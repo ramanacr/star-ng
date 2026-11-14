@@ -1,13 +1,21 @@
 import { _IdGenerator } from '@angular/cdk/a11y';
+import {
+  CdkFixedSizeVirtualScroll,
+  CdkVirtualForOf,
+  CdkVirtualScrollViewport,
+} from '@angular/cdk/scrolling';
 import { NgTemplateOutlet } from '@angular/common';
 import {
+  afterNextRender,
   booleanAttribute,
   ChangeDetectionStrategy,
   Component,
   computed,
   contentChild,
+  effect,
   ElementRef,
   inject,
+  Injector,
   input,
   model,
   output,
@@ -17,6 +25,19 @@ import {
 import type { FormValueControl } from '@angular/forms/signals';
 import { matchesFilter, optionText, readOption, STAR_UI_TEXT, StarOptionKey } from 'star-ng/core';
 import { StarOptionTemplate } from 'star-ng/select';
+import {
+  ariaPosition,
+  buildLayout,
+  isRowRendered,
+  keyboardTarget,
+  ListboxRow,
+  listHeight,
+  ListNavigationKey,
+  pageSize,
+  revealOffset,
+  revealRows,
+  typeaheadIndex,
+} from './virtual-rows';
 
 /**
  * Inline list choice (PrimeNG `p-listbox`): single or `multiple` (checkboxes), filter,
@@ -27,7 +48,7 @@ import { StarOptionTemplate } from 'star-ng/select';
  */
 @Component({
   selector: 'star-listbox',
-  imports: [NgTemplateOutlet],
+  imports: [NgTemplateOutlet, CdkVirtualScrollViewport, CdkFixedSizeVirtualScroll, CdkVirtualForOf],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-listbox-box',
@@ -47,67 +68,140 @@ import { StarOptionTemplate } from 'star-ng/select';
           [attr.aria-controls]="listId"
           [placeholder]="text.filterPlaceholder"
           [value]="query()"
-          (input)="query.set(filterInput.value); active.set(0)"
+          (input)="onFilterInput(filterInput.value)"
           (keydown)="onKeydown($event)"
         />
       </div>
     }
-    <ul
-      #list
-      class="star-listbox"
-      role="listbox"
-      [id]="listId"
-      [attr.tabindex]="disabled() ? -1 : 0"
-      [attr.aria-label]="ariaLabel()"
-      [attr.aria-multiselectable]="multiple() || null"
-      [attr.aria-activedescendant]="activeId()"
-      [attr.aria-disabled]="disabled() || null"
-      [style.max-height]="scrollHeight()"
-      (keydown)="onKeydown($event)"
-      (focus)="active() < 0 && active.set(firstSelectedOrZero())"
-      (blur)="touch.emit()"
-    >
-      @for (option of visible(); track $index; let i = $index) {
-        @if (groupHeading(i); as heading) {
-          <li class="star-listbox__group" role="presentation" [id]="groupId(i)">{{ heading }}</li>
-        }
-        <!-- Keyboard is handled on the listbox via aria-activedescendant. -->
-        <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
-        <li
-          class="star-listbox__option"
-          role="option"
-          [id]="listId + '-' + i"
-          [class.star-listbox__option--active]="active() === i"
-          [class.star-listbox__option--selected]="isSelected(option)"
-          [attr.aria-selected]="isSelected(option)"
-          [attr.aria-disabled]="isDisabled(option) || null"
-          [attr.aria-describedby]="groupId(i)"
-          (click)="active.set(i); choose(option)"
-        >
-          @if (multiple()) {
-            <span class="star-check__box" aria-hidden="true">
-              @if (isSelected(option)) {
-                <i class="ph-bold ph-check"></i>
+    @if (virtualScroll()) {
+      <!-- Virtual scroll: the CDK viewport is the listbox. Group headings and options are rows of one height. -->
+      <cdk-virtual-scroll-viewport
+        #list
+        class="star-listbox star-listbox--virtual star-listbox--viewport"
+        role="listbox"
+        [id]="listId"
+        [itemSize]="itemSize()"
+        [minBufferPx]="itemSize() * 4"
+        [maxBufferPx]="itemSize() * 8"
+        [attr.tabindex]="disabled() ? -1 : 0"
+        [attr.aria-label]="ariaLabel()"
+        [attr.aria-multiselectable]="multiple() || null"
+        [attr.aria-activedescendant]="activeId()"
+        [attr.aria-disabled]="disabled() || null"
+        [style.--star-item-size.px]="itemSize()"
+        [style.height]="viewportHeight()"
+        (keydown)="onKeydown($event)"
+        (focus)="onFocus()"
+        (blur)="touch.emit()"
+      >
+        <ng-container *cdkVirtualFor="let row of layout().rows; trackBy: trackRow">
+          @if (row.kind === 'group') {
+            <div class="star-listbox__group" role="presentation" [id]="row.id">
+              {{ row.label }}
+            </div>
+          } @else {
+            @let option = row.option;
+            @let i = row.index;
+            @let position = positionOf(i);
+            <!-- Keyboard is handled on the listbox via aria-activedescendant. -->
+            <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
+            <div
+              class="star-listbox__option"
+              role="option"
+              [id]="listId + '-' + i"
+              [class.star-listbox__option--active]="active() === i"
+              [class.star-listbox__option--selected]="isSelected(option)"
+              [attr.aria-selected]="isSelected(option)"
+              [attr.aria-disabled]="isDisabled(option) || null"
+              [attr.aria-describedby]="describedBy(row)"
+              [attr.aria-setsize]="position.setsize"
+              [attr.aria-posinset]="position.posinset"
+              (click)="active.set(i); choose(option)"
+            >
+              @if (multiple()) {
+                <span class="star-check__box" aria-hidden="true">
+                  @if (isSelected(option)) {
+                    <i class="ph-bold ph-check"></i>
+                  }
+                </span>
+              }
+              <span class="star-listbox__label">
+                @if (optionTemplate(); as custom) {
+                  <ng-container
+                    *ngTemplateOutlet="
+                      custom.template;
+                      context: { $implicit: option, selected: isSelected(option), index: i }
+                    "
+                  />
+                } @else {
+                  {{ labelOf(option) }}
+                }
+              </span>
+            </div>
+          }
+        </ng-container>
+      </cdk-virtual-scroll-viewport>
+      @if (!visible().length) {
+        <div class="star-listbox__empty" role="presentation">{{ text.emptyFilterMessage }}</div>
+      }
+    } @else {
+      <ul
+        #list
+        class="star-listbox"
+        role="listbox"
+        [id]="listId"
+        [attr.tabindex]="disabled() ? -1 : 0"
+        [attr.aria-label]="ariaLabel()"
+        [attr.aria-multiselectable]="multiple() || null"
+        [attr.aria-activedescendant]="activeId()"
+        [attr.aria-disabled]="disabled() || null"
+        [style.max-height]="scrollHeight()"
+        (keydown)="onKeydown($event)"
+        (focus)="onFocus()"
+        (blur)="touch.emit()"
+      >
+        @for (option of visible(); track $index; let i = $index) {
+          @if (groupHeading(i); as heading) {
+            <li class="star-listbox__group" role="presentation" [id]="groupId(i)">{{ heading }}</li>
+          }
+          <!-- Keyboard is handled on the listbox via aria-activedescendant. -->
+          <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
+          <li
+            class="star-listbox__option"
+            role="option"
+            [id]="listId + '-' + i"
+            [class.star-listbox__option--active]="active() === i"
+            [class.star-listbox__option--selected]="isSelected(option)"
+            [attr.aria-selected]="isSelected(option)"
+            [attr.aria-disabled]="isDisabled(option) || null"
+            [attr.aria-describedby]="groupId(i)"
+            (click)="active.set(i); choose(option)"
+          >
+            @if (multiple()) {
+              <span class="star-check__box" aria-hidden="true">
+                @if (isSelected(option)) {
+                  <i class="ph-bold ph-check"></i>
+                }
+              </span>
+            }
+            <span class="star-listbox__label">
+              @if (optionTemplate(); as custom) {
+                <ng-container
+                  *ngTemplateOutlet="
+                    custom.template;
+                    context: { $implicit: option, selected: isSelected(option), index: i }
+                  "
+                />
+              } @else {
+                {{ labelOf(option) }}
               }
             </span>
-          }
-          <span class="star-listbox__label">
-            @if (optionTemplate(); as custom) {
-              <ng-container
-                *ngTemplateOutlet="
-                  custom.template;
-                  context: { $implicit: option, selected: isSelected(option), index: i }
-                "
-              />
-            } @else {
-              {{ labelOf(option) }}
-            }
-          </span>
-        </li>
-      } @empty {
-        <li class="star-listbox__empty" role="presentation">{{ text.emptyFilterMessage }}</li>
-      }
-    </ul>
+          </li>
+        } @empty {
+          <li class="star-listbox__empty" role="presentation">{{ text.emptyFilterMessage }}</li>
+        }
+      </ul>
+    }
   `,
 })
 export class StarListbox<TOption = unknown, TValue = TOption> implements FormValueControl<
@@ -128,7 +222,17 @@ export class StarListbox<TOption = unknown, TValue = TOption> implements FormVal
   readonly optionGroup = input<StarOptionKey<TOption> | null>(null);
   readonly multiple = input(false, { transform: booleanAttribute });
   readonly filter = input(false, { transform: booleanAttribute });
+  /** Height of the list. With `virtualScroll` it is the height of the list, or less for a short list. */
   readonly scrollHeight = input('16rem');
+  /**
+   * Renders only the rows in and near the view (CDK virtual scroll), for lists of thousands of
+   * options. Every row, group headings included, has the height `virtualItemSize` and the text
+   * stays on one line. Keys and type-ahead work over all options. Page up and Page down move by
+   * the lines in view.
+   */
+  readonly virtualScroll = input(false, { transform: booleanAttribute });
+  /** Row height in pixels with `virtualScroll`. */
+  readonly virtualItemSize = input(40);
   readonly ariaLabel = input<string | null>(null);
   readonly disabled = input(false, { transform: booleanAttribute });
   readonly invalid = input(false, { transform: booleanAttribute });
@@ -136,7 +240,9 @@ export class StarListbox<TOption = unknown, TValue = TOption> implements FormVal
   readonly touch = output<void>();
 
   protected readonly optionTemplate = contentChild(StarOptionTemplate);
-  private readonly list = viewChild.required<ElementRef<HTMLUListElement>>('list');
+  private readonly list = viewChild<unknown, ElementRef<HTMLElement>>('list', { read: ElementRef });
+  private readonly viewport = viewChild(CdkVirtualScrollViewport);
+  private readonly injector = inject(Injector);
   protected readonly query = signal('');
   protected readonly active = signal(-1);
   private typeahead = '';
@@ -180,11 +286,80 @@ export class StarListbox<TOption = unknown, TValue = TOption> implements FormVal
     while (first > 0 && this.groupOf(options[first - 1]) === this.groupOf(options[index])) first--;
     return `${this.listId}-group-${first}`;
   }
-  protected readonly activeId = computed(() =>
-    this.active() >= 0 && this.active() < this.visible().length
-      ? `${this.listId}-${this.active()}`
-      : null,
+
+  // ---- Virtual scroll ----
+
+  protected readonly itemSize = computed(() => Math.max(1, this.virtualItemSize()));
+
+  /** Group headings and options in one list of rows of equal height. */
+  protected readonly layout = computed(() =>
+    buildLayout(
+      this.visible(),
+      this.optionGroup() ? (option) => this.groupOf(option) : null,
+      this.listId,
+    ),
   );
+
+  protected readonly viewportHeight = computed(() =>
+    listHeight(this.scrollHeight(), this.layout().rows.length, this.itemSize()),
+  );
+
+  /** Rows that are in the DOM now: `[start, end)`, reported by the CDK viewport. */
+  private readonly renderedRange = signal({ start: 0, end: 0 });
+
+  protected readonly trackRow = (_index: number, row: ListboxRow<TOption>): string => row.key;
+
+  protected positionOf(index: number): { setsize: number; posinset: number } {
+    return ariaPosition(index, this.visible().length);
+  }
+
+  /** The heading of the group, only while its row is in the DOM (the id must exist). */
+  protected describedBy(row: Extract<ListboxRow<TOption>, { kind: 'option' }>): string | null {
+    return row.groupId !== null && isRowRendered(row.groupRow, this.renderedRange())
+      ? row.groupId
+      : null;
+  }
+
+  /** `aria-activedescendant` only names an option that is in the DOM. */
+  protected readonly activeId = computed(() => {
+    const index = this.active();
+    if (index < 0 || index >= this.visible().length) return null;
+    if (this.virtualScroll()) {
+      const row = this.layout().rowOfOption[index];
+      if (row === undefined || !isRowRendered(row, this.renderedRange())) return null;
+    }
+    return `${this.listId}-${index}`;
+  });
+
+  constructor() {
+    effect((onCleanup) => {
+      const viewport = this.viewport();
+      if (!viewport) return;
+      const element = viewport.getElementRef().nativeElement;
+      this.renderedRange.set(viewport.getRenderedRange());
+      // The range is read after the rows have been drawn, so the ids it allows exist.
+      const range = viewport.renderedRangeStream.subscribe((next) =>
+        afterNextRender(() => this.renderedRange.set({ ...next }), { injector: this.injector }),
+      );
+      afterNextRender(
+        () =>
+          element
+            .querySelector('.cdk-virtual-scroll-content-wrapper')
+            ?.setAttribute('role', 'presentation'),
+        { injector: this.injector },
+      );
+      // The viewport measures its height once; a new height (filter, hidden parent) needs a new measure.
+      const observer =
+        typeof ResizeObserver === 'undefined'
+          ? null
+          : new ResizeObserver(() => viewport.checkViewportSize());
+      observer?.observe(element);
+      onCleanup(() => {
+        range.unsubscribe();
+        observer?.disconnect();
+      });
+    });
+  }
 
   protected labelOf(option: TOption): string {
     return optionText(option, this.optionLabel());
@@ -225,48 +400,91 @@ export class StarListbox<TOption = unknown, TValue = TOption> implements FormVal
     }
   }
 
+  protected onFilterInput(text: string): void {
+    this.query.set(text);
+    this.active.set(0);
+    // The shorter list starts at its top.
+    this.viewport()?.scrollToOffset(0);
+  }
+
+  protected onFocus(): void {
+    if (this.active() >= 0) return;
+    this.active.set(this.firstSelectedOrZero());
+    if (this.virtualScroll()) this.reveal(this.active());
+  }
+
+  /**
+   * Brings the active option into view. With `virtualScroll` the option may not be in the DOM yet:
+   * the viewport scrolls to it (least movement, heading row included) and then renders it.
+   */
+  private reveal(index: number): void {
+    if (!this.virtualScroll()) {
+      queueMicrotask(() =>
+        this.list()
+          ?.nativeElement.querySelector(`#${CSS.escape(this.activeId() ?? '')}`)
+          ?.scrollIntoView?.({ block: 'nearest' }),
+      );
+      return;
+    }
+    const viewport = this.viewport();
+    if (!viewport) return;
+    const [first, last] = revealRows(this.layout(), index);
+    const offset = revealOffset(
+      first,
+      last,
+      this.itemSize(),
+      viewport.measureScrollOffset(),
+      viewport.getViewportSize(),
+    );
+    if (offset !== null) viewport.scrollToOffset(offset);
+  }
+
   protected onKeydown(event: KeyboardEvent): void {
     const options = this.visible();
     if (!options.length || this.disabled()) return;
-    const last = options.length - 1;
-    const move = (index: number) => {
+    const fromInput = event.target instanceof HTMLInputElement;
+    const page = pageSize(this.viewport()?.getViewportSize() || 256, this.itemSize());
+    const move = (key: ListNavigationKey | number) => {
       event.preventDefault();
-      this.active.set(Math.min(Math.max(index, 0), last));
-      queueMicrotask(() =>
-        this.list()
-          .nativeElement.querySelector(`#${CSS.escape(this.activeId() ?? '')}`)
-          ?.scrollIntoView?.({ block: 'nearest' }),
+      this.active.set(
+        typeof key === 'number' ? key : keyboardTarget(key, this.active(), options.length, page),
       );
-      if (!this.multiple() && !(event.target instanceof HTMLInputElement)) {
+      this.reveal(this.active());
+      if (!this.multiple() && !fromInput) {
         const option = options[this.active()];
         if (!this.isDisabled(option)) this.value.set(this.valueOf(option));
       }
     };
     switch (event.key) {
       case 'ArrowDown':
-        return move(this.active() + 1);
       case 'ArrowUp':
-        return move(this.active() - 1);
+        return move(event.key);
       case 'Home':
-        if (event.target instanceof HTMLInputElement) return;
-        return move(0);
       case 'End':
-        if (event.target instanceof HTMLInputElement) return;
-        return move(last);
+        if (fromInput) return;
+        return move(event.key);
+      case 'PageDown':
+      case 'PageUp':
+        // Without `virtualScroll` the browser scrolls the list by a page.
+        if (fromInput || !this.virtualScroll()) return;
+        return move(event.key);
       case ' ':
       case 'Enter':
-        if (event.key === ' ' && event.target instanceof HTMLInputElement) return;
+        if (event.key === ' ' && fromInput) return;
         event.preventDefault();
         if (options[this.active()] !== undefined) this.choose(options[this.active()]);
         return;
       default:
-        if (event.key.length === 1 && !(event.target instanceof HTMLInputElement)) {
+        if (event.key.length === 1 && !fromInput) {
           const now = Date.now();
           this.typeahead =
             (now - this.typeaheadAt > 500 ? '' : this.typeahead) + event.key.toLowerCase();
           this.typeaheadAt = now;
-          const index = options.findIndex((o) =>
-            this.labelOf(o).toLowerCase().startsWith(this.typeahead),
+          // Over all options, also those that are not in the DOM.
+          const index = typeaheadIndex(
+            options.length,
+            (i) => this.labelOf(options[i]),
+            this.typeahead,
           );
           if (index >= 0) move(index);
         }
@@ -274,6 +492,6 @@ export class StarListbox<TOption = unknown, TValue = TOption> implements FormVal
   }
 
   focus(): void {
-    this.list().nativeElement.focus();
+    this.list()?.nativeElement.focus();
   }
 }

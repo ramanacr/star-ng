@@ -21,3 +21,18 @@
 .star-listbox-box--disabled {
   opacity: 0.6;
 }
+
+// Virtual scroll: the CDK viewport is the list. Rows have one height (`--star-item-size`) and are
+// inset by margin, because the viewport positions its content from the edge of its padding box.
+.star-listbox.star-listbox--viewport {
+  padding: 0;
+
+  .cdk-virtual-scroll-content-wrapper {
+    // Long text ends in an ellipsis: the rows never make the list wider.
+    width: 100%;
+  }
+  .star-listbox__option,
+  .star-listbox__group {
+    margin-inline: 0.375rem;
+  }
+}
