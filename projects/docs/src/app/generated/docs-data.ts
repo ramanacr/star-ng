@@ -236,6 +236,122 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ]
   },
+  "StarCalendar": {
+    "kind": "component",
+    "selector": "star-calendar",
+    "entry": "star-ng/date-picker",
+    "description": "Month grid used by `star-date-picker`, `star-date-range-picker`, or on its own as an inline calendar (PrimeNG `p-datepicker [inline]`). WAI-ARIA date grid keyboard model: arrows move by day / week, Home / End to week start / end, PageUp / PageDown by month, Shift + PageUp / PageDown by year, Enter / Space select. Month and year views for fast jumps.",
+    "inputs": [
+      {
+        "name": "mode",
+        "type": "'single' | 'range' | 'multiple'",
+        "default": "'single'",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "selected",
+        "type": "Date | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "selectedDates",
+        "type": "readonly Date[]",
+        "default": "[]",
+        "required": false,
+        "description": "Chosen days in `'multiple'` mode."
+      },
+      {
+        "name": "granularity",
+        "type": "StarCalendarView",
+        "default": "'day'",
+        "required": false,
+        "description": "Smallest unit the user chooses. `'month'` and `'year'` show only the month or year view and emit the first day of the chosen month or year."
+      },
+      {
+        "name": "numberOfMonths",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Months shown side by side in the day view."
+      },
+      {
+        "name": "showWeek",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows the ISO 8601 week number at the start of each week."
+      },
+      {
+        "name": "range",
+        "type": "StarDateRange | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "minDate",
+        "type": "Date | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "maxDate",
+        "type": "Date | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "disabledDates",
+        "type": "readonly Date[]",
+        "default": "[]",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "disabledDays",
+        "type": "readonly number[]",
+        "default": "[]",
+        "required": false,
+        "description": "Weekdays that cannot be chosen (0 = Sunday … 6 = Saturday)."
+      },
+      {
+        "name": "dateDisabled",
+        "type": "((date: Date) => boolean) | null",
+        "default": "null",
+        "required": false,
+        "description": "Extra rule, for example public holidays from the server."
+      },
+      {
+        "name": "firstDayOfWeek",
+        "type": "number | null",
+        "default": "null",
+        "required": false,
+        "description": "0 = Sunday. Default: the locale's first day of the week."
+      },
+      {
+        "name": "locale",
+        "type": "string | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": [
+      {
+        "name": "dateSelect",
+        "type": "Date",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
   "StarCascadeSelect": {
     "kind": "component",
     "selector": "star-cascade-select",
@@ -547,6 +663,293 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "models": [],
     "outputs": []
+  },
+  "StarDateInputBase": {
+    "kind": "directive",
+    "selector": "",
+    "entry": "star-ng/date-picker",
+    "description": "Shared input + popup behaviour of the date controls: typed entry with locale-aware parsing, a calendar popup (native popover, so it works in dialogs), Today / Clear bar, keyboard.",
+    "inputs": [
+      {
+        "name": "placeholder",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "minDate",
+        "type": "Date | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "maxDate",
+        "type": "Date | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "disabledDates",
+        "type": "readonly Date[]",
+        "default": "[]",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "disabledDays",
+        "type": "readonly number[]",
+        "default": "[]",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "dateDisabled",
+        "type": "((date: Date) => boolean) | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "firstDayOfWeek",
+        "type": "number | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "locale",
+        "type": "string | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "BCP 47 locale for names and formats. Default: the browser locale."
+      },
+      {
+        "name": "dateFormat",
+        "type": "Intl.DateTimeFormatOptions",
+        "default": "DEFAULT_DATE_FORMAT",
+        "required": false,
+        "description": "`Intl.DateTimeFormat` options for the input text (default numeric day / month / year)."
+      },
+      {
+        "name": "numberOfMonths",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Months shown side by side in the popup."
+      },
+      {
+        "name": "showWeek",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows the ISO 8601 week number at the start of each week."
+      },
+      {
+        "name": "hourFormat",
+        "type": "'24' | '12'",
+        "default": "'24'",
+        "required": false,
+        "description": "Clock of the typed time with `showTime`: `'24'` (14:30) or `'12'` (2:30 PM). Both forms are accepted when the user types."
+      },
+      {
+        "name": "showButtonBar",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "showClear",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "readonlyInput",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Disables typing; the date can only be picked."
+      },
+      {
+        "name": "size",
+        "type": "'sm' | 'md'",
+        "default": "'md'",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "inputId",
+        "type": "string",
+        "default": "(generated id)",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "readonly",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "required",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "invalid",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "touched",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": [
+      {
+        "name": "touch",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "opened",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "closed",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
+  "StarDatePicker": {
+    "kind": "component",
+    "selector": "star-date-picker",
+    "entry": "star-ng/date-picker",
+    "description": "Date picker (PrimeNG `p-datepicker`): typed entry (`dd/mm/yyyy` or the locale's order, or ISO), calendar popup with month / year views, min / max, disabled dates and weekdays, Today / Clear.",
+    "inputs": [
+      {
+        "name": "showTime",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Adds a time of day (hours and minutes) to the value."
+      },
+      {
+        "name": "stepMinute",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Minute step of the time field."
+      },
+      {
+        "name": "view",
+        "type": "StarCalendarView",
+        "default": "'day'",
+        "required": false,
+        "description": "Unit to choose: a day (default), a month or a year."
+      }
+    ],
+    "models": [
+      {
+        "name": "value",
+        "type": "Date | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "outputs": [
+      {
+        "name": "dateSelect",
+        "type": "Date",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
+  "StarDateRangePicker": {
+    "kind": "component",
+    "selector": "star-date-range-picker",
+    "entry": "star-ng/date-picker",
+    "description": "Date range picker (PrimeNG `p-datepicker selectionMode=\"range\"`). Value: `{ start, end }`. First click sets the start, second click the end (swapped if earlier); hovering previews. Type `01/11/2026 – 15/11/2026` (any separator between the two dates).",
+    "inputs": [
+      {
+        "name": "showTime",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Adds a time of day to both ends. A new start is at 00:00 and a new end at 23:59; the popup has a start and an end time field and stays open until the user chooses Done."
+      },
+      {
+        "name": "stepMinute",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Minute step of the time fields."
+      }
+    ],
+    "models": [
+      {
+        "name": "value",
+        "type": "StarDateRange | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "outputs": [
+      {
+        "name": "rangeSelect",
+        "type": "StarDateRange",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
   },
   "StarField": {
     "kind": "component",
@@ -1593,6 +1996,31 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "outputs": []
   },
+  "StarMultiDatePicker": {
+    "kind": "component",
+    "selector": "star-multi-date-picker",
+    "entry": "star-ng/date-picker",
+    "description": "Multiple-date picker (PrimeNG `p-datepicker selectionMode=\"multiple\"`). Value: a list of days in date order. A click adds a day or removes it; the popup stays open. Type the dates with a comma or a semicolon between them.",
+    "inputs": [
+      {
+        "name": "maxDates",
+        "type": "number",
+        "default": "0",
+        "required": false,
+        "description": "Largest number of days (0 = no limit). A click on a new day does nothing at the limit."
+      }
+    ],
+    "models": [
+      {
+        "name": "value",
+        "type": "readonly Date[]",
+        "default": "[]",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "outputs": []
+  },
   "StarMultiSelect": {
     "kind": "component",
     "selector": "star-multi-select",
@@ -2628,6 +3056,116 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarTimePicker": {
+    "kind": "component",
+    "selector": "star-time-picker",
+    "entry": "star-ng/date-picker",
+    "description": "Time picker: a time of day without a date (PrimeNG `p-datepicker timeOnly`). The value is 24-hour `HH:mm` text, or `null`. The control is the native time input in the StarNG input style, so the browser gives the keyboard model, the locale's 12 or 24-hour display and the picker on a phone.",
+    "inputs": [
+      {
+        "name": "min",
+        "type": "string | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "Earliest and latest time, `HH:mm`."
+      },
+      {
+        "name": "max",
+        "type": "string | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "stepMinute",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "size",
+        "type": "'sm' | 'md'",
+        "default": "'md'",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "inputId",
+        "type": "string",
+        "default": "(generated id)",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "readonly",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "required",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "invalid",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "touched",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [
+      {
+        "name": "value",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "`HH:mm` in the 24-hour clock, or `null`."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "touch",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
   "StarToggleButton": {
     "kind": "component",
     "selector": "star-toggle-button",
@@ -2994,6 +3532,10 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "button/sizes": "<star-button size=\"sm\">Small</star-button>\n<star-button size=\"md\">Medium</star-button>\n<star-button size=\"lg\">Large</star-button>",
   "button/states": "<star-button [loading]=\"saving()\" (pressed)=\"save()\">Save changes</star-button>\n<star-button variant=\"secondary\" disabled>Disabled</star-button>\n<p class=\"docs-output\" role=\"status\">Saved {{ saves() }} times</p>",
   "button/variants": "<star-button variant=\"primary\">Save</star-button>\n<star-button variant=\"secondary\">Cancel</star-button>\n<star-button variant=\"ghost\">Skip</star-button>\n<star-button variant=\"success\">Approve</star-button>\n<star-button variant=\"warning\">Hold</star-button>\n<star-button variant=\"danger\">Delete</star-button>\n<star-button variant=\"ghost-danger\">Remove</star-button>",
+  "calendar/basic": "<div class=\"docs-stack\">\n  <star-calendar\n    class=\"star-calendar--inline\"\n    [selected]=\"shipDate()\"\n    (dateSelect)=\"shipDate.set($event)\"\n    locale=\"en-GB\"\n    [firstDayOfWeek]=\"1\"\n  />\n  <p class=\"docs-output\" role=\"status\">Ship date: {{ iso(shipDate()) }}</p>\n</div>",
+  "calendar/granularity": "<div class=\"docs-stack\">\n  <star-calendar\n    class=\"star-calendar--inline\"\n    granularity=\"month\"\n    [selected]=\"reportMonth()\"\n    (dateSelect)=\"reportMonth.set($event)\"\n    locale=\"en-GB\"\n  />\n  <p class=\"docs-output\" role=\"status\">Month: {{ iso(reportMonth()) }}</p>\n</div>",
+  "calendar/months": "<star-calendar\n  class=\"star-calendar--inline\"\n  [selected]=\"stay()\"\n  (dateSelect)=\"stay.set($event)\"\n  [numberOfMonths]=\"2\"\n  showWeek\n  [minDate]=\"minDate\"\n  [maxDate]=\"maxDate\"\n  [disabledDays]=\"[0]\"\n  locale=\"en-GB\"\n  [firstDayOfWeek]=\"1\"\n/>",
+  "calendar/range": "<div class=\"docs-stack\">\n  <star-calendar\n    class=\"star-calendar--inline\"\n    mode=\"range\"\n    [range]=\"booking()\"\n    (dateSelect)=\"pick($event)\"\n    locale=\"en-GB\"\n    [firstDayOfWeek]=\"1\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Booking: {{ iso(booking()?.start) }} to {{ iso(booking()?.end) }}\n  </p>\n</div>",
   "cascade-select/basic": "<div class=\"docs-stack\">\n  <star-cascade-select\n    [options]=\"places\"\n    optionLabel=\"name\"\n    optionValue=\"code\"\n    [(value)]=\"place\"\n    placeholder=\"Choose a city\"\n    ariaLabel=\"City\"\n  />\n  <p class=\"docs-output\" role=\"status\">Value: {{ place() ?? 'none' }}</p>\n</div>",
   "cascade-select/form": "<div class=\"docs-stack\">\n  <star-field label=\"Office city\" for=\"cascade-form-city\" [state]=\"office.city()\">\n    <star-cascade-select\n      inputId=\"cascade-form-city\"\n      [formField]=\"office.city\"\n      [options]=\"places\"\n      optionLabel=\"name\"\n      optionValue=\"code\"\n      placeholder=\"Choose a city\"\n      showPath\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ office().valid() }}</p>\n</div>",
   "cascade-select/path": "<star-cascade-select\n  [options]=\"places\"\n  optionLabel=\"name\"\n  optionValue=\"code\"\n  [(value)]=\"pathPlace\"\n  placeholder=\"Choose a city\"\n  ariaLabel=\"City with path\"\n  showPath\n  showClear\n/>",
@@ -3007,12 +3549,22 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "color-picker/swatches": "<star-color-picker\n  [(value)]=\"category\"\n  [swatches]=\"['#0f766e', '#b45309', '#7c3aed', '#be123c']\"\n  ariaLabel=\"Category color\"\n/>",
   "context-menu/basic": "<div class=\"docs-stack\">\n  <div class=\"docs-output\" tabindex=\"0\" aria-label=\"Order row\" [starContextMenu]=\"rowMenu\">\n    Order 1042: right-click here\n  </div>\n  <star-menu #rowMenu [items]=\"rowItems\" (itemClick)=\"last.set($event.label ?? '')\" />\n  <p class=\"docs-output\" role=\"status\">Last action: {{ last() }}</p>\n</div>",
   "dark-mode/try": "<star-button variant=\"secondary\" (pressed)=\"theme.setMode('system')\">System</star-button>\n<star-button variant=\"secondary\" (pressed)=\"theme.setMode('light')\">Light</star-button>\n<star-button variant=\"secondary\" (pressed)=\"theme.setMode('dark')\">Dark</star-button>\n<p class=\"docs-output\" role=\"status\">\n  Choice: {{ theme.mode() }}. Theme in use: {{ theme.theme() }}.\n</p>",
+  "date-picker/basic": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"delivery\"\n    locale=\"en-GB\"\n    [firstDayOfWeek]=\"1\"\n    ariaLabel=\"Delivery date\"\n    showButtonBar\n  />\n  <p class=\"docs-output\" role=\"status\">Delivery: {{ iso(delivery()) }}</p>\n</div>",
+  "date-picker/form": "<div class=\"docs-stack\">\n  <star-field label=\"Delivery date\" for=\"date-form-delivery\" [state]=\"order.deliveryDate()\">\n    <star-date-picker\n      inputId=\"date-form-delivery\"\n      [formField]=\"order.deliveryDate\"\n      locale=\"en-GB\"\n      [minDate]=\"minDate\"\n      ariaLabel=\"Required delivery date\"\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ order().valid() }}</p>\n</div>",
+  "date-picker/format": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"invoiceDate\"\n    locale=\"en-GB\"\n    [dateFormat]=\"longFormat\"\n    ariaLabel=\"Invoice date\"\n    placeholder=\"dd/mm/yyyy\"\n  />\n  <star-date-picker\n    [value]=\"invoiceDate()\"\n    locale=\"en-GB\"\n    readonlyInput\n    ariaLabel=\"Invoice date, pick only\"\n  />\n  <p class=\"docs-output\" role=\"status\">Invoice: {{ iso(invoiceDate()) }}</p>\n</div>",
+  "date-picker/limits": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"slot\"\n    [minDate]=\"minDate\"\n    [maxDate]=\"maxDate\"\n    [disabledDays]=\"weekend\"\n    [disabledDates]=\"closedDays\"\n    [dateDisabled]=\"isMonthStart\"\n    locale=\"en-GB\"\n    ariaLabel=\"Pick-up date\"\n  />\n  <p class=\"docs-output\" role=\"status\">Pick-up: {{ iso(slot()) }}</p>\n</div>",
+  "date-picker/locale": "<div class=\"docs-stack\">\n  <star-date-picker\n    [value]=\"germanDate\"\n    locale=\"de-DE\"\n    [firstDayOfWeek]=\"1\"\n    showWeek\n    ariaLabel=\"Lieferdatum\"\n  />\n  <star-date-picker\n    [value]=\"americanDate\"\n    locale=\"en-US\"\n    [firstDayOfWeek]=\"0\"\n    [numberOfMonths]=\"2\"\n    ariaLabel=\"Delivery date (US)\"\n  />\n</div>",
+  "date-picker/multiple": "<div class=\"docs-stack\">\n  <star-multi-date-picker\n    [(value)]=\"visits\"\n    [maxDates]=\"4\"\n    locale=\"en-GB\"\n    ariaLabel=\"Visit days\"\n    showClear\n  />\n  <p class=\"docs-output\" role=\"status\">Days: {{ visits().length }}</p>\n</div>",
+  "date-picker/range": "<div class=\"docs-stack\">\n  <star-date-range-picker [(value)]=\"booking\" locale=\"en-GB\" ariaLabel=\"Booking range\" />\n  <p class=\"docs-output\" role=\"status\">\n    Booking: {{ iso(booking()?.start) }} to {{ iso(booking()?.end) }}\n  </p>\n</div>",
+  "date-picker/states": "<div class=\"docs-stack\">\n  <star-date-picker size=\"sm\" locale=\"en-GB\" ariaLabel=\"Small date picker\" />\n  <star-date-picker disabled locale=\"en-GB\" ariaLabel=\"Disabled date picker\" />\n  <star-date-picker\n    [value]=\"delivery()\"\n    readonly\n    locale=\"en-GB\"\n    ariaLabel=\"Read-only date picker\"\n  />\n</div>",
+  "date-picker/time": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"meeting\"\n    locale=\"en-GB\"\n    showTime\n    [stepMinute]=\"15\"\n    ariaLabel=\"Meeting start\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Meeting: {{ iso(meeting()) }} {{ clock(meeting()) }}\n  </p>\n</div>",
+  "date-picker/views": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"reportMonth\"\n    view=\"month\"\n    locale=\"en-GB\"\n    ariaLabel=\"Report month\"\n  />\n  <star-date-picker\n    [(value)]=\"reportYear\"\n    view=\"year\"\n    locale=\"en-GB\"\n    ariaLabel=\"Report year\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Month: {{ iso(reportMonth()) }}, year: {{ iso(reportYear()) }}\n  </p>\n</div>",
   "field/basic": "<div class=\"docs-stack\">\n  <star-field label=\"Full name\" hint=\"As shown on your account.\">\n    <input starInput placeholder=\"Avery Stone\" />\n  </star-field>\n</div>",
   "field/sizes": "<div class=\"docs-stack\">\n  <input starInput size=\"sm\" aria-label=\"Small\" placeholder=\"Small\" />\n  <input starInput aria-label=\"Medium\" placeholder=\"Medium\" />\n  <input starInput size=\"lg\" aria-label=\"Large\" placeholder=\"Large\" />\n</div>",
   "field/states": "<div class=\"docs-stack\">\n  <star-field label=\"Promo code\" error=\"This code has expired.\">\n    <input starInput value=\"SPRING\" />\n  </star-field>\n  <star-field label=\"Account number\">\n    <input starInput value=\"100-204\" disabled />\n  </star-field>\n</div>",
   "field/textarea": "<div class=\"docs-stack\">\n  <star-field label=\"Notes\">\n    <textarea starInput autoResize placeholder=\"Add a note\"></textarea>\n  </star-field>\n</div>",
   "field/validation": "<div class=\"docs-stack\">\n  <star-field label=\"Email\" [state]=\"contact.email()\">\n    <input starInput type=\"email\" [formField]=\"contact.email\" />\n  </star-field>\n</div>",
-  "forms/reactive": "<form class=\"docs-stack\" [formGroup]=\"group\">\n  <star-field label=\"Reference\">\n    <input starInput formControlName=\"reference\" />\n  </star-field>\n  <star-checkbox [formField]=\"group.controls.confirmed.fieldTree\">Confirmed</star-checkbox>\n  <star-toggle-switch [(checked)]=\"locked\">Lock the form</star-toggle-switch>\n  <p class=\"docs-output\" role=\"status\">Group value: {{ group.value | json }}</p>\n</form>",
+  "forms/reactive": "<form class=\"docs-stack\" [formGroup]=\"group\">\n  <star-field label=\"Reference\">\n    <input starInput formControlName=\"reference\" />\n  </star-field>\n  <star-field label=\"Delivery date\" for=\"forms-reactive-delivery\">\n    <star-date-picker\n      inputId=\"forms-reactive-delivery\"\n      [formField]=\"group.controls.delivery.fieldTree\"\n      locale=\"en-GB\"\n      ariaLabel=\"Delivery date\"\n    />\n  </star-field>\n  <star-checkbox [formField]=\"group.controls.confirmed.fieldTree\">Confirmed</star-checkbox>\n  <star-toggle-switch [(checked)]=\"locked\">Lock the form</star-toggle-switch>\n  <p class=\"docs-output\" role=\"status\">Group value: {{ group.value | json }}</p>\n</form>",
   "forms/signal": "<div class=\"docs-stack\">\n  <star-field label=\"Name\" [state]=\"profile.name()\">\n    <input starInput [formField]=\"profile.name\" />\n  </star-field>\n  <star-toggle-switch [formField]=\"profile.newsletter\">Newsletter</star-toggle-switch>\n  <p class=\"docs-output\" role=\"status\">\n    {{ profile().valid() ? 'Valid' : 'Not valid' }}: {{ model().name || '(no name)' }}\n  </p>\n</div>",
   "forms/two-way": "<star-checkbox [(checked)]=\"remember\">Remember this device</star-checkbox>\n<p class=\"docs-output\" role=\"status\">{{ remember() }}</p>",
   "getting-started/result": "<star-button leadingIcon=\"ph-bold ph-plus\">New order</star-button>",
@@ -3090,6 +3642,10 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "split-button/variants": "<star-split-button label=\"Save\" variant=\"secondary\" size=\"sm\" [items]=\"orderOptions\" />\n<star-split-button label=\"Approve\" variant=\"success\" [items]=\"orderOptions\" />\n<star-split-button label=\"Remove\" variant=\"danger\" size=\"lg\" [items]=\"orderOptions\" />",
   "tag/icon": "<star-tag severity=\"success\" icon=\"ph-bold ph-check\" rounded>Shipped</star-tag>\n<star-tag severity=\"warn\" icon=\"ph-bold ph-clock\" rounded>Waiting</star-tag>",
   "tag/severities": "<star-tag value=\"New\" />\n<star-tag severity=\"secondary\" value=\"Draft\" />\n<star-tag severity=\"success\" value=\"Paid\" />\n<star-tag severity=\"info\" value=\"In review\" />\n<star-tag severity=\"warn\" value=\"Due soon\" />\n<star-tag severity=\"danger\" value=\"Overdue\" />",
+  "time-picker/basic": "<div class=\"docs-stack\">\n  <star-time-picker [(value)]=\"meeting\" ariaLabel=\"Meeting time\" />\n  <p class=\"docs-output\" role=\"status\">Meeting: {{ meeting() ?? 'none' }}</p>\n</div>",
+  "time-picker/form": "<div class=\"docs-stack\">\n  <star-field label=\"Pick-up time\" for=\"time-form-pickup\" [state]=\"slot.pickup()\">\n    <star-time-picker\n      inputId=\"time-form-pickup\"\n      [formField]=\"slot.pickup\"\n      ariaLabel=\"Pick-up time\"\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ slot().valid() }}</p>\n</div>",
+  "time-picker/limits": "<div class=\"docs-stack\">\n  <star-time-picker\n    [(value)]=\"opening\"\n    min=\"08:00\"\n    max=\"18:00\"\n    [stepMinute]=\"15\"\n    ariaLabel=\"Opening time\"\n  />\n  <p class=\"docs-output\" role=\"status\">Opening: {{ opening() ?? 'none' }}</p>\n</div>",
+  "time-picker/states": "<div class=\"docs-stack\">\n  <star-time-picker size=\"sm\" ariaLabel=\"Small time picker\" />\n  <star-time-picker disabled [value]=\"'09:30'\" ariaLabel=\"Disabled time picker\" />\n  <star-time-picker readonly [value]=\"'09:30'\" ariaLabel=\"Read-only time picker\" />\n</div>",
   "toggle-switch/basic": "<star-toggle-switch [(checked)]=\"alerts\">Email alerts</star-toggle-switch>\n<p class=\"docs-output\" role=\"status\">Alerts: {{ alerts() ? 'on' : 'off' }}</p>",
   "toggle-switch/disabled": "<star-toggle-switch [checked]=\"true\" disabled\n  >Two-step sign-in (set by your admin)</star-toggle-switch\n>",
   "toggle-switch/small": "<star-toggle-switch size=\"sm\" [(checked)]=\"compact\">Compact rows</star-toggle-switch>",

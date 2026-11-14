@@ -5,6 +5,7 @@ import { disabled, form, FormField, required } from '@angular/forms/signals';
 import { SignalFormControl } from '@angular/forms/signals/compat';
 import { StarCheckbox } from 'star-ng/checkbox';
 import { syncSignalFormControls } from 'star-ng/core';
+import { StarDatePicker } from 'star-ng/date-picker';
 import { StarField, StarInput } from 'star-ng/field';
 import { StarToggleSwitch } from 'star-ng/toggle-switch';
 import { DOCS } from '../shared/docs';
@@ -19,6 +20,7 @@ import { DOCS } from '../shared/docs';
     StarField,
     StarInput,
     StarCheckbox,
+    StarDatePicker,
     StarToggleSwitch,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -84,11 +86,19 @@ import { DOCS } from '../shared/docs';
         heading="Reactive Forms"
         source="forms/reactive"
         [script]="reactiveScript"
-        note="Lock the form: the checkbox becomes disabled and the group status follows."
+        note="Lock the form: the date picker and the checkbox become disabled and the group status follows."
       >
         <form class="docs-stack" [formGroup]="group">
           <star-field label="Reference">
             <input starInput formControlName="reference" />
+          </star-field>
+          <star-field label="Delivery date" for="forms-reactive-delivery">
+            <star-date-picker
+              inputId="forms-reactive-delivery"
+              [formField]="group.controls.delivery.fieldTree"
+              locale="en-GB"
+              ariaLabel="Delivery date"
+            />
           </star-field>
           <star-checkbox [formField]="group.controls.confirmed.fieldTree">Confirmed</star-checkbox>
           <star-toggle-switch [(checked)]="locked">Lock the form</star-toggle-switch>
@@ -145,6 +155,9 @@ export class FormsGuide {
   protected readonly locked = signal(false);
   protected readonly group = new FormGroup({
     reference: new FormControl('ORD-1042'),
+    delivery: new SignalFormControl<Date | null>(null, (path) => {
+      disabled(path, { when: () => this.locked() });
+    }),
     confirmed: new SignalFormControl(false, (path) => {
       disabled(path, { when: () => this.locked() });
     }),
@@ -159,6 +172,9 @@ readonly profile = form(this.model, (path) => {
   protected readonly reactiveScript = `readonly locked = signal(false);
 readonly group = new FormGroup({
   reference: new FormControl('ORD-1042'),
+  delivery: new SignalFormControl<Date | null>(null, (path) => {
+    disabled(path, { when: () => this.locked() });
+  }),
   confirmed: new SignalFormControl(false, (path) => {
     disabled(path, { when: () => this.locked() });
   }),

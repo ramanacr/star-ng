@@ -8,6 +8,7 @@ export * from 'star-ng/badge';
 export * from 'star-ng/button';
 export * from 'star-ng/checkbox';
 export * from 'star-ng/core';
+export * from 'star-ng/date-picker';
 export * from 'star-ng/field';
 export * from 'star-ng/input-group';
 export * from 'star-ng/input-mask';

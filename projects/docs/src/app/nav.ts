@@ -214,6 +214,30 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
     ],
   },
   {
+    label: 'Date and time',
+    items: [
+      {
+        label: 'Date picker',
+        path: 'controls/date-picker',
+        keywords:
+          'datepicker date range multiple calendar input format locale min max time month year',
+        load: () => import('./controls/date-picker.page').then((m) => m.DatePickerPage),
+      },
+      {
+        label: 'Calendar',
+        path: 'controls/calendar',
+        keywords: 'inline month grid week range date',
+        load: () => import('./controls/calendar.page').then((m) => m.CalendarPage),
+      },
+      {
+        label: 'Time picker',
+        path: 'controls/time-picker',
+        keywords: 'time hour minute clock timeonly',
+        load: () => import('./controls/time-picker.page').then((m) => m.TimePickerPage),
+      },
+    ],
+  },
+  {
     label: 'Menus',
     items: [
       {

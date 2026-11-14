@@ -1,0 +1,287 @@
+// Date picker field and panel, and the calendar grid.
+@use 'select';
+.star-date {
+  display: block;
+  min-width: 11rem;
+}
+.star-date--range {
+  min-width: 16rem;
+}
+.star-date__control {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0 0.375rem 0 0.75rem;
+  border: 1px solid var(--star-border);
+  border-radius: var(--star-input-radius);
+  background: var(--star-surface-muted);
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    background-color 0.15s ease;
+
+  &:has(.star-date__input:focus-visible),
+  .star-date--open & {
+    border-color: var(--star-accent);
+    box-shadow: var(--star-focus-ring);
+    background: var(--star-surface);
+  }
+  .star-date--invalid & {
+    border-color: var(--star-danger);
+  }
+  .star-date--disabled & {
+    opacity: 0.6;
+  }
+}
+.star-date__input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.85rem 0.25rem;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--star-text-strong);
+  outline: none;
+
+  &::placeholder {
+    color: var(--star-text-muted);
+    font-weight: 600;
+  }
+}
+.star-date--sm .star-date__control {
+  border-radius: var(--star-radius-md);
+}
+.star-date--sm .star-date__input {
+  padding-block: 0.5rem;
+  font-size: 0.8125rem;
+}
+// Calendar button: a calendar icon, not a chevron, so the field does not read as a dropdown.
+.star-date__toggle {
+  @extend .star-select__icon-btn;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--star-radius-md);
+  color: var(--star-text-muted);
+  font-size: 1.125rem;
+
+  .star-date--open & {
+    background: var(--star-primary-soft);
+    color: var(--star-primary);
+  }
+}
+.star-date__panel {
+  padding: 0.75rem;
+}
+.star-date__time {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--star-border);
+}
+.star-date__time-label {
+  display: grid;
+  gap: 0.25rem;
+  font: var(--star-type-label);
+  color: var(--star-text-muted);
+
+  .star-input {
+    width: 7.5rem;
+    font-variant-numeric: tabular-nums;
+  }
+}
+.star-date__bar {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--star-border);
+}
+
+.star-calendar {
+  display: block;
+  width: 18.5rem;
+  font: var(--star-type-body-lg);
+  color: var(--star-text);
+}
+// Several months side by side need the width of all of them.
+.star-calendar:has(.star-calendar__months--many) {
+  width: auto;
+}
+.star-calendar__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+.star-calendar__title {
+  display: flex;
+  gap: 0.25rem;
+  margin: 0;
+  font: var(--star-type-title-sm);
+  color: var(--star-text-strong);
+}
+.star-calendar__title-btn,
+.star-calendar__nav {
+  padding: 0.375rem 0.5rem;
+  border: 0;
+  border-radius: var(--star-radius-sm);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--star-surface-muted);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--star-accent);
+  }
+}
+.star-calendar__title-text {
+  padding: 0.375rem 0.5rem;
+}
+.star-calendar__nav {
+  display: inline-grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  color: var(--star-text-muted);
+}
+.star-calendar__months--many {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+
+  .star-calendar__grid {
+    flex: 1 1 15rem;
+    width: auto;
+  }
+}
+.star-calendar__caption {
+  padding-bottom: 0.25rem;
+  font: var(--star-type-body);
+  font-weight: 600;
+  color: var(--star-text-strong);
+}
+.star-calendar__grid .star-calendar__week {
+  width: 2rem;
+  font: var(--star-type-body-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--star-text-muted);
+}
+.star-calendar__grid {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+
+  th {
+    padding: 0.25rem 0;
+    font: var(--star-type-label);
+    color: var(--star-text-muted);
+  }
+  td {
+    padding: 1px 0;
+    text-align: center;
+  }
+}
+.star-calendar__cell--range {
+  background: var(--star-primary-soft);
+}
+.star-calendar__cell--range-start {
+  border-radius: var(--star-radius-pill) 0 0 var(--star-radius-pill);
+}
+.star-calendar__cell--range-end {
+  border-radius: 0 var(--star-radius-pill) var(--star-radius-pill) 0;
+}
+.star-calendar__cell--range-start.star-calendar__cell--range-end {
+  border-radius: var(--star-radius-pill);
+}
+.star-calendar__day {
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+
+  &:hover:not([aria-disabled='true']) {
+    background: var(--star-surface-muted);
+  }
+  &:focus-visible {
+    outline: none;
+    box-shadow: var(--star-focus-ring);
+    border-color: var(--star-accent);
+  }
+  &[aria-disabled='true'] {
+    color: var(--star-text-soft);
+    text-decoration: line-through;
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+}
+.star-calendar__day--outside {
+  color: var(--star-text-soft);
+}
+.star-calendar__day--today {
+  border-color: var(--star-primary);
+  color: var(--star-primary);
+  font-weight: 600;
+}
+.star-calendar__day--selected,
+.star-calendar__day--selected:hover:not([aria-disabled='true']) {
+  background: var(--star-primary);
+  border-color: var(--star-primary);
+  color: var(--star-on-tone);
+}
+.star-calendar__picker {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.375rem;
+}
+.star-calendar__pick {
+  padding: 0.75rem 0.25rem;
+  border: 0;
+  border-radius: var(--star-radius-md);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: var(--star-surface-muted);
+  }
+  &:focus-visible {
+    outline: none;
+    box-shadow: var(--star-focus-ring);
+  }
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+.star-calendar__pick--selected,
+.star-calendar__pick--selected:hover:not(:disabled) {
+  background: var(--star-primary-fill);
+  color: var(--star-on-tone);
+}
+.star-calendar--inline {
+  padding: 0.75rem;
+  border: 1px solid var(--star-border);
+  border-radius: var(--star-radius-lg);
+  background: var(--star-surface);
+}
