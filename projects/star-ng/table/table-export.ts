@@ -152,6 +152,34 @@ export function buildXlsx(
   ]);
 }
 
+/** A word longer than this has no room in a print column: it gets soft break points. */
+const LONG_WORD = 20;
+/** Characters between two soft break points of a long word. */
+const WORD_CHUNK = 12;
+
+/**
+ * Escaped text for the print document. A word without spaces that is longer than `LONG_WORD`
+ * (a web address, a code, a signature) gets `<wbr>` soft break points. The print engine then
+ * wraps it inside its cell. Without them such a word sets the minimum width of its column, the
+ * table gets wider than the paper, and the engine shrinks the whole page (all text smaller) to
+ * make it fit. The CSS `overflow-wrap:anywhere` is no replacement: it lets every column shrink
+ * to one character, and the table then splits the width by the longest cell text.
+ */
+function printable(value: StarExportCell): string {
+  return String(value)
+    .split(/(\s+)/)
+    .map((word) => {
+      const letters = Array.from(word);
+      if (letters.length <= LONG_WORD) return escapeXml(word);
+      const chunks: string[] = [];
+      for (let start = 0; start < letters.length; start += WORD_CHUNK) {
+        chunks.push(escapeXml(letters.slice(start, start + WORD_CHUNK).join('')));
+      }
+      return chunks.join('<wbr>');
+    })
+    .join('');
+}
+
 /** HTML document with one table, for the browser print dialog ("Save as PDF"). */
 export function buildPrintDocument(
   title: string,
@@ -159,22 +187,39 @@ export function buildPrintDocument(
   rows: readonly (readonly StarExportCell[])[],
 ): string {
   const escape = (value: StarExportCell) => escapeXml(String(value));
-  const numeric = (value: StarExportCell) => (typeof value === 'number' ? ' class="n"' : '');
+  // A cell of one short word (a code, a number, a date, an address) is never wrapped: a break
+  // inside "INV-0001" or "2026-01-05" would only make it hard to read.
+  const cellClass = (value: StarExportCell) => {
+    const text = String(value);
+    const classes = [
+      typeof value === 'number' ? 'n' : '',
+      // A number has no break point: it needs no rule.
+      typeof value !== 'number' && text.length <= LONG_WORD && !/\s/.test(text) ? 's' : '',
+    ].filter(Boolean);
+    return classes.length ? ` class="${classes.join(' ')}"` : '';
+  };
+  // A column of numbers has its header on the right too, above the right-aligned numbers.
+  const numberColumn = (index: number) =>
+    rows.length > 0 && rows.every((row) => typeof row[index] === 'number');
   return `<!doctype html><html><head><meta charset="utf-8"><title>${escape(title)}</title><style>
 body{font:12px/1.4 system-ui,sans-serif;color:#000;margin:16px}
-h1{font-size:16px;margin:0 0 12px}
+h1{font-size:16px;margin:0 0 12px;overflow-wrap:anywhere}
 table{width:100%;border-collapse:collapse}
-th,td{padding:4px 8px;border:1px solid #999;text-align:left;vertical-align:top}
+th,td{padding:4px 8px;border:1px solid #999;text-align:left;vertical-align:top;overflow-wrap:break-word}
 th{background:#eee}
-.n{text-align:right}
+th.n,td.n{text-align:right}
+td.s{white-space:nowrap}
 thead{display:table-header-group}
 tr{break-inside:avoid}
 </style></head><body><h1>${escape(title)}</h1><table><thead><tr>${headers
-    .map((header) => `<th scope="col">${escape(header)}</th>`)
+    .map(
+      (header, index) =>
+        `<th scope="col"${numberColumn(index) ? ' class="n"' : ''}>${printable(header)}</th>`,
+    )
     .join('')}</tr></thead><tbody>${rows
     .map(
       (row) =>
-        `<tr>${row.map((value) => `<td${numeric(value)}>${escape(value)}</td>`).join('')}</tr>`,
+        `<tr>${row.map((value) => `<td${cellClass(value)}>${printable(value)}</td>`).join('')}</tr>`,
     )
     .join('')}</tbody></table></body></html>`;
 }
