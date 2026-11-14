@@ -524,6 +524,61 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarCarousel": {
+    "kind": "component",
+    "selector": "star-carousel",
+    "entry": "star-ng/media",
+    "description": "Carousel (PrimeNG `p-carousel`) on CSS scroll snap: swipe and trackpad work natively, previous / next buttons, page dots, `numVisible` items per page, optional autoplay with a pause button (WCAG 2.2.2) that also pauses on hover and focus.",
+    "inputs": [
+      {
+        "name": "items",
+        "type": "readonly T[]",
+        "default": "[]",
+        "required": false,
+        "description": "The slides: one item per slide. The `starCarouselItem` template draws each item."
+      },
+      {
+        "name": "numVisible",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Number of slides in one page."
+      },
+      {
+        "name": "autoplay",
+        "type": "number",
+        "default": "0",
+        "required": false,
+        "description": "Autoplay interval in milliseconds (0 = off)."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Accessible name of the carousel region."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
+  "StarCarouselItem": {
+    "kind": "directive",
+    "selector": "ng-template[starCarouselItem]",
+    "entry": "star-ng/media",
+    "description": "Slide template: `<ng-template starCarouselItem let-item>`.",
+    "inputs": [
+      {
+        "name": "starCarouselItemOf",
+        "type": "readonly T[] | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
   "StarCascadeSelect": {
     "kind": "component",
     "selector": "star-cascade-select",
@@ -1496,6 +1551,81 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarEditor": {
+    "kind": "component",
+    "selector": "star-editor",
+    "entry": "star-ng/editor",
+    "description": "Rich text field (PrimeNG `p-editor`, without Quill): a `contenteditable` area with a formatting toolbar (bold, italic, underline, heading, lists, link, clear). Value is HTML, sanitized with Angular's `DomSanitizer` both when it is shown and when it is stored.",
+    "inputs": [
+      {
+        "name": "placeholder",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "Text shown while the editor is empty."
+      },
+      {
+        "name": "minHeight",
+        "type": "string",
+        "default": "'8rem'",
+        "required": false,
+        "description": "CSS `min-height` of the editing area."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Accessible name of the editing area."
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "readonly",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "invalid",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "touched",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [
+      {
+        "name": "value",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "The content as HTML. Edits by the user are stored sanitized."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "touch",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
   "StarField": {
     "kind": "component",
     "selector": "star-field",
@@ -1587,6 +1717,162 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "outputs": []
   },
+  "StarFileUpload": {
+    "kind": "component",
+    "selector": "star-file-upload",
+    "entry": "star-ng/file-upload",
+    "description": "File picker with drag and drop (PrimeNG `p-fileupload`, \"advanced\" mode without the HTTP part). The value is the list of chosen `File`s; upload them in your own service. Validates `accept`, `maxFileSize` and `fileLimit`, and lists rejected files with a reason.",
+    "inputs": [
+      {
+        "name": "accept",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "Allowed files: extensions and MIME types such as `.pdf,image/*`. Empty allows every file."
+      },
+      {
+        "name": "multiple",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Allows more than one file. Without it a new file replaces the old one."
+      },
+      {
+        "name": "maxFileSize",
+        "type": "number",
+        "default": "0",
+        "required": false,
+        "description": "Bytes (0 = no limit)."
+      },
+      {
+        "name": "fileLimit",
+        "type": "number",
+        "default": "0",
+        "required": false,
+        "description": "Maximum number of files (0 = no limit)."
+      },
+      {
+        "name": "locale",
+        "type": "string | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "Locale for the file sizes (default: the application locale)."
+      },
+      {
+        "name": "fileStatus",
+        "type": "((file: File) => StarFileStatus | null | undefined) | null",
+        "default": "null",
+        "required": false,
+        "description": "Upload state of a file, or `null`. Read your own signal in the function: the list then follows the upload."
+      },
+      {
+        "name": "reorderable",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The user can change the order of the files."
+      },
+      {
+        "name": "thumbnails",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows a small picture in place of the file icon for image files."
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "readonly",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "invalid",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "touched",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [
+      {
+        "name": "value",
+        "type": "readonly File[]",
+        "default": "[]",
+        "required": false,
+        "description": "The chosen files, in list order."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "touch",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "selected",
+        "type": "readonly File[]",
+        "default": null,
+        "required": false,
+        "description": "Emits the files that passed the checks, each time files are added."
+      },
+      {
+        "name": "rejectedChange",
+        "type": "readonly StarRejectedFile[]",
+        "default": null,
+        "required": false,
+        "description": "Emits the files that failed a check, with the reason (`type`, `size` or `limit`)."
+      }
+    ]
+  },
+  "StarGalleria": {
+    "kind": "component",
+    "selector": "star-galleria",
+    "entry": "star-ng/media",
+    "description": "Image gallery (PrimeNG `p-galleria`): main image with caption, previous / next, Arrow keys, and a thumbnail strip (`aria-current` on the active one). `<star-galleria [images]=\"photos\" [(activeIndex)]=\"current\" />`",
+    "inputs": [
+      {
+        "name": "images",
+        "type": "readonly StarGalleryImage[]",
+        "default": "[]",
+        "required": false,
+        "description": "The images: `src`, `alt`, and optional `thumbnail` and `caption`."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Accessible name of the gallery region (default: the `galleryLabel` text)."
+      }
+    ],
+    "models": [
+      {
+        "name": "activeIndex",
+        "type": "number",
+        "default": "0",
+        "required": false,
+        "description": "Index of the image on show."
+      }
+    ],
+    "outputs": []
+  },
   "StarIconField": {
     "kind": "component",
     "selector": "star-icon-field",
@@ -1606,6 +1892,44 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "'start'",
         "required": false,
         "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
+  "StarImage": {
+    "kind": "component",
+    "selector": "star-image",
+    "entry": "star-ng/media",
+    "description": "Image with preview (PrimeNG `p-image [preview]`): lazy-loaded thumbnail; click opens the full image in a modal `star-dialog` with zoom in / out. `<star-image src=\"label.png\" alt=\"Product label\" width=\"160\" preview />`",
+    "inputs": [
+      {
+        "name": "src",
+        "type": "string",
+        "default": null,
+        "required": true,
+        "description": "Image address."
+      },
+      {
+        "name": "alt",
+        "type": "string",
+        "default": null,
+        "required": true,
+        "description": "Alternative text. It is also the title of the preview dialog."
+      },
+      {
+        "name": "width",
+        "type": "string | number | null",
+        "default": "null",
+        "required": false,
+        "description": "Width attribute of the thumbnail."
+      },
+      {
+        "name": "preview",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The image opens in a dialog with zoom buttons when the user activates it."
       }
     ],
     "models": [],
@@ -4946,6 +5270,9 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "calendar/range": "<div class=\"docs-stack\">\n  <star-calendar\n    class=\"star-calendar--inline\"\n    mode=\"range\"\n    [range]=\"booking()\"\n    (dateSelect)=\"pick($event)\"\n    locale=\"en-GB\"\n    [firstDayOfWeek]=\"1\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Booking: {{ iso(booking()?.start) }} to {{ iso(booking()?.end) }}\n  </p>\n</div>",
   "card/basic": "<div class=\"docs-stack\">\n  <star-card header=\"Open orders\" subheader=\"Last 30 days\">\n    <star-button starCardActions variant=\"ghost\" size=\"sm\">View all</star-button>\n    <p>Forty-two orders are open. Nine are late.</p>\n    <div starCardFooter class=\"docs-row\">\n      <star-button size=\"sm\">Export</star-button>\n      <star-button size=\"sm\" variant=\"secondary\">Filter</star-button>\n    </div>\n  </star-card>\n</div>",
   "card/plain": "<div class=\"docs-stack\">\n  <star-card>\n    <p>A card with only a body.</p>\n  </star-card>\n</div>",
+  "carousel/autoplay": "<star-carousel\n  style=\"width: 100%; max-width: 40rem\"\n  [items]=\"photos\"\n  [autoplay]=\"4000\"\n  ariaLabel=\"Automatic photos\"\n>\n  <ng-template starCarouselItem [starCarouselItemOf]=\"photos\" let-photo>\n    <img\n      style=\"display: block; width: 100%; height: auto\"\n      [src]=\"photo.src\"\n      [alt]=\"photo.label\"\n    />\n  </ng-template>\n</star-carousel>",
+  "carousel/basic": "<star-carousel\n  style=\"width: 100%; max-width: 40rem\"\n  [items]=\"photos\"\n  ariaLabel=\"Warehouse photos\"\n>\n  <ng-template starCarouselItem [starCarouselItemOf]=\"photos\" let-photo>\n    <img\n      style=\"display: block; width: 100%; height: auto\"\n      [src]=\"photo.src\"\n      [alt]=\"photo.label\"\n    />\n  </ng-template>\n</star-carousel>",
+  "carousel/visible": "<star-carousel\n  style=\"width: 100%; max-width: 40rem\"\n  [items]=\"photos\"\n  [numVisible]=\"3\"\n  ariaLabel=\"Warehouse photo pages\"\n>\n  <ng-template starCarouselItem [starCarouselItemOf]=\"photos\" let-photo let-index=\"index\">\n    <figure style=\"margin: 0\">\n      <img\n        style=\"display: block; width: 100%; height: auto\"\n        [src]=\"photo.src\"\n        [alt]=\"photo.label\"\n      />\n      <figcaption>Slide {{ index + 1 }}</figcaption>\n    </figure>\n  </ng-template>\n</star-carousel>",
   "cascade-select/basic": "<div class=\"docs-stack\">\n  <star-cascade-select\n    [options]=\"places\"\n    optionLabel=\"name\"\n    optionValue=\"code\"\n    [(value)]=\"place\"\n    placeholder=\"Choose a city\"\n    ariaLabel=\"City\"\n  />\n  <p class=\"docs-output\" role=\"status\">Value: {{ place() ?? 'none' }}</p>\n</div>",
   "cascade-select/form": "<div class=\"docs-stack\">\n  <star-field label=\"Office city\" for=\"cascade-form-city\" [state]=\"office.city()\">\n    <star-cascade-select\n      inputId=\"cascade-form-city\"\n      [formField]=\"office.city\"\n      [options]=\"places\"\n      optionLabel=\"name\"\n      optionValue=\"code\"\n      placeholder=\"Choose a city\"\n      showPath\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ office().valid() }}</p>\n</div>",
   "cascade-select/path": "<star-cascade-select\n  [options]=\"places\"\n  optionLabel=\"name\"\n  optionValue=\"code\"\n  [(value)]=\"pathPlace\"\n  placeholder=\"Choose a city\"\n  ariaLabel=\"City with path\"\n  showPath\n  showClear\n/>",
@@ -4995,16 +5322,30 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "divider/vertical": "<div class=\"docs-row\">\n  <span>Orders</span>\n  <star-divider layout=\"vertical\" />\n  <span>Invoices</span>\n  <star-divider layout=\"vertical\" type=\"dashed\" />\n  <span>Reports</span>\n</div>",
   "drawer/basic": "<star-button leadingIcon=\"ph-bold ph-sidebar-simple\" (pressed)=\"basicOpen.set(true)\">\n  Open details\n</star-button>\n<star-drawer [(visible)]=\"basicOpen\" header=\"Order ORD-1042\" dismissableMask>\n  <div class=\"docs-stack\">\n    <p class=\"docs-output\">Orchard Supply, 12 items, ships on Friday.</p>\n    <star-field label=\"Internal note\">\n      <textarea starInput autoResize rows=\"3\"></textarea>\n    </star-field>\n  </div>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button variant=\"ghost\" (pressed)=\"basicOpen.set(false)\">Close</star-button>\n  </div>\n</star-drawer>",
   "drawer/position": "<div class=\"docs-row\">\n  @for (item of positions; track item) {\n    <star-button variant=\"secondary\" (pressed)=\"openAt(item)\">{{ item }}</star-button>\n  }\n</div>\n<star-drawer\n  [(visible)]=\"positionOpen\"\n  [position]=\"position()\"\n  [drawerSize]=\"position() === 'left' || position() === 'right' ? '22rem' : '14rem'\"\n  [header]=\"'Drawer at the ' + position()\"\n>\n  <p>This drawer is pinned to the {{ position() }} edge.</p>\n</star-drawer>",
+  "editor/basic": "<div class=\"docs-stack\">\n  <star-editor\n    [(value)]=\"note\"\n    ariaLabel=\"Delivery note\"\n    placeholder=\"Write the delivery note\"\n  />\n  <pre class=\"docs-output\" aria-label=\"Value of the editor\">{{ note() }}</pre>\n</div>",
+  "editor/sanitize": "<div class=\"docs-stack\">\n  <star-editor [(value)]=\"unsafe\" ariaLabel=\"Sanitized content\" />\n  <pre class=\"docs-output\" aria-label=\"Value after sanitizing\">{{ unsafe() }}</pre>\n</div>",
+  "editor/size": "<div class=\"docs-stack\">\n  <star-editor\n    [(value)]=\"comment\"\n    ariaLabel=\"Order comment\"\n    placeholder=\"Add a comment\"\n    minHeight=\"4rem\"\n  />\n</div>",
+  "editor/states": "<div class=\"docs-stack\">\n  <star-editor [value]=\"saved()\" ariaLabel=\"Saved note\" readonly />\n  <star-editor [value]=\"saved()\" ariaLabel=\"Locked note\" disabled />\n</div>",
   "field/basic": "<div class=\"docs-stack\">\n  <star-field label=\"Full name\" hint=\"As shown on your account.\">\n    <input starInput placeholder=\"Avery Stone\" />\n  </star-field>\n</div>",
   "field/sizes": "<div class=\"docs-stack\">\n  <input starInput size=\"sm\" aria-label=\"Small\" placeholder=\"Small\" />\n  <input starInput aria-label=\"Medium\" placeholder=\"Medium\" />\n  <input starInput size=\"lg\" aria-label=\"Large\" placeholder=\"Large\" />\n</div>",
   "field/states": "<div class=\"docs-stack\">\n  <star-field label=\"Promo code\" error=\"This code has expired.\">\n    <input starInput value=\"SPRING\" />\n  </star-field>\n  <star-field label=\"Account number\">\n    <input starInput value=\"100-204\" disabled />\n  </star-field>\n</div>",
   "field/textarea": "<div class=\"docs-stack\">\n  <star-field label=\"Notes\">\n    <textarea starInput autoResize placeholder=\"Add a note\"></textarea>\n  </star-field>\n</div>",
   "field/validation": "<div class=\"docs-stack\">\n  <star-field label=\"Email\" [state]=\"contact.email()\">\n    <input starInput type=\"email\" [formField]=\"contact.email\" />\n  </star-field>\n</div>",
+  "file-upload/drop": "<div class=\"docs-stack\">\n  <star-file-upload [(value)]=\"dropped\" accept=\"image/*,.pdf\" multiple />\n</div>",
+  "file-upload/limits": "<div class=\"docs-stack\">\n  <star-file-upload\n    [(value)]=\"limited\"\n    accept=\".pdf,image/*\"\n    [maxFileSize]=\"1000000\"\n    [fileLimit]=\"3\"\n    multiple\n    (rejectedChange)=\"rejected.set($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Added: {{ limited().length }}. Rejected in the last try: {{ rejected().length }}.\n  </p>\n</div>",
+  "file-upload/modes": "<div class=\"docs-stack\">\n  <star-file-upload [(value)]=\"single\" />\n  <star-file-upload [(value)]=\"several\" multiple />\n  <p class=\"docs-output\" role=\"status\">\n    Single: {{ single().length }} file. Multiple: {{ several().length }} files.\n  </p>\n</div>",
+  "file-upload/reorder": "<div class=\"docs-stack\">\n  <star-file-upload\n    [(value)]=\"ordered\"\n    accept=\"image/*,.pdf\"\n    multiple\n    reorderable\n    thumbnails\n  />\n</div>",
+  "file-upload/states": "<div class=\"docs-stack\">\n  <star-file-upload [value]=\"existing\" readonly />\n  <star-file-upload disabled />\n</div>",
+  "file-upload/status": "<div class=\"docs-stack\">\n  <star-file-upload\n    [(value)]=\"uploads\"\n    accept=\".pdf\"\n    multiple\n    [fileStatus]=\"statusOf\"\n    (selected)=\"send($event)\"\n  />\n</div>",
   "forms/reactive": "<form class=\"docs-stack\" [formGroup]=\"group\">\n  <star-field label=\"Reference\">\n    <input starInput formControlName=\"reference\" />\n  </star-field>\n  <star-field label=\"Delivery date\" for=\"forms-reactive-delivery\">\n    <star-date-picker\n      inputId=\"forms-reactive-delivery\"\n      [formField]=\"group.controls.delivery.fieldTree\"\n      locale=\"en-GB\"\n      ariaLabel=\"Delivery date\"\n    />\n  </star-field>\n  <star-checkbox [formField]=\"group.controls.confirmed.fieldTree\">Confirmed</star-checkbox>\n  <star-toggle-switch [(checked)]=\"locked\">Lock the form</star-toggle-switch>\n  <p class=\"docs-output\" role=\"status\">Group value: {{ group.value | json }}</p>\n</form>",
   "forms/signal": "<div class=\"docs-stack\">\n  <star-field label=\"Name\" [state]=\"profile.name()\">\n    <input starInput [formField]=\"profile.name\" />\n  </star-field>\n  <star-toggle-switch [formField]=\"profile.newsletter\">Newsletter</star-toggle-switch>\n  <p class=\"docs-output\" role=\"status\">\n    {{ profile().valid() ? 'Valid' : 'Not valid' }}: {{ model().name || '(no name)' }}\n  </p>\n</div>",
   "forms/two-way": "<star-checkbox [(checked)]=\"remember\">Remember this device</star-checkbox>\n<p class=\"docs-output\" role=\"status\">{{ remember() }}</p>",
+  "galleria/basic": "<star-galleria\n  style=\"width: 100%; max-width: 40rem\"\n  [images]=\"images\"\n  ariaLabel=\"Site photos\"\n/>",
+  "galleria/model": "<star-galleria\n  style=\"width: 100%; max-width: 40rem\"\n  [images]=\"images\"\n  [(activeIndex)]=\"active\"\n  ariaLabel=\"Linked photos\"\n/>\n<p class=\"docs-output\" role=\"status\">Active index: {{ active() }}</p>",
   "getting-started/result": "<star-button leadingIcon=\"ph-bold ph-plus\">New order</star-button>",
   "i18n/spinner": "<star-spinner />\n<docs-german-text />",
+  "image/basic": "<star-image [src]=\"shelf\" alt=\"Shelf photo\" [width]=\"240\" />",
+  "image/preview": "<star-image [src]=\"shelf\" alt=\"Shelf photo\" [width]=\"240\" preview />",
   "input-group/addons": "<div class=\"docs-stack\">\n  <star-field label=\"Website\">\n    <star-input-group>\n      <star-input-group-addon>https://</star-input-group-addon>\n      <input starInput placeholder=\"example.com\" />\n    </star-input-group>\n  </star-field>\n  <star-input-group ariaLabel=\"Weight\">\n    <input starInput inputmode=\"decimal\" aria-label=\"Weight\" placeholder=\"0.0\" />\n    <star-input-group-addon>kg</star-input-group-addon>\n  </star-input-group>\n</div>",
   "input-group/button": "<div class=\"docs-stack\">\n  <star-input-group ariaLabel=\"Coupon\">\n    <input starInput aria-label=\"Coupon code\" placeholder=\"Coupon code\" />\n    <star-button variant=\"secondary\">Apply</star-button>\n  </star-input-group>\n</div>",
   "input-group/icon": "<div class=\"docs-stack\">\n  <star-icon-field icon=\"ph-bold ph-magnifying-glass\">\n    <input starInput type=\"search\" placeholder=\"Search orders\" aria-label=\"Search orders\" />\n  </star-icon-field>\n  <star-icon-field icon=\"ph-bold ph-envelope-simple\" iconPosition=\"end\">\n    <input starInput type=\"email\" placeholder=\"name@example.com\" aria-label=\"Email\" />\n  </star-icon-field>\n</div>",

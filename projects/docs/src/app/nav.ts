@@ -488,6 +488,41 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
       },
     ],
   },
+  {
+    label: 'Media',
+    items: [
+      {
+        label: 'File upload',
+        path: 'controls/file-upload',
+        keywords: 'files drop drag choose accept size limit progress status attachment paste',
+        load: () => import('./controls/file-upload.page').then((m) => m.FileUploadPage),
+      },
+      {
+        label: 'Editor',
+        path: 'controls/editor',
+        keywords: 'rich text wysiwyg html toolbar bold italic list link sanitize',
+        load: () => import('./controls/editor.page').then((m) => m.EditorPage),
+      },
+      {
+        label: 'Carousel',
+        path: 'controls/carousel',
+        keywords: 'slides scroll snap autoplay pages dots slider',
+        load: () => import('./controls/carousel.page').then((m) => m.CarouselPage),
+      },
+      {
+        label: 'Galleria',
+        path: 'controls/galleria',
+        keywords: 'gallery photos thumbnails caption images',
+        load: () => import('./controls/galleria.page').then((m) => m.GalleriaPage),
+      },
+      {
+        label: 'Image',
+        path: 'controls/image',
+        keywords: 'picture preview zoom lazy photo',
+        load: () => import('./controls/image.page').then((m) => m.ImagePage),
+      },
+    ],
+  },
 ];
 
 export const DOCS_ROUTES: Routes = DOCS_NAV.flatMap((group) =>
