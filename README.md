@@ -146,6 +146,33 @@ corepack pnpm start        # docs application on http://localhost:4200
 
 Conventions: Conventional Commits, one feature per pull request, signed commits.
 
+## Visual regression tests
+
+`e2e/visual` takes a screenshot of the `main` area of every docs page, in the light and in
+the dark theme (tall pages are cut in slices of 4000 px). CI compares them with the images
+in `e2e/visual/__screenshots__`. The test fixes the clock, seeds `Math.random` and waits for
+fonts and images, so a page only differs when the library changed.
+
+**Why baselines come from CI.** Fonts and text rendering differ per operating system, so an
+image from Windows or macOS never matches. The tests skip on your machine, and the update
+script refuses to run there. Only Linux in CI makes baselines.
+
+**Update baselines** (new page, or a change that you want):
+
+1. Run the workflow "Visual baselines" (Actions tab, input: your branch). The `visual` job
+   of a normal CI run also uploads the baselines that are still missing.
+2. In the repository root: `gh run download <run id> -n visual-baselines`. The files land in
+   `e2e/visual/__screenshots__`.
+3. Review the images, then commit them.
+
+**Look at a failure.** The `visual` job uploads the artifact `visual-report`. Unzip it and
+open `playwright-report-visual/index.html`: each failed page shows the expected image, the
+actual image and the diff. A missing baseline fails the job too (the message says how to
+commit it).
+
+To debug in a Linux container with the CI fonts, set `VISUAL_ALLOW_LOCAL=1`
+(`corepack pnpm e2e:visual`). Never commit images made that way.
+
 ## License
 
 MIT. See [LICENSE](LICENSE).
