@@ -405,3 +405,47 @@ export const STAR_UI_TEXT = new InjectionToken<StarUiText>('STAR_UI_TEXT', {
 export function provideStarUiText(overrides: Partial<StarUiText>): Provider {
   return { provide: STAR_UI_TEXT, useValue: { ...STAR_UI_TEXT_DEFAULTS, ...overrides } };
 }
+
+/**
+ * Builds a `StarUiText` whose entries read `source()` on every access. When `source` reads a
+ * signal, every OnPush control that renders a built-in text updates when that signal changes.
+ * Entries that `source()` does not return fall back to the English default.
+ *
+ * Use it in a factory when the signal lives in a service:
+ * `{ provide: STAR_UI_TEXT, useFactory: () => starUiTextFromSignal(inject(Language).text) }`.
+ */
+export function starUiTextFromSignal(source: () => Partial<StarUiText>): StarUiText {
+  const text = {} as Record<string, unknown>;
+  for (const name of Object.keys(STAR_UI_TEXT_DEFAULTS) as (keyof StarUiText)[]) {
+    if (typeof STAR_UI_TEXT_DEFAULTS[name] === 'function') {
+      text[name] = (...args: unknown[]) => {
+        const entry = (source()[name] ?? STAR_UI_TEXT_DEFAULTS[name]) as (
+          ...a: unknown[]
+        ) => string;
+        return entry(...args);
+      };
+    } else {
+      Object.defineProperty(text, name, {
+        enumerable: true,
+        get: () => source()[name] ?? STAR_UI_TEXT_DEFAULTS[name],
+      });
+    }
+  }
+  return text as unknown as StarUiText;
+}
+
+/**
+ * Provides the control texts from a function that reads a signal, so the language can change at
+ * run time without a translation library:
+ *
+ * ```ts
+ * const language = signal<'en' | 'de'>('en');
+ * provideStarUiTextFromSignal(() => (language() === 'de' ? STAR_UI_TEXT_DE : STAR_UI_TEXT_DEFAULTS));
+ * ```
+ *
+ * Do not spread a pack with getters into an object (`{ ...text }`): that reads every getter once and
+ * freezes the result. Pass a function, as shown above.
+ */
+export function provideStarUiTextFromSignal(source: () => Partial<StarUiText>): Provider {
+  return { provide: STAR_UI_TEXT, useFactory: () => starUiTextFromSignal(source) };
+}
