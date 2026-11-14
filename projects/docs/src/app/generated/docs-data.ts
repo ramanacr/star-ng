@@ -731,6 +731,30 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ]
   },
+  "StarCellTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starCell]",
+    "entry": "star-ng/table",
+    "description": "Custom cell: `<ng-template starCell=\"status\" let-row let-value=\"value\">…</ng-template>`.",
+    "inputs": [
+      {
+        "name": "starCell",
+        "type": "string",
+        "default": null,
+        "required": true,
+        "description": ""
+      },
+      {
+        "name": "starCellOf",
+        "type": "readonly T[] | null",
+        "default": "null",
+        "required": false,
+        "description": "Optional: pass the table rows to type `let-row` in strict templates."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
   "StarChart": {
     "kind": "component",
     "selector": "star-chart",
@@ -4004,6 +4028,23 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ]
   },
+  "StarRowExpansionTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starRowExpansion]",
+    "entry": "star-ng/table",
+    "description": "Detail content of an expanded row. When the table has this template, each row gets an expand button: `<ng-template starRowExpansion let-row>…</ng-template>`.",
+    "inputs": [
+      {
+        "name": "starRowExpansionOf",
+        "type": "readonly T[] | null",
+        "default": "null",
+        "required": false,
+        "description": "Optional: pass the table rows to type `let-row` in strict templates."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
   "StarSelect": {
     "kind": "component",
     "selector": "star-select",
@@ -4500,6 +4541,326 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "inputs": [],
     "models": [],
     "outputs": []
+  },
+  "StarTable": {
+    "kind": "component",
+    "selector": "star-table",
+    "entry": "star-ng/table",
+    "description": "Data table (PrimeNG `p-table` essentials): typed columns, custom cell templates, sorting, global filter, column filters, CSV / Excel / print export, client or lazy (server) pagination, single / multiple row selection with checkboxes, row expansion, inline cell edit, column resize / reorder / hide / freeze, virtual scroll, row groups, multi-column sort, footer row, row reorder, saved state, loading skeleton, empty state, sticky header and row click.",
+    "inputs": [
+      {
+        "name": "value",
+        "type": "readonly T[]",
+        "default": null,
+        "required": true,
+        "description": ""
+      },
+      {
+        "name": "columns",
+        "type": "readonly StarColumn<T>[]",
+        "default": null,
+        "required": true,
+        "description": ""
+      },
+      {
+        "name": "dataKey",
+        "type": "StarOptionKey<T> | null",
+        "default": "null",
+        "required": false,
+        "description": "Row identity for tracking and selection (default: the row object)."
+      },
+      {
+        "name": "loading",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "emptyMessage",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "striped",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "size",
+        "type": "'sm' | 'md'",
+        "default": "'md'",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "stickyHeader",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "scrollHeight",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "responsiveLayout",
+        "type": "'scroll' | 'stack'",
+        "default": "'scroll'",
+        "required": false,
+        "description": "Layout when the table is narrower than 40rem (a phone). `'scroll'`: the table scrolls sideways. `'stack'`: each row is a block with one line per column, \"label: value\"; the sortable headers stay as a row of buttons. Do not use `'stack'` with `virtualScroll`."
+      },
+      {
+        "name": "virtualScroll",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Renders only the rows in view, for long lists. Needs `scrollHeight`. Every row has the height `virtualRowHeight` and cell text stays on one line. Do not use it with row expansion, because a detail row changes the row height."
+      },
+      {
+        "name": "virtualRowHeight",
+        "type": "number",
+        "default": "48",
+        "required": false,
+        "description": "Row height in pixels with `virtualScroll`."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "paginator",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "rowsPerPageOptions",
+        "type": "readonly number[]",
+        "default": "[10, 25, 50]",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "globalFilter",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "Case- and accent-insensitive text search over all columns."
+      },
+      {
+        "name": "lazy",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Server mode: the table only renders `value`; it emits `lazyLoad` for every change."
+      },
+      {
+        "name": "totalRecords",
+        "type": "number",
+        "default": "0",
+        "required": false,
+        "description": "Total rows on the server (lazy mode)."
+      },
+      {
+        "name": "selectionMode",
+        "type": "'single' | 'multiple' | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "rowExpandMode",
+        "type": "'single' | 'multiple'",
+        "default": "'multiple'",
+        "required": false,
+        "description": "`'single'`: opening a row closes the other rows."
+      },
+      {
+        "name": "columnToggle",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows a Columns button: the user can hide columns (and move them, with `reorderableColumns`)."
+      },
+      {
+        "name": "reorderableColumns",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The user can move a column: drag its header, or use the Columns panel."
+      },
+      {
+        "name": "resizableColumns",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The user can change a column width: drag the header edge, or use the arrow keys on it."
+      },
+      {
+        "name": "multiSort",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Sort by more than one column: Shift + click (or Shift + Enter) on a header adds it as the next sort column. A plain click sorts by that column only."
+      },
+      {
+        "name": "groupBy",
+        "type": "StarOptionKey<T> | null",
+        "default": "null",
+        "required": false,
+        "description": "Group heading of a row (property name or function). Rows with the same heading show together under it, in the order in which the headings first appear after sorting. Do not use it with `virtualScroll`."
+      },
+      {
+        "name": "reorderableRows",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Adds \"Move up\" / \"Move down\" buttons to each row. The buttons work while the table shows `value` in its own order (no sort, no filter, no groups)."
+      },
+      {
+        "name": "stateKey",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Remembers sort, filters, column order, hidden columns, column widths, page size and closed groups in the browser under this key, and restores them on the next visit."
+      },
+      {
+        "name": "stateStorage",
+        "type": "'local' | 'session'",
+        "default": "'local'",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [
+      {
+        "name": "first",
+        "type": "number",
+        "default": "0",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "rows",
+        "type": "number",
+        "default": "10",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "sortField",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "sortOrder",
+        "type": "StarSortOrder",
+        "default": "1",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "filters",
+        "type": "StarColumnFilters",
+        "default": "{}",
+        "required": false,
+        "description": "Column filter values by column `field` (columns with `filter` set). Two-way."
+      },
+      {
+        "name": "selection",
+        "type": "readonly T[]",
+        "default": "[]",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "expandedKeys",
+        "type": "readonly unknown[]",
+        "default": "[]",
+        "required": false,
+        "description": "Keys (`dataKey`) of the expanded rows. Two-way. Rows expand only when the table has an `starRowExpansion` template."
+      },
+      {
+        "name": "columnOrder",
+        "type": "readonly string[]",
+        "default": "[]",
+        "required": false,
+        "description": "Column `field`s in display order. Columns not in the list keep their place after it. Two-way."
+      },
+      {
+        "name": "hiddenColumns",
+        "type": "readonly string[]",
+        "default": "[]",
+        "required": false,
+        "description": "`field`s of the hidden columns. Two-way."
+      },
+      {
+        "name": "columnWidths",
+        "type": "Readonly<Record<string, number>>",
+        "default": "{}",
+        "required": false,
+        "description": "Column widths in pixels by `field`, set by the user. Two-way."
+      },
+      {
+        "name": "sortMeta",
+        "type": "readonly StarSortState[]",
+        "default": "[]",
+        "required": false,
+        "description": "Sort columns in priority order with `multiSort`. Two-way."
+      },
+      {
+        "name": "collapsedGroups",
+        "type": "readonly string[]",
+        "default": "[]",
+        "required": false,
+        "description": "Headings of the closed groups. Two-way."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "rowClick",
+        "type": "T",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "rowReorder",
+        "type": "StarRowReorderEvent<T>",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "cellEdit",
+        "type": "StarCellEditEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "The user changed an editable cell (see `StarColumn.editable`)."
+      },
+      {
+        "name": "lazyLoad",
+        "type": "StarLazyLoadEvent",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
   },
   "StarTabs": {
     "kind": "component",
@@ -5441,6 +5802,37 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "split-button/variants": "<star-split-button label=\"Save\" variant=\"secondary\" size=\"sm\" [items]=\"orderOptions\" />\n<star-split-button label=\"Approve\" variant=\"success\" [items]=\"orderOptions\" />\n<star-split-button label=\"Remove\" variant=\"danger\" size=\"lg\" [items]=\"orderOptions\" />",
   "stepper/basic": "<div class=\"docs-stack\">\n  <star-stepper [(value)]=\"step\" ariaLabel=\"Checkout steps\">\n    <star-step value=\"cart\" label=\"Cart\" description=\"Review items\" completed>\n      Three items in the cart.\n    </star-step>\n    <star-step value=\"address\" label=\"Address\" description=\"Where to ship\">\n      Enter the delivery address.\n    </star-step>\n    <star-step value=\"pay\" label=\"Payment\">Choose a way to pay.</star-step>\n  </star-stepper>\n  <p class=\"docs-output\" role=\"status\">Active step: {{ step() ?? 'cart' }}</p>\n</div>",
   "stepper/linear": "<div class=\"docs-stack\">\n  <star-stepper #wizard [(value)]=\"wizardStep\" linear ariaLabel=\"Account setup\">\n    <star-step value=\"name\" label=\"Name\" [completed]=\"name().trim().length > 0\">\n      <star-field label=\"Your name\">\n        <input starInput [value]=\"name()\" (input)=\"name.set($any($event.target).value)\" />\n      </star-field>\n    </star-step>\n    <star-step value=\"confirm\" label=\"Confirm\">\n      Welcome, {{ name() }}. Your account is ready.\n    </star-step>\n  </star-stepper>\n  <div class=\"docs-row\">\n    <star-button\n      variant=\"secondary\"\n      [disabled]=\"wizard.isFirst()\"\n      (pressed)=\"wizard.previous()\"\n    >\n      Back\n    </star-button>\n    <star-button [disabled]=\"wizard.isLast() || !name().trim()\" (pressed)=\"wizard.next()\">\n      Next\n    </star-button>\n  </div>\n</div>",
+  "table-columns/frozen": "<docs-fill>\n  <star-table\n    [value]=\"orders.slice(0, 6)\"\n    [columns]=\"wideColumns\"\n    dataKey=\"id\"\n    ariaLabel=\"Wide orders\"\n  />\n</docs-fill>",
+  "table-columns/panel": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with column panel\"\n      columnToggle\n      reorderableColumns\n      [(columnOrder)]=\"order\"\n      [(hiddenColumns)]=\"hidden\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">\n    Order: {{ order().join(', ') || 'default' }}. Hidden:\n    {{ hidden().join(', ') || 'none' }}.\n  </p>\n</div>",
+  "table-columns/resize": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with resizable columns\"\n      resizableColumns\n      [(columnWidths)]=\"widths\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Widths: {{ widthText() }}</p>\n</div>",
+  "table-columns/state": "<div class=\"docs-stack\">\n  <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"saved.clearState()\">\n    Clear saved view\n  </star-button>\n  <docs-fill>\n    <star-table\n      #saved\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with saved view\"\n      columnToggle\n      resizableColumns\n      stateKey=\"docs-table-saved-view\"\n      stateStorage=\"session\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n</div>",
+  "table-edit/cells": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"rows()\"\n      [columns]=\"editColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Editable orders\"\n      (cellEdit)=\"applyEdit($event)\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">{{ message() }}</p>\n</div>",
+  "table-edit/reorder": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"queue()\"\n      [columns]=\"queueColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Order queue\"\n      reorderableRows\n      (rowReorder)=\"move($event)\"\n    />\n  </docs-fill>\n</div>",
+  "table-export/basic": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button\n      size=\"sm\"\n      variant=\"secondary\"\n      leadingIcon=\"ph-bold ph-download-simple\"\n      (pressed)=\"exportTable.exportCsv({ fileName: 'orders' })\"\n    >\n      Export CSV\n    </star-button>\n    <star-button\n      size=\"sm\"\n      variant=\"secondary\"\n      leadingIcon=\"ph-bold ph-microsoft-excel-logo\"\n      (pressed)=\"exportTable.exportExcel({ fileName: 'orders' })\"\n    >\n      Export Excel\n    </star-button>\n    <star-button\n      size=\"sm\"\n      variant=\"secondary\"\n      leadingIcon=\"ph-bold ph-printer\"\n      (pressed)=\"exportTable.print()\"\n    >\n      Print\n    </star-button>\n    <star-button\n      size=\"sm\"\n      variant=\"secondary\"\n      [disabled]=\"!selected().length\"\n      (pressed)=\"\n        exportTable.exportCsv({ fileName: 'selected-orders', selectionOnly: true })\n      \"\n    >\n      Export selected rows\n    </star-button>\n  </div>\n  <docs-fill>\n    <star-table\n      #exportTable\n      ariaLabel=\"Orders\"\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      selectionMode=\"multiple\"\n      [(selection)]=\"selected\"\n      paginator\n      [rows]=\"5\"\n    >\n      <ng-template starCell=\"status\" [starCellOf]=\"orders\" let-row>\n        <star-tag [severity]=\"severityOf(row.status)\" [value]=\"row.status\" rounded />\n      </ng-template>\n      <ng-template starCell=\"customer\" [starCellOf]=\"orders\" let-row let-value=\"value\">\n        <strong>{{ value }}</strong>\n        <br />\n        <small>{{ row.email }}</small>\n      </ng-template>\n    </star-table>\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">{{ selected().length }} selected</p>\n</div>",
+  "table-export/text": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"show(preview.toCsv())\">\n      Comma separated\n    </star-button>\n    <star-button\n      size=\"sm\"\n      variant=\"secondary\"\n      (pressed)=\"show(preview.toCsv({ separator: ';' }))\"\n    >\n      Semicolon separated\n    </star-button>\n    <star-button\n      size=\"sm\"\n      variant=\"secondary\"\n      (pressed)=\"show(preview.toCsv({ rows: [orders[40]] }))\"\n    >\n      Rows from the options\n    </star-button>\n  </div>\n  <docs-fill>\n    <star-table\n      #preview\n      ariaLabel=\"Order preview\"\n      [value]=\"orders.slice(0, 3)\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n    />\n  </docs-fill>\n  <pre class=\"docs-output\" aria-label=\"CSV text\" tabindex=\"0\">{{ text() }}</pre>\n</div>",
+  "table-layout/expansion": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-toggle-switch [(checked)]=\"single\">One row open at a time</star-toggle-switch>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"detailed.expandAll()\">\n      Expand all\n    </star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"detailed.collapseAll()\">\n      Collapse all\n    </star-button>\n  </div>\n  <docs-fill>\n    <star-table\n      #detailed\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with detail\"\n      [rowExpandMode]=\"single() ? 'single' : 'multiple'\"\n      [(expandedKeys)]=\"expanded\"\n      paginator\n      [rows]=\"4\"\n    >\n      <ng-template starRowExpansion [starRowExpansionOf]=\"orders\" let-row>\n        <dl class=\"detail\">\n          <dt>Email</dt>\n          <dd>{{ row.email }}</dd>\n          <dt>Quantity</dt>\n          <dd>{{ row.quantity }} x {{ row.product }}</dd>\n        </dl>\n      </ng-template>\n    </star-table>\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Open: {{ expanded().join(', ') || 'none' }}</p>\n</div>",
+  "table-layout/footer": "<docs-fill>\n  <star-table\n    [value]=\"orders.slice(0, 6)\"\n    [columns]=\"footerColumns\"\n    dataKey=\"id\"\n    ariaLabel=\"Orders with totals\"\n  />\n</docs-fill>",
+  "table-layout/groups": "<div class=\"docs-stack\">\n  <star-toggle-switch [(checked)]=\"grouped\">Group by region</star-toggle-switch>\n  <docs-fill>\n    <star-table\n      [value]=\"orders.slice(0, 12)\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders in groups\"\n      [groupBy]=\"grouped() ? 'region' : null\"\n      [(collapsedGroups)]=\"closed\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Closed: {{ closed().join(', ') || 'none' }}</p>\n</div>",
+  "table-layout/stack": "<div class=\"docs-stack\">\n  <star-table\n    [value]=\"orders.slice(0, 3)\"\n    [columns]=\"columns\"\n    dataKey=\"id\"\n    ariaLabel=\"Orders stacked\"\n    responsiveLayout=\"stack\"\n  />\n</div>",
+  "table-layout/virtual": "<docs-fill>\n  <star-table\n    [value]=\"log\"\n    [columns]=\"logColumns\"\n    dataKey=\"id\"\n    ariaLabel=\"Audit log\"\n    virtualScroll\n    [virtualRowHeight]=\"44\"\n    scrollHeight=\"20rem\"\n    stickyHeader\n    striped\n  />\n</docs-fill>",
+  "table-paging/client": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Paged orders\"\n      paginator\n      [(first)]=\"first\"\n      [(rows)]=\"rows\"\n      [rowsPerPageOptions]=\"[5, 10, 20]\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">first = {{ first() }}, rows = {{ rows() }}</p>\n</div>",
+  "table-paging/lazy": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"lazyRows()\"\n      [columns]=\"lazyColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders from the server\"\n      lazy\n      paginator\n      [rows]=\"5\"\n      [rowsPerPageOptions]=\"[5, 10]\"\n      [totalRecords]=\"lazyTotal()\"\n      [loading]=\"lazyLoading()\"\n      (lazyLoad)=\"load($event)\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Last request: {{ request() }}</p>\n</div>",
+  "table-selection/actions": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"actionOrders()\"\n      [columns]=\"actionColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with actions\"\n      selectionMode=\"single\"\n      [(selection)]=\"actionSelection\"\n    >\n      <ng-template starCell=\"status\" [starCellOf]=\"actionOrders()\" let-row>\n        <star-tag [severity]=\"severityOf(row.status)\" [value]=\"row.status\" rounded />\n      </ng-template>\n      <ng-template starCell=\"actions\" [starCellOf]=\"actionOrders()\" let-row>\n        <star-button\n          size=\"sm\"\n          variant=\"secondary\"\n          [disabled]=\"row.status === 'Cancelled'\"\n          (pressed)=\"cancel(row)\"\n        >\n          Cancel {{ row.id }}\n        </star-button>\n      </ng-template>\n    </star-table>\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">\n    Selected: {{ actionSelection()[0]?.id ?? 'none' }}\n  </p>\n</div>",
+  "table-selection/click": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders.slice(0, 5)\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with row click\"\n      (rowClick)=\"opened.set($event.id)\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Opened: {{ opened() ?? 'none' }}</p>\n</div>",
+  "table-selection/multiple": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"selectOpen()\">\n      Select open orders\n    </star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"selected.set([])\">\n      Clear selection\n    </star-button>\n  </div>\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with checkboxes\"\n      selectionMode=\"multiple\"\n      [(selection)]=\"selected\"\n      paginator\n      [rows]=\"5\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">{{ selected().length }} selected</p>\n</div>",
+  "table-selection/single": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with one choice\"\n      selectionMode=\"single\"\n      [(selection)]=\"chosen\"\n      paginator\n      [rows]=\"5\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Chosen: {{ chosen()[0]?.id ?? 'none' }}</p>\n</div>",
+  "table-sort-filter/columns": "<div class=\"docs-stack\">\n  <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"filtered.clearFilters()\">\n    Clear filters\n  </star-button>\n  <docs-fill>\n    <star-table\n      #filtered\n      [value]=\"orders\"\n      [columns]=\"filterColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with column filters\"\n      [(filters)]=\"filters\"\n      paginator\n      [rows]=\"4\"\n    >\n      <ng-template starCell=\"status\" [starCellOf]=\"orders\" let-row>\n        <star-tag [severity]=\"severityOf(row.status)\" [value]=\"row.status\" rounded />\n      </ng-template>\n    </star-table>\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Filters: {{ filterText() }}</p>\n</div>",
+  "table-sort-filter/combined": "<div class=\"docs-stack\">\n  <input\n    starInput\n    type=\"search\"\n    aria-label=\"Search combined orders\"\n    placeholder=\"Search combined orders\"\n    [value]=\"combinedQuery()\"\n    (input)=\"combinedQuery.set($any($event.target).value)\"\n  />\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"filterColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with search, filters and sort\"\n      [globalFilter]=\"combinedQuery()\"\n      size=\"sm\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n</div>",
+  "table-sort-filter/global": "<div class=\"docs-stack\">\n  <input\n    starInput\n    type=\"search\"\n    aria-label=\"Search orders\"\n    placeholder=\"Search orders\"\n    [value]=\"query()\"\n    (input)=\"query.set($any($event.target).value)\"\n  />\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"sortColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Searchable orders\"\n      [globalFilter]=\"query()\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n</div>",
+  "table-sort-filter/multi": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"sortColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders sorted by several columns\"\n      multiSort\n      [(sortMeta)]=\"sortMeta\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Sorts: {{ sortText() }}</p>\n</div>",
+  "table-sort-filter/sort": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"sortColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Sortable orders\"\n      [(sortField)]=\"sortField\"\n      [(sortOrder)]=\"sortOrder\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">\n    Sort: {{ sortField() ?? 'none' }} ({{ sortOrder() === 1 ? 'ascending' : 'descending' }})\n  </p>\n</div>",
+  "table/basic": "<docs-fill>\n  <star-table\n    [value]=\"orders\"\n    [columns]=\"columns\"\n    dataKey=\"id\"\n    ariaLabel=\"Orders\"\n    paginator\n    [rows]=\"5\"\n  />\n</docs-fill>",
+  "table/caption": "<docs-fill>\n  <star-table\n    [value]=\"orders.slice(0, 3)\"\n    [columns]=\"columns\"\n    dataKey=\"id\"\n    ariaLabel=\"Latest orders\"\n  >\n    <h4 starTableCaption>Latest orders</h4>\n  </star-table>\n</docs-fill>",
+  "table/expansion-basic": "<docs-fill>\n  <star-table\n    [value]=\"orders.slice(0, 4)\"\n    [columns]=\"columns\"\n    dataKey=\"id\"\n    ariaLabel=\"Orders with detail\"\n  >\n    <ng-template starRowExpansion [starRowExpansionOf]=\"orders\" let-row>\n      {{ row.quantity }} x {{ row.product }} for {{ row.customer }} ({{ row.email }}).\n    </ng-template>\n  </star-table>\n</docs-fill>",
+  "table/format": "<docs-fill>\n  <star-table\n    [value]=\"orders\"\n    [columns]=\"formatColumns\"\n    dataKey=\"id\"\n    ariaLabel=\"Orders with formatted values\"\n    paginator\n    [rows]=\"5\"\n  />\n</docs-fill>",
+  "table/looks": "<docs-fill>\n  <star-table\n    [value]=\"orders\"\n    [columns]=\"columns\"\n    dataKey=\"id\"\n    ariaLabel=\"Compact orders\"\n    size=\"sm\"\n    striped\n    stickyHeader\n    scrollHeight=\"14rem\"\n  />\n</docs-fill>",
+  "table/states": "<div class=\"docs-stack\">\n  <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"loading.set(!loading())\">\n    {{ loading() ? 'Stop loading' : 'Start loading' }}\n  </star-button>\n  <star-table\n    [value]=\"orders.slice(0, 3)\"\n    [columns]=\"columns\"\n    dataKey=\"id\"\n    ariaLabel=\"Orders being loaded\"\n    [loading]=\"loading()\"\n  />\n  <star-table\n    [value]=\"[]\"\n    [columns]=\"columns\"\n    ariaLabel=\"No orders\"\n    emptyMessage=\"No orders yet. Add the first one.\"\n  />\n</div>",
+  "table/templates": "<docs-fill>\n  <star-table\n    [value]=\"orders\"\n    [columns]=\"columns\"\n    dataKey=\"id\"\n    ariaLabel=\"Orders with status tags\"\n    paginator\n    [rows]=\"5\"\n  >\n    <ng-template starCell=\"status\" [starCellOf]=\"orders\" let-row>\n      <star-tag [severity]=\"severityOf(row.status)\" [value]=\"row.status\" rounded />\n    </ng-template>\n    <ng-template starCell=\"customer\" [starCellOf]=\"orders\" let-row let-value=\"value\">\n      <strong>{{ value }}</strong>\n      <br />\n      <small>{{ row.email }}</small>\n    </ng-template>\n  </star-table>\n</docs-fill>",
   "tabs/basic": "<div class=\"docs-stack\">\n  <star-tabs [(value)]=\"tab\" ariaLabel=\"Order sections\">\n    <star-tab value=\"details\" label=\"Details\" icon=\"ph-bold ph-file-text\">\n      Order ORD-1042 for Orchard Supply.\n    </star-tab>\n    <star-tab value=\"items\" label=\"Items\" [badge]=\"12\">Twelve items in two boxes.</star-tab>\n    <star-tab value=\"billing\" label=\"Billing\" disabled>Billing is not available.</star-tab>\n    <star-tab value=\"history\" label=\"History\">Created on Monday.</star-tab>\n  </star-tabs>\n  <p class=\"docs-output\" role=\"status\">Selected: {{ tab() ?? 'details' }}</p>\n</div>",
   "tabs/pill": "<div class=\"docs-stack\">\n  <star-tabs variant=\"pill\" [selectOnFocus]=\"false\" ariaLabel=\"Report views\">\n    <star-tab value=\"daily\" label=\"Daily\">Daily totals.</star-tab>\n    <star-tab value=\"weekly\" label=\"Weekly\">\n      <ng-template starTabContent>Weekly totals, loaded on first use.</ng-template>\n    </star-tab>\n    <star-tab value=\"monthly\" label=\"Monthly\">Monthly totals.</star-tab>\n  </star-tabs>\n</div>",
   "tag/icon": "<star-tag severity=\"success\" icon=\"ph-bold ph-check\" rounded>Shipped</star-tag>\n<star-tag severity=\"warn\" icon=\"ph-bold ph-clock\" rounded>Waiting</star-tag>",

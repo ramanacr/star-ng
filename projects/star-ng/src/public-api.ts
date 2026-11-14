@@ -44,6 +44,7 @@ export * from 'star-ng/skeleton';
 export * from 'star-ng/slider';
 export * from 'star-ng/spinner';
 export * from 'star-ng/stepper';
+export * from 'star-ng/table';
 export * from 'star-ng/tabs';
 export * from 'star-ng/tag';
 export * from 'star-ng/theme';

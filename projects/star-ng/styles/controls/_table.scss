@@ -1,0 +1,493 @@
+// Data table: header, cells, filters, sorting, selection, expansion, stacked and virtual layouts.
+.star-table {
+  display: block;
+  font: var(--star-type-body-lg);
+  color: var(--star-text);
+
+  table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+  th,
+  td {
+    padding: 0.875rem 1rem;
+    border-bottom: 1px solid var(--star-border);
+    text-align: start;
+    vertical-align: middle;
+  }
+  th {
+    background: var(--star-surface-muted);
+    font: var(--star-type-label);
+    color: var(--star-text-muted);
+    white-space: nowrap;
+  }
+}
+.star-table__scroll {
+  overflow: auto;
+  border: 1px solid var(--star-border);
+  border-radius: var(--star-radius-lg);
+  background: var(--star-surface);
+}
+.star-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+.star-table--sticky thead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.star-table__filters td {
+  padding-block: 0.5rem;
+  background: var(--star-surface-muted);
+}
+.star-table__filter {
+  min-width: 6rem;
+  background: var(--star-surface);
+}
+.star-table__filter-range {
+  display: flex;
+  gap: 0.25rem;
+
+  .star-table__filter {
+    flex: 1 1 0;
+    min-width: 4rem;
+  }
+}
+star-multi-select.star-table__filter {
+  display: block;
+  min-width: 8rem;
+  font: var(--star-type-body);
+}
+.star-table--sm {
+  th,
+  td {
+    padding: 0.5rem 0.75rem;
+  }
+}
+.star-table--striped .star-table__row--alt {
+  background: color-mix(in srgb, var(--star-surface-muted) 60%, transparent);
+}
+.star-table__row {
+  transition: background-color var(--star-duration-fast) ease;
+
+  &:hover {
+    background: var(--star-surface-muted);
+  }
+}
+.star-table__row--clickable {
+  cursor: pointer;
+}
+.star-table__row--selected,
+.star-table__row--selected:hover {
+  background: var(--star-primary-soft);
+}
+// Striped rows have a stronger selector than the hover and selected rules: repeat those here.
+.star-table--striped .star-table__row--alt:hover {
+  background: var(--star-surface-muted);
+}
+.star-table--striped .star-table__row--selected,
+.star-table--striped .star-table__row--selected:hover {
+  background: var(--star-primary-soft);
+}
+.star-table__select {
+  width: 3rem;
+}
+.star-table__expander {
+  width: 2.75rem;
+  padding-inline-end: 0 !important;
+}
+.star-table__toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  border: 0;
+  border-radius: var(--star-radius-sm);
+  background: none;
+  color: var(--star-text-muted);
+  cursor: pointer;
+
+  i {
+    transition: transform var(--star-duration-fast) ease;
+  }
+  &[aria-expanded='true'] i {
+    transform: rotate(90deg);
+  }
+  &:hover {
+    background: var(--star-surface-muted);
+    color: var(--star-text-strong);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--star-accent);
+    outline-offset: 2px;
+  }
+}
+.star-table__row--expanded td {
+  border-bottom-color: transparent;
+}
+.star-table__expansion td {
+  padding: 1rem 1.25rem 1.25rem;
+  background: var(--star-surface-muted);
+}
+@media (prefers-reduced-motion: reduce) {
+  .star-table__toggle i {
+    transition: none;
+  }
+}
+// Stacked layout: below 40rem of table width each row is a block of "label: value" lines.
+.star-table--stack {
+  container-type: inline-size;
+}
+@container (max-width: 40rem) {
+  .star-table--stack {
+    table,
+    thead,
+    tbody,
+    tr,
+    td {
+      display: block;
+    }
+    // Header row: only what the user can act on (select all, sort) stays, as a wrap row.
+    thead tr:first-child {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.25rem 1rem;
+      padding: 0.625rem 1rem;
+      background: var(--star-surface-muted);
+      border-bottom: 1px solid var(--star-border);
+    }
+    th {
+      display: none;
+      width: auto !important;
+      min-width: 0 !important;
+      max-width: none !important;
+      padding: 0;
+      border: 0;
+      background: none;
+    }
+    th.star-table__select,
+    th:has(.star-table__sort) {
+      display: block;
+    }
+    .star-table__resizer {
+      display: none;
+    }
+    td {
+      width: auto !important;
+      border-bottom: 0;
+    }
+    .star-table__row {
+      position: relative;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--star-border);
+    }
+    .star-table__row td[data-label],
+    .star-table__filters td[data-label] {
+      position: static;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.3rem 1rem;
+      text-align: end !important;
+
+      &::before {
+        content: attr(data-label);
+        flex: 0 0 38%;
+        font: var(--star-type-label);
+        color: var(--star-text-muted);
+        text-align: start;
+      }
+    }
+    .star-table__filters td:not([data-label]) {
+      display: none;
+    }
+    // A filter line has its label above the control: a date range needs the full width.
+    .star-table__filters td[data-label] {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0.25rem;
+      background: var(--star-surface-muted);
+
+      &::before {
+        flex: none;
+      }
+    }
+    .star-table__filter-range {
+      flex-wrap: wrap;
+    }
+    .star-table__filter {
+      min-width: 0;
+    }
+    .star-table__filter-range .star-table__filter {
+      flex: 1 1 6.5rem;
+      min-width: 0;
+    }
+    .star-table__row .star-table__select,
+    .star-table__row .star-table__expander {
+      display: inline-block;
+      width: auto !important;
+      padding: 0.25rem 0 0.25rem 1rem !important;
+      vertical-align: middle;
+    }
+    .star-table__expansion td {
+      padding: 0.75rem 1rem 1rem;
+      border-bottom: 1px solid var(--star-border);
+    }
+    .star-table__empty {
+      border-bottom: 0;
+    }
+  }
+}
+.star-table--virtual {
+  .star-table__row td {
+    height: var(--star-table-row-height);
+    padding-block: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  tbody tr:last-child td {
+    border-bottom: 1px solid var(--star-border);
+  }
+}
+.star-table__spacer td {
+  padding: 0 !important;
+  border: 0 !important;
+}
+.star-table__tools {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.5rem;
+}
+.star-table__columns {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 14rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+}
+.star-table__columns-move {
+  display: inline-flex;
+
+  button:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+}
+.star-table__th {
+  position: relative;
+
+  &[draggable='true'] {
+    cursor: grab;
+  }
+}
+.star-table__th--drop {
+  box-shadow: inset 3px 0 0 var(--star-primary);
+}
+.star-table__resizer {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: 0;
+  width: 0.5rem;
+  cursor: col-resize;
+  touch-action: none;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset-block: 25%;
+    inset-inline-end: 0;
+    width: 2px;
+    border-radius: 1px;
+    background: var(--star-border-strong);
+  }
+  &:hover::after,
+  &:focus-visible::after {
+    inset-block: 0;
+    background: var(--star-primary);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--star-accent);
+    outline-offset: -2px;
+  }
+}
+.star-table__cell--frozen {
+  position: sticky;
+  z-index: 1;
+  background: var(--star-surface);
+}
+th.star-table__cell--frozen,
+.star-table__filters .star-table__cell--frozen {
+  background: var(--star-surface-muted);
+}
+.star-table--striped .star-table__row--alt .star-table__cell--frozen {
+  background: color-mix(in srgb, var(--star-surface-muted) 60%, var(--star-surface));
+}
+.star-table__row:hover .star-table__cell--frozen {
+  background: var(--star-surface-muted);
+}
+.star-table__row--selected .star-table__cell--frozen {
+  background: var(--star-primary-soft);
+}
+.star-table__edit {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  max-width: 100%;
+  margin: -0.25rem -0.5rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px dashed transparent;
+  border-radius: var(--star-radius-sm);
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: inherit;
+  cursor: text;
+
+  i {
+    color: var(--star-text-soft);
+    opacity: 0;
+  }
+  &:hover,
+  &:focus-visible {
+    border-color: var(--star-border-strong, var(--star-border));
+    background: var(--star-surface);
+
+    i {
+      opacity: 1;
+    }
+  }
+  &:focus-visible {
+    outline: 2px solid var(--star-accent);
+    outline-offset: 2px;
+  }
+}
+.star-table__editor {
+  width: 100%;
+  min-width: 5rem;
+  margin-block: -0.375rem;
+}
+.star-table__radio {
+  width: 1.125rem;
+  height: 1.125rem;
+  accent-color: var(--star-primary);
+}
+.star-table__cell--center {
+  text-align: center !important;
+}
+.star-table__cell--end {
+  text-align: end !important;
+}
+.star-table__sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+
+  &:hover,
+  th[aria-sort='ascending'] &,
+  th[aria-sort='descending'] & {
+    color: var(--star-text-strong);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--star-accent);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+}
+.star-table__sort-idle {
+  opacity: 0.4;
+}
+.star-table__sort-rank {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1rem;
+  height: 1rem;
+  border-radius: var(--star-radius-pill);
+  background: var(--star-border);
+  color: var(--star-text-strong);
+  font: 600 10px/1 var(--star-font-sans);
+}
+// A row of a closed group. Other rules set `display` on rows (stacked layout), so force it.
+.star-table tr[hidden] {
+  display: none !important;
+}
+.star-table__group th {
+  padding-block: 0.375rem;
+  background: color-mix(in srgb, var(--star-surface-muted) 60%, var(--star-surface));
+}
+.star-table__group-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.375rem;
+  border: 0;
+  border-radius: var(--star-radius-sm);
+  background: none;
+  color: var(--star-text-strong);
+  font: var(--star-type-body);
+  font-weight: 600;
+  cursor: pointer;
+
+  i {
+    transition: rotate var(--star-duration-fast) ease;
+  }
+  &[aria-expanded='false'] i {
+    rotate: -90deg;
+  }
+  &:focus-visible {
+    outline: 2px solid var(--star-accent);
+    outline-offset: 2px;
+  }
+}
+.star-table__group-count {
+  padding: 0.0625rem 0.4rem;
+  border-radius: var(--star-radius-pill);
+  background: var(--star-border);
+  font: 600 11px/1.4 var(--star-font-sans);
+}
+.star-table__reorder {
+  width: 4.5rem;
+  white-space: nowrap;
+
+  .star-table__toggle:disabled {
+    opacity: 0.3;
+    cursor: default;
+  }
+}
+.star-table tfoot td {
+  border-top: 1px solid var(--star-border-strong);
+  border-bottom: 0;
+  background: var(--star-surface-muted);
+  font-weight: 600;
+  color: var(--star-text-strong);
+}
+.star-table__empty {
+  padding: 2.5rem 1rem !important;
+  color: var(--star-text-muted);
+  text-align: center !important;
+
+  i {
+    display: block;
+    margin: 0 auto 0.5rem;
+    font-size: 1.75rem;
+    color: var(--star-text-soft);
+  }
+}

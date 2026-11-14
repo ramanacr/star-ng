@@ -455,6 +455,61 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
     ],
   },
   {
+    label: 'Table',
+    items: [
+      {
+        label: 'Table',
+        path: 'controls/table',
+        keywords:
+          'data grid columns rows cell templates striped sticky loading empty skeleton p-table',
+        load: () => import('./controls/table.page').then((m) => m.TablePage),
+      },
+      {
+        label: 'Table sorting and filtering',
+        path: 'controls/table-sort-filter',
+        keywords:
+          'sort multi-sort global filter column filter search range multiselect date number',
+        load: () => import('./controls/table-sort-filter.page').then((m) => m.TableSortFilterPage),
+      },
+      {
+        label: 'Table paging',
+        path: 'controls/table-paging',
+        keywords: 'pagination paginator lazy server side load rows per page',
+        load: () => import('./controls/table-paging.page').then((m) => m.TablePagingPage),
+      },
+      {
+        label: 'Table selection',
+        path: 'controls/table-selection',
+        keywords: 'single multiple checkbox radio row click actions buttons',
+        load: () => import('./controls/table-selection.page').then((m) => m.TableSelectionPage),
+      },
+      {
+        label: 'Table editing',
+        path: 'controls/table-edit',
+        keywords: 'inline cell edit editor reorder move rows up down',
+        load: () => import('./controls/table-edit.page').then((m) => m.TableEditPage),
+      },
+      {
+        label: 'Table columns',
+        path: 'controls/table-columns',
+        keywords: 'hide show reorder resize freeze frozen sticky saved state stateKey',
+        load: () => import('./controls/table-columns.page').then((m) => m.TableColumnsPage),
+      },
+      {
+        label: 'Table layout',
+        path: 'controls/table-layout',
+        keywords: 'expansion detail group footer stack responsive phone virtual scroll',
+        load: () => import('./controls/table-layout.page').then((m) => m.TableLayoutPage),
+      },
+      {
+        label: 'Table export',
+        path: 'controls/table-export',
+        keywords: 'csv excel xlsx print pdf download',
+        load: () => import('./controls/table-export.page').then((m) => m.TableExportPage),
+      },
+    ],
+  },
+  {
     label: 'Feedback',
     items: [
       {
