@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { StarChart, StarChartSeries } from 'star-ng/chart';
+import { StarChart, StarChartPointSeries, StarChartSeries } from 'star-ng/chart';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -9,7 +9,7 @@ import { DOCS, DocsRow } from '../shared/docs';
   template: `
     <docs-page
       heading="Chart"
-      lead="Bar, line, area, doughnut and pie charts drawn as SVG, without a chart library. Every chart can show its data as a table. This is the equivalent of the PrimeNG p-chart."
+      lead="Bar, stacked bar, line, area, doughnut, pie, radar, polar area and scatter charts drawn as SVG, without a chart library. Every chart can show its data as a table. This is the equivalent of the PrimeNG p-chart."
       importFrom="import { StarChart } from 'star-ng/chart';"
     >
       <docs-example
@@ -70,6 +70,100 @@ import { DOCS, DocsRow } from '../shared/docs';
       </docs-example>
 
       <docs-example
+        heading="Stacked bar chart"
+        source="chart/stacked-bar"
+        note="Series are stacked in one column per category, the first series at the bottom. Hover a column to see each value and the total. Negative values stack below the baseline."
+      >
+        <star-chart
+          type="stacked-bar"
+          title="Orders per month by channel"
+          [labels]="months"
+          [series]="channelOrders"
+          categoryLabel="Month"
+        />
+      </docs-example>
+
+      <docs-example
+        heading="Stacked bar chart, percent"
+        source="chart/stacked-bar-percent"
+        note="The percent input scales every column to 100 percent, to compare the shares of the channels. The tooltip and the table still show the real values."
+      >
+        <star-chart
+          type="stacked-bar"
+          title="Share of orders by channel"
+          [labels]="months"
+          [series]="channelOrders"
+          categoryLabel="Month"
+          percent
+        />
+      </docs-example>
+
+      <docs-example
+        heading="Radar chart"
+        source="chart/radar"
+        note="One polygon per series over one axis per category. All series share one scale, and the rings carry the values. Each series has its own marker shape as well as its color."
+      >
+        <star-chart
+          type="radar"
+          title="Product ratings by criterion"
+          [labels]="criteria"
+          [series]="ratings"
+          categoryLabel="Criterion"
+        />
+      </docs-example>
+
+      <docs-example
+        heading="Polar area chart"
+        source="chart/polar-area"
+        note="One sector per category, all with the same angle. The area of a sector is in proportion to the value: the radius grows with the square root of the value, and the rings show round values on that scale."
+      >
+        <star-chart
+          type="polar-area"
+          title="Visits by weekday"
+          [labels]="weekdays"
+          [series]="weekdayVisits"
+          categoryLabel="Weekday"
+        />
+      </docs-example>
+
+      <docs-example
+        heading="Scatter chart"
+        source="chart/scatter"
+        note="Points from x and y values on two numeric axes. Series data is a list of { x, y } points. Each series has its own marker shape as well as its color, and the table lists every point."
+      >
+        <star-chart
+          type="scatter"
+          title="Price against weight"
+          [series]="products"
+          categoryLabel="Weight (kg)"
+          valueLabel="Price"
+        />
+      </docs-example>
+
+      <docs-example
+        heading="Long labels"
+        source="chart/long-labels"
+        note="A label that does not fit its column or axis is cut with an ellipsis. The full text shows as a title when you hover it, and stays in the data table."
+      >
+        <div class="docs-chart-narrow">
+          <star-chart
+            type="stacked-bar"
+            title="Orders by region"
+            [labels]="longRegions"
+            [series]="regionChannels"
+          />
+        </div>
+        <div class="docs-chart-narrow">
+          <star-chart
+            type="radar"
+            title="Detailed ratings"
+            [labels]="longCriteria"
+            [series]="ratings"
+          />
+        </div>
+      </docs-example>
+
+      <docs-example
         heading="Data table"
         source="chart/table"
         note="The data table is always in the page for screen readers. The button switches the visible view. The table input starts with the table open."
@@ -93,6 +187,66 @@ import { DOCS, DocsRow } from '../shared/docs';
           <star-chart type="bar" title="Orders, narrow" [labels]="months" [series]="single" />
         </div>
       </docs-example>
+
+      <h2>Choosing a chart</h2>
+      <ul>
+        <li>
+          <strong>Bar</strong>: compare values of a few categories, one bar per series.
+          <strong>Stacked bar</strong>: show how a total divides into parts. Use the percent input
+          when the shares matter more than the totals. Segments that do not start at the baseline
+          are hard to compare between columns, so use a grouped bar when exact comparison of every
+          series is the goal.
+        </li>
+        <li>
+          <strong>Line</strong> and <strong>area</strong>: change over ordered categories such as
+          months. Use an area chart for one series, or for a few series that do not hide each other.
+        </li>
+        <li>
+          <strong>Doughnut</strong> and <strong>pie</strong>: parts of a whole with a few categories
+          (the three largest are shown, the rest is grouped as Other).
+        </li>
+        <li>
+          <strong>Radar</strong>: compare the profile of two or three items over the same 5 to 12
+          criteria on one scale. It does not suit criteria with different units, or many series.
+        </li>
+        <li>
+          <strong>Polar area</strong>: one value per category when the categories repeat in a cycle,
+          such as weekdays or hours. For a plain comparison a bar chart reads better.
+        </li>
+        <li>
+          <strong>Scatter</strong>: the relation of two measured values, one point per item. Use it
+          when the x values are measurements and not a fixed list of categories.
+        </li>
+      </ul>
+
+      <h2>Stacked bar, radar, polar area and scatter</h2>
+      <ul>
+        <li>
+          <strong>Negative values.</strong> A stacked bar stacks negative values below the baseline
+          and positive values above it. A radar chart puts the lowest end of its scale in the
+          center. A polar area chart cannot draw a negative area, so it reads a negative value as 0.
+        </li>
+        <li>
+          <strong>Missing values.</strong> A value that is <code>null</code>, <code>NaN</code> or
+          not finite counts as 0 in stacked bar, radar and polar area charts. A scatter point with a
+          missing x or y is not drawn and is not in the table.
+        </li>
+        <li>
+          <strong>Polar area scale.</strong> The area of a sector, not its radius, carries the
+          value, because the eye reads area. A value four times as large has a sector with four
+          times the area and twice the radius.
+        </li>
+        <li>
+          <strong>Colors and marks.</strong> Marks have an outline in a darker tone of the series
+          color, so they keep 3:1 contrast with the background in both themes. Radar and scatter
+          also give each series its own marker shape. A polar area chart uses one color because the
+          categories are named at the chart, not in a legend.
+        </li>
+        <li>
+          <strong>Long labels.</strong> Labels are cut to fit their column or axis, with an
+          ellipsis. The full text shows as a title and stays in the table.
+        </li>
+      </ul>
 
       <h2>Series colors and themes</h2>
       <p>
@@ -119,6 +273,70 @@ export class ChartPage {
   protected readonly single: StarChartSeries[] = [
     { label: 'Received', data: [120, 150, 170, 140, 190, 210] },
   ];
+  protected readonly channelOrders: StarChartSeries[] = [
+    { label: 'Web', data: [120, 150, 170, 140, 190, 210] },
+    { label: 'Mobile app', data: [80, 95, 120, 130, 150, 185] },
+    { label: 'Phone', data: [40, 38, 35, 30, 28, 25] },
+    { label: 'Partner', data: [25, 30, 28, 45, 52, 60] },
+  ];
+  protected readonly criteria = [
+    'Battery',
+    'Display',
+    'Sound',
+    'Build',
+    'Value for money',
+    'Support',
+  ];
+  protected readonly ratings: StarChartSeries[] = [
+    { label: 'Model A', data: [8, 6, 7, 9, 5, 7] },
+    { label: 'Model B', data: [6, 9, 8, 7, 6, 5] },
+    { label: 'Model C', data: [7, 7, 5, 6, 9, 8] },
+  ];
+  protected readonly longRegions = [
+    'Northern coastal region',
+    'Southern inland region',
+    'Eastern highlands',
+  ];
+  protected readonly regionChannels: StarChartSeries[] = [
+    { label: 'Web', data: [120, 90, 60] },
+    { label: 'Phone', data: [30, 45, 20] },
+  ];
+  protected readonly longCriteria = [
+    'Battery life under heavy load',
+    'Display brightness outdoors',
+    'Sound',
+    'Build quality and materials',
+    'Value for money',
+    'Customer support response',
+  ];
+  protected readonly weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  protected readonly weekdayVisits: StarChartSeries[] = [
+    { label: 'Visits', data: [820, 940, 910, 880, 1020, 460, 310] },
+  ];
+  protected readonly products: StarChartPointSeries[] = [
+    {
+      label: 'Backpacks',
+      data: [
+        { x: 0.6, y: 35 },
+        { x: 0.9, y: 52 },
+        { x: 1.1, y: 48 },
+        { x: 1.4, y: 79 },
+        { x: 1.8, y: 95 },
+        { x: 2.1, y: 88 },
+      ],
+    },
+    {
+      label: 'Suitcases',
+      data: [
+        { x: 2.4, y: 110 },
+        { x: 3.1, y: 135 },
+        { x: 3.6, y: 180 },
+        { x: 4.2, y: 165 },
+        { x: 4.9, y: 240 },
+        { x: 5.5, y: 215 },
+      ],
+    },
+  ];
   protected readonly regions = ['North', 'South', 'East', 'West'];
   protected readonly revenue: StarChartSeries[] = [
     { label: 'Revenue', data: [48000, 32000, 27000, 41000] },
@@ -131,16 +349,28 @@ export class ChartPage {
   protected readonly cssVars: readonly DocsRow[] = [
     { name: '--star-chart-1 … --star-chart-8', description: 'Series colors, in fixed order.' },
     { name: '--star-border', description: 'Color of the grid lines.' },
-    { name: '--star-border-strong', description: 'Color of the hover crosshair of line charts.' },
+    {
+      name: '--star-border-strong',
+      description: 'Color of the hover crosshair of line charts and the zero line of stacked bars.',
+    },
     { name: '--star-text-muted', description: 'Color of axis labels and the legend.' },
-    { name: '--star-surface', description: 'Gap between marks and ring around line dots.' },
+    {
+      name: '--star-surface',
+      description:
+        'Gap between marks, ring around line dots, and halo behind the ring labels of radar and polar area charts.',
+    },
+    {
+      name: '--star-text-strong',
+      description:
+        'Mixed into the series color to make the outline of stacked bar, radar, polar area and scatter marks.',
+    },
     { name: '--star-tooltip-surface', description: 'Background of the hover tooltip.' },
   ];
   protected readonly keyboard: readonly DocsRow[] = [
     {
       name: 'Tab, then Enter or Space',
       description:
-        'Focuses the Table / Chart button and switches the view. The marks have no keyboard focus: the table gives the same data.',
+        'Focuses the Table / Chart button and switches the view. The marks have no keyboard focus: the table gives the same data. The chart has an accessible name (the title) and a description: the kind of chart, the number of series and items, and the range of values.',
     },
   ];
 }

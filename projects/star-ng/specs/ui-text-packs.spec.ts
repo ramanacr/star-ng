@@ -10,9 +10,18 @@ type Name = keyof StarUiText;
  */
 const SAME_AS_ENGLISH: Record<string, readonly Name[]> = {
   // "Layout", "Details", "Dock", "System", "Editor" and "Link" are the usual German UI words.
-  de: ['layout', 'rowDetails', 'dock', 'themeSystem', 'editorLabel', 'editorLink'],
-  // "Color", "Editor" and "Total" are the Spanish words too.
-  es: ['colorLabel', 'editorLabel', 'chartTotal'],
+  de: [
+    'layout',
+    'rowDetails',
+    'dock',
+    'themeSystem',
+    'editorLabel',
+    'editorLink',
+    'chartX',
+    'chartY',
+  ],
+  // "Color", "Editor" and "Total" are the Spanish words too. "X" and "Y" are axis names in every language.
+  es: ['colorLabel', 'editorLabel', 'chartTotal', 'chartX', 'chartY'],
 };
 
 const PACKS: Record<string, StarUiText> = { de: STAR_UI_TEXT_DE, es: STAR_UI_TEXT_ES };
@@ -24,6 +33,7 @@ const TEXT_PARAMS: Record<string, readonly string[]> = {
   fileTooLarge: ['name', 'max'],
   fileMaxSize: ['size'],
   meterValue: ['value'],
+  chartDescription: ['kind', 'min', 'max'],
 };
 const TEXT_NAMES = new Set(['label', 'column', 'name', 'alt']);
 

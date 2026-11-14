@@ -440,6 +440,13 @@ pre {
   border-radius: var(--star-radius-md);
 }
 
+// A chart in a live example fills the example (up to 40rem). Without this the flex row would
+// shrink it to the 300px default width of an SVG.
+.docs-example__live > star-chart {
+  flex: 1 1 28rem;
+  min-width: 0;
+  max-width: 40rem;
+}
 .docs-chart-narrow {
   max-width: 22rem;
 }
