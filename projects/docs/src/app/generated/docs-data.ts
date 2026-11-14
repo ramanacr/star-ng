@@ -18,6 +18,91 @@ export interface DocsApiEntry {
 }
 
 export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
+  "StarAutoComplete": {
+    "kind": "component",
+    "selector": "star-autocomplete",
+    "entry": "star-ng/autocomplete",
+    "description": "Autocomplete (PrimeNG `p-autocomplete`). Local mode filters `options`; server mode listens to `(completeMethod)` and shows `[suggestions]`. Only listed options can be chosen (force selection): unmatched text reverts on blur, an exact label match is taken.",
+    "inputs": [],
+    "models": [
+      {
+        "name": "value",
+        "type": "TValue | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "outputs": [
+      {
+        "name": "selected",
+        "type": "TOption",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
+  "StarAutoCompleteBase": {
+    "kind": "directive",
+    "selector": "",
+    "entry": "star-ng/autocomplete",
+    "description": "Shared behaviour of the autocomplete controls (WAI-ARIA combobox with list autocomplete): local filtering of `options`, or server search through `(completeMethod)` + `[suggestions]` with a debounce, minimum query length, loading state, match highlighting, dropdown button and a screen-reader result count.",
+    "inputs": [
+      {
+        "name": "suggestions",
+        "type": "readonly TOption[] | null",
+        "default": "null",
+        "required": false,
+        "description": "Server results. When set, the control shows these instead of filtering `options`."
+      },
+      {
+        "name": "minQueryLength",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "delay",
+        "type": "number",
+        "default": "300",
+        "required": false,
+        "description": "Debounce in ms before `(completeMethod)` fires."
+      },
+      {
+        "name": "dropdown",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows a button that lists all options (local) or searches with an empty query."
+      },
+      {
+        "name": "autoHighlight",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Highlights the first result, so Enter picks it."
+      },
+      {
+        "name": "showEmptyMessage",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": [
+      {
+        "name": "completeMethod",
+        "type": "StarAutoCompleteSearch",
+        "default": null,
+        "required": false,
+        "description": "Fires (debounced) when the user types; load `suggestions` in reply (PrimeNG `completeMethod`)."
+      }
+    ]
+  },
   "StarBadge": {
     "kind": "component",
     "selector": "star-badge",
@@ -148,6 +233,158 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": ""
+      }
+    ]
+  },
+  "StarCascadeSelect": {
+    "kind": "component",
+    "selector": "star-cascade-select",
+    "entry": "star-ng/select",
+    "description": "Cascade select (PrimeNG `p-cascadeselect`): choose one leaf of nested options, for example country → state → city. The popup is a menu with submenus (CDK Menu: arrow keys, typeahead, Escape). The value is the leaf (`optionValue`, or the whole option).",
+    "inputs": [
+      {
+        "name": "options",
+        "type": "readonly TOption[]",
+        "default": "[]",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "optionLabel",
+        "type": "StarOptionKey<TOption> | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "optionValue",
+        "type": "StarOptionKey<TOption> | null",
+        "default": "null",
+        "required": false,
+        "description": "Value stored in the form, read from the leaf. Omit to store the whole leaf option."
+      },
+      {
+        "name": "optionChildren",
+        "type": "StarOptionKey<TOption, readonly TOption[] | null | undefined>",
+        "default": null,
+        "required": false,
+        "description": "Property (or function) with the child options. An option without children is a leaf."
+      },
+      {
+        "name": "optionDisabled",
+        "type": "StarOptionKey<TOption> | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "compareWith",
+        "type": "(a: TValue, b: TValue) => boolean",
+        "default": "Object.is",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "placeholder",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "showPath",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Show the whole path (\"Germany / Bavaria / Munich\") instead of the leaf label."
+      },
+      {
+        "name": "showClear",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "size",
+        "type": "'sm' | 'md'",
+        "default": "'md'",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "inputId",
+        "type": "string",
+        "default": "(generated id)",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "readonly",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "required",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "invalid",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "touched",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [
+      {
+        "name": "value",
+        "type": "TValue | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "outputs": [
+      {
+        "name": "touch",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "optionSelect",
+        "type": "TOption",
+        "default": null,
+        "required": false,
+        "description": "The user chose a leaf."
       }
     ]
   },
@@ -1092,6 +1329,116 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ]
   },
+  "StarListbox": {
+    "kind": "component",
+    "selector": "star-listbox",
+    "entry": "star-ng/listbox",
+    "description": "Inline list choice (PrimeNG `p-listbox`): single or `multiple` (checkboxes), filter, option template, WAI-ARIA listbox keyboard (Arrow, Home / End, Space / Enter, typeahead). Value: one value, or an array in `multiple` mode.",
+    "inputs": [
+      {
+        "name": "options",
+        "type": "readonly TOption[]",
+        "default": "[]",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "optionLabel",
+        "type": "StarOptionKey<TOption> | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "optionValue",
+        "type": "StarOptionKey<TOption> | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "optionDisabled",
+        "type": "StarOptionKey<TOption> | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "optionGroup",
+        "type": "StarOptionKey<TOption> | null",
+        "default": "null",
+        "required": false,
+        "description": "Group heading of an option (property name or function). Options with the same heading show together under it, in the order in which the headings first appear."
+      },
+      {
+        "name": "multiple",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "filter",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "scrollHeight",
+        "type": "string",
+        "default": "'16rem'",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "invalid",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "touched",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [
+      {
+        "name": "value",
+        "type": "TValue | readonly TValue[] | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "outputs": [
+      {
+        "name": "touch",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
   "StarMegaMenu": {
     "kind": "component",
     "selector": "star-mega-menu",
@@ -1216,6 +1563,308 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": true,
         "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
+  "StarMultiAutoComplete": {
+    "kind": "component",
+    "selector": "star-multi-autocomplete",
+    "entry": "star-ng/autocomplete",
+    "description": "Multiple-value autocomplete (PrimeNG `p-autocomplete [multiple]`): chosen items become removable chips, Backspace in an empty field removes the last chip, chosen options leave the result list.",
+    "inputs": [
+      {
+        "name": "selectionLimit",
+        "type": "number",
+        "default": "0",
+        "required": false,
+        "description": "Maximum number of chips (0 = no limit)."
+      }
+    ],
+    "models": [
+      {
+        "name": "value",
+        "type": "readonly TValue[]",
+        "default": "[]",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "outputs": []
+  },
+  "StarMultiSelect": {
+    "kind": "component",
+    "selector": "star-multi-select",
+    "entry": "star-ng/select",
+    "description": "Multiple-choice dropdown (PrimeNG `p-multiselect`): checkbox list, \"select all\", filter, chip or comma display, `maxSelectedLabels`, `selectionLimit` and clear. Same keyboard model as `star-select`; Enter / Space toggle the active option and keep the panel open.",
+    "inputs": [
+      {
+        "name": "display",
+        "type": "'comma' | 'chip'",
+        "default": "'comma'",
+        "required": false,
+        "description": "`comma`: \"A, B, C\". `chip`: removable chips."
+      },
+      {
+        "name": "maxSelectedLabels",
+        "type": "number",
+        "default": "3",
+        "required": false,
+        "description": "Above this count the trigger shows \"{n} items selected\"."
+      },
+      {
+        "name": "selectionLimit",
+        "type": "number",
+        "default": "0",
+        "required": false,
+        "description": "Maximum number of selected items (0 = no limit). Hides \"select all\"."
+      },
+      {
+        "name": "showToggleAll",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [
+      {
+        "name": "value",
+        "type": "readonly TValue[]",
+        "default": "[]",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "outputs": []
+  },
+  "StarOptionListBase": {
+    "kind": "directive",
+    "selector": "",
+    "entry": "star-ng/select",
+    "description": "Shared state and keyboard model of the dropdown list controls (WAI-ARIA combobox + listbox with `aria-activedescendant`). Subclasses add the selection model.",
+    "inputs": [
+      {
+        "name": "options",
+        "type": "readonly TOption[]",
+        "default": "[]",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "optionLabel",
+        "type": "StarOptionKey<TOption> | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "optionValue",
+        "type": "StarOptionKey<TOption> | null",
+        "default": "null",
+        "required": false,
+        "description": "Value stored in the form. Omit to store the whole option."
+      },
+      {
+        "name": "optionDisabled",
+        "type": "StarOptionKey<TOption> | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "compareWith",
+        "type": "(a: TValue, b: TValue) => boolean",
+        "default": "Object.is",
+        "required": false,
+        "description": "Equality for values (default `Object.is`). Use for object values from the server."
+      },
+      {
+        "name": "optionGroup",
+        "type": "StarOptionKey<TOption> | null",
+        "default": "null",
+        "required": false,
+        "description": "Group heading of an option (property name or function). Options with the same heading show together under it, in the order in which the headings first appear."
+      },
+      {
+        "name": "virtualScroll",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Renders only the lines in view, for long option lists. Every line has the height `virtualItemSize` and option text stays on one line."
+      },
+      {
+        "name": "virtualItemSize",
+        "type": "number",
+        "default": "40",
+        "required": false,
+        "description": "Line height in pixels with `virtualScroll`."
+      },
+      {
+        "name": "placeholder",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "filter",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "filterPlaceholder",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "showClear",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "loading",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "emptyMessage",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "scrollHeight",
+        "type": "string",
+        "default": "'16rem'",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "size",
+        "type": "'sm' | 'md'",
+        "default": "'md'",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "ariaLabelledBy",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "inputId",
+        "type": "string",
+        "default": "(generated id)",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "readonly",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "required",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "invalid",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "touched",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": [
+      {
+        "name": "touch",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "opened",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "closed",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "filterChange",
+        "type": "string",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
+  "StarOptionTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starOption]",
+    "entry": "star-ng/select",
+    "description": "Custom option row template for `star-select` and `star-multi-select`.",
+    "inputs": [
+      {
+        "name": "starOptionOf",
+        "type": "readonly T[] | null",
+        "default": "null",
+        "required": false,
+        "description": "Optional: pass the options array to type `let-option` in strict templates."
       }
     ],
     "models": [],
@@ -1626,6 +2275,23 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       }
     ]
+  },
+  "StarSelect": {
+    "kind": "component",
+    "selector": "star-select",
+    "entry": "star-ng/select",
+    "description": "Single-choice dropdown (PrimeNG `p-select`): typed options, `optionLabel` / `optionValue` / `optionDisabled`, filter, clear button, loading state, typeahead and full keyboard support (WAI-ARIA select-only combobox). The panel is a native popover, so it also works inside modal `star-dialog`s.",
+    "inputs": [],
+    "models": [
+      {
+        "name": "value",
+        "type": "TValue | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "outputs": []
   },
   "StarSelectButton": {
     "kind": "component",
@@ -2125,10 +2791,201 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       }
     ]
+  },
+  "StarTree": {
+    "kind": "component",
+    "selector": "star-tree",
+    "entry": "star-ng/tree",
+    "description": "Tree (PrimeNG `p-tree`): expand / collapse, single, multiple or checkbox selection (checkbox mode selects whole branches and shows mixed parents), filter, and the WAI-ARIA tree keyboard model (Up / Down, Right opens or enters, Left closes or goes to the parent, Home / End, Enter / Space select, `*` expands siblings).",
+    "inputs": [
+      {
+        "name": "nodes",
+        "type": "readonly StarTreeNode[]",
+        "default": "[]",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "selectionMode",
+        "type": "'single' | 'multiple' | 'checkbox' | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "filter",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "scrollHeight",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [
+      {
+        "name": "value",
+        "type": "readonly string[]",
+        "default": "[]",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "expanded",
+        "type": "readonly string[]",
+        "default": "[]",
+        "required": false,
+        "description": "Expanded node keys."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "touch",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "nodeSelect",
+        "type": "StarTreeNode",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
+  "StarTreeSelect": {
+    "kind": "component",
+    "selector": "star-tree-select",
+    "entry": "star-ng/tree",
+    "description": "Tree select (PrimeNG `p-treeselect`): a select field whose panel is an `star-tree`. Value: selected node keys (one key in `single` mode).",
+    "inputs": [
+      {
+        "name": "nodes",
+        "type": "readonly StarTreeNode[]",
+        "default": "[]",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "selectionMode",
+        "type": "'single' | 'multiple' | 'checkbox'",
+        "default": "'single'",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "filter",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "showClear",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "placeholder",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "maxSelectedLabels",
+        "type": "number",
+        "default": "3",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "invalid",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "touched",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [
+      {
+        "name": "value",
+        "type": "readonly string[]",
+        "default": "[]",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "expanded",
+        "type": "readonly string[]",
+        "default": "[]",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "outputs": [
+      {
+        "name": "touch",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
   }
 };
 
 export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
+  "autocomplete/async": "<div class=\"docs-stack\">\n  <star-autocomplete\n    [suggestions]=\"results()\"\n    [loading]=\"searching()\"\n    [minQueryLength]=\"2\"\n    [delay]=\"150\"\n    (completeMethod)=\"search($event)\"\n    optionLabel=\"name\"\n    optionValue=\"id\"\n    [(value)]=\"found\"\n    placeholder=\"Type 2 letters of a name\"\n    ariaLabel=\"Colleague\"\n    showClear\n  />\n  <p class=\"docs-output\" role=\"status\">Colleague: {{ found() ?? 'none' }}</p>\n</div>",
+  "autocomplete/dropdown": "<star-autocomplete\n  [options]=\"cities\"\n  [(value)]=\"dropdownCity\"\n  placeholder=\"Search a city\"\n  ariaLabel=\"City with dropdown\"\n  dropdown\n  autoHighlight\n  showClear\n/>",
+  "autocomplete/form": "<div class=\"docs-stack\">\n  <star-field label=\"Assignee\" for=\"autocomplete-form-assignee\" [state]=\"task.assignee()\">\n    <star-autocomplete\n      inputId=\"autocomplete-form-assignee\"\n      [formField]=\"task.assignee\"\n      [options]=\"people\"\n      optionLabel=\"name\"\n      optionValue=\"id\"\n      placeholder=\"Search a person\"\n      showClear\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ task().valid() }}</p>\n</div>",
+  "autocomplete/local": "<div class=\"docs-stack\">\n  <star-autocomplete\n    [options]=\"cities\"\n    [(value)]=\"city\"\n    placeholder=\"Search a city\"\n    ariaLabel=\"City\"\n  />\n  <p class=\"docs-output\" role=\"status\">City: {{ city() ?? 'none' }}</p>\n</div>",
+  "autocomplete/multiple": "<div class=\"docs-stack\">\n  <star-multi-autocomplete\n    [options]=\"keywords\"\n    [(value)]=\"chosen\"\n    [selectionLimit]=\"4\"\n    placeholder=\"Add a keyword\"\n    ariaLabel=\"Keywords\"\n    dropdown\n    autoHighlight\n  />\n  <p class=\"docs-output\" role=\"status\">Keywords: {{ chosen().join(', ') || 'none' }}</p>\n</div>",
+  "autocomplete/objects": "<star-autocomplete\n  [options]=\"people\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  optionGroup=\"team\"\n  [(value)]=\"person\"\n  placeholder=\"Search a person\"\n  ariaLabel=\"Person\"\n>\n  <ng-template starOption [starOptionOf]=\"people\" let-item>\n    <span>\n      {{ item.name }}\n      <small>{{ item.team }}</small>\n    </span>\n  </ng-template>\n</star-autocomplete>",
   "badge/counts": "<star-badge [value]=\"4\" ariaLabel=\"unread messages\" />\n<star-badge [value]=\"128\" [max]=\"99\" severity=\"danger\" ariaLabel=\"open alerts\" />\n<star-badge value=\"New\" severity=\"success\" />",
   "badge/severities": "<star-badge [value]=\"1\" />\n<star-badge [value]=\"2\" severity=\"secondary\" />\n<star-badge [value]=\"3\" severity=\"success\" />\n<star-badge [value]=\"4\" severity=\"info\" />\n<star-badge [value]=\"5\" severity=\"warn\" />\n<star-badge [value]=\"6\" severity=\"danger\" />",
   "badge/sizes": "<star-badge [value]=\"7\" size=\"sm\" />\n<star-badge [value]=\"7\" />\n<star-badge [value]=\"7\" size=\"lg\" />\n<star-badge severity=\"success\" ariaLabel=\"online\" />",
@@ -2137,6 +2994,10 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "button/sizes": "<star-button size=\"sm\">Small</star-button>\n<star-button size=\"md\">Medium</star-button>\n<star-button size=\"lg\">Large</star-button>",
   "button/states": "<star-button [loading]=\"saving()\" (pressed)=\"save()\">Save changes</star-button>\n<star-button variant=\"secondary\" disabled>Disabled</star-button>\n<p class=\"docs-output\" role=\"status\">Saved {{ saves() }} times</p>",
   "button/variants": "<star-button variant=\"primary\">Save</star-button>\n<star-button variant=\"secondary\">Cancel</star-button>\n<star-button variant=\"ghost\">Skip</star-button>\n<star-button variant=\"success\">Approve</star-button>\n<star-button variant=\"warning\">Hold</star-button>\n<star-button variant=\"danger\">Delete</star-button>\n<star-button variant=\"ghost-danger\">Remove</star-button>",
+  "cascade-select/basic": "<div class=\"docs-stack\">\n  <star-cascade-select\n    [options]=\"places\"\n    optionLabel=\"name\"\n    optionValue=\"code\"\n    [(value)]=\"place\"\n    placeholder=\"Choose a city\"\n    ariaLabel=\"City\"\n  />\n  <p class=\"docs-output\" role=\"status\">Value: {{ place() ?? 'none' }}</p>\n</div>",
+  "cascade-select/form": "<div class=\"docs-stack\">\n  <star-field label=\"Office city\" for=\"cascade-form-city\" [state]=\"office.city()\">\n    <star-cascade-select\n      inputId=\"cascade-form-city\"\n      [formField]=\"office.city\"\n      [options]=\"places\"\n      optionLabel=\"name\"\n      optionValue=\"code\"\n      placeholder=\"Choose a city\"\n      showPath\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ office().valid() }}</p>\n</div>",
+  "cascade-select/path": "<star-cascade-select\n  [options]=\"places\"\n  optionLabel=\"name\"\n  optionValue=\"code\"\n  [(value)]=\"pathPlace\"\n  placeholder=\"Choose a city\"\n  ariaLabel=\"City with path\"\n  showPath\n  showClear\n/>",
+  "cascade-select/states": "<div class=\"docs-stack\">\n  <star-cascade-select\n    [options]=\"places\"\n    optionLabel=\"name\"\n    optionValue=\"code\"\n    optionDisabled=\"closed\"\n    placeholder=\"One city is closed\"\n    ariaLabel=\"City with a closed office\"\n  />\n  <star-cascade-select\n    [options]=\"places\"\n    optionLabel=\"name\"\n    optionValue=\"code\"\n    size=\"sm\"\n    disabled\n    placeholder=\"Disabled\"\n    ariaLabel=\"Disabled city\"\n  />\n</div>",
   "checkbox/basic": "<star-checkbox [(checked)]=\"subscribed\">Send me product news</star-checkbox>\n<p class=\"docs-output\" role=\"status\">Subscribed: {{ subscribed() }}</p>",
   "checkbox/form": "<star-checkbox [formField]=\"terms.accept\">I accept the terms</star-checkbox>\n<p class=\"docs-output\" role=\"status\">Valid: {{ terms().valid() }}</p>",
   "checkbox/indeterminate": "<star-checkbox [(checked)]=\"all\" [(indeterminate)]=\"some\">All regions</star-checkbox>",
@@ -2174,6 +3035,12 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "knob/basic": "<star-knob [(value)]=\"progress\" valueTemplate=\"{value}%\" ariaLabel=\"Progress\" />\n<p class=\"docs-output\" role=\"status\">Value: {{ progress() }}</p>",
   "knob/range": "<star-knob\n  [(value)]=\"temperature\"\n  [min]=\"10\"\n  [max]=\"30\"\n  [step]=\"0.5\"\n  [size]=\"160\"\n  valueTemplate=\"{value}°\"\n  ariaLabel=\"Temperature\"\n/>",
   "knob/states": "<star-knob [value]=\"72\" readonly [size]=\"90\" ariaLabel=\"Disk use\" />\n<star-knob [value]=\"35\" disabled [size]=\"90\" ariaLabel=\"Locked value\" />",
+  "listbox/disabled": "<star-listbox\n  [options]=\"queues\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  [value]=\"'intake'\"\n  disabled\n  scrollHeight=\"8rem\"\n  ariaLabel=\"Disabled queue\"\n/>",
+  "listbox/form": "<div class=\"docs-stack\">\n  <star-field label=\"Notify queues\" [state]=\"alert.queues()\">\n    <star-listbox\n      [formField]=\"alert.queues\"\n      [options]=\"queues\"\n      optionLabel=\"name\"\n      optionValue=\"id\"\n      multiple\n      scrollHeight=\"10rem\"\n      ariaLabel=\"Notify queues\"\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ alert().valid() }}</p>\n</div>",
+  "listbox/groups": "<star-listbox\n  [options]=\"queues\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  optionGroup=\"site\"\n  optionDisabled=\"closed\"\n  [(value)]=\"grouped\"\n  scrollHeight=\"14rem\"\n  ariaLabel=\"Queue by site\"\n/>",
+  "listbox/multiple": "<div class=\"docs-stack\">\n  <star-listbox\n    [options]=\"queues\"\n    optionLabel=\"name\"\n    optionValue=\"id\"\n    [(value)]=\"many\"\n    multiple\n    filter\n    scrollHeight=\"12rem\"\n    ariaLabel=\"Queues\"\n  />\n  <p class=\"docs-output\" role=\"status\">Queues: {{ manyText() }}</p>\n</div>",
+  "listbox/single": "<div class=\"docs-stack\">\n  <star-listbox\n    [options]=\"queues\"\n    optionLabel=\"name\"\n    optionValue=\"id\"\n    [(value)]=\"queue\"\n    scrollHeight=\"12rem\"\n    ariaLabel=\"Queue\"\n  />\n  <p class=\"docs-output\" role=\"status\">Queue: {{ queue() ?? 'none' }}</p>\n</div>",
+  "listbox/template": "<star-listbox\n  [options]=\"queues\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  [(value)]=\"templated\"\n  scrollHeight=\"12rem\"\n  ariaLabel=\"Queue with template\"\n>\n  <ng-template starOption [starOptionOf]=\"queues\" let-item let-selected=\"selected\">\n    <span>\n      {{ item.name }}\n      <small>{{ item.site }}</small>\n    </span>\n  </ng-template>\n</star-listbox>",
   "mega-menu/basic": "<div class=\"docs-stack\">\n  <star-mega-menu\n    ariaLabel=\"Catalogue\"\n    [items]=\"catalogue\"\n    (itemClick)=\"last.set($event.label ?? '')\"\n  />\n  <p class=\"docs-output\" role=\"status\">Last action: {{ last() }}</p>\n</div>",
   "menu/icon-trigger": "<button\n  type=\"button\"\n  class=\"star-btn star-btn--secondary star-btn--icon\"\n  aria-label=\"Row actions\"\n  [starMenuTrigger]=\"rowMenu\"\n>\n  <i class=\"ph-bold ph-dots-three-vertical\" aria-hidden=\"true\"></i>\n</button>\n<star-menu #rowMenu [items]=\"fileItems\" />",
   "menu/icons": "<star-button variant=\"secondary\" [starMenuTrigger]=\"editMenu\">Edit</star-button>\n<star-menu #editMenu [items]=\"editItems\" />",
@@ -2183,6 +3050,12 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "menu/states": "<star-button variant=\"secondary\" [starMenuTrigger]=\"orderMenu\">Order actions</star-button>\n<star-menu #orderMenu [items]=\"orderItems\" />",
   "menubar/basic": "<div class=\"docs-stack\">\n  <star-menubar ariaLabel=\"Main\" [items]=\"nav\" (itemClick)=\"last.set($event.label ?? '')\" />\n  <p class=\"docs-output\" role=\"status\">Last action: {{ last() }}</p>\n</div>",
   "menubar/end": "<star-menubar ariaLabel=\"Main with action\" [items]=\"nav\">\n  <star-button starMenubarEnd size=\"sm\" variant=\"ghost\" leadingIcon=\"ph-bold ph-plus\"\n    >New</star-button\n  >\n</star-menubar>",
+  "multi-select/basic": "<div class=\"docs-stack\">\n  <star-multi-select\n    [options]=\"departments\"\n    optionLabel=\"name\"\n    optionValue=\"id\"\n    [(value)]=\"chosen\"\n    placeholder=\"Select departments\"\n    ariaLabel=\"Departments\"\n  />\n  <p class=\"docs-output\" role=\"status\">Chosen: {{ chosen().join(', ') || 'none' }}</p>\n</div>",
+  "multi-select/chips": "<star-multi-select\n  [options]=\"departments\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  [(value)]=\"chips\"\n  display=\"chip\"\n  placeholder=\"Select departments\"\n  ariaLabel=\"Departments as chips\"\n  filter\n  showClear\n/>",
+  "multi-select/form": "<div class=\"docs-stack\">\n  <star-field label=\"Teams\" for=\"multi-form-teams\" [state]=\"team.departments()\">\n    <star-multi-select\n      inputId=\"multi-form-teams\"\n      [formField]=\"team.departments\"\n      [options]=\"departments\"\n      optionLabel=\"name\"\n      optionValue=\"id\"\n      display=\"chip\"\n      placeholder=\"Select at least two\"\n      ariaLabel=\"Teams\"\n      showClear\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ team().valid() }}</p>\n</div>",
+  "multi-select/groups": "<star-multi-select\n  [options]=\"departments\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  optionGroup=\"site\"\n  optionDisabled=\"closed\"\n  [(value)]=\"grouped\"\n  placeholder=\"Departments by site\"\n  ariaLabel=\"Departments by site\"\n/>",
+  "multi-select/limit": "<star-multi-select\n  [options]=\"departments\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  [selectionLimit]=\"2\"\n  placeholder=\"Pick up to 2\"\n  ariaLabel=\"Limited departments\"\n/>",
+  "multi-select/template": "<star-multi-select\n  [options]=\"departments\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  [(value)]=\"templated\"\n  placeholder=\"Select departments\"\n  ariaLabel=\"Departments with template\"\n>\n  <ng-template starOption [starOptionOf]=\"departments\" let-item let-selected=\"selected\">\n    <span>\n      {{ item.name }}\n      <small>{{ item.site }}</small>\n    </span>\n  </ng-template>\n</star-multi-select>",
   "panel-menu/basic": "<div class=\"docs-stack\">\n  <star-panel-menu\n    ariaLabel=\"Settings\"\n    [items]=\"sections\"\n    [(expandedKeys)]=\"open\"\n    (itemClick)=\"last.set($event.label ?? '')\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Open: {{ open().join(', ') || 'none' }}. Last action: {{ last() }}\n  </p>\n</div>",
   "panel-menu/single": "<star-panel-menu ariaLabel=\"Settings, single\" single [items]=\"sections\" />",
   "password/basic": "<div class=\"docs-stack\">\n  <star-field label=\"Password\">\n    <star-password [(value)]=\"current\" />\n  </star-field>\n</div>",
@@ -2198,6 +3071,14 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "select-button/objects": "<star-select-button\n  [options]=\"views\"\n  optionLabel=\"label\"\n  optionValue=\"id\"\n  optionIcon=\"icon\"\n  [(value)]=\"view\"\n  [allowEmpty]=\"false\"\n  ariaLabel=\"View\"\n/>",
   "select-button/single": "<star-select-button\n  [options]=\"['Day', 'Week', 'Month']\"\n  [(value)]=\"period\"\n  ariaLabel=\"Period\"\n/>\n<p class=\"docs-output\" role=\"status\">Period: {{ period() }}</p>",
   "select-button/toggle": "<star-toggle-button\n  [(checked)]=\"pinned\"\n  onLabel=\"Pinned\"\n  offLabel=\"Pin\"\n  onIcon=\"ph-fill ph-push-pin\"\n  offIcon=\"ph-bold ph-push-pin\"\n/>\n<star-toggle-button [checked]=\"true\" disabled onLabel=\"Locked\" offLabel=\"Lock\" />",
+  "select/basic": "<div class=\"docs-stack\">\n  <star-select\n    [options]=\"countries\"\n    optionLabel=\"name\"\n    optionValue=\"code\"\n    [(value)]=\"country\"\n    placeholder=\"Select a country\"\n    ariaLabel=\"Country\"\n  />\n  <p class=\"docs-output\" role=\"status\">Country: {{ country() ?? 'none' }}</p>\n</div>",
+  "select/disabled-options": "<star-select\n  [options]=\"countries\"\n  optionLabel=\"name\"\n  optionValue=\"code\"\n  optionDisabled=\"closed\"\n  [(value)]=\"open\"\n  placeholder=\"Offices (one is closed)\"\n  ariaLabel=\"Office\"\n/>",
+  "select/filter": "<div class=\"docs-stack\">\n  <star-select\n    [options]=\"countries\"\n    optionLabel=\"name\"\n    optionValue=\"code\"\n    [(value)]=\"filtered\"\n    placeholder=\"Search a country\"\n    ariaLabel=\"Country with filter\"\n    filter\n    showClear\n  />\n  <p class=\"docs-output\" role=\"status\">Filtered: {{ filtered() ?? 'none' }}</p>\n</div>",
+  "select/form": "<div class=\"docs-stack\">\n  <star-field label=\"Office country\" for=\"select-form-country\" [state]=\"office.country()\">\n    <star-select\n      inputId=\"select-form-country\"\n      [formField]=\"office.country\"\n      [options]=\"countries\"\n      optionLabel=\"name\"\n      optionValue=\"code\"\n      placeholder=\"Select a country\"\n      ariaLabel=\"Office country\"\n      showClear\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ office().valid() }}</p>\n</div>",
+  "select/groups": "<star-select\n  [options]=\"countries\"\n  optionLabel=\"name\"\n  optionValue=\"code\"\n  optionGroup=\"region\"\n  [(value)]=\"grouped\"\n  placeholder=\"Grouped by region\"\n  ariaLabel=\"Country by region\"\n/>",
+  "select/states": "<div class=\"docs-stack\">\n  <star-select [options]=\"regions\" size=\"sm\" placeholder=\"Small\" ariaLabel=\"Small select\" />\n  <star-select [options]=\"regions\" disabled placeholder=\"Disabled\" ariaLabel=\"Disabled\" />\n  <star-select [options]=\"regions\" [value]=\"'EMEA'\" readonly ariaLabel=\"Read-only\" />\n  <star-select [options]=\"[]\" loading placeholder=\"Loading options\" ariaLabel=\"Loading\" />\n</div>",
+  "select/template": "<star-select\n  [options]=\"countries\"\n  optionLabel=\"name\"\n  optionValue=\"code\"\n  [(value)]=\"templated\"\n  placeholder=\"Select a country\"\n  ariaLabel=\"Country with template\"\n>\n  <ng-template starOption [starOptionOf]=\"countries\" let-item>\n    <span>\n      {{ item.name }}\n      <small>{{ item.region }}</small>\n    </span>\n  </ng-template>\n</star-select>",
+  "select/virtual": "<star-select\n  [options]=\"orders\"\n  [(value)]=\"order\"\n  placeholder=\"5,000 orders\"\n  ariaLabel=\"Order\"\n  virtualScroll\n  filter\n/>",
   "slider/basic": "<div class=\"docs-stack\">\n  <star-slider [(value)]=\"volume\" showValue ariaLabel=\"Volume\" />\n  <p class=\"docs-output\" role=\"status\">Volume: {{ volume() }}</p>\n</div>",
   "slider/disabled": "<div class=\"docs-stack\">\n  <star-slider [value]=\"30\" disabled ariaLabel=\"Locked value\" />\n</div>",
   "slider/format": "<div class=\"docs-stack\">\n  <star-slider\n    [(value)]=\"discount\"\n    [min]=\"0\"\n    [max]=\"50\"\n    [step]=\"5\"\n    showValue\n    [format]=\"percent\"\n    ariaLabel=\"Discount\"\n  />\n</div>",
@@ -2211,5 +3092,14 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "tag/severities": "<star-tag value=\"New\" />\n<star-tag severity=\"secondary\" value=\"Draft\" />\n<star-tag severity=\"success\" value=\"Paid\" />\n<star-tag severity=\"info\" value=\"In review\" />\n<star-tag severity=\"warn\" value=\"Due soon\" />\n<star-tag severity=\"danger\" value=\"Overdue\" />",
   "toggle-switch/basic": "<star-toggle-switch [(checked)]=\"alerts\">Email alerts</star-toggle-switch>\n<p class=\"docs-output\" role=\"status\">Alerts: {{ alerts() ? 'on' : 'off' }}</p>",
   "toggle-switch/disabled": "<star-toggle-switch [checked]=\"true\" disabled\n  >Two-step sign-in (set by your admin)</star-toggle-switch\n>",
-  "toggle-switch/small": "<star-toggle-switch size=\"sm\" [(checked)]=\"compact\">Compact rows</star-toggle-switch>"
+  "toggle-switch/small": "<star-toggle-switch size=\"sm\" [(checked)]=\"compact\">Compact rows</star-toggle-switch>",
+  "tree-select/checkbox": "<div class=\"docs-stack\">\n  <star-tree-select\n    [nodes]=\"departments\"\n    selectionMode=\"checkbox\"\n    [(value)]=\"teams\"\n    filter\n    placeholder=\"Select teams\"\n    ariaLabel=\"Teams\"\n  />\n  <p class=\"docs-output\" role=\"status\">Teams: {{ teams().join(', ') || 'none' }}</p>\n</div>",
+  "tree-select/form": "<div class=\"docs-stack\">\n  <star-field label=\"Department\" [state]=\"hire.department()\">\n    <star-tree-select\n      [formField]=\"hire.department\"\n      [nodes]=\"departments\"\n      placeholder=\"Select a department\"\n      ariaLabel=\"Hire department\"\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ hire().valid() }}</p>\n</div>",
+  "tree-select/multiple": "<div class=\"docs-stack\">\n  <star-tree-select\n    [nodes]=\"departments\"\n    selectionMode=\"multiple\"\n    [(value)]=\"nodes\"\n    placeholder=\"Select nodes\"\n    ariaLabel=\"Nodes\"\n  />\n  <p class=\"docs-output\" role=\"status\">Nodes: {{ nodes().join(', ') || 'none' }}</p>\n  <star-tree-select\n    [nodes]=\"departments\"\n    disabled\n    placeholder=\"Disabled\"\n    ariaLabel=\"Disabled department\"\n  />\n</div>",
+  "tree-select/single": "<div class=\"docs-stack\">\n  <star-tree-select\n    [nodes]=\"departments\"\n    [(value)]=\"department\"\n    placeholder=\"Select a department\"\n    ariaLabel=\"Department\"\n    showClear\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Department: {{ department().join(', ') || 'none' }}\n  </p>\n</div>",
+  "tree/basic": "<star-tree [nodes]=\"folders\" [(expanded)]=\"open\" scrollHeight=\"16rem\" ariaLabel=\"Folders\" />",
+  "tree/checkbox": "<div class=\"docs-stack\">\n  <star-tree\n    [nodes]=\"folders\"\n    selectionMode=\"checkbox\"\n    [(value)]=\"checked\"\n    [(expanded)]=\"checkboxOpen\"\n    filter\n    scrollHeight=\"16rem\"\n    ariaLabel=\"Folders to sync\"\n  />\n  <p class=\"docs-output\" role=\"status\">Leaves: {{ checked().join(', ') || 'none' }}</p>\n</div>",
+  "tree/form": "<div class=\"docs-stack\">\n  <star-field label=\"Folders to share\" [state]=\"share.folders()\">\n    <star-tree\n      [formField]=\"share.folders\"\n      [nodes]=\"folders\"\n      selectionMode=\"checkbox\"\n      scrollHeight=\"12rem\"\n      ariaLabel=\"Folders to share\"\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ share().valid() }}</p>\n</div>",
+  "tree/multiple": "<star-tree\n  [nodes]=\"folders\"\n  selectionMode=\"multiple\"\n  [(value)]=\"picked\"\n  [(expanded)]=\"multipleOpen\"\n  scrollHeight=\"16rem\"\n  ariaLabel=\"Folders to back up\"\n/>",
+  "tree/single": "<div class=\"docs-stack\">\n  <star-tree\n    [nodes]=\"folders\"\n    selectionMode=\"single\"\n    [(value)]=\"selected\"\n    [(expanded)]=\"singleOpen\"\n    scrollHeight=\"16rem\"\n    ariaLabel=\"Folder\"\n    (nodeSelect)=\"lastNode.set($event.label)\"\n  />\n  <p class=\"docs-output\" role=\"status\">Selected: {{ selected().join(', ') || 'none' }}</p>\n  <p class=\"docs-output\" role=\"status\">Last node: {{ lastNode() }}</p>\n</div>"
 };

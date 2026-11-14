@@ -1,0 +1,186 @@
+import { _IdGenerator } from '@angular/cdk/a11y';
+import { CdkMenuTrigger } from '@angular/cdk/menu';
+import {
+  booleanAttribute,
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  input,
+  model,
+  output,
+} from '@angular/core';
+import type { FormValueControl } from '@angular/forms/signals';
+import { optionText, readOption, STAR_UI_TEXT, StarOptionKey } from 'star-ng/core';
+import { STAR_MENU_POSITIONS, StarMenu, StarMenuInDialog, StarMenuItem } from 'star-ng/menu';
+
+interface Leaf<TOption, TValue> {
+  readonly option: TOption;
+  readonly value: TValue;
+  /** Labels from the top level to the leaf. */
+  readonly path: readonly string[];
+}
+
+/**
+ * Cascade select (PrimeNG `p-cascadeselect`): choose one leaf of nested options, for example
+ * country → state → city. The popup is a menu with submenus (CDK Menu: arrow keys, typeahead,
+ * Escape). The value is the leaf (`optionValue`, or the whole option).
+ *
+ * ```html
+ * <star-cascade-select [options]="countries" optionLabel="name" optionChildren="children"
+ *                     optionValue="code" [(value)]="city" showPath />
+ * ```
+ */
+@Component({
+  selector: 'star-cascade-select',
+  imports: [CdkMenuTrigger, StarMenu, StarMenuInDialog],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    class: 'star-select star-cascade',
+    '[class.star-select--disabled]': 'disabled()',
+    '[class.star-select--invalid]': 'invalid() && touched()',
+    '[class.star-select--sm]': "size() === 'sm'",
+  },
+  template: `
+    <div class="star-select__control">
+      <button
+        #trigger="cdkMenuTriggerFor"
+        type="button"
+        class="star-select__trigger star-cascade__trigger"
+        [id]="inputId()"
+        [cdkMenuTriggerFor]="menu.template()"
+        [cdkMenuTriggerData]="{ $implicit: menuItems() }"
+        [cdkMenuPosition]="positions"
+        [disabled]="disabled() || readonly()"
+        [attr.aria-label]="ariaLabel()"
+        [attr.aria-invalid]="(invalid() && touched()) || null"
+        [attr.aria-required]="required() || null"
+        (cdkMenuClosed)="touch.emit()"
+      >
+        @if (selected(); as leaf) {
+          <span class="star-select__value">{{ display(leaf) }}</span>
+        } @else {
+          <span class="star-select__placeholder">{{
+            placeholder() ?? text.selectPlaceholder
+          }}</span>
+        }
+      </button>
+      @if (showClear() && selected() && !disabled() && !readonly()) {
+        <button
+          type="button"
+          class="star-select__icon-btn"
+          [attr.aria-label]="text.clear"
+          (click)="clear()"
+        >
+          <i class="ph-bold ph-x" aria-hidden="true"></i>
+        </button>
+      }
+      <i class="ph-bold ph-caret-down star-select__caret" aria-hidden="true"></i>
+    </div>
+    <star-menu #menu [ariaLabel]="ariaLabel()" />
+  `,
+})
+export class StarCascadeSelect<
+  TOption,
+  TValue = TOption,
+> implements FormValueControl<TValue | null> {
+  protected readonly text = inject(STAR_UI_TEXT);
+  protected readonly positions = STAR_MENU_POSITIONS;
+
+  readonly value = model<TValue | null>(null);
+  readonly options = input<readonly TOption[]>([]);
+  readonly optionLabel = input<StarOptionKey<TOption> | null>(null);
+  /** Value stored in the form, read from the leaf. Omit to store the whole leaf option. */
+  readonly optionValue = input<StarOptionKey<TOption> | null>(null);
+  /** Property (or function) with the child options. An option without children is a leaf. */
+  readonly optionChildren = input<StarOptionKey<TOption, readonly TOption[] | null | undefined>>(
+    'children' as StarOptionKey<TOption, readonly TOption[] | null | undefined>,
+  );
+  readonly optionDisabled = input<StarOptionKey<TOption> | null>(null);
+  readonly compareWith = input<(a: TValue, b: TValue) => boolean>(Object.is);
+  readonly placeholder = input<string | null>(null);
+  /** Show the whole path ("Germany / Bavaria / Munich") instead of the leaf label. */
+  readonly showPath = input(false, { transform: booleanAttribute });
+  readonly showClear = input(false, { transform: booleanAttribute });
+  readonly size = input<'sm' | 'md'>('md');
+  readonly ariaLabel = input<string | null>(null);
+  readonly inputId = input(inject(_IdGenerator).getId('star-cascade-'));
+
+  readonly disabled = input(false, { transform: booleanAttribute });
+  readonly readonly = input(false, { transform: booleanAttribute });
+  readonly required = input(false, { transform: booleanAttribute });
+  readonly invalid = input(false, { transform: booleanAttribute });
+  readonly touched = input(false, { transform: booleanAttribute });
+  readonly touch = output<void>();
+  /** The user chose a leaf. */
+  readonly optionSelect = output<TOption>();
+
+  private childrenOf(option: TOption): readonly TOption[] {
+    const children = readOption(option, this.optionChildren());
+    return Array.isArray(children) ? (children as readonly TOption[]) : [];
+  }
+
+  private labelOf(option: TOption): string {
+    return optionText(option, this.optionLabel() ?? null);
+  }
+
+  /** Every leaf with its path, in display order. */
+  private readonly leaves = computed(() => {
+    const out: Leaf<TOption, TValue>[] = [];
+    const walk = (options: readonly TOption[], path: readonly string[]) => {
+      for (const option of options) {
+        const next = [...path, this.labelOf(option)];
+        const children = this.childrenOf(option);
+        if (children.length) walk(children, next);
+        else {
+          out.push({
+            option,
+            value: readOption(option, this.optionValue()) as TValue,
+            path: next,
+          });
+        }
+      }
+    };
+    walk(this.options(), []);
+    return out;
+  });
+
+  protected readonly selected = computed(() => {
+    const value = this.value();
+    if (value === null || value === undefined) return null;
+    return this.leaves().find((leaf) => this.compareWith()(leaf.value, value)) ?? null;
+  });
+
+  /** The options as menu items: a parent opens a submenu, a leaf sets the value. */
+  protected readonly menuItems = computed<readonly StarMenuItem[]>(() => {
+    const disabledKey = this.optionDisabled();
+    const selected = this.selected()?.option;
+    const build = (options: readonly TOption[]): StarMenuItem[] =>
+      options.map((option) => {
+        const children = this.childrenOf(option);
+        const disabled = disabledKey ? !!readOption(option, disabledKey) : false;
+        return children.length
+          ? { label: this.labelOf(option), disabled, items: build(children) }
+          : {
+              label: this.labelOf(option),
+              disabled,
+              icon: option === selected ? 'ph-bold ph-check' : undefined,
+              command: () => this.choose(option),
+            };
+      });
+    return build(this.options());
+  });
+
+  protected display(leaf: Leaf<TOption, TValue>): string {
+    return this.showPath() ? leaf.path.join(' / ') : (leaf.path.at(-1) ?? '');
+  }
+
+  private choose(option: TOption): void {
+    this.value.set(readOption(option, this.optionValue()) as TValue);
+    this.optionSelect.emit(option);
+  }
+
+  clear(): void {
+    this.value.set(null);
+  }
+}

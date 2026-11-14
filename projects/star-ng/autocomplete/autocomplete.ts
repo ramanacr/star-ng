@@ -1,0 +1,495 @@
+import { CdkConnectedOverlay, CdkOverlayOrigin } from '@angular/cdk/overlay';
+import { NgTemplateOutlet } from '@angular/common';
+import {
+  booleanAttribute,
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  DestroyRef,
+  Directive,
+  effect,
+  ElementRef,
+  inject,
+  input,
+  linkedSignal,
+  model,
+  output,
+  signal,
+  untracked,
+  viewChild,
+} from '@angular/core';
+import type { FormValueControl } from '@angular/forms/signals';
+import { matchesFilter } from 'star-ng/core';
+import { StarOptionListBase } from 'star-ng/select';
+
+export interface StarAutoCompleteSearch {
+  readonly query: string;
+}
+
+interface Chip<TValue> {
+  readonly value: TValue;
+  readonly label: string;
+}
+
+/**
+ * Shared behaviour of the autocomplete controls (WAI-ARIA combobox with list autocomplete):
+ * local filtering of `options`, or server search through `(completeMethod)` + `[suggestions]` with a
+ * debounce, minimum query length, loading state, match highlighting, dropdown button and a
+ * screen-reader result count.
+ */
+@Directive()
+export abstract class StarAutoCompleteBase<TOption, TValue> extends StarOptionListBase<
+  TOption,
+  TValue
+> {
+  /** Server results. When set, the control shows these instead of filtering `options`. */
+  readonly suggestions = input<readonly TOption[] | null>(null);
+  readonly minQueryLength = input(1);
+  /** Debounce in ms before `(completeMethod)` fires. */
+  readonly delay = input(300);
+  /** Shows a button that lists all options (local) or searches with an empty query. */
+  readonly dropdown = input(false, { transform: booleanAttribute });
+  /** Highlights the first result, so Enter picks it. */
+  readonly autoHighlight = input(false, { transform: booleanAttribute });
+  readonly showEmptyMessage = input(true, { transform: booleanAttribute });
+
+  /** Fires (debounced) when the user types; load `suggestions` in reply (PrimeNG `completeMethod`). */
+  readonly completeMethod = output<StarAutoCompleteSearch>();
+
+  protected readonly closeOnChoose = true;
+  protected abstract readonly isMultiple: boolean;
+  protected readonly control = viewChild.required<ElementRef<HTMLElement>>('control');
+
+  /** Options the user picked, so labels survive when the result list changes. */
+  protected readonly known = signal<readonly TOption[]>([]);
+  private readonly showAll = signal(false);
+  private searchTimer: ReturnType<typeof setTimeout> | undefined;
+
+  protected abstract queryFromValue(): string;
+  /** Typed text. Resets to the selected label when the value changes. */
+  protected readonly query = linkedSignal(() => this.queryFromValue());
+
+  protected override readonly visibleOptions = computed(() => {
+    const remote = this.suggestions();
+    const query = this.query();
+    const candidates =
+      remote ??
+      (this.showAll() || !query
+        ? this.options()
+        : this.options().filter((option) => matchesFilter(this.labelOf(option), query)));
+    return this.groupedOrder(
+      this.isMultiple ? candidates.filter((option) => !this.isSelected(option)) : candidates,
+    );
+  });
+
+  protected readonly queryLongEnough = computed(
+    () => this.showAll() || this.query().length >= this.minQueryLength(),
+  );
+
+  protected readonly panelVisible = computed(
+    () =>
+      this.open() &&
+      this.queryLongEnough() &&
+      (this.visibleOptions().length > 0 || this.loading() || this.showEmptyMessage()),
+  );
+
+  protected readonly liveText = computed(() => {
+    if (!this.panelVisible()) return '';
+    if (this.loading()) return this.text.searching;
+    const count = this.visibleOptions().length;
+    return count ? this.text.resultsAvailable(count) : this.emptyText();
+  });
+
+  constructor() {
+    super();
+    inject(DestroyRef).onDestroy(() => clearTimeout(this.searchTimer));
+    // New results: highlight the first one (autoHighlight) or nothing.
+    effect(() => {
+      this.visibleOptions();
+      untracked(() =>
+        this.activeIndex.set(this.autoHighlight() ? this.firstEnabledFrom(0, 1) : -1),
+      );
+    });
+  }
+
+  protected initialActiveIndex(): number {
+    return this.autoHighlight() ? this.firstEnabledFrom(0, 1) : -1;
+  }
+
+  /** Finds the option behind a stored value, for labels. */
+  protected optionForValue(value: TValue): TOption | undefined {
+    const pools = [this.known(), this.suggestions() ?? [], this.options()];
+    for (const pool of pools) {
+      const match = pool.find((option) => this.equals(this.valueOf(option), value));
+      if (match !== undefined) return match;
+    }
+    return undefined;
+  }
+
+  protected labelForValue(value: TValue): string {
+    const option = this.optionForValue(value);
+    if (option !== undefined) return this.labelOf(option);
+    return this.optionValue() === null ? this.labelOf(value as unknown as TOption) : String(value);
+  }
+
+  protected remember(option: TOption): void {
+    this.known.update((known) => (known.includes(option) ? known : [...known, option]));
+  }
+
+  protected onQuery(text: string): void {
+    this.query.set(text);
+    this.showAll.set(false);
+    clearTimeout(this.searchTimer);
+    if (text.length < this.minQueryLength()) {
+      this.closePanel(false);
+      return;
+    }
+    this.openPanel();
+    this.searchTimer = setTimeout(() => this.completeMethod.emit({ query: text }), this.delay());
+  }
+
+  protected showAllOptions(): void {
+    if (!this.interactive()) return;
+    if (this.panelVisible()) {
+      this.closePanel();
+      return;
+    }
+    this.showAll.set(true);
+    this.completeMethod.emit({ query: '' });
+    this.openPanel();
+    this.focus();
+  }
+
+  protected override onOutsideClick(event: MouseEvent): void {
+    if (this.control().nativeElement.contains(event.target as Node)) return;
+    this.closePanel(false);
+    this.onBlurCommit();
+    this.touch.emit();
+  }
+
+  protected onInputBlur(): void {
+    if (this.panelVisible()) return;
+    this.onBlurCommit();
+    this.touch.emit();
+  }
+
+  /** Called on blur: subclasses apply force-selection rules. */
+  protected abstract onBlurCommit(): void;
+
+  protected override onKeydown(event: KeyboardEvent): void {
+    // Home / End move the caret in the text field; Enter on a closed list submits the form.
+    if (event.key === 'Home' || event.key === 'End') return;
+    if (event.key === 'Enter' && !this.panelVisible()) return;
+    if (event.key === 'ArrowDown' && !this.open() && !this.queryLongEnough()) return;
+    super.onKeydown(event);
+  }
+
+  /**
+   * Sets the field text. Also writes the DOM: the `[value]` binding does not update when the
+   * signal returns to the value it last rendered (typed text in between is not a signal write).
+   */
+  protected setText(text: string): void {
+    this.query.set(text);
+    (this.trigger().nativeElement as HTMLInputElement).value = text;
+  }
+
+  /** Splits a label around the typed text for `<mark>` highlighting. */
+  protected highlight(label: string): readonly [string, string, string] {
+    const query = this.query().trim();
+    const index = query ? label.toLocaleLowerCase().indexOf(query.toLocaleLowerCase()) : -1;
+    if (index < 0) return [label, '', ''];
+    return [
+      label.slice(0, index),
+      label.slice(index, index + query.length),
+      label.slice(index + query.length),
+    ];
+  }
+
+  protected chips(): readonly Chip<TValue>[] {
+    return [];
+  }
+}
+
+const TEMPLATE = `
+  <div #control class="star-select__control star-ac__control" cdkOverlayOrigin #origin="cdkOverlayOrigin">
+    @if (isMultiple) {
+      @for (chip of chips(); track $index) {
+        <span class="star-chip star-chip--sm">
+          {{ chip.label }}
+          @if (interactive()) {
+            <button
+              type="button"
+              class="star-chip__remove"
+              tabindex="-1"
+              [attr.aria-label]="text.removeItem(chip.label)"
+              (click)="removeValue(chip.value)"
+            >
+              <i class="ph-bold ph-x" aria-hidden="true"></i>
+            </button>
+          }
+        </span>
+      }
+    }
+    <input
+      #trigger
+      type="text"
+      class="star-ac__input"
+      role="combobox"
+      aria-autocomplete="list"
+      autocomplete="off"
+      [id]="inputId()"
+      [attr.name]="name() || null"
+      [value]="query()"
+      [attr.placeholder]="placeholder()"
+      [disabled]="disabled()"
+      [readOnly]="readonly()"
+      [attr.aria-label]="ariaLabel()"
+      [attr.aria-labelledby]="ariaLabelledBy()"
+      [attr.aria-required]="required() || null"
+      [attr.aria-invalid]="showInvalid() || null"
+      [attr.aria-expanded]="panelVisible()"
+      [attr.aria-controls]="panelVisible() ? listId : null"
+      [attr.aria-activedescendant]="panelVisible() ? activeId() : null"
+      (input)="onQuery(trigger.value)"
+      (keydown)="onKeydown($event)"
+      (blur)="onInputBlur()"
+    />
+    @if (loading()) {
+      <i class="ph-bold ph-spinner-gap star-spin star-select__caret" aria-hidden="true"></i>
+    }
+    @if (showClear() && hasValue() && interactive()) {
+      <button type="button" class="star-select__icon-btn" [attr.aria-label]="text.clear" (click)="clear()">
+        <i class="ph-bold ph-x" aria-hidden="true"></i>
+      </button>
+    }
+    @if (dropdown()) {
+      <button
+        type="button"
+        class="star-select__icon-btn"
+        tabindex="-1"
+        [attr.aria-label]="text.showOptions"
+        [disabled]="!interactive()"
+        (click)="showAllOptions()"
+      >
+        <i class="ph-bold ph-caret-down" aria-hidden="true"></i>
+      </button>
+    }
+  </div>
+  <span class="star-sr-only" aria-live="polite">{{ liveText() }}</span>
+
+  <ng-template
+    cdkConnectedOverlay
+    cdkConnectedOverlayUsePopover="inline"
+    cdkConnectedOverlayMatchWidth
+    [cdkConnectedOverlayOrigin]="origin"
+    [cdkConnectedOverlayOpen]="panelVisible()"
+    [cdkConnectedOverlayPositions]="positions"
+    (detach)="closePanel(false)"
+    (overlayOutsideClick)="onOutsideClick($event)"
+  >
+    <div class="star-panel" (mousedown)="onPanelMousedown($event)">
+      <ul
+        class="star-listbox"
+        role="listbox"
+        [id]="listId"
+        [class.star-listbox--virtual]="virtualScroll()"
+        [style.--star-item-size.px]="virtualScroll() ? virtualItemSize() : null"
+        [style.max-height]="scrollHeight()"
+        [attr.aria-label]="ariaLabel()"
+        [attr.aria-labelledby]="ariaLabelledBy()"
+        (scroll)="onListScroll($event)"
+      >
+        @if (virtualWindow().before) {
+          <li class="star-listbox__spacer" role="presentation" [style.height.px]="virtualWindow().before"></li>
+        }
+        @for (row of renderedRows(); track row.key) {
+          @if (row.kind === 'group') {
+            <li class="star-listbox__group" role="presentation" [id]="row.id">{{ row.label }}</li>
+          } @else {
+          @let option = row.option;
+          @let i = row.index;
+          <!-- Keyboard is handled on the combobox via aria-activedescendant (WAI-ARIA combobox pattern). -->
+          <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
+          <li
+            class="star-listbox__option"
+            role="option"
+            [id]="optionId(i)"
+            [class.star-listbox__option--active]="activeIndex() === i"
+            [attr.aria-selected]="activeIndex() === i"
+            [attr.aria-disabled]="isDisabled(option) || null"
+            [attr.aria-describedby]="row.groupId"
+            [attr.aria-setsize]="virtualScroll() ? visibleOptions().length : null"
+            [attr.aria-posinset]="virtualScroll() ? i + 1 : null"
+            (click)="onOptionClick(option, i)"
+            (mousemove)="isDisabled(option) || activeIndex.set(i)"
+          >
+            <span class="star-listbox__label">
+              @if (optionTemplate(); as custom) {
+                <ng-container *ngTemplateOutlet="custom.template; context: optionContext(option, i)" />
+              } @else {
+                @let parts = highlight(labelOf(option));
+                {{ parts[0] }}<mark class="star-ac__match">{{ parts[1] }}</mark>{{ parts[2] }}
+              }
+            </span>
+          </li>
+          }
+        } @empty {
+          <li class="star-listbox__empty" role="presentation">
+            {{ loading() ? text.searching : emptyText() }}
+          </li>
+        }
+        @if (virtualWindow().after) {
+          <li class="star-listbox__spacer" role="presentation" [style.height.px]="virtualWindow().after"></li>
+        }
+      </ul>
+    </div>
+  </ng-template>
+`;
+
+const HOST = {
+  class: 'star-select star-ac',
+  '[class.star-select--open]': 'panelVisible()',
+  '[class.star-select--disabled]': 'disabled()',
+  '[class.star-select--invalid]': 'showInvalid()',
+  '[class.star-select--sm]': "size() === 'sm'",
+};
+
+/**
+ * Autocomplete (PrimeNG `p-autocomplete`). Local mode filters `options`; server mode listens
+ * to `(completeMethod)` and shows `[suggestions]`. Only listed options can be chosen
+ * (force selection): unmatched text reverts on blur, an exact label match is taken.
+ *
+ * ```html
+ * <star-autocomplete [suggestions]="results()" (completeMethod)="find($event.query)" [loading]="busy()"
+ *                   optionLabel="name" [formField]="form.assignee" />
+ * ```
+ */
+@Component({
+  selector: 'star-autocomplete',
+  imports: [CdkConnectedOverlay, CdkOverlayOrigin, NgTemplateOutlet],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  host: HOST,
+  template: TEMPLATE,
+})
+export class StarAutoComplete<TOption = unknown, TValue = TOption>
+  extends StarAutoCompleteBase<TOption, TValue>
+  implements FormValueControl<TValue | null>
+{
+  readonly value = model<TValue | null>(null);
+  readonly selected = output<TOption>();
+
+  protected readonly isMultiple = false;
+  protected readonly hasValue = computed(() => this.value() !== null || !!this.query());
+
+  protected queryFromValue(): string {
+    const value = this.value();
+    return value === null ? '' : this.labelForValue(value);
+  }
+
+  protected isSelected(option: TOption): boolean {
+    const value = this.value();
+    return value !== null && this.equals(this.valueOf(option), value);
+  }
+
+  protected choose(option: TOption): void {
+    this.remember(option);
+    this.value.set(this.valueOf(option));
+    this.setText(this.labelOf(option));
+    this.selected.emit(option);
+  }
+
+  protected onBlurCommit(): void {
+    const text = this.query().trim();
+    if (!text) {
+      if (this.value() !== null) this.value.set(null);
+      return;
+    }
+    if (text === this.queryFromValue()) return;
+    const exact = this.visibleOptions().find(
+      (option) =>
+        !this.isDisabled(option) &&
+        this.labelOf(option).toLocaleLowerCase() === text.toLocaleLowerCase(),
+    );
+    if (exact !== undefined) this.choose(exact);
+    else this.setText(this.queryFromValue());
+  }
+
+  /** Single mode shows no chips; kept so both components share one template. */
+  protected removeValue(_value: TValue): void {
+    this.clear();
+  }
+
+  clear(): void {
+    this.value.set(null);
+    this.setText('');
+    this.focus();
+  }
+}
+
+/**
+ * Multiple-value autocomplete (PrimeNG `p-autocomplete [multiple]`): chosen items become
+ * removable chips, Backspace in an empty field removes the last chip, chosen options leave
+ * the result list.
+ */
+@Component({
+  selector: 'star-multi-autocomplete',
+  imports: [CdkConnectedOverlay, CdkOverlayOrigin, NgTemplateOutlet],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { ...HOST, class: 'star-select star-ac star-ac--multi' },
+  template: TEMPLATE,
+})
+export class StarMultiAutoComplete<TOption = unknown, TValue = TOption>
+  extends StarAutoCompleteBase<TOption, TValue>
+  implements FormValueControl<readonly TValue[]>
+{
+  readonly value = model<readonly TValue[]>([]);
+  /** Maximum number of chips (0 = no limit). */
+  readonly selectionLimit = input(0);
+
+  protected readonly isMultiple = true;
+  protected readonly hasValue = computed(() => this.value().length > 0);
+
+  protected queryFromValue(): string {
+    return '';
+  }
+
+  protected override chips(): readonly Chip<TValue>[] {
+    return this.value().map((value) => ({ value, label: this.labelForValue(value) }));
+  }
+
+  protected isSelected(option: TOption): boolean {
+    const optionValue = this.valueOf(option);
+    return this.value().some((value) => this.equals(value, optionValue));
+  }
+
+  protected choose(option: TOption): void {
+    const limit = this.selectionLimit();
+    if (this.isSelected(option) || (limit > 0 && this.value().length >= limit)) return;
+    this.remember(option);
+    this.value.update((values) => [...values, this.valueOf(option)]);
+    this.setText('');
+  }
+
+  protected onBlurCommit(): void {
+    this.setText('');
+  }
+
+  protected override onKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Backspace' && !this.query() && this.value().length && this.interactive()) {
+      this.value.update((values) => values.slice(0, -1));
+      return;
+    }
+    super.onKeydown(event);
+  }
+
+  protected removeValue(value: TValue): void {
+    this.value.update((values) => values.filter((v) => !this.equals(v, value)));
+    this.focus();
+  }
+
+  clear(): void {
+    this.value.set([]);
+    this.setText('');
+    this.focus();
+  }
+}

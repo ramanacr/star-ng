@@ -167,6 +167,53 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
     ],
   },
   {
+    label: 'Selection',
+    items: [
+      {
+        label: 'Select',
+        path: 'controls/select',
+        keywords: 'dropdown combobox single choice filter groups virtual',
+        load: () => import('./controls/select.page').then((m) => m.SelectPage),
+      },
+      {
+        label: 'Multi-select',
+        path: 'controls/multi-select',
+        keywords: 'dropdown checkbox chips select all limit',
+        load: () => import('./controls/multi-select.page').then((m) => m.MultiSelectPage),
+      },
+      {
+        label: 'Cascade select',
+        path: 'controls/cascade-select',
+        keywords: 'nested submenu country state city path',
+        load: () => import('./controls/cascade-select.page').then((m) => m.CascadeSelectPage),
+      },
+      {
+        label: 'Listbox',
+        path: 'controls/listbox',
+        keywords: 'inline list single multiple filter',
+        load: () => import('./controls/listbox.page').then((m) => m.ListboxPage),
+      },
+      {
+        label: 'Autocomplete',
+        path: 'controls/autocomplete',
+        keywords: 'suggestions search async typeahead multiple chips',
+        load: () => import('./controls/autocomplete.page').then((m) => m.AutocompletePage),
+      },
+      {
+        label: 'Tree',
+        path: 'controls/tree',
+        keywords: 'hierarchy nodes folders checkbox expand',
+        load: () => import('./controls/tree.page').then((m) => m.TreePage),
+      },
+      {
+        label: 'Tree select',
+        path: 'controls/tree-select',
+        keywords: 'dropdown tree hierarchy checkbox',
+        load: () => import('./controls/tree-select.page').then((m) => m.TreeSelectPage),
+      },
+    ],
+  },
+  {
     label: 'Menus',
     items: [
       {
