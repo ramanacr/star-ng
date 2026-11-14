@@ -1384,7 +1384,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-rating",
     "entry": "star-ng/rating",
-    "description": "Star rating (PrimeNG `p-rating`) as a native radio group: Arrow keys change the rating, screen readers announce \"3 of 5 stars\". Hover previews; clicking the current star clears it. `<star-rating [(value)]=\"quality\" ariaLabel=\"Response quality\" />`",
+    "description": "Star rating (PrimeNG `p-rating`) as a native radio group: Arrow keys change the rating, screen readers announce \"3 of 5 stars\". Hover previews the rating. `<star-rating [(value)]=\"quality\" ariaLabel=\"Response quality\" />`",
     "inputs": [
       {
         "name": "count",
