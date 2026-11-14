@@ -578,6 +578,101 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
       },
     ],
   },
+  {
+    label: 'Utilities',
+    items: [
+      {
+        label: 'Splitter',
+        path: 'controls/splitter',
+        keywords: 'resize panes gutter divider layout',
+        load: () => import('./controls/splitter.page').then((m) => m.SplitterPage),
+      },
+      {
+        label: 'Speed dial',
+        path: 'controls/speed-dial',
+        keywords: 'floating action button fab quick actions',
+        load: () => import('./controls/speed-dial.page').then((m) => m.SpeedDialPage),
+      },
+      {
+        label: 'Dock',
+        path: 'controls/dock',
+        keywords: 'shortcuts bar magnify apps',
+        load: () => import('./controls/dock.page').then((m) => m.DockPage),
+      },
+      {
+        label: 'Scroll top',
+        path: 'controls/scroll-top',
+        keywords: 'back to top button scroll',
+        load: () => import('./controls/scroll-top.page').then((m) => m.ScrollTopPage),
+      },
+      {
+        label: 'Block UI',
+        path: 'controls/block-ui',
+        keywords: 'busy overlay mask inert loading',
+        load: () => import('./controls/block-ui.page').then((m) => m.BlockUiPage),
+      },
+      {
+        label: 'Meter group',
+        path: 'controls/meter-group',
+        keywords: 'segmented bar usage legend meter',
+        load: () => import('./controls/meter-group.page').then((m) => m.MeterGroupPage),
+      },
+      {
+        label: 'Terminal',
+        path: 'controls/terminal',
+        keywords: 'command line console history log',
+        load: () => import('./controls/terminal.page').then((m) => m.TerminalPage),
+      },
+      {
+        label: 'Inplace',
+        path: 'controls/inplace',
+        keywords: 'inline edit value editor',
+        load: () => import('./controls/inplace.page').then((m) => m.InplacePage),
+      },
+      {
+        label: 'Scroll panel',
+        path: 'controls/scroll-panel',
+        keywords: 'scrollbar region fixed height',
+        load: () => import('./controls/scroll-panel.page').then((m) => m.ScrollPanelPage),
+      },
+      {
+        label: 'Float label',
+        path: 'controls/float-label',
+        keywords: 'floating label input textarea select',
+        load: () => import('./controls/float-label.page').then((m) => m.FloatLabelPage),
+      },
+      {
+        label: 'Image compare',
+        path: 'controls/image-compare',
+        keywords: 'before after slider divider',
+        load: () => import('./controls/image-compare.page').then((m) => m.ImageComparePage),
+      },
+      {
+        label: 'Focus trap',
+        path: 'controls/focus-trap',
+        keywords: 'tab keyboard overlay cdk',
+        load: () => import('./controls/focus-trap.page').then((m) => m.FocusTrapPage),
+      },
+      {
+        label: 'Ripple',
+        path: 'controls/ripple',
+        keywords: 'ink press effect',
+        load: () => import('./controls/ripple.page').then((m) => m.RipplePage),
+      },
+      {
+        label: 'Animate on scroll',
+        path: 'controls/animate-on-scroll',
+        keywords: 'reveal fade intersection observer',
+        load: () => import('./controls/animate-on-scroll.page').then((m) => m.AnimateOnScrollPage),
+      },
+      {
+        label: 'Theme switch',
+        path: 'controls/theme-switch',
+        keywords: 'dark mode light system speed dial',
+        load: () => import('./controls/theme-switch.page').then((m) => m.ThemeSwitchPage),
+      },
+    ],
+  },
 ];
 
 export const DOCS_ROUTES: Routes = DOCS_NAV.flatMap((group) =>

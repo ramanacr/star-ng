@@ -1,20 +1,21 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { StarConfirmHost } from 'star-ng/dialog';
-import { StarThemeMode, StarThemeService } from 'star-ng/theme';
+import { StarThemeSwitch } from 'star-ng/theme-switch';
 import { StarToast } from 'star-ng/toast';
 import { DOCS_NAV, DocsNavGroup } from './nav';
-
-const THEME_MODES: readonly { mode: StarThemeMode; label: string; icon: string }[] = [
-  { mode: 'system', label: 'System theme', icon: 'ph-bold ph-monitor' },
-  { mode: 'light', label: 'Light theme', icon: 'ph-bold ph-sun' },
-  { mode: 'dark', label: 'Dark theme', icon: 'ph-bold ph-moon' },
-];
 
 /** Shell of the docs application: header, grouped side navigation with search, page outlet. */
 @Component({
   selector: 'docs-root',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, StarToast, StarConfirmHost],
+  imports: [
+    RouterOutlet,
+    RouterLink,
+    RouterLinkActive,
+    StarToast,
+    StarConfirmHost,
+    StarThemeSwitch,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <a class="docs-skip" href="#main">Skip to content</a>
@@ -34,20 +35,7 @@ const THEME_MODES: readonly { mode: StarThemeMode; label: string; icon: string }
         <span>StarNG</span>
       </a>
       <span class="docs-header__spacer"></span>
-      <div class="docs-theme" role="group" aria-label="Theme">
-        @for (item of themeModes; track item.mode) {
-          <button
-            type="button"
-            class="docs-theme__button"
-            [attr.aria-pressed]="theme.mode() === item.mode"
-            [attr.aria-label]="item.label"
-            [title]="item.label"
-            (click)="theme.setMode(item.mode)"
-          >
-            <i [class]="item.icon" aria-hidden="true"></i>
-          </button>
-        }
-      </div>
+      <star-theme-switch />
       <a
         class="docs-header__link"
         href="https://github.com/ramanacr/star-ng"
@@ -100,8 +88,6 @@ const THEME_MODES: readonly { mode: StarThemeMode; label: string; icon: string }
   `,
 })
 export class App {
-  protected readonly theme = inject(StarThemeService);
-  protected readonly themeModes = THEME_MODES;
   protected readonly navOpen = signal(false);
   protected readonly query = signal('');
 

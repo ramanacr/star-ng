@@ -157,6 +157,10 @@ export interface StarUiText {
   readonly resizePanes: string;
   readonly dock: string;
   readonly scrollToTop: string;
+  readonly theme: string;
+  readonly themeSystem: string;
+  readonly themeLight: string;
+  readonly themeDark: string;
   // Media
   readonly pauseSlides: string;
   readonly playSlides: string;
@@ -325,6 +329,10 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   resizePanes: 'Resize panes',
   dock: 'Dock',
   scrollToTop: 'Scroll to top',
+  theme: 'Theme',
+  themeSystem: 'System',
+  themeLight: 'Light',
+  themeDark: 'Dark',
 
   pauseSlides: 'Pause slides',
   playSlides: 'Play slides',

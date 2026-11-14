@@ -1,11 +1,13 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { StarButton } from 'star-ng/button';
 import { StarThemeService } from 'star-ng/theme';
+import { StarThemeSwitch } from 'star-ng/theme-switch';
 import { DOCS } from '../shared/docs';
 
 @Component({
   selector: 'docs-dark-mode-guide',
-  imports: [DOCS, StarButton],
+  imports: [DOCS, StarButton, StarThemeSwitch, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <docs-page
@@ -76,6 +78,30 @@ import { DOCS } from '../shared/docs';
         </table>
       </div>
 
+      <h2>Theme switch control</h2>
+      <p>
+        <code>StarThemeSwitch</code> is a ready control for the choice: a small speed dial with
+        System, Light and Dark. Its button shows the icon of the current choice and has the name
+        "Theme: Dark" (or Light, or System). It calls <code>StarThemeService.setMode</code>, so the
+        choice is applied and saved. It lives in its own entry point,
+        <code>star-ng/theme-switch</code>, because it needs the menu and utility code that
+        <code>star-ng/theme</code> does not use.
+      </p>
+      <docs-example
+        heading="Theme switch"
+        source="dark-mode/switch"
+        note="The four texts (Theme, System, Light, Dark) come from STAR_UI_TEXT, so they follow the language settings of the application. The control is not positioned: the host places it."
+      >
+        <div class="docs-row" style="min-height: 11rem; align-items: flex-start">
+          <star-theme-switch />
+        </div>
+      </docs-example>
+      <p>To fix it in a corner of the page, give the element a position in your stylesheet:</p>
+      <docs-code [code]="switchCss" label="Fixed corner" />
+      <p>
+        The page <a routerLink="/controls/theme-switch">Theme switch</a> shows the API and the keys.
+      </p>
+
       <h2>First-paint script</h2>
       <p>
         The service starts with the application. Before that, the browser has already painted the
@@ -105,6 +131,13 @@ export class App {
   useDark(): void {
     this.theme.setMode('dark'); // 'system' | 'light' | 'dark'
   }
+}`;
+
+  protected readonly switchCss = `star-theme-switch {
+  position: fixed;
+  top: var(--star-space-3);
+  inset-inline-end: var(--star-space-4);
+  z-index: 40;
 }`;
 
   protected readonly script = `<script>

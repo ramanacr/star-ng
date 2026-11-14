@@ -183,10 +183,9 @@ test.describe('chart', () => {
     await page.emulateMedia({ colorScheme: 'light' });
     await openPage(page, PATH, 'Chart');
     const light = await tokenColor(page, '--star-chart-1');
-    await page
-      .getByRole('group', { name: 'Theme' })
-      .getByRole('button', { name: 'Dark theme' })
-      .click();
+    const header = page.locator('.docs-header');
+    await header.getByRole('button', { name: /^Theme: / }).click();
+    await header.getByRole('button', { name: 'Dark', exact: true }).click();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
     expect(await tokenColor(page, '--star-chart-1')).not.toBe(light);
   });
