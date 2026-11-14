@@ -390,10 +390,17 @@ test.describe('right-to-left controls', () => {
           has: page.getByRole('button', { name, exact: true }),
         });
         const fab = root.getByRole('button', { name, exact: true });
-        await fab.click();
+        // Measured before the click: the open button rotates, which widens its box.
         const fabBox = await box(fab);
+        await fab.click();
         const actions = root.locator('.star-speed-dial__action');
         await expect(actions).toHaveCount(3);
+        // The actions scale in: measure after the open animation, or a box is a fraction off.
+        await root.evaluate((element) =>
+          Promise.all(
+            element.getAnimations({ subtree: true }).map((animation) => animation.finished),
+          ),
+        );
         return { fabBox, actions: [await box(actions.nth(0)), await box(actions.nth(2))] };
       };
       const directions = example(page, 'Directions');
