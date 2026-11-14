@@ -1,0 +1,61 @@
+// Progress bar.
+@use '../shared' as *;
+
+.star-progress {
+  --star-tone: var(--star-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.star-progress--success {
+  --star-tone: var(--star-success);
+}
+.star-progress--warn {
+  --star-tone: var(--star-warning);
+}
+.star-progress--danger {
+  --star-tone: var(--star-danger);
+}
+.star-progress--info {
+  --star-tone: var(--star-accent);
+}
+.star-progress__track {
+  position: relative;
+  flex: 1;
+  height: 0.5rem;
+  overflow: hidden;
+  border-radius: var(--star-radius-pill);
+  background: var(--star-border);
+}
+.star-progress--thin .star-progress__track {
+  height: 0.25rem;
+}
+.star-progress__fill {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  border-radius: inherit;
+  background: var(--star-tone);
+  transition: width var(--star-duration-slow) $ease;
+
+  .star-progress--indeterminate & {
+    width: 40%;
+    animation: star-indeterminate 1.4s ease-in-out infinite;
+  }
+}
+@keyframes star-indeterminate {
+  from {
+    translate: -100% 0;
+  }
+  to {
+    translate: 250% 0;
+  }
+}
+.star-progress__value {
+  min-width: 2.75rem;
+  font: var(--star-type-body);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--star-text-strong);
+  text-align: end;
+}

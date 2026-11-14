@@ -1,0 +1,38 @@
+// Card component and the card surface.
+.star-card-cmp {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.star-card-cmp__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem 0;
+}
+.star-card-cmp__title {
+  margin: 0;
+  font: var(--star-type-title-sm);
+  color: var(--star-text-strong);
+}
+.star-card-cmp__subtitle {
+  margin: 0.25rem 0 0;
+  font: var(--star-type-body);
+  color: var(--star-text-muted);
+}
+.star-card-cmp__body {
+  flex: 1;
+  padding: 1.25rem 1.5rem;
+}
+.star-card-cmp [starCardFooter] {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--star-border);
+}
+
+.star-card {
+  background: var(--star-surface);
+  border: 1px solid color-mix(in srgb, var(--star-border) 50%, var(--star-surface));
+  border-radius: var(--star-radius-xl);
+  box-shadow: var(--star-shadow-card);
+}

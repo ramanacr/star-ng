@@ -279,6 +279,70 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
     ],
   },
   {
+    label: 'Panels',
+    items: [
+      {
+        label: 'Accordion',
+        path: 'controls/accordion',
+        keywords: 'collapse sections expand faq',
+        load: () => import('./controls/accordion.page').then((m) => m.AccordionPage),
+      },
+      {
+        label: 'Panel and fieldset',
+        path: 'controls/panel',
+        keywords: 'box card collapse legend group fieldset',
+        load: () => import('./controls/panel.page').then((m) => m.PanelPage),
+      },
+      {
+        label: 'Card',
+        path: 'controls/card',
+        keywords: 'surface title footer media',
+        load: () => import('./controls/card.page').then((m) => m.CardPage),
+      },
+      {
+        label: 'Tabs',
+        path: 'controls/tabs',
+        keywords: 'tablist tabpanel pill lazy',
+        load: () => import('./controls/tabs.page').then((m) => m.TabsPage),
+      },
+      {
+        label: 'Stepper',
+        path: 'controls/stepper',
+        keywords: 'wizard steps linear',
+        load: () => import('./controls/stepper.page').then((m) => m.StepperPage),
+      },
+      {
+        label: 'Divider',
+        path: 'controls/divider',
+        keywords: 'separator line rule',
+        load: () => import('./controls/divider.page').then((m) => m.DividerPage),
+      },
+      {
+        label: 'Toolbar',
+        path: 'controls/toolbar',
+        keywords: 'actions bar roving focus',
+        load: () => import('./controls/toolbar.page').then((m) => m.ToolbarPage),
+      },
+    ],
+  },
+  {
+    label: 'Navigation',
+    items: [
+      {
+        label: 'Breadcrumb',
+        path: 'controls/breadcrumb',
+        keywords: 'path trail home location',
+        load: () => import('./controls/breadcrumb.page').then((m) => m.BreadcrumbPage),
+      },
+      {
+        label: 'Paginator',
+        path: 'controls/paginator',
+        keywords: 'pages rows per page first last report',
+        load: () => import('./controls/paginator.page').then((m) => m.PaginatorPage),
+      },
+    ],
+  },
+  {
     label: 'Overlays',
     items: [
       {
@@ -334,6 +398,30 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         keywords: 'count dot notification',
         load: () => import('./controls/badge.page').then((m) => m.BadgePage),
       },
+      {
+        label: 'Avatar',
+        path: 'controls/avatar',
+        keywords: 'initials image icon person user',
+        load: () => import('./controls/avatar.page').then((m) => m.AvatarPage),
+      },
+      {
+        label: 'Chip',
+        path: 'controls/chip',
+        keywords: 'pill label remove removable',
+        load: () => import('./controls/chip.page').then((m) => m.ChipPage),
+      },
+      {
+        label: 'Timeline',
+        path: 'controls/timeline',
+        keywords: 'events history steps vertical horizontal',
+        load: () => import('./controls/timeline.page').then((m) => m.TimelinePage),
+      },
+      {
+        label: 'Skeleton',
+        path: 'controls/skeleton',
+        keywords: 'placeholder loading shimmer',
+        load: () => import('./controls/skeleton.page').then((m) => m.SkeletonPage),
+      },
     ],
   },
   {
@@ -344,6 +432,18 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         path: 'controls/spinner',
         keywords: 'loading progress busy',
         load: () => import('./controls/spinner.page').then((m) => m.SpinnerPage),
+      },
+      {
+        label: 'Message',
+        path: 'controls/message',
+        keywords: 'inline alert severity closable banner',
+        load: () => import('./controls/message.page').then((m) => m.MessagePage),
+      },
+      {
+        label: 'Progress bar',
+        path: 'controls/progress-bar',
+        keywords: 'percent determinate indeterminate upload',
+        load: () => import('./controls/progress-bar.page').then((m) => m.ProgressBarPage),
       },
     ],
   },

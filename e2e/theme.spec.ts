@@ -53,8 +53,15 @@ test.describe('theme', () => {
 
 // Pages that show filled controls: text on a fill must reach WCAG AA (4.5:1) in both themes.
 const FILLED =
-  '.star-btn--primary, .star-btn--success, .star-btn--warning, .star-btn--danger, .star-badge, .star-tag';
-const PAGES = ['/controls/button', '/controls/badge', '/controls/tag'];
+  '.star-btn--primary, .star-btn--success, .star-btn--warning, .star-btn--danger, .star-badge, .star-tag, ' +
+  '.star-paginator__page--active, .star-stepper__item--done .star-stepper__number';
+const PAGES = [
+  '/controls/button',
+  '/controls/badge',
+  '/controls/tag',
+  '/controls/paginator',
+  '/controls/stepper',
+];
 
 for (const theme of ['light', 'dark'] as const) {
   test(`filled controls have AA contrast in the ${theme} theme`, async ({ page }) => {
@@ -76,6 +83,10 @@ for (const theme of ['light', 'dark'] as const) {
     await page.addInitScript((name) => localStorage.setItem('star-theme', name), theme);
     await page.goto('/controls/field');
     await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
+    // The page loads lazily: wait for a field before reading its colors.
+    await expect(page.locator('.star-field__label').first()).toBeVisible();
+    await expect(page.locator('.star-field__error').first()).toBeAttached();
+    await expect(page.locator('.star-field__hint').first()).toBeAttached();
     // Label, hint and error text of a field against the surface of the example.
     const colors = await page.evaluate(() => {
       const pick = (selector: string) => {

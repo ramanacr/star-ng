@@ -1,0 +1,109 @@
+// Stepper.
+.star-stepper {
+  display: block;
+}
+.star-stepper__list {
+  display: flex;
+  align-items: flex-start;
+  margin: 0 0 1.5rem;
+  padding: 0;
+  list-style: none;
+}
+.star-stepper__item {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  min-width: 0;
+
+  &:last-child {
+    flex: none;
+  }
+}
+.star-stepper__header {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.25rem;
+  border: 0;
+  border-radius: var(--star-radius-md);
+  background: none;
+  color: var(--star-text-muted);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid var(--star-accent);
+  }
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+}
+.star-stepper__number {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1.5px solid var(--star-border-strong);
+  border-radius: 50%;
+  background: var(--star-surface);
+  font: 600 13px/1 var(--star-font-sans);
+
+  .star-stepper__item--done & {
+    border-color: var(--star-success);
+    background: var(--star-success);
+    color: var(--star-on-bright);
+  }
+  .star-stepper__item--active & {
+    border-color: var(--star-primary);
+    background: var(--star-primary-fill);
+    color: var(--star-on-tone);
+    box-shadow: var(--star-focus-ring-primary);
+  }
+}
+.star-stepper__text {
+  display: grid;
+}
+.star-stepper__label {
+  font: var(--star-type-body-lg);
+  font-weight: 700;
+  color: var(--star-text-muted);
+
+  .star-stepper__item--active &,
+  .star-stepper__item--done & {
+    color: var(--star-text-strong);
+  }
+}
+.star-stepper__desc {
+  font: var(--star-type-body-sm);
+  color: var(--star-text-muted);
+}
+.star-stepper__line {
+  flex: 1;
+  height: 2px;
+  margin: 0 0.75rem;
+  border-radius: 2px;
+  background: var(--star-border);
+
+  .star-stepper__item--done & {
+    background: var(--star-success);
+  }
+}
+// The class sets `display`, which would beat the `hidden` attribute of an inactive step.
+.star-stepper__panel {
+  display: block;
+
+  &[hidden] {
+    display: none;
+  }
+}
+@media (width < 640px) {
+  .star-stepper__text {
+    display: none;
+  }
+  .star-stepper__item--active .star-stepper__text {
+    display: grid;
+  }
+}

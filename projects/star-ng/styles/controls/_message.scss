@@ -1,0 +1,47 @@
+// Inline message.
+.star-message {
+  --star-tone: var(--star-accent);
+  --star-tone-soft: var(--star-accent-soft);
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem 0.875rem;
+  border-radius: var(--star-radius-md);
+  background: var(--star-tone-soft);
+  color: var(--star-text);
+  font: var(--star-type-body-lg);
+
+  &[hidden] {
+    display: none;
+  }
+}
+.star-message--outlined {
+  background: var(--star-surface);
+  border: 1px solid color-mix(in srgb, var(--star-tone) 40%, var(--star-border));
+}
+.star-message--success {
+  --star-tone: var(--star-success);
+  --star-tone-soft: var(--star-success-soft);
+}
+.star-message--warn {
+  --star-tone: var(--star-warning);
+  --star-tone-soft: var(--star-warning-soft);
+}
+.star-message--error {
+  --star-tone: var(--star-danger);
+  --star-tone-soft: var(--star-danger-soft);
+}
+.star-message__icon {
+  margin-top: 0.125rem;
+  color: var(--star-tone);
+  font-size: 1.125rem;
+}
+.star-message__text {
+  flex: 1;
+  min-width: 0;
+}
+.star-message__close {
+  width: 1.5rem;
+  height: 1.5rem;
+  margin: -0.125rem -0.25rem 0 0;
+}
