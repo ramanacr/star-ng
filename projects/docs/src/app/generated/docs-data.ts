@@ -676,6 +676,65 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ]
   },
+  "StarChart": {
+    "kind": "component",
+    "selector": "star-chart",
+    "entry": "star-ng/chart",
+    "description": "Chart (PrimeNG `p-chart` without Chart.js): dependency-free SVG bar, line, area, doughnut and pie charts. One y-axis, recessive grid, 2px lines, 4px rounded bar ends on the baseline, 2px surface gaps, legend for 2+ series, hover tooltip per mark (crosshair on line), and a data table (visible on demand, always present for screen readers). Colors are fixed series slots in both themes.",
+    "inputs": [
+      {
+        "name": "type",
+        "type": "'bar' | 'line' | 'area' | 'doughnut' | 'pie'",
+        "default": "'bar'",
+        "required": false,
+        "description": "`'area'` is a line chart with a soft fill under each line. `'pie'` is a doughnut without the hole and the total; like the doughnut it shows the top 3 categories and \"Other\"."
+      },
+      {
+        "name": "title",
+        "type": "string",
+        "default": null,
+        "required": true,
+        "description": ""
+      },
+      {
+        "name": "labels",
+        "type": "readonly string[]",
+        "default": "[]",
+        "required": false,
+        "description": "Category labels (x axis, or doughnut slices)."
+      },
+      {
+        "name": "series",
+        "type": "readonly StarChartSeries[]",
+        "default": "[]",
+        "required": false,
+        "description": "One or more series. Doughnut uses the first series only. More than 8 series are cut."
+      },
+      {
+        "name": "categoryLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "locale",
+        "type": "string | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "table",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Start the table view open."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
   "StarCheckbox": {
     "kind": "component",
     "selector": "star-checkbox",
@@ -4641,6 +4700,13 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "cascade-select/form": "<div class=\"docs-stack\">\n  <star-field label=\"Office city\" for=\"cascade-form-city\" [state]=\"office.city()\">\n    <star-cascade-select\n      inputId=\"cascade-form-city\"\n      [formField]=\"office.city\"\n      [options]=\"places\"\n      optionLabel=\"name\"\n      optionValue=\"code\"\n      placeholder=\"Choose a city\"\n      showPath\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ office().valid() }}</p>\n</div>",
   "cascade-select/path": "<star-cascade-select\n  [options]=\"places\"\n  optionLabel=\"name\"\n  optionValue=\"code\"\n  [(value)]=\"pathPlace\"\n  placeholder=\"Choose a city\"\n  ariaLabel=\"City with path\"\n  showPath\n  showClear\n/>",
   "cascade-select/states": "<div class=\"docs-stack\">\n  <star-cascade-select\n    [options]=\"places\"\n    optionLabel=\"name\"\n    optionValue=\"code\"\n    optionDisabled=\"closed\"\n    placeholder=\"One city is closed\"\n    ariaLabel=\"City with a closed office\"\n  />\n  <star-cascade-select\n    [options]=\"places\"\n    optionLabel=\"name\"\n    optionValue=\"code\"\n    size=\"sm\"\n    disabled\n    placeholder=\"Disabled\"\n    ariaLabel=\"Disabled city\"\n  />\n</div>",
+  "chart/area": "<star-chart\n  type=\"area\"\n  title=\"Orders per month, area\"\n  [labels]=\"months\"\n  [series]=\"orders\"\n/>",
+  "chart/bar": "<star-chart\n  type=\"bar\"\n  title=\"Orders per month\"\n  [labels]=\"months\"\n  [series]=\"orders\"\n  categoryLabel=\"Month\"\n/>",
+  "chart/doughnut": "<star-chart\n  type=\"doughnut\"\n  title=\"Traffic by channel\"\n  [labels]=\"channels\"\n  [series]=\"traffic\"\n/>",
+  "chart/line": "<star-chart\n  type=\"line\"\n  title=\"Orders per month, line\"\n  [labels]=\"months\"\n  [series]=\"orders\"\n/>",
+  "chart/pie": "<star-chart type=\"pie\" title=\"Revenue by region\" [labels]=\"regions\" [series]=\"revenue\" />",
+  "chart/sizing": "<div class=\"docs-chart-narrow\">\n  <star-chart type=\"bar\" title=\"Orders, narrow\" [labels]=\"months\" [series]=\"single\" />\n</div>",
+  "chart/table": "<star-chart\n  type=\"bar\"\n  title=\"Revenue by region, table\"\n  [labels]=\"regions\"\n  [series]=\"revenue\"\n  categoryLabel=\"Region\"\n  table\n/>",
   "checkbox/basic": "<star-checkbox [(checked)]=\"subscribed\">Send me product news</star-checkbox>\n<p class=\"docs-output\" role=\"status\">Subscribed: {{ subscribed() }}</p>",
   "checkbox/form": "<star-checkbox [formField]=\"terms.accept\">I accept the terms</star-checkbox>\n<p class=\"docs-output\" role=\"status\">Valid: {{ terms().valid() }}</p>",
   "checkbox/indeterminate": "<star-checkbox [(checked)]=\"all\" [(indeterminate)]=\"some\">All regions</star-checkbox>",

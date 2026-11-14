@@ -10,6 +10,7 @@ export * from 'star-ng/badge';
 export * from 'star-ng/breadcrumb';
 export * from 'star-ng/button';
 export * from 'star-ng/card';
+export * from 'star-ng/chart';
 export * from 'star-ng/checkbox';
 export * from 'star-ng/core';
 export * from 'star-ng/date-picker';

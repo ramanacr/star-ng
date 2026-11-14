@@ -65,8 +65,9 @@
   --star-scrim-modal: rgba(15, 23, 42, 0.6);
   --star-tooltip-surface: #0f172a;
 
-  // Chart series (star-chart, star-meter-group). Fixed order, never cycled. Some slots are
-  // under 3:1 on white, so every chart also offers its data as a table.
+  // Chart series (star-chart, star-meter-group). Fixed order, never cycled. Both themes pass the
+  // categorical checks (lightness, chroma, adjacent-pair color-vision and normal-vision distance).
+  // Some slots are under 3:1 on white, so every chart also offers its data as a table.
   --star-chart-1: #2a78d6;
   --star-chart-2: #eb6834;
   --star-chart-3: #1baf7a;

@@ -447,6 +447,17 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
       },
     ],
   },
+  {
+    label: 'Charts',
+    items: [
+      {
+        label: 'Chart',
+        path: 'controls/chart',
+        keywords: 'bar line area doughnut pie graph svg data table series',
+        load: () => import('./controls/chart.page').then((m) => m.ChartPage),
+      },
+    ],
+  },
 ];
 
 export const DOCS_ROUTES: Routes = DOCS_NAV.flatMap((group) =>
