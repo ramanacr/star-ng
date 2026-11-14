@@ -167,6 +167,47 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
     ],
   },
   {
+    label: 'Menus',
+    items: [
+      {
+        label: 'Menu',
+        path: 'controls/menu',
+        keywords: 'popup dropdown actions submenu trigger',
+        load: () => import('./controls/menu.page').then((m) => m.MenuPage),
+      },
+      {
+        label: 'Split button',
+        path: 'controls/split-button',
+        keywords: 'main action caret dropdown',
+        load: () => import('./controls/split-button.page').then((m) => m.SplitButtonPage),
+      },
+      {
+        label: 'Menubar',
+        path: 'controls/menubar',
+        keywords: 'top bar file edit view dropdown',
+        load: () => import('./controls/menubar.page').then((m) => m.MenubarPage),
+      },
+      {
+        label: 'Context menu',
+        path: 'controls/context-menu',
+        keywords: 'right click shortcut f10',
+        load: () => import('./controls/context-menu.page').then((m) => m.ContextMenuPage),
+      },
+      {
+        label: 'Mega menu',
+        path: 'controls/mega-menu',
+        keywords: 'panel columns catalogue',
+        load: () => import('./controls/mega-menu.page').then((m) => m.MegaMenuPage),
+      },
+      {
+        label: 'Panel menu',
+        path: 'controls/panel-menu',
+        keywords: 'accordion side navigation sections tree',
+        load: () => import('./controls/panel-menu.page').then((m) => m.PanelMenuPage),
+      },
+    ],
+  },
+  {
     label: 'Data display',
     items: [
       {

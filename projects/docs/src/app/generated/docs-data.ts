@@ -294,6 +294,23 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ]
   },
+  "StarContextMenu": {
+    "kind": "directive",
+    "selector": "[starContextMenu]",
+    "entry": "star-ng/menu",
+    "description": "Right-click (and Shift+F10 / context-menu key) menu on any element (PrimeNG `p-contextmenu`). `<tr [starContextMenu]=\"rowMenu\">…</tr> <star-menu #rowMenu [items]=\"rowActions\" />`",
+    "inputs": [
+      {
+        "name": "starContextMenu",
+        "type": "StarMenu",
+        "default": null,
+        "required": true,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
   "StarField": {
     "kind": "component",
     "selector": "star-field",
@@ -1075,6 +1092,182 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ]
   },
+  "StarMegaMenu": {
+    "kind": "component",
+    "selector": "star-mega-menu",
+    "entry": "star-ng/menu",
+    "description": "Mega menu (PrimeNG `p-megamenu`) on CDK Menu Bar: a top-level item opens one wide panel with its child items as columns. Three levels of `StarMenuItem`:",
+    "inputs": [
+      {
+        "name": "items",
+        "type": "readonly StarMenuItem[]",
+        "default": "[]",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": [
+      {
+        "name": "itemClick",
+        "type": "StarMenuItem",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
+  "StarMenu": {
+    "kind": "component",
+    "selector": "star-menu",
+    "entry": "star-ng/menu",
+    "description": "Menu (PrimeNG `p-menu` + `p-tieredmenu`) on CDK Menu: roving focus, typeahead, submenus with pointer aim, Escape and focus return come from `@angular/cdk/menu`.",
+    "inputs": [
+      {
+        "name": "items",
+        "type": "readonly StarMenuItem[]",
+        "default": "[]",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "inline",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Renders the menu in place instead of as a popup."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": [
+      {
+        "name": "itemClick",
+        "type": "StarMenuItem",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
+  "StarMenubar": {
+    "kind": "component",
+    "selector": "star-menubar",
+    "entry": "star-ng/menu",
+    "description": "Menu bar (PrimeNG `p-menubar`) on CDK Menu Bar: top-level items with dropdown submenus, Left / Right between items, Down opens, typeahead, Escape closes. Uses `star-menu` for the submenus, so nesting works to any depth.",
+    "inputs": [
+      {
+        "name": "items",
+        "type": "readonly StarMenuItem[]",
+        "default": "[]",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": [
+      {
+        "name": "itemClick",
+        "type": "StarMenuItem",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
+  "StarMenuInDialog": {
+    "kind": "directive",
+    "selector": "[cdkMenuTriggerFor]",
+    "entry": "star-ng/menu",
+    "description": "",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
+  "StarMenuTrigger": {
+    "kind": "directive",
+    "selector": "[starMenuTrigger]",
+    "entry": "star-ng/menu",
+    "description": "Opens an `star-menu` as a popup from any element (button, icon button, row action). Adds `aria-haspopup`, `aria-expanded`, Arrow Down / Enter / Space to open.",
+    "inputs": [
+      {
+        "name": "starMenuTrigger",
+        "type": "StarMenu",
+        "default": null,
+        "required": true,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
+  "StarPanelMenu": {
+    "kind": "component",
+    "selector": "star-panel-menu",
+    "entry": "star-ng/menu",
+    "description": "Panel menu (PrimeNG `p-panelmenu`): a vertical menu where an item with child items opens and closes in place, to any depth. Use it for side navigation with sections.",
+    "inputs": [
+      {
+        "name": "items",
+        "type": "readonly StarMenuItem[]",
+        "default": "[]",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "single",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Open one section at a time: opening a section closes its sibling sections."
+      }
+    ],
+    "models": [
+      {
+        "name": "expandedKeys",
+        "type": "readonly string[]",
+        "default": "[]",
+        "required": false,
+        "description": "Positions of the open sections (`'0'`, `'0.2'`). Two-way."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "itemClick",
+        "type": "StarMenuItem",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
   "StarPassword": {
     "kind": "component",
     "selector": "star-password",
@@ -1664,6 +1857,73 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarSplitButton": {
+    "kind": "component",
+    "selector": "star-split-button",
+    "entry": "star-ng/menu",
+    "description": "Split button (PrimeNG `p-splitbutton`): a main action plus a menu of related actions. `<star-split-button label=\"Send response\" [items]=\"sendOptions\" (pressed)=\"send()\" />`",
+    "inputs": [
+      {
+        "name": "label",
+        "type": "string",
+        "default": null,
+        "required": true,
+        "description": ""
+      },
+      {
+        "name": "icon",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "items",
+        "type": "readonly StarMenuItem[]",
+        "default": "[]",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "variant",
+        "type": "StarButtonVariant",
+        "default": "'primary'",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "size",
+        "type": "StarButtonSize",
+        "default": "'md'",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": [
+      {
+        "name": "pressed",
+        "type": "MouseEvent",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "itemClick",
+        "type": "StarMenuItem",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
   "StarTag": {
     "kind": "component",
     "selector": "star-tag",
@@ -1884,6 +2144,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "color-picker/basic": "<star-color-picker [(value)]=\"color\" ariaLabel=\"Label color\" />\n<p class=\"docs-output\" role=\"status\">Value: {{ color() }}</p>",
   "color-picker/disabled": "<star-color-picker value=\"#64748b\" disabled ariaLabel=\"Locked color\" />",
   "color-picker/swatches": "<star-color-picker\n  [(value)]=\"category\"\n  [swatches]=\"['#0f766e', '#b45309', '#7c3aed', '#be123c']\"\n  ariaLabel=\"Category color\"\n/>",
+  "context-menu/basic": "<div class=\"docs-stack\">\n  <div class=\"docs-output\" tabindex=\"0\" aria-label=\"Order row\" [starContextMenu]=\"rowMenu\">\n    Order 1042: right-click here\n  </div>\n  <star-menu #rowMenu [items]=\"rowItems\" (itemClick)=\"last.set($event.label ?? '')\" />\n  <p class=\"docs-output\" role=\"status\">Last action: {{ last() }}</p>\n</div>",
   "dark-mode/try": "<star-button variant=\"secondary\" (pressed)=\"theme.setMode('system')\">System</star-button>\n<star-button variant=\"secondary\" (pressed)=\"theme.setMode('light')\">Light</star-button>\n<star-button variant=\"secondary\" (pressed)=\"theme.setMode('dark')\">Dark</star-button>\n<p class=\"docs-output\" role=\"status\">\n  Choice: {{ theme.mode() }}. Theme in use: {{ theme.theme() }}.\n</p>",
   "field/basic": "<div class=\"docs-stack\">\n  <star-field label=\"Full name\" hint=\"As shown on your account.\">\n    <input starInput placeholder=\"Avery Stone\" />\n  </star-field>\n</div>",
   "field/sizes": "<div class=\"docs-stack\">\n  <input starInput size=\"sm\" aria-label=\"Small\" placeholder=\"Small\" />\n  <input starInput aria-label=\"Medium\" placeholder=\"Medium\" />\n  <input starInput size=\"lg\" aria-label=\"Large\" placeholder=\"Large\" />\n</div>",
@@ -1913,6 +2174,17 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "knob/basic": "<star-knob [(value)]=\"progress\" valueTemplate=\"{value}%\" ariaLabel=\"Progress\" />\n<p class=\"docs-output\" role=\"status\">Value: {{ progress() }}</p>",
   "knob/range": "<star-knob\n  [(value)]=\"temperature\"\n  [min]=\"10\"\n  [max]=\"30\"\n  [step]=\"0.5\"\n  [size]=\"160\"\n  valueTemplate=\"{value}°\"\n  ariaLabel=\"Temperature\"\n/>",
   "knob/states": "<star-knob [value]=\"72\" readonly [size]=\"90\" ariaLabel=\"Disk use\" />\n<star-knob [value]=\"35\" disabled [size]=\"90\" ariaLabel=\"Locked value\" />",
+  "mega-menu/basic": "<div class=\"docs-stack\">\n  <star-mega-menu\n    ariaLabel=\"Catalogue\"\n    [items]=\"catalogue\"\n    (itemClick)=\"last.set($event.label ?? '')\"\n  />\n  <p class=\"docs-output\" role=\"status\">Last action: {{ last() }}</p>\n</div>",
+  "menu/icon-trigger": "<button\n  type=\"button\"\n  class=\"star-btn star-btn--secondary star-btn--icon\"\n  aria-label=\"Row actions\"\n  [starMenuTrigger]=\"rowMenu\"\n>\n  <i class=\"ph-bold ph-dots-three-vertical\" aria-hidden=\"true\"></i>\n</button>\n<star-menu #rowMenu [items]=\"fileItems\" />",
+  "menu/icons": "<star-button variant=\"secondary\" [starMenuTrigger]=\"editMenu\">Edit</star-button>\n<star-menu #editMenu [items]=\"editItems\" />",
+  "menu/inline": "<star-menu inline ariaLabel=\"Inline menu\" [items]=\"viewItems\" />",
+  "menu/nested": "<star-button variant=\"secondary\" [starMenuTrigger]=\"viewMenu\">View</star-button>\n<star-menu #viewMenu [items]=\"viewItems\" />",
+  "menu/popup": "<div class=\"docs-stack\">\n  <star-button variant=\"secondary\" [starMenuTrigger]=\"fileMenu\">File</star-button>\n  <star-menu #fileMenu [items]=\"fileItems\" (itemClick)=\"last.set($event.label ?? '')\" />\n  <p class=\"docs-output\" role=\"status\">Last action: {{ last() }}</p>\n</div>",
+  "menu/states": "<star-button variant=\"secondary\" [starMenuTrigger]=\"orderMenu\">Order actions</star-button>\n<star-menu #orderMenu [items]=\"orderItems\" />",
+  "menubar/basic": "<div class=\"docs-stack\">\n  <star-menubar ariaLabel=\"Main\" [items]=\"nav\" (itemClick)=\"last.set($event.label ?? '')\" />\n  <p class=\"docs-output\" role=\"status\">Last action: {{ last() }}</p>\n</div>",
+  "menubar/end": "<star-menubar ariaLabel=\"Main with action\" [items]=\"nav\">\n  <star-button starMenubarEnd size=\"sm\" variant=\"ghost\" leadingIcon=\"ph-bold ph-plus\"\n    >New</star-button\n  >\n</star-menubar>",
+  "panel-menu/basic": "<div class=\"docs-stack\">\n  <star-panel-menu\n    ariaLabel=\"Settings\"\n    [items]=\"sections\"\n    [(expandedKeys)]=\"open\"\n    (itemClick)=\"last.set($event.label ?? '')\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Open: {{ open().join(', ') || 'none' }}. Last action: {{ last() }}\n  </p>\n</div>",
+  "panel-menu/single": "<star-panel-menu ariaLabel=\"Settings, single\" single [items]=\"sections\" />",
   "password/basic": "<div class=\"docs-stack\">\n  <star-field label=\"Password\">\n    <star-password [(value)]=\"current\" />\n  </star-field>\n</div>",
   "password/feedback": "<div class=\"docs-stack\">\n  <star-field label=\"New password\">\n    <star-password [(value)]=\"created\" feedback />\n  </star-field>\n</div>",
   "password/rules": "<div class=\"docs-stack\">\n  <star-field label=\"PIN phrase\">\n    <star-password [(value)]=\"phrase\" feedback [rules]=\"rules\" />\n  </star-field>\n</div>",
@@ -1932,6 +2204,9 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "slider/range": "<div class=\"docs-stack\">\n  <star-range-slider\n    [(value)]=\"price\"\n    [bounds]=\"[0, 500]\"\n    [step]=\"10\"\n    showValue\n    ariaLabel=\"Price range\"\n  />\n  <p class=\"docs-output\" role=\"status\">From {{ price()[0] }} to {{ price()[1] }}</p>\n</div>",
   "spinner/label": "<star-spinner ariaLabel=\"Loading orders\" />",
   "spinner/sizes": "<star-spinner size=\"1.25rem\" [strokeWidth]=\"6\" />\n<star-spinner />\n<star-spinner size=\"4rem\" [strokeWidth]=\"3\" />",
+  "split-button/basic": "<div class=\"docs-stack\">\n  <star-split-button\n    label=\"Place order\"\n    icon=\"ph-bold ph-paper-plane-tilt\"\n    [items]=\"orderOptions\"\n    (pressed)=\"last.set('Place order')\"\n    (itemClick)=\"last.set($event.label ?? '')\"\n  />\n  <p class=\"docs-output\" role=\"status\">Last action: {{ last() }}</p>\n</div>",
+  "split-button/disabled": "<star-split-button label=\"Place order\" disabled [items]=\"orderOptions\" />",
+  "split-button/variants": "<star-split-button label=\"Save\" variant=\"secondary\" size=\"sm\" [items]=\"orderOptions\" />\n<star-split-button label=\"Approve\" variant=\"success\" [items]=\"orderOptions\" />\n<star-split-button label=\"Remove\" variant=\"danger\" size=\"lg\" [items]=\"orderOptions\" />",
   "tag/icon": "<star-tag severity=\"success\" icon=\"ph-bold ph-check\" rounded>Shipped</star-tag>\n<star-tag severity=\"warn\" icon=\"ph-bold ph-clock\" rounded>Waiting</star-tag>",
   "tag/severities": "<star-tag value=\"New\" />\n<star-tag severity=\"secondary\" value=\"Draft\" />\n<star-tag severity=\"success\" value=\"Paid\" />\n<star-tag severity=\"info\" value=\"In review\" />\n<star-tag severity=\"warn\" value=\"Due soon\" />\n<star-tag severity=\"danger\" value=\"Overdue\" />",
   "toggle-switch/basic": "<star-toggle-switch [(checked)]=\"alerts\">Email alerts</star-toggle-switch>\n<p class=\"docs-output\" role=\"status\">Alerts: {{ alerts() ? 'on' : 'off' }}</p>",

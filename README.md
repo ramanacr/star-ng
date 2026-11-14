@@ -22,6 +22,7 @@ npm package: `star-ng`. Selector prefix: `star-`. CSS token prefix: `--star-`.
 | ---------------------------------------------------- | ------------------------------------------- |
 | `@angular/core`, `@angular/common`, `@angular/forms` | 22 or later                                 |
 | `@angular/cdk`                                       | 22 or later                                 |
+| `@angular/router`                                    | 22 or later (menus with route links)        |
 | `@phosphor-icons/web`                                | 2.1 or later (icons that the controls draw) |
 | `@jsverse/transloco`                                 | 8 or later, optional (`star-ng/transloco`)  |
 

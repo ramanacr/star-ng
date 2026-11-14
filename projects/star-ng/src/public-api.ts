@@ -14,6 +14,7 @@ export * from 'star-ng/input-number';
 export * from 'star-ng/input-otp';
 export * from 'star-ng/input-tags';
 export * from 'star-ng/knob';
+export * from 'star-ng/menu';
 export * from 'star-ng/password';
 export * from 'star-ng/radio';
 export * from 'star-ng/rating';
