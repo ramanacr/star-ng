@@ -12,6 +12,15 @@ interface Queue {
   readonly closed?: boolean;
 }
 
+interface Shipment {
+  readonly id: number;
+  readonly name: string;
+  readonly region: string;
+  readonly held: boolean;
+}
+
+const REGIONS = ['Central', 'East', 'North', 'South', 'West'];
+
 @Component({
   selector: 'docs-listbox-page',
   imports: [DOCS, StarListbox, StarOptionTemplate, StarField, FormField],
@@ -101,6 +110,53 @@ interface Queue {
       </docs-example>
 
       <docs-example
+        heading="Large list with virtual scroll"
+        source="listbox/virtual"
+        [script]="virtualScript"
+        note="virtualScroll draws only the rows in and near the view, so 10,000 options stay fast. Every row has the height virtualItemSize (40 px by default) and the text stays on one line. Keys work over all options: End goes to the last one, Page up and Page down move by a page, and letters find an option that is far down. Try typing ord-07500."
+      >
+        <div class="docs-stack">
+          <star-listbox
+            [options]="invoiceNumbers"
+            [(value)]="invoice"
+            virtualScroll
+            filter
+            scrollHeight="16rem"
+            ariaLabel="Invoice number"
+          />
+          <p class="docs-output" role="status">Invoice: {{ invoice() ?? 'none' }}</p>
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="Large list with groups and checkboxes"
+        source="listbox/virtual-groups"
+        [script]="virtualGroupsScript"
+        note="Group headings are rows of the same height. With multiple, the choice stays when you scroll away and back. Every tenth option is disabled. The option template gets the same context as without virtual scroll."
+      >
+        <div class="docs-stack">
+          <star-listbox
+            [options]="shipments"
+            optionLabel="name"
+            optionValue="id"
+            optionGroup="region"
+            optionDisabled="held"
+            [(value)]="picked"
+            multiple
+            virtualScroll
+            [virtualItemSize]="36"
+            scrollHeight="16rem"
+            ariaLabel="Shipments"
+          >
+            <ng-template starOption [starOptionOf]="shipments" let-item let-selected="selected">
+              {{ item.name }}
+            </ng-template>
+          </star-listbox>
+          <p class="docs-output" role="status">Picked: {{ pickedCount() }}</p>
+        </div>
+      </docs-example>
+
+      <docs-example
         heading="Disabled"
         source="listbox/disabled"
         note="A disabled listbox takes no focus and does not change."
@@ -161,6 +217,27 @@ export class ListboxPage {
   protected readonly grouped = signal<string | readonly string[] | null>(null);
   protected readonly templated = signal<string | readonly string[] | null>(null);
 
+  /** 10,000 invoice numbers, as plain strings: the string is label and value. */
+  protected readonly invoiceNumbers: readonly string[] = Array.from(
+    { length: 10_000 },
+    (_, i) => `ORD-${String(i + 1).padStart(5, '0')}`,
+  );
+  protected readonly invoice = signal<string | readonly string[] | null>(null);
+
+  /** 10,000 shipments in five regions; every tenth one is held and cannot be chosen. */
+  protected readonly shipments: readonly Shipment[] = Array.from({ length: 10_000 }, (_, i) => ({
+    id: i + 1,
+    name: `Shipment ${i + 1}`,
+    region: REGIONS[i % REGIONS.length],
+    held: (i + 1) % 10 === 0,
+  }));
+  protected readonly picked = signal<number | readonly number[] | null>([]);
+
+  protected pickedCount(): number {
+    const value = this.picked();
+    return Array.isArray(value) ? value.length : 0;
+  }
+
   protected manyText(): string {
     const value = this.many();
     return Array.isArray(value) && value.length ? value.join(', ') : 'none';
@@ -177,6 +254,18 @@ export class ListboxPage {
   { id: 'support', name: 'Support', site: 'Pune' },
 ];
 readonly queue = signal<string | readonly string[] | null>(null);`;
+  protected readonly virtualScript = `readonly invoiceNumbers: readonly string[] = Array.from(
+  { length: 10_000 },
+  (_, i) => \`ORD-\${String(i + 1).padStart(5, '0')}\`,
+);
+readonly invoice = signal<string | readonly string[] | null>(null);`;
+  protected readonly virtualGroupsScript = `readonly shipments: readonly Shipment[] = Array.from({ length: 10_000 }, (_, i) => ({
+  id: i + 1,
+  name: \`Shipment \${i + 1}\`,
+  region: REGIONS[i % REGIONS.length],
+  held: (i + 1) % 10 === 0,
+}));
+readonly picked = signal<number | readonly number[] | null>([]);`;
   protected readonly formScript = `readonly alertModel = signal<{ queues: readonly string[] }>({ queues: [] });
 readonly alert = form(this.alertModel, (path) => {
   minLength(path.queues, 1, { message: 'Select at least one queue.' });
@@ -195,6 +284,11 @@ readonly alert = form(this.alertModel, (path) => {
     { name: '--star-accent', description: 'Border of the box when the list has focus.' },
     { name: '--star-focus-ring', description: 'Focus ring (box-shadow).' },
     { name: '--star-danger', description: 'Border of an invalid box.' },
+    {
+      name: '--star-item-size',
+      description:
+        'Row height with virtualScroll. Set by virtualItemSize (in px); do not set it yourself.',
+    },
   ];
   protected readonly keyboard: readonly DocsRow[] = [
     {
@@ -203,12 +297,18 @@ readonly alert = form(this.alertModel, (path) => {
     },
     { name: 'Home / End', description: 'Moves to the first or the last option.' },
     {
+      name: 'Page up / Page down',
+      description:
+        'With virtualScroll only: moves the active option by the lines in view. Without it the browser scrolls the list.',
+    },
+    {
       name: 'Enter / Space',
       description: 'Chooses the active option, or toggles it in multiple mode.',
     },
     {
       name: 'Letter keys',
-      description: 'Typeahead: moves to the option that starts with the typed text.',
+      description:
+        'Typeahead: moves to the option that starts with the typed text. With virtualScroll it also finds options that are not drawn. Space chooses the active option and is not typed, so type labels without spaces.',
     },
   ];
 }
