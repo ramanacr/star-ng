@@ -3,6 +3,7 @@ import { form, FormField, minLength } from '@angular/forms/signals';
 import { StarField } from 'star-ng/field';
 import { StarTreeNode, StarTreeSelect } from 'star-ng/tree';
 import { DOCS, DocsRow } from '../shared/docs';
+import { buildLargeTree } from './large-tree';
 
 @Component({
   selector: 'docs-tree-select-page',
@@ -76,6 +77,28 @@ import { DOCS, DocsRow } from '../shared/docs';
       </docs-example>
 
       <docs-example
+        heading="Large tree with windowed rendering"
+        source="tree-select/virtual"
+        [script]="virtualScript"
+        note="virtualScroll renders only the rows in and near the panel viewport, so a tree with 11,110 open nodes opens and scrolls fast. The panel is 18rem high. virtualItemSize is the row height in pixels (default 34). Selection, filter and the keys work over all rows, also the rows that are not in the DOM."
+      >
+        <div class="docs-stack">
+          <star-tree-select
+            [nodes]="large.nodes"
+            [(expanded)]="largeOpen"
+            selectionMode="checkbox"
+            [(value)]="largeTeams"
+            virtualScroll
+            [virtualItemSize]="34"
+            filter
+            placeholder="Select orders"
+            ariaLabel="Orders by site"
+          />
+          <p class="docs-output" role="status">{{ largeTeams().length }} orders checked</p>
+        </div>
+      </docs-example>
+
+      <docs-example
         heading="Signal Forms"
         source="tree-select/form"
         [script]="formScript"
@@ -127,6 +150,9 @@ export class TreeSelectPage {
 
   protected readonly department = signal<readonly string[]>([]);
   protected readonly teams = signal<readonly string[]>([]);
+  protected readonly large = buildLargeTree();
+  protected readonly largeOpen = signal<readonly string[]>(this.large.branchKeys);
+  protected readonly largeTeams = signal<readonly string[]>([]);
   protected readonly nodes = signal<readonly string[]>([]);
 
   protected readonly hireModel = signal<{ department: readonly string[] }>({ department: [] });
@@ -146,6 +172,10 @@ export class TreeSelectPage {
   { key: 'fin', label: 'Finance' },
 ];
 readonly department = signal<readonly string[]>([]);`;
+  protected readonly virtualScript = `// 10 sites x 10 warehouses x 10 aisles x 10 orders = 11,110 nodes.
+readonly large: LargeTree = buildLargeTree(); // { nodes, branchKeys, count }
+readonly largeOpen = signal<readonly string[]>(this.large.branchKeys);
+readonly largeTeams = signal<readonly string[]>([]);`;
   protected readonly formScript = `readonly hireModel = signal<{ department: readonly string[] }>({ department: [] });
 readonly hire = form(this.hireModel, (path) => {
   minLength(path.department, 1, { message: 'Select a department.' });
@@ -165,7 +195,11 @@ readonly hire = form(this.hireModel, (path) => {
       name: 'Enter / Space / Arrow down',
       description: 'On the field: opens the panel. The focus moves into the tree.',
     },
-    { name: 'Arrow keys, Home / End, *', description: 'In the panel: the keys of the tree.' },
+    {
+      name: 'Arrow keys, Home / End, *',
+      description:
+        'In the panel: the keys of the tree. With virtualScroll they reach rows that are not rendered: the row scrolls into the window and takes the focus.',
+    },
     {
       name: 'Enter / Space',
       description: 'In the panel: selects the node. In single mode it closes the panel.',
