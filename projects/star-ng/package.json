@@ -34,6 +34,9 @@
     "tslib": "^2.3.0"
   },
   "exports": {
+    "./theme/star-theme-first-paint.js": {
+      "default": "./theme/star-theme-first-paint.js"
+    },
     "./styles/star-ng.css": {
       "style": "./styles/star-ng.css",
       "default": "./styles/star-ng.css"

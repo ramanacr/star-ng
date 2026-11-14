@@ -6,3 +6,4 @@ pnpm-lock.yaml
 playwright-report
 test-results
 projects/docs/src/app/generated
+projects/star-ng/theme/star-theme-first-paint.js
