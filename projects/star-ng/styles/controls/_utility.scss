@@ -1,0 +1,613 @@
+@use '../shared' as *;
+
+// Splitter, speed dial, dock, scroll top, block UI, meter group, terminal, inplace, scroll panel,
+// floating label, image compare, ripple and animate on scroll.
+// Splitter
+.star-splitter {
+  --star-split: 50%;
+  display: flex;
+  overflow: hidden;
+  min-height: 10rem;
+  border: 1px solid var(--star-border);
+  border-radius: var(--star-radius-lg);
+  background: var(--star-surface);
+}
+.star-splitter--vertical {
+  flex-direction: column;
+}
+.star-splitter__pane {
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  padding: 1rem;
+
+  &:first-child {
+    flex: 0 0 var(--star-split);
+  }
+  &:last-child {
+    flex: 1;
+  }
+}
+.star-splitter__gutter {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 0.625rem;
+  background: var(--star-surface-muted);
+  cursor: col-resize;
+  touch-action: none;
+  outline: none;
+
+  .star-splitter--vertical & {
+    width: auto;
+    height: 0.625rem;
+    cursor: row-resize;
+  }
+  &:hover,
+  &:focus-visible {
+    background: var(--star-primary-soft);
+  }
+  &:focus-visible {
+    box-shadow: inset 0 0 0 2px var(--star-accent);
+  }
+}
+.star-splitter__handle {
+  width: 3px;
+  height: 1.5rem;
+  border-radius: 2px;
+  background: var(--star-border-strong);
+
+  .star-splitter--vertical & {
+    width: 1.5rem;
+    height: 3px;
+  }
+}
+
+// Speed dial
+.star-speed-dial {
+  position: relative;
+  display: inline-flex;
+}
+.star-speed-dial__fab {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border: 0;
+  border-radius: 50%;
+  background: var(--star-primary-fill);
+  color: var(--star-on-tone);
+  font-size: 1.25rem;
+  box-shadow: var(--star-shadow-glow-primary);
+  cursor: pointer;
+  transition: rotate var(--star-duration-base) $ease;
+
+  .star-speed-dial--open & {
+    rotate: 45deg;
+  }
+  &:focus-visible {
+    outline: 2px solid var(--star-accent);
+    outline-offset: 3px;
+  }
+}
+.star-speed-dial--static.star-speed-dial--open .star-speed-dial__fab {
+  rotate: none;
+}
+.star-speed-dial--sm {
+  .star-speed-dial__fab {
+    width: 2.25rem;
+    height: 2.25rem;
+    font-size: 1rem;
+  }
+  .star-speed-dial__list {
+    inset-inline-start: 0;
+  }
+}
+.star-speed-dial .star-speed-dial__action--active {
+  border-color: var(--star-primary);
+  color: var(--star-primary);
+}
+.star-speed-dial__list {
+  position: absolute;
+  display: flex;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  pointer-events: none;
+
+  .star-speed-dial--up & {
+    bottom: calc(100% + 0.5rem);
+    inset-inline-start: 0.375rem;
+    flex-direction: column-reverse;
+  }
+  .star-speed-dial--down & {
+    top: calc(100% + 0.5rem);
+    inset-inline-start: 0.375rem;
+    flex-direction: column;
+  }
+  .star-speed-dial--left & {
+    inset-inline-end: calc(100% + 0.5rem);
+    top: 0.375rem;
+    flex-direction: row-reverse;
+  }
+  .star-speed-dial--right & {
+    inset-inline-start: calc(100% + 0.5rem);
+    top: 0.375rem;
+  }
+  li {
+    opacity: 0;
+    scale: 0.6;
+    transition:
+      opacity var(--star-duration-base) $ease,
+      scale var(--star-duration-base) $ease;
+    transition-delay: calc(var(--star-i, 0) * 30ms);
+  }
+  .star-speed-dial--open & {
+    pointer-events: auto;
+
+    li {
+      opacity: 1;
+      scale: 1;
+    }
+  }
+}
+.star-speed-dial__action {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 1px solid var(--star-border);
+  border-radius: 50%;
+  background: var(--star-surface);
+  color: var(--star-text);
+  box-shadow: var(--star-shadow-md);
+  cursor: pointer;
+
+  &:hover {
+    color: var(--star-primary);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--star-accent);
+  }
+}
+
+// Dock
+.star-dock__list {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 0.375rem;
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--star-glass-border);
+  border-radius: var(--star-radius-xl);
+  background: var(--star-glass-surface-strong);
+  backdrop-filter: blur(var(--star-blur-md));
+  box-shadow: var(--star-shadow-lg);
+  list-style: none;
+}
+.star-dock--left .star-dock__list,
+.star-dock--right .star-dock__list {
+  flex-direction: column;
+}
+.star-dock__item {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 0;
+  border-radius: var(--star-radius-md);
+  background: var(--star-surface-muted);
+  color: var(--star-text-strong);
+  font-size: 1.25rem;
+  cursor: pointer;
+  transform-origin: bottom center;
+  transition: scale var(--star-duration-base) $ease;
+
+  &:hover,
+  &:focus-visible {
+    scale: 1.3;
+    color: var(--star-primary);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--star-accent);
+  }
+  li:has(+ li > &:hover),
+  li:hover + li > & {
+    scale: 1.12;
+  }
+}
+
+// Scroll top
+.star-scroll-top {
+  position: fixed;
+  right: 1.5rem;
+  bottom: 1.5rem;
+  z-index: 10;
+  opacity: 0;
+  translate: 0 1rem;
+  pointer-events: none;
+  transition:
+    opacity var(--star-duration-base) $ease,
+    translate var(--star-duration-base) $ease;
+}
+.star-scroll-top--visible {
+  opacity: 1;
+  translate: 0 0;
+  pointer-events: auto;
+}
+.star-scroll-top__btn {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 0;
+  border-radius: 50%;
+  background: var(--star-text-strong);
+  color: var(--star-on-tone);
+  box-shadow: var(--star-shadow-float);
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid var(--star-accent);
+    outline-offset: 3px;
+  }
+}
+
+// Block UI
+.star-block-ui {
+  position: relative;
+  display: block;
+}
+.star-block-ui__mask {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 0.5rem;
+  border-radius: inherit;
+  background: color-mix(in srgb, var(--star-surface) 70%, transparent);
+  backdrop-filter: blur(var(--star-blur-xs));
+}
+.star-block-ui__message {
+  font: var(--star-type-body-lg);
+  font-weight: 600;
+  color: var(--star-text-strong);
+}
+
+// Meter group
+.star-meter-group {
+  display: grid;
+  gap: 0.625rem;
+}
+.star-meter-group__bar {
+  display: flex;
+  gap: 2px;
+  height: 0.625rem;
+  overflow: hidden;
+  border-radius: var(--star-radius-pill);
+  background: var(--star-border);
+}
+.star-meter-group__part {
+  height: 100%;
+
+  &:first-child {
+    border-radius: var(--star-radius-pill) 0 0 var(--star-radius-pill);
+  }
+}
+.star-meter-group__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font: var(--star-type-body);
+  color: var(--star-text-muted);
+
+  li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+  }
+  strong {
+    color: var(--star-text-strong);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .star-speed-dial__fab,
+  .star-speed-dial__list li,
+  .star-dock__item,
+  .star-scroll-top {
+    transition: none;
+  }
+}
+// Dock and block UI blur what is behind them: with reduced transparency use a solid surface.
+@media (prefers-reduced-transparency: reduce) {
+  .star-dock__list,
+  .star-block-ui__mask {
+    background: var(--star-surface);
+    backdrop-filter: none;
+  }
+}
+
+// Terminal: always dark, in both themes
+.star-terminal {
+  --star-terminal-text: #e2e8f0;
+  --star-terminal-muted: #94a3b8;
+  --star-terminal-accent: #4ade80;
+  --star-terminal-error: #f87171;
+  display: flex;
+  flex-direction: column;
+  height: 16rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--star-radius-lg);
+  background: var(--star-tooltip-surface);
+  color: var(--star-terminal-text);
+  font: var(--star-type-code);
+  cursor: text;
+}
+.star-terminal__log {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+
+  p,
+  pre {
+    margin: 0 0 0.25rem;
+    font: inherit;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+}
+.star-terminal__welcome {
+  color: var(--star-terminal-muted);
+}
+.star-terminal__prompt {
+  margin-inline-end: 0.5rem;
+  color: var(--star-terminal-accent);
+  user-select: none;
+}
+.star-terminal__response--error {
+  color: var(--star-terminal-error);
+}
+.star-terminal__line {
+  display: flex;
+  align-items: center;
+}
+.star-terminal__input {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  caret-color: var(--star-terminal-accent);
+  outline: none;
+
+  &:focus-visible {
+    box-shadow: 0 1px 0 var(--star-terminal-accent);
+  }
+}
+
+// Inplace: a value that turns into its editor
+.star-inplace {
+  display: inline-flex;
+  max-width: 100%;
+}
+.star-inplace__display {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin: -0.25rem -0.5rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px dashed transparent;
+  border-radius: var(--star-radius-sm);
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+
+  &:hover:not(:disabled),
+  &:focus-visible {
+    border-color: var(--star-border-strong);
+    background: var(--star-surface-muted);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--star-accent);
+    outline-offset: 2px;
+  }
+  &:disabled {
+    cursor: default;
+
+    .star-inplace__icon {
+      display: none;
+    }
+  }
+}
+.star-inplace__icon {
+  color: var(--star-text-soft);
+}
+.star-inplace__content {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  max-width: 100%;
+}
+
+// Scroll panel: thin scrollbar in the StarNG colors
+.star-scroll-panel {
+  display: block;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--star-border-strong) transparent;
+  border-radius: var(--star-radius-sm);
+
+  &:focus-visible {
+    outline: 2px solid var(--star-accent);
+    outline-offset: 2px;
+  }
+}
+
+// Floating label
+.star-float {
+  display: block;
+}
+.star-float__wrap {
+  position: relative;
+  display: block;
+}
+.star-float__label {
+  position: absolute;
+  top: 50%;
+  inset-inline-start: 0.875rem;
+  padding: 0 0.25rem;
+  border-radius: var(--star-radius-xs);
+  background: var(--star-surface);
+  color: var(--star-text-muted);
+  font: var(--star-type-body);
+  pointer-events: none;
+  translate: 0 -50%;
+  transition:
+    top var(--star-duration-fast) ease,
+    font-size var(--star-duration-fast) ease,
+    color var(--star-duration-fast) ease;
+}
+// Up: the control has focus, has a value, or is a select with a chosen value.
+.star-float__wrap:focus-within .star-float__label,
+.star-float__wrap:has(input:not(:placeholder-shown)) .star-float__label,
+.star-float__wrap:has(textarea:not(:placeholder-shown)) .star-float__label,
+.star-float__wrap:has(.star-select__value) .star-float__label {
+  top: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--star-text-strong);
+}
+.star-float__wrap:has(textarea) .star-float__label {
+  top: 1.5rem;
+}
+.star-float__wrap:has(textarea):focus-within .star-float__label,
+.star-float__wrap:has(textarea:not(:placeholder-shown)) .star-float__label {
+  top: 0;
+}
+// The label replaces the placeholder: an empty placeholder keeps `:placeholder-shown` in use.
+.star-float__wrap input::placeholder,
+.star-float__wrap textarea::placeholder,
+.star-float__wrap .star-select__placeholder {
+  color: transparent;
+}
+@media (prefers-reduced-motion: reduce) {
+  .star-float__label {
+    transition: none;
+  }
+}
+
+// Image compare
+.star-compare {
+  --star-compare: 50%;
+  position: relative;
+  display: block;
+  overflow: hidden;
+  border: 1px solid var(--star-border);
+  border-radius: var(--star-radius-lg);
+  background: var(--star-surface-muted);
+}
+.star-compare__image {
+  display: block;
+  width: 100%;
+  height: auto;
+  user-select: none;
+}
+.star-compare__image--left {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  object-fit: cover;
+  clip-path: inset(0 calc(100% - var(--star-compare)) 0 0);
+}
+.star-compare__divider {
+  position: absolute;
+  inset-block: 0;
+  left: var(--star-compare);
+  display: grid;
+  place-items: center;
+  width: 2px;
+  background: var(--star-surface);
+  box-shadow: 0 0 0 1px var(--star-border-strong);
+  translate: -1px 0;
+  pointer-events: none;
+
+  i {
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border: 1px solid var(--star-border-strong);
+    border-radius: 50%;
+    background: var(--star-surface);
+    color: var(--star-text-strong);
+    font-size: 1rem;
+  }
+}
+.star-compare__range {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: ew-resize;
+}
+.star-compare:has(.star-compare__range:focus-visible) {
+  outline: 2px solid var(--star-accent);
+  outline-offset: 2px;
+}
+
+// Ripple (starRipple): a short ink circle from the press point
+.star-ripple {
+  position: relative;
+  overflow: hidden;
+}
+.star-ripple__ink {
+  position: absolute;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.22;
+  scale: 0;
+  pointer-events: none;
+  animation: star-ripple var(--star-duration-slow) ease-out forwards;
+}
+@keyframes star-ripple {
+  to {
+    scale: 1;
+    opacity: 0;
+  }
+}
+
+// Animate on scroll (starAnimateOnScroll): hidden until the element comes into view
+.star-reveal {
+  opacity: 0;
+  translate: 0 0.75rem;
+  transition:
+    opacity var(--star-duration-slow) ease,
+    translate var(--star-duration-slow) ease;
+}
+.star-reveal--in {
+  opacity: 1;
+  translate: 0 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .star-ripple__ink {
+    display: none;
+  }
+  .star-reveal {
+    opacity: 1;
+    translate: none;
+    transition: none;
+  }
+}

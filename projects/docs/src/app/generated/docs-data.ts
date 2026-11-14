@@ -90,6 +90,23 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarAnimateOnScroll": {
+    "kind": "directive",
+    "selector": "[starAnimateOnScroll]",
+    "entry": "star-ng/utility",
+    "description": "Animate on scroll (PrimeNG `pAnimateOnScroll`): the element fades and moves in the first time it comes into view. Content is visible at once when the user asks for reduced motion or the browser has no `IntersectionObserver`.",
+    "inputs": [
+      {
+        "name": "threshold",
+        "type": "number",
+        "default": "0.15",
+        "required": false,
+        "description": "Part of the element that must be in view, 0 to 1."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
   "StarAutoComplete": {
     "kind": "component",
     "selector": "star-autocomplete",
@@ -260,6 +277,30 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "null",
         "required": false,
         "description": "What the count means, for screen readers (for example \"unread messages\")."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
+  "StarBlockUi": {
+    "kind": "component",
+    "selector": "star-block-ui",
+    "entry": "star-ng/utility",
+    "description": "Block UI (PrimeNG `p-blockui`): while `blocked`, the content is `inert` (no focus, no clicks, hidden from assistive tech) and shows a busy overlay with a spinner. `<star-block-ui [blocked]=\"saving()\">…form…</star-block-ui>`",
+    "inputs": [
+      {
+        "name": "blocked",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "message",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": ""
       }
     ],
     "models": [],
@@ -1551,6 +1592,45 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarDock": {
+    "kind": "component",
+    "selector": "star-dock",
+    "entry": "star-ng/utility",
+    "description": "Dock (PrimeNG `p-dock`): a bar of app shortcuts that magnify on hover and focus. `<star-dock [items]=\"apps\" ariaLabel=\"Apps\" />`",
+    "inputs": [
+      {
+        "name": "items",
+        "type": "readonly StarMenuItem[]",
+        "default": "[]",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "position",
+        "type": "'bottom' | 'top' | 'left' | 'right'",
+        "default": "'bottom'",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": [
+      {
+        "name": "itemClick",
+        "type": "StarMenuItem",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
   "StarDrawer": {
     "kind": "component",
     "selector": "star-drawer",
@@ -1865,6 +1945,32 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ]
   },
+  "StarFloatLabel": {
+    "kind": "component",
+    "selector": "star-float-label",
+    "entry": "star-ng/utility",
+    "description": "Floating label (PrimeNG `p-floatlabel`): the label sits inside the input and moves above it when the input has focus or a value. Wrap one text input, textarea or `star-select`.",
+    "inputs": [
+      {
+        "name": "label",
+        "type": "string",
+        "default": null,
+        "required": true,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
+  "StarFocusTrap": {
+    "kind": "directive",
+    "selector": "[starFocusTrap]",
+    "entry": "star-ng/utility",
+    "description": "Keeps Tab and Shift+Tab inside an element (PrimeNG `pFocusTrap`), on the CDK focus trap. `star-dialog` and `star-drawer` already trap focus; use this for a custom overlay.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
   "StarGalleria": {
     "kind": "component",
     "selector": "star-galleria",
@@ -1956,6 +2062,116 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "The image opens in a dialog with zoom buttons when the user activates it."
       }
     ],
+    "models": [],
+    "outputs": []
+  },
+  "StarImageCompare": {
+    "kind": "component",
+    "selector": "star-image-compare",
+    "entry": "star-ng/utility",
+    "description": "Image compare (PrimeNG `p-imagecompare`): two images on top of each other with a divider that the user moves. The divider is a native range input, so arrow keys, Home and End work.",
+    "inputs": [
+      {
+        "name": "leftSrc",
+        "type": "string",
+        "default": null,
+        "required": true,
+        "description": ""
+      },
+      {
+        "name": "rightSrc",
+        "type": "string",
+        "default": null,
+        "required": true,
+        "description": ""
+      },
+      {
+        "name": "leftAlt",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "rightAlt",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [
+      {
+        "name": "value",
+        "type": "number",
+        "default": "50",
+        "required": false,
+        "description": "Divider position: percent of the width that shows the left image. Two-way."
+      }
+    ],
+    "outputs": []
+  },
+  "StarInplace": {
+    "kind": "component",
+    "selector": "star-inplace",
+    "entry": "star-ng/utility",
+    "description": "Inplace (PrimeNG `p-inplace`): shows a value as a button; a click replaces it with the edit content in the same place. Escape or the close button goes back to the value.",
+    "inputs": [
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "closable",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Adds a button that goes back to the value."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [
+      {
+        "name": "active",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The edit content shows. Two-way."
+      }
+    ],
+    "outputs": []
+  },
+  "StarInplaceContent": {
+    "kind": "directive",
+    "selector": "ng-template[starInplaceContent]",
+    "entry": "star-ng/utility",
+    "description": "Edit view of `star-inplace`: `<ng-template starInplaceContent>…</ng-template>`.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
+  "StarInplaceDisplay": {
+    "kind": "directive",
+    "selector": "ng-template[starInplaceDisplay]",
+    "entry": "star-ng/utility",
+    "description": "Read view of `star-inplace`: `<ng-template starInplaceDisplay>…</ng-template>`.",
+    "inputs": [],
     "models": [],
     "outputs": []
   },
@@ -2948,6 +3164,44 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       }
     ]
+  },
+  "StarMeterGroup": {
+    "kind": "component",
+    "selector": "star-meter-group",
+    "entry": "star-ng/utility",
+    "description": "Meter group (PrimeNG `p-metergroup`): one bar split into parts (fixed series colors, 2px gaps) with a labelled legend. `role=\"meter\"` per part, so each value is announced. `<star-meter-group [items]=\"storage\" [max]=\"100\" unit=\"GB\" ariaLabel=\"Storage\" />`",
+    "inputs": [
+      {
+        "name": "items",
+        "type": "readonly StarMeterItem[]",
+        "default": "[]",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "max",
+        "type": "number | null",
+        "default": "null",
+        "required": false,
+        "description": "Full scale; default: the sum of the items."
+      },
+      {
+        "name": "unit",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
   },
   "StarMultiAutoComplete": {
     "kind": "component",
@@ -4028,6 +4282,15 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ]
   },
+  "StarRipple": {
+    "kind": "directive",
+    "selector": "[starRipple]",
+    "entry": "star-ng/utility",
+    "description": "Ripple (PrimeNG `pRipple`): a short ink circle from the point of a press. Decoration only; it does nothing when the user asks for reduced motion.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
   "StarRowExpansionTemplate": {
     "kind": "directive",
     "selector": "ng-template[starRowExpansion]",
@@ -4040,6 +4303,61 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "null",
         "required": false,
         "description": "Optional: pass the table rows to type `let-row` in strict templates."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
+  "StarScrollPanel": {
+    "kind": "component",
+    "selector": "star-scroll-panel",
+    "entry": "star-ng/utility",
+    "description": "Scroll panel (PrimeNG `p-scrollpanel`): a region with a fixed height and a thin scrollbar in the StarNG colors. It can take keyboard focus, so a keyboard user can scroll it; give it a name with `ariaLabel`.",
+    "inputs": [
+      {
+        "name": "height",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "maxHeight",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
+  "StarScrollTop": {
+    "kind": "component",
+    "selector": "star-scroll-top",
+    "entry": "star-ng/utility",
+    "description": "Scroll-to-top button (PrimeNG `p-scrolltop`): appears after `threshold` px of scroll on the window or a `target` element; smooth scroll unless the user prefers reduced motion. `<star-scroll-top [threshold]=\"400\" />`",
+    "inputs": [
+      {
+        "name": "threshold",
+        "type": "number",
+        "default": "400",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "target",
+        "type": "HTMLElement | null",
+        "default": "null",
+        "required": false,
+        "description": "Scroll container; default the window."
       }
     ],
     "models": [],
@@ -4313,6 +4631,66 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ]
   },
+  "StarSpeedDial": {
+    "kind": "component",
+    "selector": "star-speed-dial",
+    "entry": "star-ng/utility",
+    "description": "Speed dial (PrimeNG `p-speeddial`): floating action button that opens a short list of actions (up, down, left or right). `aria-expanded`, Escape closes, focus moves to the first action. `<star-speed-dial [items]=\"quickActions\" direction=\"up\" ariaLabel=\"Quick actions\" />`",
+    "inputs": [
+      {
+        "name": "items",
+        "type": "readonly StarMenuItem[]",
+        "default": "[]",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "direction",
+        "type": "'up' | 'down' | 'left' | 'right'",
+        "default": "'up'",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "icon",
+        "type": "string",
+        "default": "'ph-bold ph-plus'",
+        "required": false,
+        "description": "Icon of the main button. With another icon than the default, the button does not turn."
+      },
+      {
+        "name": "size",
+        "type": "'sm' | 'md'",
+        "default": "'md'",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "activeIndex",
+        "type": "number | null",
+        "default": "null",
+        "required": false,
+        "description": "Index of the item that is the current choice (a set of options, for example a theme)."
+      }
+    ],
+    "models": [],
+    "outputs": [
+      {
+        "name": "itemClick",
+        "type": "StarMenuItem",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
   "StarSpinner": {
     "kind": "component",
     "selector": "star-spinner",
@@ -4410,6 +4788,45 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       }
     ]
+  },
+  "StarSplitter": {
+    "kind": "component",
+    "selector": "star-splitter",
+    "entry": "star-ng/utility",
+    "description": "Splitter (PrimeNG `p-splitter`): two panes with a draggable gutter. The gutter is a `role=\"separator\"` with `aria-valuenow`; Arrow keys resize by 2 %, Home / End by the limits.",
+    "inputs": [
+      {
+        "name": "layout",
+        "type": "'horizontal' | 'vertical'",
+        "default": "'horizontal'",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "minSize",
+        "type": "number",
+        "default": "15",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [
+      {
+        "name": "size",
+        "type": "number",
+        "default": "50",
+        "required": false,
+        "description": "Size of the first pane in percent."
+      }
+    ],
+    "outputs": []
   },
   "StarStep": {
     "kind": "component",
@@ -4944,6 +5361,61 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       }
     ],
+    "models": [],
+    "outputs": []
+  },
+  "StarTerminal": {
+    "kind": "component",
+    "selector": "star-terminal",
+    "entry": "star-ng/utility",
+    "description": "Terminal (PrimeNG `p-terminal`): a text command line. The user types a command, the `handler` returns the text to print. Up / Down recall earlier commands. The output is a live log, so a screen reader announces each response.",
+    "inputs": [
+      {
+        "name": "prompt",
+        "type": "string",
+        "default": "'$'",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "welcome",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "handler",
+        "type": "StarTerminalHandler | null",
+        "default": "null",
+        "required": false,
+        "description": "Runs a command. Without a handler the terminal only emits `commandRun`."
+      }
+    ],
+    "models": [],
+    "outputs": [
+      {
+        "name": "commandRun",
+        "type": "string",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
+  "StarThemeSwitch": {
+    "kind": "component",
+    "selector": "star-theme-switch",
+    "entry": "star-ng/theme-switch",
+    "description": "Theme switch: a small speed dial with System, Light and Dark. The button shows the icon of the current choice; `StarThemeService` applies and remembers it. The texts come from `STAR_UI_TEXT` (`theme`, `themeSystem`, `themeLight`, `themeDark`).",
+    "inputs": [],
     "models": [],
     "outputs": []
   },
@@ -5606,6 +6078,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
 export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "accordion/basic": "<div class=\"docs-stack\">\n  <star-accordion [(value)]=\"open\">\n    <star-accordion-panel value=\"shipping\" header=\"Shipping\" icon=\"ph-bold ph-truck\">\n      Orders ship within two working days.\n    </star-accordion-panel>\n    <star-accordion-panel\n      value=\"returns\"\n      header=\"Returns\"\n      icon=\"ph-bold ph-arrow-u-up-left\"\n    >\n      Items can be returned for 30 days.\n    </star-accordion-panel>\n    <star-accordion-panel value=\"billing\" header=\"Billing\" disabled>\n      This section is disabled.\n    </star-accordion-panel>\n  </star-accordion>\n  <p class=\"docs-output\" role=\"status\">Open: {{ open().join(', ') || 'none' }}</p>\n</div>",
   "accordion/multiple": "<div class=\"docs-stack\">\n  <star-accordion multiple [value]=\"['summary']\">\n    <star-accordion-panel value=\"summary\" header=\"Summary\">\n      Twelve items, one parcel.\n    </star-accordion-panel>\n    <star-accordion-panel value=\"history\" header=\"History\">\n      <ng-template starAccordionContent>\n        <p>Created on Monday. Packed on Tuesday.</p>\n      </ng-template>\n    </star-accordion-panel>\n  </star-accordion>\n</div>",
+  "animate-on-scroll/basic": "<div class=\"docs-reveal-box\" tabindex=\"0\" aria-label=\"Scrollable list of blocks\">\n  @for (block of blocks; track block) {\n    <div class=\"docs-reveal-box__item\" starAnimateOnScroll>Block {{ block }}</div>\n  }\n</div>",
   "autocomplete/async": "<div class=\"docs-stack\">\n  <star-autocomplete\n    [suggestions]=\"results()\"\n    [loading]=\"searching()\"\n    [minQueryLength]=\"2\"\n    [delay]=\"150\"\n    (completeMethod)=\"search($event)\"\n    optionLabel=\"name\"\n    optionValue=\"id\"\n    [(value)]=\"found\"\n    placeholder=\"Type 2 letters of a name\"\n    ariaLabel=\"Colleague\"\n    showClear\n  />\n  <p class=\"docs-output\" role=\"status\">Colleague: {{ found() ?? 'none' }}</p>\n</div>",
   "autocomplete/dropdown": "<star-autocomplete\n  [options]=\"cities\"\n  [(value)]=\"dropdownCity\"\n  placeholder=\"Search a city\"\n  ariaLabel=\"City with dropdown\"\n  dropdown\n  autoHighlight\n  showClear\n/>",
   "autocomplete/form": "<div class=\"docs-stack\">\n  <star-field label=\"Assignee\" for=\"autocomplete-form-assignee\" [state]=\"task.assignee()\">\n    <star-autocomplete\n      inputId=\"autocomplete-form-assignee\"\n      [formField]=\"task.assignee\"\n      [options]=\"people\"\n      optionLabel=\"name\"\n      optionValue=\"id\"\n      placeholder=\"Search a person\"\n      showClear\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ task().valid() }}</p>\n</div>",
@@ -5618,6 +6091,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "badge/counts": "<star-badge [value]=\"4\" ariaLabel=\"unread messages\" />\n<star-badge [value]=\"128\" [max]=\"99\" severity=\"danger\" ariaLabel=\"open alerts\" />\n<star-badge value=\"New\" severity=\"success\" />",
   "badge/severities": "<star-badge [value]=\"1\" />\n<star-badge [value]=\"2\" severity=\"secondary\" />\n<star-badge [value]=\"3\" severity=\"success\" />\n<star-badge [value]=\"4\" severity=\"info\" />\n<star-badge [value]=\"5\" severity=\"warn\" />\n<star-badge [value]=\"6\" severity=\"danger\" />",
   "badge/sizes": "<star-badge [value]=\"7\" size=\"sm\" />\n<star-badge [value]=\"7\" />\n<star-badge [value]=\"7\" size=\"lg\" />\n<star-badge severity=\"success\" ariaLabel=\"online\" />",
+  "block-ui/basic": "<div class=\"docs-stack\">\n  <star-block-ui [blocked]=\"blocked()\" message=\"Saving…\">\n    <div class=\"docs-stack\">\n      <star-field label=\"Note\">\n        <input starInput value=\"Waiting for approval\" />\n      </star-field>\n      <star-field label=\"Reference\">\n        <input starInput value=\"PO-1042\" />\n      </star-field>\n    </div>\n  </star-block-ui>\n  <star-button variant=\"secondary\" (pressed)=\"blockFor(1500)\">\n    Save (blocks for 1.5 s)\n  </star-button>\n  <star-button variant=\"secondary\" (pressed)=\"blocked.set(!blocked())\">\n    {{ blocked() ? 'Unblock' : 'Block' }}\n  </star-button>\n</div>",
   "breadcrumb/basic": "<star-breadcrumb [home]=\"home\" [items]=\"trail\" />",
   "breadcrumb/links": "<star-breadcrumb\n  [items]=\"[\n    { label: 'Docs', url: 'https://example.com/docs' },\n    { label: 'Guides', url: 'https://example.com/docs/guides' },\n    { label: 'Install' },\n  ]\"\n/>",
   "button/full": "<div class=\"docs-stack\">\n  <star-button fullWidth>Continue</star-button>\n</div>",
@@ -5658,6 +6132,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "confirm/options": "<div class=\"docs-row\">\n  <star-button variant=\"secondary\" (pressed)=\"publish()\">Publish price list</star-button>\n  <star-button variant=\"secondary\" (pressed)=\"acknowledge()\">Show notice</star-button>\n</div>",
   "confirm/popup": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button\n      variant=\"ghost\"\n      leadingIcon=\"ph-bold ph-archive\"\n      (pressed)=\"archive($event)\"\n    >\n      Archive\n    </star-button>\n  </div>\n  <p class=\"docs-output\" role=\"status\">Archive result: {{ popupResult() }}</p>\n</div>",
   "context-menu/basic": "<div class=\"docs-stack\">\n  <div class=\"docs-output\" tabindex=\"0\" aria-label=\"Order row\" [starContextMenu]=\"rowMenu\">\n    Order 1042: right-click here\n  </div>\n  <star-menu #rowMenu [items]=\"rowItems\" (itemClick)=\"last.set($event.label ?? '')\" />\n  <p class=\"docs-output\" role=\"status\">Last action: {{ last() }}</p>\n</div>",
+  "dark-mode/switch": "<div class=\"docs-row\" style=\"min-height: 11rem; align-items: flex-start\">\n  <star-theme-switch />\n</div>",
   "dark-mode/try": "<star-button variant=\"secondary\" (pressed)=\"theme.setMode('system')\">System</star-button>\n<star-button variant=\"secondary\" (pressed)=\"theme.setMode('light')\">Light</star-button>\n<star-button variant=\"secondary\" (pressed)=\"theme.setMode('dark')\">Dark</star-button>\n<p class=\"docs-output\" role=\"status\">\n  Choice: {{ theme.mode() }}. Theme in use: {{ theme.theme() }}.\n</p>",
   "data-view/empty": "<star-data-view [items]=\"[]\" emptyMessage=\"No products match this filter.\">\n  <ng-template starDataViewItem let-item>{{ item }}</ng-template>\n</star-data-view>",
   "data-view/layouts": "<div class=\"docs-stack\">\n  <star-data-view [items]=\"products\" [(layout)]=\"layout\">\n    <ng-template starDataViewItem [starDataViewItemOf]=\"products\" let-p let-mode=\"layout\">\n      <strong>{{ p.name }}</strong>\n      <div>{{ p.category }} · {{ '$' + p.price }}</div>\n      @if (mode === 'grid') {\n        <small>Grid card</small>\n      }\n    </ng-template>\n  </star-data-view>\n  <p class=\"docs-output\" role=\"status\">Layout: {{ layout() }}</p>\n</div>",
@@ -5681,6 +6156,8 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "dialog/sizes": "<div class=\"docs-row\">\n  @for (item of sizes; track item) {\n    <star-button variant=\"secondary\" (pressed)=\"openSize(item)\">\n      Open {{ item }}\n    </star-button>\n  }\n</div>\n<star-dialog [(visible)]=\"sizeOpen\" [size]=\"size()\" [header]=\"'Size ' + size()\">\n  <p>The size input of this dialog is {{ size() }}.</p>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button (pressed)=\"sizeOpen.set(false)\">Close</star-button>\n  </div>\n</star-dialog>",
   "divider/basic": "<div class=\"docs-stack\">\n  <p>Sign in with your email.</p>\n  <star-divider>or</star-divider>\n  <p>Continue with a link.</p>\n  <star-divider align=\"start\">Start</star-divider>\n  <star-divider align=\"end\" type=\"dashed\">End, dashed</star-divider>\n  <star-divider type=\"dotted\" />\n</div>",
   "divider/vertical": "<div class=\"docs-row\">\n  <span>Orders</span>\n  <star-divider layout=\"vertical\" />\n  <span>Invoices</span>\n  <star-divider layout=\"vertical\" type=\"dashed\" />\n  <span>Reports</span>\n</div>",
+  "dock/basic": "<div class=\"docs-stack\">\n  <star-dock [items]=\"apps\" ariaLabel=\"Apps\" (itemClick)=\"last.set($event.label ?? '')\" />\n  <p class=\"docs-output\" role=\"status\">Opened: {{ last() }}</p>\n</div>",
+  "dock/left": "<star-dock [items]=\"apps\" position=\"left\" ariaLabel=\"Apps on the left\" />",
   "drawer/basic": "<star-button leadingIcon=\"ph-bold ph-sidebar-simple\" (pressed)=\"basicOpen.set(true)\">\n  Open details\n</star-button>\n<star-drawer [(visible)]=\"basicOpen\" header=\"Order ORD-1042\" dismissableMask>\n  <div class=\"docs-stack\">\n    <p class=\"docs-output\">Orchard Supply, 12 items, ships on Friday.</p>\n    <star-field label=\"Internal note\">\n      <textarea starInput autoResize rows=\"3\"></textarea>\n    </star-field>\n  </div>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button variant=\"ghost\" (pressed)=\"basicOpen.set(false)\">Close</star-button>\n  </div>\n</star-drawer>",
   "drawer/position": "<div class=\"docs-row\">\n  @for (item of positions; track item) {\n    <star-button variant=\"secondary\" (pressed)=\"openAt(item)\">{{ item }}</star-button>\n  }\n</div>\n<star-drawer\n  [(visible)]=\"positionOpen\"\n  [position]=\"position()\"\n  [drawerSize]=\"position() === 'left' || position() === 'right' ? '22rem' : '14rem'\"\n  [header]=\"'Drawer at the ' + position()\"\n>\n  <p>This drawer is pinned to the {{ position() }} edge.</p>\n</star-drawer>",
   "editor/basic": "<div class=\"docs-stack\">\n  <star-editor\n    [(value)]=\"note\"\n    ariaLabel=\"Delivery note\"\n    placeholder=\"Write the delivery note\"\n  />\n  <pre class=\"docs-output\" aria-label=\"Value of the editor\">{{ note() }}</pre>\n</div>",
@@ -5698,6 +6175,9 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "file-upload/reorder": "<div class=\"docs-stack\">\n  <star-file-upload\n    [(value)]=\"ordered\"\n    accept=\"image/*,.pdf\"\n    multiple\n    reorderable\n    thumbnails\n  />\n</div>",
   "file-upload/states": "<div class=\"docs-stack\">\n  <star-file-upload [value]=\"existing\" readonly />\n  <star-file-upload disabled />\n</div>",
   "file-upload/status": "<div class=\"docs-stack\">\n  <star-file-upload\n    [(value)]=\"uploads\"\n    accept=\".pdf\"\n    multiple\n    [fileStatus]=\"statusOf\"\n    (selected)=\"send($event)\"\n  />\n</div>",
+  "float-label/basic": "<div class=\"docs-stack\">\n  <star-float-label label=\"Customer name\">\n    <input starInput [value]=\"name()\" (input)=\"name.set($any($event.target).value)\" />\n  </star-float-label>\n  <star-float-label label=\"Delivery note\">\n    <textarea starInput rows=\"3\"></textarea>\n  </star-float-label>\n  <p class=\"docs-output\" role=\"status\">Customer: {{ name() || 'empty' }}</p>\n</div>",
+  "float-label/select": "<div class=\"docs-stack\">\n  <star-float-label label=\"City\">\n    <star-select [options]=\"cities\" [(value)]=\"city\" ariaLabel=\"City\" />\n  </star-float-label>\n</div>",
+  "focus-trap/basic": "<div class=\"docs-stack\">\n  <div class=\"docs-row docs-trap\" [starFocusTrap]=\"trapOn()\">\n    <star-toggle-switch [(checked)]=\"trapOn\">Keep Tab in this row</star-toggle-switch>\n    <star-button size=\"sm\" variant=\"secondary\">One</star-button>\n    <star-button size=\"sm\" variant=\"secondary\">Two</star-button>\n  </div>\n  <p class=\"docs-output\" role=\"status\">Trap is {{ trapOn() ? 'on' : 'off' }}.</p>\n</div>",
   "forms/reactive": "<form class=\"docs-stack\" [formGroup]=\"group\">\n  <star-field label=\"Reference\">\n    <input starInput formControlName=\"reference\" />\n  </star-field>\n  <star-field label=\"Delivery date\" for=\"forms-reactive-delivery\">\n    <star-date-picker\n      inputId=\"forms-reactive-delivery\"\n      [formField]=\"group.controls.delivery.fieldTree\"\n      locale=\"en-GB\"\n      ariaLabel=\"Delivery date\"\n    />\n  </star-field>\n  <star-checkbox [formField]=\"group.controls.confirmed.fieldTree\">Confirmed</star-checkbox>\n  <star-toggle-switch [(checked)]=\"locked\">Lock the form</star-toggle-switch>\n  <p class=\"docs-output\" role=\"status\">Group value: {{ group.value | json }}</p>\n</form>",
   "forms/signal": "<div class=\"docs-stack\">\n  <star-field label=\"Name\" [state]=\"profile.name()\">\n    <input starInput [formField]=\"profile.name\" />\n  </star-field>\n  <star-toggle-switch [formField]=\"profile.newsletter\">Newsletter</star-toggle-switch>\n  <p class=\"docs-output\" role=\"status\">\n    {{ profile().valid() ? 'Valid' : 'Not valid' }}: {{ model().name || '(no name)' }}\n  </p>\n</div>",
   "forms/two-way": "<star-checkbox [(checked)]=\"remember\">Remember this device</star-checkbox>\n<p class=\"docs-output\" role=\"status\">{{ remember() }}</p>",
@@ -5705,8 +6185,11 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "galleria/model": "<star-galleria\n  style=\"width: 100%; max-width: 40rem\"\n  [images]=\"images\"\n  [(activeIndex)]=\"active\"\n  ariaLabel=\"Linked photos\"\n/>\n<p class=\"docs-output\" role=\"status\">Active index: {{ active() }}</p>",
   "getting-started/result": "<star-button leadingIcon=\"ph-bold ph-plus\">New order</star-button>",
   "i18n/spinner": "<star-spinner />\n<docs-german-text />",
+  "image-compare/basic": "<div class=\"docs-stack\">\n  <star-image-compare\n    [leftSrc]=\"before\"\n    [rightSrc]=\"after\"\n    leftAlt=\"Before: grey shapes\"\n    rightAlt=\"After: colored shapes\"\n    ariaLabel=\"Compare before and after\"\n    [(value)]=\"position\"\n  />\n  <p class=\"docs-output\" role=\"status\">Divider at {{ position() }}%</p>\n</div>",
   "image/basic": "<star-image [src]=\"shelf\" alt=\"Shelf photo\" [width]=\"240\" />",
   "image/preview": "<star-image [src]=\"shelf\" alt=\"Shelf photo\" [width]=\"240\" preview />",
+  "inplace/active": "<div class=\"docs-stack\">\n  <star-inplace ariaLabel=\"Edit title\" [(active)]=\"editing\">\n    <ng-template starInplaceDisplay>{{ title() }}</ng-template>\n    <ng-template starInplaceContent>\n      <input\n        starInput\n        size=\"sm\"\n        aria-label=\"Title\"\n        [value]=\"title()\"\n        (input)=\"title.set($any($event.target).value)\"\n        (keydown.enter)=\"editing.set(false)\"\n      />\n    </ng-template>\n  </star-inplace>\n  <p class=\"docs-output\" role=\"status\">Editing: {{ editing() }}</p>\n  <star-inplace disabled ariaLabel=\"Locked value\">\n    <ng-template starInplaceDisplay>Locked value</ng-template>\n    <ng-template starInplaceContent>Not shown</ng-template>\n  </star-inplace>\n</div>",
+  "inplace/basic": "<div class=\"docs-stack\">\n  <p class=\"docs-output\">\n    Requester:\n    <star-inplace ariaLabel=\"Edit requester\" closable>\n      <ng-template starInplaceDisplay>{{ name() }}</ng-template>\n      <ng-template starInplaceContent>\n        <input\n          starInput\n          size=\"sm\"\n          aria-label=\"Requester\"\n          [value]=\"name()\"\n          (input)=\"name.set($any($event.target).value)\"\n        />\n      </ng-template>\n    </star-inplace>\n  </p>\n</div>",
   "input-group/addons": "<div class=\"docs-stack\">\n  <star-field label=\"Website\">\n    <star-input-group>\n      <star-input-group-addon>https://</star-input-group-addon>\n      <input starInput placeholder=\"example.com\" />\n    </star-input-group>\n  </star-field>\n  <star-input-group ariaLabel=\"Weight\">\n    <input starInput inputmode=\"decimal\" aria-label=\"Weight\" placeholder=\"0.0\" />\n    <star-input-group-addon>kg</star-input-group-addon>\n  </star-input-group>\n</div>",
   "input-group/button": "<div class=\"docs-stack\">\n  <star-input-group ariaLabel=\"Coupon\">\n    <input starInput aria-label=\"Coupon code\" placeholder=\"Coupon code\" />\n    <star-button variant=\"secondary\">Apply</star-button>\n  </star-input-group>\n</div>",
   "input-group/icon": "<div class=\"docs-stack\">\n  <star-icon-field icon=\"ph-bold ph-magnifying-glass\">\n    <input starInput type=\"search\" placeholder=\"Search orders\" aria-label=\"Search orders\" />\n  </star-icon-field>\n  <star-icon-field icon=\"ph-bold ph-envelope-simple\" iconPosition=\"end\">\n    <input starInput type=\"email\" placeholder=\"name@example.com\" aria-label=\"Email\" />\n  </star-icon-field>\n</div>",
@@ -5743,6 +6226,8 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "message/closable": "<div class=\"docs-stack\">\n  @if (!gone()) {\n    <star-message severity=\"warn\" closable (closed)=\"closedCount.set(closedCount() + 1)\">\n      Draft not saved.\n    </star-message>\n  }\n  <p class=\"docs-output\" role=\"status\">Closed: {{ closedCount() }}</p>\n  <div class=\"docs-row\">\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"reset()\">Show again</star-button>\n  </div>\n</div>",
   "message/outlined": "<div class=\"docs-stack\">\n  <star-message variant=\"outlined\" severity=\"info\">Orders close at 17:00.</star-message>\n  <star-message variant=\"outlined\" severity=\"warn\"\n    >Two items are low in stock.</star-message\n  >\n</div>",
   "message/severities": "<div class=\"docs-stack\">\n  <star-message>Your changes are saved as a draft.</star-message>\n  <star-message severity=\"success\">The invoice was sent.</star-message>\n  <star-message severity=\"warn\">The card expires next month.</star-message>\n  <star-message severity=\"error\">The payment was declined.</star-message>\n</div>",
+  "meter-group/basic": "<div class=\"docs-stack\">\n  <star-meter-group [items]=\"storage\" [max]=\"100\" unit=\"GB\" ariaLabel=\"Storage used\" />\n</div>",
+  "meter-group/sum": "<div class=\"docs-stack\">\n  <star-meter-group [items]=\"regions\" ariaLabel=\"Orders by region\" />\n</div>",
   "multi-select/basic": "<div class=\"docs-stack\">\n  <star-multi-select\n    [options]=\"departments\"\n    optionLabel=\"name\"\n    optionValue=\"id\"\n    [(value)]=\"chosen\"\n    placeholder=\"Select departments\"\n    ariaLabel=\"Departments\"\n  />\n  <p class=\"docs-output\" role=\"status\">Chosen: {{ chosen().join(', ') || 'none' }}</p>\n</div>",
   "multi-select/chips": "<star-multi-select\n  [options]=\"departments\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  [(value)]=\"chips\"\n  display=\"chip\"\n  placeholder=\"Select departments\"\n  ariaLabel=\"Departments as chips\"\n  filter\n  showClear\n/>",
   "multi-select/form": "<div class=\"docs-stack\">\n  <star-field label=\"Teams\" for=\"multi-form-teams\" [state]=\"team.departments()\">\n    <star-multi-select\n      inputId=\"multi-form-teams\"\n      [formField]=\"team.departments\"\n      [options]=\"departments\"\n      optionLabel=\"name\"\n      optionValue=\"id\"\n      display=\"chip\"\n      placeholder=\"Select at least two\"\n      ariaLabel=\"Teams\"\n      showClear\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ team().valid() }}</p>\n</div>",
@@ -5777,6 +6262,10 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "rating/basic": "<star-rating [(value)]=\"score\" ariaLabel=\"Service rating\" />\n<p class=\"docs-output\" role=\"status\">Rating: {{ score() ?? 'none' }}</p>",
   "rating/count": "<star-rating [(value)]=\"detail\" [count]=\"10\" ariaLabel=\"Detailed rating\" />",
   "rating/states": "<star-rating [value]=\"4\" readonly ariaLabel=\"Average rating\" />\n<star-rating [value]=\"2\" disabled ariaLabel=\"Closed rating\" />",
+  "ripple/basic": "<button type=\"button\" class=\"star-btn star-btn--secondary star-btn--md\" starRipple>\n  Save\n</button>\n<button type=\"button\" class=\"star-btn star-btn--primary star-btn--md\" starRipple>\n  Submit order\n</button>",
+  "scroll-panel/basic": "<star-scroll-panel class=\"docs-panel\" height=\"8rem\" ariaLabel=\"Order notes\">\n  <p class=\"docs-output\">\n    The order was placed on 2 November. The customer asked for delivery to the second\n    address. The warehouse packed the order on 3 November. The carrier picked it up on 4\n    November. The customer asked for a delivery window in the afternoon. The carrier\n    confirmed the window. The order stays open until the customer confirms receipt. All data\n    in this text is fictional.\n  </p>\n</star-scroll-panel>",
+  "scroll-panel/max": "<star-scroll-panel class=\"docs-panel\" maxHeight=\"5rem\" ariaLabel=\"Short notes\">\n  <p class=\"docs-output\">Two short lines of text.<br />The panel does not scroll.</p>\n</star-scroll-panel>",
+  "scroll-top/target": "<div class=\"docs-scroll-box\">\n  <div #scroller class=\"docs-scroll-box__list\" tabindex=\"0\" aria-label=\"Order list\">\n    @for (row of rows; track row) {\n      <p class=\"docs-output\">Order {{ row }}</p>\n    }\n  </div>\n  <star-scroll-top [target]=\"scroller\" [threshold]=\"100\" />\n</div>",
   "select-button/multiple": "<star-select-button\n  [options]=\"['Bold', 'Italic', 'Underline']\"\n  [(value)]=\"styles\"\n  multiple\n  size=\"sm\"\n  ariaLabel=\"Text style\"\n/>\n<p class=\"docs-output\" role=\"status\">{{ stylesText() }}</p>",
   "select-button/objects": "<star-select-button\n  [options]=\"views\"\n  optionLabel=\"label\"\n  optionValue=\"id\"\n  optionIcon=\"icon\"\n  [(value)]=\"view\"\n  [allowEmpty]=\"false\"\n  ariaLabel=\"View\"\n/>",
   "select-button/single": "<star-select-button\n  [options]=\"['Day', 'Week', 'Month']\"\n  [(value)]=\"period\"\n  ariaLabel=\"Period\"\n/>\n<p class=\"docs-output\" role=\"status\">Period: {{ period() }}</p>",
@@ -5795,11 +6284,16 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "slider/disabled": "<div class=\"docs-stack\">\n  <star-slider [value]=\"30\" disabled ariaLabel=\"Locked value\" />\n</div>",
   "slider/format": "<div class=\"docs-stack\">\n  <star-slider\n    [(value)]=\"discount\"\n    [min]=\"0\"\n    [max]=\"50\"\n    [step]=\"5\"\n    showValue\n    [format]=\"percent\"\n    ariaLabel=\"Discount\"\n  />\n</div>",
   "slider/range": "<div class=\"docs-stack\">\n  <star-range-slider\n    [(value)]=\"price\"\n    [bounds]=\"[0, 500]\"\n    [step]=\"10\"\n    showValue\n    ariaLabel=\"Price range\"\n  />\n  <p class=\"docs-output\" role=\"status\">From {{ price()[0] }} to {{ price()[1] }}</p>\n</div>",
+  "speed-dial/basic": "<div class=\"docs-row docs-dial-area\">\n  <star-speed-dial\n    [items]=\"actions\"\n    direction=\"right\"\n    ariaLabel=\"Quick actions\"\n    (itemClick)=\"last.set($event.label ?? '')\"\n  />\n  <p class=\"docs-output\" role=\"status\">Last action: {{ last() }}</p>\n</div>",
+  "speed-dial/choice": "<div class=\"docs-row docs-dial-area\">\n  <star-speed-dial\n    size=\"sm\"\n    direction=\"down\"\n    icon=\"ph-bold ph-sort-ascending\"\n    [items]=\"sortItems\"\n    [activeIndex]=\"sortIndex()\"\n    ariaLabel=\"Sort\"\n  />\n  <p class=\"docs-output\" role=\"status\">Sorted by: {{ sortItems[sortIndex()].label }}</p>\n</div>",
+  "speed-dial/directions": "<div class=\"docs-row docs-dial-area docs-dial-area--wide\">\n  <star-speed-dial [items]=\"actions\" direction=\"up\" ariaLabel=\"Actions up\" />\n  <star-speed-dial [items]=\"actions\" direction=\"down\" ariaLabel=\"Actions down\" />\n  <star-speed-dial [items]=\"actions\" direction=\"left\" ariaLabel=\"Actions left\" />\n  <star-speed-dial [items]=\"actions\" direction=\"right\" ariaLabel=\"Actions right\" />\n</div>",
   "spinner/label": "<star-spinner ariaLabel=\"Loading orders\" />",
   "spinner/sizes": "<star-spinner size=\"1.25rem\" [strokeWidth]=\"6\" />\n<star-spinner />\n<star-spinner size=\"4rem\" [strokeWidth]=\"3\" />",
   "split-button/basic": "<div class=\"docs-stack\">\n  <star-split-button\n    label=\"Place order\"\n    icon=\"ph-bold ph-paper-plane-tilt\"\n    [items]=\"orderOptions\"\n    (pressed)=\"last.set('Place order')\"\n    (itemClick)=\"last.set($event.label ?? '')\"\n  />\n  <p class=\"docs-output\" role=\"status\">Last action: {{ last() }}</p>\n</div>",
   "split-button/disabled": "<star-split-button label=\"Place order\" disabled [items]=\"orderOptions\" />",
   "split-button/variants": "<star-split-button label=\"Save\" variant=\"secondary\" size=\"sm\" [items]=\"orderOptions\" />\n<star-split-button label=\"Approve\" variant=\"success\" [items]=\"orderOptions\" />\n<star-split-button label=\"Remove\" variant=\"danger\" size=\"lg\" [items]=\"orderOptions\" />",
+  "splitter/basic": "<star-splitter class=\"docs-splitter\" [(size)]=\"split\" ariaLabel=\"Resize the order panes\">\n  <div starSplitterStart>\n    <strong>Orders</strong>\n    <p class=\"docs-output\">Drag the gutter or use the arrow keys.</p>\n  </div>\n  <div starSplitterEnd>\n    <strong>Details</strong>\n    <p class=\"docs-output\" role=\"status\">First pane: {{ split() }}%</p>\n  </div>\n</star-splitter>",
+  "splitter/vertical": "<star-splitter\n  class=\"docs-splitter\"\n  layout=\"vertical\"\n  [size]=\"40\"\n  [minSize]=\"25\"\n  ariaLabel=\"Resize the invoice panes\"\n>\n  <div starSplitterStart><strong>Invoices</strong></div>\n  <div starSplitterEnd><strong>Preview</strong></div>\n</star-splitter>",
   "stepper/basic": "<div class=\"docs-stack\">\n  <star-stepper [(value)]=\"step\" ariaLabel=\"Checkout steps\">\n    <star-step value=\"cart\" label=\"Cart\" description=\"Review items\" completed>\n      Three items in the cart.\n    </star-step>\n    <star-step value=\"address\" label=\"Address\" description=\"Where to ship\">\n      Enter the delivery address.\n    </star-step>\n    <star-step value=\"pay\" label=\"Payment\">Choose a way to pay.</star-step>\n  </star-stepper>\n  <p class=\"docs-output\" role=\"status\">Active step: {{ step() ?? 'cart' }}</p>\n</div>",
   "stepper/linear": "<div class=\"docs-stack\">\n  <star-stepper #wizard [(value)]=\"wizardStep\" linear ariaLabel=\"Account setup\">\n    <star-step value=\"name\" label=\"Name\" [completed]=\"name().trim().length > 0\">\n      <star-field label=\"Your name\">\n        <input starInput [value]=\"name()\" (input)=\"name.set($any($event.target).value)\" />\n      </star-field>\n    </star-step>\n    <star-step value=\"confirm\" label=\"Confirm\">\n      Welcome, {{ name() }}. Your account is ready.\n    </star-step>\n  </star-stepper>\n  <div class=\"docs-row\">\n    <star-button\n      variant=\"secondary\"\n      [disabled]=\"wizard.isFirst()\"\n      (pressed)=\"wizard.previous()\"\n    >\n      Back\n    </star-button>\n    <star-button [disabled]=\"wizard.isLast() || !name().trim()\" (pressed)=\"wizard.next()\">\n      Next\n    </star-button>\n  </div>\n</div>",
   "table-columns/frozen": "<docs-fill>\n  <star-table\n    [value]=\"orders.slice(0, 6)\"\n    [columns]=\"wideColumns\"\n    dataKey=\"id\"\n    ariaLabel=\"Wide orders\"\n  />\n</docs-fill>",
@@ -5837,6 +6331,8 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "tabs/pill": "<div class=\"docs-stack\">\n  <star-tabs variant=\"pill\" [selectOnFocus]=\"false\" ariaLabel=\"Report views\">\n    <star-tab value=\"daily\" label=\"Daily\">Daily totals.</star-tab>\n    <star-tab value=\"weekly\" label=\"Weekly\">\n      <ng-template starTabContent>Weekly totals, loaded on first use.</ng-template>\n    </star-tab>\n    <star-tab value=\"monthly\" label=\"Monthly\">Monthly totals.</star-tab>\n  </star-tabs>\n</div>",
   "tag/icon": "<star-tag severity=\"success\" icon=\"ph-bold ph-check\" rounded>Shipped</star-tag>\n<star-tag severity=\"warn\" icon=\"ph-bold ph-clock\" rounded>Waiting</star-tag>",
   "tag/severities": "<star-tag value=\"New\" />\n<star-tag severity=\"secondary\" value=\"Draft\" />\n<star-tag severity=\"success\" value=\"Paid\" />\n<star-tag severity=\"info\" value=\"In review\" />\n<star-tag severity=\"warn\" value=\"Due soon\" />\n<star-tag severity=\"danger\" value=\"Overdue\" />",
+  "terminal/basic": "<div class=\"docs-stack docs-terminal\">\n  <star-terminal\n    #terminal\n    ariaLabel=\"Diagnostics\"\n    prompt=\"app $\"\n    welcome=\"Type help for the commands.\"\n    [handler]=\"runCommand\"\n    (commandRun)=\"last.set($event)\"\n  />\n  <div class=\"docs-row\">\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"terminal.clear()\">\n      Clear\n    </star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"terminal.run('status')\">\n      Run \"status\"\n    </star-button>\n  </div>\n  <p class=\"docs-output\" role=\"status\">Last command: {{ last() || 'none' }}</p>\n</div>",
+  "theme-switch/basic": "<div class=\"docs-row docs-theme-area\">\n  <star-theme-switch />\n  <p class=\"docs-output\" role=\"status\">\n    Choice: {{ theme.mode() }}. Theme in use: {{ theme.theme() }}.\n  </p>\n</div>",
   "time-picker/basic": "<div class=\"docs-stack\">\n  <star-time-picker [(value)]=\"meeting\" ariaLabel=\"Meeting time\" />\n  <p class=\"docs-output\" role=\"status\">Meeting: {{ meeting() ?? 'none' }}</p>\n</div>",
   "time-picker/form": "<div class=\"docs-stack\">\n  <star-field label=\"Pick-up time\" for=\"time-form-pickup\" [state]=\"slot.pickup()\">\n    <star-time-picker\n      inputId=\"time-form-pickup\"\n      [formField]=\"slot.pickup\"\n      ariaLabel=\"Pick-up time\"\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ slot().valid() }}</p>\n</div>",
   "time-picker/limits": "<div class=\"docs-stack\">\n  <star-time-picker\n    [(value)]=\"opening\"\n    min=\"08:00\"\n    max=\"18:00\"\n    [stepMinute]=\"15\"\n    ariaLabel=\"Opening time\"\n  />\n  <p class=\"docs-output\" role=\"status\">Opening: {{ opening() ?? 'none' }}</p>\n</div>",

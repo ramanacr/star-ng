@@ -13,7 +13,7 @@ test.describe('docs application', () => {
     await openPage(page, '/', 'StarNG');
     const nav = page.getByRole('navigation', { name: 'Pages' });
     await nav.getByRole('searchbox', { name: 'Search pages' }).fill('switch');
-    await expect(nav.getByRole('link')).toHaveText(['Toggle switch']);
+    await expect(nav.getByRole('link')).toHaveText(['Toggle switch', 'Theme switch']);
 
     // Keywords match too: "wcag" is a keyword of the accessibility guide.
     await nav.getByRole('searchbox').fill('wcag');

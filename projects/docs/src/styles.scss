@@ -78,8 +78,7 @@ pre {
   flex: 1;
 }
 .docs-header__menu,
-.docs-header__link,
-.docs-theme__button {
+.docs-header__link {
   display: inline-grid;
   place-items: center;
   width: 2.25rem;
@@ -98,22 +97,6 @@ pre {
 }
 .docs-header__menu {
   display: none;
-}
-.docs-theme {
-  display: inline-flex;
-  gap: 2px;
-  padding: 2px;
-  border: 1px solid var(--star-border);
-  border-radius: var(--star-radius-lg);
-}
-.docs-theme__button {
-  width: 2rem;
-  height: 2rem;
-
-  &[aria-pressed='true'] {
-    background: var(--star-primary-soft);
-    color: var(--star-text-strong);
-  }
 }
 
 .docs-body {

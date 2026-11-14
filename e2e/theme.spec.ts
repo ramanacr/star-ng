@@ -18,26 +18,35 @@ test.describe('theme', () => {
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   });
 
-  test('the theme buttons apply and save the choice', async ({ page }) => {
+  test('the theme switch applies and saves the choice', async ({ page }) => {
     await page.emulateMedia({ colorScheme: 'light' });
     await openPage(page, '/', 'StarNG');
     const html = page.locator('html');
     await expect(html).toHaveAttribute('data-theme', 'light');
 
-    const group = page.getByRole('group', { name: 'Theme' });
-    await group.getByRole('button', { name: 'Dark theme' }).click();
+    const header = page.locator('.docs-header');
+    const button = header.getByRole('button', { name: /^Theme: / });
+    await expect(button).toHaveAccessibleName('Theme: System');
+    await button.click();
+    await expect(button).toHaveAttribute('aria-expanded', 'true');
+    await header.getByRole('button', { name: 'Dark', exact: true }).click();
     await expect(html).toHaveAttribute('data-theme', 'dark');
-    await expect(group.getByRole('button', { name: 'Dark theme' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    );
+    await expect(button).toHaveAccessibleName('Theme: Dark');
+    await expect(button).toBeFocused();
     expect(await page.evaluate(() => localStorage.getItem('star-theme'))).toBe('dark');
 
     await page.reload();
     await expect(html).toHaveAttribute('data-theme', 'dark');
+    await expect(header.getByRole('button', { name: 'Theme: Dark' })).toBeVisible();
 
+    // The current choice is marked in the list.
+    await header.getByRole('button', { name: 'Theme: Dark' }).click();
+    await expect(header.getByRole('button', { name: 'Dark', exact: true })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
     // "System" follows the operating system setting again.
-    await group.getByRole('button', { name: 'System theme' }).click();
+    await header.getByRole('button', { name: 'System', exact: true }).click();
     await expect(html).toHaveAttribute('data-theme', 'light');
     await page.emulateMedia({ colorScheme: 'dark' });
     await expect(html).toHaveAttribute('data-theme', 'dark');
