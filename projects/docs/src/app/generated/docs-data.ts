@@ -5047,21 +5047,28 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "'scroll' | 'stack'",
         "default": "'scroll'",
         "required": false,
-        "description": "Layout when the table is narrower than 40rem (a phone). `'scroll'`: the table scrolls sideways. `'stack'`: each row is a block with one line per column, \"label: value\"; the sortable headers stay as a row of buttons. Do not use `'stack'` with `virtualScroll`."
+        "description": "Layout when the table is narrower than 40rem (a phone). `'scroll'`: the table scrolls sideways. `'stack'`: each row is a block with one line per column, \"label: value\"; the sortable headers stay as a row of buttons. With `virtualScroll`, `'stack'` turns on rows of different heights."
       },
       {
         "name": "virtualScroll",
         "type": "boolean",
         "default": "false",
         "required": false,
-        "description": "Renders only the rows in view, for long lists. Needs `scrollHeight`. Every row has the height `virtualRowHeight` and cell text stays on one line. Do not use it with row expansion, because a detail row changes the row height."
+        "description": "Renders only the rows in view (plus 5 above and below), for long lists. Needs `scrollHeight`. Rows have one fixed height (`virtualRowHeight`, text on one line) unless `virtualRowHeights` turns on rows of different heights."
       },
       {
         "name": "virtualRowHeight",
         "type": "number",
         "default": "48",
         "required": false,
-        "description": "Row height in pixels with `virtualScroll`."
+        "description": "Row height in pixels with `virtualScroll`. With rows of different heights it is the estimated height of a row that was not measured yet."
+      },
+      {
+        "name": "virtualRowHeights",
+        "type": "'auto' | 'variable'",
+        "default": "'auto'",
+        "required": false,
+        "description": "Row heights with `virtualScroll`. `'auto'`: one fixed height, unless the table has row expansion, `groupBy` or the stacked layout, which need rows of different heights. `'variable'`: rows of different heights always, for cell text on more than one line. The table measures each rendered row and keeps the heights."
       },
       {
         "name": "ariaLabel",
@@ -5152,7 +5159,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "StarOptionKey<T> | null",
         "default": "null",
         "required": false,
-        "description": "Group heading of a row (property name or function). Rows with the same heading show together under it, in the order in which the headings first appear after sorting. Do not use it with `virtualScroll`."
+        "description": "Group heading of a row (property name or function). Rows with the same heading show together under it, in the order in which the headings first appear after sorting. With `virtualScroll`, the rows of a closed group take no space."
       },
       {
         "name": "reorderableRows",
@@ -6354,6 +6361,9 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "table-layout/groups": "<div class=\"docs-stack\">\n  <star-toggle-switch [(checked)]=\"grouped\">Group by region</star-toggle-switch>\n  <docs-fill>\n    <star-table\n      [value]=\"orders.slice(0, 12)\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders in groups\"\n      [groupBy]=\"grouped() ? 'region' : null\"\n      [(collapsedGroups)]=\"closed\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Closed: {{ closed().join(', ') || 'none' }}</p>\n</div>",
   "table-layout/stack": "<div class=\"docs-stack\">\n  <star-table\n    [value]=\"orders.slice(0, 3)\"\n    [columns]=\"columns\"\n    dataKey=\"id\"\n    ariaLabel=\"Orders stacked\"\n    responsiveLayout=\"stack\"\n  />\n</div>",
   "table-layout/virtual": "<docs-fill>\n  <star-table\n    [value]=\"log\"\n    [columns]=\"logColumns\"\n    dataKey=\"id\"\n    ariaLabel=\"Audit log\"\n    virtualScroll\n    [virtualRowHeight]=\"44\"\n    scrollHeight=\"20rem\"\n    stickyHeader\n    striped\n  />\n</docs-fill>",
+  "table-layout/virtual-detail": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"tickets\"\n      [columns]=\"ticketColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Tickets with detail\"\n      selectionMode=\"multiple\"\n      [(selection)]=\"ticketSelection\"\n      [(expandedKeys)]=\"ticketsOpen\"\n      virtualScroll\n      [virtualRowHeight]=\"52\"\n      scrollHeight=\"24rem\"\n      stickyHeader\n    >\n      <ng-template starRowExpansion [starRowExpansionOf]=\"tickets\" let-row>\n        <ol class=\"history\">\n          @for (step of historyOf(row); track step) {\n            <li>{{ step }} by {{ row.owner }} in {{ row.city }}</li>\n          }\n        </ol>\n      </ng-template>\n    </star-table>\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">\n    Open: {{ ticketsOpen().length }}, selected: {{ ticketSelection().length }}\n  </p>\n</div>",
+  "table-layout/virtual-groups": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"groupedTickets\"\n      [columns]=\"ticketColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Tickets by city\"\n      groupBy=\"city\"\n      [(collapsedGroups)]=\"closedCities\"\n      virtualScroll\n      [virtualRowHeight]=\"52\"\n      scrollHeight=\"24rem\"\n      stickyHeader\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Closed: {{ closedCities().join(', ') || 'none' }}</p>\n</div>",
+  "table-layout/virtual-stack": "<docs-fill>\n  <star-table\n    [value]=\"stackedTickets\"\n    [columns]=\"ticketColumns\"\n    dataKey=\"id\"\n    ariaLabel=\"Tickets stacked\"\n    responsiveLayout=\"stack\"\n    virtualScroll\n    scrollHeight=\"24rem\"\n  />\n</docs-fill>",
   "table-paging/client": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Paged orders\"\n      paginator\n      [(first)]=\"first\"\n      [(rows)]=\"rows\"\n      [rowsPerPageOptions]=\"[5, 10, 20]\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">first = {{ first() }}, rows = {{ rows() }}</p>\n</div>",
   "table-paging/lazy": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"lazyRows()\"\n      [columns]=\"lazyColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders from the server\"\n      lazy\n      paginator\n      [rows]=\"5\"\n      [rowsPerPageOptions]=\"[5, 10]\"\n      [totalRecords]=\"lazyTotal()\"\n      [loading]=\"lazyLoading()\"\n      (lazyLoad)=\"load($event)\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Last request: {{ request() }}</p>\n</div>",
   "table-selection/actions": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"actionOrders()\"\n      [columns]=\"actionColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with actions\"\n      selectionMode=\"single\"\n      [(selection)]=\"actionSelection\"\n    >\n      <ng-template starCell=\"status\" [starCellOf]=\"actionOrders()\" let-row>\n        <star-tag [severity]=\"severityOf(row.status)\" [value]=\"row.status\" rounded />\n      </ng-template>\n      <ng-template starCell=\"actions\" [starCellOf]=\"actionOrders()\" let-row>\n        <star-button\n          size=\"sm\"\n          variant=\"secondary\"\n          [disabled]=\"row.status === 'Cancelled'\"\n          (pressed)=\"cancel(row)\"\n        >\n          Cancel {{ row.id }}\n        </star-button>\n      </ng-template>\n    </star-table>\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">\n    Selected: {{ actionSelection()[0]?.id ?? 'none' }}\n  </p>\n</div>",
