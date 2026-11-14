@@ -7,22 +7,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="StarNG: accessible Angular controls built on signals." />
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-    <script>
-      // First-paint theme script of star-ng/theme (see the "Dark mode" guide): sets the theme
-      // before the first paint, so a dark-theme user does not see a light frame.
-      (function () {
-        var mode = 'system';
-        try {
-          mode = localStorage.getItem('star-theme') || 'system';
-        } catch (e) {}
-        var dark =
-          mode === 'dark' ||
-          (mode !== 'light' &&
-            window.matchMedia &&
-            window.matchMedia('(prefers-color-scheme: dark)').matches);
-        document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
-      })();
-    </script>
+    <!--
+      Content Security Policy of the docs application (see the "Content Security Policy" section
+      of the "Dark mode" guide). No inline script: the first-paint theme script is the static file
+      star-theme-first-paint.js of star-ng/theme, copied into the build by angular.json.
+      'unsafe-inline' stays in style-src only, because Angular adds each component style as an
+      inline style element and the examples use style attributes.
+      script-src-attr allows only the hash of the text alert(1): the Editor page shows how the
+      sanitizer removes a hostile onclick="alert(1)", and Angular's sanitizer reports a policy
+      violation when it parses that attribute (the handler never runs). No other inline event
+      handler is allowed.
+    -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; script-src-attr 'unsafe-hashes' 'sha256-bhHHL3z2vDgxUt0W3dWQOrprscmda2Y5pLsLg4GF+pI='; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'"
+    />
+    <script src="star-theme-first-paint.js"></script>
   </head>
   <body>
     <docs-root></docs-root>

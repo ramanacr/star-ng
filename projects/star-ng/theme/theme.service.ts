@@ -1,11 +1,11 @@
 import { DOCUMENT } from '@angular/common';
 import { Injectable, InjectionToken, computed, effect, inject, signal } from '@angular/core';
+import { STAR_THEME_DEFAULT_STORAGE_KEY } from './theme-key';
 
 /** `'system'` follows the operating system setting (`prefers-color-scheme`). */
 export type StarThemeMode = 'system' | 'light' | 'dark';
 
-/** Default `localStorage` key of the saved theme choice. */
-export const STAR_THEME_DEFAULT_STORAGE_KEY = 'star-theme';
+export { STAR_THEME_DEFAULT_STORAGE_KEY };
 
 /**
  * `localStorage` key of the saved theme choice. Provide another value when two applications

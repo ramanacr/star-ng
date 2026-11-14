@@ -1,19 +1,28 @@
-import { expect, test } from '@playwright/test';
+import { expect, Page, test } from '@playwright/test';
 import { lowContrast, openPage } from './support';
+
+/** Blocks every JavaScript file of the application except the external first-paint file. */
+async function blockAppScripts(page: Page): Promise<void> {
+  await page.route('**/*.js', (route) =>
+    new URL(route.request().url()).pathname === '/star-theme-first-paint.js'
+      ? route.continue()
+      : route.abort(),
+  );
+}
 
 test.describe('theme', () => {
   test('applies the saved dark theme before the application starts', async ({ page }) => {
     await page.addInitScript(() => localStorage.setItem('star-theme', 'dark'));
-    // Stop the application scripts: only index.html runs, so the attribute comes from the
-    // first-paint script.
-    await page.route('**/*.js', (route) => route.abort());
+    // Stop the application scripts: only index.html and the external first-paint file run, so
+    // the attribute comes from that file.
+    await blockAppScripts(page);
     await page.goto('/');
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   });
 
   test('follows the system setting when no theme is saved', async ({ page }) => {
     await page.emulateMedia({ colorScheme: 'dark' });
-    await page.route('**/*.js', (route) => route.abort());
+    await blockAppScripts(page);
     await page.goto('/');
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   });

@@ -6,6 +6,11 @@
       "glob": "**/*.scss",
       "input": "styles",
       "output": "styles"
+    },
+    {
+      "glob": "star-theme-first-paint.js",
+      "input": "theme",
+      "output": "theme"
     }
   ],
   "lib": {
