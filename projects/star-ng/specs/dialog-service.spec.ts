@@ -1,0 +1,74 @@
+import { Component, inject } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
+import { STAR_DIALOG_DATA, StarDialogRef, StarDialogService } from 'star-ng/dialog';
+
+// jsdom has no HTMLDialogElement methods. Minimal stand-ins (real browsers implement these).
+const dialogProto = HTMLDialogElement.prototype as Partial<HTMLDialogElement>;
+dialogProto.showModal ??= function (this: HTMLDialogElement) {
+  this.setAttribute('open', '');
+};
+dialogProto.show ??= dialogProto.showModal;
+dialogProto.close ??= function (this: HTMLDialogElement) {
+  if (!this.hasAttribute('open')) return;
+  this.removeAttribute('open');
+  this.dispatchEvent(new Event('close'));
+};
+
+@Component({
+  template: `
+    <p class="greeting">Hello {{ data.name }}</p>
+    <button id="ok" (click)="ref.close('saved')">OK</button>
+  `,
+})
+class Content {
+  readonly data = inject<{ name: string }>(STAR_DIALOG_DATA);
+  readonly ref = inject<StarDialogRef<string>>(StarDialogRef);
+}
+
+const settle = async () => {
+  for (let i = 0; i < 3; i++) {
+    TestBed.tick();
+    await Promise.resolve();
+  }
+};
+
+describe('StarDialogService', () => {
+  afterEach(() => TestBed.inject(StarDialogService).closeAll());
+
+  it('opens a component with data in a modal dialog and resolves the result', async () => {
+    const service = TestBed.inject(StarDialogService);
+    const ref = service.open<Content, { name: string }, string>(Content, {
+      header: 'Greeting',
+      data: { name: 'Ada' },
+    });
+    await settle();
+    const dialog = document.querySelector<HTMLDialogElement>('star-dialog-container dialog')!;
+    expect(dialog.hasAttribute('open')).toBe(true);
+    expect(dialog.querySelector('h2')?.textContent).toContain('Greeting');
+    expect(dialog.querySelector('.greeting')?.textContent).toContain('Hello Ada');
+
+    dialog.querySelector<HTMLButtonElement>('#ok')!.click();
+    await settle();
+    await expect(ref.closed).resolves.toBe('saved');
+    expect(document.querySelector('star-dialog-container')).toBeNull();
+  });
+
+  it('resolves undefined when the user dismisses it, and closeAll() closes every dialog', async () => {
+    const service = TestBed.inject(StarDialogService);
+    const first = service.open(Content, { data: { name: 'A' } });
+    const second = service.open(Content, { data: { name: 'B' } });
+    await settle();
+    expect(document.querySelectorAll('star-dialog-container').length).toBe(2);
+
+    document
+      .querySelectorAll<HTMLButtonElement>('star-dialog-container [aria-label=Close]')[1]
+      .click();
+    await settle();
+    await expect(second.closed).resolves.toBeUndefined();
+
+    service.closeAll();
+    await settle();
+    await expect(first.closed).resolves.toBeUndefined();
+    expect(document.querySelector('star-dialog-container')).toBeNull();
+  });
+});

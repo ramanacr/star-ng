@@ -279,6 +279,47 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
     ],
   },
   {
+    label: 'Overlays',
+    items: [
+      {
+        label: 'Dialog',
+        path: 'controls/dialog',
+        keywords: 'modal window header footer service component data result focus inert',
+        load: () => import('./controls/dialog.page').then((m) => m.DialogPage),
+      },
+      {
+        label: 'Confirm',
+        path: 'controls/confirm',
+        keywords: 'confirmation alertdialog popup ask delete accept reject',
+        load: () => import('./controls/confirm.page').then((m) => m.ConfirmPage),
+      },
+      {
+        label: 'Drawer',
+        path: 'controls/drawer',
+        keywords: 'side sheet panel left right top bottom',
+        load: () => import('./controls/drawer.page').then((m) => m.DrawerPage),
+      },
+      {
+        label: 'Popover',
+        path: 'controls/popover',
+        keywords: 'overlay panel anchored floating details',
+        load: () => import('./controls/popover.page').then((m) => m.PopoverPage),
+      },
+      {
+        label: 'Tooltip',
+        path: 'controls/tooltip',
+        keywords: 'hint hover focus label describedby',
+        load: () => import('./controls/tooltip.page').then((m) => m.TooltipPage),
+      },
+      {
+        label: 'Toast',
+        path: 'controls/toast',
+        keywords: 'notification message snackbar alert status',
+        load: () => import('./controls/toast.page').then((m) => m.ToastPage),
+      },
+    ],
+  },
+  {
     label: 'Data display',
     items: [
       {

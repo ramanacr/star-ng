@@ -647,6 +647,15 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ]
   },
+  "StarConfirmHost": {
+    "kind": "component",
+    "selector": "star-confirm-host",
+    "entry": "star-ng/dialog",
+    "description": "",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
   "StarContextMenu": {
     "kind": "directive",
     "selector": "[starContextMenu]",
@@ -950,6 +959,164 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       }
     ]
+  },
+  "StarDialog": {
+    "kind": "component",
+    "selector": "star-dialog",
+    "entry": "star-ng/dialog",
+    "description": "Dialog (PrimeNG `p-dialog`) built on the native `<dialog>` element: top-layer rendering, focus trap, focus restore and Escape handling come from the browser. Entry / exit animate with `@starting-style`; page scroll locks with `:has(dialog[open])`.",
+    "inputs": [
+      {
+        "name": "header",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "size",
+        "type": "StarDialogSize",
+        "default": "'md'",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "width",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Fixed CSS width; overrides `size`."
+      },
+      {
+        "name": "modal",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Modal blocks the page behind (backdrop). Non-modal dialogs float above it."
+      },
+      {
+        "name": "closable",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "closeOnEscape",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "dismissableMask",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Clicking the backdrop closes the dialog."
+      },
+      {
+        "name": "showHeader",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "role",
+        "type": "'dialog' | 'alertdialog'",
+        "default": "'dialog'",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [
+      {
+        "name": "visible",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "outputs": [
+      {
+        "name": "shown",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "hidden",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
+  "StarDialogContainer": {
+    "kind": "component",
+    "selector": "star-dialog-container",
+    "entry": "star-ng/dialog",
+    "description": "Internal host: an `star-dialog` whose body is the requested component.",
+    "inputs": [
+      {
+        "name": "component",
+        "type": "Type<unknown>",
+        "default": null,
+        "required": true,
+        "description": ""
+      },
+      {
+        "name": "config",
+        "type": "StarDialogConfig",
+        "default": null,
+        "required": true,
+        "description": ""
+      },
+      {
+        "name": "contentInjector",
+        "type": "Injector",
+        "default": null,
+        "required": true,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
+  "StarDrawer": {
+    "kind": "component",
+    "selector": "star-drawer",
+    "entry": "star-ng/drawer",
+    "description": "Drawer (PrimeNG `p-drawer`): side sheet on the native `<dialog>` element. Same API as `star-dialog` (`[(visible)]`, `header`, `modal`, `dismissableMask`, `closeOnEscape`, footer slot) plus `position` and a CSS `size`.",
+    "inputs": [
+      {
+        "name": "position",
+        "type": "'left' | 'right' | 'top' | 'bottom'",
+        "default": "'right'",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "drawerSize",
+        "type": "string",
+        "default": "'28rem'",
+        "required": false,
+        "description": "Width (left / right) or height (top / bottom)."
+      }
+    ],
+    "models": [],
+    "outputs": []
   },
   "StarField": {
     "kind": "component",
@@ -2462,6 +2629,52 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ]
   },
+  "StarPopover": {
+    "kind": "component",
+    "selector": "star-popover",
+    "entry": "star-ng/popover",
+    "description": "Popover (PrimeNG `p-popover`, formerly OverlayPanel): rich floating content anchored to an element. Native popover (top layer, works in dialogs), closes on outside click and Escape, moves focus in and back to the anchor.",
+    "inputs": [
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "focusOnShow",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Moves focus into the popover when it opens."
+      },
+      {
+        "name": "dismissable",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": [
+      {
+        "name": "shown",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "hidden",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
   "StarRadio": {
     "kind": "component",
     "selector": "star-radio",
@@ -3166,6 +3379,37 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ]
   },
+  "StarToast": {
+    "kind": "component",
+    "selector": "star-toast",
+    "entry": "star-ng/toast",
+    "description": "Toast outlet. Place once in the app shell. It renders as a manual popover, so toasts stay above open modal dialogs (top layer).",
+    "inputs": [
+      {
+        "name": "position",
+        "type": "'top-right' | 'top-left' | 'top-center' | 'bottom-right' | 'bottom-left' | 'bottom-center'",
+        "default": "'top-right'",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "key",
+        "type": "string | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "stackLimit",
+        "type": "number",
+        "default": "5",
+        "required": false,
+        "description": "Newest messages beyond this count wait until older ones close."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
   "StarToggleButton": {
     "kind": "component",
     "selector": "star-toggle-button",
@@ -3329,6 +3573,60 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       }
     ]
+  },
+  "StarTooltip": {
+    "kind": "directive",
+    "selector": "[starTooltip]",
+    "entry": "star-ng/tooltip",
+    "description": "Tooltip (PrimeNG `pTooltip`): shows on hover and keyboard focus, hides on Escape, links the host with `aria-describedby`. Rendered as a native popover so it appears above dialogs.",
+    "inputs": [
+      {
+        "name": "starTooltip",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "starTooltipPosition",
+        "type": "StarTooltipPosition",
+        "default": "'top'",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "starTooltipShowDelay",
+        "type": "number",
+        "default": "300",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "starTooltipHideDelay",
+        "type": "number",
+        "default": "0",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "starTooltipDisabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
+  "StarTooltipPanel": {
+    "kind": "component",
+    "selector": "star-tooltip-panel",
+    "entry": "star-ng/tooltip",
+    "description": "",
+    "inputs": [],
+    "models": [],
+    "outputs": []
   },
   "StarTree": {
     "kind": "component",
@@ -3547,6 +3845,9 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "color-picker/basic": "<star-color-picker [(value)]=\"color\" ariaLabel=\"Label color\" />\n<p class=\"docs-output\" role=\"status\">Value: {{ color() }}</p>",
   "color-picker/disabled": "<star-color-picker value=\"#64748b\" disabled ariaLabel=\"Locked color\" />",
   "color-picker/swatches": "<star-color-picker\n  [(value)]=\"category\"\n  [swatches]=\"['#0f766e', '#b45309', '#7c3aed', '#be123c']\"\n  ariaLabel=\"Category color\"\n/>",
+  "confirm/dialog": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button\n      variant=\"ghost-danger\"\n      leadingIcon=\"ph-bold ph-trash\"\n      (pressed)=\"deleteOrder()\"\n    >\n      Delete order\n    </star-button>\n  </div>\n  <p class=\"docs-output\" role=\"status\">Result: {{ result() }}</p>\n</div>",
+  "confirm/options": "<div class=\"docs-row\">\n  <star-button variant=\"secondary\" (pressed)=\"publish()\">Publish price list</star-button>\n  <star-button variant=\"secondary\" (pressed)=\"acknowledge()\">Show notice</star-button>\n</div>",
+  "confirm/popup": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button\n      variant=\"ghost\"\n      leadingIcon=\"ph-bold ph-archive\"\n      (pressed)=\"archive($event)\"\n    >\n      Archive\n    </star-button>\n  </div>\n  <p class=\"docs-output\" role=\"status\">Archive result: {{ popupResult() }}</p>\n</div>",
   "context-menu/basic": "<div class=\"docs-stack\">\n  <div class=\"docs-output\" tabindex=\"0\" aria-label=\"Order row\" [starContextMenu]=\"rowMenu\">\n    Order 1042: right-click here\n  </div>\n  <star-menu #rowMenu [items]=\"rowItems\" (itemClick)=\"last.set($event.label ?? '')\" />\n  <p class=\"docs-output\" role=\"status\">Last action: {{ last() }}</p>\n</div>",
   "dark-mode/try": "<star-button variant=\"secondary\" (pressed)=\"theme.setMode('system')\">System</star-button>\n<star-button variant=\"secondary\" (pressed)=\"theme.setMode('light')\">Light</star-button>\n<star-button variant=\"secondary\" (pressed)=\"theme.setMode('dark')\">Dark</star-button>\n<p class=\"docs-output\" role=\"status\">\n  Choice: {{ theme.mode() }}. Theme in use: {{ theme.theme() }}.\n</p>",
   "date-picker/basic": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"delivery\"\n    locale=\"en-GB\"\n    [firstDayOfWeek]=\"1\"\n    ariaLabel=\"Delivery date\"\n    showButtonBar\n  />\n  <p class=\"docs-output\" role=\"status\">Delivery: {{ iso(delivery()) }}</p>\n</div>",
@@ -3559,6 +3860,14 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "date-picker/states": "<div class=\"docs-stack\">\n  <star-date-picker size=\"sm\" locale=\"en-GB\" ariaLabel=\"Small date picker\" />\n  <star-date-picker disabled locale=\"en-GB\" ariaLabel=\"Disabled date picker\" />\n  <star-date-picker\n    [value]=\"delivery()\"\n    readonly\n    locale=\"en-GB\"\n    ariaLabel=\"Read-only date picker\"\n  />\n</div>",
   "date-picker/time": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"meeting\"\n    locale=\"en-GB\"\n    showTime\n    [stepMinute]=\"15\"\n    ariaLabel=\"Meeting start\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Meeting: {{ iso(meeting()) }} {{ clock(meeting()) }}\n  </p>\n</div>",
   "date-picker/views": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"reportMonth\"\n    view=\"month\"\n    locale=\"en-GB\"\n    ariaLabel=\"Report month\"\n  />\n  <star-date-picker\n    [(value)]=\"reportYear\"\n    view=\"year\"\n    locale=\"en-GB\"\n    ariaLabel=\"Report year\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Month: {{ iso(reportMonth()) }}, year: {{ iso(reportYear()) }}\n  </p>\n</div>",
+  "dialog/basic": "<star-button (pressed)=\"basicOpen.set(true)\">Edit order</star-button>\n<star-dialog [(visible)]=\"basicOpen\" header=\"Edit order ORD-1042\">\n  <span starDialogHeader class=\"docs-output\">Last saved at 10:42</span>\n  <div class=\"docs-stack\">\n    <star-field label=\"Customer\">\n      <input starInput value=\"Orchard Supply\" />\n    </star-field>\n    <star-field label=\"Delivery note\" hint=\"The driver reads this note.\">\n      <textarea starInput rows=\"3\">Leave at the loading dock.</textarea>\n    </star-field>\n  </div>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button variant=\"ghost\" (pressed)=\"basicOpen.set(false)\">Cancel</star-button>\n    <star-button (pressed)=\"basicOpen.set(false)\">Save</star-button>\n  </div>\n</star-dialog>",
+  "dialog/close-rules": "<div class=\"docs-row\">\n  <star-button variant=\"secondary\" (pressed)=\"maskOpen.set(true)\"\n    >Backdrop click</star-button\n  >\n  <star-button variant=\"secondary\" (pressed)=\"lockedOpen.set(true)\">Locked</star-button>\n  <star-button variant=\"secondary\" (pressed)=\"floatOpen.set(true)\">Non-modal</star-button>\n</div>\n<star-dialog [(visible)]=\"maskOpen\" header=\"Closes on a backdrop click\" dismissableMask>\n  <p>Click outside this window to close it.</p>\n</star-dialog>\n<star-dialog\n  [(visible)]=\"lockedOpen\"\n  header=\"Locked dialog\"\n  [closable]=\"false\"\n  [closeOnEscape]=\"false\"\n>\n  <p>This dialog has no close button and ignores Escape.</p>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button (pressed)=\"lockedOpen.set(false)\">Done</star-button>\n  </div>\n</star-dialog>\n<star-dialog [(visible)]=\"floatOpen\" header=\"Non-modal dialog\" [modal]=\"false\">\n  <p>The page behind this window stays usable.</p>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button (pressed)=\"floatOpen.set(false)\">Close</star-button>\n  </div>\n</star-dialog>",
+  "dialog/focus": "<div class=\"docs-row\">\n  <star-button variant=\"secondary\" (pressed)=\"defaultFocusOpen.set(true)\">\n    First focusable\n  </star-button>\n  <star-button variant=\"secondary\" (pressed)=\"markedFocusOpen.set(true)\">\n    Marked field\n  </star-button>\n</div>\n<star-dialog [(visible)]=\"defaultFocusOpen\" header=\"Default focus\">\n  <p>The focus starts on the close button.</p>\n  <star-field label=\"Reference\"><input starInput value=\"ORD-1042\" /></star-field>\n</star-dialog>\n<star-dialog [(visible)]=\"markedFocusOpen\" header=\"Marked focus\">\n  <star-field label=\"Reference\">\n    <input starInput value=\"ORD-1042\" data-autofocus />\n  </star-field>\n</star-dialog>",
+  "dialog/popups": "<star-button variant=\"secondary\" (pressed)=\"popupsOpen.set(true)\">\n  Open order dialog\n</star-button>\n<star-dialog [(visible)]=\"popupsOpen\" header=\"Order ORD-1042\" size=\"md\">\n  <div class=\"docs-stack\">\n    <star-field label=\"Shipping city\" hint=\"Menus and cascade selects open above the modal\">\n      <star-cascade-select\n        [options]=\"places\"\n        optionLabel=\"name\"\n        optionValue=\"code\"\n        [(value)]=\"place\"\n        ariaLabel=\"Dialog city\"\n        showPath\n      />\n    </star-field>\n    <div class=\"docs-row\">\n      <star-button size=\"sm\" variant=\"secondary\" [starMenuTrigger]=\"actionsMenu\">\n        More actions\n      </star-button>\n      <star-menu\n        #actionsMenu\n        [items]=\"actionItems\"\n        (itemClick)=\"lastAction.set($event.label ?? '')\"\n      />\n      <span class=\"docs-output\" tabindex=\"0\" [starContextMenu]=\"actionsMenu\">\n        Last action: {{ lastAction() }}\n      </span>\n    </div>\n  </div>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button (pressed)=\"popupsOpen.set(false)\">Done</star-button>\n  </div>\n</star-dialog>",
+  "dialog/service": "<div class=\"docs-stack\">\n  <p class=\"docs-output\" role=\"status\">Note: {{ note() }}</p>\n  <div class=\"docs-row\">\n    <star-button leadingIcon=\"ph-bold ph-note-pencil\" (pressed)=\"editNote()\">\n      Edit note\n    </star-button>\n  </div>\n</div>",
+  "dialog/sizes": "<div class=\"docs-row\">\n  @for (item of sizes; track item) {\n    <star-button variant=\"secondary\" (pressed)=\"openSize(item)\">\n      Open {{ item }}\n    </star-button>\n  }\n</div>\n<star-dialog [(visible)]=\"sizeOpen\" [size]=\"size()\" [header]=\"'Size ' + size()\">\n  <p>The size input of this dialog is {{ size() }}.</p>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button (pressed)=\"sizeOpen.set(false)\">Close</star-button>\n  </div>\n</star-dialog>",
+  "drawer/basic": "<star-button leadingIcon=\"ph-bold ph-sidebar-simple\" (pressed)=\"basicOpen.set(true)\">\n  Open details\n</star-button>\n<star-drawer [(visible)]=\"basicOpen\" header=\"Order ORD-1042\" dismissableMask>\n  <div class=\"docs-stack\">\n    <p class=\"docs-output\">Orchard Supply, 12 items, ships on Friday.</p>\n    <star-field label=\"Internal note\">\n      <textarea starInput autoResize rows=\"3\"></textarea>\n    </star-field>\n  </div>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button variant=\"ghost\" (pressed)=\"basicOpen.set(false)\">Close</star-button>\n  </div>\n</star-drawer>",
+  "drawer/position": "<div class=\"docs-row\">\n  @for (item of positions; track item) {\n    <star-button variant=\"secondary\" (pressed)=\"openAt(item)\">{{ item }}</star-button>\n  }\n</div>\n<star-drawer\n  [(visible)]=\"positionOpen\"\n  [position]=\"position()\"\n  [drawerSize]=\"position() === 'left' || position() === 'right' ? '22rem' : '14rem'\"\n  [header]=\"'Drawer at the ' + position()\"\n>\n  <p>This drawer is pinned to the {{ position() }} edge.</p>\n</star-drawer>",
   "field/basic": "<div class=\"docs-stack\">\n  <star-field label=\"Full name\" hint=\"As shown on your account.\">\n    <input starInput placeholder=\"Avery Stone\" />\n  </star-field>\n</div>",
   "field/sizes": "<div class=\"docs-stack\">\n  <input starInput size=\"sm\" aria-label=\"Small\" placeholder=\"Small\" />\n  <input starInput aria-label=\"Medium\" placeholder=\"Medium\" />\n  <input starInput size=\"lg\" aria-label=\"Large\" placeholder=\"Large\" />\n</div>",
   "field/states": "<div class=\"docs-stack\">\n  <star-field label=\"Promo code\" error=\"This code has expired.\">\n    <input starInput value=\"SPRING\" />\n  </star-field>\n  <star-field label=\"Account number\">\n    <input starInput value=\"100-204\" disabled />\n  </star-field>\n</div>",
@@ -3613,6 +3922,9 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "password/basic": "<div class=\"docs-stack\">\n  <star-field label=\"Password\">\n    <star-password [(value)]=\"current\" />\n  </star-field>\n</div>",
   "password/feedback": "<div class=\"docs-stack\">\n  <star-field label=\"New password\">\n    <star-password [(value)]=\"created\" feedback />\n  </star-field>\n</div>",
   "password/rules": "<div class=\"docs-stack\">\n  <star-field label=\"PIN phrase\">\n    <star-password [(value)]=\"phrase\" feedback [rules]=\"rules\" />\n  </star-field>\n</div>",
+  "popover/basic": "<star-button\n  variant=\"secondary\"\n  leadingIcon=\"ph-bold ph-info\"\n  (pressed)=\"details.toggle($event)\"\n>\n  Details\n</star-button>\n<star-popover #details ariaLabel=\"Order details\">\n  <div class=\"docs-stack\">\n    <p class=\"docs-output\"><strong>ORD-1042</strong></p>\n    <p class=\"docs-output\">Orchard Supply, 12 items, ships on Friday.</p>\n    <star-button size=\"sm\" (pressed)=\"details.hide()\">Close</star-button>\n  </div>\n</star-popover>",
+  "popover/field": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"rename.toggle($event)\">\n      Rename order\n    </star-button>\n  </div>\n  <star-popover\n    #rename\n    ariaLabel=\"Rename order\"\n    (shown)=\"renameState.set('open')\"\n    (hidden)=\"renameState.set('closed')\"\n  >\n    <star-field label=\"Order name\">\n      <input starInput value=\"Spring restock\" />\n    </star-field>\n  </star-popover>\n  <p class=\"docs-output\" role=\"status\">Popover: {{ renameState() }}</p>\n</div>",
+  "popover/pinned": "<star-button variant=\"secondary\" (pressed)=\"pinned.toggle($event)\">Toggle tip</star-button>\n<star-popover #pinned ariaLabel=\"Tip\" [dismissable]=\"false\" [focusOnShow]=\"false\">\n  <p class=\"docs-output\">This tip stays open until you press the button again.</p>\n</star-popover>",
   "radio/basic": "<star-radio-group [(value)]=\"plan\" ariaLabel=\"Plan\">\n  <star-radio value=\"starter\">Starter</star-radio>\n  <star-radio value=\"team\">Team</star-radio>\n  <star-radio value=\"business\">Business</star-radio>\n</star-radio-group>\n<p class=\"docs-output\" role=\"status\">Plan: {{ plan() }}</p>",
   "radio/disabled": "<star-radio-group [(value)]=\"delivery\" ariaLabel=\"Delivery\">\n  <star-radio value=\"standard\">Standard</star-radio>\n  <star-radio value=\"express\">Express</star-radio>\n  <star-radio value=\"pickup\" disabled>Pick-up (not available)</star-radio>\n</star-radio-group>",
   "radio/horizontal": "<star-radio-group [(value)]=\"size\" orientation=\"horizontal\" ariaLabel=\"Size\">\n  <star-radio value=\"s\">Small</star-radio>\n  <star-radio value=\"m\">Medium</star-radio>\n  <star-radio value=\"l\">Large</star-radio>\n</star-radio-group>",
@@ -3646,9 +3958,15 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "time-picker/form": "<div class=\"docs-stack\">\n  <star-field label=\"Pick-up time\" for=\"time-form-pickup\" [state]=\"slot.pickup()\">\n    <star-time-picker\n      inputId=\"time-form-pickup\"\n      [formField]=\"slot.pickup\"\n      ariaLabel=\"Pick-up time\"\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ slot().valid() }}</p>\n</div>",
   "time-picker/limits": "<div class=\"docs-stack\">\n  <star-time-picker\n    [(value)]=\"opening\"\n    min=\"08:00\"\n    max=\"18:00\"\n    [stepMinute]=\"15\"\n    ariaLabel=\"Opening time\"\n  />\n  <p class=\"docs-output\" role=\"status\">Opening: {{ opening() ?? 'none' }}</p>\n</div>",
   "time-picker/states": "<div class=\"docs-stack\">\n  <star-time-picker size=\"sm\" ariaLabel=\"Small time picker\" />\n  <star-time-picker disabled [value]=\"'09:30'\" ariaLabel=\"Disabled time picker\" />\n  <star-time-picker readonly [value]=\"'09:30'\" ariaLabel=\"Read-only time picker\" />\n</div>",
+  "toast/duplicates": "<star-button size=\"sm\" variant=\"secondary\" (pressed)=\"twice()\">Save twice</star-button>",
+  "toast/severities": "<star-button size=\"sm\" variant=\"success\" (pressed)=\"notify('success')\">Success</star-button>\n<star-button size=\"sm\" variant=\"secondary\" (pressed)=\"notify('info')\">Info</star-button>\n<star-button size=\"sm\" variant=\"warning\" (pressed)=\"notify('warn')\">Warn</star-button>\n<star-button size=\"sm\" variant=\"danger\" (pressed)=\"notify('error')\">Error</star-button>",
+  "toast/sticky": "<star-button size=\"sm\" variant=\"secondary\" (pressed)=\"sticky()\">Sticky message</star-button>\n<star-button size=\"sm\" variant=\"secondary\" (pressed)=\"quick()\"\n  >Two second message</star-button\n>\n<star-button size=\"sm\" variant=\"ghost\" (pressed)=\"toasts.clear()\">Clear all</star-button>",
   "toggle-switch/basic": "<star-toggle-switch [(checked)]=\"alerts\">Email alerts</star-toggle-switch>\n<p class=\"docs-output\" role=\"status\">Alerts: {{ alerts() ? 'on' : 'off' }}</p>",
   "toggle-switch/disabled": "<star-toggle-switch [checked]=\"true\" disabled\n  >Two-step sign-in (set by your admin)</star-toggle-switch\n>",
   "toggle-switch/small": "<star-toggle-switch size=\"sm\" [(checked)]=\"compact\">Compact rows</star-toggle-switch>",
+  "tooltip/delay": "<star-button variant=\"secondary\" starTooltip=\"Appears at once\" [starTooltipShowDelay]=\"0\">\n  No delay\n</star-button>\n<star-button\n  variant=\"secondary\"\n  starTooltip=\"Appears after one second\"\n  [starTooltipShowDelay]=\"1000\"\n>\n  Slow\n</star-button>\n<star-button variant=\"secondary\" starTooltip=\"Never shown\" starTooltipDisabled>\n  Disabled tooltip\n</star-button>",
+  "tooltip/icon": "<button\n  type=\"button\"\n  class=\"star-btn star-btn--secondary star-btn--icon\"\n  aria-label=\"Export orders\"\n  starTooltip=\"Export orders to CSV\"\n>\n  <i class=\"ph-bold ph-export\" aria-hidden=\"true\"></i>\n</button>",
+  "tooltip/positions": "<star-button variant=\"secondary\" starTooltip=\"Shown on hover and focus\">Top</star-button>\n<star-button\n  variant=\"secondary\"\n  starTooltip=\"Below the button\"\n  starTooltipPosition=\"bottom\"\n>\n  Bottom\n</star-button>\n<star-button variant=\"secondary\" starTooltip=\"On the left\" starTooltipPosition=\"left\">\n  Left\n</star-button>\n<star-button variant=\"secondary\" starTooltip=\"On the right\" starTooltipPosition=\"right\">\n  Right\n</star-button>",
   "tree-select/checkbox": "<div class=\"docs-stack\">\n  <star-tree-select\n    [nodes]=\"departments\"\n    selectionMode=\"checkbox\"\n    [(value)]=\"teams\"\n    filter\n    placeholder=\"Select teams\"\n    ariaLabel=\"Teams\"\n  />\n  <p class=\"docs-output\" role=\"status\">Teams: {{ teams().join(', ') || 'none' }}</p>\n</div>",
   "tree-select/form": "<div class=\"docs-stack\">\n  <star-field label=\"Department\" [state]=\"hire.department()\">\n    <star-tree-select\n      [formField]=\"hire.department\"\n      [nodes]=\"departments\"\n      placeholder=\"Select a department\"\n      ariaLabel=\"Hire department\"\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ hire().valid() }}</p>\n</div>",
   "tree-select/multiple": "<div class=\"docs-stack\">\n  <star-tree-select\n    [nodes]=\"departments\"\n    selectionMode=\"multiple\"\n    [(value)]=\"nodes\"\n    placeholder=\"Select nodes\"\n    ariaLabel=\"Nodes\"\n  />\n  <p class=\"docs-output\" role=\"status\">Nodes: {{ nodes().join(', ') || 'none' }}</p>\n  <star-tree-select\n    [nodes]=\"departments\"\n    disabled\n    placeholder=\"Disabled\"\n    ariaLabel=\"Disabled department\"\n  />\n</div>",

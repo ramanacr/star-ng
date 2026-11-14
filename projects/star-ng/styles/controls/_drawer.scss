@@ -1,0 +1,90 @@
+// Drawer: native dialog pinned to an edge.
+@use '../shared' as *;
+
+.star-drawer {
+  --star-drawer-size: 28rem;
+  --star-drawer-from: 100% 0;
+  position: fixed;
+  max-width: 100vw;
+  max-height: 100dvh;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: var(--star-surface);
+  color: var(--star-text);
+  box-shadow: var(--star-shadow-modal);
+  translate: var(--star-drawer-from);
+  transition:
+    translate var(--star-duration-slow) $ease,
+    overlay var(--star-duration-slow) allow-discrete,
+    display var(--star-duration-slow) allow-discrete;
+
+  &::backdrop {
+    background: var(--star-scrim-modal);
+    opacity: 0;
+    transition:
+      opacity var(--star-duration-slow) $ease,
+      overlay var(--star-duration-slow) allow-discrete,
+      display var(--star-duration-slow) allow-discrete;
+  }
+  &[open] {
+    translate: 0 0;
+
+    @starting-style {
+      translate: var(--star-drawer-from);
+    }
+  }
+  &[open]::backdrop {
+    opacity: 1;
+
+    @starting-style {
+      opacity: 0;
+    }
+  }
+  .star-dialog__surface {
+    height: 100%;
+    max-height: none;
+  }
+}
+.star-drawer--right,
+.star-drawer--left {
+  inset-block: 0;
+  width: min(var(--star-drawer-size), 100vw);
+  height: 100dvh;
+}
+.star-drawer--right {
+  inset-inline: auto 0;
+  border-radius: var(--star-radius-2xl) 0 0 var(--star-radius-2xl);
+}
+.star-drawer--left {
+  --star-drawer-from: -100% 0;
+  inset-inline: 0 auto;
+  border-radius: 0 var(--star-radius-2xl) var(--star-radius-2xl) 0;
+}
+.star-drawer--top,
+.star-drawer--bottom {
+  inset-inline: 0;
+  width: 100vw;
+  height: min(var(--star-drawer-size), 100dvh);
+}
+.star-drawer--top {
+  --star-drawer-from: 0 -100%;
+  inset-block: 0 auto;
+  border-radius: 0 0 var(--star-radius-2xl) var(--star-radius-2xl);
+}
+.star-drawer--bottom {
+  --star-drawer-from: 0 100%;
+  inset-block: auto 0;
+  border-radius: var(--star-radius-2xl) var(--star-radius-2xl) 0 0;
+}
+html:has(dialog.star-drawer.star-dialog--modal[open]) {
+  overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .star-drawer,
+  .star-drawer::backdrop {
+    animation: none;
+    transition: none;
+  }
+}

@@ -1,0 +1,14 @@
+// Tooltip: small dark label shown by the tooltip directive.
+.star-tooltip {
+  display: block;
+  max-width: 18rem;
+  padding: 0.375rem 0.625rem;
+  border-radius: var(--star-radius-sm);
+  background: var(--star-tooltip-surface);
+  color: #fff;
+  font: var(--star-type-body-sm);
+  font-weight: 600;
+  box-shadow: var(--star-shadow-md);
+  pointer-events: none;
+  animation: star-panel-in var(--star-duration-fast) ease-out;
+}
