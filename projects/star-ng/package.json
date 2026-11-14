@@ -1,0 +1,46 @@
+{
+  "name": "star-ng",
+  "version": "0.1.0",
+  "description": "StarNG: accessible Angular controls built on signals, Signal Forms and the Angular CDK.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ramanacr/star-ng.git"
+  },
+  "keywords": [
+    "angular",
+    "components",
+    "ui",
+    "signals",
+    "signal-forms",
+    "accessibility"
+  ],
+  "peerDependencies": {
+    "@angular/cdk": "^22.0.0",
+    "@angular/common": "^22.0.0",
+    "@angular/core": "^22.0.0",
+    "@angular/forms": "^22.0.0",
+    "@jsverse/transloco": "^8.0.0",
+    "@phosphor-icons/web": "^2.1.0",
+    "rxjs": "^7.8.0"
+  },
+  "peerDependenciesMeta": {
+    "@jsverse/transloco": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "tslib": "^2.3.0"
+  },
+  "exports": {
+    "./styles/star-ng.css": {
+      "style": "./styles/star-ng.css",
+      "default": "./styles/star-ng.css"
+    },
+    "./styles/*": {
+      "sass": "./styles/*",
+      "default": "./styles/*"
+    }
+  },
+  "sideEffects": false
+}

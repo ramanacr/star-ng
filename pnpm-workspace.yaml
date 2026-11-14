@@ -1,0 +1,20 @@
+packages:
+  - '.'
+
+# Security override (dev tooling only): GHSA-g3hv-75wg-m249, minimatch denial of service
+# (moderate), fixed in 11.0.1. eslint and typescript-eslint still declare minimatch ^10.
+# Remove both lines once eslint and typescript-eslint depend on a patched minimatch.
+#
+# Integrity pin (dev tooling only, via jsdom > tough-cookie > tldts): tldts-core 7.4.20 is a
+# deprecated partial release (remusao/tldts#2735). 7.4.19 is the last complete release before
+# it. Remove this line once the lockfile resolves to tldts-core >=7.4.22.
+overrides:
+  minimatch@>=7.0.0 <11.0.1: 11.0.3
+  '@isaacs/nonrecursive-glob-match': 1.0.3
+  tldts-core: 7.4.19
+
+allowBuilds:
+  '@parcel/watcher': false
+  esbuild: false
+  lmdb: false
+  msgpackr-extract: false
