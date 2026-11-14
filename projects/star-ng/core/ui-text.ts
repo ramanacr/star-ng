@@ -181,6 +181,25 @@ export interface StarUiText {
   readonly chartCategory: string;
   readonly chartValue: string;
   readonly chartShare: string;
+  readonly chartSeries: string;
+  readonly chartX: string;
+  readonly chartY: string;
+  readonly chartTypeBar: string;
+  readonly chartTypeStackedBar: string;
+  readonly chartTypeLine: string;
+  readonly chartTypeArea: string;
+  readonly chartTypeDoughnut: string;
+  readonly chartTypePie: string;
+  readonly chartTypeRadar: string;
+  readonly chartTypePolarArea: string;
+  readonly chartTypeScatter: string;
+  readonly chartDescription: (
+    kind: string,
+    series: number,
+    items: number,
+    min: string,
+    max: string,
+  ) => string;
   readonly meterValue: (value: string, total: number) => string;
 }
 
@@ -353,6 +372,20 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   chartCategory: 'Category',
   chartValue: 'Value',
   chartShare: 'Share',
+  chartSeries: 'Series',
+  chartX: 'X',
+  chartY: 'Y',
+  chartTypeBar: 'Bar chart',
+  chartTypeStackedBar: 'Stacked bar chart',
+  chartTypeLine: 'Line chart',
+  chartTypeArea: 'Area chart',
+  chartTypeDoughnut: 'Doughnut chart',
+  chartTypePie: 'Pie chart',
+  chartTypeRadar: 'Radar chart',
+  chartTypePolarArea: 'Polar area chart',
+  chartTypeScatter: 'Scatter chart',
+  chartDescription: (kind, series, items, min, max) =>
+    `${kind} with ${series} series and ${items} ${items === 1 ? 'item' : 'items'}, values from ${min} to ${max}. The same data is in the table.`,
   meterValue: (value, total) => `${value} of ${total}`,
 };
 
@@ -394,6 +427,7 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   showImage: ['alt'],
   previewImage: ['alt'],
   meterValue: ['value', 'total'],
+  chartDescription: ['kind', 'series', 'items', 'min', 'max'],
 };
 
 export const STAR_UI_TEXT = new InjectionToken<StarUiText>('STAR_UI_TEXT', {

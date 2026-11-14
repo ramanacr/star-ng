@@ -800,14 +800,21 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-chart",
     "entry": "star-ng/chart",
-    "description": "Chart (PrimeNG `p-chart` without Chart.js): dependency-free SVG bar, line, area, doughnut and pie charts. One y-axis, recessive grid, 2px lines, 4px rounded bar ends on the baseline, 2px surface gaps, legend for 2+ series, hover tooltip per mark (crosshair on line), and a data table (visible on demand, always present for screen readers). Colors are fixed series slots in both themes.",
+    "description": "Chart (PrimeNG `p-chart` without Chart.js): dependency-free SVG bar, stacked bar, line, area, doughnut, pie, radar, polar area and scatter charts. One y-axis, recessive grid, 2px lines, 4px rounded bar ends on the baseline, 2px surface gaps, legend for 2+ series, hover tooltip per mark (crosshair on line), and a data table (visible on demand, always present for screen readers). Colors are fixed series slots in both themes.",
     "inputs": [
       {
         "name": "type",
-        "type": "'bar' | 'line' | 'area' | 'doughnut' | 'pie'",
+        "type": "StarChartType",
         "default": "'bar'",
         "required": false,
-        "description": "`'area'` is a line chart with a soft fill under each line. `'pie'` is a doughnut without the hole and the total; like the doughnut it shows the top 3 categories and \"Other\"."
+        "description": "`'area'` is a line chart with a soft fill under each line. `'pie'` is a doughnut without the hole and the total; like the doughnut it shows the top 3 categories and \"Other\". `'stacked-bar'` stacks the series of a category in one column. `'radar'` draws one polygon per series over one axis per category. `'polar-area'` draws one sector per category of the first series, with the area of the sector in proportion to the value. `'scatter'` plots points from `{ x, y }` data on two numeric axes."
+      },
+      {
+        "name": "percent",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Stacked bar only: scale every column to 100 percent, to compare the shares of the series instead of the totals. The tooltip still shows the real values."
       },
       {
         "name": "title",
@@ -825,17 +832,24 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       },
       {
         "name": "series",
-        "type": "readonly StarChartSeries[]",
+        "type": "readonly (StarChartSeries | StarChartPointSeries)[]",
         "default": "[]",
         "required": false,
-        "description": "One or more series. Doughnut uses the first series only. More than 8 series are cut."
+        "description": "One or more series. Doughnut, pie and polar area use the first series only. More than 8 series are cut. Scatter takes `{ x, y }` points in `data`: plain numbers there are y values with the position in the series as x."
       },
       {
         "name": "categoryLabel",
         "type": "string | null",
         "default": "null",
         "required": false,
-        "description": ""
+        "description": "Name of the category column of the table. Scatter: name of the x axis and column."
+      },
+      {
+        "name": "valueLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Scatter and polar area: name of the y axis and column, or of the value column."
       },
       {
         "name": "locale",
@@ -6165,8 +6179,14 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "chart/bar": "<star-chart\n  type=\"bar\"\n  title=\"Orders per month\"\n  [labels]=\"months\"\n  [series]=\"orders\"\n  categoryLabel=\"Month\"\n/>",
   "chart/doughnut": "<star-chart\n  type=\"doughnut\"\n  title=\"Traffic by channel\"\n  [labels]=\"channels\"\n  [series]=\"traffic\"\n/>",
   "chart/line": "<star-chart\n  type=\"line\"\n  title=\"Orders per month, line\"\n  [labels]=\"months\"\n  [series]=\"orders\"\n/>",
+  "chart/long-labels": "<div class=\"docs-chart-narrow\">\n  <star-chart\n    type=\"stacked-bar\"\n    title=\"Orders by region\"\n    [labels]=\"longRegions\"\n    [series]=\"regionChannels\"\n  />\n</div>\n<div class=\"docs-chart-narrow\">\n  <star-chart\n    type=\"radar\"\n    title=\"Detailed ratings\"\n    [labels]=\"longCriteria\"\n    [series]=\"ratings\"\n  />\n</div>",
   "chart/pie": "<star-chart type=\"pie\" title=\"Revenue by region\" [labels]=\"regions\" [series]=\"revenue\" />",
+  "chart/polar-area": "<star-chart\n  type=\"polar-area\"\n  title=\"Visits by weekday\"\n  [labels]=\"weekdays\"\n  [series]=\"weekdayVisits\"\n  categoryLabel=\"Weekday\"\n/>",
+  "chart/radar": "<star-chart\n  type=\"radar\"\n  title=\"Product ratings by criterion\"\n  [labels]=\"criteria\"\n  [series]=\"ratings\"\n  categoryLabel=\"Criterion\"\n/>",
+  "chart/scatter": "<star-chart\n  type=\"scatter\"\n  title=\"Price against weight\"\n  [series]=\"products\"\n  categoryLabel=\"Weight (kg)\"\n  valueLabel=\"Price\"\n/>",
   "chart/sizing": "<div class=\"docs-chart-narrow\">\n  <star-chart type=\"bar\" title=\"Orders, narrow\" [labels]=\"months\" [series]=\"single\" />\n</div>",
+  "chart/stacked-bar": "<star-chart\n  type=\"stacked-bar\"\n  title=\"Orders per month by channel\"\n  [labels]=\"months\"\n  [series]=\"channelOrders\"\n  categoryLabel=\"Month\"\n/>",
+  "chart/stacked-bar-percent": "<star-chart\n  type=\"stacked-bar\"\n  title=\"Share of orders by channel\"\n  [labels]=\"months\"\n  [series]=\"channelOrders\"\n  categoryLabel=\"Month\"\n  percent\n/>",
   "chart/table": "<star-chart\n  type=\"bar\"\n  title=\"Revenue by region, table\"\n  [labels]=\"regions\"\n  [series]=\"revenue\"\n  categoryLabel=\"Region\"\n  table\n/>",
   "checkbox/basic": "<star-checkbox [(checked)]=\"subscribed\">Send me product news</star-checkbox>\n<p class=\"docs-output\" role=\"status\">Subscribed: {{ subscribed() }}</p>",
   "checkbox/form": "<star-checkbox [formField]=\"terms.accept\">I accept the terms</star-checkbox>\n<p class=\"docs-output\" role=\"status\">Valid: {{ terms().valid() }}</p>",

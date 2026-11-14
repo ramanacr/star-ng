@@ -141,8 +141,69 @@
   opacity: 0.16;
 }
 
+// Marks of the stacked bar, radar, polar area and scatter charts. The fill is the series color. The
+// outline is the series color mixed with the strong text color: it keeps 3:1 contrast with the
+// surface in both themes, also for the light slots (3 to 5 on white).
+.star-chart__mark {
+  --mark-edge: color-mix(in srgb, var(--mark) 65%, var(--star-text-strong));
+  fill: var(--mark);
+  stroke: var(--mark-edge);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+  transition: opacity var(--star-duration-fast) ease;
+}
+.star-chart__polygon {
+  fill-opacity: 0.18;
+  stroke-width: 2;
+}
+.star-chart__ring {
+  fill: none;
+  stroke: var(--star-border);
+  stroke-width: 1;
+}
+.star-chart__baseline {
+  stroke: var(--star-border-strong);
+  stroke-width: 1;
+}
+.star-chart__ring-label {
+  fill: var(--star-text-muted);
+  font: var(--star-type-body-sm);
+  font-variant-numeric: tabular-nums;
+  paint-order: stroke;
+  stroke: var(--star-surface);
+  stroke-width: 3;
+  stroke-linejoin: round;
+}
+.star-chart__axis-title {
+  fill: var(--star-text-muted);
+  font: var(--star-type-label);
+}
+.star-chart__swatch-shape {
+  display: inline-block;
+  flex: none;
+  width: 0.75rem;
+  height: 0.75rem;
+}
+.star-chart__tip--corner {
+  top: 0;
+  left: 0;
+  translate: 0 0;
+}
+.star-chart__tip--point {
+  margin-top: 0.75rem;
+}
+.star-chart__tip-indent {
+  padding-inline-start: 1.125rem;
+}
+.star-chart__tip-total {
+  margin-top: 0.125rem;
+  padding-top: 0.25rem;
+  border-top: 1px solid rgb(255 255 255 / 0.3);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .star-chart__bar,
+  .star-chart__mark,
   .star-chart__slice {
     transition: none;
   }
