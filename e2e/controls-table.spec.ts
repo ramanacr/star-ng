@@ -1059,8 +1059,10 @@ test.describe('table: export', () => {
     );
 
     await live.getByRole('button', { name: 'Rows from the options' }).click();
+    // The text changes after the click: wait for the new content before counting lines.
+    await expect(text).toContainText('ORD-1041');
+    await expect.poll(async () => (await text.textContent())!.split('\r\n').length).toBe(2);
     const lines = (await text.textContent())!.split('\r\n');
-    expect(lines.length).toBe(2);
     expect(lines[1]).toContain('ORD-1041');
   });
 });

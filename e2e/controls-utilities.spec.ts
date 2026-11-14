@@ -157,8 +157,11 @@ test.describe('speed dial', () => {
       'aria-pressed',
       'false',
     );
-    // This list opens down: Arrow down moves forward.
+    // This list opens down: Arrow down moves forward. Focus moves to the first action after
+    // the list renders: wait for it, so the key does not arrive too early.
+    await expect(live.getByRole('button', { name: 'Date' })).toBeFocused();
     await page.keyboard.press('ArrowDown');
+    await expect(live.getByRole('button', { name: 'Amount' })).toBeFocused();
     await page.keyboard.press('Enter');
     await expect(live.getByRole('status')).toHaveText('Sorted by: Amount');
     await live.getByRole('button', { name: 'Sort' }).click();
