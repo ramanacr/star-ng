@@ -1,0 +1,189 @@
+// StarNG design tokens. Every control reads these CSS custom properties; nothing else sets a
+// color, a radius, a shadow or a font. A product changes the look by redefining them:
+//
+//   :root {
+//     --star-primary: #0f766e;
+//     --star-primary-hover: #115e59;
+//     --star-primary-soft: #ccfbf1;
+//   }
+//   [data-theme='dark'] {
+//     --star-primary: #2dd4bf;
+//   }
+//
+// Theme switch: `data-theme="light"` or `data-theme="dark"` on `<html>` (see `star-ng/theme`).
+// Without the attribute the light values apply.
+
+:root,
+[data-theme='light'] {
+  color-scheme: light;
+
+  // Color roles
+  --star-primary: #4f46e5;
+  --star-primary-hover: #4338ca;
+  --star-primary-soft: #e0e7ff;
+  --star-accent: #0369a1;
+  --star-accent-soft: #e0f2fe;
+  --star-success: #16a34a;
+  --star-success-soft: #dcfce7;
+  --star-warning: #d97706;
+  --star-warning-soft: #fef3c7;
+  --star-danger: #dc2626;
+  --star-danger-hover: #b91c1c;
+  --star-danger-soft: #fef2f2;
+
+  // Surfaces, borders and text
+  --star-surface: #ffffff;
+  --star-surface-muted: #f8fafc;
+  --star-border: #e2e8f0;
+  --star-border-strong: #cbd5e1;
+  --star-text-strong: #0f172a;
+  --star-text: #1e293b;
+  --star-text-muted: #64748b;
+  --star-text-soft: #94a3b8;
+
+  // Shadows
+  --star-shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --star-shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.04), 0 1px 2px rgba(15, 23, 42, 0.02);
+  --star-shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
+  --star-shadow-lg: 0 8px 24px -8px rgba(15, 23, 42, 0.1);
+  --star-shadow-xl: 0 12px 32px -8px rgba(15, 23, 42, 0.12);
+  --star-shadow-card: 0 1px 3px rgba(15, 23, 42, 0.06), 0 8px 24px -12px rgba(15, 23, 42, 0.12);
+  --star-shadow-modal: 0 30px 100px -20px rgba(0, 0, 0, 0.25);
+  --star-shadow-float: 0 20px 60px -10px rgba(15, 23, 42, 0.4);
+  // Glow under a primary button. `none` by default; a product can set a colored glow.
+  --star-shadow-glow-primary: none;
+  // Focus rings: `--star-focus-ring` for text controls and buttons,
+  // `--star-focus-ring-primary` for controls that fill with the primary color.
+  --star-focus-ring: 0 0 0 4px rgba(3, 105, 161, 0.18);
+  --star-focus-ring-primary: 0 0 0 4px rgba(79, 70, 229, 0.2);
+
+  // Glass and scrims
+  --star-glass-surface: rgba(255, 255, 255, 0.7);
+  --star-glass-surface-strong: rgba(255, 255, 255, 0.92);
+  --star-glass-border: rgba(255, 255, 255, 0.6);
+  --star-scrim: rgba(15, 23, 42, 0.9);
+  --star-scrim-modal: rgba(15, 23, 42, 0.6);
+  --star-tooltip-surface: #0f172a;
+
+  // Chart series (star-chart, star-meter-group). Fixed order, never cycled. Some slots are
+  // under 3:1 on white, so every chart also offers its data as a table.
+  --star-chart-1: #2a78d6;
+  --star-chart-2: #eb6834;
+  --star-chart-3: #1baf7a;
+  --star-chart-4: #eda100;
+  --star-chart-5: #e87ba4;
+  --star-chart-6: #008300;
+  --star-chart-7: #6250d6;
+  --star-chart-8: #e34948;
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  --star-primary: #818cf8;
+  --star-primary-hover: #a5b4fc;
+  --star-primary-soft: #272a57;
+  --star-accent: #38bdf8;
+  --star-accent-soft: #0c2f47;
+  --star-success: #4ade80;
+  --star-success-soft: #0f2e1c;
+  --star-warning: #fbbf24;
+  --star-warning-soft: #3a2a06;
+  --star-danger: #f87171;
+  --star-danger-hover: #fca5a5;
+  --star-danger-soft: #3a1414;
+
+  --star-surface: #0f1216;
+  --star-surface-muted: #191d24;
+  --star-border: #2b3341;
+  --star-border-strong: #3d4a5c;
+  --star-text-strong: #f8fafc;
+  --star-text: #e2e8f0;
+  --star-text-muted: #94a3b8;
+  --star-text-soft: #64748b;
+
+  --star-focus-ring: 0 0 0 4px rgba(56, 189, 248, 0.25);
+  --star-focus-ring-primary: 0 0 0 4px rgba(129, 140, 248, 0.3);
+
+  --star-glass-surface: rgba(255, 255, 255, 0.04);
+  --star-glass-surface-strong: rgba(25, 29, 36, 0.92);
+  --star-glass-border: rgba(255, 255, 255, 0.08);
+  --star-scrim-modal: rgba(0, 0, 0, 0.65);
+
+  --star-chart-1: #3987e5;
+  --star-chart-2: #d95926;
+  --star-chart-3: #199e70;
+  --star-chart-4: #c98500;
+  --star-chart-5: #d55181;
+  --star-chart-6: #008300;
+  --star-chart-7: #9085e9;
+  --star-chart-8: #e66767;
+}
+
+:root {
+  // Spacing
+  --star-space-1: 0.25rem;
+  --star-space-2: 0.5rem;
+  --star-space-3: 0.75rem;
+  --star-space-4: 1rem;
+  --star-space-5: 1.25rem;
+  --star-space-6: 1.5rem;
+  --star-space-7: 1.75rem;
+  --star-space-8: 2rem;
+  --star-space-10: 2.5rem;
+  --star-space-12: 3rem;
+  --star-control-height: 2.75rem;
+
+  // Radius
+  --star-radius-xs: 4px;
+  --star-radius-sm: 6px;
+  --star-radius-md: 8px;
+  --star-radius-lg: 12px;
+  --star-radius-xl: 16px;
+  --star-radius-2xl: 20px;
+  --star-radius-3xl: 24px;
+  --star-radius-4xl: 28px;
+  --star-radius-pill: 9999px;
+
+  // Typography: system font stacks, no font files to load.
+  --star-font-sans:
+    system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', 'Noto Sans', Arial, sans-serif;
+  --star-font-mono:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
+  --star-type-eyebrow: 700 10px/14px var(--star-font-sans);
+  --star-type-label: 600 12px/16px var(--star-font-sans);
+  --star-type-body-sm: 400 12px/18px var(--star-font-sans);
+  --star-type-body: 400 13px/20px var(--star-font-sans);
+  --star-type-body-lg: 400 14px/22px var(--star-font-sans);
+  --star-type-title-sm: 600 16px/22px var(--star-font-sans);
+  --star-type-title: 600 18px/24px var(--star-font-sans);
+  --star-type-title-lg: 700 22px/28px var(--star-font-sans);
+  --star-type-display: 700 28px/34px var(--star-font-sans);
+  --star-type-code: 400 13px/20px var(--star-font-mono);
+
+  // Component typography. A product with a stronger voice can set, for example,
+  // `--star-button-text-transform: uppercase` and `--star-button-letter-spacing: 0.08em`.
+  --star-button-font-weight: 600;
+  --star-button-text-transform: none;
+  --star-button-letter-spacing: normal;
+  --star-button-radius: var(--star-radius-md);
+  --star-label-font-weight: 600;
+  --star-label-text-transform: none;
+  --star-label-letter-spacing: normal;
+  --star-input-radius: var(--star-radius-md);
+  --star-input-font-weight: 400;
+
+  // Backdrop blur
+  --star-blur-xs: 4px;
+  --star-blur-sm: 6px;
+  --star-blur-md: 8px;
+  --star-blur-lg: 10px;
+  --star-blur-xl: 12px;
+  --star-blur-2xl: 16px;
+  --star-blur-3xl: 20px;
+
+  // Motion
+  --star-duration-fast: 0.12s;
+  --star-duration-base: 0.2s;
+  --star-duration-slow: 0.35s;
+}

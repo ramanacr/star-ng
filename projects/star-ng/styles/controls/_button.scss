@@ -1,0 +1,137 @@
+// Button (StarButton).
+.star-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  font-family: inherit;
+  font-weight: var(--star-button-font-weight);
+  text-transform: var(--star-button-text-transform);
+  letter-spacing: var(--star-button-letter-spacing);
+  border-radius: var(--star-button-radius);
+  border: 1px solid transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background-color var(--star-duration-fast) ease-in-out,
+    color var(--star-duration-fast) ease-in-out,
+    border-color var(--star-duration-fast) ease-in-out,
+    box-shadow var(--star-duration-fast) ease-in-out,
+    transform var(--star-duration-fast) ease-in-out;
+
+  &:disabled,
+  &[aria-disabled='true'] {
+    opacity: 0.55;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: var(--star-focus-ring);
+  }
+}
+
+.star-btn--sm {
+  padding: 0.4rem 0.875rem;
+  font-size: 0.75rem;
+}
+.star-btn--md {
+  padding: 0.55rem 1.15rem;
+  font-size: 0.8125rem;
+}
+.star-btn--lg {
+  padding: 0.7rem 1.5rem;
+  font-size: 0.9375rem;
+}
+.star-btn--full {
+  width: 100%;
+}
+
+.star-btn--primary {
+  background: var(--star-primary-fill);
+  color: var(--star-on-tone);
+  box-shadow: var(--star-shadow-glow-primary);
+
+  &:hover {
+    background: var(--star-primary-hover);
+  }
+}
+.star-btn--secondary {
+  background: var(--star-surface);
+  color: var(--star-text-strong);
+  border-color: var(--star-border);
+  box-shadow: var(--star-shadow-xs);
+
+  &:hover {
+    border-color: var(--star-border-strong);
+    box-shadow: var(--star-shadow-md);
+  }
+}
+.star-btn--ghost {
+  background: transparent;
+  color: var(--star-text-strong);
+
+  &:hover {
+    background: var(--star-surface-muted);
+  }
+}
+.star-btn--danger {
+  background: var(--star-danger);
+  color: var(--star-on-tone);
+
+  &:hover {
+    background: var(--star-danger-hover);
+  }
+}
+.star-btn--ghost-danger {
+  background: transparent;
+  color: var(--star-danger);
+
+  &:hover {
+    background: var(--star-danger-soft);
+  }
+}
+.star-btn--success {
+  background: var(--star-success);
+  color: var(--star-on-bright);
+
+  // Lighter on hover: the text is dark, so a lighter fill keeps the contrast.
+  &:hover {
+    background: color-mix(in srgb, var(--star-success) 85%, #fff);
+  }
+}
+.star-btn--warning {
+  background: var(--star-warning);
+  color: var(--star-on-bright);
+
+  &:hover {
+    background: color-mix(in srgb, var(--star-warning) 85%, #fff);
+  }
+}
+.star-btn--icon {
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  letter-spacing: normal;
+  text-transform: none;
+
+  &.star-btn--sm {
+    width: 2rem;
+    height: 2rem;
+  }
+  &.star-btn--lg {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+}
+
+@keyframes star-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.star-spin {
+  display: inline-block;
+  animation: star-spin 0.8s linear infinite;
+}

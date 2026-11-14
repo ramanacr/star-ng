@@ -1,0 +1,88 @@
+// Form field (StarField) and text input (starInput).
+.star-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.star-field__label {
+  display: block;
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: var(--star-label-font-weight);
+  text-transform: var(--star-label-text-transform);
+  letter-spacing: var(--star-label-letter-spacing);
+  color: var(--star-text-muted);
+}
+
+.star-input {
+  width: 100%;
+  border-radius: var(--star-input-radius);
+  border: 1px solid var(--star-border);
+  background: var(--star-surface-muted);
+  padding: 0.625rem 0.875rem;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: var(--star-input-font-weight);
+  color: var(--star-text-strong);
+  outline: none;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+
+  &::placeholder {
+    color: var(--star-text-muted);
+    font-weight: inherit;
+  }
+
+  &:focus {
+    border-color: var(--star-accent);
+    box-shadow: var(--star-focus-ring);
+    background: var(--star-surface);
+  }
+
+  &[aria-invalid='true'] {
+    border-color: var(--star-danger);
+  }
+}
+
+.star-field__error {
+  margin: -0.5rem 0 0;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--star-danger);
+  line-height: 1.4;
+}
+.star-input--sm {
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--star-radius-md);
+  font-size: 0.8125rem;
+}
+.star-input--lg {
+  padding: 1rem 1.25rem;
+  font-size: 1rem;
+}
+textarea.star-input {
+  min-height: 5.5rem;
+  resize: vertical;
+  line-height: 1.5;
+}
+textarea.star-input--auto-resize {
+  field-sizing: content;
+  resize: none;
+  overflow: hidden;
+}
+.star-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.star-field__hint {
+  margin: -0.5rem 0 0;
+  font: var(--star-type-body-sm);
+  color: var(--star-text-muted);
+}
+.star-field__required {
+  margin-left: 0.15rem;
+  color: var(--star-danger);
+}

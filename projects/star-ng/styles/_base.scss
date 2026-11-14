@@ -1,0 +1,59 @@
+// Base rules shared by every control.
+
+// Text color on a filled tone (primary, success, warning, danger). The dark theme uses
+// lighter tones, where white text is under 3:1, so the text turns dark there.
+:root {
+  --star-on-tone: #fff;
+  // Success and warning are bright fills: white text is about 3.2:1 on them in the light
+  // theme, so their text is dark in both themes.
+  --star-on-bright: var(--star-text-strong);
+  // Fill of a control that carries text on the primary color. A product whose primary color
+  // gives white text under 4.5:1 can set a darker fill here without changing `--star-primary`.
+  --star-primary-fill: var(--star-primary);
+}
+[data-theme='dark'] {
+  --star-on-tone: var(--star-surface);
+  --star-on-bright: var(--star-surface);
+  --star-primary-fill: var(--star-primary);
+}
+
+// A table ignores `width: 1px` and table rules can set a width; as a 1px block it does not
+// widen the page.
+table.star-sr-only {
+  display: block;
+  width: 1px;
+}
+.star-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .star-panel,
+  .star-toast,
+  .star-tooltip,
+  .star-dialog,
+  .star-dialog::backdrop,
+  .star-switch__thumb,
+  .star-tabs__tab::after {
+    animation: none;
+    transition: none;
+  }
+  .star-skeleton::after {
+    animation: none;
+  }
+}
+
+// Phosphor icons take size from their container.
+i[class^='ph-'],
+i[class*=' ph-'] {
+  font-size: 1.25em;
+  line-height: 1;
+}
