@@ -15,11 +15,13 @@ import {
   inject,
   Injector,
   input,
+  isDevMode,
   model,
   output,
   signal,
   TemplateRef,
   untracked,
+  viewChild,
 } from '@angular/core';
 import { StarButton } from 'star-ng/button';
 import { StarCheckbox } from 'star-ng/checkbox';
@@ -35,6 +37,16 @@ import { StarPopover } from 'star-ng/popover';
 import { StarMultiSelect } from 'star-ng/select';
 import { StarSkeleton } from 'star-ng/skeleton';
 import { buildPrintDocument, buildXlsx, StarExportCell } from './table-export';
+import {
+  anchorOf,
+  anchorShift,
+  buildVirtualLayout,
+  groupKey,
+  HeightChange,
+  variableRange,
+  VirtualItem,
+  VirtualLayout,
+} from './virtual-heights';
 
 export interface StarColumn<T> {
   /** Unique column id; also the property read when `value` is not set. */
@@ -153,6 +165,33 @@ export interface StarCsvOptions<T = unknown> extends StarExportOptions<T> {
 const VIRTUAL_BUFFER_ROWS = 5;
 /** Viewport height in pixels before the first scroll event gives the real height. */
 const VIRTUAL_FALLBACK_VIEWPORT = 480;
+/** Smallest measured height change, in pixels, that updates the height of a row. */
+const MEASURE_TOLERANCE = 0.1;
+/** Elements that take the focus with Tab, for keyboard moves between rendered rows. */
+const FOCUSABLE =
+  'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])';
+
+/** One line of the table body: a spacer, a group heading, or a row with its detail row. */
+type BodyEntry<T> =
+  | { readonly kind: 'spacer'; readonly key: string; readonly height: number }
+  | {
+      readonly kind: 'group';
+      readonly key: string;
+      readonly label: string;
+      readonly count: number;
+      /** `aria-rowindex`, or null without virtual scroll. */
+      readonly aria: number | null;
+      /** Index in the virtual list (`data-vi`), or null without virtual scroll. */
+      readonly item: number | null;
+    }
+  | {
+      readonly kind: 'row';
+      readonly key: unknown;
+      readonly row: T;
+      readonly index: number;
+      readonly aria: number | null;
+      readonly item: number | null;
+    };
 
 /** Smallest width, in pixels, that the user can give a column. */
 const MIN_COLUMN_WIDTH = 48;
@@ -270,8 +309,13 @@ export class StarRowExpansionTemplate<T = unknown> {
     '[class.star-table--sm]': "size() === 'sm'",
     '[class.star-table--sticky]': 'stickyHeader()',
     '[class.star-table--virtual]': 'virtualScroll()',
+    '[class.star-table--variable]': 'variableHeights()',
     '[class.star-table--stack]': "responsiveLayout() === 'stack'",
     '[style.--star-table-row-height.px]': 'virtualScroll() ? virtualRowHeight() : null',
+    // Virtual scroll: the focused row stays rendered, and Tab reaches rows out of the window.
+    '(focusin)': 'onBodyFocusIn($event)',
+    '(focusout)': 'onBodyFocusOut($event)',
+    '(keydown)': 'onBodyKeydown($event)',
   },
   template: `
     <ng-content select="[starTableCaption]" />
@@ -331,14 +375,19 @@ export class StarRowExpansionTemplate<T = unknown> {
         </star-popover>
       </div>
     }
-    <div class="star-table__scroll" [style.max-height]="scrollHeight()" (scroll)="onScroll($event)">
+    <div
+      #scroller
+      class="star-table__scroll"
+      [style.max-height]="scrollHeight()"
+      (scroll)="onScroll($event)"
+    >
       <table
         [attr.aria-label]="ariaLabel()"
         [attr.aria-busy]="loading() || null"
-        [attr.aria-rowcount]="virtualScroll() ? pageRows().length + 1 : null"
+        [attr.aria-rowcount]="ariaRowCount()"
       >
         <thead>
-          <tr>
+          <tr [attr.aria-rowindex]="virtualScroll() ? 1 : null">
             @if (reorderableRows()) {
               <th class="star-table__reorder" scope="col">
                 <span class="star-sr-only">{{ text.reorderRows }}</span>
@@ -414,7 +463,7 @@ export class StarRowExpansionTemplate<T = unknown> {
             }
           </tr>
           @if (hasColumnFilters()) {
-            <tr class="star-table__filters">
+            <tr class="star-table__filters" [attr.aria-rowindex]="virtualScroll() ? 2 : null">
               @if (reorderableRows()) {
                 <td class="star-table__reorder"></td>
               }
@@ -488,7 +537,7 @@ export class StarRowExpansionTemplate<T = unknown> {
             </tr>
           }
         </thead>
-        <tbody>
+        <tbody #body>
           @if (loading()) {
             @for (row of skeletonRows(); track row) {
               <tr class="star-table__row">
@@ -507,15 +556,18 @@ export class StarRowExpansionTemplate<T = unknown> {
               </tr>
             }
           } @else {
-            @if (virtualWindow().before) {
-              <tr class="star-table__spacer" aria-hidden="true">
-                <td [attr.colspan]="colspan()" [style.height.px]="virtualWindow().before"></td>
-              </tr>
-            }
-            @for (row of renderedRows(); track trackKey(row); let offset = $index) {
-              @let i = virtualWindow().start + offset;
-              @if (groupStart(i); as group) {
-                <tr class="star-table__group">
+            @for (entry of bodyEntries(); track entry.key) {
+              @if (entry.kind === 'spacer') {
+                <tr class="star-table__spacer" aria-hidden="true">
+                  <td [attr.colspan]="colspan()" [style.height.px]="entry.height"></td>
+                </tr>
+              } @else if (entry.kind === 'group') {
+                @let group = entry;
+                <tr
+                  class="star-table__group"
+                  [attr.aria-rowindex]="group.aria"
+                  [attr.data-vi]="group.item"
+                >
                   <th [attr.colspan]="colspan()" scope="colgroup">
                     <button
                       type="button"
@@ -529,141 +581,156 @@ export class StarRowExpansionTemplate<T = unknown> {
                     </button>
                   </th>
                 </tr>
-              }
-              <tr
-                [attr.aria-rowindex]="virtualScroll() ? i + 2 : null"
-                [hidden]="isRowCollapsed(row)"
-                class="star-table__row"
-                [class.star-table__row--alt]="i % 2 === 1"
-                [class.star-table__row--selected]="isSelected(row)"
-                [class.star-table__row--clickable]="clickable()"
-                [class.star-table__row--expanded]="expandable() && isExpanded(row)"
-                [attr.aria-selected]="selectionMode() ? isSelected(row) : null"
-                (click)="onRowClick(row, $event)"
-              >
-                @if (reorderableRows()) {
-                  <td class="star-table__reorder">
-                    <button
-                      type="button"
-                      class="star-table__toggle"
-                      [disabled]="!canMoveRow(row, -1)"
-                      [attr.aria-label]="text.moveUp"
-                      (click)="moveRow(row, -1)"
-                    >
-                      <i class="ph-bold ph-arrow-up" aria-hidden="true"></i>
-                    </button>
-                    <button
-                      type="button"
-                      class="star-table__toggle"
-                      [disabled]="!canMoveRow(row, 1)"
-                      [attr.aria-label]="text.moveDown"
-                      (click)="moveRow(row, 1)"
-                    >
-                      <i class="ph-bold ph-arrow-down" aria-hidden="true"></i>
-                    </button>
-                  </td>
-                }
-                @if (expandable()) {
-                  <td class="star-table__expander">
-                    <button
-                      type="button"
-                      class="star-table__toggle"
-                      [attr.aria-expanded]="isExpanded(row)"
-                      [attr.aria-controls]="isExpanded(row) ? detailId(i) : null"
-                      [attr.aria-label]="isExpanded(row) ? text.collapseRow : text.expandRow"
-                      (click)="toggleExpansion(row)"
-                    >
-                      <i class="ph-bold ph-caret-right" aria-hidden="true"></i>
-                    </button>
-                  </td>
-                }
-                @if (selectionMode() === 'multiple') {
-                  <td class="star-table__select">
-                    <star-checkbox
-                      [checked]="isSelected(row)"
-                      [ariaLabel]="text.selectRow"
-                      (checkedChange)="toggleRow(row)"
-                      (click)="$event.stopPropagation()"
-                    />
-                  </td>
-                } @else if (selectionMode() === 'single') {
-                  <td class="star-table__select">
-                    <input
-                      type="radio"
-                      class="star-table__radio"
-                      [name]="radioName"
-                      [checked]="isSelected(row)"
-                      [attr.aria-label]="text.selectRow"
-                      (change)="selectOnly(row)"
-                      (click)="$event.stopPropagation()"
-                    />
-                  </td>
-                }
-                @for (column of visibleColumns(); track column.field) {
-                  <td
-                    [class]="'star-table__cell--' + (column.align ?? 'start')"
-                    [class.star-table__cell--frozen]="column.frozen"
-                    [style.inset-inline-start]="frozenOffset(column)"
-                    [attr.data-label]="column.header"
-                  >
-                    @if (isEditing(row, column)) {
-                      @if (column.editor === 'select') {
-                        <select
-                          class="star-input star-input--sm star-table__editor"
-                          [attr.aria-label]="text.editCell(column.header)"
-                          (change)="commitEdit(row, column, $any($event.target).value)"
-                          (blur)="commitEdit(row, column, $any($event.target).value)"
-                          (keydown.escape)="cancelEdit($event)"
-                        >
-                          @for (option of column.editOptions ?? []; track option) {
-                            <option [value]="option" [selected]="option === cellText(row, column)">
-                              {{ option }}
-                            </option>
-                          }
-                        </select>
-                      } @else {
-                        <input
-                          class="star-input star-input--sm star-table__editor"
-                          [type]="column.editor === 'number' ? 'number' : 'text'"
-                          [attr.aria-label]="text.editCell(column.header)"
-                          [value]="editText(row, column)"
-                          (blur)="commitEdit(row, column, $any($event.target).value)"
-                          (keydown.enter)="commitEdit(row, column, $any($event.target).value)"
-                          (keydown.escape)="cancelEdit($event)"
-                        />
-                      }
-                    } @else if (isEditable(row, column)) {
+              } @else {
+                @let row = entry.row;
+                @let i = entry.index;
+                <tr
+                  [attr.aria-rowindex]="entry.aria"
+                  [attr.data-vi]="entry.item"
+                  [hidden]="isRowCollapsed(row)"
+                  class="star-table__row"
+                  [class.star-table__row--alt]="i % 2 === 1"
+                  [class.star-table__row--selected]="isSelected(row)"
+                  [class.star-table__row--clickable]="clickable()"
+                  [class.star-table__row--expanded]="expandable() && isExpanded(row)"
+                  [attr.aria-selected]="selectionMode() ? isSelected(row) : null"
+                  (click)="onRowClick(row, $event)"
+                >
+                  @if (reorderableRows()) {
+                    <td class="star-table__reorder">
                       <button
                         type="button"
-                        class="star-table__edit"
-                        [attr.data-edit]="editKey(row, column)"
-                        [attr.aria-label]="text.editCell(column.header)"
-                        (click)="startEdit(row, column)"
+                        class="star-table__toggle"
+                        [disabled]="!canMoveRow(row, -1)"
+                        [attr.aria-label]="text.moveUp"
+                        (click)="moveRow(row, -1)"
                       >
-                        <span class="star-table__edit-value">
-                          <ng-container
-                            *ngTemplateOutlet="cell; context: { $implicit: row, column, index: i }"
-                          />
-                        </span>
-                        <i class="ph-bold ph-pencil-simple" aria-hidden="true"></i>
+                        <i class="ph-bold ph-arrow-up" aria-hidden="true"></i>
                       </button>
-                    } @else {
-                      <ng-container
-                        *ngTemplateOutlet="cell; context: { $implicit: row, column, index: i }"
-                      />
-                    }
-                  </td>
-                }
-              </tr>
-              @if (expansionTemplate(); as detail) {
-                @if (isExpanded(row) && !isRowCollapsed(row)) {
-                  <tr class="star-table__expansion" [id]="detailId(i)">
-                    <td [attr.colspan]="colspan()">
-                      <ng-container
-                        *ngTemplateOutlet="detail; context: { $implicit: row, index: i }"
+                      <button
+                        type="button"
+                        class="star-table__toggle"
+                        [disabled]="!canMoveRow(row, 1)"
+                        [attr.aria-label]="text.moveDown"
+                        (click)="moveRow(row, 1)"
+                      >
+                        <i class="ph-bold ph-arrow-down" aria-hidden="true"></i>
+                      </button>
+                    </td>
+                  }
+                  @if (expandable()) {
+                    <td class="star-table__expander">
+                      <button
+                        type="button"
+                        class="star-table__toggle"
+                        [attr.aria-expanded]="isExpanded(row)"
+                        [attr.aria-controls]="isExpanded(row) ? detailId(i) : null"
+                        [attr.aria-label]="isExpanded(row) ? text.collapseRow : text.expandRow"
+                        (click)="toggleExpansion(row)"
+                      >
+                        <i class="ph-bold ph-caret-right" aria-hidden="true"></i>
+                      </button>
+                    </td>
+                  }
+                  @if (selectionMode() === 'multiple') {
+                    <td class="star-table__select">
+                      <star-checkbox
+                        [checked]="isSelected(row)"
+                        [ariaLabel]="text.selectRow"
+                        (checkedChange)="toggleRow(row)"
+                        (click)="$event.stopPropagation()"
                       />
                     </td>
-                  </tr>
+                  } @else if (selectionMode() === 'single') {
+                    <td class="star-table__select">
+                      <input
+                        type="radio"
+                        class="star-table__radio"
+                        [name]="radioName"
+                        [checked]="isSelected(row)"
+                        [attr.aria-label]="text.selectRow"
+                        (change)="selectOnly(row)"
+                        (click)="$event.stopPropagation()"
+                      />
+                    </td>
+                  }
+                  @for (column of visibleColumns(); track column.field) {
+                    <td
+                      [class]="'star-table__cell--' + (column.align ?? 'start')"
+                      [class.star-table__cell--frozen]="column.frozen"
+                      [style.inset-inline-start]="frozenOffset(column)"
+                      [attr.data-label]="column.header"
+                    >
+                      @if (isEditing(row, column)) {
+                        @if (column.editor === 'select') {
+                          <select
+                            class="star-input star-input--sm star-table__editor"
+                            [attr.aria-label]="text.editCell(column.header)"
+                            (change)="commitEdit(row, column, $any($event.target).value)"
+                            (blur)="commitEdit(row, column, $any($event.target).value)"
+                            (keydown.escape)="cancelEdit($event)"
+                          >
+                            @for (option of column.editOptions ?? []; track option) {
+                              <option
+                                [value]="option"
+                                [selected]="option === cellText(row, column)"
+                              >
+                                {{ option }}
+                              </option>
+                            }
+                          </select>
+                        } @else {
+                          <input
+                            class="star-input star-input--sm star-table__editor"
+                            [type]="column.editor === 'number' ? 'number' : 'text'"
+                            [attr.aria-label]="text.editCell(column.header)"
+                            [value]="editText(row, column)"
+                            (blur)="commitEdit(row, column, $any($event.target).value)"
+                            (keydown.enter)="commitEdit(row, column, $any($event.target).value)"
+                            (keydown.escape)="cancelEdit($event)"
+                          />
+                        }
+                      } @else if (isEditable(row, column)) {
+                        <button
+                          type="button"
+                          class="star-table__edit"
+                          [attr.data-edit]="editKey(row, column)"
+                          [attr.aria-label]="text.editCell(column.header)"
+                          (click)="startEdit(row, column)"
+                        >
+                          <span class="star-table__edit-value">
+                            <ng-container
+                              *ngTemplateOutlet="
+                                cell;
+                                context: { $implicit: row, column, index: i }
+                              "
+                            />
+                          </span>
+                          <i class="ph-bold ph-pencil-simple" aria-hidden="true"></i>
+                        </button>
+                      } @else {
+                        <ng-container
+                          *ngTemplateOutlet="cell; context: { $implicit: row, column, index: i }"
+                        />
+                      }
+                    </td>
+                  }
+                </tr>
+                @if (expansionTemplate(); as detail) {
+                  @if (isExpanded(row) && !isRowCollapsed(row)) {
+                    <tr
+                      class="star-table__expansion"
+                      [id]="detailId(i)"
+                      [attr.aria-rowindex]="entry.aria === null ? null : entry.aria + 1"
+                      [attr.data-vi]="entry.item"
+                    >
+                      <td [attr.colspan]="colspan()">
+                        <ng-container
+                          *ngTemplateOutlet="detail; context: { $implicit: row, index: i }"
+                        />
+                      </td>
+                    </tr>
+                  }
                 }
               }
             } @empty {
@@ -674,16 +741,14 @@ export class StarRowExpansionTemplate<T = unknown> {
                 </td>
               </tr>
             }
-            @if (virtualWindow().after) {
-              <tr class="star-table__spacer" aria-hidden="true">
-                <td [attr.colspan]="colspan()" [style.height.px]="virtualWindow().after"></td>
-              </tr>
-            }
           }
         </tbody>
         @if (hasFooter()) {
           <tfoot>
-            <tr class="star-table__footer">
+            <tr
+              class="star-table__footer"
+              [attr.aria-rowindex]="virtualScroll() ? ariaRowCount() : null"
+            >
               @if (reorderableRows()) {
                 <td class="star-table__reorder"></td>
               }
@@ -748,17 +813,28 @@ export class StarTable<T> {
   /**
    * Layout when the table is narrower than 40rem (a phone). `'scroll'`: the table scrolls
    * sideways. `'stack'`: each row is a block with one line per column, "label: value"; the
-   * sortable headers stay as a row of buttons. Do not use `'stack'` with `virtualScroll`.
+   * sortable headers stay as a row of buttons. With `virtualScroll`, `'stack'` turns on rows of
+   * different heights.
    */
   readonly responsiveLayout = input<'scroll' | 'stack'>('scroll');
   /**
-   * Renders only the rows in view, for long lists. Needs `scrollHeight`. Every row has the
-   * height `virtualRowHeight` and cell text stays on one line. Do not use it with row
-   * expansion, because a detail row changes the row height.
+   * Renders only the rows in view (plus 5 above and below), for long lists. Needs
+   * `scrollHeight`. Rows have one fixed height (`virtualRowHeight`, text on one line) unless
+   * `virtualRowHeights` turns on rows of different heights.
    */
   readonly virtualScroll = input(false, { transform: booleanAttribute });
-  /** Row height in pixels with `virtualScroll`. */
+  /**
+   * Row height in pixels with `virtualScroll`. With rows of different heights it is the
+   * estimated height of a row that was not measured yet.
+   */
   readonly virtualRowHeight = input(48);
+  /**
+   * Row heights with `virtualScroll`. `'auto'`: one fixed height, unless the table has row
+   * expansion, `groupBy` or the stacked layout, which need rows of different heights.
+   * `'variable'`: rows of different heights always, for cell text on more than one line. The
+   * table measures each rendered row and keeps the heights.
+   */
+  readonly virtualRowHeights = input<'auto' | 'variable'>('auto');
   readonly ariaLabel = input<string | null>(null);
 
   readonly paginator = input(false, { transform: booleanAttribute });
@@ -812,7 +888,7 @@ export class StarTable<T> {
   /**
    * Group heading of a row (property name or function). Rows with the same heading show
    * together under it, in the order in which the headings first appear after sorting.
-   * Do not use it with `virtualScroll`.
+   * With `virtualScroll`, the rows of a closed group take no space.
    */
   readonly groupBy = input<StarOptionKey<T> | null>(null);
   /** Headings of the closed groups. Two-way. */
@@ -974,11 +1050,220 @@ export class StarTable<T> {
 
   private readonly scrollTop = signal(0);
   private readonly viewportHeight = signal(0);
+  private readonly scroller = viewChild<ElementRef<HTMLElement>>('scroller');
+  private readonly body = viewChild<ElementRef<HTMLElement>>('body');
+
+  /**
+   * Rows of different heights: on with `virtualRowHeights="variable"`, and with the features that
+   * cannot have one fixed height (row expansion, groups, stacked layout).
+   */
+  protected readonly variableHeights = computed(
+    () =>
+      this.virtualScroll() &&
+      (this.virtualRowHeights() === 'variable' ||
+        this.expandable() ||
+        !!this.groupBy() ||
+        this.responsiveLayout() === 'stack'),
+  );
+
+  /** Header rows: the column headings, and the filter row when there is one. */
+  private readonly headerRows = computed(() => (this.hasColumnFilters() ? 2 : 1));
+
+  /** `aria-rowcount` with virtual scroll: header, body (headings, rows, detail rows) and footer. */
+  protected readonly ariaRowCount = computed(() => {
+    if (!this.virtualScroll()) return null;
+    const body = this.layout()?.bodyRows ?? this.pageRows().length;
+    return this.headerRows() + body + (this.hasFooter() ? 1 : 0);
+  });
+
+  /** Expanded row keys, for a fast look-up per row. */
+  private readonly expandedSet = computed(() => new Set(this.expandedKeys()));
+
+  /**
+   * Measured heights by row key (`dataKey` value, else the row object). A row with its detail
+   * row open has its own entry, so closing it again needs no new measure. Group headings use
+   * their item key. The maps are not signals: `measured` counts their changes.
+   */
+  private readonly rowHeights = new Map<unknown, number>();
+  private readonly expandedHeights = new Map<unknown, number>();
+  /** Counts up when a measured height changes the height tree. */
+  private readonly measured = signal(0);
+  /** Counts up when the measured heights are no longer valid (the table width changed). */
+  private readonly heightEpoch = signal(0);
+  /** Top of the table body in the scroll area (below the sticky header), in pixels. */
+  private readonly bodyOffset = signal(0);
+
+  /** Items (group headings and rows) and their heights, with rows of different heights. */
+  private readonly layout = computed<VirtualLayout<T> | null>(() => {
+    if (!this.variableHeights() || this.loading()) return null;
+    const rows = this.pageRows();
+    const grouped = !!this.groupBy();
+    const collapsed = new Set(this.collapsedGroups());
+    const expandable = this.expandable();
+    const expanded = this.expandedSet();
+    const estimate = Math.max(1, this.virtualRowHeight());
+    this.heightEpoch();
+    return untracked(() => {
+      // Keys of rows that left the data would stay in the maps forever: drop them now and then.
+      if (this.rowHeights.size + this.expandedHeights.size > 4 * rows.length + 1000) {
+        this.rowHeights.clear();
+        this.expandedHeights.clear();
+      }
+      return buildVirtualLayout(rows, {
+        groupOf: grouped ? (row) => this.groupOf(row) : null,
+        isCollapsed: (label) => collapsed.has(label),
+        isExpanded: (row) => expandable && expanded.has(this.trackKey(row)),
+        keyOf: (row) => this.trackKey(row),
+        heightOf: (item) => this.estimateOf(item, estimate),
+      });
+    });
+  });
+
+  /** Measured height of an item, else the estimate (a row with its detail: two rows). */
+  private estimateOf(item: VirtualItem<T>, estimate: number): number {
+    if (item.kind === 'group') return this.rowHeights.get(item.key) ?? estimate;
+    if (!item.expanded) return this.rowHeights.get(item.key) ?? estimate;
+    return (
+      this.expandedHeights.get(item.key) ?? (this.rowHeights.get(item.key) ?? estimate) + estimate
+    );
+  }
+
+  /** Last layout and scroll offset of `variableWindow`, to keep the view on a layout change. */
+  private anchorMemo: { layout: VirtualLayout<T>; rows: readonly T[]; top: number } | null = null;
+  /** Scroll offset that the next render must apply (see `variableWindow`). */
+  private pendingScroll: number | null = null;
+
+  /** Rendered items with rows of different heights. */
+  private readonly variableWindow = computed(() => {
+    const layout = this.layout();
+    if (!layout) return null;
+    this.measured();
+    const rows = this.pageRows();
+    let top = Math.max(0, this.scrollTop() - this.bodyOffset());
+    // The items changed but not the rows nor the scroll offset (a group closed, a row opened
+    // from code, the width changed): keep the item at the top of the view where it was.
+    const memo = this.anchorMemo;
+    if (memo && memo.layout !== layout && memo.rows === rows && memo.top === top) {
+      const anchor = anchorOf(memo.layout.tree, top);
+      const key = anchor ? memo.layout.items[anchor.index]?.key : undefined;
+      const index = anchor ? layout.indexOfKey.get(key) : undefined;
+      if (anchor && index !== undefined) {
+        const kept = layout.tree.offsetOf(index) + anchor.inside;
+        if (Math.abs(kept - top) > 0.5) {
+          top = kept;
+          this.pendingScroll = kept + untracked(this.bodyOffset);
+        }
+      }
+    }
+    this.anchorMemo = { layout, rows, top };
+    const viewport = this.viewportHeight() || VIRTUAL_FALLBACK_VIEWPORT;
+    return { layout, ...variableRange(layout.tree, top, viewport, VIRTUAL_BUFFER_ROWS) };
+  });
+
+  /** Key of the row (or heading) that has the focus, kept rendered outside the window. */
+  private readonly focusedKey = signal<{ readonly key: unknown } | null>(null);
+
+  /** Index of the focused item in the virtual list, or -1. */
+  private readonly focusedIndex = computed(() => {
+    const focused = this.focusedKey();
+    if (!focused || !this.virtualScroll()) return -1;
+    const layout = this.layout();
+    if (layout) return layout.indexOfKey.get(focused.key) ?? -1;
+    return this.pageRows().findIndex((row) => Object.is(this.trackKey(row), focused.key));
+  });
+
+  /** The lines of the body: spacers, group headings and rows, in display order. */
+  protected readonly bodyEntries = computed<readonly BodyEntry<T>[]>(() => {
+    const rows = this.pageRows();
+    if (!this.virtualScroll()) {
+      const entries: BodyEntry<T>[] = [];
+      const starts = this.groupStarts();
+      rows.forEach((row, index) => {
+        const group = starts.get(index);
+        if (group) {
+          entries.push({
+            kind: 'group',
+            key: groupKey(group.label),
+            ...group,
+            aria: null,
+            item: null,
+          });
+        }
+        entries.push({ kind: 'row', key: this.trackKey(row), row, index, aria: null, item: null });
+      });
+      return entries;
+    }
+    const header = this.headerRows();
+    const focused = this.focusedIndex();
+    const variable = this.variableWindow();
+    if (variable) {
+      const { layout } = variable;
+      return this.windowEntries(
+        variable,
+        focused,
+        layout.tree.total,
+        (i) => layout.tree.offsetOf(i),
+        (i) => {
+          const item = layout.items[i];
+          const aria = header + item.aria + 1;
+          return item.kind === 'group'
+            ? { kind: 'group', key: item.key, label: item.label, count: item.count, aria, item: i }
+            : { kind: 'row', key: item.key, row: item.row, index: item.index, aria, item: i };
+        },
+      );
+    }
+    const height = Math.max(1, this.virtualRowHeight());
+    const window = this.virtualWindow();
+    return this.windowEntries(
+      window,
+      focused,
+      rows.length * height,
+      (i) => i * height,
+      (i) => ({
+        kind: 'row',
+        key: this.trackKey(rows[i]),
+        row: rows[i],
+        index: i,
+        aria: header + i + 1,
+        item: i,
+      }),
+    );
+  });
+
+  /**
+   * Entries of the window `[start, end)` and of the focused item outside it, with a spacer for
+   * each gap, so the body keeps the full height.
+   */
+  private windowEntries(
+    window: { readonly start: number; readonly end: number },
+    focused: number,
+    total: number,
+    offsetOf: (index: number) => number,
+    entryAt: (index: number) => BodyEntry<T>,
+  ): BodyEntry<T>[] {
+    const indexes: number[] = [];
+    if (focused >= 0 && focused < window.start) indexes.push(focused);
+    for (let i = window.start; i < window.end; i++) indexes.push(i);
+    if (focused >= window.end) indexes.push(focused);
+    const entries: BodyEntry<T>[] = [];
+    let cursor = 0;
+    let spacers = 0;
+    const spacer = (height: number) => {
+      if (height > 0.01) entries.push({ kind: 'spacer', key: `\u0000spacer${spacers++}`, height });
+    };
+    for (const index of indexes) {
+      spacer(offsetOf(index) - offsetOf(cursor));
+      entries.push(entryAt(index));
+      cursor = index + 1;
+    }
+    if (indexes.length) spacer(total - offsetOf(cursor));
+    return entries;
+  }
 
   /** First rendered row and the heights of the rows left out before and after the window. */
   protected readonly virtualWindow = computed(() => {
     const count = this.pageRows().length;
-    if (!this.virtualScroll() || this.loading())
+    if (!this.virtualScroll() || this.loading() || this.variableHeights())
       return { start: 0, end: count, before: 0, after: 0 };
     const height = Math.max(1, this.virtualRowHeight());
     const viewport = this.viewportHeight() || VIRTUAL_FALLBACK_VIEWPORT;
@@ -989,17 +1274,183 @@ export class StarTable<T> {
     return { start, end, before: start * height, after: (count - end) * height };
   });
 
-  protected readonly renderedRows = computed(() => {
-    const rows = this.pageRows();
-    const { start, end } = this.virtualWindow();
-    return start === 0 && end === rows.length ? rows : rows.slice(start, end);
-  });
-
   protected onScroll(event: Event): void {
     if (!this.virtualScroll()) return;
     const viewport = event.target as HTMLElement;
     this.scrollTop.set(viewport.scrollTop);
     this.viewportHeight.set(viewport.clientHeight);
+  }
+
+  /** Rendered rows that the ResizeObserver watches (rows of different heights only). */
+  private readonly observedRows = new Set<Element>();
+  private rowObserver: ResizeObserver | null = null;
+
+  /**
+   * Measures the rendered items, stores their heights, and moves the scroll offset by the change
+   * of the items above the first item in view, so the rows in view do not move (scroll
+   * anchoring). Runs after a render and when the ResizeObserver reports a row size change.
+   */
+  private measureRendered(): void {
+    const layout = untracked(this.layout);
+    const scroller = this.scroller()?.nativeElement;
+    const body = this.body()?.nativeElement;
+    // A hidden table (display: none, a closed tab) has no layout: keep the heights it has.
+    if (!layout || !scroller || !body || !scroller.isConnected || !scroller.clientHeight) return;
+    if (this.pendingScroll !== null) {
+      scroller.scrollTop = this.pendingScroll;
+      this.pendingScroll = null;
+    }
+    const area = scroller.getBoundingClientRect();
+    const offset =
+      body.getBoundingClientRect().top - area.top - scroller.clientTop + scroller.scrollTop;
+    const heights = new Map<number, number>();
+    for (const row of Array.from(body.children) as HTMLElement[]) {
+      const item = row.dataset['vi'];
+      if (item === undefined) continue;
+      heights.set(
+        Number(item),
+        (heights.get(Number(item)) ?? 0) + row.getBoundingClientRect().height,
+      );
+    }
+    const { tree, items } = layout;
+    const anchor = tree.indexAt(scroller.scrollTop - offset);
+    const changes: HeightChange[] = [];
+    for (const [index, height] of heights) {
+      const item = items[index];
+      if (!item || height <= 0) continue;
+      const from = tree.get(index);
+      if (Math.abs(height - from) < MEASURE_TOLERANCE) continue;
+      tree.set(index, height);
+      changes.push({ index, from, to: height });
+      (item.kind === 'row' && item.expanded ? this.expandedHeights : this.rowHeights).set(
+        item.key,
+        height,
+      );
+    }
+    const shift = anchorShift(changes, anchor);
+    if (Math.abs(shift) >= 0.5) scroller.scrollTop += shift;
+    this.bodyOffset.set(offset);
+    this.viewportHeight.set(scroller.clientHeight);
+    this.scrollTop.set(scroller.scrollTop);
+    if (changes.length) this.measured.update((count) => count + 1);
+    this.observeRows(body);
+  }
+
+  /** Watches the rendered rows and the body for size changes (content, fonts, images). */
+  private observeRows(body: HTMLElement): void {
+    if (typeof ResizeObserver === 'undefined') return;
+    this.rowObserver ??= new ResizeObserver(() => this.measureRendered());
+    const rows = new Set<Element>([
+      body,
+      ...Array.from(body.querySelectorAll(':scope > tr[data-vi]')),
+    ]);
+    for (const row of this.observedRows) {
+      if (!rows.has(row)) {
+        this.rowObserver.unobserve(row);
+        this.observedRows.delete(row);
+      }
+    }
+    for (const row of rows) {
+      if (!this.observedRows.has(row)) {
+        this.rowObserver.observe(row);
+        this.observedRows.add(row);
+      }
+    }
+  }
+
+  /** Index in the virtual list of the item that holds an element, or -1. */
+  private itemOf(element: Element | null): number {
+    const row = element?.closest<HTMLElement>('tr[data-vi]');
+    return row && this.body()?.nativeElement.contains(row) ? Number(row.dataset['vi']) : -1;
+  }
+
+  /** Key of an item of the virtual list. */
+  private keyOfItem(index: number): unknown {
+    const layout = this.layout();
+    if (layout) return layout.items[index]?.key;
+    const row = this.pageRows()[index];
+    return row === undefined ? undefined : this.trackKey(row);
+  }
+
+  protected onBodyFocusIn(event: FocusEvent): void {
+    if (!this.virtualScroll()) return;
+    const index = this.itemOf(event.target as Element);
+    if (index < 0) return;
+    const key = this.keyOfItem(index);
+    if (!Object.is(this.focusedKey()?.key, key)) this.focusedKey.set({ key });
+    // The browser scrolled the focused element into view: render the rows around it now, so the
+    // next Tab finds the next row.
+    const scroller = this.scroller()?.nativeElement;
+    if (scroller) {
+      this.scrollTop.set(scroller.scrollTop);
+      if (scroller.clientHeight) this.viewportHeight.set(scroller.clientHeight);
+    }
+  }
+
+  protected onBodyFocusOut(event: FocusEvent): void {
+    if (!this.virtualScroll()) return;
+    const body = this.body()?.nativeElement;
+    const next = event.relatedTarget as Node | null;
+    if (!body || (next && body.contains(next))) return;
+    // The focus left the body (not only the window of the browser): the row may leave the DOM.
+    setTimeout(() => {
+      if (!body.contains(this.document.activeElement)) this.focusedKey.set(null);
+    });
+  }
+
+  /**
+   * Tab and Shift + Tab from a row to a row that is not rendered (the focused row is kept
+   * outside the window): scroll that row in, then focus its first (or last) control.
+   */
+  protected onBodyKeydown(event: KeyboardEvent): void {
+    if (event.key !== 'Tab' || !this.virtualScroll() || event.defaultPrevented) return;
+    const body = this.body()?.nativeElement;
+    const index = this.itemOf(event.target as Element);
+    if (!body || index < 0) return;
+    const step = event.shiftKey ? -1 : 1;
+    const target = index + step;
+    const count = this.layout()?.items.length ?? this.pageRows().length;
+    if (target < 0 || target >= count || body.querySelector(`:scope > tr[data-vi="${target}"]`)) {
+      return;
+    }
+    const own = this.focusablesOf(body, index);
+    const position = own.indexOf(event.target as HTMLElement);
+    if (position < 0 || (step === 1 ? position < own.length - 1 : position > 0)) return;
+    event.preventDefault();
+    this.revealItem(target);
+    afterNextRender(
+      () => {
+        // The first row after (or before) the focused one that has a control.
+        for (let i = target; i >= 0 && i < count; i += step) {
+          const controls = this.focusablesOf(body, i);
+          if (!body.querySelector(`:scope > tr[data-vi="${i}"]`)) break;
+          if (controls.length) {
+            (step === 1 ? controls[0] : controls[controls.length - 1]).focus();
+            return;
+          }
+        }
+      },
+      { injector: this.injector },
+    );
+  }
+
+  private focusablesOf(body: HTMLElement, index: number): HTMLElement[] {
+    return Array.from(
+      body.querySelectorAll<HTMLElement>(`:scope > tr[data-vi="${index}"]`),
+    ).flatMap((row) => Array.from(row.querySelectorAll<HTMLElement>(FOCUSABLE)));
+  }
+
+  /** Scrolls an item of the virtual list to the middle of the view. */
+  private revealItem(index: number): void {
+    const scroller = this.scroller()?.nativeElement;
+    if (!scroller) return;
+    const layout = this.layout();
+    const offset = layout
+      ? layout.tree.offsetOf(index)
+      : index * Math.max(1, this.virtualRowHeight());
+    scroller.scrollTop = Math.max(0, this.bodyOffset() + offset - scroller.clientHeight / 2);
+    this.scrollTop.set(scroller.scrollTop);
+    if (scroller.clientHeight) this.viewportHeight.set(scroller.clientHeight);
   }
 
   protected readonly skeletonRows = computed(() =>
@@ -1032,10 +1483,42 @@ export class StarTable<T> {
       });
     });
     afterRenderEffect({ read: () => this.measureFrozen() });
+    // Rows of different heights: measure the rendered rows after each render of the body.
+    afterRenderEffect(() => {
+      this.bodyEntries();
+      this.expandedKeys();
+      if (this.variableHeights()) untracked(() => this.measureRendered());
+    });
+    const destroyRef = inject(DestroyRef);
     if (typeof ResizeObserver !== 'undefined') {
-      const observer = new ResizeObserver(() => this.resized.update((count) => count + 1));
+      let width: number | null = null;
+      const observer = new ResizeObserver((entries) => {
+        this.resized.update((count) => count + 1);
+        // A new width wraps text differently (or stacks the rows): the measured heights are
+        // estimates again. The rendered rows are measured again right away.
+        const next = Math.round(entries[entries.length - 1].contentRect.width);
+        if (width !== null && next !== width && untracked(this.variableHeights)) {
+          this.rowHeights.clear();
+          this.expandedHeights.clear();
+          this.heightEpoch.update((count) => count + 1);
+        }
+        width = next;
+      });
       observer.observe(this.host.nativeElement);
-      inject(DestroyRef).onDestroy(() => observer.disconnect());
+      destroyRef.onDestroy(() => observer.disconnect());
+    }
+    destroyRef.onDestroy(() => this.rowObserver?.disconnect());
+    if (isDevMode()) {
+      effect(() => {
+        if (this.virtualScroll() && !this.scrollHeight()) {
+          console.warn(
+            'star-table: virtualScroll needs scrollHeight. Without it the table does not scroll inside its own area, and rows after the first window are not rendered.',
+          );
+        }
+        if (this.virtualRowHeights() === 'variable' && !this.virtualScroll()) {
+          console.warn('star-table: virtualRowHeights has no effect without virtualScroll.');
+        }
+      });
     }
     // Saved state: restore once per key, then save every change.
     effect(() => {
@@ -1106,10 +1589,6 @@ export class StarTable<T> {
     const key = this.groupBy();
     const group = key ? readOption(row, key) : null;
     return group === null || group === undefined ? '' : String(group);
-  }
-
-  protected groupStart(index: number): { label: string; count: number } | null {
-    return this.groupStarts().get(index) ?? null;
   }
 
   protected isGroupCollapsed(label: string): boolean {
@@ -1414,8 +1893,7 @@ export class StarTable<T> {
   }
 
   protected isExpanded(row: T): boolean {
-    const key = this.trackKey(row);
-    return this.expandedKeys().some((expanded) => Object.is(expanded, key));
+    return this.expandedSet().has(this.trackKey(row));
   }
 
   protected detailId(index: number): string {
@@ -1670,9 +2148,13 @@ export class StarTable<T> {
     return index < 0 ? null : index + 1;
   }
 
+  /** Keys of the selected rows: a look-up per row stays fast with 50,000 selected rows. */
+  private readonly selectedKeys = computed(
+    () => new Set(this.selection().map((row) => this.trackKey(row))),
+  );
+
   protected isSelected(row: T): boolean {
-    const key = this.trackKey(row);
-    return this.selection().some((selected) => Object.is(this.trackKey(selected), key));
+    return this.selectedKeys().has(this.trackKey(row));
   }
 
   protected toggleRow(row: T): void {

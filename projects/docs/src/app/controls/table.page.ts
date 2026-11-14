@@ -291,7 +291,8 @@ readonly severityOf = (status: Order['status']) => STATUS_SEVERITY[status];`;
     { name: '--star-radius-lg', description: 'Corner radius of the table area.' },
     {
       name: '--star-table-row-height',
-      description: 'Set by the table from virtualRowHeight when virtualScroll is on (pixels).',
+      description:
+        'Set by the table from virtualRowHeight when virtualScroll is on (pixels). Cells use it as their height only with one fixed row height.',
     },
   ];
   protected readonly keyboard: readonly DocsRow[] = [
