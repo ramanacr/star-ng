@@ -1,0 +1,51 @@
+// Chip and tags field.
+.star-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: var(--star-radius-pill);
+  background: var(--star-accent-soft);
+  color: var(--star-accent);
+  font: var(--star-type-body-sm);
+  font-weight: 600;
+}
+.star-chip--sm {
+  padding: 0.125rem 0.5rem;
+}
+.star-chip__remove {
+  display: inline-grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  opacity: 0.7;
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
+// Chip component extras
+.star-chip__image {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-left: -0.375rem;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.star-tags__control {
+  cursor: text;
+}
+.star-tags__list {
+  display: contents;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.star-tags__error {
+  margin-top: 0.375rem;
+}

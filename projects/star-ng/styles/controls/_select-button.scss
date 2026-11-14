@@ -1,0 +1,61 @@
+// Select button and toggle button.
+// Select button / toggle button (segmented control)
+.star-segmented {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  border: 1px solid var(--star-border);
+  border-radius: var(--star-radius-pill);
+  background: var(--star-surface-muted);
+}
+.star-segmented--invalid {
+  border-color: var(--star-danger);
+}
+.star-segmented__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 1rem;
+  border: 0;
+  border-radius: var(--star-radius-pill);
+  background: transparent;
+  color: var(--star-text-muted);
+  font: var(--star-type-body-lg);
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color var(--star-duration-fast) ease,
+    color var(--star-duration-fast) ease,
+    box-shadow var(--star-duration-fast) ease;
+
+  &:hover:not(:disabled) {
+    color: var(--star-text-strong);
+  }
+  &:focus-visible {
+    outline: none;
+    box-shadow: var(--star-focus-ring);
+  }
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+}
+.star-segmented--sm .star-segmented__item {
+  padding: 0.3rem 0.75rem;
+  font-size: 12px;
+}
+.star-segmented__item--on {
+  background: var(--star-surface);
+  color: var(--star-primary);
+  box-shadow: var(--star-shadow-sm);
+}
+.star-toggle-btn {
+  border: 1px solid var(--star-border);
+  background: var(--star-surface);
+
+  &.star-segmented__item--on {
+    border-color: var(--star-primary);
+    background: var(--star-primary-soft);
+  }
+}

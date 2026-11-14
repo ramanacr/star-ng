@@ -201,8 +201,8 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       },
       {
         "name": "inputId",
-        "type": "unknown",
-        "default": "inject(_IdGenerator).getId('star-checkbox-')",
+        "type": "string",
+        "default": "(generated id)",
         "required": false,
         "description": ""
       },
@@ -244,6 +244,53 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": "Signal Forms touch notification."
+      }
+    ]
+  },
+  "StarColorPicker": {
+    "kind": "component",
+    "selector": "star-color-picker",
+    "entry": "star-ng/knob",
+    "description": "Color picker (PrimeNG `p-colorpicker`): preset swatches, the native color dialog and a hex field. Value: `#rrggbb`. `<star-color-picker [(value)]=\"tagColor\" ariaLabel=\"Tag color\" />`",
+    "inputs": [
+      {
+        "name": "swatches",
+        "type": "readonly string[]",
+        "default": "SWATCHES",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [
+      {
+        "name": "value",
+        "type": "string",
+        "default": "'#4f46e5'",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "outputs": [
+      {
+        "name": "touch",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": ""
       }
     ]
   },
@@ -306,6 +353,30 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarIconField": {
+    "kind": "component",
+    "selector": "star-icon-field",
+    "entry": "star-ng/input-group",
+    "description": "Icon inside a text input (PrimeNG `p-iconfield` + `p-inputicon`). The icon is decoration only: the input still needs a label (`star-field` or `aria-label`).",
+    "inputs": [
+      {
+        "name": "icon",
+        "type": "string",
+        "default": null,
+        "required": true,
+        "description": "Phosphor icon classes, for example `ph-bold ph-magnifying-glass`."
+      },
+      {
+        "name": "iconPosition",
+        "type": "'start' | 'end'",
+        "default": "'start'",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
   "StarInput": {
     "kind": "directive",
     "selector": "input[starInput], textarea[starInput]",
@@ -351,6 +422,776 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarInputGroup": {
+    "kind": "component",
+    "selector": "star-input-group",
+    "entry": "star-ng/input-group",
+    "description": "Joins an input with add-ons before or after it (PrimeNG `p-inputgroup`): a unit, a prefix text, an icon or a button. Put `star-input-group-addon` elements, native `starInput` inputs and `star-button` elements inside, in visual order.",
+    "inputs": [
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
+  "StarInputGroupAddon": {
+    "kind": "component",
+    "selector": "star-input-group-addon",
+    "entry": "star-ng/input-group",
+    "description": "Text or icon add-on of `star-input-group`.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
+  "StarInputMask": {
+    "kind": "component",
+    "selector": "star-input-mask",
+    "entry": "star-ng/input-mask",
+    "description": "Masked text field (PrimeNG `p-inputmask`): fixed-format entry such as phone numbers, postal codes or serial numbers. Mask tokens: `9` digit, `a` letter, `*` letter or digit; other characters are literals. The value is the masked text, or the raw slots with `unmask`.",
+    "inputs": [
+      {
+        "name": "mask",
+        "type": "string",
+        "default": null,
+        "required": true,
+        "description": ""
+      },
+      {
+        "name": "slotChar",
+        "type": "string",
+        "default": "'_'",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "unmask",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Store only the typed characters (no literals)."
+      },
+      {
+        "name": "autoClear",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Keep a partly filled value on blur (default clears it)."
+      },
+      {
+        "name": "placeholder",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "inputId",
+        "type": "string",
+        "default": "(generated id)",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "readonly",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "required",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "invalid",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "touched",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [
+      {
+        "name": "value",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "outputs": [
+      {
+        "name": "touch",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "completed",
+        "type": "string",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
+  "StarInputNumber": {
+    "kind": "component",
+    "selector": "star-input-number",
+    "entry": "star-ng/input-number",
+    "description": "Number field (PrimeNG `p-inputnumber`): locale formatting with `Intl.NumberFormat` (decimal, currency, percent, units), min / max clamping, step buttons, Arrow keys and PageUp / PageDown, `role=\"spinbutton\"`. While focused the field shows plain editable digits; on blur it shows the formatted number.",
+    "inputs": [
+      {
+        "name": "mode",
+        "type": "'decimal' | 'currency' | 'percent' | 'unit'",
+        "default": "'decimal'",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "currency",
+        "type": "string",
+        "default": "'USD'",
+        "required": false,
+        "description": "ISO 4217 code for `mode=\"currency\"`, for example `EUR`."
+      },
+      {
+        "name": "unit",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "ECMA-402 sanctioned unit for `mode=\"unit\"`, for example `kilogram`, `milliliter`, `day`. An unsupported unit (such as `milligram`) is shown as a plain suffix instead of failing."
+      },
+      {
+        "name": "prefix",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "Text before the number, for example `~ `."
+      },
+      {
+        "name": "suffix",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "Text after the number, for example ` kg`."
+      },
+      {
+        "name": "locale",
+        "type": "string | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "minFractionDigits",
+        "type": "number | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "Default: the Intl default for the mode (0 for decimal, 2 for most currencies)."
+      },
+      {
+        "name": "maxFractionDigits",
+        "type": "number | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "Default: the Intl default for the mode (3 for decimal, 2 for most currencies)."
+      },
+      {
+        "name": "useGrouping",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "step",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "min",
+        "type": "number | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "max",
+        "type": "number | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "showButtons",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "placeholder",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "inputId",
+        "type": "string",
+        "default": "(generated id)",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "readonly",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "required",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "invalid",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "touched",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [
+      {
+        "name": "value",
+        "type": "number | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "outputs": [
+      {
+        "name": "touch",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
+  "StarInputOtp": {
+    "kind": "component",
+    "selector": "star-input-otp",
+    "entry": "star-ng/input-otp",
+    "description": "One-time code field (PrimeNG `p-inputotp`): one box per character, auto-advance, Backspace goes back, Arrow keys move, pasting a full code fills every box, `autocomplete=\"one-time-code\"` on the first box so phones offer SMS codes.",
+    "inputs": [
+      {
+        "name": "length",
+        "type": "number",
+        "default": "6",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "integerOnly",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "mask",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Hides characters like a password."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "readonly",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "invalid",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "touched",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [
+      {
+        "name": "value",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "outputs": [
+      {
+        "name": "touch",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "completed",
+        "type": "string",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
+  "StarInputTags": {
+    "kind": "component",
+    "selector": "star-input-tags",
+    "entry": "star-ng/input-tags",
+    "description": "Free-text tag field (PrimeNG `p-inputtags` / chips): type a value and press Enter, a separator (default comma) or Tab to add it as a chip. Pasting \"a, b; c\" adds several. Backspace in the empty field removes the last chip; each chip has a remove button. Optional `validate` (for example an e-mail check), duplicate prevention, `maxTags` count and per-tag `maxLength`. A live region announces added, removed and rejected tags.",
+    "inputs": [
+      {
+        "name": "placeholder",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "separators",
+        "type": "readonly string[]",
+        "default": "[',', ';']",
+        "required": false,
+        "description": "Characters that end a tag while typing or split pasted text (Enter always adds)."
+      },
+      {
+        "name": "validate",
+        "type": "((tag: string) => boolean) | null",
+        "default": "null",
+        "required": false,
+        "description": "Returns true for a valid tag. Invalid text stays in the field with an error."
+      },
+      {
+        "name": "allowDuplicates",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "maxTags",
+        "type": "number",
+        "default": "0",
+        "required": false,
+        "description": "Maximum number of tags (0 = no limit)."
+      },
+      {
+        "name": "maxLength",
+        "type": "number | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "Maximum characters per tag."
+      },
+      {
+        "name": "addOnBlur",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Add the typed text when the field loses focus."
+      },
+      {
+        "name": "showClear",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "inputId",
+        "type": "string",
+        "default": "(generated id)",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "readonly",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "invalid",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "touched",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [
+      {
+        "name": "value",
+        "type": "readonly string[]",
+        "default": "[]",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "outputs": [
+      {
+        "name": "touch",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "added",
+        "type": "string",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "removed",
+        "type": "string",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "rejected",
+        "type": "{ tag: string; reason: StarTagRejection }",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
+  "StarKnob": {
+    "kind": "component",
+    "selector": "star-knob",
+    "entry": "star-ng/knob",
+    "description": "Knob (PrimeNG `p-knob`): circular value dial, `role=\"slider\"` with Arrow / PageUp / PageDown / Home / End keys; drag around the dial with a pointer. `<star-knob [(value)]=\"completion\" [max]=\"100\" valueTemplate=\"{value}%\" ariaLabel=\"Completion\" />`",
+    "inputs": [
+      {
+        "name": "min",
+        "type": "number | undefined",
+        "default": "0",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "max",
+        "type": "number | undefined",
+        "default": "100",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "step",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "size",
+        "type": "number",
+        "default": "120",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "valueTemplate",
+        "type": "string",
+        "default": "'{value}'",
+        "required": false,
+        "description": "`{value}` is replaced by the number, for example `{value}%`."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "readonly",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [
+      {
+        "name": "value",
+        "type": "number",
+        "default": "0",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "outputs": [
+      {
+        "name": "touch",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
+  "StarPassword": {
+    "kind": "component",
+    "selector": "star-password",
+    "entry": "star-ng/password",
+    "description": "Password field (PrimeNG `p-password`): show / hide toggle, strength meter and a rule checklist (`feedback`), `autocomplete` defaults to `new-password` with feedback, `current-password` without.",
+    "inputs": [
+      {
+        "name": "feedback",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "rules",
+        "type": "readonly StarPasswordRule[] | null",
+        "default": "null",
+        "required": false,
+        "description": "Custom rules. Default: length (`minLength`), upper, lower, number and symbol."
+      },
+      {
+        "name": "minLength",
+        "type": "number | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "Length rule; also bound from a Signal Forms `minLength()` validator. Default 12."
+      },
+      {
+        "name": "placeholder",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "autocomplete",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "inputId",
+        "type": "string",
+        "default": "(generated id)",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "readonly",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "required",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "invalid",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "touched",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [
+      {
+        "name": "value",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "outputs": [
+      {
+        "name": "touch",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
   "StarRadio": {
     "kind": "component",
     "selector": "star-radio",
@@ -373,8 +1214,8 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       },
       {
         "name": "inputId",
-        "type": "unknown",
-        "default": "inject(_IdGenerator).getId('star-radio-')",
+        "type": "string",
+        "default": "(generated id)",
         "required": false,
         "description": ""
       }
@@ -471,6 +1312,327 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ]
   },
+  "StarRangeSlider": {
+    "kind": "component",
+    "selector": "star-range-slider",
+    "entry": "star-ng/slider",
+    "description": "Range slider (PrimeNG `p-slider [range]`): two native range inputs on one track; the handles cannot cross. Value: `[low, high]`. `<star-range-slider [(value)]=\"ageRange\" [bounds]=\"[0, 100]\" ariaLabel=\"Age\" showValue />`",
+    "inputs": [
+      {
+        "name": "bounds",
+        "type": "readonly [number, number]",
+        "default": "[0, 100]",
+        "required": false,
+        "description": "Lowest and highest selectable values."
+      },
+      {
+        "name": "step",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "showValue",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "format",
+        "type": "(value: number) => string",
+        "default": "String",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [
+      {
+        "name": "value",
+        "type": "readonly [number, number]",
+        "default": "[0, 100]",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "outputs": [
+      {
+        "name": "touch",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
+  "StarRating": {
+    "kind": "component",
+    "selector": "star-rating",
+    "entry": "star-ng/rating",
+    "description": "Star rating (PrimeNG `p-rating`) as a native radio group: Arrow keys change the rating, screen readers announce \"3 of 5 stars\". Hover previews; clicking the current star clears it. `<star-rating [(value)]=\"quality\" ariaLabel=\"Response quality\" />`",
+    "inputs": [
+      {
+        "name": "count",
+        "type": "number",
+        "default": "5",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "readonly",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [
+      {
+        "name": "value",
+        "type": "number | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "outputs": [
+      {
+        "name": "touch",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
+  "StarSelectButton": {
+    "kind": "component",
+    "selector": "star-select-button",
+    "entry": "star-ng/select-button",
+    "description": "Segmented choice (PrimeNG `p-selectbutton`). Single mode is a radio group (Arrow keys move and select); `multiple` mode is a group of toggle buttons (`aria-pressed`).",
+    "inputs": [
+      {
+        "name": "options",
+        "type": "readonly TOption[]",
+        "default": "[]",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "optionLabel",
+        "type": "StarOptionKey<TOption> | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "optionValue",
+        "type": "StarOptionKey<TOption> | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "optionIcon",
+        "type": "StarOptionKey<TOption> | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "optionDisabled",
+        "type": "StarOptionKey<TOption> | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "multiple",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "allowEmpty",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Single mode: clicking the selected item clears it."
+      },
+      {
+        "name": "size",
+        "type": "'sm' | 'md'",
+        "default": "'md'",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "invalid",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "touched",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [
+      {
+        "name": "value",
+        "type": "TValue | readonly TValue[] | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "outputs": [
+      {
+        "name": "touch",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
+  "StarSlider": {
+    "kind": "component",
+    "selector": "star-slider",
+    "entry": "star-ng/slider",
+    "description": "Slider (PrimeNG `p-slider`) on native `<input type=\"range\">`: full keyboard and screen-reader support from the platform, styled track and fill, optional value label. `<star-slider [(value)]=\"severity\" [min]=\"1\" [max]=\"5\" ariaLabel=\"Severity\" showValue />`",
+    "inputs": [
+      {
+        "name": "min",
+        "type": "number | undefined",
+        "default": "0",
+        "required": false,
+        "description": "Also bound from Signal Forms `min()` / `max()` validators."
+      },
+      {
+        "name": "max",
+        "type": "number | undefined",
+        "default": "100",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "step",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "showValue",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "format",
+        "type": "(value: number) => string",
+        "default": "String",
+        "required": false,
+        "description": "Text for the current value, for example `(v) => v + ' kg'`."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "inputId",
+        "type": "string",
+        "default": "(generated id)",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "readonly",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [
+      {
+        "name": "value",
+        "type": "number",
+        "default": "0",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "outputs": [
+      {
+        "name": "touch",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
   "StarSpinner": {
     "kind": "component",
     "selector": "star-spinner",
@@ -540,6 +1702,81 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarToggleButton": {
+    "kind": "component",
+    "selector": "star-toggle-button",
+    "entry": "star-ng/select-button",
+    "description": "Two-state button (PrimeNG `p-togglebutton`): `aria-pressed`, on / off labels and icons. `<star-toggle-button [(checked)]=\"starred\" onLabel=\"Starred\" offLabel=\"Star\" onIcon=\"ph-fill ph-star\" offIcon=\"ph-bold ph-star\" />`",
+    "inputs": [
+      {
+        "name": "onLabel",
+        "type": "string",
+        "default": "'On'",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "offLabel",
+        "type": "string",
+        "default": "'Off'",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "onIcon",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "offIcon",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "readonly",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [
+      {
+        "name": "checked",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "outputs": [
+      {
+        "name": "touch",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
   "StarToggleSwitch": {
     "kind": "component",
     "selector": "star-toggle-switch",
@@ -590,8 +1827,8 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       },
       {
         "name": "inputId",
-        "type": "unknown",
-        "default": "inject(_IdGenerator).getId('star-switch-')",
+        "type": "string",
+        "default": "(generated id)",
         "required": false,
         "description": ""
       },
@@ -644,6 +1881,9 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "checkbox/form": "<star-checkbox [formField]=\"terms.accept\">I accept the terms</star-checkbox>\n<p class=\"docs-output\" role=\"status\">Valid: {{ terms().valid() }}</p>",
   "checkbox/indeterminate": "<star-checkbox [(checked)]=\"all\" [(indeterminate)]=\"some\">All regions</star-checkbox>",
   "checkbox/states": "<star-checkbox [checked]=\"true\" disabled>Disabled</star-checkbox>\n<star-checkbox [checked]=\"true\" readonly>Read-only</star-checkbox>",
+  "color-picker/basic": "<star-color-picker [(value)]=\"color\" ariaLabel=\"Label color\" />\n<p class=\"docs-output\" role=\"status\">Value: {{ color() }}</p>",
+  "color-picker/disabled": "<star-color-picker value=\"#64748b\" disabled ariaLabel=\"Locked color\" />",
+  "color-picker/swatches": "<star-color-picker\n  [(value)]=\"category\"\n  [swatches]=\"['#0f766e', '#b45309', '#7c3aed', '#be123c']\"\n  ariaLabel=\"Category color\"\n/>",
   "dark-mode/try": "<star-button variant=\"secondary\" (pressed)=\"theme.setMode('system')\">System</star-button>\n<star-button variant=\"secondary\" (pressed)=\"theme.setMode('light')\">Light</star-button>\n<star-button variant=\"secondary\" (pressed)=\"theme.setMode('dark')\">Dark</star-button>\n<p class=\"docs-output\" role=\"status\">\n  Choice: {{ theme.mode() }}. Theme in use: {{ theme.theme() }}.\n</p>",
   "field/basic": "<div class=\"docs-stack\">\n  <star-field label=\"Full name\" hint=\"As shown on your account.\">\n    <input starInput placeholder=\"Avery Stone\" />\n  </star-field>\n</div>",
   "field/sizes": "<div class=\"docs-stack\">\n  <input starInput size=\"sm\" aria-label=\"Small\" placeholder=\"Small\" />\n  <input starInput aria-label=\"Medium\" placeholder=\"Medium\" />\n  <input starInput size=\"lg\" aria-label=\"Large\" placeholder=\"Large\" />\n</div>",
@@ -655,9 +1895,41 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "forms/two-way": "<star-checkbox [(checked)]=\"remember\">Remember this device</star-checkbox>\n<p class=\"docs-output\" role=\"status\">{{ remember() }}</p>",
   "getting-started/result": "<star-button leadingIcon=\"ph-bold ph-plus\">New order</star-button>",
   "i18n/spinner": "<star-spinner />\n<docs-german-text />",
+  "input-group/addons": "<div class=\"docs-stack\">\n  <star-field label=\"Website\">\n    <star-input-group>\n      <star-input-group-addon>https://</star-input-group-addon>\n      <input starInput placeholder=\"example.com\" />\n    </star-input-group>\n  </star-field>\n  <star-input-group ariaLabel=\"Weight\">\n    <input starInput inputmode=\"decimal\" aria-label=\"Weight\" placeholder=\"0.0\" />\n    <star-input-group-addon>kg</star-input-group-addon>\n  </star-input-group>\n</div>",
+  "input-group/button": "<div class=\"docs-stack\">\n  <star-input-group ariaLabel=\"Coupon\">\n    <input starInput aria-label=\"Coupon code\" placeholder=\"Coupon code\" />\n    <star-button variant=\"secondary\">Apply</star-button>\n  </star-input-group>\n</div>",
+  "input-group/icon": "<div class=\"docs-stack\">\n  <star-icon-field icon=\"ph-bold ph-magnifying-glass\">\n    <input starInput type=\"search\" placeholder=\"Search orders\" aria-label=\"Search orders\" />\n  </star-icon-field>\n  <star-icon-field icon=\"ph-bold ph-envelope-simple\" iconPosition=\"end\">\n    <input starInput type=\"email\" placeholder=\"name@example.com\" aria-label=\"Email\" />\n  </star-icon-field>\n</div>",
+  "input-mask/phone": "<div class=\"docs-stack\">\n  <star-field label=\"Phone\">\n    <star-input-mask mask=\"(999) 999-9999\" [(value)]=\"phone\" />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Value: {{ phone() || '(empty)' }}</p>\n</div>",
+  "input-mask/unmask": "<div class=\"docs-stack\">\n  <star-field label=\"Serial number\">\n    <star-input-mask mask=\"aa-9999-**\" unmask slotChar=\"#\" [(value)]=\"serial\" />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Value: {{ serial() || '(empty)' }}</p>\n</div>",
+  "input-number/basic": "<div class=\"docs-stack\">\n  <star-field label=\"Quantity\">\n    <star-input-number [(value)]=\"quantity\" [min]=\"0\" [max]=\"20\" showButtons />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Quantity: {{ quantity() }}</p>\n</div>",
+  "input-number/currency": "<div class=\"docs-stack\">\n  <star-input-number\n    [(value)]=\"price\"\n    mode=\"currency\"\n    currency=\"EUR\"\n    locale=\"de-DE\"\n    ariaLabel=\"Price in euro\"\n  />\n  <star-input-number\n    [(value)]=\"price\"\n    mode=\"currency\"\n    currency=\"USD\"\n    locale=\"en-US\"\n    ariaLabel=\"Price in dollars\"\n  />\n</div>",
+  "input-number/modes": "<div class=\"docs-stack\">\n  <star-input-number [(value)]=\"share\" mode=\"percent\" locale=\"en-US\" ariaLabel=\"Share\" />\n  <star-input-number\n    [(value)]=\"weight\"\n    mode=\"unit\"\n    unit=\"kilogram\"\n    locale=\"en-US\"\n    ariaLabel=\"Weight\"\n  />\n  <star-input-number [(value)]=\"items\" suffix=\" items\" locale=\"en-US\" ariaLabel=\"Items\" />\n</div>",
+  "input-number/states": "<div class=\"docs-stack\">\n  <star-input-number [value]=\"12\" disabled ariaLabel=\"Disabled number\" />\n  <star-input-number [value]=\"12\" readonly ariaLabel=\"Read-only number\" />\n</div>",
+  "input-otp/basic": "<star-input-otp\n  [(value)]=\"code\"\n  integerOnly\n  ariaLabel=\"Verification code\"\n  (completed)=\"done.set($event)\"\n/>\n<p class=\"docs-output\" role=\"status\">\n  Value: {{ code() || '(empty)' }}. Completed: {{ done() || 'no' }}\n</p>",
+  "input-otp/disabled": "<star-input-otp value=\"123456\" disabled ariaLabel=\"Used code\" />",
+  "input-otp/masked": "<star-input-otp [(value)]=\"pin\" [length]=\"4\" mask ariaLabel=\"PIN\" />",
+  "input-tags/basic": "<div class=\"docs-stack\">\n  <star-field label=\"Labels\" hint=\"Press Enter or a comma to add a label.\">\n    <star-input-tags [(value)]=\"labels\" showClear />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">{{ labels().join(', ') || '(none)' }}</p>\n</div>",
+  "input-tags/disabled": "<div class=\"docs-stack\">\n  <star-input-tags [value]=\"['north', 'south']\" disabled ariaLabel=\"Regions\" />\n</div>",
+  "input-tags/validate": "<div class=\"docs-stack\">\n  <star-field label=\"Recipients\" hint=\"Email addresses, three at most.\">\n    <star-input-tags\n      [(value)]=\"recipients\"\n      [validate]=\"isEmail\"\n      [maxTags]=\"3\"\n      (rejected)=\"rejected.set($event.tag + ': ' + $event.reason)\"\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Rejected: {{ rejected() || '(nothing)' }}</p>\n</div>",
+  "knob/basic": "<star-knob [(value)]=\"progress\" valueTemplate=\"{value}%\" ariaLabel=\"Progress\" />\n<p class=\"docs-output\" role=\"status\">Value: {{ progress() }}</p>",
+  "knob/range": "<star-knob\n  [(value)]=\"temperature\"\n  [min]=\"10\"\n  [max]=\"30\"\n  [step]=\"0.5\"\n  [size]=\"160\"\n  valueTemplate=\"{value}°\"\n  ariaLabel=\"Temperature\"\n/>",
+  "knob/states": "<star-knob [value]=\"72\" readonly [size]=\"90\" ariaLabel=\"Disk use\" />\n<star-knob [value]=\"35\" disabled [size]=\"90\" ariaLabel=\"Locked value\" />",
+  "password/basic": "<div class=\"docs-stack\">\n  <star-field label=\"Password\">\n    <star-password [(value)]=\"current\" />\n  </star-field>\n</div>",
+  "password/feedback": "<div class=\"docs-stack\">\n  <star-field label=\"New password\">\n    <star-password [(value)]=\"created\" feedback />\n  </star-field>\n</div>",
+  "password/rules": "<div class=\"docs-stack\">\n  <star-field label=\"PIN phrase\">\n    <star-password [(value)]=\"phrase\" feedback [rules]=\"rules\" />\n  </star-field>\n</div>",
   "radio/basic": "<star-radio-group [(value)]=\"plan\" ariaLabel=\"Plan\">\n  <star-radio value=\"starter\">Starter</star-radio>\n  <star-radio value=\"team\">Team</star-radio>\n  <star-radio value=\"business\">Business</star-radio>\n</star-radio-group>\n<p class=\"docs-output\" role=\"status\">Plan: {{ plan() }}</p>",
   "radio/disabled": "<star-radio-group [(value)]=\"delivery\" ariaLabel=\"Delivery\">\n  <star-radio value=\"standard\">Standard</star-radio>\n  <star-radio value=\"express\">Express</star-radio>\n  <star-radio value=\"pickup\" disabled>Pick-up (not available)</star-radio>\n</star-radio-group>",
   "radio/horizontal": "<star-radio-group [(value)]=\"size\" orientation=\"horizontal\" ariaLabel=\"Size\">\n  <star-radio value=\"s\">Small</star-radio>\n  <star-radio value=\"m\">Medium</star-radio>\n  <star-radio value=\"l\">Large</star-radio>\n</star-radio-group>",
+  "rating/basic": "<star-rating [(value)]=\"score\" ariaLabel=\"Service rating\" />\n<p class=\"docs-output\" role=\"status\">Rating: {{ score() ?? 'none' }}</p>",
+  "rating/count": "<star-rating [(value)]=\"detail\" [count]=\"10\" ariaLabel=\"Detailed rating\" />",
+  "rating/states": "<star-rating [value]=\"4\" readonly ariaLabel=\"Average rating\" />\n<star-rating [value]=\"2\" disabled ariaLabel=\"Closed rating\" />",
+  "select-button/multiple": "<star-select-button\n  [options]=\"['Bold', 'Italic', 'Underline']\"\n  [(value)]=\"styles\"\n  multiple\n  size=\"sm\"\n  ariaLabel=\"Text style\"\n/>\n<p class=\"docs-output\" role=\"status\">{{ stylesText() }}</p>",
+  "select-button/objects": "<star-select-button\n  [options]=\"views\"\n  optionLabel=\"label\"\n  optionValue=\"id\"\n  optionIcon=\"icon\"\n  [(value)]=\"view\"\n  [allowEmpty]=\"false\"\n  ariaLabel=\"View\"\n/>",
+  "select-button/single": "<star-select-button\n  [options]=\"['Day', 'Week', 'Month']\"\n  [(value)]=\"period\"\n  ariaLabel=\"Period\"\n/>\n<p class=\"docs-output\" role=\"status\">Period: {{ period() }}</p>",
+  "select-button/toggle": "<star-toggle-button\n  [(checked)]=\"pinned\"\n  onLabel=\"Pinned\"\n  offLabel=\"Pin\"\n  onIcon=\"ph-fill ph-push-pin\"\n  offIcon=\"ph-bold ph-push-pin\"\n/>\n<star-toggle-button [checked]=\"true\" disabled onLabel=\"Locked\" offLabel=\"Lock\" />",
+  "slider/basic": "<div class=\"docs-stack\">\n  <star-slider [(value)]=\"volume\" showValue ariaLabel=\"Volume\" />\n  <p class=\"docs-output\" role=\"status\">Volume: {{ volume() }}</p>\n</div>",
+  "slider/disabled": "<div class=\"docs-stack\">\n  <star-slider [value]=\"30\" disabled ariaLabel=\"Locked value\" />\n</div>",
+  "slider/format": "<div class=\"docs-stack\">\n  <star-slider\n    [(value)]=\"discount\"\n    [min]=\"0\"\n    [max]=\"50\"\n    [step]=\"5\"\n    showValue\n    [format]=\"percent\"\n    ariaLabel=\"Discount\"\n  />\n</div>",
+  "slider/range": "<div class=\"docs-stack\">\n  <star-range-slider\n    [(value)]=\"price\"\n    [bounds]=\"[0, 500]\"\n    [step]=\"10\"\n    showValue\n    ariaLabel=\"Price range\"\n  />\n  <p class=\"docs-output\" role=\"status\">From {{ price()[0] }} to {{ price()[1] }}</p>\n</div>",
   "spinner/label": "<star-spinner ariaLabel=\"Loading orders\" />",
   "spinner/sizes": "<star-spinner size=\"1.25rem\" [strokeWidth]=\"6\" />\n<star-spinner />\n<star-spinner size=\"4rem\" [strokeWidth]=\"3\" />",
   "tag/icon": "<star-tag severity=\"success\" icon=\"ph-bold ph-check\" rounded>Shipped</star-tag>\n<star-tag severity=\"warn\" icon=\"ph-bold ph-clock\" rounded>Waiting</star-tag>",

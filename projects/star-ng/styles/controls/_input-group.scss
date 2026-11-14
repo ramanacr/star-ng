@@ -1,0 +1,104 @@
+// Icon field and input group.
+.star-icon-field {
+  position: relative;
+  display: block;
+
+  .star-input {
+    padding-inline-start: 2.75rem;
+  }
+  .star-input--sm {
+    padding-inline-start: 2.25rem;
+  }
+  &:focus-within .star-icon-field__icon {
+    color: var(--star-accent);
+  }
+}
+.star-icon-field__icon {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 1rem;
+  display: grid;
+  place-items: center;
+  font-size: 1.125rem;
+  color: var(--star-text-soft);
+  pointer-events: none;
+  transition: color var(--star-duration-fast) ease;
+
+  .star-icon-field:has(.star-input--sm) & {
+    inset-inline-start: 0.75rem;
+    font-size: 1rem;
+  }
+}
+.star-icon-field--end {
+  .star-input {
+    padding-inline: 1rem 2.75rem;
+  }
+  .star-input--sm {
+    padding-inline: 0.75rem 2.25rem;
+  }
+  .star-icon-field__icon {
+    inset-inline: auto 1rem;
+  }
+  &:has(.star-input--sm) .star-icon-field__icon {
+    inset-inline: auto 0.75rem;
+  }
+}
+
+.star-input-group {
+  display: flex;
+  align-items: stretch;
+
+  // Joined parts: square inner corners, one shared border line.
+  > .star-input,
+  > .star-input-group__addon,
+  > star-button .star-btn {
+    border-radius: 0;
+  }
+  > :not(:first-child) {
+    margin-inline-start: -1px;
+  }
+  > .star-input:first-child,
+  > .star-input-group__addon:first-child,
+  > star-button:first-child .star-btn {
+    border-start-start-radius: var(--star-input-radius);
+    border-end-start-radius: var(--star-input-radius);
+  }
+  > .star-input:last-child,
+  > .star-input-group__addon:last-child,
+  > star-button:last-child .star-btn {
+    border-start-end-radius: var(--star-input-radius);
+    border-end-end-radius: var(--star-input-radius);
+  }
+  > .star-input {
+    flex: 1;
+    min-width: 0;
+
+    &:focus {
+      position: relative;
+      z-index: 1;
+    }
+  }
+  > star-button {
+    display: flex;
+
+    .star-btn {
+      height: 100%;
+    }
+    &:focus-within {
+      position: relative;
+      z-index: 1;
+    }
+  }
+}
+.star-input-group__addon {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0 0.875rem;
+  border: 1px solid var(--star-border);
+  background: var(--star-surface);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--star-text-muted);
+  white-space: nowrap;
+}

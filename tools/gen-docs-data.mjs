@@ -123,7 +123,12 @@ function signalMember(member, source) {
   if (!type && kind === 'output') type = 'void';
   if (!type) type = required ? 'unknown' : inferType(first);
 
-  const defaultText = kind === 'output' || required || !first ? null : first.getText();
+  let defaultText = kind === 'output' || required || !first ? null : first.getText();
+  // An id from the CDK id generator: a string, unique per instance.
+  if (defaultText && defaultText.includes('.getId(')) {
+    if (!typeArgument) type = 'string';
+    defaultText = '(generated id)';
+  }
   return {
     kind,
     name: alias ?? member.name.getText(),

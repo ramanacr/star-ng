@@ -1,0 +1,46 @@
+// Input mask and one-time code.
+// Input mask / OTP
+.star-mask {
+  display: block;
+}
+.star-mask__input {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+.star-otp {
+  display: inline-flex;
+  gap: 0.5rem;
+  max-width: 100%;
+}
+.star-otp__box {
+  flex: 0 1 2.75rem;
+  min-width: 0;
+  width: 2.75rem;
+  height: 3.25rem;
+  border: 1px solid var(--star-border);
+  border-radius: var(--star-radius-md);
+  background: var(--star-surface-muted);
+  color: var(--star-text-strong);
+  font: 600 1.25rem/1 var(--star-font-sans);
+  text-align: center;
+  outline: none;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+
+  &:focus-visible {
+    outline: none;
+  }
+  &:focus {
+    border-color: var(--star-accent);
+    box-shadow: var(--star-focus-ring);
+    background: var(--star-surface);
+  }
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  .star-otp--invalid & {
+    border-color: var(--star-danger);
+  }
+}
