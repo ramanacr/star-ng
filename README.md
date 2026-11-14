@@ -10,7 +10,8 @@ npm package: `star-ng`. Selector prefix: `star-`. CSS token prefix: `--star-`.
   its own look.
 - One entry point per control group (`star-ng/button`, `star-ng/field`, ...), so an
   application bundles only what it uses.
-- Built-in control text in one injection token (`STAR_UI_TEXT`), ready for translation.
+- Built-in control text in one injection token (`STAR_UI_TEXT`), ready for translation,
+  with German and Spanish packs (`star-ng/i18n/de`, `star-ng/i18n/es`).
 - No Angular Material and no other UI kit.
 
 > Status: the controls are being ported in groups. The docs application lists the controls
@@ -70,6 +71,24 @@ export class Orders {
   create(): void {}
 }
 ```
+
+## Language packs
+
+The built-in text of the controls (screen-reader labels, empty states, page reports) is English.
+Each included language is a separate entry point, so an application bundles only what it
+imports. The packs are not exported from `star-ng`. The `locale` inputs of the controls set the
+number and date formats: they do not depend on the pack.
+
+```ts
+import { provideStarUiText } from 'star-ng/core';
+import { STAR_UI_TEXT_DE } from 'star-ng/i18n/de';
+
+providers: [provideStarUiText(STAR_UI_TEXT_DE)];
+```
+
+To switch the language at run time without a library, use
+`provideStarUiTextFromSignal(() => packs[language()])`. The docs have a guide for it, for your
+own pack and for Transloco.
 
 ## Theme
 
