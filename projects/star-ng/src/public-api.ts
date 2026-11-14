@@ -13,6 +13,7 @@ export * from 'star-ng/card';
 export * from 'star-ng/chart';
 export * from 'star-ng/checkbox';
 export * from 'star-ng/core';
+export * from 'star-ng/data-display';
 export * from 'star-ng/date-picker';
 export * from 'star-ng/dialog';
 export * from 'star-ng/drawer';
