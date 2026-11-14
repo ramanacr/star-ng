@@ -1,0 +1,33 @@
+// Skeleton placeholder.
+.star-skeleton {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--star-radius-sm);
+  background: var(--star-border);
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in srgb, var(--star-surface) 60%, transparent),
+      transparent
+    );
+    translate: -100% 0;
+    animation: star-wave 1.4s ease-in-out infinite;
+  }
+}
+.star-skeleton--circle {
+  border-radius: 50%;
+}
+.star-skeleton--static::after {
+  display: none;
+}
+@keyframes star-wave {
+  to {
+    translate: 100% 0;
+  }
+}

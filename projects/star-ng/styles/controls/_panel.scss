@@ -1,0 +1,77 @@
+// Panel and fieldset (they use the collapsing region of the accordion).
+@use '../shared' as *;
+
+.star-panel-box {
+  display: block;
+  border: 1px solid var(--star-border);
+  border-radius: var(--star-radius-lg);
+  background: var(--star-surface);
+}
+.star-panel-box__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.875rem 1rem 0.875rem 1.25rem;
+  border-bottom: 1px solid var(--star-border);
+
+  .star-panel-box--collapsed & {
+    border-bottom-color: transparent;
+  }
+}
+.star-panel-box__title {
+  margin: 0;
+  font: var(--star-type-title-sm);
+  color: var(--star-text-strong);
+}
+.star-panel-box__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+.star-panel-box__toggle i {
+  transition: rotate var(--star-duration-base) $ease;
+}
+.star-panel-box--collapsed .star-panel-box__toggle i {
+  rotate: -90deg;
+}
+.star-panel-box__body {
+  padding: 1.25rem;
+  font: var(--star-type-body-lg);
+}
+
+.star-fieldset {
+  margin: 0;
+  padding: 0.5rem 1.25rem 1.25rem;
+  border: 1px solid var(--star-border);
+  border-radius: var(--star-radius-lg);
+}
+.star-fieldset--collapsed {
+  padding-bottom: 0.5rem;
+}
+.star-fieldset__legend {
+  padding: 0 0.5rem;
+  font: var(--star-type-label);
+  color: var(--star-text-muted);
+}
+.star-fieldset__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid var(--star-accent);
+    border-radius: 4px;
+  }
+}
+.star-fieldset__body {
+  display: grid;
+  gap: 1rem;
+  padding-top: 0.75rem;
+}

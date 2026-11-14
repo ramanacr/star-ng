@@ -18,6 +18,78 @@ export interface DocsApiEntry {
 }
 
 export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
+  "StarAccordion": {
+    "kind": "component",
+    "selector": "star-accordion",
+    "entry": "star-ng/accordion",
+    "description": "Accordion (PrimeNG `p-accordion`): `[(value)]` holds the open panel values, `multiple` allows several open, lazy panel bodies, WAI-ARIA accordion keyboard (Arrow Up / Down, Home / End between headers). Height animates with `grid-template-rows`.",
+    "inputs": [
+      {
+        "name": "multiple",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [
+      {
+        "name": "value",
+        "type": "readonly string[]",
+        "default": "[]",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "outputs": []
+  },
+  "StarAccordionContent": {
+    "kind": "directive",
+    "selector": "ng-template[starAccordionContent]",
+    "entry": "star-ng/accordion",
+    "description": "Lazy panel body: `<ng-template starAccordionContent>` renders on first expand only.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
+  "StarAccordionPanel": {
+    "kind": "component",
+    "selector": "star-accordion-panel",
+    "entry": "star-ng/accordion",
+    "description": "One section of `star-accordion`.",
+    "inputs": [
+      {
+        "name": "value",
+        "type": "string",
+        "default": null,
+        "required": true,
+        "description": ""
+      },
+      {
+        "name": "header",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "icon",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
   "StarAutoComplete": {
     "kind": "component",
     "selector": "star-autocomplete",
@@ -103,6 +175,51 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ]
   },
+  "StarAvatar": {
+    "kind": "component",
+    "selector": "star-avatar",
+    "entry": "star-ng/avatar",
+    "description": "Avatar (PrimeNG `p-avatar`): image, initials from a name, or an icon; circle or square. Falls back to initials when the image fails to load. `<star-avatar name=\"Jane Doe\" [image]=\"user.photoUrl\" size=\"lg\" />`",
+    "inputs": [
+      {
+        "name": "name",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "image",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "icon",
+        "type": "string",
+        "default": "'ph-bold ph-user'",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "size",
+        "type": "'sm' | 'md' | 'lg' | 'xl'",
+        "default": "'md'",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "shape",
+        "type": "'circle' | 'square'",
+        "default": "'circle'",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
   "StarBadge": {
     "kind": "component",
     "selector": "star-badge",
@@ -143,6 +260,37 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "null",
         "required": false,
         "description": "What the count means, for screen readers (for example \"unread messages\")."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
+  "StarBreadcrumb": {
+    "kind": "component",
+    "selector": "star-breadcrumb",
+    "entry": "star-ng/breadcrumb",
+    "description": "Breadcrumb (PrimeNG `p-breadcrumb`): `nav` landmark, ordered list, `aria-current=\"page\"` on the last item, optional home link.",
+    "inputs": [
+      {
+        "name": "items",
+        "type": "readonly StarBreadcrumbItem[]",
+        "default": "[]",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "home",
+        "type": "StarBreadcrumbItem | null",
+        "default": "null",
+        "required": false,
+        "description": "First item; when it has an icon, only the icon shows (label stays for screen readers)."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
       }
     ],
     "models": [],
@@ -351,6 +499,30 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       }
     ]
+  },
+  "StarCard": {
+    "kind": "component",
+    "selector": "star-card",
+    "entry": "star-ng/card",
+    "description": "Content card (PrimeNG `p-card`) on the StarNG `.star-card` surface: title, subtitle, header actions, body and footer slots.",
+    "inputs": [
+      {
+        "name": "header",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "subheader",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
   },
   "StarCascadeSelect": {
     "kind": "component",
@@ -597,6 +769,52 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": "Signal Forms touch notification."
+      }
+    ]
+  },
+  "StarChip": {
+    "kind": "component",
+    "selector": "star-chip",
+    "entry": "star-ng/layout",
+    "description": "Chip (PrimeNG `p-chip`): label with optional icon or image and a remove button. `<star-chip label=\"Design\" icon=\"ph-bold ph-palette\" removable (removed)=\"drop()\" />`",
+    "inputs": [
+      {
+        "name": "label",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "icon",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "image",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "removable",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": [
+      {
+        "name": "removed",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": ""
       }
     ]
   },
@@ -1094,6 +1312,37 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarDivider": {
+    "kind": "component",
+    "selector": "star-divider",
+    "entry": "star-ng/layout",
+    "description": "Divider (PrimeNG `p-divider`): horizontal or vertical rule with an optional label. `<star-divider>or</star-divider>`, `<star-divider layout=\"vertical\" />`",
+    "inputs": [
+      {
+        "name": "layout",
+        "type": "'horizontal' | 'vertical'",
+        "default": "'horizontal'",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "type",
+        "type": "'solid' | 'dashed' | 'dotted'",
+        "default": "'solid'",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "align",
+        "type": "'start' | 'center' | 'end'",
+        "default": "'center'",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
   "StarDrawer": {
     "kind": "component",
     "selector": "star-drawer",
@@ -1175,6 +1424,38 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ],
     "models": [],
+    "outputs": []
+  },
+  "StarFieldset": {
+    "kind": "component",
+    "selector": "star-fieldset",
+    "entry": "star-ng/panel",
+    "description": "Fieldset (PrimeNG `p-fieldset`) on the native `<fieldset>` / `<legend>`, so groups of form controls keep their accessible name. Optional collapse toggle in the legend. `<star-fieldset legend=\"Requester\" toggleable>…controls…</star-fieldset>`",
+    "inputs": [
+      {
+        "name": "legend",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "toggleable",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [
+      {
+        "name": "collapsed",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      }
+    ],
     "outputs": []
   },
   "StarIconField": {
@@ -2138,6 +2419,59 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarMessage": {
+    "kind": "component",
+    "selector": "star-message",
+    "entry": "star-ng/message",
+    "description": "Inline message (PrimeNG `p-message`): severity, icon, optional close and auto-hide `life`. `<star-message severity=\"warn\" closable>Draft not saved.</star-message>`",
+    "inputs": [
+      {
+        "name": "severity",
+        "type": "StarMessageSeverity",
+        "default": "'info'",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "variant",
+        "type": "'soft' | 'outlined'",
+        "default": "'soft'",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "icon",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "closable",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "life",
+        "type": "number",
+        "default": "0",
+        "required": false,
+        "description": "Milliseconds before the message hides itself (0 = stays)."
+      }
+    ],
+    "models": [],
+    "outputs": [
+      {
+        "name": "closed",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
   "StarMultiAutoComplete": {
     "kind": "component",
     "selector": "star-multi-autocomplete",
@@ -2465,6 +2799,113 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarPaginator": {
+    "kind": "component",
+    "selector": "star-paginator",
+    "entry": "star-ng/paginator",
+    "description": "Paginator (PrimeNG `p-paginator`): `[(first)]` / `[(rows)]`, page links window, first / last buttons, rows-per-page select and a \"1–10 of 240\" report.",
+    "inputs": [
+      {
+        "name": "totalRecords",
+        "type": "number",
+        "default": "0",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "rowsPerPageOptions",
+        "type": "readonly number[]",
+        "default": "[10, 25, 50]",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "pageLinkSize",
+        "type": "number",
+        "default": "5",
+        "required": false,
+        "description": "Number of page links shown around the current page."
+      },
+      {
+        "name": "showCurrentPageReport",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "showFirstLast",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [
+      {
+        "name": "first",
+        "type": "number",
+        "default": "0",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "rows",
+        "type": "number",
+        "default": "10",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "outputs": [
+      {
+        "name": "pageChange",
+        "type": "StarPageEvent",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
+  "StarPanel": {
+    "kind": "component",
+    "selector": "star-panel",
+    "entry": "star-ng/panel",
+    "description": "Panel (PrimeNG `p-panel`): titled box with header actions and an optional collapse toggle. `<star-panel header=\"Order notes\" toggleable [(collapsed)]=\"notesHidden\">…</star-panel>`",
+    "inputs": [
+      {
+        "name": "header",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "toggleable",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [
+      {
+        "name": "collapsed",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "outputs": []
+  },
   "StarPanelMenu": {
     "kind": "component",
     "selector": "star-panel-menu",
@@ -2674,6 +3115,58 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       }
     ]
+  },
+  "StarProgressBar": {
+    "kind": "component",
+    "selector": "star-progress-bar",
+    "entry": "star-ng/progress-bar",
+    "description": "Progress bar (PrimeNG `p-progressbar`): determinate value or indeterminate stripe, optional value label, severity color. `role=\"progressbar\"` with `aria-valuenow`.",
+    "inputs": [
+      {
+        "name": "value",
+        "type": "number",
+        "default": "0",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "indeterminate",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "showValue",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "severity",
+        "type": "'primary' | 'success' | 'warn' | 'danger' | 'info'",
+        "default": "'primary'",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "size",
+        "type": "'sm' | 'md'",
+        "default": "'md'",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
   },
   "StarRadio": {
     "kind": "component",
@@ -3044,6 +3537,58 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ]
   },
+  "StarSkeleton": {
+    "kind": "component",
+    "selector": "star-skeleton",
+    "entry": "star-ng/skeleton",
+    "description": "Loading placeholder (PrimeNG `p-skeleton`). Respects `prefers-reduced-motion`. `<star-skeleton width=\"60%\" height=\"1rem\" />`, `<star-skeleton shape=\"circle\" size=\"2.5rem\" />`",
+    "inputs": [
+      {
+        "name": "shape",
+        "type": "'rectangle' | 'circle'",
+        "default": "'rectangle'",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "width",
+        "type": "string",
+        "default": "'100%'",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "height",
+        "type": "string",
+        "default": "'1rem'",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "size",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Width and height together (squares and circles)."
+      },
+      {
+        "name": "borderRadius",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "animation",
+        "type": "'wave' | 'none'",
+        "default": "'wave'",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
   "StarSlider": {
     "kind": "component",
     "selector": "star-slider",
@@ -3231,6 +3776,184 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ]
   },
+  "StarStep": {
+    "kind": "component",
+    "selector": "star-step",
+    "entry": "star-ng/stepper",
+    "description": "One step of `star-stepper`; its content is the step panel.",
+    "inputs": [
+      {
+        "name": "value",
+        "type": "string",
+        "default": null,
+        "required": true,
+        "description": ""
+      },
+      {
+        "name": "label",
+        "type": "string",
+        "default": null,
+        "required": true,
+        "description": ""
+      },
+      {
+        "name": "description",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "completed",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Marks the step done (check icon). In linear mode, later steps unlock only after this."
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
+  "StarStepper": {
+    "kind": "component",
+    "selector": "star-stepper",
+    "entry": "star-ng/stepper",
+    "description": "Stepper (PrimeNG `p-stepper`): numbered steps with completed / current / upcoming states, `[(value)]` for the active step, `linear` mode (a step opens only after all earlier steps are `completed`), and `next()` / `previous()` for wizard buttons.",
+    "inputs": [
+      {
+        "name": "linear",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [
+      {
+        "name": "value",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "outputs": []
+  },
+  "StarTab": {
+    "kind": "component",
+    "selector": "star-tab",
+    "entry": "star-ng/tabs",
+    "description": "One tab and its panel. The host element is the `tabpanel`. Eager content goes directly inside; wrap heavy content in `ng-template starTabContent`.",
+    "inputs": [
+      {
+        "name": "value",
+        "type": "string",
+        "default": null,
+        "required": true,
+        "description": ""
+      },
+      {
+        "name": "label",
+        "type": "string",
+        "default": null,
+        "required": true,
+        "description": ""
+      },
+      {
+        "name": "icon",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Phosphor icon class, for example `ph-bold ph-files`."
+      },
+      {
+        "name": "badge",
+        "type": "string | number | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
+  "StarTabContent": {
+    "kind": "directive",
+    "selector": "ng-template[starTabContent]",
+    "entry": "star-ng/tabs",
+    "description": "Lazy tab body: `<ng-template starTabContent>…</ng-template>` renders on first activation only.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
+  "StarTabs": {
+    "kind": "component",
+    "selector": "star-tabs",
+    "entry": "star-ng/tabs",
+    "description": "Tabs (PrimeNG `p-tabs`): `[(value)]`, disabled tabs, icons, badges, lazy panels and the WAI-ARIA tabs keyboard model (Arrow keys, Home, End; automatic or manual activation).",
+    "inputs": [
+      {
+        "name": "variant",
+        "type": "'line' | 'pill'",
+        "default": "'line'",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "selectOnFocus",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "`false`: arrow keys move focus only; Enter / Space activate (manual activation)."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [
+      {
+        "name": "value",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "outputs": [
+      {
+        "name": "changed",
+        "type": "string",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
   "StarTag": {
     "kind": "component",
     "selector": "star-tag",
@@ -3266,6 +3989,60 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       }
     ],
+    "models": [],
+    "outputs": []
+  },
+  "StarTimeline": {
+    "kind": "component",
+    "selector": "star-timeline",
+    "entry": "star-ng/layout",
+    "description": "Timeline (PrimeNG `p-timeline`): ordered list of events with markers, dates and severity colors; vertical (left or alternate) or horizontal.",
+    "inputs": [
+      {
+        "name": "events",
+        "type": "readonly StarTimelineEvent[]",
+        "default": "[]",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "layout",
+        "type": "'vertical' | 'horizontal'",
+        "default": "'vertical'",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "align",
+        "type": "'left' | 'alternate'",
+        "default": "'left'",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "locale",
+        "type": "string | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
+  "StarTimelineContent": {
+    "kind": "directive",
+    "selector": "ng-template[starTimelineContent]",
+    "entry": "star-ng/layout",
+    "description": "Custom event body: `<ng-template starTimelineContent let-event>…</ng-template>`.",
+    "inputs": [],
     "models": [],
     "outputs": []
   },
@@ -3574,6 +4351,23 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ]
   },
+  "StarToolbar": {
+    "kind": "component",
+    "selector": "star-toolbar",
+    "entry": "star-ng/layout",
+    "description": "Toolbar (PrimeNG `p-toolbar`): start, center and end groups, `role=\"toolbar\"` with Arrow-key focus movement between its controls (Tab enters and leaves once).",
+    "inputs": [
+      {
+        "name": "ariaLabel",
+        "type": "string",
+        "default": null,
+        "required": true,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
   "StarTooltip": {
     "kind": "directive",
     "selector": "[starTooltip]",
@@ -3816,15 +4610,22 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
 };
 
 export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
+  "accordion/basic": "<div class=\"docs-stack\">\n  <star-accordion [(value)]=\"open\">\n    <star-accordion-panel value=\"shipping\" header=\"Shipping\" icon=\"ph-bold ph-truck\">\n      Orders ship within two working days.\n    </star-accordion-panel>\n    <star-accordion-panel\n      value=\"returns\"\n      header=\"Returns\"\n      icon=\"ph-bold ph-arrow-u-up-left\"\n    >\n      Items can be returned for 30 days.\n    </star-accordion-panel>\n    <star-accordion-panel value=\"billing\" header=\"Billing\" disabled>\n      This section is disabled.\n    </star-accordion-panel>\n  </star-accordion>\n  <p class=\"docs-output\" role=\"status\">Open: {{ open().join(', ') || 'none' }}</p>\n</div>",
+  "accordion/multiple": "<div class=\"docs-stack\">\n  <star-accordion multiple [value]=\"['summary']\">\n    <star-accordion-panel value=\"summary\" header=\"Summary\">\n      Twelve items, one parcel.\n    </star-accordion-panel>\n    <star-accordion-panel value=\"history\" header=\"History\">\n      <ng-template starAccordionContent>\n        <p>Created on Monday. Packed on Tuesday.</p>\n      </ng-template>\n    </star-accordion-panel>\n  </star-accordion>\n</div>",
   "autocomplete/async": "<div class=\"docs-stack\">\n  <star-autocomplete\n    [suggestions]=\"results()\"\n    [loading]=\"searching()\"\n    [minQueryLength]=\"2\"\n    [delay]=\"150\"\n    (completeMethod)=\"search($event)\"\n    optionLabel=\"name\"\n    optionValue=\"id\"\n    [(value)]=\"found\"\n    placeholder=\"Type 2 letters of a name\"\n    ariaLabel=\"Colleague\"\n    showClear\n  />\n  <p class=\"docs-output\" role=\"status\">Colleague: {{ found() ?? 'none' }}</p>\n</div>",
   "autocomplete/dropdown": "<star-autocomplete\n  [options]=\"cities\"\n  [(value)]=\"dropdownCity\"\n  placeholder=\"Search a city\"\n  ariaLabel=\"City with dropdown\"\n  dropdown\n  autoHighlight\n  showClear\n/>",
   "autocomplete/form": "<div class=\"docs-stack\">\n  <star-field label=\"Assignee\" for=\"autocomplete-form-assignee\" [state]=\"task.assignee()\">\n    <star-autocomplete\n      inputId=\"autocomplete-form-assignee\"\n      [formField]=\"task.assignee\"\n      [options]=\"people\"\n      optionLabel=\"name\"\n      optionValue=\"id\"\n      placeholder=\"Search a person\"\n      showClear\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ task().valid() }}</p>\n</div>",
   "autocomplete/local": "<div class=\"docs-stack\">\n  <star-autocomplete\n    [options]=\"cities\"\n    [(value)]=\"city\"\n    placeholder=\"Search a city\"\n    ariaLabel=\"City\"\n  />\n  <p class=\"docs-output\" role=\"status\">City: {{ city() ?? 'none' }}</p>\n</div>",
   "autocomplete/multiple": "<div class=\"docs-stack\">\n  <star-multi-autocomplete\n    [options]=\"keywords\"\n    [(value)]=\"chosen\"\n    [selectionLimit]=\"4\"\n    placeholder=\"Add a keyword\"\n    ariaLabel=\"Keywords\"\n    dropdown\n    autoHighlight\n  />\n  <p class=\"docs-output\" role=\"status\">Keywords: {{ chosen().join(', ') || 'none' }}</p>\n</div>",
   "autocomplete/objects": "<star-autocomplete\n  [options]=\"people\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  optionGroup=\"team\"\n  [(value)]=\"person\"\n  placeholder=\"Search a person\"\n  ariaLabel=\"Person\"\n>\n  <ng-template starOption [starOptionOf]=\"people\" let-item>\n    <span>\n      {{ item.name }}\n      <small>{{ item.team }}</small>\n    </span>\n  </ng-template>\n</star-autocomplete>",
+  "avatar/basic": "<star-avatar name=\"Jane Doe\" />\n<star-avatar name=\"Sam Lee\" shape=\"square\" />\n<star-avatar />\n<star-avatar name=\"Ava Stone\" icon=\"ph-bold ph-buildings\" />",
+  "avatar/image": "<star-avatar name=\"Broken Image\" image=\"data:,\" size=\"lg\" />",
+  "avatar/sizes": "<star-avatar name=\"Jane Doe\" size=\"sm\" />\n<star-avatar name=\"Jane Doe\" size=\"md\" />\n<star-avatar name=\"Jane Doe\" size=\"lg\" />\n<star-avatar name=\"Jane Doe\" size=\"xl\" />",
   "badge/counts": "<star-badge [value]=\"4\" ariaLabel=\"unread messages\" />\n<star-badge [value]=\"128\" [max]=\"99\" severity=\"danger\" ariaLabel=\"open alerts\" />\n<star-badge value=\"New\" severity=\"success\" />",
   "badge/severities": "<star-badge [value]=\"1\" />\n<star-badge [value]=\"2\" severity=\"secondary\" />\n<star-badge [value]=\"3\" severity=\"success\" />\n<star-badge [value]=\"4\" severity=\"info\" />\n<star-badge [value]=\"5\" severity=\"warn\" />\n<star-badge [value]=\"6\" severity=\"danger\" />",
   "badge/sizes": "<star-badge [value]=\"7\" size=\"sm\" />\n<star-badge [value]=\"7\" />\n<star-badge [value]=\"7\" size=\"lg\" />\n<star-badge severity=\"success\" ariaLabel=\"online\" />",
+  "breadcrumb/basic": "<star-breadcrumb [home]=\"home\" [items]=\"trail\" />",
+  "breadcrumb/links": "<star-breadcrumb\n  [items]=\"[\n    { label: 'Docs', url: 'https://example.com/docs' },\n    { label: 'Guides', url: 'https://example.com/docs/guides' },\n    { label: 'Install' },\n  ]\"\n/>",
   "button/full": "<div class=\"docs-stack\">\n  <star-button fullWidth>Continue</star-button>\n</div>",
   "button/icons": "<star-button leadingIcon=\"ph-bold ph-plus\">New order</star-button>\n<star-button variant=\"secondary\" trailingIcon=\"ph-bold ph-arrow-right\">Next</star-button>\n<star-button variant=\"ghost\" iconOnly leadingIcon=\"ph-bold ph-gear\" ariaLabel=\"Settings\" />",
   "button/sizes": "<star-button size=\"sm\">Small</star-button>\n<star-button size=\"md\">Medium</star-button>\n<star-button size=\"lg\">Large</star-button>",
@@ -3834,6 +4635,8 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "calendar/granularity": "<div class=\"docs-stack\">\n  <star-calendar\n    class=\"star-calendar--inline\"\n    granularity=\"month\"\n    [selected]=\"reportMonth()\"\n    (dateSelect)=\"reportMonth.set($event)\"\n    locale=\"en-GB\"\n  />\n  <p class=\"docs-output\" role=\"status\">Month: {{ iso(reportMonth()) }}</p>\n</div>",
   "calendar/months": "<star-calendar\n  class=\"star-calendar--inline\"\n  [selected]=\"stay()\"\n  (dateSelect)=\"stay.set($event)\"\n  [numberOfMonths]=\"2\"\n  showWeek\n  [minDate]=\"minDate\"\n  [maxDate]=\"maxDate\"\n  [disabledDays]=\"[0]\"\n  locale=\"en-GB\"\n  [firstDayOfWeek]=\"1\"\n/>",
   "calendar/range": "<div class=\"docs-stack\">\n  <star-calendar\n    class=\"star-calendar--inline\"\n    mode=\"range\"\n    [range]=\"booking()\"\n    (dateSelect)=\"pick($event)\"\n    locale=\"en-GB\"\n    [firstDayOfWeek]=\"1\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Booking: {{ iso(booking()?.start) }} to {{ iso(booking()?.end) }}\n  </p>\n</div>",
+  "card/basic": "<div class=\"docs-stack\">\n  <star-card header=\"Open orders\" subheader=\"Last 30 days\">\n    <star-button starCardActions variant=\"ghost\" size=\"sm\">View all</star-button>\n    <p>Forty-two orders are open. Nine are late.</p>\n    <div starCardFooter class=\"docs-row\">\n      <star-button size=\"sm\">Export</star-button>\n      <star-button size=\"sm\" variant=\"secondary\">Filter</star-button>\n    </div>\n  </star-card>\n</div>",
+  "card/plain": "<div class=\"docs-stack\">\n  <star-card>\n    <p>A card with only a body.</p>\n  </star-card>\n</div>",
   "cascade-select/basic": "<div class=\"docs-stack\">\n  <star-cascade-select\n    [options]=\"places\"\n    optionLabel=\"name\"\n    optionValue=\"code\"\n    [(value)]=\"place\"\n    placeholder=\"Choose a city\"\n    ariaLabel=\"City\"\n  />\n  <p class=\"docs-output\" role=\"status\">Value: {{ place() ?? 'none' }}</p>\n</div>",
   "cascade-select/form": "<div class=\"docs-stack\">\n  <star-field label=\"Office city\" for=\"cascade-form-city\" [state]=\"office.city()\">\n    <star-cascade-select\n      inputId=\"cascade-form-city\"\n      [formField]=\"office.city\"\n      [options]=\"places\"\n      optionLabel=\"name\"\n      optionValue=\"code\"\n      placeholder=\"Choose a city\"\n      showPath\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ office().valid() }}</p>\n</div>",
   "cascade-select/path": "<star-cascade-select\n  [options]=\"places\"\n  optionLabel=\"name\"\n  optionValue=\"code\"\n  [(value)]=\"pathPlace\"\n  placeholder=\"Choose a city\"\n  ariaLabel=\"City with path\"\n  showPath\n  showClear\n/>",
@@ -3842,6 +4645,8 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "checkbox/form": "<star-checkbox [formField]=\"terms.accept\">I accept the terms</star-checkbox>\n<p class=\"docs-output\" role=\"status\">Valid: {{ terms().valid() }}</p>",
   "checkbox/indeterminate": "<star-checkbox [(checked)]=\"all\" [(indeterminate)]=\"some\">All regions</star-checkbox>",
   "checkbox/states": "<star-checkbox [checked]=\"true\" disabled>Disabled</star-checkbox>\n<star-checkbox [checked]=\"true\" readonly>Read-only</star-checkbox>",
+  "chip/basic": "<star-chip label=\"Design\" />\n<star-chip label=\"Travel\" icon=\"ph-bold ph-airplane\" />\n<star-chip label=\"Team\">(4)</star-chip>",
+  "chip/removable": "<div class=\"docs-row\">\n  @for (name of names(); track name) {\n    <star-chip [label]=\"name\" removable (removed)=\"remove(name)\" />\n  }\n</div>\n<p class=\"docs-output\" role=\"status\">{{ names().length }} chips left.</p>",
   "color-picker/basic": "<star-color-picker [(value)]=\"color\" ariaLabel=\"Label color\" />\n<p class=\"docs-output\" role=\"status\">Value: {{ color() }}</p>",
   "color-picker/disabled": "<star-color-picker value=\"#64748b\" disabled ariaLabel=\"Locked color\" />",
   "color-picker/swatches": "<star-color-picker\n  [(value)]=\"category\"\n  [swatches]=\"['#0f766e', '#b45309', '#7c3aed', '#be123c']\"\n  ariaLabel=\"Category color\"\n/>",
@@ -3866,6 +4671,8 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "dialog/popups": "<star-button variant=\"secondary\" (pressed)=\"popupsOpen.set(true)\">\n  Open order dialog\n</star-button>\n<star-dialog [(visible)]=\"popupsOpen\" header=\"Order ORD-1042\" size=\"md\">\n  <div class=\"docs-stack\">\n    <star-field label=\"Shipping city\" hint=\"Menus and cascade selects open above the modal\">\n      <star-cascade-select\n        [options]=\"places\"\n        optionLabel=\"name\"\n        optionValue=\"code\"\n        [(value)]=\"place\"\n        ariaLabel=\"Dialog city\"\n        showPath\n      />\n    </star-field>\n    <div class=\"docs-row\">\n      <star-button size=\"sm\" variant=\"secondary\" [starMenuTrigger]=\"actionsMenu\">\n        More actions\n      </star-button>\n      <star-menu\n        #actionsMenu\n        [items]=\"actionItems\"\n        (itemClick)=\"lastAction.set($event.label ?? '')\"\n      />\n      <span class=\"docs-output\" tabindex=\"0\" [starContextMenu]=\"actionsMenu\">\n        Last action: {{ lastAction() }}\n      </span>\n    </div>\n  </div>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button (pressed)=\"popupsOpen.set(false)\">Done</star-button>\n  </div>\n</star-dialog>",
   "dialog/service": "<div class=\"docs-stack\">\n  <p class=\"docs-output\" role=\"status\">Note: {{ note() }}</p>\n  <div class=\"docs-row\">\n    <star-button leadingIcon=\"ph-bold ph-note-pencil\" (pressed)=\"editNote()\">\n      Edit note\n    </star-button>\n  </div>\n</div>",
   "dialog/sizes": "<div class=\"docs-row\">\n  @for (item of sizes; track item) {\n    <star-button variant=\"secondary\" (pressed)=\"openSize(item)\">\n      Open {{ item }}\n    </star-button>\n  }\n</div>\n<star-dialog [(visible)]=\"sizeOpen\" [size]=\"size()\" [header]=\"'Size ' + size()\">\n  <p>The size input of this dialog is {{ size() }}.</p>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button (pressed)=\"sizeOpen.set(false)\">Close</star-button>\n  </div>\n</star-dialog>",
+  "divider/basic": "<div class=\"docs-stack\">\n  <p>Sign in with your email.</p>\n  <star-divider>or</star-divider>\n  <p>Continue with a link.</p>\n  <star-divider align=\"start\">Start</star-divider>\n  <star-divider align=\"end\" type=\"dashed\">End, dashed</star-divider>\n  <star-divider type=\"dotted\" />\n</div>",
+  "divider/vertical": "<div class=\"docs-row\">\n  <span>Orders</span>\n  <star-divider layout=\"vertical\" />\n  <span>Invoices</span>\n  <star-divider layout=\"vertical\" type=\"dashed\" />\n  <span>Reports</span>\n</div>",
   "drawer/basic": "<star-button leadingIcon=\"ph-bold ph-sidebar-simple\" (pressed)=\"basicOpen.set(true)\">\n  Open details\n</star-button>\n<star-drawer [(visible)]=\"basicOpen\" header=\"Order ORD-1042\" dismissableMask>\n  <div class=\"docs-stack\">\n    <p class=\"docs-output\">Orchard Supply, 12 items, ships on Friday.</p>\n    <star-field label=\"Internal note\">\n      <textarea starInput autoResize rows=\"3\"></textarea>\n    </star-field>\n  </div>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button variant=\"ghost\" (pressed)=\"basicOpen.set(false)\">Close</star-button>\n  </div>\n</star-drawer>",
   "drawer/position": "<div class=\"docs-row\">\n  @for (item of positions; track item) {\n    <star-button variant=\"secondary\" (pressed)=\"openAt(item)\">{{ item }}</star-button>\n  }\n</div>\n<star-drawer\n  [(visible)]=\"positionOpen\"\n  [position]=\"position()\"\n  [drawerSize]=\"position() === 'left' || position() === 'right' ? '22rem' : '14rem'\"\n  [header]=\"'Drawer at the ' + position()\"\n>\n  <p>This drawer is pinned to the {{ position() }} edge.</p>\n</star-drawer>",
   "field/basic": "<div class=\"docs-stack\">\n  <star-field label=\"Full name\" hint=\"As shown on your account.\">\n    <input starInput placeholder=\"Avery Stone\" />\n  </star-field>\n</div>",
@@ -3911,20 +4718,30 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "menu/states": "<star-button variant=\"secondary\" [starMenuTrigger]=\"orderMenu\">Order actions</star-button>\n<star-menu #orderMenu [items]=\"orderItems\" />",
   "menubar/basic": "<div class=\"docs-stack\">\n  <star-menubar ariaLabel=\"Main\" [items]=\"nav\" (itemClick)=\"last.set($event.label ?? '')\" />\n  <p class=\"docs-output\" role=\"status\">Last action: {{ last() }}</p>\n</div>",
   "menubar/end": "<star-menubar ariaLabel=\"Main with action\" [items]=\"nav\">\n  <star-button starMenubarEnd size=\"sm\" variant=\"ghost\" leadingIcon=\"ph-bold ph-plus\"\n    >New</star-button\n  >\n</star-menubar>",
+  "message/closable": "<div class=\"docs-stack\">\n  @if (!gone()) {\n    <star-message severity=\"warn\" closable (closed)=\"closedCount.set(closedCount() + 1)\">\n      Draft not saved.\n    </star-message>\n  }\n  <p class=\"docs-output\" role=\"status\">Closed: {{ closedCount() }}</p>\n  <div class=\"docs-row\">\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"reset()\">Show again</star-button>\n  </div>\n</div>",
+  "message/outlined": "<div class=\"docs-stack\">\n  <star-message variant=\"outlined\" severity=\"info\">Orders close at 17:00.</star-message>\n  <star-message variant=\"outlined\" severity=\"warn\"\n    >Two items are low in stock.</star-message\n  >\n</div>",
+  "message/severities": "<div class=\"docs-stack\">\n  <star-message>Your changes are saved as a draft.</star-message>\n  <star-message severity=\"success\">The invoice was sent.</star-message>\n  <star-message severity=\"warn\">The card expires next month.</star-message>\n  <star-message severity=\"error\">The payment was declined.</star-message>\n</div>",
   "multi-select/basic": "<div class=\"docs-stack\">\n  <star-multi-select\n    [options]=\"departments\"\n    optionLabel=\"name\"\n    optionValue=\"id\"\n    [(value)]=\"chosen\"\n    placeholder=\"Select departments\"\n    ariaLabel=\"Departments\"\n  />\n  <p class=\"docs-output\" role=\"status\">Chosen: {{ chosen().join(', ') || 'none' }}</p>\n</div>",
   "multi-select/chips": "<star-multi-select\n  [options]=\"departments\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  [(value)]=\"chips\"\n  display=\"chip\"\n  placeholder=\"Select departments\"\n  ariaLabel=\"Departments as chips\"\n  filter\n  showClear\n/>",
   "multi-select/form": "<div class=\"docs-stack\">\n  <star-field label=\"Teams\" for=\"multi-form-teams\" [state]=\"team.departments()\">\n    <star-multi-select\n      inputId=\"multi-form-teams\"\n      [formField]=\"team.departments\"\n      [options]=\"departments\"\n      optionLabel=\"name\"\n      optionValue=\"id\"\n      display=\"chip\"\n      placeholder=\"Select at least two\"\n      ariaLabel=\"Teams\"\n      showClear\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ team().valid() }}</p>\n</div>",
   "multi-select/groups": "<star-multi-select\n  [options]=\"departments\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  optionGroup=\"site\"\n  optionDisabled=\"closed\"\n  [(value)]=\"grouped\"\n  placeholder=\"Departments by site\"\n  ariaLabel=\"Departments by site\"\n/>",
   "multi-select/limit": "<star-multi-select\n  [options]=\"departments\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  [selectionLimit]=\"2\"\n  placeholder=\"Pick up to 2\"\n  ariaLabel=\"Limited departments\"\n/>",
   "multi-select/template": "<star-multi-select\n  [options]=\"departments\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  [(value)]=\"templated\"\n  placeholder=\"Select departments\"\n  ariaLabel=\"Departments with template\"\n>\n  <ng-template starOption [starOptionOf]=\"departments\" let-item let-selected=\"selected\">\n    <span>\n      {{ item.name }}\n      <small>{{ item.site }}</small>\n    </span>\n  </ng-template>\n</star-multi-select>",
+  "paginator/basic": "<div class=\"docs-stack\">\n  <star-paginator\n    [totalRecords]=\"95\"\n    [(first)]=\"first\"\n    [(rows)]=\"rows\"\n    (pageChange)=\"last.set($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Showing {{ shown() }}. Last event: page {{ last() ? last()!.page + 1 : '-' }}.\n  </p>\n</div>",
+  "paginator/compact": "<star-paginator\n  [totalRecords]=\"60\"\n  [rowsPerPageOptions]=\"[]\"\n  [showCurrentPageReport]=\"false\"\n  [showFirstLast]=\"false\"\n  [pageLinkSize]=\"3\"\n/>",
   "panel-menu/basic": "<div class=\"docs-stack\">\n  <star-panel-menu\n    ariaLabel=\"Settings\"\n    [items]=\"sections\"\n    [(expandedKeys)]=\"open\"\n    (itemClick)=\"last.set($event.label ?? '')\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Open: {{ open().join(', ') || 'none' }}. Last action: {{ last() }}\n  </p>\n</div>",
   "panel-menu/single": "<star-panel-menu ariaLabel=\"Settings, single\" single [items]=\"sections\" />",
+  "panel/basic": "<div class=\"docs-stack\">\n  <star-panel header=\"Order notes\" toggleable [(collapsed)]=\"collapsed\">\n    <star-button starPanelActions variant=\"ghost\" size=\"sm\" leadingIcon=\"ph-bold ph-plus\">\n      Add note\n    </star-button>\n    Ship with the next pallet. Call the front desk on arrival.\n  </star-panel>\n  <p class=\"docs-output\" role=\"status\">\n    The panel is {{ collapsed() ? 'collapsed' : 'open' }}.\n  </p>\n</div>",
+  "panel/fieldset": "<div class=\"docs-stack\">\n  <star-fieldset legend=\"Contact person\" toggleable>\n    <star-field label=\"Name\">\n      <input starInput />\n    </star-field>\n    <star-field label=\"Email\">\n      <input starInput type=\"email\" placeholder=\"name@example.com\" />\n    </star-field>\n  </star-fieldset>\n</div>",
   "password/basic": "<div class=\"docs-stack\">\n  <star-field label=\"Password\">\n    <star-password [(value)]=\"current\" />\n  </star-field>\n</div>",
   "password/feedback": "<div class=\"docs-stack\">\n  <star-field label=\"New password\">\n    <star-password [(value)]=\"created\" feedback />\n  </star-field>\n</div>",
   "password/rules": "<div class=\"docs-stack\">\n  <star-field label=\"PIN phrase\">\n    <star-password [(value)]=\"phrase\" feedback [rules]=\"rules\" />\n  </star-field>\n</div>",
   "popover/basic": "<star-button\n  variant=\"secondary\"\n  leadingIcon=\"ph-bold ph-info\"\n  (pressed)=\"details.toggle($event)\"\n>\n  Details\n</star-button>\n<star-popover #details ariaLabel=\"Order details\">\n  <div class=\"docs-stack\">\n    <p class=\"docs-output\"><strong>ORD-1042</strong></p>\n    <p class=\"docs-output\">Orchard Supply, 12 items, ships on Friday.</p>\n    <star-button size=\"sm\" (pressed)=\"details.hide()\">Close</star-button>\n  </div>\n</star-popover>",
   "popover/field": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"rename.toggle($event)\">\n      Rename order\n    </star-button>\n  </div>\n  <star-popover\n    #rename\n    ariaLabel=\"Rename order\"\n    (shown)=\"renameState.set('open')\"\n    (hidden)=\"renameState.set('closed')\"\n  >\n    <star-field label=\"Order name\">\n      <input starInput value=\"Spring restock\" />\n    </star-field>\n  </star-popover>\n  <p class=\"docs-output\" role=\"status\">Popover: {{ renameState() }}</p>\n</div>",
   "popover/pinned": "<star-button variant=\"secondary\" (pressed)=\"pinned.toggle($event)\">Toggle tip</star-button>\n<star-popover #pinned ariaLabel=\"Tip\" [dismissable]=\"false\" [focusOnShow]=\"false\">\n  <p class=\"docs-output\">This tip stays open until you press the button again.</p>\n</star-popover>",
+  "progress-bar/basic": "<div class=\"docs-stack\">\n  <star-progress-bar [value]=\"value()\" showValue ariaLabel=\"Upload\" />\n  <div class=\"docs-row\">\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"step(-20)\">Less</star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"step(20)\">More</star-button>\n  </div>\n</div>",
+  "progress-bar/indeterminate": "<div class=\"docs-stack\">\n  <star-progress-bar indeterminate ariaLabel=\"Loading\" />\n</div>",
+  "progress-bar/severities": "<div class=\"docs-stack\">\n  <star-progress-bar [value]=\"60\" ariaLabel=\"Primary\" />\n  <star-progress-bar [value]=\"80\" severity=\"success\" ariaLabel=\"Success\" />\n  <star-progress-bar [value]=\"45\" severity=\"warn\" ariaLabel=\"Warning\" />\n  <star-progress-bar [value]=\"25\" severity=\"danger\" ariaLabel=\"Danger\" />\n  <star-progress-bar [value]=\"70\" severity=\"info\" size=\"sm\" ariaLabel=\"Info, thin\" />\n</div>",
   "radio/basic": "<star-radio-group [(value)]=\"plan\" ariaLabel=\"Plan\">\n  <star-radio value=\"starter\">Starter</star-radio>\n  <star-radio value=\"team\">Team</star-radio>\n  <star-radio value=\"business\">Business</star-radio>\n</star-radio-group>\n<p class=\"docs-output\" role=\"status\">Plan: {{ plan() }}</p>",
   "radio/disabled": "<star-radio-group [(value)]=\"delivery\" ariaLabel=\"Delivery\">\n  <star-radio value=\"standard\">Standard</star-radio>\n  <star-radio value=\"express\">Express</star-radio>\n  <star-radio value=\"pickup\" disabled>Pick-up (not available)</star-radio>\n</star-radio-group>",
   "radio/horizontal": "<star-radio-group [(value)]=\"size\" orientation=\"horizontal\" ariaLabel=\"Size\">\n  <star-radio value=\"s\">Small</star-radio>\n  <star-radio value=\"m\">Medium</star-radio>\n  <star-radio value=\"l\">Large</star-radio>\n</star-radio-group>",
@@ -3943,6 +4760,8 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "select/states": "<div class=\"docs-stack\">\n  <star-select [options]=\"regions\" size=\"sm\" placeholder=\"Small\" ariaLabel=\"Small select\" />\n  <star-select [options]=\"regions\" disabled placeholder=\"Disabled\" ariaLabel=\"Disabled\" />\n  <star-select [options]=\"regions\" [value]=\"'EMEA'\" readonly ariaLabel=\"Read-only\" />\n  <star-select [options]=\"[]\" loading placeholder=\"Loading options\" ariaLabel=\"Loading\" />\n</div>",
   "select/template": "<star-select\n  [options]=\"countries\"\n  optionLabel=\"name\"\n  optionValue=\"code\"\n  [(value)]=\"templated\"\n  placeholder=\"Select a country\"\n  ariaLabel=\"Country with template\"\n>\n  <ng-template starOption [starOptionOf]=\"countries\" let-item>\n    <span>\n      {{ item.name }}\n      <small>{{ item.region }}</small>\n    </span>\n  </ng-template>\n</star-select>",
   "select/virtual": "<star-select\n  [options]=\"orders\"\n  [(value)]=\"order\"\n  placeholder=\"5,000 orders\"\n  ariaLabel=\"Order\"\n  virtualScroll\n  filter\n/>",
+  "skeleton/basic": "<div class=\"docs-row\">\n  <star-skeleton shape=\"circle\" size=\"3rem\" />\n  <div class=\"docs-stack\">\n    <star-skeleton width=\"60%\" height=\"1rem\" />\n    <star-skeleton width=\"90%\" height=\"0.75rem\" />\n    <star-skeleton width=\"40%\" height=\"0.75rem\" animation=\"none\" />\n  </div>\n</div>",
+  "skeleton/loading": "<div class=\"docs-stack\">\n  @if (loading()) {\n    <star-skeleton height=\"1.25rem\" width=\"50%\" />\n    <star-skeleton height=\"0.75rem\" />\n  } @else {\n    <strong>Orchard Supply</strong>\n    <span>12 items, ships on Friday.</span>\n  }\n  <div class=\"docs-row\">\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"loading.set(!loading())\">\n      {{ loading() ? 'Show content' : 'Show skeleton' }}\n    </star-button>\n  </div>\n</div>",
   "slider/basic": "<div class=\"docs-stack\">\n  <star-slider [(value)]=\"volume\" showValue ariaLabel=\"Volume\" />\n  <p class=\"docs-output\" role=\"status\">Volume: {{ volume() }}</p>\n</div>",
   "slider/disabled": "<div class=\"docs-stack\">\n  <star-slider [value]=\"30\" disabled ariaLabel=\"Locked value\" />\n</div>",
   "slider/format": "<div class=\"docs-stack\">\n  <star-slider\n    [(value)]=\"discount\"\n    [min]=\"0\"\n    [max]=\"50\"\n    [step]=\"5\"\n    showValue\n    [format]=\"percent\"\n    ariaLabel=\"Discount\"\n  />\n</div>",
@@ -3952,18 +4771,28 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "split-button/basic": "<div class=\"docs-stack\">\n  <star-split-button\n    label=\"Place order\"\n    icon=\"ph-bold ph-paper-plane-tilt\"\n    [items]=\"orderOptions\"\n    (pressed)=\"last.set('Place order')\"\n    (itemClick)=\"last.set($event.label ?? '')\"\n  />\n  <p class=\"docs-output\" role=\"status\">Last action: {{ last() }}</p>\n</div>",
   "split-button/disabled": "<star-split-button label=\"Place order\" disabled [items]=\"orderOptions\" />",
   "split-button/variants": "<star-split-button label=\"Save\" variant=\"secondary\" size=\"sm\" [items]=\"orderOptions\" />\n<star-split-button label=\"Approve\" variant=\"success\" [items]=\"orderOptions\" />\n<star-split-button label=\"Remove\" variant=\"danger\" size=\"lg\" [items]=\"orderOptions\" />",
+  "stepper/basic": "<div class=\"docs-stack\">\n  <star-stepper [(value)]=\"step\" ariaLabel=\"Checkout steps\">\n    <star-step value=\"cart\" label=\"Cart\" description=\"Review items\" completed>\n      Three items in the cart.\n    </star-step>\n    <star-step value=\"address\" label=\"Address\" description=\"Where to ship\">\n      Enter the delivery address.\n    </star-step>\n    <star-step value=\"pay\" label=\"Payment\">Choose a way to pay.</star-step>\n  </star-stepper>\n  <p class=\"docs-output\" role=\"status\">Active step: {{ step() ?? 'cart' }}</p>\n</div>",
+  "stepper/linear": "<div class=\"docs-stack\">\n  <star-stepper #wizard [(value)]=\"wizardStep\" linear ariaLabel=\"Account setup\">\n    <star-step value=\"name\" label=\"Name\" [completed]=\"name().trim().length > 0\">\n      <star-field label=\"Your name\">\n        <input starInput [value]=\"name()\" (input)=\"name.set($any($event.target).value)\" />\n      </star-field>\n    </star-step>\n    <star-step value=\"confirm\" label=\"Confirm\">\n      Welcome, {{ name() }}. Your account is ready.\n    </star-step>\n  </star-stepper>\n  <div class=\"docs-row\">\n    <star-button\n      variant=\"secondary\"\n      [disabled]=\"wizard.isFirst()\"\n      (pressed)=\"wizard.previous()\"\n    >\n      Back\n    </star-button>\n    <star-button [disabled]=\"wizard.isLast() || !name().trim()\" (pressed)=\"wizard.next()\">\n      Next\n    </star-button>\n  </div>\n</div>",
+  "tabs/basic": "<div class=\"docs-stack\">\n  <star-tabs [(value)]=\"tab\" ariaLabel=\"Order sections\">\n    <star-tab value=\"details\" label=\"Details\" icon=\"ph-bold ph-file-text\">\n      Order ORD-1042 for Orchard Supply.\n    </star-tab>\n    <star-tab value=\"items\" label=\"Items\" [badge]=\"12\">Twelve items in two boxes.</star-tab>\n    <star-tab value=\"billing\" label=\"Billing\" disabled>Billing is not available.</star-tab>\n    <star-tab value=\"history\" label=\"History\">Created on Monday.</star-tab>\n  </star-tabs>\n  <p class=\"docs-output\" role=\"status\">Selected: {{ tab() ?? 'details' }}</p>\n</div>",
+  "tabs/pill": "<div class=\"docs-stack\">\n  <star-tabs variant=\"pill\" [selectOnFocus]=\"false\" ariaLabel=\"Report views\">\n    <star-tab value=\"daily\" label=\"Daily\">Daily totals.</star-tab>\n    <star-tab value=\"weekly\" label=\"Weekly\">\n      <ng-template starTabContent>Weekly totals, loaded on first use.</ng-template>\n    </star-tab>\n    <star-tab value=\"monthly\" label=\"Monthly\">Monthly totals.</star-tab>\n  </star-tabs>\n</div>",
   "tag/icon": "<star-tag severity=\"success\" icon=\"ph-bold ph-check\" rounded>Shipped</star-tag>\n<star-tag severity=\"warn\" icon=\"ph-bold ph-clock\" rounded>Waiting</star-tag>",
   "tag/severities": "<star-tag value=\"New\" />\n<star-tag severity=\"secondary\" value=\"Draft\" />\n<star-tag severity=\"success\" value=\"Paid\" />\n<star-tag severity=\"info\" value=\"In review\" />\n<star-tag severity=\"warn\" value=\"Due soon\" />\n<star-tag severity=\"danger\" value=\"Overdue\" />",
   "time-picker/basic": "<div class=\"docs-stack\">\n  <star-time-picker [(value)]=\"meeting\" ariaLabel=\"Meeting time\" />\n  <p class=\"docs-output\" role=\"status\">Meeting: {{ meeting() ?? 'none' }}</p>\n</div>",
   "time-picker/form": "<div class=\"docs-stack\">\n  <star-field label=\"Pick-up time\" for=\"time-form-pickup\" [state]=\"slot.pickup()\">\n    <star-time-picker\n      inputId=\"time-form-pickup\"\n      [formField]=\"slot.pickup\"\n      ariaLabel=\"Pick-up time\"\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ slot().valid() }}</p>\n</div>",
   "time-picker/limits": "<div class=\"docs-stack\">\n  <star-time-picker\n    [(value)]=\"opening\"\n    min=\"08:00\"\n    max=\"18:00\"\n    [stepMinute]=\"15\"\n    ariaLabel=\"Opening time\"\n  />\n  <p class=\"docs-output\" role=\"status\">Opening: {{ opening() ?? 'none' }}</p>\n</div>",
   "time-picker/states": "<div class=\"docs-stack\">\n  <star-time-picker size=\"sm\" ariaLabel=\"Small time picker\" />\n  <star-time-picker disabled [value]=\"'09:30'\" ariaLabel=\"Disabled time picker\" />\n  <star-time-picker readonly [value]=\"'09:30'\" ariaLabel=\"Read-only time picker\" />\n</div>",
+  "timeline/alternate": "<star-timeline [events]=\"events\" align=\"alternate\" ariaLabel=\"Order history, alternating\" />",
+  "timeline/basic": "<star-timeline [events]=\"events\" ariaLabel=\"Order history\" />",
+  "timeline/content": "<star-timeline [events]=\"events\" ariaLabel=\"Order history, custom\">\n  <ng-template starTimelineContent let-event let-i=\"index\">\n    <strong>{{ i + 1 }}. {{ event.title }}</strong>\n  </ng-template>\n</star-timeline>",
+  "timeline/horizontal": "<star-timeline\n  [events]=\"events\"\n  layout=\"horizontal\"\n  ariaLabel=\"Order history, horizontal\"\n/>",
   "toast/duplicates": "<star-button size=\"sm\" variant=\"secondary\" (pressed)=\"twice()\">Save twice</star-button>",
   "toast/severities": "<star-button size=\"sm\" variant=\"success\" (pressed)=\"notify('success')\">Success</star-button>\n<star-button size=\"sm\" variant=\"secondary\" (pressed)=\"notify('info')\">Info</star-button>\n<star-button size=\"sm\" variant=\"warning\" (pressed)=\"notify('warn')\">Warn</star-button>\n<star-button size=\"sm\" variant=\"danger\" (pressed)=\"notify('error')\">Error</star-button>",
   "toast/sticky": "<star-button size=\"sm\" variant=\"secondary\" (pressed)=\"sticky()\">Sticky message</star-button>\n<star-button size=\"sm\" variant=\"secondary\" (pressed)=\"quick()\"\n  >Two second message</star-button\n>\n<star-button size=\"sm\" variant=\"ghost\" (pressed)=\"toasts.clear()\">Clear all</star-button>",
   "toggle-switch/basic": "<star-toggle-switch [(checked)]=\"alerts\">Email alerts</star-toggle-switch>\n<p class=\"docs-output\" role=\"status\">Alerts: {{ alerts() ? 'on' : 'off' }}</p>",
   "toggle-switch/disabled": "<star-toggle-switch [checked]=\"true\" disabled\n  >Two-step sign-in (set by your admin)</star-toggle-switch\n>",
   "toggle-switch/small": "<star-toggle-switch size=\"sm\" [(checked)]=\"compact\">Compact rows</star-toggle-switch>",
+  "toolbar/basic": "<div class=\"docs-stack\">\n  <star-toolbar ariaLabel=\"Order actions\">\n    <ng-container starToolbarStart>\n      <star-button size=\"sm\" leadingIcon=\"ph-bold ph-plus\" (pressed)=\"last.set('New')\">\n        New\n      </star-button>\n      <star-button\n        size=\"sm\"\n        variant=\"secondary\"\n        leadingIcon=\"ph-bold ph-pencil-simple\"\n        (pressed)=\"last.set('Edit')\"\n      >\n        Edit\n      </star-button>\n    </ng-container>\n    <ng-container starToolbarEnd>\n      <star-button\n        size=\"sm\"\n        variant=\"ghost\"\n        leadingIcon=\"ph-bold ph-export\"\n        (pressed)=\"last.set('Export')\"\n      >\n        Export\n      </star-button>\n    </ng-container>\n  </star-toolbar>\n  <p class=\"docs-output\" role=\"status\">Last action: {{ last() }}</p>\n</div>",
+  "toolbar/center": "<div class=\"docs-stack\">\n  <star-toolbar ariaLabel=\"Page controls\">\n    <ng-container starToolbarStart>\n      <star-button size=\"sm\" variant=\"secondary\">Back</star-button>\n    </ng-container>\n    <ng-container starToolbarCenter>\n      <star-button size=\"sm\" variant=\"ghost\">Day</star-button>\n      <star-divider layout=\"vertical\" />\n      <star-button size=\"sm\" variant=\"ghost\">Week</star-button>\n    </ng-container>\n    <ng-container starToolbarEnd>\n      <star-button size=\"sm\">Save</star-button>\n    </ng-container>\n  </star-toolbar>\n</div>",
   "tooltip/delay": "<star-button variant=\"secondary\" starTooltip=\"Appears at once\" [starTooltipShowDelay]=\"0\">\n  No delay\n</star-button>\n<star-button\n  variant=\"secondary\"\n  starTooltip=\"Appears after one second\"\n  [starTooltipShowDelay]=\"1000\"\n>\n  Slow\n</star-button>\n<star-button variant=\"secondary\" starTooltip=\"Never shown\" starTooltipDisabled>\n  Disabled tooltip\n</star-button>",
   "tooltip/icon": "<button\n  type=\"button\"\n  class=\"star-btn star-btn--secondary star-btn--icon\"\n  aria-label=\"Export orders\"\n  starTooltip=\"Export orders to CSV\"\n>\n  <i class=\"ph-bold ph-export\" aria-hidden=\"true\"></i>\n</button>",
   "tooltip/positions": "<star-button variant=\"secondary\" starTooltip=\"Shown on hover and focus\">Top</star-button>\n<star-button\n  variant=\"secondary\"\n  starTooltip=\"Below the button\"\n  starTooltipPosition=\"bottom\"\n>\n  Bottom\n</star-button>\n<star-button variant=\"secondary\" starTooltip=\"On the left\" starTooltipPosition=\"left\">\n  Left\n</star-button>\n<star-button variant=\"secondary\" starTooltip=\"On the right\" starTooltipPosition=\"right\">\n  Right\n</star-button>",

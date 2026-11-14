@@ -1,0 +1,75 @@
+// Accordion.
+@use '../shared' as *;
+
+// Accordion, panel and fieldset share the collapsing region (grid-template-rows 0fr to 1fr).
+.star-accordion__region {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows var(--star-duration-base) $ease;
+
+  &[inert] {
+    grid-template-rows: 0fr;
+  }
+}
+.star-accordion__inner {
+  min-height: 0;
+  overflow: hidden;
+}
+.star-accordion {
+  display: block;
+  overflow: hidden;
+  border: 1px solid var(--star-border);
+  border-radius: var(--star-radius-lg);
+  background: var(--star-surface);
+}
+.star-accordion__panel {
+  display: block;
+
+  & + & {
+    border-top: 1px solid var(--star-border);
+  }
+}
+.star-accordion__heading {
+  margin: 0;
+}
+.star-accordion__header {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  width: 100%;
+  padding: 1rem 1.25rem;
+  border: 0;
+  background: transparent;
+  color: var(--star-text-strong);
+  font: var(--star-type-title-sm);
+  font-size: 15px;
+  text-align: start;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: var(--star-surface-muted);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--star-accent);
+    outline-offset: -2px;
+  }
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+.star-accordion__title {
+  flex: 1;
+}
+.star-accordion__caret {
+  color: var(--star-text-soft);
+  transition: rotate var(--star-duration-base) $ease;
+
+  [aria-expanded='true'] > & {
+    rotate: 180deg;
+  }
+}
+.star-accordion__body {
+  padding: 0 1.25rem 1.25rem;
+  font: var(--star-type-body-lg);
+}

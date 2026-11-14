@@ -42,7 +42,9 @@ table.star-sr-only {
   .star-dialog,
   .star-dialog::backdrop,
   .star-switch__thumb,
-  .star-tabs__tab::after {
+  .star-tabs__tab::after,
+  .star-accordion__region,
+  .star-progress__fill {
     animation: none;
     transition: none;
   }

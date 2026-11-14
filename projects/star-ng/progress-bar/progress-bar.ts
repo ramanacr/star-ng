@@ -1,0 +1,46 @@
+import {
+  booleanAttribute,
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  input,
+} from '@angular/core';
+
+/**
+ * Progress bar (PrimeNG `p-progressbar`): determinate value or indeterminate stripe,
+ * optional value label, severity color. `role="progressbar"` with `aria-valuenow`.
+ *
+ * `<star-progress-bar [value]="uploaded()" showValue ariaLabel="Upload" />`
+ */
+@Component({
+  selector: 'star-progress-bar',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    role: 'progressbar',
+    '[class]': "'star-progress star-progress--' + severity()",
+    '[class.star-progress--indeterminate]': 'indeterminate()',
+    '[class.star-progress--thin]': "size() === 'sm'",
+    '[attr.aria-valuemin]': 'indeterminate() ? null : 0',
+    '[attr.aria-valuemax]': 'indeterminate() ? null : 100',
+    '[attr.aria-valuenow]': 'indeterminate() ? null : clamped()',
+    '[attr.aria-label]': 'ariaLabel()',
+  },
+  template: `
+    <span class="star-progress__track">
+      <span class="star-progress__fill" [style.width.%]="indeterminate() ? null : clamped()"></span>
+    </span>
+    @if (showValue() && !indeterminate()) {
+      <span class="star-progress__value" aria-hidden="true">{{ clamped() }}%</span>
+    }
+  `,
+})
+export class StarProgressBar {
+  readonly value = input(0);
+  readonly indeterminate = input(false, { transform: booleanAttribute });
+  readonly showValue = input(false, { transform: booleanAttribute });
+  readonly severity = input<'primary' | 'success' | 'warn' | 'danger' | 'info'>('primary');
+  readonly size = input<'sm' | 'md'>('md');
+  readonly ariaLabel = input<string | null>(null);
+
+  protected readonly clamped = computed(() => Math.round(Math.min(100, Math.max(0, this.value()))));
+}
