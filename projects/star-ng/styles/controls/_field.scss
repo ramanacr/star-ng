@@ -35,6 +35,10 @@
     font-weight: inherit;
   }
 
+  &:focus-visible {
+    outline: none;
+  }
+
   &:focus {
     border-color: var(--star-accent);
     box-shadow: var(--star-focus-ring);

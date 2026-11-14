@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { StarConfirmHost } from 'star-ng/dialog';
 import { StarThemeMode, StarThemeService } from 'star-ng/theme';
+import { StarToast } from 'star-ng/toast';
 import { DOCS_NAV, DocsNavGroup } from './nav';
 
 const THEME_MODES: readonly { mode: StarThemeMode; label: string; icon: string }[] = [
@@ -12,7 +14,7 @@ const THEME_MODES: readonly { mode: StarThemeMode; label: string; icon: string }
 /** Shell of the docs application: header, grouped side navigation with search, page outlet. */
 @Component({
   selector: 'docs-root',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, StarToast, StarConfirmHost],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <a class="docs-skip" href="#main">Skip to content</a>
@@ -93,6 +95,8 @@ const THEME_MODES: readonly { mode: StarThemeMode; label: string; icon: string }
         <router-outlet />
       </main>
     </div>
+    <star-toast />
+    <star-confirm-host />
   `,
 })
 export class App {

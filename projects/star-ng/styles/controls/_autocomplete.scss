@@ -1,0 +1,44 @@
+// Autocomplete.
+.star-ac__control {
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  padding-left: 0.75rem;
+
+  &:has(.star-ac__input:focus-visible) {
+    border-color: var(--star-accent);
+    box-shadow: var(--star-focus-ring);
+    background: var(--star-surface);
+  }
+}
+.star-ac__input {
+  flex: 1;
+  min-width: 6rem;
+  padding: 0.625rem 0.25rem;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: var(--star-input-font-weight);
+  color: var(--star-text-strong);
+  outline: none;
+
+  &:focus-visible {
+    outline: none;
+  }
+  &::placeholder {
+    color: var(--star-text-muted);
+    font-weight: inherit;
+  }
+}
+.star-ac--multi .star-ac__control {
+  padding-block: 0.25rem;
+}
+.star-select--sm .star-ac__input {
+  padding-block: 0.5rem;
+  font-size: 0.8125rem;
+}
+.star-ac__match {
+  background: transparent;
+  color: var(--star-primary);
+  font-weight: 600;
+}

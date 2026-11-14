@@ -1,0 +1,23 @@
+// Inline listbox box: border, focus ring and invalid and disabled states.
+.star-listbox-box {
+  display: block;
+  overflow: hidden;
+  border: 1px solid var(--star-border);
+  border-radius: var(--star-radius-lg);
+  background: var(--star-surface);
+  font: var(--star-type-body-lg);
+
+  .star-listbox {
+    outline: none;
+  }
+  &:has(.star-listbox:focus-visible) {
+    border-color: var(--star-accent);
+    box-shadow: var(--star-focus-ring);
+  }
+}
+.star-listbox-box--invalid {
+  border-color: var(--star-danger);
+}
+.star-listbox-box--disabled {
+  opacity: 0.6;
+}

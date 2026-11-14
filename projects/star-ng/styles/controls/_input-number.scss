@@ -1,0 +1,125 @@
+// Input number and password.
+// The step buttons extend the icon button of the select control.
+@use 'select';
+
+// Shared field shell used by number and password.
+.star-number__control,
+.star-password__control {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  border: 1px solid var(--star-border);
+  border-radius: var(--star-input-radius);
+  background: var(--star-surface-muted);
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    background-color 0.15s ease;
+
+  &:focus-within {
+    border-color: var(--star-accent);
+    box-shadow: var(--star-focus-ring);
+    background: var(--star-surface);
+  }
+}
+.star-number--invalid .star-number__control,
+.star-password--invalid .star-password__control {
+  border-color: var(--star-danger);
+}
+.star-number,
+.star-password {
+  display: block;
+}
+.star-number__input,
+.star-password__input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.625rem 0.875rem;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: var(--star-input-font-weight);
+  color: var(--star-text-strong);
+  outline: none;
+
+  &:focus-visible {
+    outline: none;
+  }
+  &::placeholder {
+    color: var(--star-text-muted);
+    font-weight: inherit;
+  }
+}
+.star-number__input {
+  font-variant-numeric: tabular-nums;
+}
+.star-number--buttons .star-number__input {
+  text-align: center;
+}
+.star-number__btn {
+  @extend .star-select__icon-btn;
+  width: 2rem;
+  height: 2rem;
+  margin: 0 0.25rem;
+
+  &:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+}
+.star-password__control {
+  padding-right: 0.5rem;
+}
+.star-password__feedback {
+  margin-top: 0.625rem;
+}
+.star-password__meter {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.25rem;
+}
+.star-password__bar {
+  height: 0.3rem;
+  border-radius: var(--star-radius-pill);
+  background: var(--star-border);
+
+  &--on[data-level='weak'] {
+    background: var(--star-danger);
+  }
+  &--on[data-level='fair'] {
+    background: var(--star-warning);
+  }
+  &--on[data-level='good'] {
+    background: var(--star-accent);
+  }
+  &--on[data-level='strong'] {
+    background: var(--star-success);
+  }
+}
+.star-password__level {
+  min-height: 1.125rem;
+  margin: 0.375rem 0 0.25rem;
+  font: var(--star-type-body-sm);
+  font-weight: 600;
+  color: var(--star-text-muted);
+}
+.star-password__rules {
+  display: grid;
+  gap: 0.125rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font: var(--star-type-body-sm);
+  color: var(--star-text-muted);
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+  }
+}
+// Success green alone is under 4.5:1 on white, so it is mixed with the strong text color.
+.star-password__rule--ok {
+  color: color-mix(in srgb, var(--star-success) 65%, var(--star-text-strong));
+}

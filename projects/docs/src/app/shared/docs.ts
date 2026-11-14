@@ -113,7 +113,10 @@ export class DocsExample {
     @for (item of entries(); track item.name) {
       <section class="docs-api__entry">
         <h3>
-          {{ item.name }} <code>{{ item.entry.selector }}</code>
+          {{ item.name }}
+          @if (item.entry.selector) {
+            <code>{{ item.entry.selector }}</code>
+          }
         </h3>
         @if (item.entry.description) {
           <p>{{ item.entry.description }}</p>

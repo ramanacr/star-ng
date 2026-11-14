@@ -1,0 +1,120 @@
+// Toast: notification stack and message cards.
+@use '../shared' as *;
+
+.star-toast-stack {
+  position: fixed;
+  inset: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: min(24rem, calc(100vw - 2rem));
+  margin: 0;
+  padding: 0;
+  overflow: visible;
+  border: 0;
+  background: transparent;
+  pointer-events: none;
+
+  &:not(:popover-open):empty {
+    display: none;
+  }
+}
+.star-toast-stack--top-right {
+  top: 1rem;
+  right: 1rem;
+}
+.star-toast-stack--top-left {
+  top: 1rem;
+  left: 1rem;
+}
+.star-toast-stack--top-center {
+  top: 1rem;
+  left: 50%;
+  translate: -50% 0;
+}
+.star-toast-stack--bottom-right {
+  right: 1rem;
+  bottom: 1rem;
+  flex-direction: column-reverse;
+}
+.star-toast-stack--bottom-left {
+  bottom: 1rem;
+  left: 1rem;
+  flex-direction: column-reverse;
+}
+.star-toast-stack--bottom-center {
+  bottom: 1rem;
+  left: 50%;
+  translate: -50% 0;
+  flex-direction: column-reverse;
+}
+.star-toast {
+  --star-tone: var(--star-accent);
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.875rem 0.875rem 0.875rem 1rem;
+  border: 1px solid color-mix(in srgb, var(--star-tone) 25%, var(--star-border));
+  border-left: 4px solid var(--star-tone);
+  border-radius: var(--star-radius-lg);
+  background: var(--star-glass-surface-strong);
+  backdrop-filter: blur(var(--star-blur-md));
+  box-shadow: var(--star-shadow-lg);
+  pointer-events: auto;
+  animation: star-toast-in var(--star-duration-slow) $ease;
+}
+@keyframes star-toast-in {
+  from {
+    opacity: 0;
+    translate: 0 -0.5rem;
+  }
+}
+.star-toast--success {
+  --star-tone: var(--star-success);
+}
+.star-toast--warn {
+  --star-tone: var(--star-warning);
+}
+.star-toast--error {
+  --star-tone: var(--star-danger);
+}
+.star-toast__icon {
+  margin-top: 0.125rem;
+  color: var(--star-tone);
+  font-size: 1.25rem;
+}
+.star-toast__copy {
+  flex: 1;
+  min-width: 0;
+}
+.star-toast__summary {
+  margin: 0;
+  font: var(--star-type-title-sm);
+  font-size: 14px;
+  color: var(--star-text-strong);
+}
+.star-toast__detail {
+  margin: 0.125rem 0 0;
+  font: var(--star-type-body);
+  color: var(--star-text-muted);
+}
+.star-toast__close {
+  display: inline-grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--star-text-muted);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--star-surface-muted);
+    color: var(--star-text);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--star-accent);
+  }
+}

@@ -1,0 +1,313 @@
+import { CdkContextMenuTrigger, CdkMenu, CdkMenuItem, CdkMenuTrigger } from '@angular/cdk/menu';
+import { ConnectedPosition, FlexibleConnectedPositionStrategy } from '@angular/cdk/overlay';
+import { NgTemplateOutlet } from '@angular/common';
+import {
+  afterNextRender,
+  booleanAttribute,
+  ChangeDetectionStrategy,
+  Component,
+  Directive,
+  effect,
+  ElementRef,
+  inject,
+  input,
+  output,
+  TemplateRef,
+  viewChild,
+} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { RouterLink } from '@angular/router';
+import { StarButton, StarButtonSize, StarButtonVariant } from 'star-ng/button';
+import { STAR_UI_TEXT } from 'star-ng/core';
+
+/** One menu entry (PrimeNG `MenuItem`). `items` makes a submenu (tiered menu). */
+export interface StarMenuItem {
+  readonly label?: string;
+  /** Phosphor icon class, for example `ph-bold ph-pencil-simple`. */
+  readonly icon?: string;
+  readonly command?: (item: StarMenuItem) => void;
+  /** Router link; renders the entry as an `<a>`. */
+  readonly routerLink?: string | readonly unknown[];
+  /** External link; renders an `<a href>`. */
+  readonly url?: string;
+  readonly disabled?: boolean;
+  /** Renders a divider instead of an entry. */
+  readonly separator?: boolean;
+  /** Danger styling, for destructive actions. */
+  readonly danger?: boolean;
+  /** Keyboard hint shown at the end, for example `Ctrl+E`. */
+  readonly shortcut?: string;
+  readonly items?: readonly StarMenuItem[];
+}
+
+export const STAR_MENU_POSITIONS: ConnectedPosition[] = [
+  { originX: 'start', originY: 'bottom', overlayX: 'start', overlayY: 'top', offsetY: 4 },
+  { originX: 'end', originY: 'bottom', overlayX: 'end', overlayY: 'top', offsetY: 4 },
+  { originX: 'start', originY: 'top', overlayX: 'start', overlayY: 'bottom', offsetY: -4 },
+];
+
+/**
+ * Makes the popup of a CDK menu trigger usable inside a modal `<dialog>`.
+ *
+ * A modal dialog makes the rest of the page inert. CDK puts a menu popup in the overlay
+ * container, outside the dialog, so the popup shows but takes no click and no key. When the
+ * trigger is inside a `<dialog>`, the popup goes into that dialog instead.
+ *
+ * CDK has no public option for this on `CdkMenuTrigger`, so this wraps its position
+ * strategy factory. If a CDK update removes that factory, this does nothing and the e2e test
+ * "popups inside a modal dialog" fails.
+ */
+export function keepMenuInsideDialog(
+  trigger: CdkMenuTrigger | CdkContextMenuTrigger,
+  element: HTMLElement,
+): void {
+  const target = trigger as unknown as {
+    // The context menu trigger passes the pointer coordinates; the menu trigger passes nothing.
+    _getOverlayPositionStrategy?: (...args: unknown[]) => FlexibleConnectedPositionStrategy;
+  };
+  const create = target._getOverlayPositionStrategy;
+  if (typeof create !== 'function') return;
+  target._getOverlayPositionStrategy = (...args: unknown[]) => {
+    const strategy = create.apply(trigger, args);
+    const dialog = element.closest('dialog');
+    return dialog ? strategy.withPopoverLocation({ type: 'parent', element: dialog }) : strategy;
+  };
+}
+
+/**
+ * Applies `keepMenuInsideDialog` to every `cdkMenuTriggerFor` in a template that imports it
+ * (submenus, menu bar items, cascade select).
+ */
+// The selector is the CDK attribute on purpose: the directive adds behaviour to that trigger.
+// eslint-disable-next-line @angular-eslint/directive-selector
+@Directive({ selector: '[cdkMenuTriggerFor]' })
+export class StarMenuInDialog {
+  constructor() {
+    keepMenuInsideDialog(
+      inject(CdkMenuTrigger),
+      inject<ElementRef<HTMLElement>>(ElementRef).nativeElement,
+    );
+  }
+}
+
+/**
+ * Menu (PrimeNG `p-menu` + `p-tieredmenu`) on CDK Menu: roving focus, typeahead, submenus
+ * with pointer aim, Escape and focus return come from `@angular/cdk/menu`.
+ *
+ * Popup: `<star-button [starMenuTrigger]="rowMenu">…</star-button> <star-menu #rowMenu [items]="actions" />`
+ * Inline: `<star-menu inline [items]="nav" />`
+ *
+ * The popup is a native popover. Inside a modal `star-dialog` it goes into the dialog
+ * (`keepMenuInsideDialog`), so it stays usable there.
+ */
+@Component({
+  selector: 'star-menu',
+  imports: [CdkMenu, CdkMenuItem, CdkMenuTrigger, NgTemplateOutlet, RouterLink, StarMenuInDialog],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { class: 'star-menu-host' },
+  template: `
+    <ng-template #menu let-items>
+      <!-- Items must be direct template children of cdkMenu: CDK resolves the menu by DI. -->
+      <div class="star-menu" cdkMenu [attr.aria-label]="ariaLabel()">
+        @for (item of items; track $index) {
+          @if (item.separator) {
+            <div class="star-menu__separator" role="separator"></div>
+          } @else if (item.items?.length) {
+            <button
+              type="button"
+              class="star-menu__item"
+              cdkMenuItem
+              [cdkMenuTriggerFor]="menu"
+              [cdkMenuTriggerData]="{ $implicit: item.items }"
+              [cdkMenuItemDisabled]="!!item.disabled"
+            >
+              <ng-container *ngTemplateOutlet="content; context: { $implicit: item }" />
+              <i class="ph-bold ph-caret-right star-menu__sub" aria-hidden="true"></i>
+            </button>
+          } @else if (item.routerLink) {
+            <a
+              class="star-menu__item"
+              cdkMenuItem
+              [class.star-menu__item--danger]="item.danger"
+              [routerLink]="item.routerLink"
+              [cdkMenuItemDisabled]="!!item.disabled"
+              (cdkMenuItemTriggered)="run(item)"
+            >
+              <ng-container *ngTemplateOutlet="content; context: { $implicit: item }" />
+            </a>
+          } @else if (item.url) {
+            <a
+              class="star-menu__item"
+              cdkMenuItem
+              [href]="item.url"
+              [cdkMenuItemDisabled]="!!item.disabled"
+              (cdkMenuItemTriggered)="run(item)"
+            >
+              <ng-container *ngTemplateOutlet="content; context: { $implicit: item }" />
+            </a>
+          } @else {
+            <button
+              type="button"
+              class="star-menu__item"
+              cdkMenuItem
+              [class.star-menu__item--danger]="item.danger"
+              [cdkMenuItemDisabled]="!!item.disabled"
+              (cdkMenuItemTriggered)="run(item)"
+            >
+              <ng-container *ngTemplateOutlet="content; context: { $implicit: item }" />
+            </button>
+          }
+        }
+      </div>
+    </ng-template>
+
+    <ng-template #content let-item>
+      @if (item.icon) {
+        <i class="star-menu__icon" [class]="item.icon" aria-hidden="true"></i>
+      }
+      <span class="star-menu__label">{{ item.label }}</span>
+      @if (item.shortcut) {
+        <kbd class="star-menu__shortcut">{{ item.shortcut }}</kbd>
+      }
+    </ng-template>
+
+    @if (inline()) {
+      <ng-container *ngTemplateOutlet="menu; context: { $implicit: items() }" />
+    }
+  `,
+})
+export class StarMenu {
+  readonly items = input<readonly StarMenuItem[]>([]);
+  /** Renders the menu in place instead of as a popup. */
+  readonly inline = input(false, { transform: booleanAttribute });
+  readonly ariaLabel = input<string | null>(null);
+  readonly itemClick = output<StarMenuItem>();
+
+  /** Root menu template, opened by `starMenuTrigger`. */
+  readonly template = viewChild.required<TemplateRef<unknown>>('menu');
+
+  protected run(item: StarMenuItem): void {
+    if (item.disabled) return;
+    item.command?.(item);
+    this.itemClick.emit(item);
+  }
+}
+
+/**
+ * Opens an `star-menu` as a popup from any element (button, icon button, row action).
+ * Adds `aria-haspopup`, `aria-expanded`, Arrow Down / Enter / Space to open.
+ */
+@Directive({
+  selector: '[starMenuTrigger]',
+  hostDirectives: [
+    {
+      directive: CdkMenuTrigger,
+      outputs: ['cdkMenuOpened: menuOpened', 'cdkMenuClosed: menuClosed'],
+    },
+  ],
+})
+export class StarMenuTrigger {
+  readonly starMenuTrigger = input.required<StarMenu>();
+  private readonly trigger = inject(CdkMenuTrigger);
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+
+  constructor() {
+    this.trigger.menuPosition = STAR_MENU_POSITIONS;
+    keepMenuInsideDialog(this.trigger, this.host.nativeElement);
+    effect(() => {
+      const menu = this.starMenuTrigger();
+      this.trigger.menuTemplateRef = menu.template();
+      this.trigger.menuData = { $implicit: menu.items() };
+    });
+    afterNextRender(() => this.syncInnerButton(false));
+    this.trigger.opened.pipe(takeUntilDestroyed()).subscribe(() => this.syncInnerButton(true));
+    this.trigger.closed.pipe(takeUntilDestroyed()).subscribe(() => this.syncInnerButton(false));
+    this.adaptWrapperHost();
+  }
+
+  /**
+   * CDK opens a menu on Enter or Space itself, unless the host is a native button (then the
+   * native click does it). On a wrapper such as `<star-button>` the host is no button, so CDK
+   * would toggle on the key and the native click of the inner button would toggle again: the
+   * menu opens and closes at once. The key stays with the inner button; its click opens the menu.
+   * (Arrow down and Arrow up are still handled by CDK.)
+   *
+   * CDK also calls `focus()` on the host to return the focus when the menu closes. A wrapper
+   * cannot take focus, so the call goes to the inner button.
+   */
+  private adaptWrapperHost(): void {
+    const host = this.host.nativeElement;
+    if (host.matches('button, a')) return;
+    host.focus = (options?: FocusOptions) => host.querySelector('button')?.focus(options);
+    host.addEventListener(
+      'keydown',
+      (event) => {
+        const inner = (event.target as HTMLElement | null)?.closest('button');
+        if (inner && host.contains(inner) && (event.key === 'Enter' || event.key === ' ')) {
+          event.stopPropagation();
+        }
+      },
+      true,
+    );
+  }
+
+  /**
+   * On a wrapper such as `<star-button>`, the real button is inside the host. CDK gives the
+   * host `role="button"`, which makes two nested buttons for assistive technology. The host
+   * becomes presentational and the inner button gets the popup state.
+   */
+  private syncInnerButton(open: boolean): void {
+    const host = this.host.nativeElement;
+    if (host.matches('button, a')) return;
+    const inner = host.querySelector('button');
+    if (!inner) return;
+    host.setAttribute('role', 'none');
+    inner.setAttribute('aria-haspopup', 'menu');
+    inner.setAttribute('aria-expanded', String(open));
+  }
+}
+
+/**
+ * Split button (PrimeNG `p-splitbutton`): a main action plus a menu of related actions.
+ * `<star-split-button label="Send response" [items]="sendOptions" (pressed)="send()" />`
+ */
+@Component({
+  selector: 'star-split-button',
+  imports: [StarButton, StarMenu, StarMenuTrigger],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { class: 'star-split' },
+  template: `
+    <star-button
+      class="star-split__main"
+      [variant]="variant()"
+      [size]="size()"
+      [leadingIcon]="icon()"
+      [disabled]="disabled()"
+      (pressed)="pressed.emit($event)"
+    >
+      {{ label() }}
+    </star-button>
+    <button
+      type="button"
+      class="star-btn star-split__toggle"
+      [class]="'star-btn star-split__toggle star-btn--' + variant() + ' star-btn--' + size()"
+      [disabled]="disabled()"
+      [attr.aria-label]="text.moreActions"
+      [starMenuTrigger]="menu"
+    >
+      <i class="ph-bold ph-caret-down" aria-hidden="true"></i>
+    </button>
+    <star-menu #menu [items]="items()" (itemClick)="itemClick.emit($event)" />
+  `,
+})
+export class StarSplitButton {
+  protected readonly text = inject(STAR_UI_TEXT);
+  readonly label = input.required<string>();
+  readonly icon = input<string | null>(null);
+  readonly items = input<readonly StarMenuItem[]>([]);
+  readonly variant = input<StarButtonVariant>('primary');
+  readonly size = input<StarButtonSize>('md');
+  readonly disabled = input(false, { transform: booleanAttribute });
+  readonly pressed = output<MouseEvent>();
+  readonly itemClick = output<StarMenuItem>();
+}
