@@ -422,6 +422,36 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         keywords: 'placeholder loading shimmer',
         load: () => import('./controls/skeleton.page').then((m) => m.SkeletonPage),
       },
+      {
+        label: 'Tree table',
+        path: 'controls/tree-table',
+        keywords: 'treetable hierarchy rows expand treegrid columns',
+        load: () => import('./controls/tree-table.page').then((m) => m.TreeTablePage),
+      },
+      {
+        label: 'Data view',
+        path: 'controls/data-view',
+        keywords: 'dataview list grid layout cards paging items template',
+        load: () => import('./controls/data-view.page').then((m) => m.DataViewPage),
+      },
+      {
+        label: 'Order list',
+        path: 'controls/order-list',
+        keywords: 'orderlist reorder sort move up down priority',
+        load: () => import('./controls/order-list.page').then((m) => m.OrderListPage),
+      },
+      {
+        label: 'Pick list',
+        path: 'controls/pick-list',
+        keywords: 'picklist transfer source target move dual list',
+        load: () => import('./controls/pick-list.page').then((m) => m.PickListPage),
+      },
+      {
+        label: 'Organization chart',
+        path: 'controls/org-chart',
+        keywords: 'orgchart hierarchy team structure tree connector',
+        load: () => import('./controls/org-chart.page').then((m) => m.OrgChartPage),
+      },
     ],
   },
   {

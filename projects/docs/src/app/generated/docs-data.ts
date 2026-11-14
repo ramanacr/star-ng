@@ -950,6 +950,76 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarDataView": {
+    "kind": "component",
+    "selector": "star-data-view",
+    "entry": "star-ng/data-display",
+    "description": "Data view (PrimeNG `p-dataview`): items in a list or a responsive grid, layout switch, client pagination and an empty state. It does not sort: sort the items before you pass them in. You design each item with a template.",
+    "inputs": [
+      {
+        "name": "items",
+        "type": "readonly T[]",
+        "default": "[]",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "paginator",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "emptyMessage",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [
+      {
+        "name": "layout",
+        "type": "'list' | 'grid'",
+        "default": "'list'",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "rows",
+        "type": "number",
+        "default": "6",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "first",
+        "type": "number",
+        "default": "0",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "outputs": []
+  },
+  "StarDataViewItem": {
+    "kind": "directive",
+    "selector": "ng-template[starDataViewItem]",
+    "entry": "star-ng/data-display",
+    "description": "Item template: `<ng-template starDataViewItem let-item let-layout=\"layout\">`.",
+    "inputs": [
+      {
+        "name": "starDataViewItemOf",
+        "type": "readonly T[] | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
   "StarDateInputBase": {
     "kind": "directive",
     "selector": "",
@@ -2858,6 +2928,101 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarOrderList": {
+    "kind": "component",
+    "selector": "star-order-list",
+    "entry": "star-ng/data-display",
+    "description": "Order list (PrimeNG `p-orderlist`): reorder items with buttons or Alt + Arrow keys; the moved item keeps focus and a live region announces its new position. `<star-order-list [(value)]=\"priorities\" optionLabel=\"name\" ariaLabel=\"Queue order\" />`",
+    "inputs": [
+      {
+        "name": "optionLabel",
+        "type": "StarOptionKey<T> | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [
+      {
+        "name": "value",
+        "type": "readonly T[]",
+        "default": "[]",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "outputs": []
+  },
+  "StarOrgChart": {
+    "kind": "component",
+    "selector": "star-org-chart",
+    "entry": "star-ng/data-display",
+    "description": "Organization chart (PrimeNG `p-organizationchart`): a hierarchy drawn top-down with connector lines. The markup is a nested list, so assistive technology reads the levels. A node with children has a button that hides or shows its branch.",
+    "inputs": [
+      {
+        "name": "value",
+        "type": "StarOrgNode<T>",
+        "default": null,
+        "required": true,
+        "description": "Root node of the chart."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "selectable",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Nodes are buttons; one node can be selected."
+      }
+    ],
+    "models": [
+      {
+        "name": "collapsedKeys",
+        "type": "readonly string[]",
+        "default": "[]",
+        "required": false,
+        "description": "Keys of the nodes whose branch is hidden. Two-way."
+      },
+      {
+        "name": "selectedKey",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "outputs": [
+      {
+        "name": "nodeSelect",
+        "type": "StarOrgNode<T>",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
+  "StarOrgNodeTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starOrgNode]",
+    "entry": "star-ng/data-display",
+    "description": "Custom node content: `<ng-template starOrgNode let-node>…</ng-template>`.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
   "StarPaginator": {
     "kind": "component",
     "selector": "star-paginator",
@@ -3128,6 +3293,52 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       }
     ]
+  },
+  "StarPickList": {
+    "kind": "component",
+    "selector": "star-pick-list",
+    "entry": "star-ng/data-display",
+    "description": "Pick list (PrimeNG `p-picklist`): move items between a source and a target list. Double-click or Enter moves one item; buttons move the selection or everything. `<star-pick-list [(source)]=\"available\" [(target)]=\"assigned\" optionLabel=\"name\" sourceHeader=\"Available\" targetHeader=\"Assigned\" />`",
+    "inputs": [
+      {
+        "name": "optionLabel",
+        "type": "StarOptionKey<T> | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "sourceHeader",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "targetHeader",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [
+      {
+        "name": "source",
+        "type": "readonly T[]",
+        "default": "[]",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "target",
+        "type": "readonly T[]",
+        "default": "[]",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "outputs": []
   },
   "StarPopover": {
     "kind": "component",
@@ -4665,6 +4876,45 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       }
     ]
+  },
+  "StarTreeTable": {
+    "kind": "component",
+    "selector": "star-tree-table",
+    "entry": "star-ng/data-display",
+    "description": "Tree table (PrimeNG `p-treetable`): hierarchical rows with expand / collapse in a table, `role=\"treegrid\"`, Right / Left on a row expand / collapse, Up / Down move between rows. Node `data` holds the column values; the first column shows the tree toggle.",
+    "inputs": [
+      {
+        "name": "nodes",
+        "type": "readonly StarTreeNode<Record<string, unknown>>[]",
+        "default": "[]",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "columns",
+        "type": "readonly StarTreeTableColumn[]",
+        "default": null,
+        "required": true,
+        "description": ""
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [
+      {
+        "name": "expanded",
+        "type": "readonly string[]",
+        "default": "[]",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "outputs": []
   }
 };
 
@@ -4721,6 +4971,10 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "confirm/popup": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button\n      variant=\"ghost\"\n      leadingIcon=\"ph-bold ph-archive\"\n      (pressed)=\"archive($event)\"\n    >\n      Archive\n    </star-button>\n  </div>\n  <p class=\"docs-output\" role=\"status\">Archive result: {{ popupResult() }}</p>\n</div>",
   "context-menu/basic": "<div class=\"docs-stack\">\n  <div class=\"docs-output\" tabindex=\"0\" aria-label=\"Order row\" [starContextMenu]=\"rowMenu\">\n    Order 1042: right-click here\n  </div>\n  <star-menu #rowMenu [items]=\"rowItems\" (itemClick)=\"last.set($event.label ?? '')\" />\n  <p class=\"docs-output\" role=\"status\">Last action: {{ last() }}</p>\n</div>",
   "dark-mode/try": "<star-button variant=\"secondary\" (pressed)=\"theme.setMode('system')\">System</star-button>\n<star-button variant=\"secondary\" (pressed)=\"theme.setMode('light')\">Light</star-button>\n<star-button variant=\"secondary\" (pressed)=\"theme.setMode('dark')\">Dark</star-button>\n<p class=\"docs-output\" role=\"status\">\n  Choice: {{ theme.mode() }}. Theme in use: {{ theme.theme() }}.\n</p>",
+  "data-view/empty": "<star-data-view [items]=\"[]\" emptyMessage=\"No products match this filter.\">\n  <ng-template starDataViewItem let-item>{{ item }}</ng-template>\n</star-data-view>",
+  "data-view/layouts": "<div class=\"docs-stack\">\n  <star-data-view [items]=\"products\" [(layout)]=\"layout\">\n    <ng-template starDataViewItem [starDataViewItemOf]=\"products\" let-p let-mode=\"layout\">\n      <strong>{{ p.name }}</strong>\n      <div>{{ p.category }} · {{ '$' + p.price }}</div>\n      @if (mode === 'grid') {\n        <small>Grid card</small>\n      }\n    </ng-template>\n  </star-data-view>\n  <p class=\"docs-output\" role=\"status\">Layout: {{ layout() }}</p>\n</div>",
+  "data-view/paging": "<div class=\"docs-stack\">\n  <star-data-view [items]=\"products\" paginator [rows]=\"4\" [(first)]=\"first\">\n    <ng-template starDataViewItem [starDataViewItemOf]=\"products\" let-p>\n      <strong>{{ p.name }}</strong>\n      <div>{{ p.category }} · {{ '$' + p.price }}</div>\n    </ng-template>\n  </star-data-view>\n  <p class=\"docs-output\" role=\"status\">First item on the page: {{ first() + 1 }}</p>\n</div>",
+  "data-view/sorting": "<star-data-view [items]=\"sorted()\">\n  <div starDataViewHeader>\n    <star-button size=\"sm\" variant=\"secondary\" (click)=\"sortBy.set('name')\">\n      Sort by name\n    </star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (click)=\"sortBy.set('price')\">\n      Sort by price\n    </star-button>\n  </div>\n  <ng-template starDataViewItem [starDataViewItemOf]=\"sorted()\" let-p>\n    <strong>{{ p.name }}</strong>\n    <div>{{ '$' + p.price }}</div>\n  </ng-template>\n</star-data-view>",
   "date-picker/basic": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"delivery\"\n    locale=\"en-GB\"\n    [firstDayOfWeek]=\"1\"\n    ariaLabel=\"Delivery date\"\n    showButtonBar\n  />\n  <p class=\"docs-output\" role=\"status\">Delivery: {{ iso(delivery()) }}</p>\n</div>",
   "date-picker/form": "<div class=\"docs-stack\">\n  <star-field label=\"Delivery date\" for=\"date-form-delivery\" [state]=\"order.deliveryDate()\">\n    <star-date-picker\n      inputId=\"date-form-delivery\"\n      [formField]=\"order.deliveryDate\"\n      locale=\"en-GB\"\n      [minDate]=\"minDate\"\n      ariaLabel=\"Required delivery date\"\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ order().valid() }}</p>\n</div>",
   "date-picker/format": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"invoiceDate\"\n    locale=\"en-GB\"\n    [dateFormat]=\"longFormat\"\n    ariaLabel=\"Invoice date\"\n    placeholder=\"dd/mm/yyyy\"\n  />\n  <star-date-picker\n    [value]=\"invoiceDate()\"\n    locale=\"en-GB\"\n    readonlyInput\n    ariaLabel=\"Invoice date, pick only\"\n  />\n  <p class=\"docs-output\" role=\"status\">Invoice: {{ iso(invoiceDate()) }}</p>\n</div>",
@@ -4793,6 +5047,11 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "multi-select/groups": "<star-multi-select\n  [options]=\"departments\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  optionGroup=\"site\"\n  optionDisabled=\"closed\"\n  [(value)]=\"grouped\"\n  placeholder=\"Departments by site\"\n  ariaLabel=\"Departments by site\"\n/>",
   "multi-select/limit": "<star-multi-select\n  [options]=\"departments\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  [selectionLimit]=\"2\"\n  placeholder=\"Pick up to 2\"\n  ariaLabel=\"Limited departments\"\n/>",
   "multi-select/template": "<star-multi-select\n  [options]=\"departments\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  [(value)]=\"templated\"\n  placeholder=\"Select departments\"\n  ariaLabel=\"Departments with template\"\n>\n  <ng-template starOption [starOptionOf]=\"departments\" let-item let-selected=\"selected\">\n    <span>\n      {{ item.name }}\n      <small>{{ item.site }}</small>\n    </span>\n  </ng-template>\n</star-multi-select>",
+  "order-list/basic": "<div class=\"docs-stack\">\n  <star-order-list [(value)]=\"steps\" ariaLabel=\"Release steps\" />\n  <p class=\"docs-output\" role=\"status\">Order: {{ steps().join(' > ') }}</p>\n</div>",
+  "order-list/objects": "<div class=\"docs-stack\">\n  <star-order-list [(value)]=\"playlist\" optionLabel=\"name\" ariaLabel=\"Task playlist\" />\n  <p class=\"docs-output\" role=\"status\">Ids: {{ ids() }}</p>\n</div>",
+  "org-chart/basic": "<div class=\"docs-stack\">\n  <star-org-chart ariaLabel=\"Company\" [value]=\"company\" [(collapsedKeys)]=\"closed\" />\n  <p class=\"docs-output\" role=\"status\">Collapsed: {{ closed().join(', ') || 'none' }}</p>\n</div>",
+  "org-chart/selectable": "<div class=\"docs-stack\">\n  <star-org-chart\n    ariaLabel=\"Company, selectable\"\n    [value]=\"company\"\n    selectable\n    [(selectedKey)]=\"selected\"\n    (nodeSelect)=\"last.set($event.label)\"\n  />\n  <p class=\"docs-output\" role=\"status\">Selected: {{ selected() ?? 'none' }}</p>\n  <p class=\"docs-output\" role=\"status\">Last node: {{ last() }}</p>\n</div>",
+  "org-chart/template": "<star-org-chart ariaLabel=\"Company, custom nodes\" [value]=\"company\">\n  <ng-template starOrgNode let-node let-level=\"level\">\n    <strong>{{ node.label }}</strong>\n    <small>Level {{ level }}</small>\n  </ng-template>\n</star-org-chart>",
   "paginator/basic": "<div class=\"docs-stack\">\n  <star-paginator\n    [totalRecords]=\"95\"\n    [(first)]=\"first\"\n    [(rows)]=\"rows\"\n    (pageChange)=\"last.set($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Showing {{ shown() }}. Last event: page {{ last() ? last()!.page + 1 : '-' }}.\n  </p>\n</div>",
   "paginator/compact": "<star-paginator\n  [totalRecords]=\"60\"\n  [rowsPerPageOptions]=\"[]\"\n  [showCurrentPageReport]=\"false\"\n  [showFirstLast]=\"false\"\n  [pageLinkSize]=\"3\"\n/>",
   "panel-menu/basic": "<div class=\"docs-stack\">\n  <star-panel-menu\n    ariaLabel=\"Settings\"\n    [items]=\"sections\"\n    [(expandedKeys)]=\"open\"\n    (itemClick)=\"last.set($event.label ?? '')\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Open: {{ open().join(', ') || 'none' }}. Last action: {{ last() }}\n  </p>\n</div>",
@@ -4802,6 +5061,8 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "password/basic": "<div class=\"docs-stack\">\n  <star-field label=\"Password\">\n    <star-password [(value)]=\"current\" />\n  </star-field>\n</div>",
   "password/feedback": "<div class=\"docs-stack\">\n  <star-field label=\"New password\">\n    <star-password [(value)]=\"created\" feedback />\n  </star-field>\n</div>",
   "password/rules": "<div class=\"docs-stack\">\n  <star-field label=\"PIN phrase\">\n    <star-password [(value)]=\"phrase\" feedback [rules]=\"rules\" />\n  </star-field>\n</div>",
+  "pick-list/basic": "<div class=\"docs-stack\">\n  <star-pick-list [(source)]=\"available\" [(target)]=\"chosen\" />\n  <p class=\"docs-output\" role=\"status\">Chosen: {{ chosen().join(', ') || 'none' }}</p>\n</div>",
+  "pick-list/objects": "<div class=\"docs-stack\">\n  <star-pick-list\n    [(source)]=\"people\"\n    [(target)]=\"team\"\n    optionLabel=\"name\"\n    sourceHeader=\"Available people\"\n    targetHeader=\"Project team\"\n  />\n  <p class=\"docs-output\" role=\"status\">Team size: {{ team().length }}</p>\n</div>",
   "popover/basic": "<star-button\n  variant=\"secondary\"\n  leadingIcon=\"ph-bold ph-info\"\n  (pressed)=\"details.toggle($event)\"\n>\n  Details\n</star-button>\n<star-popover #details ariaLabel=\"Order details\">\n  <div class=\"docs-stack\">\n    <p class=\"docs-output\"><strong>ORD-1042</strong></p>\n    <p class=\"docs-output\">Orchard Supply, 12 items, ships on Friday.</p>\n    <star-button size=\"sm\" (pressed)=\"details.hide()\">Close</star-button>\n  </div>\n</star-popover>",
   "popover/field": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"rename.toggle($event)\">\n      Rename order\n    </star-button>\n  </div>\n  <star-popover\n    #rename\n    ariaLabel=\"Rename order\"\n    (shown)=\"renameState.set('open')\"\n    (hidden)=\"renameState.set('closed')\"\n  >\n    <star-field label=\"Order name\">\n      <input starInput value=\"Spring restock\" />\n    </star-field>\n  </star-popover>\n  <p class=\"docs-output\" role=\"status\">Popover: {{ renameState() }}</p>\n</div>",
   "popover/pinned": "<star-button variant=\"secondary\" (pressed)=\"pinned.toggle($event)\">Toggle tip</star-button>\n<star-popover #pinned ariaLabel=\"Tip\" [dismissable]=\"false\" [focusOnShow]=\"false\">\n  <p class=\"docs-output\">This tip stays open until you press the button again.</p>\n</star-popover>",
@@ -4866,6 +5127,8 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "tree-select/form": "<div class=\"docs-stack\">\n  <star-field label=\"Department\" [state]=\"hire.department()\">\n    <star-tree-select\n      [formField]=\"hire.department\"\n      [nodes]=\"departments\"\n      placeholder=\"Select a department\"\n      ariaLabel=\"Hire department\"\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ hire().valid() }}</p>\n</div>",
   "tree-select/multiple": "<div class=\"docs-stack\">\n  <star-tree-select\n    [nodes]=\"departments\"\n    selectionMode=\"multiple\"\n    [(value)]=\"nodes\"\n    placeholder=\"Select nodes\"\n    ariaLabel=\"Nodes\"\n  />\n  <p class=\"docs-output\" role=\"status\">Nodes: {{ nodes().join(', ') || 'none' }}</p>\n  <star-tree-select\n    [nodes]=\"departments\"\n    disabled\n    placeholder=\"Disabled\"\n    ariaLabel=\"Disabled department\"\n  />\n</div>",
   "tree-select/single": "<div class=\"docs-stack\">\n  <star-tree-select\n    [nodes]=\"departments\"\n    [(value)]=\"department\"\n    placeholder=\"Select a department\"\n    ariaLabel=\"Department\"\n    showClear\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Department: {{ department().join(', ') || 'none' }}\n  </p>\n</div>",
+  "tree-table/basic": "<div class=\"docs-stack\">\n  <star-tree-table\n    [nodes]=\"departments\"\n    [columns]=\"columns\"\n    [(expanded)]=\"open\"\n    ariaLabel=\"Departments\"\n  />\n  <p class=\"docs-output\" role=\"status\">Open: {{ open().join(', ') || 'none' }}</p>\n</div>",
+  "tree-table/columns": "<star-tree-table\n  [nodes]=\"departments\"\n  [columns]=\"wideColumns\"\n  [expanded]=\"allOpen\"\n  ariaLabel=\"Departments with fixed columns\"\n/>",
   "tree/basic": "<star-tree [nodes]=\"folders\" [(expanded)]=\"open\" scrollHeight=\"16rem\" ariaLabel=\"Folders\" />",
   "tree/checkbox": "<div class=\"docs-stack\">\n  <star-tree\n    [nodes]=\"folders\"\n    selectionMode=\"checkbox\"\n    [(value)]=\"checked\"\n    [(expanded)]=\"checkboxOpen\"\n    filter\n    scrollHeight=\"16rem\"\n    ariaLabel=\"Folders to sync\"\n  />\n  <p class=\"docs-output\" role=\"status\">Leaves: {{ checked().join(', ') || 'none' }}</p>\n</div>",
   "tree/form": "<div class=\"docs-stack\">\n  <star-field label=\"Folders to share\" [state]=\"share.folders()\">\n    <star-tree\n      [formField]=\"share.folders\"\n      [nodes]=\"folders\"\n      selectionMode=\"checkbox\"\n      scrollHeight=\"12rem\"\n      ariaLabel=\"Folders to share\"\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ share().valid() }}</p>\n</div>",
