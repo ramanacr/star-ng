@@ -1,0 +1,149 @@
+// Chart: SVG marks, legend, tooltip and data table.
+.star-chart {
+  display: block;
+  font: var(--star-type-body);
+  color: var(--star-text);
+}
+.star-chart__figure {
+  margin: 0;
+}
+.star-chart__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+.star-chart__title {
+  font: var(--star-type-title-sm);
+  color: var(--star-text-strong);
+}
+.star-chart__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  margin: 0 0 0.5rem;
+  padding: 0;
+  list-style: none;
+  color: var(--star-text-muted);
+
+  li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+  }
+}
+.star-chart__swatch {
+  display: inline-block;
+  flex: none;
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: 2px;
+}
+.star-chart__plot {
+  position: relative;
+}
+.star-chart__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.star-chart__grid {
+  stroke: var(--star-border);
+  stroke-width: 1;
+}
+.star-chart__axis {
+  fill: var(--star-text-muted);
+  font: var(--star-type-body-sm);
+  font-variant-numeric: tabular-nums;
+}
+.star-chart__bar,
+.star-chart__slice {
+  stroke: var(--star-surface);
+  stroke-width: 0;
+  transition: opacity var(--star-duration-fast) ease;
+}
+.star-chart__line {
+  fill: none;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.star-chart__dot {
+  stroke: var(--star-surface);
+  stroke-width: 2;
+}
+.star-chart__crosshair {
+  stroke: var(--star-border-strong);
+  stroke-dasharray: 3 3;
+}
+.star-chart__mark--dim {
+  opacity: 0.35;
+}
+.star-chart__hit {
+  fill: transparent;
+}
+.star-chart__total {
+  fill: var(--star-text-strong);
+  font: var(--star-type-title-lg);
+}
+.star-chart__total-label {
+  fill: var(--star-text-muted);
+  font: var(--star-type-body-sm);
+}
+.star-chart__tip {
+  position: absolute;
+  z-index: 1;
+  display: grid;
+  gap: 0.125rem;
+  padding: 0.5rem 0.625rem;
+  border-radius: var(--star-radius-sm);
+  background: var(--star-tooltip-surface);
+  color: #fff;
+  font: var(--star-type-body-sm);
+  white-space: nowrap;
+  translate: -50% 0;
+  pointer-events: none;
+  box-shadow: var(--star-shadow-md);
+}
+.star-chart__tip-title {
+  font-weight: 600;
+}
+.star-chart__tip-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+.star-chart__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+
+  th,
+  td {
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--star-border);
+    text-align: end;
+  }
+  th:first-child {
+    text-align: start;
+  }
+  thead th {
+    font: var(--star-type-label);
+    color: var(--star-text-muted);
+  }
+}
+
+// Area chart: soft fill under a line.
+.star-chart__area {
+  stroke: none;
+  opacity: 0.16;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .star-chart__bar,
+  .star-chart__slice {
+    transition: none;
+  }
+}
