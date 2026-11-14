@@ -1,17 +1,7 @@
 import { expect, Page, test } from '@playwright/test';
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
-import { collectErrors } from './support';
+import { collectErrors, DOCS_PAGES } from './support';
 
-/**
- * Route paths of the docs navigation, read from `nav.ts` as text. The file is not imported:
- * it loads every docs page with a dynamic `import()`, which the e2e project cannot type check.
- */
-const PAGES = [
-  ...readFileSync(join(__dirname, '../projects/docs/src/app/nav.ts'), 'utf8').matchAll(
-    /^\s+path: '([^']+)',$/gm,
-  ),
-].map((match) => match[1]);
+const PAGES = DOCS_PAGES;
 
 /**
  * Right-to-left sweep: every page of the docs navigation is opened with `dir="rtl"` on `<html>`.

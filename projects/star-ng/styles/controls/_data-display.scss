@@ -82,6 +82,17 @@
   grid-template-columns: 1fr auto 1fr;
   gap: 0.75rem;
 }
+// The empty text lies over the empty list: it cannot be a child of the listbox.
+.star-pick-list__box {
+  position: relative;
+}
+.star-pick-list__empty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
 .star-pick-list__header {
   display: flex;
   align-items: center;

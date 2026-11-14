@@ -560,7 +560,7 @@ const POSITIONS: ConnectedPosition[] = [
         [id]="inputId"
         [disabled]="disabled()"
         [attr.aria-expanded]="open()"
-        [attr.aria-label]="ariaLabel()"
+        [attr.aria-label]="triggerName()"
         (click)="open.set(!open())"
         (keydown.arrowdown)="$event.preventDefault(); open.set(true)"
         (blur)="!open() && touch.emit()"
@@ -659,6 +659,17 @@ export class StarTreeSelect implements FormValueControl<readonly string[]> {
     const keys = this.value();
     if (keys.length > this.maxSelectedLabels()) return this.text.selectedItems(keys.length);
     return keys.map((key) => this.labels().get(key) ?? key).join(', ');
+  });
+
+  /**
+   * Accessible name of the trigger button: the label and the text on the button, so the visible
+   * text is part of the name (WCAG 2.5.3). `null` without `ariaLabel`: a `star-field` label then
+   * names the button.
+   */
+  protected readonly triggerName = computed(() => {
+    const label = this.ariaLabel();
+    if (!label) return null;
+    return `${label}: ${this.summary() || (this.placeholder() ?? this.text.selectPlaceholder)}`;
   });
 
   protected close(focus = false): void {

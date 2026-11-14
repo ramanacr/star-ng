@@ -159,7 +159,8 @@ readonly maxDate = new Date(2026, 11, 20);`;
     { name: '--star-primary-soft', description: 'Fill between the two ends of a range.' },
     { name: '--star-surface-muted', description: 'Hover background of a day.' },
     { name: '--star-focus-ring', description: 'Focus ring of a day.' },
-    { name: '--star-text-soft', description: 'Days of other months and disabled days.' },
+    { name: '--star-text-muted', description: 'Days of other months.' },
+    { name: '--star-text-soft', description: 'Disabled days.' },
     { name: '--star-border', description: 'Border of the inline calendar.' },
   ];
   protected readonly keyboard: readonly DocsRow[] = [

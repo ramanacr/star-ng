@@ -257,7 +257,9 @@ describe('StarTable inline cell edit', () => {
     const buttons = [...el.querySelectorAll('.star-table__edit')];
     // 4 products + 2 open statuses + 4 amounts.
     expect(buttons.length).toBe(10);
-    expect(buttons[0].getAttribute('aria-label')).toBe('Edit Product');
+    // The name comes from the content (action and value), so it holds the visible text.
+    expect(buttons[0].hasAttribute('aria-label')).toBe(false);
+    expect(buttons[0].textContent!.replace(/\s+/g, ' ').trim()).toMatch(/^Edit Product: \S/);
   });
 
   it('emits the new text on Enter and does not change the rows itself', async () => {

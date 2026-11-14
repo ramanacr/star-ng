@@ -49,7 +49,7 @@ const DIRECTION_KEY = 'star-direction';
       <button
         type="button"
         class="docs-header__dir"
-        aria-label="Text direction"
+        [attr.aria-label]="'Text direction: ' + (rtl() ? 'RTL' : 'LTR')"
         [attr.aria-pressed]="rtl()"
         (click)="toggleDirection()"
       >

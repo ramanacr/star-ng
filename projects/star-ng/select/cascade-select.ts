@@ -58,9 +58,8 @@ interface Leaf<TOption, TValue> {
         [cdkMenuTriggerData]="{ $implicit: menuItems() }"
         [cdkMenuPosition]="positions"
         [disabled]="disabled() || readonly()"
-        [attr.aria-label]="ariaLabel()"
+        [attr.aria-label]="triggerName()"
         [attr.aria-invalid]="(invalid() && touched()) || null"
-        [attr.aria-required]="required() || null"
         (cdkMenuClosed)="touch.emit()"
       >
         @if (selected(); as leaf) {
@@ -177,6 +176,18 @@ export class StarCascadeSelect<
             };
       });
     return build(this.options());
+  });
+
+  /**
+   * Accessible name of the trigger button: the label and the text on the button, so the visible
+   * text is part of the name (WCAG 2.5.3). `null` without `ariaLabel`: a `star-field` label then
+   * names the button.
+   */
+  protected readonly triggerName = computed(() => {
+    const label = this.ariaLabel();
+    if (!label) return null;
+    const leaf = this.selected();
+    return `${label}: ${leaf ? this.display(leaf) : (this.placeholder() ?? this.text.selectPlaceholder)}`;
   });
 
   protected display(leaf: Leaf<TOption, TValue>): string {

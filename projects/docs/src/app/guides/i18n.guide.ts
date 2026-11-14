@@ -154,7 +154,7 @@ export class DocsLanguage {
           />
           <star-paginator [totalRecords]="95" />
           <star-field label="City">
-            <star-select [options]="cities" [(value)]="city" filter />
+            <star-select [options]="cities" [(value)]="city" filter ariaLabel="City" />
           </star-field>
           <star-field label="Attachments">
             <star-file-upload multiple [maxFileSize]="1000000" [fileLimit]="3" />

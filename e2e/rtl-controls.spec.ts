@@ -80,6 +80,8 @@ test.describe('right-to-left controls', () => {
       await active().focus();
       const start = await active().getAttribute('data-date');
       await page.keyboard.press('ArrowLeft');
+      // Wait for the move: the attribute is read at once, and the focus follows after a render.
+      await expect(active()).not.toHaveAttribute('data-date', start!);
       const next = await active().getAttribute('data-date');
       expect(new Date(next!).getTime() - new Date(start!).getTime()).toBe(24 * 3600 * 1000);
       // The following day is visually to the left of the day before it.

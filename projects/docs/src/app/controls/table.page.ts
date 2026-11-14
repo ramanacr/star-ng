@@ -153,7 +153,7 @@ import {
             dataKey="id"
             ariaLabel="Latest orders"
           >
-            <h4 starTableCaption>Latest orders</h4>
+            <h3 starTableCaption>Latest orders</h3>
           </star-table>
         </docs-fill>
       </docs-example>

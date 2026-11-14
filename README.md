@@ -129,7 +129,7 @@ corepack pnpm start        # docs application on http://localhost:4200
 | ------------------ | ---------------------------------------------------------------- |
 | `projects/star-ng` | The library. One folder per entry point, `styles/` for the SCSS. |
 | `projects/docs`    | The docs application.                                            |
-| `e2e`              | Playwright tests. They run against the docs application.         |
+| `e2e`              | Playwright tests, including the axe accessibility scan.          |
 | `tools`            | Build tools: compiled CSS, docs data generator, name check.      |
 
 ## Development
@@ -141,6 +141,7 @@ corepack pnpm start        # docs application on http://localhost:4200
 | `corepack pnpm test:ci`  | Unit tests (Vitest, jsdom) with coverage.                            |
 | `corepack pnpm build`    | Builds the package to `dist/star-ng` (with CSS) and the docs.        |
 | `corepack pnpm e2e`      | Playwright tests (`corepack pnpm e2e:install` once for the browser). |
+| `corepack pnpm e2e:a11y` | Only the axe accessibility scan of every docs page and its states.   |
 | `corepack pnpm docs:gen` | Writes the API and example data of the docs after a change.          |
 
 Conventions: Conventional Commits, one feature per pull request, signed commits.

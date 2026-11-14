@@ -33,7 +33,8 @@ import { DOCS } from '../shared/docs';
         </li>
         <li>
           <strong>Contrast.</strong> The default tokens give at least 4.5:1 for text on filled
-          controls in both themes. An end-to-end test measures this.
+          controls, for text on the page and for placeholder text, in both themes. The axe scan and
+          two end-to-end tests measure this.
         </li>
         <li>
           <strong>Motion.</strong> Animations stop when the user sets
@@ -87,6 +88,112 @@ import { DOCS } from '../shared/docs';
         <li>Unit tests check roles, states and keyboard handling of each control.</li>
         <li>End-to-end tests run the docs pages in a browser with keyboard only.</li>
         <li>A contrast test measures filled controls in the light and the dark theme.</li>
+        <li>
+          An automated scan with axe-core (<code>@axe-core/playwright</code>) checks every docs page
+          and many opened states. See the next section.
+        </li>
+        <li>
+          A placeholder test measures the color of <code>::placeholder</code> text. axe does not
+          read it.
+        </li>
+      </ul>
+
+      <h3>The axe scan</h3>
+      <p>
+        The file <code>e2e/a11y.spec.ts</code> runs axe-core with the rule sets <code>wcag2a</code>,
+        <code>wcag2aa</code>, <code>wcag21a</code>, <code>wcag21aa</code>, <code>wcag22aa</code> and
+        <code>best-practice</code>. Run it with <code>corepack pnpm e2e:a11y</code>. A test fails on
+        any violation that is not in the allow-list. The failure shows the rule id, the impact, the
+        selector and the help link.
+      </p>
+      <ul>
+        <li>
+          <strong>Pages at rest.</strong> Every page of the navigation (97 pages), in the light
+          theme and in the dark theme. Contrast differs between the themes.
+        </li>
+        <li>
+          <strong>Opened states.</strong> 65 states that are hidden at rest, in both themes: panels
+          of select, multi-select, cascade select, tree select and autocomplete; the date picker
+          popup; menus with a submenu, menubar, context menu and mega menu; dialog, confirm dialog,
+          notice, drawer, popover, tooltip and toasts; open accordion, panel and panel menu; an
+          invalid field with its error; a table with the column panel, a filter, an expanded row and
+          a cell in edit mode; an expanded tree; a file upload with a file and with a rejected file;
+          a stepper on a later step; carousel, galleria and image preview; a speed dial; a terminal
+          with output; an editor with content; and the virtual-scroll listbox, tree and table,
+          scrolled to the middle.
+        </li>
+        <li>
+          <strong>Setup.</strong> The scan runs with reduced motion, so no animation changes a color
+          while axe reads it.
+        </li>
+      </ul>
+
+      <h3>Allow-list</h3>
+      <p>
+        No rule is switched off. A rule that cannot be satisfied is listed with the smallest
+        selector, and each entry has a reason. The scan has two entries.
+      </p>
+      <div class="docs-table-wrap">
+        <table class="docs-table">
+          <caption>
+            Violations that the axe scan accepts
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Rule</th>
+              <th scope="col">Elements</th>
+              <th scope="col">Reason</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row"><code>region</code></th>
+              <td><code>.cdk-overlay-container</code> and what it holds</td>
+              <td>
+                The Angular CDK moves a popup (menu, tooltip) to the end of <code>body</code>,
+                outside <code>main</code>. A popup is a transient widget. It takes the focus or is
+                tied to its trigger. axe reports every such popup as content outside a landmark. The
+                rest of the page is still checked.
+              </td>
+            </tr>
+            <tr>
+              <th scope="row"><code>scrollable-region-focusable</code></th>
+              <td><code>.star-listbox[aria-disabled="true"]</code></td>
+              <td>
+                A disabled listbox leaves the tab order on purpose, like a disabled button. Its
+                options cannot be used. axe reports a disabled list that is taller than its maximum
+                height. An enabled list is still checked.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>What an automated scan cannot find</h3>
+      <p>
+        An automated scan finds only a part of the accessibility problems. It does not replace
+        manual tests. Nothing in this list is checked by the scan:
+      </p>
+      <ul>
+        <li>What a screen reader says, and whether the names and the text make sense.</li>
+        <li>
+          Zoom and reflow (WCAG 1.4.4 and 1.4.10), text spacing, and the use of the controls in a
+          small window.
+        </li>
+        <li>High-contrast mode and forced colors.</li>
+        <li>
+          Keyboard use of a whole task: focus order, focus that returns to the right place, and
+          traps. Only the keyboard tests of each control cover this.
+        </li>
+        <li>
+          Color as the only signal, the quality of error texts, and alternatives to dragging (WCAG
+          2.5.7).
+        </li>
+        <li>
+          Every state that is not in the list above, and the right-to-left layout (the scan runs in
+          left-to-right).
+        </li>
+        <li>The contrast of text on images and gradients, which axe cannot compute.</li>
       </ul>
     </docs-page>
   `,

@@ -196,6 +196,8 @@ type BodyEntry<T> =
 
 /** Smallest width, in pixels, that the user can give a column. */
 const MIN_COLUMN_WIDTH = 48;
+/** `aria-valuemax` of a resize handle. The column width itself has no upper limit. */
+const MAX_COLUMN_WIDTH_HINT = 2000;
 
 export type StarSortOrder = 1 | -1;
 
@@ -379,6 +381,9 @@ export class StarRowExpansionTemplate<T = unknown> {
     <div
       #scroller
       class="star-table__scroll"
+      [attr.role]="scrollable() ? 'group' : null"
+      [attr.aria-label]="scrollable() ? ariaLabel() : null"
+      [attr.tabindex]="scrollable() ? 0 : null"
       [style.max-height]="scrollHeight()"
       (scroll)="onScroll($event)"
     >
@@ -455,7 +460,9 @@ export class StarRowExpansionTemplate<T = unknown> {
                     aria-orientation="vertical"
                     tabindex="0"
                     [attr.aria-label]="text.resizeColumn(column.header)"
-                    [attr.aria-valuenow]="columnWidths()[column.field] ?? null"
+                    [attr.aria-valuenow]="resizeNow(column)"
+                    [attr.aria-valuemin]="minColumnWidth"
+                    [attr.aria-valuemax]="resizeMax(column)"
                     (pointerdown)="startResize(column, $event)"
                     (keydown)="onResizeKey(column, $event)"
                   ></span>
@@ -696,9 +703,10 @@ export class StarRowExpansionTemplate<T = unknown> {
                           type="button"
                           class="star-table__edit"
                           [attr.data-edit]="editKey(row, column)"
-                          [attr.aria-label]="text.editCell(column.header)"
                           (click)="startEdit(row, column)"
                         >
+                          <!-- The name is the action and the visible value (WCAG 2.5.3). -->
+                          <span class="star-sr-only">{{ text.editCell(column.header) }}: </span>
                           <span class="star-table__edit-value">
                             <ng-container
                               *ngTemplateOutlet="
@@ -786,6 +794,7 @@ export class StarRowExpansionTemplate<T = unknown> {
     </ng-template>
     @if (paginator()) {
       <star-paginator
+        [ariaLabel]="ariaLabel() ? text.pagination + ': ' + ariaLabel() : null"
         [totalRecords]="total()"
         [(first)]="first"
         [(rows)]="rows"
@@ -1742,6 +1751,21 @@ export class StarTable<T> {
 
   /** Rendered width in pixels of each frozen header cell, by column `field`. */
   private readonly frozenWidths = signal<Readonly<Record<string, number>>>({});
+  /** Rendered width in pixels of each header cell, by column `field` (resizable tables only). */
+  private readonly headerWidths = signal<Readonly<Record<string, number>>>({});
+  /** The scroll area has content outside its box, so it must take the focus to scroll by key. */
+  protected readonly scrollable = signal(false);
+  protected readonly minColumnWidth = MIN_COLUMN_WIDTH;
+
+  /** `aria-valuenow` of a resize handle: the width of the column in pixels. */
+  protected resizeNow(column: StarColumn<T>): number | null {
+    const width = this.columnWidths()[column.field] ?? this.headerWidths()[column.field];
+    return width === undefined ? null : Math.round(width);
+  }
+
+  protected resizeMax(column: StarColumn<T>): number {
+    return Math.max(MAX_COLUMN_WIDTH_HINT, this.resizeNow(column) ?? 0);
+  }
   /** Counts up when the table element changes size, so the frozen columns are measured again. */
   private readonly resized = signal(0);
 
@@ -1753,23 +1777,36 @@ export class StarTable<T> {
     this.value();
     this.size();
     this.resized();
-    if (!frozen.length) return;
+    const scroller = this.scroller()?.nativeElement;
+    if (scroller) {
+      this.scrollable.set(
+        scroller.scrollWidth > scroller.clientWidth + 1 ||
+          scroller.scrollHeight > scroller.clientHeight + 1,
+      );
+    }
+    const resizable = this.resizableColumns();
+    if (!frozen.length && !resizable) return;
     const widths: Record<string, number> = {};
+    const all: Record<string, number> = {};
     for (const cell of this.host.nativeElement.querySelectorAll<HTMLElement>(
       'thead th[data-field]',
     )) {
       const field = cell.dataset['field'];
-      if (field && frozen.some((column) => column.field === field)) {
-        widths[field] = cell.getBoundingClientRect().width;
-      }
+      if (!field) continue;
+      const width = cell.getBoundingClientRect().width;
+      all[field] = width;
+      if (frozen.some((column) => column.field === field)) widths[field] = width;
     }
-    const current = untracked(this.frozenWidths);
-    const same =
-      Object.keys(widths).length === Object.keys(current).length &&
-      Object.entries(widths).every(
+    const sameWidths = (
+      next: Readonly<Record<string, number>>,
+      current: Readonly<Record<string, number>>,
+    ) =>
+      Object.keys(next).length === Object.keys(current).length &&
+      Object.entries(next).every(
         ([field, width]) => Math.abs((current[field] ?? -1) - width) < 0.5,
       );
-    if (!same) this.frozenWidths.set(widths);
+    if (!sameWidths(widths, untracked(this.frozenWidths))) this.frozenWidths.set(widths);
+    if (resizable && !sameWidths(all, untracked(this.headerWidths))) this.headerWidths.set(all);
   }
 
   /**

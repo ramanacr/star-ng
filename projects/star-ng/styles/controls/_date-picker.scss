@@ -240,8 +240,9 @@
     opacity: 0.6;
   }
 }
+// Days of other months stay readable: the muted text color reaches 4.5:1 in both themes.
 .star-calendar__day--outside {
-  color: var(--star-text-soft);
+  color: var(--star-text-muted);
 }
 .star-calendar__day--today {
   border-color: var(--star-primary);

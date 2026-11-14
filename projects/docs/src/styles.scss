@@ -168,6 +168,11 @@ code {
     background: transparent;
     font: inherit;
     color: var(--star-text-strong);
+
+    // The browser default placeholder color is 4.4:1 on this fill: use the muted text token.
+    &::placeholder {
+      color: var(--star-text-muted);
+    }
   }
 }
 .docs-nav__group {
@@ -313,6 +318,13 @@ code {
 .docs-example {
   display: block;
   margin: var(--star-space-6) 0;
+}
+// The title is a level 2 heading (a page has no level 2 heading before its first example), drawn
+// at the size of a level 3 heading.
+.docs-page h2.docs-example__title {
+  margin: var(--star-space-6) 0 var(--star-space-2);
+  font: var(--star-type-title-sm);
+  color: var(--star-text-strong);
 }
 .docs-example__note {
   margin: 0 0 var(--star-space-3);

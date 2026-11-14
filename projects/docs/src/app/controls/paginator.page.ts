@@ -20,6 +20,7 @@ import { DOCS, DocsRow } from '../shared/docs';
       >
         <div class="docs-stack">
           <star-paginator
+            ariaLabel="Pagination of the list"
             [totalRecords]="95"
             [(first)]="first"
             [(rows)]="rows"
@@ -37,6 +38,7 @@ import { DOCS, DocsRow } from '../shared/docs';
         note="Hide the report, the first and last buttons or the rows select. pageLinkSize sets how many page links show."
       >
         <star-paginator
+          ariaLabel="Pagination of the compact list"
           [totalRecords]="60"
           [rowsPerPageOptions]="[]"
           [showCurrentPageReport]="false"

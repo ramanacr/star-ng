@@ -199,11 +199,13 @@ export function fileMatchesAccept(file: File, accept: string): boolean {
     }
 
     @if (rejected().length) {
-      <ul class="star-upload__errors" role="alert">
-        @for (item of rejected(); track $index) {
-          <li>{{ rejectionText(item) }}</li>
-        }
-      </ul>
+      <div role="alert">
+        <ul class="star-upload__errors">
+          @for (item of rejected(); track $index) {
+            <li>{{ rejectionText(item) }}</li>
+          }
+        </ul>
+      </div>
     }
   `,
 })

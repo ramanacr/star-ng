@@ -315,7 +315,6 @@ const TEMPLATE = `
       [readOnly]="readonly() || readonlyInput()"
       [required]="required()"
       [attr.aria-label]="ariaLabel()"
-      [attr.aria-expanded]="open()"
       [attr.aria-controls]="open() ? panelId : null"
       [attr.aria-invalid]="showInvalid() || null"
       (input)="typed.set(input.value)"
@@ -332,8 +331,10 @@ const TEMPLATE = `
       type="button"
       class="star-date__toggle"
       [disabled]="!interactive()"
+      aria-haspopup="dialog"
       [attr.aria-label]="text.chooseDate"
       [attr.aria-expanded]="open()"
+      [attr.aria-controls]="open() ? panelId : null"
       (click)="togglePanel()"
     >
       <i class="ph-bold ph-calendar-blank" aria-hidden="true"></i>

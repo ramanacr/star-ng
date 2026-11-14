@@ -388,38 +388,44 @@ export class StarOrderList<T = unknown> {
     @for (side of sides; track side) {
       @let items = side === 'source' ? source() : target();
       <section class="star-pick-list__side" [attr.aria-labelledby]="ids[side]">
-        <h4 class="star-pick-list__header" [id]="ids[side]">
+        <h3 class="star-pick-list__header" [id]="ids[side]">
           {{
             side === 'source'
               ? (sourceHeader() ?? text.pickListSource)
               : (targetHeader() ?? text.pickListTarget)
           }}
           <span class="star-badge star-badge--secondary star-badge--sm">{{ items.length }}</span>
-        </h4>
-        <ul
-          class="star-listbox star-pick-list__list"
-          role="listbox"
-          aria-multiselectable="true"
-          [attr.aria-labelledby]="ids[side]"
-        >
-          @for (item of items; track $index; let i = $index) {
-            <li
-              role="option"
-              class="star-listbox__option"
-              tabindex="0"
-              [attr.aria-selected]="isPicked(side, item)"
-              [class.star-listbox__option--selected]="isPicked(side, item)"
-              (click)="pick(side, item)"
-              (dblclick)="transfer(side, [item])"
-              (keydown.enter)="transfer(side, [item])"
-              (keydown.space)="$event.preventDefault(); pick(side, item)"
-            >
-              {{ labelOf(item) }}
-            </li>
-          } @empty {
-            <li class="star-listbox__empty" role="presentation">{{ text.emptyMessage }}</li>
+        </h3>
+        <div class="star-pick-list__box">
+          <ul
+            class="star-listbox star-pick-list__list"
+            role="listbox"
+            aria-multiselectable="true"
+            [attr.aria-labelledby]="ids[side]"
+          >
+            @for (item of items; track $index; let i = $index) {
+              <li
+                role="option"
+                class="star-listbox__option"
+                tabindex="0"
+                [attr.aria-selected]="isPicked(side, item)"
+                [class.star-listbox__option--selected]="isPicked(side, item)"
+                (click)="pick(side, item)"
+                (dblclick)="transfer(side, [item])"
+                (keydown.enter)="transfer(side, [item])"
+                (keydown.space)="$event.preventDefault(); pick(side, item)"
+              >
+                {{ labelOf(item) }}
+              </li>
+            }
+          </ul>
+          <!-- Outside the listbox: a listbox may contain options and groups only. -->
+          @if (!items.length) {
+            <div class="star-listbox__empty star-pick-list__empty" role="presentation">
+              {{ text.emptyMessage }}
+            </div>
           }
-        </ul>
+        </div>
       </section>
       @if (side === 'source') {
         <div class="star-pick-list__buttons" role="group" [attr.aria-label]="text.transfer">

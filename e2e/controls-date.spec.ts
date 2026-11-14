@@ -19,12 +19,16 @@ test.describe('date picker', () => {
     await openPage(page, '/controls/date-picker', 'Date picker');
     const live = example(page, 'Single date');
     const input = live.getByRole('textbox', { name: 'Delivery date' });
+    // The textbox cannot be expanded: the state is on the calendar button.
+    const toggle = live.getByRole('button', { name: 'Choose date' });
     await expect(input).toHaveValue('17/11/2026');
-    await expect(input).toHaveAttribute('aria-expanded', 'false');
+    await expect(input).not.toHaveAttribute('aria-expanded', /.*/);
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await expect(toggle).toHaveAttribute('aria-haspopup', 'dialog');
 
     await input.focus();
     await page.keyboard.press('ArrowDown');
-    await expect(input).toHaveAttribute('aria-expanded', 'true');
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
     await expect(panel(page)).toBeVisible();
     // The focus moves to the chosen day (Tuesday 17 November).
     await expect(day(page, '2026-11-17')).toBeFocused();
@@ -50,7 +54,7 @@ test.describe('date picker', () => {
 
     await page.keyboard.press('Enter');
     await expect(panel(page)).toHaveCount(0);
-    await expect(input).toHaveAttribute('aria-expanded', 'false');
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
     await expect(input).toBeFocused();
     await expect(input).toHaveValue('22/10/2026');
     await expect(live.getByRole('status')).toHaveText('Delivery: 2026-10-22');

@@ -95,6 +95,9 @@ export class StarCarouselItem<T = unknown> {
     <div
       #track
       class="star-carousel__track"
+      role="group"
+      tabindex="0"
+      [attr.aria-label]="ariaLabel()"
       [attr.aria-live]="playing() ? 'off' : 'polite'"
       (scrollend)="syncPage()"
     >
@@ -328,7 +331,8 @@ export class StarGalleria {
             <i class="ph-bold ph-magnifying-glass-plus" aria-hidden="true"></i>
           </button>
         </div>
-        <div class="star-image__stage">
+        <!-- Focusable, so the arrow keys scroll a zoomed image. -->
+        <div class="star-image__stage" role="group" tabindex="0" [attr.aria-label]="alt()">
           <img [src]="src()" [alt]="alt()" [style.transform]="'scale(' + zoom() + ')'" />
         </div>
       </star-dialog>
