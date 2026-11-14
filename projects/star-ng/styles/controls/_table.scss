@@ -116,6 +116,11 @@ star-multi-select.star-table__filter {
   &[aria-expanded='true'] i {
     transform: rotate(90deg);
   }
+  // The expander arrow points toward the inline end: mirrored in right-to-left. The turn to
+  // "down" is the same in both directions (the mirror keeps a down arrow down).
+  i:dir(rtl) {
+    scale: -1 1;
+  }
   &:hover {
     background: var(--star-surface-muted);
     color: var(--star-text-strong);
@@ -230,7 +235,8 @@ star-multi-select.star-table__filter {
     .star-table__row .star-table__expander {
       display: inline-block;
       width: auto !important;
-      padding: 0.25rem 0 0.25rem 1rem !important;
+      padding: 0.25rem 0 !important;
+      padding-inline-start: 1rem !important;
       vertical-align: middle;
     }
     .star-table__expansion td {
@@ -308,6 +314,10 @@ star-multi-select.star-table__filter {
 }
 .star-table__th--drop {
   box-shadow: inset 3px 0 0 var(--star-primary);
+
+  &:dir(rtl) {
+    box-shadow: inset -3px 0 0 var(--star-primary);
+  }
 }
 .star-table__resizer {
   position: absolute;
@@ -464,6 +474,10 @@ th.star-table__cell--frozen,
   }
   &[aria-expanded='false'] i {
     rotate: -90deg;
+
+    &:dir(rtl) {
+      rotate: 90deg;
+    }
   }
   &:focus-visible {
     outline: 2px solid var(--star-accent);

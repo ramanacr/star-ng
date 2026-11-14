@@ -4,7 +4,9 @@ import { StarDialog } from 'star-ng/dialog';
 /**
  * Drawer (PrimeNG `p-drawer`): side sheet on the native `<dialog>` element. Same API as
  * `star-dialog` (`[(visible)]`, `header`, `modal`, `dismissableMask`, `closeOnEscape`, footer slot)
- * plus `position` and a CSS `size`.
+ * plus `position` and a CSS `size`. `left` and `right` are the physical edges of the screen, as in
+ * CSS; `start` and `end` follow the writing direction (`end` is the right edge in LTR and the left
+ * edge in RTL). Use `start` / `end` for a drawer that must switch sides in right-to-left.
  *
  * `<star-drawer [(visible)]="detailsOpen" header="ORD-1042" position="right" size="32rem">…</star-drawer>`
  */
@@ -54,7 +56,7 @@ import { StarDialog } from 'star-ng/dialog';
   `,
 })
 export class StarDrawer extends StarDialog {
-  readonly position = input<'left' | 'right' | 'top' | 'bottom'>('right');
-  /** Width (left / right) or height (top / bottom). */
+  readonly position = input<'left' | 'right' | 'start' | 'end' | 'top' | 'bottom'>('right');
+  /** Width (left / right / start / end) or height (top / bottom). */
   readonly drawerSize = input('28rem');
 }

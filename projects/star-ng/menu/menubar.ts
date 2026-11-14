@@ -10,6 +10,7 @@ import {
   output,
 } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
+import { StarDirectionService } from 'star-ng/core';
 import {
   keepMenuInsideDialog,
   STAR_MENU_POSITIONS,
@@ -92,6 +93,8 @@ import {
   `,
 })
 export class StarMenubar {
+  /** Keeps the CDK direction (overlays and menus) in step with `<html dir>`. */
+  private readonly directionSync = inject(StarDirectionService);
   readonly items = input<readonly StarMenuItem[]>([]);
   readonly ariaLabel = input<string | null>(null);
   readonly itemClick = output<StarMenuItem>();
@@ -119,6 +122,8 @@ export class StarMenubar {
   ],
 })
 export class StarContextMenu {
+  /** Keeps the CDK direction (overlays and menus) in step with `<html dir>`. */
+  private readonly directionSync = inject(StarDirectionService);
   readonly starContextMenu = input.required<StarMenu>();
   private readonly trigger = inject(CdkContextMenuTrigger);
 

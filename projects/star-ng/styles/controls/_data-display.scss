@@ -3,7 +3,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.375rem;
-  padding-left: calc(var(--star-tree-level, 0) * 1.25rem);
+  padding-inline-start: calc(var(--star-tree-level, 0) * 1.25rem);
 }
 .star-tree-table__toggle {
   padding: 0;
@@ -98,5 +98,10 @@
     flex-direction: row;
     justify-content: center;
     rotate: 90deg;
+
+    // The arrows are mirrored in right-to-left, so the turn goes the other way.
+    &:dir(rtl) {
+      rotate: -90deg;
+    }
   }
 }

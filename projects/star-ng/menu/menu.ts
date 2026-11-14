@@ -18,7 +18,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { StarButton, StarButtonSize, StarButtonVariant } from 'star-ng/button';
-import { STAR_UI_TEXT } from 'star-ng/core';
+import { STAR_UI_TEXT, StarDirectionService } from 'star-ng/core';
 
 /** One menu entry (PrimeNG `MenuItem`). `items` makes a submenu (tiered menu). */
 export interface StarMenuItem {
@@ -122,7 +122,10 @@ export class StarMenuInDialog {
               [cdkMenuItemDisabled]="!!item.disabled"
             >
               <ng-container *ngTemplateOutlet="content; context: { $implicit: item }" />
-              <i class="ph-bold ph-caret-right star-menu__sub" aria-hidden="true"></i>
+              <i
+                class="ph-bold ph-caret-right star-menu__sub star-icon-mirror"
+                aria-hidden="true"
+              ></i>
             </button>
           } @else if (item.routerLink) {
             <a
@@ -177,6 +180,8 @@ export class StarMenuInDialog {
   `,
 })
 export class StarMenu {
+  /** Keeps the CDK direction (overlays and menus) in step with `<html dir>`. */
+  private readonly directionSync = inject(StarDirectionService);
   readonly items = input<readonly StarMenuItem[]>([]);
   /** Renders the menu in place instead of as a popup. */
   readonly inline = input(false, { transform: booleanAttribute });
@@ -207,6 +212,8 @@ export class StarMenu {
   ],
 })
 export class StarMenuTrigger {
+  /** Keeps the CDK direction (overlays and menus) in step with `<html dir>`. */
+  private readonly directionSync = inject(StarDirectionService);
   readonly starMenuTrigger = input.required<StarMenu>();
   private readonly trigger = inject(CdkMenuTrigger);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);

@@ -11,7 +11,13 @@ import {
   output,
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
-import { optionText, readOption, STAR_UI_TEXT, StarOptionKey } from 'star-ng/core';
+import {
+  optionText,
+  readOption,
+  STAR_UI_TEXT,
+  StarDirectionService,
+  StarOptionKey,
+} from 'star-ng/core';
 import { STAR_MENU_POSITIONS, StarMenu, StarMenuInDialog, StarMenuItem } from 'star-ng/menu';
 
 interface Leaf<TOption, TValue> {
@@ -84,6 +90,8 @@ export class StarCascadeSelect<
   TOption,
   TValue = TOption,
 > implements FormValueControl<TValue | null> {
+  /** Keeps the CDK direction (overlays and menus) in step with `<html dir>`. */
+  private readonly directionSync = inject(StarDirectionService);
   protected readonly text = inject(STAR_UI_TEXT);
   protected readonly positions = STAR_MENU_POSITIONS;
 

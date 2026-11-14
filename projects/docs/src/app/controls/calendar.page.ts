@@ -88,6 +88,14 @@ import { DOCS, DocsRow } from '../shared/docs';
         </div>
       </docs-example>
 
+      <h2>Right-to-left</h2>
+      <p>
+        The grid follows the page direction: the week starts on the right and Arrow left moves to
+        the following day (Arrow right to the day before). In the month and year views Arrow left
+        and Arrow right turn the same way. The previous and next month arrows turn around. See the
+        Right-to-left guide.
+      </p>
+
       <docs-api [of]="['StarCalendar']" [cssVars]="cssVars" [keyboard]="keyboard" />
 
       <h2>Technical notes</h2>

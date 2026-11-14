@@ -43,7 +43,11 @@
 .star-chart__plot {
   position: relative;
 }
+// The plot keeps its left-to-right geometry in right-to-left: numeric axes run left to right, and
+// `text-anchor` of the axis labels is relative to the text direction. The legend, the title and the data
+// table follow the page direction.
 .star-chart__svg {
+  direction: ltr;
   display: block;
   width: 100%;
   height: auto;

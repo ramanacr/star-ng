@@ -74,6 +74,9 @@ import { DOCS, DocsRow } from '../shared/docs';
         </div>
       </docs-example>
 
+      <h2>Right-to-left</h2>
+      <p>The fields follow the page direction. See the Right-to-left guide.</p>
+
       <docs-api [of]="['StarTimePicker']" [cssVars]="cssVars" [keyboard]="keyboard" />
 
       <h2>Technical notes</h2>

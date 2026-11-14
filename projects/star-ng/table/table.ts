@@ -30,6 +30,7 @@ import {
   matchesFilter,
   readOption,
   STAR_UI_TEXT,
+  starIsRtl,
   StarOptionKey,
 } from 'star-ng/core';
 import { StarPaginator } from 'star-ng/paginator';
@@ -1805,7 +1806,7 @@ export class StarTable<T> {
     event.preventDefault();
     event.stopPropagation();
     this.resizing = true;
-    const direction = getComputedStyle(header).direction === 'rtl' ? -1 : 1;
+    const direction = starIsRtl(header) ? -1 : 1;
     const startWidth = header.offsetWidth;
     const startX = event.clientX;
     handle.setPointerCapture?.(event.pointerId);
@@ -1827,7 +1828,7 @@ export class StarTable<T> {
     if (!step) return;
     event.preventDefault();
     const header = (event.currentTarget as HTMLElement).closest('th');
-    const direction = header && getComputedStyle(header).direction === 'rtl' ? -1 : 1;
+    const direction = starIsRtl(header) ? -1 : 1;
     this.setWidth(
       column,
       (this.columnWidths()[column.field] ?? header?.offsetWidth ?? 0) + direction * step,

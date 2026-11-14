@@ -28,6 +28,13 @@ import { DOCS, DocsRow } from '../shared/docs';
         </div>
       </docs-example>
 
+      <h2>Right-to-left</h2>
+      <p>
+        With <code>dir="rtl"</code> the first item is on the right. Arrow left moves to the next
+        top-level item and the panel is aligned with the start edge of its item. See the
+        Right-to-left guide.
+      </p>
+
       <docs-api [of]="['StarMegaMenu']" [slots]="slots" [cssVars]="cssVars" [keyboard]="keyboard" />
 
       <h2>Technical notes</h2>

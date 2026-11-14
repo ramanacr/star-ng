@@ -11,7 +11,7 @@ import {
   viewChildren,
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
-import { STAR_UI_TEXT } from 'star-ng/core';
+import { STAR_UI_TEXT, starInlineKey } from 'star-ng/core';
 
 /**
  * One-time code field (PrimeNG `p-inputotp`): one box per character, auto-advance, Backspace
@@ -107,10 +107,10 @@ export class StarInputOtp implements FormValueControl<string> {
       event.preventDefault();
       this.setChar(index - 1, '');
       this.focusBox(index - 1);
-    } else if (event.key === 'ArrowLeft') {
+    } else if (starInlineKey(event) === 'ArrowLeft') {
       event.preventDefault();
       this.focusBox(index - 1);
-    } else if (event.key === 'ArrowRight') {
+    } else if (starInlineKey(event) === 'ArrowRight') {
       event.preventDefault();
       this.focusBox(index + 1);
     }

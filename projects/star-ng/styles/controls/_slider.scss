@@ -24,6 +24,14 @@
       var(--star-border) var(--star-fill)
     );
   }
+  // A native range input runs from right to left in right-to-left: the fill follows.
+  &:dir(rtl)::-webkit-slider-runnable-track {
+    background: linear-gradient(
+      to left,
+      var(--star-primary) var(--star-fill),
+      var(--star-border) var(--star-fill)
+    );
+  }
   &::-moz-range-track {
     height: 0.375rem;
     border-radius: var(--star-radius-pill);
@@ -92,8 +100,7 @@
     background: var(--star-border);
   }
   &::after {
-    left: var(--star-from);
-    right: calc(100% - var(--star-to));
+    inset-inline: var(--star-from) calc(100% - var(--star-to));
     background: var(--star-primary);
   }
   .star-slider__input {

@@ -4,7 +4,7 @@ import { StarDrawer } from 'star-ng/drawer';
 import { StarField, StarInput } from 'star-ng/field';
 import { DOCS, DocsRow } from '../shared/docs';
 
-type DrawerPosition = 'left' | 'right' | 'top' | 'bottom';
+type DrawerPosition = 'left' | 'right' | 'start' | 'end' | 'top' | 'bottom';
 
 @Component({
   selector: 'docs-drawer-page',
@@ -42,7 +42,7 @@ type DrawerPosition = 'left' | 'right' | 'top' | 'bottom';
         heading="Position and size"
         source="drawer/position"
         [script]="positionScript"
-        note="position is left, right (default), top or bottom. drawerSize is a CSS length: the width of a left or right drawer, or the height of a top or bottom drawer."
+        note="position is left, right (default), start, end, top or bottom. left and right are the edges of the screen. start and end follow the writing direction: end is the right edge in a left-to-right page and the left edge in a right-to-left page. drawerSize is a CSS length: the width of a side drawer, or the height of a top or bottom drawer."
       >
         <div class="docs-row">
           @for (item of positions; track item) {
@@ -52,12 +52,20 @@ type DrawerPosition = 'left' | 'right' | 'top' | 'bottom';
         <star-drawer
           [(visible)]="positionOpen"
           [position]="position()"
-          [drawerSize]="position() === 'left' || position() === 'right' ? '22rem' : '14rem'"
+          [drawerSize]="position() === 'top' || position() === 'bottom' ? '14rem' : '22rem'"
           [header]="'Drawer at the ' + position()"
         >
           <p>This drawer is pinned to the {{ position() }} edge.</p>
         </star-drawer>
       </docs-example>
+
+      <h2>Right-to-left</h2>
+      <p>
+        <code>left</code> and <code>right</code> are the physical edges of the screen. Use
+        <code>start</code> and <code>end</code> for a drawer that must change sides with the
+        direction: <code>end</code> is the left edge in a right-to-left page. The drawer slides in
+        from its own edge. See the Right-to-left guide.
+      </p>
 
       <docs-api
         [of]="['StarDrawer', 'StarDialog']"
@@ -77,7 +85,14 @@ type DrawerPosition = 'left' | 'right' | 'top' | 'bottom';
   `,
 })
 export class DrawerPage {
-  protected readonly positions: readonly DrawerPosition[] = ['left', 'right', 'top', 'bottom'];
+  protected readonly positions: readonly DrawerPosition[] = [
+    'left',
+    'right',
+    'start',
+    'end',
+    'top',
+    'bottom',
+  ];
   protected readonly basicOpen = signal(false);
   protected readonly positionOpen = signal(false);
   protected readonly position = signal<DrawerPosition>('right');
@@ -88,11 +103,11 @@ export class DrawerPage {
   }
 
   protected readonly basicScript = `readonly basicOpen = signal(false);`;
-  protected readonly positionScript = `readonly positions = ['left', 'right', 'top', 'bottom'] as const;
+  protected readonly positionScript = `readonly positions = ['left', 'right', 'start', 'end', 'top', 'bottom'] as const;
 readonly positionOpen = signal(false);
-readonly position = signal<'left' | 'right' | 'top' | 'bottom'>('right');
+readonly position = signal<'left' | 'right' | 'start' | 'end' | 'top' | 'bottom'>('right');
 
-openAt(position: 'left' | 'right' | 'top' | 'bottom'): void {
+openAt(position: 'left' | 'right' | 'start' | 'end' | 'top' | 'bottom'): void {
   this.position.set(position);
   this.positionOpen.set(true);
 }`;

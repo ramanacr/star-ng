@@ -14,7 +14,7 @@ import {
   output,
   signal,
 } from '@angular/core';
-import { STAR_UI_TEXT } from 'star-ng/core';
+import { STAR_UI_TEXT, starIsRtl } from 'star-ng/core';
 import { StarMenuItem } from 'star-ng/menu';
 import { StarSpinner } from 'star-ng/spinner';
 
@@ -23,6 +23,8 @@ import { StarSpinner } from 'star-ng/spinner';
 /**
  * Splitter (PrimeNG `p-splitter`): two panes with a draggable gutter. The gutter is a
  * `role="separator"` with `aria-valuenow`; Arrow keys resize by 2 %, Home / End by the limits.
+ * In right-to-left the first pane is on the right: Arrow left makes it larger (the gutter moves
+ * left), Arrow right makes it smaller, and a drag measures from the right edge.
  *
  * ```html
  * <star-splitter [(size)]="split" ariaLabel="Resize panes">
@@ -74,10 +76,11 @@ export class StarSplitter {
     const gutter = event.currentTarget as HTMLElement;
     gutter.setPointerCapture?.(event.pointerId);
     const box = this.host.nativeElement.getBoundingClientRect();
+    const rtl = starIsRtl(this.host.nativeElement);
     const move = (e: PointerEvent) => {
       const ratio =
         this.layout() === 'horizontal'
-          ? (e.clientX - box.left) / box.width
+          ? (rtl ? box.right - e.clientX : e.clientX - box.left) / box.width
           : (e.clientY - box.top) / box.height;
       this.size.set(this.clamp(ratio * 100));
     };
@@ -91,9 +94,12 @@ export class StarSplitter {
 
   protected onKeydown(event: KeyboardEvent): void {
     const horizontal = this.layout() === 'horizontal';
+    // The arrow keys follow the visual direction: the gutter moves left on Arrow left, and the
+    // first pane is on the right in right-to-left, so the sign turns.
+    const flip = starIsRtl(this.host.nativeElement) ? -1 : 1;
     const delta = {
-      ArrowLeft: horizontal ? -2 : 0,
-      ArrowRight: horizontal ? 2 : 0,
+      ArrowLeft: horizontal ? -2 * flip : 0,
+      ArrowRight: horizontal ? 2 * flip : 0,
       ArrowUp: horizontal ? 0 : -2,
       ArrowDown: horizontal ? 0 : 2,
     }[event.key];
@@ -113,6 +119,10 @@ export class StarSplitter {
  * Speed dial (PrimeNG `p-speeddial`): floating action button that opens a short list of
  * actions (up, down, left or right). `aria-expanded`, Escape closes, focus moves to the first action.
  * `<star-speed-dial [items]="quickActions" direction="up" ariaLabel="Quick actions" />`
+ *
+ * `left` and `right` are the physical sides of the screen, as in CSS. `start` and `end` follow the
+ * writing direction (`start` is the left side in LTR and the right side in RTL). The arrow keys
+ * move along the visual direction of the list.
  */
 @Component({
   selector: 'star-speed-dial',
@@ -164,7 +174,7 @@ export class StarSpeedDial {
   private readonly injector = inject(Injector);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   readonly items = input<readonly StarMenuItem[]>([]);
-  readonly direction = input<'up' | 'down' | 'left' | 'right'>('up');
+  readonly direction = input<'up' | 'down' | 'left' | 'right' | 'start' | 'end'>('up');
   readonly ariaLabel = input<string | null>(null);
   /** Icon of the main button. With another icon than the default, the button does not turn. */
   readonly icon = input('ph-bold ph-plus');
@@ -198,11 +208,24 @@ export class StarSpeedDial {
    */
   protected onArrow(event: KeyboardEvent): void {
     if (!this.open()) return;
+    // The list runs toward a physical side: resolve start and end first.
+    const rtl = starIsRtl(this.host.nativeElement);
+    const direction = this.direction();
+    const side =
+      direction === 'start'
+        ? rtl
+          ? 'right'
+          : 'left'
+        : direction === 'end'
+          ? rtl
+            ? 'left'
+            : 'right'
+          : direction;
     const forward = { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight' }[
-      this.direction()
+      side
     ];
     const backward = { up: 'ArrowDown', down: 'ArrowUp', left: 'ArrowRight', right: 'ArrowLeft' }[
-      this.direction()
+      side
     ];
     if (
       event.key !== forward &&
@@ -268,7 +291,8 @@ export class StarSpeedDial {
 export class StarDock {
   protected readonly text = inject(STAR_UI_TEXT);
   readonly items = input<readonly StarMenuItem[]>([]);
-  readonly position = input<'bottom' | 'top' | 'left' | 'right'>('bottom');
+  /** `left` and `right` are physical; `start` and `end` follow the writing direction. */
+  readonly position = input<'bottom' | 'top' | 'left' | 'right' | 'start' | 'end'>('bottom');
   readonly ariaLabel = input<string | null>(null);
   readonly itemClick = output<StarMenuItem>();
 }

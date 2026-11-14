@@ -1,4 +1,5 @@
 import { _IdGenerator } from '@angular/cdk/a11y';
+import { Directionality } from '@angular/cdk/bidi';
 import {
   ConnectedPosition,
   createFlexibleConnectedPositionStrategy,
@@ -23,7 +24,10 @@ import {
   ViewContainerRef,
 } from '@angular/core';
 import { Subscription } from 'rxjs';
+import { StarDirectionService } from 'star-ng/core';
 
+// `start` and `end` are turned around by the CDK in right-to-left: the popover aligns with the
+// start edge of its anchor in both directions.
 const POSITIONS: ConnectedPosition[] = [
   { originX: 'start', originY: 'bottom', overlayX: 'start', overlayY: 'top', offsetY: 8 },
   { originX: 'end', originY: 'bottom', overlayX: 'end', overlayY: 'top', offsetY: 8 },
@@ -62,6 +66,7 @@ const POSITIONS: ConnectedPosition[] = [
 export class StarPopover {
   private readonly injector = inject(Injector);
   private readonly viewContainer = inject(ViewContainerRef);
+  private readonly directionality = inject(Directionality);
   readonly panelId = inject(_IdGenerator).getId('star-popover-');
 
   readonly ariaLabel = input<string | null>(null);
@@ -79,6 +84,8 @@ export class StarPopover {
   private outside: Subscription | null = null;
 
   constructor() {
+    // Keeps the CDK direction in step with the page, so a popover opened after a switch is flipped.
+    inject(StarDirectionService);
     inject(DestroyRef).onDestroy(() => this.overlayRef?.dispose());
   }
 
@@ -101,6 +108,7 @@ export class StarPopover {
     this.overlayRef ??= createOverlayRef(this.injector, {
       positionStrategy: strategy,
       scrollStrategy: createRepositionScrollStrategy(this.injector),
+      direction: this.directionality,
       usePopover: true,
     });
     this.overlayRef.updatePositionStrategy(strategy);

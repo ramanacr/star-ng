@@ -19,6 +19,11 @@
     translate: -100% 0;
     animation: star-wave 1.4s ease-in-out infinite;
   }
+  // The wave runs in the reading direction. (`:dir()` cannot follow a pseudo-element.)
+  &:dir(rtl)::after {
+    translate: 100% 0;
+    animation-name: star-wave-rtl;
+  }
 }
 .star-skeleton--circle {
   border-radius: 50%;
@@ -29,5 +34,10 @@
 @keyframes star-wave {
   to {
     translate: 100% 0;
+  }
+}
+@keyframes star-wave-rtl {
+  to {
+    translate: -100% 0;
   }
 }

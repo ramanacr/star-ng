@@ -99,15 +99,15 @@
   }
 }
 .star-galleria__nav--prev {
-  left: 0.75rem;
+  inset-inline-start: 0.75rem;
 }
 .star-galleria__nav--next {
-  right: 0.75rem;
+  inset-inline-end: 0.75rem;
 }
 .star-galleria__count {
   position: absolute;
   top: 0.75rem;
-  right: 0.75rem;
+  inset-inline-end: 0.75rem;
   padding: 0.125rem 0.5rem;
   border-radius: var(--star-radius-pill);
   background: rgb(0 0 0 / 0.55);

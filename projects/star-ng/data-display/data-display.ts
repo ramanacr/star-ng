@@ -13,7 +13,7 @@ import {
   signal,
   TemplateRef,
 } from '@angular/core';
-import { optionText, readOption, STAR_UI_TEXT, StarOptionKey } from 'star-ng/core';
+import { optionText, readOption, STAR_UI_TEXT, starInlineKey, StarOptionKey } from 'star-ng/core';
 import { StarPaginator } from 'star-ng/paginator';
 import { StarTreeNode } from 'star-ng/tree';
 
@@ -150,12 +150,14 @@ export class StarTreeTable {
         ?.querySelector<HTMLElement>(`[data-key="${CSS.escape(target.node.key)}"]`);
       tr?.focus();
     };
-    if (event.key === 'ArrowDown') focus(rows[index + 1]);
-    else if (event.key === 'ArrowUp') focus(rows[index - 1]);
-    else if (event.key === 'ArrowRight' && row.node.children?.length) {
+    // Arrow right opens a branch and Arrow left closes it; the two swap in right-to-left.
+    const key = starInlineKey(event);
+    if (key === 'ArrowDown') focus(rows[index + 1]);
+    else if (key === 'ArrowUp') focus(rows[index - 1]);
+    else if (key === 'ArrowRight' && row.node.children?.length) {
       event.preventDefault();
       this.toggle(row.node.key, true);
-    } else if (event.key === 'ArrowLeft') {
+    } else if (key === 'ArrowLeft') {
       event.preventDefault();
       if (row.node.children?.length && this.isOpen(row.node.key)) this.toggle(row.node.key, false);
       else focus([...rows.slice(0, index)].reverse().find((r) => r.level < row.level));
@@ -428,7 +430,7 @@ export class StarOrderList<T = unknown> {
             [disabled]="!picked('source').length"
             (click)="transfer('source', picked('source'))"
           >
-            <i class="ph-bold ph-caret-right" aria-hidden="true"></i>
+            <i class="ph-bold ph-caret-right star-icon-mirror" aria-hidden="true"></i>
           </button>
           <button
             type="button"
@@ -437,7 +439,7 @@ export class StarOrderList<T = unknown> {
             [disabled]="!source().length"
             (click)="transfer('source', source())"
           >
-            <i class="ph-bold ph-caret-double-right" aria-hidden="true"></i>
+            <i class="ph-bold ph-caret-double-right star-icon-mirror" aria-hidden="true"></i>
           </button>
           <button
             type="button"
@@ -446,7 +448,7 @@ export class StarOrderList<T = unknown> {
             [disabled]="!picked('target').length"
             (click)="transfer('target', picked('target'))"
           >
-            <i class="ph-bold ph-caret-left" aria-hidden="true"></i>
+            <i class="ph-bold ph-caret-left star-icon-mirror" aria-hidden="true"></i>
           </button>
           <button
             type="button"
@@ -455,7 +457,7 @@ export class StarOrderList<T = unknown> {
             [disabled]="!target().length"
             (click)="transfer('target', target())"
           >
-            <i class="ph-bold ph-caret-double-left" aria-hidden="true"></i>
+            <i class="ph-bold ph-caret-double-left star-icon-mirror" aria-hidden="true"></i>
           </button>
         </div>
       }

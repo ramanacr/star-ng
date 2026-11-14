@@ -45,6 +45,12 @@ import { DOCS, DocsRow } from '../shared/docs';
         />
       </docs-example>
 
+      <h2>Right-to-left</h2>
+      <p>
+        The first, previous, next and last arrows turn around in a right-to-left page, so they point
+        the way the pages run. See the Right-to-left guide.
+      </p>
+
       <docs-api [of]="['StarPaginator']" [cssVars]="cssVars" [keyboard]="keyboard" />
     </docs-page>
   `,

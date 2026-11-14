@@ -18,6 +18,7 @@ import {
   TemplateRef,
   viewChildren,
 } from '@angular/core';
+import { starInlineKey } from 'star-ng/core';
 
 /** Lazy tab body: `<ng-template starTabContent>…</ng-template>` renders on first activation only. */
 @Directive({ selector: 'ng-template[starTabContent]' })
@@ -154,7 +155,8 @@ export class StarTabs {
     const enabled = this.tabs().filter((tab) => !tab.disabled());
     const index = enabled.indexOf(current);
     let next: StarTab | undefined;
-    switch (event.key) {
+    // Arrow right means "next tab in reading order": the left arrow in right-to-left.
+    switch (starInlineKey(event)) {
       case 'ArrowRight':
         next = enabled[(index + 1) % enabled.length];
         break;

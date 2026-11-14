@@ -385,6 +385,22 @@ describe('StarTable columns: order, visibility, width, freeze', () => {
     await fixture.whenStable();
     expect(host.widths()).toEqual({ id: 48 });
   });
+
+  it('resizes the other way round in a right-to-left page: the handle is on the left edge', async () => {
+    const { fixture, el, host } = await setup();
+    el.setAttribute('dir', 'rtl');
+    const handle = el.querySelector<HTMLElement>('thead th:nth-child(1) .star-table__resizer')!;
+    host.widths.set({ id: 80 });
+    await fixture.whenStable();
+    // Arrow left moves the edge to the left, which makes the column wider.
+    handle.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft' }));
+    await fixture.whenStable();
+    expect(host.widths()).toEqual({ id: 96 });
+    handle.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight' }));
+    handle.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight' }));
+    await fixture.whenStable();
+    expect(host.widths()).toEqual({ id: 64 });
+  });
 });
 
 @Component({

@@ -34,7 +34,9 @@ import { DOCS, DocsRow } from '../shared/docs';
         note="Icons are Phosphor icon classes. An icon-only button needs an ariaLabel."
       >
         <star-button leadingIcon="ph-bold ph-plus">New order</star-button>
-        <star-button variant="secondary" trailingIcon="ph-bold ph-arrow-right">Next</star-button>
+        <star-button variant="secondary" trailingIcon="ph-bold ph-arrow-right star-icon-mirror"
+          >Next</star-button
+        >
         <star-button variant="ghost" iconOnly leadingIcon="ph-bold ph-gear" ariaLabel="Settings" />
       </docs-example>
 

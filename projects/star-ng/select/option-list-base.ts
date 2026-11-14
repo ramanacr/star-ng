@@ -14,7 +14,14 @@ import {
   TemplateRef,
   viewChild,
 } from '@angular/core';
-import { matchesFilter, optionText, readOption, STAR_UI_TEXT, StarOptionKey } from 'star-ng/core';
+import {
+  matchesFilter,
+  optionText,
+  readOption,
+  STAR_UI_TEXT,
+  StarDirectionService,
+  StarOptionKey,
+} from 'star-ng/core';
 
 /** Context of the custom option template: `<ng-template starOption let-option let-selected="selected">`. */
 export interface StarOptionContext<T> {
@@ -66,6 +73,8 @@ const PANEL_POSITIONS: ConnectedPosition[] = [
  */
 @Directive()
 export abstract class StarOptionListBase<TOption, TValue> {
+  /** Keeps the CDK direction (overlays and menus) in step with `<html dir>`. */
+  private readonly directionSync = inject(StarDirectionService);
   protected readonly text = inject(STAR_UI_TEXT);
   private readonly ids = inject(_IdGenerator);
 

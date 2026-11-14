@@ -16,7 +16,7 @@ import {
   TemplateRef,
   viewChild,
 } from '@angular/core';
-import { STAR_UI_TEXT } from 'star-ng/core';
+import { STAR_UI_TEXT, starInlineKey, starIsRtl } from 'star-ng/core';
 import { StarDialog } from 'star-ng/dialog';
 
 // ---------------------------------------------------------------- Carousel
@@ -80,7 +80,7 @@ export class StarCarouselItem<T = unknown> {
         [disabled]="page() === 0"
         (click)="goTo(page() - 1)"
       >
-        <i class="ph-bold ph-caret-left" aria-hidden="true"></i>
+        <i class="ph-bold ph-caret-left star-icon-mirror" aria-hidden="true"></i>
       </button>
       <button
         type="button"
@@ -89,7 +89,7 @@ export class StarCarouselItem<T = unknown> {
         [disabled]="page() >= pages() - 1"
         (click)="goTo(page() + 1)"
       >
-        <i class="ph-bold ph-caret-right" aria-hidden="true"></i>
+        <i class="ph-bold ph-caret-right star-icon-mirror" aria-hidden="true"></i>
       </button>
     </div>
     <div
@@ -169,17 +169,26 @@ export class StarCarousel<T = unknown> {
     const track = this.track().nativeElement;
     const slide = track.children[target * this.numVisible()] as HTMLElement | undefined;
     const reduce = matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    track.scrollTo?.({
-      left: slide ? slide.offsetLeft - track.offsetLeft : 0,
-      behavior: reduce ? 'auto' : 'smooth',
-    });
+    // Scroll by the distance between the slide and the track at their inline-start edge. In
+    // right-to-left the scroll offset is negative and the first slide is at the right edge, so a
+    // distance (not an absolute `scrollLeft`) works in both directions.
+    const distance = slide ? this.distanceToStart(slide, track) : -track.scrollLeft;
+    track.scrollBy?.({ left: distance, behavior: reduce ? 'auto' : 'smooth' });
+  }
+
+  /** Pixels to scroll so that the inline-start edge of the slide meets the one of the track. */
+  private distanceToStart(slide: HTMLElement, track: HTMLElement): number {
+    const slideBox = slide.getBoundingClientRect();
+    const trackBox = track.getBoundingClientRect();
+    return starIsRtl(track) ? slideBox.right - trackBox.right : slideBox.left - trackBox.left;
   }
 
   /** Keeps dots in sync after a swipe. */
   protected syncPage(): void {
     const track = this.track().nativeElement;
     const slideWidth = (track.children[0] as HTMLElement | undefined)?.offsetWidth ?? 1;
-    this.page.set(Math.round(track.scrollLeft / (slideWidth * this.numVisible())));
+    // `scrollLeft` is zero or negative in right-to-left: its size is the distance from the start.
+    this.page.set(Math.round(Math.abs(track.scrollLeft) / (slideWidth * this.numVisible())));
   }
 }
 
@@ -219,7 +228,7 @@ export interface StarGalleryImage {
           [attr.aria-label]="text.previousImage"
           (click)="step(-1)"
         >
-          <i class="ph-bold ph-caret-left" aria-hidden="true"></i>
+          <i class="ph-bold ph-caret-left star-icon-mirror" aria-hidden="true"></i>
         </button>
         <button
           type="button"
@@ -227,7 +236,7 @@ export interface StarGalleryImage {
           [attr.aria-label]="text.nextImage"
           (click)="step(1)"
         >
-          <i class="ph-bold ph-caret-right" aria-hidden="true"></i>
+          <i class="ph-bold ph-caret-right star-icon-mirror" aria-hidden="true"></i>
         </button>
         <span class="star-galleria__count" aria-live="polite"
           >{{ activeIndex() + 1 }} / {{ images().length }}</span
@@ -265,9 +274,11 @@ export class StarGalleria {
   }
 
   protected onKeydown(event: KeyboardEvent): void {
-    if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+    // Arrow right is the next image in reading order: the left arrow in right-to-left.
+    const key = starInlineKey(event);
+    if (key === 'ArrowLeft' || key === 'ArrowRight') {
       event.preventDefault();
-      this.step(event.key === 'ArrowLeft' ? -1 : 1);
+      this.step(key === 'ArrowLeft' ? -1 : 1);
     }
   }
 }

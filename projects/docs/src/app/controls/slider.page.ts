@@ -56,6 +56,12 @@ import { DOCS, DocsRow } from '../shared/docs';
         </div>
       </docs-example>
 
+      <h2>Right-to-left</h2>
+      <p>
+        A native range input runs from right to left in a right-to-left page: the minimum is on the
+        right and the track fill follows. Arrow left raises the value. See the Right-to-left guide.
+      </p>
+
       <docs-api
         [of]="['StarSlider', 'StarRangeSlider']"
         [cssVars]="cssVars"

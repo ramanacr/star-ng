@@ -26,6 +26,12 @@ import { DOCS, DocsRow } from '../shared/docs';
         <star-rating [value]="2" disabled ariaLabel="Closed rating" />
       </docs-example>
 
+      <h2>Right-to-left</h2>
+      <p>
+        The first star is on the right in a right-to-left page. The arrow keys follow the visual
+        direction: Arrow left selects the next star. See the Right-to-left guide.
+      </p>
+
       <docs-api [of]="['StarRating']" [cssVars]="cssVars" [keyboard]="keyboard" />
     </docs-page>
   `,

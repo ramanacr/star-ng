@@ -35,6 +35,9 @@ import { DOCS, DocsRow } from '../shared/docs';
         />
       </docs-example>
 
+      <h2>Right-to-left</h2>
+      <p>The separator arrow turns around in a right-to-left page. See the Right-to-left guide.</p>
+
       <docs-api [of]="['StarBreadcrumb']" [cssVars]="cssVars" [keyboard]="keyboard" />
     </docs-page>
   `,

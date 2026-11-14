@@ -43,7 +43,7 @@ export interface StarPageEvent {
           [attr.aria-label]="text.firstPage"
           (click)="goTo(0)"
         >
-          <i class="ph-bold ph-caret-double-left" aria-hidden="true"></i>
+          <i class="ph-bold ph-caret-double-left star-icon-mirror" aria-hidden="true"></i>
         </button>
       }
       <button
@@ -53,7 +53,7 @@ export interface StarPageEvent {
         [attr.aria-label]="text.previousPage"
         (click)="goTo(page() - 1)"
       >
-        <i class="ph-bold ph-caret-left" aria-hidden="true"></i>
+        <i class="ph-bold ph-caret-left star-icon-mirror" aria-hidden="true"></i>
       </button>
       @for (link of links(); track link) {
         <button
@@ -74,7 +74,7 @@ export interface StarPageEvent {
         [attr.aria-label]="text.nextPage"
         (click)="goTo(page() + 1)"
       >
-        <i class="ph-bold ph-caret-right" aria-hidden="true"></i>
+        <i class="ph-bold ph-caret-right star-icon-mirror" aria-hidden="true"></i>
       </button>
       @if (showFirstLast()) {
         <button
@@ -84,7 +84,7 @@ export interface StarPageEvent {
           [attr.aria-label]="text.lastPage"
           (click)="goTo(pageCount() - 1)"
         >
-          <i class="ph-bold ph-caret-double-right" aria-hidden="true"></i>
+          <i class="ph-bold ph-caret-double-right star-icon-mirror" aria-hidden="true"></i>
         </button>
       }
     </nav>

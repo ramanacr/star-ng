@@ -47,6 +47,12 @@ interface Member {
         </div>
       </docs-example>
 
+      <h2>Right-to-left</h2>
+      <p>
+        The source list is on the right in a right-to-left page and the transfer arrows turn around,
+        so they point to the list that receives the items. See the Right-to-left guide.
+      </p>
+
       <docs-api [of]="['StarPickList']" [slots]="slots" [cssVars]="cssVars" [keyboard]="keyboard" />
     </docs-page>
   `,

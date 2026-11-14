@@ -65,7 +65,7 @@
   content: '';
   position: absolute;
   top: 100%;
-  left: 50%;
+  inset-inline-start: 50%;
   height: 1.25rem;
   border-inline-start: 1px solid var(--star-org-line);
 }

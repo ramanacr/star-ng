@@ -1621,10 +1621,10 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       },
       {
         "name": "position",
-        "type": "'bottom' | 'top' | 'left' | 'right'",
+        "type": "'bottom' | 'top' | 'left' | 'right' | 'start' | 'end'",
         "default": "'bottom'",
         "required": false,
-        "description": ""
+        "description": "`left` and `right` are physical; `start` and `end` follow the writing direction."
       },
       {
         "name": "ariaLabel",
@@ -1649,11 +1649,11 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-drawer",
     "entry": "star-ng/drawer",
-    "description": "Drawer (PrimeNG `p-drawer`): side sheet on the native `<dialog>` element. Same API as `star-dialog` (`[(visible)]`, `header`, `modal`, `dismissableMask`, `closeOnEscape`, footer slot) plus `position` and a CSS `size`.",
+    "description": "Drawer (PrimeNG `p-drawer`): side sheet on the native `<dialog>` element. Same API as `star-dialog` (`[(visible)]`, `header`, `modal`, `dismissableMask`, `closeOnEscape`, footer slot) plus `position` and a CSS `size`. `left` and `right` are the physical edges of the screen, as in CSS; `start` and `end` follow the writing direction (`end` is the right edge in LTR and the left edge in RTL). Use `start` / `end` for a drawer that must switch sides in right-to-left.",
     "inputs": [
       {
         "name": "position",
-        "type": "'left' | 'right' | 'top' | 'bottom'",
+        "type": "'left' | 'right' | 'start' | 'end' | 'top' | 'bottom'",
         "default": "'right'",
         "required": false,
         "description": ""
@@ -1663,7 +1663,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "string",
         "default": "'28rem'",
         "required": false,
-        "description": "Width (left / right) or height (top / bottom)."
+        "description": "Width (left / right / start / end) or height (top / bottom)."
       }
     ],
     "models": [],
@@ -4674,7 +4674,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       },
       {
         "name": "direction",
-        "type": "'up' | 'down' | 'left' | 'right'",
+        "type": "'up' | 'down' | 'left' | 'right' | 'start' | 'end'",
         "default": "'up'",
         "required": false,
         "description": ""
@@ -4821,7 +4821,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-splitter",
     "entry": "star-ng/utility",
-    "description": "Splitter (PrimeNG `p-splitter`): two panes with a draggable gutter. The gutter is a `role=\"separator\"` with `aria-valuenow`; Arrow keys resize by 2 %, Home / End by the limits.",
+    "description": "Splitter (PrimeNG `p-splitter`): two panes with a draggable gutter. The gutter is a `role=\"separator\"` with `aria-valuenow`; Arrow keys resize by 2 %, Home / End by the limits. In right-to-left the first pane is on the right: Arrow left makes it larger (the gutter moves left), Arrow right makes it smaller, and a drag measures from the right edge.",
     "inputs": [
       {
         "name": "layout",
@@ -5626,10 +5626,10 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "inputs": [
       {
         "name": "position",
-        "type": "'top-right' | 'top-left' | 'top-center' | 'bottom-right' | 'bottom-left' | 'bottom-center'",
+        "type": "| 'top-right' | 'top-left' | 'top-start' | 'top-end' | 'top-center' | 'bottom-right' | 'bottom-left' | 'bottom-start' | 'bottom-end' | 'bottom-center'",
         "default": "'top-right'",
         "required": false,
-        "description": ""
+        "description": "Corner of the screen. `-left` and `-right` are physical; `-start` and `-end` follow the writing direction (the start corner is on the right in right-to-left)."
       },
       {
         "name": "key",
@@ -6158,7 +6158,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "breadcrumb/basic": "<star-breadcrumb [home]=\"home\" [items]=\"trail\" />",
   "breadcrumb/links": "<star-breadcrumb\n  [items]=\"[\n    { label: 'Docs', url: 'https://example.com/docs' },\n    { label: 'Guides', url: 'https://example.com/docs/guides' },\n    { label: 'Install' },\n  ]\"\n/>",
   "button/full": "<div class=\"docs-stack\">\n  <star-button fullWidth>Continue</star-button>\n</div>",
-  "button/icons": "<star-button leadingIcon=\"ph-bold ph-plus\">New order</star-button>\n<star-button variant=\"secondary\" trailingIcon=\"ph-bold ph-arrow-right\">Next</star-button>\n<star-button variant=\"ghost\" iconOnly leadingIcon=\"ph-bold ph-gear\" ariaLabel=\"Settings\" />",
+  "button/icons": "<star-button leadingIcon=\"ph-bold ph-plus\">New order</star-button>\n<star-button variant=\"secondary\" trailingIcon=\"ph-bold ph-arrow-right star-icon-mirror\"\n  >Next</star-button\n>\n<star-button variant=\"ghost\" iconOnly leadingIcon=\"ph-bold ph-gear\" ariaLabel=\"Settings\" />",
   "button/sizes": "<star-button size=\"sm\">Small</star-button>\n<star-button size=\"md\">Medium</star-button>\n<star-button size=\"lg\">Large</star-button>",
   "button/states": "<star-button [loading]=\"saving()\" (pressed)=\"save()\">Save changes</star-button>\n<star-button variant=\"secondary\" disabled>Disabled</star-button>\n<p class=\"docs-output\" role=\"status\">Saved {{ saves() }} times</p>",
   "button/variants": "<star-button variant=\"primary\">Save</star-button>\n<star-button variant=\"secondary\">Cancel</star-button>\n<star-button variant=\"ghost\">Skip</star-button>\n<star-button variant=\"success\">Approve</star-button>\n<star-button variant=\"warning\">Hold</star-button>\n<star-button variant=\"danger\">Delete</star-button>\n<star-button variant=\"ghost-danger\">Remove</star-button>",
@@ -6228,7 +6228,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "dock/basic": "<div class=\"docs-stack\">\n  <star-dock [items]=\"apps\" ariaLabel=\"Apps\" (itemClick)=\"last.set($event.label ?? '')\" />\n  <p class=\"docs-output\" role=\"status\">Opened: {{ last() }}</p>\n</div>",
   "dock/left": "<star-dock [items]=\"apps\" position=\"left\" ariaLabel=\"Apps on the left\" />",
   "drawer/basic": "<star-button leadingIcon=\"ph-bold ph-sidebar-simple\" (pressed)=\"basicOpen.set(true)\">\n  Open details\n</star-button>\n<star-drawer [(visible)]=\"basicOpen\" header=\"Order ORD-1042\" dismissableMask>\n  <div class=\"docs-stack\">\n    <p class=\"docs-output\">Orchard Supply, 12 items, ships on Friday.</p>\n    <star-field label=\"Internal note\">\n      <textarea starInput autoResize rows=\"3\"></textarea>\n    </star-field>\n  </div>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button variant=\"ghost\" (pressed)=\"basicOpen.set(false)\">Close</star-button>\n  </div>\n</star-drawer>",
-  "drawer/position": "<div class=\"docs-row\">\n  @for (item of positions; track item) {\n    <star-button variant=\"secondary\" (pressed)=\"openAt(item)\">{{ item }}</star-button>\n  }\n</div>\n<star-drawer\n  [(visible)]=\"positionOpen\"\n  [position]=\"position()\"\n  [drawerSize]=\"position() === 'left' || position() === 'right' ? '22rem' : '14rem'\"\n  [header]=\"'Drawer at the ' + position()\"\n>\n  <p>This drawer is pinned to the {{ position() }} edge.</p>\n</star-drawer>",
+  "drawer/position": "<div class=\"docs-row\">\n  @for (item of positions; track item) {\n    <star-button variant=\"secondary\" (pressed)=\"openAt(item)\">{{ item }}</star-button>\n  }\n</div>\n<star-drawer\n  [(visible)]=\"positionOpen\"\n  [position]=\"position()\"\n  [drawerSize]=\"position() === 'top' || position() === 'bottom' ? '14rem' : '22rem'\"\n  [header]=\"'Drawer at the ' + position()\"\n>\n  <p>This drawer is pinned to the {{ position() }} edge.</p>\n</star-drawer>",
   "editor/basic": "<div class=\"docs-stack\">\n  <star-editor\n    [(value)]=\"note\"\n    ariaLabel=\"Delivery note\"\n    placeholder=\"Write the delivery note\"\n  />\n  <pre class=\"docs-output\" aria-label=\"Value of the editor\">{{ note() }}</pre>\n</div>",
   "editor/sanitize": "<div class=\"docs-stack\">\n  <star-editor [(value)]=\"unsafe\" ariaLabel=\"Sanitized content\" />\n  <pre class=\"docs-output\" aria-label=\"Value after sanitizing\">{{ unsafe() }}</pre>\n</div>",
   "editor/size": "<div class=\"docs-stack\">\n  <star-editor\n    [(value)]=\"comment\"\n    ariaLabel=\"Order comment\"\n    placeholder=\"Add a comment\"\n    minHeight=\"4rem\"\n  />\n</div>",
@@ -6335,6 +6335,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "rating/count": "<star-rating [(value)]=\"detail\" [count]=\"10\" ariaLabel=\"Detailed rating\" />",
   "rating/states": "<star-rating [value]=\"4\" readonly ariaLabel=\"Average rating\" />\n<star-rating [value]=\"2\" disabled ariaLabel=\"Closed rating\" />",
   "ripple/basic": "<button type=\"button\" class=\"star-btn star-btn--secondary star-btn--md\" starRipple>\n  Save\n</button>\n<button type=\"button\" class=\"star-btn star-btn--primary star-btn--md\" starRipple>\n  Submit order\n</button>",
+  "rtl/island": "<div class=\"docs-stack\" dir=\"rtl\">\n  <star-breadcrumb [items]=\"trail\" ariaLabel=\"Island trail\" />\n  <star-tabs [(value)]=\"tab\" ariaLabel=\"Island tabs\">\n    <star-tab value=\"one\" label=\"One\">First panel</star-tab>\n    <star-tab value=\"two\" label=\"Two\">Second panel</star-tab>\n    <star-tab value=\"three\" label=\"Three\">Third panel</star-tab>\n  </star-tabs>\n  <star-select-button\n    [options]=\"['Day', 'Week', 'Month']\"\n    [(value)]=\"period\"\n    ariaLabel=\"Island period\"\n  />\n  <star-paginator [totalRecords]=\"60\" [rows]=\"10\" />\n</div>",
   "scroll-panel/basic": "<star-scroll-panel class=\"docs-panel\" height=\"8rem\" ariaLabel=\"Order notes\">\n  <p class=\"docs-output\">\n    The order was placed on 2 November. The customer asked for delivery to the second\n    address. The warehouse packed the order on 3 November. The carrier picked it up on 4\n    November. The customer asked for a delivery window in the afternoon. The carrier\n    confirmed the window. The order stays open until the customer confirms receipt. All data\n    in this text is fictional.\n  </p>\n</star-scroll-panel>",
   "scroll-panel/max": "<star-scroll-panel class=\"docs-panel\" maxHeight=\"5rem\" ariaLabel=\"Short notes\">\n  <p class=\"docs-output\">Two short lines of text.<br />The panel does not scroll.</p>\n</star-scroll-panel>",
   "scroll-top/target": "<div class=\"docs-scroll-box\">\n  <div #scroller class=\"docs-scroll-box__list\" tabindex=\"0\" aria-label=\"Order list\">\n    @for (row of rows; track row) {\n      <p class=\"docs-output\">Order {{ row }}</p>\n    }\n  </div>\n  <star-scroll-top [target]=\"scroller\" [threshold]=\"100\" />\n</div>",
@@ -6359,6 +6360,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "speed-dial/basic": "<div class=\"docs-row docs-dial-area\">\n  <star-speed-dial\n    [items]=\"actions\"\n    direction=\"right\"\n    ariaLabel=\"Quick actions\"\n    (itemClick)=\"last.set($event.label ?? '')\"\n  />\n  <p class=\"docs-output\" role=\"status\">Last action: {{ last() }}</p>\n</div>",
   "speed-dial/choice": "<div class=\"docs-row docs-dial-area\">\n  <star-speed-dial\n    size=\"sm\"\n    direction=\"down\"\n    icon=\"ph-bold ph-sort-ascending\"\n    [items]=\"sortItems\"\n    [activeIndex]=\"sortIndex()\"\n    ariaLabel=\"Sort\"\n  />\n  <p class=\"docs-output\" role=\"status\">Sorted by: {{ sortItems[sortIndex()].label }}</p>\n</div>",
   "speed-dial/directions": "<div class=\"docs-row docs-dial-area docs-dial-area--wide\">\n  <star-speed-dial [items]=\"actions\" direction=\"up\" ariaLabel=\"Actions up\" />\n  <star-speed-dial [items]=\"actions\" direction=\"down\" ariaLabel=\"Actions down\" />\n  <star-speed-dial [items]=\"actions\" direction=\"left\" ariaLabel=\"Actions left\" />\n  <star-speed-dial [items]=\"actions\" direction=\"right\" ariaLabel=\"Actions right\" />\n</div>",
+  "speed-dial/logical": "<div class=\"docs-row docs-dial-area docs-dial-area--center\">\n  <star-speed-dial [items]=\"actions\" direction=\"start\" ariaLabel=\"Actions at the start\" />\n  <star-speed-dial [items]=\"actions\" direction=\"end\" ariaLabel=\"Actions at the end\" />\n</div>",
   "spinner/label": "<star-spinner ariaLabel=\"Loading orders\" />",
   "spinner/sizes": "<star-spinner size=\"1.25rem\" [strokeWidth]=\"6\" />\n<star-spinner />\n<star-spinner size=\"4rem\" [strokeWidth]=\"3\" />",
   "split-button/basic": "<div class=\"docs-stack\">\n  <star-split-button\n    label=\"Place order\"\n    icon=\"ph-bold ph-paper-plane-tilt\"\n    [items]=\"orderOptions\"\n    (pressed)=\"last.set('Place order')\"\n    (itemClick)=\"last.set($event.label ?? '')\"\n  />\n  <p class=\"docs-output\" role=\"status\">Last action: {{ last() }}</p>\n</div>",
@@ -6416,6 +6418,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "timeline/basic": "<star-timeline [events]=\"events\" ariaLabel=\"Order history\" />",
   "timeline/content": "<star-timeline [events]=\"events\" ariaLabel=\"Order history, custom\">\n  <ng-template starTimelineContent let-event let-i=\"index\">\n    <strong>{{ i + 1 }}. {{ event.title }}</strong>\n  </ng-template>\n</star-timeline>",
   "timeline/horizontal": "<star-timeline\n  [events]=\"events\"\n  layout=\"horizontal\"\n  ariaLabel=\"Order history, horizontal\"\n/>",
+  "toast/corners": "<star-button size=\"sm\" variant=\"secondary\" (pressed)=\"corner('start')\">\n  Message at the start\n</star-button>\n<star-button size=\"sm\" variant=\"secondary\" (pressed)=\"corner('end')\">\n  Message at the end\n</star-button>\n<star-toast position=\"bottom-start\" key=\"start\" />\n<star-toast position=\"bottom-end\" key=\"end\" />",
   "toast/duplicates": "<star-button size=\"sm\" variant=\"secondary\" (pressed)=\"twice()\">Save twice</star-button>",
   "toast/severities": "<star-button size=\"sm\" variant=\"success\" (pressed)=\"notify('success')\">Success</star-button>\n<star-button size=\"sm\" variant=\"secondary\" (pressed)=\"notify('info')\">Info</star-button>\n<star-button size=\"sm\" variant=\"warning\" (pressed)=\"notify('warn')\">Warn</star-button>\n<star-button size=\"sm\" variant=\"danger\" (pressed)=\"notify('error')\">Error</star-button>",
   "toast/sticky": "<star-button size=\"sm\" variant=\"secondary\" (pressed)=\"sticky()\">Sticky message</star-button>\n<star-button size=\"sm\" variant=\"secondary\" (pressed)=\"quick()\"\n  >Two second message</star-button\n>\n<star-button size=\"sm\" variant=\"ghost\" (pressed)=\"toasts.clear()\">Clear all</star-button>",
@@ -6426,7 +6429,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "toolbar/center": "<div class=\"docs-stack\">\n  <star-toolbar ariaLabel=\"Page controls\">\n    <ng-container starToolbarStart>\n      <star-button size=\"sm\" variant=\"secondary\">Back</star-button>\n    </ng-container>\n    <ng-container starToolbarCenter>\n      <star-button size=\"sm\" variant=\"ghost\">Day</star-button>\n      <star-divider layout=\"vertical\" />\n      <star-button size=\"sm\" variant=\"ghost\">Week</star-button>\n    </ng-container>\n    <ng-container starToolbarEnd>\n      <star-button size=\"sm\">Save</star-button>\n    </ng-container>\n  </star-toolbar>\n</div>",
   "tooltip/delay": "<star-button variant=\"secondary\" starTooltip=\"Appears at once\" [starTooltipShowDelay]=\"0\">\n  No delay\n</star-button>\n<star-button\n  variant=\"secondary\"\n  starTooltip=\"Appears after one second\"\n  [starTooltipShowDelay]=\"1000\"\n>\n  Slow\n</star-button>\n<star-button variant=\"secondary\" starTooltip=\"Never shown\" starTooltipDisabled>\n  Disabled tooltip\n</star-button>",
   "tooltip/icon": "<button\n  type=\"button\"\n  class=\"star-btn star-btn--secondary star-btn--icon\"\n  aria-label=\"Export orders\"\n  starTooltip=\"Export orders to CSV\"\n>\n  <i class=\"ph-bold ph-export\" aria-hidden=\"true\"></i>\n</button>",
-  "tooltip/positions": "<star-button variant=\"secondary\" starTooltip=\"Shown on hover and focus\">Top</star-button>\n<star-button\n  variant=\"secondary\"\n  starTooltip=\"Below the button\"\n  starTooltipPosition=\"bottom\"\n>\n  Bottom\n</star-button>\n<star-button variant=\"secondary\" starTooltip=\"On the left\" starTooltipPosition=\"left\">\n  Left\n</star-button>\n<star-button variant=\"secondary\" starTooltip=\"On the right\" starTooltipPosition=\"right\">\n  Right\n</star-button>",
+  "tooltip/positions": "<star-button variant=\"secondary\" starTooltip=\"Shown on hover and focus\">Top</star-button>\n<star-button\n  variant=\"secondary\"\n  starTooltip=\"Below the button\"\n  starTooltipPosition=\"bottom\"\n>\n  Bottom\n</star-button>\n<star-button variant=\"secondary\" starTooltip=\"On the left\" starTooltipPosition=\"left\">\n  Left\n</star-button>\n<star-button variant=\"secondary\" starTooltip=\"On the right\" starTooltipPosition=\"right\">\n  Right\n</star-button>\n<star-button variant=\"secondary\" starTooltip=\"At the start\" starTooltipPosition=\"start\">\n  Start\n</star-button>\n<star-button variant=\"secondary\" starTooltip=\"At the end\" starTooltipPosition=\"end\">\n  End\n</star-button>",
   "tree-select/checkbox": "<div class=\"docs-stack\">\n  <star-tree-select\n    [nodes]=\"departments\"\n    selectionMode=\"checkbox\"\n    [(value)]=\"teams\"\n    filter\n    placeholder=\"Select teams\"\n    ariaLabel=\"Teams\"\n  />\n  <p class=\"docs-output\" role=\"status\">Teams: {{ teams().join(', ') || 'none' }}</p>\n</div>",
   "tree-select/form": "<div class=\"docs-stack\">\n  <star-field label=\"Department\" [state]=\"hire.department()\">\n    <star-tree-select\n      [formField]=\"hire.department\"\n      [nodes]=\"departments\"\n      placeholder=\"Select a department\"\n      ariaLabel=\"Hire department\"\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ hire().valid() }}</p>\n</div>",
   "tree-select/multiple": "<div class=\"docs-stack\">\n  <star-tree-select\n    [nodes]=\"departments\"\n    selectionMode=\"multiple\"\n    [(value)]=\"nodes\"\n    placeholder=\"Select nodes\"\n    ariaLabel=\"Nodes\"\n  />\n  <p class=\"docs-output\" role=\"status\">Nodes: {{ nodes().join(', ') || 'none' }}</p>\n  <star-tree-select\n    [nodes]=\"departments\"\n    disabled\n    placeholder=\"Disabled\"\n    ariaLabel=\"Disabled department\"\n  />\n</div>",

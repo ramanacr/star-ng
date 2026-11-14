@@ -136,6 +136,12 @@ interface Department {
         </div>
       </docs-example>
 
+      <h2>Right-to-left</h2>
+      <p>
+        The panel is aligned with the start edge of the field: the right edge in a right-to-left
+        page. See the Right-to-left guide.
+      </p>
+
       <docs-api
         [of]="['StarMultiSelect', 'StarOptionListBase']"
         [slots]="slots"

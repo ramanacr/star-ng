@@ -13,7 +13,7 @@
   border: 1px solid var(--star-border);
   border-radius: var(--star-input-radius);
   background: var(--star-surface-muted);
-  padding-right: 0.75rem;
+  padding-inline-end: 0.75rem;
   transition:
     border-color 0.15s ease,
     box-shadow 0.15s ease,
@@ -36,7 +36,8 @@
 .star-select__trigger {
   flex: 1;
   min-width: 0;
-  padding: 0.625rem 0.25rem 0.625rem 0.875rem;
+  padding-block: 0.625rem;
+  padding-inline: 0.875rem 0.25rem;
   font-size: 0.9rem;
   font-weight: var(--star-input-font-weight);
   color: var(--star-text-strong);
@@ -61,7 +62,7 @@
 }
 .star-select--sm .star-select__trigger {
   padding-block: 0.5rem;
-  padding-left: 0.75rem;
+  padding-inline-start: 0.75rem;
   font-size: 0.8125rem;
 }
 .star-select__placeholder {

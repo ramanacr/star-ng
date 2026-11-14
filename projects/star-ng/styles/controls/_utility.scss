@@ -99,7 +99,8 @@
     height: 2.25rem;
     font-size: 1rem;
   }
-  .star-speed-dial__list {
+  &.star-speed-dial--up .star-speed-dial__list,
+  &.star-speed-dial--down .star-speed-dial__list {
     inset-inline-start: 0;
   }
 }
@@ -126,14 +127,37 @@
     inset-inline-start: 0.375rem;
     flex-direction: column;
   }
-  .star-speed-dial--left & {
+  // `start` and `end` follow the writing direction (the list is on the inline-start or
+  // inline-end side of the button). The first action is always the one next to the button:
+  // that is the last item of a row that runs away from it, so the order is reversed on the
+  // start side.
+  .star-speed-dial--start & {
     inset-inline-end: calc(100% + 0.5rem);
     top: 0.375rem;
     flex-direction: row-reverse;
   }
-  .star-speed-dial--right & {
+  .star-speed-dial--end & {
     inset-inline-start: calc(100% + 0.5rem);
     top: 0.375rem;
+  }
+  // `left` and `right` are the physical sides of the screen, as in CSS. In right-to-left a
+  // row runs from the right, so the order is the other way round.
+  .star-speed-dial--left & {
+    right: calc(100% + 0.5rem);
+    top: 0.375rem;
+    flex-direction: row-reverse;
+
+    &:dir(rtl) {
+      flex-direction: row;
+    }
+  }
+  .star-speed-dial--right & {
+    left: calc(100% + 0.5rem);
+    top: 0.375rem;
+
+    &:dir(rtl) {
+      flex-direction: row-reverse;
+    }
   }
   li {
     opacity: 0;
@@ -187,7 +211,9 @@
   list-style: none;
 }
 .star-dock--left .star-dock__list,
-.star-dock--right .star-dock__list {
+.star-dock--right .star-dock__list,
+.star-dock--start .star-dock__list,
+.star-dock--end .star-dock__list {
   flex-direction: column;
 }
 .star-dock__item {
@@ -221,7 +247,7 @@
 // Scroll top
 .star-scroll-top {
   position: fixed;
-  right: 1.5rem;
+  inset-inline-end: 1.5rem;
   bottom: 1.5rem;
   z-index: 10;
   opacity: 0;
@@ -293,7 +319,8 @@
   height: 100%;
 
   &:first-child {
-    border-radius: var(--star-radius-pill) 0 0 var(--star-radius-pill);
+    border-start-start-radius: var(--star-radius-pill);
+    border-end-start-radius: var(--star-radius-pill);
   }
 }
 .star-meter-group__legend {
@@ -507,8 +534,12 @@
   }
 }
 
-// Image compare
+// Image compare. The left image is always on the left, whatever the page direction: the divider
+// position is a percent of the width from the left edge, and the native range input then agrees with
+// the picture (a range input runs from right to left in right-to-left). Like a clock or a plot, the
+// control keeps its own direction.
 .star-compare {
+  direction: ltr;
   --star-compare: 50%;
   position: relative;
   display: block;

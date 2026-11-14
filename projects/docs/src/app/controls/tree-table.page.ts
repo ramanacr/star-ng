@@ -46,6 +46,13 @@ type Row = Record<string, unknown>;
         />
       </docs-example>
 
+      <h2>Right-to-left</h2>
+      <p>
+        In a right-to-left page Arrow left opens a closed branch and Arrow right closes an open one
+        or moves to the parent row. Indentation grows from the right and the expander arrow turns
+        around. See the Right-to-left guide.
+      </p>
+
       <docs-api
         [of]="['StarTreeTable']"
         [slots]="slots"

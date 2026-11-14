@@ -59,3 +59,12 @@ i[class*=' ph-'] {
   font-size: 1.25em;
   line-height: 1;
 }
+
+// Direction. An icon that points along the reading direction (next, previous, a submenu
+// arrow, a breadcrumb separator) takes this class and turns around in right-to-left. An icon
+// with a fixed meaning (check mark, clock, play, search) does not. `:dir()` is used instead of
+// `[dir='rtl']` because it also follows `dir="auto"`, a nested `dir="ltr"` island and the CSS
+// `direction` property. `scale` is separate from `rotate` and `translate`, so it does not clash.
+.star-icon-mirror:dir(rtl) {
+  scale: -1 1;
+}
