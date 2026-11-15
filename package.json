@@ -60,6 +60,7 @@
     "eslint-config-prettier": "^10.1.8",
     "jsdom": "^30.0.0",
     "ng-packagr": "^22.2.0",
+    "pdfjs-dist": "6.4.299",
     "prettier": "^3.8.1",
     "prettier-plugin-organize-imports": "^4.3.0",
     "sass": "^1.108.2",

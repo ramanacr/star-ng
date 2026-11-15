@@ -38,7 +38,7 @@ import { StarPaginator } from 'star-ng/paginator';
 import { StarPopover } from 'star-ng/popover';
 import { StarMultiSelect } from 'star-ng/select';
 import { StarSkeleton } from 'star-ng/skeleton';
-import { buildPrintDocument, buildXlsx, StarExportCell } from './table-export';
+import { buildPrintDocument, buildXlsx, fitPrintDocument, StarExportCell } from './table-export';
 import {
   anchorOf,
   anchorShift,
@@ -2113,7 +2113,9 @@ export class StarTable<T> {
 
   /**
    * Opens the browser print dialog with a plain table of the same columns and rows. The user
-   * can print it or choose "Save as PDF".
+   * can print it or choose "Save as PDF". The table always fits the paper the user chooses: a
+   * table that is too wide wraps its text, then gets smaller text (down to 6 pt), and last breaks
+   * long words inside a cell. No column is cut off.
    */
   print(options: StarExportOptions<T> = {}): void {
     const { columns, rows } = this.exportData(options);
@@ -2128,6 +2130,9 @@ export class StarTable<T> {
     frame.addEventListener('load', () => {
       const view = frame.contentWindow;
       if (!view) return;
+      // The paper is not known yet. The table gets the rules that wrap it, shrink its text or
+      // break its words when the paper is too narrow, so that no column is cut off.
+      fitPrintDocument(view.document);
       view.addEventListener('afterprint', () => frame.remove());
       view.focus();
       view.print();
