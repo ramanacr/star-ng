@@ -17,8 +17,14 @@ npm package: `star-ng`. Selector prefix: `star-`. CSS token prefix: `--star-`.
   direction at run time.
 - No Angular Material and no other UI kit.
 
-> Status: the controls are being ported in groups. The docs application lists the controls
-> that are available now. The package is not on npm yet.
+> Status: the control set is complete: about 90 controls in 53 entry points, each with a docs
+> page, an API table, unit tests and end-to-end tests. The package is not on npm yet.
+
+Control groups: buttons; forms (field, input, checkbox, radio, switch, number, password, mask,
+one-time code, tags, slider, rating, knob, color picker, select button); selection (select,
+multi-select, cascade select, listbox, autocomplete, tree, tree select); date and time; table;
+menus; overlays (dialog, confirm, drawer, popover, tooltip, toast); panels and navigation; data
+display; charts; media (file upload, editor, carousel, galleria, image); utilities.
 
 ## Requirements
 
@@ -144,7 +150,7 @@ corepack pnpm start        # docs application on http://localhost:4200
 | `corepack pnpm e2e:a11y` | Only the axe accessibility scan of every docs page and its states.   |
 | `corepack pnpm docs:gen` | Writes the API and example data of the docs after a change.          |
 
-Conventions: Conventional Commits, one feature per pull request, signed commits.
+Conventions: Conventional Commits, one feature per pull request, merge after green CI.
 
 ## Visual regression tests
 
