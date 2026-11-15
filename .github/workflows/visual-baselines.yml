@@ -3,7 +3,9 @@
 # artifact into the repository root and commit it:
 #   gh run download <run id> -n visual-baselines
 # The workflow only reads the repository and uploads an artifact: it cannot push.
-# Third-party actions are pinned to the same full commit SHAs as ci.yml.
+# The baselines come from the production build of the docs served as static files, the same
+# build and the same server as the `visual` job of ci.yml (E2E_STATIC_DIR, see
+# playwright.server.ts). Third-party actions are pinned to the same full commit SHAs as ci.yml.
 name: Visual baselines
 
 on:
@@ -57,11 +59,18 @@ jobs:
         if: steps.pw-cache.outputs.cache-hit != 'true'
         run: pnpm exec playwright install chromium
 
+      # The production build, as users get it. The `visual` job of ci.yml compares against
+      # images that were made from this same kind of build.
+      - name: Build docs (production)
+        run: pnpm build:docs
+
       # Start from an empty folder: a page that was removed must not leave an old image behind.
       - name: Remove old baselines
         run: rm -rf e2e/visual/__screenshots__
 
       - name: Write baselines
+        env:
+          E2E_STATIC_DIR: dist/docs/browser
         run: pnpm e2e:visual:update
 
       # The artifact root is a folder that holds the repository paths, so that the files land

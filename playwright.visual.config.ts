@@ -1,4 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
+import { docsWebServer } from './playwright.server';
 
 const PORT = Number(process.env['E2E_PORT'] ?? 4200);
 const BASE_URL = process.env['E2E_BASE_URL'] ?? `http://localhost:${PORT}`;
@@ -55,12 +56,5 @@ export default defineConfig({
       },
     },
   ],
-  webServer: process.env['E2E_BASE_URL']
-    ? undefined
-    : {
-        command: `node node_modules/@angular/cli/bin/ng.js serve docs --port ${PORT}`,
-        url: BASE_URL,
-        reuseExistingServer: !process.env['CI'],
-        timeout: 180_000,
-      },
+  webServer: docsWebServer(PORT, BASE_URL),
 });

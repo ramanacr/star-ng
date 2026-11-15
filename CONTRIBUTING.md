@@ -11,18 +11,18 @@ This file explains how to work on the StarNG repository: set up, run the checks,
 
 ## Repository layout
 
-| Path                             | Content                                                                               |
-| -------------------------------- | ------------------------------------------------------------------------------------- |
-| `projects/star-ng`               | The library. One folder per entry point.                                              |
-| `projects/star-ng/styles`        | The SCSS: tokens, base rules, and one partial per control group in `controls/`.       |
-| `projects/star-ng/specs`         | Unit tests that cover more than one entry point.                                      |
-| `projects/star-ng/src`           | `public-api.ts`, the root entry point of `@star-ng/ui`.                               |
-| `projects/docs`                  | The docs application.                                                                 |
-| `projects/docs/src/app/guides`   | The guides.                                                                           |
-| `projects/docs/src/app/controls` | One docs page per control group.                                                      |
-| `e2e`                            | Playwright tests. `e2e/visual` has the visual tests. `e2e/pages` has the Pages tests. |
-| `tools`                          | Build tools: compiled CSS, docs data generator, name check, package check, release.   |
-| `.github/workflows`              | CI, Pages, release and visual baselines.                                              |
+| Path                             | Content                                                                                                                              |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `projects/star-ng`               | The library. One folder per entry point.                                                                                             |
+| `projects/star-ng/styles`        | The SCSS: tokens, base rules, and one partial per control group in `controls/`.                                                      |
+| `projects/star-ng/specs`         | Unit tests that cover more than one entry point.                                                                                     |
+| `projects/star-ng/src`           | `public-api.ts`, the root entry point of `@star-ng/ui`.                                                                              |
+| `projects/docs`                  | The docs application.                                                                                                                |
+| `projects/docs/src/app/guides`   | The guides.                                                                                                                          |
+| `projects/docs/src/app/controls` | One docs page per control group.                                                                                                     |
+| `e2e`                            | Playwright tests. `e2e/visual` has the visual tests. `e2e/pages` has the Pages tests.                                                |
+| `tools`                          | Build tools: compiled CSS, docs data generator, name check, package check, release. CI tools: change detection, gate, static server. |
+| `.github/workflows`              | CI, Pages, release and visual baselines.                                                                                             |
 
 ## Development commands
 
@@ -40,6 +40,7 @@ This file explains how to work on the StarNG repository: set up, run the checks,
 | `corepack pnpm build:docs`        | Builds only the docs application.                                                        |
 | `corepack pnpm docs:gen`          | Writes the API and example data of the docs.                                             |
 | `corepack pnpm docs:check`        | Fails when the generated docs data is out of date.                                       |
+| `corepack pnpm test:tools`        | Tests of the CI tools (change detection and gate). No browser.                           |
 | `corepack pnpm e2e`               | Playwright tests, without the visual tests and the Pages tests.                          |
 | `corepack pnpm e2e:a11y`          | Only the axe accessibility scan.                                                         |
 | `corepack pnpm e2e:ui`            | Playwright in its interactive UI mode.                                                   |
@@ -99,7 +100,7 @@ Examples in the docs, tests and comments use neutral, fictional data: orders, in
 
 To update baselines (new page, or a change that you want):
 
-1. Run the workflow "Visual baselines" (Actions tab, input: your branch). The `visual` job of a normal CI run also uploads the baselines that are still missing.
+1. Run the workflow "Visual baselines" (Actions tab, input: your branch). The `visual` job of a normal CI run also uploads the baselines that are still missing. Both use the production build of the docs, served as static files.
 2. In the repository root, run `gh run download <run id> -n visual-baselines`. The files go to `e2e/visual/__screenshots__`.
 3. Review the images, then commit them.
 
@@ -117,12 +118,45 @@ One-time repository setting: Settings, Pages, Source: **GitHub Actions**. Withou
 - **`localStorage` is shared on the `github.io` origin.** Every project site of an owner uses the origin `ramanacr.github.io`. The docs use the keys `star-theme` and `star-direction`. Another site on that origin that uses one of these names sees the same value.
 - **Local preview.** Run `corepack pnpm pages:preview` and open <http://localhost:4300/star-ng/>. The server `tools/pages-serve.mjs` mimics GitHub Pages: files only under `/star-ng/`, and `404.html` with status 404 for any other path below it. `corepack pnpm e2e:pages` runs `e2e/pages` against it.
 
+## Continuous integration
+
+The workflow `.github/workflows/ci.yml` runs only the jobs that a change can affect. The job `ci-gate` is the one required check. It always runs.
+
+1. The job `changes` lists the files of the pull request (`base...head`). The script `tools/ci-changes.mjs` reads that list and decides which jobs are needed. The rules are in the `RULES` table of the script. The summary of the run shows what runs and why.
+2. The job `docs-build` builds the docs application once, in the production configuration. The jobs `e2e`, `a11y` and `visual` download that build and serve it as static files (`tools/pages-serve.mjs --spa`). No job starts `ng serve`.
+3. The job `ci-gate` (`tools/ci-gate.mjs`) passes when every needed job succeeded. A skipped job is a pass only when `changes` said that the job was not needed. A needed job that was skipped, cancelled or failed fails the gate. A failed `changes` job fails the gate too.
+
+| What changed                                                                                                                                                                     | Jobs that run                             |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
+| Push to `main`, any event that is not a pull request, label `ci:full`, `ci.yml`, an empty or unknown change list                                                                 | Everything                                |
+| Only Markdown outside the repository root, `.gitignore`, `.editorconfig`, `.prettierignore`, `.prettierrc`, `.gitattributes`, `.github/` files that are not `ci.yml`, `.vscode/` | `light` (format check, name check)        |
+| Root `*.md`, `LICENSE` (the package contains `README.md` and `LICENSE`, and `check:package` checks the README links)                                                             | `build-test`                              |
+| Unit tests (`*.spec.ts` in `projects/`), build tools that the docs build does not use, `eslint.config.js`, Pages tests                                                           | `build-test`                              |
+| End-to-end tests and their config (`e2e/`, `playwright.config.ts`)                                                                                                               | `build-test`, `docs-build`, `e2e`, `a11y` |
+| Visual tests and baselines (`e2e/visual/`, `playwright.visual.config.ts`)                                                                                                        | `build-test`, `docs-build`, `visual`      |
+| Library or docs source, styles, `package.json`, the lockfile, `angular.json`, `tsconfig*.json`, `.nvmrc`, the static server                                                      | Everything                                |
+
+A path that no rule knows needs everything, so a new kind of file never skips a job by accident. A renamed file counts with its old and its new path.
+
+**Force a full run.** Add the label `ci:full` to the pull request. CI starts again with every job needed. Use it when you doubt the change detection. Removing the label starts CI again as well.
+
+**Change the rules.** Edit `RULES` in `tools/ci-changes.mjs` and add a row to the table in `tools/ci-changes.test.mjs`. Run `corepack pnpm test:tools`. A change to the CI tools or to `ci.yml` runs everything.
+
+**Run the browser tests like CI.** Build the docs, then point Playwright at the folder:
+
+```sh
+corepack pnpm build:docs
+E2E_STATIC_DIR=dist/docs/browser corepack pnpm e2e
+```
+
+Without `E2E_STATIC_DIR`, Playwright starts `ng serve docs` (development build, fast rebuilds). `E2E_BASE_URL` runs the tests against a deployed site. The tests must pass against both servers. A test that needs a development build (for example `window.ng`) has the tag `@dev` in its title and calls `needsDevBuild()` from `e2e/support.ts`. The static run skips it. The CI job `e2e-dev` runs the `@dev` tests against `ng serve`. Do not use the tag for a test that only needs a fix.
+
 ## Commits and pull requests
 
 1. Make a branch from `main`.
 2. Use [Conventional Commits](https://www.conventionalcommits.org/) for commit messages, for example `feat: add the tabs control` or `fix(table): keep the focus after a sort`.
 3. Keep one feature or fix in one pull request.
-4. Run the checks of the section "Development commands" that your change touches. CI runs format, lint, unit tests, the library build, the package check, the docs build, the end-to-end tests and the visual tests.
+4. Run the checks of the section "Development commands" that your change touches. CI runs the jobs that your change can affect (see "Continuous integration"): format, lint, unit tests, the library build, the package check, the docs build, the end-to-end tests, the accessibility scan and the visual tests.
 5. Open the pull request. It merges after green CI.
 
 Commits in this repository are not signed.

@@ -1,8 +1,9 @@
 // Static server that mimics GitHub Pages for a project site: `node tools/pages-serve.mjs`.
 //
 //   --dir  <folder>  built site (default `dist/docs/browser`)
-//   --base </path/>  sub-path of the site (default `/star-ng/`)
+//   --base </path/>  sub-path of the site (default `/star-ng/`, and `/` with --spa)
 //   --port <number>  default 4300, or the PORT environment variable
+//   --spa            single-page-application mode for the test jobs: see below
 //
 // Like GitHub Pages:
 // - files are served only under the base path; `/star-ng` redirects to `/star-ng/`;
@@ -10,6 +11,14 @@
 // - any other path answers with the content of `404.html` and the status 404 (no rewrite);
 // - no other header than the content type is set (so a Content-Security-Policy must come
 //   from the `<meta>` element of the page, as it must on GitHub Pages).
+//
+// With --spa the server is a plain static server for the end-to-end tests (CI serves the
+// production build of the docs under `/`, see `playwright.server.ts`):
+// - a path without a file extension that has no file answers with `index.html` and the
+//   status 200 (deep links of the router); no `404.html` is needed;
+// - a missing path that has a file extension (a script, a style, an image) still answers 404,
+//   so a broken asset URL is not hidden by the HTML fallback;
+// - the other rules (content type only, no extra header) stay the same.
 import { createReadStream, existsSync, statSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { extname, join, normalize, resolve, sep } from 'node:path';
@@ -18,18 +27,25 @@ import { parseArgs } from 'node:util';
 const { values } = parseArgs({
   options: {
     dir: { type: 'string', default: 'dist/docs/browser' },
-    base: { type: 'string', default: '/star-ng/' },
+    base: { type: 'string' },
     port: { type: 'string', default: process.env.PORT ?? '4300' },
+    spa: { type: 'boolean', default: false },
   },
 });
 const root = resolve(values.dir);
-const base = values.base;
+const spa = values.spa;
+const base = values.base ?? (spa ? '/' : '/star-ng/');
 const port = Number(values.port);
 if (!base.startsWith('/') || !base.endsWith('/')) {
   console.error('pages-serve: --base must start and end with "/"');
   process.exit(1);
 }
-if (!existsSync(join(root, '404.html'))) {
+if (spa) {
+  if (!existsSync(join(root, 'index.html'))) {
+    console.error(`pages-serve: ${join(root, 'index.html')} is missing. Build the docs first.`);
+    process.exit(1);
+  }
+} else if (!existsSync(join(root, '404.html'))) {
   console.error(`pages-serve: ${join(root, '404.html')} is missing. Run "pnpm build:pages" first.`);
   process.exit(1);
 }
@@ -91,9 +107,10 @@ const server = createServer((request, response) => {
   }
   const file = resolveFile(pathname.slice(base.length));
   if (file) send(response, 200, file);
-  else send(response, 404, join(root, '404.html'));
+  else if (spa && extname(pathname) === '') send(response, 200, join(root, 'index.html'));
+  else send(response, 404, join(root, spa ? 'index.html' : '404.html'));
 });
 
 server.listen(port, () => {
-  console.log(`pages-serve: http://localhost:${port}${base} (folder ${root})`);
+  console.log(`pages-serve: http://localhost:${port}${base} (folder ${root}${spa ? ', spa' : ''})`);
 });

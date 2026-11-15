@@ -1,4 +1,4 @@
-import { expect, Locator, Page } from '@playwright/test';
+import { expect, Locator, Page, test } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -11,6 +11,19 @@ export const DOCS_PAGES: readonly string[] = [
     /^\s+path: '([^']+)',$/gm,
   ),
 ].map((match) => match[1]);
+
+/**
+ * Tests that need a development build carry the tag `@dev` in the title and call this first.
+ * The static run (E2E_STATIC_DIR, the production build) skips them; the CI job `e2e-dev` and a
+ * normal local run (`ng serve`) execute them. Use it only for a check that a production build
+ * cannot do, for example `window.ng`.
+ */
+export function needsDevBuild(): void {
+  test.skip(
+    !!process.env['E2E_STATIC_DIR'] && !process.env['E2E_BASE_URL'],
+    'needs a development build (window.ng): run by the e2e-dev job against ng serve',
+  );
+}
 
 /** Opens a docs page and waits for its heading. */
 export async function openPage(page: Page, path: string, heading: string | RegExp): Promise<void> {

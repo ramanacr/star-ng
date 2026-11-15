@@ -1,10 +1,28 @@
-# CI for StarNG.
+# CI for StarNG. It runs only what a change can affect.
+#
 # Required status check for branch protection: `ci-gate` (always runs, fails if any gate fails).
+#
+# How it works:
+# - `changes` (first job) lists the changed files of a pull request and decides which jobs are
+#   needed (tools/ci-changes.mjs, the rules are data in that file, the tests are in
+#   tools/ci-changes.test.mjs). On a push to main and on any event that is not a pull request,
+#   everything is needed. The label `ci:full` on a pull request forces a full run.
+# - `docs-build` builds the docs application once, in the production configuration. `e2e`,
+#   `a11y` and `visual` download that build and serve the static files
+#   (tools/pages-serve.mjs --spa, selected by E2E_STATIC_DIR, see playwright.server.ts). No job
+#   starts `ng serve`.
+# - `ci-gate` (tools/ci-gate.mjs) passes only when every job that was needed succeeded. A job
+#   that was not needed may be skipped; a needed job that was skipped, cancelled or failed
+#   fails the gate.
+#
 # Third-party actions are pinned to full commit SHAs (version in the trailing comment).
 name: CI
 
 on:
   pull_request:
+    # The default types, plus the label types: the label `ci:full` forces a full run, so a
+    # change of the labels starts the run again.
+    types: [opened, synchronize, reopened, labeled, unlabeled]
   push:
     branches: [main]
 
@@ -18,8 +36,83 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  # Decides which jobs are needed. It reads the git history only (no install, no build).
+  # The full history (`fetch-depth: 0`) is fetched, so that the merge base of the pull request
+  # and its base branch is known: the diff is `base.sha...head.sha` (three dots).
+  changes:
+    name: changes
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      light: ${{ steps.plan.outputs.light }}
+      build_test: ${{ steps.plan.outputs.build_test }}
+      docs_build: ${{ steps.plan.outputs.docs_build }}
+      e2e: ${{ steps.plan.outputs.e2e }}
+      a11y: ${{ steps.plan.outputs.a11y }}
+      visual: ${{ steps.plan.outputs.visual }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      # `-z` and `--no-renames`: paths with spaces are safe, and a renamed file lists the old
+      # path and the new path (the old path counts too). The values reach the shell through the
+      # environment, never through the script text (a label name is not trusted).
+      - name: Plan the jobs
+        id: plan
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
+        run: |
+          set -euo pipefail
+          changed="$RUNNER_TEMP/changed-files.txt"
+          if [ "$EVENT" = "pull_request" ]; then
+            git diff -z --name-only --no-renames "${BASE_SHA}...${HEAD_SHA}" > "$changed"
+          else
+            : > "$changed"
+          fi
+          node tools/ci-changes.mjs \
+            --event "$EVENT" \
+            --labels "$LABELS" \
+            --paths-file "$changed" \
+            --output-file "$GITHUB_OUTPUT" \
+            --summary-file "$GITHUB_STEP_SUMMARY"
+
+  # Documentation and meta files only: format check and name check, nothing else.
+  light:
+    name: light
+    needs: changes
+    if: needs.changes.outputs.light == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Format check
+        run: pnpm format:check
+
+      - name: Name check
+        run: node tools/check-names.mjs
+
   build-test:
     name: build-test
+    needs: changes
+    if: needs.changes.outputs.build_test == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -43,6 +136,10 @@ jobs:
       - name: Lint (ESLint, docs data, names)
         run: pnpm lint
 
+      # The rules of the change detection and of the gate (node:test, no browser).
+      - name: CI tool tests
+        run: pnpm test:tools
+
       - name: Unit tests with coverage
         run: pnpm test:ci
 
@@ -54,8 +151,7 @@ jobs:
       - name: Check the package
         run: pnpm check:package
 
-      - name: Build docs
-        run: pnpm build:docs
+      # The docs build is the job `docs-build` (it runs whenever a browser job runs).
 
       - name: Upload coverage report
         if: always()
@@ -73,10 +169,55 @@ jobs:
           path: dist/star-ng/
           retention-days: 7
 
-  e2e:
-    name: e2e
+  # Builds the docs application once, as users get it (production configuration, base `/`).
+  # The jobs `e2e`, `a11y` and `visual` download the artifact `docs-dist` and serve it.
+  docs-build:
+    name: docs-build
+    needs: changes
+    if: needs.changes.outputs.docs_build == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build docs (production)
+        run: pnpm build:docs
+
+      - name: Upload the docs build
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: docs-dist
+          path: dist/docs/browser/
+          retention-days: 3
+          if-no-files-found: error
+
+  # End-to-end tests (everything except the axe scan, which has its own job) in 2 shards.
+  # `needs: docs-build` with an `if` that has no status function: GitHub adds `success()`, so
+  # the job is skipped when `docs-build` failed (and the gate then fails: the job was needed).
+  e2e:
+    name: e2e (shard ${{ matrix.shard }})
+    needs: [changes, docs-build]
+    if: needs.changes.outputs.e2e == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      E2E_STATIC_DIR: dist/docs/browser
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: ['1/2', '2/2']
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
@@ -108,26 +249,87 @@ jobs:
         if: steps.pw-cache.outputs.cache-hit != 'true'
         run: pnpm exec playwright install chromium
 
+      - name: Download the docs build
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: docs-dist
+          path: dist/docs/browser
+
       # The axe accessibility scan (tag @a11y) runs in its own job, in parallel.
       - name: End-to-end tests
-        run: pnpm e2e --grep-invert @a11y
+        run: pnpm e2e --grep-invert @a11y --shard=${{ matrix.shard }} --workers=3
 
       - name: Upload Playwright report
         if: failure()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: playwright-report
+          name: playwright-report-e2e-${{ strategy.job-index }}
+          path: playwright-report/
+          retention-days: 7
+
+  # The few tests tagged @dev need a development build (for example `window.ng`, which Angular
+  # leaves out of a production build). They run against `ng serve`, the default of the
+  # Playwright config, in parallel with the shards. The static run skips them (see
+  # `e2e/support.ts`, `devOnly`).
+  e2e-dev:
+    name: e2e-dev
+    needs: changes
+    if: needs.changes.outputs.e2e == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Read Playwright version
+        id: pw
+        run: echo "version=$(pnpm exec playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        id: pw-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.pw.outputs.version }}
+
+      - name: Install Playwright Chromium
+        if: steps.pw-cache.outputs.cache-hit != 'true'
+        run: pnpm exec playwright install chromium
+
+      # No E2E_STATIC_DIR here: Playwright starts `ng serve docs`.
+      - name: Development-only tests (ng serve)
+        run: pnpm e2e --grep @dev
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: playwright-report-e2e-dev
           path: playwright-report/
           retention-days: 7
 
   # Accessibility scan with axe-core (e2e/a11y.spec.ts): every docs page and about 65 opened
-  # states, in the light and the dark theme, about 330 tests. A separate job keeps the `e2e` job
-  # short: the scan runs in parallel, and the two shards halve its run time. Any violation that
-  # is not in the allow-list of the spec fails the job.
+  # states, in the light and the dark theme, about 330 tests. A separate job keeps the `e2e`
+  # job short: the scan runs in parallel, and the two shards halve its run time. Any violation
+  # that is not in the allow-list of the spec fails the job.
   a11y:
     name: a11y (shard ${{ matrix.shard }})
+    needs: [changes, docs-build]
+    if: needs.changes.outputs.a11y == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      E2E_STATIC_DIR: dist/docs/browser
     strategy:
       fail-fast: false
       matrix:
@@ -161,8 +363,14 @@ jobs:
         if: steps.pw-cache.outputs.cache-hit != 'true'
         run: pnpm exec playwright install chromium
 
+      - name: Download the docs build
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: docs-dist
+          path: dist/docs/browser
+
       - name: Accessibility scan (axe)
-        run: pnpm e2e:a11y --shard=${{ matrix.shard }} --workers=2
+        run: pnpm e2e:a11y --shard=${{ matrix.shard }} --workers=3
 
       - name: Upload Playwright report
         if: failure()
@@ -173,15 +381,20 @@ jobs:
           retention-days: 7
 
   # Visual regression: compares a screenshot of every docs page with the baselines in
-  # e2e/visual/__screenshots__ (made on Linux in CI, never on a developer machine).
+  # e2e/visual/__screenshots__ (made on Linux in CI, never on a developer machine), against
+  # the production build of the docs (the same build as the users get; the workflow
+  # visual-baselines.yml makes the baselines from the same kind of build).
   # - A page without a baseline (first run, new page): the baseline is written, uploaded as the
   #   artifact `visual-baselines`, and the job FAILS with the steps to commit it.
   # - A page that differs: the job fails, the artifact `visual-report` has the diff images.
   visual:
     name: visual
+    needs: [changes, docs-build]
+    if: needs.changes.outputs.visual == 'true'
     runs-on: ubuntu-latest
-    needs: build-test
     timeout-minutes: 30
+    env:
+      E2E_STATIC_DIR: dist/docs/browser
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
@@ -210,6 +423,12 @@ jobs:
       - name: Install Playwright Chromium
         if: steps.pw-cache.outputs.cache-hit != 'true'
         run: pnpm exec playwright install chromium
+
+      - name: Download the docs build
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: docs-dist
+          path: dist/docs/browser
 
       # Playwright writes a missing baseline and fails that test; a differing page fails too.
       # The exit code is kept for the last step, so the artifacts are uploaded first.
@@ -267,24 +486,23 @@ jobs:
           fi
           echo "All pages match their baselines."
 
-  # Single stable required check. Runs always and fails unless every gate succeeded,
-  # so a skipped, cancelled or missing gate can never look like a pass.
+  # Single stable required check. Runs always and fails unless every job that was needed
+  # succeeded (tools/ci-gate.mjs). A skipped job counts as a pass only when `changes` said that
+  # the job was not needed; a needed job that was skipped, cancelled or failed fails the gate,
+  # and so does a failed `changes` job. The checkout is only the `tools` folder.
   ci-gate:
     name: ci-gate
     runs-on: ubuntu-latest
     timeout-minutes: 5
     if: always()
-    needs: [build-test, e2e, a11y, visual]
+    needs: [changes, light, build-test, docs-build, e2e, e2e-dev, a11y, visual]
     steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          sparse-checkout: tools
+          persist-credentials: false
+
       - name: Evaluate required gates
         env:
-          RESULTS: ${{ toJSON(needs) }}
-        run: |
-          set -euo pipefail
-          echo "$RESULTS" | jq -r 'to_entries[] | "\(.key): \(.value.result)"'
-          failed=$(echo "$RESULTS" | jq -r '[to_entries[] | select(.value.result != "success") | .key] | join(", ")')
-          if [ -n "$failed" ]; then
-            echo "::error::Required gates did not succeed: $failed"
-            exit 1
-          fi
-          echo "All required gates succeeded."
+          NEEDS: ${{ toJSON(needs) }}
+        run: node tools/ci-gate.mjs
