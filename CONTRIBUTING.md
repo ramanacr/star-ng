@@ -1,5 +1,9 @@
 # Contributing to StarNG
 
+All contributions are welcome: code, tests, translations, browser and assistive-technology checks, documentation and bug reports. Each contribution helps. Your GitHub name goes in the release notes of the version that contains your work.
+
+This project follows the [code of conduct](CODE_OF_CONDUCT.md).
+
 This file explains how to work on the StarNG repository: set up, run the checks, add a control, and open a pull request. People who only install the package need the [README](README.md).
 
 ## Prerequisites
@@ -126,15 +130,15 @@ The workflow `.github/workflows/ci.yml` runs only the jobs that a change can aff
 2. The job `docs-build` builds the docs application once, in the production configuration. The jobs `e2e`, `a11y` and `visual` download that build and serve it as static files (`tools/pages-serve.mjs --spa`). No job starts `ng serve`.
 3. The job `ci-gate` (`tools/ci-gate.mjs`) passes when every needed job succeeded. A skipped job is a pass only when `changes` said that the job was not needed. A needed job that was skipped, cancelled or failed fails the gate. A failed `changes` job fails the gate too.
 
-| What changed                                                                                                                                                                     | Jobs that run                             |
-| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
-| Push to `main`, any event that is not a pull request, label `ci:full`, `ci.yml`, an empty or unknown change list                                                                 | Everything                                |
-| Only Markdown outside the repository root, `.gitignore`, `.editorconfig`, `.prettierignore`, `.prettierrc`, `.gitattributes`, `.github/` files that are not `ci.yml`, `.vscode/` | `light` (format check, name check)        |
-| Root `*.md`, `LICENSE` (the package contains `README.md` and `LICENSE`, and `check:package` checks the README links)                                                             | `build-test`                              |
-| Unit tests (`*.spec.ts` in `projects/`), build tools that the docs build does not use, `eslint.config.js`, Pages tests                                                           | `build-test`                              |
-| End-to-end tests and their config (`e2e/`, `playwright.config.ts`)                                                                                                               | `build-test`, `docs-build`, `e2e`, `a11y` |
-| Visual tests and baselines (`e2e/visual/`, `playwright.visual.config.ts`)                                                                                                        | `build-test`, `docs-build`, `visual`      |
-| Library or docs source, styles, `package.json`, the lockfile, `angular.json`, `tsconfig*.json`, `.nvmrc`, the static server                                                      | Everything                                |
+| What changed                                                                                                                                                                                                   | Jobs that run                                        |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| Push to `main`, any event that is not a pull request, label `ci:full`, `ci.yml`, an empty or unknown change list                                                                                               | Everything                                           |
+| Only Markdown outside the repository root, `.gitignore`, `.editorconfig`, `.prettierignore`, `.prettierrc`, `.gitattributes`, `.github/` files that are not `ci.yml`, `.vscode/`                               | `light` (format check, name check)                   |
+| Root `*.md`, `LICENSE` (the package contains `README.md` and `LICENSE`, and `check:package` checks the README links)                                                                                           | `build-test`                                         |
+| Unit tests (`*.spec.ts` in `projects/`), CI tool tests (`tools/ci-*.test.mjs`), other build tools in `tools/` (not `ci-*` and not `pages-serve.mjs`), `eslint.config.js`, Pages tests                          | `build-test`                                         |
+| End-to-end tests and their config (`e2e/` except `e2e/visual/` and `e2e/pages/`, `playwright.config.ts`)                                                                                                       | `build-test`, `docs-build`, `e2e`, `e2e-dev`, `a11y` |
+| Visual tests and baselines (`e2e/visual/`, `playwright.visual.config.ts`)                                                                                                                                      | `build-test`, `docs-build`, `visual`                 |
+| Library or docs source, styles, `package.json`, the lockfile, `pnpm-workspace.yaml`, `.npmrc`, `.nvmrc`, `angular.json`, `tsconfig*.json`, `playwright.server.ts`, the static server (`tools/pages-serve.mjs`) | Everything                                           |
 
 A path that no rule knows needs everything, so a new kind of file never skips a job by accident. A renamed file counts with its old and its new path.
 

@@ -24,11 +24,13 @@ Run the checks that your change touches. See `CONTRIBUTING.md`.
 CI runs these jobs, based on the files that the pull request changes (`.github/workflows/ci.yml`):
 
 - Markdown outside the root, `.github/` files other than `ci.yml`, editor and format config: `light`.
-- Root `*.md` and `LICENSE`, unit tests, build tools: `build-test`.
-- `e2e/` and `playwright.config.ts`: `build-test`, `docs-build`, `e2e`, `a11y`.
+- Root `*.md`, `LICENSE`, unit tests (`*.spec.ts`), `eslint.config.js`, Pages tests (`e2e/pages/`): `build-test`.
+- Build tools (`tools/` except `ci-*` and `pages-serve.mjs`), CI tool tests (`tools/ci-*.test.mjs`): `build-test`.
+- `e2e/` (except `e2e/visual/` and `e2e/pages/`) and `playwright.config.ts`: `build-test`, `docs-build`, `e2e`, `e2e-dev`, `a11y`.
 - `e2e/visual/` and `playwright.visual.config.ts`: `build-test`, `docs-build`, `visual`.
-- Library or docs source, styles, `package.json`, lockfile, Angular or TypeScript config: all jobs.
-- Label `ci:full`: all jobs.
+- Library or docs source (not `*.spec.ts`), styles, dependency and build config (`package.json`, lockfile, `pnpm-workspace.yaml`, `.npmrc`, `.nvmrc`, `angular.json`, `tsconfig*.json`, `playwright.server.ts`, `tools/pages-serve.mjs`): all jobs.
+- `.github/workflows/ci.yml`, `tools/ci-*.mjs`, any file that no rule matches: all jobs.
+- Push to `main`, any event that is not a pull request, label `ci:full`, or an empty file list: all jobs.
 
 ## Notes for the reviewer
 

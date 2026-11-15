@@ -20,6 +20,12 @@
   }
 }
 
+// Windowed rendering: rows come and go while the table scrolls, so the column widths must come from
+// the header and `width` of the columns, not from the rows that are in the DOM.
+.star-tree-table.star-table--virtual table {
+  table-layout: fixed;
+}
+
 // Data view
 .star-data-view {
   display: block;
