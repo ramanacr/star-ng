@@ -272,7 +272,9 @@ test.describe('table virtual scroll with rows of different heights', () => {
     page,
   }) => {
     const { table, scroll } = await open(page, DETAIL, 'Tickets with detail');
-    await bodyRows(table).first().getByRole('button', { name: 'Expand row' }).focus();
+    const start = bodyRows(table).first().getByRole('button', { name: 'Expand row' });
+    await start.focus();
+    await expect(start).toBeFocused();
     // Two tab stops per row: the expand button and the checkbox.
     for (let i = 0; i < 2 * 40; i++) await page.keyboard.press('Tab');
     const row = bodyRows(table).filter({ hasText: ticket(41) });

@@ -454,6 +454,51 @@ describe('StarTable virtual scroll', () => {
 
 @Component({
   imports: [StarTable],
+  template: `<star-table
+    [value]="rows"
+    [columns]="columns"
+    dataKey="id"
+    selectionMode="multiple"
+    virtualScroll
+    [virtualRowHeight]="40"
+    scrollHeight="400px"
+  />`,
+})
+class VirtualTabHost {
+  readonly rows = Array.from({ length: 1000 }, (_, i) => ({ id: i + 1, product: `Row ${i + 1}` }));
+  readonly columns: StarColumn<{ id: number; product: string }>[] = [
+    { field: 'product', header: 'Product' },
+  ];
+}
+
+describe('StarTable virtual scroll: Tab to a row that is not rendered', () => {
+  it('renders and focuses the next row before the key event ends', async () => {
+    const fixture = TestBed.createComponent(VirtualTabHost);
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+    const viewport = el.querySelector<HTMLElement>('.star-table__scroll')!;
+    Object.defineProperty(viewport, 'clientHeight', { value: 400 });
+    const row = (index: number) => el.querySelector<HTMLElement>(`tbody tr[data-vi="${index}"]`);
+    const checkbox = (index: number) => row(index)?.querySelector<HTMLInputElement>('input');
+
+    const last = Number(
+      [...el.querySelectorAll<HTMLElement>('tbody tr[data-vi]')].at(-1)!.dataset['vi'],
+    );
+    expect(row(last + 1)).toBeNull();
+    checkbox(last)!.focus();
+
+    // No `await`: a second Tab on a slow device starts right after the first one, so the focus
+    // must have moved when the first key event returns.
+    checkbox(last)!.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true }),
+    );
+    expect(checkbox(last + 1)).not.toBeNull();
+    expect(document.activeElement).toBe(checkbox(last + 1));
+  });
+});
+
+@Component({
+  imports: [StarTable],
   template: `<star-table [value]="rows" [columns]="columns" dataKey="id" [(filters)]="filters" />`,
 })
 class FilterTypesHost {

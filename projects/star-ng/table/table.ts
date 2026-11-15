@@ -2,6 +2,7 @@ import { DOCUMENT, NgTemplateOutlet } from '@angular/common';
 import {
   afterNextRender,
   afterRenderEffect,
+  ApplicationRef,
   booleanAttribute,
   ChangeDetectionStrategy,
   Component,
@@ -809,6 +810,7 @@ export class StarTable<T> {
   private readonly document = inject(DOCUMENT);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly injector = inject(Injector);
+  private readonly appRef = inject(ApplicationRef);
 
   readonly value = input.required<readonly T[]>();
   readonly columns = input.required<readonly StarColumn<T>[]>();
@@ -1442,6 +1444,10 @@ export class StarTable<T> {
       },
       { injector: this.injector },
     );
+    // Render now, not at the next scheduled change detection: the row is rendered and focused
+    // before this key event ends. On a slow device the next Tab can arrive before a scheduled
+    // render, and it would then start from the old row, so one Tab would be lost or repeated.
+    this.appRef.tick();
   }
 
   private focusablesOf(body: HTMLElement, index: number): HTMLElement[] {

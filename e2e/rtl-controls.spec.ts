@@ -15,6 +15,27 @@ test.describe('right-to-left controls', () => {
 
   const popup = (page: Page) => page.locator('.cdk-overlay-container');
   const box = async (locator: Locator) => (await locator.boundingBox())!;
+  /**
+   * Box of an element that is still moving (a popup that is placed or scales in, a slide-in
+   * panel): polls until two reads, one poll interval apart, are the same.
+   */
+  const settledBox = async (locator: Locator) => {
+    let last = '';
+    let current!: NonNullable<Awaited<ReturnType<Locator['boundingBox']>>>;
+    await expect
+      .poll(
+        async () => {
+          current = await box(locator);
+          const key = JSON.stringify(current);
+          const same = key === last;
+          last = key;
+          return same;
+        },
+        { intervals: [50, 100, 250] },
+      )
+      .toBe(true);
+    return current;
+  };
   const centerX = async (locator: Locator) => {
     const b = await box(locator);
     return b.x + b.width / 2;
@@ -78,10 +99,12 @@ test.describe('right-to-left controls', () => {
       expect(await centerX(first)).toBeGreaterThan(await centerX(last));
 
       await active().focus();
+      await expect(active()).toBeFocused();
       const start = await active().getAttribute('data-date');
       await page.keyboard.press('ArrowLeft');
       // Wait for the move: the attribute is read at once, and the focus follows after a render.
       await expect(active()).not.toHaveAttribute('data-date', start!);
+      await expect(active()).toBeFocused();
       const next = await active().getAttribute('data-date');
       expect(new Date(next!).getTime() - new Date(start!).getTime()).toBe(24 * 3600 * 1000);
       // The following day is visually to the left of the day before it.
@@ -90,6 +113,7 @@ test.describe('right-to-left controls', () => {
       );
       await page.keyboard.press('ArrowRight');
       await expect(active()).toHaveAttribute('data-date', start!);
+      await expect(active()).toBeFocused();
     });
 
     test('tree: Arrow left opens a branch and Arrow right closes it', async ({ page }) => {
@@ -268,20 +292,21 @@ test.describe('right-to-left controls', () => {
       const trigger = example(page, 'Nested submenu').getByRole('button', { name: 'View' });
       await trigger.focus();
       await page.keyboard.press('Enter');
+      await expect(popup(page).getByRole('menu')).toBeVisible();
       await page.keyboard.press('ArrowDown');
       await page.keyboard.press('ArrowDown');
       const layout = popup(page).getByRole('menuitem', { name: 'Layout' });
       await expect(layout).toBeFocused();
       // The root menu is aligned with the right edge of its trigger.
-      const root = await box(popup(page).getByRole('menu').first());
+      const root = await settledBox(popup(page).getByRole('menu').first());
       const triggerBox = await box(trigger);
       expect(Math.abs(root.x + root.width - (triggerBox.x + triggerBox.width))).toBeLessThan(2);
 
       await page.keyboard.press('ArrowLeft');
       const single = popup(page).getByRole('menuitem', { name: 'Single column' });
       await expect(single).toBeFocused();
-      const parent = await box(layout);
-      const sub = await box(single);
+      const parent = await settledBox(layout);
+      const sub = await settledBox(single);
       expect(sub.x + sub.width).toBeLessThanOrEqual(parent.x + 4);
 
       await page.keyboard.press('ArrowRight');
@@ -298,7 +323,10 @@ test.describe('right-to-left controls', () => {
       const edit = bar.getByRole('menuitem', { name: 'Edit' });
       expect(await centerX(file)).toBeGreaterThan(await centerX(edit));
       await file.click();
+      // Escape only closes a dropdown that is open: wait for it, then for it to be gone.
+      await expect(popup(page).getByRole('menu')).toBeVisible();
       await page.keyboard.press('Escape');
+      await expect(popup(page).getByRole('menu')).toHaveCount(0);
       await expect(file).toBeFocused();
       await page.keyboard.press('ArrowLeft');
       await expect(edit).toBeFocused();
@@ -306,7 +334,7 @@ test.describe('right-to-left controls', () => {
       await expect(file).toBeFocused();
 
       await page.keyboard.press('ArrowDown');
-      const menu = await box(popup(page).getByRole('menu').first());
+      const menu = await settledBox(popup(page).getByRole('menu').first());
       const fileBox = await box(file);
       expect(Math.abs(menu.x + menu.width - (fileBox.x + fileBox.width))).toBeLessThan(2);
     });
@@ -326,9 +354,8 @@ test.describe('right-to-left controls', () => {
       const bavaria = page.getByRole('menuitem', { name: 'Bavaria' });
       await expect(bavaria).toBeFocused();
       // The submenu opens to the left of its parent.
-      expect((await box(bavaria)).x + (await box(bavaria)).width).toBeLessThanOrEqual(
-        (await box(germany)).x + 4,
-      );
+      const submenu = await settledBox(bavaria);
+      expect(submenu.x + submenu.width).toBeLessThanOrEqual((await settledBox(germany)).x + 4);
       await page.keyboard.press('ArrowRight');
       await expect(germany).toBeFocused();
     });
@@ -342,14 +369,17 @@ test.describe('right-to-left controls', () => {
       const orders = bar.getByRole('menuitem', { name: 'Orders' });
       expect(await centerX(products)).toBeGreaterThan(await centerX(orders));
       await products.click();
+      // Escape only closes a panel that is open: wait for it, then for it to be gone.
+      await expect(page.locator('.star-mega-menu__panel')).toBeVisible();
       await page.keyboard.press('Escape');
+      await expect(page.locator('.star-mega-menu__panel')).toHaveCount(0);
       await expect(products).toBeFocused();
       await page.keyboard.press('ArrowLeft');
       await expect(orders).toBeFocused();
       await page.keyboard.press('ArrowRight');
       await expect(products).toBeFocused();
       await page.keyboard.press('ArrowDown');
-      const panel = await box(page.locator('.star-mega-menu__panel'));
+      const panel = await settledBox(page.locator('.star-mega-menu__panel'));
       const item = await box(products);
       expect(Math.abs(panel.x + panel.width - (item.x + item.width))).toBeLessThan(2);
     });
@@ -362,7 +392,7 @@ test.describe('right-to-left controls', () => {
       const panel = page.getByRole('listbox', { name: 'Country', exact: true });
       await expect(panel).toBeVisible();
       const fieldBox = await box(field);
-      const panelBox = await box(panel);
+      const panelBox = await settledBox(panel);
       expect(Math.abs(panelBox.x + panelBox.width - (fieldBox.x + fieldBox.width))).toBeLessThan(3);
     });
 
@@ -377,7 +407,7 @@ test.describe('right-to-left controls', () => {
       const panel = page.locator('.star-date__panel');
       await expect(panel).toBeVisible();
       const fieldBox = await box(field);
-      const panelBox = await box(panel);
+      const panelBox = await settledBox(panel);
       expect(Math.abs(panelBox.x + panelBox.width - (fieldBox.x + fieldBox.width))).toBeLessThan(3);
     });
   });
@@ -477,11 +507,12 @@ test.describe('right-to-left controls', () => {
       const start = page.locator('.star-toast-stack--bottom-start');
       await expect(start.getByText('Corner: start')).toBeVisible();
       // Start is the right side in right-to-left.
-      expect((await box(start)).x).toBeGreaterThan(viewport.width / 2);
+      expect((await settledBox(start)).x).toBeGreaterThan(viewport.width / 2);
       await live.getByRole('button', { name: 'Message at the end' }).click();
       const end = page.locator('.star-toast-stack--bottom-end');
       await expect(end.getByText('Corner: end')).toBeVisible();
-      expect((await box(end)).x + (await box(end)).width).toBeLessThan(viewport.width / 2);
+      const endBox = await settledBox(end);
+      expect(endBox.x + endBox.width).toBeLessThan(viewport.width / 2);
       // The accent line is on the start side: the right border of the message.
       await expect(start.locator('.star-toast').first()).toHaveCSS('border-right-width', '4px');
       await expect(start.locator('.star-toast').first()).toHaveCSS('border-left-width', '1px');
@@ -497,7 +528,7 @@ test.describe('right-to-left controls', () => {
         const button = live.getByRole('button', { name, exact: true });
         await button.hover();
         await expect(tooltip).toBeVisible();
-        const result = { button: await box(button), tip: await box(tooltip) };
+        const result = { button: await box(button), tip: await settledBox(tooltip) };
         await page.mouse.move(0, 0);
         await expect(tooltip).toHaveCount(0);
         return result;
@@ -519,7 +550,7 @@ test.describe('right-to-left controls', () => {
       const panel = page.getByRole('dialog', { name: 'Order details' });
       await expect(panel).toBeVisible();
       const buttonBox = await box(button);
-      const panelBox = await box(panel);
+      const panelBox = await settledBox(panel);
       expect(Math.abs(panelBox.x + panelBox.width - (buttonBox.x + buttonBox.width))).toBeLessThan(
         3,
       );
@@ -548,21 +579,27 @@ test.describe('right-to-left controls', () => {
       await page.keyboard.press('Enter');
       await expect.poll(dot).toBe(1);
       await expect.poll(() => track.evaluate((el) => el.scrollLeft)).toBeLessThan(-50);
-      // The second slide is in view: it is the one at the right edge of the track.
-      const trackBox = await box(track);
-      const second = await box(region.getByRole('group', { name: '2 of 6' }));
-      expect(Math.abs(second.x + second.width - (trackBox.x + trackBox.width))).toBeLessThan(
-        trackBox.width * 0.1,
-      );
+      // The second slide is in view: it is the one at the right edge of the track. The track
+      // scrolls smoothly, so the position is polled until the scroll has arrived.
+      const slideAtStart = (name: string) => async () => {
+        const trackBox = await box(track);
+        const slide = await box(region.getByRole('group', { name }));
+        return Math.abs(slide.x + slide.width - (trackBox.x + trackBox.width));
+      };
+      await expect.poll(slideAtStart('2 of 6')).toBeLessThan(2);
 
       await page.keyboard.press('Space');
       await expect.poll(dot).toBe(2);
+      await expect.poll(slideAtStart('3 of 6')).toBeLessThan(2);
       await previous.focus();
       await page.keyboard.press('Enter');
       await expect.poll(dot).toBe(1);
+      await expect.poll(slideAtStart('2 of 6')).toBeLessThan(2);
       await page.keyboard.press('Enter');
       await expect.poll(dot).toBe(0);
       await expect(previous).toBeDisabled();
+      await expect.poll(slideAtStart('1 of 6')).toBeLessThan(2);
+      expect(await track.evaluate((el) => el.scrollLeft)).toBe(0);
     });
   });
 
