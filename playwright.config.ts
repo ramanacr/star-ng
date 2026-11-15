@@ -9,6 +9,8 @@ const BASE_URL = process.env['E2E_BASE_URL'] ?? `http://localhost:${PORT}`;
  */
 export default defineConfig({
   testDir: './e2e',
+  // The visual regression tests have their own config (playwright.visual.config.ts).
+  testIgnore: '**/visual/**',
   fullyParallel: true,
   forbidOnly: !!process.env['CI'],
   retries: process.env['CI'] ? 2 : 0,

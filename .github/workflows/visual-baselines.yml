@@ -1,0 +1,82 @@
+# Regenerates ALL baseline images of the visual regression tests on Linux.
+# Run it from the Actions tab (workflow "Visual baselines", input: branch), then download the
+# artifact into the repository root and commit it:
+#   gh run download <run id> -n visual-baselines
+# The workflow only reads the repository and uploads an artifact: it cannot push.
+# Third-party actions are pinned to the same full commit SHAs as ci.yml.
+name: Visual baselines
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: Branch to make the baselines from
+        required: true
+        default: main
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: visual-baselines-${{ inputs.branch }}
+  cancel-in-progress: true
+
+jobs:
+  baselines:
+    name: baselines
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: ${{ inputs.branch }}
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Read Playwright version
+        id: pw
+        run: echo "version=$(pnpm exec playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        id: pw-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.pw.outputs.version }}
+
+      - name: Install Playwright Chromium
+        if: steps.pw-cache.outputs.cache-hit != 'true'
+        run: pnpm exec playwright install chromium
+
+      # Start from an empty folder: a page that was removed must not leave an old image behind.
+      - name: Remove old baselines
+        run: rm -rf e2e/visual/__screenshots__
+
+      - name: Write baselines
+        run: pnpm e2e:visual:update
+
+      # The artifact root is a folder that holds the repository paths, so that the files land
+      # in e2e/visual/__screenshots__ when the artifact is unzipped in the repository root.
+      - name: Collect baselines
+        run: |
+          set -euo pipefail
+          mkdir -p out/e2e/visual
+          cp -r e2e/visual/__screenshots__ out/e2e/visual/
+          echo "Baselines: $(find out -type f | wc -l)"
+
+      - name: Upload baselines
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: visual-baselines
+          path: out/
+          retention-days: 14
+          if-no-files-found: error
