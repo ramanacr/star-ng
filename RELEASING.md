@@ -1,23 +1,28 @@
-# Releasing star-ng
+# Releasing @star-ng/ui
 
-The package `star-ng` goes to npm when you push a git tag `v<version>` (for example `v0.1.0`).
+The package `@star-ng/ui` goes to npm when you push a git tag `v<version>` (for example `v0.1.0`).
 The workflow `.github/workflows/release.yml` verifies the package, packs it and publishes it.
 There is no npm token in the repository: npm Trusted Publishing (OpenID Connect, OIDC) proves to
 npm that the run belongs to this repository, and npm adds a provenance attestation.
 
 ## One-time setup
 
-Do these steps once, in this order. The order matters: npm can attach a trusted publisher only
-to a package that already exists.
+Do these steps once, in this order. The order matters: the package name `@star-ng/ui` is
+scoped, so the npm organisation `star-ng` must exist before the first publish. The owner created it already. npm can attach a
+trusted publisher only to a package that already exists.
+
+0. Note: the npm organisation `star-ng` exists (created by the owner). If it is ever lost, create it
+   again on npmjs.com ("Add Organization", name `star-ng`). The free plan allows public packages.
+   The account that publishes the placeholder must be an owner or a member with publish rights.
 
 1. Publish a placeholder version by hand. Use an empty folder outside the repository.
    You need an npm account (`ramanacr`) with two-factor authentication.
 
    ```bash
-   mkdir star-ng-placeholder && cd star-ng-placeholder
+   mkdir star-ng-ui-placeholder && cd star-ng-ui-placeholder
    cat > package.json <<'JSON'
    {
-     "name": "star-ng",
+     "name": "@star-ng/ui",
      "version": "0.0.0-placeholder.0",
      "description": "Placeholder. The first release of StarNG follows.",
      "license": "MIT",
@@ -28,9 +33,10 @@ to a package that already exists.
    npm publish --access public --tag placeholder
    ```
 
+   The flag `--access public` is required: a scoped package is private (restricted) by default.
    The tag `placeholder` keeps `latest` free for the first real release.
 
-2. Attach the trusted publisher. On npmjs.com open the package `star-ng`, then Settings, then
+2. Attach the trusted publisher. On npmjs.com open the package `@star-ng/ui`, then Settings, then
    Trusted Publisher, then GitHub Actions. Enter:
    - Organization or user: `ramanacr`
    - Repository: `star-ng`
@@ -76,18 +82,18 @@ to a package that already exists.
    `publish to npm` runs next and publishes the tarball, then installs the published version
    in an empty project and runs `npm audit signatures`.
 5. Check the result:
-   - Open <https://www.npmjs.com/package/star-ng>. The page shows the version and the
+   - Open <https://www.npmjs.com/package/@star-ng/ui>. The page shows the version and the
      "Provenance" badge.
-   - `npm view star-ng dist-tags` shows the expected tag.
+   - `npm view @star-ng/ui dist-tags` shows the expected tag.
 
 ## Dist-tags and versions
 
 The workflow takes the dist-tag from the version. You do not choose it.
 
-| Version                      | Dist-tag | Who gets it                     |
-| ---------------------------- | -------- | ------------------------------- |
-| `0.1.0`, `0.2.0`, `1.0.0`    | `latest` | `npm install star-ng`           |
-| `0.2.0-rc.1`, `0.2.0-beta.2` | `next`   | `npm install star-ng@next` only |
+| Version                      | Dist-tag | Who gets it                         |
+| ---------------------------- | -------- | ----------------------------------- |
+| `0.1.0`, `0.2.0`, `1.0.0`    | `latest` | `npm install @star-ng/ui`           |
+| `0.2.0-rc.1`, `0.2.0-beta.2` | `next`   | `npm install @star-ng/ui@next` only |
 
 - A version with a prerelease part is never `latest`.
 - `0.x` tells users that the API can still change. Move to `1.0.0` when the API is stable.
@@ -129,10 +135,10 @@ publish.
    change, the same version number is still free.
 
 3. The publish step failed with a network or registry error: check
-   `npm view star-ng versions`. If the version is not listed, use "Re-run failed jobs" in
+   `npm view @star-ng/ui versions`. If the version is not listed, use "Re-run failed jobs" in
    Actions. If it is listed, the publish worked. Do not publish it again.
 4. The publish worked, but the package is wrong: publish a new version (for example `0.1.1`).
-   Mark the bad version with `npm deprecate star-ng@0.1.0 "Broken, use 0.1.1"`.
+   Mark the bad version with `npm deprecate @star-ng/ui@0.1.0 "Broken, use 0.1.1"`.
 5. The step `Verify signature and provenance` failed after a good publish: check the
    Trusted Publisher settings on npmjs.com (repository, workflow file name, environment).
    The package itself is already published.

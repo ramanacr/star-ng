@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { StarChip, StarDivider, StarTimeline, StarToolbar } from 'star-ng/layout';
+import { StarChip, StarDivider, StarTimeline, StarToolbar } from '@star-ng/ui/layout';
 
 function key(target: Element, key: string): void {
   target.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));

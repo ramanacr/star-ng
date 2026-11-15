@@ -1,8 +1,8 @@
 // StarNG styles: tokens, base rules and every control.
 //
-//   @use 'star-ng/styles/star-ng';
+//   @use '@star-ng/ui/styles/star-ng';
 //
-// The package also has this file compiled: `star-ng/styles/star-ng.css`.
+// The package also has this file compiled: `@star-ng/ui/styles/star-ng.css`.
 @use 'tokens';
 @use 'base';
 @use 'controls/button';

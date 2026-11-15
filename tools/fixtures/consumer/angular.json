@@ -18,14 +18,14 @@
             "assets": [
               {
                 "glob": "star-theme-first-paint.js",
-                "input": "node_modules/star-ng/theme",
+                "input": "node_modules/@star-ng/ui/theme",
                 "output": "/"
               }
             ],
             "styles": [
               "@phosphor-icons/web/bold/style.css",
               "@phosphor-icons/web/fill/style.css",
-              "star-ng/styles/star-ng.css"
+              "@star-ng/ui/styles/star-ng.css"
             ]
           },
           "configurations": {

@@ -1,12 +1,12 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { StarButton } from 'star-ng/button';
+import { StarButton } from '@star-ng/ui/button';
 import {
   STAR_THEME_FIRST_PAINT_HASH,
   StarThemeService,
   starThemeFirstPaintScript,
-} from 'star-ng/theme';
-import { StarThemeSwitch } from 'star-ng/theme-switch';
+} from '@star-ng/ui/theme';
+import { StarThemeSwitch } from '@star-ng/ui/theme-switch';
 import { DOCS } from '../shared/docs';
 
 @Component({
@@ -17,7 +17,7 @@ import { DOCS } from '../shared/docs';
     <docs-page
       heading="Dark mode"
       lead="The tokens have light and dark values. The data-theme attribute on the html element selects them. The theme service and the first-paint script are optional helpers."
-      importFrom="import { StarThemeService, starThemeFirstPaintScript } from 'star-ng/theme';"
+      importFrom="import { StarThemeService, starThemeFirstPaintScript } from '@star-ng/ui/theme';"
     >
       <h2>How the theme is selected</h2>
       <ul>
@@ -88,8 +88,8 @@ import { DOCS } from '../shared/docs';
         System, Light and Dark. Its button shows the icon of the current choice and has the name
         "Theme: Dark" (or Light, or System). It calls <code>StarThemeService.setMode</code>, so the
         choice is applied and saved. It lives in its own entry point,
-        <code>star-ng/theme-switch</code>, because it needs the menu and utility code that
-        <code>star-ng/theme</code> does not use.
+        <code>@star-ng/ui/theme-switch</code>, because it needs the menu and utility code that
+        <code>@star-ng/ui/theme</code> does not use.
       </p>
       <docs-example
         heading="Theme switch"
@@ -174,7 +174,7 @@ import { DOCS } from '../shared/docs';
       <h3>1. External file</h3>
       <p>
         The package ships the script as the file
-        <code>star-ng/theme/star-theme-first-paint.js</code>. Copy it into the build with an
+        <code>@star-ng/ui/theme/star-theme-first-paint.js</code>. Copy it into the build with an
         <code>assets</code> entry in <code>angular.json</code> (in the <code>assets</code> list of
         the <code>build</code> options), then load it in the <code>&lt;head&gt;</code>. Use a
         classic script: no <code>defer</code>, no <code>async</code>, no <code>type="module"</code>.
@@ -256,7 +256,7 @@ export class DarkModeGuide {
   protected readonly theme = inject(StarThemeService);
 
   protected readonly service = `import { Component, inject } from '@angular/core';
-import { StarThemeService } from 'star-ng/theme';
+import { StarThemeService } from '@star-ng/ui/theme';
 
 @Component({ selector: 'app-root', template: '<router-outlet />' })
 export class App {
@@ -277,7 +277,7 @@ export class App {
 
   protected readonly cspAssets = `{
   "glob": "star-theme-first-paint.js",
-  "input": "node_modules/star-ng/theme",
+  "input": "node_modules/@star-ng/ui/theme",
   "output": "."
 }`;
 
@@ -295,7 +295,7 @@ export class App {
 
 <script>${starThemeFirstPaintScript()}</script>`;
 
-  protected readonly cspHashCustom = `import { starThemeFirstPaintHash, starThemeFirstPaintScript } from 'star-ng/theme';
+  protected readonly cspHashCustom = `import { starThemeFirstPaintHash, starThemeFirstPaintScript } from '@star-ng/ui/theme';
 
 // Build step or server start: Node.js 20 or later, or a browser in a secure context.
 const hash = await starThemeFirstPaintHash('my-app-theme'); // "'sha256-...'", with the quotes
@@ -309,7 +309,7 @@ node -e "process.stdout.write(require('crypto').createHash('sha256').update(requ
 # Policy value: 'sha256-' plus the output, in single quotes.`;
 
   protected readonly cspNonce = `import { randomBytes } from 'node:crypto';
-import { starThemeFirstPaintElement } from 'star-ng/theme';
+import { starThemeFirstPaintElement } from '@star-ng/ui/theme';
 
 app.get('*', (request, response) => {
   const nonce = randomBytes(16).toString('base64'); // new for each response

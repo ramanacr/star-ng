@@ -3,11 +3,11 @@ import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { disabled, form, FormField, required } from '@angular/forms/signals';
 import { SignalFormControl } from '@angular/forms/signals/compat';
-import { StarCheckbox } from 'star-ng/checkbox';
-import { syncSignalFormControls } from 'star-ng/core';
-import { StarDatePicker } from 'star-ng/date-picker';
-import { StarField, StarInput } from 'star-ng/field';
-import { StarToggleSwitch } from 'star-ng/toggle-switch';
+import { StarCheckbox } from '@star-ng/ui/checkbox';
+import { syncSignalFormControls } from '@star-ng/ui/core';
+import { StarDatePicker } from '@star-ng/ui/date-picker';
+import { StarField, StarInput } from '@star-ng/ui/field';
+import { StarToggleSwitch } from '@star-ng/ui/toggle-switch';
 import { DOCS } from '../shared/docs';
 
 @Component({

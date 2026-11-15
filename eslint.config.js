@@ -38,7 +38,7 @@ module.exports = defineConfig([
   { files: ['projects/star-ng/**/*.ts'], ...typescript('star') },
   { files: ['projects/docs/**/*.ts'], ...typescript('docs') },
   // The library never depends on the docs application, and entry points import each other by
-  // package name (`star-ng/button`), never by a relative path that leaves the entry point.
+  // package name (`@star-ng/ui/button`), never by a relative path that leaves the entry point.
   {
     files: ['projects/star-ng/**/*.ts'],
     rules: {
@@ -48,7 +48,8 @@ module.exports = defineConfig([
           patterns: [
             {
               group: ['../*'],
-              message: 'Import another entry point by its package name, for example star-ng/core.',
+              message:
+                'Import another entry point by its package name, for example @star-ng/ui/core.',
             },
           ],
         },

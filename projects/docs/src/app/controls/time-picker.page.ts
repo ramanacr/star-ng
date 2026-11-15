@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { form, FormField, required } from '@angular/forms/signals';
-import { StarTimePicker } from 'star-ng/date-picker';
-import { StarField } from 'star-ng/field';
+import { StarTimePicker } from '@star-ng/ui/date-picker';
+import { StarField } from '@star-ng/ui/field';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -12,7 +12,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Time picker"
       lead="A time of day without a date. It is the native time input in the StarNG input style, so the browser gives the keyboard model, the 12 or 24-hour display of the locale, and the time picker on a phone. The value is 24-hour text (HH:mm), or null. This is the PrimeNG p-datepicker with the timeOnly option."
-      importFrom="import { StarTimePicker } from 'star-ng/date-picker';"
+      importFrom="import { StarTimePicker } from '@star-ng/ui/date-picker';"
     >
       <docs-example
         heading="Time of day"

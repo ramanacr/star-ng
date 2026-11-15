@@ -38,5 +38,5 @@ import { DOCS } from './shared/docs';
 })
 export class HomePage {
   protected readonly nav = DOCS_NAV;
-  protected readonly install = `pnpm add star-ng @angular/cdk @phosphor-icons/web`;
+  protected readonly install = `pnpm add @star-ng/ui @angular/cdk @phosphor-icons/web`;
 }

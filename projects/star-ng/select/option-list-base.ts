@@ -21,7 +21,7 @@ import {
   STAR_UI_TEXT,
   StarDirectionService,
   StarOptionKey,
-} from 'star-ng/core';
+} from '@star-ng/ui/core';
 
 /** Context of the custom option template: `<ng-template starOption let-option let-selected="selected">`. */
 export interface StarOptionContext<T> {

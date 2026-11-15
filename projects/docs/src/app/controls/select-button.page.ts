@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarSelectButton, StarToggleButton } from 'star-ng/select-button';
+import { StarSelectButton, StarToggleButton } from '@star-ng/ui/select-button';
 import { DOCS, DocsRow } from '../shared/docs';
 
 interface View {
@@ -16,7 +16,7 @@ interface View {
     <docs-page
       heading="Select button and toggle button"
       lead="star-select-button is a segmented choice: a radio group in single mode, a group of toggles in multiple mode. star-toggle-button is one pressed / not pressed button."
-      importFrom="import { StarSelectButton, StarToggleButton } from 'star-ng/select-button';"
+      importFrom="import { StarSelectButton, StarToggleButton } from '@star-ng/ui/select-button';"
     >
       <docs-example heading="Single choice" source="select-button/single">
         <star-select-button

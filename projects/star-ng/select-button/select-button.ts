@@ -10,7 +10,7 @@ import {
   output,
 } from '@angular/core';
 import type { FormCheckboxControl, FormValueControl } from '@angular/forms/signals';
-import { optionText, readOption, starInlineKey, StarOptionKey } from 'star-ng/core';
+import { optionText, readOption, starInlineKey, StarOptionKey } from '@star-ng/ui/core';
 
 /**
  * Segmented choice (PrimeNG `p-selectbutton`). Single mode is a radio group (Arrow keys move and

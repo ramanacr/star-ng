@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
-import { StarPageEvent, StarPaginator } from 'star-ng/paginator';
+import { StarPageEvent, StarPaginator } from '@star-ng/ui/paginator';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -10,7 +10,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Paginator"
       lead="Page links, first, previous, next and last buttons, a rows-per-page select and a range report. The PrimeNG equivalent is p-paginator."
-      importFrom="import { StarPaginator } from 'star-ng/paginator';"
+      importFrom="import { StarPaginator } from '@star-ng/ui/paginator';"
     >
       <docs-example
         heading="Pages of a list"

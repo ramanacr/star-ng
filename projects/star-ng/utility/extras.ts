@@ -16,7 +16,7 @@ import {
   signal,
   TemplateRef,
 } from '@angular/core';
-import { STAR_UI_TEXT } from 'star-ng/core';
+import { STAR_UI_TEXT } from '@star-ng/ui/core';
 
 /** Read view of `star-inplace`: `<ng-template starInplaceDisplay>…</ng-template>`. */
 @Directive({ selector: 'ng-template[starInplaceDisplay]' })

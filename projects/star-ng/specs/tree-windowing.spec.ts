@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { StarTree, StarTreeNode } from 'star-ng/tree';
+import { StarTree, StarTreeNode } from '@star-ng/ui/tree';
 
 // jsdom has no layout and no `Element.scrollTo`. The stub records the requested scroll offsets
 // and does not move the window, so the tests do not depend on scroll events.

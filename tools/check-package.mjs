@@ -35,7 +35,8 @@ if (!existsSync(join(dir, 'package.json'))) {
 const pkg = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8'));
 
 // 1. Manifest fields.
-if (pkg.name !== 'star-ng') fail(`package.json: name is "${pkg.name}", expected "star-ng".`);
+if (pkg.name !== '@star-ng/ui')
+  fail(`package.json: name is "${pkg.name}", expected "@star-ng/ui".`);
 if (pkg.private) fail('package.json: "private" is set. npm refuses to publish a private package.');
 for (const field of ['version', 'license', 'repository', 'homepage', 'bugs', 'description']) {
   if (!pkg[field]) fail(`package.json: missing "${field}".`);

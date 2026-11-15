@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarButton } from 'star-ng/button';
-import { StarMessage } from 'star-ng/message';
+import { StarButton } from '@star-ng/ui/button';
+import { StarMessage } from '@star-ng/ui/message';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -11,7 +11,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Message"
       lead="An inline message that stays in the page flow. It has a severity, an icon, an optional close button and an optional time limit. The PrimeNG equivalent is p-message."
-      importFrom="import { StarMessage } from 'star-ng/message';"
+      importFrom="import { StarMessage } from '@star-ng/ui/message';"
     >
       <docs-example
         heading="Severities"

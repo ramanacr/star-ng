@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { StarCarousel, StarCarouselItem } from 'star-ng/media';
+import { StarCarousel, StarCarouselItem } from '@star-ng/ui/media';
 import { DOCS, DocsRow } from '../shared/docs';
 import { sampleSet } from '../shared/sample-images';
 
@@ -11,7 +11,7 @@ import { sampleSet } from '../shared/sample-images';
     <docs-page
       heading="Carousel"
       lead="A row of slides that scrolls with CSS scroll snap. Swipe and trackpad work as in any scrolling area. Buttons and page dots move by one page."
-      importFrom="import { StarCarousel, StarCarouselItem } from 'star-ng/media';"
+      importFrom="import { StarCarousel, StarCarouselItem } from '@star-ng/ui/media';"
     >
       <docs-example
         heading="One slide per page"

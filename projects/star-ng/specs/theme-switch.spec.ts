@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
-import { StarThemeService } from 'star-ng/theme';
-import { StarThemeSwitch } from 'star-ng/theme-switch';
+import { StarThemeService } from '@star-ng/ui/theme';
+import { StarThemeSwitch } from '@star-ng/ui/theme-switch';
 
 describe('StarThemeSwitch', () => {
   beforeEach(() => {

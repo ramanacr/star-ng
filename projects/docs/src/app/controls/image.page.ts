@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { StarImage } from 'star-ng/media';
+import { StarImage } from '@star-ng/ui/media';
 import { DOCS, DocsRow } from '../shared/docs';
 import { sampleImage } from '../shared/sample-images';
 
@@ -11,7 +11,7 @@ import { sampleImage } from '../shared/sample-images';
     <docs-page
       heading="Image"
       lead="A lazy image that can open in a dialog with zoom buttons."
-      importFrom="import { StarImage } from 'star-ng/media';"
+      importFrom="import { StarImage } from '@star-ng/ui/media';"
     >
       <docs-example
         heading="Plain image"

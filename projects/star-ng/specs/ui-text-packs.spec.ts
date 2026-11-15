@@ -1,6 +1,6 @@
-import { STAR_UI_TEXT_DEFAULTS, STAR_UI_TEXT_PARAMS, StarUiText } from 'star-ng/core';
-import { STAR_UI_TEXT_DE } from 'star-ng/i18n/de';
-import { STAR_UI_TEXT_ES } from 'star-ng/i18n/es';
+import { STAR_UI_TEXT_DEFAULTS, STAR_UI_TEXT_PARAMS, StarUiText } from '@star-ng/ui/core';
+import { STAR_UI_TEXT_DE } from '@star-ng/ui/i18n/de';
+import { STAR_UI_TEXT_ES } from '@star-ng/ui/i18n/es';
 
 type Name = keyof StarUiText;
 

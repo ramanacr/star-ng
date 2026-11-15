@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
-import { StarSeverity } from 'star-ng/core';
+import { StarSeverity } from '@star-ng/ui/core';
 
 /**
  * Count or dot badge (PrimeNG `p-badge`). Without a value it renders a dot.

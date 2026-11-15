@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarTab, StarTabContent, StarTabs } from 'star-ng/tabs';
+import { StarTab, StarTabContent, StarTabs } from '@star-ng/ui/tabs';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -10,7 +10,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Tabs"
       lead="Tabs show one panel at a time. The tab buttons follow the WAI-ARIA tabs pattern. The PrimeNG equivalent is p-tabs."
-      importFrom="import { StarTabs, StarTab } from 'star-ng/tabs';"
+      importFrom="import { StarTabs, StarTab } from '@star-ng/ui/tabs';"
     >
       <docs-example
         heading="Basic tabs"

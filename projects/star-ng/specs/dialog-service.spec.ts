@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { STAR_DIALOG_DATA, StarDialogRef, StarDialogService } from 'star-ng/dialog';
+import { STAR_DIALOG_DATA, StarDialogRef, StarDialogService } from '@star-ng/ui/dialog';
 
 // jsdom has no HTMLDialogElement methods. Minimal stand-ins (real browsers implement these).
 const dialogProto = HTMLDialogElement.prototype as Partial<HTMLDialogElement>;

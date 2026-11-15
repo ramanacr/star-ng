@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { StarColumn } from 'star-ng/table';
+import { StarColumn } from '@star-ng/ui/table';
 import { DocsRow } from '../shared/docs';
 
 /** Sample data for the table pages: fictional orders, deterministic (no random values). */

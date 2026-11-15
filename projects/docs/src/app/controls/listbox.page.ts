@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { form, FormField, minLength } from '@angular/forms/signals';
-import { StarField } from 'star-ng/field';
-import { StarListbox } from 'star-ng/listbox';
-import { StarOptionTemplate } from 'star-ng/select';
+import { StarField } from '@star-ng/ui/field';
+import { StarListbox } from '@star-ng/ui/listbox';
+import { StarOptionTemplate } from '@star-ng/ui/select';
 import { DOCS, DocsRow } from '../shared/docs';
 
 interface Queue {
@@ -29,7 +29,7 @@ const REGIONS = ['Central', 'East', 'North', 'South', 'West'];
     <docs-page
       heading="Listbox"
       lead="A list of choices that stays in the page. It chooses one value, or several with checkboxes. It has a filter, groups and option templates."
-      importFrom="import { StarListbox } from 'star-ng/listbox';"
+      importFrom="import { StarListbox } from '@star-ng/ui/listbox';"
     >
       <docs-example
         heading="Single choice"
@@ -90,7 +90,7 @@ const REGIONS = ['Central', 'East', 'North', 'South', 'West'];
       <docs-example
         heading="Option template"
         source="listbox/template"
-        note="A starOption template (from star-ng/select) draws each row."
+        note="A starOption template (from @star-ng/ui/select) draws each row."
       >
         <star-listbox
           [options]="queues"

@@ -11,7 +11,7 @@ import {
   output,
   TemplateRef,
 } from '@angular/core';
-import { STAR_UI_TEXT, starInlineKey } from 'star-ng/core';
+import { STAR_UI_TEXT, starInlineKey } from '@star-ng/ui/core';
 
 /**
  * Divider (PrimeNG `p-divider`): horizontal or vertical rule with an optional label.

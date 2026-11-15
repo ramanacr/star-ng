@@ -1,10 +1,10 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { form, FormField, required, validate } from '@angular/forms/signals';
-import { StarCheckbox } from 'star-ng/checkbox';
-import { StarField, StarInput } from 'star-ng/field';
-import { StarRadio, StarRadioGroup } from 'star-ng/radio';
-import { StarToggleSwitch } from 'star-ng/toggle-switch';
+import { StarCheckbox } from '@star-ng/ui/checkbox';
+import { StarField, StarInput } from '@star-ng/ui/field';
+import { StarRadio, StarRadioGroup } from '@star-ng/ui/radio';
+import { StarToggleSwitch } from '@star-ng/ui/toggle-switch';
 
 interface Model {
   name: string;

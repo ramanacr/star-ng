@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { StarBreadcrumb, StarBreadcrumbItem } from 'star-ng/breadcrumb';
+import { StarBreadcrumb, StarBreadcrumbItem } from '@star-ng/ui/breadcrumb';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -10,7 +10,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Breadcrumb"
       lead="The path to the current page, as a list of links. The last item is the current page. The PrimeNG equivalent is p-breadcrumb."
-      importFrom="import { StarBreadcrumb } from 'star-ng/breadcrumb';"
+      importFrom="import { StarBreadcrumb } from '@star-ng/ui/breadcrumb';"
     >
       <docs-example
         heading="Trail with a home link"

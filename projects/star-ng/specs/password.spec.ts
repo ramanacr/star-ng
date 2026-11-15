@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { StarPassword } from 'star-ng/password';
+import { StarPassword } from '@star-ng/ui/password';
 
 @Component({
   imports: [StarPassword],

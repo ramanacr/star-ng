@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarButton } from 'star-ng/button';
-import { StarDivider, StarToolbar } from 'star-ng/layout';
+import { StarButton } from '@star-ng/ui/button';
+import { StarDivider, StarToolbar } from '@star-ng/ui/layout';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -11,7 +11,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Toolbar"
       lead="A bar of actions with a start group, a center group and an end group. The arrow keys move the focus between its controls. The PrimeNG equivalent is p-toolbar."
-      importFrom="import { StarToolbar } from 'star-ng/layout';"
+      importFrom="import { StarToolbar } from '@star-ng/ui/layout';"
     >
       <docs-example
         heading="Start and end groups"

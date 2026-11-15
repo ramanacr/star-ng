@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { StarSelectButton, StarToggleButton } from 'star-ng/select-button';
+import { StarSelectButton, StarToggleButton } from '@star-ng/ui/select-button';
 
 function key(target: Element, key: string, init: KeyboardEventInit = {}): void {
   target.dispatchEvent(

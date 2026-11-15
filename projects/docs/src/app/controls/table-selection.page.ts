@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarButton } from 'star-ng/button';
-import { StarCellTemplate, StarColumn, StarTable } from 'star-ng/table';
-import { StarTag } from 'star-ng/tag';
+import { StarButton } from '@star-ng/ui/button';
+import { StarCellTemplate, StarColumn, StarTable } from '@star-ng/ui/table';
+import { StarTag } from '@star-ng/ui/tag';
 import { DOCS, DocsRow } from '../shared/docs';
 import { DocsFill, Order, orderColumns, ORDERS, STATUS_SEVERITY } from './table-demo';
 
@@ -13,7 +13,7 @@ import { DocsFill, Order, orderColumns, ORDERS, STATUS_SEVERITY } from './table-
     <docs-page
       heading="Table selection"
       lead="Let the user pick one row or many rows, react to a row click, and put actions in the rows. The selection holds the row objects; the table compares rows by dataKey."
-      importFrom="import { StarTable } from 'star-ng/table';"
+      importFrom="import { StarTable } from '@star-ng/ui/table';"
     >
       <docs-example
         heading="Multiple selection"

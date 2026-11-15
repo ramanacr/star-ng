@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { StarButton } from 'star-ng/button';
+import { StarButton } from '@star-ng/ui/button';
 import { DOCS } from '../shared/docs';
 
 @Component({
@@ -60,25 +60,25 @@ import { DOCS } from '../shared/docs';
   `,
 })
 export class GettingStartedGuide {
-  protected readonly install = `pnpm add star-ng @angular/cdk @phosphor-icons/web
+  protected readonly install = `pnpm add @star-ng/ui @angular/cdk @phosphor-icons/web
 # or
-npm install star-ng @angular/cdk @phosphor-icons/web`;
+npm install @star-ng/ui @angular/cdk @phosphor-icons/web`;
 
   protected readonly angularJson = `"styles": [
   "@phosphor-icons/web/bold/style.css",
   "@phosphor-icons/web/fill/style.css",
-  "star-ng/styles/star-ng.css",
+  "@star-ng/ui/styles/star-ng.css",
   "src/styles.scss"
 ]`;
 
   protected readonly scss = `// src/styles.scss
-@use 'star-ng/styles/star-ng'; // tokens, base rules and every control
+@use '@star-ng/ui/styles/star-ng'; // tokens, base rules and every control
 
 // Or only the tokens, for example in a micro frontend that gets the control styles from its host:
-// @use 'star-ng/styles/tokens';`;
+// @use '@star-ng/ui/styles/tokens';`;
 
   protected readonly usage = `import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { StarButton } from 'star-ng/button';
+import { StarButton } from '@star-ng/ui/button';
 
 @Component({
   selector: 'app-orders',

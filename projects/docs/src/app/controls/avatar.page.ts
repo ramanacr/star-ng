@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { StarAvatar } from 'star-ng/avatar';
+import { StarAvatar } from '@star-ng/ui/avatar';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -10,7 +10,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Avatar"
       lead="A small round or square image of a person or an account. It shows the initials of a name when there is no image, and an icon when there is no name. The PrimeNG equivalent is p-avatar."
-      importFrom="import { StarAvatar } from 'star-ng/avatar';"
+      importFrom="import { StarAvatar } from '@star-ng/ui/avatar';"
     >
       <docs-example heading="Initials and icon" source="avatar/basic">
         <star-avatar name="Jane Doe" />

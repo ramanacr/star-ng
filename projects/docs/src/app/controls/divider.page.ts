@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { StarDivider } from 'star-ng/layout';
+import { StarDivider } from '@star-ng/ui/layout';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -10,7 +10,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Divider"
       lead="A line that separates content. It can carry a label. The PrimeNG equivalent is p-divider."
-      importFrom="import { StarDivider } from 'star-ng/layout';"
+      importFrom="import { StarDivider } from '@star-ng/ui/layout';"
     >
       <docs-example
         heading="Horizontal"

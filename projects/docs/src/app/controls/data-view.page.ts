@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
-import { StarButton } from 'star-ng/button';
-import { StarDataView, StarDataViewItem } from 'star-ng/data-display';
+import { StarButton } from '@star-ng/ui/button';
+import { StarDataView, StarDataViewItem } from '@star-ng/ui/data-display';
 import { DOCS, DocsRow } from '../shared/docs';
 
 interface Product {
@@ -17,7 +17,7 @@ interface Product {
     <docs-page
       heading="Data view"
       lead="Items in a list or in a responsive grid, with a layout switch, client paging and an empty state. You design each item with a template. The PrimeNG equivalent is p-dataview."
-      importFrom="import { StarDataView, StarDataViewItem } from 'star-ng/data-display';"
+      importFrom="import { StarDataView, StarDataViewItem } from '@star-ng/ui/data-display';"
     >
       <docs-example
         heading="List and grid layout"

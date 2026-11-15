@@ -1,17 +1,17 @@
 # StarNG
 
 Accessible Angular controls built on signals, Signal Forms and the Angular CDK.
-npm package: `star-ng`. Selector prefix: `star-`. CSS token prefix: `--star-`.
+npm package: `@star-ng/ui`. Selector prefix: `star-`. CSS token prefix: `--star-`.
 
 - Standalone components with signal inputs, models and outputs. OnPush everywhere.
 - Form controls implement the Signal Forms control interfaces (`[formField]`), and work in
   Reactive Forms through `SignalFormControl`.
 - One set of CSS tokens with light and dark themes. A product overrides the tokens to get
   its own look.
-- One entry point per control group (`star-ng/button`, `star-ng/field`, ...), so an
+- One entry point per control group (`@star-ng/ui/button`, `@star-ng/ui/field`, ...), so an
   application bundles only what it uses.
 - Built-in control text in one injection token (`STAR_UI_TEXT`), ready for translation,
-  with German and Spanish packs (`star-ng/i18n/de`, `star-ng/i18n/es`).
+  with German and Spanish packs (`@star-ng/ui/i18n/de`, `@star-ng/ui/i18n/es`).
 - Right-to-left layouts (Arabic, Hebrew, Persian, Urdu): set `dir="rtl"` on `<html>`. The styles
   use logical properties, the arrow keys follow the visual direction and overlays follow the
   direction at run time.
@@ -19,7 +19,7 @@ npm package: `star-ng`. Selector prefix: `star-`. CSS token prefix: `--star-`.
 
 > Status: the control set is complete: about 90 controls in 53 entry points, each with a docs
 > page, an API table, unit tests and end-to-end tests. The release workflow is ready (see
-> "Releasing"). The first version is not published to npm yet, so `pnpm add star-ng` works only
+> "Releasing"). The first version is not published to npm yet, so `pnpm add @star-ng/ui` works only
 > after the first release.
 
 Control groups: buttons; forms (field, input, checkbox, radio, switch, number, password, mask,
@@ -30,18 +30,18 @@ display; charts; media (file upload, editor, carousel, galleria, image); utiliti
 
 ## Requirements
 
-| Package                                              | Version                                     |
-| ---------------------------------------------------- | ------------------------------------------- |
-| `@angular/core`, `@angular/common`, `@angular/forms` | 22 or later                                 |
-| `@angular/cdk`                                       | 22 or later                                 |
-| `@angular/router`                                    | 22 or later (menus with route links)        |
-| `@phosphor-icons/web`                                | 2.1 or later (icons that the controls draw) |
-| `@jsverse/transloco`                                 | 8 or later, optional (`star-ng/transloco`)  |
+| Package                                              | Version                                        |
+| ---------------------------------------------------- | ---------------------------------------------- |
+| `@angular/core`, `@angular/common`, `@angular/forms` | 22 or later                                    |
+| `@angular/cdk`                                       | 22 or later                                    |
+| `@angular/router`                                    | 22 or later (menus with route links)           |
+| `@phosphor-icons/web`                                | 2.1 or later (icons that the controls draw)    |
+| `@jsverse/transloco`                                 | 8 or later, optional (`@star-ng/ui/transloco`) |
 
 ## Install
 
 ```bash
-pnpm add star-ng @angular/cdk @phosphor-icons/web
+pnpm add @star-ng/ui @angular/cdk @phosphor-icons/web
 ```
 
 ## Include the styles
@@ -53,7 +53,7 @@ in `angular.json`:
 "styles": [
   "@phosphor-icons/web/bold/style.css",
   "@phosphor-icons/web/fill/style.css",
-  "star-ng/styles/star-ng.css",
+  "@star-ng/ui/styles/star-ng.css",
   "src/styles.scss"
 ]
 ```
@@ -61,14 +61,14 @@ in `angular.json`:
 With Sass you can use the SCSS entry instead:
 
 ```scss
-@use 'star-ng/styles/star-ng';
+@use '@star-ng/ui/styles/star-ng';
 ```
 
 ## Use a control
 
 ```ts
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { StarButton } from 'star-ng/button';
+import { StarButton } from '@star-ng/ui/button';
 
 @Component({
   selector: 'app-orders',
@@ -87,12 +87,12 @@ export class Orders {
 
 The built-in text of the controls (screen-reader labels, empty states, page reports) is English.
 Each included language is a separate entry point, so an application bundles only what it
-imports. The packs are not exported from `star-ng`. The `locale` inputs of the controls set the
+imports. The packs are not exported from `@star-ng/ui`. The `locale` inputs of the controls set the
 number and date formats: they do not depend on the pack.
 
 ```ts
-import { provideStarUiText } from 'star-ng/core';
-import { STAR_UI_TEXT_DE } from 'star-ng/i18n/de';
+import { provideStarUiText } from '@star-ng/ui/core';
+import { STAR_UI_TEXT_DE } from '@star-ng/ui/i18n/de';
 
 providers: [provideStarUiText(STAR_UI_TEXT_DE)];
 ```
@@ -117,7 +117,7 @@ Override tokens after the StarNG styles. Light values go on `:root`, dark values
 }
 ```
 
-`StarThemeService` (`star-ng/theme`) is an optional helper for a system / light / dark
+`StarThemeService` (`@star-ng/ui/theme`) is an optional helper for a system / light / dark
 choice. The docs have a guide for it and for the first-paint script.
 
 ## Documentation

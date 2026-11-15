@@ -2,9 +2,9 @@ import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 
 import { form, FormField, minLength } from '@angular/forms/signals';
 
-import { StarField } from 'star-ng/field';
+import { StarField } from '@star-ng/ui/field';
 
-import { StarTree, StarTreeNode } from 'star-ng/tree';
+import { StarTree, StarTreeNode } from '@star-ng/ui/tree';
 
 import { DOCS, DocsRow } from '../shared/docs';
 
@@ -21,7 +21,7 @@ import { buildLargeTree } from './large-tree';
     <docs-page
       heading="Tree"
       lead="A hierarchy of nodes with expand and collapse, optional selection (single, multiple or checkbox) and a filter. It follows the WAI-ARIA tree keyboard model."
-      importFrom="import { StarTree, StarTreeNode } from 'star-ng/tree';"
+      importFrom="import { StarTree, StarTreeNode } from '@star-ng/ui/tree';"
     >
       <docs-example
         heading="Expand and collapse"

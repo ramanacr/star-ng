@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { applyMask, StarInputMask, unmask } from 'star-ng/input-mask';
-import { StarInputOtp } from 'star-ng/input-otp';
+import { applyMask, StarInputMask, unmask } from '@star-ng/ui/input-mask';
+import { StarInputOtp } from '@star-ng/ui/input-otp';
 
 afterEach(() => document.querySelectorAll('.cdk-overlay-container').forEach((n) => n.remove()));
 

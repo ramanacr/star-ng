@@ -1,8 +1,14 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { StarButton } from 'star-ng/button';
-import { StarMegaMenu, StarMenu, StarMenuItem, StarMenuTrigger, StarPanelMenu } from 'star-ng/menu';
+import { StarButton } from '@star-ng/ui/button';
+import {
+  StarMegaMenu,
+  StarMenu,
+  StarMenuItem,
+  StarMenuTrigger,
+  StarPanelMenu,
+} from '@star-ng/ui/menu';
 
 @Component({
   imports: [StarPanelMenu, StarMegaMenu],

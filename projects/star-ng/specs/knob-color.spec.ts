@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { StarColorPicker, StarKnob } from 'star-ng/knob';
+import { StarColorPicker, StarKnob } from '@star-ng/ui/knob';
 
 function key(target: Element, key: string, init: KeyboardEventInit = {}): void {
   target.dispatchEvent(

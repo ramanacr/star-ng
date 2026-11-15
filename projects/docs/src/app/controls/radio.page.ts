@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarRadio, StarRadioGroup } from 'star-ng/radio';
+import { StarRadio, StarRadioGroup } from '@star-ng/ui/radio';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -10,7 +10,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Radio"
       lead="star-radio-group owns the value. Each star-radio is a native radio input, so the arrow keys move and select."
-      importFrom="import { StarRadio, StarRadioGroup } from 'star-ng/radio';"
+      importFrom="import { StarRadio, StarRadioGroup } from '@star-ng/ui/radio';"
     >
       <docs-example heading="Group" source="radio/basic" [script]="basicScript">
         <star-radio-group [(value)]="plan" ariaLabel="Plan">

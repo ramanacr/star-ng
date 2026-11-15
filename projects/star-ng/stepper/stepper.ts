@@ -10,7 +10,7 @@ import {
   input,
   model,
 } from '@angular/core';
-import { STAR_UI_TEXT } from 'star-ng/core';
+import { STAR_UI_TEXT } from '@star-ng/ui/core';
 
 /** One step of `star-stepper`; its content is the step panel. */
 @Component({

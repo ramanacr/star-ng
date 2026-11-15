@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarGalleria, StarGalleryImage } from 'star-ng/media';
+import { StarGalleria, StarGalleryImage } from '@star-ng/ui/media';
 import { DOCS, DocsRow } from '../shared/docs';
 import { sampleImage, sampleSet } from '../shared/sample-images';
 
@@ -11,7 +11,7 @@ import { sampleImage, sampleSet } from '../shared/sample-images';
     <docs-page
       heading="Galleria"
       lead="A large image with a caption, previous and next buttons and a strip of thumbnails."
-      importFrom="import { StarGalleria, StarGalleryImage } from 'star-ng/media';"
+      importFrom="import { StarGalleria, StarGalleryImage } from '@star-ng/ui/media';"
     >
       <docs-example
         heading="Images and thumbnails"

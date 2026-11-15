@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarMegaMenu, StarMenuItem } from 'star-ng/menu';
+import { StarMegaMenu, StarMenuItem } from '@star-ng/ui/menu';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -10,7 +10,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Mega menu"
       lead="A menubar where a top-level item opens one wide panel. The child items of the item are the columns of the panel."
-      importFrom="import { StarMegaMenu } from 'star-ng/menu';"
+      importFrom="import { StarMegaMenu } from '@star-ng/ui/menu';"
     >
       <docs-example
         heading="Panel with columns"

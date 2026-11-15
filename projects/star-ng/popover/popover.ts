@@ -23,8 +23,8 @@ import {
   viewChild,
   ViewContainerRef,
 } from '@angular/core';
+import { StarDirectionService } from '@star-ng/ui/core';
 import { Subscription } from 'rxjs';
-import { StarDirectionService } from 'star-ng/core';
 
 // `start` and `end` are turned around by the CDK in right-to-left: the popover aligns with the
 // start edge of its anchor in both directions.

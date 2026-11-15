@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarField } from 'star-ng/field';
-import { StarInputTags } from 'star-ng/input-tags';
+import { StarField } from '@star-ng/ui/field';
+import { StarInputTags } from '@star-ng/ui/input-tags';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -11,7 +11,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Tags field"
       lead="Free-text values as chips. Type a value and press Enter or a separator. Pasted text splits at the separators."
-      importFrom="import { StarInputTags } from 'star-ng/input-tags';"
+      importFrom="import { StarInputTags } from '@star-ng/ui/input-tags';"
     >
       <docs-example heading="Basic" source="input-tags/basic">
         <div class="docs-stack">

@@ -7,19 +7,19 @@ import {
   StarDirectionService,
   starInlineKey,
   starIsRtl,
-} from 'star-ng/core';
-import { StarTreeTable } from 'star-ng/data-display';
-import { StarCalendar } from 'star-ng/date-picker';
-import { StarDrawer } from 'star-ng/drawer';
-import { StarInputOtp } from 'star-ng/input-otp';
-import { StarKnob } from 'star-ng/knob';
-import { StarToolbar } from 'star-ng/layout';
-import { StarGalleria } from 'star-ng/media';
-import { StarSelectButton } from 'star-ng/select-button';
-import { StarTab, StarTabs } from 'star-ng/tabs';
-import { StarToast } from 'star-ng/toast';
-import { StarTree, StarTreeNode } from 'star-ng/tree';
-import { StarDock, StarSpeedDial, StarSplitter } from 'star-ng/utility';
+} from '@star-ng/ui/core';
+import { StarTreeTable } from '@star-ng/ui/data-display';
+import { StarCalendar } from '@star-ng/ui/date-picker';
+import { StarDrawer } from '@star-ng/ui/drawer';
+import { StarInputOtp } from '@star-ng/ui/input-otp';
+import { StarKnob } from '@star-ng/ui/knob';
+import { StarToolbar } from '@star-ng/ui/layout';
+import { StarGalleria } from '@star-ng/ui/media';
+import { StarSelectButton } from '@star-ng/ui/select-button';
+import { StarTab, StarTabs } from '@star-ng/ui/tabs';
+import { StarToast } from '@star-ng/ui/toast';
+import { StarTree, StarTreeNode } from '@star-ng/ui/tree';
+import { StarDock, StarSpeedDial, StarSplitter } from '@star-ng/ui/utility';
 
 /**
  * Right-to-left behavior of the controls. A control reads the direction from the `dir` attribute

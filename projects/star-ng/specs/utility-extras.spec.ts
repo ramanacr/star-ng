@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { StarChart } from 'star-ng/chart';
+import { StarChart } from '@star-ng/ui/chart';
 import {
   StarAnimateOnScroll,
   StarFloatLabel,
@@ -11,7 +11,7 @@ import {
   StarInplaceDisplay,
   StarRipple,
   StarScrollPanel,
-} from 'star-ng/utility';
+} from '@star-ng/ui/utility';
 
 @Component({
   imports: [

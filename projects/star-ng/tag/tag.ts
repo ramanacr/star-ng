@@ -1,5 +1,5 @@
 import { booleanAttribute, ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { StarSeverity } from 'star-ng/core';
+import { StarSeverity } from '@star-ng/ui/core';
 
 /**
  * Status label (PrimeNG `p-tag`): severity color, optional icon, rounded pill.

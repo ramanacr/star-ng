@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarButton } from 'star-ng/button';
+import { StarButton } from '@star-ng/ui/button';
 
 @Component({
   selector: 'app-root',

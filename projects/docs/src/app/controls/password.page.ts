@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarField } from 'star-ng/field';
-import { StarPassword, StarPasswordRule } from 'star-ng/password';
+import { StarField } from '@star-ng/ui/field';
+import { StarPassword, StarPasswordRule } from '@star-ng/ui/password';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -11,7 +11,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Password"
       lead="A password field with a show / hide button. With feedback it adds a strength meter and a rule checklist."
-      importFrom="import { StarPassword } from 'star-ng/password';"
+      importFrom="import { StarPassword } from '@star-ng/ui/password';"
     >
       <docs-example
         heading="Sign-in field"

@@ -14,7 +14,7 @@ export type StarButtonSize = 'sm' | 'md' | 'lg';
 
 /**
  * Button: the one component for every call to action. Variants, sizes, icons, a loading
- * state and an icon-only form. Styles: `star-ng/styles/controls/_button.scss` (`.star-btn`).
+ * state and an icon-only form. Styles: `@star-ng/ui/styles/controls/_button.scss` (`.star-btn`).
  *
  * `<star-button variant="primary" trailingIcon="ph-bold ph-arrow-right" (pressed)="next()">Next</star-button>`
  */

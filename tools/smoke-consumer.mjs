@@ -1,11 +1,11 @@
 // Consumer smoke test: proves that the PACKED package works for a real Angular application.
 // It copies the fixture tools/fixtures/consumer to a temp folder OUTSIDE the repository, installs
 // the tarball into it (with the Angular versions of this workspace), and runs a production build.
-// The fixture imports `star-ng/button`, `star-ng/core` and `star-ng/i18n/de`, uses <star-button>,
-// and includes `star-ng/styles/star-ng.css` and the first-paint script through angular.json.
+// The fixture imports `@star-ng/ui/button`, `@star-ng/ui/core` and `@star-ng/ui/i18n/de`, uses <star-button>,
+// and includes `@star-ng/ui/styles/star-ng.css` and the first-paint script through angular.json.
 // A failure means that an entry point, a typing, a peer dependency range or a style export does
 // not resolve for a consumer, which no test inside this repository can show.
-// Usage: node tools/smoke-consumer.mjs [path to star-ng-<version>.tgz]
+// Usage: node tools/smoke-consumer.mjs [path to star-ng-ui-<version>.tgz]
 //   Without an argument the script packs dist/star-ng itself (run `pnpm build:lib` first).
 //   SMOKE_KEEP=1 keeps the temp folder. SMOKE_DIR=<path> chooses its parent folder.
 import { execFileSync, spawnSync } from 'node:child_process';
@@ -114,7 +114,7 @@ writeFileSync(
       name: 'star-ng-consumer-smoke',
       version: '0.0.0',
       private: true,
-      dependencies: { ...dependencies, 'star-ng': `file:${tarball.replaceAll('\\', '/')}` },
+      dependencies: { ...dependencies, '@star-ng/ui': `file:${tarball.replaceAll('\\', '/')}` },
       devDependencies,
     },
     null,
@@ -128,16 +128,16 @@ writeFileSync(
 );
 
 try {
-  // 3. Install. An unmet or invalid peer dependency of star-ng is a failure.
-  step(`Installing star-ng from ${tarball} into ${app}`);
+  // 3. Install. An unmet or invalid peer dependency of @star-ng/ui is a failure.
+  step(`Installing @star-ng/ui from ${tarball} into ${app}`);
   const install = pnpm(['install', '--no-frozen-lockfile', '--prefer-offline'], app);
   if (install.status !== 0) die(`pnpm install failed:\n${install.output.slice(-3000)}`);
   const peerIssue = install.output
     .split('\n')
     .filter((line) => /peer/i.test(line) && /(unmet|missing|invalid|incompatible)/i.test(line));
   if (peerIssue.length) die(`peer dependency problem reported by pnpm:\n${peerIssue.join('\n')}`);
-  const consumerStarNg = join(app, 'node_modules/star-ng/package.json');
-  if (!existsSync(consumerStarNg)) die('star-ng is not in the temp project node_modules.');
+  const consumerStarNg = join(app, 'node_modules/@star-ng/ui/package.json');
+  if (!existsSync(consumerStarNg)) die('@star-ng/ui is not in the temp project node_modules.');
 
   // 4. Production build with strict templates and full library type checking.
   step('Building the consumer application (production)');

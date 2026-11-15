@@ -1,8 +1,8 @@
 import { HttpErrorResponse, HttpEvent, HttpEventType, HttpResponse } from '@angular/common/http';
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { StarFileStatus, StarFileUpload, toUploadStatus } from '@star-ng/ui/file-upload';
 import { firstValueFrom, of, throwError, toArray } from 'rxjs';
-import { StarFileStatus, StarFileUpload, toUploadStatus } from 'star-ng/file-upload';
 
 const file = (name: string) => new File(['x'], name, { type: 'application/pdf' });
 

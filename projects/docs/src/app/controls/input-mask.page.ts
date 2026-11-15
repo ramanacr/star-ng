@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarField } from 'star-ng/field';
-import { StarInputMask } from 'star-ng/input-mask';
+import { StarField } from '@star-ng/ui/field';
+import { StarInputMask } from '@star-ng/ui/input-mask';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -11,7 +11,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Input mask"
       lead="A text field with a fixed format, such as a phone number or a serial number. Mask tokens: 9 is a digit, a is a letter, * is a letter or a digit. Other characters are literals."
-      importFrom="import { StarInputMask } from 'star-ng/input-mask';"
+      importFrom="import { StarInputMask } from '@star-ng/ui/input-mask';"
     >
       <docs-example heading="Phone number" source="input-mask/phone">
         <div class="docs-stack">

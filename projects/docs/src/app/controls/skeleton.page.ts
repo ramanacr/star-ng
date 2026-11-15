@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarButton } from 'star-ng/button';
-import { StarSkeleton } from 'star-ng/skeleton';
+import { StarButton } from '@star-ng/ui/button';
+import { StarSkeleton } from '@star-ng/ui/skeleton';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -11,7 +11,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Skeleton"
       lead="A placeholder shape that shows where content will appear while it loads. It is hidden from screen readers. The PrimeNG equivalent is p-skeleton."
-      importFrom="import { StarSkeleton } from 'star-ng/skeleton';"
+      importFrom="import { StarSkeleton } from '@star-ng/ui/skeleton';"
     >
       <docs-example
         heading="Shapes"

@@ -1,9 +1,9 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { StarBreadcrumb } from 'star-ng/breadcrumb';
-import { StarProgressBar } from 'star-ng/progress-bar';
-import { StarStep, StarStepper } from 'star-ng/stepper';
+import { StarBreadcrumb } from '@star-ng/ui/breadcrumb';
+import { StarProgressBar } from '@star-ng/ui/progress-bar';
+import { StarStep, StarStepper } from '@star-ng/ui/stepper';
 
 @Component({
   imports: [StarStepper, StarStep, StarProgressBar, StarBreadcrumb],

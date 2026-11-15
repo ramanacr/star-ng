@@ -13,7 +13,7 @@ import {
   output,
   signal,
 } from '@angular/core';
-import { STAR_UI_TEXT, starInlineKey } from 'star-ng/core';
+import { STAR_UI_TEXT, starInlineKey } from '@star-ng/ui/core';
 import {
   addDays,
   addMonths,

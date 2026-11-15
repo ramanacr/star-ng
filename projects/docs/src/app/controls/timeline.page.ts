@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { StarTimeline, StarTimelineContent, StarTimelineEvent } from 'star-ng/layout';
+import { StarTimeline, StarTimelineContent, StarTimelineEvent } from '@star-ng/ui/layout';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -10,7 +10,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Timeline"
       lead="An ordered list of events with a marker, a date and a text. It can run down the page, alternate left and right, or run across. The PrimeNG equivalent is p-timeline."
-      importFrom="import { StarTimeline } from 'star-ng/layout';"
+      importFrom="import { StarTimeline } from '@star-ng/ui/layout';"
     >
       <docs-example
         heading="Vertical"

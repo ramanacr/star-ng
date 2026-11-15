@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { email, form, FormField, required } from '@angular/forms/signals';
-import { StarField, StarInput } from 'star-ng/field';
+import { StarField, StarInput } from '@star-ng/ui/field';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -11,7 +11,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Field and input"
       lead="star-field adds a label, a hint and an error message to a control. starInput styles a native input or textarea and links it to the field."
-      importFrom="import { StarField, StarInput } from 'star-ng/field';"
+      importFrom="import { StarField, StarInput } from '@star-ng/ui/field';"
     >
       <docs-example heading="Label and hint" source="field/basic">
         <div class="docs-stack">

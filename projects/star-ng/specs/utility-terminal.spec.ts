@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { StarTerminal } from 'star-ng/utility';
+import { StarTerminal } from '@star-ng/ui/utility';
 
 @Component({
   imports: [StarTerminal],

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarMenuItem } from 'star-ng/menu';
-import { StarSpeedDial } from 'star-ng/utility';
+import { StarMenuItem } from '@star-ng/ui/menu';
+import { StarSpeedDial } from '@star-ng/ui/utility';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -11,7 +11,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Speed dial"
       lead="A round button that opens a short list of actions. The list opens up, down, left, right, to the start or to the end. The button has aria-expanded, the list is inert while it is closed, and Escape closes it."
-      importFrom="import { StarSpeedDial } from 'star-ng/utility';"
+      importFrom="import { StarSpeedDial } from '@star-ng/ui/utility';"
     >
       <docs-example
         heading="Actions"

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarMenuItem, StarSplitButton } from 'star-ng/menu';
+import { StarMenuItem, StarSplitButton } from '@star-ng/ui/menu';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -10,7 +10,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Split button"
       lead="A main action and a menu of related actions in one control. A click on the main part runs the default action. The caret opens the other actions."
-      importFrom="import { StarSplitButton } from 'star-ng/menu';"
+      importFrom="import { StarSplitButton } from '@star-ng/ui/menu';"
     >
       <docs-example
         heading="Main action and menu"

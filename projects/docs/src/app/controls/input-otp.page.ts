@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarInputOtp } from 'star-ng/input-otp';
+import { StarInputOtp } from '@star-ng/ui/input-otp';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -10,7 +10,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="One-time code"
       lead="One box per character. Focus moves forward as the user types. A pasted code fills every box."
-      importFrom="import { StarInputOtp } from 'star-ng/input-otp';"
+      importFrom="import { StarInputOtp } from '@star-ng/ui/input-otp';"
     >
       <docs-example heading="Six digits" source="input-otp/basic">
         <star-input-otp

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { StarButton } from 'star-ng/button';
-import { StarField, StarInput } from 'star-ng/field';
-import { StarIconField, StarInputGroup, StarInputGroupAddon } from 'star-ng/input-group';
+import { StarButton } from '@star-ng/ui/button';
+import { StarField, StarInput } from '@star-ng/ui/field';
+import { StarIconField, StarInputGroup, StarInputGroupAddon } from '@star-ng/ui/input-group';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -20,7 +20,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Input group and icon field"
       lead="star-icon-field puts an icon inside an input. star-input-group joins an input with text, icons or buttons into one control."
-      importFrom="import { StarIconField, StarInputGroup, StarInputGroupAddon } from 'star-ng/input-group';"
+      importFrom="import { StarIconField, StarInputGroup, StarInputGroupAddon } from '@star-ng/ui/input-group';"
     >
       <docs-example heading="Icon field" source="input-group/icon">
         <div class="docs-stack">

@@ -1,9 +1,9 @@
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { TranslocoService, TranslocoTestingModule } from '@jsverse/transloco';
-import { STAR_UI_TEXT, STAR_UI_TEXT_DEFAULTS } from 'star-ng/core';
-import { StarPaginator } from 'star-ng/paginator';
-import { StarPassword } from 'star-ng/password';
+import { STAR_UI_TEXT, STAR_UI_TEXT_DEFAULTS } from '@star-ng/ui/core';
+import { StarPaginator } from '@star-ng/ui/paginator';
+import { StarPassword } from '@star-ng/ui/password';
 import { provideStarUiTextFromTransloco } from './transloco-ui-text';
 
 @Component({

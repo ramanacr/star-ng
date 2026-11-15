@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { StarChart, StarChartPointSeries, StarChartSeries } from 'star-ng/chart';
+import { StarChart, StarChartPointSeries, StarChartSeries } from '@star-ng/ui/chart';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -10,7 +10,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Chart"
       lead="Bar, stacked bar, line, area, doughnut, pie, radar, polar area and scatter charts drawn as SVG, without a chart library. Every chart can show its data as a table. This is the equivalent of the PrimeNG p-chart."
-      importFrom="import { StarChart } from 'star-ng/chart';"
+      importFrom="import { StarChart } from '@star-ng/ui/chart';"
     >
       <docs-example
         heading="Bar chart"

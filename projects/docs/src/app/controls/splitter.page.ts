@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarSplitter } from 'star-ng/utility';
+import { StarSplitter } from '@star-ng/ui/utility';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -10,7 +10,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Splitter"
       lead="Two panes with a gutter between them. The user drags the gutter or uses the arrow keys to change the size of the first pane. The gutter is a separator with a value, so a screen reader announces the size."
-      importFrom="import { StarSplitter } from 'star-ng/utility';"
+      importFrom="import { StarSplitter } from '@star-ng/ui/utility';"
     >
       <docs-example
         heading="Horizontal"

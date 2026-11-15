@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { StarSpinner } from 'star-ng/spinner';
+import { StarSpinner } from '@star-ng/ui/spinner';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -10,7 +10,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Spinner"
       lead="Shows that work is in progress when the duration is not known."
-      importFrom="import { StarSpinner } from 'star-ng/spinner';"
+      importFrom="import { StarSpinner } from '@star-ng/ui/spinner';"
     >
       <docs-example heading="Sizes" source="spinner/sizes">
         <star-spinner size="1.25rem" [strokeWidth]="6" />

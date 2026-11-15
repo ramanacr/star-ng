@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarToggleSwitch } from 'star-ng/toggle-switch';
+import { StarToggleSwitch } from '@star-ng/ui/toggle-switch';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -10,7 +10,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Toggle switch"
       lead="An on/off setting that applies at once. A native checkbox with role switch."
-      importFrom="import { StarToggleSwitch } from 'star-ng/toggle-switch';"
+      importFrom="import { StarToggleSwitch } from '@star-ng/ui/toggle-switch';"
     >
       <docs-example heading="Two-way binding" source="toggle-switch/basic" [script]="basicScript">
         <star-toggle-switch [(checked)]="alerts">Email alerts</star-toggle-switch>

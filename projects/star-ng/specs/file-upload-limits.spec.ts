@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { fileMatchesAccept, formatFileSize, StarFileUpload } from 'star-ng/file-upload';
+import { fileMatchesAccept, formatFileSize, StarFileUpload } from '@star-ng/ui/file-upload';
 
 @Component({
   imports: [StarFileUpload],

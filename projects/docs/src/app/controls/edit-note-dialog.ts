@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { StarButton } from 'star-ng/button';
-import { STAR_DIALOG_DATA, StarDialogRef } from 'star-ng/dialog';
-import { StarField, StarInput } from 'star-ng/field';
+import { StarButton } from '@star-ng/ui/button';
+import { STAR_DIALOG_DATA, StarDialogRef } from '@star-ng/ui/dialog';
+import { StarField, StarInput } from '@star-ng/ui/field';
 
 export interface EditNoteData {
   readonly orderId: string;

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarInput } from 'star-ng/field';
-import { StarSelect } from 'star-ng/select';
-import { StarFloatLabel } from 'star-ng/utility';
+import { StarInput } from '@star-ng/ui/field';
+import { StarSelect } from '@star-ng/ui/select';
+import { StarFloatLabel } from '@star-ng/ui/utility';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -12,7 +12,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Float label"
       lead="The label sits inside the input and moves above it when the input has focus or a value. Wrap one text input, one textarea or one select. The label is a real label around the control, so a click focuses the control and a screen reader reads the label."
-      importFrom="import { StarFloatLabel } from 'star-ng/utility';"
+      importFrom="import { StarFloatLabel } from '@star-ng/ui/utility';"
     >
       <docs-example
         heading="Text input and textarea"

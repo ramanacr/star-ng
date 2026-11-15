@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { StarChart, StarChartPointSeries, StarChartSeries } from 'star-ng/chart';
+import { StarChart, StarChartPointSeries, StarChartSeries } from '@star-ng/ui/chart';
 
 @Component({
   imports: [StarChart],

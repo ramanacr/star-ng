@@ -8,9 +8,9 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { StarButton, StarButtonVariant } from 'star-ng/button';
-import { STAR_UI_TEXT } from 'star-ng/core';
-import { StarPopover } from 'star-ng/popover';
+import { StarButton, StarButtonVariant } from '@star-ng/ui/button';
+import { STAR_UI_TEXT } from '@star-ng/ui/core';
+import { StarPopover } from '@star-ng/ui/popover';
 import { StarDialog } from './dialog';
 
 export interface StarConfirmOptions {

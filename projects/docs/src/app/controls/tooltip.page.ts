@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { StarButton } from 'star-ng/button';
-import { StarTooltip } from 'star-ng/tooltip';
+import { StarButton } from '@star-ng/ui/button';
+import { StarTooltip } from '@star-ng/ui/tooltip';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -11,7 +11,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Tooltip"
       lead="A short text label for an element. It shows on hover and on keyboard focus, and it hides on Escape. The element gets aria-describedby while the tooltip is visible."
-      importFrom="import { StarTooltip } from 'star-ng/tooltip';"
+      importFrom="import { StarTooltip } from '@star-ng/ui/tooltip';"
     >
       <docs-example
         heading="Positions"

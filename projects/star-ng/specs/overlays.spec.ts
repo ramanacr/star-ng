@@ -1,8 +1,8 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { StarConfirmHost, StarConfirmService, StarDialog } from 'star-ng/dialog';
-import { StarDrawer } from 'star-ng/drawer';
-import { StarToast, StarToastService } from 'star-ng/toast';
+import { StarConfirmHost, StarConfirmService, StarDialog } from '@star-ng/ui/dialog';
+import { StarDrawer } from '@star-ng/ui/drawer';
+import { StarToast, StarToastService } from '@star-ng/ui/toast';
 
 // jsdom has no HTMLDialogElement methods. Minimal stand-ins (real browsers implement these).
 const dialogProto = HTMLDialogElement.prototype as Partial<HTMLDialogElement>;

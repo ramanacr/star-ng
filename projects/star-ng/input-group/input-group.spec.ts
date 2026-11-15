@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { StarInput } from 'star-ng/field';
+import { StarInput } from '@star-ng/ui/field';
 import { StarIconField, StarInputGroup, StarInputGroupAddon } from './input-group';
 
 @Component({

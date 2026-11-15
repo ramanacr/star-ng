@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarButton } from 'star-ng/button';
-import { StarMenu, StarMenuItem, StarMenuTrigger } from 'star-ng/menu';
+import { StarButton } from '@star-ng/ui/button';
+import { StarMenu, StarMenuItem, StarMenuTrigger } from '@star-ng/ui/menu';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -11,7 +11,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Menu"
       lead="A list of actions. It opens as a popup from any trigger, or it stays in place as an inline list. Built on the Angular CDK menu: roving focus, typeahead, submenus and focus return are included."
-      importFrom="import { StarMenu, StarMenuTrigger } from 'star-ng/menu';"
+      importFrom="import { StarMenu, StarMenuTrigger } from '@star-ng/ui/menu';"
     >
       <docs-example
         heading="Popup menu"
@@ -100,8 +100,8 @@ import { DOCS, DocsRow } from '../shared/docs';
         A modal <code>dialog</code> makes the rest of the page inert. The Angular CDK menu puts its
         popup in the overlay container, outside the dialog, so the popup would show but take no
         click and no key. The function <code>keepMenuInsideDialog</code> in
-        <code>star-ng/menu</code> moves the popup into the dialog when the trigger is inside one.
-        The menu trigger, the context menu and every submenu trigger apply it.
+        <code>@star-ng/ui/menu</code> moves the popup into the dialog when the trigger is inside
+        one. The menu trigger, the context menu and every submenu trigger apply it.
       </p>
       <p>
         <code>keepMenuInsideDialog</code> wraps a private factory of the CDK menu trigger, because

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { form, FormField, required } from '@angular/forms/signals';
-import { StarField } from 'star-ng/field';
-import { StarCascadeSelect } from 'star-ng/select';
+import { StarField } from '@star-ng/ui/field';
+import { StarCascadeSelect } from '@star-ng/ui/select';
 import { DOCS, DocsRow } from '../shared/docs';
 
 interface Place {
@@ -19,7 +19,7 @@ interface Place {
     <docs-page
       heading="Cascade select"
       lead="A dropdown for one leaf of nested options, for example country, state and city. The popup is a menu with submenus. The value is the leaf."
-      importFrom="import { StarCascadeSelect } from 'star-ng/select';"
+      importFrom="import { StarCascadeSelect } from '@star-ng/ui/select';"
     >
       <docs-example
         heading="Country, state and city"

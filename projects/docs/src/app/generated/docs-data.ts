@@ -21,7 +21,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarAccordion": {
     "kind": "component",
     "selector": "star-accordion",
-    "entry": "star-ng/accordion",
+    "entry": "@star-ng/ui/accordion",
     "description": "Accordion (PrimeNG `p-accordion`): `[(value)]` holds the open panel values, `multiple` allows several open, lazy panel bodies, WAI-ARIA accordion keyboard (Arrow Up / Down, Home / End between headers). Height animates with `grid-template-rows`.",
     "inputs": [
       {
@@ -46,7 +46,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarAccordionContent": {
     "kind": "directive",
     "selector": "ng-template[starAccordionContent]",
-    "entry": "star-ng/accordion",
+    "entry": "@star-ng/ui/accordion",
     "description": "Lazy panel body: `<ng-template starAccordionContent>` renders on first expand only.",
     "inputs": [],
     "models": [],
@@ -55,7 +55,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarAccordionPanel": {
     "kind": "component",
     "selector": "star-accordion-panel",
-    "entry": "star-ng/accordion",
+    "entry": "@star-ng/ui/accordion",
     "description": "One section of `star-accordion`.",
     "inputs": [
       {
@@ -93,7 +93,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarAnimateOnScroll": {
     "kind": "directive",
     "selector": "[starAnimateOnScroll]",
-    "entry": "star-ng/utility",
+    "entry": "@star-ng/ui/utility",
     "description": "Animate on scroll (PrimeNG `pAnimateOnScroll`): the element fades and moves in the first time it comes into view. Content is visible at once when the user asks for reduced motion or the browser has no `IntersectionObserver`.",
     "inputs": [
       {
@@ -110,7 +110,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarAutoComplete": {
     "kind": "component",
     "selector": "star-autocomplete",
-    "entry": "star-ng/autocomplete",
+    "entry": "@star-ng/ui/autocomplete",
     "description": "Autocomplete (PrimeNG `p-autocomplete`). Local mode filters `options`; server mode listens to `(completeMethod)` and shows `[suggestions]`. Only listed options can be chosen (force selection): unmatched text reverts on blur, an exact label match is taken.",
     "inputs": [],
     "models": [
@@ -135,7 +135,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarAutoCompleteBase": {
     "kind": "directive",
     "selector": "",
-    "entry": "star-ng/autocomplete",
+    "entry": "@star-ng/ui/autocomplete",
     "description": "Shared behaviour of the autocomplete controls (WAI-ARIA combobox with list autocomplete): local filtering of `options`, or server search through `(completeMethod)` + `[suggestions]` with a debounce, minimum query length, loading state, match highlighting, dropdown button and a screen-reader result count.",
     "inputs": [
       {
@@ -195,7 +195,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarAvatar": {
     "kind": "component",
     "selector": "star-avatar",
-    "entry": "star-ng/avatar",
+    "entry": "@star-ng/ui/avatar",
     "description": "Avatar (PrimeNG `p-avatar`): image, initials from a name, or an icon; circle or square. Falls back to initials when the image fails to load. `<star-avatar name=\"Jane Doe\" [image]=\"user.photoUrl\" size=\"lg\" />`",
     "inputs": [
       {
@@ -240,7 +240,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarBadge": {
     "kind": "component",
     "selector": "star-badge",
-    "entry": "star-ng/badge",
+    "entry": "@star-ng/ui/badge",
     "description": "Count or dot badge (PrimeNG `p-badge`). Without a value it renders a dot. `<star-badge [value]=\"unread()\" severity=\"danger\" ariaLabel=\"unread messages\" />`",
     "inputs": [
       {
@@ -285,7 +285,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarBlockUi": {
     "kind": "component",
     "selector": "star-block-ui",
-    "entry": "star-ng/utility",
+    "entry": "@star-ng/ui/utility",
     "description": "Block UI (PrimeNG `p-blockui`): while `blocked`, the content is `inert` (no focus, no clicks, hidden from assistive tech) and shows a busy overlay with a spinner. `<star-block-ui [blocked]=\"saving()\">…form…</star-block-ui>`",
     "inputs": [
       {
@@ -309,7 +309,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarBreadcrumb": {
     "kind": "component",
     "selector": "star-breadcrumb",
-    "entry": "star-ng/breadcrumb",
+    "entry": "@star-ng/ui/breadcrumb",
     "description": "Breadcrumb (PrimeNG `p-breadcrumb`): `nav` landmark, ordered list, `aria-current=\"page\"` on the last item, optional home link.",
     "inputs": [
       {
@@ -340,8 +340,8 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarButton": {
     "kind": "component",
     "selector": "star-button",
-    "entry": "star-ng/button",
-    "description": "Button: the one component for every call to action. Variants, sizes, icons, a loading state and an icon-only form. Styles: `star-ng/styles/controls/_button.scss` (`.star-btn`).",
+    "entry": "@star-ng/ui/button",
+    "description": "Button: the one component for every call to action. Variants, sizes, icons, a loading state and an icon-only form. Styles: `@star-ng/ui/styles/controls/_button.scss` (`.star-btn`).",
     "inputs": [
       {
         "name": "variant",
@@ -428,7 +428,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarCalendar": {
     "kind": "component",
     "selector": "star-calendar",
-    "entry": "star-ng/date-picker",
+    "entry": "@star-ng/ui/date-picker",
     "description": "Month grid used by `star-date-picker`, `star-date-range-picker`, or on its own as an inline calendar (PrimeNG `p-datepicker [inline]`). WAI-ARIA date grid keyboard model: arrows move by day / week, Home / End to week start / end, PageUp / PageDown by month, Shift + PageUp / PageDown by year, Enter / Space select. Month and year views for fast jumps.",
     "inputs": [
       {
@@ -544,7 +544,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarCard": {
     "kind": "component",
     "selector": "star-card",
-    "entry": "star-ng/card",
+    "entry": "@star-ng/ui/card",
     "description": "Content card (PrimeNG `p-card`) on the StarNG `.star-card` surface: title, subtitle, header actions, body and footer slots.",
     "inputs": [
       {
@@ -568,7 +568,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarCarousel": {
     "kind": "component",
     "selector": "star-carousel",
-    "entry": "star-ng/media",
+    "entry": "@star-ng/ui/media",
     "description": "Carousel (PrimeNG `p-carousel`) on CSS scroll snap: swipe and trackpad work natively, previous / next buttons, page dots, `numVisible` items per page, optional autoplay with a pause button (WCAG 2.2.2) that also pauses on hover and focus.",
     "inputs": [
       {
@@ -606,7 +606,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarCarouselItem": {
     "kind": "directive",
     "selector": "ng-template[starCarouselItem]",
-    "entry": "star-ng/media",
+    "entry": "@star-ng/ui/media",
     "description": "Slide template: `<ng-template starCarouselItem let-item>`.",
     "inputs": [
       {
@@ -623,7 +623,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarCascadeSelect": {
     "kind": "component",
     "selector": "star-cascade-select",
-    "entry": "star-ng/select",
+    "entry": "@star-ng/ui/select",
     "description": "Cascade select (PrimeNG `p-cascadeselect`): choose one leaf of nested options, for example country → state → city. The popup is a menu with submenus (CDK Menu: arrow keys, typeahead, Escape). The value is the leaf (`optionValue`, or the whole option).",
     "inputs": [
       {
@@ -775,7 +775,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarCellTemplate": {
     "kind": "directive",
     "selector": "ng-template[starCell]",
-    "entry": "star-ng/table",
+    "entry": "@star-ng/ui/table",
     "description": "Custom cell: `<ng-template starCell=\"status\" let-row let-value=\"value\">…</ng-template>`.",
     "inputs": [
       {
@@ -799,7 +799,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarChart": {
     "kind": "component",
     "selector": "star-chart",
-    "entry": "star-ng/chart",
+    "entry": "@star-ng/ui/chart",
     "description": "Chart (PrimeNG `p-chart` without Chart.js): dependency-free SVG bar, stacked bar, line, area, doughnut, pie, radar, polar area and scatter charts. One y-axis, recessive grid, 2px lines, 4px rounded bar ends on the baseline, 2px surface gaps, legend for 2+ series, hover tooltip per mark (crosshair on line), and a data table (visible on demand, always present for screen readers). Colors are fixed series slots in both themes.",
     "inputs": [
       {
@@ -872,7 +872,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarCheckbox": {
     "kind": "component",
     "selector": "star-checkbox",
-    "entry": "star-ng/checkbox",
+    "entry": "@star-ng/ui/checkbox",
     "description": "Checkbox (PrimeNG `p-checkbox` binary mode). Native `<input type=\"checkbox\">` for full keyboard and screen-reader support, with the StarNG box drawn over it.",
     "inputs": [
       {
@@ -968,7 +968,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarChip": {
     "kind": "component",
     "selector": "star-chip",
-    "entry": "star-ng/layout",
+    "entry": "@star-ng/ui/layout",
     "description": "Chip (PrimeNG `p-chip`): label with optional icon or image and a remove button. `<star-chip label=\"Design\" icon=\"ph-bold ph-palette\" removable (removed)=\"drop()\" />`",
     "inputs": [
       {
@@ -1014,7 +1014,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarColorPicker": {
     "kind": "component",
     "selector": "star-color-picker",
-    "entry": "star-ng/knob",
+    "entry": "@star-ng/ui/knob",
     "description": "Color picker (PrimeNG `p-colorpicker`): preset swatches, the native color dialog and a hex field. Value: `#rrggbb`. `<star-color-picker [(value)]=\"tagColor\" ariaLabel=\"Tag color\" />`",
     "inputs": [
       {
@@ -1061,7 +1061,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarConfirmHost": {
     "kind": "component",
     "selector": "star-confirm-host",
-    "entry": "star-ng/dialog",
+    "entry": "@star-ng/ui/dialog",
     "description": "",
     "inputs": [],
     "models": [],
@@ -1070,7 +1070,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarContextMenu": {
     "kind": "directive",
     "selector": "[starContextMenu]",
-    "entry": "star-ng/menu",
+    "entry": "@star-ng/ui/menu",
     "description": "Right-click (and Shift+F10 / context-menu key) menu on any element (PrimeNG `p-contextmenu`). `<tr [starContextMenu]=\"rowMenu\">…</tr> <star-menu #rowMenu [items]=\"rowActions\" />`",
     "inputs": [
       {
@@ -1087,7 +1087,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarDataView": {
     "kind": "component",
     "selector": "star-data-view",
-    "entry": "star-ng/data-display",
+    "entry": "@star-ng/ui/data-display",
     "description": "Data view (PrimeNG `p-dataview`): items in a list or a responsive grid, layout switch, client pagination and an empty state. It does not sort: sort the items before you pass them in. You design each item with a template.",
     "inputs": [
       {
@@ -1140,7 +1140,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarDataViewItem": {
     "kind": "directive",
     "selector": "ng-template[starDataViewItem]",
-    "entry": "star-ng/data-display",
+    "entry": "@star-ng/ui/data-display",
     "description": "Item template: `<ng-template starDataViewItem let-item let-layout=\"layout\">`.",
     "inputs": [
       {
@@ -1157,7 +1157,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarDateInputBase": {
     "kind": "directive",
     "selector": "",
-    "entry": "star-ng/date-picker",
+    "entry": "@star-ng/ui/date-picker",
     "description": "Shared input + popup behaviour of the date controls: typed entry with locale-aware parsing, a calendar popup (native popover, so it works in dialogs), Today / Clear bar, keyboard.",
     "inputs": [
       {
@@ -1357,7 +1357,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarDatePicker": {
     "kind": "component",
     "selector": "star-date-picker",
-    "entry": "star-ng/date-picker",
+    "entry": "@star-ng/ui/date-picker",
     "description": "Date picker (PrimeNG `p-datepicker`): typed entry (`dd/mm/yyyy` or the locale's order, or ISO), calendar popup with month / year views, min / max, disabled dates and weekdays, Today / Clear.",
     "inputs": [
       {
@@ -1404,7 +1404,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarDateRangePicker": {
     "kind": "component",
     "selector": "star-date-range-picker",
-    "entry": "star-ng/date-picker",
+    "entry": "@star-ng/ui/date-picker",
     "description": "Date range picker (PrimeNG `p-datepicker selectionMode=\"range\"`). Value: `{ start, end }`. First click sets the start, second click the end (swapped if earlier); hovering previews. Type `01/11/2026 – 15/11/2026` (any separator between the two dates).",
     "inputs": [
       {
@@ -1444,7 +1444,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarDialog": {
     "kind": "component",
     "selector": "star-dialog",
-    "entry": "star-ng/dialog",
+    "entry": "@star-ng/ui/dialog",
     "description": "Dialog (PrimeNG `p-dialog`) built on the native `<dialog>` element: top-layer rendering, focus trap, focus restore and Escape handling come from the browser. Entry / exit animate with `@starting-style`; page scroll locks with `:has(dialog[open])`.",
     "inputs": [
       {
@@ -1547,7 +1547,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarDialogContainer": {
     "kind": "component",
     "selector": "star-dialog-container",
-    "entry": "star-ng/dialog",
+    "entry": "@star-ng/ui/dialog",
     "description": "Internal host: an `star-dialog` whose body is the requested component.",
     "inputs": [
       {
@@ -1578,7 +1578,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarDivider": {
     "kind": "component",
     "selector": "star-divider",
-    "entry": "star-ng/layout",
+    "entry": "@star-ng/ui/layout",
     "description": "Divider (PrimeNG `p-divider`): horizontal or vertical rule with an optional label. `<star-divider>or</star-divider>`, `<star-divider layout=\"vertical\" />`",
     "inputs": [
       {
@@ -1609,7 +1609,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarDock": {
     "kind": "component",
     "selector": "star-dock",
-    "entry": "star-ng/utility",
+    "entry": "@star-ng/ui/utility",
     "description": "Dock (PrimeNG `p-dock`): a bar of app shortcuts that magnify on hover and focus. `<star-dock [items]=\"apps\" ariaLabel=\"Apps\" />`",
     "inputs": [
       {
@@ -1648,7 +1648,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarDrawer": {
     "kind": "component",
     "selector": "star-drawer",
-    "entry": "star-ng/drawer",
+    "entry": "@star-ng/ui/drawer",
     "description": "Drawer (PrimeNG `p-drawer`): side sheet on the native `<dialog>` element. Same API as `star-dialog` (`[(visible)]`, `header`, `modal`, `dismissableMask`, `closeOnEscape`, footer slot) plus `position` and a CSS `size`. `left` and `right` are the physical edges of the screen, as in CSS; `start` and `end` follow the writing direction (`end` is the right edge in LTR and the left edge in RTL). Use `start` / `end` for a drawer that must switch sides in right-to-left.",
     "inputs": [
       {
@@ -1672,7 +1672,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarEditor": {
     "kind": "component",
     "selector": "star-editor",
-    "entry": "star-ng/editor",
+    "entry": "@star-ng/ui/editor",
     "description": "Rich text field (PrimeNG `p-editor`, without Quill): a `contenteditable` area with a formatting toolbar (bold, italic, underline, heading, lists, link, clear). Value is HTML, sanitized with Angular's `DomSanitizer` both when it is shown and when it is stored.",
     "inputs": [
       {
@@ -1747,7 +1747,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarField": {
     "kind": "component",
     "selector": "star-field",
-    "entry": "star-ng/field",
+    "entry": "@star-ng/ui/field",
     "description": "Form field wrapper: uppercase label, the control, a hint and an error message (PrimeNG `p-floatlabel` / `p-iftalabel` + `p-message` in one, StarNG style).",
     "inputs": [
       {
@@ -1806,7 +1806,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarFieldset": {
     "kind": "component",
     "selector": "star-fieldset",
-    "entry": "star-ng/panel",
+    "entry": "@star-ng/ui/panel",
     "description": "Fieldset (PrimeNG `p-fieldset`) on the native `<fieldset>` / `<legend>`, so groups of form controls keep their accessible name. Optional collapse toggle in the legend. `<star-fieldset legend=\"Requester\" toggleable>…controls…</star-fieldset>`",
     "inputs": [
       {
@@ -1838,7 +1838,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarFileUpload": {
     "kind": "component",
     "selector": "star-file-upload",
-    "entry": "star-ng/file-upload",
+    "entry": "@star-ng/ui/file-upload",
     "description": "File picker with drag and drop (PrimeNG `p-fileupload`, \"advanced\" mode without the HTTP part). The value is the list of chosen `File`s; upload them in your own service. Validates `accept`, `maxFileSize` and `fileLimit`, and lists rejected files with a reason.",
     "inputs": [
       {
@@ -1962,7 +1962,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarFloatLabel": {
     "kind": "component",
     "selector": "star-float-label",
-    "entry": "star-ng/utility",
+    "entry": "@star-ng/ui/utility",
     "description": "Floating label (PrimeNG `p-floatlabel`): the label sits inside the input and moves above it when the input has focus or a value. Wrap one text input, textarea or `star-select`.",
     "inputs": [
       {
@@ -1979,7 +1979,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarFocusTrap": {
     "kind": "directive",
     "selector": "[starFocusTrap]",
-    "entry": "star-ng/utility",
+    "entry": "@star-ng/ui/utility",
     "description": "Keeps Tab and Shift+Tab inside an element (PrimeNG `pFocusTrap`), on the CDK focus trap. `star-dialog` and `star-drawer` already trap focus; use this for a custom overlay.",
     "inputs": [],
     "models": [],
@@ -1988,7 +1988,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarGalleria": {
     "kind": "component",
     "selector": "star-galleria",
-    "entry": "star-ng/media",
+    "entry": "@star-ng/ui/media",
     "description": "Image gallery (PrimeNG `p-galleria`): main image with caption, previous / next, Arrow keys, and a thumbnail strip (`aria-current` on the active one). `<star-galleria [images]=\"photos\" [(activeIndex)]=\"current\" />`",
     "inputs": [
       {
@@ -2020,7 +2020,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarIconField": {
     "kind": "component",
     "selector": "star-icon-field",
-    "entry": "star-ng/input-group",
+    "entry": "@star-ng/ui/input-group",
     "description": "Icon inside a text input (PrimeNG `p-iconfield` + `p-inputicon`). The icon is decoration only: the input still needs a label (`star-field` or `aria-label`).",
     "inputs": [
       {
@@ -2044,7 +2044,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarImage": {
     "kind": "component",
     "selector": "star-image",
-    "entry": "star-ng/media",
+    "entry": "@star-ng/ui/media",
     "description": "Image with preview (PrimeNG `p-image [preview]`): lazy-loaded thumbnail; click opens the full image in a modal `star-dialog` with zoom in / out. `<star-image src=\"label.png\" alt=\"Product label\" width=\"160\" preview />`",
     "inputs": [
       {
@@ -2082,7 +2082,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarImageCompare": {
     "kind": "component",
     "selector": "star-image-compare",
-    "entry": "star-ng/utility",
+    "entry": "@star-ng/ui/utility",
     "description": "Image compare (PrimeNG `p-imagecompare`): two images on top of each other with a divider that the user moves. The divider is a native range input, so arrow keys, Home and End work.",
     "inputs": [
       {
@@ -2135,7 +2135,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarInplace": {
     "kind": "component",
     "selector": "star-inplace",
-    "entry": "star-ng/utility",
+    "entry": "@star-ng/ui/utility",
     "description": "Inplace (PrimeNG `p-inplace`): shows a value as a button; a click replaces it with the edit content in the same place. Escape or the close button goes back to the value.",
     "inputs": [
       {
@@ -2174,7 +2174,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarInplaceContent": {
     "kind": "directive",
     "selector": "ng-template[starInplaceContent]",
-    "entry": "star-ng/utility",
+    "entry": "@star-ng/ui/utility",
     "description": "Edit view of `star-inplace`: `<ng-template starInplaceContent>…</ng-template>`.",
     "inputs": [],
     "models": [],
@@ -2183,7 +2183,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarInplaceDisplay": {
     "kind": "directive",
     "selector": "ng-template[starInplaceDisplay]",
-    "entry": "star-ng/utility",
+    "entry": "@star-ng/ui/utility",
     "description": "Read view of `star-inplace`: `<ng-template starInplaceDisplay>…</ng-template>`.",
     "inputs": [],
     "models": [],
@@ -2192,7 +2192,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarInput": {
     "kind": "directive",
     "selector": "input[starInput], textarea[starInput]",
-    "entry": "star-ng/field",
+    "entry": "@star-ng/ui/field",
     "description": "Applies StarNG input styling to a native `input` or `textarea` (PrimeNG `pInputText` / `pTextarea`). Inside `star-field` it links label, hint and error automatically. `autoResize` on a textarea grows it with its content (CSS `field-sizing: content`, with a script fallback for browsers without it).",
     "inputs": [
       {
@@ -2237,7 +2237,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarInputGroup": {
     "kind": "component",
     "selector": "star-input-group",
-    "entry": "star-ng/input-group",
+    "entry": "@star-ng/ui/input-group",
     "description": "Joins an input with add-ons before or after it (PrimeNG `p-inputgroup`): a unit, a prefix text, an icon or a button. Put `star-input-group-addon` elements, native `starInput` inputs and `star-button` elements inside, in visual order.",
     "inputs": [
       {
@@ -2254,7 +2254,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarInputGroupAddon": {
     "kind": "component",
     "selector": "star-input-group-addon",
-    "entry": "star-ng/input-group",
+    "entry": "@star-ng/ui/input-group",
     "description": "Text or icon add-on of `star-input-group`.",
     "inputs": [],
     "models": [],
@@ -2263,7 +2263,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarInputMask": {
     "kind": "component",
     "selector": "star-input-mask",
-    "entry": "star-ng/input-mask",
+    "entry": "@star-ng/ui/input-mask",
     "description": "Masked text field (PrimeNG `p-inputmask`): fixed-format entry such as phone numbers, postal codes or serial numbers. Mask tokens: `9` digit, `a` letter, `*` letter or digit; other characters are literals. The value is the masked text, or the raw slots with `unmask`.",
     "inputs": [
       {
@@ -2387,7 +2387,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarInputNumber": {
     "kind": "component",
     "selector": "star-input-number",
-    "entry": "star-ng/input-number",
+    "entry": "@star-ng/ui/input-number",
     "description": "Number field (PrimeNG `p-inputnumber`): locale formatting with `Intl.NumberFormat` (decimal, currency, percent, units), min / max clamping, step buttons, Arrow keys and PageUp / PageDown, `role=\"spinbutton\"`. While focused the field shows plain editable digits; on blur it shows the formatted number.",
     "inputs": [
       {
@@ -2567,7 +2567,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarInputOtp": {
     "kind": "component",
     "selector": "star-input-otp",
-    "entry": "star-ng/input-otp",
+    "entry": "@star-ng/ui/input-otp",
     "description": "One-time code field (PrimeNG `p-inputotp`): one box per character, auto-advance, Backspace goes back, Arrow keys move, pasting a full code fills every box, `autocomplete=\"one-time-code\"` on the first box so phones offer SMS codes.",
     "inputs": [
       {
@@ -2656,7 +2656,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarInputTags": {
     "kind": "component",
     "selector": "star-input-tags",
-    "entry": "star-ng/input-tags",
+    "entry": "@star-ng/ui/input-tags",
     "description": "Free-text tag field (PrimeNG `p-inputtags` / chips): type a value and press Enter, a separator (default comma) or Tab to add it as a chip. Pasting \"a, b; c\" adds several. Backspace in the empty field removes the last chip; each chip has a remove button. Optional `validate` (for example an e-mail check), duplicate prevention, `maxTags` count and per-tag `maxLength`. A live region announces added, removed and rejected tags.",
     "inputs": [
       {
@@ -2808,7 +2808,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarKnob": {
     "kind": "component",
     "selector": "star-knob",
-    "entry": "star-ng/knob",
+    "entry": "@star-ng/ui/knob",
     "description": "Knob (PrimeNG `p-knob`): circular value dial, `role=\"slider\"` with Arrow / PageUp / PageDown / Home / End keys; drag around the dial with a pointer. `<star-knob [(value)]=\"completion\" [max]=\"100\" valueTemplate=\"{value}%\" ariaLabel=\"Completion\" />`",
     "inputs": [
       {
@@ -2890,7 +2890,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarListbox": {
     "kind": "component",
     "selector": "star-listbox",
-    "entry": "star-ng/listbox",
+    "entry": "@star-ng/ui/listbox",
     "description": "Inline list choice (PrimeNG `p-listbox`): single or `multiple` (checkboxes), filter, option template, WAI-ARIA listbox keyboard (Arrow, Home / End, Space / Enter, typeahead). Value: one value, or an array in `multiple` mode.",
     "inputs": [
       {
@@ -3014,7 +3014,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarMegaMenu": {
     "kind": "component",
     "selector": "star-mega-menu",
-    "entry": "star-ng/menu",
+    "entry": "@star-ng/ui/menu",
     "description": "Mega menu (PrimeNG `p-megamenu`) on CDK Menu Bar: a top-level item opens one wide panel with its child items as columns. Three levels of `StarMenuItem`:",
     "inputs": [
       {
@@ -3046,7 +3046,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarMenu": {
     "kind": "component",
     "selector": "star-menu",
-    "entry": "star-ng/menu",
+    "entry": "@star-ng/ui/menu",
     "description": "Menu (PrimeNG `p-menu` + `p-tieredmenu`) on CDK Menu: roving focus, typeahead, submenus with pointer aim, Escape and focus return come from `@angular/cdk/menu`.",
     "inputs": [
       {
@@ -3085,7 +3085,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarMenubar": {
     "kind": "component",
     "selector": "star-menubar",
-    "entry": "star-ng/menu",
+    "entry": "@star-ng/ui/menu",
     "description": "Menu bar (PrimeNG `p-menubar`) on CDK Menu Bar: top-level items with dropdown submenus, Left / Right between items, Down opens, typeahead, Escape closes. Uses `star-menu` for the submenus, so nesting works to any depth.",
     "inputs": [
       {
@@ -3117,7 +3117,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarMenuInDialog": {
     "kind": "directive",
     "selector": "[cdkMenuTriggerFor]",
-    "entry": "star-ng/menu",
+    "entry": "@star-ng/ui/menu",
     "description": "",
     "inputs": [],
     "models": [],
@@ -3126,7 +3126,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarMenuTrigger": {
     "kind": "directive",
     "selector": "[starMenuTrigger]",
-    "entry": "star-ng/menu",
+    "entry": "@star-ng/ui/menu",
     "description": "Opens an `star-menu` as a popup from any element (button, icon button, row action). Adds `aria-haspopup`, `aria-expanded`, Arrow Down / Enter / Space to open.",
     "inputs": [
       {
@@ -3143,7 +3143,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarMessage": {
     "kind": "component",
     "selector": "star-message",
-    "entry": "star-ng/message",
+    "entry": "@star-ng/ui/message",
     "description": "Inline message (PrimeNG `p-message`): severity, icon, optional close and auto-hide `life`. `<star-message severity=\"warn\" closable>Draft not saved.</star-message>`",
     "inputs": [
       {
@@ -3196,7 +3196,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarMeterGroup": {
     "kind": "component",
     "selector": "star-meter-group",
-    "entry": "star-ng/utility",
+    "entry": "@star-ng/ui/utility",
     "description": "Meter group (PrimeNG `p-metergroup`): one bar split into parts (fixed series colors, 2px gaps) with a labelled legend. `role=\"meter\"` per part, so each value is announced. `<star-meter-group [items]=\"storage\" [max]=\"100\" unit=\"GB\" ariaLabel=\"Storage\" />`",
     "inputs": [
       {
@@ -3234,7 +3234,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarMultiAutoComplete": {
     "kind": "component",
     "selector": "star-multi-autocomplete",
-    "entry": "star-ng/autocomplete",
+    "entry": "@star-ng/ui/autocomplete",
     "description": "Multiple-value autocomplete (PrimeNG `p-autocomplete [multiple]`): chosen items become removable chips, Backspace in an empty field removes the last chip, chosen options leave the result list.",
     "inputs": [
       {
@@ -3259,7 +3259,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarMultiDatePicker": {
     "kind": "component",
     "selector": "star-multi-date-picker",
-    "entry": "star-ng/date-picker",
+    "entry": "@star-ng/ui/date-picker",
     "description": "Multiple-date picker (PrimeNG `p-datepicker selectionMode=\"multiple\"`). Value: a list of days in date order. A click adds a day or removes it; the popup stays open. Type the dates with a comma or a semicolon between them.",
     "inputs": [
       {
@@ -3284,7 +3284,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarMultiSelect": {
     "kind": "component",
     "selector": "star-multi-select",
-    "entry": "star-ng/select",
+    "entry": "@star-ng/ui/select",
     "description": "Multiple-choice dropdown (PrimeNG `p-multiselect`): checkbox list, \"select all\", filter, chip or comma display, `maxSelectedLabels`, `selectionLimit` and clear. Same keyboard model as `star-select`; Enter / Space toggle the active option and keep the panel open.",
     "inputs": [
       {
@@ -3330,7 +3330,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarOptionListBase": {
     "kind": "directive",
     "selector": "",
-    "entry": "star-ng/select",
+    "entry": "@star-ng/ui/select",
     "description": "Shared state and keyboard model of the dropdown list controls (WAI-ARIA combobox + listbox with `aria-activedescendant`). Subclasses add the selection model.",
     "inputs": [
       {
@@ -3544,7 +3544,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarOptionTemplate": {
     "kind": "directive",
     "selector": "ng-template[starOption]",
-    "entry": "star-ng/select",
+    "entry": "@star-ng/ui/select",
     "description": "Custom option row template for `star-select` and `star-multi-select`.",
     "inputs": [
       {
@@ -3561,7 +3561,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarOrderList": {
     "kind": "component",
     "selector": "star-order-list",
-    "entry": "star-ng/data-display",
+    "entry": "@star-ng/ui/data-display",
     "description": "Order list (PrimeNG `p-orderlist`): reorder items with buttons or Alt + Arrow keys; the moved item keeps focus and a live region announces its new position. `<star-order-list [(value)]=\"priorities\" optionLabel=\"name\" ariaLabel=\"Queue order\" />`",
     "inputs": [
       {
@@ -3593,7 +3593,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarOrgChart": {
     "kind": "component",
     "selector": "star-org-chart",
-    "entry": "star-ng/data-display",
+    "entry": "@star-ng/ui/data-display",
     "description": "Organization chart (PrimeNG `p-organizationchart`): a hierarchy drawn top-down with connector lines. The markup is a nested list, so assistive technology reads the levels. A node with children has a button that hides or shows its branch.",
     "inputs": [
       {
@@ -3647,7 +3647,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarOrgNodeTemplate": {
     "kind": "directive",
     "selector": "ng-template[starOrgNode]",
-    "entry": "star-ng/data-display",
+    "entry": "@star-ng/ui/data-display",
     "description": "Custom node content: `<ng-template starOrgNode let-node>…</ng-template>`.",
     "inputs": [],
     "models": [],
@@ -3656,7 +3656,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarPaginator": {
     "kind": "component",
     "selector": "star-paginator",
-    "entry": "star-ng/paginator",
+    "entry": "@star-ng/ui/paginator",
     "description": "Paginator (PrimeNG `p-paginator`): `[(first)]` / `[(rows)]`, page links window, first / last buttons, rows-per-page select and a \"1–10 of 240\" report.",
     "inputs": [
       {
@@ -3731,7 +3731,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarPanel": {
     "kind": "component",
     "selector": "star-panel",
-    "entry": "star-ng/panel",
+    "entry": "@star-ng/ui/panel",
     "description": "Panel (PrimeNG `p-panel`): titled box with header actions and an optional collapse toggle. `<star-panel header=\"Order notes\" toggleable [(collapsed)]=\"notesHidden\">…</star-panel>`",
     "inputs": [
       {
@@ -3763,7 +3763,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarPanelMenu": {
     "kind": "component",
     "selector": "star-panel-menu",
-    "entry": "star-ng/menu",
+    "entry": "@star-ng/ui/menu",
     "description": "Panel menu (PrimeNG `p-panelmenu`): a vertical menu where an item with child items opens and closes in place, to any depth. Use it for side navigation with sections.",
     "inputs": [
       {
@@ -3810,7 +3810,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarPassword": {
     "kind": "component",
     "selector": "star-password",
-    "entry": "star-ng/password",
+    "entry": "@star-ng/ui/password",
     "description": "Password field (PrimeNG `p-password`): show / hide toggle, strength meter and a rule checklist (`feedback`), `autocomplete` defaults to `new-password` with feedback, `current-password` without.",
     "inputs": [
       {
@@ -3927,7 +3927,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarPickList": {
     "kind": "component",
     "selector": "star-pick-list",
-    "entry": "star-ng/data-display",
+    "entry": "@star-ng/ui/data-display",
     "description": "Pick list (PrimeNG `p-picklist`): move items between a source and a target list. Double-click or Enter moves one item; buttons move the selection or everything. `<star-pick-list [(source)]=\"available\" [(target)]=\"assigned\" optionLabel=\"name\" sourceHeader=\"Available\" targetHeader=\"Assigned\" />`",
     "inputs": [
       {
@@ -3973,7 +3973,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarPopover": {
     "kind": "component",
     "selector": "star-popover",
-    "entry": "star-ng/popover",
+    "entry": "@star-ng/ui/popover",
     "description": "Popover (PrimeNG `p-popover`, formerly OverlayPanel): rich floating content anchored to an element. Native popover (top layer, works in dialogs), closes on outside click and Escape, moves focus in and back to the anchor.",
     "inputs": [
       {
@@ -4019,7 +4019,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarProgressBar": {
     "kind": "component",
     "selector": "star-progress-bar",
-    "entry": "star-ng/progress-bar",
+    "entry": "@star-ng/ui/progress-bar",
     "description": "Progress bar (PrimeNG `p-progressbar`): determinate value or indeterminate stripe, optional value label, severity color. `role=\"progressbar\"` with `aria-valuenow`.",
     "inputs": [
       {
@@ -4071,7 +4071,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarRadio": {
     "kind": "component",
     "selector": "star-radio",
-    "entry": "star-ng/radio",
+    "entry": "@star-ng/ui/radio",
     "description": "",
     "inputs": [
       {
@@ -4102,7 +4102,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarRadioGroup": {
     "kind": "component",
     "selector": "star-radio-group",
-    "entry": "star-ng/radio",
+    "entry": "@star-ng/ui/radio",
     "description": "Radio group (PrimeNG `p-radiobutton` used as a group). The group owns the value; each `star-radio` is a native radio input, so arrow keys move and select natively.",
     "inputs": [
       {
@@ -4191,7 +4191,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarRangeSlider": {
     "kind": "component",
     "selector": "star-range-slider",
-    "entry": "star-ng/slider",
+    "entry": "@star-ng/ui/slider",
     "description": "Range slider (PrimeNG `p-slider [range]`): two native range inputs on one track; the handles cannot cross. Value: `[low, high]`. `<star-range-slider [(value)]=\"ageRange\" [bounds]=\"[0, 100]\" ariaLabel=\"Age\" showValue />`",
     "inputs": [
       {
@@ -4259,7 +4259,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarRating": {
     "kind": "component",
     "selector": "star-rating",
-    "entry": "star-ng/rating",
+    "entry": "@star-ng/ui/rating",
     "description": "Star rating (PrimeNG `p-rating`) as a native radio group: Arrow keys change the rating, screen readers announce \"3 of 5 stars\". Hover previews the rating. `<star-rating [(value)]=\"quality\" ariaLabel=\"Response quality\" />`",
     "inputs": [
       {
@@ -4313,7 +4313,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarRipple": {
     "kind": "directive",
     "selector": "[starRipple]",
-    "entry": "star-ng/utility",
+    "entry": "@star-ng/ui/utility",
     "description": "Ripple (PrimeNG `pRipple`): a short ink circle from the point of a press. Decoration only; it does nothing when the user asks for reduced motion.",
     "inputs": [],
     "models": [],
@@ -4322,7 +4322,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarRowExpansionTemplate": {
     "kind": "directive",
     "selector": "ng-template[starRowExpansion]",
-    "entry": "star-ng/table",
+    "entry": "@star-ng/ui/table",
     "description": "Detail content of an expanded row. When the table has this template, each row gets an expand button: `<ng-template starRowExpansion let-row>…</ng-template>`.",
     "inputs": [
       {
@@ -4339,7 +4339,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarScrollPanel": {
     "kind": "component",
     "selector": "star-scroll-panel",
-    "entry": "star-ng/utility",
+    "entry": "@star-ng/ui/utility",
     "description": "Scroll panel (PrimeNG `p-scrollpanel`): a region with a fixed height and a thin scrollbar in the StarNG colors. It can take keyboard focus, so a keyboard user can scroll it; give it a name with `ariaLabel`.",
     "inputs": [
       {
@@ -4370,7 +4370,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarScrollTop": {
     "kind": "component",
     "selector": "star-scroll-top",
-    "entry": "star-ng/utility",
+    "entry": "@star-ng/ui/utility",
     "description": "Scroll-to-top button (PrimeNG `p-scrolltop`): appears after `threshold` px of scroll on the window or a `target` element; smooth scroll unless the user prefers reduced motion. `<star-scroll-top [threshold]=\"400\" />`",
     "inputs": [
       {
@@ -4394,7 +4394,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarSelect": {
     "kind": "component",
     "selector": "star-select",
-    "entry": "star-ng/select",
+    "entry": "@star-ng/ui/select",
     "description": "Single-choice dropdown (PrimeNG `p-select`): typed options, `optionLabel` / `optionValue` / `optionDisabled`, filter, clear button, loading state, typeahead and full keyboard support (WAI-ARIA select-only combobox). The panel is a native popover, so it also works inside modal `star-dialog`s.",
     "inputs": [],
     "models": [
@@ -4411,7 +4411,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarSelectButton": {
     "kind": "component",
     "selector": "star-select-button",
-    "entry": "star-ng/select-button",
+    "entry": "@star-ng/ui/select-button",
     "description": "Segmented choice (PrimeNG `p-selectbutton`). Single mode is a radio group (Arrow keys move and select); `multiple` mode is a group of toggle buttons (`aria-pressed`).",
     "inputs": [
       {
@@ -4521,7 +4521,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarSkeleton": {
     "kind": "component",
     "selector": "star-skeleton",
-    "entry": "star-ng/skeleton",
+    "entry": "@star-ng/ui/skeleton",
     "description": "Loading placeholder (PrimeNG `p-skeleton`). Respects `prefers-reduced-motion`. `<star-skeleton width=\"60%\" height=\"1rem\" />`, `<star-skeleton shape=\"circle\" size=\"2.5rem\" />`",
     "inputs": [
       {
@@ -4573,7 +4573,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarSlider": {
     "kind": "component",
     "selector": "star-slider",
-    "entry": "star-ng/slider",
+    "entry": "@star-ng/ui/slider",
     "description": "Slider (PrimeNG `p-slider`) on native `<input type=\"range\">`: full keyboard and screen-reader support from the platform, styled track and fill, optional value label. `<star-slider [(value)]=\"severity\" [min]=\"1\" [max]=\"5\" ariaLabel=\"Severity\" showValue />`",
     "inputs": [
       {
@@ -4662,7 +4662,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarSpeedDial": {
     "kind": "component",
     "selector": "star-speed-dial",
-    "entry": "star-ng/utility",
+    "entry": "@star-ng/ui/utility",
     "description": "Speed dial (PrimeNG `p-speeddial`): floating action button that opens a short list of actions (up, down, left or right). `aria-expanded`, Escape closes, focus moves to the first action. `<star-speed-dial [items]=\"quickActions\" direction=\"up\" ariaLabel=\"Quick actions\" />`",
     "inputs": [
       {
@@ -4722,7 +4722,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarSpinner": {
     "kind": "component",
     "selector": "star-spinner",
-    "entry": "star-ng/spinner",
+    "entry": "@star-ng/ui/spinner",
     "description": "Indeterminate progress spinner (PrimeNG `p-progressspinner`), SVG stroke in the primary color. `<star-spinner size=\"2rem\" />`",
     "inputs": [
       {
@@ -4753,7 +4753,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarSplitButton": {
     "kind": "component",
     "selector": "star-split-button",
-    "entry": "star-ng/menu",
+    "entry": "@star-ng/ui/menu",
     "description": "Split button (PrimeNG `p-splitbutton`): a main action plus a menu of related actions. `<star-split-button label=\"Send response\" [items]=\"sendOptions\" (pressed)=\"send()\" />`",
     "inputs": [
       {
@@ -4820,7 +4820,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarSplitter": {
     "kind": "component",
     "selector": "star-splitter",
-    "entry": "star-ng/utility",
+    "entry": "@star-ng/ui/utility",
     "description": "Splitter (PrimeNG `p-splitter`): two panes with a draggable gutter. The gutter is a `role=\"separator\"` with `aria-valuenow`; Arrow keys resize by 2 %, Home / End by the limits. In right-to-left the first pane is on the right: Arrow left makes it larger (the gutter moves left), Arrow right makes it smaller, and a drag measures from the right edge.",
     "inputs": [
       {
@@ -4859,7 +4859,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarStep": {
     "kind": "component",
     "selector": "star-step",
-    "entry": "star-ng/stepper",
+    "entry": "@star-ng/ui/stepper",
     "description": "One step of `star-stepper`; its content is the step panel.",
     "inputs": [
       {
@@ -4904,7 +4904,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarStepper": {
     "kind": "component",
     "selector": "star-stepper",
-    "entry": "star-ng/stepper",
+    "entry": "@star-ng/ui/stepper",
     "description": "Stepper (PrimeNG `p-stepper`): numbered steps with completed / current / upcoming states, `[(value)]` for the active step, `linear` mode (a step opens only after all earlier steps are `completed`), and `next()` / `previous()` for wizard buttons.",
     "inputs": [
       {
@@ -4936,7 +4936,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarTab": {
     "kind": "component",
     "selector": "star-tab",
-    "entry": "star-ng/tabs",
+    "entry": "@star-ng/ui/tabs",
     "description": "One tab and its panel. The host element is the `tabpanel`. Eager content goes directly inside; wrap heavy content in `ng-template starTabContent`.",
     "inputs": [
       {
@@ -4981,7 +4981,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarTabContent": {
     "kind": "directive",
     "selector": "ng-template[starTabContent]",
-    "entry": "star-ng/tabs",
+    "entry": "@star-ng/ui/tabs",
     "description": "Lazy tab body: `<ng-template starTabContent>…</ng-template>` renders on first activation only.",
     "inputs": [],
     "models": [],
@@ -4990,7 +4990,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarTable": {
     "kind": "component",
     "selector": "star-table",
-    "entry": "star-ng/table",
+    "entry": "@star-ng/ui/table",
     "description": "Data table (PrimeNG `p-table` essentials): typed columns, custom cell templates, sorting, global filter, column filters, CSV / Excel / print export, client or lazy (server) pagination, single / multiple row selection with checkboxes, row expansion, inline cell edit, column resize / reorder / hide / freeze, virtual scroll, row groups, multi-column sort, footer row, row reorder, saved state, loading skeleton, empty state, sticky header and row click.",
     "inputs": [
       {
@@ -5317,7 +5317,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarTabs": {
     "kind": "component",
     "selector": "star-tabs",
-    "entry": "star-ng/tabs",
+    "entry": "@star-ng/ui/tabs",
     "description": "Tabs (PrimeNG `p-tabs`): `[(value)]`, disabled tabs, icons, badges, lazy panels and the WAI-ARIA tabs keyboard model (Arrow keys, Home, End; automatic or manual activation).",
     "inputs": [
       {
@@ -5364,7 +5364,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarTag": {
     "kind": "component",
     "selector": "star-tag",
-    "entry": "star-ng/tag",
+    "entry": "@star-ng/ui/tag",
     "description": "Status label (PrimeNG `p-tag`): severity color, optional icon, rounded pill. `<star-tag severity=\"success\" icon=\"ph-bold ph-check\">Closed</star-tag>`",
     "inputs": [
       {
@@ -5402,7 +5402,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarTerminal": {
     "kind": "component",
     "selector": "star-terminal",
-    "entry": "star-ng/utility",
+    "entry": "@star-ng/ui/utility",
     "description": "Terminal (PrimeNG `p-terminal`): a text command line. The user types a command, the `handler` returns the text to print. Up / Down recall earlier commands. The output is a live log, so a screen reader announces each response.",
     "inputs": [
       {
@@ -5448,7 +5448,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarThemeSwitch": {
     "kind": "component",
     "selector": "star-theme-switch",
-    "entry": "star-ng/theme-switch",
+    "entry": "@star-ng/ui/theme-switch",
     "description": "Theme switch: a small speed dial with System, Light and Dark. The button shows the icon of the current choice; `StarThemeService` applies and remembers it. The texts come from `STAR_UI_TEXT` (`theme`, `themeSystem`, `themeLight`, `themeDark`).",
     "inputs": [],
     "models": [],
@@ -5457,7 +5457,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarTimeline": {
     "kind": "component",
     "selector": "star-timeline",
-    "entry": "star-ng/layout",
+    "entry": "@star-ng/ui/layout",
     "description": "Timeline (PrimeNG `p-timeline`): ordered list of events with markers, dates and severity colors; vertical (left or alternate) or horizontal.",
     "inputs": [
       {
@@ -5502,7 +5502,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarTimelineContent": {
     "kind": "directive",
     "selector": "ng-template[starTimelineContent]",
-    "entry": "star-ng/layout",
+    "entry": "@star-ng/ui/layout",
     "description": "Custom event body: `<ng-template starTimelineContent let-event>…</ng-template>`.",
     "inputs": [],
     "models": [],
@@ -5511,7 +5511,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarTimePicker": {
     "kind": "component",
     "selector": "star-time-picker",
-    "entry": "star-ng/date-picker",
+    "entry": "@star-ng/ui/date-picker",
     "description": "Time picker: a time of day without a date (PrimeNG `p-datepicker timeOnly`). The value is 24-hour `HH:mm` text, or `null`. The control is the native time input in the StarNG input style, so the browser gives the keyboard model, the locale's 12 or 24-hour display and the picker on a phone.",
     "inputs": [
       {
@@ -5621,7 +5621,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarToast": {
     "kind": "component",
     "selector": "star-toast",
-    "entry": "star-ng/toast",
+    "entry": "@star-ng/ui/toast",
     "description": "Toast outlet. Place once in the app shell. It renders as a manual popover, so toasts stay above open modal dialogs (top layer).",
     "inputs": [
       {
@@ -5652,7 +5652,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarToggleButton": {
     "kind": "component",
     "selector": "star-toggle-button",
-    "entry": "star-ng/select-button",
+    "entry": "@star-ng/ui/select-button",
     "description": "Two-state button (PrimeNG `p-togglebutton`): `aria-pressed`, on / off labels and icons. `<star-toggle-button [(checked)]=\"starred\" onLabel=\"Starred\" offLabel=\"Star\" onIcon=\"ph-fill ph-star\" offIcon=\"ph-bold ph-star\" />`",
     "inputs": [
       {
@@ -5727,7 +5727,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarToggleSwitch": {
     "kind": "component",
     "selector": "star-toggle-switch",
-    "entry": "star-ng/toggle-switch",
+    "entry": "@star-ng/ui/toggle-switch",
     "description": "On/off switch (PrimeNG `p-toggleswitch`). Native checkbox with `role=\"switch\"`, so Space toggles and screen readers announce \"on\" / \"off\".",
     "inputs": [
       {
@@ -5816,7 +5816,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarToolbar": {
     "kind": "component",
     "selector": "star-toolbar",
-    "entry": "star-ng/layout",
+    "entry": "@star-ng/ui/layout",
     "description": "Toolbar (PrimeNG `p-toolbar`): start, center and end groups, `role=\"toolbar\"` with Arrow-key focus movement between its controls (Tab enters and leaves once).",
     "inputs": [
       {
@@ -5833,7 +5833,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarTooltip": {
     "kind": "directive",
     "selector": "[starTooltip]",
-    "entry": "star-ng/tooltip",
+    "entry": "@star-ng/ui/tooltip",
     "description": "Tooltip (PrimeNG `pTooltip`): shows on hover and keyboard focus, hides on Escape, links the host with `aria-describedby`. Rendered as a native popover so it appears above dialogs.",
     "inputs": [
       {
@@ -5878,7 +5878,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarTooltipPanel": {
     "kind": "component",
     "selector": "star-tooltip-panel",
-    "entry": "star-ng/tooltip",
+    "entry": "@star-ng/ui/tooltip",
     "description": "",
     "inputs": [],
     "models": [],
@@ -5887,7 +5887,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarTree": {
     "kind": "component",
     "selector": "star-tree",
-    "entry": "star-ng/tree",
+    "entry": "@star-ng/ui/tree",
     "description": "Tree (PrimeNG `p-tree`): expand / collapse, single, multiple or checkbox selection (checkbox mode selects whole branches and shows mixed parents), filter, and the WAI-ARIA tree keyboard model (Up / Down, Right opens or enters, Left closes or goes to the parent, Home / End, Enter / Space select, `*` expands siblings).",
     "inputs": [
       {
@@ -5983,7 +5983,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarTreeSelect": {
     "kind": "component",
     "selector": "star-tree-select",
-    "entry": "star-ng/tree",
+    "entry": "@star-ng/ui/tree",
     "description": "Tree select (PrimeNG `p-treeselect`): a select field whose panel is an `star-tree`. Value: selected node keys (one key in `single` mode).",
     "inputs": [
       {
@@ -6100,7 +6100,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
   "StarTreeTable": {
     "kind": "component",
     "selector": "star-tree-table",
-    "entry": "star-ng/data-display",
+    "entry": "@star-ng/ui/data-display",
     "description": "Tree table (PrimeNG `p-treetable`): hierarchical rows with expand / collapse in a table, `role=\"treegrid\"`, Right / Left on a row expand / collapse, Up / Down move between rows. Node `data` holds the column values; the first column shows the tree toggle.",
     "inputs": [
       {

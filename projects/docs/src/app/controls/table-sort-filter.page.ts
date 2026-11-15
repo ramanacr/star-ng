@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarButton } from 'star-ng/button';
-import { StarInput } from 'star-ng/field';
+import { StarButton } from '@star-ng/ui/button';
+import { StarInput } from '@star-ng/ui/field';
 import {
   StarCellTemplate,
   StarColumn,
@@ -8,8 +8,8 @@ import {
   StarSortOrder,
   StarSortState,
   StarTable,
-} from 'star-ng/table';
-import { StarTag } from 'star-ng/tag';
+} from '@star-ng/ui/table';
+import { StarTag } from '@star-ng/ui/tag';
 import { DOCS, DocsRow } from '../shared/docs';
 import { DocsFill, formatDay, formatMoney, Order, ORDERS, STATUS_SEVERITY } from './table-demo';
 
@@ -21,7 +21,7 @@ import { DocsFill, formatDay, formatMoney, Order, ORDERS, STATUS_SEVERITY } from
     <docs-page
       heading="Table sorting and filtering"
       lead="Sort by one or more columns and filter the rows with a global search or with a filter in each column. Sorting and filtering run in the browser; the lazy mode on the Table paging page sends them to a server instead."
-      importFrom="import { StarTable, StarColumn, StarColumnFilters } from 'star-ng/table';"
+      importFrom="import { StarTable, StarColumn, StarColumnFilters } from '@star-ng/ui/table';"
     >
       <docs-example
         heading="Sorting"

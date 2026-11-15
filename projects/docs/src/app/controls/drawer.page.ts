@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarButton } from 'star-ng/button';
-import { StarDrawer } from 'star-ng/drawer';
-import { StarField, StarInput } from 'star-ng/field';
+import { StarButton } from '@star-ng/ui/button';
+import { StarDrawer } from '@star-ng/ui/drawer';
+import { StarField, StarInput } from '@star-ng/ui/field';
 import { DOCS, DocsRow } from '../shared/docs';
 
 type DrawerPosition = 'left' | 'right' | 'start' | 'end' | 'top' | 'bottom';
@@ -14,7 +14,7 @@ type DrawerPosition = 'left' | 'right' | 'start' | 'end' | 'top' | 'bottom';
     <docs-page
       heading="Drawer"
       lead="A side sheet pinned to an edge of the window. It is built on the native dialog element and has the same API as the dialog, plus position and drawerSize."
-      importFrom="import { StarDrawer } from 'star-ng/drawer';"
+      importFrom="import { StarDrawer } from '@star-ng/ui/drawer';"
     >
       <docs-example
         heading="Details drawer"

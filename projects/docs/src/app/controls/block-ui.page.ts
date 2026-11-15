@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarButton } from 'star-ng/button';
-import { StarField, StarInput } from 'star-ng/field';
-import { StarBlockUi } from 'star-ng/utility';
+import { StarButton } from '@star-ng/ui/button';
+import { StarField, StarInput } from '@star-ng/ui/field';
+import { StarBlockUi } from '@star-ng/ui/utility';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -12,7 +12,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Block UI"
       lead="Blocks a region while work runs. The content becomes inert: no focus, no clicks, and hidden from assistive technology. A busy mask with a spinner and a message shows over it."
-      importFrom="import { StarBlockUi } from 'star-ng/utility';"
+      importFrom="import { StarBlockUi } from '@star-ng/ui/utility';"
     >
       <docs-example
         heading="Block a form"

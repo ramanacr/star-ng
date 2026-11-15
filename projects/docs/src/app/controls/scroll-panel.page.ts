@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { StarScrollPanel } from 'star-ng/utility';
+import { StarScrollPanel } from '@star-ng/ui/utility';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -10,7 +10,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Scroll panel"
       lead="A region with a fixed height and a thin scrollbar in the StarNG colors. It takes keyboard focus, so a keyboard user can scroll it. Give it a name with ariaLabel."
-      importFrom="import { StarScrollPanel } from 'star-ng/utility';"
+      importFrom="import { StarScrollPanel } from '@star-ng/ui/utility';"
     >
       <docs-example
         heading="Fixed height"

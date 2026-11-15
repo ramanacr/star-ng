@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { StarTag } from 'star-ng/tag';
+import { StarTag } from '@star-ng/ui/tag';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -10,7 +10,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Tag"
       lead="A short status label with a severity color and an optional icon."
-      importFrom="import { StarTag } from 'star-ng/tag';"
+      importFrom="import { StarTag } from '@star-ng/ui/tag';"
     >
       <docs-example heading="Severities" source="tag/severities">
         <star-tag value="New" />

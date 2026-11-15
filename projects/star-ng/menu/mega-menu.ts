@@ -1,7 +1,7 @@
 import { CdkMenu, CdkMenuBar, CdkMenuGroup, CdkMenuItem, CdkMenuTrigger } from '@angular/cdk/menu';
 import { ChangeDetectionStrategy, Component, inject, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { StarDirectionService } from 'star-ng/core';
+import { StarDirectionService } from '@star-ng/ui/core';
 import { STAR_MENU_POSITIONS, StarMenuInDialog, StarMenuItem } from './menu';
 
 /**

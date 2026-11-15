@@ -10,7 +10,7 @@ import {
   Service,
   signal,
 } from '@angular/core';
-import { STAR_UI_TEXT } from 'star-ng/core';
+import { STAR_UI_TEXT } from '@star-ng/ui/core';
 
 export type StarToastSeverity = 'success' | 'info' | 'warn' | 'error';
 

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { compareDays, isoDay, StarCalendar, StarDateRange } from 'star-ng/date-picker';
+import { compareDays, isoDay, StarCalendar, StarDateRange } from '@star-ng/ui/date-picker';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -10,7 +10,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Calendar"
       lead="The month grid of the date picker, used on its own as an always visible calendar. It does not keep a value: it shows what you give it and emits the day that the user chooses. This is the PrimeNG p-datepicker with the inline option."
-      importFrom="import { StarCalendar } from 'star-ng/date-picker';"
+      importFrom="import { StarCalendar } from '@star-ng/ui/date-picker';"
     >
       <docs-example
         heading="Inline calendar"

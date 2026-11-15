@@ -15,8 +15,8 @@ import {
   viewChild,
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
-import { STAR_UI_TEXT } from 'star-ng/core';
-import { StarField } from 'star-ng/field';
+import { STAR_UI_TEXT } from '@star-ng/ui/core';
+import { StarField } from '@star-ng/ui/field';
 
 /**
  * Number field (PrimeNG `p-inputnumber`): locale formatting with `Intl.NumberFormat`

@@ -9,7 +9,7 @@ import {
   model,
   output,
 } from '@angular/core';
-import { STAR_UI_TEXT } from 'star-ng/core';
+import { STAR_UI_TEXT } from '@star-ng/ui/core';
 
 export interface StarPageEvent {
   /** Index of the first record on the page (0-based). */

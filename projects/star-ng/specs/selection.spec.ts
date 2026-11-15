@@ -1,9 +1,9 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { StarListbox } from 'star-ng/listbox';
-import { StarCascadeSelect } from 'star-ng/select';
-import { StarTree, StarTreeNode, StarTreeSelect } from 'star-ng/tree';
+import { StarListbox } from '@star-ng/ui/listbox';
+import { StarCascadeSelect } from '@star-ng/ui/select';
+import { StarTree, StarTreeNode, StarTreeSelect } from '@star-ng/ui/tree';
 
 function key(target: Element, key: string, init: KeyboardEventInit = {}): void {
   target.dispatchEvent(
