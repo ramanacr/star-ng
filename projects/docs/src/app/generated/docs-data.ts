@@ -6101,11 +6101,11 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-tree-table",
     "entry": "@star-ng/ui/data-display",
-    "description": "Tree table (PrimeNG `p-treetable`): hierarchical rows with expand / collapse in a table, `role=\"treegrid\"`, Right / Left on a row expand / collapse, Up / Down move between rows. Node `data` holds the column values; the first column shows the tree toggle.",
+    "description": "Tree table (PrimeNG `p-treetable`): hierarchical rows with expand / collapse in a table, `role=\"treegrid\"`, Right / Left on a row expand / collapse, Up / Down, Home and End move between rows. Node `data` holds the column values; the first column shows the tree toggle.",
     "inputs": [
       {
         "name": "nodes",
-        "type": "readonly StarTreeNode<Record<string, unknown>>[]",
+        "type": "readonly TreeTableNode[]",
         "default": "[]",
         "required": false,
         "description": ""
@@ -6123,6 +6123,27 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "null",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "scrollHeight",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Maximum height of the table (a CSS length, for example `20rem`). The table scrolls inside it and the header stays at the top."
+      },
+      {
+        "name": "virtualScroll",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Windowed rendering for large tables: only the rows in and near the viewport are in the DOM. Needs `scrollHeight`, and every row gets the fixed height `virtualItemSize` with its text on one line. Without `scrollHeight` the table renders all rows as usual."
+      },
+      {
+        "name": "virtualItemSize",
+        "type": "number",
+        "default": "TREE_TABLE_ROW_HEIGHT",
+        "required": false,
+        "description": "Row height in pixels in windowed rendering. The default is the natural height of a row of this table."
       }
     ],
     "models": [
@@ -6380,6 +6401,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "table-edit/cells": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"rows()\"\n      [columns]=\"editColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Editable orders\"\n      (cellEdit)=\"applyEdit($event)\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">{{ message() }}</p>\n</div>",
   "table-edit/reorder": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"queue()\"\n      [columns]=\"queueColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Order queue\"\n      reorderableRows\n      (rowReorder)=\"move($event)\"\n    />\n  </docs-fill>\n</div>",
   "table-export/basic": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button\n      size=\"sm\"\n      variant=\"secondary\"\n      leadingIcon=\"ph-bold ph-download-simple\"\n      (pressed)=\"exportTable.exportCsv({ fileName: 'orders' })\"\n    >\n      Export CSV\n    </star-button>\n    <star-button\n      size=\"sm\"\n      variant=\"secondary\"\n      leadingIcon=\"ph-bold ph-microsoft-excel-logo\"\n      (pressed)=\"exportTable.exportExcel({ fileName: 'orders' })\"\n    >\n      Export Excel\n    </star-button>\n    <star-button\n      size=\"sm\"\n      variant=\"secondary\"\n      leadingIcon=\"ph-bold ph-printer\"\n      (pressed)=\"exportTable.print()\"\n    >\n      Print\n    </star-button>\n    <star-button\n      size=\"sm\"\n      variant=\"secondary\"\n      [disabled]=\"!selected().length\"\n      (pressed)=\"\n        exportTable.exportCsv({ fileName: 'selected-orders', selectionOnly: true })\n      \"\n    >\n      Export selected rows\n    </star-button>\n  </div>\n  <docs-fill>\n    <star-table\n      #exportTable\n      ariaLabel=\"Orders\"\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      selectionMode=\"multiple\"\n      [(selection)]=\"selected\"\n      paginator\n      [rows]=\"5\"\n    >\n      <ng-template starCell=\"status\" [starCellOf]=\"orders\" let-row>\n        <star-tag [severity]=\"severityOf(row.status)\" [value]=\"row.status\" rounded />\n      </ng-template>\n      <ng-template starCell=\"customer\" [starCellOf]=\"orders\" let-row let-value=\"value\">\n        <strong>{{ value }}</strong>\n        <br />\n        <small>{{ row.email }}</small>\n      </ng-template>\n    </star-table>\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">{{ selected().length }} selected</p>\n</div>",
+  "table-export/print-format": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button\n      size=\"sm\"\n      variant=\"secondary\"\n      leadingIcon=\"ph-bold ph-printer\"\n      (pressed)=\"partsTable.print()\"\n    >\n      Print parts\n    </star-button>\n  </div>\n  <docs-fill>\n    <star-table\n      #partsTable\n      ariaLabel=\"Parts\"\n      [value]=\"parts\"\n      [columns]=\"partColumns\"\n      dataKey=\"code\"\n    />\n  </docs-fill>\n</div>",
   "table-export/print-long": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button\n      size=\"sm\"\n      variant=\"secondary\"\n      leadingIcon=\"ph-bold ph-printer\"\n      (pressed)=\"longTable.print()\"\n    >\n      Print invoices\n    </star-button>\n  </div>\n  <docs-fill>\n    <star-table\n      #longTable\n      ariaLabel=\"Invoices\"\n      [value]=\"invoices\"\n      [columns]=\"invoiceColumns\"\n      dataKey=\"id\"\n      selectionMode=\"multiple\"\n      [hiddenColumns]=\"['region']\"\n      paginator\n      [rows]=\"10\"\n    >\n      <ng-template starCell=\"open\" [starCellOf]=\"invoices\" let-row>\n        <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"opened.set(row.id)\">\n          Open\n        </star-button>\n      </ng-template>\n    </star-table>\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Opened: {{ opened() || 'none' }}</p>\n</div>",
   "table-export/print-wide": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button\n      size=\"sm\"\n      variant=\"secondary\"\n      leadingIcon=\"ph-bold ph-printer\"\n      (pressed)=\"wideTable.print()\"\n    >\n      Print wide table\n    </star-button>\n  </div>\n  <docs-fill>\n    <star-table\n      #wideTable\n      ariaLabel=\"Wide orders\"\n      [value]=\"wideRows\"\n      [columns]=\"wideColumns\"\n      dataKey=\"Order\"\n    />\n  </docs-fill>\n</div>",
   "table-export/text": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"show(preview.toCsv())\">\n      Comma separated\n    </star-button>\n    <star-button\n      size=\"sm\"\n      variant=\"secondary\"\n      (pressed)=\"show(preview.toCsv({ separator: ';' }))\"\n    >\n      Semicolon separated\n    </star-button>\n    <star-button\n      size=\"sm\"\n      variant=\"secondary\"\n      (pressed)=\"show(preview.toCsv({ rows: [orders[40]] }))\"\n    >\n      Rows from the options\n    </star-button>\n  </div>\n  <docs-fill>\n    <star-table\n      #preview\n      ariaLabel=\"Order preview\"\n      [value]=\"orders.slice(0, 3)\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n    />\n  </docs-fill>\n  <pre class=\"docs-output\" aria-label=\"CSV text\" tabindex=\"0\">{{ text() }}</pre>\n</div>",
@@ -6442,6 +6464,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "tree-select/virtual": "<div class=\"docs-stack\">\n  <star-tree-select\n    [nodes]=\"large.nodes\"\n    [(expanded)]=\"largeOpen\"\n    selectionMode=\"checkbox\"\n    [(value)]=\"largeTeams\"\n    virtualScroll\n    [virtualItemSize]=\"34\"\n    filter\n    placeholder=\"Select orders\"\n    ariaLabel=\"Orders by site\"\n  />\n  <p class=\"docs-output\" role=\"status\">{{ largeTeams().length }} orders checked</p>\n</div>",
   "tree-table/basic": "<div class=\"docs-stack\">\n  <star-tree-table\n    [nodes]=\"departments\"\n    [columns]=\"columns\"\n    [(expanded)]=\"open\"\n    ariaLabel=\"Departments\"\n  />\n  <p class=\"docs-output\" role=\"status\">Open: {{ open().join(', ') || 'none' }}</p>\n</div>",
   "tree-table/columns": "<star-tree-table\n  [nodes]=\"departments\"\n  [columns]=\"wideColumns\"\n  [expanded]=\"allOpen\"\n  ariaLabel=\"Departments with fixed columns\"\n/>",
+  "tree-table/virtual": "<div class=\"docs-stack\">\n  <star-tree-table\n    [nodes]=\"large.nodes\"\n    [columns]=\"virtualColumns\"\n    [(expanded)]=\"largeOpen\"\n    virtualScroll\n    scrollHeight=\"20rem\"\n    ariaLabel=\"Stock by site\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    {{ large.count }} rows, {{ largeOpen().length }} branches open\n  </p>\n</div>",
   "tree/basic": "<star-tree [nodes]=\"folders\" [(expanded)]=\"open\" scrollHeight=\"16rem\" ariaLabel=\"Folders\" />",
   "tree/checkbox": "<div class=\"docs-stack\">\n  <star-tree\n    [nodes]=\"folders\"\n    selectionMode=\"checkbox\"\n    [(value)]=\"checked\"\n    [(expanded)]=\"checkboxOpen\"\n    filter\n    scrollHeight=\"16rem\"\n    ariaLabel=\"Folders to sync\"\n  />\n\n  <p class=\"docs-output\" role=\"status\">Leaves: {{ checked().join(', ') || 'none' }}</p>\n</div>",
   "tree/form": "<div class=\"docs-stack\">\n  <star-field label=\"Folders to share\" [state]=\"share.folders()\">\n    <star-tree\n      [formField]=\"share.folders\"\n      [nodes]=\"folders\"\n      selectionMode=\"checkbox\"\n      scrollHeight=\"12rem\"\n      ariaLabel=\"Folders to share\"\n    />\n  </star-field>\n\n  <p class=\"docs-output\" role=\"status\">Valid: {{ share().valid() }}</p>\n</div>",

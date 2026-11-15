@@ -139,6 +139,20 @@ The package follows semantic versioning. In `0.x` versions, the API can change b
 - There are no screen-reader, zoom, reflow or forced-colors tests.
 - The editor and the file upload do not protect your server. See [SECURITY.md](SECURITY.md).
 
+## Community
+
+Contributions are welcome and appreciated.
+
+- Start with issues that have the label [help wanted](https://github.com/ramanacr/star-ng/labels/help%20wanted) or `good first issue`.
+- Four requests are open now:
+  - [Review of the German text pack by a native speaker](https://github.com/ramanacr/star-ng/issues/33)
+  - [Review of the Spanish text pack by a native speaker](https://github.com/ramanacr/star-ng/issues/34)
+  - [A check in Firefox and Safari](https://github.com/ramanacr/star-ng/issues/35)
+  - [A check with a screen reader](https://github.com/ramanacr/star-ng/issues/36)
+- Ask questions and share ideas in [GitHub Discussions](https://github.com/ramanacr/star-ng/discussions).
+- Read [CONTRIBUTING.md](CONTRIBUTING.md) and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) before you start.
+- To support the project, use the Sponsor button on the repository page when it is shown.
+
 ## Links
 
 - [Documentation site](https://ramanacr.github.io/star-ng/)

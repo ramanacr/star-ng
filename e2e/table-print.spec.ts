@@ -47,7 +47,20 @@ function contentWidth(paper: Paper): number {
 
 /** What the frame reports when it calls `print()`. */
 interface Captured {
+  /**
+   * The frame document as HTML. The print style is made of constructed style sheets, which
+   * `outerHTML` does not hold: their rules are written into one `style` element of this copy,
+   * so `page.pdf()` can print the same rules in a page that has no policy.
+   */
   readonly html: string;
+  /** `style` elements and `style` attributes of the frame itself, before the copy above. */
+  readonly styleElements: number;
+  readonly styleAttributes: number;
+  readonly adoptedSheets: number;
+  readonly lang: string | null;
+  readonly dir: string | null;
+  /** Computed in the frame: the border width of the first body cell. */
+  readonly cellBorder: string;
   readonly borderCollapse: string;
   readonly rowBreakInside: string;
   readonly violations: readonly string[];
@@ -149,8 +162,20 @@ async function stubFramePrint(page: Page, stress: FrameStress = {}): Promise<voi
     window.print = () => {
       const table = document.querySelector('table');
       const row = document.querySelector('tbody tr');
+      const rules = Array.from(document.adoptedStyleSheets, (sheet) =>
+        Array.from(sheet.cssRules, (rule) => rule.cssText).join('\n'),
+      ).join('\n');
+      const cell = document.querySelector('tbody td');
       (window.top as unknown as { __printed?: unknown }).__printed = {
-        html: '<!doctype html>' + document.documentElement.outerHTML,
+        html:
+          '<!doctype html>' +
+          document.documentElement.outerHTML.replace('</head>', `<style>${rules}</style></head>`),
+        styleElements: document.querySelectorAll('style').length,
+        styleAttributes: document.querySelectorAll('[style]').length,
+        adoptedSheets: document.adoptedStyleSheets.length,
+        lang: document.documentElement.getAttribute('lang'),
+        dir: document.documentElement.getAttribute('dir'),
+        cellBorder: cell ? getComputedStyle(cell).borderTopWidth : '',
         borderCollapse: table ? getComputedStyle(table).borderCollapse : '',
         rowBreakInside: row ? getComputedStyle(row).breakInside : '',
         violations,
@@ -667,7 +692,10 @@ test.describe('table print: stress with wide text on narrow paper', () => {
       test('without the fit rules the same document loses its right edge (A4 portrait)', async () => {
         // The old behavior, to show that the stress works: the table is not wrapped or shrunk
         // by the document, so the engine shrinks the page by 1.5 times at most and cuts the rest.
-        const old = printout.captured.html.replace(/@container[^{]*\{(?:[^{}]*\{[^{}]*\})*\}/g, '');
+        const old = printout.captured.html.replace(
+          /@container[^{]*\{(?:[^{}]*\{[^{}]*\})*\s*\}/g,
+          '',
+        );
         expect(old).not.toContain('@container');
         const pages = await renderPdf(printout.context, old, A4_PORTRAIT);
         const { headers } = printout.captured;
@@ -782,34 +810,230 @@ test.describe('table print: Content Security Policy', () => {
     expect(captured.rowBreakInside).toBe('avoid');
   });
 
-  test('without unsafe-inline in style-src the inline style of the frame is blocked', async ({
+  test('without unsafe-inline in style-src the frame keeps its style and reports no violation', async ({
     page,
   }) => {
     await removeUnsafeInline(page);
-    const captured = await capture(page, BUTTON, HEADING);
-    // The print dialog still opens, with the rows, but the table has no style.
+    // The violations of the page itself (not of the frame) are counted before and after the click.
+    await page.addInitScript(() => {
+      if (window !== window.top) return;
+      const store: string[] = ((window as any).__hostViolations = []);
+      document.addEventListener('securitypolicyviolation', (event) =>
+        store.push(`${event.violatedDirective} ${event.blockedURI}`),
+      );
+    });
+    await stubFramePrint(page);
+    await openPage(page, '/controls/table-export', 'Table export');
+    const policy = await page
+      .locator('meta[http-equiv="Content-Security-Policy"]')
+      .getAttribute('content');
+    expect(policy).toContain("style-src 'self';");
+    expect(policy).not.toMatch(/style-src[^;]*unsafe-inline/);
+    const hostBefore = await page.evaluate(() => (window as any).__hostViolations.length);
+    await example(page, HEADING).getByRole('button', { name: BUTTON }).click();
+    const captured = await readCaptured(page);
+    const hostAfter = await page.evaluate(() => (window as any).__hostViolations.slice());
+
+    // Before: the style element of the frame was blocked and the table was plain. Now the
+    // document has no style element and no style attribute, and its sheets are constructed.
+    expect(captured.violations).toEqual([]);
+    expect(hostAfter.length).toBe(hostBefore);
+    expect(captured.styleElements).toBe(0);
+    expect(captured.styleAttributes).toBe(0);
+    expect(captured.adoptedSheets).toBeGreaterThanOrEqual(1);
+    expect(captured.borderCollapse).toBe('collapse');
+    expect(captured.rowBreakInside).toBe('avoid');
+    expect(captured.cellBorder).toBe('1px');
     expect(captured.html).toContain('INV-0240');
-    expect(captured.violations).toContain('style-src-elem');
-    expect(captured.borderCollapse).toBe('separate');
-    expect(captured.rowBreakInside).toBe('auto');
+    // The fit rules use the same way: they are in the sheets, not in a style element.
+    expect(captured.html).toContain('@container');
+
+    // The PDF of the same rules has the header fill (#eeeeee) and all rows. Without the rules
+    // the same document has no fill.
+    const context = page.context();
+    const pages = await renderPdf(context, captured.html, A4_PORTRAIT);
+    expect(new Set(pages.flatMap((pdfPage) => [...pdfPage.fillColors])).has('#eeeeee')).toBe(true);
+    expect(firstColumn(pages, INVOICE_ID)).toEqual(allInvoiceIds);
+    const plain = captured.html.replace(/<style>[\s\S]*?<\/style>/, '');
+    const unstyled = await renderPdf(context, plain, A4_PORTRAIT);
+    expect(new Set(unstyled.flatMap((pdfPage) => [...pdfPage.fillColors])).has('#eeeeee')).toBe(
+      false,
+    );
   });
 
-  test('a constructed style sheet is not blocked, and styles the frame under that policy', async ({
+  test('without constructed style sheets the frame gets a style element, which a strict policy blocks', async ({
     page,
   }) => {
     await removeUnsafeInline(page);
+    // The fallback path: a frame window without constructed style sheets.
+    await page.addInitScript(() => {
+      if (window === window.top) return;
+      delete (CSSStyleSheet.prototype as { replaceSync?: unknown }).replaceSync;
+    });
     const captured = await capture(page, BUTTON, HEADING);
-    const css = /<style>([\s\S]*?)<\/style>/.exec(captured.html)![1];
-    const frame = page.frames().find((candidate) => candidate.url() === 'about:srcdoc')!;
-    const result = await frame.evaluate((text) => {
-      const sheet = new CSSStyleSheet();
-      sheet.replaceSync(text);
-      document.adoptedStyleSheets = [sheet];
-      return {
-        borderCollapse: getComputedStyle(document.querySelector('table')!).borderCollapse,
-        rowBreakInside: getComputedStyle(document.querySelector('tbody tr')!).breakInside,
-      };
-    }, css);
-    expect(result).toEqual({ borderCollapse: 'collapse', rowBreakInside: 'avoid' });
+    expect(captured.adoptedSheets).toBe(0);
+    expect(captured.styleElements).toBeGreaterThanOrEqual(1);
+    expect(captured.violations).toContain('style-src-elem');
+    expect(captured.html).toContain('INV-0240');
+    expect(captured.borderCollapse).toBe('separate');
+  });
+
+  test('without constructed style sheets the style element works under the policy of the docs', async ({
+    page,
+  }) => {
+    await page.addInitScript(() => {
+      if (window === window.top) return;
+      delete (CSSStyleSheet.prototype as { replaceSync?: unknown }).replaceSync;
+    });
+    const captured = await capture(page, BUTTON, HEADING);
+    expect(captured.adoptedSheets).toBe(0);
+    expect(captured.violations).toEqual([]);
+    expect(captured.borderCollapse).toBe('collapse');
+    expect(captured.cellBorder).toBe('1px');
+  });
+});
+
+test.describe('table print: alignment of formatted numbers', () => {
+  let printout: Printout;
+  test.beforeAll(async ({ browser }) => {
+    printout = await openPrintout(browser, 'Print parts', 'Print formatted numbers');
+  });
+  test.afterAll(async () => {
+    await printout.context.close();
+  });
+
+  test('the cells of the number columns are strings, because of the format function', () => {
+    expect(printout.captured.headers).toEqual(['Code', 'Part', 'Zone', 'Stock', 'Price']);
+    expect(printout.captured.rows[0]).toEqual([
+      'PRT-100',
+      'Steel bolt',
+      'North',
+      '1,250 pcs',
+      '$0.35',
+    ]);
+  });
+
+  test('aligns the columns by the column definition, headers included', async () => {
+    const pages = await printout.pdf(A4_PORTRAIT);
+    expect(pages).toHaveLength(1);
+    const header = pages[0].lines[headerLineIndex(pages[0], printout.captured.headers)];
+    const head = Object.fromEntries(header.items.map((item) => [item.str, item]));
+    const rows = pages[0].lines.filter((line) => /^PRT-/.test(line.items[0].str));
+    expect(rows).toHaveLength(4);
+    const column = (index: number) => rows.map((line) => line.items[index]);
+    const spread = (values: number[]) => Math.max(...values) - Math.min(...values);
+
+    // Stock: a number column without align. Right edges are equal, left edges differ.
+    const stock = column(3);
+    expect(stock.map((item) => item.str)).toEqual(['1,250 pcs', '48 pcs', '9 pcs', '305 pcs']);
+    expect(spread(stock.map((item) => item.right))).toBeLessThan(SLACK);
+    expect(spread(stock.map((item) => item.x))).toBeGreaterThan(5);
+    expect(head['Stock'].right).toBeCloseTo(stock[0].right, 0);
+    // Price: align 'end'.
+    const price = column(4);
+    expect(price.map((item) => item.str)).toEqual(['$0.35', '$12.50', '$120.00', '$7.75']);
+    expect(spread(price.map((item) => item.right))).toBeLessThan(SLACK);
+    expect(spread(price.map((item) => item.x))).toBeGreaterThan(5);
+    expect(head['Price'].right).toBeCloseTo(price[0].right, 0);
+    // Zone: align 'center'. The middle of every cell is the middle of the header.
+    const middle = (item: PdfItem) => (item.x + item.right) / 2;
+    for (const item of column(2)) {
+      expect(Math.abs(middle(item) - middle(head['Zone']))).toBeLessThan(1);
+    }
+    expect(spread(column(2).map((item) => item.x))).toBeGreaterThan(2);
+    // A text column stays at the start.
+    expect(spread(column(1).map((item) => item.x))).toBeLessThan(SLACK);
+    expect(head['Part'].x).toBeCloseTo(column(1)[0].x, 0);
+  });
+});
+
+test.describe('table print: language and direction', () => {
+  test('sets lang from the page, and dir', async ({ page }) => {
+    const captured = await capture(page, 'Print invoices', 'Print a long table');
+    expect(captured.lang).toBe(await page.locator('html').getAttribute('lang'));
+    expect(captured.lang).toBeTruthy();
+    expect(captured.dir).toBe('ltr');
+    expect(captured.html).toMatch(/^<!doctype html><html lang="[^"]+" dir="ltr">/);
+  });
+
+  test('takes the nearest lang of the table, before the lang of the page', async ({ page }) => {
+    await stubFramePrint(page);
+    await openPage(page, '/controls/table-export', 'Table export');
+    const live = example(page, 'Print a long table');
+    await live.locator('star-table').evaluate((table) => table.setAttribute('lang', 'fr-CA'));
+    await live.getByRole('button', { name: 'Print invoices' }).click();
+    const captured = await readCaptured(page);
+    expect(captured.lang).toBe('fr-CA');
+    expect(await page.locator('html').getAttribute('lang')).not.toBe('fr-CA');
+  });
+
+  test.describe('right-to-left', () => {
+    let printout: Printout;
+    test.beforeAll(async ({ browser }) => {
+      const context = await browser.newContext();
+      await context.addInitScript(() => localStorage.setItem('star-direction', 'rtl'));
+      const page = await context.newPage();
+      const captured = await capture(page, 'Print invoices', 'Print a long table');
+      await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+      await page.close();
+      printout = new Printout(context, captured);
+    });
+    test.afterAll(async () => {
+      await printout.context.close();
+    });
+
+    test('the printout is right-to-left', () => {
+      expect(printout.captured.dir).toBe('rtl');
+      expect(printout.captured.html).toContain('dir="rtl"');
+    });
+
+    test('puts the first column on the right, text at the start and numbers at the end', async () => {
+      const pages = await printout.pdf(A4_PORTRAIT);
+      const spread = (values: number[]) => Math.max(...values) - Math.min(...values);
+      const head: Record<string, PdfItem> = {};
+      const invoice: PdfItem[] = [];
+      const customer: PdfItem[] = [];
+      const quantity: PdfItem[] = [];
+      const amount: PdfItem[] = [];
+      for (const page of pages) {
+        const header = page.lines.find(
+          (line) =>
+            line.items.length === INVOICE_HEADERS.length &&
+            INVOICE_HEADERS.every((name) => line.items.some((item) => item.str === name)),
+        )!;
+        for (const item of header.items) head[item.str] = item;
+        for (const line of page.lines) {
+          // The invoice number is the rightmost item of its line in right-to-left.
+          const first = line.items[line.items.length - 1];
+          if (!INVOICE_ID.test(first.str)) continue;
+          invoice.push(first);
+          // The customer is the item next to the invoice number (a name can wrap in two lines).
+          customer.push(line.items[line.items.length - 2]);
+          quantity.push(...line.items.filter((item) => /^[1-9]$/.test(item.str)));
+          amount.push(...line.items.filter((item) => /^\d{2,}(\.\d+)?$/.test(item.str)));
+        }
+      }
+      expect(invoice.map((item) => item.str)).toEqual(allInvoiceIds);
+      // The column order is mirrored: the first column is the rightmost.
+      const xs = INVOICE_HEADERS.map((name) => head[name].x);
+      expect(xs).toEqual([...xs].sort((a, b) => b - a));
+      // Text columns are at the start of the line, on the right: right edges are equal.
+      expect(spread(invoice.map((item) => item.right))).toBeLessThan(SLACK);
+      expect(customer).toHaveLength(240);
+      expect(spread(customer.map((item) => item.right))).toBeLessThan(SLACK);
+      expect(spread(customer.map((item) => item.x))).toBeGreaterThan(5);
+      expect(head['Customer'].right).toBeCloseTo(customer[0].right, 0);
+      // Number columns are at the end of the line, on the left: left edges are equal.
+      for (const [name, items] of [
+        ['Quantity', quantity],
+        ['Amount', amount],
+      ] as const) {
+        expect(items, name).toHaveLength(240);
+        expect(spread(items.map((item) => item.x)), name).toBeLessThan(SLACK);
+        expect(head[name].x, name).toBeCloseTo(items[0].x, 0);
+      }
+      expect(spread(amount.map((item) => item.right))).toBeGreaterThan(5);
+      expectInsidePage(pages);
+    });
   });
 });

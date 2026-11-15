@@ -1,8 +1,13 @@
 import {
+  addPrintStyle,
   buildPrintDocument,
   fitPrintDocument,
   PRINT_FIT_STEPS,
+  PRINT_STYLE,
+  printColumnAlign,
+  printContext,
   printFitStyle,
+  stylePrintDocument,
 } from './table-export';
 
 /** Parses the print document the way the browser does, to inspect it as a tree. */
@@ -41,10 +46,10 @@ describe('buildPrintDocument', () => {
       ),
     );
     const headers = [...doc.querySelectorAll('th')];
-    expect(headers[0].classList.contains('n')).toBe(false);
-    expect(headers[1].classList.contains('n')).toBe(true);
-    expect(doc.querySelectorAll('td.n')).toHaveLength(2);
-    expect(doc.querySelector('style')?.textContent).toContain('th.n,td.n{text-align:right}');
+    expect(headers[0].classList.contains('e')).toBe(false);
+    expect(headers[1].classList.contains('e')).toBe(true);
+    expect(doc.querySelectorAll('td.e')).toHaveLength(2);
+    expect(PRINT_STYLE).toContain('th.e,td.e{text-align:end}');
   });
 
   it('keeps the header of a mixed or empty column to the left', () => {
@@ -58,14 +63,14 @@ describe('buildPrintDocument', () => {
         ],
       ),
     );
-    expect([...doc.querySelectorAll('th')].map((th) => th.classList.contains('n'))).toEqual([
+    expect([...doc.querySelectorAll('th')].map((th) => th.classList.contains('e'))).toEqual([
       false,
       false,
       false,
     ]);
     // A table without rows has no number column.
     const none = parse(buildPrintDocument('None', ['Total'], []));
-    expect(none.querySelector('th')?.classList.contains('n')).toBe(false);
+    expect(none.querySelector('th')?.classList.contains('e')).toBe(false);
   });
 
   it('gives a long unbroken word soft break points, and keeps its text', () => {
@@ -93,9 +98,7 @@ describe('buildPrintDocument', () => {
 
   it('does not let the style shrink a column to one character', () => {
     // overflow-wrap:anywhere would, and the longest cell text would take the table width.
-    const css = parse(buildPrintDocument('Any', ['A'], [['a']])).querySelector(
-      'style',
-    )!.textContent!;
+    const css = PRINT_STYLE;
     expect(css).not.toMatch(/th,td{[^}]*overflow-wrap:anywhere/);
     expect(css).toMatch(/th,td{[^}]*overflow-wrap:break-word/);
   });
@@ -110,7 +113,7 @@ describe('buildPrintDocument', () => {
     );
     const cells = [...doc.querySelectorAll('td')];
     expect(cells.map((cell) => cell.classList.contains('s'))).toEqual([true, false, false]);
-    expect(doc.querySelector('style')?.textContent).toContain('td.s{white-space:nowrap}');
+    expect(PRINT_STYLE).toContain('td.s{white-space:nowrap}');
   });
 
   it('escapes markup in the title, the headers and the cells', () => {
@@ -126,7 +129,7 @@ describe('print fit', () => {
   it('puts the table in a wrapper that a container query can measure', () => {
     const doc = parse(buildPrintDocument('Wrapped', ['A'], [['a']]));
     expect(doc.querySelector('div.fit > table')).not.toBeNull();
-    expect(doc.querySelector('style')?.textContent).toContain('.fit{container-type:inline-size}');
+    expect(PRINT_STYLE).toContain('.fit{container-type:inline-size}');
   });
 
   it('has the steps in a fixed order: wrap, smaller text down to 6 pt, then break words', () => {
@@ -216,6 +219,7 @@ describe('print fit', () => {
 
     it('measures the table at every step, adds the query style and removes its probe', () => {
       const doc = parse(buildPrintDocument('Orders', ['Order', 'Total'], [['A-1', 1]]));
+      stylePrintDocument(doc);
       // Wider for bigger text, narrower when the short words may wrap, as the engine would.
       stubLayout(doc, (probe) => {
         const size = Number(/font-size:(\d+)px/.exec(probe)?.[1] ?? 12);
@@ -236,6 +240,7 @@ describe('print fit', () => {
 
     it('adds no style when the table is no wider at any step', () => {
       const doc = parse(buildPrintDocument('Orders', ['Order'], [['A-1']]));
+      stylePrintDocument(doc);
       stubLayout(doc, () => 300);
       expect(fitPrintDocument(doc).widths).toEqual(Array(PRINT_FIT_STEPS.length).fill(300));
       expect(doc.head.querySelectorAll('style')).toHaveLength(1);
@@ -246,5 +251,213 @@ describe('print fit', () => {
       expect(fitPrintDocument(doc)).toEqual({ widths: [], columns: [] });
       expect(doc.head.querySelectorAll('style')).toHaveLength(0);
     });
+  });
+});
+
+describe('print document without inline style', () => {
+  it('has no style element and no style attribute, whatever the content', () => {
+    const html = buildPrintDocument(
+      'Orders',
+      ['Order', 'Total', 'Zone'],
+      [['A-1', 12.5, 'North']],
+      {
+        align: ['start', 'end', 'center'],
+        lang: 'fr',
+        dir: 'rtl',
+      },
+    );
+    const doc = parse(html);
+    expect(doc.querySelectorAll('style')).toHaveLength(0);
+    expect(doc.querySelectorAll('[style]')).toHaveLength(0);
+    expect(html).not.toMatch(/<style|\sstyle=/i);
+  });
+
+  it('has a base style with logical alignment, for right-to-left', () => {
+    expect(PRINT_STYLE).toContain('text-align:start');
+    expect(PRINT_STYLE).toContain('th.c,td.c{text-align:center}');
+    expect(PRINT_STYLE).toContain('th.e,td.e{text-align:end}');
+    expect(PRINT_STYLE).not.toMatch(/text-align:(left|right)/);
+  });
+});
+
+describe('print column alignment', () => {
+  it('takes the alignment from the column, not from the type of the printed text', () => {
+    const doc = parse(
+      buildPrintDocument(
+        'Parts',
+        ['Part', 'Stock', 'Price', 'Zone'],
+        [
+          ['Bolt', '12 pcs', '$1.50', 'A'],
+          ['Nut', '8 pcs', '$0.75', 'B'],
+        ],
+        { align: ['start', 'end', 'end', 'center'] },
+      ),
+    );
+    const classes = (selector: string) =>
+      [...doc.querySelectorAll(selector)].map((cell) => cell.getAttribute('class') ?? '');
+    // The cells hold text, but the columns are right-aligned (and centered): so are the headers.
+    expect(classes('th')).toEqual(['', 'e', 'e', 'c']);
+    // A cell of one short word also has the class `s`: "12 pcs" has two words.
+    expect(classes('tbody tr:first-child td')).toEqual(['s', 'e', 'e s', 'c s']);
+    expect(classes('tbody tr:last-child td')).toEqual(['s', 'e', 'e s', 'c s']);
+  });
+
+  it('lets an explicit start alignment win over number cells', () => {
+    const doc = parse(buildPrintDocument('Ids', ['Id'], [[1], [2]], { align: ['start'] }));
+    expect(doc.querySelector('th')?.hasAttribute('class')).toBe(false);
+    expect(doc.querySelector('td')?.hasAttribute('class')).toBe(false);
+  });
+
+  describe('printColumnAlign', () => {
+    it('uses an explicit align first', () => {
+      expect(printColumnAlign('end', ['a'])).toBe('end');
+      expect(printColumnAlign('center', [1, 2])).toBe('center');
+      expect(printColumnAlign('start', [1, 2])).toBe('start');
+    });
+
+    it('puts a column in which every value is a number at the end', () => {
+      expect(printColumnAlign(undefined, [1, 2.5, 0])).toBe('end');
+    });
+
+    it('keeps mixed, text, empty and missing values at the start', () => {
+      expect(printColumnAlign(undefined, [1, 'two'])).toBe('start');
+      expect(printColumnAlign(undefined, ['a'])).toBe('start');
+      expect(printColumnAlign(undefined, [1, null])).toBe('start');
+      expect(printColumnAlign(undefined, [])).toBe('start');
+    });
+  });
+});
+
+describe('print language and direction', () => {
+  function tree(markup: string): { root: Document; leaf: Element } {
+    const root = parse(`<!doctype html><html${markup}`);
+    return { root, leaf: root.querySelector('#leaf')! };
+  }
+
+  it('puts lang and dir on the html element, escaped', () => {
+    const doc = parse(buildPrintDocument('T', ['A'], [['a']], { lang: 'ar-EG', dir: 'rtl' }));
+    expect(doc.documentElement.getAttribute('lang')).toBe('ar-EG');
+    expect(doc.documentElement.getAttribute('dir')).toBe('rtl');
+    const odd = parse(buildPrintDocument('T', ['A'], [['a']], { lang: 'x"><b>' }));
+    expect(odd.documentElement.getAttribute('lang')).toBe('x"><b>');
+    expect(odd.querySelector('b')).toBeNull();
+  });
+
+  it('adds no attribute when there is none to give', () => {
+    const doc = parse(buildPrintDocument('T', ['A'], [['a']]));
+    expect(doc.documentElement.hasAttribute('lang')).toBe(false);
+    expect(doc.documentElement.hasAttribute('dir')).toBe(false);
+  });
+
+  it('takes the nearest lang and dir of the table', () => {
+    const { root, leaf } = tree(
+      ' lang="en" dir="ltr"><body><section lang="de"><div dir="rtl"><p id="leaf"></p></div></section></body></html>',
+    );
+    expect(printContext(leaf, root)).toEqual({ lang: 'de', dir: 'rtl' });
+  });
+
+  it('starts at the element itself', () => {
+    const { root, leaf } = tree(
+      ' lang="en"><body><p id="leaf" lang="fr" dir="rtl"></p></body></html>',
+    );
+    expect(printContext(leaf, root)).toEqual({ lang: 'fr', dir: 'rtl' });
+  });
+
+  it('falls back to the document, and to nothing', () => {
+    const withRoot = tree(' lang="es" dir="rtl"><body><p id="leaf"></p></body></html>');
+    expect(printContext(withRoot.leaf, withRoot.root)).toEqual({ lang: 'es', dir: 'rtl' });
+    const bare = tree('><body><p id="leaf"></p></body></html>');
+    expect(printContext(bare.leaf, bare.root)).toEqual({});
+    expect(printContext(null, withRoot.root)).toEqual({ lang: 'es', dir: 'rtl' });
+  });
+
+  it('skips an empty lang, a dir of auto and an unusable lang', () => {
+    const { root, leaf } = tree(
+      ' lang="en" dir="ltr"><body><div lang="" dir="auto"><p id="leaf" lang="a b"></p></div></body></html>',
+    );
+    expect(printContext(leaf, root)).toEqual({ lang: 'en', dir: 'ltr' });
+    const upper = tree('><body><p id="leaf" dir="RTL"></p></body></html>');
+    expect(printContext(upper.leaf, upper.root)).toEqual({ dir: 'rtl' });
+  });
+});
+
+describe('addPrintStyle', () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  type Sheets = { text: string }[];
+
+  it('falls back to a style element where there are no constructed style sheets', () => {
+    const doc = parse('<!doctype html><title>x</title>');
+    const style = addPrintStyle(doc, 'a{color:red}');
+    expect(doc.head.querySelector('style')?.textContent).toBe('a{color:red}');
+    style.set('b{color:blue}');
+    expect(doc.head.querySelector('style')?.textContent).toBe('b{color:blue}');
+    style.remove();
+    expect(doc.head.querySelector('style')).toBeNull();
+  });
+
+  /** A document of a window that has constructed style sheets, as the frame of Chromium has. */
+  function documentWithSheets(sheet?: new () => unknown) {
+    class FakeSheet {
+      text = '';
+      replaceSync(text: string) {
+        this.text = text;
+      }
+    }
+    const doc = parse('<!doctype html><title>x</title>');
+    Object.defineProperty(doc, 'defaultView', { value: { CSSStyleSheet: sheet ?? FakeSheet } });
+    Object.defineProperty(doc, 'adoptedStyleSheets', { value: [], writable: true });
+    return doc as Document & { adoptedStyleSheets: unknown[] };
+  }
+
+  it('adopts a constructed sheet of the realm of the document, and no style element', () => {
+    const doc = documentWithSheets();
+    stylePrintDocument(doc);
+    expect((doc.adoptedStyleSheets as Sheets).map((sheet) => sheet.text)).toEqual([PRINT_STYLE]);
+    expect(doc.querySelectorAll('style')).toHaveLength(0);
+  });
+
+  it('keeps the order of the sheets, changes a sheet and removes only that sheet', () => {
+    const doc = documentWithSheets();
+    const first = addPrintStyle(doc, 'a{}');
+    const second = addPrintStyle(doc, 'b{}');
+    const texts = () => (doc.adoptedStyleSheets as Sheets).map((sheet) => sheet.text);
+    expect(texts()).toEqual(['a{}', 'b{}']);
+    first.set('c{}');
+    expect(texts()).toEqual(['c{}', 'b{}']);
+    second.remove();
+    expect(texts()).toEqual(['c{}']);
+  });
+
+  it('falls back to a style element when a constructed sheet cannot be made', () => {
+    const doc = documentWithSheets(
+      class {
+        replaceSync(): void {
+          throw new Error('not allowed');
+        }
+      },
+    );
+    addPrintStyle(doc, 'a{}');
+    expect(doc.querySelector('style')?.textContent).toBe('a{}');
+    expect(doc.adoptedStyleSheets).toHaveLength(0);
+  });
+
+  it('measures with constructed sheets and leaves the base sheet and one sheet of queries', () => {
+    const doc = documentWithSheets();
+    doc.body.innerHTML =
+      '<table><thead><tr><th>A</th></tr></thead><tbody><tr><td>x</td></tr></tbody></table>';
+    stylePrintDocument(doc);
+    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(() => {
+      const sheets = doc.adoptedStyleSheets as Sheets;
+      const size = Number(/font-size:(\d+)px/.exec(sheets[sheets.length - 1].text)?.[1] ?? 12);
+      return { width: size * 50 } as DOMRect;
+    });
+    fitPrintDocument(doc);
+    const texts = (doc.adoptedStyleSheets as Sheets).map((sheet) => sheet.text);
+    // The base sheet and the sheet with the queries. The probe is gone, no style element exists.
+    expect(texts).toHaveLength(2);
+    expect(texts[0]).toBe(PRINT_STYLE);
+    expect(texts[1]).toContain('@container (width < 600px)');
+    expect(doc.querySelectorAll('style')).toHaveLength(0);
   });
 });

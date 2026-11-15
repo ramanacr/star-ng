@@ -861,6 +861,16 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'tree table with windowed rendering in the middle',
+    path: 'controls/tree-table',
+    open: async (page) => {
+      const live = example(page, 'Large tree table with windowed rendering');
+      await live.scrollIntoViewIfNeeded();
+      await scrollToMiddle(live.locator('.star-table__scroll'));
+      await expect(live.getByRole('row').nth(2)).toBeVisible();
+    },
+  },
+  {
     name: 'table with virtual scroll in the middle',
     path: 'controls/table-layout',
     open: async (page) => {

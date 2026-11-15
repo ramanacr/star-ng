@@ -1,17 +1,25 @@
 import { _IdGenerator } from '@angular/cdk/a11y';
-import { NgTemplateOutlet } from '@angular/common';
+import { DOCUMENT, NgTemplateOutlet } from '@angular/common';
 import {
+  afterEveryRender,
   booleanAttribute,
   ChangeDetectionStrategy,
   Component,
   computed,
   contentChild,
   Directive,
+  effect,
+  ElementRef,
   inject,
   input,
+  isDevMode,
+  linkedSignal,
   model,
+  numberAttribute,
   signal,
   TemplateRef,
+  untracked,
+  viewChild,
 } from '@angular/core';
 import {
   optionText,
@@ -21,7 +29,22 @@ import {
   StarOptionKey,
 } from '@star-ng/ui/core';
 import { StarPaginator } from '@star-ng/ui/paginator';
-import { StarTreeNode } from '@star-ng/ui/tree';
+import {
+  flattenVisible,
+  navigationTarget,
+  parentsOf,
+  rowIndexOf,
+  StarTreeNode,
+  stillFocusable,
+  TreeRow,
+} from '@star-ng/ui/tree';
+import {
+  ariaRowCount,
+  ariaRowIndex,
+  revealRowOffset,
+  RowWindow,
+  rowWindow,
+} from './tree-table-model';
 
 // ---------------------------------------------------------------- Tree table
 
@@ -32,29 +55,64 @@ export interface StarTreeTableColumn {
   readonly align?: 'start' | 'center' | 'end';
 }
 
-interface TreeRow {
-  readonly node: StarTreeNode<Record<string, unknown>>;
-  readonly level: number;
-  readonly setSize: number;
-  readonly position: number;
+type TreeTableNode = StarTreeNode<Record<string, unknown>>;
+type TreeTableRow = TreeRow<TreeTableNode>;
+
+/** One rendered row: the row and its `aria-rowindex` (null in the default rendering). */
+interface TreeTableEntry {
+  readonly row: TreeTableRow;
+  readonly aria: number | null;
 }
+
+/** Natural height of a tree table row in pixels. */
+const TREE_TABLE_ROW_HEIGHT = 53;
+/** Rows that render before and after the visible ones in windowed rendering. */
+const BUFFER_ROWS = 8;
+/** Height of the scroll area before it is measured (the first window of windowed rendering). */
+const FALLBACK_VIEWPORT = 600;
 
 /**
  * Tree table (PrimeNG `p-treetable`): hierarchical rows with expand / collapse in a table,
- * `role="treegrid"`, Right / Left on a row expand / collapse, Up / Down move between rows.
- * Node `data` holds the column values; the first column shows the tree toggle.
+ * `role="treegrid"`, Right / Left on a row expand / collapse, Up / Down, Home and End move between
+ * rows. Node `data` holds the column values; the first column shows the tree toggle.
+ *
+ * Large tables: `virtualScroll` with `scrollHeight` and `virtualItemSize` renders only the rows in
+ * and near the viewport. It is still one `<table>`: a spacer row above and one below the rendered
+ * rows stand for the others, the header is sticky, and every row has the fixed height
+ * `virtualItemSize`. Keys, `aria-rowcount`, `aria-rowindex`, `aria-level`, `aria-setsize` and
+ * `aria-posinset` work over all open rows, also the ones that are not in the DOM.
  *
  * `<star-tree-table [nodes]="budget" [columns]="cols" [(expanded)]="open" ariaLabel="Budget" />`
  */
 @Component({
   selector: 'star-tree-table',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'star-table star-tree-table' },
+  host: {
+    class: 'star-table star-tree-table',
+    '[class.star-table--sticky]': '!!scrollHeight()',
+    '[class.star-table--virtual]': 'windowed()',
+    '[style.--star-table-row-height.px]': 'windowed() ? virtualItemSize() : null',
+  },
   template: `
-    <div class="star-table__scroll">
-      <table role="treegrid" [attr.aria-label]="ariaLabel()">
-        <thead>
-          <tr>
+    <div
+      #scroller
+      class="star-table__scroll"
+      [attr.role]="windowed() ? 'group' : null"
+      [attr.aria-label]="windowed() ? ariaLabel() : null"
+      [attr.tabindex]="windowed() ? (activeRendered() ? -1 : 0) : null"
+      [style.max-height]="scrollHeight()"
+      (scroll)="syncScroll()"
+      (focus)="onScrollerFocus()"
+      (blur)="parked = false"
+      (keydown)="onScrollerKeydown($event)"
+    >
+      <table
+        role="treegrid"
+        [attr.aria-label]="ariaLabel()"
+        [attr.aria-rowcount]="windowed() ? ariaRowCount(rows().length) : null"
+      >
+        <thead #header>
+          <tr [attr.aria-rowindex]="windowed() ? 1 : null">
             @for (column of columns(); track column.field) {
               <th
                 scope="col"
@@ -67,9 +125,16 @@ interface TreeRow {
           </tr>
         </thead>
         <tbody>
-          @for (row of rows(); track row.node.key) {
+          @if (window().before > 0) {
+            <tr class="star-table__spacer" aria-hidden="true">
+              <td [attr.colspan]="columns().length" [style.height.px]="window().before"></td>
+            </tr>
+          }
+          @for (entry of entries(); track entry.row.node.key) {
+            @let row = entry.row;
             <tr
               class="star-table__row"
+              [attr.aria-rowindex]="entry.aria"
               [attr.aria-level]="row.level"
               [attr.aria-setsize]="row.setSize"
               [attr.aria-posinset]="row.position"
@@ -77,7 +142,7 @@ interface TreeRow {
               [attr.tabindex]="focusKey() === row.node.key ? 0 : -1"
               [attr.data-key]="row.node.key"
               (keydown)="onKeydown($event, row)"
-              (focus)="focusKey.set(row.node.key)"
+              (focusin)="onRowFocus($event, row.node.key)"
             >
               @for (column of columns(); track column.field; let first = $first) {
                 <td [class]="'star-table__cell--' + (column.align ?? 'start')">
@@ -109,6 +174,11 @@ interface TreeRow {
               }
             </tr>
           }
+          @if (window().after > 0) {
+            <tr class="star-table__spacer" aria-hidden="true">
+              <td [attr.colspan]="columns().length" [style.height.px]="window().after"></td>
+            </tr>
+          }
         </tbody>
       </table>
     </div>
@@ -116,57 +186,276 @@ interface TreeRow {
 })
 export class StarTreeTable {
   protected readonly text = inject(STAR_UI_TEXT);
-  readonly nodes = input<readonly StarTreeNode<Record<string, unknown>>[]>([]);
+  private readonly doc = inject(DOCUMENT);
+  readonly nodes = input<readonly TreeTableNode[]>([]);
   readonly columns = input.required<readonly StarTreeTableColumn[]>();
   readonly expanded = model<readonly string[]>([]);
   readonly ariaLabel = input<string | null>(null);
+  /**
+   * Maximum height of the table (a CSS length, for example `20rem`). The table scrolls inside it
+   * and the header stays at the top.
+   */
+  readonly scrollHeight = input<string | null>(null);
+  /**
+   * Windowed rendering for large tables: only the rows in and near the viewport are in the DOM.
+   * Needs `scrollHeight`, and every row gets the fixed height `virtualItemSize` with its text on
+   * one line. Without `scrollHeight` the table renders all rows as usual.
+   */
+  readonly virtualScroll = input(false, { transform: booleanAttribute });
+  /**
+   * Row height in pixels in windowed rendering. The default is the natural height of a row of
+   * this table.
+   */
+  readonly virtualItemSize = input(TREE_TABLE_ROW_HEIGHT, { transform: numberAttribute });
 
-  protected readonly rows = computed<TreeRow[]>(() => {
-    const rows: TreeRow[] = [];
-    const open = new Set(this.expanded());
-    const walk = (nodes: readonly StarTreeNode<Record<string, unknown>>[], level: number) =>
-      nodes.forEach((node, i) => {
-        rows.push({ node, level, setSize: nodes.length, position: i + 1 });
-        if (node.children?.length && open.has(node.key)) {
-          walk(node.children as readonly StarTreeNode<Record<string, unknown>>[], level + 1);
+  private readonly scroller = viewChild<ElementRef<HTMLElement>>('scroller');
+  private readonly header = viewChild<ElementRef<HTMLElement>>('header');
+
+  private readonly openKeys = computed(() => new Set(this.expanded()));
+  private readonly parents = computed(() => parentsOf(this.nodes()));
+  /** The rows whose parents are open, in order. The sibling numbers come from the data. */
+  protected readonly rows = computed<TreeTableRow[]>(() =>
+    flattenVisible(this.nodes(), this.openKeys()),
+  );
+  private readonly rowIndex = computed(() => rowIndexOf(this.rows()));
+
+  /**
+   * The active row (the one with `tabindex` 0). It stays a row after the rows change, and it is
+   * kept in state, not read from the DOM: in windowed rendering its element may not exist.
+   */
+  protected readonly focusKey = linkedSignal<readonly TreeTableRow[], string | null>({
+    source: this.rows,
+    computation: (rows, previous) =>
+      stillFocusable(previous?.value, this.rowIndex(), this.parents(), rows[0]?.node.key ?? null),
+  });
+
+  // ---- windowed rendering ----
+  protected readonly windowed = computed(
+    () => this.virtualScroll() && !!this.scrollHeight() && this.virtualItemSize() > 0,
+  );
+  private readonly scrollTop = signal(0);
+  private readonly viewportHeight = signal(0);
+  /** The rows that are in the DOM. Without windowed rendering: all of them. */
+  protected readonly window = computed<RowWindow>(
+    () => {
+      if (!this.windowed()) return { start: 0, end: this.rows().length, before: 0, after: 0 };
+      return rowWindow(
+        this.rows().length,
+        this.virtualItemSize(),
+        this.scrollTop(),
+        this.viewportHeight() || FALLBACK_VIEWPORT,
+        BUFFER_ROWS,
+      );
+    },
+    // A scroll of a few pixels does not change the window: skip the work after it.
+    {
+      equal: (a, b) =>
+        a.start === b.start && a.end === b.end && a.before === b.before && a.after === b.after,
+    },
+  );
+  protected readonly entries = computed<TreeTableEntry[]>(() => {
+    const rows = this.rows();
+    if (!this.windowed()) return rows.map((row) => ({ row, aria: null }));
+    const { start, end } = this.window();
+    return rows.slice(start, end).map((row, i) => ({ row, aria: ariaRowIndex(start + i) }));
+  });
+  /** The active row is in the DOM. If it is not, the scroll area takes the Tab stop. */
+  protected readonly activeRendered = computed(() => {
+    const index = this.rowIndex().get(this.focusKey() ?? '');
+    const { start, end } = this.window();
+    return index !== undefined && index >= start && index < end;
+  });
+  protected readonly ariaRowCount = ariaRowCount;
+  /** Row to focus as soon as its element exists (it may need scrolling in first). */
+  private pendingFocus: string | null = null;
+  /** The focus waits on the scroll area because the focused row left the DOM. */
+  protected parked = false;
+
+  constructor() {
+    // The rows or the window change (a scroll, a branch closes, new nodes) and the focused row
+    // may leave the DOM. This effect runs before the template updates, while the row is still there.
+    effect(() => {
+      const window = this.window();
+      this.rowIndex();
+      untracked(() => {
+        if (this.windowed()) this.parkFocus(window);
+      });
+    });
+    // The scroll area changes its height with the rows (up to `scrollHeight`) and with the page.
+    effect((onCleanup) => {
+      const scroller = this.scroller()?.nativeElement;
+      if (!this.windowed() || !scroller || typeof ResizeObserver === 'undefined') return;
+      const observer = new ResizeObserver(() => this.syncScroll());
+      observer.observe(scroller);
+      onCleanup(() => observer.disconnect());
+    });
+    afterEveryRender({ read: () => this.syncScroll() });
+    afterEveryRender(() => {
+      this.applyPendingFocus();
+      if (this.parked) this.restoreParkedFocus();
+    });
+    if (isDevMode()) {
+      effect(() => {
+        if (this.virtualScroll() && !this.scrollHeight()) {
+          console.warn(
+            'star-tree-table: virtualScroll needs scrollHeight. Without it the table renders all rows.',
+          );
         }
       });
-    walk(this.nodes(), 1);
-    return rows;
-  });
-  protected readonly focusKey = signal<string | null>(null);
+    }
+  }
 
   protected isOpen(key: string): boolean {
-    return this.expanded().includes(key);
+    return this.openKeys().has(key);
   }
 
   toggle(key: string, open = !this.isOpen(key)): void {
-    this.expanded.update((keys) => (open ? [...keys, key] : keys.filter((k) => k !== key)));
+    this.expanded.update((keys) => {
+      if (!open) return keys.filter((k) => k !== key);
+      return keys.includes(key) ? keys : [...keys, key];
+    });
   }
 
-  protected onKeydown(event: KeyboardEvent, row: TreeRow): void {
+  /** Reads the scroll position and the height of the scroll area (windowed rendering). */
+  protected syncScroll(): void {
+    const scroller = this.scroller()?.nativeElement;
+    if (!scroller || !this.windowed()) return;
+    this.scrollTop.set(scroller.scrollTop);
+    if (scroller.clientHeight) this.viewportHeight.set(scroller.clientHeight);
+  }
+
+  protected onRowFocus(event: FocusEvent, key: string): void {
+    this.focusKey.set(key);
+    this.pendingFocus = null;
+    this.parked = false;
+    // A row that the keyboard or a click focuses may sit under the sticky header.
+    if (event.target === event.currentTarget && this.windowed()) this.revealRow(key);
+  }
+
+  /**
+   * Moves the focus to a row. The row becomes the active row at once. In windowed rendering the
+   * row is scrolled into the window first, and the focus is applied after its element renders.
+   */
+  private focusRow(key: string | null | undefined): void {
+    if (!key) return;
+    this.focusKey.set(key);
+    this.pendingFocus = key;
+    if (this.windowed()) this.revealRow(key);
+    queueMicrotask(() => this.applyPendingFocus());
+  }
+
+  /** Scrolls a row fully into view, below the sticky header, with the least movement. */
+  private revealRow(key: string): void {
+    const scroller = this.scroller()?.nativeElement;
+    const index = this.rowIndex().get(key);
+    if (!scroller || index === undefined) return;
+    const offset = revealRowOffset(
+      index,
+      this.virtualItemSize(),
+      scroller.scrollTop,
+      scroller.clientHeight,
+      this.header()?.nativeElement.offsetHeight ?? 0,
+    );
+    if (offset === null) return;
+    scroller.scrollTop = offset;
+    this.syncScroll();
+  }
+
+  private rowElement(key: string): HTMLElement | null {
+    return (
+      this.scroller()?.nativeElement.querySelector<HTMLElement>(
+        `tbody > tr[data-key="${CSS.escape(key)}"]`,
+      ) ?? null
+    );
+  }
+
+  private applyPendingFocus(): void {
+    const key = this.pendingFocus;
+    if (key === null) return;
+    if (!this.rowIndex().has(key)) {
+      this.pendingFocus = null;
+      return;
+    }
+    const row = this.rowElement(key);
+    if (!row) return; // not rendered yet: the next render calls this again
+    this.pendingFocus = null;
+    row.focus({ preventScroll: this.windowed() });
+  }
+
+  /**
+   * The browser drops the focus to the page body when the focused element leaves the DOM. Before
+   * the focused row leaves the window, the focus moves to the scroll area; the keys still work
+   * there, and the focus returns to the row when it renders again.
+   */
+  private parkFocus(window: RowWindow): void {
+    const scroller = this.scroller()?.nativeElement;
+    const active = this.doc.activeElement;
+    if (!scroller || !active || active === scroller || !scroller.contains(active)) return;
+    const key = active.closest<HTMLElement>('tbody > tr[data-key]')?.dataset['key'];
+    const index = key === undefined ? undefined : this.rowIndex().get(key);
+    if (index !== undefined && index >= window.start && index < window.end) return;
+    this.parked = true;
+    scroller.focus({ preventScroll: true });
+  }
+
+  private restoreParkedFocus(): void {
+    const scroller = this.scroller()?.nativeElement;
+    if (!scroller || this.doc.activeElement !== scroller) {
+      this.parked = false;
+      return;
+    }
+    const key = this.focusKey();
+    if (key === null) return;
+    this.rowElement(key)?.focus({ preventScroll: true });
+  }
+
+  /** Tab into the scroll area (no row has the Tab stop): the focus goes to the active row. */
+  protected onScrollerFocus(): void {
+    if (this.windowed() && !this.parked) this.focusRow(this.focusKey());
+  }
+
+  /** Keys on the scroll area itself (the focus is parked there): they act on the active row. */
+  protected onScrollerKeydown(event: KeyboardEvent): void {
+    if (!this.windowed() || event.target !== event.currentTarget) return;
+    const row = this.rows()[this.rowIndex().get(this.focusKey() ?? '') ?? -1];
+    if (row) this.onKeydown(event, row);
+  }
+
+  protected onKeydown(event: KeyboardEvent, row: TreeTableRow): void {
     const rows = this.rows();
-    const index = rows.indexOf(row);
-    const focus = (target: TreeRow | undefined) => {
-      if (!target) return;
-      event.preventDefault();
-      this.focusKey.set(target.node.key);
-      const tr = (event.currentTarget as HTMLElement)
-        .closest('tbody')
-        ?.querySelector<HTMLElement>(`[data-key="${CSS.escape(target.node.key)}"]`);
-      tr?.focus();
-    };
+    // A key that arrives before the last move has rendered (a held key, a far scroll) continues
+    // from the row that the last move aimed at, not from the row that still has the DOM focus.
+    const item =
+      this.pendingFocus === null
+        ? row
+        : (rows[this.rowIndex().get(this.pendingFocus) ?? -1] ?? row);
+    const index = this.rowIndex().get(item.node.key) ?? -1;
+    const hasChildren = !!item.node.children?.length;
+    const expanded = hasChildren && this.isOpen(item.node.key);
     // Arrow right opens a branch and Arrow left closes it; the two swap in right-to-left.
     const key = starInlineKey(event);
-    if (key === 'ArrowDown') focus(rows[index + 1]);
-    else if (key === 'ArrowUp') focus(rows[index - 1]);
-    else if (key === 'ArrowRight' && row.node.children?.length) {
+    const move = (target: string | null) => {
+      if (target === null) return;
       event.preventDefault();
-      this.toggle(row.node.key, true);
-    } else if (key === 'ArrowLeft') {
-      event.preventDefault();
-      if (row.node.children?.length && this.isOpen(row.node.key)) this.toggle(row.node.key, false);
-      else focus([...rows.slice(0, index)].reverse().find((r) => r.level < row.level));
+      this.focusRow(target);
+    };
+    switch (key) {
+      case 'ArrowDown':
+      case 'ArrowUp':
+      case 'Home':
+      case 'End':
+        return move(navigationTarget(rows, index, key, { hasChildren, expanded }));
+      case 'ArrowRight':
+        if (hasChildren) {
+          event.preventDefault();
+          if (!expanded) this.toggle(item.node.key, true);
+        }
+        return;
+      case 'ArrowLeft':
+        event.preventDefault();
+        if (expanded) this.toggle(item.node.key, false);
+        else move(item.parentKey);
+        return;
     }
   }
 }
