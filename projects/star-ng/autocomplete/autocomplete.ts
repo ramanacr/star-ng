@@ -103,12 +103,13 @@ export abstract class StarAutoCompleteBase<TOption, TValue> extends StarOptionLi
   constructor() {
     super();
     inject(DestroyRef).onDestroy(() => clearTimeout(this.searchTimer));
-    // New results: highlight the first one (autoHighlight) or nothing.
+    // New results: show them from the top and highlight the first one (autoHighlight) or nothing.
     effect(() => {
       this.visibleOptions();
-      untracked(() =>
-        this.activeIndex.set(this.autoHighlight() ? this.firstEnabledFrom(0, 1) : -1),
-      );
+      untracked(() => {
+        this.resetScroll();
+        this.activeIndex.set(this.autoHighlight() ? this.firstEnabledFrom(0, 1) : -1);
+      });
     });
   }
 
@@ -284,6 +285,7 @@ const TEMPLATE = `
     [cdkConnectedOverlayOrigin]="origin"
     [cdkConnectedOverlayOpen]="panelVisible()"
     [cdkConnectedOverlayPositions]="positions"
+    (attach)="onPanelAttached()"
     (detach)="closePanel(false)"
     (overlayOutsideClick)="onOutsideClick($event)"
   >
@@ -317,7 +319,7 @@ const TEMPLATE = `
             [class.star-listbox__option--active]="activeIndex() === i"
             [attr.aria-selected]="activeIndex() === i"
             [attr.aria-disabled]="isDisabled(option) || null"
-            [attr.aria-describedby]="row.groupId"
+            [attr.aria-describedby]="describedBy(row)"
             [attr.aria-setsize]="virtualScroll() ? visibleOptions().length : null"
             [attr.aria-posinset]="virtualScroll() ? i + 1 : null"
             (click)="onOptionClick(option, i)"

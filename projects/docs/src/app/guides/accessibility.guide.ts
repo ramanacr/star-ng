@@ -119,8 +119,8 @@ import { DOCS } from '../shared/docs';
           invalid field with its error; a table with the column panel, a filter, an expanded row and
           a cell in edit mode; an expanded tree; a file upload with a file and with a rejected file;
           a stepper on a later step; carousel, galleria and image preview; a speed dial; a terminal
-          with output; an editor with content; and the virtual-scroll listbox, tree and table,
-          scrolled to the middle.
+          with output; an editor with content; and the virtual-scroll listbox, select, multi-select,
+          autocomplete, tree and table, scrolled to the middle.
         </li>
         <li>
           <strong>Setup.</strong> The scan runs with reduced motion, so no animation changes a color

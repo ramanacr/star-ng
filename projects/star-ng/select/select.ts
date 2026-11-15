@@ -142,7 +142,7 @@ import { StarOptionListBase } from './option-list-base';
                 [class.star-listbox__option--selected]="isSelected(option)"
                 [attr.aria-selected]="isSelected(option)"
                 [attr.aria-disabled]="isDisabled(option) || null"
-                [attr.aria-describedby]="row.groupId"
+                [attr.aria-describedby]="describedBy(row)"
                 [attr.aria-setsize]="virtualScroll() ? visibleOptions().length : null"
                 [attr.aria-posinset]="virtualScroll() ? i + 1 : null"
                 (click)="onOptionClick(option, i)"
