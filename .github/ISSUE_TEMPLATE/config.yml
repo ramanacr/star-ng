@@ -3,3 +3,6 @@ contact_links:
   - name: Report a security vulnerability
     url: https://github.com/ramanacr/star-ng/security/advisories/new
     about: Report a security problem in private. Do not open a public issue for it.
+  - name: Ask a question or share an idea
+    url: https://github.com/ramanacr/star-ng/discussions
+    about: Use GitHub Discussions for questions, ideas and general talk.

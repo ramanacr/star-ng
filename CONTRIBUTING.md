@@ -1,5 +1,9 @@
 # Contributing to StarNG
 
+All contributions are welcome: code, tests, translations, browser and assistive-technology checks, documentation and bug reports. Each contribution helps. Your GitHub name goes in the release notes of the version that contains your work.
+
+This project follows the [code of conduct](CODE_OF_CONDUCT.md).
+
 This file explains how to work on the StarNG repository: set up, run the checks, add a control, and open a pull request. People who only install the package need the [README](README.md).
 
 ## Prerequisites
