@@ -63,7 +63,13 @@ trusted publisher only to a package that already exists.
 ## Release steps
 
 1. Make a branch. Change `version` in `projects/star-ng/package.json`. This is the only place
-   that holds the version. Open a pull request.
+   that holds the version. In the same pull request:
+   - In `CHANGELOG.md`, replace "Unreleased" in the heading of this version with the release
+     date (`YYYY-MM-DD`). For a new version, add a new section above the older ones.
+   - First release only (`0.1.0`): in `README.md`, add the npm version badge where the HTML
+     comment says so, and delete the "Status" block and that comment. Before the first release,
+     the badge would show "package not found".
+   - Open the pull request.
 2. Merge the pull request when CI is green.
 3. Tag the merge commit on `main` and push the tag:
 

@@ -12,7 +12,7 @@ if (!allowed) {
   console.error(
     'e2e:visual:update refuses to run here: baselines must come from Linux in CI.\n' +
       'Run the "Visual baselines" workflow in GitHub Actions and commit its artifact\n' +
-      '(see "Visual regression tests" in README.md), or set VISUAL_ALLOW_LOCAL=1 to override.',
+      '(see "Visual tests" in CONTRIBUTING.md), or set VISUAL_ALLOW_LOCAL=1 to override.',
   );
   process.exit(1);
 }
