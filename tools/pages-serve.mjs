@@ -7,15 +7,20 @@
 //
 // Like GitHub Pages:
 // - files are served only under the base path; `/star-ng` redirects to `/star-ng/`;
-// - a folder answers with its `index.html`;
+// - a folder answers with its `index.html` (the prerendered page of a route), and a folder
+//   address without the final `/` redirects (301) to the address with it;
 // - any other path answers with the content of `404.html` and the status 404 (no rewrite);
 // - no other header than the content type is set (so a Content-Security-Policy must come
 //   from the `<meta>` element of the page, as it must on GitHub Pages).
 //
 // With --spa the server is a plain static server for the end-to-end tests (CI serves the
 // production build of the docs under `/`, see `playwright.server.ts`):
-// - a path without a file extension that has no file answers with `index.html` and the
-//   status 200 (deep links of the router); no `404.html` is needed;
+// - a folder answers with its `index.html` at once, without the redirect (the prerendered
+//   page of a route, status 200);
+// - a path without a file extension that has no file answers with the client-rendered shell
+//   `index.csr.html` (`index.html` when the build has none) and the status 200 (deep links of
+//   the router); no `404.html` is needed. The shell has no page content, so a page that was
+//   not prerendered cannot pass for a prerendered one;
 // - a missing path that has a file extension (a script, a style, an image) still answers 404,
 //   so a broken asset URL is not hidden by the HTML fallback;
 // - the other rules (content type only, no extra header) stay the same.
@@ -49,6 +54,12 @@ if (spa) {
   console.error(`pages-serve: ${join(root, '404.html')} is missing. Run "pnpm build:pages" first.`);
   process.exit(1);
 }
+
+// The shell for an address that is no page: the client-rendered one when the build has it.
+const shell = join(
+  root,
+  existsSync(join(root, 'index.csr.html')) ? 'index.csr.html' : 'index.html',
+);
 
 const TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -105,10 +116,17 @@ const server = createServer((request, response) => {
     response.end('404 Not Found (outside the site path)');
     return;
   }
-  const file = resolveFile(pathname.slice(base.length));
-  if (file) send(response, 200, file);
-  else if (spa && extname(pathname) === '') send(response, 200, join(root, 'index.html'));
-  else send(response, 404, join(root, spa ? 'index.html' : '404.html'));
+  const relative = pathname.slice(base.length);
+  const file = resolveFile(relative);
+  if (file && !spa && !pathname.endsWith('/') && extname(pathname) === '') {
+    // GitHub Pages sends a folder address without the final "/" to the one with it.
+    response.writeHead(301, {
+      location: pathname + '/' + new URL(request.url ?? '/', 'http://localhost').search,
+    });
+    response.end();
+  } else if (file) send(response, 200, file);
+  else if (spa && extname(pathname) === '') send(response, 200, shell);
+  else send(response, 404, spa ? shell : join(root, '404.html'));
 });
 
 server.listen(port, () => {

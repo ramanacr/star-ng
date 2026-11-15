@@ -47,8 +47,9 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       # The docs use the library from source (tsconfig paths, SCSS), so no package build is needed.
-      # build:pages runs `ng build docs --base-href`, then copies index.html to 404.html
-      # (single-page-application fallback, see tools/pages-fallback.mjs).
+      # build:pages runs `ng build docs --base-href`, which prerenders every page to its own
+      # index.html (status 200, content in the HTML), checks that every page was prerendered, then
+      # copies the client-rendered shell to 404.html (see tools/pages-fallback.mjs).
       - name: Build the docs for the sub-path
         env:
           BASE_PATH: ${{ steps.pages.outputs.base_path }}

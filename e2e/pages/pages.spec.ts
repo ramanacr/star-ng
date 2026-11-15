@@ -1,8 +1,10 @@
 import { expect, Page, test } from '@playwright/test';
 
 /**
- * The docs application as GitHub Pages serves it: under the sub-path `/star-ng/`, with
- * `404.html` as the only fallback (status 404). Run with `pnpm e2e:pages`.
+ * The docs application as GitHub Pages serves it: under the sub-path `/star-ng/`. Every docs
+ * page is a prerendered `<route>/index.html` (status 200, reached through the redirect to the
+ * folder address), and `404.html` is the only fallback for any other address (status 404).
+ * Run with `pnpm e2e:pages`.
  */
 const BASE = '/star-ng/';
 
@@ -54,13 +56,46 @@ test.describe('docs site under /star-ng/', () => {
     expect(await problems()).toEqual([]);
   });
 
-  test('a deep link renders the page (the response is the 404.html, status 404)', async ({
-    page,
-  }) => {
-    const problems = await trackProblems(page, `${BASE}controls/button`);
+  test('a deep link is a prerendered page (status 200) without console error', async ({ page }) => {
+    const problems = await trackProblems(page);
     const response = await page.goto(`${BASE}controls/button`);
-    expect(response?.status()).toBe(404);
+    expect(response?.status()).toBe(200);
+    // GitHub Pages redirects a folder address to the one with the final slash.
+    expect(new URL(response!.url()).pathname).toBe(`${BASE}controls/button/`);
     await expect(heading(page, 'Button')).toBeVisible();
+    // The router takes the address with the slash, and the navigation marks the page.
+    await expect(page.locator('.docs-nav a[aria-current="page"]')).toHaveText('Button');
+    expect(await problems()).toEqual([]);
+  });
+
+  test('the folder address redirects to the slash address, which holds the page in its HTML', async ({
+    request,
+  }) => {
+    const redirect = await request.get(`${BASE}controls/button`, { maxRedirects: 0 });
+    expect(redirect.status()).toBe(301);
+    expect(redirect.headers()['location']).toBe(`${BASE}controls/button/`);
+    const response = await request.get(`${BASE}controls/button/`);
+    expect(response.status()).toBe(200);
+    const html = await response.text();
+    expect(html).toContain('<title>Button · StarNG</title>');
+    expect(html).toContain('<h1>Button</h1>');
+    expect(html).toContain(`<base href="${BASE}">`);
+  });
+
+  test('an unknown address gets 404.html, the shell without page content', async ({
+    page,
+    request,
+  }) => {
+    const response = await request.get(`${BASE}no/such/page`);
+    expect(response.status()).toBe(404);
+    const html = await response.text();
+    expect(html).toContain('<docs-root></docs-root>');
+    expect(html).not.toContain('<h1');
+    // The shell still starts the application: the router sends an unknown address home.
+    const problems = await trackProblems(page, `${BASE}no/such/page`);
+    const shown = await page.goto(`${BASE}no/such/page`);
+    expect(shown?.status()).toBe(404);
+    await expect(heading(page, 'StarNG')).toBeVisible();
     expect(await problems()).toEqual([]);
   });
 
