@@ -49,6 +49,11 @@ jobs:
       - name: Build library (package and CSS)
         run: pnpm build:lib
 
+      # Package contents, exports, size and forbidden names: a broken package is found on the
+      # pull request, not on release day (the release workflow runs the same check).
+      - name: Check the package
+        run: pnpm check:package
+
       - name: Build docs
         run: pnpm build:docs
 
