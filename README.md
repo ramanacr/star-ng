@@ -120,23 +120,62 @@ choice. The docs have a guide for it and for the first-paint script.
 
 ## Documentation
 
-The docs application has the guides (getting started, theming and tokens, dark mode, forms,
-internationalisation, right-to-left, accessibility) and one page per control with live examples, their
-source and an API table.
+The documentation site is at <https://ramanacr.github.io/star-ng/>. It has the guides (getting
+started, theming and tokens, dark mode, forms, internationalisation, right-to-left,
+accessibility) and one page per control with live examples, their source and an API table. See
+"Documentation site" below for how it is published.
+
+To run the docs application locally:
 
 ```bash
 corepack pnpm install
 corepack pnpm start        # docs application on http://localhost:4200
 ```
 
+## Documentation site
+
+The docs application is published to GitHub Pages at <https://ramanacr.github.io/star-ng/>, a
+project site under the sub-path `/star-ng/`.
+
+**Deployment.** The workflow `.github/workflows/pages.yml` runs on every push to `main`, and by
+hand (Actions, "Pages", "Run workflow"). It builds the docs with `pnpm build:pages`, uploads
+`dist/docs/browser` and deploys it. It does not run the tests: the CI workflow does that on the
+pull request. The base path comes from `actions/configure-pages`, so a fork publishes under its
+own repository name without a change.
+
+**One-time repository setting.** Settings, Pages, Source: **GitHub Actions**. Without it the
+deploy job fails.
+
+**Deep links.** GitHub Pages cannot rewrite URLs. A direct request for a route such as
+`/star-ng/controls/button` has no file, so GitHub answers with `404.html`. `pnpm build:pages`
+makes `404.html` a copy of `index.html`, so the application starts and shows the page. The
+HTTP status of such a response is **404**, not 200: the page works for people, but a crawler or a
+link checker sees a 404. Links inside the site (the navigation) are normal router links and
+have no such problem. The router uses path URLs, not hash URLs.
+
+**Shared browser storage.** Every project site of an owner shares the origin
+`ramanacr.github.io`, so `localStorage` is shared as well. The docs use the keys `star-theme`
+and `star-direction`. Another site on that origin that uses one of these names sees the same value.
+
+**Preview the sub-path build locally.**
+
+| Command                       | What it does                                                                      |
+| ----------------------------- | --------------------------------------------------------------------------------- |
+| `corepack pnpm build:pages`   | `ng build docs --base-href /star-ng/`, then `404.html` (optional argument: base). |
+| `corepack pnpm pages:preview` | Builds, then serves `dist/docs/browser` at <http://localhost:4300/star-ng/>.      |
+| `corepack pnpm e2e:pages`     | Builds, then runs `e2e/pages` against that server (not part of `pnpm e2e`).       |
+
+The server `tools/pages-serve.mjs` mimics GitHub Pages: files only under `/star-ng/`, and
+`404.html` with the status 404 for any other path below it.
+
 ## Repository
 
-| Path               | Content                                                          |
-| ------------------ | ---------------------------------------------------------------- |
-| `projects/star-ng` | The library. One folder per entry point, `styles/` for the SCSS. |
-| `projects/docs`    | The docs application.                                            |
-| `e2e`              | Playwright tests, including the axe accessibility scan.          |
-| `tools`            | Build tools: compiled CSS, docs data generator, name check.      |
+| Path               | Content                                                                             |
+| ------------------ | ----------------------------------------------------------------------------------- |
+| `projects/star-ng` | The library. One folder per entry point, `styles/` for the SCSS.                    |
+| `projects/docs`    | The docs application.                                                               |
+| `e2e`              | Playwright tests, including the axe accessibility scan.                             |
+| `tools`            | Build tools: compiled CSS, docs data generator, name check, Pages build and server. |
 
 ## Development
 
