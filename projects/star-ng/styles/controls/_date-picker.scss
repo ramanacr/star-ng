@@ -46,6 +46,11 @@
   font-variant-numeric: tabular-nums;
   color: var(--star-text-strong);
   outline: none;
+  // The wrapper shows the focus ring. `:focus-visible` is named here so that a global focus
+  // rule of the application (`:focus-visible { outline: … }`) does not draw a second one.
+  &:focus-visible {
+    outline: none;
+  }
 
   &::placeholder {
     color: var(--star-text-muted);
