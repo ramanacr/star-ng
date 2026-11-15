@@ -1,11 +1,14 @@
 import { defineConfig, devices } from '@playwright/test';
+import { docsWebServer } from './playwright.server';
 
 const PORT = Number(process.env['E2E_PORT'] ?? 4200);
 const BASE_URL = process.env['E2E_BASE_URL'] ?? `http://localhost:${PORT}`;
 
 /**
  * End-to-end tests of the library, run against the docs application. By default Playwright
- * starts `ng serve docs`. Set E2E_BASE_URL to run against a deployed docs site instead.
+ * starts `ng serve docs`. Set E2E_STATIC_DIR (a built docs folder) to serve the production build
+ * instead (CI does this), or E2E_BASE_URL to run against a deployed docs site. See
+ * `playwright.server.ts`.
  */
 export default defineConfig({
   testDir: './e2e',
@@ -23,13 +26,5 @@ export default defineConfig({
     screenshot: 'only-on-failure',
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
-  webServer: process.env['E2E_BASE_URL']
-    ? undefined
-    : {
-        // Started through node, so it works where `pnpm` is not on the PATH (corepack only).
-        command: `node node_modules/@angular/cli/bin/ng.js serve docs --port ${PORT}`,
-        url: BASE_URL,
-        reuseExistingServer: !process.env['CI'],
-        timeout: 180_000,
-      },
+  webServer: docsWebServer(PORT, BASE_URL),
 });

@@ -1,5 +1,5 @@
 import { expect, Locator, Page, test } from '@playwright/test';
-import { collectErrors, example, openPage } from './support';
+import { collectErrors, example, needsDevBuild, openPage } from './support';
 
 /**
  * Virtual scroll of the table with rows of different heights (row detail, groups, stacked
@@ -284,7 +284,8 @@ test.describe('table virtual scroll with rows of different heights', () => {
     expect(await bodyRows(table).count()).toBeLessThan(MAX_ROWS + 1);
   });
 
-  test('selects, sorts and exports all rows, not only the rendered ones', async ({ page }) => {
+  test('selects, sorts and exports all rows, not only the rendered ones @dev', async ({ page }) => {
+    needsDevBuild();
     const { table, scroll, live, host } = await open(page, DETAIL, 'Tickets with detail');
     await table.getByRole('checkbox', { name: 'Select all rows' }).check();
     await expect(live.getByRole('status')).toContainText('selected: 50000');
@@ -299,7 +300,7 @@ test.describe('table virtual scroll with rows of different heights', () => {
     await settle(scroll);
     await expect(bodyRows(table).first()).toContainText(ticket(50_000));
 
-    // The CSV has the header and all 50,000 rows (window.ng exists in a development build).
+    // The CSV has the header and all 50,000 rows (window.ng exists in a development build only: tag @dev).
     const lines = await host.evaluate((el) => {
       const ng = (window as unknown as { ng: { getComponent(el: Element): unknown } }).ng;
       const table = ng.getComponent(el) as { toCsv(): string };
