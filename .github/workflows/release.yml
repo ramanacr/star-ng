@@ -20,6 +20,8 @@ on:
   workflow_dispatch:
 
 # Least privilege for every job. The publish job adds `id-token: write`.
+# The job `verify-published` checks the package after the publish. It is separate from `publish`,
+# so the run shows if the publish worked, and a failed check can be re-run alone (see RELEASING.md).
 permissions:
   contents: read
 
@@ -36,6 +38,7 @@ jobs:
     timeout-minutes: 30
     outputs:
       version: ${{ steps.release.outputs.version }}
+      package: ${{ steps.pack.outputs.package }}
       dist_tag: ${{ steps.release.outputs.dist_tag }}
       tarball: ${{ steps.pack.outputs.tarball }}
     steps:
@@ -98,6 +101,7 @@ jobs:
           test -f "release/${tarball}" || { echo "::error::Expected release/${tarball} was not made."; ls -l release; exit 1; }
           test "$(ls release | wc -l)" = "1" || { echo "::error::The release folder must hold exactly one tarball."; ls -l release; exit 1; }
           echo "tarball=${tarball}" >> "$GITHUB_OUTPUT"
+          echo "package=$(node -p "require('./dist/star-ng/package.json').name")" >> "$GITHUB_OUTPUT"
 
       # A real Angular application installs the packed tarball and builds for production.
       # It proves that the entry points, typings, peer ranges and style exports resolve.
@@ -188,34 +192,74 @@ jobs:
             echo "Dist-tag: \`${DIST_TAG}\`. Package page: https://www.npmjs.com/package/@star-ng/ui/v/${VERSION}"
           } >> "$GITHUB_STEP_SUMMARY"
 
-      # Installs the version that was just published into an empty project and checks the registry
-      # signature and the provenance attestation. The registry can need a moment to show a new
-      # version, so the install is retried.
+  # Checks the version that `publish` made. Read-only: no id-token and no environment. It never
+  # publishes, so "Re-run failed jobs" or "Re-run job" on this job alone is always safe.
+  verify-published:
+    name: verify published package
+    needs: [verify, publish]
+    if: needs.publish.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+
+      - name: Install a current npm
+        run: |
+          npm install -g npm@11.20.0
+          npm --version
+
+      # A new version can need some minutes before the registry answers for it ("Your package is
+      # being processed"). Poll the metadata of the exact version first, with a growing delay
+      # (5 s, doubled up to 60 s) and a total budget of 15 minutes (POLL_BUDGET_SECONDS).
+      - name: Wait for the version in the registry
+        env:
+          PACKAGE: ${{ needs.verify.outputs.package }}
+          VERSION: ${{ needs.verify.outputs.version }}
+          POLL_BUDGET_SECONDS: '900'
+        run: |
+          set -euo pipefail
+          spec="${PACKAGE}@${VERSION}"
+          start=$SECONDS
+          delay=5
+          attempt=1
+          until npm view "$spec" version --prefer-online > /dev/null 2>&1; do
+            elapsed=$((SECONDS - start))
+            if [ "$elapsed" -ge "$POLL_BUDGET_SECONDS" ]; then
+              echo "::error title=Version not in the registry::${spec} did not appear in the npm registry within ${POLL_BUDGET_SECONDS} seconds. The job 'publish to npm' (job id: publish) of this run succeeded, so the publish may be fine and the registry may only be slow. Do NOT re-run the publish job: a version can be published only once. Check 'npm view ${spec} version', then re-run only the job 'verify published package' (verify-published)."
+              exit 1
+            fi
+            echo "${spec} is not available yet (attempt ${attempt}, ${elapsed} s of ${POLL_BUDGET_SECONDS} s). Waiting ${delay} seconds."
+            sleep "$delay"
+            attempt=$((attempt + 1))
+            delay=$((delay * 2 > 60 ? 60 : delay * 2))
+          done
+          echo "${spec} is available after $((SECONDS - start)) s (attempt ${attempt})."
+
+      # Installs the published version into an empty project and checks the registry signature and
+      # the provenance attestation. `--ignore-scripts --legacy-peer-deps --no-audit --no-fund`:
+      # the Angular peer dependencies are not installed and no script runs.
       - name: Verify signature and provenance
         env:
+          PACKAGE: ${{ needs.verify.outputs.package }}
           VERSION: ${{ needs.verify.outputs.version }}
         run: |
           set -euo pipefail
           mkdir scratch
           cd scratch
           npm init -y > /dev/null
-          for attempt in 1 2 3 4 5 6 7 8 9 10; do
-            if npm install "@star-ng/ui@${VERSION}" --legacy-peer-deps --no-fund; then
-              break
-            fi
-            if [ "$attempt" = "10" ]; then
-              echo "::error::@star-ng/ui@${VERSION} could not be installed from the registry."
-              exit 1
-            fi
-            echo "Not available yet (attempt ${attempt}). Waiting 15 seconds."
-            sleep 15
-          done
+          npm install "${PACKAGE}@${VERSION}" --ignore-scripts --legacy-peer-deps --no-audit --no-fund
           npm audit signatures | tee audit.txt
-          if ! grep -q "verified attestation" audit.txt; then
+          # npm 11 prints "1 package has a verified attestation" or "N packages have verified attestations".
+          if ! grep -Eq "verified attestations?" audit.txt; then
             echo "::error::npm audit signatures reports no verified provenance attestation."
             exit 1
           fi
           {
+            echo "## Verified ${PACKAGE} ${VERSION}"
             echo
             echo "\`npm audit signatures\`:"
             echo
