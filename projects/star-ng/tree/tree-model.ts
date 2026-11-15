@@ -1,6 +1,8 @@
 // Pure helpers of the tree: flattening, sibling position, keyboard targets, selection state and
 // the scroll math of windowed rendering. They hold no DOM or signal state, so they are unit
-// tested without layout. This file is internal and is not exported from the entry point.
+// tested without layout. The entry point exports the row helpers that the tree table reuses
+// (`flattenVisible`, `rowIndexOf`, `parentsOf`, `stillFocusable`, `navigationTarget`,
+// `scrollOffsetToReveal`); the check and subtree helpers stay internal.
 
 /** The part of a tree node that the helpers read. `StarTreeNode` fits it. */
 export interface BranchLike<N> {
