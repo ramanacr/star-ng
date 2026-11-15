@@ -1,6 +1,6 @@
 import { CdkContextMenuTrigger, CdkMenu, CdkMenuItem, CdkMenuTrigger } from '@angular/cdk/menu';
 import { ConnectedPosition, FlexibleConnectedPositionStrategy } from '@angular/cdk/overlay';
-import { NgTemplateOutlet } from '@angular/common';
+import { isPlatformBrowser, NgTemplateOutlet } from '@angular/common';
 import {
   afterNextRender,
   booleanAttribute,
@@ -12,6 +12,7 @@ import {
   inject,
   input,
   output,
+  PLATFORM_ID,
   TemplateRef,
   viewChild,
 } from '@angular/core';
@@ -217,6 +218,7 @@ export class StarMenuTrigger {
   readonly starMenuTrigger = input.required<StarMenu>();
   private readonly trigger = inject(CdkMenuTrigger);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly browser = isPlatformBrowser(inject(PLATFORM_ID));
 
   constructor() {
     this.trigger.menuPosition = STAR_MENU_POSITIONS;
@@ -243,6 +245,8 @@ export class StarMenuTrigger {
    * cannot take focus, so the call goes to the inner button.
    */
   private adaptWrapperHost(): void {
+    // Only a browser has a user to press a key; the server DOM does not allow the `focus` change.
+    if (!this.browser) return;
     const host = this.host.nativeElement;
     if (host.matches('button, a')) return;
     host.focus = (options?: FocusOptions) => host.querySelector('button')?.focus(options);

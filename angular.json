@@ -78,6 +78,8 @@
           },
           "configurations": {
             "production": {
+              "server": "projects/docs/src/main.server.ts",
+              "outputMode": "static",
               "budgets": [
                 {
                   "type": "initial",

@@ -41,7 +41,8 @@ This file explains how to work on the StarNG repository: set up, run the checks,
 | `corepack pnpm test:ci`           | Unit tests (Vitest, jsdom) with coverage.                                                |
 | `corepack pnpm build`             | Builds the package to `dist/star-ng` (with CSS) and the docs.                            |
 | `corepack pnpm build:lib`         | Builds only the package and the CSS.                                                     |
-| `corepack pnpm build:docs`        | Builds only the docs application.                                                        |
+| `corepack pnpm build:docs`        | Builds only the docs application, prerenders every page and checks the result.           |
+| `corepack pnpm check:prerender`   | Checks that the last docs build has an HTML file for every page.                         |
 | `corepack pnpm docs:gen`          | Writes the API and example data of the docs.                                             |
 | `corepack pnpm docs:check`        | Fails when the generated docs data is out of date.                                       |
 | `corepack pnpm test:tools`        | Tests of the CI tools (change detection and gate). No browser.                           |
@@ -118,9 +119,11 @@ The workflow `.github/workflows/pages.yml` runs on every push to `main`, and by 
 
 One-time repository setting: Settings, Pages, Source: **GitHub Actions**. Without it, the deploy job fails.
 
-- **Deep links answer with status 404.** GitHub Pages cannot rewrite URLs. A direct request for a route such as `/star-ng/controls/button` has no file, so GitHub answers with `404.html`. `build:pages` makes `404.html` a copy of `index.html`, so the application starts and shows the page. The page works for people, but a crawler or a link checker sees status 404. Links inside the site are normal router links. The router uses path URLs, not hash URLs.
+- **Every page is prerendered, so a deep link answers with status 200.** The production build of the docs writes one HTML file per route, for example `controls/button/index.html`, with the title, the heading and the text of the page in the HTML source. GitHub Pages serves it for `/star-ng/controls/button` through a redirect to `/star-ng/controls/button/`. The router accepts the address with the final slash and shows it without. The build needs no server: `outputMode: "static"` and one server route `**` with `RenderMode.Prerender` (`projects/docs/src/app/app.routes.server.ts`). The builder reads the list of routes from the router config, so a new page in `nav.ts` is prerendered without a change. After the build, `tools/check-prerender.mjs` (run by `build:docs` and `build:pages`) fails when a page of `nav.ts` has no HTML file with a title and a heading.
+- **The browser reuses the prerendered page.** The app uses `provideClientHydration` (without incremental hydration: that adds an inline script, which the Content Security Policy does not allow). Code that runs while a page is rendered must not use `window`, `document`, `localStorage` or `matchMedia` directly. Inject `DOCUMENT` or check `isPlatformBrowser`, and put code that measures the page in `afterNextRender`. A browser global that runs during the render makes the build fail for that route.
+- **An address that is no page answers with status 404.** `build:pages` copies the client-rendered shell `index.csr.html` to `404.html`. The shell has no page content: the application starts, and the router sends an unknown address to the home page.
 - **`localStorage` is shared on the `github.io` origin.** Every project site of an owner uses the origin `ramanacr.github.io`. The docs use the keys `star-theme` and `star-direction`. Another site on that origin that uses one of these names sees the same value.
-- **Local preview.** Run `corepack pnpm pages:preview` and open <http://localhost:4300/star-ng/>. The server `tools/pages-serve.mjs` mimics GitHub Pages: files only under `/star-ng/`, and `404.html` with status 404 for any other path below it. `corepack pnpm e2e:pages` runs `e2e/pages` against it.
+- **Local preview.** Run `corepack pnpm pages:preview` and open <http://localhost:4300/star-ng/>. The server `tools/pages-serve.mjs` mimics GitHub Pages: files only under `/star-ng/`, a redirect from a folder address to the one with the final slash, and `404.html` with status 404 for any other path below it. `corepack pnpm e2e:pages` runs `e2e/pages` against it.
 
 ## Continuous integration
 
@@ -153,7 +156,7 @@ corepack pnpm build:docs
 E2E_STATIC_DIR=dist/docs/browser corepack pnpm e2e
 ```
 
-Without `E2E_STATIC_DIR`, Playwright starts `ng serve docs` (development build, fast rebuilds). `E2E_BASE_URL` runs the tests against a deployed site. The tests must pass against both servers. A test that needs a development build (for example `window.ng`) has the tag `@dev` in its title and calls `needsDevBuild()` from `e2e/support.ts`. The static run skips it. The CI job `e2e-dev` runs the `@dev` tests against `ng serve`. Do not use the tag for a test that only needs a fix.
+Without `E2E_STATIC_DIR`, Playwright starts `ng serve docs` (development build, fast rebuilds, no prerender: `e2e/docs-prerender.spec.ts` skips itself there). `E2E_BASE_URL` runs the tests against a deployed site. The tests must pass against both servers. A test that needs a development build (for example `window.ng`) has the tag `@dev` in its title and calls `needsDevBuild()` from `e2e/support.ts`. The static run skips it. The CI job `e2e-dev` runs the `@dev` tests against `ng serve`. Do not use the tag for a test that only needs a fix.
 
 ## Commits and pull requests
 

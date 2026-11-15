@@ -1,4 +1,5 @@
 import { _IdGenerator } from '@angular/cdk/a11y';
+import { DOCUMENT } from '@angular/common';
 import {
   afterNextRender,
   booleanAttribute,
@@ -328,15 +329,17 @@ export class StarScrollTop {
   protected readonly visible = signal(false);
 
   constructor() {
+    // The injected document, not the global: the global does not exist when the page is prerendered.
+    const doc = inject(DOCUMENT);
     const onScroll = (event: Event) => {
       const el = this.target();
       if (el && event.target !== el) return;
-      const top = el ? el.scrollTop : (document.scrollingElement?.scrollTop ?? 0);
+      const top = el ? el.scrollTop : (doc.scrollingElement?.scrollTop ?? 0);
       this.visible.set(top > this.threshold());
     };
-    document.addEventListener('scroll', onScroll, { capture: true, passive: true });
+    doc.addEventListener('scroll', onScroll, { capture: true, passive: true });
     inject(DestroyRef).onDestroy(() =>
-      document.removeEventListener('scroll', onScroll, { capture: true }),
+      doc.removeEventListener('scroll', onScroll, { capture: true }),
     );
   }
 
