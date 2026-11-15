@@ -1,5 +1,7 @@
-import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { DOCS_API, DOCS_EXAMPLES, DocsApiMember } from '../generated/docs-data';
+import { DOCS_NAV } from '../nav';
 
 /** One row of a hand-written reference table (slots, CSS variables, keyboard). */
 export interface DocsRow {
@@ -37,12 +39,18 @@ export class DocsCode {
   }
 }
 
-/** Page frame: title, lead text and the import statement of the control. */
+/**
+ * Page frame: navigation group, title, lead text and the import statement of the control. The
+ * group is the label of the navigation group of the current route (for example "Selection").
+ */
 @Component({
   selector: 'docs-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <header class="docs-page__header">
+      @if (group) {
+        <p class="docs-page__group">{{ group }}</p>
+      }
       <h1>{{ heading() }}</h1>
       @if (lead()) {
         <p class="docs-page__lead">{{ lead() }}</p>
@@ -61,6 +69,10 @@ export class DocsPage {
   readonly lead = input('');
   /** Import statement shown under the title. */
   readonly importFrom = input('');
+
+  private readonly path = inject(ActivatedRoute).snapshot.routeConfig?.path ?? '';
+  protected readonly group =
+    DOCS_NAV.find((group) => group.items.some((item) => item.path === this.path))?.label ?? '';
 }
 
 /**
@@ -78,14 +90,16 @@ export class DocsPage {
     @if (note()) {
       <p class="docs-example__note">{{ note() }}</p>
     }
-    <div class="docs-example__live"><ng-content /></div>
-    <details class="docs-example__source">
-      <summary>Source</summary>
-      <docs-code [code]="code()" [label]="heading() + ' source'" />
-      @if (script()) {
-        <docs-code [code]="script()" [label]="heading() + ' component code'" />
-      }
-    </details>
+    <div class="docs-example__frame">
+      <div class="docs-example__live"><ng-content /></div>
+      <details class="docs-example__source">
+        <summary>Source</summary>
+        <docs-code [code]="code()" [label]="heading() + ' source'" />
+        @if (script()) {
+          <docs-code [code]="script()" [label]="heading() + ' component code'" />
+        }
+      </details>
+    </div>
   `,
 })
 export class DocsExample {
