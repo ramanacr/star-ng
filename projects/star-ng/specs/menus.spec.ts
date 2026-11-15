@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, PLATFORM_ID, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { StarButton } from '@star-ng/ui/button';
@@ -166,5 +166,16 @@ describe('starMenuTrigger on star-button', () => {
     expect(reached).toBe(false);
     button.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
     expect(reached).toBe(true);
+  });
+
+  it('does not change the host while the page is prerendered (server platform)', async () => {
+    // The server DOM does not allow a new `focus` on an element, and no key is pressed there.
+    TestBed.configureTestingModule({
+      providers: [provideRouter([]), { provide: PLATFORM_ID, useValue: 'server' }],
+    });
+    const fixture = TestBed.createComponent(TriggerHost);
+    await fixture.whenStable();
+    const host = (fixture.nativeElement as HTMLElement).querySelector<HTMLElement>('star-button')!;
+    expect(Object.hasOwn(host, 'focus')).toBe(false);
   });
 });
