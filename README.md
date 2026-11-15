@@ -18,7 +18,9 @@ npm package: `star-ng`. Selector prefix: `star-`. CSS token prefix: `--star-`.
 - No Angular Material and no other UI kit.
 
 > Status: the control set is complete: about 90 controls in 53 entry points, each with a docs
-> page, an API table, unit tests and end-to-end tests. The package is not on npm yet.
+> page, an API table, unit tests and end-to-end tests. The release workflow is ready (see
+> "Releasing"). The first version is not published to npm yet, so `pnpm add star-ng` works only
+> after the first release.
 
 Control groups: buttons; forms (field, input, checkbox, radio, switch, number, password, mask,
 one-time code, tags, slider, rating, knob, color picker, select button); selection (select,
@@ -175,19 +177,22 @@ The server `tools/pages-serve.mjs` mimics GitHub Pages: files only under `/star-
 | `projects/star-ng` | The library. One folder per entry point, `styles/` for the SCSS.                    |
 | `projects/docs`    | The docs application.                                                               |
 | `e2e`              | Playwright tests, including the axe accessibility scan.                             |
-| `tools`            | Build tools: compiled CSS, docs data generator, name check, Pages build and server. |
+| `tools`            | Build tools: compiled CSS, docs data generator, name check, package check, release. |
 
 ## Development
 
-| Command                  | What it does                                                         |
-| ------------------------ | -------------------------------------------------------------------- |
-| `corepack pnpm start`    | Serves the docs application.                                         |
-| `corepack pnpm lint`     | ESLint, docs data check and name check.                              |
-| `corepack pnpm test:ci`  | Unit tests (Vitest, jsdom) with coverage.                            |
-| `corepack pnpm build`    | Builds the package to `dist/star-ng` (with CSS) and the docs.        |
-| `corepack pnpm e2e`      | Playwright tests (`corepack pnpm e2e:install` once for the browser). |
-| `corepack pnpm e2e:a11y` | Only the axe accessibility scan of every docs page and its states.   |
-| `corepack pnpm docs:gen` | Writes the API and example data of the docs after a change.          |
+| Command                        | What it does                                                                       |
+| ------------------------------ | ---------------------------------------------------------------------------------- |
+| `corepack pnpm start`          | Serves the docs application.                                                       |
+| `corepack pnpm lint`           | ESLint, docs data check and name check.                                            |
+| `corepack pnpm test:ci`        | Unit tests (Vitest, jsdom) with coverage.                                          |
+| `corepack pnpm build`          | Builds the package to `dist/star-ng` (with CSS) and the docs.                      |
+| `corepack pnpm e2e`            | Playwright tests (`corepack pnpm e2e:install` once for the browser).               |
+| `corepack pnpm e2e:a11y`       | Only the axe accessibility scan of every docs page and its states.                 |
+| `corepack pnpm docs:gen`       | Writes the API and example data of the docs after a change.                        |
+| `corepack pnpm build:lib`      | Builds only the package and the CSS.                                               |
+| `corepack pnpm check:package`  | Checks `dist/star-ng` (files, exports, size, names). Run after `build:lib`.        |
+| `corepack pnpm smoke:consumer` | Installs the packed package in a temp Angular app and builds it (about 2 minutes). |
 
 Conventions: Conventional Commits, one feature per pull request, merge after green CI.
 
@@ -217,6 +222,14 @@ commit it).
 
 To debug in a Linux container with the CI fonts, set `VISUAL_ALLOW_LOCAL=1`
 (`corepack pnpm e2e:visual`). Never commit images made that way.
+
+## Releasing
+
+A release is a git tag `v<version>` on `main`. The workflow `.github/workflows/release.yml`
+checks the package, publishes it to npm with provenance (Trusted Publishing, no stored token),
+and chooses the dist-tag from the version: `latest`, or `next` for a prerelease. The one-time
+setup, the steps, a dry run and the recovery from a failed publish are in
+[RELEASING.md](RELEASING.md).
 
 ## License
 
