@@ -28,10 +28,17 @@ import { DOCS, DocsRow } from '../shared/docs';
       <docs-example
         heading="Left position"
         source="dock/left"
-        note="position is bottom (default), top, left or right. On the left or the right the bar is a column."
+        note="position is bottom (default), top, left, right, start or end. On a side the bar is a column. start and end follow the writing direction."
       >
         <star-dock [items]="apps" position="left" ariaLabel="Apps on the left" />
       </docs-example>
+
+      <h2>Right-to-left</h2>
+      <p>
+        <code>left</code> and <code>right</code> are physical, <code>start</code> and
+        <code>end</code> follow the writing direction. A column dock has no other change. See the
+        Right-to-left guide.
+      </p>
 
       <docs-api [of]="['StarDock']" [cssVars]="cssVars" [keyboard]="keyboard" />
     </docs-page>

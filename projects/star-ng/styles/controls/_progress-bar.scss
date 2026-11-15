@@ -41,6 +41,10 @@
   .star-progress--indeterminate & {
     width: 40%;
     animation: star-indeterminate 1.4s ease-in-out infinite;
+
+    &:dir(rtl) {
+      animation-name: star-indeterminate-rtl;
+    }
   }
 }
 @keyframes star-indeterminate {
@@ -49,6 +53,15 @@
   }
   to {
     translate: 250% 0;
+  }
+}
+// The fill starts at the right edge in right-to-left and runs to the left.
+@keyframes star-indeterminate-rtl {
+  from {
+    translate: 100% 0;
+  }
+  to {
+    translate: -250% 0;
   }
 }
 .star-progress__value {

@@ -80,6 +80,14 @@ import { DOCS, DocsRow } from '../shared/docs';
         <star-menu inline ariaLabel="Inline menu" [items]="viewItems" />
       </docs-example>
 
+      <h2>Right-to-left</h2>
+      <p>
+        Submenus open toward the start side of the menu: to the left in a right-to-left page. Arrow
+        left opens a submenu and Arrow right closes it, and the submenu arrow turns around. A popup
+        is aligned with the start edge of its trigger. The menu follows a change of
+        <code>dir</code> at run time. See the Right-to-left guide.
+      </p>
+
       <docs-api
         [of]="['StarMenu', 'StarMenuTrigger']"
         [slots]="slots"

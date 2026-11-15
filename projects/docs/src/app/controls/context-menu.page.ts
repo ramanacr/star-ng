@@ -27,6 +27,12 @@ import { DOCS, DocsRow } from '../shared/docs';
         </div>
       </docs-example>
 
+      <h2>Right-to-left</h2>
+      <p>
+        Arrow left opens a submenu and Arrow right closes it in a right-to-left page. See the
+        Right-to-left guide.
+      </p>
+
       <docs-api
         [of]="['StarContextMenu']"
         [slots]="slots"

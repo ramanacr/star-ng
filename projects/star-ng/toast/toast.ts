@@ -190,8 +190,21 @@ export class StarToast {
   protected readonly text = inject(STAR_UI_TEXT);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
 
+  /**
+   * Corner of the screen. `-left` and `-right` are physical; `-start` and `-end` follow the
+   * writing direction (the start corner is on the right in right-to-left).
+   */
   readonly position = input<
-    'top-right' | 'top-left' | 'top-center' | 'bottom-right' | 'bottom-left' | 'bottom-center'
+    | 'top-right'
+    | 'top-left'
+    | 'top-start'
+    | 'top-end'
+    | 'top-center'
+    | 'bottom-right'
+    | 'bottom-left'
+    | 'bottom-start'
+    | 'bottom-end'
+    | 'bottom-center'
   >('top-right');
   readonly key = input<string | undefined>(undefined);
   /** Newest messages beyond this count wait until older ones close. */

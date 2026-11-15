@@ -28,7 +28,7 @@ import { DOCS, DocsRow } from '../shared/docs';
       <docs-example
         heading="Content at the end"
         source="menubar/end"
-        note="Content with the attribute starMenubarEnd goes to the right end of the bar. Content with starMenubarStart goes to the left end."
+        note="Content with the attribute starMenubarEnd goes to the end of the bar. Content with starMenubarStart goes to the start of the bar. In a left-to-right page the start is the left side."
       >
         <star-menubar ariaLabel="Main with action" [items]="nav">
           <star-button starMenubarEnd size="sm" variant="ghost" leadingIcon="ph-bold ph-plus"
@@ -36,6 +36,13 @@ import { DOCS, DocsRow } from '../shared/docs';
           >
         </star-menubar>
       </docs-example>
+
+      <h2>Right-to-left</h2>
+      <p>
+        With <code>dir="rtl"</code> the first item is on the right. Arrow left moves to the next
+        item, and a dropdown is aligned with the start edge of its item. Content with
+        <code>starMenubarStart</code> goes to the right end. See the Right-to-left guide.
+      </p>
 
       <docs-api [of]="['StarMenubar']" [slots]="slots" [cssVars]="cssVars" [keyboard]="keyboard" />
     </docs-page>
@@ -97,11 +104,11 @@ readonly nav: readonly StarMenuItem[] = [
   protected readonly slots: readonly DocsRow[] = [
     {
       name: '[starMenubarStart]',
-      description: 'Content at the left end of the bar, for example a logo.',
+      description: 'Content at the start of the bar, for example a logo.',
     },
     {
       name: '[starMenubarEnd]',
-      description: 'Content at the right end of the bar, for example a button.',
+      description: 'Content at the end of the bar, for example a button.',
     },
   ];
   protected readonly cssVars: readonly DocsRow[] = [

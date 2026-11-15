@@ -20,6 +20,7 @@ import { DOCS, DocsRow } from '../shared/docs';
       >
         <div class="docs-stack">
           <star-paginator
+            ariaLabel="Pagination of the list"
             [totalRecords]="95"
             [(first)]="first"
             [(rows)]="rows"
@@ -37,6 +38,7 @@ import { DOCS, DocsRow } from '../shared/docs';
         note="Hide the report, the first and last buttons or the rows select. pageLinkSize sets how many page links show."
       >
         <star-paginator
+          ariaLabel="Pagination of the compact list"
           [totalRecords]="60"
           [rowsPerPageOptions]="[]"
           [showCurrentPageReport]="false"
@@ -44,6 +46,12 @@ import { DOCS, DocsRow } from '../shared/docs';
           [pageLinkSize]="3"
         />
       </docs-example>
+
+      <h2>Right-to-left</h2>
+      <p>
+        The first, previous, next and last arrows turn around in a right-to-left page, so they point
+        the way the pages run. See the Right-to-left guide.
+      </p>
 
       <docs-api [of]="['StarPaginator']" [cssVars]="cssVars" [keyboard]="keyboard" />
     </docs-page>

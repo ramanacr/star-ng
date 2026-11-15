@@ -260,6 +260,13 @@ import { DOCS, DocsRow } from '../shared/docs';
         carried by color alone: the legend names each series and every chart offers the data table.
       </p>
 
+      <h2>Right-to-left</h2>
+      <p>
+        The plot keeps its left-to-right geometry in a right-to-left page, as numeric axes do. The
+        title, the legend and the data table follow the page direction and start on the right. See
+        the Right-to-left guide.
+      </p>
+
       <docs-api [of]="['StarChart']" [cssVars]="cssVars" [keyboard]="keyboard" />
     </docs-page>
   `,

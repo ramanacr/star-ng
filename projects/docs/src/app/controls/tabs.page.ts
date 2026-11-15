@@ -47,6 +47,13 @@ import { DOCS, DocsRow } from '../shared/docs';
         </div>
       </docs-example>
 
+      <h2>Right-to-left</h2>
+      <p>
+        With <code>dir="rtl"</code> the first tab is on the right. Arrow left moves to the next tab
+        and Arrow right to the previous one: the arrow keys follow the visual direction. Home and
+        End keep their meaning. See the Right-to-left guide.
+      </p>
+
       <docs-api
         [of]="['StarTabs', 'StarTab', 'StarTabContent']"
         [slots]="slots"

@@ -7,3 +7,6 @@ playwright-report
 test-results
 projects/docs/src/app/generated
 projects/star-ng/theme/star-theme-first-paint.js
+test-results-visual
+playwright-report-visual
+e2e/visual/__screenshots__

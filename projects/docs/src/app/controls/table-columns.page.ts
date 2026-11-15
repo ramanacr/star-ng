@@ -109,6 +109,13 @@ import { DocsFill, formatDay, formatMoney, Order, ORDERS } from './table-demo';
         </div>
       </docs-example>
 
+      <h2>Right-to-left</h2>
+      <p>
+        In a right-to-left page the first column is on the right, the resize handle is on the left
+        edge of a header, and frozen columns stick to the right edge. Arrow left makes a column
+        wider. A drag to the left makes it wider. See the Right-to-left guide.
+      </p>
+
       <docs-api [of]="['StarTable']" [keyboard]="keyboard" />
 
       <h2>Technical notes</h2>

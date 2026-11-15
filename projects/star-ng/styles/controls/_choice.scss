@@ -108,7 +108,7 @@
 .star-switch__thumb {
   position: absolute;
   top: 0.1875rem;
-  left: 0.1875rem;
+  inset-inline-start: 0.1875rem;
   width: 1.0625rem;
   height: 1.0625rem;
   border-radius: 50%;
@@ -121,6 +121,11 @@
 }
 .star-switch__input:checked + .star-switch__track .star-switch__thumb {
   translate: 1rem 0;
+
+  // The thumb starts at the inline-start edge, so it moves the other way in right-to-left.
+  &:dir(rtl) {
+    translate: -1rem 0;
+  }
 }
 .star-switch--sm .star-switch__track {
   width: 2rem;
@@ -132,6 +137,10 @@
 }
 .star-switch--sm .star-switch__input:checked + .star-switch__track .star-switch__thumb {
   translate: 0.75rem 0;
+
+  &:dir(rtl) {
+    translate: -0.75rem 0;
+  }
 }
 .star-check--disabled,
 .star-radio--disabled,

@@ -46,20 +46,48 @@
     max-height: none;
   }
 }
+// `left` and `right` are the physical edges of the screen, as in CSS. `start` and `end` follow
+// the writing direction: the right edge in LTR is `end`, in RTL it is `start`.
 .star-drawer--right,
-.star-drawer--left {
+.star-drawer--left,
+.star-drawer--start,
+.star-drawer--end {
   inset-block: 0;
   width: min(var(--star-drawer-size), 100vw);
   height: 100dvh;
 }
 .star-drawer--right {
-  inset-inline: auto 0;
-  border-radius: var(--star-radius-2xl) 0 0 var(--star-radius-2xl);
+  right: 0;
+  left: auto;
+  border-top-left-radius: var(--star-radius-2xl);
+  border-bottom-left-radius: var(--star-radius-2xl);
 }
 .star-drawer--left {
   --star-drawer-from: -100% 0;
+  left: 0;
+  right: auto;
+  border-top-right-radius: var(--star-radius-2xl);
+  border-bottom-right-radius: var(--star-radius-2xl);
+}
+// The slide-in offset is physical (translate has no logical form), so RTL swaps it.
+.star-drawer--end {
+  inset-inline: auto 0;
+  border-start-start-radius: var(--star-radius-2xl);
+  border-end-start-radius: var(--star-radius-2xl);
+
+  &:dir(rtl) {
+    --star-drawer-from: -100% 0;
+  }
+}
+.star-drawer--start {
+  --star-drawer-from: -100% 0;
   inset-inline: 0 auto;
-  border-radius: 0 var(--star-radius-2xl) var(--star-radius-2xl) 0;
+  border-start-end-radius: var(--star-radius-2xl);
+  border-end-end-radius: var(--star-radius-2xl);
+
+  &:dir(rtl) {
+    --star-drawer-from: 100% 0;
+  }
 }
 .star-drawer--top,
 .star-drawer--bottom {

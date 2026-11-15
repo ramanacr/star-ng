@@ -72,6 +72,12 @@ import { DOCS, DocsRow } from '../shared/docs';
         </star-popover>
       </docs-example>
 
+      <h2>Right-to-left</h2>
+      <p>
+        The popover is aligned with the start edge of its anchor: the right edge in a right-to-left
+        page. When there is no room, it moves to the other edge. See the Right-to-left guide.
+      </p>
+
       <docs-api [of]="['StarPopover']" [slots]="slots" [cssVars]="cssVars" [keyboard]="keyboard" />
 
       <h2>Methods</h2>

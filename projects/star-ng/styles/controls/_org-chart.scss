@@ -65,7 +65,7 @@
   content: '';
   position: absolute;
   top: 100%;
-  left: 50%;
+  inset-inline-start: 50%;
   height: 1.25rem;
   border-inline-start: 1px solid var(--star-org-line);
 }
@@ -109,9 +109,10 @@
   z-index: 1;
   display: grid;
   place-items: center;
-  width: 1.25rem;
-  height: 1.25rem;
-  margin-top: -0.625rem;
+  // At least 24 by 24 px (WCAG 2.5.8).
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-top: -0.75rem;
   padding: 0;
   border: 1px solid var(--star-border-strong);
   border-radius: 50%;

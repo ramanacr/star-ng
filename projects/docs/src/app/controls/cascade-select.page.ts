@@ -105,6 +105,12 @@ interface Place {
         </div>
       </docs-example>
 
+      <h2>Right-to-left</h2>
+      <p>
+        The list opens aligned with the start edge of the field. In a right-to-left page Arrow left
+        opens a submenu and Arrow right returns to the parent option. See the Right-to-left guide.
+      </p>
+
       <docs-api
         [of]="['StarCascadeSelect']"
         [slots]="slots"

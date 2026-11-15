@@ -41,6 +41,13 @@ import { sampleImage, sampleSet } from '../shared/sample-images';
         <p class="docs-output" role="status">Active index: {{ active() }}</p>
       </docs-example>
 
+      <h2>Right-to-left</h2>
+      <p>
+        With <code>dir="rtl"</code> the first thumbnail is on the right. Arrow left shows the next
+        image and Arrow right the previous one, and the arrows on the image turn around. See the
+        Right-to-left guide.
+      </p>
+
       <docs-api [of]="['StarGalleria']" [cssVars]="cssVars" [keyboard]="keyboard" />
 
       <h2>Technical notes</h2>

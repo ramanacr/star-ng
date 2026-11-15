@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { StarButton } from 'star-ng/button';
-import { StarToastService } from 'star-ng/toast';
+import { StarToast, StarToastService } from 'star-ng/toast';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
   selector: 'docs-toast-page',
-  imports: [DOCS, StarButton],
+  imports: [DOCS, StarButton, StarToast],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <docs-page
@@ -46,6 +46,31 @@ import { DOCS, DocsRow } from '../shared/docs';
       >
         <star-button size="sm" variant="secondary" (pressed)="twice()">Save twice</star-button>
       </docs-example>
+
+      <docs-example
+        heading="Corners that follow the direction"
+        source="toast/corners"
+        [script]="cornersScript"
+        note="Each star-toast shows the messages of its own key. position accepts top-left, top-right, bottom-left and bottom-right (the corners of the screen) and top-start, top-end, bottom-start and bottom-end (the corners follow the writing direction: start is the right side in a right-to-left page). top-center and bottom-center are the same in both directions."
+      >
+        <star-button size="sm" variant="secondary" (pressed)="corner('start')">
+          Message at the start
+        </star-button>
+        <star-button size="sm" variant="secondary" (pressed)="corner('end')">
+          Message at the end
+        </star-button>
+        <star-toast position="bottom-start" key="start" />
+        <star-toast position="bottom-end" key="end" />
+      </docs-example>
+
+      <h2>Right-to-left</h2>
+      <p>
+        <code>top-left</code>, <code>top-right</code>, <code>bottom-left</code> and
+        <code>bottom-right</code> are physical corners. Use <code>top-start</code>,
+        <code>top-end</code>, <code>bottom-start</code> and <code>bottom-end</code> for a corner
+        that follows the writing direction. The accent line of a message is on the start side. See
+        the Right-to-left guide.
+      </p>
 
       <docs-api [of]="['StarToast']" [slots]="slots" [cssVars]="cssVars" [keyboard]="keyboard" />
 
@@ -111,11 +136,23 @@ export class ToastPage {
     this.toasts.show({ severity: 'info', summary: 'Quick note', life: 2000 });
   }
 
+  protected corner(side: 'start' | 'end'): void {
+    this.toasts.show({
+      severity: 'info',
+      summary: `Corner: ${side}`,
+      life: 4000,
+      key: side,
+    });
+  }
+
   protected twice(): void {
     this.toasts.success('Saved');
     this.toasts.success('Saved');
   }
 
+  protected readonly cornersScript = `corner(side: 'start' | 'end'): void {
+  this.toasts.show({ severity: 'info', summary: 'Corner: ' + side, life: 4000, key: side });
+}`;
   protected readonly severitiesScript = `private readonly toasts = inject(StarToastService);
 
 notify(severity: 'success' | 'info' | 'warn' | 'error'): void {

@@ -47,6 +47,13 @@ import { DOCS, DocsRow } from '../shared/docs';
         </star-splitter>
       </docs-example>
 
+      <h2>Right-to-left</h2>
+      <p>
+        With <code>dir="rtl"</code> the first pane is on the right. Arrow left makes it larger,
+        Arrow right makes it smaller, and a drag with the pointer measures from the right edge. A
+        vertical splitter is not changed. See the Right-to-left guide.
+      </p>
+
       <docs-api [of]="['StarSplitter']" [slots]="slots" [cssVars]="cssVars" [keyboard]="keyboard" />
     </docs-page>
   `,

@@ -23,6 +23,9 @@
     "docs:gen": "node tools/gen-docs-data.mjs",
     "docs:check": "node tools/gen-docs-data.mjs --check",
     "e2e": "playwright test",
+    "e2e:a11y": "playwright test --grep @a11y",
+    "e2e:visual": "playwright test -c playwright.visual.config.ts",
+    "e2e:visual:update": "node tools/visual-update.mjs",
     "e2e:ui": "playwright test --ui",
     "e2e:install": "playwright install chromium"
   },
@@ -43,6 +46,7 @@
     "@angular/build": "^22.2.6",
     "@angular/cli": "^22.2.6",
     "@angular/compiler-cli": "^22.2.0",
+    "@axe-core/playwright": "4.14.0",
     "@eslint/js": "^10.0.1",
     "@jsverse/transloco": "^8.4.0",
     "@playwright/test": "^1.65.0",

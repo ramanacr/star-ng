@@ -18,7 +18,7 @@ import { DOCS, DocsRow } from '../shared/docs';
         [script]="basicScript"
         note="The nav landmark has the label Breadcrumb. The last item has aria-current page. When the home item has an icon, only the icon shows and the label stays for screen readers."
       >
-        <star-breadcrumb [home]="home" [items]="trail" />
+        <star-breadcrumb [home]="home" [items]="trail" ariaLabel="Breadcrumb of the guide" />
       </docs-example>
 
       <docs-example
@@ -27,6 +27,7 @@ import { DOCS, DocsRow } from '../shared/docs';
         note="An item has either routerLink for the Angular router or url for a plain link. An item without both is plain text."
       >
         <star-breadcrumb
+          ariaLabel="Breadcrumb of the install page"
           [items]="[
             { label: 'Docs', url: 'https://example.com/docs' },
             { label: 'Guides', url: 'https://example.com/docs/guides' },
@@ -34,6 +35,9 @@ import { DOCS, DocsRow } from '../shared/docs';
           ]"
         />
       </docs-example>
+
+      <h2>Right-to-left</h2>
+      <p>The separator arrow turns around in a right-to-left page. See the Right-to-left guide.</p>
 
       <docs-api [of]="['StarBreadcrumb']" [cssVars]="cssVars" [keyboard]="keyboard" />
     </docs-page>

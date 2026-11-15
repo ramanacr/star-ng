@@ -11,7 +11,7 @@ import {
   output,
   TemplateRef,
 } from '@angular/core';
-import { STAR_UI_TEXT } from 'star-ng/core';
+import { STAR_UI_TEXT, starInlineKey } from 'star-ng/core';
 
 /**
  * Divider (PrimeNG `p-divider`): horizontal or vertical rule with an optional label.
@@ -94,7 +94,7 @@ export class StarToolbar {
       ArrowLeft: (index - 1 + controls.length) % controls.length,
       Home: 0,
       End: controls.length - 1,
-    }[event.key];
+    }[starInlineKey(event, this.host.nativeElement)];
     if (target === undefined) return;
     event.preventDefault();
     controls[target].focus();

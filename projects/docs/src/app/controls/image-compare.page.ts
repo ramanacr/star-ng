@@ -48,6 +48,13 @@ const AFTER = svg(
         </div>
       </docs-example>
 
+      <h2>Right-to-left</h2>
+      <p>
+        The control keeps its left-to-right geometry in a right-to-left page: the left image stays
+        on the left, and the divider position is a percentage from the left edge. See the
+        Right-to-left guide.
+      </p>
+
       <docs-api [of]="['StarImageCompare']" [cssVars]="cssVars" [keyboard]="keyboard" />
     </docs-page>
   `,

@@ -13,7 +13,7 @@ import {
   signal,
   TemplateRef,
 } from '@angular/core';
-import { optionText, readOption, STAR_UI_TEXT, StarOptionKey } from 'star-ng/core';
+import { optionText, readOption, STAR_UI_TEXT, starInlineKey, StarOptionKey } from 'star-ng/core';
 import { StarPaginator } from 'star-ng/paginator';
 import { StarTreeNode } from 'star-ng/tree';
 
@@ -150,12 +150,14 @@ export class StarTreeTable {
         ?.querySelector<HTMLElement>(`[data-key="${CSS.escape(target.node.key)}"]`);
       tr?.focus();
     };
-    if (event.key === 'ArrowDown') focus(rows[index + 1]);
-    else if (event.key === 'ArrowUp') focus(rows[index - 1]);
-    else if (event.key === 'ArrowRight' && row.node.children?.length) {
+    // Arrow right opens a branch and Arrow left closes it; the two swap in right-to-left.
+    const key = starInlineKey(event);
+    if (key === 'ArrowDown') focus(rows[index + 1]);
+    else if (key === 'ArrowUp') focus(rows[index - 1]);
+    else if (key === 'ArrowRight' && row.node.children?.length) {
       event.preventDefault();
       this.toggle(row.node.key, true);
-    } else if (event.key === 'ArrowLeft') {
+    } else if (key === 'ArrowLeft') {
       event.preventDefault();
       if (row.node.children?.length && this.isOpen(row.node.key)) this.toggle(row.node.key, false);
       else focus([...rows.slice(0, index)].reverse().find((r) => r.level < row.level));
@@ -386,38 +388,44 @@ export class StarOrderList<T = unknown> {
     @for (side of sides; track side) {
       @let items = side === 'source' ? source() : target();
       <section class="star-pick-list__side" [attr.aria-labelledby]="ids[side]">
-        <h4 class="star-pick-list__header" [id]="ids[side]">
+        <h3 class="star-pick-list__header" [id]="ids[side]">
           {{
             side === 'source'
               ? (sourceHeader() ?? text.pickListSource)
               : (targetHeader() ?? text.pickListTarget)
           }}
           <span class="star-badge star-badge--secondary star-badge--sm">{{ items.length }}</span>
-        </h4>
-        <ul
-          class="star-listbox star-pick-list__list"
-          role="listbox"
-          aria-multiselectable="true"
-          [attr.aria-labelledby]="ids[side]"
-        >
-          @for (item of items; track $index; let i = $index) {
-            <li
-              role="option"
-              class="star-listbox__option"
-              tabindex="0"
-              [attr.aria-selected]="isPicked(side, item)"
-              [class.star-listbox__option--selected]="isPicked(side, item)"
-              (click)="pick(side, item)"
-              (dblclick)="transfer(side, [item])"
-              (keydown.enter)="transfer(side, [item])"
-              (keydown.space)="$event.preventDefault(); pick(side, item)"
-            >
-              {{ labelOf(item) }}
-            </li>
-          } @empty {
-            <li class="star-listbox__empty" role="presentation">{{ text.emptyMessage }}</li>
+        </h3>
+        <div class="star-pick-list__box">
+          <ul
+            class="star-listbox star-pick-list__list"
+            role="listbox"
+            aria-multiselectable="true"
+            [attr.aria-labelledby]="ids[side]"
+          >
+            @for (item of items; track $index; let i = $index) {
+              <li
+                role="option"
+                class="star-listbox__option"
+                tabindex="0"
+                [attr.aria-selected]="isPicked(side, item)"
+                [class.star-listbox__option--selected]="isPicked(side, item)"
+                (click)="pick(side, item)"
+                (dblclick)="transfer(side, [item])"
+                (keydown.enter)="transfer(side, [item])"
+                (keydown.space)="$event.preventDefault(); pick(side, item)"
+              >
+                {{ labelOf(item) }}
+              </li>
+            }
+          </ul>
+          <!-- Outside the listbox: a listbox may contain options and groups only. -->
+          @if (!items.length) {
+            <div class="star-listbox__empty star-pick-list__empty" role="presentation">
+              {{ text.emptyMessage }}
+            </div>
           }
-        </ul>
+        </div>
       </section>
       @if (side === 'source') {
         <div class="star-pick-list__buttons" role="group" [attr.aria-label]="text.transfer">
@@ -428,7 +436,7 @@ export class StarOrderList<T = unknown> {
             [disabled]="!picked('source').length"
             (click)="transfer('source', picked('source'))"
           >
-            <i class="ph-bold ph-caret-right" aria-hidden="true"></i>
+            <i class="ph-bold ph-caret-right star-icon-mirror" aria-hidden="true"></i>
           </button>
           <button
             type="button"
@@ -437,7 +445,7 @@ export class StarOrderList<T = unknown> {
             [disabled]="!source().length"
             (click)="transfer('source', source())"
           >
-            <i class="ph-bold ph-caret-double-right" aria-hidden="true"></i>
+            <i class="ph-bold ph-caret-double-right star-icon-mirror" aria-hidden="true"></i>
           </button>
           <button
             type="button"
@@ -446,7 +454,7 @@ export class StarOrderList<T = unknown> {
             [disabled]="!picked('target').length"
             (click)="transfer('target', picked('target'))"
           >
-            <i class="ph-bold ph-caret-left" aria-hidden="true"></i>
+            <i class="ph-bold ph-caret-left star-icon-mirror" aria-hidden="true"></i>
           </button>
           <button
             type="button"
@@ -455,7 +463,7 @@ export class StarOrderList<T = unknown> {
             [disabled]="!target().length"
             (click)="transfer('target', target())"
           >
-            <i class="ph-bold ph-caret-double-left" aria-hidden="true"></i>
+            <i class="ph-bold ph-caret-double-left star-icon-mirror" aria-hidden="true"></i>
           </button>
         </div>
       }

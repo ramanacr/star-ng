@@ -267,7 +267,11 @@ test.describe('pick list', () => {
 
     await expect(source.getByRole('option')).toHaveText(['Berlin', 'Lisbon', 'Oslo', 'Prague']);
     await expect(target.getByRole('option')).toHaveCount(0);
-    await expect(target).toContainText('No options available');
+    // The empty text is next to the listbox: a listbox holds options only.
+    await expect(target).toHaveText('');
+    await expect(
+      live.locator('.star-pick-list__side').nth(1).locator('.star-listbox__empty'),
+    ).toHaveText('No options available');
     await expect(button('Move selected to target')).toBeDisabled();
     await expect(button('Move all to source')).toBeDisabled();
 

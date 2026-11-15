@@ -67,6 +67,12 @@ import { DOCS, DocsRow } from '../shared/docs';
         </div>
       </docs-example>
 
+      <h2>Right-to-left</h2>
+      <p>
+        The arrow keys follow the visual direction: with <code>dir="rtl"</code> Arrow left moves to
+        the next control. The start group is on the right. See the Right-to-left guide.
+      </p>
+
       <docs-api [of]="['StarToolbar']" [slots]="slots" [cssVars]="cssVars" [keyboard]="keyboard" />
     </docs-page>
   `,

@@ -103,8 +103,9 @@ jobs:
         if: steps.pw-cache.outputs.cache-hit != 'true'
         run: pnpm exec playwright install chromium
 
+      # The axe accessibility scan (tag @a11y) runs in its own job, in parallel.
       - name: End-to-end tests
-        run: pnpm e2e
+        run: pnpm e2e --grep-invert @a11y
 
       - name: Upload Playwright report
         if: failure()
@@ -114,6 +115,153 @@ jobs:
           path: playwright-report/
           retention-days: 7
 
+  # Accessibility scan with axe-core (e2e/a11y.spec.ts): every docs page and about 65 opened
+  # states, in the light and the dark theme, about 330 tests. A separate job keeps the `e2e` job
+  # short: the scan runs in parallel, and the two shards halve its run time. Any violation that
+  # is not in the allow-list of the spec fails the job.
+  a11y:
+    name: a11y (shard ${{ matrix.shard }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: ['1/2', '2/2']
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Read Playwright version
+        id: pw
+        run: echo "version=$(pnpm exec playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        id: pw-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.pw.outputs.version }}
+
+      - name: Install Playwright Chromium
+        if: steps.pw-cache.outputs.cache-hit != 'true'
+        run: pnpm exec playwright install chromium
+
+      - name: Accessibility scan (axe)
+        run: pnpm e2e:a11y --shard=${{ matrix.shard }} --workers=2
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: playwright-report-a11y-${{ strategy.job-index }}
+          path: playwright-report/
+          retention-days: 7
+
+  # Visual regression: compares a screenshot of every docs page with the baselines in
+  # e2e/visual/__screenshots__ (made on Linux in CI, never on a developer machine).
+  # - A page without a baseline (first run, new page): the baseline is written, uploaded as the
+  #   artifact `visual-baselines`, and the job FAILS with the steps to commit it.
+  # - A page that differs: the job fails, the artifact `visual-report` has the diff images.
+  visual:
+    name: visual
+    runs-on: ubuntu-latest
+    needs: build-test
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Read Playwright version
+        id: pw
+        run: echo "version=$(pnpm exec playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        id: pw-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.pw.outputs.version }}
+
+      - name: Install Playwright Chromium
+        if: steps.pw-cache.outputs.cache-hit != 'true'
+        run: pnpm exec playwright install chromium
+
+      # Playwright writes a missing baseline and fails that test; a differing page fails too.
+      # The exit code is kept for the last step, so the artifacts are uploaded first.
+      - name: Compare screenshots
+        id: compare
+        run: |
+          set +e
+          pnpm e2e:visual
+          echo "exit_code=$?" >> "$GITHUB_OUTPUT"
+
+      # Baseline files that did not exist in the repository are untracked now. Copy them to a
+      # folder with their repository paths, so that the artifact unzips into the repository root.
+      - name: Collect new baselines
+        id: baselines
+        run: |
+          set -euo pipefail
+          mkdir -p new-baselines
+          git ls-files --others --exclude-standard -z e2e/visual/__screenshots__ \
+            | xargs -0 -r cp --parents -t new-baselines
+          count=$(find new-baselines -type f | wc -l)
+          echo "count=$count" >> "$GITHUB_OUTPUT"
+
+      - name: Upload new baselines
+        if: steps.baselines.outputs.count != '0'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: visual-baselines
+          path: new-baselines/
+          retention-days: 14
+
+      - name: Upload visual report
+        if: steps.compare.outputs.exit_code != '0'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: visual-report
+          path: |
+            playwright-report-visual/
+            test-results-visual/
+          retention-days: 7
+
+      - name: Evaluate result
+        env:
+          EXIT_CODE: ${{ steps.compare.outputs.exit_code }}
+          NEW_COUNT: ${{ steps.baselines.outputs.count }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          if [ "$NEW_COUNT" != "0" ]; then
+            echo "::error title=Visual baselines missing::$NEW_COUNT baseline image(s) did not exist. Download the artifact and commit it: gh run download $RUN_ID -n visual-baselines (run it in the repository root), then git add e2e/visual/__screenshots__ and commit."
+            exit 1
+          fi
+          if [ "$EXIT_CODE" != "0" ]; then
+            echo "::error title=Visual difference::A page differs from its baseline. See the artifact visual-report (diff images). If the change is wanted, run the Visual baselines workflow and commit its artifact."
+            exit 1
+          fi
+          echo "All pages match their baselines."
+
   # Single stable required check. Runs always and fails unless every gate succeeded,
   # so a skipped, cancelled or missing gate can never look like a pass.
   ci-gate:
@@ -121,7 +269,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     if: always()
-    needs: [build-test, e2e]
+    needs: [build-test, e2e, a11y, visual]
     steps:
       - name: Evaluate required gates
         env:

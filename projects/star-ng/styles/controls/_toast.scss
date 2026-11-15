@@ -42,6 +42,25 @@
   left: 1rem;
   flex-direction: column-reverse;
 }
+// Logical corners: the start corner is the left one in LTR and the right one in RTL.
+.star-toast-stack--top-start {
+  top: 1rem;
+  inset-inline-start: 1rem;
+}
+.star-toast-stack--top-end {
+  top: 1rem;
+  inset-inline-end: 1rem;
+}
+.star-toast-stack--bottom-start {
+  bottom: 1rem;
+  inset-inline-start: 1rem;
+  flex-direction: column-reverse;
+}
+.star-toast-stack--bottom-end {
+  bottom: 1rem;
+  inset-inline-end: 1rem;
+  flex-direction: column-reverse;
+}
 .star-toast-stack--bottom-center {
   bottom: 1rem;
   left: 50%;
@@ -53,9 +72,10 @@
   display: flex;
   align-items: flex-start;
   gap: 0.75rem;
-  padding: 0.875rem 0.875rem 0.875rem 1rem;
+  padding: 0.875rem;
+  padding-inline-start: 1rem;
   border: 1px solid color-mix(in srgb, var(--star-tone) 25%, var(--star-border));
-  border-left: 4px solid var(--star-tone);
+  border-inline-start: 4px solid var(--star-tone);
   border-radius: var(--star-radius-lg);
   background: var(--star-glass-surface-strong);
   backdrop-filter: blur(var(--star-blur-md));

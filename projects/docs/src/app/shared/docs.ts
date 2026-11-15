@@ -74,7 +74,7 @@ export class DocsPage {
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'docs-example' },
   template: `
-    <h3 class="docs-example__title" [id]="anchor()">{{ heading() }}</h3>
+    <h2 class="docs-example__title" [id]="anchor()">{{ heading() }}</h2>
     @if (note()) {
       <p class="docs-example__note">{{ note() }}</p>
     }

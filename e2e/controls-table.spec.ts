@@ -103,8 +103,8 @@ test.describe('table: basics', () => {
   test('puts a caption above the table', async ({ page }) => {
     await openPage(page, '/controls/table', 'Table');
     const live = example(page, 'Caption');
-    await expect(live.getByRole('heading', { level: 4, name: 'Latest orders' })).toBeVisible();
-    const caption = await live.getByRole('heading', { level: 4 }).boundingBox();
+    await expect(live.getByRole('heading', { level: 3, name: 'Latest orders' })).toBeVisible();
+    const caption = await live.getByRole('heading', { level: 3 }).boundingBox();
     const table = await live.getByRole('table').boundingBox();
     expect(caption!.y).toBeLessThan(table!.y);
   });
@@ -539,7 +539,10 @@ test.describe('table: editing', () => {
     await expect(table.getByRole('button', { name: 'Edit Product' })).toHaveCount(5);
 
     const edit = table.getByRole('button', { name: 'Edit Quantity' }).first();
-    await expect(edit).toHaveText('1');
+    // The name is the action and the visible value; the value is in its own element.
+    const value = edit.locator('.star-table__edit-value');
+    await expect(edit).toHaveAccessibleName('Edit Quantity: 1');
+    await expect(value).toHaveText('1');
     await edit.focus();
     await page.keyboard.press('Enter');
     const editor = table.getByRole('spinbutton', { name: 'Edit Quantity' });
@@ -550,13 +553,14 @@ test.describe('table: editing', () => {
       'Quantity not changed: enter a whole number from 1 to 9.',
     );
     await expect(editor).toHaveCount(0);
-    await expect(edit).toHaveText('1');
+    await expect(value).toHaveText('1');
     await expect(edit).toBeFocused();
 
     await page.keyboard.press('Enter');
     await editor.fill('4');
     await page.keyboard.press('Enter');
-    await expect(edit).toHaveText('4');
+    await expect(value).toHaveText('4');
+    await expect(edit).toHaveAccessibleName('Edit Quantity: 4');
     await expect(live.getByRole('status')).toHaveText('ORD-1001: quantity changed from 1 to 4.');
     await expect(edit).toBeFocused();
 
@@ -565,7 +569,7 @@ test.describe('table: editing', () => {
     await editor.fill('7');
     await page.keyboard.press('Escape');
     await expect(editor).toHaveCount(0);
-    await expect(edit).toHaveText('4');
+    await expect(value).toHaveText('4');
     await expect(edit).toBeFocused();
   });
 
@@ -580,17 +584,23 @@ test.describe('table: editing', () => {
     await expect(text).toHaveValue('Ava Stone');
     await text.fill('Ava Stone-Reed');
     await page.keyboard.press('Tab');
-    await expect(table.getByRole('button', { name: 'Edit Customer' }).first()).toHaveText(
-      'Ava Stone-Reed',
-    );
+    await expect(
+      table
+        .getByRole('button', { name: 'Edit Customer' })
+        .first()
+        .locator('.star-table__edit-value'),
+    ).toHaveText('Ava Stone-Reed');
 
     await table.getByRole('button', { name: 'Edit Product' }).first().click();
     const choice = table.getByRole('combobox', { name: 'Edit Product' });
     await expect(choice).toHaveValue('Cable kit');
     await choice.selectOption('Notebook');
-    await expect(table.getByRole('button', { name: 'Edit Product' }).first()).toHaveText(
-      'Notebook',
-    );
+    await expect(
+      table
+        .getByRole('button', { name: 'Edit Product' })
+        .first()
+        .locator('.star-table__edit-value'),
+    ).toHaveText('Notebook');
     await expect(live.getByRole('status')).toHaveText(
       'ORD-1001: product changed from Cable kit to Notebook.',
     );
@@ -698,9 +708,11 @@ test.describe('table: columns', () => {
     const table = live.getByRole('table', { name: 'Orders with resizable columns' });
     const handle = table.getByRole('separator', { name: 'Resize Customer' });
     await expect(handle).toHaveAttribute('aria-orientation', 'vertical');
-    await expect(handle).not.toHaveAttribute('aria-valuenow', /.*/);
     const header = table.getByRole('columnheader', { name: 'Customer' });
     const start = (await header.boundingBox())!.width;
+    // A focusable separator needs its value: before any resize it is the rendered width.
+    await expect(handle).toHaveAttribute('aria-valuenow', String(Math.round(start)));
+    await expect(handle).toHaveAttribute('aria-valuemin', '48');
 
     await handle.focus();
     await page.keyboard.press('ArrowRight');

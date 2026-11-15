@@ -32,6 +32,13 @@ import { DOCS, DocsRow } from '../shared/docs';
         <star-input-otp value="123456" disabled ariaLabel="Used code" />
       </docs-example>
 
+      <h2>Right-to-left</h2>
+      <p>
+        The boxes follow the page direction: in a right-to-left page the first box is on the right
+        and Arrow left moves to the next box. A code that must always read from left to right
+        belongs in an element with <code>dir="ltr"</code>. See the Right-to-left guide.
+      </p>
+
       <docs-api [of]="['StarInputOtp']" [cssVars]="cssVars" [keyboard]="keyboard" />
     </docs-page>
   `,

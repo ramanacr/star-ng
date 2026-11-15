@@ -27,7 +27,7 @@ import {
   viewChild,
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
-import { matchesFilter, STAR_UI_TEXT } from 'star-ng/core';
+import { matchesFilter, STAR_UI_TEXT, StarDirectionService, starInlineKey } from 'star-ng/core';
 import {
   checkStates,
   flattenVisible,
@@ -471,9 +471,12 @@ export class StarTree implements FormValueControl<readonly string[]> {
     const index = this.rowIndex().get(item.node.key) ?? -1;
     const hasChildren = !!item.node.children?.length;
     const expanded = hasChildren && this.isExpanded(item.node);
-    const target = () => navigationTarget(rows, index, event.key, { hasChildren, expanded });
+    // Arrow right opens a branch and Arrow left closes it (WAI-ARIA tree pattern). In
+    // right-to-left the arrows swap: the branch opens toward the left.
+    const key = starInlineKey(event);
+    const target = () => navigationTarget(rows, index, key, { hasChildren, expanded });
     const handled = () => event.preventDefault();
-    switch (event.key) {
+    switch (key) {
       case 'ArrowDown':
       case 'ArrowUp':
       case 'Home':
@@ -557,7 +560,7 @@ const POSITIONS: ConnectedPosition[] = [
         [id]="inputId"
         [disabled]="disabled()"
         [attr.aria-expanded]="open()"
-        [attr.aria-label]="ariaLabel()"
+        [attr.aria-label]="triggerName()"
         (click)="open.set(!open())"
         (keydown.arrowdown)="$event.preventDefault(); open.set(true)"
         (blur)="!open() && touch.emit()"
@@ -613,6 +616,8 @@ const POSITIONS: ConnectedPosition[] = [
   `,
 })
 export class StarTreeSelect implements FormValueControl<readonly string[]> {
+  /** Keeps the CDK direction (overlays and menus) in step with `<html dir>`. */
+  private readonly directionSync = inject(StarDirectionService);
   protected readonly text = inject(STAR_UI_TEXT);
   protected readonly inputId = inject(_IdGenerator).getId('star-tree-select-');
   protected readonly positions = POSITIONS;
@@ -654,6 +659,17 @@ export class StarTreeSelect implements FormValueControl<readonly string[]> {
     const keys = this.value();
     if (keys.length > this.maxSelectedLabels()) return this.text.selectedItems(keys.length);
     return keys.map((key) => this.labels().get(key) ?? key).join(', ');
+  });
+
+  /**
+   * Accessible name of the trigger button: the label and the text on the button, so the visible
+   * text is part of the name (WCAG 2.5.3). `null` without `ariaLabel`: a `star-field` label then
+   * names the button.
+   */
+  protected readonly triggerName = computed(() => {
+    const label = this.ariaLabel();
+    if (!label) return null;
+    return `${label}: ${this.summary() || (this.placeholder() ?? this.text.selectPlaceholder)}`;
   });
 
   protected close(focus = false): void {

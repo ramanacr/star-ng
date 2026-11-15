@@ -66,6 +66,12 @@ interface View {
         <star-toggle-button [checked]="true" disabled onLabel="Locked" offLabel="Lock" />
       </docs-example>
 
+      <h2>Right-to-left</h2>
+      <p>
+        With <code>dir="rtl"</code> the first option is on the right. Arrow left selects the next
+        option and Arrow right the previous one. See the Right-to-left guide.
+      </p>
+
       <docs-api
         [of]="['StarSelectButton', 'StarToggleButton']"
         [cssVars]="cssVars"

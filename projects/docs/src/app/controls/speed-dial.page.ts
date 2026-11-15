@@ -10,7 +10,7 @@ import { DOCS, DocsRow } from '../shared/docs';
   template: `
     <docs-page
       heading="Speed dial"
-      lead="A round button that opens a short list of actions. The list opens up, down, left or right. The button has aria-expanded, the list is inert while it is closed, and Escape closes it."
+      lead="A round button that opens a short list of actions. The list opens up, down, left, right, to the start or to the end. The button has aria-expanded, the list is inert while it is closed, and Escape closes it."
       importFrom="import { StarSpeedDial } from 'star-ng/utility';"
     >
       <docs-example
@@ -33,13 +33,24 @@ import { DOCS, DocsRow } from '../shared/docs';
       <docs-example
         heading="Directions"
         source="speed-dial/directions"
-        note="direction is up (default), down, left or right. Leave room in that direction: the list overlays the page."
+        note="direction is up (default), down, left or right. Leave room in that direction: the list overlays the page. left and right are the sides of the screen."
       >
         <div class="docs-row docs-dial-area docs-dial-area--wide">
           <star-speed-dial [items]="actions" direction="up" ariaLabel="Actions up" />
           <star-speed-dial [items]="actions" direction="down" ariaLabel="Actions down" />
           <star-speed-dial [items]="actions" direction="left" ariaLabel="Actions left" />
           <star-speed-dial [items]="actions" direction="right" ariaLabel="Actions right" />
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="Start and end"
+        source="speed-dial/logical"
+        note="start and end follow the writing direction. In a left-to-right page start is the left side, in a right-to-left page it is the right side. Use them when the list must open toward the same edge of the content in both directions."
+      >
+        <div class="docs-row docs-dial-area docs-dial-area--center">
+          <star-speed-dial [items]="actions" direction="start" ariaLabel="Actions at the start" />
+          <star-speed-dial [items]="actions" direction="end" ariaLabel="Actions at the end" />
         </div>
       </docs-example>
 
@@ -62,6 +73,14 @@ import { DOCS, DocsRow } from '../shared/docs';
         </div>
       </docs-example>
 
+      <h2>Right-to-left</h2>
+      <p>
+        <code>left</code> and <code>right</code> are the physical sides of the screen, as in CSS.
+        <code>start</code> and <code>end</code> follow the writing direction: <code>start</code> is
+        the right side in a right-to-left page. The arrow keys follow the side the list opens to.
+        See the Right-to-left guide.
+      </p>
+
       <docs-api [of]="['StarSpeedDial']" [cssVars]="cssVars" [keyboard]="keyboard" />
     </docs-page>
   `,
@@ -73,6 +92,10 @@ import { DOCS, DocsRow } from '../shared/docs';
     }
     .docs-dial-area--wide {
       gap: 8rem;
+    }
+    .docs-dial-area--center {
+      justify-content: center;
+      gap: 16rem;
     }
   `,
 })

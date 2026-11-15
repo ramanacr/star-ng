@@ -10,7 +10,7 @@ import {
   output,
 } from '@angular/core';
 import type { FormCheckboxControl, FormValueControl } from '@angular/forms/signals';
-import { optionText, readOption, StarOptionKey } from 'star-ng/core';
+import { optionText, readOption, starInlineKey, StarOptionKey } from 'star-ng/core';
 
 /**
  * Segmented choice (PrimeNG `p-selectbutton`). Single mode is a radio group (Arrow keys move and
@@ -124,7 +124,8 @@ export class StarSelectButton<TOption = unknown, TValue = TOption> implements Fo
 
   protected onKeydown(event: KeyboardEvent, index: number): void {
     if (this.multiple()) return;
-    const step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[event.key];
+    // The horizontal arrows follow the reading order: left is "next" in right-to-left.
+    const step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[starInlineKey(event)];
     if (!step) return;
     event.preventDefault();
     const options = this.options();

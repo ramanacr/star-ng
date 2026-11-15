@@ -136,6 +136,14 @@ import { buildLargeTree } from './large-tree';
         </div>
       </docs-example>
 
+      <h2>Right-to-left</h2>
+      <p>
+        In a right-to-left page the keys of the WAI-ARIA tree pattern are mirrored: Arrow left opens
+        a closed branch and moves to its first child, and Arrow right closes an open branch and
+        moves to the parent. Indentation and the expander arrow follow the direction. See the
+        Right-to-left guide.
+      </p>
+
       <docs-api [of]="['StarTree']" [slots]="slots" [cssVars]="cssVars" [keyboard]="keyboard" />
     </docs-page>
   `,

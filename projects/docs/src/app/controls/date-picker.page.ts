@@ -237,6 +237,14 @@ import { DOCS, DocsRow } from '../shared/docs';
         >.
       </p>
 
+      <h2>Right-to-left</h2>
+      <p>
+        The calendar follows the page direction: Arrow left moves to the following day in a
+        right-to-left page, and the previous and next month arrows turn around. The popup opens
+        aligned with the start edge of the field (the right edge in a right-to-left page). See the
+        Right-to-left guide.
+      </p>
+
       <docs-api
         [of]="['StarDatePicker', 'StarDateRangePicker', 'StarMultiDatePicker', 'StarDateInputBase']"
         [cssVars]="cssVars"

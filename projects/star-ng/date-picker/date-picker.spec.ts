@@ -11,6 +11,17 @@ import {
   StarDateRange,
 } from './date-utils';
 
+/**
+ * `aria-expanded` of the popup: the text field is a textbox, which cannot be expanded, so the
+ * state is on the calendar button next to it.
+ */
+function expanded(input: HTMLInputElement): string | null {
+  return input
+    .closest('.star-date__control')!
+    .querySelector('.star-date__toggle')!
+    .getAttribute('aria-expanded');
+}
+
 describe('date utils', () => {
   it('parses the locale order, ISO and two-digit years; rejects impossible dates', () => {
     expect(parseDate('22/11/2026', 'en-GB')).toEqual(new Date(2026, 10, 22));
@@ -178,11 +189,11 @@ describe('StarDatePicker', () => {
     await fixture.whenStable();
     key(single, 'ArrowDown', { altKey: true });
     await fixture.whenStable();
-    expect(single.getAttribute('aria-expanded')).toBe('true');
+    expect(expanded(single)).toBe('true');
     document.querySelector<HTMLButtonElement>('[data-date="2026-06-20"]')!.click();
     await fixture.whenStable();
     expect(host.date()).toEqual(new Date(2026, 5, 20));
-    expect(single.getAttribute('aria-expanded')).toBe('false');
+    expect(expanded(single)).toBe('false');
   });
 
   it('showTime: types, shows and edits a time of day and keeps the popup open', async () => {
@@ -209,7 +220,7 @@ describe('StarDatePicker', () => {
     document.querySelector<HTMLButtonElement>('[data-date="2026-11-27"]')!.click();
     await fixture.whenStable();
     expect(host.date()).toEqual(new Date(2026, 10, 27, 14, 30));
-    expect(input.getAttribute('aria-expanded')).toBe('true');
+    expect(expanded(input)).toBe('true');
 
     const time = document.querySelector<HTMLInputElement>('.star-date__time input')!;
     expect(time.value).toBe('14:30');
@@ -221,7 +232,7 @@ describe('StarDatePicker', () => {
 
     document.querySelector<HTMLButtonElement>('.star-date__time button')!.click();
     await fixture.whenStable();
-    expect(input.getAttribute('aria-expanded')).toBe('false');
+    expect(expanded(input)).toBe('false');
   });
 
   it('range picker takes start then end, swapping when needed, and parses typed ranges', async () => {
@@ -321,7 +332,7 @@ describe('date picker: time limits, month and year, range with time, multiple da
     document.querySelector<HTMLButtonElement>('.star-calendar__pick[data-pick="7"]')!.click();
     await fixture.whenStable();
     expect(host.month()).toEqual(new Date(2027, 7, 1));
-    expect(field('Month').getAttribute('aria-expanded')).toBe('false');
+    expect(expanded(field('Month'))).toBe('false');
 
     await type('Year', '2031');
     expect(host.year()).toEqual(new Date(2031, 0, 1));
@@ -348,7 +359,7 @@ describe('date picker: time limits, month and year, range with time, multiple da
       start: new Date(2026, 10, 5, 0, 0),
       end: new Date(2026, 10, 9, 23, 59),
     });
-    expect(field('Shift').getAttribute('aria-expanded')).toBe('true');
+    expect(expanded(field('Shift'))).toBe('true');
 
     const times = [...document.querySelectorAll<HTMLInputElement>('.star-date__time input')];
     expect(times.map((time) => time.value)).toEqual(['00:00', '23:59']);
@@ -373,7 +384,7 @@ describe('date picker: time limits, month and year, range with time, multiple da
     await fixture.whenStable();
     expect(host.days().length).toBe(3);
     expect(day('2026-11-12').closest('td')?.getAttribute('aria-selected')).toBe('true');
-    expect(field('Days').getAttribute('aria-expanded')).toBe('true');
+    expect(expanded(field('Days'))).toBe('true');
 
     day('2026-11-05').click();
     await fixture.whenStable();

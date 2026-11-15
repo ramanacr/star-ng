@@ -12,10 +12,19 @@ npm package: `star-ng`. Selector prefix: `star-`. CSS token prefix: `--star-`.
   application bundles only what it uses.
 - Built-in control text in one injection token (`STAR_UI_TEXT`), ready for translation,
   with German and Spanish packs (`star-ng/i18n/de`, `star-ng/i18n/es`).
+- Right-to-left layouts (Arabic, Hebrew, Persian, Urdu): set `dir="rtl"` on `<html>`. The styles
+  use logical properties, the arrow keys follow the visual direction and overlays follow the
+  direction at run time.
 - No Angular Material and no other UI kit.
 
-> Status: the controls are being ported in groups. The docs application lists the controls
-> that are available now. The package is not on npm yet.
+> Status: the control set is complete: about 90 controls in 53 entry points, each with a docs
+> page, an API table, unit tests and end-to-end tests. The package is not on npm yet.
+
+Control groups: buttons; forms (field, input, checkbox, radio, switch, number, password, mask,
+one-time code, tags, slider, rating, knob, color picker, select button); selection (select,
+multi-select, cascade select, listbox, autocomplete, tree, tree select); date and time; table;
+menus; overlays (dialog, confirm, drawer, popover, tooltip, toast); panels and navigation; data
+display; charts; media (file upload, editor, carousel, galleria, image); utilities.
 
 ## Requirements
 
@@ -112,7 +121,7 @@ choice. The docs have a guide for it and for the first-paint script.
 ## Documentation
 
 The docs application has the guides (getting started, theming and tokens, dark mode, forms,
-internationalisation, accessibility) and one page per control with live examples, their
+internationalisation, right-to-left, accessibility) and one page per control with live examples, their
 source and an API table.
 
 ```bash
@@ -126,7 +135,7 @@ corepack pnpm start        # docs application on http://localhost:4200
 | ------------------ | ---------------------------------------------------------------- |
 | `projects/star-ng` | The library. One folder per entry point, `styles/` for the SCSS. |
 | `projects/docs`    | The docs application.                                            |
-| `e2e`              | Playwright tests. They run against the docs application.         |
+| `e2e`              | Playwright tests, including the axe accessibility scan.          |
 | `tools`            | Build tools: compiled CSS, docs data generator, name check.      |
 
 ## Development
@@ -138,9 +147,37 @@ corepack pnpm start        # docs application on http://localhost:4200
 | `corepack pnpm test:ci`  | Unit tests (Vitest, jsdom) with coverage.                            |
 | `corepack pnpm build`    | Builds the package to `dist/star-ng` (with CSS) and the docs.        |
 | `corepack pnpm e2e`      | Playwright tests (`corepack pnpm e2e:install` once for the browser). |
+| `corepack pnpm e2e:a11y` | Only the axe accessibility scan of every docs page and its states.   |
 | `corepack pnpm docs:gen` | Writes the API and example data of the docs after a change.          |
 
-Conventions: Conventional Commits, one feature per pull request, signed commits.
+Conventions: Conventional Commits, one feature per pull request, merge after green CI.
+
+## Visual regression tests
+
+`e2e/visual` takes a screenshot of the `main` area of every docs page, in the light and in
+the dark theme (tall pages are cut in slices of 4000 px). CI compares them with the images
+in `e2e/visual/__screenshots__`. The test fixes the clock, seeds `Math.random` and waits for
+fonts and images, so a page only differs when the library changed.
+
+**Why baselines come from CI.** Fonts and text rendering differ per operating system, so an
+image from Windows or macOS never matches. The tests skip on your machine, and the update
+script refuses to run there. Only Linux in CI makes baselines.
+
+**Update baselines** (new page, or a change that you want):
+
+1. Run the workflow "Visual baselines" (Actions tab, input: your branch). The `visual` job
+   of a normal CI run also uploads the baselines that are still missing.
+2. In the repository root: `gh run download <run id> -n visual-baselines`. The files land in
+   `e2e/visual/__screenshots__`.
+3. Review the images, then commit them.
+
+**Look at a failure.** The `visual` job uploads the artifact `visual-report`. Unzip it and
+open `playwright-report-visual/index.html`: each failed page shows the expected image, the
+actual image and the diff. A missing baseline fails the job too (the message says how to
+commit it).
+
+To debug in a Linux container with the CI fonts, set `VISUAL_ALLOW_LOCAL=1`
+(`corepack pnpm e2e:visual`). Never commit images made that way.
 
 ## License
 
