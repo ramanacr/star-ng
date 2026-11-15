@@ -1,6 +1,6 @@
 {
   "name": "@star-ng/ui",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "StarNG: accessible Angular controls built on signals, Signal Forms and the Angular CDK.",
   "license": "MIT",
   "publishConfig": {

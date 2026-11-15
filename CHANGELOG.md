@@ -2,6 +2,31 @@
 
 All notable changes to `@star-ng/ui` are in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The version numbers follow [Semantic Versioning](https://semver.org/). In `0.x` versions, the API can change between minor versions.
 
+## [0.2.0] - 2026-11-15
+
+### Added
+
+- `star-tree-table` can render only the rows in and near the view. Set `virtualScroll` and `scrollHeight`. The input `virtualItemSize` sets the row height in pixels (default 53). This is opt-in. The table stays one table with the `treegrid` role.
+- `@star-ng/ui/tree` exports its pure row helpers: `flattenVisible`, `navigationTarget`, `parentsOf`, `rowIndexOf`, `scrollOffsetToReveal` and `stillFocusable`, with the types `BranchLike` and `TreeRow`.
+- `@star-ng/ui/core` exports the list window math: `starListLayout`, `starListPageSize`, `starListKeyboardTarget`, `starListTypeaheadIndex`, `starListRevealRows`, `starListRevealOffset`, `starListAriaPosition`, `starListHeight` and `starListRowRendered`, with the types `StarWindowRow`, `StarWindowLayout` and `StarListNavigationKey`.
+- Page Up and Page Down move the active option by one page in select, multi-select and autocomplete when `virtualScroll` is on.
+
+### Changed
+
+- `star-tree-table` without `virtualScroll`: Home and End move to the first and the last row. The first row is a Tab stop.
+- Type-ahead in select and multi-select accepts a space in the label. A Space inside an active type-ahead does not open the panel and does not toggle an option.
+- The print document of the table export aligns a number column to the end when the column sets only `format`.
+
+### Fixed
+
+- Table print works under a strict `style-src` Content Security Policy. The print document uses constructed stylesheets, with no `<style>` element and no `style` attribute.
+- The print document takes `lang` and `dir` from the table.
+- `aria-activedescendant` and `aria-describedby` in windowed option lists point only to rows that are in the DOM.
+- A filter change resets the scroll position of the option list.
+- The selected option is fully in view when the panel opens.
+- Select all is fast with large lists.
+- A list taller than 256 px draws enough rows before the first scroll.
+
 ## [0.1.0] - 2026-11-15
 
 This is the first release.
@@ -20,4 +45,5 @@ This is the first release.
 - A docs site with guides and one page per control, with live examples, source and API tables: <https://ramanacr.github.io/star-ng/>.
 - Tests: unit tests, end-to-end tests in Chromium, automated axe accessibility scans, a right-to-left sweep, visual tests with baselines made in CI, a print test of the table export, and a consumer smoke test of the packed package.
 
+[0.2.0]: https://github.com/ramanacr/star-ng/releases/tag/v0.2.0
 [0.1.0]: https://github.com/ramanacr/star-ng/releases/tag/v0.1.0
