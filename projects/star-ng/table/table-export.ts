@@ -269,23 +269,76 @@ export interface StarPrintFitMeasure {
   readonly columns: readonly number[];
 }
 
+/** A style sheet of the print document that can be changed and removed again. */
+export interface StarPrintStyle {
+  /** Replaces the rules of the sheet. */
+  set(css: string): void;
+  /** Takes the sheet out of the document. */
+  remove(): void;
+}
+
+/**
+ * Adds a style sheet to `doc`. The sheet is a constructed style sheet (`new CSSStyleSheet()`,
+ * created in the realm of the document, then `adoptedStyleSheets`). A policy whose `style-src`
+ * has no `'unsafe-inline'` blocks an inline `style` element, but it does not block a constructed
+ * sheet. An environment without constructed style sheets (or one where they fail) gets a
+ * `style` element instead: that is the only fallback, and a strict policy blocks it.
+ */
+export function addPrintStyle(doc: Document, css = ''): StarPrintStyle {
+  const Sheet = doc.defaultView?.CSSStyleSheet;
+  if (Sheet && 'adoptedStyleSheets' in doc && typeof Sheet.prototype.replaceSync === 'function') {
+    try {
+      const sheet = new Sheet();
+      sheet.replaceSync(css);
+      doc.adoptedStyleSheets = [...doc.adoptedStyleSheets, sheet];
+      return {
+        set: (text) => sheet.replaceSync(text),
+        remove: () => {
+          doc.adoptedStyleSheets = doc.adoptedStyleSheets.filter((other) => other !== sheet);
+        },
+      };
+    } catch {
+      // Fall through to the style element.
+    }
+  }
+  const element = doc.createElement('style');
+  element.textContent = css;
+  doc.head.append(element);
+  return {
+    set: (text) => {
+      element.textContent = text;
+    },
+    remove: () => element.remove(),
+  };
+}
+
+/**
+ * Adds the base style of the print document (see `buildPrintDocument`) to `doc`. The document
+ * has no `style` element and no `style` attribute, so a Content-Security-Policy without
+ * `'unsafe-inline'` in `style-src` does not unstyle it. Call it when the frame has loaded,
+ * before `fitPrintDocument` measures the table.
+ */
+export function stylePrintDocument(doc: Document): void {
+  addPrintStyle(doc, PRINT_STYLE);
+}
+
 /**
  * Measures the minimum width of the print table at each fit step, in the layout of `doc`, and
- * adds the style sheet of `printFitStyle` to it. Call it when the frame has loaded, before the
- * print dialog opens. The widths are read in the real fonts of the document, so the text of any
- * font, wide or narrow, gets the steps it needs.
+ * adds the style sheet of `printFitStyle` to it (a constructed style sheet, see
+ * `addPrintStyle`). Call it when the frame has loaded and has its base style
+ * (`stylePrintDocument`), before the print dialog opens. The widths are read in the real fonts
+ * of the document, so the text of any font, wide or narrow, gets the steps it needs.
  */
 export function fitPrintDocument(doc: Document): StarPrintFitMeasure {
   const table = doc.querySelector('table');
   if (!table) return { widths: [], columns: [] };
   // The probe sets the table to 1 px wide, and a table is never narrower than its minimum
   // width: the width that is read is the minimum width, whatever the size of the frame is.
-  const probe = doc.createElement('style');
-  doc.head.append(probe);
+  const probe = addPrintStyle(doc);
   const lastWhole = PRINT_FIT_STEPS.findIndex((step) => step.anywhere) - 1;
   let columns: number[] = [];
   const widths = PRINT_FIT_STEPS.map((step, index) => {
-    probe.textContent = `table{width:1px}${fitRules(step, 'table')}`;
+    probe.set(`table{width:1px}${fitRules(step, 'table')}`);
     if (index === lastWhole) {
       columns = Array.from(table.querySelectorAll('thead th'), (cell) =>
         Math.ceil(cell.getBoundingClientRect().width),
@@ -295,60 +348,122 @@ export function fitPrintDocument(doc: Document): StarPrintFitMeasure {
   });
   probe.remove();
   const css = printFitStyle(widths, columns);
-  if (css) {
-    const style = doc.createElement('style');
-    style.textContent = css;
-    doc.head.append(style);
-  }
+  if (css) addPrintStyle(doc, css);
   return { widths, columns };
 }
 
+/** Alignment of a print column. `start` and `end` follow the direction of the document. */
+export type StarPrintAlign = 'start' | 'center' | 'end';
+
 /**
- * HTML document with one table, for the browser print dialog ("Save as PDF"). The table is
- * built to print at the normal size. When the paper is too narrow for it, call
- * `fitPrintDocument` on the loaded document: the table then wraps, shrinks or breaks words
- * (see `PRINT_FIT_STEPS`) so that no column is cut off.
+ * Alignment of a print column. The column definition decides: an explicit `align` wins. Without
+ * it a column in which every value is a number (and there is at least one) is `end`, and any
+ * other column is `start`. The type of the printed text does not matter: a number that a
+ * `format` function turned into a string still sits in a number column. `values` are the cell
+ * values before formatting.
+ */
+export function printColumnAlign(
+  align: StarPrintAlign | undefined,
+  values: readonly unknown[],
+): StarPrintAlign {
+  if (align) return align;
+  return values.length > 0 && values.every((value) => typeof value === 'number') ? 'end' : 'start';
+}
+
+/** Language and direction of the print document. */
+export interface StarPrintContext {
+  readonly lang?: string;
+  readonly dir?: 'ltr' | 'rtl';
+}
+
+/**
+ * `lang` and `dir` for the print document: the nearest ancestor of `host` (the element itself
+ * first) that has the attribute with a usable value, else the `<html>` element of `doc`. An
+ * empty `lang` and a `dir` other than `ltr` or `rtl` (such as `auto`) are skipped.
+ */
+export function printContext(host: Element | null, doc: Document): StarPrintContext {
+  const find = (name: 'lang' | 'dir', accept: (value: string) => boolean) => {
+    for (let node = host; node; node = node.parentElement) {
+      const value = node.getAttribute(name)?.trim();
+      if (value && accept(value)) return value;
+    }
+    const root = doc.documentElement.getAttribute(name)?.trim();
+    return root && accept(root) ? root : undefined;
+  };
+  const lang = find('lang', (value) => /^[A-Za-z0-9-]+$/.test(value));
+  const dir = find('dir', (value) => /^(ltr|rtl)$/i.test(value))?.toLowerCase() as
+    'ltr' | 'rtl' | undefined;
+  return { ...(lang ? { lang } : {}), ...(dir ? { dir } : {}) };
+}
+
+/** Options of `buildPrintDocument`. */
+export interface StarPrintOptions extends StarPrintContext {
+  /** Alignment of each column, in column order (see `printColumnAlign`). */
+  readonly align?: readonly StarPrintAlign[];
+}
+
+/** Base style of the print document. It is added with `stylePrintDocument`, not inline. */
+export const PRINT_STYLE = `body{font:12px/1.4 system-ui,sans-serif;color:#000;margin:16px}
+h1{font-size:16px;margin:0 0 12px;overflow-wrap:anywhere}
+.fit{container-type:inline-size}
+table{width:100%;border-collapse:collapse}
+th,td{padding:4px 8px;border:1px solid #999;text-align:start;vertical-align:top;overflow-wrap:break-word}
+th{background:#eee}
+th.c,td.c{text-align:center}
+th.e,td.e{text-align:end}
+td.s{white-space:nowrap}
+thead{display:table-header-group}
+tr{break-inside:avoid}`;
+
+/**
+ * HTML document with one table, for the browser print dialog ("Save as PDF"). The markup has
+ * no `style` element and no `style` attribute: the style is added to the loaded document by
+ * `stylePrintDocument`, as a constructed style sheet, so that it works under a policy without
+ * `'unsafe-inline'` in `style-src`. The table is built to print at the normal size. When the
+ * paper is too narrow for it, call `fitPrintDocument` on the loaded document: the table then
+ * wraps, shrinks or breaks words (see `PRINT_FIT_STEPS`) so that no column is cut off.
+ *
+ * `options.align` sets the alignment of each column (cells and header). `options.lang` and
+ * `options.dir` go on the `html` element.
  */
 export function buildPrintDocument(
   title: string,
   headers: readonly string[],
   rows: readonly (readonly StarExportCell[])[],
+  options: StarPrintOptions = {},
 ): string {
   const escape = (value: StarExportCell) => escapeXml(String(value));
+  const alignClass = (align: StarPrintAlign) =>
+    align === 'end' ? 'e' : align === 'center' ? 'c' : '';
   // A cell of one short word (a code, a number, a date, an address) is never wrapped: a break
   // inside "INV-0001" or "2026-01-05" would only make it hard to read.
-  const cellClass = (value: StarExportCell) => {
+  const cellClass = (value: StarExportCell, index: number) => {
     const text = String(value);
+    const column = options.align?.[index];
     const classes = [
-      typeof value === 'number' ? 'n' : '',
+      // The column decides. Without a column alignment, a number cell is right-aligned.
+      column ? alignClass(column) : typeof value === 'number' ? 'e' : '',
       // A number has no break point: it needs no rule.
       typeof value !== 'number' && text.length <= LONG_WORD && !/\s/.test(text) ? 's' : '',
     ].filter(Boolean);
     return classes.length ? ` class="${classes.join(' ')}"` : '';
   };
-  // A column of numbers has its header on the right too, above the right-aligned numbers.
+  // Without a column alignment, a column of numbers has its header on the right too.
   const numberColumn = (index: number) =>
     rows.length > 0 && rows.every((row) => typeof row[index] === 'number');
-  return `<!doctype html><html><head><meta charset="utf-8"><title>${escape(title)}</title><style>
-body{font:12px/1.4 system-ui,sans-serif;color:#000;margin:16px}
-h1{font-size:16px;margin:0 0 12px;overflow-wrap:anywhere}
-.fit{container-type:inline-size}
-table{width:100%;border-collapse:collapse}
-th,td{padding:4px 8px;border:1px solid #999;text-align:left;vertical-align:top;overflow-wrap:break-word}
-th{background:#eee}
-th.n,td.n{text-align:right}
-td.s{white-space:nowrap}
-thead{display:table-header-group}
-tr{break-inside:avoid}
-</style></head><body><h1>${escape(title)}</h1><div class="fit"><table><thead><tr>${headers
-    .map(
-      (header, index) =>
-        `<th scope="col"${numberColumn(index) ? ' class="n"' : ''}>${printable(header)}</th>`,
-    )
+  const headerClass = (index: number) => {
+    const align = options.align?.[index] ?? (numberColumn(index) ? 'end' : 'start');
+    return alignClass(align) ? ` class="${alignClass(align)}"` : '';
+  };
+  const attributes =
+    (options.lang ? ` lang="${escapeXml(options.lang)}"` : '') +
+    (options.dir ? ` dir="${options.dir === 'rtl' ? 'rtl' : 'ltr'}"` : '');
+  return `<!doctype html><html${attributes}><head><meta charset="utf-8"><title>${escape(title)}</title></head><body><h1>${escape(title)}</h1><div class="fit"><table><thead><tr>${headers
+    .map((header, index) => `<th scope="col"${headerClass(index)}>${printable(header)}</th>`)
     .join('')}</tr></thead><tbody>${rows
     .map(
       (row) =>
-        `<tr>${row.map((value) => `<td${cellClass(value)}>${printable(value)}</td>`).join('')}</tr>`,
+        `<tr>${row.map((value, index) => `<td${cellClass(value, index)}>${printable(value)}</td>`).join('')}</tr>`,
     )
     .join('')}</tbody></table></div></body></html>`;
 }

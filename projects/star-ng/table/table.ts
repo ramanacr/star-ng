@@ -38,7 +38,15 @@ import { StarPaginator } from '@star-ng/ui/paginator';
 import { StarPopover } from '@star-ng/ui/popover';
 import { StarMultiSelect } from '@star-ng/ui/select';
 import { StarSkeleton } from '@star-ng/ui/skeleton';
-import { buildPrintDocument, buildXlsx, fitPrintDocument, StarExportCell } from './table-export';
+import {
+  buildPrintDocument,
+  buildXlsx,
+  fitPrintDocument,
+  printColumnAlign,
+  printContext,
+  StarExportCell,
+  stylePrintDocument,
+} from './table-export';
 import {
   anchorOf,
   anchorShift,
@@ -2126,10 +2134,26 @@ export class StarTable<T> {
       options.title ?? this.ariaLabel() ?? '',
       columns.map((column) => column.header),
       rows.map((row) => columns.map((column) => this.exportCell(row, column))),
+      {
+        // The column definition decides the alignment, not the type of the formatted text.
+        align: columns.map((column) =>
+          printColumnAlign(
+            column.align,
+            rows.map((row) => {
+              const cell = this.exportCell(row, column);
+              return typeof cell === 'number' ? cell : this.cellValue(row, column);
+            }),
+          ),
+        ),
+        ...printContext(this.host.nativeElement, this.document),
+      },
     );
     frame.addEventListener('load', () => {
       const view = frame.contentWindow;
       if (!view) return;
+      // The document has no style element and no style attribute, so that a policy without
+      // 'unsafe-inline' in style-src does not unstyle it: the styles are constructed sheets.
+      stylePrintDocument(view.document);
       // The paper is not known yet. The table gets the rules that wrap it, shrink its text or
       // break its words when the paper is too narrow, so that no column is cut off.
       fitPrintDocument(view.document);
