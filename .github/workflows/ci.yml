@@ -6,7 +6,8 @@
 # - `changes` (first job) lists the changed files of a pull request and decides which jobs are
 #   needed (tools/ci-changes.mjs, the rules are data in that file, the tests are in
 #   tools/ci-changes.test.mjs). On a push to main and on any event that is not a pull request,
-#   everything is needed. The label `ci:full` on a pull request forces a full run.
+#   everything is needed. The label `ci:full` on a pull request forces a full run. Adding or
+#   removing any other label starts no work: all jobs, `ci-gate` too, are skipped.
 # - `docs-build` builds the docs application once, in the production configuration. `e2e`,
 #   `a11y` and `visual` download that build and serve the static files
 #   (tools/pages-serve.mjs --spa, selected by E2E_STATIC_DIR, see playwright.server.ts). No job
@@ -20,8 +21,9 @@ name: CI
 
 on:
   pull_request:
-    # The default types, plus the label types: the label `ci:full` forces a full run, so a
-    # change of the labels starts the run again.
+    # The default types, plus the label types: the label `ci:full` forces a full run, so adding
+    # or removing it starts the run again. A label event for any other label does nothing: every
+    # job is skipped (see `if` of `changes` and `ci-gate`, and the concurrency group below).
     types: [opened, synchronize, reopened, labeled, unlabeled]
   push:
     branches: [main]
@@ -30,10 +32,18 @@ on:
 permissions:
   contents: read
 
+# - A label event for a label other than `ci:full` has its own group (suffix `-label`), so that
+#   its skipped run never cancels a real run.
+# - A `labeled` or `unlabeled` event never cancels a run in progress. A pull request that is
+#   created with the label `ci:full` sends `opened` and `labeled`: the second run waits for the
+#   first one, and no run ends as cancelled. A new push still cancels every older run.
+# - Never cancel default-branch runs.
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  # Cancel superseded PR runs; never cancel default-branch runs.
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  group: >-
+    ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}${{
+    (github.event.action == 'labeled' || github.event.action == 'unlabeled')
+    && github.event.label.name != 'ci:full' && '-label' || '' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' && github.event.action != 'labeled' && github.event.action != 'unlabeled' }}
 
 jobs:
   # Decides which jobs are needed. It reads the git history only (no install, no build).
@@ -41,6 +51,11 @@ jobs:
   # and its base branch is known: the diff is `base.sha...head.sha` (three dots).
   changes:
     name: changes
+    # Skipped for a label event of another label than `ci:full`. Every other job needs
+    # `changes`, so they are skipped too.
+    if: >-
+      github.event.action != 'labeled' && github.event.action != 'unlabeled'
+      || github.event.label.name == 'ci:full'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
@@ -494,7 +509,10 @@ jobs:
     name: ci-gate
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    if: always()
+    # Skipped together with `changes` for a label event of another label than `ci:full`.
+    if: >-
+      always() && (github.event.action != 'labeled' && github.event.action != 'unlabeled'
+      || github.event.label.name == 'ci:full')
     needs: [changes, light, build-test, docs-build, e2e, e2e-dev, a11y, visual]
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0

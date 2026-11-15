@@ -142,7 +142,7 @@ The workflow `.github/workflows/ci.yml` runs only the jobs that a change can aff
 
 A path that no rule knows needs everything, so a new kind of file never skips a job by accident. A renamed file counts with its old and its new path.
 
-**Force a full run.** Add the label `ci:full` to the pull request. CI starts again with every job needed. Use it when you doubt the change detection. Removing the label starts CI again as well.
+**Force a full run.** Add the label `ci:full` to the pull request. CI starts again with every job needed. Use it when you doubt the change detection. Removing the label starts CI again as well. Adding or removing any other label starts no work: CI skips every job. A pull request that is opened with the label runs CI twice, one run after the other, and no run is cancelled.
 
 **Change the rules.** Edit `RULES` in `tools/ci-changes.mjs` and add a row to the table in `tools/ci-changes.test.mjs`. Run `corepack pnpm test:tools`. A change to the CI tools or to `ci.yml` runs everything.
 
