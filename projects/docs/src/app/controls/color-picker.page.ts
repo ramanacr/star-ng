@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarColorPicker } from 'star-ng/knob';
+import { StarColorPicker } from '@star-ng/ui/knob';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -10,7 +10,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Color picker"
       lead="Preset swatches, the native color dialog and a hex field. The value is a #rrggbb string."
-      importFrom="import { StarColorPicker } from 'star-ng/knob';"
+      importFrom="import { StarColorPicker } from '@star-ng/ui/knob';"
     >
       <docs-example heading="Basic" source="color-picker/basic">
         <star-color-picker [(value)]="color" ariaLabel="Label color" />

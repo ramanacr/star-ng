@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { StarScrollTop } from 'star-ng/utility';
+import { StarScrollTop } from '@star-ng/ui/utility';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -10,7 +10,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Scroll top"
       lead="A round button that appears after the user scrolled down, and scrolls back to the top. It scrolls the window, or the element in target. The scroll is smooth unless the user prefers reduced motion."
-      importFrom="import { StarScrollTop } from 'star-ng/utility';"
+      importFrom="import { StarScrollTop } from '@star-ng/ui/utility';"
     >
       <docs-example
         heading="Scroll container"

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { form, FormField, validate } from '@angular/forms/signals';
-import { StarCheckbox } from 'star-ng/checkbox';
+import { StarCheckbox } from '@star-ng/ui/checkbox';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -11,7 +11,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Checkbox"
       lead="A native checkbox with a styled box. Works alone, with two-way binding or with Signal Forms."
-      importFrom="import { StarCheckbox } from 'star-ng/checkbox';"
+      importFrom="import { StarCheckbox } from '@star-ng/ui/checkbox';"
     >
       <docs-example heading="Two-way binding" source="checkbox/basic" [script]="basicScript">
         <star-checkbox [(checked)]="subscribed">Send me product news</star-checkbox>

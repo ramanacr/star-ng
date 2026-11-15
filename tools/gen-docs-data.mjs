@@ -158,7 +158,7 @@ function readApi() {
       api[node.name.text] = {
         kind: decorator.kind,
         selector: decorator.selector,
-        entry: `star-ng/${entry}`,
+        entry: `@star-ng/ui/${entry}`,
         description: summary(jsDoc(node, source)),
         inputs: members.filter((member) => member.kind === 'input').map(strip),
         models: members.filter((member) => member.kind === 'model').map(strip),

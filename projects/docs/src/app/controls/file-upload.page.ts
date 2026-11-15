@@ -1,13 +1,13 @@
 import { HttpEvent, HttpEventType, HttpResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { concat, interval, map, mergeMap, Observable, of, take, throwError, timer } from 'rxjs';
 import {
   StarFileUpload,
   StarRejectedFile,
   StarUploadResult,
   toUploadStatus,
-} from 'star-ng/file-upload';
+} from '@star-ng/ui/file-upload';
+import { concat, interval, map, mergeMap, Observable, of, take, throwError, timer } from 'rxjs';
 import { DOCS, DocsRow } from '../shared/docs';
 
 interface Receipt {
@@ -49,7 +49,7 @@ function fakeUpload(file: File): Observable<HttpEvent<Receipt>> {
     <docs-page
       heading="File upload"
       lead="A file picker with drag and drop. The control checks the files, lists them and shows their upload state. It does not send anything: your code sends the files."
-      importFrom="import { StarFileUpload, toUploadStatus } from 'star-ng/file-upload';"
+      importFrom="import { StarFileUpload, toUploadStatus } from '@star-ng/ui/file-upload';"
     >
       <docs-example
         heading="Single and multiple"
@@ -165,7 +165,7 @@ function fakeUpload(file: File): Observable<HttpEvent<Receipt>> {
       <div class="docs-table-wrap">
         <table class="docs-table">
           <caption>
-            Exports of star-ng/file-upload
+            Exports of @star-ng/ui/file-upload
           </caption>
           <thead>
             <tr>

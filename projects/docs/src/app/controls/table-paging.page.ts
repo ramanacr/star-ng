@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
-import { StarColumn, StarLazyLoadEvent, StarTable } from 'star-ng/table';
+import { StarColumn, StarLazyLoadEvent, StarTable } from '@star-ng/ui/table';
 import { DOCS, DocsRow } from '../shared/docs';
 import { DocsFill, formatMoney, Order, orderColumns, ORDERS } from './table-demo';
 
@@ -11,7 +11,7 @@ import { DocsFill, formatMoney, Order, orderColumns, ORDERS } from './table-demo
     <docs-page
       heading="Table paging"
       lead="The table has a built-in paginator. In client mode it slices the rows itself. In lazy mode it shows the rows that you load and tells you which page, sort and filters it needs."
-      importFrom="import { StarTable, StarLazyLoadEvent } from 'star-ng/table';"
+      importFrom="import { StarTable, StarLazyLoadEvent } from '@star-ng/ui/table';"
     >
       <docs-example
         heading="Client paging"

@@ -1,4 +1,4 @@
-import { StarTreeNode } from 'star-ng/tree';
+import { StarTreeNode } from '@star-ng/ui/tree';
 
 /**
  * Sample data for the windowed tree examples: 10 sites, each with 10 warehouses, each with

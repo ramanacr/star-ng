@@ -7,8 +7,8 @@ import {
   StarDateRange,
   StarDateRangePicker,
   StarMultiDatePicker,
-} from 'star-ng/date-picker';
-import { StarField } from 'star-ng/field';
+} from '@star-ng/ui/date-picker';
+import { StarField } from '@star-ng/ui/field';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -27,7 +27,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Date picker"
       lead="An input with a calendar popup. The user types a date or picks it in the calendar. There are three components: one date (star-date-picker), a range (star-date-range-picker) and several single days (star-multi-date-picker). Typed text follows the order of day, month and year of the locale."
-      importFrom="import { StarDatePicker, StarDateRangePicker, StarMultiDatePicker } from 'star-ng/date-picker';"
+      importFrom="import { StarDatePicker, StarDateRangePicker, StarMultiDatePicker } from '@star-ng/ui/date-picker';"
     >
       <docs-example
         heading="Single date"
@@ -253,9 +253,9 @@ import { DOCS, DocsRow } from '../shared/docs';
 
       <h2>Date helpers</h2>
       <p>
-        <code>star-ng/date-picker</code> also exports the helper functions that the calendar uses.
-        All of them work with local calendar days (time 00:00) and have no dependency on a date
-        library.
+        <code>@star-ng/ui/date-picker</code> also exports the helper functions that the calendar
+        uses. All of them work with local calendar days (time 00:00) and have no dependency on a
+        date library.
       </p>
       <div class="docs-table-wrap">
         <table class="docs-table">
@@ -336,7 +336,7 @@ export class DatePickerPage {
   });
 
   protected readonly basicScript = `readonly delivery = signal<Date | null>(new Date(2026, 10, 17));
-// isoDay comes from 'star-ng/date-picker'.
+// isoDay comes from '@star-ng/ui/date-picker'.
 readonly iso = (date: Date | null) => (date ? isoDay(date) : 'none');`;
   protected readonly rangeScript = `readonly booking = signal<StarDateRange | null>({
   start: new Date(2026, 10, 9),

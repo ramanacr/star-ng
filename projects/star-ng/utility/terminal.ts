@@ -11,7 +11,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { STAR_UI_TEXT } from 'star-ng/core';
+import { STAR_UI_TEXT } from '@star-ng/ui/core';
 
 export interface StarTerminalEntry {
   readonly command: string;

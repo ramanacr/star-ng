@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarContextMenu, StarMenu, StarMenuItem } from 'star-ng/menu';
+import { StarContextMenu, StarMenu, StarMenuItem } from '@star-ng/ui/menu';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -10,7 +10,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Context menu"
       lead="A menu that opens at the pointer on right-click, or with the context-menu key. Add it to any element, for example a table row."
-      importFrom="import { StarContextMenu, StarMenu } from 'star-ng/menu';"
+      importFrom="import { StarContextMenu, StarMenu } from '@star-ng/ui/menu';"
     >
       <docs-example
         heading="Right-click area"
@@ -44,7 +44,7 @@ import { DOCS, DocsRow } from '../shared/docs';
       <p>
         A modal <code>dialog</code> makes the rest of the page inert. When the element is inside a
         dialog, the context menu goes into that dialog (<code>keepMenuInsideDialog</code> in
-        <code>star-ng/menu</code>), so the menu stays usable. The function accepts both
+        <code>@star-ng/ui/menu</code>), so the menu stays usable. The function accepts both
         <code>CdkMenuTrigger</code> and <code>CdkContextMenuTrigger</code>.
       </p>
     </docs-page>

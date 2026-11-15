@@ -29,7 +29,7 @@ function scriptLiteral(value: string): string {
  * script. There are three ways that work with it. See the "Content Security Policy" section of
  * the "Dark mode" guide:
  *
- * 1. the static file `star-ng/theme/star-theme-first-paint.js` (see
+ * 1. the static file `@star-ng/ui/theme/star-theme-first-paint.js` (see
  *    `starThemeFirstPaintFileScript`), loaded with `<script src>`;
  * 2. the hash of this text in the policy (`STAR_THEME_FIRST_PAINT_HASH`,
  *    `starThemeFirstPaintHash`);
@@ -47,7 +47,7 @@ export function starThemeFirstPaintScript(storageKey = STAR_THEME_DEFAULT_STORAG
 }
 
 /**
- * Text of the static file `star-ng/theme/star-theme-first-paint.js`. It is the same script as
+ * Text of the static file `@star-ng/ui/theme/star-theme-first-paint.js`. It is the same script as
  * `starThemeFirstPaintScript()`, but the storage key comes from the `data-storage-key`
  * attribute of its own `<script>` element (default `'star-theme'`), so a custom key needs no
  * inline code:

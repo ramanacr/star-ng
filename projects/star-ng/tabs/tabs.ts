@@ -18,7 +18,7 @@ import {
   TemplateRef,
   viewChildren,
 } from '@angular/core';
-import { starInlineKey } from 'star-ng/core';
+import { starInlineKey } from '@star-ng/ui/core';
 
 /** Lazy tab body: `<ng-template starTabContent>…</ng-template>` renders on first activation only. */
 @Directive({ selector: 'ng-template[starTabContent]' })

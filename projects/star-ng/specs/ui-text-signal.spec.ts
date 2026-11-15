@@ -7,11 +7,11 @@ import {
   STAR_UI_TEXT_DEFAULTS,
   StarUiText,
   starUiTextFromSignal,
-} from 'star-ng/core';
-import { STAR_UI_TEXT_DE } from 'star-ng/i18n/de';
-import { STAR_UI_TEXT_ES } from 'star-ng/i18n/es';
-import { StarPaginator } from 'star-ng/paginator';
-import { StarPassword } from 'star-ng/password';
+} from '@star-ng/ui/core';
+import { STAR_UI_TEXT_DE } from '@star-ng/ui/i18n/de';
+import { STAR_UI_TEXT_ES } from '@star-ng/ui/i18n/es';
+import { StarPaginator } from '@star-ng/ui/paginator';
+import { StarPassword } from '@star-ng/ui/password';
 
 type Language = 'en' | 'de' | 'es';
 const PACKS: Record<Language, StarUiText> = {

@@ -1,4 +1,4 @@
-import { StarTreeNode } from 'star-ng/tree';
+import { StarTreeNode } from '@star-ng/ui/tree';
 import {
   checkStates,
   flattenVisible,

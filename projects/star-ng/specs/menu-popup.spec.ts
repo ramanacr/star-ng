@@ -6,7 +6,7 @@ import {
   StarMenubar,
   StarMenuItem,
   StarMenuTrigger,
-} from 'star-ng/menu';
+} from '@star-ng/ui/menu';
 
 afterEach(() => document.querySelectorAll('.cdk-overlay-container').forEach((n) => n.remove()));
 

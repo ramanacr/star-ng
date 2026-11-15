@@ -27,7 +27,7 @@ import {
   viewChild,
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
-import { matchesFilter, STAR_UI_TEXT, StarDirectionService, starInlineKey } from 'star-ng/core';
+import { matchesFilter, STAR_UI_TEXT, StarDirectionService, starInlineKey } from '@star-ng/ui/core';
 import {
   checkStates,
   flattenVisible,

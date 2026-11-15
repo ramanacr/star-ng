@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { StarOrgChart, StarOrgNode } from 'star-ng/data-display';
+import { StarOrgChart, StarOrgNode } from '@star-ng/ui/data-display';
 
 @Component({
   imports: [StarOrgChart],

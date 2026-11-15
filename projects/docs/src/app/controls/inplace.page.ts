@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarInput } from 'star-ng/field';
-import { StarInplace, StarInplaceContent, StarInplaceDisplay } from 'star-ng/utility';
+import { StarInput } from '@star-ng/ui/field';
+import { StarInplace, StarInplaceContent, StarInplaceDisplay } from '@star-ng/ui/utility';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -11,7 +11,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Inplace"
       lead="Shows a value as a button. A click replaces it with an editor in the same place. Escape, or the close button, goes back to the value. The focus moves to the editor and back."
-      importFrom="import { StarInplace, StarInplaceDisplay, StarInplaceContent } from 'star-ng/utility';"
+      importFrom="import { StarInplace, StarInplaceDisplay, StarInplaceContent } from '@star-ng/ui/utility';"
     >
       <docs-example
         heading="Edit a value"

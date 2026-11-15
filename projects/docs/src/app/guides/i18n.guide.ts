@@ -11,16 +11,16 @@ import {
   STAR_UI_TEXT,
   STAR_UI_TEXT_DEFAULTS,
   starUiTextFromSignal,
-} from 'star-ng/core';
-import { StarField } from 'star-ng/field';
-import { StarFileUpload } from 'star-ng/file-upload';
-import { STAR_UI_TEXT_DE } from 'star-ng/i18n/de';
-import { STAR_UI_TEXT_ES } from 'star-ng/i18n/es';
-import { StarPaginator } from 'star-ng/paginator';
-import { StarPassword } from 'star-ng/password';
-import { StarSelect } from 'star-ng/select';
-import { StarSelectButton } from 'star-ng/select-button';
-import { StarSpinner } from 'star-ng/spinner';
+} from '@star-ng/ui/core';
+import { StarField } from '@star-ng/ui/field';
+import { StarFileUpload } from '@star-ng/ui/file-upload';
+import { STAR_UI_TEXT_DE } from '@star-ng/ui/i18n/de';
+import { STAR_UI_TEXT_ES } from '@star-ng/ui/i18n/es';
+import { StarPaginator } from '@star-ng/ui/paginator';
+import { StarPassword } from '@star-ng/ui/password';
+import { StarSelect } from '@star-ng/ui/select';
+import { StarSelectButton } from '@star-ng/ui/select-button';
+import { StarSpinner } from '@star-ng/ui/spinner';
 import { DOCS } from '../shared/docs';
 
 /** Wrapper that gives its content a built-in language pack, to show a provider on one subtree. */
@@ -75,7 +75,7 @@ export class DocsLanguage {
     <docs-page
       heading="Internationalisation"
       lead="The controls have built-in text: screen-reader labels, empty states, page reports. All of it is in one object behind the STAR_UI_TEXT injection token. The defaults are English. German and Spanish packs are included."
-      importFrom="import { provideStarUiText, STAR_UI_TEXT, StarUiText } from 'star-ng/core';"
+      importFrom="import { provideStarUiText, STAR_UI_TEXT, StarUiText } from '@star-ng/ui/core';"
     >
       <h2>Use a built-in language pack</h2>
       <p>
@@ -97,12 +97,12 @@ export class DocsLanguage {
           <tbody>
             <tr>
               <td>German (formal address)</td>
-              <td><code>star-ng/i18n/de</code></td>
+              <td><code>@star-ng/ui/i18n/de</code></td>
               <td><code>STAR_UI_TEXT_DE</code></td>
             </tr>
             <tr>
               <td>Spanish (neutral)</td>
-              <td><code>star-ng/i18n/es</code></td>
+              <td><code>@star-ng/ui/i18n/es</code></td>
               <td><code>STAR_UI_TEXT_ES</code></td>
             </tr>
           </tbody>
@@ -247,8 +247,8 @@ export class I18nGuide {
   protected readonly city = signal<string | null>(null);
 
   protected readonly pack = `// app.config.ts
-import { provideStarUiText } from 'star-ng/core';
-import { STAR_UI_TEXT_DE } from 'star-ng/i18n/de';
+import { provideStarUiText } from '@star-ng/ui/core';
+import { STAR_UI_TEXT_DE } from '@star-ng/ui/i18n/de';
 
 export const appConfig: ApplicationConfig = {
   providers: [provideStarUiText(STAR_UI_TEXT_DE)],
@@ -258,9 +258,9 @@ export const appConfig: ApplicationConfig = {
 
   protected readonly signalCode = `// app.config.ts
 import { signal } from '@angular/core';
-import { provideStarUiTextFromSignal, STAR_UI_TEXT_DEFAULTS } from 'star-ng/core';
-import { STAR_UI_TEXT_DE } from 'star-ng/i18n/de';
-import { STAR_UI_TEXT_ES } from 'star-ng/i18n/es';
+import { provideStarUiTextFromSignal, STAR_UI_TEXT_DEFAULTS } from '@star-ng/ui/core';
+import { STAR_UI_TEXT_DE } from '@star-ng/ui/i18n/de';
+import { STAR_UI_TEXT_ES } from '@star-ng/ui/i18n/es';
 
 export const language = signal<'en' | 'de' | 'es'>('en');
 const packs = { en: STAR_UI_TEXT_DEFAULTS, de: STAR_UI_TEXT_DE, es: STAR_UI_TEXT_ES };
@@ -304,7 +304,7 @@ export class LanguageDemo {
 }`;
 
   protected readonly ownPack = `// star-ui-text-fr.ts
-import { StarUiText } from 'star-ng/core';
+import { StarUiText } from '@star-ng/ui/core';
 
 const plural = new Intl.PluralRules('fr');
 
@@ -318,7 +318,7 @@ export const STAR_UI_TEXT_FR: StarUiText = {
   // ...and every other entry of StarUiText. A missing entry does not compile.
 };`;
 
-  protected readonly transloco = `import { provideStarUiTextFromTransloco } from 'star-ng/transloco';
+  protected readonly transloco = `import { provideStarUiTextFromTransloco } from '@star-ng/ui/transloco';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -336,7 +336,7 @@ export const appConfig: ApplicationConfig = {
   }
 }`;
 
-  protected readonly custom = `import { STAR_UI_TEXT, STAR_UI_TEXT_DEFAULTS, StarUiText } from 'star-ng/core';
+  protected readonly custom = `import { STAR_UI_TEXT, STAR_UI_TEXT_DEFAULTS, StarUiText } from '@star-ng/ui/core';
 
 {
   provide: STAR_UI_TEXT,

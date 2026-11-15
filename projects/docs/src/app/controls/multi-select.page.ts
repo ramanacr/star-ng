@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { form, FormField, minLength } from '@angular/forms/signals';
-import { StarField } from 'star-ng/field';
-import { StarMultiSelect, StarOptionTemplate } from 'star-ng/select';
+import { StarField } from '@star-ng/ui/field';
+import { StarMultiSelect, StarOptionTemplate } from '@star-ng/ui/select';
 import { DOCS, DocsRow } from '../shared/docs';
 
 interface Department {
@@ -19,7 +19,7 @@ interface Department {
     <docs-page
       heading="Multi-select"
       lead="A dropdown for several choices. The panel has a checkbox for every option, a select all box and an optional filter. The trigger shows the chosen labels as text or as removable chips."
-      importFrom="import { StarMultiSelect } from 'star-ng/select';"
+      importFrom="import { StarMultiSelect } from '@star-ng/ui/select';"
     >
       <docs-example
         heading="Basic"

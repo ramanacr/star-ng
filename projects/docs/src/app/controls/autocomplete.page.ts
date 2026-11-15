@@ -4,9 +4,9 @@ import {
   StarAutoComplete,
   StarAutoCompleteSearch,
   StarMultiAutoComplete,
-} from 'star-ng/autocomplete';
-import { StarField } from 'star-ng/field';
-import { StarOptionTemplate } from 'star-ng/select';
+} from '@star-ng/ui/autocomplete';
+import { StarField } from '@star-ng/ui/field';
+import { StarOptionTemplate } from '@star-ng/ui/select';
 import { DOCS, DocsRow } from '../shared/docs';
 
 interface Person {
@@ -30,7 +30,7 @@ interface Person {
     <docs-page
       heading="Autocomplete"
       lead="A text field with a list of suggestions (WAI-ARIA combobox with list autocomplete). It filters local options, or it asks a server through completeMethod. Only listed options can be chosen."
-      importFrom="import { StarAutoComplete, StarMultiAutoComplete } from 'star-ng/autocomplete';"
+      importFrom="import { StarAutoComplete, StarMultiAutoComplete } from '@star-ng/ui/autocomplete';"
     >
       <docs-example
         heading="Local options"

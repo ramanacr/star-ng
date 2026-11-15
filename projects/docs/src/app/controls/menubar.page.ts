@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarButton } from 'star-ng/button';
-import { StarMenubar, StarMenuItem } from 'star-ng/menu';
+import { StarButton } from '@star-ng/ui/button';
+import { StarMenubar, StarMenuItem } from '@star-ng/ui/menu';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -11,7 +11,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Menubar"
       lead="A horizontal bar of top-level items. An item with child items opens a dropdown. Submenus can go to any depth."
-      importFrom="import { StarMenubar } from 'star-ng/menu';"
+      importFrom="import { StarMenubar } from '@star-ng/ui/menu';"
     >
       <docs-example
         heading="File, edit and view"

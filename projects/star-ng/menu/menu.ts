@@ -17,8 +17,8 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
-import { StarButton, StarButtonSize, StarButtonVariant } from 'star-ng/button';
-import { STAR_UI_TEXT, StarDirectionService } from 'star-ng/core';
+import { StarButton, StarButtonSize, StarButtonVariant } from '@star-ng/ui/button';
+import { STAR_UI_TEXT, StarDirectionService } from '@star-ng/ui/core';
 
 /** One menu entry (PrimeNG `MenuItem`). `items` makes a submenu (tiered menu). */
 export interface StarMenuItem {

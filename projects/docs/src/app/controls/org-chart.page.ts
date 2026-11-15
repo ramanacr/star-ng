@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarOrgChart, StarOrgNode, StarOrgNodeTemplate } from 'star-ng/data-display';
+import { StarOrgChart, StarOrgNode, StarOrgNodeTemplate } from '@star-ng/ui/data-display';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -10,7 +10,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Organization chart"
       lead="A hierarchy drawn top-down with connector lines. The markup is a nested list, so assistive technology reads the levels. The PrimeNG equivalent is p-organizationchart."
-      importFrom="import { StarOrgChart, StarOrgNode, StarOrgNodeTemplate } from 'star-ng/data-display';"
+      importFrom="import { StarOrgChart, StarOrgNode, StarOrgNodeTemplate } from '@star-ng/ui/data-display';"
     >
       <docs-example
         heading="Expand and collapse"

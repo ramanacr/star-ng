@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { StarRating } from 'star-ng/rating';
-import { StarRangeSlider, StarSlider } from 'star-ng/slider';
+import { StarRating } from '@star-ng/ui/rating';
+import { StarRangeSlider, StarSlider } from '@star-ng/ui/slider';
 
 @Component({
   imports: [StarSlider, StarRangeSlider, StarRating],

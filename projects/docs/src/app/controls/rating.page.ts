@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarRating } from 'star-ng/rating';
+import { StarRating } from '@star-ng/ui/rating';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -10,7 +10,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Rating"
       lead="A star rating built as a native radio group, so the arrow keys change the rating."
-      importFrom="import { StarRating } from 'star-ng/rating';"
+      importFrom="import { StarRating } from '@star-ng/ui/rating';"
     >
       <docs-example heading="Basic" source="rating/basic">
         <star-rating [(value)]="score" ariaLabel="Service rating" />

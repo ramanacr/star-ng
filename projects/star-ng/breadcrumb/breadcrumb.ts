@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { STAR_UI_TEXT } from 'star-ng/core';
+import { STAR_UI_TEXT } from '@star-ng/ui/core';
 
 export interface StarBreadcrumbItem {
   readonly label: string;

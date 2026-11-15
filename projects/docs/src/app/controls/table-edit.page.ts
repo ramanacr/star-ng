@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarCellEditEvent, StarColumn, StarRowReorderEvent, StarTable } from 'star-ng/table';
+import { StarCellEditEvent, StarColumn, StarRowReorderEvent, StarTable } from '@star-ng/ui/table';
 import { DOCS, DocsRow } from '../shared/docs';
 import { DocsFill, Order, ORDERS, PRODUCT_NAMES } from './table-demo';
 
@@ -11,7 +11,7 @@ import { DocsFill, Order, ORDERS, PRODUCT_NAMES } from './table-demo';
     <docs-page
       heading="Table editing"
       lead="Change a cell in place, and move rows up and down. The table does not change its rows: it emits an event, and the owner stores the change."
-      importFrom="import { StarTable, StarCellEditEvent, StarRowReorderEvent } from 'star-ng/table';"
+      importFrom="import { StarTable, StarCellEditEvent, StarRowReorderEvent } from '@star-ng/ui/table';"
     >
       <docs-example
         heading="Inline cell edit"

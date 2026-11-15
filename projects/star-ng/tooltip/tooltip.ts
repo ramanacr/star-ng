@@ -23,7 +23,7 @@ import {
   numberAttribute,
   signal,
 } from '@angular/core';
-import { StarDirectionService } from 'star-ng/core';
+import { StarDirectionService } from '@star-ng/ui/core';
 
 /**
  * Side of the host. `left` and `right` are the physical sides of the screen, as in CSS;

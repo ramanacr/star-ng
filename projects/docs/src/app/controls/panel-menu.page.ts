@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarMenuItem, StarPanelMenu } from 'star-ng/menu';
+import { StarMenuItem, StarPanelMenu } from '@star-ng/ui/menu';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -10,7 +10,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Panel menu"
       lead="A vertical menu where an item with child items opens and closes in place, to any depth. Use it for side navigation with sections."
-      importFrom="import { StarPanelMenu } from 'star-ng/menu';"
+      importFrom="import { StarPanelMenu } from '@star-ng/ui/menu';"
     >
       <docs-example
         heading="Sections that open in place"

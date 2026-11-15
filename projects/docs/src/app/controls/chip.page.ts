@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarChip } from 'star-ng/layout';
+import { StarChip } from '@star-ng/ui/layout';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -10,7 +10,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Chip"
       lead="A small pill with a label, an optional icon or image and an optional remove button. The PrimeNG equivalent is p-chip."
-      importFrom="import { StarChip } from 'star-ng/layout';"
+      importFrom="import { StarChip } from '@star-ng/ui/layout';"
     >
       <docs-example heading="Label and icon" source="chip/basic">
         <star-chip label="Design" />

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarRangeSlider, StarSlider } from 'star-ng/slider';
+import { StarRangeSlider, StarSlider } from '@star-ng/ui/slider';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -10,7 +10,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Slider"
       lead="star-slider is a native range input with a styled track. star-range-slider has two thumbs for a low and a high value."
-      importFrom="import { StarRangeSlider, StarSlider } from 'star-ng/slider';"
+      importFrom="import { StarRangeSlider, StarSlider } from '@star-ng/ui/slider';"
     >
       <docs-example heading="Single value" source="slider/basic">
         <div class="docs-stack">

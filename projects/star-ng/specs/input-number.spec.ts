@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { StarInputNumber } from 'star-ng/input-number';
+import { StarInputNumber } from '@star-ng/ui/input-number';
 
 /** Intl uses no-break spaces in currency output. */
 const spaces = (text: string) => text.replace(/\s/gu, ' ');

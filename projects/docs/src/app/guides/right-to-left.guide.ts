@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarBreadcrumb } from 'star-ng/breadcrumb';
-import { StarPaginator } from 'star-ng/paginator';
-import { StarSelectButton } from 'star-ng/select-button';
-import { StarTab, StarTabs } from 'star-ng/tabs';
+import { StarBreadcrumb } from '@star-ng/ui/breadcrumb';
+import { StarPaginator } from '@star-ng/ui/paginator';
+import { StarSelectButton } from '@star-ng/ui/select-button';
+import { StarTab, StarTabs } from '@star-ng/ui/tabs';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -225,7 +225,7 @@ import { DOCS, DocsRow } from '../shared/docs';
       <div class="docs-table-wrap">
         <table class="docs-table">
           <caption>
-            Exports of star-ng/core
+            Exports of @star-ng/ui/core
           </caption>
           <thead>
             <tr>
@@ -295,7 +295,7 @@ export class RightToLeftGuide {
   protected readonly runtime = `document.documentElement.lang = 'he';
 document.documentElement.dir = 'rtl';`;
   protected readonly mirror = `<i class="ph-bold ph-arrow-right star-icon-mirror" aria-hidden="true"></i>`;
-  protected readonly helperCode = `import { starInlineKey, starIsRtl } from 'star-ng/core';
+  protected readonly helperCode = `import { starInlineKey, starIsRtl } from '@star-ng/ui/core';
 
 onKeydown(event: KeyboardEvent): void {
   // 'ArrowRight' is "toward the end of the line" in both directions.

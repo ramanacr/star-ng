@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
-import { STAR_UI_TEXT } from 'star-ng/core';
+import { STAR_UI_TEXT } from '@star-ng/ui/core';
 
 /**
  * Indeterminate progress spinner (PrimeNG `p-progressspinner`), SVG stroke in the primary color.

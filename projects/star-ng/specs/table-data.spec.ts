@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { StarCellTemplate, StarColumn, StarTable } from 'star-ng/table';
+import { StarCellTemplate, StarColumn, StarTable } from '@star-ng/ui/table';
 
 interface Row {
   id: number;

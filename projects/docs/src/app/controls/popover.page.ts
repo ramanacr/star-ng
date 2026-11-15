@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarButton } from 'star-ng/button';
-import { StarField, StarInput } from 'star-ng/field';
-import { StarPopover } from 'star-ng/popover';
+import { StarButton } from '@star-ng/ui/button';
+import { StarField, StarInput } from '@star-ng/ui/field';
+import { StarPopover } from '@star-ng/ui/popover';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -12,7 +12,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Popover"
       lead="A floating panel with rich content, anchored to an element (PrimeNG Popover, formerly OverlayPanel). It closes on a click outside and on Escape, moves the focus in, and gives the focus back to the anchor."
-      importFrom="import { StarPopover } from 'star-ng/popover';"
+      importFrom="import { StarPopover } from '@star-ng/ui/popover';"
     >
       <docs-example
         heading="Details popover"

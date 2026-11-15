@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
-import { STAR_UI_TEXT } from 'star-ng/core';
-import { StarMenuItem } from 'star-ng/menu';
-import { StarThemeMode, StarThemeService } from 'star-ng/theme';
-import { StarSpeedDial } from 'star-ng/utility';
+import { STAR_UI_TEXT } from '@star-ng/ui/core';
+import { StarMenuItem } from '@star-ng/ui/menu';
+import { StarThemeMode, StarThemeService } from '@star-ng/ui/theme';
+import { StarSpeedDial } from '@star-ng/ui/utility';
 
 const MODES: readonly { readonly mode: StarThemeMode; readonly icon: string }[] = [
   { mode: 'system', icon: 'ph-bold ph-monitor' },

@@ -18,8 +18,8 @@
     // The docs application and the unit tests compile the library from source.
     // `ng build star-ng` (ng-packagr) resolves its own entry points and ignores these paths.
     "paths": {
-      "star-ng": ["./projects/star-ng/src/public-api.ts"],
-      "star-ng/*": ["./projects/star-ng/*/index.ts"]
+      "@star-ng/ui": ["./projects/star-ng/src/public-api.ts"],
+      "@star-ng/ui/*": ["./projects/star-ng/*/index.ts"]
     }
   },
   "angularCompilerOptions": {

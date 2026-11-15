@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { StarMeterGroup, StarMeterItem } from 'star-ng/utility';
+import { StarMeterGroup, StarMeterItem } from '@star-ng/ui/utility';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -10,7 +10,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Meter group"
       lead="One bar that is split into parts, with a legend. The parts use the chart palette tokens in order. Each part has the meter role, so a screen reader announces its value."
-      importFrom="import { StarMeterGroup, StarMeterItem } from 'star-ng/utility';"
+      importFrom="import { StarMeterGroup, StarMeterItem } from '@star-ng/ui/utility';"
     >
       <docs-example
         heading="Storage by type"

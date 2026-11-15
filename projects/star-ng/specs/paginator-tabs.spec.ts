@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { StarPaginator } from 'star-ng/paginator';
-import { StarTab, StarTabContent, StarTabs } from 'star-ng/tabs';
+import { StarPaginator } from '@star-ng/ui/paginator';
+import { StarTab, StarTabContent, StarTabs } from '@star-ng/ui/tabs';
 
 @Component({
   imports: [StarPaginator],

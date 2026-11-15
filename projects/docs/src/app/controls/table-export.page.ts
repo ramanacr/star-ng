@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarButton } from 'star-ng/button';
-import { StarCellTemplate, StarColumn, StarTable } from 'star-ng/table';
-import { StarTag } from 'star-ng/tag';
+import { StarButton } from '@star-ng/ui/button';
+import { StarCellTemplate, StarColumn, StarTable } from '@star-ng/ui/table';
+import { StarTag } from '@star-ng/ui/tag';
 import { DOCS, DocsRow } from '../shared/docs';
 import {
   DocsFill,
@@ -95,7 +95,7 @@ const WIDE_ROWS: readonly WideRow[] = Array.from({ length: 30 }, (_, i) => ({
     <docs-page
       heading="Table export"
       lead="Download the table as a CSV file or an Excel workbook, or print it. The export uses the visible columns in display order and the rows after filtering and sorting, on all pages. No third-party library is used: the Excel file is built in the browser."
-      importFrom="import { StarTable, StarExportOptions, StarCsvOptions } from 'star-ng/table';"
+      importFrom="import { StarTable, StarExportOptions, StarCsvOptions } from '@star-ng/ui/table';"
     >
       <docs-example
         heading="Download and print"

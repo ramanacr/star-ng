@@ -1,4 +1,4 @@
-# Release of the npm package `star-ng`. See RELEASING.md for the steps and the one-time setup.
+# Release of the npm package `@star-ng/ui`. See RELEASING.md for the steps and the one-time setup.
 #
 # - Push a tag `v<version>` (for example `v0.1.0`) on a commit of `main`: verify, pack, publish.
 # - "Run workflow" by hand (Actions, "Release"): a DRY RUN. It verifies and packs, uploads the
@@ -94,7 +94,7 @@ jobs:
           set -euo pipefail
           mkdir -p release
           npm pack ./dist/star-ng --pack-destination ./release --ignore-scripts
-          tarball="star-ng-${VERSION}.tgz"
+          tarball="star-ng-ui-${VERSION}.tgz"
           test -f "release/${tarball}" || { echo "::error::Expected release/${tarball} was not made."; ls -l release; exit 1; }
           test "$(ls release | wc -l)" = "1" || { echo "::error::The release folder must hold exactly one tarball."; ls -l release; exit 1; }
           echo "tarball=${tarball}" >> "$GITHUB_OUTPUT"
@@ -125,7 +125,7 @@ jobs:
           size=$(stat -c%s "release/${TARBALL}")
           files=$(tar -tzf "release/${TARBALL}" | wc -l)
           {
-            echo "## Release check: star-ng ${VERSION}"
+            echo "## Release check: @star-ng/ui ${VERSION}"
             echo
             echo "| Item | Value |"
             echo "| --- | --- |"
@@ -183,9 +183,9 @@ jobs:
           test -f "./release/${TARBALL}"
           npm publish "./release/${TARBALL}" --access public --provenance --tag "${DIST_TAG}"
           {
-            echo "## Published star-ng ${VERSION}"
+            echo "## Published @star-ng/ui ${VERSION}"
             echo
-            echo "Dist-tag: \`${DIST_TAG}\`. Package page: https://www.npmjs.com/package/star-ng/v/${VERSION}"
+            echo "Dist-tag: \`${DIST_TAG}\`. Package page: https://www.npmjs.com/package/@star-ng/ui/v/${VERSION}"
           } >> "$GITHUB_STEP_SUMMARY"
 
       # Installs the version that was just published into an empty project and checks the registry
@@ -200,11 +200,11 @@ jobs:
           cd scratch
           npm init -y > /dev/null
           for attempt in 1 2 3 4 5 6 7 8 9 10; do
-            if npm install "star-ng@${VERSION}" --legacy-peer-deps --no-fund; then
+            if npm install "@star-ng/ui@${VERSION}" --legacy-peer-deps --no-fund; then
               break
             fi
             if [ "$attempt" = "10" ]; then
-              echo "::error::star-ng@${VERSION} could not be installed from the registry."
+              echo "::error::@star-ng/ui@${VERSION} could not be installed from the registry."
               exit 1
             fi
             echo "Not available yet (attempt ${attempt}). Waiting 15 seconds."

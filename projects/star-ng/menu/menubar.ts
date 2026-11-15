@@ -10,7 +10,7 @@ import {
   output,
 } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-import { StarDirectionService } from 'star-ng/core';
+import { StarDirectionService } from '@star-ng/ui/core';
 import {
   keepMenuInsideDialog,
   STAR_MENU_POSITIONS,

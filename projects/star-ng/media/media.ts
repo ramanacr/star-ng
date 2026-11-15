@@ -16,8 +16,8 @@ import {
   TemplateRef,
   viewChild,
 } from '@angular/core';
-import { STAR_UI_TEXT, starInlineKey, starIsRtl } from 'star-ng/core';
-import { StarDialog } from 'star-ng/dialog';
+import { STAR_UI_TEXT, starInlineKey, starIsRtl } from '@star-ng/ui/core';
+import { StarDialog } from '@star-ng/ui/dialog';
 
 // ---------------------------------------------------------------- Carousel
 

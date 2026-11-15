@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarTreeTable, StarTreeTableColumn } from 'star-ng/data-display';
-import { StarTreeNode } from 'star-ng/tree';
+import { StarTreeTable, StarTreeTableColumn } from '@star-ng/ui/data-display';
+import { StarTreeNode } from '@star-ng/ui/tree';
 import { DOCS, DocsRow } from '../shared/docs';
 
 type Row = Record<string, unknown>;
@@ -13,7 +13,7 @@ type Row = Record<string, unknown>;
     <docs-page
       heading="Tree table"
       lead="Rows in a hierarchy, with expand and collapse in a table. The first column shows the tree toggle. The PrimeNG equivalent is p-treetable."
-      importFrom="import { StarTreeTable, StarTreeTableColumn } from 'star-ng/data-display';"
+      importFrom="import { StarTreeTable, StarTreeTableColumn } from '@star-ng/ui/data-display';"
     >
       <docs-example
         heading="Expand and collapse"

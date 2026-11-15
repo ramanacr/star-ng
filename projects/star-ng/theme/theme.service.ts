@@ -20,7 +20,7 @@ const MODES: readonly StarThemeMode[] = ['system', 'light', 'dark'];
 
 /**
  * Color theme of the application. The StarNG tokens change with `data-theme` on `<html>`
- * (`star-ng/styles/_tokens.scss`); this service sets that attribute and remembers the choice
+ * (`@star-ng/ui/styles/_tokens.scss`); this service sets that attribute and remembers the choice
  * in the browser (`localStorage`). Inject it in the root component, so the theme applies on
  * every page.
  *

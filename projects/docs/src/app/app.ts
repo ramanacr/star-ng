@@ -8,9 +8,9 @@ import {
   signal,
 } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { StarConfirmHost } from 'star-ng/dialog';
-import { StarThemeSwitch } from 'star-ng/theme-switch';
-import { StarToast } from 'star-ng/toast';
+import { StarConfirmHost } from '@star-ng/ui/dialog';
+import { StarThemeSwitch } from '@star-ng/ui/theme-switch';
+import { StarToast } from '@star-ng/ui/toast';
 import { DOCS_NAV, DocsNavGroup } from './nav';
 
 /** `localStorage` key of the saved text direction of the docs application. */

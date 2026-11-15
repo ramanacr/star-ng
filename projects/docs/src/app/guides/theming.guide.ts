@@ -112,7 +112,7 @@ const names = (prefix: string, items: readonly string[]) => items.map((item) => 
       </div>
       <p>
         The full list with the default values is in
-        <code>star-ng/styles/_tokens.scss</code>.
+        <code>@star-ng/ui/styles/_tokens.scss</code>.
       </p>
     </docs-page>
   `,

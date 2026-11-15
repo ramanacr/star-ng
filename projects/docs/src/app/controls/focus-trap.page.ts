@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarButton } from 'star-ng/button';
-import { StarToggleSwitch } from 'star-ng/toggle-switch';
-import { StarFocusTrap } from 'star-ng/utility';
+import { StarButton } from '@star-ng/ui/button';
+import { StarToggleSwitch } from '@star-ng/ui/toggle-switch';
+import { StarFocusTrap } from '@star-ng/ui/utility';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -12,7 +12,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Focus trap"
       lead="A directive that keeps Tab and Shift+Tab inside an element. It builds on the CDK focus trap. star-dialog and star-drawer already trap focus: use this for a custom overlay."
-      importFrom="import { StarFocusTrap } from 'star-ng/utility';"
+      importFrom="import { StarFocusTrap } from '@star-ng/ui/utility';"
     >
       <docs-example
         heading="Trap Tab in a row"

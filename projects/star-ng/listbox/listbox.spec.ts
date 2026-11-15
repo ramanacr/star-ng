@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { StarAutoComplete } from 'star-ng/autocomplete';
+import { StarAutoComplete } from '@star-ng/ui/autocomplete';
 import { StarListbox } from './listbox';
 
 interface Site {

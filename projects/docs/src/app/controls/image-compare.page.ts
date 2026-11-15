@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarImageCompare } from 'star-ng/utility';
+import { StarImageCompare } from '@star-ng/ui/utility';
 import { DOCS, DocsRow } from '../shared/docs';
 
 /** An inline SVG as a data URL: the docs ship no image files and load nothing from the network. */
@@ -27,7 +27,7 @@ const AFTER = svg(
     <docs-page
       heading="Image compare"
       lead="Two images on top of each other with a divider that the user moves. The divider is a native range input, so the arrow keys, Home and End work and a screen reader announces the position."
-      importFrom="import { StarImageCompare } from 'star-ng/utility';"
+      importFrom="import { StarImageCompare } from '@star-ng/ui/utility';"
     >
       <docs-example
         heading="Before and after"

@@ -7,7 +7,7 @@ import {
   input,
   model,
 } from '@angular/core';
-import { STAR_UI_TEXT } from 'star-ng/core';
+import { STAR_UI_TEXT } from '@star-ng/ui/core';
 
 /**
  * Panel (PrimeNG `p-panel`): titled box with header actions and an optional collapse toggle.

@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { StarBlockUi, StarMeterGroup, StarSpeedDial, StarSplitter } from 'star-ng/utility';
+import { StarBlockUi, StarMeterGroup, StarSpeedDial, StarSplitter } from '@star-ng/ui/utility';
 
 function key(target: Element, key: string, init: KeyboardEventInit = {}): void {
   target.dispatchEvent(

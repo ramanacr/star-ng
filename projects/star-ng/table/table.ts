@@ -24,8 +24,8 @@ import {
   untracked,
   viewChild,
 } from '@angular/core';
-import { StarButton } from 'star-ng/button';
-import { StarCheckbox } from 'star-ng/checkbox';
+import { StarButton } from '@star-ng/ui/button';
+import { StarCheckbox } from '@star-ng/ui/checkbox';
 import {
   compareValues,
   matchesFilter,
@@ -33,11 +33,11 @@ import {
   STAR_UI_TEXT,
   starIsRtl,
   StarOptionKey,
-} from 'star-ng/core';
-import { StarPaginator } from 'star-ng/paginator';
-import { StarPopover } from 'star-ng/popover';
-import { StarMultiSelect } from 'star-ng/select';
-import { StarSkeleton } from 'star-ng/skeleton';
+} from '@star-ng/ui/core';
+import { StarPaginator } from '@star-ng/ui/paginator';
+import { StarPopover } from '@star-ng/ui/popover';
+import { StarMultiSelect } from '@star-ng/ui/select';
+import { StarSkeleton } from '@star-ng/ui/skeleton';
 import { buildPrintDocument, buildXlsx, fitPrintDocument, StarExportCell } from './table-export';
 import {
   anchorOf,

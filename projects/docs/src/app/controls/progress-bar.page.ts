@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarButton } from 'star-ng/button';
-import { StarProgressBar } from 'star-ng/progress-bar';
+import { StarButton } from '@star-ng/ui/button';
+import { StarProgressBar } from '@star-ng/ui/progress-bar';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -11,7 +11,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Progress bar"
       lead="A bar that shows how far a task has come, or that a task is running when the end is not known. The PrimeNG equivalent is p-progressbar."
-      importFrom="import { StarProgressBar } from 'star-ng/progress-bar';"
+      importFrom="import { StarProgressBar } from '@star-ng/ui/progress-bar';"
     >
       <docs-example
         heading="Determinate"

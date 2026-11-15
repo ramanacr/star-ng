@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { form, FormField, minLength } from '@angular/forms/signals';
-import { StarField } from 'star-ng/field';
-import { StarTreeNode, StarTreeSelect } from 'star-ng/tree';
+import { StarField } from '@star-ng/ui/field';
+import { StarTreeNode, StarTreeSelect } from '@star-ng/ui/tree';
 import { DOCS, DocsRow } from '../shared/docs';
 import { buildLargeTree } from './large-tree';
 
@@ -13,7 +13,7 @@ import { buildLargeTree } from './large-tree';
     <docs-page
       heading="Tree select"
       lead="A select field whose panel is a tree. It chooses one node, several nodes, or the leaves of checked branches. The value is the array of selected node keys."
-      importFrom="import { StarTreeSelect } from 'star-ng/tree';"
+      importFrom="import { StarTreeSelect } from '@star-ng/ui/tree';"
     >
       <docs-example
         heading="Single node"

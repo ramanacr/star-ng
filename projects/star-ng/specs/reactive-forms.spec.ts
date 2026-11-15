@@ -3,12 +3,12 @@ import { TestBed } from '@angular/core/testing';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { disabled, FormField, required } from '@angular/forms/signals';
 import { SignalFormControl } from '@angular/forms/signals/compat';
-import { StarCheckbox } from 'star-ng/checkbox';
-import { syncSignalFormControls } from 'star-ng/core';
-import { StarDatePicker } from 'star-ng/date-picker';
-import { StarField, StarInput } from 'star-ng/field';
-import { StarInputNumber } from 'star-ng/input-number';
-import { StarMultiSelect, StarSelect } from 'star-ng/select';
+import { StarCheckbox } from '@star-ng/ui/checkbox';
+import { syncSignalFormControls } from '@star-ng/ui/core';
+import { StarDatePicker } from '@star-ng/ui/date-picker';
+import { StarField, StarInput } from '@star-ng/ui/field';
+import { StarInputNumber } from '@star-ng/ui/input-number';
+import { StarMultiSelect, StarSelect } from '@star-ng/ui/select';
 
 /**
  * Reactive Forms interop: StarNG controls inside a classic `FormGroup`, through Angular's

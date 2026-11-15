@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { StarRipple } from 'star-ng/utility';
+import { StarRipple } from '@star-ng/ui/utility';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -10,7 +10,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Ripple"
       lead="A directive that draws a short ink circle from the point of a press. It is decoration only: it adds no element that a screen reader reads, and it does nothing when the user asks for reduced motion."
-      importFrom="import { StarRipple } from 'star-ng/utility';"
+      importFrom="import { StarRipple } from '@star-ng/ui/utility';"
     >
       <docs-example
         heading="On buttons"

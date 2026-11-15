@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { StarAnimateOnScroll } from 'star-ng/utility';
+import { StarAnimateOnScroll } from '@star-ng/ui/utility';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -10,7 +10,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Animate on scroll"
       lead="A directive that fades an element in and moves it up the first time it comes into view. The content is visible at once when the user asks for reduced motion or the browser has no IntersectionObserver."
-      importFrom="import { StarAnimateOnScroll } from 'star-ng/utility';"
+      importFrom="import { StarAnimateOnScroll } from '@star-ng/ui/utility';"
     >
       <docs-example
         heading="Reveal while scrolling"

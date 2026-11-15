@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { StarAccordion, StarAccordionPanel } from 'star-ng/accordion';
-import { StarFieldset, StarPanel } from 'star-ng/panel';
+import { StarAccordion, StarAccordionPanel } from '@star-ng/ui/accordion';
+import { StarFieldset, StarPanel } from '@star-ng/ui/panel';
 
 function key(target: Element, key: string): void {
   target.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));

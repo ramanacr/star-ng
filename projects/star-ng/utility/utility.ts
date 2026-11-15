@@ -14,9 +14,9 @@ import {
   output,
   signal,
 } from '@angular/core';
-import { STAR_UI_TEXT, starIsRtl } from 'star-ng/core';
-import { StarMenuItem } from 'star-ng/menu';
-import { StarSpinner } from 'star-ng/spinner';
+import { STAR_UI_TEXT, starIsRtl } from '@star-ng/ui/core';
+import { StarMenuItem } from '@star-ng/ui/menu';
+import { StarSpinner } from '@star-ng/ui/spinner';
 
 // ---------------------------------------------------------------- Splitter
 

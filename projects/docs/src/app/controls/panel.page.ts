@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarButton } from 'star-ng/button';
-import { StarField, StarInput } from 'star-ng/field';
-import { StarFieldset, StarPanel } from 'star-ng/panel';
+import { StarButton } from '@star-ng/ui/button';
+import { StarField, StarInput } from '@star-ng/ui/field';
+import { StarFieldset, StarPanel } from '@star-ng/ui/panel';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -12,7 +12,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Panel and fieldset"
       lead="A panel is a titled box with header actions and an optional collapse button. A fieldset groups form controls on the native fieldset element. The PrimeNG equivalents are p-panel and p-fieldset."
-      importFrom="import { StarPanel, StarFieldset } from 'star-ng/panel';"
+      importFrom="import { StarPanel, StarFieldset } from '@star-ng/ui/panel';"
     >
       <docs-example
         heading="Panel with actions"

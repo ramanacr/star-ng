@@ -13,9 +13,15 @@ import {
   signal,
   TemplateRef,
 } from '@angular/core';
-import { optionText, readOption, STAR_UI_TEXT, starInlineKey, StarOptionKey } from 'star-ng/core';
-import { StarPaginator } from 'star-ng/paginator';
-import { StarTreeNode } from 'star-ng/tree';
+import {
+  optionText,
+  readOption,
+  STAR_UI_TEXT,
+  starInlineKey,
+  StarOptionKey,
+} from '@star-ng/ui/core';
+import { StarPaginator } from '@star-ng/ui/paginator';
+import { StarTreeNode } from '@star-ng/ui/tree';
 
 // ---------------------------------------------------------------- Tree table
 

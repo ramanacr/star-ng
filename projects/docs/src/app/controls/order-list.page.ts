@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
-import { StarOrderList } from 'star-ng/data-display';
+import { StarOrderList } from '@star-ng/ui/data-display';
 import { DOCS, DocsRow } from '../shared/docs';
 
 interface Task {
@@ -15,7 +15,7 @@ interface Task {
     <docs-page
       heading="Order list"
       lead="A list that the user reorders with four buttons or with Alt and the arrow keys. The moved item keeps the focus and a live region announces its new position. The PrimeNG equivalent is p-orderlist."
-      importFrom="import { StarOrderList } from 'star-ng/data-display';"
+      importFrom="import { StarOrderList } from '@star-ng/ui/data-display';"
     >
       <docs-example
         heading="Reorder text items"

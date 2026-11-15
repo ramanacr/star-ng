@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { StarBadge } from 'star-ng/badge';
+import { StarBadge } from '@star-ng/ui/badge';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -10,7 +10,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Badge"
       lead="A count or a dot. Without a value it renders a dot."
-      importFrom="import { StarBadge } from 'star-ng/badge';"
+      importFrom="import { StarBadge } from '@star-ng/ui/badge';"
     >
       <docs-example
         heading="Counts"

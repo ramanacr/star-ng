@@ -14,8 +14,8 @@ import {
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
 import { DomSanitizer } from '@angular/platform-browser';
-import { STAR_UI_TEXT, StarUiText } from 'star-ng/core';
-import { StarToolbar } from 'star-ng/layout';
+import { STAR_UI_TEXT, StarUiText } from '@star-ng/ui/core';
+import { StarToolbar } from '@star-ng/ui/layout';
 
 interface EditorCommand {
   readonly command: string;

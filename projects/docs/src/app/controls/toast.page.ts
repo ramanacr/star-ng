@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { StarButton } from 'star-ng/button';
-import { StarToast, StarToastService } from 'star-ng/toast';
+import { StarButton } from '@star-ng/ui/button';
+import { StarToast, StarToastService } from '@star-ng/ui/toast';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -11,7 +11,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Toast"
       lead="A short message that appears at the edge of the window and closes by itself (PrimeNG MessageService with p-toast). Code shows a message with StarToastService. One star-toast in the app shell shows the messages."
-      importFrom="import { StarToast, StarToastService } from 'star-ng/toast';"
+      importFrom="import { StarToast, StarToastService } from '@star-ng/ui/toast';"
     >
       <docs-example
         heading="Severities"

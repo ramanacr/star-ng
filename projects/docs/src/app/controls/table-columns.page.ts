@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarButton } from 'star-ng/button';
-import { StarColumn, StarTable } from 'star-ng/table';
+import { StarButton } from '@star-ng/ui/button';
+import { StarColumn, StarTable } from '@star-ng/ui/table';
 import { DOCS, DocsRow } from '../shared/docs';
 import { DocsFill, formatDay, formatMoney, Order, ORDERS } from './table-demo';
 
@@ -12,7 +12,7 @@ import { DocsFill, formatDay, formatMoney, Order, ORDERS } from './table-demo';
     <docs-page
       heading="Table columns"
       lead="Let the user hide, move and resize columns, keep columns in view while the table scrolls sideways, and keep the view for the next visit."
-      importFrom="import { StarTable, StarColumn } from 'star-ng/table';"
+      importFrom="import { StarTable, StarColumn } from '@star-ng/ui/table';"
     >
       <docs-example
         heading="Hide and move columns"

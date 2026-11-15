@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarPickList } from 'star-ng/data-display';
+import { StarPickList } from '@star-ng/ui/data-display';
 import { DOCS, DocsRow } from '../shared/docs';
 
 interface Member {
@@ -15,7 +15,7 @@ interface Member {
     <docs-page
       heading="Pick list"
       lead="Two lists with buttons that move items from one to the other. Double-click or Enter moves one item. The PrimeNG equivalent is p-picklist."
-      importFrom="import { StarPickList } from 'star-ng/data-display';"
+      importFrom="import { StarPickList } from '@star-ng/ui/data-display';"
     >
       <docs-example
         heading="Move text items"

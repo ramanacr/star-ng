@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { StarThemeService } from 'star-ng/theme';
-import { StarThemeSwitch } from 'star-ng/theme-switch';
+import { StarThemeService } from '@star-ng/ui/theme';
+import { StarThemeSwitch } from '@star-ng/ui/theme-switch';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -11,7 +11,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Theme switch"
       lead="A small speed dial with System, Light and Dark. The button shows the icon of the current choice and is named, for example, Theme: Dark. It uses StarThemeService, which applies and saves the choice."
-      importFrom="import { StarThemeSwitch } from 'star-ng/theme-switch';"
+      importFrom="import { StarThemeSwitch } from '@star-ng/ui/theme-switch';"
     >
       <docs-example
         heading="Theme switch"
@@ -36,9 +36,9 @@ import { DOCS, DocsRow } from '../shared/docs';
       <docs-api [of]="['StarThemeSwitch']" [cssVars]="cssVars" [keyboard]="keyboard" />
       <p>
         The control is a <code>star-speed-dial</code>. See the speed dial page for its CSS variables
-        and keys. The package entry point <code>star-ng/theme-switch</code> imports
-        <code>star-ng/theme</code> and <code>star-ng/utility</code>; the entry point
-        <code>star-ng/theme</code> stays free of them.
+        and keys. The package entry point <code>@star-ng/ui/theme-switch</code> imports
+        <code>@star-ng/ui/theme</code> and <code>@star-ng/ui/utility</code>; the entry point
+        <code>@star-ng/ui/theme</code> stays free of them.
       </p>
     </docs-page>
   `,

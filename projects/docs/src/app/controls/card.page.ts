@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { StarButton } from 'star-ng/button';
-import { StarCard } from 'star-ng/card';
+import { StarButton } from '@star-ng/ui/button';
+import { StarCard } from '@star-ng/ui/card';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -11,7 +11,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Card"
       lead="A content surface with a title, a subtitle, header actions, a body and a footer. The PrimeNG equivalent is p-card."
-      importFrom="import { StarCard } from 'star-ng/card';"
+      importFrom="import { StarCard } from '@star-ng/ui/card';"
     >
       <docs-example heading="Title, actions and footer" source="card/basic">
         <div class="docs-stack">

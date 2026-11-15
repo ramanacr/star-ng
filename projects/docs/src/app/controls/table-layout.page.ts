@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarButton } from 'star-ng/button';
-import { StarColumn, StarRowExpansionTemplate, StarTable } from 'star-ng/table';
-import { StarToggleSwitch } from 'star-ng/toggle-switch';
+import { StarButton } from '@star-ng/ui/button';
+import { StarColumn, StarRowExpansionTemplate, StarTable } from '@star-ng/ui/table';
+import { StarToggleSwitch } from '@star-ng/ui/toggle-switch';
 import { DOCS, DocsRow } from '../shared/docs';
 import { DocsFill, formatMoney, Order, orderColumns, ORDERS } from './table-demo';
 
@@ -63,7 +63,7 @@ const LOG: readonly LogEntry[] = Array.from({ length: 5000 }, (_, i) => ({
     <docs-page
       heading="Table layout"
       lead="Show more than one line of data per row: row detail, row groups and a footer. Fit the table to a phone with the stacked layout, and render thousands of rows with virtual scroll."
-      importFrom="import { StarTable, StarRowExpansionTemplate } from 'star-ng/table';"
+      importFrom="import { StarTable, StarRowExpansionTemplate } from '@star-ng/ui/table';"
     >
       <docs-example
         heading="Row expansion"

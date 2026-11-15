@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarButton } from 'star-ng/button';
+import { StarButton } from '@star-ng/ui/button';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -10,7 +10,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Button"
       lead="The call to action. One component for every variant, size and state."
-      importFrom="import { StarButton } from 'star-ng/button';"
+      importFrom="import { StarButton } from '@star-ng/ui/button';"
     >
       <docs-example heading="Variants" source="button/variants">
         <star-button variant="primary">Save</star-button>

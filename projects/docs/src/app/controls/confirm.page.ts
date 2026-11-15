@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { StarButton } from 'star-ng/button';
-import { StarConfirmService } from 'star-ng/dialog';
+import { StarButton } from '@star-ng/ui/button';
+import { StarConfirmService } from '@star-ng/ui/dialog';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -11,7 +11,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Confirm"
       lead="A question that the user answers with accept or reject. StarConfirmService.ask returns a promise: true for accept, false for reject, Escape, the close button or a click outside. One star-confirm-host in the app shell shows the question."
-      importFrom="import { StarConfirmHost, StarConfirmService } from 'star-ng/dialog';"
+      importFrom="import { StarConfirmHost, StarConfirmService } from '@star-ng/ui/dialog';"
     >
       <docs-example
         heading="Confirm dialog"
@@ -219,7 +219,7 @@ async archive(event: MouseEvent): Promise<void> {
     { name: 'options.icon', description: 'Phosphor icon class shown next to the message.' },
     {
       name: 'options.acceptLabel, options.rejectLabel',
-      description: 'Button texts. The defaults come from the star-ng text provider.',
+      description: 'Button texts. The defaults come from the @star-ng/ui text provider.',
     },
     {
       name: 'options.acceptVariant',

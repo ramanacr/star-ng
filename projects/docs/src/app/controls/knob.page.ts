@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarKnob } from 'star-ng/knob';
+import { StarKnob } from '@star-ng/ui/knob';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -10,7 +10,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Knob"
       lead="A circular dial for a number. It has the slider role: drag around the dial or use the keyboard."
-      importFrom="import { StarKnob } from 'star-ng/knob';"
+      importFrom="import { StarKnob } from '@star-ng/ui/knob';"
     >
       <docs-example heading="Basic" source="knob/basic">
         <star-knob [(value)]="progress" valueTemplate="{value}%" ariaLabel="Progress" />

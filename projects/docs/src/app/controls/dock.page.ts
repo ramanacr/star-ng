@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarMenuItem } from 'star-ng/menu';
-import { StarDock } from 'star-ng/utility';
+import { StarMenuItem } from '@star-ng/ui/menu';
+import { StarDock } from '@star-ng/ui/utility';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -11,7 +11,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Dock"
       lead="A bar of shortcuts. An item grows when the pointer or the keyboard focus is on it, and its neighbours grow a little. Each item is a button with an accessible name. The bar uses the glass tokens."
-      importFrom="import { StarDock } from 'star-ng/utility';"
+      importFrom="import { StarDock } from '@star-ng/ui/utility';"
     >
       <docs-example
         heading="Bottom dock"

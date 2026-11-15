@@ -1,7 +1,12 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarButton } from 'star-ng/button';
-import { StarCellTemplate, StarColumn, StarRowExpansionTemplate, StarTable } from 'star-ng/table';
-import { StarTag } from 'star-ng/tag';
+import { StarButton } from '@star-ng/ui/button';
+import {
+  StarCellTemplate,
+  StarColumn,
+  StarRowExpansionTemplate,
+  StarTable,
+} from '@star-ng/ui/table';
+import { StarTag } from '@star-ng/ui/tag';
 import { DOCS, DocsRow } from '../shared/docs';
 import {
   DocsFill,
@@ -31,7 +36,7 @@ import {
     <docs-page
       heading="Table"
       lead="A data table with typed columns. It has custom cell templates, sorting, filters, paging, selection, row expansion, inline edit, column tools, virtual scroll, row groups, export and a stacked layout for phones. The PrimeNG equivalent is p-table. This page covers the basics and the full API; the pages of the Table group cover each feature."
-      importFrom="import { StarTable, StarCellTemplate, StarRowExpansionTemplate } from 'star-ng/table';"
+      importFrom="import { StarTable, StarCellTemplate, StarRowExpansionTemplate } from '@star-ng/ui/table';"
     >
       <docs-example
         heading="Columns and rows"

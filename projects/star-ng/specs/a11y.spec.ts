@@ -1,17 +1,17 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { StarAvatar } from 'star-ng/avatar';
-import { StarPickList } from 'star-ng/data-display';
-import { StarDatePicker } from 'star-ng/date-picker';
-import { StarField } from 'star-ng/field';
-import { StarFileUpload } from 'star-ng/file-upload';
-import { StarInputTags } from 'star-ng/input-tags';
-import { StarListbox } from 'star-ng/listbox';
-import { StarCarousel, StarCarouselItem } from 'star-ng/media';
-import { StarCascadeSelect, StarSelect } from 'star-ng/select';
-import { StarTable } from 'star-ng/table';
-import { StarTreeNode, StarTreeSelect } from 'star-ng/tree';
-import { StarInplace, StarInplaceContent, StarInplaceDisplay } from 'star-ng/utility';
+import { StarAvatar } from '@star-ng/ui/avatar';
+import { StarPickList } from '@star-ng/ui/data-display';
+import { StarDatePicker } from '@star-ng/ui/date-picker';
+import { StarField } from '@star-ng/ui/field';
+import { StarFileUpload } from '@star-ng/ui/file-upload';
+import { StarInputTags } from '@star-ng/ui/input-tags';
+import { StarListbox } from '@star-ng/ui/listbox';
+import { StarCarousel, StarCarouselItem } from '@star-ng/ui/media';
+import { StarCascadeSelect, StarSelect } from '@star-ng/ui/select';
+import { StarTable } from '@star-ng/ui/table';
+import { StarTreeNode, StarTreeSelect } from '@star-ng/ui/tree';
+import { StarInplace, StarInplaceContent, StarInplaceDisplay } from '@star-ng/ui/utility';
 
 /**
  * Accessible structure that the axe scan (`e2e/a11y.spec.ts`) found wrong and that is fixed in the

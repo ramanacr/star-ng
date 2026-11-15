@@ -17,8 +17,8 @@ import {
   STAR_UI_TEXT,
   StarDirectionService,
   StarOptionKey,
-} from 'star-ng/core';
-import { STAR_MENU_POSITIONS, StarMenu, StarMenuInDialog, StarMenuItem } from 'star-ng/menu';
+} from '@star-ng/ui/core';
+import { STAR_MENU_POSITIONS, StarMenu, StarMenuInDialog, StarMenuItem } from '@star-ng/ui/menu';
 
 interface Leaf<TOption, TValue> {
   readonly option: TOption;

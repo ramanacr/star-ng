@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { StarDialog } from 'star-ng/dialog';
+import { StarDialog } from '@star-ng/ui/dialog';
 
 /**
  * Drawer (PrimeNG `p-drawer`): side sheet on the native `<dialog>` element. Same API as

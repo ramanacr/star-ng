@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarAccordion, StarAccordionContent, StarAccordionPanel } from 'star-ng/accordion';
+import { StarAccordion, StarAccordionContent, StarAccordionPanel } from '@star-ng/ui/accordion';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -10,7 +10,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Accordion"
       lead="A stack of sections. The header of a section is a button that opens or closes its body. The PrimeNG equivalent is p-accordion."
-      importFrom="import { StarAccordion, StarAccordionPanel } from 'star-ng/accordion';"
+      importFrom="import { StarAccordion, StarAccordionPanel } from '@star-ng/ui/accordion';"
     >
       <docs-example
         heading="One section at a time"

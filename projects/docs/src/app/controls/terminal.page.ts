@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarButton } from 'star-ng/button';
-import { StarTerminal } from 'star-ng/utility';
+import { StarButton } from '@star-ng/ui/button';
+import { StarTerminal } from '@star-ng/ui/utility';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -11,7 +11,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Terminal"
       lead="A text command line. The user types a command and the handler returns the text to print. Arrow up and down recall earlier commands. The log is a live region, so a screen reader announces each response. The control is always dark, in both themes."
-      importFrom="import { StarTerminal, StarTerminalHandler } from 'star-ng/utility';"
+      importFrom="import { StarTerminal, StarTerminalHandler } from '@star-ng/ui/utility';"
     >
       <docs-example
         heading="Command handler"

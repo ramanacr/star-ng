@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarButton } from 'star-ng/button';
-import { StarField, StarInput } from 'star-ng/field';
-import { StarStep, StarStepper } from 'star-ng/stepper';
+import { StarButton } from '@star-ng/ui/button';
+import { StarField, StarInput } from '@star-ng/ui/field';
+import { StarStep, StarStepper } from '@star-ng/ui/stepper';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -12,7 +12,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Stepper"
       lead="A row of numbered steps for a wizard. Each step is done, current or upcoming. The PrimeNG equivalent is p-stepper."
-      importFrom="import { StarStepper, StarStep } from 'star-ng/stepper';"
+      importFrom="import { StarStepper, StarStep } from '@star-ng/ui/stepper';"
     >
       <docs-example
         heading="Free navigation"

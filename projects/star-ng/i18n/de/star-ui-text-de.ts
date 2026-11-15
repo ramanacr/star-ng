@@ -1,4 +1,4 @@
-import type { StarUiText } from 'star-ng/core';
+import type { StarUiText } from '@star-ng/ui/core';
 
 const plural = new Intl.PluralRules('de');
 

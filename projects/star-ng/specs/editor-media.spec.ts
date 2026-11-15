@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { StarEditor } from 'star-ng/editor';
-import { StarGalleria } from 'star-ng/media';
+import { StarEditor } from '@star-ng/ui/editor';
+import { StarGalleria } from '@star-ng/ui/media';
 
 @Component({
   imports: [StarEditor, StarGalleria],

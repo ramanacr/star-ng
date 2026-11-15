@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { StarOrderList, StarPickList, StarTreeTable } from 'star-ng/data-display';
+import { StarOrderList, StarPickList, StarTreeTable } from '@star-ng/ui/data-display';
 
 function key(target: Element, key: string, init: KeyboardEventInit = {}): void {
   target.dispatchEvent(

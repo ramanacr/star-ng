@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarEditor } from 'star-ng/editor';
+import { StarEditor } from '@star-ng/ui/editor';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -10,7 +10,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Editor"
       lead="A rich text field: an editable area with a formatting toolbar. The value is an HTML string."
-      importFrom="import { StarEditor } from 'star-ng/editor';"
+      importFrom="import { StarEditor } from '@star-ng/ui/editor';"
     >
       <docs-example
         heading="Toolbar and value"

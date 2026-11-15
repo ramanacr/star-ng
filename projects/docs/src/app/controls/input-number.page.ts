@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarField } from 'star-ng/field';
-import { StarInputNumber } from 'star-ng/input-number';
+import { StarField } from '@star-ng/ui/field';
+import { StarInputNumber } from '@star-ng/ui/input-number';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -11,7 +11,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     <docs-page
       heading="Input number"
       lead="A number field that formats with the browser Intl API: decimal, currency, percent and unit. It parses what the user types in the same locale."
-      importFrom="import { StarInputNumber } from 'star-ng/input-number';"
+      importFrom="import { StarInputNumber } from '@star-ng/ui/input-number';"
     >
       <docs-example heading="Decimal with buttons" source="input-number/basic">
         <div class="docs-stack">

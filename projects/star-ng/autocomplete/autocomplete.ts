@@ -19,8 +19,8 @@ import {
   viewChild,
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
-import { matchesFilter } from 'star-ng/core';
-import { StarOptionListBase } from 'star-ng/select';
+import { matchesFilter } from '@star-ng/ui/core';
+import { StarOptionListBase } from '@star-ng/ui/select';
 
 export interface StarAutoCompleteSearch {
   readonly query: string;

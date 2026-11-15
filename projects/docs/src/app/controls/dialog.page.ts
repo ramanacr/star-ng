@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { StarButton } from 'star-ng/button';
-import { StarDialog, StarDialogService, StarDialogSize } from 'star-ng/dialog';
-import { StarField, StarInput } from 'star-ng/field';
-import { StarContextMenu, StarMenu, StarMenuItem, StarMenuTrigger } from 'star-ng/menu';
-import { StarCascadeSelect } from 'star-ng/select';
+import { StarButton } from '@star-ng/ui/button';
+import { StarDialog, StarDialogService, StarDialogSize } from '@star-ng/ui/dialog';
+import { StarField, StarInput } from '@star-ng/ui/field';
+import { StarContextMenu, StarMenu, StarMenuItem, StarMenuTrigger } from '@star-ng/ui/menu';
+import { StarCascadeSelect } from '@star-ng/ui/select';
 import { DOCS, DocsRow } from '../shared/docs';
 import { EditNoteData, EditNoteDialog } from './edit-note-dialog';
 
@@ -33,7 +33,7 @@ const SIZES: readonly StarDialogSize[] = ['sm', 'md', 'lg', 'xl', 'full'];
     <docs-page
       heading="Dialog"
       lead="A window above the page, built on the native dialog element. The browser gives the top layer, the focus trap, Escape and the return of the focus. A modal dialog makes the rest of the page inert."
-      importFrom="import { StarDialog, StarDialogService } from 'star-ng/dialog';"
+      importFrom="import { StarDialog, StarDialogService } from '@star-ng/ui/dialog';"
     >
       <docs-example
         heading="Header and footer"
@@ -230,8 +230,8 @@ const SIZES: readonly StarDialogSize[] = ['sm', 'md', 'lg', 'xl', 'full'];
         takes no click and no key, and a popup that the Angular CDK puts in its overlay container is
         outside the dialog. The popover, tooltip and toast of StarNG use the top layer, so they stay
         above a dialog. A menu trigger, a context menu and a menu bar inside a dialog use
-        <code>keepMenuInsideDialog</code> from <code>star-ng/menu</code>, which moves the menu popup
-        into the dialog. A select inside a dialog also opens its panel in the top layer.
+        <code>keepMenuInsideDialog</code> from <code>@star-ng/ui/menu</code>, which moves the menu
+        popup into the dialog. A select inside a dialog also opens its panel in the top layer.
       </p>
       <p>
         Page scroll locks while a modal dialog is open (the CSS rule

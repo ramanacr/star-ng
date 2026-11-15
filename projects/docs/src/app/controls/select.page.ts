@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { form, FormField, required } from '@angular/forms/signals';
-import { StarField } from 'star-ng/field';
-import { StarOptionTemplate, StarSelect } from 'star-ng/select';
+import { StarField } from '@star-ng/ui/field';
+import { StarOptionTemplate, StarSelect } from '@star-ng/ui/select';
 import { DOCS, DocsRow } from '../shared/docs';
 
 interface Country {
@@ -19,7 +19,7 @@ interface Country {
     <docs-page
       heading="Select"
       lead="A dropdown for one choice. It is a select-only combobox (WAI-ARIA) with a listbox panel: typed options, filter, groups, option templates, a clear button, a loading state and virtual scroll for long lists."
-      importFrom="import { StarSelect, StarOptionTemplate } from 'star-ng/select';"
+      importFrom="import { StarSelect, StarOptionTemplate } from '@star-ng/ui/select';"
     >
       <docs-example
         heading="Objects as options"

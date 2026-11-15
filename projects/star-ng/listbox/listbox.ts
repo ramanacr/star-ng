@@ -23,8 +23,14 @@ import {
   viewChild,
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
-import { matchesFilter, optionText, readOption, STAR_UI_TEXT, StarOptionKey } from 'star-ng/core';
-import { StarOptionTemplate } from 'star-ng/select';
+import {
+  matchesFilter,
+  optionText,
+  readOption,
+  STAR_UI_TEXT,
+  StarOptionKey,
+} from '@star-ng/ui/core';
+import { StarOptionTemplate } from '@star-ng/ui/select';
 import {
   ariaPosition,
   buildLayout,

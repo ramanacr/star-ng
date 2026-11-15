@@ -1,8 +1,13 @@
 import { inject, Provider } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { TranslocoService } from '@jsverse/transloco';
+import {
+  STAR_UI_TEXT,
+  STAR_UI_TEXT_DEFAULTS,
+  STAR_UI_TEXT_PARAMS,
+  StarUiText,
+} from '@star-ng/ui/core';
 import { map, merge } from 'rxjs';
-import { STAR_UI_TEXT, STAR_UI_TEXT_DEFAULTS, STAR_UI_TEXT_PARAMS, StarUiText } from 'star-ng/core';
 
 /**
  * Reads the control texts from Transloco: key `<prefix>.<name>` (default `ui.close`, `ui.page`…),

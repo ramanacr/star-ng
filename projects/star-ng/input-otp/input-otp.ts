@@ -11,7 +11,7 @@ import {
   viewChildren,
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
-import { STAR_UI_TEXT, starInlineKey } from 'star-ng/core';
+import { STAR_UI_TEXT, starInlineKey } from '@star-ng/ui/core';
 
 /**
  * One-time code field (PrimeNG `p-inputotp`): one box per character, auto-advance, Backspace

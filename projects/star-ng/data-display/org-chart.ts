@@ -10,7 +10,7 @@ import {
   output,
   TemplateRef,
 } from '@angular/core';
-import { STAR_UI_TEXT } from 'star-ng/core';
+import { STAR_UI_TEXT } from '@star-ng/ui/core';
 
 export interface StarOrgNode<T = unknown> {
   /** Unique id of the node in the chart. */
