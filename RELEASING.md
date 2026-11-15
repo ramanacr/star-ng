@@ -85,8 +85,9 @@ trusted publisher only to a package that already exists.
 4. Watch the workflow: Actions, "Release" (or `gh run watch`). The job `verify and pack` runs
    lint, unit tests, the library build, the package check, `npm pack` and the consumer smoke
    test (a real Angular application installs the tarball and builds). The job
-   `publish to npm` runs next and publishes the tarball, then installs the published version
-   in an empty project and runs `npm audit signatures`.
+   `publish to npm` runs next and only publishes the tarball. The job
+   `verify published package` runs last. It waits until the registry shows the new version
+   (up to 15 minutes), installs it in an empty project and runs `npm audit signatures`.
 5. Check the result:
    - Open <https://www.npmjs.com/package/@star-ng/ui>. The page shows the version and the
      "Provenance" badge.
@@ -123,6 +124,23 @@ corepack pnpm smoke:consumer
 
 `check:package` also runs in CI on every pull request.
 
+## When `verify published package` is red
+
+The job `publish to npm` shows only if the publish worked. If it is green, the version is on
+npm. A red `verify published package` does not change that.
+
+1. Open the log. If the message is "Version not in the registry", the registry did not show the
+   version in 15 minutes. This is rare. Run `npm view @star-ng/ui@<version> version` by hand.
+2. If the command prints the version, the registry was only slow. Re-run only the failed job:
+   Actions, open the run, "Re-run failed jobs" (or the "Re-run" button of that job), or
+   `gh run rerun <run-id> --job <job-id>`. The job needs no approval and does not publish.
+3. If the log shows "no verified provenance attestation" or a signature error, check the
+   Trusted Publisher settings on npmjs.com (repository, workflow file name, environment).
+4. If the version never appears, see "When a publish fails" below.
+
+A publish can never be repeated for the same version. Do not re-run the job `publish to npm`
+after it succeeded. It would fail, because npm rejects an existing version.
+
 ## When a publish fails
 
 A version number can never be used again on npm, even after an unpublish. Think before you
@@ -145,9 +163,8 @@ publish.
    Actions. If it is listed, the publish worked. Do not publish it again.
 4. The publish worked, but the package is wrong: publish a new version (for example `0.1.1`).
    Mark the bad version with `npm deprecate @star-ng/ui@0.1.0 "Broken, use 0.1.1"`.
-5. The step `Verify signature and provenance` failed after a good publish: check the
-   Trusted Publisher settings on npmjs.com (repository, workflow file name, environment).
-   The package itself is already published.
+5. The job `verify published package` failed after a good publish: see the next section. The
+   package itself is already published. Never re-run the job `publish to npm`.
 6. Error "OIDC" or "not authorized" in `npm publish`: the trusted publisher on npmjs.com does
    not match this run. The four values must be exactly `ramanacr`, `star-ng`, `release.yml`
    and `npm`. The npm version in the job must be 11.5.1 or later.
