@@ -404,6 +404,10 @@
   display: flex;
   align-items: center;
 }
+// Focus ring on the terminal while its input has keyboard focus.
+.star-terminal:has(.star-terminal__input:focus-visible) {
+  box-shadow: var(--star-focus-ring);
+}
 .star-terminal__input {
   flex: 1;
   min-width: 0;
@@ -414,6 +418,12 @@
   font: inherit;
   caret-color: var(--star-terminal-accent);
   outline: none;
+
+  // The wrapper shows the focus ring. `:focus-visible` is named here so that a global focus
+  // rule of the application (`:focus-visible { outline: … }`) does not draw a second one.
+  &:focus-visible {
+    outline: none;
+  }
 
   &:focus-visible {
     box-shadow: 0 1px 0 var(--star-terminal-accent);

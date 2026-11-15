@@ -50,6 +50,11 @@
   font: var(--star-type-body-lg);
   color: var(--star-text);
   outline: none;
+  // The wrapper shows the focus ring. `:focus-visible` is named here so that a global focus
+  // rule of the application (`:focus-visible { outline: … }`) does not draw a second one.
+  &:focus-visible {
+    outline: none;
+  }
 
   &:empty::before {
     content: attr(data-placeholder);
