@@ -11,6 +11,11 @@ interface Department {
   readonly closed?: boolean;
 }
 
+interface Parcel {
+  readonly id: number;
+  readonly name: string;
+}
+
 @Component({
   selector: 'docs-multi-select-page',
   imports: [DOCS, StarMultiSelect, StarOptionTemplate, StarField, FormField],
@@ -113,6 +118,26 @@ interface Department {
       </docs-example>
 
       <docs-example
+        heading="Large list"
+        source="multi-select/large"
+        [script]="largeScript"
+        note="virtualScroll renders only the lines in view, also with select all. Select all chooses every enabled option, also those that are not in the DOM. Arrow keys, Home, End, Page up, Page down and type-ahead reach all 10,000 options."
+      >
+        <div class="docs-stack">
+          <star-multi-select
+            [options]="parcels"
+            optionLabel="name"
+            optionValue="id"
+            [(value)]="selectedParcels"
+            placeholder="10,000 parcels"
+            ariaLabel="Parcels"
+            virtualScroll
+          />
+          <p class="docs-output" role="status">Parcels: {{ selectedParcels().length }}</p>
+        </div>
+      </docs-example>
+
+      <docs-example
         heading="Signal Forms"
         source="multi-select/form"
         [script]="formScript"
@@ -160,10 +185,16 @@ export class MultiSelectPage {
     { id: 'mkt', name: 'Marketing', site: 'Lisbon', closed: true },
   ];
 
+  protected readonly parcels: readonly Parcel[] = Array.from({ length: 10_000 }, (_, index) => ({
+    id: index + 1,
+    name: `Parcel ${index + 1}`,
+  }));
+
   protected readonly chosen = signal<readonly string[]>([]);
   protected readonly chips = signal<readonly string[]>(['eng', 'ops']);
   protected readonly grouped = signal<readonly string[]>([]);
   protected readonly templated = signal<readonly string[]>([]);
+  protected readonly selectedParcels = signal<readonly number[]>([]);
 
   protected readonly teamModel = signal<{ departments: readonly string[] }>({ departments: [] });
   protected readonly team = form(this.teamModel, (path) => {
@@ -176,6 +207,11 @@ export class MultiSelectPage {
   { id: 'eng', name: 'Engineering', site: 'Pune' },
 ];
 readonly chosen = signal<readonly string[]>([]);`;
+  protected readonly largeScript = `readonly parcels: readonly Parcel[] = Array.from({ length: 10_000 }, (_, index) => ({
+  id: index + 1,
+  name: \`Parcel \${index + 1}\`,
+}));
+readonly selectedParcels = signal<readonly number[]>([]);`;
   protected readonly formScript = `readonly teamModel = signal<{ departments: readonly string[] }>({ departments: [] });
 readonly team = form(this.teamModel, (path) => {
   minLength(path.departments, 2, { message: 'Select at least two departments.' });
@@ -202,10 +238,16 @@ readonly team = form(this.teamModel, (path) => {
       description: 'Moves the active option. Disabled options are skipped.',
     },
     { name: 'Home / End', description: 'Moves to the first or the last enabled option.' },
+    {
+      name: 'Page up / Page down',
+      description:
+        'With virtualScroll: moves the active option by the lines in view, over all options. Disabled options are skipped.',
+    },
     { name: 'Enter / Space', description: 'Toggles the active option. The panel stays open.' },
     {
       name: 'Letter keys',
-      description: 'Typeahead: moves to the option that starts with the typed text.',
+      description:
+        'Typeahead: moves to the option that starts with the typed text. A space in the middle of the typed text belongs to the text.',
     },
     { name: 'Escape', description: 'Closes the panel. The focus returns to the trigger.' },
   ];

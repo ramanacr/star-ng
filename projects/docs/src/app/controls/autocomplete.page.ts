@@ -132,6 +132,25 @@ interface Person {
       </docs-example>
 
       <docs-example
+        heading="Large list"
+        source="autocomplete/large"
+        [script]="largeScript"
+        note="virtualScroll renders only the lines in view. The dropdown button lists all 10,000 options. Arrow keys and Page keys reach options that are not in the DOM. Typing filters the list and shows it from the top."
+      >
+        <div class="docs-stack">
+          <star-autocomplete
+            [options]="tickets"
+            [(value)]="ticket"
+            placeholder="Search 10,000 tickets"
+            ariaLabel="Ticket"
+            virtualScroll
+            dropdown
+          />
+          <p class="docs-output" role="status">Ticket: {{ ticket() ?? 'none' }}</p>
+        </div>
+      </docs-example>
+
+      <docs-example
         heading="Signal Forms"
         source="autocomplete/form"
         [script]="formScript"
@@ -200,10 +219,16 @@ export class AutocompletePage {
     { id: 'p5', name: 'Sven Berg', team: 'Operations' },
   ];
 
+  protected readonly tickets: readonly string[] = Array.from(
+    { length: 10_000 },
+    (_, index) => `Ticket ${String(index + 1).padStart(5, '0')}`,
+  );
+
   protected readonly city = signal<string | null>(null);
   protected readonly dropdownCity = signal<string | null>(null);
   protected readonly person = signal<string | null>(null);
   protected readonly chosen = signal<readonly string[]>([]);
+  protected readonly ticket = signal<string | null>(null);
 
   protected readonly results = signal<readonly Person[]>([]);
   protected readonly searching = signal(false);
@@ -242,6 +267,11 @@ search(event: StarAutoCompleteSearch): void {
     this.searching.set(false);
   }, 400);
 }`;
+  protected readonly largeScript = `readonly tickets: readonly string[] = Array.from(
+  { length: 10_000 },
+  (_, index) => \`Ticket \${String(index + 1).padStart(5, '0')}\`,
+);
+readonly ticket = signal<string | null>(null);`;
   protected readonly formScript = `readonly taskModel = signal<{ assignee: string | null }>({ assignee: null });
 readonly task = form(this.taskModel, (path) => {
   required(path.assignee, { message: 'Choose an assignee.' });
@@ -269,6 +299,11 @@ readonly task = form(this.taskModel, (path) => {
     {
       name: 'Enter',
       description: 'Chooses the active suggestion. With a closed list it does nothing.',
+    },
+    {
+      name: 'Page up / Page down',
+      description:
+        'With virtualScroll: moves the active suggestion by the lines in view, over all suggestions.',
     },
     { name: 'Escape', description: 'Closes the list.' },
     {

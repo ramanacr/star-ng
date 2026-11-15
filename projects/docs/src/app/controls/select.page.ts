@@ -11,6 +11,12 @@ interface Country {
   readonly closed?: boolean;
 }
 
+interface Shipment {
+  readonly id: number;
+  readonly name: string;
+  readonly region: string;
+}
+
 @Component({
   selector: 'docs-select-page',
   imports: [DOCS, StarSelect, StarOptionTemplate, StarField, FormField],
@@ -132,6 +138,28 @@ interface Country {
       </docs-example>
 
       <docs-example
+        heading="Large list with groups"
+        source="select/large"
+        [script]="largeScript"
+        note="virtualScroll also works with optionGroup and filter. Headings are lines of the same height. Arrow keys, Home, End, Page up, Page down and type-ahead reach all 10,000 options, also those that are not in the DOM. The selected option is in view when the panel opens."
+      >
+        <div class="docs-stack">
+          <star-select
+            [options]="shipments"
+            optionLabel="name"
+            optionValue="id"
+            optionGroup="region"
+            [(value)]="shipment"
+            placeholder="10,000 shipments"
+            ariaLabel="Shipment"
+            virtualScroll
+            filter
+          />
+          <p class="docs-output" role="status">Shipment: {{ shipment() ?? 'none' }}</p>
+        </div>
+      </docs-example>
+
+      <docs-example
         heading="Sizes and states"
         source="select/states"
         note="loading shows a spinner in place of the caret. A disabled select takes no focus. A read-only select keeps its value and does not open."
@@ -204,12 +232,22 @@ export class SelectPage {
     (_, index) => `Order ${String(index + 1).padStart(5, '0')}`,
   );
 
+  protected readonly shipments: readonly Shipment[] = Array.from(
+    { length: 10_000 },
+    (_, index) => ({
+      id: index + 1,
+      name: `Shipment ${index + 1}`,
+      region: ['North', 'South', 'East', 'West', 'Central'][Math.floor(index / 2000)],
+    }),
+  );
+
   protected readonly country = signal<string | null>(null);
   protected readonly filtered = signal<string | null>(null);
   protected readonly grouped = signal<string | null>(null);
   protected readonly open = signal<string | null>(null);
   protected readonly templated = signal<string | null>(null);
   protected readonly order = signal<string | null>(null);
+  protected readonly shipment = signal<number | null>(null);
 
   protected readonly officeModel = signal<{ country: string | null }>({ country: null });
   protected readonly office = form(this.officeModel, (path) => {
@@ -231,6 +269,12 @@ readonly countries: readonly Country[] = [
   { length: 5000 },
   (_, index) => \`Order \${String(index + 1).padStart(5, '0')}\`,
 );`;
+  protected readonly largeScript = `readonly shipments: readonly Shipment[] = Array.from({ length: 10_000 }, (_, index) => ({
+  id: index + 1,
+  name: \`Shipment \${index + 1}\`,
+  region: ['North', 'South', 'East', 'West', 'Central'][Math.floor(index / 2000)],
+}));
+readonly shipment = signal<number | null>(null);`;
   protected readonly formScript = `readonly officeModel = signal<{ country: string | null }>({ country: null });
 readonly office = form(this.officeModel, (path) => {
   required(path.country, { message: 'Select a country.' });
@@ -259,12 +303,17 @@ readonly office = form(this.officeModel, (path) => {
       description: 'Moves the active option. Disabled options are skipped.',
     },
     { name: 'Home / End', description: 'Moves to the first or the last enabled option.' },
+    {
+      name: 'Page up / Page down',
+      description:
+        'With virtualScroll: moves the active option by the lines in view, over all options. Disabled options are skipped.',
+    },
     { name: 'Enter / Space', description: 'Chooses the active option and closes the panel.' },
     { name: 'Alt + Arrow up', description: 'Chooses the active option and closes the panel.' },
     {
       name: 'Letter keys',
       description:
-        'Typeahead: moves to the option that starts with the typed text. On a closed select it also chooses it.',
+        'Typeahead: moves to the option that starts with the typed text. On a closed select it also chooses it. A space in the middle of the typed text belongs to the text.',
     },
     { name: 'Escape', description: 'Closes the panel. The focus stays on the trigger.' },
     { name: 'Tab', description: 'Closes the panel and moves the focus on.' },

@@ -1,6 +1,8 @@
 import { _IdGenerator } from '@angular/cdk/a11y';
 import { ConnectedPosition } from '@angular/cdk/overlay';
+import { DOCUMENT } from '@angular/common';
 import {
+  afterNextRender,
   booleanAttribute,
   computed,
   contentChild,
@@ -8,6 +10,7 @@ import {
   Directive,
   ElementRef,
   inject,
+  Injector,
   input,
   output,
   signal,
@@ -20,7 +23,14 @@ import {
   readOption,
   STAR_UI_TEXT,
   StarDirectionService,
+  starListKeyboardTarget,
+  starListLayout,
+  starListPageSize,
+  starListRevealOffset,
+  starListRevealRows,
+  starListRowRendered,
   StarOptionKey,
+  StarWindowRow,
 } from '@star-ng/ui/core';
 
 /** Context of the custom option template: `<ng-template starOption let-option let-selected="selected">`. */
@@ -46,16 +56,7 @@ export class StarOptionTemplate<T = unknown> {
 }
 
 /** One rendered line of the option list: a group heading or an option. */
-export type StarListRow<T> =
-  | { readonly kind: 'group'; readonly key: string; readonly label: string; readonly id: string }
-  | {
-      readonly kind: 'option';
-      readonly key: string;
-      readonly option: T;
-      /** Index in the visible options (keyboard order). */
-      readonly index: number;
-      readonly groupId: string | null;
-    };
+export type StarListRow<T> = StarWindowRow<T>;
 
 /** Lines rendered above and below the lines in view with `virtualScroll`. */
 const VIRTUAL_BUFFER = 6;
@@ -77,6 +78,8 @@ export abstract class StarOptionListBase<TOption, TValue> {
   private readonly directionSync = inject(StarDirectionService);
   protected readonly text = inject(STAR_UI_TEXT);
   private readonly ids = inject(_IdGenerator);
+  private readonly document = inject(DOCUMENT);
+  private readonly injector = inject(Injector);
 
   readonly options = input<readonly TOption[]>([]);
   readonly optionLabel = input<StarOptionKey<TOption> | null>(null);
@@ -92,7 +95,10 @@ export abstract class StarOptionListBase<TOption, TValue> {
   readonly optionGroup = input<StarOptionKey<TOption> | null>(null);
   /**
    * Renders only the lines in view, for long option lists. Every line has the height
-   * `virtualItemSize` and option text stays on one line.
+   * `virtualItemSize` and option text stays on one line. Keys and type-ahead work over all
+   * options, also those that are not in the DOM. Page up and Page down move by the lines in view.
+   * Each option has `aria-setsize` and `aria-posinset` for the whole list, and
+   * `aria-activedescendant` only names an option that is in the DOM.
    */
   readonly virtualScroll = input(false, { transform: booleanAttribute });
   /** Line height in pixels with `virtualScroll`. */
@@ -159,25 +165,17 @@ export abstract class StarOptionListBase<TOption, TValue> {
       .map(({ option }) => option);
   }
 
+  /** Group headings and options in display order, and the row of each option. */
+  protected readonly layout = computed(() =>
+    starListLayout(
+      this.visibleOptions(),
+      this.optionGroup() ? (option) => this.groupOf(option) : null,
+      this.listId,
+    ),
+  );
+
   /** Group headings and options, in display order. */
-  protected readonly rows = computed<readonly StarListRow<TOption>[]>(() => {
-    const grouped = !!this.optionGroup();
-    const rows: StarListRow<TOption>[] = [];
-    let current: string | null = null;
-    let groupId: string | null = null;
-    this.visibleOptions().forEach((option, index) => {
-      if (grouped) {
-        const label = this.groupOf(option);
-        if (label !== current) {
-          current = label;
-          groupId = `${this.listId}-group-${rows.length}`;
-          rows.push({ kind: 'group', key: `g:${label}`, label, id: groupId });
-        }
-      }
-      rows.push({ kind: 'option', key: `o:${index}`, option, index, groupId });
-    });
-    return rows;
-  });
+  protected readonly rows = computed<readonly StarListRow<TOption>[]>(() => this.layout().rows);
 
   private readonly listScrollTop = signal(0);
   private readonly listHeight = signal(0);
@@ -207,9 +205,22 @@ export abstract class StarOptionListBase<TOption, TValue> {
     this.listHeight.set(list.clientHeight);
   }
 
-  protected readonly activeId = computed(() =>
-    this.open() && this.activeIndex() >= 0 ? this.optionId(this.activeIndex()) : null,
-  );
+  /** `aria-activedescendant` only names an option that is in the DOM. */
+  protected readonly activeId = computed(() => {
+    const index = this.activeIndex();
+    if (!this.open() || index < 0) return null;
+    const row = this.layout().rowOfOption[index];
+    return row !== undefined && starListRowRendered(row, this.virtualWindow())
+      ? this.optionId(index)
+      : null;
+  });
+
+  /** The heading of the group, only while its row is in the DOM (the id must exist). */
+  protected describedBy(row: Extract<StarListRow<TOption>, { kind: 'option' }>): string | null {
+    return row.groupId !== null && starListRowRendered(row.groupRow, this.virtualWindow())
+      ? row.groupId
+      : null;
+  }
 
   protected readonly emptyText = computed(() =>
     this.filterValue()
@@ -295,7 +306,21 @@ export abstract class StarOptionListBase<TOption, TValue> {
 
   protected onPanelAttached(): void {
     this.filterInput()?.nativeElement.focus();
+    // The window needs the real list height before the first scroll event.
+    const height = this.listElement()?.clientHeight;
+    if (this.virtualScroll() && height) this.listHeight.set(height);
     this.scrollActiveIntoView();
+    // The panel may attach before its list is drawn: the list is there after the next render.
+    if (this.virtualScroll()) {
+      afterNextRender(
+        () => {
+          const list = this.listElement();
+          if (list?.clientHeight) this.listHeight.set(list.clientHeight);
+          this.scrollActiveIntoView();
+        },
+        { injector: this.injector },
+      );
+    }
   }
 
   protected onOutsideClick(event: MouseEvent): void {
@@ -317,8 +342,19 @@ export abstract class StarOptionListBase<TOption, TValue> {
   protected onFilterInput(value: string): void {
     this.filterValue.set(value);
     this.filterChange.emit(value);
-    this.listScrollTop.set(0);
+    this.resetScroll();
     this.activeIndex.set(this.firstEnabledFrom(0, 1));
+  }
+
+  /**
+   * Shows the list from its top. The window and the scroll position of the element change
+   * together: a new list that is still long would else keep the old position of the element
+   * while the window draws its first lines.
+   */
+  protected resetScroll(): void {
+    this.listScrollTop.set(0);
+    const list = this.listElement();
+    if (list) list.scrollTop = 0;
   }
 
   protected onOptionClick(option: TOption, index: number): void {
@@ -360,6 +396,13 @@ export abstract class StarOptionListBase<TOption, TValue> {
         );
         this.scrollActiveIntoView();
         return;
+      case 'PageDown':
+      case 'PageUp':
+        // Without `virtualScroll` the list is short enough to scroll by arrow keys.
+        if (!open || !this.virtualScroll()) return;
+        event.preventDefault();
+        this.movePage(event.key === 'PageDown' ? 1 : -1);
+        return;
       case 'Enter':
         event.preventDefault();
         if (!open) this.openPanel();
@@ -369,6 +412,11 @@ export abstract class StarOptionListBase<TOption, TValue> {
         // Space types into the filter field.
         if (event.target instanceof HTMLInputElement) return;
         event.preventDefault();
+        // While the user types ahead, Space is part of the text ("Order 5000").
+        if (this.typeahead) {
+          this.runTypeahead(' ');
+          return;
+        }
         if (!open) this.openPanel();
         else this.chooseActive(this.closeOnChoose);
         return;
@@ -411,6 +459,23 @@ export abstract class StarOptionListBase<TOption, TValue> {
     this.scrollActiveIntoView();
   }
 
+  /** Page up / Page down: moves the active option by the lines in view, over all options. */
+  private movePage(step: 1 | -1): void {
+    const count = this.visibleOptions().length;
+    const height = this.listElement()?.clientHeight || VIRTUAL_FALLBACK_HEIGHT;
+    const target = starListKeyboardTarget(
+      step === 1 ? 'PageDown' : 'PageUp',
+      this.activeIndex(),
+      count,
+      starListPageSize(height, this.virtualItemSize()),
+    );
+    // A disabled option is skipped, in the direction of the key and then back.
+    const next = this.firstEnabledFrom(target, step);
+    const found = next >= 0 ? next : this.firstEnabledFrom(target, step === 1 ? -1 : 1);
+    if (found >= 0) this.activeIndex.set(found);
+    this.scrollActiveIntoView();
+  }
+
   protected firstEnabledFrom(start: number, step: 1 | -1): number {
     const options = this.visibleOptions();
     for (let i = start; i >= 0 && i < options.length; i += step) {
@@ -440,30 +505,56 @@ export abstract class StarOptionListBase<TOption, TValue> {
     this.scrollActiveIntoView();
   }
 
+  /** The list element in the panel (the panel is outside the host, in the overlay). */
+  private listElement(): HTMLElement | null {
+    return this.document.getElementById(this.listId);
+  }
+
+  /**
+   * Moves the list element to the offset of the window. A list that has just opened may not be
+   * able to take it yet: it may be too short until its window is drawn, or not laid out until
+   * the popover shows. The browser then keeps the old offset and sends no scroll event, so the
+   * window would draw lines that the element does not show. Try again for some frames, until the
+   * element is there or the user scrolls.
+   */
+  private applyScroll(list: HTMLElement, offset: number, frames: number): void {
+    if (!list.isConnected || this.listScrollTop() !== offset) return;
+    list.scrollTop = offset;
+    if (frames > 0 && Math.abs(list.scrollTop - offset) > 1) {
+      this.document.defaultView?.requestAnimationFrame?.(() =>
+        this.applyScroll(list, offset, frames - 1),
+      );
+    }
+  }
+
   private scrollActiveIntoView(): void {
-    const id = this.activeId();
-    if (!id) return;
+    if (!this.open() || this.activeIndex() < 0) return;
     if (this.virtualScroll()) {
       // The active line may not be rendered yet: move the list so its position is in view.
-      const active = this.activeIndex();
-      const line = this.rows().findIndex((row) => row.kind === 'option' && row.index === active);
-      const list = this.trigger().nativeElement.ownerDocument.getElementById(this.listId);
-      if (line < 0 || !list) return;
-      const size = Math.max(1, this.virtualItemSize());
+      const list = this.listElement();
+      const layout = this.layout();
+      if (!list || layout.rowOfOption[this.activeIndex()] === undefined) return;
       const height = list.clientHeight || VIRTUAL_FALLBACK_HEIGHT;
-      const top = line * size;
-      let scrollTop = this.listScrollTop();
-      if (top < scrollTop) scrollTop = top;
-      else if (top + size > scrollTop + height) scrollTop = top + size - height;
-      this.listScrollTop.set(scrollTop);
+      // The lines start below the padding of the list: without it the last line is cut off.
+      const inset = parseFloat(getComputedStyle(list).paddingTop) || 0;
+      const [first, last] = starListRevealRows(layout, this.activeIndex());
+      const offset = starListRevealOffset(
+        first,
+        last,
+        Math.max(1, this.virtualItemSize()),
+        // The element knows where it is. The window can be ahead of it for a moment.
+        list.clientHeight ? list.scrollTop : this.listScrollTop(),
+        height,
+        inset,
+      );
       this.listHeight.set(height);
-      queueMicrotask(() => (list.scrollTop = scrollTop));
+      if (offset === null) return;
+      this.listScrollTop.set(offset);
+      queueMicrotask(() => this.applyScroll(list, offset, 12));
       return;
     }
-    queueMicrotask(() =>
-      this.trigger()
-        .nativeElement.ownerDocument.getElementById(id)
-        ?.scrollIntoView?.({ block: 'nearest' }),
-    );
+    const id = this.activeId();
+    if (!id) return;
+    queueMicrotask(() => this.document.getElementById(id)?.scrollIntoView?.({ block: 'nearest' }));
   }
 }

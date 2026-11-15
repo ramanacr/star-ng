@@ -28,22 +28,20 @@ import {
   optionText,
   readOption,
   STAR_UI_TEXT,
+  starListAriaPosition,
+  starListHeight,
+  starListKeyboardTarget,
+  starListLayout,
+  StarListNavigationKey,
+  starListPageSize,
+  starListRevealOffset,
+  starListRevealRows,
+  starListRowRendered,
+  starListTypeaheadIndex,
   StarOptionKey,
+  StarWindowRow,
 } from '@star-ng/ui/core';
 import { StarOptionTemplate } from '@star-ng/ui/select';
-import {
-  ariaPosition,
-  buildLayout,
-  isRowRendered,
-  keyboardTarget,
-  ListboxRow,
-  listHeight,
-  ListNavigationKey,
-  pageSize,
-  revealOffset,
-  revealRows,
-  typeaheadIndex,
-} from './virtual-rows';
 
 /**
  * Inline list choice (PrimeNG `p-listbox`): single or `multiple` (checkboxes), filter,
@@ -301,7 +299,7 @@ export class StarListbox<TOption = unknown, TValue = TOption> implements FormVal
 
   /** Group headings and options in one list of rows of equal height. */
   protected readonly layout = computed(() =>
-    buildLayout(
+    starListLayout(
       this.visible(),
       this.optionGroup() ? (option) => this.groupOf(option) : null,
       this.listId,
@@ -309,21 +307,21 @@ export class StarListbox<TOption = unknown, TValue = TOption> implements FormVal
   );
 
   protected readonly viewportHeight = computed(() =>
-    listHeight(this.scrollHeight(), this.layout().rows.length, this.itemSize()),
+    starListHeight(this.scrollHeight(), this.layout().rows.length, this.itemSize()),
   );
 
   /** Rows that are in the DOM now: `[start, end)`, reported by the CDK viewport. */
   private readonly renderedRange = signal({ start: 0, end: 0 });
 
-  protected readonly trackRow = (_index: number, row: ListboxRow<TOption>): string => row.key;
+  protected readonly trackRow = (_index: number, row: StarWindowRow<TOption>): string => row.key;
 
   protected positionOf(index: number): { setsize: number; posinset: number } {
-    return ariaPosition(index, this.visible().length);
+    return starListAriaPosition(index, this.visible().length);
   }
 
   /** The heading of the group, only while its row is in the DOM (the id must exist). */
-  protected describedBy(row: Extract<ListboxRow<TOption>, { kind: 'option' }>): string | null {
-    return row.groupId !== null && isRowRendered(row.groupRow, this.renderedRange())
+  protected describedBy(row: Extract<StarWindowRow<TOption>, { kind: 'option' }>): string | null {
+    return row.groupId !== null && starListRowRendered(row.groupRow, this.renderedRange())
       ? row.groupId
       : null;
   }
@@ -334,7 +332,7 @@ export class StarListbox<TOption = unknown, TValue = TOption> implements FormVal
     if (index < 0 || index >= this.visible().length) return null;
     if (this.virtualScroll()) {
       const row = this.layout().rowOfOption[index];
-      if (row === undefined || !isRowRendered(row, this.renderedRange())) return null;
+      if (row === undefined || !starListRowRendered(row, this.renderedRange())) return null;
     }
     return `${this.listId}-${index}`;
   });
@@ -436,8 +434,8 @@ export class StarListbox<TOption = unknown, TValue = TOption> implements FormVal
     }
     const viewport = this.viewport();
     if (!viewport) return;
-    const [first, last] = revealRows(this.layout(), index);
-    const offset = revealOffset(
+    const [first, last] = starListRevealRows(this.layout(), index);
+    const offset = starListRevealOffset(
       first,
       last,
       this.itemSize(),
@@ -451,11 +449,13 @@ export class StarListbox<TOption = unknown, TValue = TOption> implements FormVal
     const options = this.visible();
     if (!options.length || this.disabled()) return;
     const fromInput = event.target instanceof HTMLInputElement;
-    const page = pageSize(this.viewport()?.getViewportSize() || 256, this.itemSize());
-    const move = (key: ListNavigationKey | number) => {
+    const page = starListPageSize(this.viewport()?.getViewportSize() || 256, this.itemSize());
+    const move = (key: StarListNavigationKey | number) => {
       event.preventDefault();
       this.active.set(
-        typeof key === 'number' ? key : keyboardTarget(key, this.active(), options.length, page),
+        typeof key === 'number'
+          ? key
+          : starListKeyboardTarget(key, this.active(), options.length, page),
       );
       this.reveal(this.active());
       if (!this.multiple() && !fromInput) {
@@ -489,7 +489,7 @@ export class StarListbox<TOption = unknown, TValue = TOption> implements FormVal
             (now - this.typeaheadAt > 500 ? '' : this.typeahead) + event.key.toLowerCase();
           this.typeaheadAt = now;
           // Over all options, also those that are not in the DOM.
-          const index = typeaheadIndex(
+          const index = starListTypeaheadIndex(
             options.length,
             (i) => this.labelOf(options[i]),
             this.typeahead,

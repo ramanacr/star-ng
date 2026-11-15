@@ -1,14 +1,14 @@
 import {
-  ariaPosition,
-  buildLayout,
-  isRowRendered,
-  keyboardTarget,
-  listHeight,
-  pageSize,
-  revealOffset,
-  revealRows,
-  typeaheadIndex,
-} from './virtual-rows';
+  starListAriaPosition as ariaPosition,
+  starListLayout as buildLayout,
+  starListRowRendered as isRowRendered,
+  starListKeyboardTarget as keyboardTarget,
+  starListHeight as listHeight,
+  starListPageSize as pageSize,
+  starListRevealOffset as revealOffset,
+  starListRevealRows as revealRows,
+  starListTypeaheadIndex as typeaheadIndex,
+} from './list-windowing';
 
 interface Order {
   name: string;
@@ -23,7 +23,7 @@ const ORDERS: Order[] = [
   { name: 'Order 5', region: 'West' },
 ];
 
-describe('virtual listbox: row model', () => {
+describe('windowed list: row model', () => {
   it('has one row per option without groups', () => {
     const layout = buildLayout(ORDERS, null, 'lb');
     expect(layout.rows.length).toBe(5);
@@ -70,7 +70,7 @@ describe('virtual listbox: row model', () => {
   });
 });
 
-describe('virtual listbox: keyboard target', () => {
+describe('windowed list: keyboard target', () => {
   it('moves by one and stops at the ends', () => {
     expect(keyboardTarget('ArrowDown', 3, 10, 5)).toBe(4);
     expect(keyboardTarget('ArrowDown', 9, 10, 5)).toBe(9);
@@ -119,7 +119,7 @@ describe('virtual listbox: keyboard target', () => {
   });
 });
 
-describe('virtual listbox: scroll offset', () => {
+describe('windowed list: scroll offset', () => {
   const size = 40;
 
   it('does not scroll when the rows are in view', () => {
@@ -152,6 +152,16 @@ describe('virtual listbox: scroll offset', () => {
     expect(revealRows(layout, 3)).toEqual([3, 3]);
   });
 
+  it('moves a row below the view by the inset, and keeps the first row at the very top', () => {
+    // The scroll container has 6 px of padding above the first row.
+    expect(revealOffset(20, 20, size, 0, 200, 6)).toBe(6 + 21 * size - 200);
+    expect(revealOffset(5, 5, size, 300, 200, 6)).toBe(6 + 5 * size);
+    expect(revealOffset(0, 0, size, 100, 200, 6)).toBe(0);
+    expect(revealOffset(3, 3, size, 80, 200, 6)).toBeNull();
+    // Row 4 ends at 6 + 5 * 40 = 206, 6 px below the view: the inset counts.
+    expect(revealOffset(4, 4, size, 0, 200, 6)).toBe(6 + 5 * size - 200);
+  });
+
   it('computes the list height', () => {
     expect(listHeight('16rem', 10_000, 40)).toBe('min(16rem, 400000px)');
     expect(listHeight('16rem', 0, 40)).toBe('min(16rem, 0px)');
@@ -164,7 +174,7 @@ describe('virtual listbox: scroll offset', () => {
   });
 });
 
-describe('virtual listbox: ARIA values', () => {
+describe('windowed list: ARIA values', () => {
   it('gives each option the size of the whole list and its position in it', () => {
     expect(ariaPosition(0, 10_000)).toEqual({ setsize: 10_000, posinset: 1 });
     expect(ariaPosition(9_999, 10_000)).toEqual({ setsize: 10_000, posinset: 10_000 });

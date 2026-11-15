@@ -183,7 +183,7 @@ import { StarOptionListBase } from './option-list-base';
                 [class.star-listbox__option--selected]="isSelected(option)"
                 [attr.aria-selected]="isSelected(option)"
                 [attr.aria-disabled]="isDisabled(option) || null"
-                [attr.aria-describedby]="row.groupId"
+                [attr.aria-describedby]="describedBy(row)"
                 [attr.aria-setsize]="virtualScroll() ? visibleOptions().length : null"
                 [attr.aria-posinset]="virtualScroll() ? i + 1 : null"
                 (click)="onOptionClick(option, i)"
@@ -259,9 +259,20 @@ export class StarMultiSelect<TOption = unknown, TValue = TOption>
     return selected === options.length ? true : 'mixed';
   });
 
+  /**
+   * The chosen values in a `Set`, for the default `compareWith`. A lookup then costs one step and
+   * not one scan of the value: with 10,000 chosen options a scan per option took seconds.
+   */
+  private readonly chosenSet = computed(() =>
+    this.compareWith() === Object.is ? new Set<TValue>(this.value()) : null,
+  );
+
   protected isSelected(option: TOption): boolean {
     const optionValue = this.valueOf(option);
-    return this.value().some((value) => this.equals(value, optionValue));
+    const chosen = this.chosenSet();
+    return chosen
+      ? chosen.has(optionValue)
+      : this.value().some((value) => this.equals(value, optionValue));
   }
 
   protected choose(option: TOption): void {
@@ -287,8 +298,13 @@ export class StarMultiSelect<TOption = unknown, TValue = TOption>
     const options = this.selectableVisible();
     if (this.allState() === true) {
       const visibleValues = options.map((option) => this.valueOf(option));
+      const visibleSet = this.compareWith() === Object.is ? new Set<TValue>(visibleValues) : null;
       this.value.update((values) =>
-        values.filter((value) => !visibleValues.some((visible) => this.equals(visible, value))),
+        values.filter((value) =>
+          visibleSet
+            ? !visibleSet.has(value)
+            : !visibleValues.some((visible) => this.equals(visible, value)),
+        ),
       );
       return;
     }

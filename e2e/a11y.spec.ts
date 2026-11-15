@@ -791,6 +791,53 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'select panel with 10,000 grouped options in the middle',
+    path: 'controls/select',
+    open: async (page) => {
+      await example(page, 'Large list with groups')
+        .getByRole('combobox', { name: 'Shipment' })
+        .click();
+      const list = page.getByRole('listbox', { name: 'Shipment', exact: true });
+      await expect(list).toBeVisible();
+      await scrollToMiddle(list);
+      await expect
+        .poll(() => list.getByRole('option').first().textContent())
+        .not.toContain('Shipment 1');
+      await expect(list.getByRole('option').first()).toHaveAttribute('aria-setsize', '10000');
+    },
+  },
+  {
+    name: 'multi-select panel with 10,000 options in the middle',
+    path: 'controls/multi-select',
+    open: async (page) => {
+      await example(page, 'Large list').getByRole('combobox', { name: 'Parcels' }).click();
+      const list = page.getByRole('listbox', { name: 'Parcels', exact: true });
+      await expect(list).toBeVisible();
+      await list.getByRole('option').first().click();
+      await scrollToMiddle(list);
+      await expect
+        .poll(() => list.getByRole('option').first().textContent())
+        .not.toContain('Parcel 1');
+      await expect(list.getByRole('option').first()).toHaveAttribute('aria-setsize', '10000');
+    },
+  },
+  {
+    name: 'autocomplete with 10,000 suggestions in the middle',
+    path: 'controls/autocomplete',
+    open: async (page) => {
+      await example(page, 'Large list')
+        .getByRole('button', { name: /show options/i })
+        .click();
+      const list = page.getByRole('listbox', { name: 'Ticket', exact: true });
+      await expect(list).toBeVisible();
+      await scrollToMiddle(list);
+      await expect
+        .poll(() => list.getByRole('option').first().textContent())
+        .not.toContain('Ticket 0000');
+      await expect(list.getByRole('option').first()).toHaveAttribute('aria-setsize', '10000');
+    },
+  },
+  {
     name: 'tree with windowed rendering in the middle',
     path: 'controls/tree',
     open: async (page) => {
