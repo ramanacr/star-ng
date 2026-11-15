@@ -620,8 +620,72 @@ describe('StarTable Excel and print export', () => {
     const frame = document.querySelector<HTMLIFrameElement>('iframe[aria-hidden="true"]')!;
     expect(frame.srcdoc).toContain('<h1>Orders &lt;today&gt;</h1>');
     expect(frame.srcdoc).toContain('<th scope="col">Product &amp; quantity</th>');
-    expect(frame.srcdoc).toContain('<td class="n">-5</td>');
+    expect(frame.srcdoc).toContain('<td class="e">-5</td>');
+    // The document has no style element and no style attribute: the style is added on load.
+    expect(frame.srcdoc).not.toMatch(/<style|\sstyle=/);
     frame.remove();
+  });
+
+  it('takes the print alignment from the column, also for a number with a format function', async () => {
+    @Component({
+      imports: [StarTable],
+      template: `<star-table
+        [value]="rows"
+        [columns]="columns"
+        dataKey="id"
+        lang="fr"
+        dir="rtl"
+      />`,
+    })
+    class FormatHost {
+      readonly table = viewChild.required<StarTable<Row>>(StarTable);
+      readonly rows = ROWS;
+      readonly columns: StarColumn<Row>[] = [
+        { field: 'product', header: 'Product' },
+        // Every value is a number: a number column, although the text is a string.
+        { field: 'amount', header: 'Amount', format: (row) => `${row.amount} EUR` },
+        // An explicit align.
+        { field: 'status', header: 'Status', align: 'center' },
+        { field: 'amount', header: 'Quantity', align: 'end', format: (row) => `${row.amount} pcs` },
+      ];
+    }
+    const fixture = TestBed.createComponent(FormatHost);
+    await fixture.whenStable();
+    fixture.componentInstance.table().print();
+    const frame = document.querySelector<HTMLIFrameElement>('iframe[aria-hidden="true"]')!;
+    const doc = new DOMParser().parseFromString(frame.srcdoc, 'text/html');
+    expect([...doc.querySelectorAll('th')].map((cell) => cell.getAttribute('class'))).toEqual([
+      null,
+      'e',
+      'c',
+      'e',
+    ]);
+    expect(doc.querySelector('tbody tr td:nth-child(2)')?.textContent).toBe('-5 EUR');
+    expect(doc.querySelector('tbody tr td:nth-child(2)')?.classList.contains('e')).toBe(true);
+    // lang and dir of the table, not of the page.
+    expect(doc.documentElement.getAttribute('lang')).toBe('fr');
+    expect(doc.documentElement.getAttribute('dir')).toBe('rtl');
+    frame.remove();
+  });
+
+  it('exports the formatted text of a number column in CSV and Excel (no alignment there)', async () => {
+    @Component({
+      imports: [StarTable],
+      template: `<star-table [value]="rows" [columns]="columns" dataKey="id" />`,
+    })
+    class FormatCsvHost {
+      readonly table = viewChild.required<StarTable<Row>>(StarTable);
+      readonly rows = ROWS;
+      readonly columns: StarColumn<Row>[] = [
+        { field: 'amount', header: 'Amount', format: (row) => `EUR ${row.amount}` },
+      ];
+    }
+    const fixture = TestBed.createComponent(FormatCsvHost);
+    await fixture.whenStable();
+    expect(fixture.componentInstance.table().toCsv().split('\r\n')[1]).toBe('EUR -5');
+    expect(new TextDecoder().decode(fixture.componentInstance.table().toXlsx())).toContain(
+      '<t xml:space="preserve">EUR -5</t>',
+    );
   });
 });
 

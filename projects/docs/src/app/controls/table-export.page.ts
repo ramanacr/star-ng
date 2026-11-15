@@ -87,6 +87,21 @@ const WIDE_ROWS: readonly WideRow[] = Array.from({ length: 30 }, (_, i) => ({
   Note: i % 4 === 0 ? 'Fragile goods' : '',
 }));
 
+/** One part of the formatted print example: numbers that a `format` function turns into text. */
+interface Part {
+  readonly code: string;
+  readonly name: string;
+  readonly zone: string;
+  readonly stock: number;
+  readonly price: number;
+}
+const PARTS: readonly Part[] = [
+  { code: 'PRT-100', name: 'Steel bolt', zone: 'North', stock: 1250, price: 0.35 },
+  { code: 'PRT-101', name: 'Brass washer', zone: 'North', stock: 48, price: 12.5 },
+  { code: 'PRT-102', name: 'Cable tie', zone: 'South', stock: 9, price: 120 },
+  { code: 'PRT-103', name: 'Hinge', zone: 'East', stock: 305, price: 7.75 },
+];
+
 @Component({
   selector: 'docs-table-export-page',
   imports: [DOCS, StarTable, StarCellTemplate, StarTag, StarButton, DocsFill, DocsRefTable],
@@ -274,6 +289,35 @@ const WIDE_ROWS: readonly WideRow[] = Array.from({ length: 30 }, (_, i) => ({
         </div>
       </docs-example>
 
+      <docs-example
+        heading="Print formatted numbers"
+        source="table-export/print-format"
+        [script]="printFormatScript"
+        note="Stock and Price have a format function, so their cell text is a string (for example 1,250 pcs). The printout still aligns both columns to the end, and their headers too: Stock because every value is a number, Price because of align: 'end'. Zone has align: 'center'."
+      >
+        <div class="docs-stack">
+          <div class="docs-row">
+            <star-button
+              size="sm"
+              variant="secondary"
+              leadingIcon="ph-bold ph-printer"
+              (pressed)="partsTable.print()"
+            >
+              Print parts
+            </star-button>
+          </div>
+          <docs-fill>
+            <star-table
+              #partsTable
+              ariaLabel="Parts"
+              [value]="parts"
+              [columns]="partColumns"
+              dataKey="code"
+            />
+          </docs-fill>
+        </div>
+      </docs-example>
+
       <docs-api [of]="['StarTable']" [slots]="slots" />
       <docs-ref-table
         title="Export options (StarExportOptions, StarCsvOptions)"
@@ -332,11 +376,26 @@ const WIDE_ROWS: readonly WideRow[] = Array.from({ length: 30 }, (_, i) => ({
           >).
         </li>
         <li>
-          <strong>Numbers on the right.</strong> A cell with a number is right-aligned, and so is
-          the header of a column in which every cell is a number. A cell with formatted text (the
-          <code>format</code> function, without an <code>exportValue</code> that returns a number)
-          is text: it is left-aligned, whatever <code>align</code> the column has on the screen.
-          Give such a column an <code>exportValue</code> that returns the number.
+          <strong>Alignment comes from the column.</strong> The column <code>align</code> sets the
+          alignment of the header and of every cell: <code>'start'</code>, <code>'center'</code> or
+          <code>'end'</code>. A column without <code>align</code>, in which every value is a number,
+          is aligned to the end (on the right in a left-to-right table). Any other column is aligned
+          to the start. The type of the printed text does not matter: a number column with a
+          <code>format</code> function (its cell text is then a string) is still aligned by its
+          column, as on the screen. The CSV file and the Excel workbook have no alignment. A column
+          with a <code>format</code> function and no <code>exportValue</code> that returns a number
+          exports its formatted text there, so Excel gets text, not a number.
+        </li>
+        <li>
+          <strong>Language and direction.</strong> The printout sets <code>lang</code> and
+          <code>dir</code> on its <code>html</code> element. They come from the nearest element
+          around the table that has the attribute (the table itself first), and else from the
+          <code>html</code> element of the page. A table in a right-to-left block prints
+          right-to-left: the first column is on the right, text columns are aligned to the right and
+          number columns to the left, which are the start and the end of the line. An empty
+          <code>lang</code>, and a <code>dir</code> of <code>auto</code>, are skipped. The printout
+          has no <code>lang</code> when the page has none. The tests print the invoice table with
+          <code>dir="rtl"</code> on the page and check the columns in the PDF.
         </li>
         <li>
           <strong>Long text wraps.</strong> A cell with several words wraps at the spaces. A word of
@@ -391,9 +450,12 @@ const WIDE_ROWS: readonly WideRow[] = Array.from({ length: 30 }, (_, i) => ({
       <h2>Content Security Policy</h2>
       <p>
         The frame is created from a string (<code>srcdoc</code>). A frame of that kind uses the
-        Content Security Policy of the page that holds it. The style of the printed table is an
-        inline <code>style</code> element, so it needs <code>'unsafe-inline'</code> in
-        <code>style-src</code>:
+        Content Security Policy of the page that holds it. The print document has no
+        <code>style</code> element and no <code>style</code> attribute. When the frame has loaded,
+        StarNG adds its styles as constructed style sheets (<code>new CSSStyleSheet()</code> made in
+        the frame, <code>replaceSync(css)</code> and <code>document.adoptedStyleSheets</code> of the
+        frame document). The base style of the table, the rules that make it fit the paper and the
+        measuring of the table use the same way.
       </p>
       <ul>
         <li>
@@ -403,19 +465,18 @@ const WIDE_ROWS: readonly WideRow[] = Array.from({ length: 30 }, (_, i) => ({
           <code>script-src 'self'</code> is enough.
         </li>
         <li>
-          If an application removes <code>'unsafe-inline'</code> from <code>style-src</code>, the
-          browser blocks the style elements of the frame (violation <code>style-src-elem</code>),
-          the one of the table and the one that makes it fit the paper. The print dialog still opens
-          with all rows, but the table loses its own style (collapsed borders, the rule that keeps a
-          row on one page, the alignment of numbers): it is plain and hard to read. The repeated
-          header still works, because the browser default style has it.
+          With a <code>style-src</code> that has no <code>'unsafe-inline'</code> (for example
+          <code>style-src 'self'</code>), the print works the same: the browser does not block a
+          constructed style sheet, the printout keeps its collapsed borders, the rule that keeps a
+          row on one page, the alignment and the fit rules, and the frame reports no violation. A
+          test serves the page with that policy and checks the borders in the frame and in the PDF.
         </li>
         <li>
-          A style sheet that is built with the CSSOM (<code>new CSSStyleSheet()</code>,
-          <code>replaceSync(css)</code> and <code>document.adoptedStyleSheets</code>) is not blocked
-          by the policy. This is the way to keep the print style under a strict policy. StarNG does
-          not do this yet: with a strict <code>style-src</code> the printout is unstyled, as
-          described above.
+          An environment without constructed style sheets gets a <code>style</code> element in the
+          frame instead. A strict <code>style-src</code> blocks it (violation
+          <code>style-src-elem</code>), and then the printout is plain: the print dialog opens with
+          all rows, but without the table style. Not checked: Firefox and Safari under a strict
+          policy.
         </li>
       </ul>
     </docs-page>
@@ -483,6 +544,21 @@ export class TableExportPage {
     align: typeof WIDE_ROWS[0][header] === 'number' ? ('end' as const) : ('start' as const),
   }));
 
+  protected readonly parts = PARTS;
+  protected readonly partColumns: StarColumn<Part>[] = [
+    { field: 'code', header: 'Code' },
+    { field: 'name', header: 'Part' },
+    { field: 'zone', header: 'Zone', align: 'center' },
+    // A number column without align: every value is a number.
+    {
+      field: 'stock',
+      header: 'Stock',
+      format: (row) => `${row.stock.toLocaleString('en-US')} pcs`,
+    },
+    // An explicit align: the column definition decides, not the type of the text.
+    { field: 'price', header: 'Price', align: 'end', format: (row) => formatMoney(row.price) },
+  ];
+
   protected readonly printLongScript = `readonly invoiceColumns: StarColumn<Invoice>[] = [
   { field: 'id', header: 'Invoice', sortable: true },
   { field: 'customer', header: 'Customer', sortable: true, filter: 'text' },
@@ -494,6 +570,16 @@ export class TableExportPage {
 ];
 // <star-table #longTable [hiddenColumns]="['region']" selectionMode="multiple" paginator [rows]="10" ... />
 // longTable.print();`;
+  protected readonly printFormatScript = `readonly partColumns: StarColumn<Part>[] = [
+  { field: 'code', header: 'Code' },
+  { field: 'name', header: 'Part' },
+  { field: 'zone', header: 'Zone', align: 'center' },
+  // Every value is a number: the print column is aligned to the end, although the cell text is a string.
+  { field: 'stock', header: 'Stock', format: (row) => \`\${row.stock.toLocaleString('en-US')} pcs\` },
+  // An explicit align wins.
+  { field: 'price', header: 'Price', align: 'end', format: (row) => formatMoney(row.price) },
+];
+// partsTable.print();`;
   protected readonly printWideScript = `readonly wideColumns: StarColumn<WideRow>[] = fields.map((header) => ({ field: header, header }));
 // wideTable.print();`;
 
