@@ -300,15 +300,18 @@ const WIDE_ROWS: readonly WideRow[] = Array.from({ length: 30 }, (_, i) => ({
       <p>
         <code>print</code> adds a hidden frame (<code>iframe</code>) to the page, writes a plain
         document with one table into it (with its own style rules: borders, a repeated header on
-        each page, no page break inside a row), calls the print dialog of the frame and removes the
-        frame after printing. The page styles do not apply to the printed table.
+        each page, no page break inside a row), measures the table in the frame and adds the rules
+        that make it fit the paper (wrapping, smaller text), calls the print dialog of the frame and
+        removes the frame after printing. The page styles do not apply to the printed table.
       </p>
 
       <h2>What the printout looks like</h2>
       <p>
         The tests of this page print the examples above with the print engine of Chromium (headless,
         print media, margin 0.4 inch) on A4 portrait, A4 landscape and US Letter portrait, and read
-        the resulting PDF. What they found:
+        the resulting PDF. Other tests print a table of 16 and of 24 columns with deliberately wide
+        text (a monospace font, with letter spacing for the larger table) on A4 portrait, US Letter
+        portrait and A5 portrait. What they found:
       </p>
       <ul>
         <li>
@@ -339,15 +342,37 @@ const WIDE_ROWS: readonly WideRow[] = Array.from({ length: 30 }, (_, i) => ({
           <strong>Long text wraps.</strong> A cell with several words wraps at the spaces. A word of
           more than 20 characters (a code, a signature, an address) gets soft break points, so it
           wraps inside its cell. A cell of one short word, such as <code>INV-0001</code> or
-          <code>2026-01-05</code>, is never wrapped.
+          <code>2026-01-05</code>, is not wrapped as long as the table fits the paper (see Wide
+          tables).
         </li>
         <li>
-          <strong>Wide tables.</strong> The orders example fits A4 portrait at the full text size (9
-          pt). The table with 16 columns does not: Chromium shrinks the whole page to fit it, and
-          the text is about 6 pt, on one page for 30 rows. The same table in A4 landscape has about
-          8.6 pt text on 2 pages. Nothing is cut off, but use landscape for a table with more than
-          about 8 columns. The export does not set the paper size or the orientation: the user
-          chooses them in the print dialog.
+          <strong>Wide tables.</strong> The print dialog decides the paper, the margins and the
+          scale after the document is built, so the document gives way by itself when the table is
+          wider than the page. It does this in steps, and takes the first step that fits:
+          <ol>
+            <li>
+              The table as it is built: text of 9 pt, a cell of one short word is not wrapped.
+            </li>
+            <li>A cell of one short word may wrap (at a hyphen). The text keeps its size.</li>
+            <li>
+              Smaller text: 8.25, 7.5, 6.75 and 6 pt. The padding of the cells gets smaller too.
+            </li>
+            <li>
+              Last resort: a word may break at any character. The columns then share the width of
+              the page by the length of their longest word.
+            </li>
+          </ol>
+          No column is cut off, and no text is lost, on any paper size and with any font. 6 pt is
+          the smallest text. The document measures the table in its own fonts, so a wide font gets
+          more steps than a narrow one. The browser shrink-to-fit is not used for this: Chromium
+          shrinks a page by 1.5 times at most (to 6 pt) and cuts off everything that is still too
+          wide. With the fonts of the test machine (Windows), the table with 16 columns prints in A4
+          landscape at 9 pt on 3 pages, and in A4 portrait at 6 pt on one page. The sizes depend on
+          the fonts of the platform. A table with many columns on narrow paper (24 columns on A5)
+          prints at 6 pt with broken words: it is complete, but hard to read. Use landscape for a
+          table with more than about 8 columns. The export does not set the paper size or the
+          orientation: the user chooses them in the print dialog. The steps need container queries
+          (all current browsers); a browser without them prints the table as it is built.
         </li>
         <li>
           <strong>Always on white paper.</strong> The printout is a separate document. It does not
@@ -356,10 +381,11 @@ const WIDE_ROWS: readonly WideRow[] = Array.from({ length: 30 }, (_, i) => ({
         </li>
       </ul>
       <p>
-        Not checked: the print engines of Firefox and Safari, real printers, and the print dialog
-        itself (the paper chosen by the user, the scale, the margins, "Background graphics").
-        Chromium prints the light gray header background only when "Background graphics" is on; the
-        header text is bold, so the header stays visible without it.
+        Not checked: the print engines of Firefox and Safari (including their answer to the
+        container queries of the steps above), real printers, and the print dialog itself (the paper
+        chosen by the user, the scale, the margins, "Background graphics"). Chromium prints the
+        light gray header background only when "Background graphics" is on; the header text is bold,
+        so the header stays visible without it.
       </p>
 
       <h2>Content Security Policy</h2>
@@ -378,10 +404,11 @@ const WIDE_ROWS: readonly WideRow[] = Array.from({ length: 30 }, (_, i) => ({
         </li>
         <li>
           If an application removes <code>'unsafe-inline'</code> from <code>style-src</code>, the
-          browser blocks the style element of the frame (violation <code>style-src-elem</code>). The
-          print dialog still opens with all rows, but the table loses its own style (collapsed
-          borders, the rule that keeps a row on one page, the alignment of numbers): it is plain and
-          hard to read. The repeated header still works, because the browser default style has it.
+          browser blocks the style elements of the frame (violation <code>style-src-elem</code>),
+          the one of the table and the one that makes it fit the paper. The print dialog still opens
+          with all rows, but the table loses its own style (collapsed borders, the rule that keeps a
+          row on one page, the alignment of numbers): it is plain and hard to read. The repeated
+          header still works, because the browser default style has it.
         </li>
         <li>
           A style sheet that is built with the CSSOM (<code>new CSSStyleSheet()</code>,

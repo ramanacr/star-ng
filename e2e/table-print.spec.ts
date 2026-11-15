@@ -24,13 +24,26 @@ const SLACK = 0.75;
 
 interface Paper {
   readonly name: string;
-  readonly format: 'A4' | 'Letter';
+  readonly format: 'A4' | 'A5' | 'Letter';
   readonly landscape: boolean;
 }
 const A4_PORTRAIT: Paper = { name: 'A4 portrait', format: 'A4', landscape: false };
 const A4_LANDSCAPE: Paper = { name: 'A4 landscape', format: 'A4', landscape: true };
 const LETTER_PORTRAIT: Paper = { name: 'US Letter portrait', format: 'Letter', landscape: false };
+const A5_PORTRAIT: Paper = { name: 'A5 portrait', format: 'A5', landscape: false };
 const PAPERS: readonly Paper[] = [A4_PORTRAIT, A4_LANDSCAPE, LETTER_PORTRAIT];
+/** Paper sizes in points, as the PDF reports them (rounded). */
+const PAPER_WIDTH: Record<Paper['format'], number> = { A4: 595.28, A5: 419.53, Letter: 612 };
+const PAPER_HEIGHT: Record<Paper['format'], number> = { A4: 841.89, A5: 595.28, Letter: 792 };
+
+/**
+ * Width in CSS pixels that the print engine gives the layout of the table: the paper minus the
+ * margins (and the 16 px margin of the document body). 96 CSS pixels are 72 points.
+ */
+function contentWidth(paper: Paper): number {
+  const points = paper.landscape ? PAPER_HEIGHT[paper.format] : PAPER_WIDTH[paper.format];
+  return (points - 2 * MARGIN) / 0.75 - 32;
+}
 
 /** What the frame reports when it calls `print()`. */
 interface Captured {
@@ -38,6 +51,17 @@ interface Captured {
   readonly borderCollapse: string;
   readonly rowBreakInside: string;
   readonly violations: readonly string[];
+  /** Text of the header cells and of the body cells, as the frame has them when it prints. */
+  readonly headers: readonly string[];
+  readonly rows: readonly (readonly string[])[];
+}
+
+/** What a test does to the frame document before the table is measured and printed. */
+interface FrameStress {
+  /** Style rules added to the document, so wide text is in the layout that is measured. */
+  readonly css?: string;
+  /** Adds eight columns to the table (24 in all, for the table with 16 columns). */
+  readonly extraColumns?: boolean;
 }
 
 interface PdfItem {
@@ -66,9 +90,58 @@ interface PdfTextItem {
 }
 
 /** Replaces `print` of the frame: the test gets the document and the print dialog stays closed. */
-async function stubFramePrint(page: Page): Promise<void> {
-  await page.addInitScript(() => {
+async function stubFramePrint(page: Page, stress: FrameStress = {}): Promise<void> {
+  await page.addInitScript((stress) => {
     if (window === window.top) return;
+    // Before the load event, so before the table is measured by the frame code of the library.
+    if (stress.css || stress.extraColumns) {
+      document.addEventListener('DOMContentLoaded', () => {
+        if (stress.css) {
+          const style = document.createElement('style');
+          style.textContent = stress.css;
+          document.head.append(style);
+        }
+        if (stress.extraColumns) {
+          const values: ((row: number) => string)[] = [
+            () => 'North hub',
+            (row) => (row % 2 ? 'High' : 'Low'),
+            () => 'Web shop',
+            () => 'EUR',
+            (row) => `REF-${20000 + row}`,
+            () => 'Ava Stone',
+            (row) => `+1 555 01${String(row).padStart(2, '0')}`,
+            () => 'Call before delivery',
+          ];
+          const names = [
+            'Warehouse',
+            'Priority',
+            'Channel',
+            'Currency',
+            'Reference',
+            'Contact',
+            'Phone',
+            'Comment',
+          ];
+          for (const row of document.querySelectorAll('thead tr')) {
+            for (const name of names) {
+              const cell = document.createElement('th');
+              cell.scope = 'col';
+              cell.textContent = name;
+              row.append(cell);
+            }
+          }
+          document.querySelectorAll('tbody tr').forEach((row, index) => {
+            for (const value of values) {
+              const text = value(index);
+              const cell = document.createElement('td');
+              cell.textContent = text;
+              if (!/\s/.test(text) && text.length <= 20) cell.className = 's';
+              row.append(cell);
+            }
+          });
+        }
+      });
+    }
     const violations: string[] = [];
     document.addEventListener('securitypolicyviolation', (event) =>
       violations.push(event.violatedDirective),
@@ -81,9 +154,16 @@ async function stubFramePrint(page: Page): Promise<void> {
         borderCollapse: table ? getComputedStyle(table).borderCollapse : '',
         rowBreakInside: row ? getComputedStyle(row).breakInside : '',
         violations,
+        headers: Array.from(
+          document.querySelectorAll('thead th'),
+          (cell) => cell.textContent ?? '',
+        ),
+        rows: Array.from(document.querySelectorAll('tbody tr'), (row) =>
+          Array.from(row.children, (cell) => cell.textContent ?? ''),
+        ),
       };
     };
-  });
+  }, stress);
 }
 
 async function readCaptured(page: Page): Promise<Captured> {
@@ -94,8 +174,13 @@ async function readCaptured(page: Page): Promise<Captured> {
 }
 
 /** Opens a docs page, presses a print button and returns the document of the print frame. */
-async function capture(page: Page, button: string, exampleHeading: string): Promise<Captured> {
-  await stubFramePrint(page);
+async function capture(
+  page: Page,
+  button: string,
+  exampleHeading: string,
+  stress: FrameStress = {},
+): Promise<Captured> {
+  await stubFramePrint(page, stress);
   await openPage(page, '/controls/table-export', 'Table export');
   await example(page, exampleHeading).getByRole('button', { name: button }).click();
   return readCaptured(page);
@@ -185,10 +270,11 @@ async function openPrintout(
   browser: Browser,
   button: string,
   exampleHeading: string,
+  stress: FrameStress = {},
 ): Promise<Printout> {
   const context = await browser.newContext();
   const page = await context.newPage();
-  const captured = await capture(page, button, exampleHeading);
+  const captured = await capture(page, button, exampleHeading, stress);
   await page.close();
   return new Printout(context, captured);
 }
@@ -224,6 +310,53 @@ function inBounds(pages: readonly PdfPage[]): { right: number; left: number; bot
 
 const minimumSize = (pages: readonly PdfPage[]) =>
   Math.min(...pages.flatMap((page) => page.items.map((item) => item.size)));
+
+/** The smallest text that the table is allowed to get: 8 px are 6 pt. */
+const TEXT_FLOOR = 6 - 0.1;
+
+const squeeze = (text: string) => text.replace(/\s/g, '');
+
+/**
+ * Checks that the PDF holds the whole table, once: the title and the header cells at the top of
+ * the first page, the header cells at the top of every other page, and then every cell of every
+ * row, in order, complete, with whole rows on each page (no row is split between two pages). The
+ * text of a page is read in the order of the PDF content, which is the order of the table: cell
+ * by cell, row by row. A word that the table had to break at the end of a line is still all
+ * there, in pieces of the same cell. Spaces are left out because the line breaks decide them.
+ */
+function expectWholeTable(
+  pages: readonly PdfPage[],
+  title: string,
+  headers: readonly string[],
+  rows: readonly (readonly string[])[],
+): void {
+  const header = squeeze(headers.join(''));
+  const rowText = rows.map((row) => squeeze(row.join('')));
+  let next = 0;
+  pages.forEach((page, index) => {
+    const text = squeeze(page.items.map((item) => item.str).join(''));
+    const top = index === 0 ? squeeze(title) + header : header;
+    expect(text.startsWith(top), `page ${index + 1} starts with ${top.slice(0, 40)}`).toBe(true);
+    let position = top.length;
+    while (next < rowText.length && text.startsWith(rowText[next], position)) {
+      position += rowText[next].length;
+      next++;
+    }
+    expect(position, `page ${index + 1} has whole rows only, from row ${next + 1} on`).toBe(
+      text.length,
+    );
+  });
+  expect(next).toBe(rowText.length);
+}
+
+/** Nothing outside the page box, and no text smaller than the floor of the table. */
+function expectInsidePage(pages: readonly PdfPage[]): void {
+  const bounds = inBounds(pages);
+  expect(bounds.right).toBeGreaterThanOrEqual(-SLACK);
+  expect(bounds.left).toBeGreaterThanOrEqual(-SLACK);
+  expect(bounds.bottom).toBeGreaterThanOrEqual(-SLACK);
+  expect(minimumSize(pages)).toBeGreaterThan(TEXT_FLOOR);
+}
 
 const INVOICE_HEADERS = ['Invoice', 'Customer', 'Project', 'Status', 'Quantity', 'Amount', 'Note'];
 const INVOICE_ID = /^INV-\d{4}$/;
@@ -419,6 +552,25 @@ test.describe('table print: the orders example of the docs page', () => {
   }
 });
 
+const WIDE_HEADERS = [
+  'Order',
+  'Customer',
+  'Email',
+  'Product',
+  'Region',
+  'Status',
+  'Placed',
+  'Shipped',
+  'Quantity',
+  'Unit price',
+  'Discount',
+  'Tax',
+  'Total',
+  'Carrier',
+  'Tracking',
+  'Note',
+];
+
 test.describe('table print: a wide table (16 columns)', () => {
   let printout: Printout;
   test.beforeAll(async ({ browser }) => {
@@ -429,43 +581,99 @@ test.describe('table print: a wide table (16 columns)', () => {
   });
 
   for (const paper of PAPERS) {
-    test(`${paper.name}: fits the page width and loses no row`, async () => {
+    test(`${paper.name}: fits the page width and loses no column, no cell and no row`, async () => {
       const pages = await printout.pdf(paper);
-      expect(firstColumn(pages, /^ORD-\d{4}$/)).toEqual(
-        Array.from({ length: 30 }, (_, i) => `ORD-${1001 + i}`),
-      );
-      // Nothing is cut at the right edge: the engine shrinks the page to fit. The shrunk text
-      // can reach a few points into the right margin, but stays far inside the paper
-      // (a printer cannot print the outer 14 points anyway).
-      const bounds = inBounds(pages);
-      expect(bounds.right).toBeGreaterThan(-MARGIN + 14);
-      expect(bounds.left).toBeGreaterThanOrEqual(-SLACK);
-      // Every page starts with the header row.
-      // A header cell can wrap, and platform fonts decide where: read every text above the
-      // first data row, not one text line.
-      for (const page of pages) {
-        const texts = page.lines.flatMap((line) => line.items.map((item) => item.str));
-        const firstRow = texts.findIndex((text) => /^ORD-\d{4}$/.test(text));
-        expect(firstRow).toBeGreaterThan(0);
-        const top = texts.slice(0, firstRow).join(' ');
-        expect(top).toContain('Order');
-        expect(top).toContain('Tracking');
-      }
+      const { headers, rows } = printout.captured;
+      expect(headers).toEqual(WIDE_HEADERS);
+      expect(rows).toHaveLength(30);
+      // Every header, every cell of every row, once and in order, inside the page. This holds
+      // for the fonts of any platform: a table that is too wide for the paper wraps, gets smaller
+      // text or breaks words, and never loses its right edge.
+      expectWholeTable(pages, 'Wide orders', headers, rows);
+      expectInsidePage(pages);
+      // Every page starts with the header row: checked by expectWholeTable.
       const size = minimumSize(pages);
       test.info().annotations.push({
         type: 'text size',
         description: `${paper.name}: ${size.toFixed(1)}pt on ${pages.length} page(s)`,
       });
-      if (paper.landscape) {
-        // Landscape is wide enough for most of the text size (9pt). The exact scale depends on
-        // the fonts of the platform, so the limits leave room.
-        expect(size).toBeGreaterThan(7);
-      } else {
-        // Portrait: Chromium scales the whole page down to fit, to about 70%.
-        // The table is readable but small. Use landscape for a table like this.
-        expect(size).toBeLessThan(8.5);
-        expect(size).toBeGreaterThan(4.5);
+      // The size depends on the fonts of the platform. It is never above the normal size
+      // (9 pt) and never below the floor (6 pt).
+      expect(size).toBeLessThan(9.1);
+    });
+  }
+
+  test('the table is wider than a portrait page, and the document knows what to do', async () => {
+    // The first query of the fit style names the width at which the table fits as it is built.
+    const natural = Number(/@container \(width < (\d+)px\)/.exec(printout.captured.html)?.[1]);
+    expect(natural).toBeGreaterThan(contentWidth(A4_PORTRAIT));
+  });
+});
+
+/**
+ * The same print pipeline with text that is much wider than the fonts of this platform: a
+ * monospace font, and for the table with 24 columns also letter spacing. The style is added to
+ * the frame document before the library measures the table, as a wide font of a platform would
+ * be. On the paper sizes below the table is far wider than the page (more than the 1.5 times
+ * that the print engine of Chromium can shrink a page), so a table that relied on the shrink to
+ * fit would lose its right columns.
+ */
+const WIDE_TEXT = 'body,table,th,td{font-family:"Courier New",Courier,monospace}';
+const WIDER_TEXT = WIDE_TEXT + 'th,td{letter-spacing:1px}';
+const STRESS_PAPERS: readonly Paper[] = [A4_PORTRAIT, LETTER_PORTRAIT, A5_PORTRAIT];
+
+test.describe('table print: stress with wide text on narrow paper', () => {
+  const cases = [
+    { name: '16 columns, wide font', columns: 16, stress: { css: WIDE_TEXT } },
+    {
+      name: '24 columns, wide font and letter spacing',
+      columns: 24,
+      stress: { css: WIDER_TEXT, extraColumns: true },
+    },
+  ];
+  for (const { name, columns, stress } of cases) {
+    test.describe(name, () => {
+      let printout: Printout;
+      test.beforeAll(async ({ browser }) => {
+        printout = await openPrintout(browser, 'Print wide table', 'Print a wide table', stress);
+      });
+      test.afterAll(async () => {
+        await printout.context.close();
+      });
+
+      test('is a real stress: wider than 1.5 times every paper below', () => {
+        expect(printout.captured.headers).toHaveLength(columns);
+        const natural = Number(/@container \(width < (\d+)px\)/.exec(printout.captured.html)?.[1]);
+        for (const paper of STRESS_PAPERS) {
+          expect(natural, paper.name).toBeGreaterThan(1.5 * contentWidth(paper));
+        }
+      });
+
+      for (const paper of STRESS_PAPERS) {
+        test(`${paper.name}: every header and every cell is on the page, complete, once`, async () => {
+          const pages = await printout.pdf(paper);
+          const { headers, rows } = printout.captured;
+          expect(rows).toHaveLength(30);
+          expectWholeTable(pages, 'Wide orders', headers, rows);
+          expectInsidePage(pages);
+          // The header row is on every page, and a row is not split: expectWholeTable.
+          test.info().annotations.push({
+            type: 'text size',
+            description: `${paper.name}: ${minimumSize(pages).toFixed(1)}pt on ${pages.length} page(s)`,
+          });
+        });
       }
+
+      test('without the fit rules the same document loses its right edge (A4 portrait)', async () => {
+        // The old behavior, to show that the stress works: the table is not wrapped or shrunk
+        // by the document, so the engine shrinks the page by 1.5 times at most and cuts the rest.
+        const old = printout.captured.html.replace(/@container[^{]*\{(?:[^{}]*\{[^{}]*\})*\}/g, '');
+        expect(old).not.toContain('@container');
+        const pages = await renderPdf(printout.context, old, A4_PORTRAIT);
+        const { headers } = printout.captured;
+        const text = squeeze(pages.flatMap((page) => page.items.map((item) => item.str)).join(''));
+        expect(text).not.toContain(squeeze(headers.join('')));
+      });
     });
   }
 });

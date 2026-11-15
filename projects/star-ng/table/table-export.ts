@@ -180,7 +180,135 @@ function printable(value: StarExportCell): string {
     .join('');
 }
 
-/** HTML document with one table, for the browser print dialog ("Save as PDF"). */
+/** One step of the fit ladder: how a print table gives way when it is wider than the paper. */
+export interface StarPrintFitStep {
+  /** Text size in CSS pixels. The normal size is 12 px (9 pt). */
+  readonly size: number;
+  /** A cell of one short word may wrap too (at a hyphen). */
+  readonly wrap: boolean;
+  /** A word may break at any character. Last resort: it sets no minimum width on a column. */
+  readonly anywhere: boolean;
+}
+
+/** The text size of the print document, in CSS pixels (9 pt). */
+const PRINT_SIZE = 12;
+
+/**
+ * What a table gives way to, in this order, until its minimum width fits the paper: first the
+ * cells of one short word may wrap (the text keeps its size), then the text gets smaller
+ * (11, 10, 9 and 8 px; 8 px is 6 pt, the floor), and last a word may break at any character.
+ * Step 0 is the table as it is built: no rule changes, short words never wrap.
+ */
+export const PRINT_FIT_STEPS: readonly StarPrintFitStep[] = [
+  { size: PRINT_SIZE, wrap: false, anywhere: false },
+  { size: PRINT_SIZE, wrap: true, anywhere: false },
+  { size: 11, wrap: true, anywhere: false },
+  { size: 10, wrap: true, anywhere: false },
+  { size: 9, wrap: true, anywhere: false },
+  { size: 8, wrap: true, anywhere: false },
+  { size: 8, wrap: true, anywhere: true },
+];
+
+const round = (value: number) => Math.round(value * 100) / 100;
+
+/**
+ * Style rules of one fit step. `scope` is the selector of the table (`table` in this file).
+ * `columns` (minimum widths of the columns) is for the step that breaks words: it gives each
+ * column a share of the width in proportion to its longest word.
+ */
+function fitRules(step: StarPrintFitStep, scope: string, columns: readonly number[] = []): string {
+  const scale = step.size / PRINT_SIZE;
+  const total = columns.reduce((sum, width) => sum + width, 0);
+  return (
+    `${scope}{font-size:${step.size}px${step.anywhere && total ? ';table-layout:fixed' : ''}}` +
+    // Padding follows the text size: at 6 pt, 4 px of padding would take a third of a column.
+    `${scope} th,${scope} td{padding:${round(4 * scale)}px ${round(8 * scale)}px${
+      step.anywhere ? ';overflow-wrap:anywhere' : ''
+    }}` +
+    (step.wrap ? `${scope} td.s{white-space:normal}` : '') +
+    // Without this, a word-breaking table gives its width to the columns with the longest text
+    // and leaves one character for the others. The shares add up to 100% at most, and the
+    // padding is inside them, so the table does not grow beyond the page.
+    (step.anywhere && total
+      ? `${scope} th{box-sizing:border-box}` +
+        columns
+          .map(
+            (width, index) =>
+              `${scope} th:nth-child(${index + 1}){width:${Math.floor((width / total) * 10000) / 100}%}`,
+          )
+          .join('')
+      : '')
+  );
+}
+
+/**
+ * Style sheet that makes the print table fit any paper. `widths[i]` is the minimum width in
+ * pixels of the table at step `i` of `PRINT_FIT_STEPS`; `columns` are the minimum widths of its
+ * columns at the last step that keeps words whole. Step `i` applies when the content width of
+ * the page is less than the minimum width of every step before it. The query is a container
+ * query on the wrapper of the table, so it is answered with the real width of the page, which
+ * the print dialog (paper, margins, scale) decides after the document is built. A step that is
+ * not narrower than a step before it is left out.
+ */
+export function printFitStyle(widths: readonly number[], columns: readonly number[] = []): string {
+  let narrowest = widths[0] ?? 0;
+  let css = '';
+  for (let index = 1; index < widths.length && index < PRINT_FIT_STEPS.length; index++) {
+    if (widths[index] >= narrowest) continue;
+    css += `@container (width < ${narrowest}px){${fitRules(PRINT_FIT_STEPS[index], 'table', columns)}}`;
+    narrowest = widths[index];
+  }
+  return css;
+}
+
+/** Widths measured by `fitPrintDocument`. */
+export interface StarPrintFitMeasure {
+  /** Minimum width of the table at each step of `PRINT_FIT_STEPS`. */
+  readonly widths: readonly number[];
+  /** Minimum width of each column at the last step that keeps words whole. */
+  readonly columns: readonly number[];
+}
+
+/**
+ * Measures the minimum width of the print table at each fit step, in the layout of `doc`, and
+ * adds the style sheet of `printFitStyle` to it. Call it when the frame has loaded, before the
+ * print dialog opens. The widths are read in the real fonts of the document, so the text of any
+ * font, wide or narrow, gets the steps it needs.
+ */
+export function fitPrintDocument(doc: Document): StarPrintFitMeasure {
+  const table = doc.querySelector('table');
+  if (!table) return { widths: [], columns: [] };
+  // The probe sets the table to 1 px wide, and a table is never narrower than its minimum
+  // width: the width that is read is the minimum width, whatever the size of the frame is.
+  const probe = doc.createElement('style');
+  doc.head.append(probe);
+  const lastWhole = PRINT_FIT_STEPS.findIndex((step) => step.anywhere) - 1;
+  let columns: number[] = [];
+  const widths = PRINT_FIT_STEPS.map((step, index) => {
+    probe.textContent = `table{width:1px}${fitRules(step, 'table')}`;
+    if (index === lastWhole) {
+      columns = Array.from(table.querySelectorAll('thead th'), (cell) =>
+        Math.ceil(cell.getBoundingClientRect().width),
+      );
+    }
+    return Math.ceil(table.getBoundingClientRect().width);
+  });
+  probe.remove();
+  const css = printFitStyle(widths, columns);
+  if (css) {
+    const style = doc.createElement('style');
+    style.textContent = css;
+    doc.head.append(style);
+  }
+  return { widths, columns };
+}
+
+/**
+ * HTML document with one table, for the browser print dialog ("Save as PDF"). The table is
+ * built to print at the normal size. When the paper is too narrow for it, call
+ * `fitPrintDocument` on the loaded document: the table then wraps, shrinks or breaks words
+ * (see `PRINT_FIT_STEPS`) so that no column is cut off.
+ */
 export function buildPrintDocument(
   title: string,
   headers: readonly string[],
@@ -204,6 +332,7 @@ export function buildPrintDocument(
   return `<!doctype html><html><head><meta charset="utf-8"><title>${escape(title)}</title><style>
 body{font:12px/1.4 system-ui,sans-serif;color:#000;margin:16px}
 h1{font-size:16px;margin:0 0 12px;overflow-wrap:anywhere}
+.fit{container-type:inline-size}
 table{width:100%;border-collapse:collapse}
 th,td{padding:4px 8px;border:1px solid #999;text-align:left;vertical-align:top;overflow-wrap:break-word}
 th{background:#eee}
@@ -211,7 +340,7 @@ th.n,td.n{text-align:right}
 td.s{white-space:nowrap}
 thead{display:table-header-group}
 tr{break-inside:avoid}
-</style></head><body><h1>${escape(title)}</h1><table><thead><tr>${headers
+</style></head><body><h1>${escape(title)}</h1><div class="fit"><table><thead><tr>${headers
     .map(
       (header, index) =>
         `<th scope="col"${numberColumn(index) ? ' class="n"' : ''}>${printable(header)}</th>`,
@@ -221,5 +350,5 @@ tr{break-inside:avoid}
       (row) =>
         `<tr>${row.map((value) => `<td${cellClass(value)}>${printable(value)}</td>`).join('')}</tr>`,
     )
-    .join('')}</tbody></table></body></html>`;
+    .join('')}</tbody></table></div></body></html>`;
 }
