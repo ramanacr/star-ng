@@ -1,11 +1,13 @@
-import { DOCUMENT } from '@angular/common';
+import { DOCUMENT, ViewportScroller } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
   computed,
   effect,
+  ElementRef,
   inject,
   signal,
+  viewChild,
 } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { StarConfirmHost } from '@star-ng/ui/dialog';
@@ -30,7 +32,7 @@ const DIRECTION_KEY = 'star-direction';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <a class="docs-skip" href="#main">Skip to content</a>
-    <header class="docs-header">
+    <header #header class="docs-header">
       <button
         type="button"
         class="docs-header__menu"
@@ -42,7 +44,7 @@ const DIRECTION_KEY = 'star-direction';
         <i class="ph-bold ph-list" aria-hidden="true"></i>
       </button>
       <a class="docs-header__brand" routerLink="/">
-        <i class="ph-fill ph-star" aria-hidden="true"></i>
+        <span class="docs-header__mark" aria-hidden="true"><i class="ph-fill ph-star"></i></span>
         <span>StarNG</span>
       </a>
       <span class="docs-header__spacer"></span>
@@ -109,11 +111,15 @@ const DIRECTION_KEY = 'star-direction';
 })
 export class App {
   private readonly document = inject(DOCUMENT);
+  private readonly header = viewChild.required<ElementRef<HTMLElement>>('header');
   protected readonly navOpen = signal(false);
   /** Right-to-left layout: sets `dir` on `<html>` and is remembered in `localStorage`. */
   protected readonly rtl = signal(this.storedRtl());
 
   constructor() {
+    // The header stays on top of the page. A link to an anchor (`#api`, an example heading)
+    // scrolls the target to just below the header, not under it.
+    inject(ViewportScroller).setOffset(() => [0, this.header().nativeElement.offsetHeight + 16]);
     // Set at once (not only in the effect), so the first render already has the direction.
     this.document.documentElement.dir = this.rtl() ? 'rtl' : 'ltr';
     effect(() => {
