@@ -1,0 +1,15 @@
+# The "Sponsor" button shows on the repository. The `github` entry needs an approved GitHub Sponsors profile for that account.
+github: ramanacr
+# To switch on another platform, remove the "#" and replace the placeholder.
+# patreon: USERNAME
+# open_collective: COLLECTIVE_SLUG
+# ko_fi: USERNAME
+# tidelift: npm/PACKAGE_NAME
+# liberapay: USERNAME
+# issuehunt: USERNAME
+# polar: USERNAME
+# buy_me_a_coffee: USERNAME
+# thanks_dev: u/gh/USERNAME
+# lfx_crowdfunding: PROJECT_NAME
+# community_bridge: PROJECT_NAME
+# custom: ["https://example.com/support-one", "https://example.com/support-two"] # one to four URLs
