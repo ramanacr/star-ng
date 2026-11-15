@@ -12,6 +12,9 @@ npm package: `star-ng`. Selector prefix: `star-`. CSS token prefix: `--star-`.
   application bundles only what it uses.
 - Built-in control text in one injection token (`STAR_UI_TEXT`), ready for translation,
   with German and Spanish packs (`star-ng/i18n/de`, `star-ng/i18n/es`).
+- Right-to-left layouts (Arabic, Hebrew, Persian, Urdu): set `dir="rtl"` on `<html>`. The styles
+  use logical properties, the arrow keys follow the visual direction and overlays follow the
+  direction at run time.
 - No Angular Material and no other UI kit.
 
 > Status: the controls are being ported in groups. The docs application lists the controls
@@ -112,7 +115,7 @@ choice. The docs have a guide for it and for the first-paint script.
 ## Documentation
 
 The docs application has the guides (getting started, theming and tokens, dark mode, forms,
-internationalisation, accessibility) and one page per control with live examples, their
+internationalisation, right-to-left, accessibility) and one page per control with live examples, their
 source and an API table.
 
 ```bash
@@ -126,7 +129,7 @@ corepack pnpm start        # docs application on http://localhost:4200
 | ------------------ | ---------------------------------------------------------------- |
 | `projects/star-ng` | The library. One folder per entry point, `styles/` for the SCSS. |
 | `projects/docs`    | The docs application.                                            |
-| `e2e`              | Playwright tests. They run against the docs application.         |
+| `e2e`              | Playwright tests, including the axe accessibility scan.          |
 | `tools`            | Build tools: compiled CSS, docs data generator, name check.      |
 
 ## Development
@@ -138,6 +141,7 @@ corepack pnpm start        # docs application on http://localhost:4200
 | `corepack pnpm test:ci`  | Unit tests (Vitest, jsdom) with coverage.                            |
 | `corepack pnpm build`    | Builds the package to `dist/star-ng` (with CSS) and the docs.        |
 | `corepack pnpm e2e`      | Playwright tests (`corepack pnpm e2e:install` once for the browser). |
+| `corepack pnpm e2e:a11y` | Only the axe accessibility scan of every docs page and its states.   |
 | `corepack pnpm docs:gen` | Writes the API and example data of the docs after a change.          |
 
 Conventions: Conventional Commits, one feature per pull request, signed commits.

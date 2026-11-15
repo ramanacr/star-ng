@@ -1,4 +1,16 @@
 import { expect, Locator, Page } from '@playwright/test';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+/**
+ * Route paths of the docs navigation, read from `nav.ts` as text. The file is not imported:
+ * it loads every docs page with a dynamic `import()`, which the e2e project cannot type check.
+ */
+export const DOCS_PAGES: readonly string[] = [
+  ...readFileSync(join(__dirname, '../projects/docs/src/app/nav.ts'), 'utf8').matchAll(
+    /^\s+path: '([^']+)',$/gm,
+  ),
+].map((match) => match[1]);
 
 /** Opens a docs page and waits for its heading. */
 export async function openPage(page: Page, path: string, heading: string | RegExp): Promise<void> {
@@ -10,7 +22,7 @@ export async function openPage(page: Page, path: string, heading: string | RegEx
 export function example(page: Page, heading: string): Locator {
   return page
     .locator('docs-example')
-    .filter({ has: page.getByRole('heading', { level: 3, name: heading, exact: true }) })
+    .filter({ has: page.getByRole('heading', { level: 2, name: heading, exact: true }) })
     .locator('.docs-example__live');
 }
 

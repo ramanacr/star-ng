@@ -257,7 +257,9 @@ describe('StarTable inline cell edit', () => {
     const buttons = [...el.querySelectorAll('.star-table__edit')];
     // 4 products + 2 open statuses + 4 amounts.
     expect(buttons.length).toBe(10);
-    expect(buttons[0].getAttribute('aria-label')).toBe('Edit Product');
+    // The name comes from the content (action and value), so it holds the visible text.
+    expect(buttons[0].hasAttribute('aria-label')).toBe(false);
+    expect(buttons[0].textContent!.replace(/\s+/g, ' ').trim()).toMatch(/^Edit Product: \S/);
   });
 
   it('emits the new text on Enter and does not change the rows itself', async () => {
@@ -385,6 +387,22 @@ describe('StarTable columns: order, visibility, width, freeze', () => {
     await fixture.whenStable();
     expect(host.widths()).toEqual({ id: 48 });
   });
+
+  it('resizes the other way round in a right-to-left page: the handle is on the left edge', async () => {
+    const { fixture, el, host } = await setup();
+    el.setAttribute('dir', 'rtl');
+    const handle = el.querySelector<HTMLElement>('thead th:nth-child(1) .star-table__resizer')!;
+    host.widths.set({ id: 80 });
+    await fixture.whenStable();
+    // Arrow left moves the edge to the left, which makes the column wider.
+    handle.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft' }));
+    await fixture.whenStable();
+    expect(host.widths()).toEqual({ id: 96 });
+    handle.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight' }));
+    handle.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight' }));
+    await fixture.whenStable();
+    expect(host.widths()).toEqual({ id: 64 });
+  });
 });
 
 @Component({
@@ -431,6 +449,51 @@ describe('StarTable virtual scroll', () => {
     expect(rows()[0].textContent).toContain('Row 96');
     expect(rows()[0].getAttribute('aria-rowindex')).toBe('97');
     expect(spacers()).toEqual([`${95 * 40}px`, `${(1000 - 115) * 40}px`]);
+  });
+});
+
+@Component({
+  imports: [StarTable],
+  template: `<star-table
+    [value]="rows"
+    [columns]="columns"
+    dataKey="id"
+    selectionMode="multiple"
+    virtualScroll
+    [virtualRowHeight]="40"
+    scrollHeight="400px"
+  />`,
+})
+class VirtualTabHost {
+  readonly rows = Array.from({ length: 1000 }, (_, i) => ({ id: i + 1, product: `Row ${i + 1}` }));
+  readonly columns: StarColumn<{ id: number; product: string }>[] = [
+    { field: 'product', header: 'Product' },
+  ];
+}
+
+describe('StarTable virtual scroll: Tab to a row that is not rendered', () => {
+  it('renders and focuses the next row before the key event ends', async () => {
+    const fixture = TestBed.createComponent(VirtualTabHost);
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+    const viewport = el.querySelector<HTMLElement>('.star-table__scroll')!;
+    Object.defineProperty(viewport, 'clientHeight', { value: 400 });
+    const row = (index: number) => el.querySelector<HTMLElement>(`tbody tr[data-vi="${index}"]`);
+    const checkbox = (index: number) => row(index)?.querySelector<HTMLInputElement>('input');
+
+    const last = Number(
+      [...el.querySelectorAll<HTMLElement>('tbody tr[data-vi]')].at(-1)!.dataset['vi'],
+    );
+    expect(row(last + 1)).toBeNull();
+    checkbox(last)!.focus();
+
+    // No `await`: a second Tab on a slow device starts right after the first one, so the focus
+    // must have moved when the first key event returns.
+    checkbox(last)!.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true }),
+    );
+    expect(checkbox(last + 1)).not.toBeNull();
+    expect(document.activeElement).toBe(checkbox(last + 1));
   });
 });
 

@@ -16,7 +16,7 @@ import {
   viewChild,
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
-import { STAR_UI_TEXT } from 'star-ng/core';
+import { STAR_UI_TEXT, StarDirectionService } from 'star-ng/core';
 import { StarCalendar, StarCalendarView } from './calendar';
 import {
   compareDays,
@@ -53,6 +53,8 @@ const PANEL_POSITIONS: ConnectedPosition[] = [
  */
 @Directive()
 export abstract class StarDateInputBase<TValue> {
+  /** Keeps the CDK direction (overlays and menus) in step with `<html dir>`. */
+  private readonly directionSync = inject(StarDirectionService);
   protected readonly text = inject(STAR_UI_TEXT);
   private readonly ids = inject(_IdGenerator);
 
@@ -313,7 +315,6 @@ const TEMPLATE = `
       [readOnly]="readonly() || readonlyInput()"
       [required]="required()"
       [attr.aria-label]="ariaLabel()"
-      [attr.aria-expanded]="open()"
       [attr.aria-controls]="open() ? panelId : null"
       [attr.aria-invalid]="showInvalid() || null"
       (input)="typed.set(input.value)"
@@ -330,8 +331,10 @@ const TEMPLATE = `
       type="button"
       class="star-date__toggle"
       [disabled]="!interactive()"
+      aria-haspopup="dialog"
       [attr.aria-label]="text.chooseDate"
       [attr.aria-expanded]="open()"
+      [attr.aria-controls]="open() ? panelId : null"
       (click)="togglePanel()"
     >
       <i class="ph-bold ph-calendar-blank" aria-hidden="true"></i>

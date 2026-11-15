@@ -58,8 +58,9 @@ describe('inplace, scroll panel, focus trap, float label, image compare', () => 
   it('inplace swaps the value for the edit content and goes back on Escape', async () => {
     const { fixture, el, host } = await setup();
     const display = el.querySelector<HTMLButtonElement>('.star-inplace__display')!;
-    expect(display.getAttribute('aria-label')).toBe('Edit name');
-    expect(display.textContent).toContain('A. Rivera');
+    // The name comes from the content (label and value), so it holds the visible text.
+    expect(display.hasAttribute('aria-label')).toBe(false);
+    expect(display.textContent!.replace(/\s+/g, ' ').trim()).toBe('Edit name: A. Rivera');
     expect(el.querySelector('.name')).toBeNull();
 
     display.click();

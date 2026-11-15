@@ -88,6 +88,14 @@ import { DOCS, DocsRow } from '../shared/docs';
         </div>
       </docs-example>
 
+      <h2>Right-to-left</h2>
+      <p>
+        The grid follows the page direction: the week starts on the right and Arrow left moves to
+        the following day (Arrow right to the day before). In the month and year views Arrow left
+        and Arrow right turn the same way. The previous and next month arrows turn around. See the
+        Right-to-left guide.
+      </p>
+
       <docs-api [of]="['StarCalendar']" [cssVars]="cssVars" [keyboard]="keyboard" />
 
       <h2>Technical notes</h2>
@@ -151,7 +159,8 @@ readonly maxDate = new Date(2026, 11, 20);`;
     { name: '--star-primary-soft', description: 'Fill between the two ends of a range.' },
     { name: '--star-surface-muted', description: 'Hover background of a day.' },
     { name: '--star-focus-ring', description: 'Focus ring of a day.' },
-    { name: '--star-text-soft', description: 'Days of other months and disabled days.' },
+    { name: '--star-text-muted', description: 'Days of other months.' },
+    { name: '--star-text-soft', description: 'Disabled days.' },
     { name: '--star-border', description: 'Border of the inline calendar.' },
   ];
   protected readonly keyboard: readonly DocsRow[] = [

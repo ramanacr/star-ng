@@ -10,7 +10,9 @@ import { ChangeDetectionStrategy, Component, computed, input, signal } from '@an
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '[class]': "'star-avatar star-avatar--' + size() + ' star-avatar--' + shape()",
-    role: 'img',
+    // Without a name the avatar is decoration: it has no role and screen readers skip it.
+    '[attr.role]': "name() ? 'img' : null",
+    '[attr.aria-hidden]': "name() ? null : 'true'",
     '[attr.aria-label]': 'name() || null',
   },
   template: `

@@ -1,6 +1,7 @@
 import { CdkMenu, CdkMenuBar, CdkMenuGroup, CdkMenuItem, CdkMenuTrigger } from '@angular/cdk/menu';
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { StarDirectionService } from 'star-ng/core';
 import { STAR_MENU_POSITIONS, StarMenuInDialog, StarMenuItem } from './menu';
 
 /**
@@ -143,6 +144,8 @@ import { STAR_MENU_POSITIONS, StarMenuInDialog, StarMenuItem } from './menu';
   `,
 })
 export class StarMegaMenu {
+  /** Keeps the CDK direction (overlays and menus) in step with `<html dir>`. */
+  private readonly directionSync = inject(StarDirectionService);
   readonly items = input<readonly StarMenuItem[]>([]);
   readonly ariaLabel = input<string | null>(null);
   readonly itemClick = output<StarMenuItem>();

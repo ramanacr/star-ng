@@ -16,7 +16,7 @@ import { DOCS, DocsRow } from '../shared/docs';
       <docs-example
         heading="Positions"
         source="tooltip/positions"
-        note="starTooltipPosition is top (default), bottom, left or right. When there is no room, the tooltip moves to the opposite side."
+        note="starTooltipPosition is top (default), bottom, left, right, start or end. left and right are the sides of the screen, start and end follow the writing direction. When there is no room, the tooltip moves to the opposite side."
       >
         <star-button variant="secondary" starTooltip="Shown on hover and focus">Top</star-button>
         <star-button
@@ -31,6 +31,12 @@ import { DOCS, DocsRow } from '../shared/docs';
         </star-button>
         <star-button variant="secondary" starTooltip="On the right" starTooltipPosition="right">
           Right
+        </star-button>
+        <star-button variant="secondary" starTooltip="At the start" starTooltipPosition="start">
+          Start
+        </star-button>
+        <star-button variant="secondary" starTooltip="At the end" starTooltipPosition="end">
+          End
         </star-button>
       </docs-example>
 
@@ -68,6 +74,14 @@ import { DOCS, DocsRow } from '../shared/docs';
           Disabled tooltip
         </star-button>
       </docs-example>
+
+      <h2>Right-to-left</h2>
+      <p>
+        <code>left</code> and <code>right</code> are physical sides of the host.
+        <code>start</code> and <code>end</code> follow the writing direction (<code>start</code> is
+        the right side in a right-to-left page). A tooltip that opens after <code>dir</code> changed
+        uses the new direction. See the Right-to-left guide.
+      </p>
 
       <docs-api [of]="['StarTooltip']" [slots]="slots" [cssVars]="cssVars" [keyboard]="keyboard" />
 

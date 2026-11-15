@@ -68,9 +68,12 @@ export class StarInplaceContent {
         type="button"
         class="star-inplace__display"
         [disabled]="disabled()"
-        [attr.aria-label]="ariaLabel()"
         (click)="activate()"
       >
+        <!-- The label is part of the name, so the visible value is too (WCAG 2.5.3). -->
+        @if (ariaLabel(); as label) {
+          <span class="star-sr-only">{{ label }}: </span>
+        }
         @if (display(); as view) {
           <ng-container *ngTemplateOutlet="view.template" />
         }

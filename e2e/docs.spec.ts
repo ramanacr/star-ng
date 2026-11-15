@@ -72,7 +72,7 @@ test.describe('docs application', () => {
   test('shows the source of an example and it matches the live markup', async ({ page }) => {
     await openPage(page, '/controls/button', 'Button');
     const block = page.locator('docs-example').filter({
-      has: page.getByRole('heading', { level: 3, name: 'Sizes', exact: true }),
+      has: page.getByRole('heading', { level: 2, name: 'Sizes', exact: true }),
     });
     await block.getByText('Source', { exact: true }).click();
     await expect(block.locator('pre').first()).toContainText('<star-button size="sm">Small');

@@ -103,14 +103,67 @@ jobs:
         if: steps.pw-cache.outputs.cache-hit != 'true'
         run: pnpm exec playwright install chromium
 
+      # The axe accessibility scan (tag @a11y) runs in its own job, in parallel.
       - name: End-to-end tests
-        run: pnpm e2e
+        run: pnpm e2e --grep-invert @a11y
 
       - name: Upload Playwright report
         if: failure()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+  # Accessibility scan with axe-core (e2e/a11y.spec.ts): every docs page and about 65 opened
+  # states, in the light and the dark theme, about 330 tests. A separate job keeps the `e2e` job
+  # short: the scan runs in parallel, and the two shards halve its run time. Any violation that
+  # is not in the allow-list of the spec fails the job.
+  a11y:
+    name: a11y (shard ${{ matrix.shard }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: ['1/2', '2/2']
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Read Playwright version
+        id: pw
+        run: echo "version=$(pnpm exec playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        id: pw-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.pw.outputs.version }}
+
+      - name: Install Playwright Chromium
+        if: steps.pw-cache.outputs.cache-hit != 'true'
+        run: pnpm exec playwright install chromium
+
+      - name: Accessibility scan (axe)
+        run: pnpm e2e:a11y --shard=${{ matrix.shard }} --workers=2
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: playwright-report-a11y-${{ strategy.job-index }}
           path: playwright-report/
           retention-days: 7
 
@@ -121,7 +174,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     if: always()
-    needs: [build-test, e2e]
+    needs: [build-test, e2e, a11y]
     steps:
       - name: Evaluate required gates
         env:

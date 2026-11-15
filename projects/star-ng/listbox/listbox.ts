@@ -197,10 +197,12 @@ import {
               }
             </span>
           </li>
-        } @empty {
-          <li class="star-listbox__empty" role="presentation">{{ text.emptyFilterMessage }}</li>
         }
       </ul>
+      <!-- Outside the listbox: a listbox may contain options and groups only. -->
+      @if (!visible().length) {
+        <div class="star-listbox__empty" role="presentation">{{ text.emptyFilterMessage }}</div>
+      }
     }
   `,
 })

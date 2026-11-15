@@ -86,6 +86,7 @@ import { StarOptionListBase } from './option-list-base';
       @if (loading()) {
         <i
           class="ph-bold ph-spinner-gap star-spin star-select__caret"
+          role="img"
           [attr.aria-label]="text.loading"
         ></i>
       } @else {

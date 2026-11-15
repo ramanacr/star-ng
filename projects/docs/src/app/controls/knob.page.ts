@@ -34,6 +34,12 @@ import { DOCS, DocsRow } from '../shared/docs';
         <star-knob [value]="35" disabled [size]="90" ariaLabel="Locked value" />
       </docs-example>
 
+      <h2>Right-to-left</h2>
+      <p>
+        The knob keeps its geometry in a right-to-left page, like a clock: the arc runs clockwise
+        and Arrow up and Arrow right add one step. See the Right-to-left guide.
+      </p>
+
       <docs-api [of]="['StarKnob']" [cssVars]="cssVars" [keyboard]="keyboard" />
     </docs-page>
   `,

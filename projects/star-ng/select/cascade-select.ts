@@ -11,7 +11,13 @@ import {
   output,
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
-import { optionText, readOption, STAR_UI_TEXT, StarOptionKey } from 'star-ng/core';
+import {
+  optionText,
+  readOption,
+  STAR_UI_TEXT,
+  StarDirectionService,
+  StarOptionKey,
+} from 'star-ng/core';
 import { STAR_MENU_POSITIONS, StarMenu, StarMenuInDialog, StarMenuItem } from 'star-ng/menu';
 
 interface Leaf<TOption, TValue> {
@@ -52,9 +58,8 @@ interface Leaf<TOption, TValue> {
         [cdkMenuTriggerData]="{ $implicit: menuItems() }"
         [cdkMenuPosition]="positions"
         [disabled]="disabled() || readonly()"
-        [attr.aria-label]="ariaLabel()"
+        [attr.aria-label]="triggerName()"
         [attr.aria-invalid]="(invalid() && touched()) || null"
-        [attr.aria-required]="required() || null"
         (cdkMenuClosed)="touch.emit()"
       >
         @if (selected(); as leaf) {
@@ -84,6 +89,8 @@ export class StarCascadeSelect<
   TOption,
   TValue = TOption,
 > implements FormValueControl<TValue | null> {
+  /** Keeps the CDK direction (overlays and menus) in step with `<html dir>`. */
+  private readonly directionSync = inject(StarDirectionService);
   protected readonly text = inject(STAR_UI_TEXT);
   protected readonly positions = STAR_MENU_POSITIONS;
 
@@ -169,6 +176,18 @@ export class StarCascadeSelect<
             };
       });
     return build(this.options());
+  });
+
+  /**
+   * Accessible name of the trigger button: the label and the text on the button, so the visible
+   * text is part of the name (WCAG 2.5.3). `null` without `ariaLabel`: a `star-field` label then
+   * names the button.
+   */
+  protected readonly triggerName = computed(() => {
+    const label = this.ariaLabel();
+    if (!label) return null;
+    const leaf = this.selected();
+    return `${label}: ${leaf ? this.display(leaf) : (this.placeholder() ?? this.text.selectPlaceholder)}`;
   });
 
   protected display(leaf: Leaf<TOption, TValue>): string {

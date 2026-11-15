@@ -50,7 +50,10 @@ export interface StarBreadcrumbItem {
               } @else {
                 <span>{{ item.label }}</span>
               }
-              <i class="ph-bold ph-caret-right star-breadcrumb__sep" aria-hidden="true"></i>
+              <i
+                class="ph-bold ph-caret-right star-breadcrumb__sep star-icon-mirror"
+                aria-hidden="true"
+              ></i>
             }
           </li>
         }

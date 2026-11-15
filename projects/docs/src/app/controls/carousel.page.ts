@@ -81,6 +81,13 @@ import { sampleSet } from '../shared/sample-images';
         </star-carousel>
       </docs-example>
 
+      <h2>Right-to-left</h2>
+      <p>
+        With <code>dir="rtl"</code> the first slide is on the right and the pages run to the left:
+        the scroll offset of the track is zero or negative. The previous and next arrows turn
+        around. See the Right-to-left guide.
+      </p>
+
       <docs-api
         [of]="['StarCarousel', 'StarCarouselItem']"
         [slots]="slots"

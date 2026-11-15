@@ -13,7 +13,7 @@ import {
   output,
   signal,
 } from '@angular/core';
-import { STAR_UI_TEXT } from 'star-ng/core';
+import { STAR_UI_TEXT, starInlineKey } from 'star-ng/core';
 import {
   addDays,
   addMonths,
@@ -67,7 +67,7 @@ export function isoWeek(date: Date): number {
         [attr.aria-label]="view() === 'year' ? text.previousYears : text.previousMonth"
         (click)="page(-1)"
       >
-        <i class="ph-bold ph-caret-left" aria-hidden="true"></i>
+        <i class="ph-bold ph-caret-left star-icon-mirror" aria-hidden="true"></i>
       </button>
       <h2 class="star-calendar__title" [id]="titleId" aria-live="polite">
         @if (view() === 'day') {
@@ -99,7 +99,7 @@ export function isoWeek(date: Date): number {
         [attr.aria-label]="view() === 'year' ? text.nextYears : text.nextMonth"
         (click)="page(1)"
       >
-        <i class="ph-bold ph-caret-right" aria-hidden="true"></i>
+        <i class="ph-bold ph-caret-right star-icon-mirror" aria-hidden="true"></i>
       </button>
     </div>
 
@@ -429,6 +429,8 @@ export class StarCalendar {
   protected onDayKeydown(event: KeyboardEvent): void {
     const current = this.focused();
     const weekStart = (current.getDay() - this.firstDay() + 7) % 7;
+    // The day before is on the left in left-to-right and on the right in right-to-left.
+    const key = starInlineKey(event);
     const moves: Record<string, () => Date> = {
       ArrowLeft: () => addDays(current, -1),
       ArrowRight: () => addDays(current, 1),
@@ -444,7 +446,7 @@ export class StarCalendar {
       this.choose(current);
       return;
     }
-    const move = moves[event.key];
+    const move = moves[key];
     if (!move) return;
     event.preventDefault();
     this.focused.set(move());
@@ -458,7 +460,7 @@ export class StarCalendar {
       ArrowUp: -3,
       ArrowDown: 3,
     };
-    const step = steps[event.key];
+    const step = steps[starInlineKey(event)];
     if (step === undefined) return;
     event.preventDefault();
     this.focused.set(addMonths(this.focused(), kind === 'month' ? step : step * 12));

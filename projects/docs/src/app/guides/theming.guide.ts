@@ -161,7 +161,8 @@ export class ThemingGuide {
     { name: '--star-border, --star-border-strong', description: 'Dividers and control borders.' },
     {
       name: '--star-text-strong, --star-text, --star-text-muted, --star-text-soft',
-      description: 'Headings and values; body text; labels and hints; decorative text only.',
+      description:
+        'Headings and values; body text; labels, hints and placeholders; icons and decoration only (soft is under 4.5:1 on the surface, so never use it for text to read).',
     },
   ];
 

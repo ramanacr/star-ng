@@ -1,9 +1,20 @@
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  signal,
+} from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { StarConfirmHost } from 'star-ng/dialog';
 import { StarThemeSwitch } from 'star-ng/theme-switch';
 import { StarToast } from 'star-ng/toast';
 import { DOCS_NAV, DocsNavGroup } from './nav';
+
+/** `localStorage` key of the saved text direction of the docs application. */
+const DIRECTION_KEY = 'star-direction';
 
 /** Shell of the docs application: header, grouped side navigation with search, page outlet. */
 @Component({
@@ -35,6 +46,15 @@ import { DOCS_NAV, DocsNavGroup } from './nav';
         <span>StarNG</span>
       </a>
       <span class="docs-header__spacer"></span>
+      <button
+        type="button"
+        class="docs-header__dir"
+        [attr.aria-label]="'Text direction: ' + (rtl() ? 'RTL' : 'LTR')"
+        [attr.aria-pressed]="rtl()"
+        (click)="toggleDirection()"
+      >
+        {{ rtl() ? 'RTL' : 'LTR' }}
+      </button>
       <star-theme-switch />
       <a
         class="docs-header__link"
@@ -88,7 +108,36 @@ import { DOCS_NAV, DocsNavGroup } from './nav';
   `,
 })
 export class App {
+  private readonly document = inject(DOCUMENT);
   protected readonly navOpen = signal(false);
+  /** Right-to-left layout: sets `dir` on `<html>` and is remembered in `localStorage`. */
+  protected readonly rtl = signal(this.storedRtl());
+
+  constructor() {
+    // Set at once (not only in the effect), so the first render already has the direction.
+    this.document.documentElement.dir = this.rtl() ? 'rtl' : 'ltr';
+    effect(() => {
+      this.document.documentElement.dir = this.rtl() ? 'rtl' : 'ltr';
+    });
+  }
+
+  protected toggleDirection(): void {
+    const next = !this.rtl();
+    this.rtl.set(next);
+    try {
+      this.document.defaultView?.localStorage.setItem(DIRECTION_KEY, next ? 'rtl' : 'ltr');
+    } catch {
+      // Storage can be blocked (private mode): the choice then lasts for this visit only.
+    }
+  }
+
+  private storedRtl(): boolean {
+    try {
+      return this.document.defaultView?.localStorage.getItem(DIRECTION_KEY) === 'rtl';
+    } catch {
+      return false;
+    }
+  }
   protected readonly query = signal('');
 
   /** Navigation groups, filtered by the search text (label and keywords). */

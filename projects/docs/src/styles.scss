@@ -28,6 +28,11 @@ code,
 pre {
   font: var(--star-type-code);
 }
+// Code stays left-to-right inside right-to-left text; isolation keeps it from reordering its neighbors.
+code {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
 
 :focus-visible {
   outline: 2px solid var(--star-accent);
@@ -37,7 +42,7 @@ pre {
 // ---------- Shell ----------
 .docs-skip {
   position: absolute;
-  left: var(--star-space-3);
+  inset-inline-start: var(--star-space-3);
   top: -4rem;
   z-index: 100;
   padding: var(--star-space-2) var(--star-space-3);
@@ -77,6 +82,23 @@ pre {
 .docs-header__spacer {
   flex: 1;
 }
+.docs-header__dir {
+  min-width: 2.75rem;
+  height: 2.25rem;
+  padding: 0 var(--star-space-2);
+  border: 1px solid var(--star-border);
+  border-radius: var(--star-radius-md);
+  background: transparent;
+  color: var(--star-text-muted);
+  font: var(--star-type-label);
+  cursor: pointer;
+
+  &:hover,
+  &[aria-pressed='true'] {
+    background: var(--star-surface-muted);
+    color: var(--star-text-strong);
+  }
+}
 .docs-header__menu,
 .docs-header__link {
   display: inline-grid;
@@ -112,7 +134,7 @@ pre {
   height: calc(100vh - 3.5rem);
   overflow-y: auto;
   padding: var(--star-space-4);
-  border-right: 1px solid var(--star-border);
+  border-inline-end: 1px solid var(--star-border);
   background: var(--star-surface);
 
   ul {
@@ -146,6 +168,11 @@ pre {
     background: transparent;
     font: inherit;
     color: var(--star-text-strong);
+
+    // The browser default placeholder color is 4.4:1 on this fill: use the muted text token.
+    &::placeholder {
+      color: var(--star-text-muted);
+    }
   }
 }
 .docs-nav__group {
@@ -247,15 +274,19 @@ pre {
   color: var(--star-text-muted);
 }
 
+// Code is always left-to-right, also on a right-to-left page: the block keeps its own direction,
+// so the copy button stays on the same side as the end of the lines.
 .docs-code {
   position: relative;
   display: block;
   margin: var(--star-space-3) 0;
+  direction: ltr;
+  text-align: left;
 
   pre {
     margin: 0;
     padding: var(--star-space-4);
-    padding-right: 3rem;
+    padding-inline-end: 3rem;
     overflow-x: auto;
     border: 1px solid var(--star-border);
     border-radius: var(--star-radius-lg);
@@ -267,7 +298,7 @@ pre {
 .docs-code__copy {
   position: absolute;
   top: var(--star-space-2);
-  right: var(--star-space-2);
+  inset-inline-end: var(--star-space-2);
   display: inline-grid;
   place-items: center;
   width: 2rem;
@@ -287,6 +318,13 @@ pre {
 .docs-example {
   display: block;
   margin: var(--star-space-6) 0;
+}
+// The title is a level 2 heading (a page has no level 2 heading before its first example), drawn
+// at the size of a level 3 heading.
+.docs-page h2.docs-example__title {
+  margin: var(--star-space-6) 0 var(--star-space-2);
+  font: var(--star-type-title-sm);
+  color: var(--star-text-strong);
 }
 .docs-example__note {
   margin: 0 0 var(--star-space-3);
@@ -356,7 +394,7 @@ pre {
 
   caption {
     padding: var(--star-space-3) var(--star-space-4);
-    text-align: left;
+    text-align: start;
     font: var(--star-type-label);
     color: var(--star-text-muted);
     border-bottom: 1px solid var(--star-border);
@@ -364,7 +402,7 @@ pre {
   th,
   td {
     padding: var(--star-space-2) var(--star-space-4);
-    text-align: left;
+    text-align: start;
     vertical-align: top;
     border-bottom: 1px solid var(--star-border);
   }
@@ -382,7 +420,7 @@ pre {
   }
 }
 .docs-table__required {
-  margin-left: var(--star-space-2);
+  margin-inline-start: var(--star-space-2);
   font: var(--star-type-eyebrow);
   color: var(--star-danger);
   text-transform: uppercase;

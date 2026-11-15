@@ -53,6 +53,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         load: () => import('./guides/i18n.guide').then((m) => m.I18nGuide),
       },
       {
+        label: 'Right-to-left',
+        path: 'guides/right-to-left',
+        keywords: 'rtl direction dir arabic hebrew persian urdu mirror bidi logical start end',
+        load: () => import('./guides/right-to-left.guide').then((m) => m.RightToLeftGuide),
+      },
+      {
         label: 'Accessibility',
         path: 'guides/accessibility',
         keywords: 'a11y keyboard screen reader contrast wcag aria',

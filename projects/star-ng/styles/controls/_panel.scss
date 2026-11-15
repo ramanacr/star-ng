@@ -12,7 +12,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 0.875rem 1rem 0.875rem 1.25rem;
+  padding-block: 0.875rem;
+  padding-inline: 1.25rem 1rem;
   border-bottom: 1px solid var(--star-border);
 
   .star-panel-box--collapsed & {
@@ -34,6 +35,11 @@
 }
 .star-panel-box--collapsed .star-panel-box__toggle i {
   rotate: -90deg;
+
+  // A collapsed panel points toward the inline end: right in LTR, left in RTL.
+  &:dir(rtl) {
+    rotate: 90deg;
+  }
 }
 .star-panel-box__body {
   padding: 1.25rem;

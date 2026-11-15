@@ -1,4 +1,5 @@
 import { _IdGenerator } from '@angular/cdk/a11y';
+import { Directionality } from '@angular/cdk/bidi';
 import {
   ConnectedPosition,
   createFlexibleConnectedPositionStrategy,
@@ -22,10 +23,15 @@ import {
   numberAttribute,
   signal,
 } from '@angular/core';
+import { StarDirectionService } from 'star-ng/core';
 
-export type StarTooltipPosition = 'top' | 'bottom' | 'left' | 'right';
+/**
+ * Side of the host. `left` and `right` are the physical sides of the screen, as in CSS;
+ * `start` and `end` follow the writing direction (`start` is the right side in right-to-left).
+ */
+export type StarTooltipPosition = 'top' | 'bottom' | 'left' | 'right' | 'start' | 'end';
 
-const POSITIONS: Record<StarTooltipPosition, ConnectedPosition[]> = {
+const VERTICAL: Record<'top' | 'bottom', ConnectedPosition[]> = {
   top: [
     { originX: 'center', originY: 'top', overlayX: 'center', overlayY: 'bottom', offsetY: -8 },
     { originX: 'center', originY: 'bottom', overlayX: 'center', overlayY: 'top', offsetY: 8 },
@@ -34,15 +40,41 @@ const POSITIONS: Record<StarTooltipPosition, ConnectedPosition[]> = {
     { originX: 'center', originY: 'bottom', overlayX: 'center', overlayY: 'top', offsetY: 8 },
     { originX: 'center', originY: 'top', overlayX: 'center', overlayY: 'bottom', offsetY: -8 },
   ],
-  left: [
-    { originX: 'start', originY: 'center', overlayX: 'end', overlayY: 'center', offsetX: -8 },
-    { originX: 'end', originY: 'center', overlayX: 'start', overlayY: 'center', offsetX: 8 },
-  ],
-  right: [
-    { originX: 'end', originY: 'center', overlayX: 'start', overlayY: 'center', offsetX: 8 },
-    { originX: 'start', originY: 'center', overlayX: 'end', overlayY: 'center', offsetX: -8 },
-  ],
 };
+
+/**
+ * Candidate places of the tooltip, the preferred one first. The CDK turns `start` and `end` around
+ * in right-to-left but adds `offsetX` as it is, so a physical side needs the matching origin:
+ * the left edge of the host is its `end` in right-to-left.
+ */
+function positionsFor(position: StarTooltipPosition, rtl: boolean): ConnectedPosition[] {
+  if (position === 'top' || position === 'bottom') return VERTICAL[position];
+  const physical =
+    position === 'start'
+      ? rtl
+        ? 'right'
+        : 'left'
+      : position === 'end'
+        ? rtl
+          ? 'left'
+          : 'right'
+        : position;
+  const left: ConnectedPosition = {
+    originX: rtl ? 'end' : 'start',
+    originY: 'center',
+    overlayX: rtl ? 'start' : 'end',
+    overlayY: 'center',
+    offsetX: -8,
+  };
+  const right: ConnectedPosition = {
+    originX: rtl ? 'start' : 'end',
+    originY: 'center',
+    overlayX: rtl ? 'end' : 'start',
+    overlayY: 'center',
+    offsetX: 8,
+  };
+  return physical === 'left' ? [left, right] : [right, left];
+}
 
 @Component({
   selector: 'star-tooltip-panel',
@@ -76,6 +108,7 @@ export class StarTooltip {
   private readonly injector = inject(Injector);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly panelId = inject(_IdGenerator).getId('star-tooltip-');
+  private readonly directionality = inject(Directionality);
 
   readonly starTooltip = input('');
   readonly starTooltipPosition = input<StarTooltipPosition>('top');
@@ -90,6 +123,8 @@ export class StarTooltip {
   private timer: ReturnType<typeof setTimeout> | undefined;
 
   constructor() {
+    // Keeps the CDK direction in step with the page, so a tooltip opened after a switch is flipped.
+    inject(StarDirectionService);
     effect(() => {
       const text = this.starTooltip();
       if (this.panelRef) this.panelRef.instance.text.set(text);
@@ -114,12 +149,13 @@ export class StarTooltip {
   show(): void {
     if (!this.starTooltip() || this.starTooltipDisabled() || this.panelRef) return;
     const strategy = createFlexibleConnectedPositionStrategy(this.injector, this.host)
-      .withPositions(POSITIONS[this.starTooltipPosition()])
+      .withPositions(positionsFor(this.starTooltipPosition(), this.directionality.value === 'rtl'))
       .withPush(true)
       .withViewportMargin(8);
     this.overlayRef ??= createOverlayRef(this.injector, {
       positionStrategy: strategy,
       scrollStrategy: createRepositionScrollStrategy(this.injector),
+      direction: this.directionality,
       usePopover: true,
       panelClass: 'star-tooltip-pane',
     });

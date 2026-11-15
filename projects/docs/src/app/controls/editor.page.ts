@@ -24,7 +24,7 @@ import { DOCS, DocsRow } from '../shared/docs';
             ariaLabel="Delivery note"
             placeholder="Write the delivery note"
           />
-          <pre class="docs-output" aria-label="Value of the editor">{{ note() }}</pre>
+          <pre class="docs-output" role="group" aria-label="Value of the editor">{{ note() }}</pre>
         </div>
       </docs-example>
 

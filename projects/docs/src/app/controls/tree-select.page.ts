@@ -117,6 +117,12 @@ import { buildLargeTree } from './large-tree';
         </div>
       </docs-example>
 
+      <h2>Right-to-left</h2>
+      <p>
+        The tree panel is aligned with the start edge of the field, and the tree keys are mirrored
+        as in the Tree control. See the Right-to-left guide.
+      </p>
+
       <docs-api
         [of]="['StarTreeSelect']"
         [slots]="slots"

@@ -14,6 +14,7 @@ import {
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
 import { STAR_UI_TEXT } from 'star-ng/core';
+import { StarField } from 'star-ng/field';
 
 export type StarTagRejection = 'invalid' | 'duplicate' | 'limit';
 
@@ -38,7 +39,11 @@ export type StarTagRejection = 'invalid' | 'duplicate' | 'limit';
     <!-- Pointer convenience only: keyboard users reach the input directly. -->
     <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
     <div class="star-select__control star-ac__control star-tags__control" (click)="focus()">
-      <ul class="star-tags__list" [attr.aria-label]="ariaLabel()">
+      <ul
+        class="star-tags__list"
+        [attr.aria-label]="ariaLabel()"
+        [attr.aria-disabled]="disabled() || null"
+      >
         @for (tag of value(); track tag; let i = $index) {
           <li class="star-chip star-chip--sm">
             {{ tag }}
@@ -69,7 +74,7 @@ export type StarTagRejection = 'invalid' | 'duplicate' | 'limit';
         [disabled]="disabled()"
         [readOnly]="readonly() || atLimit()"
         [attr.aria-label]="ariaLabel()"
-        [attr.aria-describedby]="hintId"
+        [attr.aria-describedby]="describedBy()"
         [attr.aria-invalid]="(invalid() && touched()) || !!rejection() || null"
         (input)="onInput(input)"
         (keydown)="onKeydown($event)"
@@ -97,6 +102,12 @@ export type StarTagRejection = 'invalid' | 'duplicate' | 'limit';
 export class StarInputTags implements FormValueControl<readonly string[]> {
   protected readonly text = inject(STAR_UI_TEXT);
   private readonly ids = inject(_IdGenerator);
+  private readonly field = inject(StarField, { optional: true });
+
+  constructor() {
+    // The label of a parent `star-field` points at the input.
+    this.field?.linkControl(this.inputId);
+  }
 
   readonly value = model<readonly string[]>([]);
   readonly placeholder = input<string | null>(null);
@@ -126,6 +137,10 @@ export class StarInputTags implements FormValueControl<readonly string[]> {
   readonly rejected = output<{ tag: string; reason: StarTagRejection }>();
 
   protected readonly hintId = this.ids.getId('star-tags-hint-');
+  /** The hint of the keys, and the hint or error of a parent `star-field`. */
+  protected readonly describedBy = computed(() =>
+    [this.hintId, this.field?.describedBy()].filter(Boolean).join(' '),
+  );
   protected readonly draft = signal('');
   protected readonly rejection = signal<{ tag: string; reason: StarTagRejection } | null>(null);
   protected readonly announcement = signal('');
