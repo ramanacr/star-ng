@@ -1,32 +1,20 @@
 # StarNG
 
-Accessible Angular controls built on signals, Signal Forms and the Angular CDK.
-npm package: `@star-ng/ui`. Selector prefix: `star-`. CSS token prefix: `--star-`.
+[![CI](https://github.com/ramanacr/star-ng/actions/workflows/ci.yml/badge.svg)](https://github.com/ramanacr/star-ng/actions/workflows/ci.yml)
+[![Docs](https://img.shields.io/badge/docs-ramanacr.github.io%2Fstar--ng-blue)](https://ramanacr.github.io/star-ng/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-- Standalone components with signal inputs, models and outputs. OnPush everywhere.
-- Form controls implement the Signal Forms control interfaces (`[formField]`), and work in
-  Reactive Forms through `SignalFormControl`.
-- One set of CSS tokens with light and dark themes. A product overrides the tokens to get
-  its own look.
-- One entry point per control group (`@star-ng/ui/button`, `@star-ng/ui/field`, ...), so an
-  application bundles only what it uses.
-- Built-in control text in one injection token (`STAR_UI_TEXT`), ready for translation,
-  with German and Spanish packs (`@star-ng/ui/i18n/de`, `@star-ng/ui/i18n/es`).
-- Right-to-left layouts (Arabic, Hebrew, Persian, Urdu): set `dir="rtl"` on `<html>`. The styles
-  use logical properties, the arrow keys follow the visual direction and overlays follow the
-  direction at run time.
-- No Angular Material and no other UI kit.
+<!-- Release pull request for 0.1.0: add the npm version badge above, and delete the status block below. -->
 
-> Status: the control set is complete: about 90 controls in 53 entry points, each with a docs
-> page, an API table, unit tests and end-to-end tests. The release workflow is ready (see
-> "Releasing"). The first version is not published to npm yet, so `pnpm add @star-ng/ui` works only
-> after the first release.
+StarNG is a library of accessible Angular controls. It uses signals, Signal Forms and the Angular CDK. The npm package is `@star-ng/ui`. The selector prefix is `star-` and the CSS token prefix is `--star-`. Each control group is one entry point, for example `@star-ng/ui/button`, so an application bundles only what it imports. The library does not use Angular Material or another UI kit.
 
-Control groups: buttons; forms (field, input, checkbox, radio, switch, number, password, mask,
-one-time code, tags, slider, rating, knob, color picker, select button); selection (select,
-multi-select, cascade select, listbox, autocomplete, tree, tree select); date and time; table;
-menus; overlays (dialog, confirm, drawer, popover, tooltip, toast); panels and navigation; data
-display; charts; media (file upload, editor, carousel, galleria, image); utilities.
+> Status: version 0.1.0 is the first release. Until it is published, `@star-ng/ui` is not on npm and the install commands below fail. The API can change between `0.x` minor versions (see "Versioning and stability").
+
+## What is in the package
+
+About 90 controls in more than 50 entry points. Each control has a docs page with live examples and an API table.
+
+Control groups: buttons; forms (field, input, checkbox, radio, switch, number, password, mask, one-time code, tags, slider, rating, knob, color picker, select button); selection (select, multi-select, cascade select, listbox, autocomplete, tree, tree select); date and time; table; menus; overlays (dialog, confirm, drawer, popover, tooltip, toast); panels and navigation; data display and charts; media (file upload, editor, carousel, galleria, image); utilities.
 
 ## Requirements
 
@@ -34,20 +22,24 @@ display; charts; media (file upload, editor, carousel, galleria, image); utiliti
 | ---------------------------------------------------- | ---------------------------------------------- |
 | `@angular/core`, `@angular/common`, `@angular/forms` | 22 or later                                    |
 | `@angular/cdk`                                       | 22 or later                                    |
-| `@angular/router`                                    | 22 or later (menus with route links)           |
+| `@angular/router`                                    | 22 or later                                    |
 | `@phosphor-icons/web`                                | 2.1 or later (icons that the controls draw)    |
+| `rxjs`                                               | 7.8 or later                                   |
 | `@jsverse/transloco`                                 | 8 or later, optional (`@star-ng/ui/transloco`) |
 
 ## Install
 
+Use one of these commands.
+
 ```bash
 pnpm add @star-ng/ui @angular/cdk @phosphor-icons/web
+npm install @star-ng/ui @angular/cdk @phosphor-icons/web
+yarn add @star-ng/ui @angular/cdk @phosphor-icons/web
 ```
 
 ## Include the styles
 
-Add the compiled CSS and the two Phosphor icon weights to the `styles` of your build target
-in `angular.json`:
+Add the compiled CSS and two Phosphor icon weights to the `styles` of your build target in `angular.json`:
 
 ```json
 "styles": [
@@ -58,13 +50,11 @@ in `angular.json`:
 ]
 ```
 
-With Sass you can use the SCSS entry instead:
-
-```scss
-@use '@star-ng/ui/styles/star-ng';
-```
+With Sass, you can use the SCSS entry instead: `@use '@star-ng/ui/styles/star-ng';`.
 
 ## Use a control
+
+Import a control from its entry point, not from the package root.
 
 ```ts
 import { ChangeDetectionStrategy, Component } from '@angular/core';
@@ -74,21 +64,39 @@ import { StarButton } from '@star-ng/ui/button';
   selector: 'app-orders',
   imports: [StarButton],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `<star-button leadingIcon="ph-bold ph-plus" (pressed)="create()"
-    >New order</star-button
-  >`,
+  template: `<star-button (pressed)="create()">New order</star-button>`,
 })
 export class Orders {
   create(): void {}
 }
 ```
 
+## Forms
+
+1. Form controls implement the Signal Forms control interfaces. Bind them with `[formField]`.
+2. Without a form, use two-way binding, for example `[(checked)]` or `[(value)]`.
+3. In Reactive Forms, use `SignalFormControl` from `@angular/forms/signals/compat`.
+
+See the [forms guide](https://ramanacr.github.io/star-ng/guides/forms).
+
+## Theme and dark mode
+
+Override the `--star-*` tokens after the StarNG styles. Put light values on `:root` and dark values on `[data-theme='dark']`.
+
+```css
+:root {
+  --star-primary: #0f766e;
+}
+[data-theme='dark'] {
+  --star-primary: #2dd4bf;
+}
+```
+
+`StarThemeService` (`@star-ng/ui/theme`) is an optional helper for a system, light or dark choice. A first-paint script avoids a flash of the wrong theme. See the guides [theming and tokens](https://ramanacr.github.io/star-ng/guides/theming) and [dark mode](https://ramanacr.github.io/star-ng/guides/dark-mode).
+
 ## Language packs
 
-The built-in text of the controls (screen-reader labels, empty states, page reports) is English.
-Each included language is a separate entry point, so an application bundles only what it
-imports. The packs are not exported from `@star-ng/ui`. The `locale` inputs of the controls set the
-number and date formats: they do not depend on the pack.
+The built-in text of the controls is English. The German and Spanish packs are separate entry points. The `locale` inputs of the controls set number and date formats. They do not depend on the pack.
 
 ```ts
 import { provideStarUiText } from '@star-ng/ui/core';
@@ -97,140 +105,46 @@ import { STAR_UI_TEXT_DE } from '@star-ng/ui/i18n/de';
 providers: [provideStarUiText(STAR_UI_TEXT_DE)];
 ```
 
-To switch the language at run time without a library, use
-`provideStarUiTextFromSignal(() => packs[language()])`. The docs have a guide for it, for your
-own pack and for Transloco.
+A language model wrote the German and Spanish packs. Native speakers did not review them. See the [internationalisation guide](https://ramanacr.github.io/star-ng/guides/i18n) for run-time switching, your own pack and Transloco.
 
-## Theme
+## Right-to-left
 
-Override tokens after the StarNG styles. Light values go on `:root`, dark values on
-`[data-theme='dark']`:
+Set `dir="rtl"` on `<html>`. The styles use logical properties, the arrow keys follow the visual direction, and overlays follow the direction at run time. See the [right-to-left guide](https://ramanacr.github.io/star-ng/guides/right-to-left).
 
-```css
-:root {
-  --star-primary: #0f766e;
-  --star-primary-hover: #115e59;
-  --star-primary-soft: #ccfbf1;
-}
-[data-theme='dark'] {
-  --star-primary: #2dd4bf;
-}
-```
+## Browser support
 
-`StarThemeService` (`@star-ng/ui/theme`) is an optional helper for a system / light / dark
-choice. The docs have a guide for it and for the first-paint script.
+The tests run in Chromium only (Playwright). Firefox and Safari are not tested. The library uses these modern CSS and platform features. Check them against your browser targets.
 
-## Documentation
+- `:has()` and `:dir()`
+- container queries
+- `@starting-style`
+- `field-sizing`
+- `color-mix()`
+- logical properties
+- the native `<dialog>` element and popover behavior (through the Angular CDK)
 
-The documentation site is at <https://ramanacr.github.io/star-ng/>. It has the guides (getting
-started, theming and tokens, dark mode, forms, internationalisation, right-to-left,
-accessibility) and one page per control with live examples, their source and an API table. See
-"Documentation site" below for how it is published.
+## Accessibility
 
-To run the docs application locally:
+The target is WCAG 2.2 level AA. CI runs an automated axe scan on every docs page in the light and dark themes, and on 65 opened states. Unit tests and keyboard tests cover roles, states and key handling.
 
-```bash
-corepack pnpm install
-corepack pnpm start        # docs application on http://localhost:4200
-```
+Not tested: screen-reader output, zoom and reflow, forced-colors mode. An automated scan finds only some problems. Your application must also name every control and set the page language. See the [accessibility guide](https://ramanacr.github.io/star-ng/guides/accessibility).
 
-## Documentation site
+## Versioning and stability
 
-The docs application is published to GitHub Pages at <https://ramanacr.github.io/star-ng/>, a
-project site under the sub-path `/star-ng/`.
+The package follows semantic versioning. In `0.x` versions, the API can change between minor versions. Read the [changelog](CHANGELOG.md) before you update. The dist-tag `latest` is for releases. The dist-tag `next` is for prereleases.
 
-**Deployment.** The workflow `.github/workflows/pages.yml` runs on every push to `main`, and by
-hand (Actions, "Pages", "Run workflow"). It builds the docs with `pnpm build:pages`, uploads
-`dist/docs/browser` and deploys it. It does not run the tests: the CI workflow does that on the
-pull request. The base path comes from `actions/configure-pages`, so a fork publishes under its
-own repository name without a change.
+## Known limits
 
-**One-time repository setting.** Settings, Pages, Source: **GitHub Actions**. Without it the
-deploy job fails.
+- Chromium is the only tested browser.
+- The German and Spanish text packs have no native-speaker review.
+- There are no screen-reader, zoom, reflow or forced-colors tests.
+- The editor and the file upload do not protect your server. See [SECURITY.md](SECURITY.md).
 
-**Deep links.** GitHub Pages cannot rewrite URLs. A direct request for a route such as
-`/star-ng/controls/button` has no file, so GitHub answers with `404.html`. `pnpm build:pages`
-makes `404.html` a copy of `index.html`, so the application starts and shows the page. The
-HTTP status of such a response is **404**, not 200: the page works for people, but a crawler or a
-link checker sees a 404. Links inside the site (the navigation) are normal router links and
-have no such problem. The router uses path URLs, not hash URLs.
+## Links
 
-**Shared browser storage.** Every project site of an owner shares the origin
-`ramanacr.github.io`, so `localStorage` is shared as well. The docs use the keys `star-theme`
-and `star-direction`. Another site on that origin that uses one of these names sees the same value.
-
-**Preview the sub-path build locally.**
-
-| Command                       | What it does                                                                      |
-| ----------------------------- | --------------------------------------------------------------------------------- |
-| `corepack pnpm build:pages`   | `ng build docs --base-href /star-ng/`, then `404.html` (optional argument: base). |
-| `corepack pnpm pages:preview` | Builds, then serves `dist/docs/browser` at <http://localhost:4300/star-ng/>.      |
-| `corepack pnpm e2e:pages`     | Builds, then runs `e2e/pages` against that server (not part of `pnpm e2e`).       |
-
-The server `tools/pages-serve.mjs` mimics GitHub Pages: files only under `/star-ng/`, and
-`404.html` with the status 404 for any other path below it.
-
-## Repository
-
-| Path               | Content                                                                             |
-| ------------------ | ----------------------------------------------------------------------------------- |
-| `projects/star-ng` | The library. One folder per entry point, `styles/` for the SCSS.                    |
-| `projects/docs`    | The docs application.                                                               |
-| `e2e`              | Playwright tests, including the axe accessibility scan.                             |
-| `tools`            | Build tools: compiled CSS, docs data generator, name check, package check, release. |
-
-## Development
-
-| Command                        | What it does                                                                       |
-| ------------------------------ | ---------------------------------------------------------------------------------- |
-| `corepack pnpm start`          | Serves the docs application.                                                       |
-| `corepack pnpm lint`           | ESLint, docs data check and name check.                                            |
-| `corepack pnpm test:ci`        | Unit tests (Vitest, jsdom) with coverage.                                          |
-| `corepack pnpm build`          | Builds the package to `dist/star-ng` (with CSS) and the docs.                      |
-| `corepack pnpm e2e`            | Playwright tests (`corepack pnpm e2e:install` once for the browser).               |
-| `corepack pnpm e2e:a11y`       | Only the axe accessibility scan of every docs page and its states.                 |
-| `corepack pnpm docs:gen`       | Writes the API and example data of the docs after a change.                        |
-| `corepack pnpm build:lib`      | Builds only the package and the CSS.                                               |
-| `corepack pnpm check:package`  | Checks `dist/star-ng` (files, exports, size, names). Run after `build:lib`.        |
-| `corepack pnpm smoke:consumer` | Installs the packed package in a temp Angular app and builds it (about 2 minutes). |
-
-Conventions: Conventional Commits, one feature per pull request, merge after green CI.
-
-## Visual regression tests
-
-`e2e/visual` takes a screenshot of the `main` area of every docs page, in the light and in
-the dark theme (tall pages are cut in slices of 4000 px). CI compares them with the images
-in `e2e/visual/__screenshots__`. The test fixes the clock, seeds `Math.random` and waits for
-fonts and images, so a page only differs when the library changed.
-
-**Why baselines come from CI.** Fonts and text rendering differ per operating system, so an
-image from Windows or macOS never matches. The tests skip on your machine, and the update
-script refuses to run there. Only Linux in CI makes baselines.
-
-**Update baselines** (new page, or a change that you want):
-
-1. Run the workflow "Visual baselines" (Actions tab, input: your branch). The `visual` job
-   of a normal CI run also uploads the baselines that are still missing.
-2. In the repository root: `gh run download <run id> -n visual-baselines`. The files land in
-   `e2e/visual/__screenshots__`.
-3. Review the images, then commit them.
-
-**Look at a failure.** The `visual` job uploads the artifact `visual-report`. Unzip it and
-open `playwright-report-visual/index.html`: each failed page shows the expected image, the
-actual image and the diff. A missing baseline fails the job too (the message says how to
-commit it).
-
-To debug in a Linux container with the CI fonts, set `VISUAL_ALLOW_LOCAL=1`
-(`corepack pnpm e2e:visual`). Never commit images made that way.
-
-## Releasing
-
-A release is a git tag `v<version>` on `main`. The workflow `.github/workflows/release.yml`
-checks the package, publishes it to npm with provenance (Trusted Publishing, no stored token),
-and chooses the dist-tag from the version: `latest`, or `next` for a prerelease. The one-time
-setup, the steps, a dry run and the recovery from a failed publish are in
-[RELEASING.md](RELEASING.md).
-
-## License
-
-MIT. See [LICENSE](LICENSE).
+- [Documentation site](https://ramanacr.github.io/star-ng/)
+- [Changelog](CHANGELOG.md)
+- [Contributing](CONTRIBUTING.md)
+- [Releasing](RELEASING.md)
+- [Security](SECURITY.md)
+- [License (MIT)](LICENSE)

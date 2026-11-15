@@ -1,0 +1,132 @@
+# Contributing to StarNG
+
+This file explains how to work on the StarNG repository: set up, run the checks, add a control, and open a pull request. People who only install the package need the [README](README.md).
+
+## Prerequisites
+
+1. Install Node 22.12.0 or later. The file `.nvmrc` names the version that CI uses (22). The root `package.json` sets `engines.node` to `>=22.12.0`. The published package does not set `engines`, because the requirement belongs to the build tools.
+2. Use `corepack pnpm` for every command. The root `package.json` sets the package manager (`packageManager`). Plain `pnpm` is not always on the `PATH`.
+3. Install the dependencies: `corepack pnpm install --frozen-lockfile`.
+4. For end-to-end tests, install the browser once: `corepack pnpm e2e:install`.
+
+## Repository layout
+
+| Path                             | Content                                                                               |
+| -------------------------------- | ------------------------------------------------------------------------------------- |
+| `projects/star-ng`               | The library. One folder per entry point.                                              |
+| `projects/star-ng/styles`        | The SCSS: tokens, base rules, and one partial per control group in `controls/`.       |
+| `projects/star-ng/specs`         | Unit tests that cover more than one entry point.                                      |
+| `projects/star-ng/src`           | `public-api.ts`, the root entry point of `@star-ng/ui`.                               |
+| `projects/docs`                  | The docs application.                                                                 |
+| `projects/docs/src/app/guides`   | The guides.                                                                           |
+| `projects/docs/src/app/controls` | One docs page per control group.                                                      |
+| `e2e`                            | Playwright tests. `e2e/visual` has the visual tests. `e2e/pages` has the Pages tests. |
+| `tools`                          | Build tools: compiled CSS, docs data generator, name check, package check, release.   |
+| `.github/workflows`              | CI, Pages, release and visual baselines.                                              |
+
+## Development commands
+
+| Command                           | What it does                                                                             |
+| --------------------------------- | ---------------------------------------------------------------------------------------- |
+| `corepack pnpm start`             | Serves the docs application on <http://localhost:4200>.                                  |
+| `corepack pnpm format`            | Formats all files with Prettier.                                                         |
+| `corepack pnpm format:check`      | Checks the format. CI runs it.                                                           |
+| `corepack pnpm lint`              | ESLint, docs data check and name check.                                                  |
+| `corepack pnpm lint:fix`          | ESLint with automatic fixes.                                                             |
+| `corepack pnpm test`              | Unit tests in watch mode.                                                                |
+| `corepack pnpm test:ci`           | Unit tests (Vitest, jsdom) with coverage.                                                |
+| `corepack pnpm build`             | Builds the package to `dist/star-ng` (with CSS) and the docs.                            |
+| `corepack pnpm build:lib`         | Builds only the package and the CSS.                                                     |
+| `corepack pnpm build:docs`        | Builds only the docs application.                                                        |
+| `corepack pnpm docs:gen`          | Writes the API and example data of the docs.                                             |
+| `corepack pnpm docs:check`        | Fails when the generated docs data is out of date.                                       |
+| `corepack pnpm e2e`               | Playwright tests, without the visual tests and the Pages tests.                          |
+| `corepack pnpm e2e:a11y`          | Only the axe accessibility scan.                                                         |
+| `corepack pnpm e2e:ui`            | Playwright in its interactive UI mode.                                                   |
+| `corepack pnpm e2e:visual`        | Visual tests. They skip outside CI (see "Visual tests").                                 |
+| `corepack pnpm e2e:visual:update` | Writes baseline images. It refuses to run outside Linux in CI.                           |
+| `corepack pnpm e2e:pages`         | Builds the Pages version of the docs, then runs `e2e/pages` against it.                  |
+| `corepack pnpm pages:preview`     | Builds the Pages version, then serves it on <http://localhost:4300/star-ng/>.            |
+| `corepack pnpm check:package`     | Checks `dist/star-ng`: files, exports, size, names, README links. Run `build:lib` first. |
+| `corepack pnpm smoke:consumer`    | Installs the packed package in a temporary Angular app and builds it (about 2 minutes).  |
+
+## Rules for the library
+
+- **Tokens only.** Colors, radius, spacing and fonts come from `--star-*` tokens. Do not write a color value in a control style.
+- **Neutral design.** A text control has no `text-transform: uppercase`, no pill radius and no font weight above 600.
+- **No brand names.** `tools/check-names.mjs` fails when a tracked file contains a name that must not be in the repository. It runs in `corepack pnpm lint`.
+- **Entry points import each other by package name**, for example `@star-ng/ui/core`, never with a relative path across folders.
+- **Keep comments that name the PrimeNG equivalent of a control.** They help readers who know PrimeNG.
+- **Accessibility.** Use native elements first. Every action must work with the keyboard. Every control needs a visible focus.
+
+## Example data rules
+
+Examples in the docs, tests and comments use neutral, fictional data: orders, invoices, projects, cities. E-mail addresses and host names use `example.com`. Do not use real people, real companies or domain-specific words (for example medical words).
+
+## Add a control
+
+1. Create the folder `projects/star-ng/<name>/` with the component file `<name>.ts`.
+2. Add `index.ts` in the folder. It exports the public symbols, for example `export * from './<name>';`.
+3. Add `ng-package.json` in the folder. Copy it from another entry point, for example `projects/star-ng/button/ng-package.json`.
+4. Add the entry point to `projects/star-ng/src/public-api.ts`, in alphabetical order.
+5. Add the style partial `projects/star-ng/styles/controls/_<name>.scss`. Add `@use 'controls/<name>';` to `projects/star-ng/styles/star-ng.scss`.
+6. Add the docs page `projects/docs/src/app/controls/<name>.page.ts`. Each example is a `<docs-example source="<name>/<id>">` element, so the code that the page shows is the code that runs.
+7. Add the page to `DOCS_NAV` in `projects/docs/src/app/nav.ts`. The side navigation, its search and the routes come from this list.
+8. Run `corepack pnpm docs:gen`. Commit the changed file `projects/docs/src/app/generated/docs-data.ts`. `corepack pnpm lint` fails when it is out of date.
+9. Add tests (see "Test layers"). A new docs page gets visual baselines from CI.
+10. Run `corepack pnpm format`, `corepack pnpm lint`, `corepack pnpm test:ci`, `corepack pnpm build:lib` and `corepack pnpm check:package`.
+
+## The docs data generator
+
+`tools/gen-docs-data.mjs` reads the library source with the TypeScript compiler API. It writes, for every component and directive, the selector and the inputs, models and outputs (name, type, default, description). It also copies the markup of each `<docs-example>` element. The output is `projects/docs/src/app/generated/docs-data.ts`. The file is committed. Write the descriptions as JSDoc comments on the inputs.
+
+## Test layers
+
+| Layer                   | Where                                         | What it checks                                                                                          |
+| ----------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| Unit                    | `*.spec.ts` next to the code, `specs/`        | Roles, states, keyboard handling and logic of each control (Vitest, jsdom).                             |
+| End-to-end              | `e2e/*.spec.ts`                               | The docs pages in Chromium, with keyboard and pointer.                                                  |
+| Accessibility           | `e2e/a11y.spec.ts`                            | An axe scan of every docs page in both themes and of opened states. A new page or state needs an entry. |
+| Right-to-left           | `e2e/rtl.spec.ts`, `e2e/rtl-controls.spec.ts` | A sweep that opens every page with `dir="rtl"`, and control-specific checks.                            |
+| Visual                  | `e2e/visual`                                  | A screenshot of every docs page in both themes.                                                         |
+| Print                   | `e2e/table-print.spec.ts`                     | The table print export, with the print engine of Chromium.                                              |
+| Content Security Policy | `e2e/csp.spec.ts`                             | The first-paint script under strict policies.                                                           |
+| Pages                   | `e2e/pages`                                   | The sub-path build, as GitHub Pages serves it.                                                          |
+
+### Visual tests
+
+`e2e/visual` takes a screenshot of the `main` area of every docs page, in the light and the dark theme. CI compares them with the images in `e2e/visual/__screenshots__`. Fonts and text rendering differ per operating system, so only Linux in CI makes baselines. The tests skip on your machine, and `e2e:visual:update` refuses to run there.
+
+To update baselines (new page, or a change that you want):
+
+1. Run the workflow "Visual baselines" (Actions tab, input: your branch). The `visual` job of a normal CI run also uploads the baselines that are still missing.
+2. In the repository root, run `gh run download <run id> -n visual-baselines`. The files go to `e2e/visual/__screenshots__`.
+3. Review the images, then commit them.
+
+When a visual test fails, the `visual` job uploads the artifact `visual-report`. Unzip it and open `playwright-report-visual/index.html`. Each failed page shows the expected image, the actual image and the diff.
+
+To debug in a Linux container with the CI fonts, set `VISUAL_ALLOW_LOCAL=1` (then `corepack pnpm e2e:visual`). Never commit images made that way.
+
+## Documentation site
+
+The workflow `.github/workflows/pages.yml` runs on every push to `main`, and by hand (Actions, "Pages", "Run workflow"). It builds the docs with `corepack pnpm build:pages`, uploads `dist/docs/browser` and deploys it to <https://ramanacr.github.io/star-ng/>. It does not run the tests: the CI workflow does that on the pull request. The base path comes from `actions/configure-pages`, so a fork publishes under its own repository name.
+
+One-time repository setting: Settings, Pages, Source: **GitHub Actions**. Without it, the deploy job fails.
+
+- **Deep links answer with status 404.** GitHub Pages cannot rewrite URLs. A direct request for a route such as `/star-ng/controls/button` has no file, so GitHub answers with `404.html`. `build:pages` makes `404.html` a copy of `index.html`, so the application starts and shows the page. The page works for people, but a crawler or a link checker sees status 404. Links inside the site are normal router links. The router uses path URLs, not hash URLs.
+- **`localStorage` is shared on the `github.io` origin.** Every project site of an owner uses the origin `ramanacr.github.io`. The docs use the keys `star-theme` and `star-direction`. Another site on that origin that uses one of these names sees the same value.
+- **Local preview.** Run `corepack pnpm pages:preview` and open <http://localhost:4300/star-ng/>. The server `tools/pages-serve.mjs` mimics GitHub Pages: files only under `/star-ng/`, and `404.html` with status 404 for any other path below it. `corepack pnpm e2e:pages` runs `e2e/pages` against it.
+
+## Commits and pull requests
+
+1. Make a branch from `main`.
+2. Use [Conventional Commits](https://www.conventionalcommits.org/) for commit messages, for example `feat: add the tabs control` or `fix(table): keep the focus after a sort`.
+3. Keep one feature or fix in one pull request.
+4. Run the checks of the section "Development commands" that your change touches. CI runs format, lint, unit tests, the library build, the package check, the docs build, the end-to-end tests and the visual tests.
+5. Open the pull request. It merges after green CI.
+
+Commits in this repository are not signed.
+
+## Releases
+
+The maintainer publishes releases. See [RELEASING.md](RELEASING.md). Report a security problem as [SECURITY.md](SECURITY.md) describes, not in a public issue.

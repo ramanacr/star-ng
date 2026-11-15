@@ -59,6 +59,23 @@ for (const file of REQUIRED) {
   if (!existsSync(join(dir, file))) fail(`missing file: ${file}`);
 }
 
+// 2b. Relative links in the packed README. npmjs.com resolves them against the repository, so the
+// target must be a file in the repository root (the folder above `tools`).
+if (existsSync(join(dir, 'README.md'))) {
+  const fence = '`'.repeat(3);
+  const readme = readFileSync(join(dir, 'README.md'), 'utf8')
+    .split(fence)
+    .filter((_, index) => index % 2 === 0) // text outside code fences
+    .join('\n');
+  for (const [, raw] of readme.matchAll(/\]\(([^)\s]+)[^)]*\)/g)) {
+    if (/^([a-z][a-z0-9+.-]*:|#|\/\/)/i.test(raw)) continue; // absolute URL or anchor
+    const target = raw.split('#')[0].split('?')[0];
+    if (target && !existsSync(join(root, target))) {
+      fail(`README.md: link "${raw}" points to a missing file in the repository root.`);
+    }
+  }
+}
+
 // 3. Every target of "exports" must exist. A pattern target ("./styles/*") needs a folder with files.
 const targets = [];
 const collect = (value, path) => {
