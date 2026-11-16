@@ -35,6 +35,12 @@
     width: max(100%, 1.5rem);
     height: max(100%, 1.5rem);
     translate: -50% -50%;
+    z-index: 0;
+  }
+  // The icon stays above the hit area, so a pointer reaches the icon first.
+  > * {
+    position: relative;
+    z-index: 1;
   }
 
   &:hover {
