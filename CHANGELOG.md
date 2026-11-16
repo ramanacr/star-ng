@@ -7,6 +7,8 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 ### Added
 
 - Tokens for media: `--star-media-surface`, `--star-scrim-media`, `--star-scrim-media-soft`, `--star-scrim-media-strong`, `--star-on-scrim`, `--star-media-control` and `--star-media-control-text`. The default look does not change.
+- `StarTimeField` has the optional properties `min` and `max`.
+- The UI text entries `colorArea`, `colorAreaValue`, `hue` and `hueValue`, with German and Spanish texts.
 
 ### Fixed
 
@@ -21,11 +23,6 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
   - `StarTable` uses a small `star-select` for a `filter: 'select'` column. "All" is its placeholder, and its clear button removes the filter.
   - `StarTable` uses a `star-select` for an `editor: 'select'` cell. The list opens when the edit starts. A choice saves at once; Escape or closing the list without a choice cancels.
   - `StarColorPicker` opens a StarNG panel from the custom tile instead of the color dialog of the browser: a saturation and brightness area and a hue slider. Both are sliders with value text, work with the keyboard and mirror in right-to-left.
-
-### Added
-
-- `StarTimeField` has the optional properties `min` and `max`.
-- The UI text entries `colorArea`, `colorAreaValue`, `hue` and `hueValue`, with German and Spanish texts.
 
 ## [0.2.1] - 2026-11-16
 
