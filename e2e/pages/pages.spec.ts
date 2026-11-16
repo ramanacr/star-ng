@@ -126,6 +126,19 @@ test.describe('docs site under /star-ng/', () => {
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   });
 
+  test('the first-paint script applies a saved rtl choice without application scripts', async ({
+    page,
+  }) => {
+    await page.addInitScript(() => localStorage.setItem('star-direction', 'rtl'));
+    await page.route('**/*.js', (route) =>
+      new URL(route.request().url()).pathname === `${BASE}docs-direction-first-paint.js`
+        ? route.continue()
+        : route.abort(),
+    );
+    await page.goto(BASE);
+    await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+  });
+
   test('the icon font loads from the sub-path and an icon has a width', async ({ page }) => {
     const fonts: { url: string; status: number }[] = [];
     page.on('response', (response) => {

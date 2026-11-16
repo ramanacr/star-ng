@@ -97,3 +97,77 @@ test.describe('prerendered docs pages', () => {
     expect(errors).toEqual([]);
   });
 });
+
+test.describe('saved text direction on the prerendered page', () => {
+  /** Keeps the two first-paint scripts and stops every other script, so the app never starts. */
+  const blockApplication = async (page: import('@playwright/test').Page) =>
+    page.route('**/*.js', (route) =>
+      /\/(docs-direction|star-theme)-first-paint\.js$/.test(new URL(route.request().url()).pathname)
+        ? route.continue()
+        : route.abort(),
+    );
+
+  test('a saved rtl choice sets dir="rtl" before the application runs', async ({ page }) => {
+    await page.addInitScript(() => localStorage.setItem('star-direction', 'rtl'));
+    await blockApplication(page);
+    await page.goto('/controls/table');
+    // The prerendered HTML says dir="ltr": only the first-paint script can have set this.
+    await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+    // Nothing started: no application, no hydrated header.
+    await expect(page.locator('.docs-header')).toHaveCount(1);
+    expect(await page.evaluate(() => document.documentElement.hasAttribute('ng-version'))).toBe(
+      false,
+    );
+  });
+
+  test('without a saved choice, or with ltr, the direction stays ltr', async ({ page }) => {
+    await blockApplication(page);
+    await page.goto('/controls/table');
+    await expect(page.locator('html')).toHaveAttribute('dir', 'ltr');
+    await page.evaluate(() => localStorage.setItem('star-direction', 'ltr'));
+    await page.reload();
+    await expect(page.locator('html')).toHaveAttribute('dir', 'ltr');
+  });
+
+  test('blocked storage does not throw and keeps ltr', async ({ page }) => {
+    // Only uncaught exceptions count: the blocked application scripts log failed requests.
+    const errors: string[] = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    await page.addInitScript(() => {
+      Object.defineProperty(window, 'localStorage', {
+        get() {
+          throw new DOMException('blocked', 'SecurityError');
+        },
+      });
+    });
+    await blockApplication(page);
+    await page.goto('/controls/table');
+    await expect(page.locator('html')).toHaveAttribute('dir', 'ltr');
+    expect(errors).toEqual([]);
+  });
+
+  test('the application keeps rtl: no flip, no console error', async ({ page }) => {
+    const errors = collectErrors(page);
+    await page.addInitScript(() => {
+      localStorage.setItem('star-direction', 'rtl');
+      // Every value that `dir` on <html> gets while the page loads.
+      const seen: (string | null)[] = [];
+      (window as unknown as { __dirSeen: typeof seen }).__dirSeen = seen;
+      new MutationObserver((records) => {
+        for (const record of records)
+          if (record.attributeName === 'dir')
+            seen.push((record.target as Element).getAttribute('dir'));
+      }).observe(document, { attributes: true, attributeFilter: ['dir'], subtree: true });
+    });
+    await page.goto('/controls/table');
+    await expect(page.getByRole('heading', { level: 1, name: 'Table' })).toBeVisible();
+    const direction = page.getByRole('button', { name: /^Text direction: / });
+    await expect(direction).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+    const seen = await page.evaluate(
+      () => (window as unknown as { __dirSeen: (string | null)[] }).__dirSeen,
+    );
+    expect(seen).not.toContain('ltr');
+    expect(errors).toEqual([]);
+  });
+});
