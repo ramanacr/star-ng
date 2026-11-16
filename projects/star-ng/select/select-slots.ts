@@ -32,11 +32,17 @@ export class StarSelectedTemplate<T = unknown> extends StarSlot<StarSelectedCont
 export interface StarChipContext<T> {
   /** The chosen option. */
   readonly $implicit: T;
-  /** Removes this option from the value. */
+  /** Removes this option from the value. Call it from a button with `tabindex="-1"`. */
   readonly remove: () => void;
 }
 
-/** Replaces a chip of `star-multi-select` with `display="chip"`. PrimeNG `#selecteditems` template. */
+/**
+ * Replaces a chip of `star-multi-select` with `display="chip"`. PrimeNG `#selecteditems` template.
+ *
+ * The chip is drawn inside the combobox, which handles Enter and Space. A button inside a chip
+ * must have `tabindex="-1"`, like the default chip, and an accessible name. Keyboard users remove
+ * a value in the panel: move to the option and press Enter or Space.
+ */
 @Directive({
   selector: 'ng-template[starChip]',
   providers: [{ provide: StarSlot, useExisting: StarChipTemplate }],

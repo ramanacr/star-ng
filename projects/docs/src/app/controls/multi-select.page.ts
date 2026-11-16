@@ -174,7 +174,13 @@ interface Parcel {
           <ng-template starChip [starChipOf]="cities" let-item let-remove="remove">
             <span class="star-chip star-chip--sm">
               {{ item.code }}
-              <button type="button" class="star-chip__remove" tabindex="-1" (click)="remove()">
+              <button
+                type="button"
+                class="star-chip__remove"
+                tabindex="-1"
+                [attr.aria-label]="'Remove ' + item.name"
+                (click)="remove()"
+              >
                 x
               </button>
             </span>

@@ -89,7 +89,7 @@ const COUNTRIES: Country[] = [
     >
       <ng-template starChip [starChipOf]="countries" let-item let-remove="remove">
         <span class="my-chip">{{ item.code }}</span>
-        <button type="button" class="my-remove" (click)="remove()">drop</button>
+        <button type="button" class="my-remove" tabindex="-1" (click)="remove()">drop</button>
       </ng-template>
     </star-multi-select>
   `,
@@ -192,6 +192,18 @@ describe('select slots', () => {
     el.querySelectorAll<HTMLElement>('.my-remove')[1].click();
     await fixture.whenStable();
     expect(host.codes()).toEqual(['IN']);
+  });
+
+  it('removes a value with the keyboard through the panel when starChip is present', async () => {
+    const { fixture, host, el } = await setup();
+    const multi = el.querySelector<HTMLElement>('.multi [role=combobox]')!;
+    multi.focus();
+    key(multi, 'ArrowDown'); // opens, India (first option) active
+    await fixture.whenStable();
+    key(multi, 'Enter'); // India is chosen: Enter toggles it off
+    await fixture.whenStable();
+    expect(host.codes()).toEqual(['FR']);
+    expect([...el.querySelectorAll('.my-chip')].map((n) => n.textContent)).toEqual(['FR']);
   });
 
   it('clear icon slot replaces the default icon', async () => {
