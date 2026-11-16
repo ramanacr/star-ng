@@ -241,7 +241,7 @@ describe('option list with virtualScroll', () => {
   it('shows the suggestions of autocomplete from the top when the typed text changes', async () => {
     const { fixture, trigger, list } = await setup();
     const typed = trigger('Typed') as HTMLInputElement;
-    const button = typed.parentElement!.querySelector<HTMLButtonElement>('button')!;
+    const button = typed.closest('.star-ac__control')!.querySelector<HTMLButtonElement>('button')!;
     button.click();
     await fixture.whenStable();
     const scroll = trackScroll(list(), 0);

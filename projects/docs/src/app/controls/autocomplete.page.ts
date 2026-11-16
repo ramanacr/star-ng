@@ -126,6 +126,7 @@ interface Person {
             ariaLabel="Keywords"
             dropdown
             autoHighlight
+            showClear
           />
           <p class="docs-output" role="status">Keywords: {{ chosen().join(', ') || 'none' }}</p>
         </div>
