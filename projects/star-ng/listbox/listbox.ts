@@ -12,8 +12,10 @@ import {
   Component,
   computed,
   contentChild,
+  contentChildren,
   effect,
   ElementRef,
+  forwardRef,
   inject,
   Injector,
   input,
@@ -27,7 +29,10 @@ import {
   matchesFilter,
   optionText,
   readOption,
+  STAR_SLOT_HOST,
   STAR_UI_TEXT,
+  StarEmptyContext,
+  StarGroupContext,
   starListAriaPosition,
   starListHeight,
   starListKeyboardTarget,
@@ -39,6 +44,8 @@ import {
   starListRowRendered,
   starListTypeaheadIndex,
   StarOptionKey,
+  StarSlot,
+  starSlot,
   StarWindowRow,
 } from '@star-ng/ui/core';
 import { StarOptionTemplate } from '@star-ng/ui/select';
@@ -54,12 +61,16 @@ import { StarOptionTemplate } from '@star-ng/ui/select';
   selector: 'star-listbox',
   imports: [NgTemplateOutlet, CdkVirtualScrollViewport, CdkFixedSizeVirtualScroll, CdkVirtualForOf],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarListbox) }],
   host: {
     class: 'star-listbox-box',
     '[class.star-listbox-box--disabled]': 'disabled()',
     '[class.star-listbox-box--invalid]': 'invalid() && touched()',
   },
   template: `
+    @if (headerSlot(); as header) {
+      <ng-container *ngTemplateOutlet="header" />
+    }
     @if (filter()) {
       <div class="star-panel__filter">
         <i class="ph-bold ph-magnifying-glass" aria-hidden="true"></i>
@@ -101,7 +112,11 @@ import { StarOptionTemplate } from '@star-ng/ui/select';
         <ng-container *cdkVirtualFor="let row of layout().rows; trackBy: trackRow">
           @if (row.kind === 'group') {
             <div class="star-listbox__group" role="presentation" [id]="row.id">
-              {{ row.label }}
+              @if (groupSlot(); as custom) {
+                <ng-container *ngTemplateOutlet="custom; context: groupContext(row.label)" />
+              } @else {
+                {{ row.label }}
+              }
             </div>
           } @else {
             @let option = row.option;
@@ -146,7 +161,13 @@ import { StarOptionTemplate } from '@star-ng/ui/select';
         </ng-container>
       </cdk-virtual-scroll-viewport>
       @if (!visible().length) {
-        <div class="star-listbox__empty" role="presentation">{{ text.emptyFilterMessage }}</div>
+        <div class="star-listbox__empty" role="presentation">
+          @if (emptySlot(); as custom) {
+            <ng-container *ngTemplateOutlet="custom; context: emptyContext()" />
+          } @else {
+            <ng-container>{{ text.emptyFilterMessage }}</ng-container>
+          }
+        </div>
       }
     } @else {
       <ul
@@ -166,7 +187,13 @@ import { StarOptionTemplate } from '@star-ng/ui/select';
       >
         @for (option of visible(); track $index; let i = $index) {
           @if (groupHeading(i); as heading) {
-            <li class="star-listbox__group" role="presentation" [id]="groupId(i)">{{ heading }}</li>
+            <li class="star-listbox__group" role="presentation" [id]="groupId(i)">
+              @if (groupSlot(); as custom) {
+                <ng-container *ngTemplateOutlet="custom; context: groupContext(heading)" />
+              } @else {
+                <ng-container>{{ heading }}</ng-container>
+              }
+            </li>
           }
           <!-- Keyboard is handled on the listbox via aria-activedescendant. -->
           <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
@@ -205,8 +232,17 @@ import { StarOptionTemplate } from '@star-ng/ui/select';
       </ul>
       <!-- Outside the listbox: a listbox may contain options and groups only. -->
       @if (!visible().length) {
-        <div class="star-listbox__empty" role="presentation">{{ text.emptyFilterMessage }}</div>
+        <div class="star-listbox__empty" role="presentation">
+          @if (emptySlot(); as custom) {
+            <ng-container *ngTemplateOutlet="custom; context: emptyContext()" />
+          } @else {
+            <ng-container>{{ text.emptyFilterMessage }}</ng-container>
+          }
+        </div>
       }
+    }
+    @if (footerSlot(); as footer) {
+      <ng-container *ngTemplateOutlet="footer" />
     }
   `,
 })
@@ -246,6 +282,12 @@ export class StarListbox<TOption = unknown, TValue = TOption> implements FormVal
   readonly touch = output<void>();
 
   protected readonly optionTemplate = contentChild(StarOptionTemplate);
+  /** All slot directives written inside this control. The picks below filter them by host. */
+  protected readonly slots = contentChildren(StarSlot, { descendants: true });
+  protected readonly headerSlot = starSlot<object>(this.slots, this, 'header');
+  protected readonly footerSlot = starSlot<object>(this.slots, this, 'footer');
+  protected readonly emptySlot = starSlot<StarEmptyContext>(this.slots, this, 'empty');
+  protected readonly groupSlot = starSlot<StarGroupContext>(this.slots, this, 'group');
   private readonly list = viewChild<unknown, ElementRef<HTMLElement>>('list', { read: ElementRef });
   private readonly viewport = viewChild(CdkVirtualScrollViewport);
   private readonly injector = inject(Injector);
@@ -270,6 +312,25 @@ export class StarListbox<TOption = unknown, TValue = TOption> implements FormVal
       .sort((a, b) => a.rank - b.rank || a.index - b.index)
       .map(({ option }) => option);
   });
+
+  /** Number of visible options in each group, by group label. */
+  private readonly groupCounts = computed(() => {
+    const counts = new Map<string, number>();
+    if (!this.optionGroup()) return counts;
+    for (const option of this.visible()) {
+      const group = this.groupOf(option);
+      counts.set(group, (counts.get(group) ?? 0) + 1);
+    }
+    return counts;
+  });
+
+  protected groupContext(label: string): StarGroupContext {
+    return { $implicit: label, count: this.groupCounts().get(label) ?? 0 };
+  }
+
+  protected emptyContext(): StarEmptyContext {
+    return { $implicit: this.query() };
+  }
 
   protected groupOf(option: TOption): string {
     const key = this.optionGroup();
