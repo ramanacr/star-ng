@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, Locator, test } from '@playwright/test';
 import { example, openPage } from './support';
 
 test.describe('accordion', () => {
@@ -320,7 +320,19 @@ test.describe('paginator', () => {
     await live.getByRole('button', { name: 'Last page' }).click();
     await expect(report).toHaveText('91–95 of 95');
 
-    await live.getByLabel('Rows per page').selectOption('25');
+    // Rows per page is a small StarNG select, not the native select of the browser.
+    await expect(live.locator('select')).toHaveCount(0);
+    const rows = live.getByRole('combobox', { name: 'Rows per page' });
+    await expect(rows).toHaveText('10');
+    // Narrower than a form select (12rem).
+    expect((await rows.locator('xpath=ancestor::star-select').boundingBox())!.width).toBeLessThan(
+      150,
+    );
+    await rows.click();
+    await expect(page.getByRole('option')).toHaveText(['10', '25', '50']);
+    await page.getByRole('option', { name: '25' }).click();
+    await expect(rows).toHaveText('25');
+    await expect(rows).toBeFocused();
     await expect(report).toHaveText('76–95 of 95');
     await expect(live.getByRole('button', { name: 'Page 4' })).toHaveAttribute(
       'aria-current',
@@ -399,5 +411,46 @@ test.describe('divider and timeline', () => {
     await expect(example(page, 'Custom content').getByRole('listitem').nth(1)).toContainText(
       '2. Packed',
     );
+  });
+});
+
+test.describe('hit areas of small targets (WCAG 2.5.8)', () => {
+  /**
+   * A point near each corner of a 21 x 21 px square, centered on the target, must hit the target (a rounded corner of the target cuts the last pixel, so the square is a little smaller than 24)
+   * or one of its children. The test does not read the box of the element: a hit area can come
+   * from a pseudo-element.
+   */
+  const hasHitArea = (target: Locator) =>
+    target.evaluate((node) => {
+      const box = node.getBoundingClientRect();
+      const cx = box.left + box.width / 2;
+      const cy = box.top + box.height / 2;
+      return [-1, 1].flatMap((dx) =>
+        [-1, 1].map((dy) => {
+          const hit = document.elementFromPoint(cx + dx * 10.5, cy + dy * 10.5);
+          return !!hit && node.contains(hit);
+        }),
+      );
+    });
+
+  test('the chip remove button, the tree toggle and the home link are at least 24 px', async ({
+    page,
+  }) => {
+    await openPage(page, '/controls/chip', 'Chip');
+    const remove = example(page, 'Removable').getByRole('button', { name: 'Remove Beta' });
+    await remove.scrollIntoViewIfNeeded();
+    expect(await hasHitArea(remove)).toEqual([true, true, true, true]);
+
+    await openPage(page, '/controls/breadcrumb', 'Breadcrumb');
+    const home = example(page, 'Trail with a home link').getByRole('link', { name: 'Home' });
+    await home.scrollIntoViewIfNeeded();
+    expect(await hasHitArea(home)).toEqual([true, true, true, true]);
+
+    await openPage(page, '/controls/tree', 'Tree');
+    const toggle = example(page, 'Expand and collapse')
+      .getByRole('tree', { name: 'Folders' })
+      .locator('[data-key="docs"] .star-tree__toggle');
+    await toggle.scrollIntoViewIfNeeded();
+    expect(await hasHitArea(toggle)).toEqual([true, true, true, true]);
   });
 });

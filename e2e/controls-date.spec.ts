@@ -339,10 +339,29 @@ test.describe('date picker', () => {
     await live.evaluate((element) => element.scrollIntoView({ block: 'start' }));
     await live.getByRole('button', { name: 'Choose date' }).click();
     await day(page, '2026-11-15').click();
-    // With a time the popup stays open for the time field.
+    // With a time the popup stays open for the time columns: a StarNG panel, no native popup.
     await expect(panel(page)).toBeVisible();
     await expect(status).toHaveText('Meeting: 2026-11-15 09:30');
-    await panel(page).getByLabel('Time', { exact: true }).fill('14:30');
+    await expect(panel(page).locator('input[type="time"]')).toHaveCount(0);
+    const time = panel(page).getByRole('group', { name: 'Time' });
+    const hours = time.getByRole('listbox', { name: 'Hour' });
+    const minutes = time.getByRole('listbox', { name: 'Minute' });
+    await expect(hours.getByRole('option', { name: '09', exact: true })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
+    // stepMinute 15: the minute column has the quarters only.
+    await expect(minutes.getByRole('option')).toHaveText(['00', '15', '30', '45']);
+    await hours.getByRole('option', { name: '14', exact: true }).click();
+    await expect(status).toHaveText('Meeting: 2026-11-15 14:30');
+    // The keyboard: Arrow down moves in the column, Enter chooses.
+    await minutes.getByRole('option', { name: '30', exact: true }).focus();
+    await page.keyboard.press('ArrowDown');
+    await expect(minutes.getByRole('option', { name: '45', exact: true })).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(status).toHaveText('Meeting: 2026-11-15 14:45');
+    await page.keyboard.press('ArrowUp');
+    await page.keyboard.press('Space');
     await expect(status).toHaveText('Meeting: 2026-11-15 14:30');
     await panel(page).getByRole('button', { name: 'Done' }).click();
     await expect(panel(page)).toHaveCount(0);

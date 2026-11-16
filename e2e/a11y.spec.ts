@@ -208,7 +208,9 @@ const STATES: readonly State[] = [
     open: async (page) => {
       await example(page, 'Chips, filter and clear button')
         .getByRole('combobox', { name: 'Departments as chips' })
-        .click();
+        // The corner, not the center: a chip remove button has a 24 px target, and the center of
+        // the field can lie on it.
+        .click({ position: { x: 4, y: 4 } });
       await expect(page.getByRole('listbox', { name: 'Departments as chips' })).toBeVisible();
     },
   },
@@ -284,6 +286,33 @@ const STATES: readonly State[] = [
     open: async (page) => {
       await example(page, 'Date and time').getByRole('button', { name: 'Choose date' }).click();
       await expect(page.locator('.star-date__panel')).toBeVisible();
+    },
+  },
+  {
+    name: 'date and time popup with a chosen time',
+    path: 'controls/date-picker',
+    open: async (page) => {
+      await example(page, 'Date and time').getByRole('button', { name: 'Choose date' }).click();
+      await expect(page.getByRole('group', { name: 'Time' })).toBeVisible();
+      await page.getByRole('listbox', { name: 'Hour' }).getByRole('option').first().focus();
+    },
+  },
+  {
+    name: 'color picker panel',
+    path: 'controls/color-picker',
+    open: async (page) => {
+      await example(page, 'Basic').getByRole('button', { name: 'Custom color' }).click();
+      await expect(page.getByRole('dialog', { name: 'Custom color' })).toBeVisible();
+    },
+  },
+  {
+    name: 'paginator rows per page open',
+    path: 'controls/paginator',
+    open: async (page) => {
+      await example(page, 'Pages of a list')
+        .getByRole('combobox', { name: 'Rows per page' })
+        .click();
+      await expect(page.getByRole('listbox')).toBeVisible();
     },
   },
   {
@@ -663,6 +692,29 @@ const STATES: readonly State[] = [
       const live = example(page, 'Inline cell edit');
       await live.locator('button[data-edit="ORD-1001|product"]').click();
       await expect(live.locator('.star-table__editor').first()).toBeVisible();
+    },
+  },
+  {
+    name: 'table with a choice editor open',
+    path: 'controls/table-edit',
+    open: async (page) => {
+      const live = example(page, 'Inline cell edit');
+      await live.getByRole('button', { name: 'Edit Product' }).first().click();
+      await expect(live.getByRole('combobox', { name: 'Edit Product' })).toHaveAttribute(
+        'aria-expanded',
+        'true',
+      );
+      await expect(page.getByRole('listbox')).toBeVisible();
+    },
+  },
+  {
+    name: 'table with a filter select open (Region)',
+    path: 'controls/table-sort-filter',
+    open: async (page) => {
+      await example(page, 'Column filters')
+        .getByRole('combobox', { name: 'Filter by Region' })
+        .click();
+      await expect(page.getByRole('listbox')).toBeVisible();
     },
   },
   {

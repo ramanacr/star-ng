@@ -17,7 +17,7 @@ import { DocsFill, Order, ORDERS, PRODUCT_NAMES } from './table-demo';
         heading="Inline cell edit"
         source="table-edit/cells"
         [script]="cellScript"
-        note="A column with editable: true shows an edit button in each cell. The button opens an editor: text (default), number or select. Enter or leaving the field saves, Escape cancels. editable can be a function of the row. cellEdit emits the new value and the previous one, only when the value changed."
+        note="A column with editable: true shows an edit button in each cell. The button opens an editor: text (default), number or select. Enter or leaving the field saves, Escape cancels. The select editor is a small star-select that opens its list when the edit starts: a choice saves at once, and Escape or closing the list without a choice cancels. editable can be a function of the row. cellEdit emits the new value and the previous one, only when the value changed."
       >
         <div class="docs-stack">
           <docs-fill>
@@ -172,7 +172,15 @@ move(event: StarRowReorderEvent<Order>): void {
     },
     {
       name: 'Arrow up / Arrow down',
-      description: 'In a select editor: changes the choice. Leaving the select or choosing saves.',
+      description: 'In a select editor: moves through the choices in the open list.',
+    },
+    {
+      name: 'Enter / Space',
+      description: 'In a select editor: saves the focused choice and closes the editor.',
+    },
+    {
+      name: 'Escape / Tab',
+      description: 'In a select editor: closes the list and cancels the edit.',
     },
     {
       name: 'Enter / Space',

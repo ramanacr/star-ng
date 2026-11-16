@@ -524,6 +524,79 @@ test.describe('color picker', () => {
     await expect(hex).toHaveValue('#0f766e');
   });
 
+  test('the custom tile opens a themed panel: area and hue sliders with the keyboard', async ({
+    page,
+  }) => {
+    await openPage(page, '/controls/color-picker', 'Color picker');
+    const live = example(page, 'Basic');
+    const output = live.locator('.docs-output');
+    await expect(live.locator('input[type="color"]')).toHaveCount(0);
+    const tile = live.getByRole('button', { name: 'Custom color' });
+    await expect(tile).toHaveAttribute('aria-haspopup', 'dialog');
+    await tile.click();
+    const panel = page.getByRole('dialog', { name: 'Custom color' });
+    await expect(panel).toBeVisible();
+    await expect(panel).toHaveClass(/star-panel/);
+    const area = panel.getByRole('slider', { name: 'Saturation and brightness' });
+    const hue = panel.getByRole('slider', { name: 'Hue' });
+    await expect(area).toBeFocused();
+    await expect(area).toHaveAttribute('aria-valuetext', 'Saturation 69%, brightness 90%');
+    await expect(hue).toHaveAttribute('aria-valuetext', '243 degrees');
+
+    await page.keyboard.press('Home');
+    await expect(output).toHaveText('Value: #e6e6e6');
+    await page.keyboard.press('End');
+    await expect(output).toHaveText('Value: #0b00e6');
+    await page.keyboard.press('Shift+ArrowDown');
+    await expect(area).toHaveAttribute('aria-valuetext', 'Saturation 100%, brightness 80%');
+    await page.keyboard.press('Tab');
+    await expect(hue).toBeFocused();
+    await page.keyboard.press('Home');
+    await expect(hue).toHaveAttribute('aria-valuenow', '0');
+    await expect(output).toHaveText('Value: #cc0000');
+    await page.keyboard.press('PageUp');
+    await expect(hue).toHaveAttribute('aria-valuenow', '10');
+
+    // A click in the area sets the saturation and the brightness under the pointer: 75 % of the
+    // width from the left (saturation) and a quarter of the height from the top (brightness).
+    const box = (await area.boundingBox())!;
+    await page.mouse.click(box.x + box.width * 0.75, box.y + box.height * 0.25);
+    await expect(area).toHaveAttribute(
+      'aria-valuetext',
+      /Saturation (7[4-6])%, brightness (7[4-6])%/,
+    );
+    await expect(area).toBeFocused();
+    await expect(live.getByRole('textbox', { name: 'Label color hex value' })).toHaveValue(
+      /^#[0-9a-f]{6}$/,
+    );
+
+    await page.keyboard.press('Escape');
+    await expect(panel).toHaveCount(0);
+    await expect(tile).toBeFocused();
+  });
+
+  test('the color panel uses the theme surface in the dark theme', async ({ page }) => {
+    await page.emulateMedia({ colorScheme: 'dark' });
+    await page.addInitScript(() => localStorage.setItem('star-theme', 'dark'));
+    await openPage(page, '/controls/color-picker', 'Color picker');
+    await example(page, 'Basic').getByRole('button', { name: 'Custom color' }).click();
+    const panel = page.getByRole('dialog', { name: 'Custom color' });
+    await expect(panel).toBeVisible();
+    const colors = await panel.evaluate((element) => {
+      const style = getComputedStyle(element);
+      const surface = getComputedStyle(document.documentElement)
+        .getPropertyValue('--star-surface')
+        .trim();
+      const probe = document.createElement('div');
+      probe.style.background = surface;
+      document.body.append(probe);
+      const expected = getComputedStyle(probe).backgroundColor;
+      probe.remove();
+      return { actual: style.backgroundColor, expected };
+    });
+    expect(colors.actual).toBe(colors.expected);
+  });
+
   test('custom swatches replace the presets and a disabled picker cannot change', async ({
     page,
   }) => {
@@ -540,6 +613,7 @@ test.describe('color picker', () => {
     const disabled = example(page, 'Disabled');
     await expect(disabled.getByRole('radio').first()).toBeDisabled();
     await expect(disabled.getByRole('textbox', { name: 'Locked color hex value' })).toBeDisabled();
+    await expect(disabled.getByRole('button', { name: 'Custom color' })).toBeDisabled();
   });
 });
 

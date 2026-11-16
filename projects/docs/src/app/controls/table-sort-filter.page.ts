@@ -164,10 +164,12 @@ import { DocsFill, formatDay, formatMoney, Order, ORDERS, STATUS_SEVERITY } from
       <h2>Technical notes</h2>
       <p>
         The text filter and the global filter match case- and accent-insensitive substrings of the
-        display text. The select filter needs the exact display text. The multiselect filter keeps
-        the rows whose display text is in the list. The number filter compares the cell value, and
-        the date filter compares the local calendar day of the cell value, so a
-        <code>format</code> function does not change what a range matches.
+        display text. The select filter needs the exact display text. It is a small
+        <code>star-select</code> with a clear button: "All" is its placeholder, and the clear button
+        shows every row again. The multiselect filter keeps the rows whose display text is in the
+        list. The number filter compares the cell value, and the date filter compares the local
+        calendar day of the cell value, so a <code>format</code> function does not change what a
+        range matches.
       </p>
       <p>
         <code>aria-sort</code> is set on one header only: the first sort column. The other sortable

@@ -68,14 +68,26 @@ describe('StarTable column filters and CSV export', () => {
   }
 
   it('renders a labelled filter for each column that asks for one', async () => {
-    const { el } = await setup();
-    const filters = [...el.querySelectorAll<HTMLElement>('.star-table__filter')];
+    const { fixture, el } = await setup();
+    const filters = [
+      ...el.querySelectorAll<HTMLElement>(
+        'input.star-table__filter, .star-table__filter [role=combobox]',
+      ),
+    ];
     expect(filters.map((filter) => filter.getAttribute('aria-label'))).toEqual([
       'Filter by Product',
       'Filter by Status',
     ]);
-    const options = [...el.querySelectorAll('select.star-table__filter option')];
-    expect(options.map((option) => option.textContent?.trim())).toEqual(['All', 'Closed', 'Open']);
+    // The choice filter is a StarNG select (no native popup): "All" is its placeholder.
+    expect(el.querySelector('select')).toBeNull();
+    const choice = filters[1];
+    expect(choice.textContent?.trim()).toBe('All');
+    choice.click();
+    await fixture.whenStable();
+    const options = [...document.querySelectorAll('[role=option]')];
+    expect(options.map((option) => option.textContent?.trim())).toEqual(['Closed', 'Open']);
+    choice.click();
+    await fixture.whenStable();
   });
 
   it('filters by text and by choice together, and clears the filters', async () => {
@@ -86,12 +98,26 @@ describe('StarTable column filters and CSV export', () => {
     await fixture.whenStable();
     expect(products()).toEqual(['Cable Kit', 'Cable Kit']);
 
-    const select = el.querySelector<HTMLSelectElement>('select.star-table__filter')!;
-    select.value = 'Closed';
-    select.dispatchEvent(new Event('change'));
-    await fixture.whenStable();
+    const choice = el.querySelector<HTMLElement>('.star-table__filter [role=combobox]')!;
+    const choose = async (label: string) => {
+      choice.click();
+      await fixture.whenStable();
+      [...document.querySelectorAll<HTMLElement>('[role=option]')]
+        .find((option) => option.textContent?.trim() === label)!
+        .click();
+      await fixture.whenStable();
+    };
+    await choose('Closed');
     expect(host.filters()).toEqual({ product: 'cable', status: 'Closed' });
     expect(el.querySelectorAll('tbody tr').length).toBe(1);
+
+    // The clear button of the select shows every status again: the filter is empty text.
+    el.querySelector<HTMLButtonElement>('.star-table__filter [aria-label="Clear"]')!.click();
+    await fixture.whenStable();
+    expect(host.filters()).toEqual({ product: 'cable', status: '' });
+    expect(choice.textContent?.trim()).toBe('All');
+    expect(el.querySelectorAll('tbody tr').length).toBe(2);
+    await choose('Closed');
 
     host.table().clearFilters();
     await fixture.whenStable();
@@ -292,20 +318,79 @@ describe('StarTable inline cell edit', () => {
     expect(host.edits.at(-1)).toMatchObject({ field: 'amount', value: 40, previous: 12 });
   });
 
-  it('cancels on Escape and commits a choice', async () => {
+  it('cancels on Escape', async () => {
     const { fixture, el, host, open } = await setup();
-    let editor = await open(1, 1);
+    const editor = await open(1, 1);
     editor.value = 'Changed';
     editor.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
     await fixture.whenStable();
     expect(host.edits).toEqual([]);
     expect(el.querySelector('.star-table__editor')).toBeNull();
+  });
 
-    editor = await open(1, 2);
-    editor.value = 'Closed';
-    editor.dispatchEvent(new Event('change'));
-    await fixture.whenStable();
-    expect(host.edits.at(-1)).toMatchObject({ field: 'status', value: 'Closed', previous: 'Open' });
+  describe('choice editor', () => {
+    const tick = () => new Promise((resolve) => setTimeout(resolve));
+    const editButton = (el: HTMLElement) =>
+      el.querySelector<HTMLElement>('tbody tr:nth-child(1) td:nth-child(2) .star-table__edit');
+    const keydown = (target: Element, key: string) =>
+      target.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
+
+    /** Opens the editor of the status of the first row; the list opens with it. */
+    async function openChoice() {
+      const context = await setup();
+      editButton(context.el)!.click();
+      await context.fixture.whenStable();
+      await tick();
+      await context.fixture.whenStable();
+      const combobox = context.el.querySelector<HTMLElement>(
+        'star-select.star-table__editor [role=combobox]',
+      )!;
+      const option = (label: string) =>
+        [...document.querySelectorAll<HTMLElement>('[role=option]')].find(
+          (item) => item.textContent?.trim() === label,
+        )!;
+      return { ...context, combobox, option };
+    }
+
+    it('is a StarNG select that has the focus and an open list', async () => {
+      const { el, combobox, option } = await openChoice();
+      expect(el.querySelector('select')).toBeNull();
+      expect(combobox.getAttribute('aria-label')).toBe('Edit Status');
+      expect(document.activeElement).toBe(combobox);
+      expect(combobox.getAttribute('aria-expanded')).toBe('true');
+      expect(option('Open').getAttribute('aria-selected')).toBe('true');
+    });
+
+    it('commits a choice at once and gives the focus back to the cell', async () => {
+      const { fixture, el, host, option } = await openChoice();
+      option('Closed').click();
+      await fixture.whenStable();
+      expect(host.edits).toEqual([
+        { row: ROWS[0], field: 'status', value: 'Closed', previous: 'Open' },
+      ]);
+      expect(el.querySelector('.star-table__editor')).toBeNull();
+      await tick();
+      expect(document.activeElement).toBe(editButton(el));
+    });
+
+    it('cancels on Escape: no edit, and the focus goes back to the cell', async () => {
+      const { fixture, el, host, combobox } = await openChoice();
+      keydown(combobox, 'ArrowDown');
+      keydown(combobox, 'Escape');
+      await fixture.whenStable();
+      expect(host.edits).toEqual([]);
+      expect(el.querySelector('.star-table__editor')).toBeNull();
+      await tick();
+      expect(document.activeElement).toBe(editButton(el));
+    });
+
+    it('cancels when the list closes without a change (Tab)', async () => {
+      const { fixture, el, host, combobox } = await openChoice();
+      keydown(combobox, 'Tab');
+      await fixture.whenStable();
+      expect(host.edits).toEqual([]);
+      expect(el.querySelector('.star-table__editor')).toBeNull();
+    });
   });
 });
 

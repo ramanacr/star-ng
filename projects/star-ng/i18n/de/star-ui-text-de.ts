@@ -132,6 +132,11 @@ export const STAR_UI_TEXT_DE: StarUiText = {
   colorLabel: 'Farbe',
   customColor: 'Eigene Farbe',
   hexValue: (label) => `${label} Hex-Wert`,
+  colorArea: 'Sättigung und Helligkeit',
+  colorAreaValue: (saturation, brightness) =>
+    `Sättigung ${saturation} %, Helligkeit ${brightness} %`,
+  hue: 'Farbton',
+  hueValue: (degrees) => `${degrees} Grad`,
 
   chooseFiles: 'Dateien auswählen',
   dropFiles: 'Dateien hierher ziehen oder',
