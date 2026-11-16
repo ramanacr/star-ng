@@ -151,7 +151,7 @@ import { DOCS, DocsRow } from '../shared/docs';
         heading="Date and time"
         source="date-picker/time"
         [script]="timeScript"
-        note="showTime adds a time field to the popup. The value keeps hours and minutes, and the popup stays open until the user chooses Done. stepMinute sets the minute step. hourFormat='12' shows 2:30 pm in the text. The range picker has showTime too (start 00:00, end 23:59 by default). With showTime, minDate and maxDate also limit the time."
+        note="showTime adds hour and minute columns to the popup: a StarNG panel, not the time popup of the browser. The value keeps hours and minutes, and the popup stays open until the user chooses Done. stepMinute sets the minute step of the column. hourFormat='12' shows 2:30 pm in the text and adds an am / pm column. The range picker has showTime too (start 00:00, end 23:59 by default), with a start and an end time. With showTime, minDate and maxDate also limit the time: the columns disable the times outside the limits."
       >
         <div class="docs-stack">
           <star-date-picker
@@ -372,7 +372,10 @@ readonly order = form(this.orderModel, (path) => {
     { name: '--star-accent', description: 'Border of the focused field.' },
     { name: '--star-focus-ring', description: 'Focus ring (box-shadow).' },
     { name: '--star-danger', description: 'Border of an invalid field.' },
-    { name: '--star-primary', description: 'Today marker and chosen day.' },
+    {
+      name: '--star-primary',
+      description: 'Today marker, chosen day, and chosen hour and minute.',
+    },
     { name: '--star-primary-soft', description: 'Fill between the two ends of a range.' },
   ];
   protected readonly keyboard: readonly DocsRow[] = [
@@ -395,6 +398,15 @@ readonly order = form(this.orderModel, (path) => {
       name: 'Arrow keys',
       description: 'In the month and year views: move by one (left, right) or by a row (up, down).',
     },
+    {
+      name: 'Arrow up / Arrow down, Home / End',
+      description: 'In a time column (showTime): the previous, next, first or last hour or minute.',
+    },
+    {
+      name: 'Arrow left / Arrow right',
+      description: 'In a time column: the column on that side (hour, minute, am / pm).',
+    },
+    { name: 'Enter / Space', description: 'In a time column: chooses the focused hour or minute.' },
   ];
 
   protected readonly helpers: readonly DocsRow[] = [

@@ -1,16 +1,23 @@
 import { _IdGenerator } from '@angular/cdk/a11y';
+import { CdkConnectedOverlay, CdkOverlayOrigin, ConnectedPosition } from '@angular/cdk/overlay';
 import {
+  afterNextRender,
   booleanAttribute,
   ChangeDetectionStrategy,
   Component,
   computed,
+  ElementRef,
   inject,
+  Injector,
   input,
+  linkedSignal,
   model,
   output,
+  signal,
+  viewChild,
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
-import { STAR_UI_TEXT } from '@star-ng/ui/core';
+import { STAR_UI_TEXT, StarDirectionService, starIsRtl } from '@star-ng/ui/core';
 
 /**
  * Knob (PrimeNG `p-knob`): circular value dial, `role="slider"` with Arrow / PageUp / PageDown /
@@ -127,15 +134,70 @@ const SWATCHES = [
   '#64748b',
 ];
 
+const PANEL_POSITIONS: ConnectedPosition[] = [
+  { originX: 'start', originY: 'bottom', overlayX: 'start', overlayY: 'top', offsetY: 6 },
+  { originX: 'start', originY: 'top', overlayX: 'start', overlayY: 'bottom', offsetY: -6 },
+  { originX: 'end', originY: 'bottom', overlayX: 'end', overlayY: 'top', offsetY: 6 },
+];
+
+/** A color as hue (0–359), saturation (0–100) and value, the brightness (0–100). */
+interface Hsv {
+  readonly h: number;
+  readonly s: number;
+  readonly v: number;
+}
+
+/** HSV of `#rrggbb` text; `null` when the text is not a hex color. */
+function hexToHsv(hex: string): Hsv | null {
+  const match = /^#?([0-9a-f]{6})$/i.exec(hex.trim());
+  if (!match) return null;
+  const number = parseInt(match[1], 16);
+  const [r, g, b] = [(number >> 16) & 255, (number >> 8) & 255, number & 255].map((c) => c / 255);
+  const max = Math.max(r, g, b);
+  const delta = max - Math.min(r, g, b);
+  let h = 0;
+  if (delta) {
+    if (max === r) h = ((g - b) / delta) % 6;
+    else if (max === g) h = (b - r) / delta + 2;
+    else h = (r - g) / delta + 4;
+  }
+  return {
+    h: Math.round((h * 60 + 360) % 360) % 360,
+    s: Math.round(max ? (delta / max) * 100 : 0),
+    v: Math.round(max * 100),
+  };
+}
+
+/** `#rrggbb` text of an HSV color. */
+function hsvToHex({ h, s, v }: Hsv): string {
+  const channel = (n: number) => {
+    const k = (n + h / 60) % 6;
+    const c = (v / 100) * (1 - (s / 100) * Math.max(0, Math.min(k, 4 - k, 1)));
+    return Math.round(c * 255)
+      .toString(16)
+      .padStart(2, '0');
+  };
+  return `#${channel(5)}${channel(3)}${channel(1)}`;
+}
+
+const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+
 /**
- * Color picker (PrimeNG `p-colorpicker`): preset swatches, the native color dialog and a
- * hex field. Value: `#rrggbb`.
+ * Color picker (PrimeNG `p-colorpicker`): preset swatches, a custom color panel and a hex field.
+ * Value: `#rrggbb`.
+ *
+ * The custom tile opens a StarNG panel (not the color dialog of the browser) with a saturation
+ * and brightness area and a hue slider. Both are sliders for assistive technology: the arrow
+ * keys move them (with Shift in steps of 10), Page up / Page down move in steps of 10, Home and
+ * End go to the ends. In right-to-left the panel is mirrored.
+ *
  * `<star-color-picker [(value)]="tagColor" ariaLabel="Tag color" />`
  */
 @Component({
   selector: 'star-color-picker',
+  imports: [CdkConnectedOverlay, CdkOverlayOrigin],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'star-color' },
+  host: { class: 'star-color', '[class.star-color--open]': 'open()' },
   template: `
     <div
       class="star-color__swatches"
@@ -155,17 +217,20 @@ const SWATCHES = [
         ></button>
       }
     </div>
-    <label class="star-color__custom">
-      <input
-        type="color"
-        class="star-color__native"
-        [value]="value()"
-        [disabled]="disabled()"
-        (input)="value.set($any($event.target).value)"
-        (blur)="touch.emit()"
-      />
-      <span class="star-sr-only">{{ text.customColor }}</span>
-    </label>
+    <button
+      #custom
+      type="button"
+      class="star-color__custom"
+      cdkOverlayOrigin
+      #origin="cdkOverlayOrigin"
+      aria-haspopup="dialog"
+      [style.background]="value()"
+      [attr.aria-label]="text.customColor"
+      [attr.aria-expanded]="open()"
+      [attr.aria-controls]="open() ? panelId : null"
+      [disabled]="disabled()"
+      (click)="togglePanel()"
+    ></button>
     <input
       class="star-input star-input--sm star-color__hex"
       [value]="value()"
@@ -173,21 +238,264 @@ const SWATCHES = [
       [attr.aria-label]="text.hexValue(ariaLabel() ?? text.colorLabel)"
       maxlength="7"
       (change)="onHex($any($event.target))"
+      (blur)="touch.emit()"
     />
+
+    <ng-template
+      cdkConnectedOverlay
+      cdkConnectedOverlayUsePopover="inline"
+      [cdkConnectedOverlayOrigin]="origin"
+      [cdkConnectedOverlayOpen]="open()"
+      [cdkConnectedOverlayPositions]="positions"
+      (attach)="onAttached()"
+      (detach)="closePanel(false)"
+      (overlayOutsideClick)="onOutsideClick($event)"
+    >
+      <div
+        class="star-panel star-date__panel star-color__panel"
+        role="dialog"
+        [id]="panelId"
+        [attr.dir]="rtl() ? 'rtl' : 'ltr'"
+        [attr.aria-label]="text.customColor"
+        (keydown)="onPanelKeydown($event)"
+      >
+        <div
+          #area
+          class="star-color__area"
+          role="slider"
+          tabindex="0"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          [style.background]="areaBackground()"
+          [attr.aria-label]="text.colorArea"
+          [attr.aria-valuenow]="hsv().s"
+          [attr.aria-valuetext]="text.colorAreaValue(hsv().s, hsv().v)"
+          (keydown)="onAreaKeydown($event)"
+          (pointerdown)="onAreaPointer($event, true)"
+          (pointermove)="$event.buttons === 1 && onAreaPointer($event, false)"
+        >
+          <span
+            class="star-color__thumb"
+            [style.inset-inline-start.%]="hsv().s"
+            [style.top.%]="100 - hsv().v"
+            [style.background]="value()"
+          ></span>
+        </div>
+        <div
+          class="star-color__hue"
+          role="slider"
+          tabindex="0"
+          aria-valuemin="0"
+          aria-valuemax="359"
+          aria-orientation="horizontal"
+          [style.background]="hueBackground()"
+          [attr.aria-label]="text.hue"
+          [attr.aria-valuenow]="hsv().h"
+          [attr.aria-valuetext]="text.hueValue(hsv().h)"
+          (keydown)="onHueKeydown($event)"
+          (pointerdown)="onHuePointer($event, true)"
+          (pointermove)="$event.buttons === 1 && onHuePointer($event, false)"
+        >
+          <span
+            class="star-color__thumb"
+            [style.inset-inline-start.%]="(hsv().h / 359) * 100"
+            [style.background]="hueColor()"
+          ></span>
+        </div>
+        <div class="star-color__bar">
+          <span class="star-color__preview" [style.background]="value()" aria-hidden="true"></span>
+          <span class="star-color__code">{{ value() }}</span>
+          <button
+            type="button"
+            class="star-btn star-btn--primary star-btn--sm"
+            (click)="closePanel()"
+          >
+            {{ text.done }}
+          </button>
+        </div>
+      </div>
+    </ng-template>
   `,
 })
 export class StarColorPicker implements FormValueControl<string> {
+  /** Keeps the CDK direction (overlays) in step with `<html dir>`. */
+  private readonly directionSync = inject(StarDirectionService);
   protected readonly text = inject(STAR_UI_TEXT);
+  private readonly ids = inject(_IdGenerator);
+  private readonly injector = inject(Injector);
+
   readonly value = model('#4f46e5');
   readonly swatches = input<readonly string[]>(SWATCHES);
   readonly ariaLabel = input<string | null>(null);
   readonly disabled = input(false, { transform: booleanAttribute });
   readonly touch = output<void>();
 
+  protected readonly positions = PANEL_POSITIONS;
+  protected readonly panelId = this.ids.getId('star-color-panel-');
+  protected readonly open = signal(false);
+
+  private readonly custom = viewChild.required<ElementRef<HTMLButtonElement>>('custom');
+  private readonly area = viewChild<ElementRef<HTMLElement>>('area');
+
+  /**
+   * The color of the panel. It follows the value, but keeps its own hue (and saturation) while
+   * the value is a gray, white or black, where the hex text has no hue.
+   */
+  protected readonly hsv = linkedSignal<string, Hsv>({
+    source: this.value,
+    computation: (hex, previous) => {
+      const before = previous?.value;
+      if (before && hsvToHex(before) === hex.toLowerCase()) return before;
+      const next = hexToHsv(hex) ?? before ?? { h: 0, s: 0, v: 0 };
+      if (!before) return next;
+      if (next.v === 0) return { ...before, v: 0 };
+      return next.s === 0 ? { ...next, h: before.h } : next;
+    },
+  });
+  /**
+   * `true` when the control is laid out right-to-left (read when the panel opens). The panel
+   * takes the same direction, wherever the overlay puts it in the page.
+   */
+  protected readonly rtl = signal(false);
+
+  protected readonly hueColor = computed(() => hsvToHex({ h: this.hsv().h, s: 100, v: 100 }));
+  // The gradients are the color model itself (white to the hue, then to black), not theme colors.
+  protected readonly areaBackground = computed(() => {
+    const end = this.rtl() ? 'to left' : 'to right';
+    return `linear-gradient(to top, #000, transparent), linear-gradient(${end}, #fff, ${this.hueColor()})`;
+  });
+  protected readonly hueBackground = computed(() => {
+    const end = this.rtl() ? 'to left' : 'to right';
+    return `linear-gradient(${end}, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00)`;
+  });
+
+  /** Opens the custom color panel. The focus goes to the saturation and brightness area. */
+  openPanel(): void {
+    if (this.disabled() || this.open()) return;
+    this.rtl.set(starIsRtl(this.custom().nativeElement));
+    this.open.set(true);
+  }
+
+  /** Closes the panel; by default the focus goes back to the custom color tile. */
+  closePanel(focusTile = true): void {
+    if (!this.open()) return;
+    this.open.set(false);
+    this.touch.emit();
+    if (focusTile) this.custom().nativeElement.focus();
+  }
+
+  protected togglePanel(): void {
+    if (this.open()) this.closePanel();
+    else this.openPanel();
+  }
+
+  protected onAttached(): void {
+    // The panel content is rendered after the overlay is attached.
+    afterNextRender(() => this.area()?.nativeElement.focus(), { injector: this.injector });
+  }
+
+  protected onOutsideClick(event: MouseEvent): void {
+    if (this.custom().nativeElement.contains(event.target as Node)) return;
+    this.closePanel(false);
+  }
+
+  protected onPanelKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      event.stopPropagation();
+      this.closePanel();
+    }
+  }
+
+  /** Arrow left / right, Home and End: saturation; Arrow up / down, Page up / down: brightness. */
+  protected onAreaKeydown(event: KeyboardEvent): void {
+    const step = event.shiftKey ? 10 : 1;
+    const { s, v } = this.hsv();
+    const moves: Record<string, Partial<Hsv>> = {
+      ArrowRight: { s: s + step },
+      ArrowLeft: { s: s - step },
+      ArrowUp: { v: v + step },
+      ArrowDown: { v: v - step },
+      PageUp: { v: v + 10 },
+      PageDown: { v: v - 10 },
+      Home: { s: 0 },
+      End: { s: 100 },
+    };
+    const move = moves[this.inlineKey(event)];
+    if (!move) return;
+    event.preventDefault();
+    this.setHsv(move);
+  }
+
+  /** The arrow keys move the hue; Page up / down in steps of 10, Home and End to the ends. */
+  protected onHueKeydown(event: KeyboardEvent): void {
+    const step = event.shiftKey ? 10 : 1;
+    const { h } = this.hsv();
+    const moves: Record<string, number> = {
+      ArrowRight: h + step,
+      ArrowUp: h + step,
+      ArrowLeft: h - step,
+      ArrowDown: h - step,
+      PageUp: h + 10,
+      PageDown: h - 10,
+      Home: 0,
+      End: 359,
+    };
+    const next = moves[this.inlineKey(event)];
+    if (next === undefined) return;
+    event.preventDefault();
+    this.setHsv({ h: next });
+  }
+
+  protected onAreaPointer(event: PointerEvent, start: boolean): void {
+    const area = event.currentTarget as HTMLElement;
+    if (start) this.capture(event, area);
+    const box = area.getBoundingClientRect();
+    const y = box.height ? clamp((event.clientY - box.top) / box.height, 0, 1) : 0;
+    this.setHsv({ s: this.inlineRatio(event.clientX, box) * 100, v: (1 - y) * 100 });
+  }
+
+  protected onHuePointer(event: PointerEvent, start: boolean): void {
+    const track = event.currentTarget as HTMLElement;
+    if (start) this.capture(event, track);
+    this.setHsv({ h: this.inlineRatio(event.clientX, track.getBoundingClientRect()) * 359 });
+  }
+
   protected onHex(input: HTMLInputElement): void {
     const raw = input.value.trim();
     const hex = raw.startsWith('#') ? raw : `#${raw}`;
     if (/^#[0-9a-f]{6}$/i.test(hex)) this.value.set(hex.toLowerCase());
     else input.value = this.value();
+  }
+
+  /** Keeps the pointer on the slider while it drags, and the focus on the slider. */
+  private capture(event: PointerEvent, element: HTMLElement): void {
+    event.preventDefault();
+    element.focus();
+    element.setPointerCapture?.(event.pointerId);
+  }
+
+  /** The key in inline terms: in right-to-left, Arrow left moves toward the end of the line. */
+  private inlineKey(event: KeyboardEvent): string {
+    if (!this.rtl() || (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight')) return event.key;
+    return event.key === 'ArrowLeft' ? 'ArrowRight' : 'ArrowLeft';
+  }
+
+  /** 0 at the start of the line and 1 at its end: the left edge in left-to-right. */
+  private inlineRatio(clientX: number, box: DOMRect): number {
+    const ratio = box.width ? clamp((clientX - box.left) / box.width, 0, 1) : 0;
+    return this.rtl() ? 1 - ratio : ratio;
+  }
+
+  private setHsv(change: Partial<Hsv>): void {
+    if (this.disabled()) return;
+    const current = this.hsv();
+    const next: Hsv = {
+      h: Math.round(clamp(change.h ?? current.h, 0, 359)),
+      s: Math.round(clamp(change.s ?? current.s, 0, 100)),
+      v: Math.round(clamp(change.v ?? current.v, 0, 100)),
+    };
+    this.hsv.set(next);
+    this.value.set(hsvToHex(next));
   }
 }

@@ -132,6 +132,10 @@ export interface StarUiText {
   readonly colorLabel: string;
   readonly customColor: string;
   readonly hexValue: (label: string) => string;
+  readonly colorArea: string;
+  readonly colorAreaValue: (saturation: number, brightness: number) => string;
+  readonly hue: string;
+  readonly hueValue: (degrees: number) => string;
   // File upload
   readonly chooseFiles: string;
   readonly dropFiles: string;
@@ -327,6 +331,11 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   colorLabel: 'Color',
   customColor: 'Custom color',
   hexValue: (label) => `${label} hex value`,
+  colorArea: 'Saturation and brightness',
+  colorAreaValue: (saturation, brightness) =>
+    `Saturation ${saturation}%, brightness ${brightness}%`,
+  hue: 'Hue',
+  hueValue: (degrees) => `${degrees} degrees`,
 
   chooseFiles: 'Choose files',
   dropFiles: 'Drag files here, or',
@@ -425,6 +434,8 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   sliderMinimum: ['label'],
   sliderMaximum: ['label'],
   hexValue: ['label'],
+  colorAreaValue: ['saturation', 'brightness'],
+  hueValue: ['degrees'],
   fileMaxSize: ['size'],
   fileUpTo: ['count'],
   uploadingFile: ['name'],
