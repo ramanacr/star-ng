@@ -7,6 +7,7 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 ### Fixed
 
 - The panels of `StarSelect`, `StarMultiSelect`, `StarAutocomplete` and `StarTreeSelect` are as wide as the control when the options are short.
+- `star-input-tags`, `star-autocomplete` and `star-multi-autocomplete` keep the end buttons on the first row. The chips and the input wrap inside the field.
 
 ## [0.2.1] - 2026-11-16
 
