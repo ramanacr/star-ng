@@ -14,8 +14,10 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  contentChildren,
   effect,
   ElementRef,
+  forwardRef,
   inject,
   input,
   linkedSignal,
@@ -23,11 +25,22 @@ import {
   numberAttribute,
   output,
   signal,
+  TemplateRef,
   untracked,
   viewChild,
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
-import { matchesFilter, STAR_UI_TEXT, StarDirectionService, starInlineKey } from '@star-ng/ui/core';
+import {
+  matchesFilter,
+  STAR_SLOT_HOST,
+  STAR_UI_TEXT,
+  StarDirectionService,
+  StarEmptyContext,
+  starInlineKey,
+  StarSlot,
+  starSlot,
+  starSlotMap,
+} from '@star-ng/ui/core';
 import {
   checkStates,
   flattenVisible,
@@ -39,6 +52,7 @@ import {
   subtreeKeys,
   TreeRow,
 } from './tree-model';
+import type { StarNodeContext } from './tree-slots';
 
 /** Tree data (PrimeNG `TreeNode`). `key` must be unique in the tree. */
 export interface StarTreeNode<T = unknown> {
@@ -79,8 +93,12 @@ function filterNodes(nodes: readonly StarTreeNode[], query: string): StarTreeNod
   selector: 'star-tree',
   imports: [CdkVirtualScrollViewport, CdkFixedSizeVirtualScroll, CdkVirtualForOf, NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarTree) }],
   host: { class: 'star-tree' },
   template: `
+    @if (headerSlot(); as header) {
+      <ng-container *ngTemplateOutlet="header" />
+    }
     @if (filter()) {
       <div class="star-panel__filter">
         <i class="ph-bold ph-magnifying-glass" aria-hidden="true"></i>
@@ -124,7 +142,11 @@ function filterNodes(nodes: readonly StarTreeNode[], query: string): StarTreeNod
             aria-hidden="true"
             (click)="$event.stopPropagation(); toggle(item.node)"
           >
-            <i class="ph-bold ph-caret-right"></i>
+            @if (toggleIcon(); as icon) {
+              <ng-container *ngTemplateOutlet="icon" />
+            } @else {
+              <i class="ph-bold ph-caret-right"></i>
+            }
           </span>
         } @else {
           <span class="star-tree__toggle star-tree__toggle--leaf" aria-hidden="true"></span>
@@ -145,7 +167,11 @@ function filterNodes(nodes: readonly StarTreeNode[], query: string): StarTreeNod
         @if (item.node.icon) {
           <i class="star-tree__icon" [class]="item.node.icon" aria-hidden="true"></i>
         }
-        <span class="star-tree__label">{{ item.node.label }}</span>
+        @if (nodeSlot(); as custom) {
+          <ng-container *ngTemplateOutlet="custom; context: nodeContext(item)" />
+        } @else {
+          <span class="star-tree__label">{{ item.node.label }}</span>
+        }
       </li>
     </ng-template>
     @if (showViewport()) {
@@ -183,9 +209,18 @@ function filterNodes(nodes: readonly StarTreeNode[], query: string): StarTreeNod
         @for (item of visible(); track item.node.key) {
           <ng-container [ngTemplateOutlet]="row" [ngTemplateOutletContext]="{ $implicit: item }" />
         } @empty {
-          <li class="star-listbox__empty" role="presentation">{{ text.emptyFilterMessage }}</li>
+          <li class="star-listbox__empty" role="presentation">
+            @if (emptySlot(); as custom) {
+              <ng-container *ngTemplateOutlet="custom; context: emptyContext()" />
+            } @else {
+              <ng-container>{{ text.emptyFilterMessage }}</ng-container>
+            }
+          </li>
         }
       </ul>
+    }
+    @if (footerSlot(); as footer) {
+      <ng-container *ngTemplateOutlet="footer" />
     }
   `,
 })
@@ -211,10 +246,29 @@ export class StarTree implements FormValueControl<readonly string[]> {
   readonly virtualItemSize = input(34, { transform: numberAttribute });
   readonly ariaLabel = input<string | null>(null);
   readonly disabled = input(false, { transform: booleanAttribute });
+  /** Set by `star-tree-select`. In your own markup, use the `starNode` slot. */
+  readonly nodeTemplate = input<TemplateRef<StarNodeContext> | null>(null);
+  /** Set by `star-tree-select`. In your own markup, use the `starEmpty` slot. */
+  readonly emptyTemplate = input<TemplateRef<StarEmptyContext> | null>(null);
+  /** Set by `star-tree-select`. In your own markup, use `<ng-template starIcon="toggle">`. */
+  readonly toggleIconTemplate = input<TemplateRef<object> | null>(null);
   readonly touch = output<void>();
   readonly nodeSelect = output<StarTreeNode>();
 
   protected readonly query = signal('');
+  private readonly slots = contentChildren(StarSlot, { descendants: true });
+  protected readonly headerSlot = starSlot<object>(this.slots, this, 'header');
+  protected readonly footerSlot = starSlot<object>(this.slots, this, 'footer');
+  private readonly ownNodeSlot = starSlot<StarNodeContext>(this.slots, this, 'node');
+  private readonly ownEmptySlot = starSlot<StarEmptyContext>(this.slots, this, 'empty');
+  private readonly ownIconSlots = starSlotMap<object>(this.slots, this, 'icon');
+  /** Own `starNode` slot first, then the `nodeTemplate` input. */
+  protected readonly nodeSlot = computed(() => this.ownNodeSlot() ?? this.nodeTemplate());
+  protected readonly emptySlot = computed(() => this.ownEmptySlot() ?? this.emptyTemplate());
+  protected readonly toggleIcon = computed(
+    () => this.ownIconSlots().get('toggle') ?? this.toggleIconTemplate(),
+  );
+  protected readonly emptyContext = computed<StarEmptyContext>(() => ({ $implicit: this.query() }));
   private readonly viewport = viewChild(CdkVirtualScrollViewport);
   private readonly filtered = computed(() => filterNodes(this.nodes(), this.query()));
 
@@ -316,6 +370,15 @@ export class StarTree implements FormValueControl<readonly string[]> {
       this.applyPendingFocus();
       if (this.parked) this.restoreParkedFocus();
     });
+  }
+
+  protected nodeContext(item: VisibleNode): StarNodeContext {
+    return {
+      $implicit: item.node,
+      level: item.level,
+      expanded: this.isExpanded(item.node),
+      selected: this.isSelected(item.node),
+    };
   }
 
   isExpanded(node: StarTreeNode): boolean {
@@ -542,8 +605,9 @@ const POSITIONS: ConnectedPosition[] = [
  */
 @Component({
   selector: 'star-tree-select',
-  imports: [CdkConnectedOverlay, CdkOverlayOrigin, StarTree],
+  imports: [CdkConnectedOverlay, CdkOverlayOrigin, NgTemplateOutlet, StarTree],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarTreeSelect) }],
   host: {
     class: 'star-select star-tree-select',
     '[class.star-select--open]': 'open()',
@@ -598,6 +662,9 @@ const POSITIONS: ConnectedPosition[] = [
       (overlayKeydown)="$event.key === 'Escape' && close(true)"
     >
       <div class="star-panel star-tree-select__panel">
+        @if (headerSlot(); as header) {
+          <ng-container *ngTemplateOutlet="header" />
+        }
         <star-tree
           #panelTree
           [nodes]="nodes()"
@@ -609,8 +676,14 @@ const POSITIONS: ConnectedPosition[] = [
           [virtualScroll]="virtualScroll()"
           [virtualItemSize]="virtualItemSize()"
           [ariaLabel]="ariaLabel()"
+          [nodeTemplate]="nodeSlot()"
+          [emptyTemplate]="emptySlot()"
+          [toggleIconTemplate]="toggleIcon()"
           (nodeSelect)="selectionMode() === 'single' && close(true)"
         />
+        @if (footerSlot(); as footer) {
+          <ng-container *ngTemplateOutlet="footer" />
+        }
       </div>
     </ng-template>
   `,
@@ -639,6 +712,14 @@ export class StarTreeSelect implements FormValueControl<readonly string[]> {
   readonly invalid = input(false, { transform: booleanAttribute });
   readonly touched = input(false, { transform: booleanAttribute });
   readonly touch = output<void>();
+
+  private readonly slots = contentChildren(StarSlot, { descendants: true });
+  protected readonly headerSlot = starSlot<object>(this.slots, this, 'header');
+  protected readonly footerSlot = starSlot<object>(this.slots, this, 'footer');
+  protected readonly nodeSlot = starSlot<StarNodeContext>(this.slots, this, 'node');
+  protected readonly emptySlot = starSlot<StarEmptyContext>(this.slots, this, 'empty');
+  private readonly iconSlots = starSlotMap<object>(this.slots, this, 'icon');
+  protected readonly toggleIcon = computed(() => this.iconSlots().get('toggle') ?? null);
 
   protected readonly open = signal(false);
   protected readonly panelTree = viewChild<StarTree>('panelTree');

@@ -3406,6 +3406,23 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "outputs": []
   },
+  "StarNodeTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starNode]",
+    "entry": "@star-ng/ui/tree",
+    "description": "Replaces the label of a node in `star-tree` and `star-tree-select`. PrimeNG `#default` node template. The toggle, the checkbox and the node icon stay.",
+    "inputs": [
+      {
+        "name": "starNodeOf",
+        "type": "readonly StarTreeNode<T>[] | null",
+        "default": "null",
+        "required": false,
+        "description": "Optional: pass the nodes array to type `let-node` in strict templates."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
   "StarOptionListBase": {
     "kind": "directive",
     "selector": "",
@@ -6057,6 +6074,27 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "false",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "nodeTemplate",
+        "type": "TemplateRef<StarNodeContext> | null",
+        "default": "null",
+        "required": false,
+        "description": "Set by `star-tree-select`. In your own markup, use the `starNode` slot."
+      },
+      {
+        "name": "emptyTemplate",
+        "type": "TemplateRef<StarEmptyContext> | null",
+        "default": "null",
+        "required": false,
+        "description": "Set by `star-tree-select`. In your own markup, use the `starEmpty` slot."
+      },
+      {
+        "name": "toggleIconTemplate",
+        "type": "TemplateRef<object> | null",
+        "default": "null",
+        "required": false,
+        "description": "Set by `star-tree-select`. In your own markup, use `<ng-template starIcon=\"toggle\">`."
       }
     ],
     "models": [
@@ -6578,6 +6616,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "tree-select/form": "<div class=\"docs-stack\">\n  <star-field label=\"Department\" [state]=\"hire.department()\">\n    <star-tree-select\n      [formField]=\"hire.department\"\n      [nodes]=\"departments\"\n      placeholder=\"Select a department\"\n      ariaLabel=\"Hire department\"\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ hire().valid() }}</p>\n</div>",
   "tree-select/multiple": "<div class=\"docs-stack\">\n  <star-tree-select\n    [nodes]=\"departments\"\n    selectionMode=\"multiple\"\n    [(value)]=\"nodes\"\n    placeholder=\"Select nodes\"\n    ariaLabel=\"Nodes\"\n  />\n  <p class=\"docs-output\" role=\"status\">Nodes: {{ nodes().join(', ') || 'none' }}</p>\n  <star-tree-select\n    [nodes]=\"departments\"\n    disabled\n    placeholder=\"Disabled\"\n    ariaLabel=\"Disabled department\"\n  />\n</div>",
   "tree-select/single": "<div class=\"docs-stack\">\n  <star-tree-select\n    [nodes]=\"departments\"\n    [(value)]=\"department\"\n    placeholder=\"Select a department\"\n    ariaLabel=\"Department\"\n    showClear\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Department: {{ department().join(', ') || 'none' }}\n  </p>\n</div>",
+  "tree-select/slots": "<star-tree-select\n  [nodes]=\"projects\"\n  [(expanded)]=\"projectsOpen\"\n  [(value)]=\"project\"\n  filter\n  placeholder=\"Select a project\"\n  ariaLabel=\"Project\"\n>\n  <ng-template starHeader>\n    <p class=\"docs-output\">Active projects</p>\n  </ng-template>\n  <ng-template starNode [starNodeOf]=\"projects\" let-node let-level=\"level\">\n    {{ node.label }}\n    @if (node.data) {\n      <small>(owner {{ node.data.owner }}, level {{ level }})</small>\n    }\n  </ng-template>\n  <ng-template starIcon=\"toggle\"\n    ><i class=\"ph-bold ph-plus\" aria-hidden=\"true\"></i\n  ></ng-template>\n  <ng-template starEmpty let-text>No project matches {{ text }}.</ng-template>\n  <ng-template starFooter>\n    <p class=\"docs-output\">3 projects</p>\n  </ng-template>\n</star-tree-select>",
   "tree-select/virtual": "<div class=\"docs-stack\">\n  <star-tree-select\n    [nodes]=\"large.nodes\"\n    [(expanded)]=\"largeOpen\"\n    selectionMode=\"checkbox\"\n    [(value)]=\"largeTeams\"\n    virtualScroll\n    [virtualItemSize]=\"34\"\n    filter\n    placeholder=\"Select orders\"\n    ariaLabel=\"Orders by site\"\n  />\n  <p class=\"docs-output\" role=\"status\">{{ largeTeams().length }} orders checked</p>\n</div>",
   "tree-table/basic": "<div class=\"docs-stack\">\n  <star-tree-table\n    [nodes]=\"departments\"\n    [columns]=\"columns\"\n    [(expanded)]=\"open\"\n    ariaLabel=\"Departments\"\n  />\n  <p class=\"docs-output\" role=\"status\">Open: {{ open().join(', ') || 'none' }}</p>\n</div>",
   "tree-table/columns": "<star-tree-table\n  [nodes]=\"departments\"\n  [columns]=\"wideColumns\"\n  [expanded]=\"allOpen\"\n  ariaLabel=\"Departments with fixed columns\"\n/>",
@@ -6587,5 +6626,6 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "tree/form": "<div class=\"docs-stack\">\n  <star-field label=\"Folders to share\" [state]=\"share.folders()\">\n    <star-tree\n      [formField]=\"share.folders\"\n      [nodes]=\"folders\"\n      selectionMode=\"checkbox\"\n      scrollHeight=\"12rem\"\n      ariaLabel=\"Folders to share\"\n    />\n  </star-field>\n\n  <p class=\"docs-output\" role=\"status\">Valid: {{ share().valid() }}</p>\n</div>",
   "tree/multiple": "<star-tree\n  [nodes]=\"folders\"\n  selectionMode=\"multiple\"\n  [(value)]=\"picked\"\n  [(expanded)]=\"multipleOpen\"\n  scrollHeight=\"16rem\"\n  ariaLabel=\"Folders to back up\"\n/>",
   "tree/single": "<div class=\"docs-stack\">\n  <star-tree\n    [nodes]=\"folders\"\n    selectionMode=\"single\"\n    [(value)]=\"selected\"\n    [(expanded)]=\"singleOpen\"\n    scrollHeight=\"16rem\"\n    ariaLabel=\"Folder\"\n    (nodeSelect)=\"lastNode.set($event.label)\"\n  />\n\n  <p class=\"docs-output\" role=\"status\">Selected: {{ selected().join(', ') || 'none' }}</p>\n\n  <p class=\"docs-output\" role=\"status\">Last node: {{ lastNode() }}</p>\n</div>",
+  "tree/slots": "<star-tree\n  [nodes]=\"projects\"\n  [(expanded)]=\"projectsOpen\"\n  filter\n  scrollHeight=\"16rem\"\n  ariaLabel=\"Projects\"\n>\n  <ng-template starHeader>\n    <p class=\"docs-output\">Active projects</p>\n  </ng-template>\n  <ng-template starNode [starNodeOf]=\"projects\" let-node let-level=\"level\">\n    {{ node.label }}\n    @if (node.data) {\n      <small>(owner {{ node.data.owner }}, level {{ level }})</small>\n    }\n  </ng-template>\n  <ng-template starIcon=\"toggle\"\n    ><i class=\"ph-bold ph-plus\" aria-hidden=\"true\"></i\n  ></ng-template>\n  <ng-template starEmpty let-text>No project matches {{ text }}.</ng-template>\n  <ng-template starFooter>\n    <p class=\"docs-output\">3 projects</p>\n  </ng-template>\n</star-tree>",
   "tree/virtual": "<div class=\"docs-stack\">\n  <star-tree\n    [nodes]=\"large.nodes\"\n    [(expanded)]=\"largeOpen\"\n    selectionMode=\"checkbox\"\n    [(value)]=\"largeChecked\"\n    virtualScroll\n    [virtualItemSize]=\"34\"\n    filter\n    scrollHeight=\"20rem\"\n    ariaLabel=\"Orders by site\"\n  />\n\n  <p class=\"docs-output\" role=\"status\">\n    {{ large.count }} nodes, {{ largeChecked().length }} orders checked\n  </p>\n</div>"
 };

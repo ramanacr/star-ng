@@ -1,4 +1,5 @@
 export * from './tree';
+export * from './tree-slots';
 // Pure row helpers that other entry points reuse (the tree table). Not part of the control API.
 export {
   flattenVisible,
