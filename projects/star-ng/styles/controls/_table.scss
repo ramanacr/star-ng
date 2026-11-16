@@ -54,7 +54,8 @@
     min-width: 4rem;
   }
 }
-star-multi-select.star-table__filter {
+star-multi-select.star-table__filter,
+star-select.star-table__filter {
   display: block;
   min-width: 8rem;
   font: var(--star-type-body);
@@ -224,7 +225,9 @@ star-multi-select.star-table__filter {
     .star-table__filter-range {
       flex-wrap: wrap;
     }
-    .star-table__filter {
+    .star-table__filter,
+    star-select.star-table__filter,
+    star-multi-select.star-table__filter {
       min-width: 0;
     }
     .star-table__filter-range .star-table__filter {
@@ -401,6 +404,11 @@ th.star-table__cell--frozen,
   width: 100%;
   min-width: 5rem;
   margin-block: -0.375rem;
+}
+// The choice editor is a `star-select`: narrower than a form select (12rem).
+star-select.star-table__editor {
+  min-width: 8rem;
+  font: var(--star-type-body);
 }
 .star-table__radio {
   width: 1.125rem;

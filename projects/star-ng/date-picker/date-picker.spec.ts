@@ -47,6 +47,25 @@ describe('date utils', () => {
   });
 });
 
+/** The time columns of one time in the open popup (`Time`, `Start time` or `End time`). */
+function timeGroup(label: string): HTMLElement {
+  return document.querySelector<HTMLElement>(`.star-date__time-field[aria-label="${label}"]`)!;
+}
+function timeCell(group: HTMLElement, part: string, value: number): HTMLButtonElement {
+  return group.querySelector<HTMLButtonElement>(`[data-part="${part}"] [data-value="${value}"]`)!;
+}
+function values(group: HTMLElement, part: string): number[] {
+  return [...group.querySelectorAll<HTMLElement>(`[data-part="${part}"] [role="option"]`)].map(
+    (cell) => Number(cell.dataset['value']),
+  );
+}
+/** Labels of the chosen cells, column by column. */
+function selected(group: HTMLElement): string[] {
+  return [...group.querySelectorAll('[aria-selected="true"]')].map(
+    (cell) => cell.textContent?.trim() ?? '',
+  );
+}
+
 @Component({
   imports: [StarCalendar],
   template: `<star-calendar
@@ -222,15 +241,21 @@ describe('StarDatePicker', () => {
     expect(host.date()).toEqual(new Date(2026, 10, 27, 14, 30));
     expect(expanded(input)).toBe('true');
 
-    const time = document.querySelector<HTMLInputElement>('.star-date__time input')!;
-    expect(time.value).toBe('14:30');
-    expect(time.step).toBe('900');
-    time.value = '09:15';
-    time.dispatchEvent(new Event('change'));
+    // The time is a StarNG hour and minute column, not the time popup of the browser.
+    expect(document.querySelector('.star-date__time input')).toBeNull();
+    const group = timeGroup('Time');
+    expect(group.getAttribute('role')).toBe('group');
+    expect(selected(group)).toEqual(['14', '30']);
+    expect(values(group, 'minute')).toEqual([0, 15, 30, 45]);
+    timeCell(group, 'hour', 9).click();
+    await fixture.whenStable();
+    expect(host.date()).toEqual(new Date(2026, 10, 27, 9, 30));
+    timeCell(group, 'minute', 15).click();
     await fixture.whenStable();
     expect(host.date()).toEqual(new Date(2026, 10, 27, 9, 15));
+    expect(input.value).toBe('27/11/2026, 09:15');
 
-    document.querySelector<HTMLButtonElement>('.star-date__time button')!.click();
+    document.querySelector<HTMLButtonElement>('.star-date__time > .star-btn')!.click();
     await fixture.whenStable();
     expect(expanded(input)).toBe('false');
   });
@@ -311,9 +336,17 @@ describe('date picker: time limits, month and year, range with time, multiple da
     expect(host.limited()).toEqual(new Date(2026, 10, 10, 9, 30));
 
     await open('Limited');
-    const time = document.querySelector<HTMLInputElement>('.star-date__time input')!;
-    time.value = '07:00';
-    time.dispatchEvent(new Event('change'));
+    // On the day of minDate the hours before 09:00 are disabled; a disabled cell does nothing.
+    const group = timeGroup('Time');
+    const disabled = (part: string, value: number) =>
+      timeCell(group, part, value).getAttribute('aria-disabled') === 'true';
+    expect(disabled('hour', 7)).toBe(true);
+    expect(disabled('hour', 8)).toBe(true);
+    expect(disabled('hour', 9)).toBe(false);
+    timeCell(group, 'hour', 7).click();
+    await fixture.whenStable();
+    expect(host.limited()).toEqual(new Date(2026, 10, 10, 9, 30));
+    timeCell(group, 'minute', 0).click();
     await fixture.whenStable();
     expect(host.limited()).toEqual(new Date(2026, 10, 10, 9, 0));
     expect(field('Limited').value).toBe('10/11/2026, 09:00');
@@ -361,10 +394,12 @@ describe('date picker: time limits, month and year, range with time, multiple da
     });
     expect(expanded(field('Shift'))).toBe('true');
 
-    const times = [...document.querySelectorAll<HTMLInputElement>('.star-date__time input')];
-    expect(times.map((time) => time.value)).toEqual(['00:00', '23:59']);
-    times[1].value = '18:00';
-    times[1].dispatchEvent(new Event('change'));
+    expect(selected(timeGroup('Start time'))).toEqual(['00', '00']);
+    expect(selected(timeGroup('End time'))).toEqual(['23', '59']);
+    timeCell(timeGroup('End time'), 'hour', 18).click();
+    await fixture.whenStable();
+    expect(host.shift()?.end).toEqual(new Date(2026, 10, 9, 18, 59));
+    timeCell(timeGroup('End time'), 'minute', 0).click();
     await fixture.whenStable();
     expect(host.shift()?.end).toEqual(new Date(2026, 10, 9, 18, 0));
     expect(field('Shift').value).toBe('05/11/2026, 00:00 – 09/11/2026, 18:00');
@@ -389,5 +424,73 @@ describe('date picker: time limits, month and year, range with time, multiple da
     day('2026-11-05').click();
     await fixture.whenStable();
     expect(host.days()).toEqual([new Date(2026, 10, 12), new Date(2026, 10, 20)]);
+  });
+});
+
+@Component({
+  imports: [StarDatePicker],
+  template: `
+    <star-date-picker
+      locale="en-GB"
+      showTime
+      hourFormat="12"
+      ariaLabel="Pickup"
+      [stepMinute]="30"
+      [(value)]="pickup"
+    />
+  `,
+})
+class TimeColumnsHost {
+  readonly pickup = signal<Date | null>(null);
+}
+
+describe('date picker: time columns', () => {
+  async function setup() {
+    const fixture = TestBed.createComponent(TimeColumnsHost);
+    await fixture.whenStable();
+    const input = (fixture.nativeElement as HTMLElement).querySelector('input')!;
+    input.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'ArrowDown', altKey: true, bubbles: true }),
+    );
+    await fixture.whenStable();
+    return { fixture, host: fixture.componentInstance, input };
+  }
+
+  afterEach(() => document.querySelectorAll('.star-date__panel').forEach((item) => item.remove()));
+
+  it('disables the columns until a date is chosen, then keeps the time with the date', async () => {
+    const { fixture, host } = await setup();
+    const group = timeGroup('Time');
+    expect(group.querySelector('star-time-columns')?.classList).toContain(
+      'star-time__columns--disabled',
+    );
+    expect(
+      [...group.querySelectorAll('[role="option"]')].every(
+        (cell) => cell.getAttribute('aria-disabled') === 'true',
+      ),
+    ).toBe(true);
+    timeCell(group, 'hour', 3).click();
+    await fixture.whenStable();
+    expect(host.pickup()).toBeNull();
+
+    host.pickup.set(new Date(2026, 10, 22, 9, 0));
+    await fixture.whenStable();
+    expect(timeCell(group, 'hour', 3).getAttribute('aria-disabled')).toBeNull();
+  });
+
+  it('follows hourFormat and stepMinute: a 12-hour clock with an am / pm column', async () => {
+    const { fixture, host } = await setup();
+    host.pickup.set(new Date(2026, 10, 22, 9, 0));
+    await fixture.whenStable();
+    const group = timeGroup('Time');
+    expect(values(group, 'hour')).toEqual([12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
+    expect(values(group, 'minute')).toEqual([0, 30]);
+    expect(values(group, 'period')).toEqual([0, 1]);
+    timeCell(group, 'period', 1).click();
+    await fixture.whenStable();
+    expect(host.pickup()).toEqual(new Date(2026, 10, 22, 21, 0));
+    timeCell(group, 'minute', 30).click();
+    await fixture.whenStable();
+    expect(host.pickup()).toEqual(new Date(2026, 10, 22, 21, 30));
   });
 });

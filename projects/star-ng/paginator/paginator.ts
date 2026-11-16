@@ -10,6 +10,7 @@ import {
   output,
 } from '@angular/core';
 import { STAR_UI_TEXT } from '@star-ng/ui/core';
+import { StarSelect } from '@star-ng/ui/select';
 
 export interface StarPageEvent {
   /** Index of the first record on the page (0-based). */
@@ -22,12 +23,13 @@ export interface StarPageEvent {
 
 /**
  * Paginator (PrimeNG `p-paginator`): `[(first)]` / `[(rows)]`, page links window,
- * first / last buttons, rows-per-page select and a "1–10 of 240" report.
+ * first / last buttons, a rows-per-page `star-select` and a "1–10 of 240" report.
  *
  * `<star-paginator [totalRecords]="240" [(first)]="first" [(rows)]="rows" />`
  */
 @Component({
   selector: 'star-paginator',
+  imports: [StarSelect],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-paginator' },
   template: `
@@ -89,25 +91,26 @@ export interface StarPageEvent {
       }
     </nav>
     @if (rowsPerPageOptions().length) {
-      <label class="star-paginator__rows" [for]="rowsId">
-        <span>{{ text.rowsPerPage }}</span>
-        <select
-          class="star-input star-input--sm star-paginator__select"
-          [id]="rowsId"
+      <span class="star-paginator__rows">
+        <span [id]="rowsLabelId">{{ text.rowsPerPage }}</span>
+        <star-select
+          class="star-paginator__select"
+          size="sm"
+          [inputId]="rowsId"
+          [ariaLabelledBy]="rowsLabelId"
+          [options]="rowsPerPageOptions()"
           [value]="rows()"
-          (change)="changeRows(+$any($event.target).value)"
-        >
-          @for (option of rowsPerPageOptions(); track option) {
-            <option [value]="option" [selected]="option === rows()">{{ option }}</option>
-          }
-        </select>
-      </label>
+          (valueChange)="$event !== null && changeRows($event)"
+        />
+      </span>
     }
   `,
 })
 export class StarPaginator {
   protected readonly text = inject(STAR_UI_TEXT);
-  protected readonly rowsId = inject(_IdGenerator).getId('star-paginator-rows-');
+  private readonly ids = inject(_IdGenerator);
+  protected readonly rowsId = this.ids.getId('star-paginator-rows-');
+  protected readonly rowsLabelId = this.ids.getId('star-paginator-rows-label-');
 
   readonly totalRecords = input(0);
   readonly first = model(0);
@@ -153,6 +156,7 @@ export class StarPaginator {
   }
 
   protected changeRows(rows: number): void {
+    if (rows === this.rows()) return;
     // Keep the first visible record on screen.
     const first = Math.floor(this.first() / rows) * rows;
     this.rows.set(rows);

@@ -284,12 +284,21 @@ test.describe('table: sorting and filtering', () => {
     await expect(filters).toHaveText('Filters: {"customer":"ben"}');
 
     // Select filter, with the choices of filterOptions. Three of them are in Europe.
-    const region = table.getByLabel('Filter by Region');
-    await expect(region.locator('option')).toHaveText(['All', 'Europe', 'Asia', 'Americas']);
-    await region.selectOption('Europe');
+    // It is a StarNG select: "All" is the placeholder, and its clear button shows every row.
+    const region = table.getByRole('combobox', { name: 'Filter by Region' });
+    await expect(table.locator('select')).toHaveCount(0);
+    await expect(region).toHaveText('All');
+    await region.click();
+    await expect(page.getByRole('option')).toHaveText(['Europe', 'Asia', 'Americas']);
+    await page.getByRole('option', { name: 'Europe' }).click();
+    await expect(region).toHaveText('Europe');
     await expect(report).toContainText('of 3');
     for (const cell of await column(table, 3).all()) await expect(cell).toHaveText('Europe');
-    await region.selectOption('');
+    await region
+      .locator('xpath=ancestor::star-select[1]')
+      .getByRole('button', { name: 'Clear' })
+      .click();
+    await expect(region).toHaveText('All');
     await expect(report).toContainText('of 7');
 
     // Multiselect filter: choose a status.
@@ -322,7 +331,7 @@ test.describe('table: sorting and filtering', () => {
     await expect(report).toContainText('of 57');
     await expect(table.getByLabel('Total to')).toHaveValue('');
     await expect(table.getByLabel('Filter by Customer')).toHaveValue('');
-    await expect(region).toHaveValue('');
+    await expect(region).toHaveText('All');
   });
 
   test('filters a date column by a range of local days', async ({ page }) => {
@@ -345,7 +354,8 @@ test.describe('table: sorting and filtering', () => {
     const table = live.getByRole('table', { name: 'Orders with search, filters and sort' });
     await live.getByRole('searchbox', { name: 'Search combined orders' }).fill('ava');
     await expect(live.locator('.star-paginator__report')).toContainText('of 8');
-    await table.getByLabel('Filter by Region').selectOption('Europe');
+    await table.getByRole('combobox', { name: 'Filter by Region' }).click();
+    await page.getByRole('option', { name: 'Europe' }).click();
     await expect(live.locator('.star-paginator__report')).toContainText('of 3');
     await table.getByRole('columnheader', { name: 'Total' }).getByRole('button').click();
     await expect(table.getByRole('columnheader', { name: 'Total' })).toHaveAttribute(
@@ -376,9 +386,10 @@ test.describe('table: paging', () => {
     await expect(bodyRows(table)).toHaveCount(2);
     await expect(next).toBeDisabled();
 
-    const size = live.locator('select');
-    await expect(size.locator('option')).toHaveText(['5', '10', '20']);
-    await size.selectOption('20');
+    const size = live.getByRole('combobox', { name: 'Rows per page' });
+    await size.click();
+    await expect(page.getByRole('option')).toHaveText(['5', '10', '20']);
+    await page.getByRole('option', { name: '20' }).click();
     // The page size changes and the first row stays on a page border: 57 - 40 = 17 rows.
     await expect(live.getByRole('status')).toHaveText('first = 40, rows = 20');
     await expect(bodyRows(table)).toHaveCount(17);
@@ -416,7 +427,8 @@ test.describe('table: paging', () => {
     await expect(live.locator('.star-paginator__report')).toContainText('1–5 of 7');
     for (const cell of await column(table, 2).all()) await expect(cell).toHaveText('Ben Carter');
 
-    await live.locator('select').selectOption('10');
+    await live.getByRole('combobox', { name: 'Rows per page' }).click();
+    await page.getByRole('option', { name: '10', exact: true }).click();
     await expect(request).toContainText('rows 10');
     await expect(live.locator('.star-paginator__report')).toContainText('1–7 of 7');
   });
@@ -593,8 +605,8 @@ test.describe('table: editing', () => {
 
     await table.getByRole('button', { name: 'Edit Product' }).first().click();
     const choice = table.getByRole('combobox', { name: 'Edit Product' });
-    await expect(choice).toHaveValue('Cable kit');
-    await choice.selectOption('Notebook');
+    await expect(choice).toHaveText('Cable kit');
+    await page.getByRole('option', { name: 'Notebook' }).click();
     await expect(
       table
         .getByRole('button', { name: 'Edit Product' })
@@ -604,6 +616,53 @@ test.describe('table: editing', () => {
     await expect(live.getByRole('status')).toHaveText(
       'ORD-1001: product changed from Cable kit to Notebook.',
     );
+  });
+
+  test('the choice editor opens its list at once, commits a choice and cancels on Escape', async ({
+    page,
+  }) => {
+    await openPage(page, '/controls/table-edit', 'Table editing');
+    const live = example(page, 'Inline cell edit');
+    const table = live.getByRole('table');
+    const status = live.getByRole('status');
+    const edit = table.getByRole('button', { name: 'Edit Product' }).first();
+    const value = edit.locator('.star-table__edit-value');
+    const before = await status.textContent();
+
+    // The editor is a StarNG select with the focus on it and its list open.
+    await edit.click();
+    const choice = table.getByRole('combobox', { name: 'Edit Product' });
+    await expect(table.locator('select')).toHaveCount(0);
+    await expect(choice).toBeFocused();
+    await expect(choice).toHaveAttribute('aria-expanded', 'true');
+    await expect(page.getByRole('listbox')).toBeVisible();
+
+    // Escape closes the list and cancels: no change, and the focus is back on the cell.
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('Escape');
+    await expect(choice).toHaveCount(0);
+    await expect(value).toHaveText('Cable kit');
+    await expect(status).toHaveText(before ?? '');
+    await expect(edit).toBeFocused();
+
+    // A click outside closes the list without a change: the edit ends.
+    await edit.click();
+    await expect(choice).toHaveAttribute('aria-expanded', 'true');
+    await page.getByRole('heading', { level: 1 }).click();
+    await expect(choice).toHaveCount(0);
+    await expect(value).toHaveText('Cable kit');
+
+    // The keyboard: Enter on the edit button opens the list; Arrow down and Enter choose.
+    await edit.focus();
+    await page.keyboard.press('Enter');
+    await expect(choice).toBeFocused();
+    await expect(choice).toHaveAttribute('aria-expanded', 'true');
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('Enter');
+    await expect(choice).toHaveCount(0);
+    await expect(value).not.toHaveText('Cable kit');
+    await expect(status).toContainText('ORD-1001: product changed from Cable kit to');
+    await expect(edit).toBeFocused();
   });
 
   test('moves rows with the buttons and disables them at the ends', async ({ page }) => {

@@ -91,16 +91,20 @@
   padding-top: 0.5rem;
   border-top: 1px solid var(--star-border);
 }
-.star-date__time-label {
+.star-date__time-field {
   display: grid;
   gap: 0.25rem;
+}
+.star-date__time-label {
   font: var(--star-type-label);
   color: var(--star-text-muted);
-
-  .star-input {
-    width: 7.5rem;
-    font-variant-numeric: tabular-nums;
-  }
+}
+// Under the calendar the time columns are shorter than in the time picker's own panel.
+.star-date__time .star-time__column {
+  max-height: 9rem;
+}
+.star-time__columns--disabled .star-time__cell {
+  cursor: not-allowed;
 }
 .star-date__bar {
   display: flex;

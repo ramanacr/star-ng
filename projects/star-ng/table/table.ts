@@ -36,7 +36,7 @@ import {
 } from '@star-ng/ui/core';
 import { StarPaginator } from '@star-ng/ui/paginator';
 import { StarPopover } from '@star-ng/ui/popover';
-import { StarMultiSelect } from '@star-ng/ui/select';
+import { StarMultiSelect, StarSelect } from '@star-ng/ui/select';
 import { StarSkeleton } from '@star-ng/ui/skeleton';
 import {
   buildPrintDocument,
@@ -311,6 +311,7 @@ export class StarRowExpansionTemplate<T = unknown> {
     StarCheckbox,
     StarMultiSelect,
     StarPaginator,
+    StarSelect,
     StarPopover,
     StarSkeleton,
   ],
@@ -497,20 +498,16 @@ export class StarRowExpansionTemplate<T = unknown> {
                   [attr.data-label]="column.filter ? column.header : null"
                 >
                   @if (column.filter === 'select') {
-                    <select
-                      class="star-input star-input--sm star-table__filter"
-                      [attr.aria-label]="text.filterBy(column.header)"
-                      (change)="setFilter(column.field, $any($event.target).value)"
-                    >
-                      <option value="" [selected]="!filterValue(column.field)">
-                        {{ text.filterAll }}
-                      </option>
-                      @for (option of filterChoices(column); track option) {
-                        <option [value]="option" [selected]="option === filterValue(column.field)">
-                          {{ option }}
-                        </option>
-                      }
-                    </select>
+                    <star-select
+                      class="star-table__filter"
+                      size="sm"
+                      showClear
+                      [options]="filterChoices(column)"
+                      [value]="filterValue(column.field) || null"
+                      [placeholder]="text.filterAll"
+                      [ariaLabel]="text.filterBy(column.header)"
+                      (valueChange)="setFilter(column.field, $event ?? '')"
+                    />
                   } @else if (column.filter === 'text') {
                     <input
                       type="search"
@@ -680,22 +677,18 @@ export class StarRowExpansionTemplate<T = unknown> {
                     >
                       @if (isEditing(row, column)) {
                         @if (column.editor === 'select') {
-                          <select
-                            class="star-input star-input--sm star-table__editor"
-                            [attr.aria-label]="text.editCell(column.header)"
-                            (change)="commitEdit(row, column, $any($event.target).value)"
-                            (blur)="commitEdit(row, column, $any($event.target).value)"
+                          <!-- A choice commits at once; Escape or closing the list cancels. -->
+                          <star-select
+                            #selectEditor
+                            class="star-table__editor"
+                            size="sm"
+                            [options]="column.editOptions ?? []"
+                            [value]="cellText(row, column)"
+                            [ariaLabel]="text.editCell(column.header)"
+                            (valueChange)="commitEdit(row, column, $event ?? '')"
+                            (closed)="onEditorClosed(row, column)"
                             (keydown.escape)="cancelEdit($event)"
-                          >
-                            @for (option of column.editOptions ?? []; track option) {
-                              <option
-                                [value]="option"
-                                [selected]="option === cellText(row, column)"
-                              >
-                                {{ option }}
-                              </option>
-                            }
-                          </select>
+                          />
                         } @else {
                           <input
                             class="star-input star-input--sm star-table__editor"
@@ -1072,6 +1065,8 @@ export class StarTable<T> {
   private readonly viewportHeight = signal(0);
   private readonly scroller = viewChild<ElementRef<HTMLElement>>('scroller');
   private readonly body = viewChild<ElementRef<HTMLElement>>('body');
+  /** The choice editor of the cell in edit (one cell at a time). */
+  private readonly selectEditor = viewChild('selectEditor', { read: StarSelect });
 
   /**
    * Rows of different heights: on with `virtualRowHeights="variable"`, and with the features that
@@ -1906,7 +1901,32 @@ export class StarTable<T> {
 
   protected startEdit(row: T, column: StarColumn<T>): void {
     this.editing.set(this.editKey(row, column));
-    this.focusAfterRender('.star-table__editor', true);
+    if (column.editor !== 'select') {
+      this.focusAfterRender('.star-table__editor', true);
+      return;
+    }
+    // A choice editor opens its list at once, with the focus on the field.
+    afterNextRender(
+      () => {
+        const editor = this.selectEditor();
+        editor?.focus();
+        editor?.openPanel();
+      },
+      { injector: this.injector },
+    );
+  }
+
+  /**
+   * The list of a choice editor closed. A choice has already committed (and closed the editor);
+   * else the edit ends without a change. The focus goes back to the cell only when it is still
+   * on the editor, so Tab or a click elsewhere keeps the focus where the user moved it.
+   */
+  protected onEditorClosed(row: T, column: StarColumn<T>): void {
+    if (!this.isEditing(row, column)) return;
+    const editor = this.host.nativeElement.querySelector('.star-table__editor');
+    const focused = this.document.activeElement;
+    if (editor && focused && editor.contains(focused)) this.closeEditor(row, column);
+    else this.editing.set(null);
   }
 
   protected commitEdit(row: T, column: StarColumn<T>, text: string): void {
@@ -2253,7 +2273,9 @@ export class StarTable<T> {
   }
 
   protected onRowClick(row: T, event: MouseEvent): void {
-    if ((event.target as HTMLElement).closest('button, a, input, select, textarea')) return;
+    // A click on a control, or in the list of a choice editor, is not a click on the row.
+    const control = 'button, a, input, select, textarea, .star-table__editor';
+    if ((event.target as HTMLElement).closest(control)) return;
     if (this.selectionMode() === 'single') this.selectOnly(row);
     this.rowClick.emit(row);
   }

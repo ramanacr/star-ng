@@ -9,7 +9,7 @@ import { DOCS, DocsRow } from '../shared/docs';
   template: `
     <docs-page
       heading="Paginator"
-      lead="Page links, first, previous, next and last buttons, a rows-per-page select and a range report. The PrimeNG equivalent is p-paginator."
+      lead="Page links, first, previous, next and last buttons, a rows-per-page select (a small star-select, not the native select of the browser) and a range report. The PrimeNG equivalent is p-paginator."
       importFrom="import { StarPaginator } from '@star-ng/ui/paginator';"
     >
       <docs-example

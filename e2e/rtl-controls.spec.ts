@@ -104,6 +104,44 @@ test.describe('right-to-left controls', () => {
       await expect(hour).toBeFocused();
     });
 
+    test('date and time: the hour column is on the right of the minutes', async ({ page }) => {
+      await openPage(page, '/controls/date-picker', 'Date picker');
+      const live = example(page, 'Date and time');
+      await live.evaluate((element) => element.scrollIntoView({ block: 'start' }));
+      await live.getByRole('button', { name: 'Choose date' }).click();
+      const time = page.getByRole('dialog', { name: 'Choose date' }).getByRole('group', {
+        name: 'Time',
+      });
+      const hours = time.getByRole('listbox', { name: 'Hour' });
+      const minutes = time.getByRole('listbox', { name: 'Minute' });
+      expect(await centerX(hours)).toBeGreaterThan(await centerX(minutes));
+      const hour = hours.getByRole('option', { name: '09', exact: true });
+      await hour.focus();
+      await page.keyboard.press('ArrowLeft');
+      await expect(minutes.getByRole('option', { name: '30', exact: true })).toBeFocused();
+    });
+
+    test('color panel: the saturation and the hue grow toward the left', async ({ page }) => {
+      await openPage(page, '/controls/color-picker', 'Color picker');
+      await example(page, 'Basic').getByRole('button', { name: 'Custom color' }).click();
+      const panel = page.getByRole('dialog', { name: 'Custom color' });
+      const area = panel.getByRole('slider', { name: 'Saturation and brightness' });
+      const hue = panel.getByRole('slider', { name: 'Hue' });
+      await expect(area).toBeFocused();
+      // Arrow left is toward the end of the line: more saturation.
+      await page.keyboard.press('ArrowLeft');
+      await expect(area).toHaveAttribute('aria-valuetext', 'Saturation 70%, brightness 90%');
+      await hue.focus();
+      await page.keyboard.press('ArrowLeft');
+      await expect(hue).toHaveAttribute('aria-valuenow', '244');
+      // Full saturation is at the left edge, so its thumb is left of the middle.
+      await area.focus();
+      await page.keyboard.press('End');
+      const areaBox = await box(area);
+      const thumb = await box(area.locator('.star-color__thumb'));
+      expect(thumb.x + thumb.width / 2).toBeLessThan(areaBox.x + areaBox.width / 4);
+    });
+
     test('calendar: Arrow left is the following day, the week starts on the right', async ({
       page,
     }) => {

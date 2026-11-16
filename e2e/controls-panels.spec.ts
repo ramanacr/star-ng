@@ -320,7 +320,19 @@ test.describe('paginator', () => {
     await live.getByRole('button', { name: 'Last page' }).click();
     await expect(report).toHaveText('91–95 of 95');
 
-    await live.getByLabel('Rows per page').selectOption('25');
+    // Rows per page is a small StarNG select, not the native select of the browser.
+    await expect(live.locator('select')).toHaveCount(0);
+    const rows = live.getByRole('combobox', { name: 'Rows per page' });
+    await expect(rows).toHaveText('10');
+    // Narrower than a form select (12rem).
+    expect((await rows.locator('xpath=ancestor::star-select').boundingBox())!.width).toBeLessThan(
+      150,
+    );
+    await rows.click();
+    await expect(page.getByRole('option')).toHaveText(['10', '25', '50']);
+    await page.getByRole('option', { name: '25' }).click();
+    await expect(rows).toHaveText('25');
+    await expect(rows).toBeFocused();
     await expect(report).toHaveText('76–95 of 95');
     await expect(live.getByRole('button', { name: 'Page 4' })).toHaveAttribute(
       'aria-current',

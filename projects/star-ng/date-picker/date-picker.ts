@@ -28,6 +28,7 @@ import {
   StarDateRange,
   startOfDay,
 } from './date-utils';
+import { StarTimeColumns } from './time-columns';
 
 /** Time part of the input text: 24-hour clock, so typed text parses the same in every locale. */
 const TIME_FORMAT: Intl.DateTimeFormatOptions = {
@@ -266,6 +267,16 @@ export abstract class StarDateInputBase<TValue> {
     return date;
   }
 
+  /** Earliest and latest time of the day of `date`: `minDate` / `maxDate` when it is that day. */
+  protected timeLimits(date: Date | null | undefined): { min?: string; max?: string } {
+    const min = this.minDate();
+    const max = this.maxDate();
+    return {
+      min: date && min && sameDay(date, min) ? timeOf(min) : undefined,
+      max: date && max && sameDay(date, max) ? timeOf(max) : undefined,
+    };
+  }
+
   protected timeHint(): string {
     return this.hourFormat() === '12' ? ' hh:mm am' : ' hh:mm';
   }
@@ -279,12 +290,15 @@ export abstract class StarDateInputBase<TValue> {
   }
 }
 
-/** One time input in the popup. */
+/** One set of time columns in the popup. */
 export interface StarTimeField {
   readonly label: string;
   /** `hh:mm`, or `''` when the date is not chosen yet. */
   readonly value: string;
   readonly set: (time: string) => void;
+  /** Earliest and latest time on the chosen day, `hh:mm` (from `minDate` / `maxDate`). */
+  readonly min?: string;
+  readonly max?: string;
 }
 
 function timeOf(date: Date | null | undefined): string {
@@ -378,17 +392,18 @@ const TEMPLATE = `
       @if (timeEnabled()) {
         <div class="star-date__time">
           @for (field of timeFields(); track field.label) {
-            <label class="star-date__time-label">
-              {{ field.label }}
-              <input
-                type="time"
-                class="star-input star-input--sm"
-                [value]="field.value"
-                [step]="timeStep()"
+            <div class="star-date__time-field" role="group" [attr.aria-label]="field.label">
+              <span class="star-date__time-label" aria-hidden="true">{{ field.label }}</span>
+              <star-time-columns
+                [value]="field.value || null"
+                [min]="field.min"
+                [max]="field.max"
+                [stepMinute]="timeStep() / 60"
+                [hourFormat]="hourFormat()"
                 [disabled]="!field.value"
-                (change)="field.set($any($event.target).value)"
+                (valueChange)="$event && field.set($event)"
               />
-            </label>
+            </div>
           }
           <button type="button" class="star-btn star-btn--primary star-btn--sm" (click)="closePanel()">{{ text.done }}</button>
         </div>
@@ -416,9 +431,10 @@ const HOST = {
  * calendar popup with month / year views, min / max, disabled dates and weekdays, Today / Clear.
  *
  * `showTime` adds a time of day: the value keeps hours and minutes, the text is
- * `dd/mm/yyyy, hh:mm` in the 24-hour clock, and the popup has a time field and stays open
- * until the user chooses Done. With `showTime`, `minDate` / `maxDate` also limit the time: a
- * value outside the limits moves to the nearest limit.
+ * `dd/mm/yyyy, hh:mm` in the 24-hour clock, and the popup has hour and minute columns (a
+ * StarNG panel, not the popup of the browser) and stays open until the user chooses Done. With
+ * `showTime`, `minDate` / `maxDate` also limit the time: the columns disable the times outside
+ * the limits, and a value outside the limits moves to the nearest limit.
  *
  * `view="month"` or `view="year"` chooses a month or a year: the value is its first day and the
  * text is `mm/yyyy` or `yyyy`.
@@ -427,7 +443,7 @@ const HOST = {
  */
 @Component({
   selector: 'star-date-picker',
-  imports: [CdkConnectedOverlay, CdkOverlayOrigin, StarCalendar],
+  imports: [CdkConnectedOverlay, CdkOverlayOrigin, StarCalendar, StarTimeColumns],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: HOST,
   template: TEMPLATE,
@@ -439,7 +455,7 @@ export class StarDatePicker
   readonly value = model<Date | null>(null);
   /** Adds a time of day (hours and minutes) to the value. */
   readonly showTime = input(false, { transform: booleanAttribute });
-  /** Minute step of the time field. */
+  /** Minute step of the time columns. */
   readonly stepMinute = input(1);
   /** Unit to choose: a day (default), a month or a year. */
   readonly view = input<StarCalendarView>('day');
@@ -534,6 +550,7 @@ export class StarDatePicker
       {
         label: this.text.time,
         value: timeOf(this.value()),
+        ...this.timeLimits(this.value()),
         set: (time) => {
           const next = withTime(this.value(), time);
           if (next) this.setValue(next);
@@ -563,7 +580,7 @@ export class StarDatePicker
  */
 @Component({
   selector: 'star-date-range-picker',
-  imports: [CdkConnectedOverlay, CdkOverlayOrigin, StarCalendar],
+  imports: [CdkConnectedOverlay, CdkOverlayOrigin, StarCalendar, StarTimeColumns],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { ...HOST, class: 'star-date star-date--range' },
   template: TEMPLATE,
@@ -575,10 +592,10 @@ export class StarDateRangePicker
   readonly value = model<StarDateRange | null>(null);
   /**
    * Adds a time of day to both ends. A new start is at 00:00 and a new end at 23:59; the popup
-   * has a start and an end time field and stays open until the user chooses Done.
+   * has start and end time columns and stays open until the user chooses Done.
    */
   readonly showTime = input(false, { transform: booleanAttribute });
-  /** Minute step of the time fields. */
+  /** Minute step of the time columns. */
   readonly stepMinute = input(1);
   readonly rangeSelect = output<StarDateRange>();
 
@@ -604,9 +621,25 @@ export class StarDateRangePicker
       this.value.set(changed);
       if (changed.end) this.rangeSelect.emit(changed);
     };
+    const start = this.timeLimits(range?.start);
+    const end = this.timeLimits(range?.end);
+    // On one day the end is not before the start.
+    const sameDate = !!range?.start && !!range.end && sameDay(range.start, range.end);
     return [
-      { label: this.text.startTime, value: timeOf(range?.start), set: update('start') },
-      { label: this.text.endTime, value: timeOf(range?.end), set: update('end') },
+      {
+        label: this.text.startTime,
+        value: timeOf(range?.start),
+        set: update('start'),
+        min: start.min,
+        max: sameDate ? timeOf(range?.end) : start.max,
+      },
+      {
+        label: this.text.endTime,
+        value: timeOf(range?.end),
+        set: update('end'),
+        min: sameDate ? timeOf(range?.start) : end.min,
+        max: end.max,
+      },
     ];
   }
   protected readonly hasValue = computed(() => !!this.value()?.start);
@@ -685,7 +718,7 @@ export class StarDateRangePicker
  */
 @Component({
   selector: 'star-multi-date-picker',
-  imports: [CdkConnectedOverlay, CdkOverlayOrigin, StarCalendar],
+  imports: [CdkConnectedOverlay, CdkOverlayOrigin, StarCalendar, StarTimeColumns],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { ...HOST, class: 'star-date star-date--multiple' },
   template: TEMPLATE,
