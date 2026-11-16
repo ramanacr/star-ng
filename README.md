@@ -4,6 +4,7 @@
 [![CI](https://github.com/ramanacr/star-ng/actions/workflows/ci.yml/badge.svg)](https://github.com/ramanacr/star-ng/actions/workflows/ci.yml)
 [![Docs](https://img.shields.io/badge/docs-ramanacr.github.io%2Fstar--ng-blue)](https://ramanacr.github.io/star-ng/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![Socket Badge](https://badge.socket.dev/npm/package/@star-ng/ui)](https://socket.dev/npm/package/@star-ng/ui)
 
 StarNG is a library of accessible Angular controls. It uses signals, Signal Forms and the Angular CDK. The npm package is `@star-ng/ui`. The selector prefix is `star-` and the CSS token prefix is `--star-`. Each control group is one entry point, for example `@star-ng/ui/button`, so an application bundles only what it imports. The library does not use Angular Material or another UI kit.
 
