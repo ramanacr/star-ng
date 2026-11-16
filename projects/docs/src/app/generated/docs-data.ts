@@ -1744,6 +1744,15 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ]
   },
+  "StarEmptyTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starEmpty]",
+    "entry": "@star-ng/ui/core",
+    "description": "Content shown when there is nothing to list. PrimeNG `#empty` template.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
   "StarField": {
     "kind": "component",
     "selector": "star-field",
@@ -1985,6 +1994,15 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarFooterTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starFooter]",
+    "entry": "@star-ng/ui/core",
+    "description": "Footer content of a control. PrimeNG `#footer` template.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
   "StarGalleria": {
     "kind": "component",
     "selector": "star-galleria",
@@ -2017,6 +2035,24 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "outputs": []
   },
+  "StarGroupTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starGroup]",
+    "entry": "@star-ng/ui/core",
+    "description": "Group heading row. PrimeNG `#group` template.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
+  "StarHeaderTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starHeader]",
+    "entry": "@star-ng/ui/core",
+    "description": "Header content of a control. PrimeNG `#header` template.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
   "StarIconField": {
     "kind": "component",
     "selector": "star-icon-field",
@@ -2035,6 +2071,23 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "'start' | 'end'",
         "default": "'start'",
         "required": false,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
+  "StarIconTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starIcon]",
+    "entry": "@star-ng/ui/core",
+    "description": "Replaces one built-in icon: `<ng-template starIcon=\"clear\">…</ng-template>`. PrimeNG `#clearicon`, `#dropdownicon` and similar templates.",
+    "inputs": [
+      {
+        "name": "starIcon",
+        "type": "StarIconSlotName",
+        "default": null,
+        "required": true,
         "description": ""
       }
     ],
@@ -3010,6 +3063,15 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       }
     ]
+  },
+  "StarLoadingTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starLoading]",
+    "entry": "@star-ng/ui/core",
+    "description": "Content shown while data loads. PrimeNG `#loader` template.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
   },
   "StarMegaMenu": {
     "kind": "component",
@@ -4658,6 +4720,15 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       }
     ]
+  },
+  "StarSlot": {
+    "kind": "directive",
+    "selector": "",
+    "entry": "@star-ng/ui/core",
+    "description": "Base of all slot directives. Controls query it with `contentChildren(StarSlot, { descendants: true })`.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
   },
   "StarSpeedDial": {
     "kind": "component",
