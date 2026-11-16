@@ -74,7 +74,9 @@ const PROJECTS: StarTreeNode<Project>[] = [
       <ng-template starEmpty let-text>Nothing for {{ text }}</ng-template>
     </star-tree>
     <star-tree class="icons" [nodes]="projects" [expanded]="['web']" ariaLabel="Icons">
-      <ng-template starIcon="toggle"><b class="my-toggle">+</b></ng-template>
+      <ng-template starIcon="toggle" let-open
+        ><b class="my-toggle">{{ open }}</b></ng-template
+      >
     </star-tree>
     <star-tree-select
       class="select"
@@ -124,7 +126,7 @@ describe('tree slots', () => {
       'Chen:API:2:false:false',
       'Dara:Mobile app:1:false:true',
     ]);
-    expect(el.querySelector('.plain .star-tree__label')).toBeNull();
+    expect(el.querySelector('.plain .star-tree__label .mine')).not.toBeNull();
   });
 
   it('arrow keys still move focus with starNode', async () => {
@@ -173,6 +175,19 @@ describe('tree slots', () => {
     expect(toggle.querySelector('.my-toggle')).not.toBeNull();
     expect(toggle.querySelector('.ph-caret-right')).toBeNull();
     expect(toggle.getAttribute('aria-hidden')).toBe('true');
+    // The custom element is a direct child of the toggle, so the rotation rules reach it.
+    expect(toggle.querySelector('.my-toggle')?.parentElement).toBe(toggle);
+    expect(toggle.querySelector('.my-toggle')?.textContent).toBe('true');
+  });
+
+  it('toggle icon context flips when the branch opens', async () => {
+    const { fixture, el } = await setup();
+    const tree = el.querySelector('.icons')!;
+    const mark = () => tree.querySelector('.my-toggle')!.textContent;
+    expect(mark()).toBe('true');
+    tree.querySelector<HTMLElement>('.star-tree__toggle')!.click();
+    await fixture.whenStable();
+    expect(mark()).toBe('false');
   });
 
   it('tree-select passes starNode to its panel tree', async () => {

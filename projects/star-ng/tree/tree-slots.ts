@@ -2,6 +2,16 @@ import { Directive, input } from '@angular/core';
 import { StarSlot } from '@star-ng/ui/core';
 import type { StarTreeNode } from './tree';
 
+/**
+ * Context of `<ng-template starIcon="toggle">` in `star-tree` and `star-tree-select`.
+ * The template should have one root element: it is a direct child of the toggle, and the built-in
+ * rotation (and the right-to-left mirror) applies to it.
+ */
+export interface StarToggleIconContext {
+  /** The branch is open. */
+  readonly $implicit: boolean;
+}
+
 /** Context of the node slot. */
 export interface StarNodeContext<T = unknown> {
   /** The node. */
@@ -21,8 +31,9 @@ export interface StarNodeContext<T = unknown> {
  * The tree owns the keyboard model and the ARIA attributes of the `role="treeitem"` row. Do not
  * add focusable elements (buttons, links, inputs) in this template.
  *
- * Windowed rendering: with `virtualScroll` every row keeps the fixed height `virtualItemSize`.
- * Content that is higher is cut off.
+ * The content goes inside the label element. Windowed rendering: with `virtualScroll` every row
+ * keeps the fixed height `virtualItemSize`, and the label does not wrap: content that is wider
+ * is cut off with an ellipsis.
  */
 @Directive({
   selector: 'ng-template[starNode]',

@@ -52,7 +52,7 @@ import {
   subtreeKeys,
   TreeRow,
 } from './tree-model';
-import type { StarNodeContext } from './tree-slots';
+import type { StarNodeContext, StarToggleIconContext } from './tree-slots';
 
 /** Tree data (PrimeNG `TreeNode`). `key` must be unique in the tree. */
 export interface StarTreeNode<T = unknown> {
@@ -143,7 +143,9 @@ function filterNodes(nodes: readonly StarTreeNode[], query: string): StarTreeNod
             (click)="$event.stopPropagation(); toggle(item.node)"
           >
             @if (toggleIcon(); as icon) {
-              <ng-container *ngTemplateOutlet="icon" />
+              <ng-container
+                *ngTemplateOutlet="icon; context: { $implicit: isExpanded(item.node) }"
+              />
             } @else {
               <i class="ph-bold ph-caret-right"></i>
             }
@@ -167,11 +169,13 @@ function filterNodes(nodes: readonly StarTreeNode[], query: string): StarTreeNod
         @if (item.node.icon) {
           <i class="star-tree__icon" [class]="item.node.icon" aria-hidden="true"></i>
         }
-        @if (nodeSlot(); as custom) {
-          <ng-container *ngTemplateOutlet="custom; context: nodeContext(item)" />
-        } @else {
-          <span class="star-tree__label">{{ item.node.label }}</span>
-        }
+        <span class="star-tree__label">
+          @if (nodeSlot(); as custom) {
+            <ng-container *ngTemplateOutlet="custom; context: nodeContext(item)" />
+          } @else {
+            <ng-container>{{ item.node.label }}</ng-container>
+          }
+        </span>
       </li>
     </ng-template>
     @if (showViewport()) {
@@ -251,7 +255,7 @@ export class StarTree implements FormValueControl<readonly string[]> {
   /** Set by `star-tree-select`. In your own markup, use the `starEmpty` slot. */
   readonly emptyTemplate = input<TemplateRef<StarEmptyContext> | null>(null);
   /** Set by `star-tree-select`. In your own markup, use `<ng-template starIcon="toggle">`. */
-  readonly toggleIconTemplate = input<TemplateRef<object> | null>(null);
+  readonly toggleIconTemplate = input<TemplateRef<StarToggleIconContext> | null>(null);
   readonly touch = output<void>();
   readonly nodeSelect = output<StarTreeNode>();
 
@@ -261,7 +265,7 @@ export class StarTree implements FormValueControl<readonly string[]> {
   protected readonly footerSlot = starSlot<object>(this.slots, this, 'footer');
   private readonly ownNodeSlot = starSlot<StarNodeContext>(this.slots, this, 'node');
   private readonly ownEmptySlot = starSlot<StarEmptyContext>(this.slots, this, 'empty');
-  private readonly ownIconSlots = starSlotMap<object>(this.slots, this, 'icon');
+  private readonly ownIconSlots = starSlotMap<StarToggleIconContext>(this.slots, this, 'icon');
   /** Own `starNode` slot first, then the `nodeTemplate` input. */
   protected readonly nodeSlot = computed(() => this.ownNodeSlot() ?? this.nodeTemplate());
   protected readonly emptySlot = computed(() => this.ownEmptySlot() ?? this.emptyTemplate());
@@ -718,7 +722,7 @@ export class StarTreeSelect implements FormValueControl<readonly string[]> {
   protected readonly footerSlot = starSlot<object>(this.slots, this, 'footer');
   protected readonly nodeSlot = starSlot<StarNodeContext>(this.slots, this, 'node');
   protected readonly emptySlot = starSlot<StarEmptyContext>(this.slots, this, 'empty');
-  private readonly iconSlots = starSlotMap<object>(this.slots, this, 'icon');
+  private readonly iconSlots = starSlotMap<StarToggleIconContext>(this.slots, this, 'icon');
   protected readonly toggleIcon = computed(() => this.iconSlots().get('toggle') ?? null);
 
   protected readonly open = signal(false);

@@ -127,7 +127,7 @@ interface Project {
             }
           </ng-template>
           <ng-template starIcon="toggle"
-            ><i class="ph-bold ph-plus" aria-hidden="true"></i
+            ><i class="ph-bold ph-arrow-right" aria-hidden="true"></i
           ></ng-template>
           <ng-template starEmpty let-text>No project matches {{ text }}.</ng-template>
           <ng-template starFooter>
@@ -262,7 +262,7 @@ readonly hire = form(this.hireModel, (path) => {
     {
       name: 'ng-template[starNode]',
       description:
-        'Content child. Replaces the label of a node. The toggle, checkbox and icon stay. The context has $implicit (the node), level, expanded and selected. Do not add focusable elements: the tree owns the keys. With virtualScroll the row keeps the height virtualItemSize.',
+        'Content child. Replaces the label of a node. The toggle, checkbox and icon stay. The context has $implicit (the node), level, expanded and selected. Do not add focusable elements: the tree owns the keys. The content is inside the label. With virtualScroll the row keeps the height virtualItemSize and long content is cut off with an ellipsis.',
     },
     {
       name: 'ng-template[starHeader]',
@@ -278,7 +278,8 @@ readonly hire = form(this.hireModel, (path) => {
     },
     {
       name: 'ng-template[starIcon]',
-      description: 'Content child. Set starIcon to toggle to replace the arrow of a branch.',
+      description:
+        'Content child. Set starIcon to toggle to replace the arrow of a branch. Use one root element: the arrow rotation and the right-to-left mirror apply to it. $implicit is true when the branch is open.',
     },
   ];
   protected readonly cssVars: readonly DocsRow[] = [
