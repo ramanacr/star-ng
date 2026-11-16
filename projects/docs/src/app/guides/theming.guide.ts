@@ -192,6 +192,11 @@ export class ThemingGuide {
       name: '--star-glass-*, --star-scrim, --star-scrim-modal, --star-tooltip-surface',
       description: 'Translucent surfaces, overlay backdrops and the tooltip ground.',
     },
+    {
+      name: '--star-media-*, --star-scrim-media, --star-scrim-media-soft, --star-scrim-media-strong, --star-on-scrim',
+      description:
+        'Media: the dark stage of the galleria, the scrims on a photo (count, hover hint, caption), the text on them and the round arrow buttons. They stay dark in both themes.',
+    },
   ];
 
   protected readonly override = `/* src/styles.css, after the StarNG styles */
