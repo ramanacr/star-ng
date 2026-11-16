@@ -873,3 +873,59 @@ test.describe('selection pages', () => {
     });
   }
 });
+
+test.describe('panel width', () => {
+  // With short options, the panel must be as wide as the control (it was as wide as its content).
+  const cases = [
+    {
+      name: 'select',
+      path: '/controls/select',
+      heading: 'Select',
+      example: 'Objects as options',
+      role: 'combobox' as const,
+      label: 'Country',
+    },
+    {
+      name: 'multi-select',
+      path: '/controls/multi-select',
+      heading: 'Multi-select',
+      example: 'Basic',
+      role: 'combobox' as const,
+      label: 'Departments',
+    },
+    {
+      name: 'autocomplete',
+      path: '/controls/autocomplete',
+      heading: 'Autocomplete',
+      example: 'Local options',
+      role: 'combobox' as const,
+      label: 'City',
+    },
+    {
+      name: 'tree select',
+      path: '/controls/tree-select',
+      heading: 'Tree select',
+      example: 'Single node',
+      role: 'button' as const,
+      label: 'Department',
+    },
+  ];
+
+  for (const c of cases) {
+    test(`${c.name}: the panel is as wide as the control`, async ({ page }) => {
+      await openPage(page, c.path, c.heading);
+      const trigger = example(page, c.example).getByRole(c.role, { name: c.label });
+      await trigger.click();
+      if (c.name === 'autocomplete') await trigger.pressSequentially('a');
+      const panel = page.locator('.cdk-overlay-pane > .star-panel');
+      await expect(panel).toBeVisible();
+
+      const control = trigger.locator(
+        'xpath=ancestor-or-self::*[contains(@class,"star-select__control")][1]',
+      );
+      const controlWidth = (await control.boundingBox())!.width;
+      const panelWidth = (await panel.boundingBox())!.width;
+      expect(Math.abs(panelWidth - controlWidth)).toBeLessThanOrEqual(1);
+    });
+  }
+});
