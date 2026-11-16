@@ -2,6 +2,13 @@
 
 All notable changes to `@star-ng/ui` are in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The version numbers follow [Semantic Versioning](https://semver.org/). In `0.x` versions, the API can change between minor versions.
 
+## [0.2.1] - 2026-11-16
+
+### Fixed
+
+- `StarMenuTrigger` renders on the server. It no longer changes the focus method of its host in the constructor, which the server DOM rejects.
+- `StarScrollTop` renders on the server. It no longer uses the global `document`.
+
 ## [0.2.0] - 2026-11-15
 
 ### Added
@@ -45,5 +52,6 @@ This is the first release.
 - A docs site with guides and one page per control, with live examples, source and API tables: <https://ramanacr.github.io/star-ng/>.
 - Tests: unit tests, end-to-end tests in Chromium, automated axe accessibility scans, a right-to-left sweep, visual tests with baselines made in CI, a print test of the table export, and a consumer smoke test of the packed package.
 
+[0.2.1]: https://github.com/ramanacr/star-ng/releases/tag/v0.2.1
 [0.2.0]: https://github.com/ramanacr/star-ng/releases/tag/v0.2.0
 [0.1.0]: https://github.com/ramanacr/star-ng/releases/tag/v0.1.0
