@@ -87,6 +87,23 @@ test.describe('right-to-left controls', () => {
       await expect(box1).toBeFocused();
     });
 
+    test('time picker: the hour column is on the right and Arrow left moves to the minutes', async ({
+      page,
+    }) => {
+      await openPage(page, '/controls/time-picker', 'Time picker');
+      await example(page, 'Limits and step').getByRole('button', { name: 'Choose time' }).click();
+      const dialog = page.getByRole('dialog', { name: 'Choose time' });
+      const hours = dialog.getByRole('listbox', { name: 'Hour' });
+      const minutes = dialog.getByRole('listbox', { name: 'Minute' });
+      expect(await centerX(hours)).toBeGreaterThan(await centerX(minutes));
+      const hour = hours.getByRole('option', { name: '08', exact: true });
+      await expect(hour).toBeFocused();
+      await page.keyboard.press('ArrowLeft');
+      await expect(minutes.getByRole('option', { name: '30', exact: true })).toBeFocused();
+      await page.keyboard.press('ArrowRight');
+      await expect(hour).toBeFocused();
+    });
+
     test('calendar: Arrow left is the following day, the week starts on the right', async ({
       page,
     }) => {

@@ -104,6 +104,10 @@ export const STAR_UI_TEXT_DE: StarUiText = {
   weekShort: 'KW',
   endTime: 'Endzeit',
   done: 'Fertig',
+  chooseTime: 'Uhrzeit auswählen',
+  hour: 'Stunde',
+  minute: 'Minute',
+  dayPeriod: 'Vormittag oder Nachmittag',
 
   increase: 'Erhöhen',
   decrease: 'Verringern',
