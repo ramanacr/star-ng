@@ -24,6 +24,25 @@
   font-weight: 600;
   text-decoration: none;
 
+  // Hit area of at least 24 x 24 px (WCAG 2.5.8) around a smaller icon. The icon keeps its size.
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100%, 1.5rem);
+    height: max(100%, 1.5rem);
+    translate: -50% -50%;
+    z-index: 0;
+  }
+  // The icon stays above the hit area, so a pointer reaches the icon first.
+  > * {
+    position: relative;
+    z-index: 1;
+  }
+
   &:hover {
     color: var(--star-primary-text);
   }

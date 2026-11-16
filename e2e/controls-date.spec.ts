@@ -621,6 +621,121 @@ test.describe('time picker', () => {
   });
 });
 
+test.describe('time picker panel', () => {
+  const timePanel = (page: Page) => page.getByRole('dialog', { name: 'Choose time' });
+  const cell = (page: Page, column: string, name: string) =>
+    timePanel(page)
+      .getByRole('listbox', { name: column })
+      .getByRole('option', { name, exact: true });
+
+  test('the clock button opens a StarNG panel, not the popup of the browser', async ({ page }) => {
+    await openPage(page, '/controls/time-picker', 'Time picker');
+    const live = example(page, 'Limits and step');
+    const toggle = live.getByRole('button', { name: 'Choose time' });
+    await expect(toggle).toHaveAttribute('aria-haspopup', 'dialog');
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await toggle.click();
+    await expect(timePanel(page)).toBeVisible();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    // The panel uses the surface and the shadow of the date picker panel.
+    const look = await timePanel(page).evaluate((panel) => {
+      const style = getComputedStyle(panel);
+      return { radius: style.borderTopLeftRadius, shadow: style.boxShadow };
+    });
+    expect(look.radius).not.toBe('0px');
+    expect(look.shadow).not.toBe('none');
+    // The focus is on the chosen hour; the chosen cells have the primary color.
+    await expect(cell(page, 'Hour', '08')).toBeFocused();
+    await expect(cell(page, 'Hour', '08')).toHaveAttribute('aria-selected', 'true');
+    await expect(cell(page, 'Minute', '30')).toHaveAttribute('aria-selected', 'true');
+    const primary = await page.evaluate(() => {
+      const probe = document.createElement('div');
+      probe.style.backgroundColor = 'var(--star-primary)';
+      document.body.append(probe);
+      const color = getComputedStyle(probe).backgroundColor;
+      probe.remove();
+      return color;
+    });
+    await expect(cell(page, 'Hour', '08')).toHaveCSS('background-color', primary);
+  });
+
+  test('disables the times outside min and max, and the minutes follow the step', async ({
+    page,
+  }) => {
+    await openPage(page, '/controls/time-picker', 'Time picker');
+    const live = example(page, 'Limits and step');
+    await live.getByRole('button', { name: 'Choose time' }).click();
+    const minutes = timePanel(page).getByRole('listbox', { name: 'Minute' }).getByRole('option');
+    await expect(minutes).toHaveText(['00', '15', '30', '45']);
+    await expect(cell(page, 'Hour', '07')).toHaveAttribute('aria-disabled', 'true');
+    await expect(cell(page, 'Hour', '19')).toHaveAttribute('aria-disabled', 'true');
+    await expect(cell(page, 'Hour', '18')).not.toHaveAttribute('aria-disabled', /.*/);
+
+    // A disabled hour is not chosen. Playwright waits for an enabled cell, so the click is dispatched.
+    await cell(page, 'Hour', '07').dispatchEvent('click');
+    await expect(live.getByRole('status')).toHaveText('Opening: 08:30');
+    await cell(page, 'Hour', '18').click();
+    // 18:30 is after 18:00: the nearest time inside the limits is set.
+    await expect(live.getByRole('status')).toHaveText('Opening: 18:00');
+    await expect(cell(page, 'Minute', '15')).toHaveAttribute('aria-disabled', 'true');
+    await expect(live.getByLabel('Opening time')).toHaveValue('18:00');
+  });
+
+  test('chooses with the keyboard and Escape gives the focus back to the button', async ({
+    page,
+  }) => {
+    await openPage(page, '/controls/time-picker', 'Time picker');
+    const live = example(page, 'Limits and step');
+    const toggle = live.getByRole('button', { name: 'Choose time' });
+    await toggle.focus();
+    await page.keyboard.press('Enter');
+    await expect(cell(page, 'Hour', '08')).toBeFocused();
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('ArrowDown');
+    await expect(cell(page, 'Hour', '10')).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(live.getByRole('status')).toHaveText('Opening: 10:30');
+    await page.keyboard.press('ArrowRight');
+    await expect(cell(page, 'Minute', '30')).toBeFocused();
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('Enter');
+    await expect(live.getByRole('status')).toHaveText('Opening: 10:45');
+    await page.keyboard.press('ArrowLeft');
+    await expect(cell(page, 'Hour', '10')).toBeFocused();
+
+    await page.keyboard.press('Escape');
+    await expect(timePanel(page)).toBeHidden();
+    await expect(toggle).toBeFocused();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  test('has an am / pm column in the 12-hour clock and keeps 24-hour text', async ({ page }) => {
+    await openPage(page, '/controls/time-picker', 'Time picker');
+    const live = example(page, '12-hour clock');
+    await live.getByRole('button', { name: 'Choose time' }).click();
+    const hours = timePanel(page).getByRole('listbox', { name: 'Hour' }).getByRole('option');
+    await expect(hours).toHaveCount(12);
+    await expect(hours.first()).toHaveText('12');
+    await expect(cell(page, 'Hour', '5')).toHaveAttribute('aria-selected', 'true');
+    const period = timePanel(page).getByRole('listbox', { name: 'AM or PM' }).getByRole('option');
+    await expect(period).toHaveCount(2);
+    await period.first().click();
+    await expect(live.getByRole('status')).toHaveText('Cut-off: 05:15');
+    await timePanel(page).getByRole('button', { name: 'Done' }).click();
+    await expect(timePanel(page)).toBeHidden();
+  });
+
+  test('typing in the field still works while the panel is closed', async ({ page }) => {
+    await openPage(page, '/controls/time-picker', 'Time picker');
+    const live = example(page, 'Limits and step');
+    await live.getByLabel('Opening time').fill('11:15');
+    await expect(live.getByRole('status')).toHaveText('Opening: 11:15');
+    await live.getByRole('button', { name: 'Choose time' }).click();
+    await expect(cell(page, 'Hour', '11')).toHaveAttribute('aria-selected', 'true');
+    await expect(cell(page, 'Minute', '15')).toHaveAttribute('aria-selected', 'true');
+  });
+});
+
 test.describe('forms guide with a date picker', () => {
   test('a date picker in the Reactive Forms group writes its value and follows the lock', async ({
     page,

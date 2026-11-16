@@ -5512,7 +5512,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-time-picker",
     "entry": "@star-ng/ui/date-picker",
-    "description": "Time picker: a time of day without a date (PrimeNG `p-datepicker timeOnly`). The value is 24-hour `HH:mm` text, or `null`. The control is the native time input in the StarNG input style, so the browser gives the keyboard model, the locale's 12 or 24-hour display and the picker on a phone.",
+    "description": "Time picker: a time of day without a date (PrimeNG `p-datepicker timeOnly`). The value is 24-hour `HH:mm` text, or `null`.",
     "inputs": [
       {
         "name": "min",
@@ -5533,7 +5533,14 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "number",
         "default": "1",
         "required": false,
-        "description": ""
+        "description": "Minute step of the field's arrow keys and of the panel's minute column."
+      },
+      {
+        "name": "hourFormat",
+        "type": "'12' | '24' | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "Clock of the panel: `'24'` (an hour column 00–23) or `'12'` (1–12 and an am / pm column). Default: the clock of the browser locale, which is the clock the field shows. The value is always 24-hour text."
       },
       {
         "name": "size",
@@ -6168,7 +6175,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "autocomplete/form": "<div class=\"docs-stack\">\n  <star-field label=\"Assignee\" for=\"autocomplete-form-assignee\" [state]=\"task.assignee()\">\n    <star-autocomplete\n      inputId=\"autocomplete-form-assignee\"\n      [formField]=\"task.assignee\"\n      [options]=\"people\"\n      optionLabel=\"name\"\n      optionValue=\"id\"\n      placeholder=\"Search a person\"\n      showClear\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ task().valid() }}</p>\n</div>",
   "autocomplete/large": "<div class=\"docs-stack\">\n  <star-autocomplete\n    [options]=\"tickets\"\n    [(value)]=\"ticket\"\n    placeholder=\"Search 10,000 tickets\"\n    ariaLabel=\"Ticket\"\n    virtualScroll\n    dropdown\n  />\n  <p class=\"docs-output\" role=\"status\">Ticket: {{ ticket() ?? 'none' }}</p>\n</div>",
   "autocomplete/local": "<div class=\"docs-stack\">\n  <star-autocomplete\n    [options]=\"cities\"\n    [(value)]=\"city\"\n    placeholder=\"Search a city\"\n    ariaLabel=\"City\"\n  />\n  <p class=\"docs-output\" role=\"status\">City: {{ city() ?? 'none' }}</p>\n</div>",
-  "autocomplete/multiple": "<div class=\"docs-stack\">\n  <star-multi-autocomplete\n    [options]=\"keywords\"\n    [(value)]=\"chosen\"\n    [selectionLimit]=\"4\"\n    placeholder=\"Add a keyword\"\n    ariaLabel=\"Keywords\"\n    dropdown\n    autoHighlight\n  />\n  <p class=\"docs-output\" role=\"status\">Keywords: {{ chosen().join(', ') || 'none' }}</p>\n</div>",
+  "autocomplete/multiple": "<div class=\"docs-stack\">\n  <star-multi-autocomplete\n    [options]=\"keywords\"\n    [(value)]=\"chosen\"\n    [selectionLimit]=\"4\"\n    placeholder=\"Add a keyword\"\n    ariaLabel=\"Keywords\"\n    dropdown\n    autoHighlight\n    showClear\n  />\n  <p class=\"docs-output\" role=\"status\">Keywords: {{ chosen().join(', ') || 'none' }}</p>\n</div>",
   "autocomplete/objects": "<star-autocomplete\n  [options]=\"people\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  optionGroup=\"team\"\n  [(value)]=\"person\"\n  placeholder=\"Search a person\"\n  ariaLabel=\"Person\"\n>\n  <ng-template starOption [starOptionOf]=\"people\" let-item>\n    <span>\n      {{ item.name }}\n      <small>{{ item.team }}</small>\n    </span>\n  </ng-template>\n</star-autocomplete>",
   "avatar/basic": "<star-avatar name=\"Jane Doe\" />\n<star-avatar name=\"Sam Lee\" shape=\"square\" />\n<star-avatar />\n<star-avatar name=\"Ava Stone\" icon=\"ph-bold ph-buildings\" />",
   "avatar/image": "<star-avatar name=\"Broken Image\" image=\"data:,\" size=\"lg\" />",
@@ -6439,7 +6446,8 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "theme-switch/basic": "<div class=\"docs-row docs-theme-area\">\n  <star-theme-switch />\n  <p class=\"docs-output\" role=\"status\">\n    Choice: {{ theme.mode() }}. Theme in use: {{ theme.theme() }}.\n  </p>\n</div>",
   "time-picker/basic": "<div class=\"docs-stack\">\n  <star-time-picker [(value)]=\"meeting\" ariaLabel=\"Meeting time\" />\n  <p class=\"docs-output\" role=\"status\">Meeting: {{ meeting() ?? 'none' }}</p>\n</div>",
   "time-picker/form": "<div class=\"docs-stack\">\n  <star-field label=\"Pick-up time\" for=\"time-form-pickup\" [state]=\"slot.pickup()\">\n    <star-time-picker\n      inputId=\"time-form-pickup\"\n      [formField]=\"slot.pickup\"\n      ariaLabel=\"Pick-up time\"\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ slot().valid() }}</p>\n</div>",
-  "time-picker/limits": "<div class=\"docs-stack\">\n  <star-time-picker\n    [(value)]=\"opening\"\n    min=\"08:00\"\n    max=\"18:00\"\n    [stepMinute]=\"15\"\n    ariaLabel=\"Opening time\"\n  />\n  <p class=\"docs-output\" role=\"status\">Opening: {{ opening() ?? 'none' }}</p>\n</div>",
+  "time-picker/hour-format": "<div class=\"docs-stack\">\n  <star-time-picker [(value)]=\"cutOff\" hourFormat=\"12\" ariaLabel=\"Cut-off time\" />\n  <p class=\"docs-output\" role=\"status\">Cut-off: {{ cutOff() ?? 'none' }}</p>\n</div>",
+  "time-picker/limits": "<div class=\"docs-stack\">\n  <star-time-picker\n    [(value)]=\"opening\"\n    min=\"08:00\"\n    max=\"18:00\"\n    [stepMinute]=\"15\"\n    hourFormat=\"24\"\n    ariaLabel=\"Opening time\"\n  />\n  <p class=\"docs-output\" role=\"status\">Opening: {{ opening() ?? 'none' }}</p>\n</div>",
   "time-picker/states": "<div class=\"docs-stack\">\n  <star-time-picker size=\"sm\" ariaLabel=\"Small time picker\" />\n  <star-time-picker disabled [value]=\"'09:30'\" ariaLabel=\"Disabled time picker\" />\n  <star-time-picker readonly [value]=\"'09:30'\" ariaLabel=\"Read-only time picker\" />\n</div>",
   "timeline/alternate": "<star-timeline [events]=\"events\" align=\"alternate\" ariaLabel=\"Order history, alternating\" />",
   "timeline/basic": "<star-timeline [events]=\"events\" ariaLabel=\"Order history\" />",

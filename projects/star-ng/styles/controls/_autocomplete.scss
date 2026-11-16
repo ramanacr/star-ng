@@ -1,6 +1,7 @@
 // Autocomplete.
 .star-ac__control {
-  flex-wrap: wrap;
+  --star-ac-row: 2.625rem;
+  flex-wrap: nowrap;
   gap: 0.375rem;
   padding-inline-start: 0.75rem;
 
@@ -9,6 +10,27 @@
     box-shadow: var(--star-focus-ring);
     background: var(--star-surface);
   }
+}
+// Chips and input wrap inside this box. The end buttons stay beside it, on row 1.
+.star-ac__main {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem;
+  min-width: 0;
+}
+// The end buttons stay on row 1: they sit at the top and are centered on the height of one input row.
+.star-ac__control > .star-select__icon-btn,
+.star-ac__control > .star-select__caret {
+  flex: none;
+  align-self: flex-start;
+  margin-block-start: calc((var(--star-ac-row) - 1.5rem) / 2);
+}
+.star-ac__control > .star-select__caret {
+  display: grid;
+  place-items: center;
+  block-size: 1.5rem;
 }
 .star-ac__input {
   flex: 1;
@@ -32,6 +54,9 @@
 }
 .star-ac--multi .star-ac__control {
   padding-block: 0.25rem;
+}
+.star-select--sm .star-ac__control {
+  --star-ac-row: 2.25rem;
 }
 .star-select--sm .star-ac__input {
   padding-block: 0.5rem;

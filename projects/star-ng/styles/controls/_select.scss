@@ -113,6 +113,13 @@
   font: var(--star-type-body-lg);
   color: var(--star-text);
   animation: star-panel-in var(--star-duration-base) $ease;
+
+  // The CDK overlay pane is a flex container. Fill it, so the panel is as wide as the control
+  // (match width). A panel with long options still grows the pane as before.
+  .cdk-overlay-pane > & {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
 }
 @keyframes star-panel-in {
   from {

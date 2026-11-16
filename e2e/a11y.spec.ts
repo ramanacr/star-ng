@@ -208,7 +208,9 @@ const STATES: readonly State[] = [
     open: async (page) => {
       await example(page, 'Chips, filter and clear button')
         .getByRole('combobox', { name: 'Departments as chips' })
-        .click();
+        // The corner, not the center: a chip remove button has a 24 px target, and the center of
+        // the field can lie on it.
+        .click({ position: { x: 4, y: 4 } });
       await expect(page.getByRole('listbox', { name: 'Departments as chips' })).toBeVisible();
     },
   },
@@ -295,6 +297,22 @@ const STATES: readonly State[] = [
         .first()
         .click();
       await expect(page.locator('.star-date__panel')).toBeVisible();
+    },
+  },
+  {
+    name: 'time picker panel',
+    path: 'controls/time-picker',
+    open: async (page) => {
+      await example(page, 'Limits and step').getByRole('button', { name: 'Choose time' }).click();
+      await expect(page.getByRole('dialog', { name: 'Choose time' })).toBeVisible();
+    },
+  },
+  {
+    name: 'time picker panel, 12-hour clock',
+    path: 'controls/time-picker',
+    open: async (page) => {
+      await example(page, '12-hour clock').getByRole('button', { name: 'Choose time' }).click();
+      await expect(page.getByRole('listbox', { name: 'AM or PM' })).toBeVisible();
     },
   },
 
