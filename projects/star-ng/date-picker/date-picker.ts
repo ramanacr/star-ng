@@ -1,12 +1,15 @@
 import { _IdGenerator } from '@angular/cdk/a11y';
 import { CdkConnectedOverlay, CdkOverlayOrigin, ConnectedPosition } from '@angular/cdk/overlay';
+import { NgTemplateOutlet } from '@angular/common';
 import {
   booleanAttribute,
   ChangeDetectionStrategy,
   Component,
   computed,
+  contentChildren,
   Directive,
   ElementRef,
+  forwardRef,
   inject,
   input,
   linkedSignal,
@@ -16,8 +19,15 @@ import {
   viewChild,
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
-import { STAR_UI_TEXT, StarDirectionService } from '@star-ng/ui/core';
+import {
+  STAR_SLOT_HOST,
+  STAR_UI_TEXT,
+  StarDirectionService,
+  StarSlot,
+  starSlot,
+} from '@star-ng/ui/core';
 import { StarCalendar, StarCalendarView } from './calendar';
+import type { StarDateContext } from './date-slots';
 import {
   compareDays,
   DEFAULT_DATE_FORMAT,
@@ -121,6 +131,12 @@ export abstract class StarDateInputBase<TValue> {
   protected readonly input = viewChild.required<ElementRef<HTMLInputElement>>('input');
   protected readonly control = viewChild.required<ElementRef<HTMLElement>>('control');
   protected readonly calendar = viewChild(StarCalendar);
+
+  /** `starDate`, `starHeader` and `starFooter` slots written inside the picker. */
+  private readonly slots = contentChildren(StarSlot, { descendants: true });
+  protected readonly headerSlot = starSlot<object>(this.slots, this, 'header');
+  protected readonly footerSlot = starSlot<object>(this.slots, this, 'footer');
+  protected readonly dateSlot = starSlot<StarDateContext>(this.slots, this, 'date');
 
   /** Text for the current value. */
   protected abstract readonly displayText: () => string;
@@ -372,6 +388,9 @@ const TEMPLATE = `
       [attr.aria-label]="text.chooseDate"
       (keydown)="onPanelKeydown($event)"
     >
+      @if (headerSlot(); as header) {
+        <ng-container *ngTemplateOutlet="header" />
+      }
       <star-calendar
         [mode]="mode"
         [selected]="calendarSelected()"
@@ -387,6 +406,7 @@ const TEMPLATE = `
         [dateDisabled]="dateDisabled()"
         [firstDayOfWeek]="firstDayOfWeek()"
         [locale]="locale()"
+        [dateTemplate]="dateSlot()"
         (dateSelect)="onDateSelect($event)"
       />
       @if (timeEnabled()) {
@@ -407,6 +427,9 @@ const TEMPLATE = `
           }
           <button type="button" class="star-btn star-btn--primary star-btn--sm" (click)="closePanel()">{{ text.done }}</button>
         </div>
+      }
+      @if (footerSlot(); as footer) {
+        <ng-container *ngTemplateOutlet="footer" />
       }
       @if (showButtonBar()) {
         <div class="star-date__bar">
@@ -443,8 +466,9 @@ const HOST = {
  */
 @Component({
   selector: 'star-date-picker',
-  imports: [CdkConnectedOverlay, CdkOverlayOrigin, StarCalendar, StarTimeColumns],
+  imports: [CdkConnectedOverlay, CdkOverlayOrigin, NgTemplateOutlet, StarCalendar, StarTimeColumns],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarDatePicker) }],
   host: HOST,
   template: TEMPLATE,
 })
@@ -580,8 +604,9 @@ export class StarDatePicker
  */
 @Component({
   selector: 'star-date-range-picker',
-  imports: [CdkConnectedOverlay, CdkOverlayOrigin, StarCalendar, StarTimeColumns],
+  imports: [CdkConnectedOverlay, CdkOverlayOrigin, NgTemplateOutlet, StarCalendar, StarTimeColumns],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarDateRangePicker) }],
   host: { ...HOST, class: 'star-date star-date--range' },
   template: TEMPLATE,
 })
@@ -718,8 +743,9 @@ export class StarDateRangePicker
  */
 @Component({
   selector: 'star-multi-date-picker',
-  imports: [CdkConnectedOverlay, CdkOverlayOrigin, StarCalendar, StarTimeColumns],
+  imports: [CdkConnectedOverlay, CdkOverlayOrigin, NgTemplateOutlet, StarCalendar, StarTimeColumns],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarMultiDatePicker) }],
   host: { ...HOST, class: 'star-date star-date--multiple' },
   template: TEMPLATE,
 })

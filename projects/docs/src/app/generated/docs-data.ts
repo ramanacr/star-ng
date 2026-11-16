@@ -528,6 +528,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "undefined",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "dateTemplate",
+        "type": "TemplateRef<StarDateContext> | null",
+        "default": "null",
+        "required": false,
+        "description": "Set by the date pickers. In your own markup, use the `starDate` slot."
       }
     ],
     "models": [],
@@ -1457,6 +1464,15 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       }
     ]
+  },
+  "StarDateTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starDate]",
+    "entry": "@star-ng/ui/date-picker",
+    "description": "Replaces the content of a day in `star-calendar`, `star-date-picker`, `star-date-range-picker` and `star-multi-date-picker`. PrimeNG `#date` template.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
   },
   "StarDialog": {
     "kind": "component",
@@ -6416,6 +6432,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "calendar/granularity": "<div class=\"docs-stack\">\n  <star-calendar\n    class=\"star-calendar--inline\"\n    granularity=\"month\"\n    [selected]=\"reportMonth()\"\n    (dateSelect)=\"reportMonth.set($event)\"\n    locale=\"en-GB\"\n  />\n  <p class=\"docs-output\" role=\"status\">Month: {{ iso(reportMonth()) }}</p>\n</div>",
   "calendar/months": "<star-calendar\n  class=\"star-calendar--inline\"\n  [selected]=\"stay()\"\n  (dateSelect)=\"stay.set($event)\"\n  [numberOfMonths]=\"2\"\n  showWeek\n  [minDate]=\"minDate\"\n  [maxDate]=\"maxDate\"\n  [disabledDays]=\"[0]\"\n  locale=\"en-GB\"\n  [firstDayOfWeek]=\"1\"\n/>",
   "calendar/range": "<div class=\"docs-stack\">\n  <star-calendar\n    class=\"star-calendar--inline\"\n    mode=\"range\"\n    [range]=\"booking()\"\n    (dateSelect)=\"pick($event)\"\n    locale=\"en-GB\"\n    [firstDayOfWeek]=\"1\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Booking: {{ iso(booking()?.start) }} to {{ iso(booking()?.end) }}\n  </p>\n</div>",
+  "calendar/slots": "<div class=\"docs-stack\">\n  <star-calendar\n    class=\"star-calendar--inline\"\n    [selected]=\"payDate()\"\n    (dateSelect)=\"payDate.set($event)\"\n    locale=\"en-GB\"\n    [firstDayOfWeek]=\"1\"\n  >\n    <ng-template starHeader>\n      <p class=\"docs-output docs-due-note\">Invoices due in November 2026</p>\n    </ng-template>\n    <ng-template starDate let-date>\n      <span class=\"docs-due\" [class.docs-due--marked]=\"isDue(date)\">{{\n        date.getDate()\n      }}</span>\n    </ng-template>\n    <ng-template starFooter>\n      <p class=\"docs-output docs-due-note\">\n        A dot marks a due date: 5, 12 and 26 November.\n      </p>\n    </ng-template>\n  </star-calendar>\n  <p class=\"docs-output\" role=\"status\">Payment date: {{ iso(payDate()) }}</p>\n</div>",
   "card/basic": "<div class=\"docs-stack\">\n  <star-card header=\"Open orders\" subheader=\"Last 30 days\">\n    <star-button starCardActions variant=\"ghost\" size=\"sm\">View all</star-button>\n    <p>Forty-two orders are open. Nine are late.</p>\n    <div starCardFooter class=\"docs-row\">\n      <star-button size=\"sm\">Export</star-button>\n      <star-button size=\"sm\" variant=\"secondary\">Filter</star-button>\n    </div>\n  </star-card>\n</div>",
   "card/plain": "<div class=\"docs-stack\">\n  <star-card>\n    <p>A card with only a body.</p>\n  </star-card>\n</div>",
   "carousel/autoplay": "<star-carousel\n  style=\"width: 100%; max-width: 40rem\"\n  [items]=\"photos\"\n  [autoplay]=\"4000\"\n  ariaLabel=\"Automatic photos\"\n>\n  <ng-template starCarouselItem [starCarouselItemOf]=\"photos\" let-photo>\n    <img\n      style=\"display: block; width: 100%; height: auto\"\n      [src]=\"photo.src\"\n      [alt]=\"photo.label\"\n    />\n  </ng-template>\n</star-carousel>",
@@ -6464,6 +6481,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "date-picker/locale": "<div class=\"docs-stack\">\n  <star-date-picker\n    [value]=\"germanDate\"\n    locale=\"de-DE\"\n    [firstDayOfWeek]=\"1\"\n    showWeek\n    ariaLabel=\"Lieferdatum\"\n  />\n  <star-date-picker\n    [value]=\"americanDate\"\n    locale=\"en-US\"\n    [firstDayOfWeek]=\"0\"\n    [numberOfMonths]=\"2\"\n    ariaLabel=\"Delivery date (US)\"\n  />\n</div>",
   "date-picker/multiple": "<div class=\"docs-stack\">\n  <star-multi-date-picker\n    [(value)]=\"visits\"\n    [maxDates]=\"4\"\n    locale=\"en-GB\"\n    ariaLabel=\"Visit days\"\n    showClear\n  />\n  <p class=\"docs-output\" role=\"status\">Days: {{ visits().length }}</p>\n</div>",
   "date-picker/range": "<div class=\"docs-stack\">\n  <star-date-range-picker [(value)]=\"booking\" locale=\"en-GB\" ariaLabel=\"Booking range\" />\n  <p class=\"docs-output\" role=\"status\">\n    Booking: {{ iso(booking()?.start) }} to {{ iso(booking()?.end) }}\n  </p>\n</div>",
+  "date-picker/slots": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"payDate\"\n    locale=\"en-GB\"\n    [firstDayOfWeek]=\"1\"\n    showButtonBar\n    ariaLabel=\"Payment date\"\n  >\n    <ng-template starHeader>\n      <p class=\"docs-output docs-due-note\">Invoices due in November 2026</p>\n    </ng-template>\n    <ng-template starDate let-date>\n      <span class=\"docs-due\" [class.docs-due--marked]=\"isDue(date)\">{{\n        date.getDate()\n      }}</span>\n    </ng-template>\n    <ng-template starFooter>\n      <p class=\"docs-output docs-due-note\">\n        A dot marks a due date: 5, 12 and 26 November.\n      </p>\n    </ng-template>\n  </star-date-picker>\n  <p class=\"docs-output\" role=\"status\">Payment date: {{ iso(payDate()) }}</p>\n</div>",
   "date-picker/states": "<div class=\"docs-stack\">\n  <star-date-picker size=\"sm\" locale=\"en-GB\" ariaLabel=\"Small date picker\" />\n  <star-date-picker disabled locale=\"en-GB\" ariaLabel=\"Disabled date picker\" />\n  <star-date-picker\n    [value]=\"delivery()\"\n    readonly\n    locale=\"en-GB\"\n    ariaLabel=\"Read-only date picker\"\n  />\n</div>",
   "date-picker/time": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"meeting\"\n    locale=\"en-GB\"\n    showTime\n    [stepMinute]=\"15\"\n    ariaLabel=\"Meeting start\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Meeting: {{ iso(meeting()) }} {{ clock(meeting()) }}\n  </p>\n</div>",
   "date-picker/views": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"reportMonth\"\n    view=\"month\"\n    locale=\"en-GB\"\n    ariaLabel=\"Report month\"\n  />\n  <star-date-picker\n    [(value)]=\"reportYear\"\n    view=\"year\"\n    locale=\"en-GB\"\n    ariaLabel=\"Report year\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Month: {{ iso(reportMonth()) }}, year: {{ iso(reportYear()) }}\n  </p>\n</div>",

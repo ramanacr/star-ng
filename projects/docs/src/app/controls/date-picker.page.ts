@@ -1,11 +1,14 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { form, FormField, required } from '@angular/forms/signals';
 import { RouterLink } from '@angular/router';
+import { StarFooterTemplate, StarHeaderTemplate } from '@star-ng/ui/core';
 import {
   isoDay,
+  sameDay,
   StarDatePicker,
   StarDateRange,
   StarDateRangePicker,
+  StarDateTemplate,
   StarMultiDatePicker,
 } from '@star-ng/ui/date-picker';
 import { StarField } from '@star-ng/ui/field';
@@ -19,6 +22,9 @@ import { DOCS, DocsRow } from '../shared/docs';
     StarDatePicker,
     StarDateRangePicker,
     StarMultiDatePicker,
+    StarDateTemplate,
+    StarHeaderTemplate,
+    StarFooterTemplate,
     StarField,
     FormField,
   ],
@@ -209,6 +215,38 @@ import { DOCS, DocsRow } from '../shared/docs';
       </docs-example>
 
       <docs-example
+        heading="Slots"
+        source="date-picker/slots"
+        [script]="slotsScript"
+        note="Content child templates change parts of the popup. starDate replaces the content of a day button and gets the date, today, selected, disabled and outside: here a dot marks the days when an invoice is due. The button keeps its accessible name, so a screen reader does not announce the dot: give the information in text too. starHeader adds content above the calendar and starFooter above the button bar. The template applies to the calendar of all three pickers, and to every month when numberOfMonths is 2 or more. Do not put buttons or links in starDate: the calendar owns the focus and the keys."
+      >
+        <div class="docs-stack">
+          <star-date-picker
+            [(value)]="payDate"
+            locale="en-GB"
+            [firstDayOfWeek]="1"
+            showButtonBar
+            ariaLabel="Payment date"
+          >
+            <ng-template starHeader>
+              <p class="docs-output docs-due-note">Invoices due in November 2026</p>
+            </ng-template>
+            <ng-template starDate let-date>
+              <span class="docs-due" [class.docs-due--marked]="isDue(date)">{{
+                date.getDate()
+              }}</span>
+            </ng-template>
+            <ng-template starFooter>
+              <p class="docs-output docs-due-note">
+                A dot marks a due date: 5, 12 and 26 November.
+              </p>
+            </ng-template>
+          </star-date-picker>
+          <p class="docs-output" role="status">Payment date: {{ iso(payDate()) }}</p>
+        </div>
+      </docs-example>
+
+      <docs-example
         heading="Signal Forms"
         source="date-picker/form"
         [script]="formScript"
@@ -247,6 +285,7 @@ import { DOCS, DocsRow } from '../shared/docs';
 
       <docs-api
         [of]="['StarDatePicker', 'StarDateRangePicker', 'StarMultiDatePicker', 'StarDateInputBase']"
+        [slots]="slots"
         [cssVars]="cssVars"
         [keyboard]="keyboard"
       />
@@ -289,6 +328,25 @@ import { DOCS, DocsRow } from '../shared/docs';
         no time zone, so a date does not move to another day when the user travels.
       </p>
     </docs-page>
+  `,
+  styles: `
+    .docs-due {
+      position: relative;
+    }
+    .docs-due--marked::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      width: 0.3rem;
+      height: 0.3rem;
+      border-radius: 50%;
+      background: currentColor;
+      transform: translateX(-50%);
+    }
+    .docs-due-note {
+      margin: var(--star-space-2) 0;
+    }
   `,
 })
 export class DatePickerPage {
@@ -364,6 +422,54 @@ readonly longFormat: Intl.DateTimeFormatOptions = {
 readonly order = form(this.orderModel, (path) => {
   required(path.deliveryDate, { message: 'Choose a delivery date.' });
 });`;
+
+  protected readonly dueDates: readonly Date[] = [
+    new Date(2026, 10, 5),
+    new Date(2026, 10, 12),
+    new Date(2026, 10, 26),
+  ];
+  protected readonly payDate = signal<Date | null>(new Date(2026, 10, 17));
+  protected readonly isDue = (date: Date) => this.dueDates.some((due) => sameDay(due, date));
+  protected readonly slotsScript = `// Import StarHeaderTemplate and StarFooterTemplate from '@star-ng/ui/core' and StarDateTemplate in the component imports.
+readonly dueDates: readonly Date[] = [
+  new Date(2026, 10, 5),
+  new Date(2026, 10, 12),
+  new Date(2026, 10, 26),
+];
+readonly payDate = signal<Date | null>(new Date(2026, 10, 17));
+readonly isDue = (date: Date) => this.dueDates.some((due) => sameDay(due, date));
+readonly iso = (date: Date | null) => (date ? isoDay(date) : 'none');
+
+// Component styles: the dot below the day number.
+// .docs-due { position: relative; }
+// .docs-due--marked::after {
+//   content: '';
+//   position: absolute;
+//   top: 100%;
+//   left: 50%;
+//   width: 0.3rem;
+//   height: 0.3rem;
+//   border-radius: 50%;
+//   background: currentColor;
+//   transform: translateX(-50%);
+// }`;
+
+  protected readonly slots: readonly DocsRow[] = [
+    {
+      name: 'ng-template[starDate]',
+      description:
+        'Content child. Replaces the content of a day button. The button keeps its accessible name (the full date), aria-current, aria-disabled and the keys. The context has $implicit (the date), today, selected, disabled and outside. Do not add focusable elements: the calendar owns the keys. With two or more months the template applies to every month.',
+    },
+    {
+      name: 'ng-template[starHeader]',
+      description: 'Content child. Content at the top of the popup, above the calendar.',
+    },
+    {
+      name: 'ng-template[starFooter]',
+      description:
+        'Content child. Content in the popup below the calendar and the time columns, above the button bar.',
+    },
+  ];
 
   protected readonly cssVars: readonly DocsRow[] = [
     { name: '--star-input-radius', description: 'Corner radius of the field.' },
