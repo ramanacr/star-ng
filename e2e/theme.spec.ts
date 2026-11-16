@@ -1,5 +1,7 @@
 import { expect, Page, test } from '@playwright/test';
-import { lowContrast, openPage } from './support';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { example, lowContrast, openPage } from './support';
 
 /** Blocks every JavaScript file of the application except the external first-paint file. */
 async function blockAppScripts(page: Page): Promise<void> {
@@ -66,6 +68,34 @@ test.describe('theme', () => {
     const primary = page.locator('.star-btn--primary').first();
     await page.addStyleTag({ content: ':root { --star-primary-fill: rgb(15, 118, 110); }' });
     await expect(primary).toHaveCSS('background-color', 'rgb(15, 118, 110)');
+  });
+
+  test('--star-primary-text is a token and colors the primary text of tabs and select', async ({
+    page,
+  }) => {
+    const base = readFileSync(join(__dirname, '../projects/star-ng/styles/_base.scss'), 'utf8');
+    // The token has a default in the light block and in the dark block.
+    expect(base.match(/--star-primary-text: var\(--star-primary\);/g)).toHaveLength(2);
+
+    const override = ':root { --star-primary-text: rgb(15, 118, 110); }';
+    await openPage(page, '/controls/tabs', 'Tabs');
+    await page.addStyleTag({ content: override });
+    await expect(page.locator('.star-tabs__tab--active').first()).toHaveCSS(
+      'color',
+      'rgb(15, 118, 110)',
+    );
+
+    await openPage(page, '/controls/select', 'Select');
+    await page.addStyleTag({ content: override });
+    const select = example(page, 'Objects as options').getByRole('combobox', { name: 'Country' });
+    await select.focus();
+    await page.keyboard.press('Enter');
+    await page.keyboard.press('F');
+    await page.keyboard.press('Enter');
+    await page.keyboard.press('Enter');
+    await expect(
+      page.getByRole('listbox', { name: 'Country' }).getByRole('option', { name: 'France' }),
+    ).toHaveCSS('color', 'rgb(15, 118, 110)');
   });
 });
 

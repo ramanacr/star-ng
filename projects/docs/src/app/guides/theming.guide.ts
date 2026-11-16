@@ -32,10 +32,10 @@ const names = (prefix: string, items: readonly string[]) => items.map((item) => 
           text on your primary color is under 4.5:1, set a darker <code>--star-primary-fill</code>.
         </li>
         <li>
-          Primary text and icons on a surface or a soft tint (active tab, selected option, links
-          on hover) use <code>--star-primary-text</code>. It defaults to
-          <code>--star-primary</code>. If your primary color is too light for text on surfaces, set
-          a darker <code>--star-primary-text</code>. A theme with a light primary color can set both
+          Primary text and icons on a surface or a soft tint (active tab, selected option, links on
+          hover) use <code>--star-primary-text</code>. It defaults to <code>--star-primary</code>.
+          If your primary color is too light for text on surfaces, set a darker
+          <code>--star-primary-text</code>. A theme with a light primary color can set both
           <code>--star-primary-text</code> and <code>--star-primary-fill</code>.
         </li>
         <li>
