@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, Locator, test } from '@playwright/test';
 import { example, openPage } from './support';
 
 test.describe('accordion', () => {
@@ -399,5 +399,46 @@ test.describe('divider and timeline', () => {
     await expect(example(page, 'Custom content').getByRole('listitem').nth(1)).toContainText(
       '2. Packed',
     );
+  });
+});
+
+test.describe('hit areas of small targets (WCAG 2.5.8)', () => {
+  /**
+   * A point near each corner of a 24 x 24 px square, centered on the target, must hit the target
+   * or one of its children. The test does not read the box of the element: a hit area can come
+   * from a pseudo-element.
+   */
+  const hasHitArea = (target: Locator) =>
+    target.evaluate((node) => {
+      const box = node.getBoundingClientRect();
+      const cx = box.left + box.width / 2;
+      const cy = box.top + box.height / 2;
+      return [-1, 1].flatMap((dx) =>
+        [-1, 1].map((dy) => {
+          const hit = document.elementFromPoint(cx + dx * 11.5, cy + dy * 11.5);
+          return !!hit && node.contains(hit);
+        }),
+      );
+    });
+
+  test('the chip remove button, the tree toggle and the home link are at least 24 px', async ({
+    page,
+  }) => {
+    await openPage(page, '/controls/chip', 'Chip');
+    const remove = example(page, 'Removable').getByRole('button', { name: 'Remove Beta' });
+    await remove.scrollIntoViewIfNeeded();
+    expect(await hasHitArea(remove)).toEqual([true, true, true, true]);
+
+    await openPage(page, '/controls/breadcrumb', 'Breadcrumb');
+    const home = example(page, 'Trail with a home link').getByRole('link', { name: 'Home' });
+    await home.scrollIntoViewIfNeeded();
+    expect(await hasHitArea(home)).toEqual([true, true, true, true]);
+
+    await openPage(page, '/controls/tree', 'Tree');
+    const toggle = example(page, 'Expand and collapse')
+      .getByRole('tree', { name: 'Folders' })
+      .locator('[data-key="docs"] .star-tree__toggle');
+    await toggle.scrollIntoViewIfNeeded();
+    expect(await hasHitArea(toggle)).toEqual([true, true, true, true]);
   });
 });

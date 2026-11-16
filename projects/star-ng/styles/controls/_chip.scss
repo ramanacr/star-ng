@@ -23,6 +23,19 @@
   cursor: pointer;
   opacity: 0.7;
 
+  // Hit area of at least 24 x 24 px (WCAG 2.5.8) around a smaller icon. The icon keeps its size.
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100%, 1.5rem);
+    height: max(100%, 1.5rem);
+    translate: -50% -50%;
+  }
+
   &:hover {
     opacity: 1;
   }
