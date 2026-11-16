@@ -63,7 +63,9 @@ async function expectTexts(live: Locator, texts: Texts): Promise<void> {
   await expect(live.getByRole('button', { name: texts.next })).toBeVisible();
   await expect(live.locator('.star-paginator__report')).toHaveText(texts.report);
   // Select: the placeholder.
-  await expect(live.locator('.star-select__trigger')).toContainText(texts.placeholder);
+  await expect(
+    live.locator('star-select:not(.star-paginator__select) .star-select__trigger'),
+  ).toContainText(texts.placeholder);
   // File upload: the choose button and the limit hint.
   await expect(live.getByText(texts.choose, { exact: true })).toBeVisible();
   await expect(live.locator('.star-upload')).toContainText(texts.limit);
@@ -94,7 +96,7 @@ test.describe('language packs', () => {
     const live = example(page, 'Language switch');
     await live.getByRole('radio', { name: 'Deutsch' }).click();
 
-    await live.locator('.star-select__trigger').click();
+    await live.locator('star-select:not(.star-paginator__select) .star-select__trigger').click();
     const search = page.getByRole('searchbox', { name: 'Suchen' });
     await expect(search).toBeVisible();
     await search.fill('zzz');
