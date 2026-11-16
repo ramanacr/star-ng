@@ -104,6 +104,10 @@ export interface StarUiText {
   readonly weekShort: string;
   readonly endTime: string;
   readonly done: string;
+  readonly chooseTime: string;
+  readonly hour: string;
+  readonly minute: string;
+  readonly dayPeriod: string;
   // Inputs
   readonly increase: string;
   readonly decrease: string;
@@ -295,6 +299,10 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   weekShort: 'Wk',
   endTime: 'End time',
   done: 'Done',
+  chooseTime: 'Choose time',
+  hour: 'Hour',
+  minute: 'Minute',
+  dayPeriod: 'AM or PM',
 
   increase: 'Increase',
   decrease: 'Decrease',

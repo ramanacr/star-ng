@@ -106,6 +106,10 @@ export const STAR_UI_TEXT_ES: StarUiText = {
   weekShort: 'Sem.',
   endTime: 'Hora de fin',
   done: 'Listo',
+  chooseTime: 'Elegir hora',
+  hour: 'Hora',
+  minute: 'Minuto',
+  dayPeriod: 'a. m. o p. m.',
 
   increase: 'Aumentar',
   decrease: 'Disminuir',
