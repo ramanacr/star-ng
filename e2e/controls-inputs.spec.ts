@@ -1,4 +1,4 @@
-import { expect, Page, test } from '@playwright/test';
+import { expect, Locator, Page, test } from '@playwright/test';
 import { example, lowContrast, openPage } from './support';
 
 /** Puts a pasted text into a box: the clipboard is not available to the test, so it sends the event. */
@@ -629,3 +629,53 @@ for (const theme of ['light', 'dark'] as const) {
     }
   });
 }
+
+/**
+ * Narrows a field and checks the Clear button: it stays on row 1 at the inline end, and the
+ * input wraps to a lower row instead.
+ */
+async function expectClearOnFirstRow(live: Locator): Promise<void> {
+  const host = live.locator('star-input-tags, star-multi-autocomplete').first();
+  await host.evaluate((el) => ((el as HTMLElement).style.width = '16rem'));
+  const control = host.locator('.star-ac__control');
+  const clear = control.locator('.star-select__icon-btn[aria-label="Clear"]');
+  const input = control.locator('input.star-ac__input');
+  const chips = control.locator('.star-chip');
+  await expect(clear).toBeVisible();
+  const [box, clearBox, inputBox, firstChip] = await Promise.all([
+    control.boundingBox(),
+    clear.boundingBox(),
+    input.boundingBox(),
+    chips.first().boundingBox(),
+  ]);
+  const rowEnd = firstChip!.y + firstChip!.height;
+  // The top of the button is in the row of the first chip.
+  expect(clearBox!.y).toBeLessThan(rowEnd);
+  // The input wrapped below the chips.
+  expect(inputBox!.y).toBeGreaterThanOrEqual(rowEnd - 1);
+  // The button is at the inline end of the control.
+  expect(box!.x + box!.width - (clearBox!.x + clearBox!.width)).toBeLessThan(box!.width / 4);
+}
+
+test.describe('end buttons stay on row 1', () => {
+  test('tags field: Clear stays beside the chips and the input wraps', async ({ page }) => {
+    await openPage(page, '/controls/input-tags', 'Tags field');
+    const live = example(page, 'Basic');
+    await live.locator('input.star-ac__input').click();
+    await page.keyboard.type('newsletter,archive,');
+    await expectClearOnFirstRow(live);
+  });
+
+  test('multi autocomplete: Clear stays beside the chips and the input wraps', async ({ page }) => {
+    await openPage(page, '/controls/autocomplete', 'Autocomplete');
+    const live = example(page, 'Multiple');
+    const input = live.locator('input.star-ac__input');
+    for (const word of ['angular', 'accessibility', 'forms']) {
+      await input.click();
+      await page.keyboard.type(word);
+      await page.keyboard.press('ArrowDown');
+      await page.keyboard.press('Enter');
+    }
+    await expectClearOnFirstRow(live);
+  });
+});
