@@ -532,3 +532,24 @@ test.describe('image', () => {
     expect(errors).toEqual([]);
   });
 });
+
+test.describe('galleria stage surface', () => {
+  for (const theme of ['light', 'dark'] as const) {
+    test(`the stage is opaque and dark in the ${theme} theme`, async ({ page }) => {
+      await page.addInitScript((value) => localStorage.setItem('star-theme', value), theme);
+      await openPage(page, '/controls/galleria', 'Galleria');
+      await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
+      const stage = example(page, 'Images and thumbnails')
+        .getByRole('region', { name: 'Site photos' })
+        .locator('.star-galleria__stage');
+      const [red, green, blue, alpha] = await stage.evaluate((node) => {
+        const match = getComputedStyle(node).backgroundColor.match(/[\d.]+/g) ?? [];
+        const [r, g, b, a = 1] = match.map(Number);
+        return [r, g, b, a];
+      });
+      expect(alpha).toBe(1);
+      const luminance = (0.2126 * red + 0.7152 * green + 0.0722 * blue) / 255;
+      expect(luminance).toBeLessThan(0.15);
+    });
+  }
+});

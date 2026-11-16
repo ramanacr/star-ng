@@ -208,7 +208,9 @@ const STATES: readonly State[] = [
     open: async (page) => {
       await example(page, 'Chips, filter and clear button')
         .getByRole('combobox', { name: 'Departments as chips' })
-        .click();
+        // The corner, not the center: a chip remove button has a 24 px target, and the center of
+        // the field can lie on it.
+        .click({ position: { x: 4, y: 4 } });
       await expect(page.getByRole('listbox', { name: 'Departments as chips' })).toBeVisible();
     },
   },

@@ -76,7 +76,7 @@
   margin: 0;
   overflow: hidden;
   border-radius: var(--star-radius-lg);
-  background: var(--star-text-strong);
+  background: var(--star-media-surface);
   outline: none;
 
   &:focus-visible {
@@ -93,8 +93,8 @@
   position: absolute;
   inset: auto 0 0;
   padding: 0.75rem 1rem;
-  background: linear-gradient(transparent, rgb(0 0 0 / 0.65));
-  color: #fff;
+  background: linear-gradient(transparent, var(--star-scrim-media-strong));
+  color: var(--star-on-scrim);
   font: var(--star-type-body-lg);
 }
 .star-galleria__nav {
@@ -106,8 +106,8 @@
   height: 2.5rem;
   border: 0;
   border-radius: 50%;
-  background: rgb(255 255 255 / 0.85);
-  color: var(--star-text-strong);
+  background: var(--star-media-control);
+  color: var(--star-media-control-text);
   translate: 0 -50%;
   cursor: pointer;
 
@@ -127,8 +127,8 @@
   inset-inline-end: 0.75rem;
   padding: 0.125rem 0.5rem;
   border-radius: var(--star-radius-pill);
-  background: rgb(0 0 0 / 0.55);
-  color: #fff;
+  background: var(--star-scrim-media);
+  color: var(--star-on-scrim);
   font: var(--star-type-body-sm);
 }
 .star-galleria__thumbs {
@@ -184,8 +184,8 @@
   inset: 0;
   display: grid;
   place-items: center;
-  background: rgb(0 0 0 / 0.45);
-  color: #fff;
+  background: var(--star-scrim-media-soft);
+  color: var(--star-on-scrim);
   font-size: 1.5rem;
   opacity: 0;
   transition: opacity var(--star-duration-fast) ease;
