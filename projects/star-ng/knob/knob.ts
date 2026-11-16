@@ -1,5 +1,6 @@
 import { _IdGenerator } from '@angular/cdk/a11y';
 import { CdkConnectedOverlay, CdkOverlayOrigin, ConnectedPosition } from '@angular/cdk/overlay';
+import { DOCUMENT } from '@angular/common';
 import {
   afterNextRender,
   booleanAttribute,
@@ -123,6 +124,7 @@ export class StarKnob implements FormValueControl<number> {
   }
 }
 
+/** The default swatches on the server, and when no theme token resolves to a color. */
 const SWATCHES = [
   '#4f46e5',
   '#0369a1',
@@ -133,6 +135,74 @@ const SWATCHES = [
   '#0f172a',
   '#64748b',
 ];
+
+/** Theme tokens that give the default swatches, in order. Missing tokens are skipped. */
+const THEME_SWATCH_TOKENS = [
+  '--star-primary',
+  '--star-accent',
+  '--star-success',
+  '--star-warning',
+  '--star-danger',
+  '--star-info',
+  ...Array.from({ length: 12 }, (_, index) => `--star-chart-${index + 1}`),
+];
+
+const toHexByte = (channel: number) =>
+  Math.round(clamp(channel, 0, 255))
+    .toString(16)
+    .padStart(2, '0');
+
+/**
+ * Converts a computed CSS color (`rgb()`, `rgba()`, or `color(srgb ...)`, comma or space syntax)
+ * to `#rrggbb`. Returns `null` when the text is not one of these forms.
+ */
+function computedColorToHex(text: string): string | null {
+  const color = /^color\(\s*srgb\s+([^)]*)\)$/i.exec(text.trim());
+  const rgb = /^rgba?\(([^)]*)\)$/i.exec(text.trim());
+  const body = color?.[1] ?? rgb?.[1];
+  if (body === undefined) return null;
+  const parts = body
+    .split('/')[0]
+    .split(/[\s,]+/)
+    .filter(Boolean);
+  if (parts.length < 3) return null;
+  const scale = color ? 255 : 1;
+  const channels = parts.slice(0, 3).map((part) => {
+    const percent = part.endsWith('%');
+    const number = Number.parseFloat(part);
+    return percent ? (number / 100) * 255 : number * scale;
+  });
+  if (channels.some((channel) => !Number.isFinite(channel))) return null;
+  return `#${channels.map(toHexByte).join('')}`;
+}
+
+/**
+ * Reads the theme tokens on `host` and returns them as `#rrggbb` colors, without failures and
+ * duplicates. Each value is resolved through a computed `color` on a probe element.
+ */
+function readThemeSwatches(doc: Document, host: HTMLElement): string[] {
+  const view = doc.defaultView;
+  if (!view) return [];
+  const hostStyle = view.getComputedStyle(host);
+  const probe = doc.createElement('span');
+  probe.style.display = 'none';
+  host.append(probe);
+  const found: string[] = [];
+  try {
+    for (const token of THEME_SWATCH_TOKENS) {
+      const raw = hostStyle.getPropertyValue(token).trim();
+      if (!raw) continue;
+      probe.style.color = '';
+      probe.style.color = raw;
+      if (!probe.style.color) continue;
+      const hex = computedColorToHex(view.getComputedStyle(probe).color);
+      if (hex && !found.includes(hex)) found.push(hex);
+    }
+  } finally {
+    probe.remove();
+  }
+  return found;
+}
 
 const PANEL_POSITIONS: ConnectedPosition[] = [
   { originX: 'start', originY: 'bottom', overlayX: 'start', overlayY: 'top', offsetY: 6 },
@@ -204,7 +274,7 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
       role="radiogroup"
       [attr.aria-label]="ariaLabel() ?? text.colorLabel"
     >
-      @for (swatch of swatches(); track swatch) {
+      @for (swatch of shownSwatches(); track swatch) {
         <button
           type="button"
           role="radio"
@@ -324,11 +394,37 @@ export class StarColorPicker implements FormValueControl<string> {
   private readonly ids = inject(_IdGenerator);
   private readonly injector = inject(Injector);
 
+  private readonly doc = inject(DOCUMENT);
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+
+  /** The color, as `#rrggbb`. */
   readonly value = model('#4f46e5');
-  readonly swatches = input<readonly string[]>(SWATCHES);
+  /**
+   * The preset swatches (`#rrggbb`). When you do not set it, the swatches come from the theme:
+   * after the first render, the control reads `--star-primary`, `--star-accent`, `--star-success`,
+   * `--star-warning`, `--star-danger`, `--star-info` and `--star-chart-1` to `--star-chart-12` on
+   * its own element (the tokens that exist). It reads them once, so a later theme change does not
+   * update the swatches. On the server, and when no token gives a color, a fixed list is used.
+   * A list that you set is always used as it is, and nothing is read.
+   */
+  readonly swatches = input<readonly string[] | undefined>(undefined);
   readonly ariaLabel = input<string | null>(null);
   readonly disabled = input(false, { transform: booleanAttribute });
   readonly touch = output<void>();
+
+  constructor() {
+    // Browser only (this callback does not run on the server). One read, no theme-change watcher.
+    afterNextRender(() => {
+      if (this.swatches() !== undefined) return;
+      const found = readThemeSwatches(this.doc, this.host.nativeElement);
+      if (found.length) this.themeSwatches.set(found);
+    });
+  }
+
+  private readonly themeSwatches = signal<readonly string[] | null>(null);
+  protected readonly shownSwatches = computed(
+    () => this.swatches() ?? this.themeSwatches() ?? SWATCHES,
+  );
 
   protected readonly positions = PANEL_POSITIONS;
   protected readonly panelId = this.ids.getId('star-color-panel-');

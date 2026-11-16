@@ -1019,10 +1019,10 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "inputs": [
       {
         "name": "swatches",
-        "type": "readonly string[]",
-        "default": "SWATCHES",
+        "type": "readonly string[] | undefined",
+        "default": "undefined",
         "required": false,
-        "description": ""
+        "description": "The preset swatches (`#rrggbb`). When you do not set it, the swatches come from the theme: after the first render, the control reads `--star-primary`, `--star-accent`, `--star-success`, `--star-warning`, `--star-danger`, `--star-info` and `--star-chart-1` to `--star-chart-12` on its own element (the tokens that exist). It reads them once, so a later theme change does not update the swatches. On the server, and when no token gives a color, a fixed list is used. A list that you set is always used as it is, and nothing is read."
       },
       {
         "name": "ariaLabel",
@@ -1045,7 +1045,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "string",
         "default": "'#4f46e5'",
         "required": false,
-        "description": ""
+        "description": "The color, as `#rrggbb`."
       }
     ],
     "outputs": [

@@ -12,6 +12,18 @@ import { DOCS, DocsRow } from '../shared/docs';
       lead="Preset swatches, a custom color panel and a hex field. The custom tile opens a StarNG panel (not the color dialog of the browser) with a saturation and brightness area and a hue slider. The value is a #rrggbb string."
       importFrom="import { StarColorPicker } from '@star-ng/ui/knob';"
     >
+      <p>
+        The default swatches come from the theme. After the first render, the control reads
+        <code>--star-primary</code>, <code>--star-accent</code>, <code>--star-success</code>,
+        <code>--star-warning</code>, <code>--star-danger</code>, <code>--star-info</code> and
+        <code>--star-chart-1</code> to <code>--star-chart-12</code> on its own element, and shows
+        the ones that exist as <code>#rrggbb</code> colors, without duplicates. The control reads
+        them once: it does not watch for a theme change, so the swatches keep the colors of the
+        theme that was active at that time. On the server, and when no token gives a color, a fixed
+        list of eight colors is used. When you set <code>[swatches]</code>, that list is always used
+        and nothing is read. The default value does not change.
+      </p>
+
       <docs-example heading="Basic" source="color-picker/basic">
         <star-color-picker [(value)]="color" ariaLabel="Label color" />
         <p class="docs-output" role="status">Value: {{ color() }}</p>
