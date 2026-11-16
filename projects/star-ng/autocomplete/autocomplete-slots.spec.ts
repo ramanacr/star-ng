@@ -85,6 +85,7 @@ class Host {
     <star-autocomplete
       [suggestions]="results()"
       [delay]="0"
+      [loading]="busy()"
       optionLabel="name"
       optionValue="id"
       ariaLabel="Remote"
@@ -96,6 +97,7 @@ class Host {
 })
 class RemoteHost {
   readonly results = signal<readonly City[]>([]);
+  readonly busy = signal(false);
   readonly queries: string[] = [];
 }
 
@@ -156,7 +158,7 @@ describe('StarAutoComplete slots', () => {
     expect(panel.querySelector('[role="listbox"] .foot')).toBeNull();
   });
 
-  it('loading slot shows between query and suggestions', async () => {
+  it('loading slot shows while loading is true, not from typing alone', async () => {
     const fixture = TestBed.createComponent(RemoteHost);
     fixture.detectChanges();
     typeInto(fixture.nativeElement, 'star-autocomplete', 'ber');
@@ -164,8 +166,12 @@ describe('StarAutoComplete slots', () => {
     await new Promise((resolve) => setTimeout(resolve, 20));
     fixture.detectChanges();
     expect(fixture.componentInstance.queries).toEqual(['ber']);
+    expect(document.querySelector('.busy')).toBeNull();
+    fixture.componentInstance.busy.set(true);
+    fixture.detectChanges();
     expect(document.querySelector('.busy')).not.toBeNull();
     fixture.componentInstance.results.set([CITIES[0]]);
+    fixture.componentInstance.busy.set(false);
     fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();

@@ -185,7 +185,7 @@ interface OfficeCity {
         heading="Slots"
         source="autocomplete/slots"
         [script]="slotsScript"
-        note="starHeader and starFooter sit above and below the list. starEmpty gets the typed text. starGroup gets the label and the count. starLoading shows while a completeMethod query waits for its suggestions."
+        note="starHeader and starFooter sit above and below the list. starEmpty gets the typed text. starGroup gets the label and the count. starLoading shows while loading is true."
       >
         <div class="docs-stack">
           <star-autocomplete
@@ -352,7 +352,7 @@ readonly task = form(this.taskModel, (path) => {
     {
       name: 'ng-template[starLoading]',
       description:
-        'Content child. Shown while loading is on, or while a completeMethod query waits for new suggestions.',
+        'Content child. Shown while the loading input is true. Set loading while your completeMethod request runs.',
     },
     {
       name: 'ng-template[starGroup]',

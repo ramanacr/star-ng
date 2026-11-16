@@ -65,14 +65,8 @@ export abstract class StarAutoCompleteBase<TOption, TValue> extends StarOptionLi
   protected readonly known = signal<readonly TOption[]>([]);
   private readonly showAll = signal(false);
   private searchTimer: ReturnType<typeof setTimeout> | undefined;
-  /** True from the moment a query is emitted until `suggestions` next changes. */
-  private readonly searchPending = signal(false);
-  /** The loading slot, while `loading` is on or server results are pending. */
-  protected readonly loadingContent = computed(() =>
-    this.loading() || (this.searchPending() && this.suggestions() !== null)
-      ? this.loadingSlot()
-      : null,
-  );
+  /** The loading slot, only while `loading` is on. */
+  protected readonly loadingContent = computed(() => (this.loading() ? this.loadingSlot() : null));
 
   protected abstract queryFromValue(): string;
   /** Typed text. Resets to the selected label when the value changes. */
@@ -112,10 +106,6 @@ export abstract class StarAutoCompleteBase<TOption, TValue> extends StarOptionLi
   constructor() {
     super();
     inject(DestroyRef).onDestroy(() => clearTimeout(this.searchTimer));
-    effect(() => {
-      this.suggestions();
-      untracked(() => this.searchPending.set(false));
-    });
     // New results: show them from the top and highlight the first one (autoHighlight) or nothing.
     effect(() => {
       this.visibleOptions();
@@ -159,12 +149,7 @@ export abstract class StarAutoCompleteBase<TOption, TValue> extends StarOptionLi
       return;
     }
     this.openPanel();
-    this.searchTimer = setTimeout(() => this.emitSearch(text), this.delay());
-  }
-
-  private emitSearch(query: string): void {
-    this.searchPending.set(true);
-    this.completeMethod.emit({ query });
+    this.searchTimer = setTimeout(() => this.completeMethod.emit({ query: text }), this.delay());
   }
 
   protected showAllOptions(): void {
@@ -174,7 +159,7 @@ export abstract class StarAutoCompleteBase<TOption, TValue> extends StarOptionLi
       return;
     }
     this.showAll.set(true);
-    this.emitSearch('');
+    this.completeMethod.emit({ query: '' });
     this.openPanel();
     this.focus();
   }
