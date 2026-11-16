@@ -109,7 +109,7 @@ html:has(dialog.star-dialog--modal[open]) {
   height: 2.75rem;
   border-radius: 50%;
   background: var(--star-primary-soft);
-  color: var(--star-primary);
+  color: var(--star-primary-text);
   font-size: 1.25rem;
 }
 .star-confirm__message {

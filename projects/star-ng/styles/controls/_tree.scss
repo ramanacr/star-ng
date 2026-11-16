@@ -39,7 +39,7 @@
 }
 .star-tree__item--selected[aria-selected='true'] {
   background: var(--star-primary-soft);
-  color: var(--star-primary);
+  color: var(--star-primary-text);
   font-weight: 600;
 }
 .star-tree__toggle {

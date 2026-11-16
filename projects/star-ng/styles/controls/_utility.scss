@@ -106,7 +106,7 @@
 }
 .star-speed-dial .star-speed-dial__action--active {
   border-color: var(--star-primary);
-  color: var(--star-primary);
+  color: var(--star-primary-text);
 }
 .star-speed-dial__list {
   position: absolute;
@@ -189,7 +189,7 @@
   cursor: pointer;
 
   &:hover {
-    color: var(--star-primary);
+    color: var(--star-primary-text);
   }
   &:focus-visible {
     outline: 2px solid var(--star-accent);
@@ -233,7 +233,7 @@
   &:hover,
   &:focus-visible {
     scale: 1.3;
-    color: var(--star-primary);
+    color: var(--star-primary-text);
   }
   &:focus-visible {
     outline: 2px solid var(--star-accent);

@@ -195,7 +195,7 @@
   outline: 1px solid var(--star-border);
 }
 .star-listbox__option--selected {
-  color: var(--star-primary);
+  color: var(--star-primary-text);
   background: var(--star-primary-soft);
 }
 .star-select--multi .star-listbox__option--selected {
