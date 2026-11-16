@@ -12,6 +12,9 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 
 - `star-galleria`: the stage is dark in the dark theme (it was near white, so the white caption was not readable), and the round arrow buttons keep a dark icon (#57).
 - The chip remove button, the tree toggle and the breadcrumb link have a hit area of at least 24 x 24 px. The icon size does not change.
+### Fixed
+
+- `star-input-tags`, `star-autocomplete` and `star-multi-autocomplete` keep the end buttons on the first row. The chips and the input wrap inside the field.
 
 ## [0.2.1] - 2026-11-16
 
