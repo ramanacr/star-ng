@@ -6,6 +6,7 @@ import {
   booleanAttribute,
   computed,
   contentChild,
+  contentChildren,
   DestroyRef,
   Directive,
   ElementRef,
@@ -23,6 +24,9 @@ import {
   readOption,
   STAR_UI_TEXT,
   StarDirectionService,
+  StarEmptyContext,
+  StarGroupContext,
+  StarIconSlotName,
   starListKeyboardTarget,
   starListLayout,
   starListPageSize,
@@ -30,6 +34,9 @@ import {
   starListRevealRows,
   starListRowRendered,
   StarOptionKey,
+  StarSlot,
+  starSlot,
+  starSlotMap,
   StarWindowRow,
 } from '@star-ng/ui/core';
 
@@ -130,6 +137,16 @@ export abstract class StarOptionListBase<TOption, TValue> {
   readonly filterChange = output<string>();
 
   protected readonly optionTemplate = contentChild(StarOptionTemplate);
+  /** All slot directives written inside this control. The picks below filter them by host. */
+  protected readonly slots = contentChildren(StarSlot, { descendants: true });
+  protected readonly headerSlot = starSlot<object>(this.slots, this, 'header');
+  protected readonly footerSlot = starSlot<object>(this.slots, this, 'footer');
+  protected readonly emptySlot = starSlot<StarEmptyContext>(this.slots, this, 'empty');
+  protected readonly loadingSlot = starSlot<object>(this.slots, this, 'loading');
+  protected readonly groupSlot = starSlot<StarGroupContext>(this.slots, this, 'group');
+  protected readonly iconSlots = starSlotMap<object>(this.slots, this, 'icon');
+  /** The loading slot, only while `loading` is on. */
+  protected readonly loadingRow = computed(() => (this.loading() ? this.loadingSlot() : null));
   protected readonly trigger = viewChild.required<ElementRef<HTMLElement>>('trigger');
   private readonly filterInput = viewChild<ElementRef<HTMLInputElement>>('filterInput');
 
@@ -220,6 +237,29 @@ export abstract class StarOptionListBase<TOption, TValue> {
     return row.groupId !== null && starListRowRendered(row.groupRow, this.virtualWindow())
       ? row.groupId
       : null;
+  }
+
+  /** Number of visible options in each group, by group label. */
+  private readonly groupCounts = computed(() => {
+    const counts = new Map<string, number>();
+    if (!this.optionGroup()) return counts;
+    for (const option of this.visibleOptions()) {
+      const group = this.groupOf(option);
+      counts.set(group, (counts.get(group) ?? 0) + 1);
+    }
+    return counts;
+  });
+
+  protected groupContext(label: string): StarGroupContext {
+    return { $implicit: label, count: this.groupCounts().get(label) ?? 0 };
+  }
+
+  protected emptyContext(): StarEmptyContext {
+    return { $implicit: this.filterValue() };
+  }
+
+  protected iconSlot(name: StarIconSlotName): TemplateRef<object> | null {
+    return this.iconSlots().get(name) ?? null;
   }
 
   protected readonly emptyText = computed(() =>

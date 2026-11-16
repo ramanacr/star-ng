@@ -1011,6 +1011,23 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ]
   },
+  "StarChipTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starChip]",
+    "entry": "@star-ng/ui/select",
+    "description": "Replaces a chip of `star-multi-select` with `display=\"chip\"`. PrimeNG `#selecteditems` template.",
+    "inputs": [
+      {
+        "name": "starChipOf",
+        "type": "readonly T[] | null",
+        "default": "null",
+        "required": false,
+        "description": "Optional: pass the options array to type `let-option` in strict templates."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
   "StarColorPicker": {
     "kind": "component",
     "selector": "star-color-picker",
@@ -4580,6 +4597,23 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ]
   },
+  "StarSelectedTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starSelected]",
+    "entry": "@star-ng/ui/select",
+    "description": "Replaces the label in the closed trigger of `star-select` when a value is chosen. The placeholder still shows when nothing is chosen. PrimeNG `#selecteditem` template.",
+    "inputs": [
+      {
+        "name": "starSelectedOf",
+        "type": "readonly T[] | null",
+        "default": "null",
+        "required": false,
+        "description": "Optional: pass the options array to type `let-option` in strict templates."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
   "StarSkeleton": {
     "kind": "component",
     "selector": "star-skeleton",
@@ -6406,6 +6440,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "multi-select/groups": "<star-multi-select\n  [options]=\"departments\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  optionGroup=\"site\"\n  optionDisabled=\"closed\"\n  [(value)]=\"grouped\"\n  placeholder=\"Departments by site\"\n  ariaLabel=\"Departments by site\"\n/>",
   "multi-select/large": "<div class=\"docs-stack\">\n  <star-multi-select\n    [options]=\"parcels\"\n    optionLabel=\"name\"\n    optionValue=\"id\"\n    [(value)]=\"selectedParcels\"\n    placeholder=\"10,000 parcels\"\n    ariaLabel=\"Parcels\"\n    virtualScroll\n  />\n  <p class=\"docs-output\" role=\"status\">Parcels: {{ selectedParcels().length }}</p>\n</div>",
   "multi-select/limit": "<star-multi-select\n  [options]=\"departments\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  [selectionLimit]=\"2\"\n  placeholder=\"Pick up to 2\"\n  ariaLabel=\"Limited departments\"\n/>",
+  "multi-select/slots": "<star-multi-select\n  [options]=\"cities\"\n  optionLabel=\"name\"\n  optionValue=\"code\"\n  [(value)]=\"visited\"\n  display=\"chip\"\n  placeholder=\"Select cities\"\n  ariaLabel=\"Cities\"\n  filter\n>\n  <ng-template starHeader>\n    <p class=\"docs-output\">Cities with an office</p>\n  </ng-template>\n  <ng-template starEmpty let-text>No city matches {{ text }}.</ng-template>\n  <ng-template starChip [starChipOf]=\"cities\" let-item let-remove=\"remove\">\n    <span class=\"star-chip star-chip--sm\">\n      {{ item.code }}\n      <button type=\"button\" class=\"star-chip__remove\" tabindex=\"-1\" (click)=\"remove()\">\n        x\n      </button>\n    </span>\n  </ng-template>\n  <ng-template starFooter>\n    <p class=\"docs-output\">{{ cities.length }} cities</p>\n  </ng-template>\n</star-multi-select>",
   "multi-select/template": "<star-multi-select\n  [options]=\"departments\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  [(value)]=\"templated\"\n  placeholder=\"Select departments\"\n  ariaLabel=\"Departments with template\"\n>\n  <ng-template starOption [starOptionOf]=\"departments\" let-item let-selected=\"selected\">\n    <span>\n      {{ item.name }}\n      <small>{{ item.site }}</small>\n    </span>\n  </ng-template>\n</star-multi-select>",
   "order-list/basic": "<div class=\"docs-stack\">\n  <star-order-list [(value)]=\"steps\" ariaLabel=\"Release steps\" />\n  <p class=\"docs-output\" role=\"status\">Order: {{ steps().join(' > ') }}</p>\n</div>",
   "order-list/objects": "<div class=\"docs-stack\">\n  <star-order-list [(value)]=\"playlist\" optionLabel=\"name\" ariaLabel=\"Task playlist\" />\n  <p class=\"docs-output\" role=\"status\">Ids: {{ ids() }}</p>\n</div>",
@@ -6450,6 +6485,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "select/form": "<div class=\"docs-stack\">\n  <star-field label=\"Office country\" for=\"select-form-country\" [state]=\"office.country()\">\n    <star-select\n      inputId=\"select-form-country\"\n      [formField]=\"office.country\"\n      [options]=\"countries\"\n      optionLabel=\"name\"\n      optionValue=\"code\"\n      placeholder=\"Select a country\"\n      ariaLabel=\"Office country\"\n      showClear\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ office().valid() }}</p>\n</div>",
   "select/groups": "<star-select\n  [options]=\"countries\"\n  optionLabel=\"name\"\n  optionValue=\"code\"\n  optionGroup=\"region\"\n  [(value)]=\"grouped\"\n  placeholder=\"Grouped by region\"\n  ariaLabel=\"Country by region\"\n/>",
   "select/large": "<div class=\"docs-stack\">\n  <star-select\n    [options]=\"shipments\"\n    optionLabel=\"name\"\n    optionValue=\"id\"\n    optionGroup=\"region\"\n    [(value)]=\"shipment\"\n    placeholder=\"10,000 shipments\"\n    ariaLabel=\"Shipment\"\n    virtualScroll\n    filter\n  />\n  <p class=\"docs-output\" role=\"status\">Shipment: {{ shipment() ?? 'none' }}</p>\n</div>",
+  "select/slots": "<star-select\n  [options]=\"cities\"\n  optionLabel=\"name\"\n  optionValue=\"code\"\n  optionGroup=\"country\"\n  [(value)]=\"city\"\n  placeholder=\"Select a city\"\n  ariaLabel=\"City\"\n  filter\n  showClear\n>\n  <ng-template starHeader>\n    <p class=\"docs-output\">Cities with an office</p>\n  </ng-template>\n  <ng-template starGroup let-country let-count=\"count\">\n    {{ country }} ({{ count }})\n  </ng-template>\n  <ng-template starEmpty let-text>No city matches {{ text }}.</ng-template>\n  <ng-template starSelected [starSelectedOf]=\"cities\" let-item>\n    {{ item.code }} · {{ item.name }}\n  </ng-template>\n  <ng-template starFooter>\n    <p class=\"docs-output\">{{ cities.length }} cities</p>\n  </ng-template>\n</star-select>",
   "select/states": "<div class=\"docs-stack\">\n  <star-select [options]=\"regions\" size=\"sm\" placeholder=\"Small\" ariaLabel=\"Small select\" />\n  <star-select [options]=\"regions\" disabled placeholder=\"Disabled\" ariaLabel=\"Disabled\" />\n  <star-select [options]=\"regions\" [value]=\"'EMEA'\" readonly ariaLabel=\"Read-only\" />\n  <star-select [options]=\"[]\" loading placeholder=\"Loading options\" ariaLabel=\"Loading\" />\n</div>",
   "select/template": "<star-select\n  [options]=\"countries\"\n  optionLabel=\"name\"\n  optionValue=\"code\"\n  [(value)]=\"templated\"\n  placeholder=\"Select a country\"\n  ariaLabel=\"Country with template\"\n>\n  <ng-template starOption [starOptionOf]=\"countries\" let-item>\n    <span>\n      {{ item.name }}\n      <small>{{ item.region }}</small>\n    </span>\n  </ng-template>\n</star-select>",
   "select/virtual": "<star-select\n  [options]=\"orders\"\n  [(value)]=\"order\"\n  placeholder=\"5,000 orders\"\n  ariaLabel=\"Order\"\n  virtualScroll\n  filter\n/>",

@@ -1,8 +1,17 @@
 import { CdkConnectedOverlay, CdkOverlayOrigin } from '@angular/cdk/overlay';
 import { NgTemplateOutlet } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, input, model } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  forwardRef,
+  input,
+  model,
+} from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
+import { STAR_SLOT_HOST, starSlot } from '@star-ng/ui/core';
 import { StarOptionListBase } from './option-list-base';
+import { StarChipContext } from './select-slots';
 
 /**
  * Multiple-choice dropdown (PrimeNG `p-multiselect`): checkbox list, "select all", filter,
@@ -15,6 +24,7 @@ import { StarOptionListBase } from './option-list-base';
   selector: 'star-multi-select',
   imports: [CdkConnectedOverlay, CdkOverlayOrigin, NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarMultiSelect) }],
   host: {
     class: 'star-select star-select--multi',
     '[class.star-select--open]': 'open()',
@@ -53,20 +63,28 @@ import { StarOptionListBase } from './option-list-base';
         } @else if (display() === 'chip') {
           <span class="star-select__chips">
             @for (option of selectedOptions(); track $index) {
-              <span class="star-chip star-chip--sm">
-                {{ labelOf(option) }}
-                @if (interactive()) {
-                  <button
-                    type="button"
-                    class="star-chip__remove"
-                    tabindex="-1"
-                    [attr.aria-label]="text.removeItem(labelOf(option))"
-                    (click)="$event.stopPropagation(); remove(option)"
-                  >
-                    <i class="ph-bold ph-x" aria-hidden="true"></i>
-                  </button>
-                }
-              </span>
+              @if (chipSlot(); as custom) {
+                <!-- The slot owns its buttons: a click on one must not toggle the panel. -->
+                <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
+                <span (click)="onChipSlotClick($event)">
+                  <ng-container *ngTemplateOutlet="custom; context: chipContext(option)" />
+                </span>
+              } @else {
+                <span class="star-chip star-chip--sm">
+                  {{ labelOf(option) }}
+                  @if (interactive()) {
+                    <button
+                      type="button"
+                      class="star-chip__remove"
+                      tabindex="-1"
+                      [attr.aria-label]="text.removeItem(labelOf(option))"
+                      (click)="$event.stopPropagation(); remove(option)"
+                    >
+                      <i class="ph-bold ph-x" aria-hidden="true"></i>
+                    </button>
+                  }
+                </span>
+              }
             }
           </span>
         } @else {
@@ -80,7 +98,11 @@ import { StarOptionListBase } from './option-list-base';
           [attr.aria-label]="text.clear"
           (click)="clear()"
         >
-          <i class="ph-bold ph-x" aria-hidden="true"></i>
+          @if (iconSlot('clear'); as icon) {
+            <ng-container *ngTemplateOutlet="icon" />
+          } @else {
+            <i class="ph-bold ph-x" aria-hidden="true"></i>
+          }
         </button>
       }
       @if (loading()) {
@@ -90,7 +112,11 @@ import { StarOptionListBase } from './option-list-base';
           [attr.aria-label]="text.loading"
         ></i>
       } @else {
-        <i class="ph-bold ph-caret-down star-select__caret" aria-hidden="true"></i>
+        @if (iconSlot('dropdown'); as icon) {
+          <ng-container *ngTemplateOutlet="icon" />
+        } @else {
+          <i class="ph-bold ph-caret-down star-select__caret" aria-hidden="true"></i>
+        }
       }
     </div>
 
@@ -106,6 +132,9 @@ import { StarOptionListBase } from './option-list-base';
       (overlayOutsideClick)="onOutsideClick($event)"
     >
       <div class="star-panel" (mousedown)="onPanelMousedown($event)">
+        @if (headerSlot(); as header) {
+          <ng-container *ngTemplateOutlet="header" />
+        }
         @if (showToggleAll() || filter()) {
           <div class="star-panel__filter">
             @if (showToggleAll() && !selectionLimit()) {
@@ -128,7 +157,11 @@ import { StarOptionListBase } from './option-list-base';
               </button>
             }
             @if (filter()) {
-              <i class="ph-bold ph-magnifying-glass" aria-hidden="true"></i>
+              @if (iconSlot('filter'); as icon) {
+                <ng-container *ngTemplateOutlet="icon" />
+              } @else {
+                <i class="ph-bold ph-magnifying-glass" aria-hidden="true"></i>
+              }
               <input
                 #filterInput
                 type="text"
@@ -160,6 +193,11 @@ import { StarOptionListBase } from './option-list-base';
           [attr.aria-labelledby]="ariaLabelledBy()"
           (scroll)="onListScroll($event)"
         >
+          @if (loadingRow(); as loader) {
+            <li class="star-listbox__empty" role="presentation">
+              <ng-container *ngTemplateOutlet="loader" />
+            </li>
+          }
           @if (virtualWindow().before) {
             <li
               class="star-listbox__spacer"
@@ -169,7 +207,13 @@ import { StarOptionListBase } from './option-list-base';
           }
           @for (row of renderedRows(); track row.key) {
             @if (row.kind === 'group') {
-              <li class="star-listbox__group" role="presentation" [id]="row.id">{{ row.label }}</li>
+              <li class="star-listbox__group" role="presentation" [id]="row.id">
+                @if (groupSlot(); as custom) {
+                  <ng-container *ngTemplateOutlet="custom; context: groupContext(row.label)" />
+                } @else {
+                  {{ row.label }}
+                }
+              </li>
             } @else {
               @let option = row.option;
               @let i = row.index;
@@ -191,7 +235,11 @@ import { StarOptionListBase } from './option-list-base';
               >
                 <span class="star-check__box" aria-hidden="true">
                   @if (isSelected(option)) {
-                    <i class="ph-bold ph-check"></i>
+                    @if (iconSlot('check'); as icon) {
+                      <ng-container *ngTemplateOutlet="icon" />
+                    } @else {
+                      <i class="ph-bold ph-check"></i>
+                    }
                   }
                 </span>
                 <span class="star-listbox__label">
@@ -206,7 +254,15 @@ import { StarOptionListBase } from './option-list-base';
               </li>
             }
           } @empty {
-            <li class="star-listbox__empty" role="presentation">{{ emptyText() }}</li>
+            @if (!loadingRow()) {
+              <li class="star-listbox__empty" role="presentation">
+                @if (emptySlot(); as custom) {
+                  <ng-container *ngTemplateOutlet="custom; context: emptyContext()" />
+                } @else {
+                  {{ emptyText() }}
+                }
+              </li>
+            }
           }
           @if (virtualWindow().after) {
             <li
@@ -216,6 +272,9 @@ import { StarOptionListBase } from './option-list-base';
             ></li>
           }
         </ul>
+        @if (footerSlot(); as footer) {
+          <ng-container *ngTemplateOutlet="footer" />
+        }
       </div>
     </ng-template>
   `,
@@ -234,6 +293,17 @@ export class StarMultiSelect<TOption = unknown, TValue = TOption>
   readonly showToggleAll = input(true);
 
   protected readonly closeOnChoose = false;
+
+  protected readonly chipSlot = starSlot<StarChipContext<TOption>>(this.slots, this, 'chip');
+
+  protected chipContext(option: TOption): StarChipContext<TOption> {
+    return { $implicit: option, remove: () => this.remove(option) };
+  }
+
+  /** A click on a button or link inside a chip slot must not toggle the panel. */
+  protected onChipSlotClick(event: MouseEvent): void {
+    if ((event.target as Element).closest('button, a, [role=button]')) event.stopPropagation();
+  }
 
   protected readonly selectedOptions = computed(() =>
     this.options().filter((option) => this.isSelected(option)),
