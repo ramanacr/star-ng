@@ -213,48 +213,50 @@ export abstract class StarAutoCompleteBase<TOption, TValue> extends StarOptionLi
 
 const TEMPLATE = `
   <div #control class="star-select__control star-ac__control" cdkOverlayOrigin #origin="cdkOverlayOrigin">
-    @if (isMultiple) {
-      @for (chip of chips(); track $index) {
-        <span class="star-chip star-chip--sm">
-          {{ chip.label }}
-          @if (interactive()) {
-            <button
-              type="button"
-              class="star-chip__remove"
-              tabindex="-1"
-              [attr.aria-label]="text.removeItem(chip.label)"
-              (click)="removeValue(chip.value)"
-            >
-              <i class="ph-bold ph-x" aria-hidden="true"></i>
-            </button>
-          }
-        </span>
+    <div class="star-ac__main">
+      @if (isMultiple) {
+        @for (chip of chips(); track $index) {
+          <span class="star-chip star-chip--sm">
+            {{ chip.label }}
+            @if (interactive()) {
+              <button
+                type="button"
+                class="star-chip__remove"
+                tabindex="-1"
+                [attr.aria-label]="text.removeItem(chip.label)"
+                (click)="removeValue(chip.value)"
+              >
+                <i class="ph-bold ph-x" aria-hidden="true"></i>
+              </button>
+            }
+          </span>
+        }
       }
-    }
-    <input
-      #trigger
-      type="text"
-      class="star-ac__input"
-      role="combobox"
-      aria-autocomplete="list"
-      autocomplete="off"
-      [id]="inputId()"
-      [attr.name]="name() || null"
-      [value]="query()"
-      [attr.placeholder]="placeholder()"
-      [disabled]="disabled()"
-      [readOnly]="readonly()"
-      [attr.aria-label]="ariaLabel()"
-      [attr.aria-labelledby]="ariaLabelledBy()"
-      [attr.aria-required]="required() || null"
-      [attr.aria-invalid]="showInvalid() || null"
-      [attr.aria-expanded]="panelVisible()"
-      [attr.aria-controls]="panelVisible() ? listId : null"
-      [attr.aria-activedescendant]="panelVisible() ? activeId() : null"
-      (input)="onQuery(trigger.value)"
-      (keydown)="onKeydown($event)"
-      (blur)="onInputBlur()"
-    />
+      <input
+        #trigger
+        type="text"
+        class="star-ac__input"
+        role="combobox"
+        aria-autocomplete="list"
+        autocomplete="off"
+        [id]="inputId()"
+        [attr.name]="name() || null"
+        [value]="query()"
+        [attr.placeholder]="placeholder()"
+        [disabled]="disabled()"
+        [readOnly]="readonly()"
+        [attr.aria-label]="ariaLabel()"
+        [attr.aria-labelledby]="ariaLabelledBy()"
+        [attr.aria-required]="required() || null"
+        [attr.aria-invalid]="showInvalid() || null"
+        [attr.aria-expanded]="panelVisible()"
+        [attr.aria-controls]="panelVisible() ? listId : null"
+        [attr.aria-activedescendant]="panelVisible() ? activeId() : null"
+        (input)="onQuery(trigger.value)"
+        (keydown)="onKeydown($event)"
+        (blur)="onInputBlur()"
+      />
+    </div>
     @if (loading()) {
       <i class="ph-bold ph-spinner-gap star-spin star-select__caret" aria-hidden="true"></i>
     }

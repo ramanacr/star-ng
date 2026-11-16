@@ -39,48 +39,50 @@ export type StarTagRejection = 'invalid' | 'duplicate' | 'limit';
     <!-- Pointer convenience only: keyboard users reach the input directly. -->
     <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
     <div class="star-select__control star-ac__control star-tags__control" (click)="focus()">
-      <ul
-        class="star-tags__list"
-        [attr.aria-label]="ariaLabel()"
-        [attr.aria-disabled]="disabled() || null"
-      >
-        @for (tag of value(); track tag; let i = $index) {
-          <li class="star-chip star-chip--sm">
-            {{ tag }}
-            @if (!disabled() && !readonly()) {
-              <button
-                type="button"
-                class="star-chip__remove"
-                tabindex="-1"
-                [attr.aria-label]="text.removeItem(tag)"
-                (click)="$event.stopPropagation(); removeAt(i)"
-              >
-                <i class="ph-bold ph-x" aria-hidden="true"></i>
-              </button>
-            }
-          </li>
-        }
-      </ul>
-      <input
-        #input
-        type="text"
-        class="star-ac__input"
-        autocomplete="off"
-        [id]="inputId()"
-        [attr.name]="name() || null"
-        [value]="draft()"
-        [attr.placeholder]="atLimit() ? null : placeholder()"
-        [attr.maxlength]="maxLength() ?? null"
-        [disabled]="disabled()"
-        [readOnly]="readonly() || atLimit()"
-        [attr.aria-label]="ariaLabel()"
-        [attr.aria-describedby]="describedBy()"
-        [attr.aria-invalid]="(invalid() && touched()) || !!rejection() || null"
-        (input)="onInput(input)"
-        (keydown)="onKeydown($event)"
-        (paste)="onPaste($event)"
-        (blur)="onBlur()"
-      />
+      <div class="star-ac__main">
+        <ul
+          class="star-tags__list"
+          [attr.aria-label]="ariaLabel()"
+          [attr.aria-disabled]="disabled() || null"
+        >
+          @for (tag of value(); track tag; let i = $index) {
+            <li class="star-chip star-chip--sm">
+              {{ tag }}
+              @if (!disabled() && !readonly()) {
+                <button
+                  type="button"
+                  class="star-chip__remove"
+                  tabindex="-1"
+                  [attr.aria-label]="text.removeItem(tag)"
+                  (click)="$event.stopPropagation(); removeAt(i)"
+                >
+                  <i class="ph-bold ph-x" aria-hidden="true"></i>
+                </button>
+              }
+            </li>
+          }
+        </ul>
+        <input
+          #input
+          type="text"
+          class="star-ac__input"
+          autocomplete="off"
+          [id]="inputId()"
+          [attr.name]="name() || null"
+          [value]="draft()"
+          [attr.placeholder]="atLimit() ? null : placeholder()"
+          [attr.maxlength]="maxLength() ?? null"
+          [disabled]="disabled()"
+          [readOnly]="readonly() || atLimit()"
+          [attr.aria-label]="ariaLabel()"
+          [attr.aria-describedby]="describedBy()"
+          [attr.aria-invalid]="(invalid() && touched()) || !!rejection() || null"
+          (input)="onInput(input)"
+          (keydown)="onKeydown($event)"
+          (paste)="onPaste($event)"
+          (blur)="onBlur()"
+        />
+      </div>
       @if (showClear() && value().length && !disabled() && !readonly()) {
         <button
           type="button"
