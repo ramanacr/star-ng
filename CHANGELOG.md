@@ -11,6 +11,10 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - `StarTimeField` has the optional properties `min` and `max`.
 - The UI text entries `colorArea`, `colorAreaValue`, `hue` and `hueValue`, with German and Spanish texts.
 
+### Changed
+
+- `StarColorPicker`: the default swatches come from the theme (#59). After the first render, the control reads `--star-primary`, `--star-accent`, `--star-success`, `--star-warning`, `--star-danger`, `--star-info` and `--star-chart-1` to `--star-chart-12` (the tokens that exist) on its own element, as `#rrggbb`. It reads them once and does not follow a later theme change. The fixed list stays as the default on the server and when no token gives a color. An explicit `[swatches]` list always wins. The default `value` does not change.
+
 ### Fixed
 
 - The selected day of `star-calendar` and `star-date-picker` uses `--star-primary-fill` for its background, like the buttons do, so the white text on it can reach 4.5:1 in a theme that sets a darker fill.
