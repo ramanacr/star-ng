@@ -32,6 +32,13 @@ const names = (prefix: string, items: readonly string[]) => items.map((item) => 
           text on your primary color is under 4.5:1, set a darker <code>--star-primary-fill</code>.
         </li>
         <li>
+          Primary text and icons on a surface or a soft tint (active tab, selected option, links on
+          hover) use <code>--star-primary-text</code>. It defaults to <code>--star-primary</code>.
+          If your primary color is too light for text on surfaces, set a darker
+          <code>--star-primary-text</code>. A theme with a light primary color can set both
+          <code>--star-primary-text</code> and <code>--star-primary-fill</code>.
+        </li>
+        <li>
           Success and warning are bright fills. Their text is <code>--star-on-bright</code>
           (dark in both themes).
         </li>
@@ -145,6 +152,11 @@ export class ThemingGuide {
     {
       name: '--star-primary, -hover, -soft',
       description: 'Main action color: primary button, checked boxes, selected items.',
+    },
+    {
+      name: '--star-primary-fill, --star-primary-text',
+      description:
+        'Primary color as a fill under white text (default: --star-primary) and as the color of text and icons on a surface (default: --star-primary).',
     },
     {
       name: '--star-accent, -soft',

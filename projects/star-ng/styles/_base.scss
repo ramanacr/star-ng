@@ -10,11 +10,15 @@
   // Fill of a control that carries text on the primary color. A product whose primary color
   // gives white text under 4.5:1 can set a darker fill here without changing `--star-primary`.
   --star-primary-fill: var(--star-primary);
+  // Color of text and icons that use the primary color on a surface or a soft tint. A theme
+  // whose primary color is too light for text can set a darker color here.
+  --star-primary-text: var(--star-primary);
 }
 [data-theme='dark'] {
   --star-on-tone: var(--star-surface);
   --star-on-bright: var(--star-surface);
   --star-primary-fill: var(--star-primary);
+  --star-primary-text: var(--star-primary);
 }
 
 // A table ignores `width: 1px` and table rules can set a width; as a 1px block it does not

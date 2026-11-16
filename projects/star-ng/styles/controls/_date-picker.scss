@@ -75,7 +75,7 @@
 
   .star-date--open & {
     background: var(--star-primary-soft);
-    color: var(--star-primary);
+    color: var(--star-primary-text);
   }
 }
 .star-date__panel {
@@ -255,13 +255,13 @@
 }
 .star-calendar__day--today {
   border-color: var(--star-primary);
-  color: var(--star-primary);
+  color: var(--star-primary-text);
   font-weight: 600;
 }
 .star-calendar__day--selected,
 .star-calendar__day--selected:hover:not([aria-disabled='true']) {
-  background: var(--star-primary);
-  border-color: var(--star-primary);
+  background: var(--star-primary-fill);
+  border-color: var(--star-primary-fill);
   color: var(--star-on-tone);
 }
 .star-calendar__picker {
