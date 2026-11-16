@@ -16,7 +16,7 @@ import { StarToast } from '@star-ng/ui/toast';
 import { DOCS_NAV, DocsNavGroup } from './nav';
 
 /** `localStorage` key of the saved text direction of the docs application. */
-const DIRECTION_KEY = 'star-direction';
+export const DIRECTION_KEY = 'star-direction';
 
 /** Shell of the docs application: header, grouped side navigation with search, page outlet. */
 @Component({

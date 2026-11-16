@@ -122,6 +122,12 @@
           },
           "defaultConfiguration": "development"
         },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "projects/docs/tsconfig.spec.json"
+          }
+        },
         "lint": {
           "builder": "@angular-eslint/builder:lint",
           "options": {
