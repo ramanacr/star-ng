@@ -53,7 +53,7 @@
   align-items: center;
   gap: 0.5rem;
 }
-.star-paginator__select {
-  width: auto;
-  appearance: base-select;
+// The rows-per-page select holds a short number: narrower than a form select (12rem).
+.star-select.star-paginator__select {
+  min-width: 5rem;
 }

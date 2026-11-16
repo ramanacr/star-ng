@@ -1015,7 +1015,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-color-picker",
     "entry": "@star-ng/ui/knob",
-    "description": "Color picker (PrimeNG `p-colorpicker`): preset swatches, the native color dialog and a hex field. Value: `#rrggbb`. `<star-color-picker [(value)]=\"tagColor\" ariaLabel=\"Tag color\" />`",
+    "description": "Color picker (PrimeNG `p-colorpicker`): preset swatches, a custom color panel and a hex field. Value: `#rrggbb`.",
     "inputs": [
       {
         "name": "swatches",
@@ -1372,7 +1372,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "number",
         "default": "1",
         "required": false,
-        "description": "Minute step of the time field."
+        "description": "Minute step of the time columns."
       },
       {
         "name": "view",
@@ -1412,14 +1412,14 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "boolean",
         "default": "false",
         "required": false,
-        "description": "Adds a time of day to both ends. A new start is at 00:00 and a new end at 23:59; the popup has a start and an end time field and stays open until the user chooses Done."
+        "description": "Adds a time of day to both ends. A new start is at 00:00 and a new end at 23:59; the popup has start and end time columns and stays open until the user chooses Done."
       },
       {
         "name": "stepMinute",
         "type": "number",
         "default": "1",
         "required": false,
-        "description": "Minute step of the time fields."
+        "description": "Minute step of the time columns."
       }
     ],
     "models": [
@@ -3657,7 +3657,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-paginator",
     "entry": "@star-ng/ui/paginator",
-    "description": "Paginator (PrimeNG `p-paginator`): `[(first)]` / `[(rows)]`, page links window, first / last buttons, rows-per-page select and a \"1–10 of 240\" report.",
+    "description": "Paginator (PrimeNG `p-paginator`): `[(first)]` / `[(rows)]`, page links window, first / last buttons, a rows-per-page `star-select` and a \"1–10 of 240\" report.",
     "inputs": [
       {
         "name": "totalRecords",
@@ -5452,6 +5452,59 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "description": "Theme switch: a small speed dial with System, Light and Dark. The button shows the icon of the current choice; `StarThemeService` applies and remembers it. The texts come from `STAR_UI_TEXT` (`theme`, `themeSystem`, `themeLight`, `themeDark`).",
     "inputs": [],
     "models": [],
+    "outputs": []
+  },
+  "StarTimeColumns": {
+    "kind": "component",
+    "selector": "star-time-columns",
+    "entry": "@star-ng/ui/date-picker",
+    "description": "The hour, minute and (in the 12-hour clock) am / pm columns of a time panel. `star-time-picker` shows them in its panel, and the date pickers show them under the calendar with `showTime`. The value is 24-hour `HH:mm` text, or `null`. Times outside `min` … `max` are disabled, and the minutes follow `stepMinute`. Each column is a listbox: Arrow up / down, Home and End move in a column, Arrow left / right move to the column that is on that side.",
+    "inputs": [
+      {
+        "name": "min",
+        "type": "string | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "Earliest and latest time, `HH:mm`."
+      },
+      {
+        "name": "max",
+        "type": "string | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "stepMinute",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Minutes of the minute column: 0, then every `stepMinute` minutes."
+      },
+      {
+        "name": "hourFormat",
+        "type": "'12' | '24' | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "Clock of the columns: `'24'` (an hour column 00–23) or `'12'` (1–12 and an am / pm column). Default: the clock of the browser locale. The value is always 24-hour text."
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Every cell is disabled, for example while a date picker has no date."
+      }
+    ],
+    "models": [
+      {
+        "name": "value",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "`HH:mm` in the 24-hour clock, or `null`."
+      }
+    ],
     "outputs": []
   },
   "StarTimeline": {

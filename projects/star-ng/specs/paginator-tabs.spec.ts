@@ -40,9 +40,18 @@ describe('StarPaginator', () => {
     expect(fixture.componentInstance.first()).toBe(90);
     expect(el.querySelector('.star-paginator__report')?.textContent).toContain('91–95 of 95');
     expect(el.querySelector<HTMLButtonElement>('[aria-label="Next page"]')!.disabled).toBe(true);
-    const select = el.querySelector<HTMLSelectElement>('select')!;
-    select.value = '25';
-    select.dispatchEvent(new Event('change'));
+    // Rows per page is a StarNG select (no native popup), labelled by the visible text.
+    expect(el.querySelector('select')).toBeNull();
+    const rows = el.querySelector<HTMLElement>('star-select [role=combobox]')!;
+    const label = document.getElementById(rows.getAttribute('aria-labelledby')!);
+    expect(label?.textContent).toBe('Rows per page');
+    expect(rows.textContent?.trim()).toBe('10');
+    expect(el.querySelector('star-select')!.classList).toContain('star-select--sm');
+    rows.click();
+    await fixture.whenStable();
+    const options = [...document.querySelectorAll<HTMLElement>('[role=option]')];
+    expect(options.map((option) => option.textContent?.trim())).toEqual(['10', '25', '50']);
+    options[1].click();
     await fixture.whenStable();
     expect(fixture.componentInstance.rows()).toBe(25);
     expect(fixture.componentInstance.first()).toBe(75);
