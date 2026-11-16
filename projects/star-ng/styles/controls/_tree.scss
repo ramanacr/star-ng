@@ -50,11 +50,24 @@
   border-radius: 4px;
   color: var(--star-text-muted);
 
-  // Target of at least 24 x 24 px (WCAG 2.5.8). The negative margin keeps the row layout. The
-  // icon keeps its size.
-  min-width: 1.5rem;
-  min-height: 1.5rem;
-  margin: -0.125rem;
+  // Hit area of at least 24 x 24 px (WCAG 2.5.8) around the smaller toggle. A pseudo-element adds
+  // no layout size, so the row height stays the same. The icon stays above the hit area.
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100%, 1.5rem);
+    height: max(100%, 1.5rem);
+    translate: -50% -50%;
+    z-index: 0;
+  }
+  > * {
+    position: relative;
+    z-index: 1;
+  }
 
   i {
     transition: rotate var(--star-duration-fast) ease;

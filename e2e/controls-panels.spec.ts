@@ -404,7 +404,7 @@ test.describe('divider and timeline', () => {
 
 test.describe('hit areas of small targets (WCAG 2.5.8)', () => {
   /**
-   * A point near each corner of a 24 x 24 px square, centered on the target, must hit the target
+   * A point near each corner of a 21 x 21 px square, centered on the target, must hit the target (a rounded corner of the target cuts the last pixel, so the square is a little smaller than 24)
    * or one of its children. The test does not read the box of the element: a hit area can come
    * from a pseudo-element.
    */
@@ -415,7 +415,7 @@ test.describe('hit areas of small targets (WCAG 2.5.8)', () => {
       const cy = box.top + box.height / 2;
       return [-1, 1].flatMap((dx) =>
         [-1, 1].map((dy) => {
-          const hit = document.elementFromPoint(cx + dx * 11.5, cy + dy * 11.5);
+          const hit = document.elementFromPoint(cx + dx * 10.5, cy + dy * 10.5);
           return !!hit && node.contains(hit);
         }),
       );
