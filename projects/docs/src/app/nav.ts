@@ -435,6 +435,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         load: () => import('./controls/skeleton.page').then((m) => m.SkeletonPage),
       },
       {
+        label: 'List',
+        path: 'controls/list',
+        keywords: 'list item nav list action list subheader avatar divider dense',
+        load: () => import('./controls/list.page').then((m) => m.ListPage),
+      },
+      {
         label: 'Virtual scroller',
         path: 'controls/virtual-scroller',
         keywords: 'virtual scroll windowing large list lazy load infinite performance',

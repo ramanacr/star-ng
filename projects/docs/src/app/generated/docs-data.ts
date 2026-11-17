@@ -3040,6 +3040,44 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ]
   },
+  "StarList": {
+    "kind": "component",
+    "selector": "star-list",
+    "entry": "@star-ng/ui/list",
+    "description": "List (Material `mat-list` / `mat-nav-list` / `mat-action-list`, Ignite `igx-list`): a list of items with an optional avatar or icon, a title, a subtitle and meta text or actions.",
+    "inputs": [
+      {
+        "name": "mode",
+        "type": "StarListMode",
+        "default": "'plain'",
+        "required": false,
+        "description": "How the items behave: plain text, links or buttons."
+      },
+      {
+        "name": "dense",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Smaller item height and padding."
+      },
+      {
+        "name": "divider",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "A line between the items."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Accessible name of the list."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
   "StarListbox": {
     "kind": "component",
     "selector": "star-listbox",
@@ -3163,6 +3201,75 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       }
     ]
+  },
+  "StarListItem": {
+    "kind": "component",
+    "selector": "star-list-item",
+    "entry": "@star-ng/ui/list",
+    "description": "One item of `star-list` (Material `mat-list-item`, Ignite `igx-list-item`). The host is the `listitem`. Areas: `[starListItemStart]` (avatar or icon), the default content (title), `[starListItemSubtitle]` and `[starListItemEnd]` (meta text or actions).",
+    "inputs": [
+      {
+        "name": "href",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Link address. The item becomes a link."
+      },
+      {
+        "name": "routerLink",
+        "type": "string | readonly unknown[] | null",
+        "default": "null",
+        "required": false,
+        "description": "Router link. The item becomes a link with `aria-current=\"page\"` while its route is active."
+      },
+      {
+        "name": "target",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Target of the link, for example `_blank`."
+      },
+      {
+        "name": "exact",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "With `routerLink`: the item is active only on an exact URL match."
+      },
+      {
+        "name": "active",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Marks the current item (`aria-current`) for `href` and button items. Router links set it themselves."
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "A disabled item is not a link or button, and the arrow keys skip it."
+      }
+    ],
+    "models": [],
+    "outputs": [
+      {
+        "name": "activated",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "Emits when the link or button of the item is activated (click, Enter, Space on a button)."
+      }
+    ]
+  },
+  "StarListSubheader": {
+    "kind": "component",
+    "selector": "star-list-subheader",
+    "entry": "@star-ng/ui/list",
+    "description": "Optional heading line between the items of `star-list`. Material `mat-subheader`.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
   },
   "StarLoadingTemplate": {
     "kind": "directive",
@@ -6679,6 +6786,10 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "knob/basic": "<star-knob [(value)]=\"progress\" valueTemplate=\"{value}%\" ariaLabel=\"Progress\" />\n<p class=\"docs-output\" role=\"status\">Value: {{ progress() }}</p>",
   "knob/range": "<star-knob\n  [(value)]=\"temperature\"\n  [min]=\"10\"\n  [max]=\"30\"\n  [step]=\"0.5\"\n  [size]=\"160\"\n  valueTemplate=\"{value}°\"\n  ariaLabel=\"Temperature\"\n/>",
   "knob/states": "<star-knob [value]=\"72\" readonly [size]=\"90\" ariaLabel=\"Disk use\" />\n<star-knob [value]=\"35\" disabled [size]=\"90\" ariaLabel=\"Locked value\" />",
+  "list/action": "<div class=\"docs-stack\">\n  <star-list mode=\"action\" dense ariaLabel=\"Projects\">\n    @for (project of projects; track project.id) {\n      <star-list-item\n        [active]=\"opened() === project.id\"\n        (activated)=\"opened.set(project.id)\"\n      >\n        {{ project.name }}\n        <span starListItemEnd>{{ project.tasks }} tasks</span>\n      </star-list-item>\n    }\n    <star-list-item disabled>\n      Archive\n      <span starListItemEnd>Read only</span>\n    </star-list-item>\n  </star-list>\n  <p class=\"docs-output\" role=\"status\">Opened: {{ opened() ?? 'none' }}</p>\n</div>",
+  "list/basic": "<star-list ariaLabel=\"Warehouses\" divider>\n  <star-list-subheader>Portugal</star-list-subheader>\n  <star-list-item>\n    <i starListItemStart class=\"ph ph-warehouse\" aria-hidden=\"true\"></i>\n    Lisbon\n    <span starListItemSubtitle>Main warehouse</span>\n    <span starListItemEnd>1,240 orders</span>\n  </star-list-item>\n  <star-list-item>\n    <i starListItemStart class=\"ph ph-warehouse\" aria-hidden=\"true\"></i>\n    Porto\n    <span starListItemSubtitle>Returns</span>\n    <span starListItemEnd>310 orders</span>\n  </star-list-item>\n  <star-list-subheader>Spain</star-list-subheader>\n  <star-list-item>\n    <i starListItemStart class=\"ph ph-warehouse\" aria-hidden=\"true\"></i>\n    Valencia\n    <span starListItemSubtitle>Cross-dock</span>\n    <star-tag starListItemEnd severity=\"success\" value=\"Open\" />\n  </star-list-item>\n</star-list>",
+  "list/empty": "<star-list ariaLabel=\"Recent orders\">\n  <ng-template starEmpty>No recent orders.</ng-template>\n</star-list>",
+  "list/navigation": "<star-list mode=\"navigation\" ariaLabel=\"Documentation\">\n  <star-list-item routerLink=\"/controls/list\">\n    <i starListItemStart class=\"ph ph-list-bullets\" aria-hidden=\"true\"></i>\n    List\n    <span starListItemSubtitle>This page</span>\n  </star-list-item>\n  <star-list-item routerLink=\"/controls/listbox\">\n    <i starListItemStart class=\"ph ph-check-square\" aria-hidden=\"true\"></i>\n    Listbox\n    <span starListItemSubtitle>For selection</span>\n  </star-list-item>\n  <star-list-item routerLink=\"/controls/virtual-scroller\">\n    <i starListItemStart class=\"ph ph-rows\" aria-hidden=\"true\"></i>\n    Virtual scroller\n    <span starListItemSubtitle>For thousands of items</span>\n  </star-list-item>\n</star-list>",
   "listbox/disabled": "<star-listbox\n  [options]=\"queues\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  [value]=\"'intake'\"\n  disabled\n  scrollHeight=\"8rem\"\n  ariaLabel=\"Disabled queue\"\n/>",
   "listbox/form": "<div class=\"docs-stack\">\n  <star-field label=\"Notify queues\" [state]=\"alert.queues()\">\n    <star-listbox\n      [formField]=\"alert.queues\"\n      [options]=\"queues\"\n      optionLabel=\"name\"\n      optionValue=\"id\"\n      multiple\n      scrollHeight=\"10rem\"\n      ariaLabel=\"Notify queues\"\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ alert().valid() }}</p>\n</div>",
   "listbox/groups": "<star-listbox\n  [options]=\"queues\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  optionGroup=\"site\"\n  optionDisabled=\"closed\"\n  [(value)]=\"grouped\"\n  scrollHeight=\"14rem\"\n  ariaLabel=\"Queue by site\"\n/>",

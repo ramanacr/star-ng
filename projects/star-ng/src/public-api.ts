@@ -27,6 +27,7 @@ export * from '@star-ng/ui/input-otp';
 export * from '@star-ng/ui/input-tags';
 export * from '@star-ng/ui/knob';
 export * from '@star-ng/ui/layout';
+export * from '@star-ng/ui/list';
 export * from '@star-ng/ui/listbox';
 export * from '@star-ng/ui/media';
 export * from '@star-ng/ui/menu';
