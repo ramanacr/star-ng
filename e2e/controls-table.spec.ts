@@ -1169,3 +1169,42 @@ test.describe('table: pages', () => {
     await expect(nav.getByRole('link')).toHaveText(['Table export']);
   });
 });
+
+test.describe('table: width', () => {
+  test.use({ viewport: { width: 1280, height: 900 } });
+
+  // A table fills the live area of its example (the area inside the padding of the card). A
+  // narrow wrapper in the docs (a width cap on a stack) made it about 415 px wide.
+  for (const [path, heading] of [
+    ['/controls/table', 'Table'],
+    ['/controls/table-sort-filter', 'Table sorting and filtering'],
+    ['/controls/table-paging', 'Table paging'],
+    ['/controls/table-selection', 'Table selection'],
+    ['/controls/table-edit', 'Table editing'],
+    ['/controls/table-columns', 'Table columns'],
+    ['/controls/table-layout', 'Table layout'],
+    ['/controls/table-export', 'Table export'],
+    ['/controls/tree-table', 'Tree table'],
+  ] as const) {
+    test(`${path}: every table is as wide as the live area of its example`, async ({ page }) => {
+      await openPage(page, path, heading);
+      const widths = await page.locator('.docs-example__live').evaluateAll((lives) =>
+        lives.flatMap((live) =>
+          [...live.querySelectorAll('star-table, star-tree-table')]
+            .filter((table) => !table.closest('.docs-stack--narrow'))
+            .map((table) => {
+              const style = getComputedStyle(live);
+              return {
+                table: table.getBoundingClientRect().width,
+                live:
+                  live.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight),
+              };
+            }),
+        ),
+      );
+      expect(widths.length).toBeGreaterThan(0);
+      expect(widths.every((w) => w.live > 800)).toBe(true);
+      for (const w of widths) expect(Math.abs(w.table - w.live)).toBeLessThanOrEqual(2);
+    });
+  }
+});

@@ -24,6 +24,8 @@
   }
 }
 .star-table__scroll {
+  // Contains the absolute screen-reader text of the cells, so it cannot widen the page.
+  position: relative;
   overflow: auto;
   border: 1px solid var(--star-border);
   border-radius: var(--star-radius-lg);

@@ -150,7 +150,7 @@ const LOG: readonly LogEntry[] = Array.from({ length: 5000 }, (_, i) => ({
         source="table-layout/stack"
         note="responsiveLayout stack changes the layout when the table is narrower than 40rem. Each row becomes a block with one line per column (label and value). The sortable headers stay as a row of buttons. The default, scroll, keeps the table and scrolls it sideways."
       >
-        <div class="docs-stack">
+        <div class="docs-stack docs-stack--narrow">
           <star-table
             [value]="orders.slice(0, 3)"
             [columns]="columns"
