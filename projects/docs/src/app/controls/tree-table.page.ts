@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { STAR_SLOTS } from '@star-ng/ui/core';
 import { StarTreeTable, StarTreeTableColumn } from '@star-ng/ui/data-display';
-import { StarTreeNode } from '@star-ng/ui/tree';
+import { StarNodeTemplate, StarTreeNode } from '@star-ng/ui/tree';
 import { DOCS, DocsRow } from '../shared/docs';
 import { buildLargeTreeTable } from './large-tree-table';
 
@@ -8,7 +9,7 @@ type Row = Record<string, unknown>;
 
 @Component({
   selector: 'docs-tree-table-page',
-  imports: [DOCS, StarTreeTable],
+  imports: [DOCS, StarTreeTable, StarNodeTemplate, STAR_SLOTS],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <docs-page
@@ -65,6 +66,38 @@ type Row = Record<string, unknown>;
           <p class="docs-output" role="status">
             {{ large.count }} rows, {{ largeOpen().length }} branches open
           </p>
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="Slots"
+        source="tree-table/slots"
+        [script]="slotsScript"
+        note="Content child templates change parts of the table. starNode replaces the label of a node in the first column and gets the node, its level, expanded and selected (selected is always false: the tree table has no row selection). The toggle and the keys stay. starHeader and starFooter add content above and below the table. starEmpty fills one row over all columns when there are no rows; without it the table shows nothing. Do not put buttons or links in these templates: the table owns the focus and the keys."
+      >
+        <div class="docs-stack">
+          <star-tree-table
+            [nodes]="departments"
+            [columns]="columns"
+            [expanded]="allOpen"
+            ariaLabel="Departments with slots"
+          >
+            <ng-template starHeader>
+              <p class="docs-output">Budget by department</p>
+            </ng-template>
+            <ng-template starNode [starNodeOf]="departments" let-node let-level="level">
+              <strong [style.color]="level === 1 ? 'var(--star-text)' : 'var(--star-text-muted)'">
+                {{ node.label }}
+              </strong>
+              <small>(level {{ level }})</small>
+            </ng-template>
+            <ng-template starFooter>
+              <p class="docs-output">Figures in millions.</p>
+            </ng-template>
+          </star-tree-table>
+          <star-tree-table [nodes]="[]" [columns]="columns" ariaLabel="Empty departments">
+            <ng-template starEmpty let-text>No departments yet.</ng-template>
+          </star-tree-table>
         </div>
       </docs-example>
 
@@ -180,8 +213,30 @@ readonly virtualColumns: readonly StarTreeTableColumn[] = [
 // Every branch is open: 11,110 open rows.
 readonly largeOpen = signal<readonly string[]>(this.large.branchKeys);`;
 
+  protected readonly slotsScript = `// Import STAR_SLOTS from '@star-ng/ui/core' and StarNodeTemplate from '@star-ng/ui/tree'
+// in the component imports.
+readonly departments: readonly StarTreeNode<Record<string, unknown>>[] = [ /* as above */ ];
+readonly allOpen = ['eng', 'apps', 'ops'];`;
+
   protected readonly slots: readonly DocsRow[] = [
-    { name: '(none)', description: 'The rows come from the nodes input, not from content.' },
+    {
+      name: 'ng-template[starNode]',
+      description:
+        'Content child, from @star-ng/ui/tree. Replaces the label of a node in the first column. The toggle stays. The context has $implicit (the node), level (1 for a root node), expanded and selected (always false: the tree table has no row selection). Do not add focusable elements: the table owns the keys. With virtualScroll the row keeps the height virtualItemSize and the content does not wrap.',
+    },
+    {
+      name: 'ng-template[starEmpty]',
+      description:
+        'Content child. Shows one row over all columns when there are no rows. $implicit is an empty text, because the tree table has no filter. Without this slot the table shows no row.',
+    },
+    {
+      name: 'ng-template[starHeader]',
+      description: 'Content child. Content above the table.',
+    },
+    {
+      name: 'ng-template[starFooter]',
+      description: 'Content child. Content below the table.',
+    },
   ];
   protected readonly cssVars: readonly DocsRow[] = [
     {

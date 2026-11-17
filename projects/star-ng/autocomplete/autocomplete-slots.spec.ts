@@ -197,4 +197,67 @@ describe('StarAutoComplete slots', () => {
     await fixture.whenStable();
     expect(panelText().replace(/\s+/g, ' ').trim()).toBe('Germany Munich India Pune');
   });
+
+  it('arrow keys skip group headings and Enter chooses the active option', async () => {
+    const fixture = TestBed.createComponent(KeyHost);
+    fixture.detectChanges();
+    const input = typeInto(fixture.nativeElement, '.keyed', 'n');
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    expect(document.querySelectorAll('.grp').length).toBe(2);
+    const press = async (key: string) => {
+      input.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.detectChanges();
+    };
+    const active = () => {
+      const id = input.getAttribute('aria-activedescendant');
+      return id ? document.getElementById(id) : null;
+    };
+    const seen: (string | undefined)[] = [];
+    await press('ArrowDown');
+    for (let i = 0; i < 3; i++) {
+      const el = active();
+      expect(el?.getAttribute('role')).toBe('option');
+      seen.push(el?.textContent?.trim());
+      await press('ArrowDown');
+    }
+    // The three options come in order; headings are never the active element.
+    expect(seen).toEqual(['Berlin!', 'Munich!', 'Pune!']);
+    // The last ArrowDown stays on the last option. ArrowUp from Pune crosses the India heading.
+    expect(active()?.textContent?.trim()).toBe('Pune!');
+    await press('ArrowUp');
+    expect(active()?.getAttribute('role')).toBe('option');
+    expect(active()?.textContent?.trim()).toBe('Munich!');
+    await press('Enter');
+    expect(fixture.componentInstance.picked()).toBe(2);
+  });
 });
+
+@Component({
+  imports: [StarAutoComplete, StarOptionTemplate, StarGroupTemplate],
+  template: `
+    <star-autocomplete
+      class="keyed"
+      [options]="cities"
+      optionLabel="name"
+      optionValue="id"
+      optionGroup="country"
+      [(value)]="picked"
+      ariaLabel="Keyed"
+    >
+      <ng-template starOption [starOptionOf]="cities" let-option
+        ><b class="opt">{{ option.name }}!</b></ng-template
+      >
+      <ng-template starGroup let-label let-count="count"
+        ><b class="grp">{{ label }} ({{ count }})</b></ng-template
+      >
+    </star-autocomplete>
+  `,
+})
+class KeyHost {
+  readonly cities = CITIES;
+  readonly picked = signal<number | null>(null);
+}

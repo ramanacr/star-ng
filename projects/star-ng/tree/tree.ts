@@ -250,11 +250,23 @@ export class StarTree implements FormValueControl<readonly string[]> {
   readonly virtualItemSize = input(34, { transform: numberAttribute });
   readonly ariaLabel = input<string | null>(null);
   readonly disabled = input(false, { transform: booleanAttribute });
-  /** Set by `star-tree-select`. In your own markup, use the `starNode` slot. */
+  /**
+   * Set by `star-tree-select`. In your own markup, use the `starNode` slot.
+   *
+   * @internal
+   */
   readonly nodeTemplate = input<TemplateRef<StarNodeContext> | null>(null);
-  /** Set by `star-tree-select`. In your own markup, use the `starEmpty` slot. */
+  /**
+   * Set by `star-tree-select`. In your own markup, use the `starEmpty` slot.
+   *
+   * @internal
+   */
   readonly emptyTemplate = input<TemplateRef<StarEmptyContext> | null>(null);
-  /** Set by `star-tree-select`. In your own markup, use `<ng-template starIcon="toggle">`. */
+  /**
+   * Set by `star-tree-select`. In your own markup, use `<ng-template starIcon="toggle">`.
+   *
+   * @internal
+   */
   readonly toggleIconTemplate = input<TemplateRef<StarToggleIconContext> | null>(null);
   readonly touch = output<void>();
   readonly nodeSelect = output<StarTreeNode>();

@@ -1,11 +1,14 @@
 import { _IdGenerator } from '@angular/cdk/a11y';
+import { NgTemplateOutlet } from '@angular/common';
 import {
   booleanAttribute,
   ChangeDetectionStrategy,
   Component,
   computed,
+  contentChildren,
   DestroyRef,
   ElementRef,
+  forwardRef,
   inject,
   input,
   model,
@@ -14,7 +17,14 @@ import {
   viewChild,
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
-import { STAR_UI_TEXT } from '@star-ng/ui/core';
+import {
+  STAR_SLOT_HOST,
+  STAR_UI_TEXT,
+  StarEmptyContext,
+  StarSlot,
+  starSlot,
+} from '@star-ng/ui/core';
+import type { StarFileContext } from './file-upload-slots';
 
 export interface StarRejectedFile {
   readonly file: File;
@@ -75,9 +85,15 @@ export function fileMatchesAccept(file: File, accept: string): boolean {
  * picture for image files. Files pasted while focus is in the control are added.
  *
  * `<star-file-upload [formField]="form.attachments" accept=".pdf,image/*" [maxFileSize]="10_000_000" multiple />`
+ *
+ * Slots: `ng-template[starFile]` replaces one row of the file list (`StarFileTemplate`).
+ * `ng-template[starEmpty]` shows content in place of the list while no file is chosen. The context
+ * of `starEmpty` is `''`, because this control has no filter.
  */
 @Component({
   selector: 'star-file-upload',
+  imports: [NgTemplateOutlet],
+  providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarFileUpload) }],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-upload',
@@ -130,72 +146,84 @@ export function fileMatchesAccept(file: File, accept: string): boolean {
             (drop)="onFileDrop(i, $event)"
             (dragend)="endFileDrag()"
           >
-            @if (status?.state === 'done') {
-              <i class="ph-fill ph-check-circle star-upload__state--done" aria-hidden="true"></i>
-            } @else if (status?.state === 'error') {
-              <i class="ph-fill ph-warning-circle star-upload__state--error" aria-hidden="true"></i>
-            } @else if (thumbnailOf(file); as thumbnail) {
-              <img class="star-upload__thumb" alt="" [src]="thumbnail" />
+            @if (fileSlot(); as slot) {
+              <ng-container *ngTemplateOutlet="slot; context: fileContext(file, i, status)" />
             } @else {
-              <i class="ph-bold ph-file star-upload__file-icon" aria-hidden="true"></i>
-            }
-            <span class="star-upload__main">
-              <span class="star-upload__name">{{ file.name }}</span>
-              @if (status?.state === 'uploading') {
-                <span
-                  class="star-upload__progress"
-                  role="progressbar"
-                  aria-valuemin="0"
-                  aria-valuemax="100"
-                  [attr.aria-valuenow]="percent(status)"
-                  [attr.aria-label]="text.uploadingFile(file.name)"
-                >
-                  <span class="star-upload__progress-bar" [style.width.%]="percent(status)"></span>
-                </span>
-              } @else if (status?.state === 'error' && status?.message) {
-                <span class="star-upload__message">{{ status?.message }}</span>
-              } @else if (status?.state === 'done') {
-                <span class="star-sr-only">{{ text.uploaded }}</span>
+              @if (status?.state === 'done') {
+                <i class="ph-fill ph-check-circle star-upload__state--done" aria-hidden="true"></i>
+              } @else if (status?.state === 'error') {
+                <i
+                  class="ph-fill ph-warning-circle star-upload__state--error"
+                  aria-hidden="true"
+                ></i>
+              } @else if (thumbnailOf(file); as thumbnail) {
+                <img class="star-upload__thumb" alt="" [src]="thumbnail" />
+              } @else {
+                <i class="ph-bold ph-file star-upload__file-icon" aria-hidden="true"></i>
               }
-            </span>
-            @if (status?.state === 'uploading') {
-              <span class="star-upload__size">{{ percent(status) }}%</span>
-            } @else {
-              <span class="star-upload__size">{{ size(file) }}</span>
-            }
-            @if (canReorder()) {
-              <button
-                type="button"
-                class="star-select__icon-btn"
-                [disabled]="first"
-                [attr.aria-label]="text.moveUp + ': ' + file.name"
-                (click)="move(i, i - 1)"
-              >
-                <i class="ph-bold ph-arrow-up" aria-hidden="true"></i>
-              </button>
-              <button
-                type="button"
-                class="star-select__icon-btn"
-                [disabled]="last"
-                [attr.aria-label]="text.moveDown + ': ' + file.name"
-                (click)="move(i, i + 1)"
-              >
-                <i class="ph-bold ph-arrow-down" aria-hidden="true"></i>
-              </button>
-            }
-            @if (!disabled() && !readonly()) {
-              <button
-                type="button"
-                class="star-select__icon-btn"
-                [attr.aria-label]="text.removeItem(file.name)"
-                (click)="remove(file)"
-              >
-                <i class="ph-bold ph-x" aria-hidden="true"></i>
-              </button>
+              <span class="star-upload__main">
+                <span class="star-upload__name">{{ file.name }}</span>
+                @if (status?.state === 'uploading') {
+                  <span
+                    class="star-upload__progress"
+                    role="progressbar"
+                    aria-valuemin="0"
+                    aria-valuemax="100"
+                    [attr.aria-valuenow]="percent(status)"
+                    [attr.aria-label]="text.uploadingFile(file.name)"
+                  >
+                    <span
+                      class="star-upload__progress-bar"
+                      [style.width.%]="percent(status)"
+                    ></span>
+                  </span>
+                } @else if (status?.state === 'error' && status?.message) {
+                  <span class="star-upload__message">{{ status?.message }}</span>
+                } @else if (status?.state === 'done') {
+                  <span class="star-sr-only">{{ text.uploaded }}</span>
+                }
+              </span>
+              @if (status?.state === 'uploading') {
+                <span class="star-upload__size">{{ percent(status) }}%</span>
+              } @else {
+                <span class="star-upload__size">{{ size(file) }}</span>
+              }
+              @if (canReorder()) {
+                <button
+                  type="button"
+                  class="star-select__icon-btn"
+                  [disabled]="first"
+                  [attr.aria-label]="text.moveUp + ': ' + file.name"
+                  (click)="move(i, i - 1)"
+                >
+                  <i class="ph-bold ph-arrow-up" aria-hidden="true"></i>
+                </button>
+                <button
+                  type="button"
+                  class="star-select__icon-btn"
+                  [disabled]="last"
+                  [attr.aria-label]="text.moveDown + ': ' + file.name"
+                  (click)="move(i, i + 1)"
+                >
+                  <i class="ph-bold ph-arrow-down" aria-hidden="true"></i>
+                </button>
+              }
+              @if (!disabled() && !readonly()) {
+                <button
+                  type="button"
+                  class="star-select__icon-btn"
+                  [attr.aria-label]="text.removeItem(file.name)"
+                  (click)="remove(file)"
+                >
+                  <i class="ph-bold ph-x" aria-hidden="true"></i>
+                </button>
+              }
             }
           </li>
         }
       </ul>
+    } @else if (emptySlot(); as slot) {
+      <ng-container *ngTemplateOutlet="slot; context: emptyContext" />
     }
 
     @if (rejected().length) {
@@ -251,12 +279,19 @@ export class StarFileUpload implements FormValueControl<readonly File[]> {
   /** Emits the files that failed a check, with the reason (`type`, `size` or `limit`). */
   readonly rejectedChange = output<readonly StarRejectedFile[]>();
 
+  protected readonly slots = contentChildren(StarSlot, { descendants: true });
+  protected readonly fileSlot = starSlot<StarFileContext>(this.slots, this, 'file');
+  protected readonly emptySlot = starSlot<StarEmptyContext>(this.slots, this, 'empty');
+  /** The control has no filter, so the empty slot always gets `''`. */
+  protected readonly emptyContext: StarEmptyContext = { $implicit: '' };
+
   protected readonly inputId = this.ids.getId('star-upload-');
   protected readonly hintId = this.ids.getId('star-upload-hint-');
   protected readonly dragging = signal(false);
   protected readonly rejected = signal<readonly StarRejectedFile[]>([]);
   protected readonly dropIndex = signal<number | null>(null);
   private dragIndex: number | null = null;
+  private readonly interactive = computed(() => !this.disabled() && !this.readonly());
   protected readonly canReorder = computed(
     () => this.reorderable() && !this.disabled() && !this.readonly() && this.value().length > 1,
   );
@@ -270,6 +305,18 @@ export class StarFileUpload implements FormValueControl<readonly File[]> {
     if (this.fileLimit()) parts.push(this.text.fileUpTo(this.fileLimit()));
     return parts.join(' · ');
   });
+
+  protected fileContext(file: File, index: number, status: StarFileStatus | null): StarFileContext {
+    return {
+      $implicit: file,
+      status,
+      index,
+      interactive: this.interactive(),
+      remove: () => {
+        if (this.interactive()) this.remove(file);
+      },
+    };
+  }
 
   protected statusOf(file: File): StarFileStatus | null {
     return this.fileStatus()?.(file) ?? null;

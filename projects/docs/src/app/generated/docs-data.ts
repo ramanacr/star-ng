@@ -627,6 +627,23 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarCascadeOptionTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starCascadeOption]",
+    "entry": "@star-ng/ui/select",
+    "description": "Replaces the label of each option in the menu of `star-cascade-select`, for parents and leaves. PrimeNG `#option` template of `p-cascadeselect`. The context extends the one of `starOption` (`$implicit`, `selected`, `index`) with `level` and `hasChildren`.",
+    "inputs": [
+      {
+        "name": "starCascadeOptionOf",
+        "type": "readonly T[] | null",
+        "default": "null",
+        "required": false,
+        "description": "Optional: pass the options array to type `let-option` in strict templates."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
   "StarCascadeSelect": {
     "kind": "component",
     "selector": "star-cascade-select",
@@ -1877,6 +1894,15 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "outputs": []
   },
+  "StarFileTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starFile]",
+    "entry": "@star-ng/ui/file-upload",
+    "description": "Replaces one row of the file list in `star-file-upload`. PrimeNG `#file` template.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
   "StarFileUpload": {
     "kind": "component",
     "selector": "star-file-upload",
@@ -2081,7 +2107,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "directive",
     "selector": "ng-template[starHeaderCell]",
     "entry": "@star-ng/ui/table",
-    "description": "Replaces the header label of one column in `star-table`: `<ng-template starHeaderCell=\"customer\" let-column>…</ng-template>`. PrimeNG `#header` template.",
+    "description": "Replaces the header label of one column in `star-table`: `<ng-template starHeaderCell=\"customer\" let-column>…</ng-template>`. This is like the column header part of the PrimeNG `#header` template. The PrimeNG template replaces the whole header row. This slot replaces the label of one column only.",
     "inputs": [
       {
         "name": "starHeaderCell",
@@ -2915,6 +2941,23 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ]
   },
+  "StarItemTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starItem]",
+    "entry": "@star-ng/ui/data-display",
+    "description": "Replaces the label of an item in `star-order-list` and `star-pick-list`: `<ng-template starItem let-item let-index=\"index\">…</ng-template>`. PrimeNG `#item` template. The item row, its `role=\"option\"`, the keys and (in the order list) the grip icon stay.",
+    "inputs": [
+      {
+        "name": "starItemOf",
+        "type": "readonly T[] | null",
+        "default": "null",
+        "required": false,
+        "description": "Optional: pass the items array to type `let-item` in strict templates."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
   "StarKnob": {
     "kind": "component",
     "selector": "star-knob",
@@ -3188,6 +3231,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "null",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "itemTemplate",
+        "type": "TemplateRef<StarMenuItemContext> | null",
+        "default": "null",
+        "required": false,
+        "description": "@internal Replaces the label text of each entry. The icon, the shortcut and the submenu arrow stay. Used by `star-cascade-select`. Not public API yet."
       }
     ],
     "models": [],
@@ -5871,6 +5921,15 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarToastMessageTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starToastMessage]",
+    "entry": "@star-ng/ui/toast",
+    "description": "Replaces the text of one toast in `star-toast`: the summary and the detail. PrimeNG `#message` template. The template runs once for each visible toast of the outlet.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
   "StarToggleButton": {
     "kind": "component",
     "selector": "star-toggle-button",
@@ -6413,7 +6472,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "autocomplete/local": "<div class=\"docs-stack\">\n  <star-autocomplete\n    [options]=\"cities\"\n    [(value)]=\"city\"\n    placeholder=\"Search a city\"\n    ariaLabel=\"City\"\n  />\n  <p class=\"docs-output\" role=\"status\">City: {{ city() ?? 'none' }}</p>\n</div>",
   "autocomplete/multiple": "<div class=\"docs-stack\">\n  <star-multi-autocomplete\n    [options]=\"keywords\"\n    [(value)]=\"chosen\"\n    [selectionLimit]=\"4\"\n    placeholder=\"Add a keyword\"\n    ariaLabel=\"Keywords\"\n    dropdown\n    autoHighlight\n    showClear\n  />\n  <p class=\"docs-output\" role=\"status\">Keywords: {{ chosen().join(', ') || 'none' }}</p>\n</div>",
   "autocomplete/objects": "<star-autocomplete\n  [options]=\"people\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  optionGroup=\"team\"\n  [(value)]=\"person\"\n  placeholder=\"Search a person\"\n  ariaLabel=\"Person\"\n>\n  <ng-template starOption [starOptionOf]=\"people\" let-item>\n    <span>\n      {{ item.name }}\n      <small>{{ item.team }}</small>\n    </span>\n  </ng-template>\n</star-autocomplete>",
-  "autocomplete/slots": "<div class=\"docs-stack\">\n  <star-autocomplete\n    [options]=\"officeCities\"\n    [(value)]=\"officeCity\"\n    optionLabel=\"name\"\n    optionValue=\"code\"\n    optionGroup=\"country\"\n    placeholder=\"Search a city\"\n    ariaLabel=\"Office city\"\n  >\n    <ng-template starHeader>\n      <p class=\"docs-output\">Cities with an office</p>\n    </ng-template>\n    <ng-template starGroup let-country let-count=\"count\">\n      {{ country }} ({{ count }})\n    </ng-template>\n    <ng-template starEmpty let-text>No city matches {{ text }}.</ng-template>\n    <ng-template starFooter>\n      <p class=\"docs-output\">{{ officeCities.length }} cities</p>\n    </ng-template>\n  </star-autocomplete>\n  <p class=\"docs-output\" role=\"status\">City: {{ officeCity() ?? 'none' }}</p>\n</div>",
+  "autocomplete/slots": "<div class=\"docs-stack\">\n  <star-autocomplete\n    [options]=\"officeCities\"\n    [(value)]=\"officeCity\"\n    [loading]=\"officesLoading()\"\n    optionLabel=\"name\"\n    optionValue=\"code\"\n    optionGroup=\"country\"\n    placeholder=\"Search a city\"\n    ariaLabel=\"Office city\"\n  >\n    <ng-template starHeader>\n      <p class=\"docs-output\">Cities with an office</p>\n    </ng-template>\n    <ng-template starGroup let-country let-count=\"count\">\n      {{ country }} ({{ count }})\n    </ng-template>\n    <ng-template starEmpty let-text>No city matches {{ text }}.</ng-template>\n    <ng-template starLoading>\n      <p class=\"docs-output\">Loading the office list...</p>\n    </ng-template>\n    <ng-template starFooter>\n      <p class=\"docs-output\">{{ officeCities.length }} cities</p>\n      <button\n        type=\"button\"\n        class=\"star-btn star-btn--sm star-btn--ghost\"\n        (click)=\"reloadOffices()\"\n      >\n        Reload\n      </button>\n    </ng-template>\n  </star-autocomplete>\n  <p class=\"docs-output\" role=\"status\">City: {{ officeCity() ?? 'none' }}</p>\n</div>",
   "avatar/basic": "<star-avatar name=\"Jane Doe\" />\n<star-avatar name=\"Sam Lee\" shape=\"square\" />\n<star-avatar />\n<star-avatar name=\"Ava Stone\" icon=\"ph-bold ph-buildings\" />",
   "avatar/image": "<star-avatar name=\"Broken Image\" image=\"data:,\" size=\"lg\" />",
   "avatar/sizes": "<star-avatar name=\"Jane Doe\" size=\"sm\" />\n<star-avatar name=\"Jane Doe\" size=\"md\" />\n<star-avatar name=\"Jane Doe\" size=\"lg\" />\n<star-avatar name=\"Jane Doe\" size=\"xl\" />",
@@ -6440,6 +6499,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "carousel/visible": "<star-carousel\n  style=\"width: 100%; max-width: 40rem\"\n  [items]=\"photos\"\n  [numVisible]=\"3\"\n  ariaLabel=\"Warehouse photo pages\"\n>\n  <ng-template starCarouselItem [starCarouselItemOf]=\"photos\" let-photo let-index=\"index\">\n    <figure style=\"margin: 0\">\n      <img\n        style=\"display: block; width: 100%; height: auto\"\n        [src]=\"photo.src\"\n        [alt]=\"photo.label\"\n      />\n      <figcaption>Slide {{ index + 1 }}</figcaption>\n    </figure>\n  </ng-template>\n</star-carousel>",
   "cascade-select/basic": "<div class=\"docs-stack\">\n  <star-cascade-select\n    [options]=\"places\"\n    optionLabel=\"name\"\n    optionValue=\"code\"\n    [(value)]=\"place\"\n    placeholder=\"Choose a city\"\n    ariaLabel=\"City\"\n  />\n  <p class=\"docs-output\" role=\"status\">Value: {{ place() ?? 'none' }}</p>\n</div>",
   "cascade-select/form": "<div class=\"docs-stack\">\n  <star-field label=\"Office city\" for=\"cascade-form-city\" [state]=\"office.city()\">\n    <star-cascade-select\n      inputId=\"cascade-form-city\"\n      [formField]=\"office.city\"\n      [options]=\"places\"\n      optionLabel=\"name\"\n      optionValue=\"code\"\n      placeholder=\"Choose a city\"\n      showPath\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ office().valid() }}</p>\n</div>",
+  "cascade-select/option": "<div class=\"docs-stack\">\n  <star-cascade-select\n    [options]=\"places\"\n    optionLabel=\"name\"\n    optionValue=\"code\"\n    [(value)]=\"templated\"\n    placeholder=\"Choose a city\"\n    ariaLabel=\"City with option template\"\n  >\n    <ng-template\n      starCascadeOption\n      [starCascadeOptionOf]=\"places\"\n      let-place\n      let-hasChildren=\"hasChildren\"\n    >\n      @if (hasChildren) {\n        <strong>{{ place.name }}</strong>\n      } @else {\n        {{ place.name }} ({{ place.code }})\n      }\n    </ng-template>\n  </star-cascade-select>\n  <p class=\"docs-output\" role=\"status\">Value: {{ templated() ?? 'none' }}</p>\n</div>",
   "cascade-select/path": "<star-cascade-select\n  [options]=\"places\"\n  optionLabel=\"name\"\n  optionValue=\"code\"\n  [(value)]=\"pathPlace\"\n  placeholder=\"Choose a city\"\n  ariaLabel=\"City with path\"\n  showPath\n  showClear\n/>",
   "cascade-select/states": "<div class=\"docs-stack\">\n  <star-cascade-select\n    [options]=\"places\"\n    optionLabel=\"name\"\n    optionValue=\"code\"\n    optionDisabled=\"closed\"\n    placeholder=\"One city is closed\"\n    ariaLabel=\"City with a closed office\"\n  />\n  <star-cascade-select\n    [options]=\"places\"\n    optionLabel=\"name\"\n    optionValue=\"code\"\n    size=\"sm\"\n    disabled\n    placeholder=\"Disabled\"\n    ariaLabel=\"Disabled city\"\n  />\n</div>",
   "chart/area": "<star-chart\n  type=\"area\"\n  title=\"Orders per month, area\"\n  [labels]=\"months\"\n  [series]=\"orders\"\n/>",
@@ -6473,6 +6533,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "data-view/empty": "<star-data-view [items]=\"[]\" emptyMessage=\"No products match this filter.\">\n  <ng-template starDataViewItem let-item>{{ item }}</ng-template>\n</star-data-view>",
   "data-view/layouts": "<div class=\"docs-stack\">\n  <star-data-view [items]=\"products\" [(layout)]=\"layout\">\n    <ng-template starDataViewItem [starDataViewItemOf]=\"products\" let-p let-mode=\"layout\">\n      <strong>{{ p.name }}</strong>\n      <div>{{ p.category }} · {{ '$' + p.price }}</div>\n      @if (mode === 'grid') {\n        <small>Grid card</small>\n      }\n    </ng-template>\n  </star-data-view>\n  <p class=\"docs-output\" role=\"status\">Layout: {{ layout() }}</p>\n</div>",
   "data-view/paging": "<div class=\"docs-stack\">\n  <star-data-view [items]=\"products\" paginator [rows]=\"4\" [(first)]=\"first\">\n    <ng-template starDataViewItem [starDataViewItemOf]=\"products\" let-p>\n      <strong>{{ p.name }}</strong>\n      <div>{{ p.category }} · {{ '$' + p.price }}</div>\n    </ng-template>\n  </star-data-view>\n  <p class=\"docs-output\" role=\"status\">First item on the page: {{ first() + 1 }}</p>\n</div>",
+  "data-view/slots": "<div class=\"docs-stack\">\n  <star-data-view [items]=\"products.slice(0, 3)\">\n    <ng-template starHeader>\n      <p class=\"docs-output\">Today's picks</p>\n    </ng-template>\n    <ng-template starDataViewItem [starDataViewItemOf]=\"products\" let-p>\n      <strong>{{ p.name }}</strong>\n      <div>{{ '$' + p.price }}</div>\n    </ng-template>\n    <ng-template starFooter>\n      <p class=\"docs-output\">Prices include tax.</p>\n    </ng-template>\n  </star-data-view>\n  <star-data-view [items]=\"[]\">\n    <ng-template starDataViewItem let-item>{{ item }}</ng-template>\n    <ng-template starEmpty let-text>\n      <span style=\"color: var(--star-text-muted)\">Nothing to show yet.</span>\n    </ng-template>\n  </star-data-view>\n</div>",
   "data-view/sorting": "<star-data-view [items]=\"sorted()\">\n  <div starDataViewHeader>\n    <star-button size=\"sm\" variant=\"secondary\" (click)=\"sortBy.set('name')\">\n      Sort by name\n    </star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (click)=\"sortBy.set('price')\">\n      Sort by price\n    </star-button>\n  </div>\n  <ng-template starDataViewItem [starDataViewItemOf]=\"sorted()\" let-p>\n    <strong>{{ p.name }}</strong>\n    <div>{{ '$' + p.price }}</div>\n  </ng-template>\n</star-data-view>",
   "date-picker/basic": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"delivery\"\n    locale=\"en-GB\"\n    [firstDayOfWeek]=\"1\"\n    ariaLabel=\"Delivery date\"\n    showButtonBar\n  />\n  <p class=\"docs-output\" role=\"status\">Delivery: {{ iso(delivery()) }}</p>\n</div>",
   "date-picker/form": "<div class=\"docs-stack\">\n  <star-field label=\"Delivery date\" for=\"date-form-delivery\" [state]=\"order.deliveryDate()\">\n    <star-date-picker\n      inputId=\"date-form-delivery\"\n      [formField]=\"order.deliveryDate\"\n      locale=\"en-GB\"\n      [minDate]=\"minDate\"\n      ariaLabel=\"Required delivery date\"\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ order().valid() }}</p>\n</div>",
@@ -6510,6 +6571,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "file-upload/limits": "<div class=\"docs-stack\">\n  <star-file-upload\n    [(value)]=\"limited\"\n    accept=\".pdf,image/*\"\n    [maxFileSize]=\"1000000\"\n    [fileLimit]=\"3\"\n    multiple\n    (rejectedChange)=\"rejected.set($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Added: {{ limited().length }}. Rejected in the last try: {{ rejected().length }}.\n  </p>\n</div>",
   "file-upload/modes": "<div class=\"docs-stack\">\n  <star-file-upload [(value)]=\"single\" />\n  <star-file-upload [(value)]=\"several\" multiple />\n  <p class=\"docs-output\" role=\"status\">\n    Single: {{ single().length }} file. Multiple: {{ several().length }} files.\n  </p>\n</div>",
   "file-upload/reorder": "<div class=\"docs-stack\">\n  <star-file-upload\n    [(value)]=\"ordered\"\n    accept=\"image/*,.pdf\"\n    multiple\n    reorderable\n    thumbnails\n  />\n</div>",
+  "file-upload/slots": "<div class=\"docs-stack\">\n  <star-file-upload [(value)]=\"templated\" multiple>\n    <ng-template starEmpty>\n      <p class=\"docs-output\">No file yet. Add an invoice or a packing list.</p>\n    </ng-template>\n    <ng-template\n      starFile\n      let-file\n      let-remove=\"remove\"\n      let-index=\"index\"\n      let-interactive=\"interactive\"\n    >\n      <i class=\"ph-bold ph-file-pdf star-upload__file-icon\" aria-hidden=\"true\"></i>\n      <span class=\"star-upload__main\">\n        <span class=\"star-upload__name\">{{ index + 1 }}. {{ file.name }}</span>\n      </span>\n      <span class=\"star-upload__size\">{{ file.size }} bytes</span>\n      @if (interactive) {\n        <button\n          type=\"button\"\n          class=\"star-select__icon-btn\"\n          [attr.aria-label]=\"'Remove ' + file.name\"\n          (click)=\"remove()\"\n        >\n          <i class=\"ph-bold ph-trash\" aria-hidden=\"true\"></i>\n        </button>\n      }\n    </ng-template>\n  </star-file-upload>\n</div>",
   "file-upload/states": "<div class=\"docs-stack\">\n  <star-file-upload [value]=\"existing\" readonly />\n  <star-file-upload disabled />\n</div>",
   "file-upload/status": "<div class=\"docs-stack\">\n  <star-file-upload\n    [(value)]=\"uploads\"\n    accept=\".pdf\"\n    multiple\n    [fileStatus]=\"statusOf\"\n    (selected)=\"send($event)\"\n  />\n</div>",
   "float-label/basic": "<div class=\"docs-stack\">\n  <star-float-label label=\"Customer name\">\n    <input starInput [value]=\"name()\" (input)=\"name.set($any($event.target).value)\" />\n  </star-float-label>\n  <star-float-label label=\"Delivery note\">\n    <textarea starInput rows=\"3\"></textarea>\n  </star-float-label>\n  <p class=\"docs-output\" role=\"status\">Customer: {{ name() || 'empty' }}</p>\n</div>",
@@ -6575,9 +6637,10 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "multi-select/groups": "<star-multi-select\n  [options]=\"departments\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  optionGroup=\"site\"\n  optionDisabled=\"closed\"\n  [(value)]=\"grouped\"\n  placeholder=\"Departments by site\"\n  ariaLabel=\"Departments by site\"\n/>",
   "multi-select/large": "<div class=\"docs-stack\">\n  <star-multi-select\n    [options]=\"parcels\"\n    optionLabel=\"name\"\n    optionValue=\"id\"\n    [(value)]=\"selectedParcels\"\n    placeholder=\"10,000 parcels\"\n    ariaLabel=\"Parcels\"\n    virtualScroll\n  />\n  <p class=\"docs-output\" role=\"status\">Parcels: {{ selectedParcels().length }}</p>\n</div>",
   "multi-select/limit": "<star-multi-select\n  [options]=\"departments\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  [selectionLimit]=\"2\"\n  placeholder=\"Pick up to 2\"\n  ariaLabel=\"Limited departments\"\n/>",
-  "multi-select/slots": "<star-multi-select\n  [options]=\"cities\"\n  optionLabel=\"name\"\n  optionValue=\"code\"\n  [(value)]=\"visited\"\n  display=\"chip\"\n  placeholder=\"Select cities\"\n  ariaLabel=\"Cities\"\n  filter\n>\n  <ng-template starHeader>\n    <p class=\"docs-output\">Cities with an office</p>\n  </ng-template>\n  <ng-template starEmpty let-text>No city matches {{ text }}.</ng-template>\n  <ng-template\n    starChip\n    [starChipOf]=\"cities\"\n    let-item\n    let-remove=\"remove\"\n    let-interactive=\"interactive\"\n  >\n    <span class=\"star-chip star-chip--sm\">\n      {{ item.code }}\n      @if (interactive) {\n        <button\n          type=\"button\"\n          class=\"star-chip__remove\"\n          tabindex=\"-1\"\n          [attr.aria-label]=\"'Remove ' + item.name\"\n          (click)=\"remove()\"\n        >\n          x\n        </button>\n      }\n    </span>\n  </ng-template>\n  <ng-template starFooter>\n    <p class=\"docs-output\">{{ cities.length }} cities</p>\n  </ng-template>\n</star-multi-select>",
+  "multi-select/slots": "<star-multi-select\n  [options]=\"cities\"\n  optionLabel=\"name\"\n  optionValue=\"code\"\n  [(value)]=\"visited\"\n  display=\"chip\"\n  placeholder=\"Select cities\"\n  ariaLabel=\"Cities\"\n  filter\n>\n  <ng-template starHeader>\n    <p class=\"docs-output\">Cities with an office</p>\n  </ng-template>\n  <ng-template starEmpty let-text>No city matches {{ text }}.</ng-template>\n  <ng-template\n    starChip\n    [starChipOf]=\"cities\"\n    let-item\n    let-remove=\"remove\"\n    let-interactive=\"interactive\"\n  >\n    <span class=\"star-chip star-chip--sm\">\n      {{ item.code }}\n      @if (interactive) {\n        <button\n          type=\"button\"\n          class=\"star-chip__remove\"\n          tabindex=\"-1\"\n          [attr.aria-label]=\"'Remove ' + item.name\"\n          (click)=\"remove()\"\n        >\n          x\n        </button>\n      }\n    </span>\n  </ng-template>\n  <ng-template starFooter>\n    <p class=\"docs-output\">{{ cities.length }} cities</p>\n    <button\n      type=\"button\"\n      class=\"star-btn star-btn--sm star-btn--ghost\"\n      (click)=\"visited.set([])\"\n    >\n      Clear the choice\n    </button>\n  </ng-template>\n</star-multi-select>",
   "multi-select/template": "<star-multi-select\n  [options]=\"departments\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  [(value)]=\"templated\"\n  placeholder=\"Select departments\"\n  ariaLabel=\"Departments with template\"\n>\n  <ng-template starOption [starOptionOf]=\"departments\" let-item let-selected=\"selected\">\n    <span>\n      {{ item.name }}\n      <small>{{ item.site }}</small>\n    </span>\n  </ng-template>\n</star-multi-select>",
   "order-list/basic": "<div class=\"docs-stack\">\n  <star-order-list [(value)]=\"steps\" ariaLabel=\"Release steps\" />\n  <p class=\"docs-output\" role=\"status\">Order: {{ steps().join(' > ') }}</p>\n</div>",
+  "order-list/item": "<div class=\"docs-stack\">\n  <star-order-list [(value)]=\"playlist\" optionLabel=\"name\" ariaLabel=\"Task priorities\">\n    <ng-template\n      starItem\n      [starItemOf]=\"playlist()\"\n      let-task\n      let-i=\"index\"\n      let-on=\"selected\"\n    >\n      <strong>{{ i + 1 }}.</strong> {{ task.name }}\n      @if (on) {\n        <small style=\"color: var(--star-text-muted)\">(selected)</small>\n      }\n    </ng-template>\n  </star-order-list>\n</div>",
   "order-list/objects": "<div class=\"docs-stack\">\n  <star-order-list [(value)]=\"playlist\" optionLabel=\"name\" ariaLabel=\"Task playlist\" />\n  <p class=\"docs-output\" role=\"status\">Ids: {{ ids() }}</p>\n</div>",
   "org-chart/basic": "<div class=\"docs-stack\">\n  <star-org-chart ariaLabel=\"Company\" [value]=\"company\" [(collapsedKeys)]=\"closed\" />\n  <p class=\"docs-output\" role=\"status\">Collapsed: {{ closed().join(', ') || 'none' }}</p>\n</div>",
   "org-chart/selectable": "<div class=\"docs-stack\">\n  <star-org-chart\n    ariaLabel=\"Company, selectable\"\n    [value]=\"company\"\n    selectable\n    [(selectedKey)]=\"selected\"\n    (nodeSelect)=\"last.set($event.label)\"\n  />\n  <p class=\"docs-output\" role=\"status\">Selected: {{ selected() ?? 'none' }}</p>\n  <p class=\"docs-output\" role=\"status\">Last node: {{ last() }}</p>\n</div>",
@@ -6592,6 +6655,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "password/feedback": "<div class=\"docs-stack\">\n  <star-field label=\"New password\">\n    <star-password [(value)]=\"created\" feedback />\n  </star-field>\n</div>",
   "password/rules": "<div class=\"docs-stack\">\n  <star-field label=\"PIN phrase\">\n    <star-password [(value)]=\"phrase\" feedback [rules]=\"rules\" />\n  </star-field>\n</div>",
   "pick-list/basic": "<div class=\"docs-stack\">\n  <star-pick-list [(source)]=\"available\" [(target)]=\"chosen\" />\n  <p class=\"docs-output\" role=\"status\">Chosen: {{ chosen().join(', ') || 'none' }}</p>\n</div>",
+  "pick-list/item": "<div class=\"docs-stack\">\n  <star-pick-list [(source)]=\"people\" [(target)]=\"team\" optionLabel=\"name\">\n    <ng-template starItem [starItemOf]=\"people()\" let-member let-list=\"list\">\n      {{ member.name }}\n      @if (list === 'target') {\n        <small style=\"color: var(--star-text-muted)\">on the team</small>\n      }\n    </ng-template>\n  </star-pick-list>\n</div>",
   "pick-list/objects": "<div class=\"docs-stack\">\n  <star-pick-list\n    [(source)]=\"people\"\n    [(target)]=\"team\"\n    optionLabel=\"name\"\n    sourceHeader=\"Available people\"\n    targetHeader=\"Project team\"\n  />\n  <p class=\"docs-output\" role=\"status\">Team size: {{ team().length }}</p>\n</div>",
   "popover/basic": "<star-button\n  variant=\"secondary\"\n  leadingIcon=\"ph-bold ph-info\"\n  (pressed)=\"details.toggle($event)\"\n>\n  Details\n</star-button>\n<star-popover #details ariaLabel=\"Order details\">\n  <div class=\"docs-stack\">\n    <p class=\"docs-output\"><strong>ORD-1042</strong></p>\n    <p class=\"docs-output\">Orchard Supply, 12 items, ships on Friday.</p>\n    <star-button size=\"sm\" (pressed)=\"details.hide()\">Close</star-button>\n  </div>\n</star-popover>",
   "popover/field": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"rename.toggle($event)\">\n      Rename order\n    </star-button>\n  </div>\n  <star-popover\n    #rename\n    ariaLabel=\"Rename order\"\n    (shown)=\"renameState.set('open')\"\n    (hidden)=\"renameState.set('closed')\"\n  >\n    <star-field label=\"Order name\">\n      <input starInput value=\"Spring restock\" />\n    </star-field>\n  </star-popover>\n  <p class=\"docs-output\" role=\"status\">Popover: {{ renameState() }}</p>\n</div>",
@@ -6698,6 +6762,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "timeline/horizontal": "<star-timeline\n  [events]=\"events\"\n  layout=\"horizontal\"\n  ariaLabel=\"Order history, horizontal\"\n/>",
   "toast/corners": "<star-button size=\"sm\" variant=\"secondary\" (pressed)=\"corner('start')\">\n  Message at the start\n</star-button>\n<star-button size=\"sm\" variant=\"secondary\" (pressed)=\"corner('end')\">\n  Message at the end\n</star-button>\n<star-toast position=\"bottom-start\" key=\"start\" />\n<star-toast position=\"bottom-end\" key=\"end\" />",
   "toast/duplicates": "<star-button size=\"sm\" variant=\"secondary\" (pressed)=\"twice()\">Save twice</star-button>",
+  "toast/message": "<star-button size=\"sm\" variant=\"secondary\" (pressed)=\"archive()\">Archive order</star-button>\n<star-button size=\"sm\" variant=\"ghost\" (pressed)=\"undo()\">Undo archive</star-button>\n<p class=\"docs-output\" role=\"status\">{{ undoNote() }}</p>\n<star-toast position=\"bottom-center\" key=\"undo\">\n  <ng-template starToastMessage let-message let-close=\"close\">\n    <p class=\"star-toast__summary\">{{ message.summary }}</p>\n    <button\n      type=\"button\"\n      class=\"star-btn star-btn--ghost star-btn--sm\"\n      [attr.aria-label]=\"'Undo: ' + message.summary\"\n      (click)=\"undo(); close()\"\n    >\n      Undo\n    </button>\n  </ng-template>\n</star-toast>",
   "toast/severities": "<star-button size=\"sm\" variant=\"success\" (pressed)=\"notify('success')\">Success</star-button>\n<star-button size=\"sm\" variant=\"secondary\" (pressed)=\"notify('info')\">Info</star-button>\n<star-button size=\"sm\" variant=\"warning\" (pressed)=\"notify('warn')\">Warn</star-button>\n<star-button size=\"sm\" variant=\"danger\" (pressed)=\"notify('error')\">Error</star-button>",
   "toast/sticky": "<star-button size=\"sm\" variant=\"secondary\" (pressed)=\"sticky()\">Sticky message</star-button>\n<star-button size=\"sm\" variant=\"secondary\" (pressed)=\"quick()\"\n  >Two second message</star-button\n>\n<star-button size=\"sm\" variant=\"ghost\" (pressed)=\"toasts.clear()\">Clear all</star-button>",
   "toggle-switch/basic": "<star-toggle-switch [(checked)]=\"alerts\">Email alerts</star-toggle-switch>\n<p class=\"docs-output\" role=\"status\">Alerts: {{ alerts() ? 'on' : 'off' }}</p>",
@@ -6716,6 +6781,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "tree-select/virtual": "<div class=\"docs-stack\">\n  <star-tree-select\n    [nodes]=\"large.nodes\"\n    [(expanded)]=\"largeOpen\"\n    selectionMode=\"checkbox\"\n    [(value)]=\"largeTeams\"\n    virtualScroll\n    [virtualItemSize]=\"34\"\n    filter\n    placeholder=\"Select orders\"\n    ariaLabel=\"Orders by site\"\n  />\n  <p class=\"docs-output\" role=\"status\">{{ largeTeams().length }} orders checked</p>\n</div>",
   "tree-table/basic": "<div class=\"docs-stack\">\n  <star-tree-table\n    [nodes]=\"departments\"\n    [columns]=\"columns\"\n    [(expanded)]=\"open\"\n    ariaLabel=\"Departments\"\n  />\n  <p class=\"docs-output\" role=\"status\">Open: {{ open().join(', ') || 'none' }}</p>\n</div>",
   "tree-table/columns": "<star-tree-table\n  [nodes]=\"departments\"\n  [columns]=\"wideColumns\"\n  [expanded]=\"allOpen\"\n  ariaLabel=\"Departments with fixed columns\"\n/>",
+  "tree-table/slots": "<div class=\"docs-stack\">\n  <star-tree-table\n    [nodes]=\"departments\"\n    [columns]=\"columns\"\n    [expanded]=\"allOpen\"\n    ariaLabel=\"Departments with slots\"\n  >\n    <ng-template starHeader>\n      <p class=\"docs-output\">Budget by department</p>\n    </ng-template>\n    <ng-template starNode [starNodeOf]=\"departments\" let-node let-level=\"level\">\n      <strong [style.color]=\"level === 1 ? 'var(--star-text)' : 'var(--star-text-muted)'\">\n        {{ node.label }}\n      </strong>\n      <small>(level {{ level }})</small>\n    </ng-template>\n    <ng-template starFooter>\n      <p class=\"docs-output\">Figures in millions.</p>\n    </ng-template>\n  </star-tree-table>\n  <star-tree-table [nodes]=\"[]\" [columns]=\"columns\" ariaLabel=\"Empty departments\">\n    <ng-template starEmpty let-text>No departments yet.</ng-template>\n  </star-tree-table>\n</div>",
   "tree-table/virtual": "<div class=\"docs-stack\">\n  <star-tree-table\n    [nodes]=\"large.nodes\"\n    [columns]=\"virtualColumns\"\n    [(expanded)]=\"largeOpen\"\n    virtualScroll\n    scrollHeight=\"20rem\"\n    ariaLabel=\"Stock by site\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    {{ large.count }} rows, {{ largeOpen().length }} branches open\n  </p>\n</div>",
   "tree/basic": "<star-tree [nodes]=\"folders\" [(expanded)]=\"open\" scrollHeight=\"16rem\" ariaLabel=\"Folders\" />",
   "tree/checkbox": "<div class=\"docs-stack\">\n  <star-tree\n    [nodes]=\"folders\"\n    selectionMode=\"checkbox\"\n    [(value)]=\"checked\"\n    [(expanded)]=\"checkboxOpen\"\n    filter\n    scrollHeight=\"16rem\"\n    ariaLabel=\"Folders to sync\"\n  />\n\n  <p class=\"docs-output\" role=\"status\">Leaves: {{ checked().join(', ') || 'none' }}</p>\n</div>",

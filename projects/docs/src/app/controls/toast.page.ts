@@ -1,11 +1,11 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { StarButton } from '@star-ng/ui/button';
-import { StarToast, StarToastService } from '@star-ng/ui/toast';
+import { StarToast, StarToastMessageTemplate, StarToastService } from '@star-ng/ui/toast';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
   selector: 'docs-toast-page',
-  imports: [DOCS, StarButton, StarToast],
+  imports: [DOCS, StarButton, StarToast, StarToastMessageTemplate],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <docs-page
@@ -63,6 +63,30 @@ import { DOCS, DocsRow } from '../shared/docs';
         <star-toast position="bottom-end" key="end" />
       </docs-example>
 
+      <docs-example
+        heading="Message with an action"
+        source="toast/message"
+        [script]="messageScript"
+        note="starToastMessage replaces the summary and the detail of each toast. The context has the message and close(), which closes that toast. The box, the status or alert role, the severity icon and the close button stay. A button in the template needs an accessible name. A message that closes by itself must not hold the only way to an action, so this example uses sticky, and the page has an Undo archive button too."
+      >
+        <star-button size="sm" variant="secondary" (pressed)="archive()">Archive order</star-button>
+        <star-button size="sm" variant="ghost" (pressed)="undo()">Undo archive</star-button>
+        <p class="docs-output" role="status">{{ undoNote() }}</p>
+        <star-toast position="bottom-center" key="undo">
+          <ng-template starToastMessage let-message let-close="close">
+            <p class="star-toast__summary">{{ message.summary }}</p>
+            <button
+              type="button"
+              class="star-btn star-btn--ghost star-btn--sm"
+              [attr.aria-label]="'Undo: ' + message.summary"
+              (click)="undo(); close()"
+            >
+              Undo
+            </button>
+          </ng-template>
+        </star-toast>
+      </docs-example>
+
       <h2>Right-to-left</h2>
       <p>
         <code>top-left</code>, <code>top-right</code>, <code>bottom-left</code> and
@@ -72,7 +96,12 @@ import { DOCS, DocsRow } from '../shared/docs';
         the Right-to-left guide.
       </p>
 
-      <docs-api [of]="['StarToast']" [slots]="slots" [cssVars]="cssVars" [keyboard]="keyboard" />
+      <docs-api
+        [of]="['StarToast', 'StarToastMessageTemplate']"
+        [slots]="slots"
+        [cssVars]="cssVars"
+        [keyboard]="keyboard"
+      />
 
       <h2>Toast service</h2>
       <div class="docs-table-wrap">
@@ -145,11 +174,34 @@ export class ToastPage {
     });
   }
 
+  protected readonly undoNote = signal('Nothing archived yet.');
+
+  protected archive(): void {
+    this.undoNote.set('ORD-1051 archived.');
+    this.toasts.show({
+      severity: 'info',
+      summary: 'ORD-1051 archived',
+      sticky: true,
+      key: 'undo',
+    });
+  }
+
+  protected undo(): void {
+    this.undoNote.set('Archive undone.');
+  }
+
   protected twice(): void {
     this.toasts.success('Saved');
     this.toasts.success('Saved');
   }
 
+  protected readonly messageScript = `archive(): void {
+  this.toasts.show({ severity: 'info', summary: 'ORD-1051 archived', sticky: true, key: 'undo' });
+}
+
+undo(): void {
+  this.undoNote.set('Archive undone.');
+}`;
   protected readonly cornersScript = `corner(side: 'start' | 'end'): void {
   this.toasts.show({ severity: 'info', summary: 'Corner: ' + side, life: 4000, key: side });
 }`;
@@ -205,7 +257,11 @@ quick(): void {
   ];
 
   protected readonly slots: readonly DocsRow[] = [
-    { name: '(none)', description: 'The outlet shows the messages of the service.' },
+    {
+      name: 'ng-template[starToastMessage]',
+      description:
+        'Content child. Replaces the summary and the detail of each toast (PrimeNG #message template). The context has $implicit (the message) and close(). The toast box, its role, the severity icon and the close button stay. Not for the only way to do an action: a message that closes by itself can be gone before the user reaches it.',
+    },
   ];
   protected readonly cssVars: readonly DocsRow[] = [
     { name: '--star-success', description: 'Accent of a success message.' },
@@ -216,7 +272,11 @@ quick(): void {
     { name: '--star-shadow-lg', description: 'Shadow of a message.' },
   ];
   protected readonly keyboard: readonly DocsRow[] = [
-    { name: 'Tab', description: 'Moves to the close button of a message. The close timer stops.' },
+    {
+      name: 'Tab',
+      description:
+        'Moves to the close button of a message, and to the buttons in a starToastMessage template. The close timer stops.',
+    },
     { name: 'Enter / Space', description: 'On the close button: removes the message.' },
   ];
 }

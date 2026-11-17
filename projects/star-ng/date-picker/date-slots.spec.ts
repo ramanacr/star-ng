@@ -213,3 +213,87 @@ describe('date slots', () => {
     expect(document.activeElement!.querySelector('.mine')).not.toBeNull();
   });
 });
+
+@Component({
+  imports: [StarCalendar, StarDateTemplate],
+  template: `
+    <star-calendar
+      class="range-one"
+      locale="en-GB"
+      [firstDayOfWeek]="1"
+      mode="range"
+      [range]="range"
+      [numberOfMonths]="1"
+    >
+      <ng-template starDate let-date let-selected="selected" let-outside="outside"
+        ><b class="mine" [attr.data-date]="iso(date)" [attr.data-selected]="selected">{{
+          outside
+        }}</b></ng-template
+      >
+    </star-calendar>
+    <star-calendar
+      class="range-two"
+      locale="en-GB"
+      [firstDayOfWeek]="1"
+      mode="range"
+      [range]="range"
+      [numberOfMonths]="2"
+    >
+      <ng-template starDate let-date let-selected="selected" let-outside="outside"
+        ><b class="mine" [attr.data-date]="iso(date)" [attr.data-selected]="selected">{{
+          outside
+        }}</b></ng-template
+      >
+    </star-calendar>
+  `,
+})
+class RangeHost {
+  readonly range = { start: new Date(2026, 10, 3), end: new Date(2026, 10, 9) };
+  readonly iso = isoDay;
+}
+
+describe('date slots in range mode and in a multi-month grid', () => {
+  async function setup() {
+    const fixture = TestBed.createComponent(RangeHost);
+    await fixture.whenStable();
+    return fixture.nativeElement as HTMLElement;
+  }
+  const marks = (el: HTMLElement, cls: string) =>
+    [...el.querySelectorAll<HTMLElement>(`.${cls} .mine`)].map((n) => ({
+      date: n.getAttribute('data-date')!,
+      selected: n.getAttribute('data-selected'),
+      outside: n.textContent,
+    }));
+
+  it('selected is true only for the two ends of the range, not for the days between', async () => {
+    const el = await setup();
+    for (const cls of ['range-one', 'range-two']) {
+      const chosen = marks(el, cls)
+        .filter((m) => m.selected === 'true')
+        .map((m) => m.date);
+      expect(chosen).toEqual(['2026-11-03', '2026-11-09']);
+      const between = marks(el, cls).find((m) => m.date === '2026-11-05')!;
+      expect(between.selected).toBe('false');
+    }
+  });
+
+  it('outside marks the days of the other months in a one-month grid', async () => {
+    const el = await setup();
+    const all = marks(el, 'range-one');
+    expect(all.find((m) => m.date === '2026-10-30')?.outside).toBe('true');
+    expect(all.find((m) => m.date === '2026-11-15')?.outside).toBe('false');
+    expect(all.find((m) => m.date === '2026-12-01')?.outside).toBe('true');
+  });
+
+  it('outside is false for every shown day in a two-month grid, which blanks the other-month cells', async () => {
+    const el = await setup();
+    const all = marks(el, 'range-two');
+    const dates = all.map((m) => m.date);
+    // November and December, each day once, in the month in which it is shown.
+    expect(all.length).toBe(30 + 31);
+    expect(new Set(dates).size).toBe(dates.length);
+    expect(dates[0]).toBe('2026-11-01');
+    expect(dates.at(-1)).toBe('2026-12-31');
+    expect(all.every((m) => m.outside === 'false')).toBe(true);
+  });
+});

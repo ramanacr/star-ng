@@ -13,6 +13,7 @@ import {
   inject,
   Injector,
   input,
+  linkedSignal,
   output,
   signal,
   TemplateRef,
@@ -73,6 +74,13 @@ const VIRTUAL_BUFFER = 6;
 /** List height in pixels before the first scroll event gives the real height. */
 const VIRTUAL_FALLBACK_HEIGHT = 256;
 
+/** Elements that can take focus: candidates for the Tab order of the panel header and footer. */
+const PANEL_FOCUSABLE =
+  'a[href], area[href], button, input, select, textarea, iframe, summary, [tabindex], ' +
+  '[contenteditable]:not([contenteditable="false"])';
+/** Parts of the panel that the combobox keys control: the filter row and the option list. */
+const PANEL_OWN_PARTS = '.star-panel__filter, [role=listbox]';
+
 const PANEL_POSITIONS: ConnectedPosition[] = [
   { originX: 'start', originY: 'bottom', overlayX: 'start', overlayY: 'top', offsetY: 6 },
   { originX: 'start', originY: 'top', overlayX: 'start', overlayY: 'bottom', offsetY: -6 },
@@ -81,6 +89,12 @@ const PANEL_POSITIONS: ConnectedPosition[] = [
 /**
  * Shared state and keyboard model of the dropdown list controls (WAI-ARIA combobox +
  * listbox with `aria-activedescendant`). Subclasses add the selection model.
+ *
+ * Buttons, links and fields in the panel header and footer are in the tab order of the open
+ * panel: Tab in the combobox moves to them, Tab after the last one leaves the control, Shift+Tab
+ * from the first one returns to the combobox, and Escape closes the panel. A subclass template
+ * binds `onPanelMousedown`, `onPanelKeydown`, `onPanelFocusin` and `onPanelFocusout` on the
+ * `.star-panel` element.
  *
  * A subclass must provide `STAR_SLOT_HOST` (`{ provide: STAR_SLOT_HOST, useExisting:
  * forwardRef(() => MyControl) }`). Without it, slot directives find no host and the control
@@ -161,7 +175,27 @@ export abstract class StarOptionListBase<TOption, TValue> {
   protected readonly listId = this.ids.getId('star-listbox-');
   protected readonly open = signal(false);
   protected readonly filterValue = signal('');
-  protected readonly activeIndex = signal(-1);
+  /**
+   * Index of the active option in `visibleOptions`. When the options change (for example after a
+   * button in the panel header loads more), the same option stays active at its new index. When it
+   * is gone, the nearest enabled option at the old position becomes active.
+   */
+  protected readonly activeIndex = linkedSignal<readonly TOption[], number>({
+    source: () => this.visibleOptions(),
+    computation: (options, previous) => {
+      if (!previous || previous.value < 0) return -1;
+      const option = previous.source[previous.value];
+      const same = option === undefined ? -1 : options.indexOf(option);
+      if (same >= 0) return same;
+      const from = Math.min(previous.value, options.length - 1);
+      for (const step of [1, -1]) {
+        for (let i = from; i >= 0 && i < options.length; i += step) {
+          if (!this.isDisabled(options[i])) return i;
+        }
+      }
+      return -1;
+    },
+  });
   protected readonly showInvalid = computed(() => this.invalid() && this.touched());
   protected readonly interactive = computed(() => !this.disabled() && !this.readonly());
 
@@ -203,6 +237,18 @@ export abstract class StarOptionListBase<TOption, TValue> {
 
   private readonly listScrollTop = signal(0);
   private readonly listHeight = signal(0);
+  /** Measured height of the loading row, which is above the option rows (0 = not measured). */
+  private readonly loadingRowHeight = signal(0);
+
+  /**
+   * Space above the first row with `virtualScroll`: the loading row, while it shows. Before it
+   * is measured, it counts as one line.
+   */
+  private readonly leadHeight = computed(() =>
+    this.virtualScroll() && this.loadingRow()
+      ? this.loadingRowHeight() || Math.max(1, this.virtualItemSize())
+      : 0,
+  );
 
   /** First and last rendered line, and the heights of the lines left out. */
   protected readonly virtualWindow = computed(() => {
@@ -210,7 +256,8 @@ export abstract class StarOptionListBase<TOption, TValue> {
     if (!this.virtualScroll()) return { start: 0, end: count, before: 0, after: 0 };
     const size = Math.max(1, this.virtualItemSize());
     const visible = Math.ceil((this.listHeight() || VIRTUAL_FALLBACK_HEIGHT) / size);
-    const first = Math.min(Math.floor(this.listScrollTop() / size), Math.max(0, count - visible));
+    const top = Math.max(0, this.listScrollTop() - this.leadHeight());
+    const first = Math.min(Math.floor(top / size), Math.max(0, count - visible));
     const start = Math.max(0, first - VIRTUAL_BUFFER);
     const end = Math.min(count, first + visible + VIRTUAL_BUFFER);
     return { start, end, before: start * size, after: (count - end) * size };
@@ -225,14 +272,29 @@ export abstract class StarOptionListBase<TOption, TValue> {
   protected onListScroll(event: Event): void {
     if (!this.virtualScroll()) return;
     const list = event.target as HTMLElement;
+    this.measureLoadingRow(list);
     this.listScrollTop.set(list.scrollTop);
     this.listHeight.set(list.clientHeight);
   }
 
-  /** `aria-activedescendant` only names an option that is in the DOM. */
+  /** Reads the height of the loading row, which is the first line of the list while it shows. */
+  private measureLoadingRow(list: HTMLElement): void {
+    if (!this.virtualScroll() || !this.loadingRow()) return;
+    const row = list.querySelector<HTMLElement>(':scope > .star-listbox__empty');
+    if (row?.offsetHeight) this.loadingRowHeight.set(row.offsetHeight);
+  }
+
+  /** True while focus is on an element in the panel header or footer. */
+  protected readonly panelFocused = signal(false);
+
+  /**
+   * `aria-activedescendant` only names an option that is in the DOM. While focus is in the panel
+   * header or footer, it names nothing: the combobox does not have focus then. The active option
+   * stays, and comes back when focus returns to the combobox.
+   */
   protected readonly activeId = computed(() => {
     const index = this.activeIndex();
-    if (!this.open() || index < 0) return null;
+    if (!this.open() || index < 0 || this.panelFocused()) return null;
     const row = this.layout().rowOfOption[index];
     return row !== undefined && starListRowRendered(row, this.virtualWindow())
       ? this.optionId(index)
@@ -333,6 +395,7 @@ export abstract class StarOptionListBase<TOption, TValue> {
     if (!this.open()) return;
     this.open.set(false);
     this.activeIndex.set(-1);
+    this.panelFocused.set(false);
     this.listScrollTop.set(0);
     if (this.filterValue()) {
       this.filterValue.set('');
@@ -373,13 +436,120 @@ export abstract class StarOptionListBase<TOption, TValue> {
   protected onOutsideClick(event: MouseEvent): void {
     // Clicks on the trigger are handled by its own (click) toggle.
     if (this.trigger().nativeElement.contains(event.target as Node)) return;
+    // Focus that left the panel for an element outside has closed it already.
+    if (!this.open()) return;
+    this.dismiss();
+  }
+
+  /** Closes the panel because the user left the control. Emits `touch`. */
+  protected dismiss(): void {
     this.closePanel(false);
     this.touch.emit();
   }
 
-  /** Keeps focus on the trigger (or filter) while the user clicks inside the panel. */
+  private readonly hostElement = inject<ElementRef<HTMLElement>>(ElementRef);
+
+  /** The panel element. The overlay renders it, so it is found by the id of its list. */
+  private panelElement(): HTMLElement | null {
+    return this.listElement()?.closest<HTMLElement>('.star-panel') ?? null;
+  }
+
+  /**
+   * Elements of the panel header and footer that Tab reaches, in DOM order. The filter field,
+   * the "select all" box and the options are not in the list: the combobox keys control them.
+   */
+  protected panelTabStops(): HTMLElement[] {
+    const panel = this.panelElement();
+    if (!panel) return [];
+    return [...panel.querySelectorAll<HTMLElement>(PANEL_FOCUSABLE)].filter(
+      (element) =>
+        element.tabIndex >= 0 &&
+        !(element as HTMLButtonElement).disabled &&
+        !element.closest(PANEL_OWN_PARTS) &&
+        !element.closest('[hidden], [inert]') &&
+        element.checkVisibility?.({ visibilityProperty: true }) !== false,
+    );
+  }
+
+  /** Element that has focus for the combobox keys: the filter field when it shows, else the trigger. */
+  private comboboxElement(): HTMLElement {
+    const filter = this.filterInput()?.nativeElement;
+    return filter?.isConnected ? filter : this.trigger().nativeElement;
+  }
+
+  /**
+   * Leaves the control with Tab or Shift+Tab: focus goes to the trigger and the panel closes. The
+   * key is not cancelled, so the browser then moves focus from the trigger to the next (or the
+   * previous) element of the page. The panel hides at once, because the browser must not move
+   * focus into it while it is still in the DOM.
+   */
+  private leaveByTab(): void {
+    this.trigger().nativeElement.focus();
+    const panel = this.panelElement();
+    if (panel) panel.style.display = 'none';
+    this.closePanel(false);
+  }
+
+  /**
+   * Keeps focus on the trigger (or filter) while the user clicks the options or empty parts of
+   * the panel. A press on a focusable element in the header or footer (a button, link or field)
+   * is not cancelled, so that element gets focus.
+   */
   protected onPanelMousedown(event: MouseEvent): void {
-    if (!(event.target instanceof HTMLInputElement)) event.preventDefault();
+    const target = event.target;
+    if (target instanceof HTMLInputElement) return;
+    const focusable = target instanceof Element ? target.closest(PANEL_FOCUSABLE) : null;
+    if (
+      focusable &&
+      (event.currentTarget as Element).contains(focusable) &&
+      !focusable.closest(PANEL_OWN_PARTS)
+    ) {
+      return;
+    }
+    event.preventDefault();
+  }
+
+  /** Keys on the elements of the panel header and footer (the filter field has its own). */
+  protected onPanelKeydown(event: KeyboardEvent): void {
+    const target = event.target as HTMLElement;
+    if (event.defaultPrevented || target === this.filterInput()?.nativeElement) return;
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      // The overlay must not see the key: it would close the panel without focus on the trigger.
+      event.stopPropagation();
+      this.closePanel();
+      return;
+    }
+    if (event.key !== 'Tab' || event.altKey || event.ctrlKey || event.metaKey) return;
+    const stops = this.panelTabStops();
+    const index = stops.indexOf(target);
+    if (index < 0) return;
+    if (event.shiftKey) {
+      event.preventDefault();
+      (index > 0 ? stops[index - 1] : this.comboboxElement()).focus();
+    } else if (index < stops.length - 1) {
+      event.preventDefault();
+      stops[index + 1].focus();
+    } else {
+      this.leaveByTab();
+    }
+  }
+
+  protected onPanelFocusin(event: FocusEvent): void {
+    this.panelFocused.set(event.target !== this.filterInput()?.nativeElement);
+  }
+
+  /** Focus that leaves the panel and the control closes the panel, as a click outside does. */
+  protected onPanelFocusout(event: FocusEvent): void {
+    const next = event.relatedTarget instanceof Node ? event.relatedTarget : null;
+    const panel = event.currentTarget as HTMLElement;
+    if (next && panel.contains(next) && next !== this.filterInput()?.nativeElement) return;
+    this.panelFocused.set(false);
+    // No next element: the window lost focus, or the user clicked an empty part of the page
+    // (the outside click closes the panel then).
+    if (!next || !this.open() || panel.contains(next)) return;
+    if (this.hostElement.nativeElement.contains(next)) return;
+    this.dismiss();
   }
 
   protected onTriggerBlur(): void {
@@ -474,9 +644,21 @@ export abstract class StarOptionListBase<TOption, TValue> {
           this.closePanel();
         }
         return;
-      case 'Tab':
-        if (open) this.closePanel(false);
+      case 'Tab': {
+        if (!open) return;
+        // Panel header and footer with buttons or links: Tab moves into them (PrimeNG model).
+        const stops = this.panelTabStops();
+        if (stops.length && !event.shiftKey) {
+          event.preventDefault();
+          stops[0].focus();
+        } else if (stops.length && event.target !== this.trigger().nativeElement) {
+          // Shift+Tab from the filter field: the header is before it in the DOM, so leave by script.
+          this.leaveByTab();
+        } else {
+          this.closePanel(false);
+        }
         return;
+      }
       default:
         if (
           event.key.length === 1 &&
@@ -582,8 +764,10 @@ export abstract class StarOptionListBase<TOption, TValue> {
       const layout = this.layout();
       if (!list || layout.rowOfOption[this.activeIndex()] === undefined) return;
       const height = list.clientHeight || VIRTUAL_FALLBACK_HEIGHT;
-      // The lines start below the padding of the list: without it the last line is cut off.
-      const inset = parseFloat(getComputedStyle(list).paddingTop) || 0;
+      this.measureLoadingRow(list);
+      // The lines start below the padding of the list and the loading row: without them the last
+      // line is cut off.
+      const inset = (parseFloat(getComputedStyle(list).paddingTop) || 0) + this.leadHeight();
       const [first, last] = starListRevealRows(layout, this.activeIndex());
       const offset = starListRevealOffset(
         first,

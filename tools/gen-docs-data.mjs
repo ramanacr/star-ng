@@ -2,7 +2,8 @@
 //
 // 1. API: every component and directive of the library with its selector, inputs, models and
 //    outputs (name, type, default, description), read from the library source with the
-//    TypeScript compiler API.
+//    TypeScript compiler API. A member with an `@internal` tag in its doc comment is left out
+//    (for example an input that only another library component sets).
 // 2. Example source: the markup inside each `<docs-example source="page/id">` element of the
 //    docs pages, so the code that a page shows is always the code that runs.
 //
@@ -99,6 +100,8 @@ function signalMember(member, source) {
   }
   const call = member.initializer;
   if (!ts.isCallExpression(call)) return null;
+  const doc = jsDoc(member, source);
+  if (/^@internal/m.test(doc)) return null;
   const callee = call.expression.getText();
   const [base, variant] = callee.split('.');
   const kind = SIGNAL_KINDS[base];
@@ -135,7 +138,7 @@ function signalMember(member, source) {
     type: type.replace(/\s+/g, ' '),
     default: defaultText && defaultText.length <= 60 ? defaultText.replace(/\s+/g, ' ') : null,
     required,
-    description: summary(jsDoc(member, source)),
+    description: summary(doc),
   };
 }
 

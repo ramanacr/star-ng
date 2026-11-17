@@ -6,6 +6,7 @@ import {
   StarGroupTemplate,
   StarHeaderTemplate,
 } from '@star-ng/ui/core';
+import { StarOptionTemplate } from '@star-ng/ui/select';
 import { StarListbox } from './listbox';
 
 interface City {
@@ -75,6 +76,48 @@ class GroupedHost {
   readonly picked = signal<unknown>([]);
 }
 
+@Component({
+  imports: [StarListbox, StarGroupTemplate, StarOptionTemplate, StarEmptyTemplate],
+  template: `
+    <star-listbox
+      class="virt"
+      [options]="cities"
+      optionLabel="name"
+      optionValue="id"
+      optionGroup="country"
+      virtualScroll
+      ariaLabel="Virtual"
+    >
+      <ng-template starGroup let-label let-count="count">
+        <b class="vgrp">{{ label }} ({{ count }})</b>
+      </ng-template>
+      <ng-template starOption [starOptionOf]="cities" let-city
+        ><i class="vopt">{{ city.name }}!</i></ng-template
+      >
+    </star-listbox>
+    <star-listbox class="virt-empty" [options]="[]" virtualScroll ariaLabel="Virtual empty">
+      <ng-template starEmpty><b class="vnone">Nothing</b></ng-template>
+    </star-listbox>
+    <star-listbox
+      class="virt-bare"
+      [options]="cities"
+      optionLabel="name"
+      optionGroup="country"
+      virtualScroll
+      ariaLabel="Virtual bare"
+    />
+    <star-listbox
+      class="virt-bare-empty"
+      [options]="[]"
+      virtualScroll
+      ariaLabel="Virtual bare empty"
+    />
+  `,
+})
+class VirtualHost {
+  readonly cities = CITIES;
+}
+
 describe('StarListbox slots', () => {
   it('header and footer render around the list', () => {
     const fixture = TestBed.createComponent(PlainHost);
@@ -109,15 +152,35 @@ describe('StarListbox slots', () => {
     expect(groups).toEqual(['Germany (2)', 'India (1)']);
   });
 
-  it('checkbox or multiple selection still works with starGroup', () => {
+  it('multiple selection with starGroup: aria-selected, deselect and option count', () => {
     const fixture = TestBed.createComponent(GroupedHost);
     fixture.detectChanges();
-    const options = (fixture.nativeElement as HTMLElement).querySelectorAll<HTMLElement>(
-      '[role="option"]',
+    const root = fixture.nativeElement as HTMLElement;
+    const options = () => root.querySelectorAll<HTMLElement>('[role="option"]');
+    const selected = () =>
+      Array.from(options(), (o) => o.getAttribute('aria-selected')).map((v) => v === 'true');
+    expect(options().length).toBe(3);
+    expect(root.querySelector('[role="listbox"]')?.getAttribute('aria-multiselectable')).toBe(
+      'true',
     );
-    options[1].click();
+    expect(selected()).toEqual([false, false, false]);
+
+    options()[1].click();
     fixture.detectChanges();
-    expect(fixture.componentInstance.picked()).toContain(2);
+    expect(fixture.componentInstance.picked()).toEqual([2]);
+    expect(selected()).toEqual([false, true, false]);
+
+    options()[2].click();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.picked()).toEqual([2, 3]);
+    expect(selected()).toEqual([false, true, true]);
+
+    // A second click on a selected option removes it.
+    options()[1].click();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.picked()).toEqual([3]);
+    expect(selected()).toEqual([false, false, true]);
+    expect(options().length).toBe(3);
   });
 
   it('keeps default text unchanged without slots', () => {
@@ -141,6 +204,49 @@ describe('StarListbox slots', () => {
     );
     expect(groups).toEqual(['Germany', 'India']);
     expect(root.querySelector('.bare-empty .star-listbox__empty')?.textContent).toBe(
+      'No results found',
+    );
+  });
+});
+
+describe('StarListbox slots with virtualScroll', () => {
+  async function setup() {
+    const fixture = TestBed.createComponent(VirtualHost);
+    await fixture.whenStable();
+    return { fixture, el: fixture.nativeElement as HTMLElement };
+  }
+
+  it('starGroup and starOption render in the virtual rows', async () => {
+    const { el } = await setup();
+    const box = el.querySelector('.virt') as HTMLElement;
+    const groups = Array.from(box.querySelectorAll('.vgrp'), (n) => n.textContent?.trim());
+    expect(groups).toEqual(['Germany (2)', 'India (1)']);
+    const options = Array.from(box.querySelectorAll('.vopt'), (n) => n.textContent);
+    expect(options).toEqual(['Berlin!', 'Munich!', 'Pune!']);
+    const rows = box.querySelectorAll('[role="option"]');
+    expect(rows.length).toBe(3);
+    expect(rows[0].getAttribute('aria-setsize')).toBe('3');
+    expect(rows[0].getAttribute('aria-describedby')).toBe(
+      box.querySelector('.star-listbox__group')?.id,
+    );
+  });
+
+  it('starEmpty renders outside the virtual viewport', async () => {
+    const { el } = await setup();
+    const box = el.querySelector('.virt-empty') as HTMLElement;
+    const none = box.querySelector('.vnone') as HTMLElement;
+    expect(none.textContent).toBe('Nothing');
+    expect(box.querySelector('[role="listbox"]')?.contains(none)).toBe(false);
+  });
+
+  it('default group heading and empty text stay free of extra whitespace', async () => {
+    const { el } = await setup();
+    const groups = Array.from(
+      el.querySelectorAll('.virt-bare .star-listbox__group'),
+      (n) => n.textContent,
+    );
+    expect(groups).toEqual(['Germany', 'India']);
+    expect(el.querySelector('.virt-bare-empty .star-listbox__empty')?.textContent).toBe(
       'No results found',
     );
   });

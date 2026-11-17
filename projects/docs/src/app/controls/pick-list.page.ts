@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarPickList } from '@star-ng/ui/data-display';
+import { StarItemTemplate, StarPickList } from '@star-ng/ui/data-display';
 import { DOCS, DocsRow } from '../shared/docs';
 
 interface Member {
@@ -9,7 +9,7 @@ interface Member {
 
 @Component({
   selector: 'docs-pick-list-page',
-  imports: [DOCS, StarPickList],
+  imports: [DOCS, StarPickList, StarItemTemplate],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <docs-page
@@ -47,13 +47,36 @@ interface Member {
         </div>
       </docs-example>
 
+      <docs-example
+        heading="Custom item"
+        source="pick-list/item"
+        [script]="itemScript"
+        note="starItem replaces the label of an item in both lists. It gets the item, its index, selected and list (source or target). Use list to show a different item in each list. Do not put buttons or links in the template: every item is an option in a listbox and takes the keys."
+      >
+        <div class="docs-stack">
+          <star-pick-list [(source)]="people" [(target)]="team" optionLabel="name">
+            <ng-template starItem [starItemOf]="people()" let-member let-list="list">
+              {{ member.name }}
+              @if (list === 'target') {
+                <small style="color: var(--star-text-muted)">on the team</small>
+              }
+            </ng-template>
+          </star-pick-list>
+        </div>
+      </docs-example>
+
       <h2>Right-to-left</h2>
       <p>
         The source list is on the right in a right-to-left page and the transfer arrows turn around,
         so they point to the list that receives the items. See the Right-to-left guide.
       </p>
 
-      <docs-api [of]="['StarPickList']" [slots]="slots" [cssVars]="cssVars" [keyboard]="keyboard" />
+      <docs-api
+        [of]="['StarPickList', 'StarItemTemplate']"
+        [slots]="slots"
+        [cssVars]="cssVars"
+        [keyboard]="keyboard"
+      />
     </docs-page>
   `,
 })
@@ -76,10 +99,15 @@ readonly people = signal<readonly Member[]>([
 ]);
 readonly team = signal<readonly Member[]>([{ id: 4, name: 'Dan Moss' }]);`;
 
+  protected readonly itemScript = `// Import StarItemTemplate from '@star-ng/ui/data-display' in the component imports.
+readonly people = signal<readonly Member[]>([ /* as above */ ]);
+readonly team = signal<readonly Member[]>([ /* as above */ ]);`;
+
   protected readonly slots: readonly DocsRow[] = [
     {
-      name: '(none)',
-      description: 'The items come from the source and target models, not from content.',
+      name: 'ng-template[starItem]',
+      description:
+        'Content child. Replaces the label of an item in both lists. The context has $implicit (the item), index (from 0), selected and list (source or target). Set starItemOf to the items to type the item. Do not add focusable elements: every item is an option with its own keys.',
     },
   ];
   protected readonly cssVars: readonly DocsRow[] = [

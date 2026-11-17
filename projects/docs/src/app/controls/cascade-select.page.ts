@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { form, FormField, required } from '@angular/forms/signals';
 import { StarField } from '@star-ng/ui/field';
-import { StarCascadeSelect } from '@star-ng/ui/select';
+import { StarCascadeOptionTemplate, StarCascadeSelect } from '@star-ng/ui/select';
 import { DOCS, DocsRow } from '../shared/docs';
 
 interface Place {
@@ -13,7 +13,7 @@ interface Place {
 
 @Component({
   selector: 'docs-cascade-select-page',
-  imports: [DOCS, StarCascadeSelect, StarField, FormField],
+  imports: [DOCS, StarCascadeSelect, StarCascadeOptionTemplate, StarField, FormField],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <docs-page
@@ -84,6 +84,38 @@ interface Place {
       </docs-example>
 
       <docs-example
+        heading="Option template"
+        source="cascade-select/option"
+        [script]="optionScript"
+        note="starCascadeOption replaces the label of each option, for parents and leaves. The context extends the one of starOption: $implicit, selected and index, plus level (1 for the top level) and hasChildren. Pass starCascadeOptionOf to type the option. The check icon and the submenu arrow stay. Do not put buttons or links in the template: the menu item is the focus target."
+      >
+        <div class="docs-stack">
+          <star-cascade-select
+            [options]="places"
+            optionLabel="name"
+            optionValue="code"
+            [(value)]="templated"
+            placeholder="Choose a city"
+            ariaLabel="City with option template"
+          >
+            <ng-template
+              starCascadeOption
+              [starCascadeOptionOf]="places"
+              let-place
+              let-hasChildren="hasChildren"
+            >
+              @if (hasChildren) {
+                <strong>{{ place.name }}</strong>
+              } @else {
+                {{ place.name }} ({{ place.code }})
+              }
+            </ng-template>
+          </star-cascade-select>
+          <p class="docs-output" role="status">Value: {{ templated() ?? 'none' }}</p>
+        </div>
+      </docs-example>
+
+      <docs-example
         heading="Signal Forms"
         source="cascade-select/form"
         [script]="formScript"
@@ -112,7 +144,7 @@ interface Place {
       </p>
 
       <docs-api
-        [of]="['StarCascadeSelect']"
+        [of]="['StarCascadeSelect', 'StarCascadeOptionTemplate']"
         [slots]="slots"
         [cssVars]="cssVars"
         [keyboard]="keyboard"
@@ -147,6 +179,7 @@ export class CascadeSelectPage {
 
   protected readonly place = signal<string | null>(null);
   protected readonly pathPlace = signal<string | null>(null);
+  protected readonly templated = signal<string | null>(null);
 
   protected readonly officeModel = signal<{ city: string | null }>({ city: null });
   protected readonly office = form(this.officeModel, (path) => {
@@ -169,13 +202,26 @@ export class CascadeSelectPage {
   { name: 'Remote', code: 'REMOTE' },
 ];
 readonly place = signal<string | null>(null);`;
+  protected readonly optionScript = `// Import StarCascadeOptionTemplate in the component imports.
+readonly places: readonly Place[] = [
+  {
+    name: 'Germany',
+    children: [{ name: 'Bavaria', children: [{ name: 'Munich', code: 'DE-MUC' }] }],
+  },
+  { name: 'Remote', code: 'REMOTE' },
+];
+readonly templated = signal<string | null>(null);`;
   protected readonly formScript = `readonly officeModel = signal<{ city: string | null }>({ city: null });
 readonly office = form(this.officeModel, (path) => {
   required(path.city, { message: 'Choose a city.' });
 });`;
 
   protected readonly slots: readonly DocsRow[] = [
-    { name: '(none)', description: 'The options come from the options input, not from content.' },
+    {
+      name: 'ng-template[starCascadeOption]',
+      description:
+        'Content child. Replaces the label of each option (PrimeNG #option template). The context has $implicit (the option), selected, index, level and hasChildren. No focusable elements. The check icon and the submenu arrow stay.',
+    },
   ];
   protected readonly cssVars: readonly DocsRow[] = [
     { name: '--star-input-radius', description: 'Corner radius of the control.' },

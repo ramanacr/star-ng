@@ -191,7 +191,7 @@ interface Shipment {
         heading="Slots"
         source="select/slots"
         [script]="slotsScript"
-        note="Content child templates change parts of the control. starHeader and starFooter add content to the panel. starEmpty gets the filter text. starGroup gets the label and the count. starSelected draws the chosen value in the trigger. starIcon replaces one icon."
+        note="Content child templates change parts of the control. starHeader and starFooter add content to the panel. Buttons and links there are in the tab order of the open panel. starEmpty gets the filter text. starGroup gets the label and the count. starSelected draws the chosen value in the trigger. starIcon replaces one icon."
       >
         <star-select
           [options]="cities"
@@ -409,7 +409,20 @@ readonly office = form(this.officeModel, (path) => {
       description:
         'Typeahead: moves to the option that starts with the typed text. On a closed select it also chooses it. A space in the middle of the typed text belongs to the text.',
     },
-    { name: 'Escape', description: 'Closes the panel. The focus stays on the trigger.' },
-    { name: 'Tab', description: 'Closes the panel and moves the focus on.' },
+    {
+      name: 'Escape',
+      description:
+        'Closes the panel. The focus stays on the trigger, or goes back to it from the panel header or footer.',
+    },
+    {
+      name: 'Tab',
+      description:
+        'Closes the panel and moves the focus on. When the panel header or footer has buttons or links, Tab moves to them first, and Tab after the last one closes the panel.',
+    },
+    {
+      name: 'Shift + Tab',
+      description:
+        'In the panel header or footer: moves to the previous button or link. From the first one, the focus goes back to the trigger (or the filter field) and the panel stays open.',
+    },
   ];
 }

@@ -41,6 +41,12 @@ export interface StarMenuItem {
   readonly items?: readonly StarMenuItem[];
 }
 
+/** Context of the `itemTemplate` of `star-menu`. */
+export interface StarMenuItemContext {
+  /** The menu item. It is the same object that is in `items`, so extra fields are kept. */
+  readonly $implicit: StarMenuItem;
+}
+
 export const STAR_MENU_POSITIONS: ConnectedPosition[] = [
   { originX: 'start', originY: 'bottom', overlayX: 'start', overlayY: 'top', offsetY: 4 },
   { originX: 'end', originY: 'bottom', overlayX: 'end', overlayY: 'top', offsetY: 4 },
@@ -169,7 +175,13 @@ export class StarMenuInDialog {
       @if (item.icon) {
         <i class="star-menu__icon" [class]="item.icon" aria-hidden="true"></i>
       }
-      <span class="star-menu__label">{{ item.label }}</span>
+      <span class="star-menu__label">
+        @if (itemTemplate(); as template) {
+          <ng-container *ngTemplateOutlet="template; context: { $implicit: item }" />
+        } @else {
+          <ng-container>{{ item.label }}</ng-container>
+        }
+      </span>
       @if (item.shortcut) {
         <kbd class="star-menu__shortcut">{{ item.shortcut }}</kbd>
       }
@@ -187,6 +199,11 @@ export class StarMenu {
   /** Renders the menu in place instead of as a popup. */
   readonly inline = input(false, { transform: booleanAttribute });
   readonly ariaLabel = input<string | null>(null);
+  /**
+   * @internal Replaces the label text of each entry. The icon, the shortcut and the submenu arrow
+   * stay. Used by `star-cascade-select`. Not public API yet.
+   */
+  readonly itemTemplate = input<TemplateRef<StarMenuItemContext> | null>(null);
   readonly itemClick = output<StarMenuItem>();
 
   /** Root menu template, opened by `starMenuTrigger`. */
