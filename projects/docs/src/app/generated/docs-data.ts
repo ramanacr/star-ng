@@ -463,6 +463,23 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ]
   },
+  "StarButtonGroup": {
+    "kind": "component",
+    "selector": "star-button-group",
+    "entry": "@star-ng/ui/button",
+    "description": "Button group (PrimeNG `p-buttongroup`): joins adjacent buttons into one bar. The buttons share their borders and only the outer corners are round. Works with `star-button`, a native `button.star-btn` and `star-split-button`. Each button keeps its own action and its own tab stop: this is not a selection control (use `star-select-button` to pick a value).",
+    "inputs": [
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Name of the group for screen readers, for example \"Text alignment\"."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
   "StarCalendar": {
     "kind": "component",
     "selector": "star-calendar",
@@ -6553,6 +6570,9 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "block-ui/basic": "<div class=\"docs-stack\">\n  <star-block-ui [blocked]=\"blocked()\" message=\"Saving…\">\n    <div class=\"docs-stack\">\n      <star-field label=\"Note\">\n        <input starInput value=\"Waiting for approval\" />\n      </star-field>\n      <star-field label=\"Reference\">\n        <input starInput value=\"PO-1042\" />\n      </star-field>\n    </div>\n  </star-block-ui>\n  <star-button variant=\"secondary\" (pressed)=\"blockFor(1500)\">\n    Save (blocks for 1.5 s)\n  </star-button>\n  <star-button variant=\"secondary\" (pressed)=\"blocked.set(!blocked())\">\n    {{ blocked() ? 'Unblock' : 'Block' }}\n  </star-button>\n</div>",
   "breadcrumb/basic": "<star-breadcrumb [home]=\"home\" [items]=\"trail\" ariaLabel=\"Breadcrumb of the guide\" />",
   "breadcrumb/links": "<star-breadcrumb\n  ariaLabel=\"Breadcrumb of the install page\"\n  [items]=\"[\n    { label: 'Docs', url: 'https://example.com/docs' },\n    { label: 'Guides', url: 'https://example.com/docs/guides' },\n    { label: 'Install' },\n  ]\"\n/>",
+  "button-group/basic": "<div class=\"docs-stack\">\n  <star-button-group ariaLabel=\"Order actions\">\n    <star-button\n      variant=\"secondary\"\n      leadingIcon=\"ph-bold ph-floppy-disk\"\n      (pressed)=\"last.set('Save')\"\n    >\n      Save\n    </star-button>\n    <star-button\n      variant=\"secondary\"\n      leadingIcon=\"ph-bold ph-copy\"\n      (pressed)=\"last.set('Copy')\"\n    >\n      Copy\n    </star-button>\n    <star-button\n      variant=\"secondary\"\n      leadingIcon=\"ph-bold ph-trash\"\n      (pressed)=\"last.set('Delete')\"\n    >\n      Delete\n    </star-button>\n  </star-button-group>\n  <p class=\"docs-output\" role=\"status\">Last action: {{ last() }}</p>\n</div>",
+  "button-group/icons": "<div class=\"docs-stack\">\n  <star-button-group ariaLabel=\"Text alignment\">\n    <star-button\n      variant=\"secondary\"\n      iconOnly\n      leadingIcon=\"ph-bold ph-text-align-left\"\n      ariaLabel=\"Align left\"\n    />\n    <star-button\n      variant=\"secondary\"\n      iconOnly\n      leadingIcon=\"ph-bold ph-text-align-center\"\n      ariaLabel=\"Align center\"\n    />\n    <star-button\n      variant=\"secondary\"\n      iconOnly\n      leadingIcon=\"ph-bold ph-text-align-right\"\n      ariaLabel=\"Align right\"\n    />\n  </star-button-group>\n  <star-button-group ariaLabel=\"Pages\">\n    <star-button variant=\"secondary\" size=\"sm\">Previous</star-button>\n    <star-button variant=\"secondary\" size=\"sm\">Next</star-button>\n  </star-button-group>\n</div>",
+  "button-group/split": "<star-button-group ariaLabel=\"Invoice actions\">\n  <star-button variant=\"secondary\">Preview</star-button>\n  <star-split-button label=\"Send\" variant=\"secondary\" [items]=\"sendOptions\" />\n</star-button-group>",
   "button/full": "<div class=\"docs-stack\">\n  <star-button fullWidth>Continue</star-button>\n</div>",
   "button/icons": "<star-button leadingIcon=\"ph-bold ph-plus\">New order</star-button>\n<star-button variant=\"secondary\" trailingIcon=\"ph-bold ph-arrow-right star-icon-mirror\"\n  >Next</star-button\n>\n<star-button variant=\"ghost\" iconOnly leadingIcon=\"ph-bold ph-gear\" ariaLabel=\"Settings\" />",
   "button/sizes": "<star-button size=\"sm\">Small</star-button>\n<star-button size=\"md\">Medium</star-button>\n<star-button size=\"lg\">Large</star-button>",

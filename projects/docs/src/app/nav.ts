@@ -81,6 +81,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         keywords: 'action submit loading icon',
         load: () => import('./controls/button.page').then((m) => m.ButtonPage),
       },
+      {
+        label: 'Button group',
+        path: 'controls/button-group',
+        keywords: 'buttons joined bar toolbar segmented',
+        load: () => import('./controls/button-group.page').then((m) => m.ButtonGroupPage),
+      },
     ],
   },
   {
