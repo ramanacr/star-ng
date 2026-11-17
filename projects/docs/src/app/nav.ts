@@ -435,6 +435,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         load: () => import('./controls/skeleton.page').then((m) => m.SkeletonPage),
       },
       {
+        label: 'Virtual scroller',
+        path: 'controls/virtual-scroller',
+        keywords: 'virtual scroll windowing large list lazy load infinite performance',
+        load: () => import('./controls/virtual-scroller.page').then((m) => m.VirtualScrollerPage),
+      },
+      {
         label: 'Tree table',
         path: 'controls/tree-table',
         keywords: 'treetable hierarchy rows expand treegrid columns',

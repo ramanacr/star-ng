@@ -6430,6 +6430,104 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ],
     "outputs": []
+  },
+  "StarVirtualItemTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starVirtualItem]",
+    "entry": "@star-ng/ui/virtual-scroller",
+    "description": "Renders one item of `star-virtual-scroller`: `<ng-template starVirtualItem let-order let-i=\"index\">…</ng-template>`. PrimeNG `#item` template.",
+    "inputs": [
+      {
+        "name": "starVirtualItemOf",
+        "type": "readonly T[] | null",
+        "default": "null",
+        "required": false,
+        "description": "Optional: pass the items array to type `let-item` in strict templates."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
+  "StarVirtualScroller": {
+    "kind": "component",
+    "selector": "star-virtual-scroller",
+    "entry": "@star-ng/ui/virtual-scroller",
+    "description": "Virtual scroller (PrimeNG `p-scroller`, Angular CDK `cdk-virtual-scroll-viewport`): renders only the items in and near the view, so a list of thousands of items stays fast. Every item has the same size (`itemSize`, in pixels). Vertical or horizontal. With `lazy`, the scroller emits `lazyLoad` with the range it renders, and the application loads the data for that range.",
+    "inputs": [
+      {
+        "name": "items",
+        "type": "readonly T[]",
+        "default": "[]",
+        "required": false,
+        "description": "The items. In lazy mode, an array with one entry per item, where items not loaded yet are placeholders."
+      },
+      {
+        "name": "itemSize",
+        "type": "number",
+        "default": "40",
+        "required": false,
+        "description": "Size of one item in pixels: the height (vertical) or the width (horizontal). Every item has this size."
+      },
+      {
+        "name": "orientation",
+        "type": "'vertical' | 'horizontal'",
+        "default": "'vertical'",
+        "required": false,
+        "description": "Scroll direction."
+      },
+      {
+        "name": "scrollHeight",
+        "type": "string",
+        "default": "'20rem'",
+        "required": false,
+        "description": "CSS height of the viewport. A horizontal scroller needs it too: the viewport does not grow with its items."
+      },
+      {
+        "name": "scrollWidth",
+        "type": "string",
+        "default": "'100%'",
+        "required": false,
+        "description": "CSS width of the viewport."
+      },
+      {
+        "name": "lazy",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Emits `lazyLoad` when the rendered range changes."
+      },
+      {
+        "name": "loading",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows the loading slot (or a spinner) over the items, and sets `aria-busy`."
+      },
+      {
+        "name": "trackBy",
+        "type": "TrackByFunction<T> | null",
+        "default": "null",
+        "required": false,
+        "description": "Identity of an item, so the scroller keeps its DOM when the array changes. Default: the item itself."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Accessible name of the list."
+      }
+    ],
+    "models": [],
+    "outputs": [
+      {
+        "name": "lazyLoad",
+        "type": "StarVirtualRange",
+        "default": null,
+        "required": false,
+        "description": "Lazy mode: the range of items that is rendered now (with the buffer), so their data is needed."
+      }
+    ]
   }
 };
 
@@ -6762,5 +6860,8 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "tree/multiple": "<star-tree\n  [nodes]=\"folders\"\n  selectionMode=\"multiple\"\n  [(value)]=\"picked\"\n  [(expanded)]=\"multipleOpen\"\n  scrollHeight=\"16rem\"\n  ariaLabel=\"Folders to back up\"\n/>",
   "tree/single": "<div class=\"docs-stack\">\n  <star-tree\n    [nodes]=\"folders\"\n    selectionMode=\"single\"\n    [(value)]=\"selected\"\n    [(expanded)]=\"singleOpen\"\n    scrollHeight=\"16rem\"\n    ariaLabel=\"Folder\"\n    (nodeSelect)=\"lastNode.set($event.label)\"\n  />\n\n  <p class=\"docs-output\" role=\"status\">Selected: {{ selected().join(', ') || 'none' }}</p>\n\n  <p class=\"docs-output\" role=\"status\">Last node: {{ lastNode() }}</p>\n</div>",
   "tree/slots": "<star-tree\n  [nodes]=\"projects\"\n  [(expanded)]=\"projectsOpen\"\n  filter\n  scrollHeight=\"16rem\"\n  ariaLabel=\"Projects\"\n>\n  <ng-template starHeader>\n    <p class=\"docs-output\">Active projects</p>\n  </ng-template>\n  <ng-template starNode [starNodeOf]=\"projects\" let-node let-level=\"level\">\n    {{ node.label }}\n    @if (node.data) {\n      <small>(owner {{ node.data.owner }}, level {{ level }})</small>\n    }\n  </ng-template>\n  <ng-template starIcon=\"toggle\"\n    ><i class=\"ph-bold ph-arrow-right\" aria-hidden=\"true\"></i\n  ></ng-template>\n  <ng-template starEmpty let-text>No project matches {{ text }}.</ng-template>\n  <ng-template starFooter>\n    <p class=\"docs-output\">3 projects</p>\n  </ng-template>\n</star-tree>",
-  "tree/virtual": "<div class=\"docs-stack\">\n  <star-tree\n    [nodes]=\"large.nodes\"\n    [(expanded)]=\"largeOpen\"\n    selectionMode=\"checkbox\"\n    [(value)]=\"largeChecked\"\n    virtualScroll\n    [virtualItemSize]=\"34\"\n    filter\n    scrollHeight=\"20rem\"\n    ariaLabel=\"Orders by site\"\n  />\n\n  <p class=\"docs-output\" role=\"status\">\n    {{ large.count }} nodes, {{ largeChecked().length }} orders checked\n  </p>\n</div>"
+  "tree/virtual": "<div class=\"docs-stack\">\n  <star-tree\n    [nodes]=\"large.nodes\"\n    [(expanded)]=\"largeOpen\"\n    selectionMode=\"checkbox\"\n    [(value)]=\"largeChecked\"\n    virtualScroll\n    [virtualItemSize]=\"34\"\n    filter\n    scrollHeight=\"20rem\"\n    ariaLabel=\"Orders by site\"\n  />\n\n  <p class=\"docs-output\" role=\"status\">\n    {{ large.count }} nodes, {{ largeChecked().length }} orders checked\n  </p>\n</div>",
+  "virtual-scroller/basic": "<div class=\"docs-stack\">\n  <star-virtual-scroller\n    #orderList\n    [items]=\"orders\"\n    [itemSize]=\"44\"\n    scrollHeight=\"18rem\"\n    ariaLabel=\"Orders\"\n  >\n    <ng-template starVirtualItem [starVirtualItemOf]=\"orders\" let-order>\n      <span class=\"docs-scroller-row\">\n        <strong>{{ order.number }}</strong>\n        <span>{{ order.city }}</span>\n        <span>{{ order.total }} EUR</span>\n      </span>\n    </ng-template>\n  </star-virtual-scroller>\n  <div class=\"docs-row\">\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"orderList.scrollToIndex(0)\">\n      First order\n    </star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"orderList.scrollToIndex(4999)\">\n      Order 5,000\n    </star-button>\n    <star-button\n      size=\"sm\"\n      variant=\"secondary\"\n      (pressed)=\"orderList.scrollToIndex(orders.length - 1)\"\n    >\n      Last order\n    </star-button>\n  </div>\n  @let inView = orderList.visibleRange();\n  @if (inView.last > 0) {\n    <p class=\"docs-output\">In view: orders {{ inView.first + 1 }} to {{ inView.last }}.</p>\n  }\n</div>",
+  "virtual-scroller/horizontal": "<star-virtual-scroller\n  [items]=\"cities\"\n  [itemSize]=\"120\"\n  orientation=\"horizontal\"\n  scrollHeight=\"4rem\"\n  ariaLabel=\"Cities\"\n/>",
+  "virtual-scroller/lazy": "<star-virtual-scroller\n  [items]=\"lazyOrders()\"\n  [itemSize]=\"44\"\n  scrollHeight=\"18rem\"\n  lazy\n  [loading]=\"page.isLoading()\"\n  ariaLabel=\"Orders, loaded on demand\"\n  (lazyLoad)=\"range.set($event)\"\n>\n  <ng-template starVirtualItem [starVirtualItemOf]=\"lazyOrders()\" let-order>\n    @if (order) {\n      <span class=\"docs-scroller-row\">\n        <strong>{{ order.number }}</strong>\n        <span>{{ order.city }}</span>\n        <span>{{ order.total }} EUR</span>\n      </span>\n    } @else {\n      <star-skeleton width=\"70%\" height=\"0.875rem\" />\n    }\n  </ng-template>\n</star-virtual-scroller>"
 };
