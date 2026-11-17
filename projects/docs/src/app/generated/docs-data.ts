@@ -107,6 +107,51 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarAppBar": {
+    "kind": "component",
+    "selector": "star-app-bar",
+    "entry": "@star-ng/ui/app-bar",
+    "description": "App bar (Ignite `igx-navbar`, Material `mat-toolbar` used as the top bar): the top bar of an application or a view, with a start area (menu button, logo), a title and an end area (actions).",
+    "inputs": [
+      {
+        "name": "title",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "Title text. The default content goes after it, so a custom title can replace it."
+      },
+      {
+        "name": "position",
+        "type": "StarAppBarPosition",
+        "default": "'static'",
+        "required": false,
+        "description": "`static` scrolls with the page; `sticky` stays at the top of its scroll container (below the safe area of the device); `fixed` stays at the top of the window, over the page."
+      },
+      {
+        "name": "elevated",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "A shadow under the bar."
+      },
+      {
+        "name": "dense",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "A lower bar."
+      },
+      {
+        "name": "landmark",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "`true`: the bar is the `banner` landmark. `false`: no landmark role (nested or second bar)."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
   "StarAutoComplete": {
     "kind": "component",
     "selector": "star-autocomplete",
@@ -6689,6 +6734,8 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "accordion/basic": "<div class=\"docs-stack\">\n  <star-accordion [(value)]=\"open\">\n    <star-accordion-panel value=\"shipping\" header=\"Shipping\" icon=\"ph-bold ph-truck\">\n      Orders ship within two working days.\n    </star-accordion-panel>\n    <star-accordion-panel\n      value=\"returns\"\n      header=\"Returns\"\n      icon=\"ph-bold ph-arrow-u-up-left\"\n    >\n      Items can be returned for 30 days.\n    </star-accordion-panel>\n    <star-accordion-panel value=\"billing\" header=\"Billing\" disabled>\n      This section is disabled.\n    </star-accordion-panel>\n  </star-accordion>\n  <p class=\"docs-output\" role=\"status\">Open: {{ open().join(', ') || 'none' }}</p>\n</div>",
   "accordion/multiple": "<div class=\"docs-stack\">\n  <star-accordion multiple [value]=\"['summary']\">\n    <star-accordion-panel value=\"summary\" header=\"Summary\">\n      Twelve items, one parcel.\n    </star-accordion-panel>\n    <star-accordion-panel value=\"history\" header=\"History\">\n      <ng-template starAccordionContent>\n        <p>Created on Monday. Packed on Tuesday.</p>\n      </ng-template>\n    </star-accordion-panel>\n  </star-accordion>\n</div>",
   "animate-on-scroll/basic": "<div class=\"docs-reveal-box\" tabindex=\"0\" aria-label=\"Scrollable list of blocks\">\n  @for (block of blocks; track block) {\n    <div class=\"docs-reveal-box__item\" starAnimateOnScroll>Block {{ block }}</div>\n  }\n</div>",
+  "app-bar/basic": "<star-app-bar title=\"Orders\" [landmark]=\"false\">\n  <star-button\n    starAppBarStart\n    variant=\"ghost\"\n    iconOnly\n    leadingIcon=\"ph-bold ph-list\"\n    ariaLabel=\"Menu\"\n  />\n  <star-button\n    starAppBarEnd\n    variant=\"ghost\"\n    iconOnly\n    leadingIcon=\"ph-bold ph-magnifying-glass\"\n    ariaLabel=\"Search orders\"\n  />\n  <star-button\n    starAppBarEnd\n    variant=\"ghost\"\n    iconOnly\n    leadingIcon=\"ph-bold ph-bell\"\n    ariaLabel=\"Notifications\"\n  />\n  <star-avatar starAppBarEnd name=\"Order Desk\" size=\"sm\" />\n</star-app-bar>",
+  "app-bar/sticky": "<div class=\"docs-app-bar-frame\">\n  <star-app-bar position=\"sticky\" elevated dense [landmark]=\"false\">\n    <star-button\n      starAppBarStart\n      variant=\"ghost\"\n      iconOnly\n      leadingIcon=\"ph-bold ph-arrow-left\"\n      ariaLabel=\"Back to projects\"\n    />\n    Project Apollo\n    <star-button starAppBarEnd variant=\"ghost\" size=\"sm\">Share</star-button>\n  </star-app-bar>\n  @for (week of weeks; track week) {\n    <p>Week {{ week }}: 12 tasks planned, 9 done, 3 moved to the next week.</p>\n  }\n</div>",
   "autocomplete/async": "<div class=\"docs-stack\">\n  <star-autocomplete\n    [suggestions]=\"results()\"\n    [loading]=\"searching()\"\n    [minQueryLength]=\"2\"\n    [delay]=\"150\"\n    (completeMethod)=\"search($event)\"\n    optionLabel=\"name\"\n    optionValue=\"id\"\n    [(value)]=\"found\"\n    placeholder=\"Type 2 letters of a name\"\n    ariaLabel=\"Colleague\"\n    showClear\n  />\n  <p class=\"docs-output\" role=\"status\">Colleague: {{ found() ?? 'none' }}</p>\n</div>",
   "autocomplete/dropdown": "<star-autocomplete\n  [options]=\"cities\"\n  [(value)]=\"dropdownCity\"\n  placeholder=\"Search a city\"\n  ariaLabel=\"City with dropdown\"\n  dropdown\n  autoHighlight\n  showClear\n/>",
   "autocomplete/form": "<div class=\"docs-stack\">\n  <star-field label=\"Assignee\" for=\"autocomplete-form-assignee\" [state]=\"task.assignee()\">\n    <star-autocomplete\n      inputId=\"autocomplete-form-assignee\"\n      [formField]=\"task.assignee\"\n      [options]=\"people\"\n      optionLabel=\"name\"\n      optionValue=\"id\"\n      placeholder=\"Search a person\"\n      showClear\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ task().valid() }}</p>\n</div>",

@@ -1,0 +1,54 @@
+// App bar (StarAppBar): the top bar of an application or a view.
+.star-app-bar {
+  --star-app-bar-height: 3.5rem;
+  display: block;
+  z-index: 20;
+  background: var(--star-surface);
+  color: var(--star-text-strong);
+  border-block-end: 1px solid var(--star-border);
+}
+.star-app-bar--dense {
+  --star-app-bar-height: 2.75rem;
+}
+// Sticky and fixed bars stay below the notch or status bar of the device.
+.star-app-bar--sticky {
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+}
+.star-app-bar--fixed {
+  position: fixed;
+  inset-block-start: 0;
+  inset-inline: 0;
+  padding-block-start: env(safe-area-inset-top, 0px);
+}
+.star-app-bar--elevated {
+  border-block-end-color: transparent;
+  box-shadow: var(--star-shadow-md);
+}
+.star-app-bar__bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-block-size: var(--star-app-bar-height);
+  padding-inline: 0.5rem;
+}
+.star-app-bar__start,
+.star-app-bar__end {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 0.25rem;
+
+  &:empty {
+    display: none;
+  }
+}
+.star-app-bar__title {
+  flex: 1;
+  min-inline-size: 0;
+  padding-inline: 0.5rem;
+  overflow: hidden;
+  font: var(--star-type-title-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

@@ -341,6 +341,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
     label: 'Navigation',
     items: [
       {
+        label: 'App bar',
+        path: 'controls/app-bar',
+        keywords: 'navbar toolbar header top bar title actions sticky banner landmark',
+        load: () => import('./controls/app-bar.page').then((m) => m.AppBarPage),
+      },
+      {
         label: 'Breadcrumb',
         path: 'controls/breadcrumb',
         keywords: 'path trail home location',
