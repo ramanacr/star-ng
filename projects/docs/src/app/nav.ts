@@ -423,6 +423,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         load: () => import('./controls/avatar.page').then((m) => m.AvatarPage),
       },
       {
+        label: 'Avatar group',
+        path: 'controls/avatar-group',
+        keywords: 'avatars stack overlap team members more',
+        load: () => import('./controls/avatar-group.page').then((m) => m.AvatarGroupPage),
+      },
+      {
         label: 'Chip',
         path: 'controls/chip',
         keywords: 'pill label remove removable',

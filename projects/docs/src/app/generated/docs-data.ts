@@ -237,6 +237,44 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarAvatarGroup": {
+    "kind": "component",
+    "selector": "star-avatar-group",
+    "entry": "@star-ng/ui/avatar",
+    "description": "Avatar group (PrimeNG `p-avatargroup`): a row of overlapping `star-avatar`s. With `max`, the avatars over the limit are hidden and a \"+N\" avatar takes their place; its accessible name is \"N more\" (`STAR_UI_TEXT.moreCount`).",
+    "inputs": [
+      {
+        "name": "max",
+        "type": "number | null",
+        "default": "null",
+        "required": false,
+        "description": "Number of avatars to show. The rest are counted in the \"+N\" avatar. `null` shows all."
+      },
+      {
+        "name": "size",
+        "type": "'sm' | 'md' | 'lg' | 'xl'",
+        "default": "'md'",
+        "required": false,
+        "description": "Size of the \"+N\" avatar. Use the size of the avatars."
+      },
+      {
+        "name": "shape",
+        "type": "'circle' | 'square'",
+        "default": "'circle'",
+        "required": false,
+        "description": "Shape of the \"+N\" avatar. Use the shape of the avatars."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Name of the group, for example \"Project team\"."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
   "StarBadge": {
     "kind": "component",
     "selector": "star-badge",
@@ -6504,6 +6542,8 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "autocomplete/multiple": "<div class=\"docs-stack\">\n  <star-multi-autocomplete\n    [options]=\"keywords\"\n    [(value)]=\"chosen\"\n    [selectionLimit]=\"4\"\n    placeholder=\"Add a keyword\"\n    ariaLabel=\"Keywords\"\n    dropdown\n    autoHighlight\n    showClear\n  />\n  <p class=\"docs-output\" role=\"status\">Keywords: {{ chosen().join(', ') || 'none' }}</p>\n</div>",
   "autocomplete/objects": "<star-autocomplete\n  [options]=\"people\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  optionGroup=\"team\"\n  [(value)]=\"person\"\n  placeholder=\"Search a person\"\n  ariaLabel=\"Person\"\n>\n  <ng-template starOption [starOptionOf]=\"people\" let-item>\n    <span>\n      {{ item.name }}\n      <small>{{ item.team }}</small>\n    </span>\n  </ng-template>\n</star-autocomplete>",
   "autocomplete/slots": "<div class=\"docs-stack\">\n  <star-autocomplete\n    [options]=\"officeCities\"\n    [(value)]=\"officeCity\"\n    [loading]=\"officesLoading()\"\n    optionLabel=\"name\"\n    optionValue=\"code\"\n    optionGroup=\"country\"\n    placeholder=\"Search a city\"\n    ariaLabel=\"Office city\"\n  >\n    <ng-template starHeader>\n      <p class=\"docs-output\">Cities with an office</p>\n    </ng-template>\n    <ng-template starGroup let-country let-count=\"count\">\n      {{ country }} ({{ count }})\n    </ng-template>\n    <ng-template starEmpty let-text>No city matches {{ text }}.</ng-template>\n    <ng-template starLoading>\n      <p class=\"docs-output\">Loading the office list...</p>\n    </ng-template>\n    <ng-template starFooter>\n      <p class=\"docs-output\">{{ officeCities.length }} cities</p>\n      <button\n        type=\"button\"\n        class=\"star-btn star-btn--sm star-btn--ghost\"\n        (click)=\"reloadOffices()\"\n      >\n        Reload\n      </button>\n    </ng-template>\n  </star-autocomplete>\n  <p class=\"docs-output\" role=\"status\">City: {{ officeCity() ?? 'none' }}</p>\n</div>",
+  "avatar-group/max": "<star-avatar-group [max]=\"3\" ariaLabel=\"Project team\">\n  @for (member of team; track member) {\n    <star-avatar [name]=\"member\" />\n  }\n</star-avatar-group>",
+  "avatar-group/sizes": "<div class=\"docs-stack\">\n  <star-avatar-group size=\"sm\" ariaLabel=\"Reviewers\">\n    <star-avatar name=\"Jane Doe\" size=\"sm\" />\n    <star-avatar name=\"Sam Lee\" size=\"sm\" />\n    <star-avatar name=\"Ava Stone\" size=\"sm\" />\n  </star-avatar-group>\n  <star-avatar-group [max]=\"2\" size=\"lg\" shape=\"square\" ariaLabel=\"Workspaces\">\n    <star-avatar name=\"North Office\" size=\"lg\" shape=\"square\" />\n    <star-avatar name=\"South Office\" size=\"lg\" shape=\"square\" />\n    <star-avatar name=\"East Office\" size=\"lg\" shape=\"square\" />\n    <star-avatar name=\"West Office\" size=\"lg\" shape=\"square\" />\n  </star-avatar-group>\n</div>",
   "avatar/basic": "<star-avatar name=\"Jane Doe\" />\n<star-avatar name=\"Sam Lee\" shape=\"square\" />\n<star-avatar />\n<star-avatar name=\"Ava Stone\" icon=\"ph-bold ph-buildings\" />",
   "avatar/image": "<star-avatar name=\"Broken Image\" image=\"data:,\" size=\"lg\" />",
   "avatar/sizes": "<star-avatar name=\"Jane Doe\" size=\"sm\" />\n<star-avatar name=\"Jane Doe\" size=\"md\" />\n<star-avatar name=\"Jane Doe\" size=\"lg\" />\n<star-avatar name=\"Jane Doe\" size=\"xl\" />",

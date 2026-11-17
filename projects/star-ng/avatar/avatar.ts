@@ -1,4 +1,20 @@
-import { ChangeDetectionStrategy, Component, computed, input, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  InjectionToken,
+  input,
+  signal,
+} from '@angular/core';
+
+/**
+ * Provided by `star-avatar-group`. An avatar inside a group asks it whether it is one of the
+ * avatars over `max`, which the group hides.
+ */
+export const STAR_AVATAR_GROUP = new InjectionToken<{ hides(avatar: StarAvatar): boolean }>(
+  'STAR_AVATAR_GROUP',
+);
 
 /**
  * Avatar (PrimeNG `p-avatar`): image, initials from a name, or an icon; circle or square.
@@ -14,6 +30,7 @@ import { ChangeDetectionStrategy, Component, computed, input, signal } from '@an
     '[attr.role]': "name() ? 'img' : null",
     '[attr.aria-hidden]': "name() ? null : 'true'",
     '[attr.aria-label]': 'name() || null',
+    '[hidden]': 'hiddenByGroup()',
   },
   template: `
     @if (image() && !failed()) {
@@ -32,6 +49,9 @@ export class StarAvatar {
   readonly size = input<'sm' | 'md' | 'lg' | 'xl'>('md');
   readonly shape = input<'circle' | 'square'>('circle');
 
+  private readonly group = inject(STAR_AVATAR_GROUP, { optional: true });
+  /** In a `star-avatar-group`, true when this avatar is over `max` of the group. */
+  protected readonly hiddenByGroup = computed(() => this.group?.hides(this) ?? false);
   protected readonly failed = signal(false);
   protected readonly initials = computed(() =>
     this.name()
