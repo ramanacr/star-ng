@@ -14,7 +14,7 @@ import {
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
 import { STAR_UI_TEXT } from '@star-ng/ui/core';
-import { StarField } from '@star-ng/ui/field';
+import { injectStarFieldLink } from '@star-ng/ui/field';
 
 export type StarTagRejection = 'invalid' | 'duplicate' | 'limit';
 
@@ -104,12 +104,7 @@ export type StarTagRejection = 'invalid' | 'duplicate' | 'limit';
 export class StarInputTags implements FormValueControl<readonly string[]> {
   protected readonly text = inject(STAR_UI_TEXT);
   private readonly ids = inject(_IdGenerator);
-  private readonly field = inject(StarField, { optional: true });
-
-  constructor() {
-    // The label of a parent `star-field` points at the input.
-    this.field?.linkControl(this.inputId);
-  }
+  private readonly field = injectStarFieldLink(() => this.inputId());
 
   readonly value = model<readonly string[]>([]);
   readonly placeholder = input<string | null>(null);

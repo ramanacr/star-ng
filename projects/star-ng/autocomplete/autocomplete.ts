@@ -104,7 +104,7 @@ export abstract class StarAutoCompleteBase<TOption, TValue> extends StarOptionLi
   constructor() {
     super();
     // The trigger is a native input: the field label points at it with \`for\`.
-    this.field?.linkControl(this.inputId);
+    this.linkField();
     inject(DestroyRef).onDestroy(() => clearTimeout(this.searchTimer));
     // New results: show them from the top and highlight the first one (autoHighlight) or nothing.
     effect(() => {

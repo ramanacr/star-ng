@@ -17,7 +17,7 @@ import {
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
 import { STAR_UI_TEXT, StarDirectionService } from '@star-ng/ui/core';
-import { StarField, starJoinIds } from '@star-ng/ui/field';
+import { injectStarFieldLink, starJoinIds } from '@star-ng/ui/field';
 import { StarTimeColumns } from './time-columns';
 
 const PANEL_POSITIONS: ConnectedPosition[] = [
@@ -129,8 +129,8 @@ export class StarTimePicker implements FormValueControl<string | null> {
   protected readonly text = inject(STAR_UI_TEXT);
   private readonly ids = inject(_IdGenerator);
   private readonly injector = inject(Injector);
-  /** The parent `star-field`, if any: its label names the input, its hint or error describes it. */
-  private readonly field = inject(StarField, { optional: true });
+  /** The parent `star-field` when it labels the input (with `for`); its hint or error describes it. */
+  private readonly field = injectStarFieldLink(() => this.inputId());
 
   /** `HH:mm` in the 24-hour clock, or `null`. */
   readonly value = model<string | null>(null);
@@ -175,11 +175,6 @@ export class StarTimePicker implements FormValueControl<string | null> {
 
   private readonly minuteStep = computed(() => Math.max(1, Math.floor(this.stepMinute())));
   private readonly timeColumns = viewChild(StarTimeColumns);
-
-  constructor() {
-    // The input is labelable: the field label points at it with `for`.
-    this.field?.linkControl(this.inputId);
-  }
 
   protected onChange(text: string): void {
     // The native input gives `HH:mm` (or `HH:mm:ss`); empty text clears the value.

@@ -147,6 +147,13 @@ const PLACES = [{ name: 'Germany', children: [{ name: 'Munich' }] }];
         <star-autocomplete [suggestions]="cities" />
       }
     </star-field>
+    <star-field id="f-ro-date" label="Read-only typing"
+      ><star-date-picker readonlyInput
+    /></star-field>
+    <star-field id="f-two" label="Shared" hint="Shared hint" error="Shared error">
+      <star-select id="first" [options]="cities" />
+      <star-select id="second" [options]="cities" />
+    </star-field>
   `,
 })
 class Host {
@@ -277,13 +284,13 @@ describe('star-field label linking (#55)', () => {
     const { fixture, el } = await setup();
     const { field, label } = fieldParts(el, id);
     if (LABELABLE.has(id)) {
-      // Native label: the browser focuses (and names) the labelled input.
+      // The label points at the input, so the browser names it.
       const control = label.control;
       expect(control, id).not.toBeNull();
       expect(field.contains(control)).toBe(true);
-      return;
+    } else {
+      expect(label.hasAttribute('for'), `${id} label has no for`).toBe(false);
     }
-    expect(label.hasAttribute('for'), `${id} label has no for`).toBe(false);
     label.click();
     await fixture.whenStable();
     expect(field.contains(document.activeElement), `${id} focus`).toBe(true);
@@ -369,5 +376,90 @@ describe('star-field label linking (#55)', () => {
     const combobox = el.querySelector('#f-swap [role=combobox]')!;
     expect(label.hasAttribute('for')).toBe(false);
     expect(combobox.getAttribute('aria-labelledby')).toBe(label.id);
+  });
+
+  it('a second control in the same field does not use the label, the hint or the error', async () => {
+    const { el } = await setup();
+    const label = el.querySelector('#f-two label')!;
+    const first = el.querySelector('#first [role=combobox]')!;
+    const second = el.querySelector('#second [role=combobox]')!;
+    expect(first.getAttribute('aria-labelledby')).toBe(label.id);
+    expect(first.getAttribute('aria-describedby')).toBe(
+      el.querySelector('#f-two .star-field__error')!.id,
+    );
+    expect(first.getAttribute('aria-invalid')).toBe('true');
+    expect(second.hasAttribute('aria-labelledby')).toBe(false);
+    expect(second.hasAttribute('aria-describedby')).toBe(false);
+    expect(second.hasAttribute('aria-invalid')).toBe(false);
+  });
+});
+
+describe('a click on a star-field label only focuses (#55)', () => {
+  async function clickLabel(id: string) {
+    const ctx = await setup();
+    const { field, label } = fieldParts(ctx.el, id);
+    const input = label.control as HTMLInputElement;
+    expect(input, id).not.toBeNull();
+    const clicks = vi.fn();
+    input.addEventListener('click', clicks);
+    label.click();
+    await ctx.fixture.whenStable();
+    return { ...ctx, field, input, clicks };
+  }
+
+  it('does not open the file dialog of a file upload', async () => {
+    const { input, clicks } = await clickLabel('f-upload');
+    expect(clicks).not.toHaveBeenCalled();
+    expect(document.activeElement).toBe(input);
+  });
+
+  it('does not open the popup of a date picker with readonlyInput', async () => {
+    const { input, clicks } = await clickLabel('f-ro-date');
+    expect(clicks).not.toHaveBeenCalled();
+    expect(document.activeElement).toBe(input);
+    expect(document.querySelector('.star-date__panel')).toBeNull();
+  });
+
+  it('does not toggle a checkbox or a switch', async () => {
+    for (const id of ['f-check', 'f-switch']) {
+      const { input, clicks } = await clickLabel(id);
+      expect(clicks, id).not.toHaveBeenCalled();
+      expect(input.checked, id).toBe(false);
+      expect(document.activeElement, id).toBe(input);
+    }
+  });
+
+  it('keeps the native label behaviour with a for that the user set', async () => {
+    @Component({
+      imports: [StarField],
+      template: `<star-field label="Agree" for="own-box"
+        ><input id="own-box" type="checkbox"
+      /></star-field>`,
+    })
+    class OwnFor {}
+    const fixture = TestBed.createComponent(OwnFor);
+    document.body.appendChild(fixture.nativeElement);
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+    el.querySelector<HTMLLabelElement>('label')!.click();
+    expect(el.querySelector<HTMLInputElement>('#own-box')!.checked).toBe(true);
+  });
+});
+
+describe('StarField.linkControl outside an injection context', () => {
+  it('does not throw, and unlinkControl ends the link', async () => {
+    @Component({ imports: [StarField], template: `<star-field label="Late" />` })
+    class Late {}
+    const fixture = TestBed.createComponent(Late);
+    await fixture.whenStable();
+    const field = fixture.debugElement.children[0].injector.get(StarField);
+    const id = () => 'late-input';
+    expect(field.linkControl(id)).toBe(true);
+    expect(field.linkControl(() => 'other')).toBe(false);
+    await fixture.whenStable();
+    const label = (fixture.nativeElement as HTMLElement).querySelector('label')!;
+    expect(label.htmlFor).toBe('late-input');
+    field.unlinkControl(id);
+    expect(field.linkControl(() => 'other')).toBe(true);
   });
 });

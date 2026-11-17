@@ -1,4 +1,5 @@
 import { _IdGenerator } from '@angular/cdk/a11y';
+import { DOCUMENT } from '@angular/common';
 import {
   afterRenderEffect,
   booleanAttribute,
@@ -39,14 +40,14 @@ export interface StarFieldStateLike {
   host: { class: 'star-field', '[class.star-field--invalid]': 'errorText()' },
   template: `
     @if (label()) {
-      <!-- The click does what a label click does natively: it moves the focus to the control.
-           Keyboard users reach the control itself with Tab, so the label needs no key handler. -->
+      <!-- A click on the label only moves the focus to the control (see onLabelClick). Keyboard
+           users reach the control itself with Tab, so the label needs no key handler. -->
       <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
       <label
         class="star-field__label"
         [id]="labelId"
         [attr.for]="labelFor()"
-        (click)="onLabelClick()"
+        (click)="onLabelClick($event)"
       >
         {{ label() }}
         @if (isRequired()) {
@@ -78,6 +79,7 @@ export class StarField {
   readonly for = input<string | null>(null);
 
   private readonly ids = inject(_IdGenerator);
+  private readonly document = inject(DOCUMENT);
   readonly labelId = this.ids.getId('star-field-label-');
   readonly hintId = this.ids.getId('star-field-hint-');
   readonly errorId = this.ids.getId('star-field-error-');
@@ -123,34 +125,74 @@ export class StarField {
   );
 
   /**
-   * Called by a StarNG control inside this field, in its constructor (an injection context). The
-   * control also reads `describedBy()` and `errorText()`.
+   * Called by a StarNG control inside this field. The control also reads `describedBy()` and
+   * `errorText()`. Use `injectStarFieldLink` in a control: it calls this method and returns the
+   * field only when the control owns the label.
    *
    * The first control wins: a control inside the popup of another one (the calendar of a date
    * picker, the tree of a tree select) does not take the label. The link ends when the control is
    * destroyed, so the next control that links (for example after an `@if`) gets the label.
-   * Returns `true` when this control now owns the label.
+   * Returns `true` when this control now owns the label. A control that gets `false` must not use
+   * the label, the hint or the error of the field.
+   *
+   * The link ends with `destroyRef`. Without it, a call in an injection context (a constructor or
+   * a field initializer) uses the `DestroyRef` of the caller. A call outside an injection context
+   * without `destroyRef` keeps the link until `unlinkControl` is called with the same id.
    *
    * - A control with a labelable element (`input`, `textarea`, `select`, `button`) passes only the
-   *   id of that element. The label points at it with `for`, so the browser names and focuses it.
+   *   id of that element. The label points at it with `for`, so the browser names it, and a click
+   *   on the label focuses it.
    * - A control without one (a `div` combobox, a radio group, a slider drawn in SVG) also passes
    *   `focus`. The label then has no `for` (a `for` that names such an element is invalid HTML),
    *   the control names itself with `aria-labelledby` (`labelledBy()`), and a click on the label
    *   calls `focus`. Such a control may pass `null` as the id.
    */
-  linkControl(controlId: Signal<string> | (() => string) | null, focus?: () => void): boolean {
+  linkControl(
+    controlId: Signal<string> | (() => string) | null,
+    focus?: () => void,
+    destroyRef?: DestroyRef,
+  ): boolean {
     if (this.linked()) return false;
     const link = { id: controlId, focus: focus ?? null };
     this.linked.set(link);
-    inject(DestroyRef).onDestroy(() => {
+    (destroyRef ?? callerDestroyRef())?.onDestroy(() => {
       if (this.linked() === link) this.linked.set(null);
     });
     return true;
   }
 
-  protected onLabelClick(): void {
+  /** Ends the link of the control that linked with `controlId` (see `linkControl`). */
+  unlinkControl(controlId: Signal<string> | (() => string) | null): void {
+    if (this.linked()?.id === controlId) this.linked.set(null);
+  }
+
+  /**
+   * A click on the label moves the focus to the control and does nothing else. The native label
+   * click would also activate the input: open the file dialog, toggle a checkbox, or open the
+   * popup of a date picker that opens on click. The field label is a heading above the control
+   * (a checkbox has its own label), so it only focuses. A `for` that the user set keeps the
+   * native behaviour.
+   */
+  protected onLabelClick(event: MouseEvent): void {
     if (this.for() !== null) return;
-    this.linked()?.focus?.();
+    const focus = this.linked()?.focus;
+    if (focus) {
+      focus();
+      return;
+    }
+    const control = this.document.getElementById(this.controlId());
+    if (!control) return;
+    event.preventDefault();
+    control.focus();
+  }
+}
+
+/** The `DestroyRef` of the caller in an injection context, else `null`. */
+function callerDestroyRef(): DestroyRef | null {
+  try {
+    return inject(DestroyRef);
+  } catch {
+    return null;
   }
 }
 
@@ -243,5 +285,5 @@ export function injectStarFieldLink(
   focus?: () => void,
 ): StarField | null {
   const field = inject(StarField, { optional: true });
-  return field?.linkControl(controlId, focus) ? field : null;
+  return field?.linkControl(controlId, focus, inject(DestroyRef)) ? field : null;
 }

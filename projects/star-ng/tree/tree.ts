@@ -41,12 +41,7 @@ import {
   starSlot,
   starSlotMap,
 } from '@star-ng/ui/core';
-import {
-  injectStarFieldLink,
-  StarField,
-  starFieldLabelledBy,
-  starJoinIds,
-} from '@star-ng/ui/field';
+import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/ui/field';
 import {
   checkStates,
   flattenVisible,
@@ -714,8 +709,15 @@ export class StarTreeSelect implements FormValueControl<readonly string[]> {
   private readonly directionSync = inject(StarDirectionService);
   protected readonly text = inject(STAR_UI_TEXT);
   protected readonly inputId = inject(_IdGenerator).getId('star-tree-select-');
-  /** The parent `star-field`, if any: its label, hint and error name and describe the trigger. */
-  protected readonly field = inject(StarField, { optional: true });
+  /**
+   * The parent `star-field` when it labels this control. A label `for` a button would click it
+   * (and open the panel), so the trigger takes its name with aria-labelledby, and a click on the
+   * label only focuses it.
+   */
+  protected readonly field = injectStarFieldLink(
+    () => this.inputId,
+    () => this.focus(),
+  );
   protected readonly positions = POSITIONS;
 
   readonly value = model<readonly string[]>([]);
@@ -789,15 +791,6 @@ export class StarTreeSelect implements FormValueControl<readonly string[]> {
     return label ? `${label} ${this.inputId}` : null;
   });
   protected readonly fieldDescribedBy = computed(() => starJoinIds(this.field?.describedBy()));
-
-  constructor() {
-    // A label `for` a button would click it (and open the panel). The trigger takes its name with
-    // aria-labelledby instead, and a click on the label only focuses it.
-    this.field?.linkControl(
-      () => this.inputId,
-      () => this.focus(),
-    );
-  }
 
   protected close(focus = false): void {
     if (!this.open()) return;

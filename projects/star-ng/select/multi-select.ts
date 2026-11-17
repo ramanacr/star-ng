@@ -301,7 +301,7 @@ export class StarMultiSelect<TOption = unknown, TValue = TOption>
     super();
     // The trigger is a `div`, not a labelable element: the field label names it with
     // aria-labelledby, and a click on the label focuses it.
-    this.field?.linkControl(this.inputId, () => this.focus());
+    this.linkField(() => this.focus());
   }
 
   protected readonly chipSlot = starSlot<StarChipContext<TOption>>(this.slots, this, 'chip');

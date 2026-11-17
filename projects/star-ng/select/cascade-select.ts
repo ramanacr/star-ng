@@ -20,7 +20,7 @@ import {
   StarDirectionService,
   StarOptionKey,
 } from '@star-ng/ui/core';
-import { StarField, starFieldLabelledBy, starJoinIds } from '@star-ng/ui/field';
+import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/ui/field';
 import { STAR_MENU_POSITIONS, StarMenu, StarMenuInDialog, StarMenuItem } from '@star-ng/ui/menu';
 
 interface Leaf<TOption, TValue> {
@@ -99,8 +99,6 @@ export class StarCascadeSelect<
   private readonly directionSync = inject(StarDirectionService);
   protected readonly text = inject(STAR_UI_TEXT);
   protected readonly positions = STAR_MENU_POSITIONS;
-  /** The parent `star-field`, if any: its label, hint and error name and describe the trigger. */
-  protected readonly field = inject(StarField, { optional: true });
   private readonly button = viewChild.required<ElementRef<HTMLButtonElement>>('button');
 
   readonly value = model<TValue | null>(null);
@@ -121,6 +119,12 @@ export class StarCascadeSelect<
   readonly size = input<'sm' | 'md'>('md');
   readonly ariaLabel = input<string | null>(null);
   readonly inputId = input(inject(_IdGenerator).getId('star-cascade-'));
+  /**
+   * The parent `star-field` when it labels this control. A label `for` a button would click it
+   * (and open the menu), so the trigger takes its name with aria-labelledby, and a click on the
+   * label only focuses it.
+   */
+  protected readonly field = injectStarFieldLink(this.inputId, () => this.focus());
 
   readonly disabled = input(false, { transform: booleanAttribute });
   readonly readonly = input(false, { transform: booleanAttribute });
@@ -130,12 +134,6 @@ export class StarCascadeSelect<
   readonly touch = output<void>();
   /** The user chose a leaf. */
   readonly optionSelect = output<TOption>();
-
-  constructor() {
-    // A label `for` a button would click it (and open the menu). The trigger takes its name with
-    // aria-labelledby instead, and a click on the label only focuses it.
-    this.field?.linkControl(this.inputId, () => this.focus());
-  }
 
   /** Invalid after touch, or while the parent `star-field` shows an error. */
   protected readonly showInvalid = computed(

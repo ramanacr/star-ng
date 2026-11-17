@@ -95,8 +95,13 @@ export abstract class StarOptionListBase<TOption, TValue> {
   private readonly ids = inject(_IdGenerator);
   private readonly document = inject(DOCUMENT);
   private readonly injector = inject(Injector);
-  /** The parent `star-field`, if any: its label, hint and error name and describe the control. */
-  protected readonly field = inject(StarField, { optional: true });
+  private readonly parentField = inject(StarField, { optional: true });
+  private readonly destroyRef = inject(DestroyRef);
+  /**
+   * The parent `star-field` when this control owns its label (see `linkField`), else `null`. Its
+   * label, hint and error name and describe the control.
+   */
+  protected field: StarField | null = null;
 
   readonly options = input<readonly TOption[]>([]);
   readonly optionLabel = input<StarOptionKey<TOption> | null>(null);
@@ -291,7 +296,16 @@ export abstract class StarOptionListBase<TOption, TValue> {
   private typeaheadTimer: ReturnType<typeof setTimeout> | undefined;
 
   constructor() {
-    inject(DestroyRef).onDestroy(() => clearTimeout(this.typeaheadTimer));
+    this.destroyRef.onDestroy(() => clearTimeout(this.typeaheadTimer));
+  }
+
+  /**
+   * Links the control to a parent `star-field` (call it in the constructor of the subclass). A
+   * trigger that is not labelable passes `focus` (see `StarField.linkControl`).
+   */
+  protected linkField(focus?: () => void): void {
+    const parent = this.parentField;
+    this.field = parent?.linkControl(this.inputId, focus, this.destroyRef) ? parent : null;
   }
 
   /** True when the option is part of the current value. */
