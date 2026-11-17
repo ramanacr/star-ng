@@ -1,16 +1,20 @@
+import { NgTemplateOutlet } from '@angular/common';
 import {
   afterRenderEffect,
   ChangeDetectionStrategy,
   Component,
   computed,
+  contentChildren,
   DestroyRef,
   ElementRef,
+  forwardRef,
   inject,
   input,
   Service,
   signal,
 } from '@angular/core';
-import { STAR_UI_TEXT } from '@star-ng/ui/core';
+import { STAR_SLOT_HOST, STAR_UI_TEXT, StarSlot, starSlot } from '@star-ng/ui/core';
+import type { StarToastMessageContext } from './toast-slots';
 
 export type StarToastSeverity = 'success' | 'info' | 'warn' | 'error';
 
@@ -144,9 +148,14 @@ const ICONS: Record<StarToastSeverity, string> = {
 /**
  * Toast outlet. Place once in the app shell. It renders as a manual popover, so toasts stay
  * above open modal dialogs (top layer).
+ *
+ * Slot: `ng-template[starToastMessage]` replaces the summary and the detail of each toast
+ * (`StarToastMessageTemplate`).
  */
 @Component({
   selector: 'star-toast',
+  imports: [NgTemplateOutlet],
+  providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarToast) }],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-toast-stack',
@@ -168,9 +177,13 @@ const ICONS: Record<StarToastSeverity, string> = {
       >
         <i class="star-toast__icon" [class]="icon(message.severity)" aria-hidden="true"></i>
         <div class="star-toast__copy">
-          <p class="star-toast__summary">{{ message.summary }}</p>
-          @if (message.detail) {
-            <p class="star-toast__detail">{{ message.detail }}</p>
+          @if (messageSlot(); as slot) {
+            <ng-container *ngTemplateOutlet="slot; context: messageContext(message)" />
+          } @else {
+            <p class="star-toast__summary">{{ message.summary }}</p>
+            @if (message.detail) {
+              <p class="star-toast__detail">{{ message.detail }}</p>
+            }
           }
         </div>
         <button
@@ -210,6 +223,9 @@ export class StarToast {
   /** Newest messages beyond this count wait until older ones close. */
   readonly stackLimit = input(5);
 
+  protected readonly slots = contentChildren(StarSlot, { descendants: true });
+  protected readonly messageSlot = starSlot<StarToastMessageContext>(this.slots, this, 'message');
+
   protected readonly visible = computed(() =>
     this.toasts
       .messages()
@@ -228,6 +244,10 @@ export class StarToast {
         if (count > 0) element.showPopover();
       },
     });
+  }
+
+  protected messageContext(message: StarToastMessage): StarToastMessageContext {
+    return { $implicit: message, close: () => this.toasts.remove(message.id) };
   }
 
   protected icon(severity: StarToastSeverity): string {

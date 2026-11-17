@@ -62,10 +62,13 @@ export function starSlotMap<C>(
 /**
  * Header content of a control. PrimeNG `#header` template.
  *
- * In the dropdown panel of `star-select`, `star-multi-select` and `star-autocomplete`, use it only
- * for content that is not interactive (text, counts, hints): focus stays in the combobox, and Tab
- * closes the panel, so a button or link here cannot be reached with the keyboard. `star-listbox`,
- * `star-tree`, `star-table` and the date pickers allow interactive content, in the normal tab order.
+ * In the dropdown panel of `star-select`, `star-multi-select` and `star-autocomplete`, buttons,
+ * links and fields here are in the tab order of the open panel (PrimeNG select model). Tab in the
+ * combobox moves focus to the first one: header first, then footer. Tab after the last one closes
+ * the panel and focus goes on. Shift+Tab from the first one returns to the combobox, and the panel
+ * stays open. Escape closes the panel and focuses the combobox. A click on such an element gives it
+ * focus. Without them, Tab closes the panel. `star-listbox`, `star-tree`, `star-table` and the date
+ * pickers allow interactive content in the normal tab order of the page.
  */
 @Directive({
   selector: 'ng-template[starHeader]',
@@ -78,10 +81,13 @@ export class StarHeaderTemplate extends StarSlot<object> {
 /**
  * Footer content of a control. PrimeNG `#footer` template.
  *
- * In the dropdown panel of `star-select`, `star-multi-select` and `star-autocomplete`, use it only
- * for content that is not interactive (text, counts, hints): focus stays in the combobox, and Tab
- * closes the panel, so a button or link here cannot be reached with the keyboard. `star-listbox`,
- * `star-tree`, `star-table` and the date pickers allow interactive content, in the normal tab order.
+ * In the dropdown panel of `star-select`, `star-multi-select` and `star-autocomplete`, buttons,
+ * links and fields here are in the tab order of the open panel (PrimeNG select model). Tab in the
+ * combobox moves focus to the first one: header first, then footer. Tab after the last one closes
+ * the panel and focus goes on. Shift+Tab from the first one returns to the combobox, and the panel
+ * stays open. Escape closes the panel and focuses the combobox. A click on such an element gives it
+ * focus. Without them, Tab closes the panel. `star-listbox`, `star-tree`, `star-table` and the date
+ * pickers allow interactive content in the normal tab order of the page.
  */
 @Directive({
   selector: 'ng-template[starFooter]',

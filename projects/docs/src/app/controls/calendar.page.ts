@@ -159,7 +159,7 @@ import { DOCS, DocsRow } from '../shared/docs';
       width: 0.3rem;
       height: 0.3rem;
       border-radius: 50%;
-      background: currentColor;
+      background: var(--star-primary);
       transform: translateX(-50%);
     }
     .docs-due-note {
@@ -240,7 +240,7 @@ readonly iso = (date: Date | null) => (date ? isoDay(date) : 'none');
 //   width: 0.3rem;
 //   height: 0.3rem;
 //   border-radius: 50%;
-//   background: currentColor;
+//   background: var(--star-primary);
 //   transform: translateX(-50%);
 // }`;
 

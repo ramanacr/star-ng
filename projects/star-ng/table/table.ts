@@ -573,7 +573,7 @@ export class StarRowExpansionTemplate<T = unknown> {
         <tbody #body>
           @if (loading() && loadingSlot(); as loader) {
             <tr>
-              <td [attr.colspan]="colspan()">
+              <td class="star-table__loading" [attr.colspan]="colspan()">
                 <ng-container *ngTemplateOutlet="loader" />
               </td>
             </tr>

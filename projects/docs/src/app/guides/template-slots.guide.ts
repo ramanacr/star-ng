@@ -23,6 +23,7 @@ import { DOCS } from '../shared/docs';
         <code>&#64;star-ng/ui/core</code> lists the shared slots. A control can also have slots of
         its own, such as <code>starSelected</code> or <code>starNode</code>.
       </p>
+      <docs-code [code]="standalone" label="Import the slots in a standalone component" />
 
       <h2>Shared slots</h2>
       <p>These slots have the same name and context in every control that supports them.</p>
@@ -124,7 +125,10 @@ import { DOCS } from '../shared/docs';
             </tr>
             <tr>
               <th scope="row">
-                <a routerLink="/controls/autocomplete">Autocomplete</a>, multi autocomplete
+                <a routerLink="/controls/autocomplete">Autocomplete</a>,
+                <a routerLink="/controls/autocomplete" fragment="autocomplete-multiple"
+                  >multi autocomplete</a
+                >
               </th>
               <td>
                 <code>starOption</code>, <code>starHeader</code>, <code>starFooter</code>,
@@ -152,9 +156,60 @@ import { DOCS } from '../shared/docs';
             <tr>
               <th scope="row">
                 <a routerLink="/controls/calendar">Calendar</a>,
-                <a routerLink="/controls/date-picker">date pickers</a>
+                <a routerLink="/controls/date-picker">date picker</a>,
+                <a routerLink="/controls/date-picker" fragment="date-picker-range"
+                  >date range picker</a
+                >,
+                <a routerLink="/controls/date-picker" fragment="date-picker-multiple"
+                  >multi date picker</a
+                >
               </th>
               <td><code>starDate</code>, <code>starHeader</code>, <code>starFooter</code>.</td>
+            </tr>
+            <tr>
+              <th scope="row"><a routerLink="/controls/tree-table">Tree table</a></th>
+              <td>
+                <code>starNode</code>, <code>starHeader</code>, <code>starFooter</code>,
+                <code>starEmpty</code>.
+              </td>
+            </tr>
+            <tr>
+              <th scope="row"><a routerLink="/controls/data-view">Data view</a></th>
+              <td><code>starHeader</code>, <code>starFooter</code>, <code>starEmpty</code>.</td>
+            </tr>
+            <tr>
+              <th scope="row">
+                <a routerLink="/controls/order-list">Order list</a>,
+                <a routerLink="/controls/pick-list">Pick list</a>
+              </th>
+              <td>
+                <code>starItem</code>. The context has <code>$implicit</code>,
+                <code>index</code> and <code>selected</code>. The pick list also has
+                <code>list</code>: 'source' or 'target'.
+              </td>
+            </tr>
+            <tr>
+              <th scope="row"><a routerLink="/controls/cascade-select">Cascade select</a></th>
+              <td>
+                <code>starCascadeOption</code>. The context has <code>$implicit</code>,
+                <code>selected</code>, <code>index</code>, <code>level</code> and
+                <code>hasChildren</code>.
+              </td>
+            </tr>
+            <tr>
+              <th scope="row"><a routerLink="/controls/toast">Toast</a></th>
+              <td>
+                <code>starToastMessage</code>. The context has <code>$implicit</code> (the message)
+                and <code>close()</code>.
+              </td>
+            </tr>
+            <tr>
+              <th scope="row"><a routerLink="/controls/file-upload">File upload</a></th>
+              <td>
+                <code>starFile</code>: the context has <code>$implicit</code> (the file),
+                <code>status</code>, <code>remove()</code>, <code>index</code> and
+                <code>interactive</code>. <code>starEmpty</code>: <code>$implicit</code> is ''.
+              </td>
             </tr>
           </tbody>
         </table>
@@ -170,10 +225,13 @@ import { DOCS } from '../shared/docs';
       <h2>No focusable elements in item templates</h2>
       <p>
         The control owns the keyboard model of its items. Do not put a button, a link or an input in
-        a <code>starOption</code>, <code>starNode</code> or <code>starDate</code> template. Focus
-        would leave the item and the arrow keys would stop working. The same applies to
-        <code>starSelected</code>, which goes inside the combobox, and to <code>starGroup</code>: in
-        the table its content goes inside the button that opens and closes the group.
+        a <code>starOption</code>, <code>starNode</code>, <code>starDate</code>,
+        <code>starItem</code> or <code>starCascadeOption</code> template. Focus would leave the item
+        and the arrow keys would stop working. In the tree table, <code>starNode</code> replaces the
+        label in the first column, and <code>selected</code> is always false there (the tree table
+        has no row selection). The same applies to <code>starSelected</code>, which goes inside the
+        combobox, and to <code>starGroup</code>: in the table its content goes inside the button
+        that opens and closes the group.
       </p>
       <p>
         The <code>starChip</code> slot of the multi select needs one more rule. Its context has a
@@ -183,13 +241,51 @@ import { DOCS } from '../shared/docs';
         button only when it is true; <code>remove()</code> then does nothing.
       </p>
 
+      <p>
+        <code>starToastMessage</code> and <code>starFile</code> may contain buttons. In a toast, a
+        button needs an accessible name. An auto-dismissing toast must not be the only path to an
+        action: use <code>sticky</code> or give a second path. In a file row, the buttons are in the
+        normal tab order. Name them with the file name. With <code>reorderable</code>, the built-in
+        move buttons go away. Use <code>index</code> with your own buttons.
+      </p>
+
       <h2>Header and footer in a dropdown panel</h2>
       <p>
-        In the panels of the select, the multi select and the autocomplete, focus stays in the
-        combobox, and Tab closes the panel. Use <code>starHeader</code> and
-        <code>starFooter</code> there only for content that is not interactive: text, counts and
-        hints. The listbox, the tree, the table and the date pickers allow interactive content in
-        the header and footer, in the normal tab order.
+        The select, the multi select and the autocomplete keep focus in the combobox while the panel
+        is open. The arrow keys move the active option, and the options are not in the tab order.
+        Buttons, links and fields in <code>starHeader</code> and <code>starFooter</code> are in the
+        tab order of the open panel. This is the model of the PrimeNG select.
+      </p>
+      <ul>
+        <li>
+          Tab in the combobox (or in the filter field) moves focus to the first button or link of
+          the panel: first the header, then the footer.
+        </li>
+        <li>
+          Tab moves to the next one. Tab after the last one closes the panel, and focus goes on to
+          the next element of the page.
+        </li>
+        <li>
+          Shift+Tab moves to the previous one. From the first one, focus goes back to the combobox
+          (or the filter field), and the panel stays open.
+        </li>
+        <li>Escape in the panel closes it, and focus goes back to the combobox.</li>
+        <li>When focus leaves the panel and the control, the panel closes.</li>
+        <li>
+          A click on a button or link in the header or footer gives it focus. A click on an option
+          or on text does not take focus from the combobox.
+        </li>
+      </ul>
+      <p>
+        When focus is in the header or footer, the combobox does not name an active option
+        (<code>aria-activedescendant</code>). The active option stays, and focus on the combobox
+        brings it back. When a button changes the options, the same option stays active if it is
+        still in the list.
+      </p>
+      <p>
+        Without buttons or links in the header and footer, Tab closes the panel, as before. The
+        listbox, the tree, the table and the date pickers have interactive content in the header and
+        footer in the normal tab order of the page.
       </p>
 
       <h2>Icons are hidden from screen readers</h2>
@@ -213,6 +309,10 @@ import { DOCS } from '../shared/docs';
         <code>virtualItemSize</code> height. A template that is taller than that height is clipped.
         Keep the content of an item to one line, or raise <code>virtualItemSize</code>.
       </p>
+      <p>
+        In the select, the multi select and the autocomplete, the <code>starLoading</code> row is
+        above the options. It can have its own height, and the list counts it when it scrolls.
+      </p>
     </docs-page>
   `,
 })
@@ -222,4 +322,23 @@ export class TemplateSlotsGuide {
   <ng-template starEmpty let-text>No city matches {{ text }}.</ng-template>
   <ng-template starIcon="dropdown"><span aria-hidden="true">v</span></ng-template>
 </star-select>`;
+
+  protected readonly standalone = `import { Component, signal } from '@angular/core';
+import { STAR_SLOTS } from '@star-ng/ui/core';
+import { StarSelect } from '@star-ng/ui/select';
+
+@Component({
+  selector: 'app-city-picker',
+  imports: [StarSelect, STAR_SLOTS],
+  template: \`
+    <star-select [options]="cities" [(value)]="city" ariaLabel="City">
+      <ng-template starHeader>Choose a city</ng-template>
+      <ng-template starEmpty let-text>No city matches {{ text }}.</ng-template>
+    </star-select>
+  \`,
+})
+export class CityPicker {
+  readonly cities = ['Berlin', 'Paris', 'Pune'];
+  readonly city = signal<string | null>(null);
+}`;
 }

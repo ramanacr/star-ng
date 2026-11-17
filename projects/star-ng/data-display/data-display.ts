@@ -7,9 +7,11 @@ import {
   Component,
   computed,
   contentChild,
+  contentChildren,
   Directive,
   effect,
   ElementRef,
+  forwardRef,
   inject,
   input,
   isDevMode,
@@ -24,9 +26,13 @@ import {
 import {
   optionText,
   readOption,
+  STAR_SLOT_HOST,
   STAR_UI_TEXT,
+  StarEmptyContext,
   starInlineKey,
   StarOptionKey,
+  StarSlot,
+  starSlot,
 } from '@star-ng/ui/core';
 import { StarPaginator } from '@star-ng/ui/paginator';
 import {
@@ -34,10 +40,12 @@ import {
   navigationTarget,
   parentsOf,
   rowIndexOf,
+  StarNodeContext,
   StarTreeNode,
   stillFocusable,
   TreeRow,
 } from '@star-ng/ui/tree';
+import { StarItemContext } from './data-display-slots';
 import {
   ariaRowCount,
   ariaRowIndex,
@@ -82,11 +90,21 @@ const FALLBACK_VIEWPORT = 600;
  * `virtualItemSize`. Keys, `aria-rowcount`, `aria-rowindex`, `aria-level`, `aria-setsize` and
  * `aria-posinset` work over all open rows, also the ones that are not in the DOM.
  *
+ * Slots (content children): `starNode` (from `@star-ng/ui/tree`; replaces the label in the first
+ * column, and the toggle stays; the context has `$implicit` (the node), `level`, `expanded` and
+ * `selected`, which is always `false` because the tree table has no row selection),
+ * `starEmpty` (a row with one cell over all columns when there are no rows; `$implicit` is `''`;
+ * without the slot nothing shows), `starHeader` and `starFooter` (content above and below the
+ * table). Do not put focusable elements (buttons, links, inputs) in these templates: the table
+ * owns the keyboard model and the ARIA attributes of its rows.
+ *
  * `<star-tree-table [nodes]="budget" [columns]="cols" [(expanded)]="open" ariaLabel="Budget" />`
  */
 @Component({
   selector: 'star-tree-table',
+  imports: [NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarTreeTable) }],
   host: {
     class: 'star-table star-tree-table',
     '[class.star-table--sticky]': '!!scrollHeight()',
@@ -94,6 +112,9 @@ const FALLBACK_VIEWPORT = 600;
     '[style.--star-table-row-height.px]': 'windowed() ? virtualItemSize() : null',
   },
   template: `
+    @if (headerSlot(); as header) {
+      <ng-container *ngTemplateOutlet="header" />
+    }
     <div
       #scroller
       class="star-table__scroll"
@@ -109,7 +130,9 @@ const FALLBACK_VIEWPORT = 600;
       <table
         role="treegrid"
         [attr.aria-label]="ariaLabel()"
-        [attr.aria-rowcount]="windowed() ? ariaRowCount(rows().length) : null"
+        [attr.aria-rowcount]="
+          windowed() ? ariaRowCount(rows().length + (showEmpty() ? 1 : 0)) : null
+        "
       >
         <thead #header>
           <tr [attr.aria-rowindex]="windowed() ? 1 : null">
@@ -128,6 +151,14 @@ const FALLBACK_VIEWPORT = 600;
           @if (window().before > 0) {
             <tr class="star-table__spacer" aria-hidden="true">
               <td [attr.colspan]="columns().length" [style.height.px]="window().before"></td>
+            </tr>
+          }
+          @if (showEmpty() && emptySlot(); as custom) {
+            <tr [attr.aria-rowindex]="windowed() ? 2 : null">
+              <td class="star-table__empty" [attr.colspan]="columns().length">
+                <i class="ph-bold ph-tray" aria-hidden="true"></i>
+                <ng-container *ngTemplateOutlet="custom; context: emptyContext" />
+              </td>
             </tr>
           }
           @for (entry of entries(); track entry.row.node.key) {
@@ -165,7 +196,11 @@ const FALLBACK_VIEWPORT = 600;
                       } @else {
                         <span class="star-tree__toggle star-tree__toggle--leaf"></span>
                       }
-                      {{ row.node.data?.[column.field] ?? row.node.label }}
+                      @if (nodeSlot(); as custom) {
+                        <ng-container *ngTemplateOutlet="custom; context: nodeContext(row)" />
+                      } @else {
+                        {{ row.node.data?.[column.field] ?? row.node.label }}
+                      }
                     </span>
                   } @else {
                     {{ row.node.data?.[column.field] }}
@@ -182,6 +217,9 @@ const FALLBACK_VIEWPORT = 600;
         </tbody>
       </table>
     </div>
+    @if (footerSlot(); as footer) {
+      <ng-container *ngTemplateOutlet="footer" />
+    }
   `,
 })
 export class StarTreeTable {
@@ -211,6 +249,18 @@ export class StarTreeTable {
   private readonly scroller = viewChild<ElementRef<HTMLElement>>('scroller');
   private readonly header = viewChild<ElementRef<HTMLElement>>('header');
 
+  private readonly slots = contentChildren(StarSlot, { descendants: true });
+  protected readonly headerSlot = starSlot<object>(this.slots, this, 'header');
+  protected readonly footerSlot = starSlot<object>(this.slots, this, 'footer');
+  protected readonly nodeSlot = starSlot<StarNodeContext<Record<string, unknown>>>(
+    this.slots,
+    this,
+    'node',
+  );
+  protected readonly emptySlot = starSlot<StarEmptyContext>(this.slots, this, 'empty');
+  /** The tree table has no filter, so the empty slot always gets `''`. */
+  protected readonly emptyContext: StarEmptyContext = { $implicit: '' };
+
   private readonly openKeys = computed(() => new Set(this.expanded()));
   private readonly parents = computed(() => parentsOf(this.nodes()));
   /** The rows whose parents are open, in order. The sibling numbers come from the data. */
@@ -218,6 +268,8 @@ export class StarTreeTable {
     flattenVisible(this.nodes(), this.openKeys()),
   );
   private readonly rowIndex = computed(() => rowIndexOf(this.rows()));
+  /** The empty row shows when there are no rows and the `starEmpty` slot exists. */
+  protected readonly showEmpty = computed(() => this.rows().length === 0 && !!this.emptySlot());
 
   /**
    * The active row (the one with `tabindex` 0). It stays a row after the rows change, and it is
@@ -307,6 +359,15 @@ export class StarTreeTable {
 
   protected isOpen(key: string): boolean {
     return this.openKeys().has(key);
+  }
+
+  protected nodeContext(row: TreeTableRow): StarNodeContext<Record<string, unknown>> {
+    return {
+      $implicit: row.node,
+      level: row.level,
+      expanded: this.isOpen(row.node.key),
+      selected: false,
+    };
   }
 
   toggle(key: string, open = !this.isOpen(key)): void {
@@ -486,13 +547,23 @@ export class StarDataViewItem<T = unknown> {
  *   <ng-template starDataViewItem let-p let-layout="layout">…</ng-template>
  * </star-data-view>
  * ```
+ *
+ * Slots (content children): `starHeader` (content above the layout switch), `starFooter`
+ * (content below the items and the paginator) and `starEmpty` (replaces the empty message;
+ * `$implicit` is `''`, because the data view has no filter). The item template is
+ * `starDataViewItem`. Keep interactive content in your own items and in the header and footer
+ * slots: the data view has no keyboard model of its own for them.
  */
 @Component({
   selector: 'star-data-view',
   imports: [NgTemplateOutlet, StarPaginator],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarDataView) }],
   host: { class: 'star-data-view' },
   template: `
+    @if (headerSlot(); as header) {
+      <ng-container *ngTemplateOutlet="header" />
+    }
     <div class="star-data-view__header">
       <ng-content select="[starDataViewHeader]" />
       <div
@@ -530,7 +601,11 @@ export class StarDataViewItem<T = unknown> {
       } @empty {
         <li class="star-table__empty">
           <i class="ph-bold ph-tray" aria-hidden="true"></i>
-          {{ emptyMessage() ?? text.noData }}
+          @if (emptySlot(); as custom) {
+            <ng-container *ngTemplateOutlet="custom; context: emptyContext" />
+          } @else {
+            {{ emptyMessage() ?? text.noData }}
+          }
         </li>
       }
     </ul>
@@ -541,6 +616,9 @@ export class StarDataViewItem<T = unknown> {
         [(rows)]="rows"
         [rowsPerPageOptions]="[]"
       />
+    }
+    @if (footerSlot(); as footer) {
+      <ng-container *ngTemplateOutlet="footer" />
     }
   `,
 })
@@ -558,6 +636,13 @@ export class StarDataView<T = unknown> {
   readonly emptyMessage = input<string | null>(null);
   protected readonly itemTemplate = contentChild(StarDataViewItem);
 
+  private readonly slots = contentChildren(StarSlot, { descendants: true });
+  protected readonly headerSlot = starSlot<object>(this.slots, this, 'header');
+  protected readonly footerSlot = starSlot<object>(this.slots, this, 'footer');
+  protected readonly emptySlot = starSlot<StarEmptyContext>(this.slots, this, 'empty');
+  /** The data view has no filter, so the empty slot always gets `''`. */
+  protected readonly emptyContext: StarEmptyContext = { $implicit: '' };
+
   protected readonly pageItems = computed(() =>
     this.paginator() ? this.items().slice(this.first(), this.first() + this.rows()) : this.items(),
   );
@@ -569,10 +654,16 @@ export class StarDataView<T = unknown> {
  * Order list (PrimeNG `p-orderlist`): reorder items with buttons or Alt + Arrow keys; the moved
  * item keeps focus and a live region announces its new position.
  * `<star-order-list [(value)]="priorities" optionLabel="name" ariaLabel="Queue order" />`
+ *
+ * Slot (content child): `starItem` replaces the label of an item. The context has `$implicit`
+ * (the item), `index` and `selected`. The items are options in a listbox with their own keys, so
+ * do not put focusable elements (buttons, links, inputs) in the template.
  */
 @Component({
   selector: 'star-order-list',
+  imports: [NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarOrderList) }],
   host: { class: 'star-order-list' },
   template: `
     <div class="star-order-list__buttons" role="group" [attr.aria-label]="text.moveSelectedItem">
@@ -606,7 +697,11 @@ export class StarDataView<T = unknown> {
           (keydown)="onKeydown($event, i)"
         >
           <i class="ph-bold ph-dots-six-vertical star-order-list__grip" aria-hidden="true"></i>
-          {{ labelOf(item) }}
+          @if (itemSlot(); as custom) {
+            <ng-container *ngTemplateOutlet="custom; context: itemContext(item, i)" />
+          } @else {
+            {{ labelOf(item) }}
+          }
         </li>
       }
     </ul>
@@ -621,6 +716,9 @@ export class StarOrderList<T = unknown> {
   readonly optionLabel = input<StarOptionKey<T> | null>(null);
   readonly ariaLabel = input<string | null>(null);
 
+  private readonly slots = contentChildren(StarSlot, { descendants: true });
+  protected readonly itemSlot = starSlot<StarItemContext<T>>(this.slots, this, 'item');
+
   protected readonly selected = signal(-1);
   protected readonly announcement = signal('');
   protected readonly actions = [
@@ -632,6 +730,10 @@ export class StarOrderList<T = unknown> {
 
   protected labelOf(item: T): string {
     return optionText(item, this.optionLabel());
+  }
+
+  protected itemContext(item: T, index: number): StarItemContext<T> {
+    return { $implicit: item, index, selected: this.selected() === index };
   }
 
   protected canMove(direction: 'top' | 'up' | 'down' | 'bottom'): boolean {
@@ -674,10 +776,17 @@ export class StarOrderList<T = unknown> {
  * Pick list (PrimeNG `p-picklist`): move items between a source and a target list.
  * Double-click or Enter moves one item; buttons move the selection or everything.
  * `<star-pick-list [(source)]="available" [(target)]="assigned" optionLabel="name" sourceHeader="Available" targetHeader="Assigned" />`
+ *
+ * Slot (content child): `starItem` replaces the label of an item in both lists. The context has
+ * `$implicit` (the item), `index`, `selected` and `list` (`'source'` or `'target'`). The items are
+ * options in a listbox with their own keys, so do not put focusable elements (buttons, links,
+ * inputs) in the template.
  */
 @Component({
   selector: 'star-pick-list',
+  imports: [NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarPickList) }],
   host: { class: 'star-pick-list' },
   template: `
     @for (side of sides; track side) {
@@ -710,7 +819,11 @@ export class StarOrderList<T = unknown> {
                 (keydown.enter)="transfer(side, [item])"
                 (keydown.space)="$event.preventDefault(); pick(side, item)"
               >
-                {{ labelOf(item) }}
+                @if (itemSlot(); as custom) {
+                  <ng-container *ngTemplateOutlet="custom; context: itemContext(side, item, i)" />
+                } @else {
+                  {{ labelOf(item) }}
+                }
               </li>
             }
           </ul>
@@ -774,6 +887,9 @@ export class StarPickList<T = unknown> {
   };
   protected readonly sides = ['source', 'target'] as const;
 
+  private readonly slots = contentChildren(StarSlot, { descendants: true });
+  protected readonly itemSlot = starSlot<StarItemContext<T>>(this.slots, this, 'item');
+
   readonly source = model<readonly T[]>([]);
   readonly target = model<readonly T[]>([]);
   readonly optionLabel = input<StarOptionKey<T> | null>(null);
@@ -787,6 +903,9 @@ export class StarPickList<T = unknown> {
 
   protected labelOf(item: T): string {
     return optionText(item, this.optionLabel());
+  }
+  protected itemContext(side: 'source' | 'target', item: T, index: number): StarItemContext<T> {
+    return { $implicit: item, index, selected: this.isPicked(side, item), list: side };
   }
   protected picked(side: 'source' | 'target'): readonly T[] {
     return this.selection()[side];

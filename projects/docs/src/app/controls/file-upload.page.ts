@@ -1,7 +1,9 @@
 import { HttpEvent, HttpEventType, HttpResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { StarEmptyTemplate } from '@star-ng/ui/core';
 import {
+  StarFileTemplate,
   StarFileUpload,
   StarRejectedFile,
   StarUploadResult,
@@ -43,7 +45,7 @@ function fakeUpload(file: File): Observable<HttpEvent<Receipt>> {
 
 @Component({
   selector: 'docs-file-upload-page',
-  imports: [DOCS, StarFileUpload],
+  imports: [DOCS, StarFileUpload, StarFileTemplate, StarEmptyTemplate],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <docs-page
@@ -144,6 +146,44 @@ function fakeUpload(file: File): Observable<HttpEvent<Receipt>> {
         </div>
       </docs-example>
 
+      <docs-example
+        heading="File row and empty state"
+        source="file-upload/slots"
+        [script]="slotsScript"
+        note="starFile replaces everything inside one row of the list: icon, name, progress, size and the buttons. The context has the file, status (the state from fileStatus, or null), remove(), index and interactive. Your row must show the name and a way to remove the file. A button needs an accessible name with the file name. starEmpty shows while the list is empty. It gets an empty string, because the control has no filter."
+      >
+        <div class="docs-stack">
+          <star-file-upload [(value)]="templated" multiple>
+            <ng-template starEmpty>
+              <p class="docs-output">No file yet. Add an invoice or a packing list.</p>
+            </ng-template>
+            <ng-template
+              starFile
+              let-file
+              let-remove="remove"
+              let-index="index"
+              let-interactive="interactive"
+            >
+              <i class="ph-bold ph-file-pdf star-upload__file-icon" aria-hidden="true"></i>
+              <span class="star-upload__main">
+                <span class="star-upload__name">{{ index + 1 }}. {{ file.name }}</span>
+              </span>
+              <span class="star-upload__size">{{ file.size }} bytes</span>
+              @if (interactive) {
+                <button
+                  type="button"
+                  class="star-select__icon-btn"
+                  [attr.aria-label]="'Remove ' + file.name"
+                  (click)="remove()"
+                >
+                  <i class="ph-bold ph-trash" aria-hidden="true"></i>
+                </button>
+              }
+            </ng-template>
+          </star-file-upload>
+        </div>
+      </docs-example>
+
       <h2>Send the files</h2>
       <p>
         The control only collects files. Use the <code>selected</code> output (it emits only the
@@ -159,7 +199,12 @@ function fakeUpload(file: File): Observable<HttpEvent<Receipt>> {
         files.
       </p>
 
-      <docs-api [of]="['StarFileUpload']" [cssVars]="cssVars" [keyboard]="keyboard" />
+      <docs-api
+        [of]="['StarFileUpload', 'StarFileTemplate']"
+        [slots]="slots"
+        [cssVars]="cssVars"
+        [keyboard]="keyboard"
+      />
 
       <h2>Helpers</h2>
       <div class="docs-table-wrap">
@@ -216,6 +261,10 @@ export class FileUploadPage {
   protected readonly rejected = signal<readonly StarRejectedFile[]>([]);
   protected readonly dropped = signal<readonly File[]>([]);
   protected readonly ordered = signal<readonly File[]>([]);
+  protected readonly templated = signal<readonly File[]>([
+    new File(['x'], 'invoice-1042.pdf', { type: 'application/pdf' }),
+    new File(['xx'], 'packing-list.pdf', { type: 'application/pdf' }),
+  ]);
   protected readonly uploads = signal<readonly File[]>([]);
   protected readonly existing: readonly File[] = [
     new File(['x'], 'invoice-1042.pdf', { type: 'application/pdf' }),
@@ -255,6 +304,11 @@ send(files: readonly File[]): void {
       .subscribe((status) => this.states.update((map) => new Map(map).set(file, status)));
   }
 }`;
+  protected readonly slotsScript = `// Import StarFileTemplate and StarEmptyTemplate in the component imports.
+readonly templated = signal<readonly File[]>([
+  new File(['x'], 'invoice-1042.pdf', { type: 'application/pdf' }),
+  new File(['xx'], 'packing-list.pdf', { type: 'application/pdf' }),
+]);`;
   protected readonly statesScript = `readonly existing: readonly File[] = [
   new File(['x'], 'invoice-1042.pdf', { type: 'application/pdf' }),
   new File(['x'], 'packing-list.pdf', { type: 'application/pdf' }),
@@ -303,6 +357,19 @@ send(files: readonly File[]): void {
     {
       name: 'add(files) / remove(file) / move(from, to) / focus()',
       description: 'Public methods of StarFileUpload for code that works on the list.',
+    },
+  ];
+
+  protected readonly slots: readonly DocsRow[] = [
+    {
+      name: 'ng-template[starFile]',
+      description:
+        'Content child. Replaces everything inside one row of the file list, including the move and remove buttons (PrimeNG #file template). The context has $implicit (the File), status, remove(), index and interactive. Buttons are allowed: the list is a plain list in the normal tab order.',
+    },
+    {
+      name: 'ng-template[starEmpty]',
+      description:
+        'Content child. Shown in place of the file list while no file is chosen. $implicit is an empty string, because this control has no filter.',
     },
   ];
 

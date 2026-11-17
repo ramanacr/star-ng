@@ -1,11 +1,14 @@
 import { _IdGenerator } from '@angular/cdk/a11y';
 import { CdkMenuTrigger } from '@angular/cdk/menu';
+import { NgTemplateOutlet } from '@angular/common';
 import {
   booleanAttribute,
   ChangeDetectionStrategy,
   Component,
   computed,
+  contentChildren,
   ElementRef,
+  forwardRef,
   inject,
   input,
   model,
@@ -16,18 +19,34 @@ import type { FormValueControl } from '@angular/forms/signals';
 import {
   optionText,
   readOption,
+  STAR_SLOT_HOST,
   STAR_UI_TEXT,
   StarDirectionService,
   StarOptionKey,
+  StarSlot,
+  starSlot,
 } from '@star-ng/ui/core';
 import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/ui/field';
 import { STAR_MENU_POSITIONS, StarMenu, StarMenuInDialog, StarMenuItem } from '@star-ng/ui/menu';
+import type { StarCascadeOptionContext } from './select-slots';
 
 interface Leaf<TOption, TValue> {
   readonly option: TOption;
   readonly value: TValue;
   /** Labels from the top level to the leaf. */
   readonly path: readonly string[];
+}
+
+/** One entry of the cascade menu: the menu item and the data of its option. */
+interface CascadeItem<TOption> extends StarMenuItem {
+  readonly option: TOption;
+  /** Depth: 1 for a top-level option. */
+  readonly level: number;
+  /** Position among the siblings. */
+  readonly index: number;
+  readonly selected: boolean;
+  readonly hasChildren: boolean;
+  readonly items?: readonly CascadeItem<TOption>[];
 }
 
 /**
@@ -39,10 +58,14 @@ interface Leaf<TOption, TValue> {
  * <star-cascade-select [options]="countries" optionLabel="name" optionChildren="children"
  *                     optionValue="code" [(value)]="city" showPath />
  * ```
+ *
+ * Slot: `ng-template[starCascadeOption]` replaces the label of each menu entry
+ * (`StarCascadeOptionTemplate`).
  */
 @Component({
   selector: 'star-cascade-select',
-  imports: [CdkMenuTrigger, StarMenu, StarMenuInDialog],
+  imports: [CdkMenuTrigger, NgTemplateOutlet, StarMenu, StarMenuInDialog],
+  providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarCascadeSelect) }],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-select star-cascade',
@@ -88,7 +111,14 @@ interface Leaf<TOption, TValue> {
       }
       <i class="ph-bold ph-caret-down star-select__caret" aria-hidden="true"></i>
     </div>
-    <star-menu #menu [ariaLabel]="ariaLabel() ?? (field?.label() || null)" />
+    <star-menu
+      #menu
+      [ariaLabel]="ariaLabel() ?? (field?.label() || null)"
+      [itemTemplate]="optionSlot() ? optionItem : null"
+    />
+    <ng-template #optionItem let-item>
+      <ng-container *ngTemplateOutlet="optionSlot(); context: optionContext(item)" />
+    </ng-template>
   `,
 })
 export class StarCascadeSelect<
@@ -189,24 +219,47 @@ export class StarCascadeSelect<
     return this.leaves().find((leaf) => this.compareWith()(leaf.value, value)) ?? null;
   });
 
+  protected readonly slots = contentChildren(StarSlot, { descendants: true });
+  protected readonly optionSlot = starSlot<StarCascadeOptionContext<TOption>>(
+    this.slots,
+    this,
+    'option',
+  );
+
+  /** Context of the option slot for one menu entry. The entries are the `CascadeItem`s of `menuItems`. */
+  protected optionContext(item: StarMenuItem): StarCascadeOptionContext<TOption> {
+    const entry = item as CascadeItem<TOption>;
+    return {
+      $implicit: entry.option,
+      selected: entry.selected,
+      index: entry.index,
+      level: entry.level,
+      hasChildren: entry.hasChildren,
+    };
+  }
+
   /** The options as menu items: a parent opens a submenu, a leaf sets the value. */
-  protected readonly menuItems = computed<readonly StarMenuItem[]>(() => {
+  protected readonly menuItems = computed<readonly CascadeItem<TOption>[]>(() => {
     const disabledKey = this.optionDisabled();
     const selected = this.selected()?.option;
-    const build = (options: readonly TOption[]): StarMenuItem[] =>
-      options.map((option) => {
+    const build = (options: readonly TOption[], level: number): CascadeItem<TOption>[] =>
+      options.map((option, index) => {
         const children = this.childrenOf(option);
+        const hasChildren = children.length > 0;
         const disabled = disabledKey ? !!readOption(option, disabledKey) : false;
-        return children.length
-          ? { label: this.labelOf(option), disabled, items: build(children) }
+        const chosen = !hasChildren && option === selected;
+        const entry = { option, level, index, hasChildren, selected: chosen };
+        return hasChildren
+          ? { ...entry, label: this.labelOf(option), disabled, items: build(children, level + 1) }
           : {
+              ...entry,
               label: this.labelOf(option),
               disabled,
-              icon: option === selected ? 'ph-bold ph-check' : undefined,
+              icon: chosen ? 'ph-bold ph-check' : undefined,
               command: () => this.choose(option),
             };
       });
-    return build(this.options());
+    return build(this.options(), 1);
   });
 
   /**

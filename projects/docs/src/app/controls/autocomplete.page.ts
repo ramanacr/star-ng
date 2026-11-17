@@ -185,12 +185,13 @@ interface OfficeCity {
         heading="Slots"
         source="autocomplete/slots"
         [script]="slotsScript"
-        note="starHeader and starFooter sit above and below the list. starEmpty gets the typed text. starGroup gets the label and the count. starLoading shows while loading is true."
+        note="starHeader and starFooter sit above and below the list. A button there is in the tab order: Tab from the field moves to it. starEmpty gets the typed text. starGroup gets the label and the count. starLoading shows while loading is true: press Reload in the footer."
       >
         <div class="docs-stack">
           <star-autocomplete
             [options]="officeCities"
             [(value)]="officeCity"
+            [loading]="officesLoading()"
             optionLabel="name"
             optionValue="code"
             optionGroup="country"
@@ -204,8 +205,18 @@ interface OfficeCity {
               {{ country }} ({{ count }})
             </ng-template>
             <ng-template starEmpty let-text>No city matches {{ text }}.</ng-template>
+            <ng-template starLoading>
+              <p class="docs-output">Loading the office list...</p>
+            </ng-template>
             <ng-template starFooter>
               <p class="docs-output">{{ officeCities.length }} cities</p>
+              <button
+                type="button"
+                class="star-btn star-btn--sm star-btn--ghost"
+                (click)="reloadOffices()"
+              >
+                Reload
+              </button>
             </ng-template>
           </star-autocomplete>
           <p class="docs-output" role="status">City: {{ officeCity() ?? 'none' }}</p>
@@ -272,6 +283,15 @@ export class AutocompletePage {
 
   protected readonly city = signal<string | null>(null);
   protected readonly officeCity = signal<string | null>(null);
+  protected readonly officesLoading = signal(false);
+  private officesTimer: ReturnType<typeof setTimeout> | undefined;
+
+  protected reloadOffices(): void {
+    this.officesLoading.set(true);
+    clearTimeout(this.officesTimer);
+    this.officesTimer = setTimeout(() => this.officesLoading.set(false), 800);
+  }
+
   protected readonly dropdownCity = signal<string | null>(null);
   protected readonly person = signal<string | null>(null);
   protected readonly chosen = signal<readonly string[]>([]);
@@ -320,7 +340,15 @@ readonly officeCities: readonly OfficeCity[] = [
   { code: 'PAR', name: 'Paris', country: 'France' },
   { code: 'PUN', name: 'Pune', country: 'India' },
 ];
-readonly officeCity = signal<string | null>(null);`;
+readonly officeCity = signal<string | null>(null);
+// starLoading follows this signal through [loading].
+readonly officesLoading = signal(false);
+
+reloadOffices(): void {
+  this.officesLoading.set(true);
+  // A real application loads the list from its server here.
+  setTimeout(() => this.officesLoading.set(false), 800);
+}`;
   protected readonly largeScript = `readonly tickets: readonly string[] = Array.from(
   { length: 10_000 },
   (_, index) => \`Ticket \${String(index + 1).padStart(5, '0')}\`,
@@ -381,10 +409,20 @@ readonly task = form(this.taskModel, (path) => {
       description:
         'With virtualScroll: moves the active suggestion by the lines in view, over all suggestions.',
     },
-    { name: 'Escape', description: 'Closes the list.' },
+    {
+      name: 'Escape',
+      description:
+        'Closes the list. From the panel header or footer, the focus goes back to the field.',
+    },
     {
       name: 'Tab',
-      description: 'Closes the list and moves on. Text that is not an option is reset.',
+      description:
+        'Closes the list and moves on. Text that is not an option is reset. When the panel header or footer has buttons or links, Tab moves to them first, and Tab after the last one closes the list.',
+    },
+    {
+      name: 'Shift + Tab',
+      description:
+        'In the panel header or footer: moves to the previous button or link. From the first one, the focus goes back to the field and the list stays open.',
     },
     { name: 'Backspace', description: 'Multiple: in an empty field it removes the last chip.' },
     { name: 'Home / End', description: 'Move the caret in the text, as in any text field.' },

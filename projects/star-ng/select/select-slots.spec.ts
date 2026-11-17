@@ -139,6 +139,15 @@ class Host {
       filter
     />
 
+    <star-select
+      class="bare-loading"
+      [options]="countries"
+      optionLabel="name"
+      optionValue="code"
+      ariaLabel="Bare loading"
+      loading
+    />
+
     <star-multi-select
       class="bare-multi"
       [options]="countries"
@@ -214,14 +223,27 @@ describe('select slots', () => {
     );
   });
 
-  it('loading slot replaces the loading row', async () => {
-    const { fixture, host, plain } = await setup();
+  it('loading slot renders as a loading row in the panel, above the options', async () => {
+    const { fixture, host, el, plain } = await setup();
     host.loading.set(true);
     plain.click();
     await fixture.whenStable();
     const panel = document.querySelector('.star-panel')!;
-    expect(panel.querySelector('.load')?.textContent).toBe('Fetching');
-    expect(panel.textContent).not.toContain('Loading');
+    const row = panel.querySelector('.star-listbox__empty')!;
+    expect(row.querySelector('.load')?.textContent).toBe('Fetching');
+    expect(row.textContent?.trim()).toBe('Fetching');
+    // The row comes before the first option, and the options stay.
+    const first = panel.querySelector('[role=option]')!;
+    expect(row.compareDocumentPosition(first) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    // The trigger shows the built-in spinner, with or without the slot.
+    expect(el.querySelector('.plain [role=img][aria-label="Loading"]')).not.toBeNull();
+  });
+
+  it('loading slot is not rendered while loading is off', async () => {
+    const { fixture, plain } = await setup();
+    plain.click();
+    await fixture.whenStable();
+    expect(document.querySelector('.star-panel .load')).toBeNull();
   });
 
   it('group slot gets label and count', async () => {
@@ -317,6 +339,21 @@ describe('select icon slots and default text', () => {
   }
 
   afterEach(() => document.querySelectorAll('.cdk-overlay-container').forEach((n) => n.remove()));
+
+  it('with loading and no starLoading slot, the trigger shows the spinner and the panel has no loading row', async () => {
+    const { fixture, el } = await setup();
+    const trigger = el.querySelector<HTMLElement>('.bare-loading [role=combobox]')!;
+    const spinner = el.querySelector('.bare-loading .ph-spinner-gap')!;
+    expect(spinner.getAttribute('role')).toBe('img');
+    expect(spinner.getAttribute('aria-label')).toBe('Loading');
+    expect(spinner.classList).toContain('star-spin');
+    expect(el.querySelector('.bare-loading .ph-caret-down')).toBeNull();
+    trigger.click();
+    await fixture.whenStable();
+    const panel = document.querySelector('.star-panel')!;
+    expect(panel.querySelector('.star-listbox__empty')).toBeNull();
+    expect(panel.querySelectorAll('[role=option]').length).toBe(COUNTRIES.length);
+  });
 
   it('a custom dropdown icon sits in an aria-hidden wrapper with the caret class', async () => {
     const { el } = await setup();

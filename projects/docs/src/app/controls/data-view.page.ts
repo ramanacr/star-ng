@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 import { StarButton } from '@star-ng/ui/button';
+import { STAR_SLOTS } from '@star-ng/ui/core';
 import { StarDataView, StarDataViewItem } from '@star-ng/ui/data-display';
 import { DOCS, DocsRow } from '../shared/docs';
 
@@ -11,7 +12,7 @@ interface Product {
 
 @Component({
   selector: 'docs-data-view-page',
-  imports: [DOCS, StarDataView, StarDataViewItem, StarButton],
+  imports: [DOCS, StarDataView, StarDataViewItem, StarButton, STAR_SLOTS],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <docs-page
@@ -88,6 +89,34 @@ interface Product {
         </star-data-view>
       </docs-example>
 
+      <docs-example
+        heading="Header, footer and empty slots"
+        source="data-view/slots"
+        [script]="slotsScript"
+        note="starHeader and starFooter add content above the layout switch and below the items. starEmpty replaces the empty message and gets an empty text, because the data view has no filter. Use the slots for content that is not interactive, or for your own controls with their own labels. They do not change the item template."
+      >
+        <div class="docs-stack">
+          <star-data-view [items]="products.slice(0, 3)">
+            <ng-template starHeader>
+              <p class="docs-output">Today's picks</p>
+            </ng-template>
+            <ng-template starDataViewItem [starDataViewItemOf]="products" let-p>
+              <strong>{{ p.name }}</strong>
+              <div>{{ '$' + p.price }}</div>
+            </ng-template>
+            <ng-template starFooter>
+              <p class="docs-output">Prices include tax.</p>
+            </ng-template>
+          </star-data-view>
+          <star-data-view [items]="[]">
+            <ng-template starDataViewItem let-item>{{ item }}</ng-template>
+            <ng-template starEmpty let-text>
+              <span style="color: var(--star-text-muted)">Nothing to show yet.</span>
+            </ng-template>
+          </star-data-view>
+        </div>
+      </docs-example>
+
       <docs-api
         [of]="['StarDataView', 'StarDataViewItem']"
         [slots]="slots"
@@ -134,6 +163,9 @@ readonly sorted = computed(() =>
   ),
 );`;
 
+  protected readonly slotsScript = `// Import STAR_SLOTS from '@star-ng/ui/core' in the component imports.
+readonly products: readonly Product[] = [ /* as above */ ];`;
+
   protected readonly slots: readonly DocsRow[] = [
     {
       name: 'ng-template starDataViewItem',
@@ -143,6 +175,19 @@ readonly sorted = computed(() =>
     {
       name: '[starDataViewHeader]',
       description: 'Content at the start of the header, before the layout switch.',
+    },
+    {
+      name: 'ng-template[starHeader]',
+      description: 'Content child. Content above the header row with the layout switch.',
+    },
+    {
+      name: 'ng-template[starFooter]',
+      description: 'Content child. Content below the items and the paginator.',
+    },
+    {
+      name: 'ng-template[starEmpty]',
+      description:
+        'Content child. Replaces the empty message (emptyMessage and the default text). $implicit is an empty text, because the data view has no filter.',
     },
   ];
   protected readonly cssVars: readonly DocsRow[] = [

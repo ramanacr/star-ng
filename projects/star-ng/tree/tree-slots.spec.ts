@@ -104,6 +104,23 @@ class Host {
   readonly checked = signal<readonly string[]>([]);
 }
 
+@Component({
+  imports: [StarTree, StarNodeTemplate],
+  template: `
+    @for (mode of modes; track mode) {
+      <star-tree [class]="mode" [nodes]="projects" [selectionMode]="mode" [ariaLabel]="mode">
+        <ng-template starNode let-node
+          ><b class="mine">{{ node.label }}</b></ng-template
+        >
+      </star-tree>
+    }
+  `,
+})
+class ModeHost {
+  readonly projects = PROJECTS;
+  readonly modes = ['single', 'multiple'] as const;
+}
+
 function key(target: Element, key: string): void {
   target.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
 }
@@ -238,4 +255,57 @@ describe('tree slots', () => {
     expect((rows[0] as HTMLElement).style.height).toBe('40px');
     expect(rows[0].querySelector('.mine')).not.toBeNull();
   });
+
+  for (const mode of ['single', 'multiple'] as const) {
+    it(`${mode} selection: aria-expanded and aria-selected follow the keyboard with starNode`, async () => {
+      const fixture = TestBed.createComponent(ModeHost);
+      await fixture.whenStable();
+      const el = fixture.nativeElement as HTMLElement;
+      const rows = () => [...el.querySelectorAll<HTMLElement>(`.${mode} [role=treeitem]`)];
+      const flags = () => rows().map((r) => r.getAttribute('aria-selected'));
+      expect(rows().length).toBe(2);
+      expect(rows()[0].getAttribute('aria-expanded')).toBe('false');
+      expect(rows()[1].getAttribute('aria-expanded')).toBeNull();
+      expect(flags()).toEqual(['false', 'false']);
+
+      rows()[0].focus();
+      key(rows()[0], 'ArrowRight');
+      await fixture.whenStable();
+      expect(rows().length).toBe(4);
+      expect(rows()[0].getAttribute('aria-expanded')).toBe('true');
+      expect(rows()[1].querySelector('.mine')?.textContent).toBe('UI kit');
+
+      key(rows()[0], 'Enter');
+      await fixture.whenStable();
+      expect(flags()).toEqual(['true', 'false', 'false', 'false']);
+
+      // Move to the next row and select it with Space.
+      key(rows()[0], 'ArrowDown');
+      await fixture.whenStable();
+      key(rows()[1], ' ');
+      await fixture.whenStable();
+      expect(flags()).toEqual(
+        mode === 'single'
+          ? ['false', 'true', 'false', 'false']
+          : ['true', 'true', 'false', 'false'],
+      );
+
+      // Enter on a selected row in multiple mode clears it. In single mode it stays selected.
+      key(rows()[1], 'Enter');
+      await fixture.whenStable();
+      expect(flags()).toEqual(
+        mode === 'single'
+          ? ['false', 'true', 'false', 'false']
+          : ['true', 'false', 'false', 'false'],
+      );
+      expect(rows()[0].getAttribute('aria-expanded')).toBe('true');
+
+      key(rows()[1], 'ArrowLeft'); // leaf row: focus goes to the parent
+      await fixture.whenStable();
+      key(rows()[0], 'ArrowLeft');
+      await fixture.whenStable();
+      expect(rows().length).toBe(2);
+      expect(rows()[0].getAttribute('aria-expanded')).toBe('false');
+    });
+  }
 });

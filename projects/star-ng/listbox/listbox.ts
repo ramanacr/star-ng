@@ -118,7 +118,7 @@ import { StarOptionTemplate } from '@star-ng/ui/select';
               @if (groupSlot(); as custom) {
                 <ng-container *ngTemplateOutlet="custom; context: groupContext(row.label)" />
               } @else {
-                {{ row.label }}
+                <ng-container>{{ row.label }}</ng-container>
               }
             </div>
           } @else {
@@ -163,15 +163,6 @@ import { StarOptionTemplate } from '@star-ng/ui/select';
           }
         </ng-container>
       </cdk-virtual-scroll-viewport>
-      @if (!visible().length) {
-        <div class="star-listbox__empty" role="presentation">
-          @if (emptySlot(); as custom) {
-            <ng-container *ngTemplateOutlet="custom; context: emptyContext()" />
-          } @else {
-            <ng-container>{{ text.emptyFilterMessage }}</ng-container>
-          }
-        </div>
-      }
     } @else {
       <ul
         #list
@@ -235,16 +226,16 @@ import { StarOptionTemplate } from '@star-ng/ui/select';
           </li>
         }
       </ul>
-      <!-- Outside the listbox: a listbox may contain options and groups only. -->
-      @if (!visible().length) {
-        <div class="star-listbox__empty" role="presentation">
-          @if (emptySlot(); as custom) {
-            <ng-container *ngTemplateOutlet="custom; context: emptyContext()" />
-          } @else {
-            <ng-container>{{ text.emptyFilterMessage }}</ng-container>
-          }
-        </div>
-      }
+    }
+    <!-- Outside the listbox: a listbox may contain options and groups only. -->
+    @if (!visible().length) {
+      <div class="star-listbox__empty" role="presentation">
+        @if (emptySlot(); as custom) {
+          <ng-container *ngTemplateOutlet="custom; context: emptyContext()" />
+        } @else {
+          <ng-container>{{ text.emptyFilterMessage }}</ng-container>
+        }
+      </div>
     }
     @if (footerSlot(); as footer) {
       <ng-container *ngTemplateOutlet="footer" />

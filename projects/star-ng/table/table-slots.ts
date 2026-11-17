@@ -10,7 +10,9 @@ export interface StarHeaderCellContext<T = unknown> {
 
 /**
  * Replaces the header label of one column in `star-table`:
- * `<ng-template starHeaderCell="customer" let-column>…</ng-template>`. PrimeNG `#header` template.
+ * `<ng-template starHeaderCell="customer" let-column>…</ng-template>`. This is like the column
+ * header part of the PrimeNG `#header` template. The PrimeNG template replaces the whole header
+ * row. This slot replaces the label of one column only.
  *
  * Only the label text changes. The sort button, the sort icon and rank, the resize handle and
  * `aria-sort` stay. On a sortable column the content goes inside the sort button, so do not add

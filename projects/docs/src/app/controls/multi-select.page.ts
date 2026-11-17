@@ -155,7 +155,7 @@ interface Parcel {
         heading="Slots"
         source="multi-select/slots"
         [script]="slotsScript"
-        note="Content child templates change parts of the control. starChip draws one chip when display is chip. Its context has remove, which removes that option, and interactive, which is false when the control is disabled or read-only. starHeader and starFooter add content to the panel. starEmpty gets the filter text."
+        note="Content child templates change parts of the control. starChip draws one chip when display is chip. Its context has remove, which removes that option, and interactive, which is false when the control is disabled or read-only. starHeader and starFooter add content to the panel. A button there is in the tab order: Tab from the filter field moves to it. starEmpty gets the filter text."
       >
         <star-multi-select
           [options]="cities"
@@ -195,6 +195,13 @@ interface Parcel {
           </ng-template>
           <ng-template starFooter>
             <p class="docs-output">{{ cities.length }} cities</p>
+            <button
+              type="button"
+              class="star-btn star-btn--sm star-btn--ghost"
+              (click)="visited.set([])"
+            >
+              Clear the choice
+            </button>
           </ng-template>
         </star-multi-select>
       </docs-example>
@@ -356,6 +363,20 @@ readonly team = form(this.teamModel, (path) => {
       description:
         'Typeahead: moves to the option that starts with the typed text. A space in the middle of the typed text belongs to the text.',
     },
-    { name: 'Escape', description: 'Closes the panel. The focus returns to the trigger.' },
+    {
+      name: 'Escape',
+      description:
+        'Closes the panel. The focus returns to the trigger, also from the panel header or footer.',
+    },
+    {
+      name: 'Tab',
+      description:
+        'Closes the panel and moves the focus on. When the panel header or footer has buttons or links, Tab moves to them first, and Tab after the last one closes the panel.',
+    },
+    {
+      name: 'Shift + Tab',
+      description:
+        'In the panel header or footer: moves to the previous button or link. From the first one, the focus goes back to the trigger (or the filter field) and the panel stays open.',
+    },
   ];
 }

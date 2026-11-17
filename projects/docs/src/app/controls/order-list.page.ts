@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
-import { StarOrderList } from '@star-ng/ui/data-display';
+import { StarItemTemplate, StarOrderList } from '@star-ng/ui/data-display';
 import { DOCS, DocsRow } from '../shared/docs';
 
 interface Task {
@@ -9,7 +9,7 @@ interface Task {
 
 @Component({
   selector: 'docs-order-list-page',
-  imports: [DOCS, StarOrderList],
+  imports: [DOCS, StarOrderList, StarItemTemplate],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <docs-page
@@ -41,8 +41,32 @@ interface Task {
         </div>
       </docs-example>
 
+      <docs-example
+        heading="Custom item"
+        source="order-list/item"
+        [script]="itemScript"
+        note="starItem replaces the label of an item. It gets the item, its index (from 0) and selected. The grip icon, the option role and the keys stay. Do not put buttons or links in the template: every item is an option in a listbox and takes the keys."
+      >
+        <div class="docs-stack">
+          <star-order-list [(value)]="playlist" optionLabel="name" ariaLabel="Task priorities">
+            <ng-template
+              starItem
+              [starItemOf]="playlist()"
+              let-task
+              let-i="index"
+              let-on="selected"
+            >
+              <strong>{{ i + 1 }}.</strong> {{ task.name }}
+              @if (on) {
+                <small style="color: var(--star-text-muted)">(selected)</small>
+              }
+            </ng-template>
+          </star-order-list>
+        </div>
+      </docs-example>
+
       <docs-api
-        [of]="['StarOrderList']"
+        [of]="['StarOrderList', 'StarItemTemplate']"
         [slots]="slots"
         [cssVars]="cssVars"
         [keyboard]="keyboard"
@@ -72,8 +96,15 @@ readonly playlist = signal<readonly Task[]>([
 ]);
 readonly ids = computed(() => this.playlist().map((task) => task.id).join(', '));`;
 
+  protected readonly itemScript = `// Import StarItemTemplate from '@star-ng/ui/data-display' in the component imports.
+readonly playlist = signal<readonly Task[]>([ /* as above */ ]);`;
+
   protected readonly slots: readonly DocsRow[] = [
-    { name: '(none)', description: 'The items come from the value model, not from content.' },
+    {
+      name: 'ng-template[starItem]',
+      description:
+        'Content child. Replaces the label of an item. The grip icon stays. The context has $implicit (the item), index (from 0) and selected. Set starItemOf to the items to type the item. Do not add focusable elements: every item is an option with its own keys.',
+    },
   ];
   protected readonly cssVars: readonly DocsRow[] = [
     { name: '--star-border', description: 'Border of the list.' },

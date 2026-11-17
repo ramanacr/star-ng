@@ -166,6 +166,12 @@ export abstract class StarAutoCompleteBase<TOption, TValue> extends StarOptionLi
 
   protected override onOutsideClick(event: MouseEvent): void {
     if (this.control().nativeElement.contains(event.target as Node)) return;
+    // Focus that left the panel for an element outside has closed it already.
+    if (!this.open()) return;
+    this.dismiss();
+  }
+
+  protected override dismiss(): void {
     this.closePanel(false);
     this.onBlurCommit();
     this.touch.emit();
@@ -300,7 +306,14 @@ const TEMPLATE = `
     (detach)="closePanel(false)"
     (overlayOutsideClick)="onOutsideClick($event)"
   >
-    <div class="star-panel" (mousedown)="onPanelMousedown($event)">
+    <!-- The panel handles keys and focus that bubble up from its header and footer. -->
+    <div
+      class="star-panel"
+      (mousedown)="onPanelMousedown($event)"
+      (keydown)="onPanelKeydown($event)"
+      (focusin)="onPanelFocusin($event)"
+      (focusout)="onPanelFocusout($event)"
+    >
       @if (headerSlot(); as header) {
         <ng-container *ngTemplateOutlet="header" />
       }

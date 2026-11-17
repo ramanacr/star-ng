@@ -108,7 +108,15 @@ import { StarSelectedContext } from './select-slots';
       (detach)="closePanel(false)"
       (overlayOutsideClick)="onOutsideClick($event)"
     >
-      <div class="star-panel" (mousedown)="onPanelMousedown($event)">
+      <!-- The panel handles keys and focus that bubble up from its header and footer. -->
+      <!-- eslint-disable-next-line @angular-eslint/template/interactive-supports-focus -->
+      <div
+        class="star-panel"
+        (mousedown)="onPanelMousedown($event)"
+        (keydown)="onPanelKeydown($event)"
+        (focusin)="onPanelFocusin($event)"
+        (focusout)="onPanelFocusout($event)"
+      >
         @if (headerSlot(); as header) {
           <ng-container *ngTemplateOutlet="header" />
         }

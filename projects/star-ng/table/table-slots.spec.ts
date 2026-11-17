@@ -2,7 +2,7 @@ import { Component, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { StarEmptyTemplate, StarGroupTemplate, StarLoadingTemplate } from '@star-ng/ui/core';
 import { StarSelect } from '@star-ng/ui/select';
-import { StarCellTemplate, StarColumn, StarTable } from './table';
+import { StarCellTemplate, StarColumn, StarRowExpansionTemplate, StarTable } from './table';
 import { StarHeaderCellTemplate } from './table-slots';
 
 interface Order {
@@ -80,6 +80,119 @@ class Host {
     { field: 'status', header: 'Status' },
   ];
 }
+
+@Component({
+  imports: [StarTable, StarLoadingTemplate, StarGroupTemplate, StarRowExpansionTemplate],
+  template: `
+    <star-table
+      class="wide"
+      [value]="ORDERS"
+      [columns]="columns"
+      dataKey="id"
+      ariaLabel="Wide"
+      selectionMode="multiple"
+      loading
+    >
+      <ng-template starLoading><b class="wide-load">Fetching</b></ng-template>
+      <ng-template starRowExpansion [starRowExpansionOf]="ORDERS" let-row>{{ row.id }}</ng-template>
+    </star-table>
+    <star-table
+      class="narrow"
+      [value]="ORDERS"
+      [columns]="columns"
+      dataKey="id"
+      ariaLabel="Narrow"
+      loading
+    >
+      <ng-template starLoading><b class="narrow-load">Fetching</b></ng-template>
+    </star-table>
+    <star-table
+      class="paged"
+      [value]="ORDERS"
+      [columns]="columns"
+      dataKey="id"
+      ariaLabel="Paged"
+      paginator
+      [rows]="2"
+    >
+      <p starTableSummary class="paged-summary">Summary</p>
+    </star-table>
+    <star-table
+      class="counted"
+      [value]="ORDERS"
+      [columns]="columns"
+      dataKey="id"
+      ariaLabel="Counted"
+      groupBy="status"
+      [globalFilter]="query()"
+    >
+      <ng-template starGroup let-label let-count="count">
+        <b class="cg">{{ label }} ({{ count }})</b>
+      </ng-template>
+    </star-table>
+  `,
+})
+class MoreHost {
+  readonly ORDERS = ORDERS;
+  readonly query = signal('');
+  readonly columns: StarColumn<Order>[] = [
+    { field: 'id', header: 'Order' },
+    { field: 'customer', header: 'Customer' },
+    { field: 'status', header: 'Status' },
+  ];
+}
+
+describe('table slots, more cases', () => {
+  async function setup() {
+    const fixture = TestBed.createComponent(MoreHost);
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+    return { fixture, host: fixture.componentInstance, el };
+  }
+  const groups = (el: HTMLElement) =>
+    [...el.querySelectorAll('.counted .cg')].map((n) => n.textContent?.trim());
+
+  it('loading row spans the data columns, the selection column and the expansion column', async () => {
+    const { el } = await setup();
+    const wide = el.querySelector('.wide .star-table__loading')!;
+    expect(wide.getAttribute('colspan')).toBe('5');
+    expect(wide.querySelector('.wide-load')?.textContent).toBe('Fetching');
+    const narrow = el.querySelector('.narrow .star-table__loading')!;
+    expect(narrow.getAttribute('colspan')).toBe('3');
+  });
+
+  it('summary content comes before the paginator in the DOM', async () => {
+    const { el } = await setup();
+    const table = el.querySelector<HTMLElement>('star-table.paged')!;
+    const summary = table.querySelector('.paged-summary')!;
+    const paginator = table.querySelector('star-paginator')!;
+    expect(paginator).not.toBeNull();
+    expect(
+      summary.compareDocumentPosition(paginator) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(summary.parentElement).toBe(table);
+  });
+
+  it('group count follows the global filter', async () => {
+    const { fixture, host, el } = await setup();
+    expect(groups(el)).toEqual(['Open (2)', 'Paid (1)']);
+    host.query.set('ava');
+    await fixture.whenStable();
+    expect(groups(el)).toEqual(['Open (1)']);
+    host.query.set('ben');
+    await fixture.whenStable();
+    expect(groups(el)).toEqual(['Paid (1)']);
+  });
+
+  it('group count stays the same when a group is collapsed', async () => {
+    const { fixture, el } = await setup();
+    const toggles = el.querySelectorAll<HTMLButtonElement>('.counted .star-table__group-toggle');
+    toggles[0].click();
+    await fixture.whenStable();
+    expect(toggles[0].getAttribute('aria-expanded')).toBe('false');
+    expect(groups(el)).toEqual(['Open (2)', 'Paid (1)']);
+  });
+});
 
 describe('table slots', () => {
   async function setup() {
