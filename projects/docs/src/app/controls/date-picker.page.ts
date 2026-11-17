@@ -218,7 +218,7 @@ import { DOCS, DocsRow } from '../shared/docs';
         heading="Slots"
         source="date-picker/slots"
         [script]="slotsScript"
-        note="Content child templates change parts of the popup. starDate replaces the content of a day button and gets the date, today, selected, disabled and outside: here a dot marks the days when an invoice is due. The button keeps its accessible name, so a screen reader does not announce the dot: give the information in text too. starHeader adds content above the calendar and starFooter above the button bar. The template applies to the calendar of all three pickers, and to every month when numberOfMonths is 2 or more. Do not put buttons or links in starDate: the calendar owns the focus and the keys."
+        note="Content child templates change parts of the popup. starDate replaces the content of a day button and gets the date, today, selected, disabled and outside: here a dot marks the days when an invoice is due. The button keeps its accessible name, so a screen reader does not announce the dot: give the information in text too. starHeader adds content above the calendar and starFooter at the bottom of the popup, below the button bar. The template applies to the calendar of all three pickers, and to every month when numberOfMonths is 2 or more. Do not put buttons or links in starDate: the calendar owns the focus and the keys."
       >
         <div class="docs-stack">
           <star-date-picker
@@ -467,7 +467,7 @@ readonly iso = (date: Date | null) => (date ? isoDay(date) : 'none');
     {
       name: 'ng-template[starFooter]',
       description:
-        'Content child. Content in the popup below the calendar and the time columns, above the button bar.',
+        'Content child. Content at the bottom of the popup, below the calendar, the time columns and the button bar.',
     },
   ];
 

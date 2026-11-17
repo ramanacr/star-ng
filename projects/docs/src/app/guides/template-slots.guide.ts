@@ -68,6 +68,7 @@ import { DOCS } from '../shared/docs';
               <td>The heading row of a group.</td>
               <td>
                 <code>$implicit</code>: the group label. <code>count</code>: the items in the group.
+                In the table, <code>count</code> is the rows of that group on the current page.
               </td>
             </tr>
             <tr>
@@ -110,8 +111,8 @@ import { DOCS } from '../shared/docs';
               <td>
                 <code>starHeader</code>, <code>starFooter</code>, <code>starEmpty</code>,
                 <code>starLoading</code>, <code>starGroup</code>, <code>starIcon</code>,
-                <code>starOption</code>, <code>starSelected</code>. Multi select also has
-                <code>starChip</code>.
+                <code>starOption</code>. Select also has <code>starSelected</code>. Multi select
+                also has <code>starChip</code>.
               </td>
             </tr>
             <tr>
@@ -170,12 +171,33 @@ import { DOCS } from '../shared/docs';
       <p>
         The control owns the keyboard model of its items. Do not put a button, a link or an input in
         a <code>starOption</code>, <code>starNode</code> or <code>starDate</code> template. Focus
-        would leave the item and the arrow keys would stop working.
+        would leave the item and the arrow keys would stop working. The same applies to
+        <code>starSelected</code>, which goes inside the combobox, and to <code>starGroup</code>: in
+        the table its content goes inside the button that opens and closes the group.
       </p>
       <p>
         The <code>starChip</code> slot of the multi select needs one more rule. Its context has a
         <code>remove()</code> function. A button that calls it must have <code>tabindex="-1"</code>,
-        so that the keyboard model of the control stays in charge.
+        so that the keyboard model of the control stays in charge. The context also has
+        <code>interactive</code>, which is false when the control is disabled or read-only. Show the
+        button only when it is true; <code>remove()</code> then does nothing.
+      </p>
+
+      <h2>Header and footer in a dropdown panel</h2>
+      <p>
+        In the panels of the select, the multi select and the autocomplete, focus stays in the
+        combobox, and Tab closes the panel. Use <code>starHeader</code> and
+        <code>starFooter</code> there only for content that is not interactive: text, counts and
+        hints. The listbox, the tree, the table and the date pickers allow interactive content in
+        the header and footer, in the normal tab order.
+      </p>
+
+      <h2>Icons are hidden from screen readers</h2>
+      <p>
+        The control puts a <code>starIcon</code> template in a wrapper with
+        <code>aria-hidden="true"</code>, so the icon is not read out and does not change the
+        accessible name of an option. The wrapper keeps the layout of the built-in icon, for example
+        the turn of the dropdown arrow when the panel opens.
       </p>
 
       <h2>Loading follows the input</h2>

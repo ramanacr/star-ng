@@ -1022,7 +1022,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "directive",
     "selector": "ng-template[starChip]",
     "entry": "@star-ng/ui/select",
-    "description": "Replaces a chip of `star-multi-select` with `display=\"chip\"`. PrimeNG `#selecteditems` template.",
+    "description": "Replaces a chip of `star-multi-select` with `display=\"chip\"`. PrimeNG `#chip` template (one chip).",
     "inputs": [
       {
         "name": "starChipOf",
@@ -2138,7 +2138,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "directive",
     "selector": "ng-template[starIcon]",
     "entry": "@star-ng/ui/core",
-    "description": "Replaces one built-in icon: `<ng-template starIcon=\"clear\">…</ng-template>`. PrimeNG `#clearicon`, `#dropdownicon` and similar templates.",
+    "description": "Replaces one built-in icon: `<ng-template starIcon=\"clear\">…</ng-template>`. PrimeNG `#clearicon`, `#dropdownicon` and similar templates. The control puts the icon in a wrapper with `aria-hidden=\"true\"`, so the icon is not read out.",
     "inputs": [
       {
         "name": "starIcon",
@@ -3681,7 +3681,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "directive",
     "selector": "ng-template[starOption]",
     "entry": "@star-ng/ui/select",
-    "description": "Custom option row template for `star-select` and `star-multi-select`.",
+    "description": "Custom option row template for `star-select`, `star-multi-select`, `star-listbox` and `star-autocomplete`. PrimeNG `#item` template.",
     "inputs": [
       {
         "name": "starOptionOf",
@@ -6575,7 +6575,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "multi-select/groups": "<star-multi-select\n  [options]=\"departments\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  optionGroup=\"site\"\n  optionDisabled=\"closed\"\n  [(value)]=\"grouped\"\n  placeholder=\"Departments by site\"\n  ariaLabel=\"Departments by site\"\n/>",
   "multi-select/large": "<div class=\"docs-stack\">\n  <star-multi-select\n    [options]=\"parcels\"\n    optionLabel=\"name\"\n    optionValue=\"id\"\n    [(value)]=\"selectedParcels\"\n    placeholder=\"10,000 parcels\"\n    ariaLabel=\"Parcels\"\n    virtualScroll\n  />\n  <p class=\"docs-output\" role=\"status\">Parcels: {{ selectedParcels().length }}</p>\n</div>",
   "multi-select/limit": "<star-multi-select\n  [options]=\"departments\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  [selectionLimit]=\"2\"\n  placeholder=\"Pick up to 2\"\n  ariaLabel=\"Limited departments\"\n/>",
-  "multi-select/slots": "<star-multi-select\n  [options]=\"cities\"\n  optionLabel=\"name\"\n  optionValue=\"code\"\n  [(value)]=\"visited\"\n  display=\"chip\"\n  placeholder=\"Select cities\"\n  ariaLabel=\"Cities\"\n  filter\n>\n  <ng-template starHeader>\n    <p class=\"docs-output\">Cities with an office</p>\n  </ng-template>\n  <ng-template starEmpty let-text>No city matches {{ text }}.</ng-template>\n  <ng-template starChip [starChipOf]=\"cities\" let-item let-remove=\"remove\">\n    <span class=\"star-chip star-chip--sm\">\n      {{ item.code }}\n      <button\n        type=\"button\"\n        class=\"star-chip__remove\"\n        tabindex=\"-1\"\n        [attr.aria-label]=\"'Remove ' + item.name\"\n        (click)=\"remove()\"\n      >\n        x\n      </button>\n    </span>\n  </ng-template>\n  <ng-template starFooter>\n    <p class=\"docs-output\">{{ cities.length }} cities</p>\n  </ng-template>\n</star-multi-select>",
+  "multi-select/slots": "<star-multi-select\n  [options]=\"cities\"\n  optionLabel=\"name\"\n  optionValue=\"code\"\n  [(value)]=\"visited\"\n  display=\"chip\"\n  placeholder=\"Select cities\"\n  ariaLabel=\"Cities\"\n  filter\n>\n  <ng-template starHeader>\n    <p class=\"docs-output\">Cities with an office</p>\n  </ng-template>\n  <ng-template starEmpty let-text>No city matches {{ text }}.</ng-template>\n  <ng-template\n    starChip\n    [starChipOf]=\"cities\"\n    let-item\n    let-remove=\"remove\"\n    let-interactive=\"interactive\"\n  >\n    <span class=\"star-chip star-chip--sm\">\n      {{ item.code }}\n      @if (interactive) {\n        <button\n          type=\"button\"\n          class=\"star-chip__remove\"\n          tabindex=\"-1\"\n          [attr.aria-label]=\"'Remove ' + item.name\"\n          (click)=\"remove()\"\n        >\n          x\n        </button>\n      }\n    </span>\n  </ng-template>\n  <ng-template starFooter>\n    <p class=\"docs-output\">{{ cities.length }} cities</p>\n  </ng-template>\n</star-multi-select>",
   "multi-select/template": "<star-multi-select\n  [options]=\"departments\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  [(value)]=\"templated\"\n  placeholder=\"Select departments\"\n  ariaLabel=\"Departments with template\"\n>\n  <ng-template starOption [starOptionOf]=\"departments\" let-item let-selected=\"selected\">\n    <span>\n      {{ item.name }}\n      <small>{{ item.site }}</small>\n    </span>\n  </ng-template>\n</star-multi-select>",
   "order-list/basic": "<div class=\"docs-stack\">\n  <star-order-list [(value)]=\"steps\" ariaLabel=\"Release steps\" />\n  <p class=\"docs-output\" role=\"status\">Order: {{ steps().join(' > ') }}</p>\n</div>",
   "order-list/objects": "<div class=\"docs-stack\">\n  <star-order-list [(value)]=\"playlist\" optionLabel=\"name\" ariaLabel=\"Task playlist\" />\n  <p class=\"docs-output\" role=\"status\">Ids: {{ ids() }}</p>\n</div>",

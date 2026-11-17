@@ -348,7 +348,7 @@ readonly slotLoading = signal(false);`;
     {
       name: 'ng-template[starGroup]',
       description:
-        'Content child. Replaces the label and the row count of a group heading (groupBy). The toggle button and aria-expanded stay. The context has $implicit (the group label) and count.',
+        'Content child. Replaces the label and the row count of a group heading (groupBy). The toggle button and aria-expanded stay. The context has $implicit (the group label) and count (the rows of that group on the current page). Do not put focusable elements in it: the content goes inside the toggle button.',
     },
     {
       name: 'ng-template[starEmpty]',

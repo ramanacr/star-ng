@@ -313,6 +313,7 @@ readonly picked = signal<number | readonly number[] | null>([]);`;
   protected readonly slotsScript = `// Import STAR_SLOTS from '@star-ng/ui/core' in the component imports.
 readonly cities: readonly City[] = [
   { code: 'BER', name: 'Berlin', country: 'Germany' },
+  { code: 'MUC', name: 'Munich', country: 'Germany' },
   { code: 'PAR', name: 'Paris', country: 'France' },
   { code: 'PUN', name: 'Pune', country: 'India' },
 ];
