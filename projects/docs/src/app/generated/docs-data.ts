@@ -90,6 +90,15 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarActionSheet": {
+    "kind": "component",
+    "selector": "star-action-sheet",
+    "entry": "@star-ng/ui/bottom-sheet",
+    "description": "List of actions in a bottom sheet (Kendo / DevExtreme ActionSheet). Open it with `StarBottomSheet.openActions(actions)`: the ref resolves with the chosen action, or `undefined` for Cancel, Escape or a backdrop click.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
   "StarAnimateOnScroll": {
     "kind": "directive",
     "selector": "[starAnimateOnScroll]",
@@ -300,6 +309,44 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "string",
         "default": "''",
         "required": false,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
+  "StarBottomSheetContainer": {
+    "kind": "component",
+    "selector": "star-bottom-sheet-container",
+    "entry": "@star-ng/ui/bottom-sheet",
+    "description": "Internal host: the native `<dialog>` of one sheet.",
+    "inputs": [
+      {
+        "name": "content",
+        "type": "Type<unknown> | TemplateRef<unknown>",
+        "default": null,
+        "required": true,
+        "description": ""
+      },
+      {
+        "name": "config",
+        "type": "StarBottomSheetConfig",
+        "default": null,
+        "required": true,
+        "description": ""
+      },
+      {
+        "name": "contentInjector",
+        "type": "Injector",
+        "default": null,
+        "required": true,
+        "description": ""
+      },
+      {
+        "name": "templateContext",
+        "type": "StarBottomSheetContext",
+        "default": null,
+        "required": true,
         "description": ""
       }
     ],
@@ -6475,6 +6522,9 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "badge/severities": "<star-badge [value]=\"1\" />\n<star-badge [value]=\"2\" severity=\"secondary\" />\n<star-badge [value]=\"3\" severity=\"success\" />\n<star-badge [value]=\"4\" severity=\"info\" />\n<star-badge [value]=\"5\" severity=\"warn\" />\n<star-badge [value]=\"6\" severity=\"danger\" />",
   "badge/sizes": "<star-badge [value]=\"7\" size=\"sm\" />\n<star-badge [value]=\"7\" />\n<star-badge [value]=\"7\" size=\"lg\" />\n<star-badge severity=\"success\" ariaLabel=\"online\" />",
   "block-ui/basic": "<div class=\"docs-stack\">\n  <star-block-ui [blocked]=\"blocked()\" message=\"Saving…\">\n    <div class=\"docs-stack\">\n      <star-field label=\"Note\">\n        <input starInput value=\"Waiting for approval\" />\n      </star-field>\n      <star-field label=\"Reference\">\n        <input starInput value=\"PO-1042\" />\n      </star-field>\n    </div>\n  </star-block-ui>\n  <star-button variant=\"secondary\" (pressed)=\"blockFor(1500)\">\n    Save (blocks for 1.5 s)\n  </star-button>\n  <star-button variant=\"secondary\" (pressed)=\"blocked.set(!blocked())\">\n    {{ blocked() ? 'Unblock' : 'Block' }}\n  </star-button>\n</div>",
+  "bottom-sheet/actions": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button\n      variant=\"secondary\"\n      leadingIcon=\"ph-bold ph-dots-three\"\n      (pressed)=\"orderActions()\"\n    >\n      Order actions\n    </star-button>\n  </div>\n  <p class=\"docs-output\" role=\"status\">Action: {{ action() }}</p>\n</div>",
+  "bottom-sheet/component": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button leadingIcon=\"ph-bold ph-export\" (pressed)=\"exportInvoice()\">\n      Export invoice\n    </star-button>\n  </div>\n  <p class=\"docs-output\" role=\"status\">Export format: {{ format() }}</p>\n</div>",
+  "bottom-sheet/template": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"showProjects(projects)\">\n      Pick a project\n    </star-button>\n  </div>\n  <p class=\"docs-output\" role=\"status\">Project: {{ project() }}</p>\n</div>\n<ng-template #projects let-data let-ref=\"ref\">\n  <div class=\"docs-stack\">\n    <h2 class=\"star-dialog__title\">Projects</h2>\n    @for (name of data; track name) {\n      <star-button variant=\"ghost\" (pressed)=\"ref.dismiss(name)\">{{ name }}</star-button>\n    }\n  </div>\n</ng-template>",
   "breadcrumb/basic": "<star-breadcrumb [home]=\"home\" [items]=\"trail\" ariaLabel=\"Breadcrumb of the guide\" />",
   "breadcrumb/links": "<star-breadcrumb\n  ariaLabel=\"Breadcrumb of the install page\"\n  [items]=\"[\n    { label: 'Docs', url: 'https://example.com/docs' },\n    { label: 'Guides', url: 'https://example.com/docs/guides' },\n    { label: 'Install' },\n  ]\"\n/>",
   "button/full": "<div class=\"docs-stack\">\n  <star-button fullWidth>Continue</star-button>\n</div>",

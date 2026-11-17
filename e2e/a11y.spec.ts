@@ -505,6 +505,24 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'bottom sheet with a component',
+    path: 'controls/bottom-sheet',
+    open: async (page) => {
+      await example(page, 'Sheet from a component')
+        .getByRole('button', { name: 'Export invoice' })
+        .click();
+      await expect(page.getByRole('dialog', { name: 'Export invoice INV-2041' })).toBeVisible();
+    },
+  },
+  {
+    name: 'action sheet',
+    path: 'controls/bottom-sheet',
+    open: async (page) => {
+      await example(page, 'Action sheet').getByRole('button', { name: 'Order actions' }).click();
+      await expect(page.getByRole('dialog', { name: 'Order ORD-1042 actions' })).toBeVisible();
+    },
+  },
+  {
     name: 'popover',
     path: 'controls/popover',
     open: async (page) => {

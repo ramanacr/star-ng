@@ -435,6 +435,92 @@ test.describe('confirm', () => {
   });
 });
 
+test.describe('bottom sheet', () => {
+  test('opens a component at the bottom edge, traps Tab, resolves and returns the focus', async ({
+    page,
+  }) => {
+    await openPage(page, '/controls/bottom-sheet', 'Bottom sheet');
+    const live = example(page, 'Sheet from a component');
+    const trigger = live.getByRole('button', { name: 'Export invoice' });
+    const sheet = page.getByRole('dialog', { name: 'Export invoice INV-2041' });
+
+    await trigger.focus();
+    await page.keyboard.press('Enter');
+    await expect(sheet).toBeVisible();
+    await expect(sheet.getByRole('button', { name: 'PDF' })).toBeFocused();
+    const box = (await sheet.boundingBox())!;
+    const viewport = page.viewportSize()!;
+    // Wait for the slide-up transition, then the sheet touches the bottom edge.
+    await expect
+      .poll(async () => {
+        const current = (await sheet.boundingBox())!;
+        return Math.round(current.y + current.height);
+      })
+      .toBe(viewport.height);
+    expect(box.width).toBeLessThanOrEqual(640 + 1);
+    await tabStaysInside(page, sheet, 5);
+
+    await sheet.getByRole('button', { name: 'CSV' }).click();
+    await expect(sheet).toBeHidden();
+    await expect(live.getByRole('status')).toHaveText('Export format: CSV');
+    await expect(trigger).toBeFocused();
+
+    await trigger.click();
+    await expect(sheet).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(sheet).toBeHidden();
+    await expect(live.getByRole('status')).toHaveText('Export format: cancelled');
+    await expect(trigger).toBeFocused();
+
+    await trigger.click();
+    await expect(sheet).toBeVisible();
+    await page.mouse.click(4, 4);
+    await expect(sheet).toBeHidden();
+    await expect(live.getByRole('status')).toHaveText('Export format: cancelled');
+  });
+
+  test('an action sheet resolves with the chosen action and skips disabled ones', async ({
+    page,
+  }) => {
+    await openPage(page, '/controls/bottom-sheet', 'Bottom sheet');
+    const live = example(page, 'Action sheet');
+    const sheet = page.getByRole('dialog', { name: 'Order ORD-1042 actions' });
+
+    await live.getByRole('button', { name: 'Order actions' }).click();
+    await expect(sheet).toBeVisible();
+    await expect(sheet.getByRole('listitem')).toHaveCount(4);
+    await expect(sheet.getByRole('button', { name: 'Print label' })).toBeDisabled();
+    await expect(sheet.getByRole('button', { name: 'Share order' })).toBeFocused();
+    await sheet.getByRole('button', { name: 'Cancel order' }).click();
+    await expect(sheet).toBeHidden();
+    await expect(live.getByRole('status')).toHaveText('Action: cancel');
+
+    await live.getByRole('button', { name: 'Order actions' }).click();
+    await sheet.getByRole('button', { name: 'Cancel', exact: true }).click();
+    await expect(sheet).toBeHidden();
+    await expect(live.getByRole('status')).toHaveText('Action: none');
+  });
+
+  test('a template sheet stays open on a backdrop click and closes on Escape', async ({ page }) => {
+    await openPage(page, '/controls/bottom-sheet', 'Bottom sheet');
+    const live = example(page, 'Template and options');
+    const sheet = page.getByRole('dialog', { name: 'Projects' });
+
+    await live.getByRole('button', { name: 'Pick a project' }).click();
+    await expect(sheet).toBeVisible();
+    await page.mouse.click(4, 4);
+    await expect(sheet).toBeVisible();
+    await sheet.getByRole('button', { name: 'North depot' }).click();
+    await expect(sheet).toBeHidden();
+    await expect(live.getByRole('status')).toHaveText('Project: North depot');
+
+    await live.getByRole('button', { name: 'Pick a project' }).click();
+    await page.keyboard.press('Escape');
+    await expect(sheet).toBeHidden();
+    await expect(live.getByRole('status')).toHaveText('Project: none');
+  });
+});
+
 test.describe('drawer', () => {
   test('opens, puts the focus inside, traps Tab, closes with Escape and returns the focus', async ({
     page,
@@ -782,6 +868,7 @@ test.describe('overlay pages', () => {
     ['dialog', 'Dialog'],
     ['confirm', 'Confirm'],
     ['drawer', 'Drawer'],
+    ['bottom-sheet', 'Bottom sheet'],
     ['popover', 'Popover'],
     ['tooltip', 'Tooltip'],
     ['toast', 'Toast'],
