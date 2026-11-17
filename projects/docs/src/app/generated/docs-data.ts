@@ -3231,13 +3231,6 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "null",
         "required": false,
         "description": ""
-      },
-      {
-        "name": "itemTemplate",
-        "type": "TemplateRef<StarMenuItemContext> | null",
-        "default": "null",
-        "required": false,
-        "description": "@internal Replaces the label text of each entry. The icon, the shortcut and the submenu arrow stay. Used by `star-cascade-select`. Not public API yet."
       }
     ],
     "models": [],
@@ -6226,27 +6219,6 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "false",
         "required": false,
         "description": ""
-      },
-      {
-        "name": "nodeTemplate",
-        "type": "TemplateRef<StarNodeContext> | null",
-        "default": "null",
-        "required": false,
-        "description": "Set by `star-tree-select`. In your own markup, use the `starNode` slot."
-      },
-      {
-        "name": "emptyTemplate",
-        "type": "TemplateRef<StarEmptyContext> | null",
-        "default": "null",
-        "required": false,
-        "description": "Set by `star-tree-select`. In your own markup, use the `starEmpty` slot."
-      },
-      {
-        "name": "toggleIconTemplate",
-        "type": "TemplateRef<StarToggleIconContext> | null",
-        "default": "null",
-        "required": false,
-        "description": "Set by `star-tree-select`. In your own markup, use `<ng-template starIcon=\"toggle\">`."
       }
     ],
     "models": [

@@ -200,8 +200,10 @@ export class StarMenu {
   readonly inline = input(false, { transform: booleanAttribute });
   readonly ariaLabel = input<string | null>(null);
   /**
-   * @internal Replaces the label text of each entry. The icon, the shortcut and the submenu arrow
+   * Replaces the label text of each entry. The icon, the shortcut and the submenu arrow
    * stay. Used by `star-cascade-select`. Not public API yet.
+   *
+   * @internal
    */
   readonly itemTemplate = input<TemplateRef<StarMenuItemContext> | null>(null);
   readonly itemClick = output<StarMenuItem>();

@@ -101,7 +101,7 @@ function signalMember(member, source) {
   const call = member.initializer;
   if (!ts.isCallExpression(call)) return null;
   const doc = jsDoc(member, source);
-  if (/^@internal/m.test(doc)) return null;
+  if (/^@internal\b/m.test(doc)) return null;
   const callee = call.expression.getText();
   const [base, variant] = callee.split('.');
   const kind = SIGNAL_KINDS[base];
