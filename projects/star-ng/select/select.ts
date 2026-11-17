@@ -56,7 +56,7 @@ import { StarSelectedContext } from './select-slots';
             @if (selectedSlot(); as custom) {
               <ng-container *ngTemplateOutlet="custom; context: { $implicit: option }" />
             } @else {
-              {{ labelOf(option) }}
+              <ng-container>{{ labelOf(option) }}</ng-container>
             }
           </span>
         } @else {
@@ -73,7 +73,7 @@ import { StarSelectedContext } from './select-slots';
           (click)="clear()"
         >
           @if (iconSlot('clear'); as icon) {
-            <ng-container *ngTemplateOutlet="icon" />
+            <span aria-hidden="true"><ng-container *ngTemplateOutlet="icon" /></span>
           } @else {
             <i class="ph-bold ph-x" aria-hidden="true"></i>
           }
@@ -87,7 +87,9 @@ import { StarSelectedContext } from './select-slots';
         ></i>
       } @else {
         @if (iconSlot('dropdown'); as icon) {
-          <ng-container *ngTemplateOutlet="icon" />
+          <span class="star-select__caret" aria-hidden="true"
+            ><ng-container *ngTemplateOutlet="icon"
+          /></span>
         } @else {
           <i class="ph-bold ph-caret-down star-select__caret" aria-hidden="true"></i>
         }
@@ -112,7 +114,7 @@ import { StarSelectedContext } from './select-slots';
         @if (filter()) {
           <div class="star-panel__filter">
             @if (iconSlot('filter'); as icon) {
-              <ng-container *ngTemplateOutlet="icon" />
+              <span aria-hidden="true"><ng-container *ngTemplateOutlet="icon" /></span>
             } @else {
               <i class="ph-bold ph-magnifying-glass" aria-hidden="true"></i>
             }
@@ -161,7 +163,7 @@ import { StarSelectedContext } from './select-slots';
                 @if (groupSlot(); as custom) {
                   <ng-container *ngTemplateOutlet="custom; context: groupContext(row.label)" />
                 } @else {
-                  {{ row.label }}
+                  <ng-container>{{ row.label }}</ng-container>
                 }
               </li>
             } @else {
@@ -194,7 +196,9 @@ import { StarSelectedContext } from './select-slots';
                 </span>
                 @if (isSelected(option)) {
                   @if (iconSlot('check'); as icon) {
-                    <ng-container *ngTemplateOutlet="icon" />
+                    <span class="star-listbox__check" aria-hidden="true"
+                      ><ng-container *ngTemplateOutlet="icon"
+                    /></span>
                   } @else {
                     <i class="ph-bold ph-check star-listbox__check" aria-hidden="true"></i>
                   }
@@ -207,7 +211,7 @@ import { StarSelectedContext } from './select-slots';
                 @if (emptySlot(); as custom) {
                   <ng-container *ngTemplateOutlet="custom; context: emptyContext()" />
                 } @else {
-                  {{ emptyText() }}
+                  <ng-container>{{ emptyText() }}</ng-container>
                 }
               </li>
             }

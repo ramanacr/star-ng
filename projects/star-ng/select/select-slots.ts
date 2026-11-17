@@ -10,6 +10,9 @@ export interface StarSelectedContext<T> {
 /**
  * Replaces the label in the closed trigger of `star-select` when a value is chosen.
  * The placeholder still shows when nothing is chosen. PrimeNG `#selecteditem` template.
+ *
+ * The content goes inside the combobox, which owns focus and the keyboard. Do not add focusable
+ * elements (buttons, links, inputs) in this template.
  */
 @Directive({
   selector: 'ng-template[starSelected]',
@@ -32,12 +35,20 @@ export class StarSelectedTemplate<T = unknown> extends StarSlot<StarSelectedCont
 export interface StarChipContext<T> {
   /** The chosen option. */
   readonly $implicit: T;
-  /** Removes this option from the value. Call it from a button with `tabindex="-1"`. */
+  /**
+   * `true` when the control is neither disabled nor read-only. Show a remove button only then,
+   * like the default chip.
+   */
+  readonly interactive: boolean;
+  /**
+   * Removes this option from the value. Call it from a button with `tabindex="-1"`.
+   * It does nothing when `interactive` is `false`.
+   */
   readonly remove: () => void;
 }
 
 /**
- * Replaces a chip of `star-multi-select` with `display="chip"`. PrimeNG `#selecteditems` template.
+ * Replaces a chip of `star-multi-select` with `display="chip"`. PrimeNG `#chip` template (one chip).
  *
  * The chip is drawn inside the combobox, which handles Enter and Space. A button inside a chip
  * must have `tabindex="-1"`, like the default chip, and an accessible name. Keyboard users remove

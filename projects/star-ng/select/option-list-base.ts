@@ -47,7 +47,10 @@ export interface StarOptionContext<T> {
   readonly index: number;
 }
 
-/** Custom option row template for `star-select` and `star-multi-select`. */
+/**
+ * Custom option row template for `star-select`, `star-multi-select`, `star-listbox` and
+ * `star-autocomplete`. PrimeNG `#item` template.
+ */
 @Directive({ selector: 'ng-template[starOption]' })
 export class StarOptionTemplate<T = unknown> {
   /** Optional: pass the options array to type `let-option` in strict templates. */
@@ -78,6 +81,10 @@ const PANEL_POSITIONS: ConnectedPosition[] = [
 /**
  * Shared state and keyboard model of the dropdown list controls (WAI-ARIA combobox +
  * listbox with `aria-activedescendant`). Subclasses add the selection model.
+ *
+ * A subclass must provide `STAR_SLOT_HOST` (`{ provide: STAR_SLOT_HOST, useExisting:
+ * forwardRef(() => MyControl) }`). Without it, slot directives find no host and the control
+ * gets no slots.
  */
 @Directive()
 export abstract class StarOptionListBase<TOption, TValue> {

@@ -99,7 +99,7 @@ import { StarChipContext } from './select-slots';
           (click)="clear()"
         >
           @if (iconSlot('clear'); as icon) {
-            <ng-container *ngTemplateOutlet="icon" />
+            <span aria-hidden="true"><ng-container *ngTemplateOutlet="icon" /></span>
           } @else {
             <i class="ph-bold ph-x" aria-hidden="true"></i>
           }
@@ -113,7 +113,9 @@ import { StarChipContext } from './select-slots';
         ></i>
       } @else {
         @if (iconSlot('dropdown'); as icon) {
-          <ng-container *ngTemplateOutlet="icon" />
+          <span class="star-select__caret" aria-hidden="true"
+            ><ng-container *ngTemplateOutlet="icon"
+          /></span>
         } @else {
           <i class="ph-bold ph-caret-down star-select__caret" aria-hidden="true"></i>
         }
@@ -158,7 +160,7 @@ import { StarChipContext } from './select-slots';
             }
             @if (filter()) {
               @if (iconSlot('filter'); as icon) {
-                <ng-container *ngTemplateOutlet="icon" />
+                <span aria-hidden="true"><ng-container *ngTemplateOutlet="icon" /></span>
               } @else {
                 <i class="ph-bold ph-magnifying-glass" aria-hidden="true"></i>
               }
@@ -211,7 +213,7 @@ import { StarChipContext } from './select-slots';
                 @if (groupSlot(); as custom) {
                   <ng-container *ngTemplateOutlet="custom; context: groupContext(row.label)" />
                 } @else {
-                  {{ row.label }}
+                  <ng-container>{{ row.label }}</ng-container>
                 }
               </li>
             } @else {
@@ -259,7 +261,7 @@ import { StarChipContext } from './select-slots';
                 @if (emptySlot(); as custom) {
                   <ng-container *ngTemplateOutlet="custom; context: emptyContext()" />
                 } @else {
-                  {{ emptyText() }}
+                  <ng-container>{{ emptyText() }}</ng-container>
                 }
               </li>
             }
@@ -297,7 +299,14 @@ export class StarMultiSelect<TOption = unknown, TValue = TOption>
   protected readonly chipSlot = starSlot<StarChipContext<TOption>>(this.slots, this, 'chip');
 
   protected chipContext(option: TOption): StarChipContext<TOption> {
-    return { $implicit: option, remove: () => this.remove(option) };
+    return {
+      $implicit: option,
+      interactive: this.interactive(),
+      // Disabled or read-only: no change to the value, as the default chip has no remove button.
+      remove: () => {
+        if (this.interactive()) this.remove(option);
+      },
+    };
   }
 
   /** A click on a button or link inside a chip slot must not toggle the panel. */

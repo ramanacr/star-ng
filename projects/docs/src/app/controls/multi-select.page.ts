@@ -155,7 +155,7 @@ interface Parcel {
         heading="Slots"
         source="multi-select/slots"
         [script]="slotsScript"
-        note="Content child templates change parts of the control. starChip draws one chip when display is chip. Its context has remove, which removes that option. starHeader and starFooter add content to the panel. starEmpty gets the filter text."
+        note="Content child templates change parts of the control. starChip draws one chip when display is chip. Its context has remove, which removes that option, and interactive, which is false when the control is disabled or read-only. starHeader and starFooter add content to the panel. starEmpty gets the filter text."
       >
         <star-multi-select
           [options]="cities"
@@ -171,18 +171,26 @@ interface Parcel {
             <p class="docs-output">Cities with an office</p>
           </ng-template>
           <ng-template starEmpty let-text>No city matches {{ text }}.</ng-template>
-          <ng-template starChip [starChipOf]="cities" let-item let-remove="remove">
+          <ng-template
+            starChip
+            [starChipOf]="cities"
+            let-item
+            let-remove="remove"
+            let-interactive="interactive"
+          >
             <span class="star-chip star-chip--sm">
               {{ item.code }}
-              <button
-                type="button"
-                class="star-chip__remove"
-                tabindex="-1"
-                [attr.aria-label]="'Remove ' + item.name"
-                (click)="remove()"
-              >
-                x
-              </button>
+              @if (interactive) {
+                <button
+                  type="button"
+                  class="star-chip__remove"
+                  tabindex="-1"
+                  [attr.aria-label]="'Remove ' + item.name"
+                  (click)="remove()"
+                >
+                  x
+                </button>
+              }
             </span>
           </ng-template>
           <ng-template starFooter>
@@ -294,7 +302,7 @@ readonly team = form(this.teamModel, (path) => {
     {
       name: 'ng-template[starChip]',
       description:
-        'Content child. Draws one chip when display is chip. $implicit is the option. remove() removes it from the value.',
+        'Content child. Draws one chip when display is chip. $implicit is the option. remove() removes it from the value. interactive is false when the control is disabled or read-only; then remove() does nothing.',
     },
     {
       name: 'ng-template[starHeader]',
