@@ -353,6 +353,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         keywords: 'actions bar roving focus',
         load: () => import('./controls/toolbar.page').then((m) => m.ToolbarPage),
       },
+      {
+        label: 'Action strip',
+        path: 'controls/action-strip',
+        keywords: 'row actions hover toolbar overlay card icon buttons',
+        load: () => import('./controls/action-strip.page').then((m) => m.ActionStripPage),
+      },
     ],
   },
   {

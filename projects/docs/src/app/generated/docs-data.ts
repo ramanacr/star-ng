@@ -90,6 +90,52 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarActionStrip": {
+    "kind": "component",
+    "selector": "star-action-strip",
+    "entry": "@star-ng/ui/action-strip",
+    "description": "Action strip (Ignite UI `igx-action-strip`): a small toolbar of icon actions on top of its container, for example a list row or a card. It shows while the pointer is over the container or the focus is in it, so keyboard users reach it with Tab. On a device without hover it always shows.",
+    "inputs": [
+      {
+        "name": "actions",
+        "type": "readonly StarMenuItem[]",
+        "default": "[]",
+        "required": false,
+        "description": "The actions. Each one needs a `label` (the name of the icon button) and an `icon`. `command`, `disabled` and `danger` work as in `star-menu`."
+      },
+      {
+        "name": "max",
+        "type": "number | null",
+        "default": "null",
+        "required": false,
+        "description": "Number of actions shown as buttons. The rest go into the \"More actions\" menu. `null` shows all."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Name of the toolbar. Defaults to the \"Actions\" text of `STAR_UI_TEXT`."
+      },
+      {
+        "name": "persistent",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows the strip at all times, not only on hover and focus."
+      }
+    ],
+    "models": [],
+    "outputs": [
+      {
+        "name": "actionClick",
+        "type": "StarMenuItem",
+        "default": null,
+        "required": false,
+        "description": "Emits the action that the user ran, from a button or from the menu."
+      }
+    ]
+  },
   "StarAnimateOnScroll": {
     "kind": "directive",
     "selector": "[starAnimateOnScroll]",
@@ -6682,6 +6728,8 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
 export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "accordion/basic": "<div class=\"docs-stack\">\n  <star-accordion [(value)]=\"open\">\n    <star-accordion-panel value=\"shipping\" header=\"Shipping\" icon=\"ph-bold ph-truck\">\n      Orders ship within two working days.\n    </star-accordion-panel>\n    <star-accordion-panel\n      value=\"returns\"\n      header=\"Returns\"\n      icon=\"ph-bold ph-arrow-u-up-left\"\n    >\n      Items can be returned for 30 days.\n    </star-accordion-panel>\n    <star-accordion-panel value=\"billing\" header=\"Billing\" disabled>\n      This section is disabled.\n    </star-accordion-panel>\n  </star-accordion>\n  <p class=\"docs-output\" role=\"status\">Open: {{ open().join(', ') || 'none' }}</p>\n</div>",
   "accordion/multiple": "<div class=\"docs-stack\">\n  <star-accordion multiple [value]=\"['summary']\">\n    <star-accordion-panel value=\"summary\" header=\"Summary\">\n      Twelve items, one parcel.\n    </star-accordion-panel>\n    <star-accordion-panel value=\"history\" header=\"History\">\n      <ng-template starAccordionContent>\n        <p>Created on Monday. Packed on Tuesday.</p>\n      </ng-template>\n    </star-accordion-panel>\n  </star-accordion>\n</div>",
+  "action-strip/menu": "<ul class=\"orders\">\n  <li>\n    Invoice 2042\n    <star-action-strip\n      persistent\n      [actions]=\"moreActions\"\n      [max]=\"2\"\n      ariaLabel=\"Invoice 2042 actions\"\n    />\n  </li>\n</ul>",
+  "action-strip/rows": "<div class=\"docs-stack\">\n  <ul class=\"orders\">\n    @for (order of orders; track order) {\n      <li>\n        {{ order }}\n        <star-action-strip\n          [actions]=\"actions\"\n          [ariaLabel]=\"order + ' actions'\"\n          (actionClick)=\"last.set(($event.label ?? '') + ' ' + order)\"\n        />\n      </li>\n    }\n  </ul>\n  <p class=\"docs-output\" role=\"status\">Last action: {{ last() }}</p>\n</div>",
   "animate-on-scroll/basic": "<div class=\"docs-reveal-box\" tabindex=\"0\" aria-label=\"Scrollable list of blocks\">\n  @for (block of blocks; track block) {\n    <div class=\"docs-reveal-box__item\" starAnimateOnScroll>Block {{ block }}</div>\n  }\n</div>",
   "autocomplete/async": "<div class=\"docs-stack\">\n  <star-autocomplete\n    [suggestions]=\"results()\"\n    [loading]=\"searching()\"\n    [minQueryLength]=\"2\"\n    [delay]=\"150\"\n    (completeMethod)=\"search($event)\"\n    optionLabel=\"name\"\n    optionValue=\"id\"\n    [(value)]=\"found\"\n    placeholder=\"Type 2 letters of a name\"\n    ariaLabel=\"Colleague\"\n    showClear\n  />\n  <p class=\"docs-output\" role=\"status\">Colleague: {{ found() ?? 'none' }}</p>\n</div>",
   "autocomplete/dropdown": "<star-autocomplete\n  [options]=\"cities\"\n  [(value)]=\"dropdownCity\"\n  placeholder=\"Search a city\"\n  ariaLabel=\"City with dropdown\"\n  dropdown\n  autoHighlight\n  showClear\n/>",
