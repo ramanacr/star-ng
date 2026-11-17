@@ -17,6 +17,7 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 
 ### Fixed
 
+- The tables of the docs site fill the width of their example. A width cap of 26 rem on the example stack made a table about 415 px wide, so the cells wrapped and a scrollbar appeared. The library styles do not change.
 - The selected day of `star-calendar` and `star-date-picker` uses `--star-primary-fill` for its background, like the buttons do, so the white text on it can reach 4.5:1 in a theme that sets a darker fill.
 - `star-galleria`: the stage is dark in the dark theme (it was near white, so the white caption was not readable), and the round arrow buttons keep a dark icon (#57).
 - The chip remove button, the tree toggle and the breadcrumb link have a hit area of at least 24 x 24 px. The icon size does not change.

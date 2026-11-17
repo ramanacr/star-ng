@@ -455,6 +455,15 @@ code {
   width: 100%;
   max-width: 26rem;
 }
+// A table needs the full width of the live area. The 26rem cap is for forms and small controls.
+.docs-stack:has(star-table, star-tree-table) {
+  max-width: none;
+}
+.docs-example__live > star-table,
+.docs-example__live > star-tree-table {
+  flex: 1 1 100%;
+  min-width: 0;
+}
 .docs-row {
   display: flex;
   flex-wrap: wrap;
