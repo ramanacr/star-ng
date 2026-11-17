@@ -59,7 +59,14 @@ export function starSlotMap<C>(
   });
 }
 
-/** Header content of a control. PrimeNG `#header` template. */
+/**
+ * Header content of a control. PrimeNG `#header` template.
+ *
+ * In the dropdown panel of `star-select`, `star-multi-select` and `star-autocomplete`, use it only
+ * for content that is not interactive (text, counts, hints): focus stays in the combobox, and Tab
+ * closes the panel, so a button or link here cannot be reached with the keyboard. `star-listbox`,
+ * `star-tree`, `star-table` and the date pickers allow interactive content, in the normal tab order.
+ */
 @Directive({
   selector: 'ng-template[starHeader]',
   providers: [{ provide: StarSlot, useExisting: StarHeaderTemplate }],
@@ -68,7 +75,14 @@ export class StarHeaderTemplate extends StarSlot<object> {
   readonly name = 'header';
 }
 
-/** Footer content of a control. PrimeNG `#footer` template. */
+/**
+ * Footer content of a control. PrimeNG `#footer` template.
+ *
+ * In the dropdown panel of `star-select`, `star-multi-select` and `star-autocomplete`, use it only
+ * for content that is not interactive (text, counts, hints): focus stays in the combobox, and Tab
+ * closes the panel, so a button or link here cannot be reached with the keyboard. `star-listbox`,
+ * `star-tree`, `star-table` and the date pickers allow interactive content, in the normal tab order.
+ */
 @Directive({
   selector: 'ng-template[starFooter]',
   providers: [{ provide: StarSlot, useExisting: StarFooterTemplate }],
@@ -109,10 +123,17 @@ export class StarLoadingTemplate extends StarSlot<object> {
 export interface StarGroupContext {
   /** Group label. */
   readonly $implicit: string;
+  /** Number of items in the group. In `star-table`, the rows of the group on the current page. */
   readonly count: number;
 }
 
-/** Group heading row. PrimeNG `#group` template. */
+/**
+ * Group heading row. PrimeNG `#group` template.
+ *
+ * Do not add focusable elements (buttons, links, inputs) in this template. In `star-table` the
+ * content goes inside the button that opens and closes the group; in the list controls the
+ * heading is not focusable and the keyboard skips it.
+ */
 @Directive({
   selector: 'ng-template[starGroup]',
   providers: [{ provide: StarSlot, useExisting: StarGroupTemplate }],
@@ -128,17 +149,34 @@ export class StarGroupTemplate extends StarSlot<StarGroupContext> {
 /** Icons a control lets you replace. */
 export type StarIconSlotName = 'dropdown' | 'clear' | 'filter' | 'check' | 'toggle';
 
-/** Replaces one built-in icon: `<ng-template starIcon="clear">…</ng-template>`. PrimeNG `#clearicon`, `#dropdownicon` and similar templates. */
+/** Context of the icon slot. */
+export interface StarIconContext {
+  /**
+   * Only for the `toggle` icon of the tree: `true` when the branch is open, `false` when it is
+   * closed (`let-expanded`). `undefined` for all other icons.
+   */
+  readonly $implicit?: boolean;
+}
+
+/**
+ * Replaces one built-in icon: `<ng-template starIcon="clear">…</ng-template>`. PrimeNG `#clearicon`,
+ * `#dropdownicon` and similar templates. The control puts the icon in a wrapper with
+ * `aria-hidden="true"`, so the icon is not read out.
+ */
 @Directive({
   selector: 'ng-template[starIcon]',
   providers: [{ provide: StarSlot, useExisting: StarIconTemplate }],
 })
-export class StarIconTemplate extends StarSlot<object> {
+export class StarIconTemplate extends StarSlot<StarIconContext> {
   readonly name = 'icon';
   readonly starIcon = input.required<StarIconSlotName>();
 
   override slotKey(): string {
     return this.starIcon();
+  }
+
+  static ngTemplateContextGuard(_dir: StarIconTemplate, _ctx: unknown): _ctx is StarIconContext {
+    return true;
   }
 }
 

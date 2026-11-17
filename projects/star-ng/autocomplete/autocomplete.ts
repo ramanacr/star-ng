@@ -65,8 +65,6 @@ export abstract class StarAutoCompleteBase<TOption, TValue> extends StarOptionLi
   protected readonly known = signal<readonly TOption[]>([]);
   private readonly showAll = signal(false);
   private searchTimer: ReturnType<typeof setTimeout> | undefined;
-  /** The loading slot, only while `loading` is on. */
-  protected readonly loadingContent = computed(() => (this.loading() ? this.loadingSlot() : null));
 
   protected abstract queryFromValue(): string;
   /** Typed text. Resets to the selected label when the value changes. */
@@ -209,7 +207,8 @@ export abstract class StarAutoCompleteBase<TOption, TValue> extends StarOptionLi
     ];
   }
 
-  protected queryContext(): StarEmptyContext {
+  /** The empty slot gets the typed text: the autocomplete has no separate filter field. */
+  protected override emptyContext(): StarEmptyContext {
     return { $implicit: this.query() };
   }
 
@@ -313,7 +312,7 @@ const TEMPLATE = `
         [attr.aria-labelledby]="ariaLabelledBy()"
         (scroll)="onListScroll($event)"
       >
-        @if (loadingContent(); as loader) {
+        @if (loadingRow(); as loader) {
           <li class="star-listbox__empty" role="presentation">
             <ng-container *ngTemplateOutlet="loader" />
           </li>
@@ -359,10 +358,10 @@ const TEMPLATE = `
           </li>
           }
         } @empty {
-          @if (!loadingContent()) {
+          @if (!loadingRow()) {
             <li class="star-listbox__empty" role="presentation">
               @if (emptySlot(); as custom) {
-                <ng-container *ngTemplateOutlet="custom; context: queryContext()" />
+                <ng-container *ngTemplateOutlet="custom; context: emptyContext()" />
               } @else {
                 <ng-container>{{ loading() ? text.searching : emptyText() }}</ng-container>
               }

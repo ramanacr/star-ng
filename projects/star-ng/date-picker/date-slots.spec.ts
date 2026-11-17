@@ -176,7 +176,9 @@ describe('date slots', () => {
     expect(foot.textContent).toBe('Due dates have a dot');
     expect(children.indexOf(head)).toBeLessThan(children.indexOf(calendar));
     expect(children.indexOf(calendar)).toBeLessThan(children.indexOf(foot));
-    expect(children.indexOf(foot)).toBeLessThan(children.indexOf(bar));
+    // The footer is the last child of the panel, below the Today / Clear button bar.
+    expect(children.indexOf(bar)).toBeLessThan(children.indexOf(foot));
+    expect(children.indexOf(foot)).toBe(children.length - 1);
     expect(head.closest('[role="grid"]')).toBeNull();
     // The inner calendar does not render the picker's header a second time.
     expect(panel.querySelectorAll('.head').length).toBe(1);

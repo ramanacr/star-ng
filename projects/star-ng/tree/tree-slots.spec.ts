@@ -234,8 +234,7 @@ describe('tree slots', () => {
     const fixture = TestBed.createComponent(Windowed);
     await fixture.whenStable();
     const rows = fixture.nativeElement.querySelectorAll('[role=treeitem]');
-    // jsdom may render no rows in the viewport; then there is nothing to check here.
-    if (!rows.length) return;
+    expect(rows.length).toBeGreaterThan(0);
     expect((rows[0] as HTMLElement).style.height).toBe('40px');
     expect(rows[0].querySelector('.mine')).not.toBeNull();
   });

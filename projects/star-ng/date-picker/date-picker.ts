@@ -428,14 +428,15 @@ const TEMPLATE = `
           <button type="button" class="star-btn star-btn--primary star-btn--sm" (click)="closePanel()">{{ text.done }}</button>
         </div>
       }
-      @if (footerSlot(); as footer) {
-        <ng-container *ngTemplateOutlet="footer" />
-      }
       @if (showButtonBar()) {
         <div class="star-date__bar">
           <button type="button" class="star-btn star-btn--ghost star-btn--sm" (click)="today()">{{ text.today }}</button>
           <button type="button" class="star-btn star-btn--ghost star-btn--sm" (click)="clear()">{{ text.clear }}</button>
         </div>
+      }
+      <!-- The footer is last, below the button bar. PrimeNG \`#footer\` template. -->
+      @if (footerSlot(); as footer) {
+        <ng-container *ngTemplateOutlet="footer" />
       }
     </div>
   </ng-template>

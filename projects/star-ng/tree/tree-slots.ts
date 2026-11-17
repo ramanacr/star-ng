@@ -1,5 +1,5 @@
 import { Directive, input } from '@angular/core';
-import { StarSlot } from '@star-ng/ui/core';
+import { StarIconContext, StarSlot } from '@star-ng/ui/core';
 import type { StarTreeNode } from './tree';
 
 /**
@@ -7,7 +7,7 @@ import type { StarTreeNode } from './tree';
  * The template should have one root element: it is a direct child of the toggle, and the built-in
  * rotation (and the right-to-left mirror) applies to it.
  */
-export interface StarToggleIconContext {
+export interface StarToggleIconContext extends StarIconContext {
   /** The branch is open. */
   readonly $implicit: boolean;
 }

@@ -308,7 +308,9 @@ export class StarRowExpansionTemplate<T = unknown> {
  * column), `starEmpty` (empty message; `$implicit` is the `globalFilter` text, `''` when none),
  * `starLoading` (replaces the skeleton rows with one row and one cell over all columns while
  * `loading` is true) and `starGroup` (replaces the label and the row count of a group heading
- * together; the context has both, and the toggle button and its `aria-expanded` stay). Content
+ * together; the context has both, and the toggle button and its `aria-expanded` stay; `count` is
+ * the rows of that group on the current page; the content goes inside the toggle button, so do
+ * not add focusable elements). Content
  * with `starTableCaption` goes above the table. Content with `starTableSummary` goes directly
  * below the scroll area of the table and above the paginator.
  *

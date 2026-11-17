@@ -7,7 +7,10 @@ export interface StarDateContext {
   readonly $implicit: Date;
   /** The day is today. */
   readonly today: boolean;
-  /** The day is chosen. */
+  /**
+   * The day is chosen. In range mode it is `true` only for the two ends of the range (start and
+   * end); the days between them are `false`, and the context has no in-range flag.
+   */
   readonly selected: boolean;
   /** The day cannot be chosen. */
   readonly disabled: boolean;
