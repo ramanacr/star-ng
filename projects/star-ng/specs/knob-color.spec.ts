@@ -34,6 +34,14 @@ class PanelHost {
   touched = false;
 }
 
+@Component({
+  imports: [StarColorPicker],
+  template: `<star-color-picker [swatches]="swatches()" [value]="'#112233'" />`,
+})
+class SwatchHost {
+  readonly swatches = signal<readonly string[] | undefined>(undefined);
+}
+
 describe('Knob, color picker', () => {
   it('knob is a slider with keyboard steps and limits', async () => {
     const fixture = TestBed.createComponent(DialHost);
@@ -178,6 +186,60 @@ describe('Knob, color picker', () => {
       panel()!.querySelector<HTMLButtonElement>('.star-btn')!.click();
       await fixture.whenStable();
       expect(tile.getAttribute('aria-expanded')).toBe('false');
+    });
+  });
+
+  describe('default swatches from the theme', () => {
+    const swatchLabels = (root: HTMLElement) =>
+      Array.from(root.querySelectorAll('.star-color__swatch')).map((node) =>
+        node.getAttribute('aria-label'),
+      );
+    const withTokens = (tokens: Record<string, string>) => {
+      const style = document.createElement('style');
+      style.textContent = `:root{${Object.entries(tokens)
+        .map(([name, value]) => `${name}:${value}`)
+        .join(';')}}`;
+      document.head.append(style);
+      return style;
+    };
+
+    it('uses the tokens of the theme, as hex, without duplicates and failures', async () => {
+      const style = withTokens({
+        '--star-primary': '#ff0000',
+        '--star-accent': 'rgb(0, 128, 0)',
+        '--star-success': '#f00',
+        '--star-warning': 'not-a-color',
+        '--star-chart-1': 'rgba(0, 0, 255, 1)',
+      });
+      try {
+        const fixture = TestBed.createComponent(DialHost);
+        await fixture.whenStable();
+        expect(swatchLabels(fixture.nativeElement)).toEqual(['#ff0000', '#008000', '#0000ff']);
+        // The bound value is not changed by the read.
+        expect(fixture.componentInstance.color()).toBe('#4f46e5');
+      } finally {
+        style.remove();
+      }
+    });
+
+    it('uses an explicit [swatches] list and reads nothing', async () => {
+      const style = withTokens({ '--star-primary': '#ff0000' });
+      try {
+        const fixture = TestBed.createComponent(SwatchHost);
+        fixture.componentInstance.swatches.set(['#0f766e', '#b45309']);
+        await fixture.whenStable();
+        expect(swatchLabels(fixture.nativeElement)).toEqual(['#0f766e', '#b45309']);
+      } finally {
+        style.remove();
+      }
+    });
+
+    it('uses the fixed default list when no token gives a color', async () => {
+      const fixture = TestBed.createComponent(DialHost);
+      await fixture.whenStable();
+      const labels = swatchLabels(fixture.nativeElement);
+      expect(labels).toHaveLength(8);
+      expect(labels[0]).toBe('#4f46e5');
     });
   });
 });

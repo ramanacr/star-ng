@@ -509,6 +509,27 @@ test.describe('color picker', () => {
     await expect(green).toHaveAttribute('aria-checked', 'false');
   });
 
+  test('the default swatches follow the theme tokens, and [swatches] does not', async ({
+    page,
+  }) => {
+    await page.addInitScript(() => {
+      document.addEventListener('DOMContentLoaded', () => {
+        const style = document.createElement('style');
+        style.textContent = ':root:root { --star-primary: #ff0000; }';
+        document.head.append(style);
+      });
+    });
+    await openPage(page, '/controls/color-picker', 'Color picker');
+    const group = example(page, 'Basic').getByRole('radiogroup', { name: 'Label color' });
+    await expect(group.getByRole('radio', { name: '#ff0000' })).toHaveCount(1);
+    await expect(group.getByRole('radio', { name: '#4f46e5' })).toHaveCount(0);
+    const custom = example(page, 'Custom swatches').getByRole('radiogroup', {
+      name: 'Category color',
+    });
+    await expect(custom.getByRole('radio')).toHaveCount(4);
+    await expect(custom.getByRole('radio', { name: '#ff0000' })).toHaveCount(0);
+  });
+
   test('the hex field takes a valid value and restores the old value after a wrong one', async ({
     page,
   }) => {

@@ -39,7 +39,7 @@
   }
   &[aria-pressed='true'] {
     background: var(--star-primary-soft);
-    color: var(--star-primary);
+    color: var(--star-primary-text);
   }
   &:focus-visible {
     outline: 2px solid var(--star-accent);
