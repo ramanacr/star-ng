@@ -403,6 +403,36 @@ test.describe('confirm', () => {
     await expect(popup).toBeHidden();
     await expect(live.getByRole('status')).toHaveText('Archive result: kept');
   });
+
+  test('a danger popup on a row is named by its message, traps Tab and returns the focus', async ({
+    page,
+  }) => {
+    await openPage(page, '/controls/confirm', 'Confirm');
+    const live = example(page, 'Delete from a row');
+    const trigger = live.getByRole('button', { name: 'Delete INV-2042' });
+    const popup = page.getByRole('alertdialog', { name: 'Delete invoice INV-2042?' });
+
+    await trigger.click();
+    await expect(popup).toBeVisible();
+    await expect(popup).toHaveAttribute('aria-modal', 'false');
+    await expect(popup.getByRole('button', { name: 'Cancel' })).toBeFocused();
+    await expect(popup.getByRole('button', { name: 'Delete' })).toHaveClass(/star-btn--danger/);
+    await page.keyboard.press('Tab');
+    await expect(popup.getByRole('button', { name: 'Delete' })).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(popup.getByRole('button', { name: 'Cancel' })).toBeFocused();
+
+    await popup.getByRole('button', { name: 'Cancel' }).click();
+    await expect(popup).toBeHidden();
+    await expect(trigger).toBeFocused();
+    await expect(live.getByRole('status')).toHaveText('Invoice result: INV-2042 kept');
+
+    await trigger.click();
+    await popup.getByRole('button', { name: 'Delete' }).click();
+    await expect(popup).toBeHidden();
+    await expect(live.getByRole('status')).toHaveText('Invoice result: INV-2042 deleted');
+    await expect(trigger).toHaveCount(0);
+  });
 });
 
 test.describe('drawer', () => {

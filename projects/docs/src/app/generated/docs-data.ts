@@ -1103,7 +1103,16 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-confirm-host",
     "entry": "@star-ng/ui/dialog",
-    "description": "",
+    "description": "Shows the questions of `StarConfirmService`: a modal `alertdialog`, or a popup next to `target` (PrimeNG `p-confirmdialog` / `p-confirmpopup`). Place one in the app shell.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
+  "StarConfirmMessageTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starConfirmMessage]",
+    "entry": "@star-ng/ui/dialog",
+    "description": "Replaces the message text of the confirm dialog and popup (PrimeNG `#message` template). Write it inside `star-confirm-host`:",
     "inputs": [],
     "models": [],
     "outputs": []
@@ -4153,7 +4162,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-popover",
     "entry": "@star-ng/ui/popover",
-    "description": "Popover (PrimeNG `p-popover`, formerly OverlayPanel): rich floating content anchored to an element. Native popover (top layer, works in dialogs), closes on outside click and Escape, moves focus in and back to the anchor.",
+    "description": "Popover (PrimeNG `p-popover`, formerly OverlayPanel): rich floating content anchored to an element. Native popover (top layer, works in dialogs), closes on outside click and Escape, moves focus in and back to the anchor. Put `data-autofocus` on the element that should get the first focus; without it the first focusable element gets it.",
     "inputs": [
       {
         "name": "ariaLabel",
@@ -4161,6 +4170,20 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "null",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "ariaLabelledby",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Id of the element that names the popover. Wins over `ariaLabel`."
+      },
+      {
+        "name": "role",
+        "type": "'dialog' | 'alertdialog'",
+        "default": "'dialog'",
+        "required": false,
+        "description": "`alertdialog` for a question that needs an answer (the confirm popup)."
       },
       {
         "name": "focusOnShow",
@@ -6499,6 +6522,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "confirm/dialog": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button\n      variant=\"ghost-danger\"\n      leadingIcon=\"ph-bold ph-trash\"\n      (pressed)=\"deleteOrder()\"\n    >\n      Delete order\n    </star-button>\n  </div>\n  <p class=\"docs-output\" role=\"status\">Result: {{ result() }}</p>\n</div>",
   "confirm/options": "<div class=\"docs-row\">\n  <star-button variant=\"secondary\" (pressed)=\"publish()\">Publish price list</star-button>\n  <star-button variant=\"secondary\" (pressed)=\"acknowledge()\">Show notice</star-button>\n</div>",
   "confirm/popup": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button\n      variant=\"ghost\"\n      leadingIcon=\"ph-bold ph-archive\"\n      (pressed)=\"archive($event)\"\n    >\n      Archive\n    </star-button>\n  </div>\n  <p class=\"docs-output\" role=\"status\">Archive result: {{ popupResult() }}</p>\n</div>",
+  "confirm/popup-row": "<div class=\"docs-stack\">\n  <div class=\"docs-stack\">\n    @for (invoice of invoices(); track invoice.id) {\n      <div class=\"docs-row\">\n        <span>{{ invoice.id }}, {{ invoice.amount }}</span>\n        <star-button\n          size=\"sm\"\n          variant=\"ghost-danger\"\n          leadingIcon=\"ph-bold ph-trash\"\n          [ariaLabel]=\"'Delete ' + invoice.id\"\n          (pressed)=\"deleteInvoice(invoice.id, $event)\"\n        />\n      </div>\n    }\n  </div>\n  <p class=\"docs-output\" role=\"status\">Invoice result: {{ rowResult() }}</p>\n</div>",
   "context-menu/basic": "<div class=\"docs-stack\">\n  <div class=\"docs-output\" tabindex=\"0\" aria-label=\"Order row\" [starContextMenu]=\"rowMenu\">\n    Order 1042: right-click here\n  </div>\n  <star-menu #rowMenu [items]=\"rowItems\" (itemClick)=\"last.set($event.label ?? '')\" />\n  <p class=\"docs-output\" role=\"status\">Last action: {{ last() }}</p>\n</div>",
   "dark-mode/switch": "<div class=\"docs-row\" style=\"min-height: 11rem; align-items: flex-start\">\n  <star-theme-switch />\n</div>",
   "dark-mode/try": "<star-button variant=\"secondary\" (pressed)=\"theme.setMode('system')\">System</star-button>\n<star-button variant=\"secondary\" (pressed)=\"theme.setMode('light')\">Light</star-button>\n<star-button variant=\"secondary\" (pressed)=\"theme.setMode('dark')\">Dark</star-button>\n<p class=\"docs-output\" role=\"status\">\n  Choice: {{ theme.mode() }}. Theme in use: {{ theme.theme() }}.\n</p>",

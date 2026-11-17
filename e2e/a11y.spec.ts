@@ -487,6 +487,16 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'confirm popup with danger severity',
+    path: 'controls/confirm',
+    open: async (page) => {
+      await example(page, 'Delete from a row')
+        .getByRole('button', { name: 'Delete INV-2041' })
+        .click();
+      await expect(page.getByRole('alertdialog')).toBeVisible();
+    },
+  },
+  {
     name: 'drawer',
     path: 'controls/drawer',
     open: async (page) => {

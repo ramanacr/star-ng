@@ -26,6 +26,9 @@ import {
 import { StarDirectionService } from '@star-ng/ui/core';
 import { Subscription } from 'rxjs';
 
+const FOCUSABLE =
+  'button:not([disabled]), [href], input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])';
+
 // `start` and `end` are turned around by the CDK in right-to-left: the popover aligns with the
 // start edge of its anchor in both directions.
 const POSITIONS: ConnectedPosition[] = [
@@ -38,7 +41,8 @@ const POSITIONS: ConnectedPosition[] = [
 /**
  * Popover (PrimeNG `p-popover`, formerly OverlayPanel): rich floating content anchored to an
  * element. Native popover (top layer, works in dialogs), closes on outside click and Escape,
- * moves focus in and back to the anchor.
+ * moves focus in and back to the anchor. Put `data-autofocus` on the element that should get the
+ * first focus; without it the first focusable element gets it.
  *
  * ```html
  * <star-button #anchor (pressed)="info.toggle($event)">Details</star-button>
@@ -52,10 +56,12 @@ const POSITIONS: ConnectedPosition[] = [
     <ng-template #panel>
       <div
         class="star-popover"
-        role="dialog"
         tabindex="-1"
         [id]="panelId"
-        [attr.aria-label]="ariaLabel()"
+        [attr.role]="role()"
+        [attr.aria-modal]="role() === 'alertdialog' ? 'false' : null"
+        [attr.aria-label]="ariaLabelledby() ? null : ariaLabel()"
+        [attr.aria-labelledby]="ariaLabelledby()"
         (keydown.escape)="hide()"
       >
         <ng-content />
@@ -70,6 +76,10 @@ export class StarPopover {
   readonly panelId = inject(_IdGenerator).getId('star-popover-');
 
   readonly ariaLabel = input<string | null>(null);
+  /** Id of the element that names the popover. Wins over `ariaLabel`. */
+  readonly ariaLabelledby = input<string | null>(null);
+  /** `alertdialog` for a question that needs an answer (the confirm popup). */
+  readonly role = input<'dialog' | 'alertdialog'>('dialog');
   /** Moves focus into the popover when it opens. */
   readonly focusOnShow = input(true, { transform: booleanAttribute });
   readonly dismissable = input(true, { transform: booleanAttribute });
@@ -124,9 +134,11 @@ export class StarPopover {
       afterNextRender(
         () => {
           const root = this.overlayRef?.overlayElement.querySelector<HTMLElement>('.star-popover');
-          const first = root?.querySelector<HTMLElement>(
-            'button:not([disabled]), [href], input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])',
-          );
+          // `data-autofocus` marks the element (or a component around it) that gets the focus.
+          const marked = root?.querySelector<HTMLElement>('[data-autofocus]');
+          const first = marked?.matches(FOCUSABLE)
+            ? marked
+            : (marked ?? root)?.querySelector<HTMLElement>(FOCUSABLE);
           (first ?? root)?.focus();
         },
         { injector: this.injector },
