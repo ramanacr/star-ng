@@ -411,6 +411,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         load: () => import('./controls/badge.page').then((m) => m.BadgePage),
       },
       {
+        label: 'Overlay badge',
+        path: 'controls/overlay-badge',
+        keywords: 'badge corner notification count dot icon button',
+        load: () => import('./controls/overlay-badge.page').then((m) => m.OverlayBadgePage),
+      },
+      {
         label: 'Avatar',
         path: 'controls/avatar',
         keywords: 'initials image icon person user',

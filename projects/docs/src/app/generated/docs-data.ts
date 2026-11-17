@@ -3832,6 +3832,65 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarOverlayBadge": {
+    "kind": "component",
+    "selector": "star-overlay-badge",
+    "entry": "@star-ng/ui/badge",
+    "description": "Overlay badge (PrimeNG `p-overlaybadge`): puts a `star-badge` on a corner of any content, for example an icon button or an avatar. The badge is hidden from screen readers; `ariaLabel` adds visually hidden text after the content (for example \"4 unread messages\").",
+    "inputs": [
+      {
+        "name": "value",
+        "type": "string | number | null",
+        "default": "null",
+        "required": false,
+        "description": "Count or short text. Without a value (or with `dot`) the badge is a dot."
+      },
+      {
+        "name": "severity",
+        "type": "StarSeverity",
+        "default": "'primary'",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "size",
+        "type": "'sm' | 'md' | 'lg'",
+        "default": "'sm'",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "max",
+        "type": "number",
+        "default": "99",
+        "required": false,
+        "description": "Numbers above this show as \"max+\"."
+      },
+      {
+        "name": "dot",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows a dot without the value."
+      },
+      {
+        "name": "position",
+        "type": "StarOverlayBadgePosition",
+        "default": "'top-end'",
+        "required": false,
+        "description": "Corner of the badge. `start` and `end` follow the text direction."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "What the badge means, for screen readers (for example \"unread messages\"). The value is put in front of it. Without it the badge is decoration only."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
   "StarPaginator": {
     "kind": "component",
     "selector": "star-paginator",
@@ -6618,6 +6677,8 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "org-chart/basic": "<div class=\"docs-stack\">\n  <star-org-chart ariaLabel=\"Company\" [value]=\"company\" [(collapsedKeys)]=\"closed\" />\n  <p class=\"docs-output\" role=\"status\">Collapsed: {{ closed().join(', ') || 'none' }}</p>\n</div>",
   "org-chart/selectable": "<div class=\"docs-stack\">\n  <star-org-chart\n    ariaLabel=\"Company, selectable\"\n    [value]=\"company\"\n    selectable\n    [(selectedKey)]=\"selected\"\n    (nodeSelect)=\"last.set($event.label)\"\n  />\n  <p class=\"docs-output\" role=\"status\">Selected: {{ selected() ?? 'none' }}</p>\n  <p class=\"docs-output\" role=\"status\">Last node: {{ last() }}</p>\n</div>",
   "org-chart/template": "<star-org-chart ariaLabel=\"Company, custom nodes\" [value]=\"company\">\n  <ng-template starOrgNode let-node let-level=\"level\">\n    <strong>{{ node.label }}</strong>\n    <small>Level {{ level }}</small>\n  </ng-template>\n</star-org-chart>",
+  "overlay-badge/count": "<div class=\"docs-row\">\n  <star-overlay-badge [value]=\"orders()\" severity=\"danger\" ariaLabel=\"new orders\">\n    <star-button\n      variant=\"secondary\"\n      iconOnly\n      leadingIcon=\"ph-bold ph-shopping-cart\"\n      ariaLabel=\"Orders\"\n      (pressed)=\"orders.set(orders() + 1)\"\n    />\n  </star-overlay-badge>\n  <star-overlay-badge [value]=\"128\" ariaLabel=\"unread invoices\">\n    <star-button\n      variant=\"secondary\"\n      iconOnly\n      leadingIcon=\"ph-bold ph-receipt\"\n      ariaLabel=\"Invoices\"\n    />\n  </star-overlay-badge>\n</div>",
+  "overlay-badge/positions": "<div class=\"docs-row\">\n  <star-overlay-badge dot severity=\"success\" position=\"bottom-end\" ariaLabel=\"online\">\n    <star-avatar name=\"Jane Doe\" />\n  </star-overlay-badge>\n  <star-overlay-badge [value]=\"2\" position=\"top-start\" ariaLabel=\"new comments\">\n    <star-avatar name=\"Sam Lee\" shape=\"square\" />\n  </star-overlay-badge>\n  <star-overlay-badge [value]=\"5\" severity=\"warn\" position=\"bottom-start\" size=\"md\">\n    <star-avatar icon=\"ph-bold ph-folder\" />\n  </star-overlay-badge>\n</div>",
   "paginator/basic": "<div class=\"docs-stack\">\n  <star-paginator\n    ariaLabel=\"Pagination of the list\"\n    [totalRecords]=\"95\"\n    [(first)]=\"first\"\n    [(rows)]=\"rows\"\n    (pageChange)=\"last.set($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Showing {{ shown() }}. Last event: page {{ last() ? last()!.page + 1 : '-' }}.\n  </p>\n</div>",
   "paginator/compact": "<star-paginator\n  ariaLabel=\"Pagination of the compact list\"\n  [totalRecords]=\"60\"\n  [rowsPerPageOptions]=\"[]\"\n  [showCurrentPageReport]=\"false\"\n  [showFirstLast]=\"false\"\n  [pageLinkSize]=\"3\"\n/>",
   "panel-menu/basic": "<div class=\"docs-stack\">\n  <star-panel-menu\n    ariaLabel=\"Settings\"\n    [items]=\"sections\"\n    [(expandedKeys)]=\"open\"\n    (itemClick)=\"last.set($event.label ?? '')\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Open: {{ open().join(', ') || 'none' }}. Last action: {{ last() }}\n  </p>\n</div>",
