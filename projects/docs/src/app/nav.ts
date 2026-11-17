@@ -549,6 +549,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         load: () => import('./controls/message.page').then((m) => m.MessagePage),
       },
       {
+        label: 'Banner',
+        path: 'controls/banner',
+        keywords: 'notice page alert persistent dismiss announcement',
+        load: () => import('./controls/banner.page').then((m) => m.BannerPage),
+      },
+      {
         label: 'Progress bar',
         path: 'controls/progress-bar',
         keywords: 'percent determinate indeterminate upload',

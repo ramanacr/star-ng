@@ -282,6 +282,53 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarBanner": {
+    "kind": "component",
+    "selector": "star-banner",
+    "entry": "@star-ng/ui/banner",
+    "description": "Banner (Ignite `igx-banner`, the Material banner pattern): a persistent notice for the whole page, under the app bar. It stays until the user dismisses it or the application closes it. It is not a toast: use `star-toast` for short messages that go away on their own.",
+    "inputs": [
+      {
+        "name": "severity",
+        "type": "StarBannerSeverity",
+        "default": "'info'",
+        "required": false,
+        "description": "Color and default icon."
+      },
+      {
+        "name": "icon",
+        "type": "string | null | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "Phosphor icon class, for example `ph-fill ph-cloud-warning`. Default: the icon of the severity. `''` or `null` shows no icon."
+      },
+      {
+        "name": "dismissible",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows a dismiss button."
+      }
+    ],
+    "models": [
+      {
+        "name": "open",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Whether the banner is shown. The dismiss button sets it to `false`."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "dismissed",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "Emits when the user dismisses the banner with its button."
+      }
+    ]
+  },
   "StarBlockUi": {
     "kind": "component",
     "selector": "star-block-ui",
@@ -6656,6 +6703,8 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "badge/counts": "<star-badge [value]=\"4\" ariaLabel=\"unread messages\" />\n<star-badge [value]=\"128\" [max]=\"99\" severity=\"danger\" ariaLabel=\"open alerts\" />\n<star-badge value=\"New\" severity=\"success\" />",
   "badge/severities": "<star-badge [value]=\"1\" />\n<star-badge [value]=\"2\" severity=\"secondary\" />\n<star-badge [value]=\"3\" severity=\"success\" />\n<star-badge [value]=\"4\" severity=\"info\" />\n<star-badge [value]=\"5\" severity=\"warn\" />\n<star-badge [value]=\"6\" severity=\"danger\" />",
   "badge/sizes": "<star-badge [value]=\"7\" size=\"sm\" />\n<star-badge [value]=\"7\" />\n<star-badge [value]=\"7\" size=\"lg\" />\n<star-badge severity=\"success\" ariaLabel=\"online\" />",
+  "banner/basic": "<div class=\"docs-stack\">\n  <star-banner severity=\"warn\" dismissible [(open)]=\"open\">\n    Invoice export is slow today. Large exports can take up to ten minutes.\n    <star-button starBannerActions variant=\"ghost\" size=\"sm\">Status page</star-button>\n  </star-banner>\n  @if (!open()) {\n    <div class=\"docs-row\">\n      <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"open.set(true)\">\n        Show the banner again\n      </star-button>\n    </div>\n  }\n</div>",
+  "banner/severity": "<div class=\"docs-stack\">\n  <star-banner>Projects can now have more than one owner.</star-banner>\n  <star-banner severity=\"success\">All orders of March are invoiced.</star-banner>\n  <star-banner severity=\"warn\" icon=\"ph-fill ph-cloud-warning\">\n    Some cities report slow deliveries.\n  </star-banner>\n  <star-banner severity=\"danger\">The order service is not available.</star-banner>\n  <star-banner icon=\"\">A banner without an icon.</star-banner>\n</div>",
   "block-ui/basic": "<div class=\"docs-stack\">\n  <star-block-ui [blocked]=\"blocked()\" message=\"Saving…\">\n    <div class=\"docs-stack\">\n      <star-field label=\"Note\">\n        <input starInput value=\"Waiting for approval\" />\n      </star-field>\n      <star-field label=\"Reference\">\n        <input starInput value=\"PO-1042\" />\n      </star-field>\n    </div>\n  </star-block-ui>\n  <star-button variant=\"secondary\" (pressed)=\"blockFor(1500)\">\n    Save (blocks for 1.5 s)\n  </star-button>\n  <star-button variant=\"secondary\" (pressed)=\"blocked.set(!blocked())\">\n    {{ blocked() ? 'Unblock' : 'Block' }}\n  </star-button>\n</div>",
   "breadcrumb/basic": "<star-breadcrumb [home]=\"home\" [items]=\"trail\" ariaLabel=\"Breadcrumb of the guide\" />",
   "breadcrumb/links": "<star-breadcrumb\n  ariaLabel=\"Breadcrumb of the install page\"\n  [items]=\"[\n    { label: 'Docs', url: 'https://example.com/docs' },\n    { label: 'Guides', url: 'https://example.com/docs/guides' },\n    { label: 'Install' },\n  ]\"\n/>",

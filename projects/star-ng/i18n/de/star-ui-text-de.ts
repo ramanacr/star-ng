@@ -13,6 +13,7 @@ const forCount = (count: number, one: string, other: string): string =>
  */
 export const STAR_UI_TEXT_DE: StarUiText = {
   close: 'Schließen',
+  dismiss: 'Ausblenden',
   clear: 'Leeren',
   loading: 'Wird geladen',
   actions: 'Aktionen',

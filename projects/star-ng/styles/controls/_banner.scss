@@ -1,0 +1,71 @@
+// Banner (StarBanner): a page-level notice under the app bar.
+@use '../shared' as *;
+
+.star-banner {
+  --star-tone: var(--star-accent);
+  --star-tone-soft: var(--star-accent-soft);
+  display: block;
+
+  &[hidden] {
+    display: none;
+  }
+}
+.star-banner--success {
+  --star-tone: var(--star-success);
+  --star-tone-soft: var(--star-success-soft);
+}
+.star-banner--warn {
+  --star-tone: var(--star-warning);
+  --star-tone-soft: var(--star-warning-soft);
+}
+.star-banner--danger {
+  --star-tone: var(--star-danger);
+  --star-tone-soft: var(--star-danger-soft);
+}
+.star-banner__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  padding-block: 0.625rem;
+  padding-inline: 1rem 0.5rem;
+  border-block-end: 1px solid color-mix(in srgb, var(--star-tone) 35%, var(--star-border));
+  border-inline-start: 3px solid var(--star-tone);
+  background: var(--star-tone-soft);
+  color: var(--star-text);
+  font: var(--star-type-body-lg);
+  animation: star-banner-in var(--star-duration-slow) $ease;
+}
+.star-banner__icon {
+  flex: none;
+  color: var(--star-tone);
+  font-size: 1.125rem;
+}
+.star-banner__text {
+  flex: 1 1 16rem;
+  min-inline-size: 0;
+}
+.star-banner__actions {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 0.25rem;
+  margin-inline-start: auto;
+}
+.star-banner__dismiss {
+  width: 2rem;
+  height: 2rem;
+}
+
+@keyframes star-banner-in {
+  from {
+    opacity: 0;
+    translate: 0 -0.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .star-banner__inner {
+    animation: none;
+  }
+}
