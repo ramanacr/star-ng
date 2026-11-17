@@ -19,7 +19,8 @@ import { DOCS } from '../shared/docs';
         </li>
         <li><code>&#64;angular/cdk</code> 22 or later (overlays, menus, focus management).</li>
         <li>
-          <code>&#64;phosphor-icons/web</code> 2.1 or later (the icons that the controls draw).
+          <code>&#64;phosphor-icons/web</code> 2.1 or later, optional (the default icons that the
+          controls draw; without it, load your own CSS for the <code>ph-*</code> classes).
         </li>
       </ul>
 
