@@ -40,6 +40,9 @@
   "peerDependenciesMeta": {
     "@jsverse/transloco": {
       "optional": true
+    },
+    "@phosphor-icons/web": {
+      "optional": true
     }
   },
   "dependencies": {
