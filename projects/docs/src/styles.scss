@@ -455,13 +455,18 @@ code {
   width: 100%;
   max-width: 26rem;
 }
-// A table, a data view or an org chart needs the full width of the live area. The 26rem cap is for forms and small
+// A table, a data view, an org chart and the other wide controls need the full width of the live area. The 26rem cap is for forms and small
 // controls, and for a demo of a narrow table (docs-stack--narrow).
 .docs-stack:not(.docs-stack--narrow):has(
     star-table,
     star-tree-table,
     star-data-view,
-    star-org-chart
+    star-org-chart,
+    star-timeline,
+    star-editor,
+    star-menubar,
+    star-scroll-panel,
+    star-paginator
   ) {
   max-width: none;
 }
