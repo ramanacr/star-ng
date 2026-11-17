@@ -99,6 +99,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         load: () => import('./controls/field.page').then((m) => m.FieldPage),
       },
       {
+        label: 'In-field label',
+        path: 'controls/ifta-label',
+        keywords: 'ifta label inside top aligned field input select',
+        load: () => import('./controls/ifta-label.page').then((m) => m.IftaLabelPage),
+      },
+      {
         label: 'Checkbox',
         path: 'controls/checkbox',
         keywords: 'tick indeterminate boolean',

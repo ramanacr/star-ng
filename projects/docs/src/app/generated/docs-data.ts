@@ -2232,6 +2232,15 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarIftaLabel": {
+    "kind": "component",
+    "selector": "star-ifta-label",
+    "entry": "@star-ng/ui/field",
+    "description": "In-field top-aligned label (PrimeNG `p-iftalabel`): the label sits inside the box of the control, above the value, and stays there. It is a `star-field` with another layout, so it has the same inputs (`label`, `hint`, `error`, `state`, `required`, `for`) and links its label the same way: `starInput`, `star-select`, `star-date-picker`, `star-input-number` and the other StarNG form controls register with it (see `StarField.linkControl`).",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
   "StarImage": {
     "kind": "component",
     "selector": "star-image",
@@ -6677,6 +6686,8 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "getting-started/result": "<star-button leadingIcon=\"ph-bold ph-plus\">New order</star-button>",
   "i18n/spinner": "<star-spinner />\n<docs-german-text />",
   "i18n/switch": "<div class=\"docs-stack\">\n  <star-select-button\n    [options]=\"languages\"\n    optionLabel=\"label\"\n    optionValue=\"id\"\n    [(value)]=\"language.choice\"\n    [allowEmpty]=\"false\"\n    ariaLabel=\"Language\"\n  />\n  <star-paginator [totalRecords]=\"95\" />\n  <star-field label=\"City\">\n    <star-select [options]=\"cities\" [(value)]=\"city\" filter ariaLabel=\"City\" />\n  </star-field>\n  <star-field label=\"Attachments\">\n    <star-file-upload multiple [maxFileSize]=\"1000000\" [fileLimit]=\"3\" />\n  </star-field>\n  <star-field label=\"New password\">\n    <star-password value=\"abc\" feedback />\n  </star-field>\n</div>",
+  "ifta-label/basic": "<div class=\"docs-stack\">\n  <star-ifta-label label=\"Customer name\" hint=\"As on the invoice.\">\n    <input starInput placeholder=\"Avery Stone\" />\n  </star-ifta-label>\n  <star-ifta-label label=\"City\">\n    <star-select [options]=\"cities\" [(value)]=\"city\" />\n  </star-ifta-label>\n  <star-ifta-label label=\"Delivery date\">\n    <star-date-picker />\n  </star-ifta-label>\n  <star-ifta-label label=\"Quantity\">\n    <star-input-number [(value)]=\"quantity\" [min]=\"1\" />\n  </star-ifta-label>\n</div>",
+  "ifta-label/validation": "<div class=\"docs-stack\">\n  <star-ifta-label label=\"Order number\" [state]=\"order.number()\">\n    <input starInput [formField]=\"order.number\" />\n  </star-ifta-label>\n</div>",
   "image-compare/basic": "<div class=\"docs-stack\">\n  <star-image-compare\n    [leftSrc]=\"before\"\n    [rightSrc]=\"after\"\n    leftAlt=\"Before: grey shapes\"\n    rightAlt=\"After: colored shapes\"\n    ariaLabel=\"Compare before and after\"\n    [(value)]=\"position\"\n  />\n  <p class=\"docs-output\" role=\"status\">Divider at {{ position() }}%</p>\n</div>",
   "image/basic": "<star-image [src]=\"shelf\" alt=\"Shelf photo\" [width]=\"240\" />",
   "image/preview": "<star-image [src]=\"shelf\" alt=\"Shelf photo\" [width]=\"240\" preview />",
