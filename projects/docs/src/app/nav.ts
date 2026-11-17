@@ -59,6 +59,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         load: () => import('./guides/right-to-left.guide').then((m) => m.RightToLeftGuide),
       },
       {
+        label: 'Template slots',
+        path: 'guides/template-slots',
+        keywords: 'ng-template customize header footer empty loading group icon option node date',
+        load: () => import('./guides/template-slots.guide').then((m) => m.TemplateSlotsGuide),
+      },
+      {
         label: 'Accessibility',
         path: 'guides/accessibility',
         keywords: 'a11y keyboard screen reader contrast wcag aria',

@@ -1,19 +1,24 @@
 import { _IdGenerator } from '@angular/cdk/a11y';
+import { NgTemplateOutlet } from '@angular/common';
 import {
   afterNextRender,
   booleanAttribute,
   ChangeDetectionStrategy,
   Component,
   computed,
+  contentChildren,
   ElementRef,
+  forwardRef,
   inject,
   Injector,
   input,
   linkedSignal,
   output,
   signal,
+  TemplateRef,
 } from '@angular/core';
-import { STAR_UI_TEXT, starInlineKey } from '@star-ng/ui/core';
+import { STAR_SLOT_HOST, STAR_UI_TEXT, starInlineKey, StarSlot, starSlot } from '@star-ng/ui/core';
+import type { StarDateContext } from './date-slots';
 import {
   addDays,
   addMonths,
@@ -57,9 +62,14 @@ export function isoWeek(date: Date): number {
  */
 @Component({
   selector: 'star-calendar',
+  imports: [NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarCalendar) }],
   host: { class: 'star-calendar' },
   template: `
+    @if (headerSlot(); as header) {
+      <ng-container *ngTemplateOutlet="header" />
+    }
     <div class="star-calendar__header">
       <button
         type="button"
@@ -167,7 +177,22 @@ export function isoWeek(date: Date): number {
                             (mouseenter)="hover.set(cell.date)"
                             (focus)="focused.set(cell.date)"
                           >
-                            {{ cell.date.getDate() }}
+                            @if (dateSlot(); as custom) {
+                              <ng-container
+                                *ngTemplateOutlet="
+                                  custom;
+                                  context: {
+                                    $implicit: cell.date,
+                                    today: cell.today,
+                                    selected: isSelected(cell.date),
+                                    disabled: cell.disabled,
+                                    outside: cell.outside,
+                                  }
+                                "
+                              />
+                            } @else {
+                              {{ cell.date.getDate() }}
+                            }
                           </button>
                         </td>
                       }
@@ -226,6 +251,9 @@ export function isoWeek(date: Date): number {
         </div>
       }
     }
+    @if (footerSlot(); as footer) {
+      <ng-container *ngTemplateOutlet="footer" />
+    }
   `,
 })
 export class StarCalendar {
@@ -259,8 +287,17 @@ export class StarCalendar {
   /** 0 = Sunday. Default: the locale's first day of the week. */
   readonly firstDayOfWeek = input<number | null>(null);
   readonly locale = input<string | undefined>(undefined);
+  /** Set by the date pickers. In your own markup, use the `starDate` slot. */
+  readonly dateTemplate = input<TemplateRef<StarDateContext> | null>(null);
 
   readonly dateSelect = output<Date>();
+
+  private readonly slots = contentChildren(StarSlot, { descendants: true });
+  protected readonly headerSlot = starSlot<object>(this.slots, this, 'header');
+  protected readonly footerSlot = starSlot<object>(this.slots, this, 'footer');
+  private readonly ownDateSlot = starSlot<StarDateContext>(this.slots, this, 'date');
+  /** Own `starDate` slot first, then the `dateTemplate` input. */
+  protected readonly dateSlot = computed(() => this.ownDateSlot() ?? this.dateTemplate());
 
   readonly view = linkedSignal<StarCalendarView>(() => this.granularity());
   protected readonly hover = signal<Date | null>(null);

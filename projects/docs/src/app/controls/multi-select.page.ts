@@ -1,7 +1,8 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { form, FormField, minLength } from '@angular/forms/signals';
+import { STAR_SLOTS } from '@star-ng/ui/core';
 import { StarField } from '@star-ng/ui/field';
-import { StarMultiSelect, StarOptionTemplate } from '@star-ng/ui/select';
+import { StarChipTemplate, StarMultiSelect, StarOptionTemplate } from '@star-ng/ui/select';
 import { DOCS, DocsRow } from '../shared/docs';
 
 interface Department {
@@ -11,6 +12,11 @@ interface Department {
   readonly closed?: boolean;
 }
 
+interface City {
+  readonly code: string;
+  readonly name: string;
+}
+
 interface Parcel {
   readonly id: number;
   readonly name: string;
@@ -18,7 +24,15 @@ interface Parcel {
 
 @Component({
   selector: 'docs-multi-select-page',
-  imports: [DOCS, StarMultiSelect, StarOptionTemplate, StarField, FormField],
+  imports: [
+    DOCS,
+    StarMultiSelect,
+    StarOptionTemplate,
+    StarChipTemplate,
+    STAR_SLOTS,
+    StarField,
+    FormField,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <docs-page
@@ -138,6 +152,54 @@ interface Parcel {
       </docs-example>
 
       <docs-example
+        heading="Slots"
+        source="multi-select/slots"
+        [script]="slotsScript"
+        note="Content child templates change parts of the control. starChip draws one chip when display is chip. Its context has remove, which removes that option, and interactive, which is false when the control is disabled or read-only. starHeader and starFooter add content to the panel. starEmpty gets the filter text."
+      >
+        <star-multi-select
+          [options]="cities"
+          optionLabel="name"
+          optionValue="code"
+          [(value)]="visited"
+          display="chip"
+          placeholder="Select cities"
+          ariaLabel="Cities"
+          filter
+        >
+          <ng-template starHeader>
+            <p class="docs-output">Cities with an office</p>
+          </ng-template>
+          <ng-template starEmpty let-text>No city matches {{ text }}.</ng-template>
+          <ng-template
+            starChip
+            [starChipOf]="cities"
+            let-item
+            let-remove="remove"
+            let-interactive="interactive"
+          >
+            <span class="star-chip star-chip--sm">
+              {{ item.code }}
+              @if (interactive) {
+                <button
+                  type="button"
+                  class="star-chip__remove"
+                  tabindex="-1"
+                  [attr.aria-label]="'Remove ' + item.name"
+                  (click)="remove()"
+                >
+                  x
+                </button>
+              }
+            </span>
+          </ng-template>
+          <ng-template starFooter>
+            <p class="docs-output">{{ cities.length }} cities</p>
+          </ng-template>
+        </star-multi-select>
+      </docs-example>
+
+      <docs-example
         heading="Signal Forms"
         source="multi-select/form"
         [script]="formScript"
@@ -168,7 +230,7 @@ interface Parcel {
       </p>
 
       <docs-api
-        [of]="['StarMultiSelect', 'StarOptionListBase']"
+        [of]="['StarMultiSelect', 'StarOptionListBase', 'StarChipTemplate']"
         [slots]="slots"
         [cssVars]="cssVars"
         [keyboard]="keyboard"
@@ -190,6 +252,13 @@ export class MultiSelectPage {
     name: `Parcel ${index + 1}`,
   }));
 
+  protected readonly cities: readonly City[] = [
+    { code: 'BER', name: 'Berlin' },
+    { code: 'PAR', name: 'Paris' },
+    { code: 'PUN', name: 'Pune' },
+    { code: 'LIS', name: 'Lisbon' },
+  ];
+  protected readonly visited = signal<readonly string[]>(['BER', 'PUN']);
   protected readonly chosen = signal<readonly string[]>([]);
   protected readonly chips = signal<readonly string[]>(['eng', 'ops']);
   protected readonly grouped = signal<readonly string[]>([]);
@@ -212,6 +281,13 @@ readonly chosen = signal<readonly string[]>([]);`;
   name: \`Parcel \${index + 1}\`,
 }));
 readonly selectedParcels = signal<readonly number[]>([]);`;
+  protected readonly slotsScript = `// Import STAR_SLOTS from '@star-ng/ui/core' and StarChipTemplate in the component imports.
+readonly cities: readonly City[] = [
+  { code: 'BER', name: 'Berlin' },
+  { code: 'PAR', name: 'Paris' },
+  { code: 'PUN', name: 'Pune' },
+];
+readonly visited = signal<readonly string[]>(['BER', 'PUN']);`;
   protected readonly formScript = `readonly teamModel = signal<{ departments: readonly string[] }>({ departments: [] });
 readonly team = form(this.teamModel, (path) => {
   minLength(path.departments, 2, { message: 'Select at least two departments.' });
@@ -222,6 +298,37 @@ readonly team = form(this.teamModel, (path) => {
       name: 'ng-template[starOption]',
       description:
         'Content child. Draws the text of one option row. The context has $implicit, selected and index.',
+    },
+    {
+      name: 'ng-template[starChip]',
+      description:
+        'Content child. Draws one chip when display is chip. $implicit is the option. remove() removes it from the value. interactive is false when the control is disabled or read-only; then remove() does nothing.',
+    },
+    {
+      name: 'ng-template[starHeader]',
+      description: 'Content child. Content at the top of the panel, above the filter.',
+    },
+    {
+      name: 'ng-template[starFooter]',
+      description: 'Content child. Content at the bottom of the panel, below the list.',
+    },
+    {
+      name: 'ng-template[starEmpty]',
+      description: 'Content child. Replaces the empty message. $implicit is the filter text.',
+    },
+    {
+      name: 'ng-template[starLoading]',
+      description: 'Content child. A row at the top of the list while loading is on.',
+    },
+    {
+      name: 'ng-template[starGroup]',
+      description:
+        'Content child. Replaces the text of a group heading. $implicit is the label and count is the number of options in the group after filtering.',
+    },
+    {
+      name: 'ng-template[starIcon]',
+      description:
+        'Content child. Replaces one icon. Set starIcon to dropdown, clear, filter or check.',
     },
   ];
   protected readonly cssVars: readonly DocsRow[] = [

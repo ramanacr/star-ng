@@ -9,6 +9,7 @@ import {
   Directive,
   effect,
   ElementRef,
+  forwardRef,
   inject,
   input,
   linkedSignal,
@@ -19,7 +20,7 @@ import {
   viewChild,
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
-import { matchesFilter } from '@star-ng/ui/core';
+import { matchesFilter, STAR_SLOT_HOST, type StarEmptyContext } from '@star-ng/ui/core';
 import { StarOptionListBase } from '@star-ng/ui/select';
 
 export interface StarAutoCompleteSearch {
@@ -206,6 +207,11 @@ export abstract class StarAutoCompleteBase<TOption, TValue> extends StarOptionLi
     ];
   }
 
+  /** The empty slot gets the typed text: the autocomplete has no separate filter field. */
+  protected override emptyContext(): StarEmptyContext {
+    return { $implicit: this.query() };
+  }
+
   protected chips(): readonly Chip<TValue>[] {
     return [];
   }
@@ -292,6 +298,9 @@ const TEMPLATE = `
     (overlayOutsideClick)="onOutsideClick($event)"
   >
     <div class="star-panel" (mousedown)="onPanelMousedown($event)">
+      @if (headerSlot(); as header) {
+        <ng-container *ngTemplateOutlet="header" />
+      }
       <ul
         class="star-listbox"
         role="listbox"
@@ -303,12 +312,23 @@ const TEMPLATE = `
         [attr.aria-labelledby]="ariaLabelledBy()"
         (scroll)="onListScroll($event)"
       >
+        @if (loadingRow(); as loader) {
+          <li class="star-listbox__empty" role="presentation">
+            <ng-container *ngTemplateOutlet="loader" />
+          </li>
+        }
         @if (virtualWindow().before) {
           <li class="star-listbox__spacer" role="presentation" [style.height.px]="virtualWindow().before"></li>
         }
         @for (row of renderedRows(); track row.key) {
           @if (row.kind === 'group') {
-            <li class="star-listbox__group" role="presentation" [id]="row.id">{{ row.label }}</li>
+            <li class="star-listbox__group" role="presentation" [id]="row.id">
+              @if (groupSlot(); as custom) {
+                <ng-container *ngTemplateOutlet="custom; context: groupContext(row.label)" />
+              } @else {
+                <ng-container>{{ row.label }}</ng-container>
+              }
+            </li>
           } @else {
           @let option = row.option;
           @let i = row.index;
@@ -338,14 +358,23 @@ const TEMPLATE = `
           </li>
           }
         } @empty {
-          <li class="star-listbox__empty" role="presentation">
-            {{ loading() ? text.searching : emptyText() }}
-          </li>
+          @if (!loadingRow()) {
+            <li class="star-listbox__empty" role="presentation">
+              @if (emptySlot(); as custom) {
+                <ng-container *ngTemplateOutlet="custom; context: emptyContext()" />
+              } @else {
+                <ng-container>{{ loading() ? text.searching : emptyText() }}</ng-container>
+              }
+            </li>
+          }
         }
         @if (virtualWindow().after) {
           <li class="star-listbox__spacer" role="presentation" [style.height.px]="virtualWindow().after"></li>
         }
       </ul>
+      @if (footerSlot(); as footer) {
+        <ng-container *ngTemplateOutlet="footer" />
+      }
     </div>
   </ng-template>
 `;
@@ -372,6 +401,7 @@ const HOST = {
   selector: 'star-autocomplete',
   imports: [CdkConnectedOverlay, CdkOverlayOrigin, NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarAutoComplete) }],
   host: HOST,
   template: TEMPLATE,
 })
@@ -439,6 +469,7 @@ export class StarAutoComplete<TOption = unknown, TValue = TOption>
   selector: 'star-multi-autocomplete',
   imports: [CdkConnectedOverlay, CdkOverlayOrigin, NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarMultiAutoComplete) }],
   host: { ...HOST, class: 'star-select star-ac star-ac--multi' },
   template: TEMPLATE,
 })

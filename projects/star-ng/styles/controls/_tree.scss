@@ -67,20 +67,17 @@
   > * {
     position: relative;
     z-index: 1;
-  }
-
-  i {
     transition: rotate var(--star-duration-fast) ease;
   }
-  [aria-expanded='true'] > & i {
+  [aria-expanded='true'] > & > * {
     rotate: 90deg;
   }
   // The arrow points toward the inline end: mirrored in right-to-left. A mirrored arrow turns
   // the other way to point down.
-  i:dir(rtl) {
+  > *:dir(rtl) {
     scale: -1 1;
   }
-  [aria-expanded='true'] > &:dir(rtl) i {
+  [aria-expanded='true'] > &:dir(rtl) > * {
     rotate: -90deg;
   }
   &:hover {

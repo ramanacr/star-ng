@@ -1,7 +1,8 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { form, FormField, required } from '@angular/forms/signals';
+import { STAR_SLOTS } from '@star-ng/ui/core';
 import { StarField } from '@star-ng/ui/field';
-import { StarOptionTemplate, StarSelect } from '@star-ng/ui/select';
+import { StarOptionTemplate, StarSelect, StarSelectedTemplate } from '@star-ng/ui/select';
 import { DOCS, DocsRow } from '../shared/docs';
 
 interface Country {
@@ -9,6 +10,12 @@ interface Country {
   readonly name: string;
   readonly region: string;
   readonly closed?: boolean;
+}
+
+interface City {
+  readonly code: string;
+  readonly name: string;
+  readonly country: string;
 }
 
 interface Shipment {
@@ -19,7 +26,15 @@ interface Shipment {
 
 @Component({
   selector: 'docs-select-page',
-  imports: [DOCS, StarSelect, StarOptionTemplate, StarField, FormField],
+  imports: [
+    DOCS,
+    StarSelect,
+    StarOptionTemplate,
+    StarSelectedTemplate,
+    STAR_SLOTS,
+    StarField,
+    FormField,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <docs-page
@@ -173,6 +188,39 @@ interface Shipment {
       </docs-example>
 
       <docs-example
+        heading="Slots"
+        source="select/slots"
+        [script]="slotsScript"
+        note="Content child templates change parts of the control. starHeader and starFooter add content to the panel. starEmpty gets the filter text. starGroup gets the label and the count. starSelected draws the chosen value in the trigger. starIcon replaces one icon."
+      >
+        <star-select
+          [options]="cities"
+          optionLabel="name"
+          optionValue="code"
+          optionGroup="country"
+          [(value)]="city"
+          placeholder="Select a city"
+          ariaLabel="City"
+          filter
+          showClear
+        >
+          <ng-template starHeader>
+            <p class="docs-output">Cities with an office</p>
+          </ng-template>
+          <ng-template starGroup let-country let-count="count">
+            {{ country }} ({{ count }})
+          </ng-template>
+          <ng-template starEmpty let-text>No city matches {{ text }}.</ng-template>
+          <ng-template starSelected [starSelectedOf]="cities" let-item>
+            {{ item.code }} · {{ item.name }}
+          </ng-template>
+          <ng-template starFooter>
+            <p class="docs-output">{{ cities.length }} cities</p>
+          </ng-template>
+        </star-select>
+      </docs-example>
+
+      <docs-example
         heading="Signal Forms"
         source="select/form"
         [script]="formScript"
@@ -202,7 +250,7 @@ interface Shipment {
       </p>
 
       <docs-api
-        [of]="['StarSelect', 'StarOptionListBase', 'StarOptionTemplate']"
+        [of]="['StarSelect', 'StarOptionListBase', 'StarOptionTemplate', 'StarSelectedTemplate']"
         [slots]="slots"
         [cssVars]="cssVars"
         [keyboard]="keyboard"
@@ -227,6 +275,13 @@ export class SelectPage {
     { code: 'CA', name: 'Canada', region: 'Americas' },
   ];
   protected readonly regions = ['EMEA', 'APAC', 'Americas'];
+  protected readonly cities: readonly City[] = [
+    { code: 'BER', name: 'Berlin', country: 'Germany' },
+    { code: 'MUC', name: 'Munich', country: 'Germany' },
+    { code: 'PAR', name: 'Paris', country: 'France' },
+    { code: 'LYS', name: 'Lyon', country: 'France' },
+    { code: 'PUN', name: 'Pune', country: 'India' },
+  ];
   protected readonly orders: readonly string[] = Array.from(
     { length: 5000 },
     (_, index) => `Order ${String(index + 1).padStart(5, '0')}`,
@@ -247,6 +302,7 @@ export class SelectPage {
   protected readonly open = signal<string | null>(null);
   protected readonly templated = signal<string | null>(null);
   protected readonly order = signal<string | null>(null);
+  protected readonly city = signal<string | null>(null);
   protected readonly shipment = signal<number | null>(null);
 
   protected readonly officeModel = signal<{ country: string | null }>({ country: null });
@@ -265,6 +321,13 @@ readonly countries: readonly Country[] = [
   { code: 'DE', name: 'Germany', region: 'Europe' },
   { code: 'IN', name: 'India', region: 'Asia' },
 ];`;
+  protected readonly slotsScript = `// Import STAR_SLOTS from '@star-ng/ui/core' and StarSelectedTemplate in the component imports.
+readonly cities: readonly City[] = [
+  { code: 'BER', name: 'Berlin', country: 'Germany' },
+  { code: 'PAR', name: 'Paris', country: 'France' },
+  { code: 'PUN', name: 'Pune', country: 'India' },
+];
+readonly city = signal<string | null>(null);`;
   protected readonly virtualScript = `readonly orders: readonly string[] = Array.from(
   { length: 5000 },
   (_, index) => \`Order \${String(index + 1).padStart(5, '0')}\`,
@@ -285,6 +348,37 @@ readonly office = form(this.officeModel, (path) => {
       name: 'ng-template[starOption]',
       description:
         'Content child. Draws one option row. The context has $implicit (the option), selected and index.',
+    },
+    {
+      name: 'ng-template[starSelected]',
+      description:
+        'Content child. Replaces the label in the trigger when a value is chosen. $implicit is the chosen option. The placeholder still shows without a value.',
+    },
+    {
+      name: 'ng-template[starHeader]',
+      description: 'Content child. Content at the top of the panel, above the filter.',
+    },
+    {
+      name: 'ng-template[starFooter]',
+      description: 'Content child. Content at the bottom of the panel, below the list.',
+    },
+    {
+      name: 'ng-template[starEmpty]',
+      description: 'Content child. Replaces the empty message. $implicit is the filter text.',
+    },
+    {
+      name: 'ng-template[starLoading]',
+      description: 'Content child. A row at the top of the list while loading is on.',
+    },
+    {
+      name: 'ng-template[starGroup]',
+      description:
+        'Content child. Replaces the text of a group heading. $implicit is the label and count is the number of options in the group after filtering.',
+    },
+    {
+      name: 'ng-template[starIcon]',
+      description:
+        'Content child. Replaces one icon. Set starIcon to dropdown, clear, filter or check.',
     },
   ];
   protected readonly cssVars: readonly DocsRow[] = [

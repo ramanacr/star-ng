@@ -13,6 +13,7 @@ import {
   Directive,
   effect,
   ElementRef,
+  forwardRef,
   inject,
   Injector,
   input,
@@ -30,9 +31,15 @@ import {
   compareValues,
   matchesFilter,
   readOption,
+  STAR_SLOT_HOST,
   STAR_UI_TEXT,
+  StarEmptyContext,
+  StarGroupContext,
   starIsRtl,
   StarOptionKey,
+  StarSlot,
+  starSlot,
+  starSlotMap,
 } from '@star-ng/ui/core';
 import { StarPaginator } from '@star-ng/ui/paginator';
 import { StarPopover } from '@star-ng/ui/popover';
@@ -47,6 +54,7 @@ import {
   StarExportCell,
   stylePrintDocument,
 } from './table-export';
+import type { StarHeaderCellContext } from './table-slots';
 import {
   anchorOf,
   anchorShift,
@@ -296,6 +304,16 @@ export class StarRowExpansionTemplate<T = unknown> {
  * checkboxes, row expansion, inline cell edit, column resize / reorder / hide / freeze, virtual scroll, row groups, multi-column sort,
  * footer row, row reorder, saved state, loading skeleton, empty state, sticky header and row click.
  *
+ * Slots (content children): `starCell`, `starRowExpansion`, `starHeaderCell` (header label of one
+ * column), `starEmpty` (empty message; `$implicit` is the `globalFilter` text, `''` when none),
+ * `starLoading` (replaces the skeleton rows with one row and one cell over all columns while
+ * `loading` is true) and `starGroup` (replaces the label and the row count of a group heading
+ * together; the context has both, and the toggle button and its `aria-expanded` stay; `count` is
+ * the rows of that group on the current page; the content goes inside the toggle button, so do
+ * not add focusable elements). Content
+ * with `starTableCaption` goes above the table. Content with `starTableSummary` goes directly
+ * below the scroll area of the table and above the paginator.
+ *
  * ```html
  * <star-table [value]="rows()" [columns]="columns" dataKey="id" selectionMode="multiple"
  *            [(selection)]="selected" paginator [rows]="10" [globalFilter]="query()">
@@ -305,6 +323,7 @@ export class StarRowExpansionTemplate<T = unknown> {
  */
 @Component({
   selector: 'star-table',
+  providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarTable) }],
   imports: [
     NgTemplateOutlet,
     StarButton,
@@ -454,14 +473,14 @@ export class StarRowExpansionTemplate<T = unknown> {
                     [attr.title]="multiSort() ? text.sortMultiHint : null"
                     (click)="sortBy(column, $event)"
                   >
-                    {{ column.header }}
+                    <ng-container *ngTemplateOutlet="headerLabel; context: { $implicit: column }" />
                     <i [class]="sortIcon(column)" aria-hidden="true"></i>
                     @if (sortRank(column); as rank) {
                       <span class="star-table__sort-rank">{{ rank }}</span>
                     }
                   </button>
                 } @else {
-                  {{ column.header }}
+                  <ng-container *ngTemplateOutlet="headerLabel; context: { $implicit: column }" />
                 }
                 @if (resizableColumns()) {
                   <span
@@ -552,7 +571,13 @@ export class StarRowExpansionTemplate<T = unknown> {
           }
         </thead>
         <tbody #body>
-          @if (loading()) {
+          @if (loading() && loadingSlot(); as loader) {
+            <tr>
+              <td [attr.colspan]="colspan()">
+                <ng-container *ngTemplateOutlet="loader" />
+              </td>
+            </tr>
+          } @else if (loading()) {
             @for (row of skeletonRows(); track row) {
               <tr class="star-table__row">
                 @if (reorderableRows()) {
@@ -590,8 +615,17 @@ export class StarRowExpansionTemplate<T = unknown> {
                       (click)="toggleGroup(group.label)"
                     >
                       <i class="ph-bold ph-caret-down" aria-hidden="true"></i>
-                      {{ group.label }}
-                      <span class="star-table__group-count">{{ group.count }}</span>
+                      @if (groupSlot(); as custom) {
+                        <ng-container
+                          *ngTemplateOutlet="
+                            custom;
+                            context: { $implicit: group.label, count: group.count }
+                          "
+                        />
+                      } @else {
+                        {{ group.label }}
+                        <span class="star-table__group-count">{{ group.count }}</span>
+                      }
                     </button>
                   </th>
                 </tr>
@@ -748,7 +782,13 @@ export class StarRowExpansionTemplate<T = unknown> {
               <tr>
                 <td class="star-table__empty" [attr.colspan]="colspan()">
                   <i class="ph-bold ph-tray" aria-hidden="true"></i>
-                  {{ emptyMessage() ?? text.noData }}
+                  @if (emptySlot(); as custom) {
+                    <ng-container
+                      *ngTemplateOutlet="custom; context: { $implicit: globalFilter() }"
+                    />
+                  } @else {
+                    {{ emptyMessage() ?? text.noData }}
+                  }
                 </td>
               </tr>
             }
@@ -782,6 +822,14 @@ export class StarRowExpansionTemplate<T = unknown> {
         }
       </table>
     </div>
+    <ng-content select="[starTableSummary]" />
+    <ng-template #headerLabel let-column>
+      @if (headerCellSlots().get(column.field); as custom) {
+        <ng-container *ngTemplateOutlet="custom; context: { $implicit: column }" />
+      } @else {
+        {{ column.header }}
+      }
+    </ng-template>
     <ng-template #cell let-row let-column="column" let-i="index">
       @if (cellTemplate(column.field); as custom) {
         <ng-container
@@ -927,6 +975,15 @@ export class StarTable<T> {
   /** The cell in edit mode: `<row key>|<field>` text, or `null`. */
   private readonly editing = signal<string | null>(null);
   private readonly cellTemplates = contentChildren(StarCellTemplate);
+  private readonly slots = contentChildren(StarSlot, { descendants: true });
+  protected readonly emptySlot = starSlot<StarEmptyContext>(this.slots, this, 'empty');
+  protected readonly loadingSlot = starSlot<object>(this.slots, this, 'loading');
+  protected readonly groupSlot = starSlot<StarGroupContext>(this.slots, this, 'group');
+  protected readonly headerCellSlots = starSlotMap<StarHeaderCellContext<T>>(
+    this.slots,
+    this,
+    'headerCell',
+  );
   private readonly expansion = contentChild(StarRowExpansionTemplate);
   protected readonly expansionTemplate = computed(
     () => (this.expansion()?.template as TemplateRef<StarRowContext<T>> | undefined) ?? null,

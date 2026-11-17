@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { form, FormField, minLength } from '@angular/forms/signals';
+import { STAR_SLOTS } from '@star-ng/ui/core';
 import { StarField } from '@star-ng/ui/field';
 import { StarListbox } from '@star-ng/ui/listbox';
 import { StarOptionTemplate } from '@star-ng/ui/select';
@@ -19,11 +20,17 @@ interface Shipment {
   readonly held: boolean;
 }
 
+interface City {
+  readonly code: string;
+  readonly name: string;
+  readonly country: string;
+}
+
 const REGIONS = ['Central', 'East', 'North', 'South', 'West'];
 
 @Component({
   selector: 'docs-listbox-page',
-  imports: [DOCS, StarListbox, StarOptionTemplate, StarField, FormField],
+  imports: [DOCS, StarListbox, StarOptionTemplate, STAR_SLOTS, StarField, FormField],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <docs-page
@@ -194,6 +201,35 @@ const REGIONS = ['Central', 'East', 'North', 'South', 'West'];
         </div>
       </docs-example>
 
+      <docs-example
+        heading="Slots"
+        source="listbox/slots"
+        [script]="slotsScript"
+        note="starHeader sits above the filter and starFooter below the list. starEmpty gets the filter text. starGroup gets the label and the count of options in the group after filtering."
+      >
+        <star-listbox
+          [options]="cities"
+          optionLabel="name"
+          optionValue="code"
+          optionGroup="country"
+          [(value)]="city"
+          scrollHeight="12rem"
+          filter
+          ariaLabel="City"
+        >
+          <ng-template starHeader>
+            <p class="docs-output">Cities with an office</p>
+          </ng-template>
+          <ng-template starGroup let-country let-count="count">
+            {{ country }} ({{ count }})
+          </ng-template>
+          <ng-template starEmpty let-text>No city matches {{ text }}.</ng-template>
+          <ng-template starFooter>
+            <p class="docs-output">{{ cities.length }} cities</p>
+          </ng-template>
+        </star-listbox>
+      </docs-example>
+
       <docs-api
         [of]="['StarListbox', 'StarOptionTemplate']"
         [slots]="slots"
@@ -211,6 +247,14 @@ export class ListboxPage {
     { id: 'returns', name: 'Returns', site: 'Pune', closed: true },
     { id: 'partners', name: 'Partners', site: 'Lisbon' },
   ];
+
+  protected readonly cities: readonly City[] = [
+    { code: 'BER', name: 'Berlin', country: 'Germany' },
+    { code: 'MUC', name: 'Munich', country: 'Germany' },
+    { code: 'PAR', name: 'Paris', country: 'France' },
+    { code: 'PUN', name: 'Pune', country: 'India' },
+  ];
+  protected readonly city = signal<string | readonly string[] | null>(null);
 
   protected readonly queue = signal<string | readonly string[] | null>(null);
   protected readonly many = signal<string | readonly string[] | null>(['billing']);
@@ -266,6 +310,14 @@ readonly invoice = signal<string | readonly string[] | null>(null);`;
   held: (i + 1) % 10 === 0,
 }));
 readonly picked = signal<number | readonly number[] | null>([]);`;
+  protected readonly slotsScript = `// Import STAR_SLOTS from '@star-ng/ui/core' in the component imports.
+readonly cities: readonly City[] = [
+  { code: 'BER', name: 'Berlin', country: 'Germany' },
+  { code: 'MUC', name: 'Munich', country: 'Germany' },
+  { code: 'PAR', name: 'Paris', country: 'France' },
+  { code: 'PUN', name: 'Pune', country: 'India' },
+];
+readonly city = signal<string | readonly string[] | null>(null);`;
   protected readonly formScript = `readonly alertModel = signal<{ queues: readonly string[] }>({ queues: [] });
 readonly alert = form(this.alertModel, (path) => {
   minLength(path.queues, 1, { message: 'Select at least one queue.' });
@@ -276,6 +328,23 @@ readonly alert = form(this.alertModel, (path) => {
       name: 'ng-template[starOption]',
       description:
         'Content child. Draws the text of one option row. The context has $implicit, selected and index.',
+    },
+    {
+      name: 'ng-template[starHeader]',
+      description: 'Content child. Content at the top of the listbox, above the filter.',
+    },
+    {
+      name: 'ng-template[starFooter]',
+      description: 'Content child. Content at the bottom of the listbox, below the list.',
+    },
+    {
+      name: 'ng-template[starEmpty]',
+      description: 'Content child. Replaces the empty message. $implicit is the filter text.',
+    },
+    {
+      name: 'ng-template[starGroup]',
+      description:
+        'Content child. Replaces the text of a group heading. $implicit is the label and count is the number of options in the group after filtering.',
     },
   ];
   protected readonly cssVars: readonly DocsRow[] = [

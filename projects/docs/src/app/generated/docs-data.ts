@@ -528,6 +528,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "undefined",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "dateTemplate",
+        "type": "TemplateRef<StarDateContext> | null",
+        "default": "null",
+        "required": false,
+        "description": "Set by the date pickers. In your own markup, use the `starDate` slot."
       }
     ],
     "models": [],
@@ -1011,6 +1018,23 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ]
   },
+  "StarChipTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starChip]",
+    "entry": "@star-ng/ui/select",
+    "description": "Replaces a chip of `star-multi-select` with `display=\"chip\"`. PrimeNG `#chip` template (one chip).",
+    "inputs": [
+      {
+        "name": "starChipOf",
+        "type": "readonly T[] | null",
+        "default": "null",
+        "required": false,
+        "description": "Optional: pass the options array to type `let-option` in strict templates."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
   "StarColorPicker": {
     "kind": "component",
     "selector": "star-color-picker",
@@ -1441,6 +1465,15 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ]
   },
+  "StarDateTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starDate]",
+    "entry": "@star-ng/ui/date-picker",
+    "description": "Replaces the content of a day in `star-calendar`, `star-date-picker`, `star-date-range-picker` and `star-multi-date-picker`. PrimeNG `#date` template.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
   "StarDialog": {
     "kind": "component",
     "selector": "star-dialog",
@@ -1744,6 +1777,15 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ]
   },
+  "StarEmptyTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starEmpty]",
+    "entry": "@star-ng/ui/core",
+    "description": "Content shown when there is nothing to list. PrimeNG `#empty` template.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
   "StarField": {
     "kind": "component",
     "selector": "star-field",
@@ -1985,6 +2027,15 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarFooterTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starFooter]",
+    "entry": "@star-ng/ui/core",
+    "description": "Footer content of a control. PrimeNG `#footer` template.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
   "StarGalleria": {
     "kind": "component",
     "selector": "star-galleria",
@@ -2017,6 +2068,48 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "outputs": []
   },
+  "StarGroupTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starGroup]",
+    "entry": "@star-ng/ui/core",
+    "description": "Group heading row. PrimeNG `#group` template.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
+  "StarHeaderCellTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starHeaderCell]",
+    "entry": "@star-ng/ui/table",
+    "description": "Replaces the header label of one column in `star-table`: `<ng-template starHeaderCell=\"customer\" let-column>…</ng-template>`. PrimeNG `#header` template.",
+    "inputs": [
+      {
+        "name": "starHeaderCell",
+        "type": "string",
+        "default": null,
+        "required": true,
+        "description": "`field` of the column."
+      },
+      {
+        "name": "starHeaderCellOf",
+        "type": "readonly T[] | null",
+        "default": "null",
+        "required": false,
+        "description": "Optional: pass the table rows to type `let-column` in strict templates."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
+  "StarHeaderTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starHeader]",
+    "entry": "@star-ng/ui/core",
+    "description": "Header content of a control. PrimeNG `#header` template.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
   "StarIconField": {
     "kind": "component",
     "selector": "star-icon-field",
@@ -2035,6 +2128,23 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "'start' | 'end'",
         "default": "'start'",
         "required": false,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
+  "StarIconTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starIcon]",
+    "entry": "@star-ng/ui/core",
+    "description": "Replaces one built-in icon: `<ng-template starIcon=\"clear\">…</ng-template>`. PrimeNG `#clearicon`, `#dropdownicon` and similar templates. The control puts the icon in a wrapper with `aria-hidden=\"true\"`, so the icon is not read out.",
+    "inputs": [
+      {
+        "name": "starIcon",
+        "type": "StarIconSlotName",
+        "default": null,
+        "required": true,
         "description": ""
       }
     ],
@@ -3011,6 +3121,15 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ]
   },
+  "StarLoadingTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starLoading]",
+    "entry": "@star-ng/ui/core",
+    "description": "Content shown while data loads. PrimeNG `#loader` template.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
   "StarMegaMenu": {
     "kind": "component",
     "selector": "star-mega-menu",
@@ -3327,6 +3446,23 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "outputs": []
   },
+  "StarNodeTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starNode]",
+    "entry": "@star-ng/ui/tree",
+    "description": "Replaces the label of a node in `star-tree` and `star-tree-select`. PrimeNG `#default` node template. The toggle, the checkbox and the node icon stay.",
+    "inputs": [
+      {
+        "name": "starNodeOf",
+        "type": "readonly StarTreeNode<T>[] | null",
+        "default": "null",
+        "required": false,
+        "description": "Optional: pass the nodes array to type `let-node` in strict templates."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
   "StarOptionListBase": {
     "kind": "directive",
     "selector": "",
@@ -3545,7 +3681,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "directive",
     "selector": "ng-template[starOption]",
     "entry": "@star-ng/ui/select",
-    "description": "Custom option row template for `star-select` and `star-multi-select`.",
+    "description": "Custom option row template for `star-select`, `star-multi-select`, `star-listbox` and `star-autocomplete`. PrimeNG `#item` template.",
     "inputs": [
       {
         "name": "starOptionOf",
@@ -4518,6 +4654,23 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ]
   },
+  "StarSelectedTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starSelected]",
+    "entry": "@star-ng/ui/select",
+    "description": "Replaces the label in the closed trigger of `star-select` when a value is chosen. The placeholder still shows when nothing is chosen. PrimeNG `#selecteditem` template.",
+    "inputs": [
+      {
+        "name": "starSelectedOf",
+        "type": "readonly T[] | null",
+        "default": "null",
+        "required": false,
+        "description": "Optional: pass the options array to type `let-option` in strict templates."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
   "StarSkeleton": {
     "kind": "component",
     "selector": "star-skeleton",
@@ -4658,6 +4811,15 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       }
     ]
+  },
+  "StarSlot": {
+    "kind": "directive",
+    "selector": "",
+    "entry": "@star-ng/ui/core",
+    "description": "Base of all slot directives. Controls query it with `contentChildren(StarSlot, { descendants: true })`.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
   },
   "StarSpeedDial": {
     "kind": "component",
@@ -6005,6 +6167,27 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "false",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "nodeTemplate",
+        "type": "TemplateRef<StarNodeContext> | null",
+        "default": "null",
+        "required": false,
+        "description": "Set by `star-tree-select`. In your own markup, use the `starNode` slot."
+      },
+      {
+        "name": "emptyTemplate",
+        "type": "TemplateRef<StarEmptyContext> | null",
+        "default": "null",
+        "required": false,
+        "description": "Set by `star-tree-select`. In your own markup, use the `starEmpty` slot."
+      },
+      {
+        "name": "toggleIconTemplate",
+        "type": "TemplateRef<StarToggleIconContext> | null",
+        "default": "null",
+        "required": false,
+        "description": "Set by `star-tree-select`. In your own markup, use `<ng-template starIcon=\"toggle\">`."
       }
     ],
     "models": [
@@ -6230,6 +6413,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "autocomplete/local": "<div class=\"docs-stack\">\n  <star-autocomplete\n    [options]=\"cities\"\n    [(value)]=\"city\"\n    placeholder=\"Search a city\"\n    ariaLabel=\"City\"\n  />\n  <p class=\"docs-output\" role=\"status\">City: {{ city() ?? 'none' }}</p>\n</div>",
   "autocomplete/multiple": "<div class=\"docs-stack\">\n  <star-multi-autocomplete\n    [options]=\"keywords\"\n    [(value)]=\"chosen\"\n    [selectionLimit]=\"4\"\n    placeholder=\"Add a keyword\"\n    ariaLabel=\"Keywords\"\n    dropdown\n    autoHighlight\n    showClear\n  />\n  <p class=\"docs-output\" role=\"status\">Keywords: {{ chosen().join(', ') || 'none' }}</p>\n</div>",
   "autocomplete/objects": "<star-autocomplete\n  [options]=\"people\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  optionGroup=\"team\"\n  [(value)]=\"person\"\n  placeholder=\"Search a person\"\n  ariaLabel=\"Person\"\n>\n  <ng-template starOption [starOptionOf]=\"people\" let-item>\n    <span>\n      {{ item.name }}\n      <small>{{ item.team }}</small>\n    </span>\n  </ng-template>\n</star-autocomplete>",
+  "autocomplete/slots": "<div class=\"docs-stack\">\n  <star-autocomplete\n    [options]=\"officeCities\"\n    [(value)]=\"officeCity\"\n    optionLabel=\"name\"\n    optionValue=\"code\"\n    optionGroup=\"country\"\n    placeholder=\"Search a city\"\n    ariaLabel=\"Office city\"\n  >\n    <ng-template starHeader>\n      <p class=\"docs-output\">Cities with an office</p>\n    </ng-template>\n    <ng-template starGroup let-country let-count=\"count\">\n      {{ country }} ({{ count }})\n    </ng-template>\n    <ng-template starEmpty let-text>No city matches {{ text }}.</ng-template>\n    <ng-template starFooter>\n      <p class=\"docs-output\">{{ officeCities.length }} cities</p>\n    </ng-template>\n  </star-autocomplete>\n  <p class=\"docs-output\" role=\"status\">City: {{ officeCity() ?? 'none' }}</p>\n</div>",
   "avatar/basic": "<star-avatar name=\"Jane Doe\" />\n<star-avatar name=\"Sam Lee\" shape=\"square\" />\n<star-avatar />\n<star-avatar name=\"Ava Stone\" icon=\"ph-bold ph-buildings\" />",
   "avatar/image": "<star-avatar name=\"Broken Image\" image=\"data:,\" size=\"lg\" />",
   "avatar/sizes": "<star-avatar name=\"Jane Doe\" size=\"sm\" />\n<star-avatar name=\"Jane Doe\" size=\"md\" />\n<star-avatar name=\"Jane Doe\" size=\"lg\" />\n<star-avatar name=\"Jane Doe\" size=\"xl\" />",
@@ -6248,6 +6432,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "calendar/granularity": "<div class=\"docs-stack\">\n  <star-calendar\n    class=\"star-calendar--inline\"\n    granularity=\"month\"\n    [selected]=\"reportMonth()\"\n    (dateSelect)=\"reportMonth.set($event)\"\n    locale=\"en-GB\"\n  />\n  <p class=\"docs-output\" role=\"status\">Month: {{ iso(reportMonth()) }}</p>\n</div>",
   "calendar/months": "<star-calendar\n  class=\"star-calendar--inline\"\n  [selected]=\"stay()\"\n  (dateSelect)=\"stay.set($event)\"\n  [numberOfMonths]=\"2\"\n  showWeek\n  [minDate]=\"minDate\"\n  [maxDate]=\"maxDate\"\n  [disabledDays]=\"[0]\"\n  locale=\"en-GB\"\n  [firstDayOfWeek]=\"1\"\n/>",
   "calendar/range": "<div class=\"docs-stack\">\n  <star-calendar\n    class=\"star-calendar--inline\"\n    mode=\"range\"\n    [range]=\"booking()\"\n    (dateSelect)=\"pick($event)\"\n    locale=\"en-GB\"\n    [firstDayOfWeek]=\"1\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Booking: {{ iso(booking()?.start) }} to {{ iso(booking()?.end) }}\n  </p>\n</div>",
+  "calendar/slots": "<div class=\"docs-stack\">\n  <star-calendar\n    class=\"star-calendar--inline\"\n    [selected]=\"payDate()\"\n    (dateSelect)=\"payDate.set($event)\"\n    locale=\"en-GB\"\n    [firstDayOfWeek]=\"1\"\n  >\n    <ng-template starHeader>\n      <p class=\"docs-output docs-due-note\">Invoices due in November 2026</p>\n    </ng-template>\n    <ng-template starDate let-date>\n      <span class=\"docs-due\" [class.docs-due--marked]=\"isDue(date)\">{{\n        date.getDate()\n      }}</span>\n    </ng-template>\n    <ng-template starFooter>\n      <p class=\"docs-output docs-due-note\">\n        A dot marks a due date: 5, 12 and 26 November.\n      </p>\n    </ng-template>\n  </star-calendar>\n  <p class=\"docs-output\" role=\"status\">Payment date: {{ iso(payDate()) }}</p>\n</div>",
   "card/basic": "<div class=\"docs-stack\">\n  <star-card header=\"Open orders\" subheader=\"Last 30 days\">\n    <star-button starCardActions variant=\"ghost\" size=\"sm\">View all</star-button>\n    <p>Forty-two orders are open. Nine are late.</p>\n    <div starCardFooter class=\"docs-row\">\n      <star-button size=\"sm\">Export</star-button>\n      <star-button size=\"sm\" variant=\"secondary\">Filter</star-button>\n    </div>\n  </star-card>\n</div>",
   "card/plain": "<div class=\"docs-stack\">\n  <star-card>\n    <p>A card with only a body.</p>\n  </star-card>\n</div>",
   "carousel/autoplay": "<star-carousel\n  style=\"width: 100%; max-width: 40rem\"\n  [items]=\"photos\"\n  [autoplay]=\"4000\"\n  ariaLabel=\"Automatic photos\"\n>\n  <ng-template starCarouselItem [starCarouselItemOf]=\"photos\" let-photo>\n    <img\n      style=\"display: block; width: 100%; height: auto\"\n      [src]=\"photo.src\"\n      [alt]=\"photo.label\"\n    />\n  </ng-template>\n</star-carousel>",
@@ -6296,6 +6481,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "date-picker/locale": "<div class=\"docs-stack\">\n  <star-date-picker\n    [value]=\"germanDate\"\n    locale=\"de-DE\"\n    [firstDayOfWeek]=\"1\"\n    showWeek\n    ariaLabel=\"Lieferdatum\"\n  />\n  <star-date-picker\n    [value]=\"americanDate\"\n    locale=\"en-US\"\n    [firstDayOfWeek]=\"0\"\n    [numberOfMonths]=\"2\"\n    ariaLabel=\"Delivery date (US)\"\n  />\n</div>",
   "date-picker/multiple": "<div class=\"docs-stack\">\n  <star-multi-date-picker\n    [(value)]=\"visits\"\n    [maxDates]=\"4\"\n    locale=\"en-GB\"\n    ariaLabel=\"Visit days\"\n    showClear\n  />\n  <p class=\"docs-output\" role=\"status\">Days: {{ visits().length }}</p>\n</div>",
   "date-picker/range": "<div class=\"docs-stack\">\n  <star-date-range-picker [(value)]=\"booking\" locale=\"en-GB\" ariaLabel=\"Booking range\" />\n  <p class=\"docs-output\" role=\"status\">\n    Booking: {{ iso(booking()?.start) }} to {{ iso(booking()?.end) }}\n  </p>\n</div>",
+  "date-picker/slots": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"payDate\"\n    locale=\"en-GB\"\n    [firstDayOfWeek]=\"1\"\n    showButtonBar\n    ariaLabel=\"Payment date\"\n  >\n    <ng-template starHeader>\n      <p class=\"docs-output docs-due-note\">Invoices due in November 2026</p>\n    </ng-template>\n    <ng-template starDate let-date>\n      <span class=\"docs-due\" [class.docs-due--marked]=\"isDue(date)\">{{\n        date.getDate()\n      }}</span>\n    </ng-template>\n    <ng-template starFooter>\n      <p class=\"docs-output docs-due-note\">\n        A dot marks a due date: 5, 12 and 26 November.\n      </p>\n    </ng-template>\n  </star-date-picker>\n  <p class=\"docs-output\" role=\"status\">Payment date: {{ iso(payDate()) }}</p>\n</div>",
   "date-picker/states": "<div class=\"docs-stack\">\n  <star-date-picker size=\"sm\" locale=\"en-GB\" ariaLabel=\"Small date picker\" />\n  <star-date-picker disabled locale=\"en-GB\" ariaLabel=\"Disabled date picker\" />\n  <star-date-picker\n    [value]=\"delivery()\"\n    readonly\n    locale=\"en-GB\"\n    ariaLabel=\"Read-only date picker\"\n  />\n</div>",
   "date-picker/time": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"meeting\"\n    locale=\"en-GB\"\n    showTime\n    [stepMinute]=\"15\"\n    ariaLabel=\"Meeting start\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Meeting: {{ iso(meeting()) }} {{ clock(meeting()) }}\n  </p>\n</div>",
   "date-picker/views": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"reportMonth\"\n    view=\"month\"\n    locale=\"en-GB\"\n    ariaLabel=\"Report month\"\n  />\n  <star-date-picker\n    [(value)]=\"reportYear\"\n    view=\"year\"\n    locale=\"en-GB\"\n    ariaLabel=\"Report year\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Month: {{ iso(reportMonth()) }}, year: {{ iso(reportYear()) }}\n  </p>\n</div>",
@@ -6365,6 +6551,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "listbox/groups": "<star-listbox\n  [options]=\"queues\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  optionGroup=\"site\"\n  optionDisabled=\"closed\"\n  [(value)]=\"grouped\"\n  scrollHeight=\"14rem\"\n  ariaLabel=\"Queue by site\"\n/>",
   "listbox/multiple": "<div class=\"docs-stack\">\n  <star-listbox\n    [options]=\"queues\"\n    optionLabel=\"name\"\n    optionValue=\"id\"\n    [(value)]=\"many\"\n    multiple\n    filter\n    scrollHeight=\"12rem\"\n    ariaLabel=\"Queues\"\n  />\n  <p class=\"docs-output\" role=\"status\">Queues: {{ manyText() }}</p>\n</div>",
   "listbox/single": "<div class=\"docs-stack\">\n  <star-listbox\n    [options]=\"queues\"\n    optionLabel=\"name\"\n    optionValue=\"id\"\n    [(value)]=\"queue\"\n    scrollHeight=\"12rem\"\n    ariaLabel=\"Queue\"\n  />\n  <p class=\"docs-output\" role=\"status\">Queue: {{ queue() ?? 'none' }}</p>\n</div>",
+  "listbox/slots": "<star-listbox\n  [options]=\"cities\"\n  optionLabel=\"name\"\n  optionValue=\"code\"\n  optionGroup=\"country\"\n  [(value)]=\"city\"\n  scrollHeight=\"12rem\"\n  filter\n  ariaLabel=\"City\"\n>\n  <ng-template starHeader>\n    <p class=\"docs-output\">Cities with an office</p>\n  </ng-template>\n  <ng-template starGroup let-country let-count=\"count\">\n    {{ country }} ({{ count }})\n  </ng-template>\n  <ng-template starEmpty let-text>No city matches {{ text }}.</ng-template>\n  <ng-template starFooter>\n    <p class=\"docs-output\">{{ cities.length }} cities</p>\n  </ng-template>\n</star-listbox>",
   "listbox/template": "<star-listbox\n  [options]=\"queues\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  [(value)]=\"templated\"\n  scrollHeight=\"12rem\"\n  ariaLabel=\"Queue with template\"\n>\n  <ng-template starOption [starOptionOf]=\"queues\" let-item let-selected=\"selected\">\n    <span>\n      {{ item.name }}\n      <small>{{ item.site }}</small>\n    </span>\n  </ng-template>\n</star-listbox>",
   "listbox/virtual": "<div class=\"docs-stack\">\n  <star-listbox\n    [options]=\"invoiceNumbers\"\n    [(value)]=\"invoice\"\n    virtualScroll\n    filter\n    scrollHeight=\"16rem\"\n    ariaLabel=\"Invoice number\"\n  />\n  <p class=\"docs-output\" role=\"status\">Invoice: {{ invoice() ?? 'none' }}</p>\n</div>",
   "listbox/virtual-groups": "<div class=\"docs-stack\">\n  <star-listbox\n    [options]=\"shipments\"\n    optionLabel=\"name\"\n    optionValue=\"id\"\n    optionGroup=\"region\"\n    optionDisabled=\"held\"\n    [(value)]=\"picked\"\n    multiple\n    virtualScroll\n    [virtualItemSize]=\"36\"\n    scrollHeight=\"16rem\"\n    ariaLabel=\"Shipments\"\n  >\n    <ng-template starOption [starOptionOf]=\"shipments\" let-item let-selected=\"selected\">\n      {{ item.name }}\n    </ng-template>\n  </star-listbox>\n  <p class=\"docs-output\" role=\"status\">Picked: {{ pickedCount() }}</p>\n</div>",
@@ -6388,6 +6575,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "multi-select/groups": "<star-multi-select\n  [options]=\"departments\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  optionGroup=\"site\"\n  optionDisabled=\"closed\"\n  [(value)]=\"grouped\"\n  placeholder=\"Departments by site\"\n  ariaLabel=\"Departments by site\"\n/>",
   "multi-select/large": "<div class=\"docs-stack\">\n  <star-multi-select\n    [options]=\"parcels\"\n    optionLabel=\"name\"\n    optionValue=\"id\"\n    [(value)]=\"selectedParcels\"\n    placeholder=\"10,000 parcels\"\n    ariaLabel=\"Parcels\"\n    virtualScroll\n  />\n  <p class=\"docs-output\" role=\"status\">Parcels: {{ selectedParcels().length }}</p>\n</div>",
   "multi-select/limit": "<star-multi-select\n  [options]=\"departments\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  [selectionLimit]=\"2\"\n  placeholder=\"Pick up to 2\"\n  ariaLabel=\"Limited departments\"\n/>",
+  "multi-select/slots": "<star-multi-select\n  [options]=\"cities\"\n  optionLabel=\"name\"\n  optionValue=\"code\"\n  [(value)]=\"visited\"\n  display=\"chip\"\n  placeholder=\"Select cities\"\n  ariaLabel=\"Cities\"\n  filter\n>\n  <ng-template starHeader>\n    <p class=\"docs-output\">Cities with an office</p>\n  </ng-template>\n  <ng-template starEmpty let-text>No city matches {{ text }}.</ng-template>\n  <ng-template\n    starChip\n    [starChipOf]=\"cities\"\n    let-item\n    let-remove=\"remove\"\n    let-interactive=\"interactive\"\n  >\n    <span class=\"star-chip star-chip--sm\">\n      {{ item.code }}\n      @if (interactive) {\n        <button\n          type=\"button\"\n          class=\"star-chip__remove\"\n          tabindex=\"-1\"\n          [attr.aria-label]=\"'Remove ' + item.name\"\n          (click)=\"remove()\"\n        >\n          x\n        </button>\n      }\n    </span>\n  </ng-template>\n  <ng-template starFooter>\n    <p class=\"docs-output\">{{ cities.length }} cities</p>\n  </ng-template>\n</star-multi-select>",
   "multi-select/template": "<star-multi-select\n  [options]=\"departments\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  [(value)]=\"templated\"\n  placeholder=\"Select departments\"\n  ariaLabel=\"Departments with template\"\n>\n  <ng-template starOption [starOptionOf]=\"departments\" let-item let-selected=\"selected\">\n    <span>\n      {{ item.name }}\n      <small>{{ item.site }}</small>\n    </span>\n  </ng-template>\n</star-multi-select>",
   "order-list/basic": "<div class=\"docs-stack\">\n  <star-order-list [(value)]=\"steps\" ariaLabel=\"Release steps\" />\n  <p class=\"docs-output\" role=\"status\">Order: {{ steps().join(' > ') }}</p>\n</div>",
   "order-list/objects": "<div class=\"docs-stack\">\n  <star-order-list [(value)]=\"playlist\" optionLabel=\"name\" ariaLabel=\"Task playlist\" />\n  <p class=\"docs-output\" role=\"status\">Ids: {{ ids() }}</p>\n</div>",
@@ -6432,6 +6620,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "select/form": "<div class=\"docs-stack\">\n  <star-field label=\"Office country\" for=\"select-form-country\" [state]=\"office.country()\">\n    <star-select\n      inputId=\"select-form-country\"\n      [formField]=\"office.country\"\n      [options]=\"countries\"\n      optionLabel=\"name\"\n      optionValue=\"code\"\n      placeholder=\"Select a country\"\n      ariaLabel=\"Office country\"\n      showClear\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ office().valid() }}</p>\n</div>",
   "select/groups": "<star-select\n  [options]=\"countries\"\n  optionLabel=\"name\"\n  optionValue=\"code\"\n  optionGroup=\"region\"\n  [(value)]=\"grouped\"\n  placeholder=\"Grouped by region\"\n  ariaLabel=\"Country by region\"\n/>",
   "select/large": "<div class=\"docs-stack\">\n  <star-select\n    [options]=\"shipments\"\n    optionLabel=\"name\"\n    optionValue=\"id\"\n    optionGroup=\"region\"\n    [(value)]=\"shipment\"\n    placeholder=\"10,000 shipments\"\n    ariaLabel=\"Shipment\"\n    virtualScroll\n    filter\n  />\n  <p class=\"docs-output\" role=\"status\">Shipment: {{ shipment() ?? 'none' }}</p>\n</div>",
+  "select/slots": "<star-select\n  [options]=\"cities\"\n  optionLabel=\"name\"\n  optionValue=\"code\"\n  optionGroup=\"country\"\n  [(value)]=\"city\"\n  placeholder=\"Select a city\"\n  ariaLabel=\"City\"\n  filter\n  showClear\n>\n  <ng-template starHeader>\n    <p class=\"docs-output\">Cities with an office</p>\n  </ng-template>\n  <ng-template starGroup let-country let-count=\"count\">\n    {{ country }} ({{ count }})\n  </ng-template>\n  <ng-template starEmpty let-text>No city matches {{ text }}.</ng-template>\n  <ng-template starSelected [starSelectedOf]=\"cities\" let-item>\n    {{ item.code }} · {{ item.name }}\n  </ng-template>\n  <ng-template starFooter>\n    <p class=\"docs-output\">{{ cities.length }} cities</p>\n  </ng-template>\n</star-select>",
   "select/states": "<div class=\"docs-stack\">\n  <star-select [options]=\"regions\" size=\"sm\" placeholder=\"Small\" ariaLabel=\"Small select\" />\n  <star-select [options]=\"regions\" disabled placeholder=\"Disabled\" ariaLabel=\"Disabled\" />\n  <star-select [options]=\"regions\" [value]=\"'EMEA'\" readonly ariaLabel=\"Read-only\" />\n  <star-select [options]=\"[]\" loading placeholder=\"Loading options\" ariaLabel=\"Loading\" />\n</div>",
   "select/template": "<star-select\n  [options]=\"countries\"\n  optionLabel=\"name\"\n  optionValue=\"code\"\n  [(value)]=\"templated\"\n  placeholder=\"Select a country\"\n  ariaLabel=\"Country with template\"\n>\n  <ng-template starOption [starOptionOf]=\"countries\" let-item>\n    <span>\n      {{ item.name }}\n      <small>{{ item.region }}</small>\n    </span>\n  </ng-template>\n</star-select>",
   "select/virtual": "<star-select\n  [options]=\"orders\"\n  [(value)]=\"order\"\n  placeholder=\"5,000 orders\"\n  ariaLabel=\"Order\"\n  virtualScroll\n  filter\n/>",
@@ -6489,6 +6678,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "table/expansion-basic": "<docs-fill>\n  <star-table\n    [value]=\"orders.slice(0, 4)\"\n    [columns]=\"columns\"\n    dataKey=\"id\"\n    ariaLabel=\"Orders with detail\"\n  >\n    <ng-template starRowExpansion [starRowExpansionOf]=\"orders\" let-row>\n      {{ row.quantity }} x {{ row.product }} for {{ row.customer }} ({{ row.email }}).\n    </ng-template>\n  </star-table>\n</docs-fill>",
   "table/format": "<docs-fill>\n  <star-table\n    [value]=\"orders\"\n    [columns]=\"formatColumns\"\n    dataKey=\"id\"\n    ariaLabel=\"Orders with formatted values\"\n    paginator\n    [rows]=\"5\"\n  />\n</docs-fill>",
   "table/looks": "<docs-fill>\n  <star-table\n    [value]=\"orders\"\n    [columns]=\"columns\"\n    dataKey=\"id\"\n    ariaLabel=\"Compact orders\"\n    size=\"sm\"\n    striped\n    stickyHeader\n    scrollHeight=\"14rem\"\n  />\n</docs-fill>",
+  "table/slots": "<div class=\"docs-stack\">\n  <input\n    starInput\n    type=\"search\"\n    aria-label=\"Search orders\"\n    placeholder=\"Search orders\"\n    [value]=\"slotQuery()\"\n    (input)=\"slotQuery.set($any($event.target).value)\"\n  />\n  <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"slotLoading.set(!slotLoading())\">\n    {{ slotLoading() ? 'Stop loading' : 'Start loading' }}\n  </star-button>\n  <docs-fill>\n    <star-table\n      [value]=\"slotOrders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders by status\"\n      groupBy=\"status\"\n      [globalFilter]=\"slotQuery()\"\n      [loading]=\"slotLoading()\"\n    >\n      <ng-template starHeaderCell=\"total\" let-column>\n        {{ column.header }} (USD)\n      </ng-template>\n      <ng-template starGroup let-status let-count=\"count\">\n        {{ status }}: {{ count }} orders\n      </ng-template>\n      <ng-template starEmpty let-text>No order matches \"{{ text }}\".</ng-template>\n      <ng-template starLoading>Loading the orders.</ng-template>\n      <p starTableSummary class=\"docs-output\">{{ slotOrders.length }} orders in total</p>\n    </star-table>\n  </docs-fill>\n</div>",
   "table/states": "<div class=\"docs-stack\">\n  <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"loading.set(!loading())\">\n    {{ loading() ? 'Stop loading' : 'Start loading' }}\n  </star-button>\n  <star-table\n    [value]=\"orders.slice(0, 3)\"\n    [columns]=\"columns\"\n    dataKey=\"id\"\n    ariaLabel=\"Orders being loaded\"\n    [loading]=\"loading()\"\n  />\n  <star-table\n    [value]=\"[]\"\n    [columns]=\"columns\"\n    ariaLabel=\"No orders\"\n    emptyMessage=\"No orders yet. Add the first one.\"\n  />\n</div>",
   "table/templates": "<docs-fill>\n  <star-table\n    [value]=\"orders\"\n    [columns]=\"columns\"\n    dataKey=\"id\"\n    ariaLabel=\"Orders with status tags\"\n    paginator\n    [rows]=\"5\"\n  >\n    <ng-template starCell=\"status\" [starCellOf]=\"orders\" let-row>\n      <star-tag [severity]=\"severityOf(row.status)\" [value]=\"row.status\" rounded />\n    </ng-template>\n    <ng-template starCell=\"customer\" [starCellOf]=\"orders\" let-row let-value=\"value\">\n      <strong>{{ value }}</strong>\n      <br />\n      <small>{{ row.email }}</small>\n    </ng-template>\n  </star-table>\n</docs-fill>",
   "tabs/basic": "<div class=\"docs-stack\">\n  <star-tabs [(value)]=\"tab\" ariaLabel=\"Order sections\">\n    <star-tab value=\"details\" label=\"Details\" icon=\"ph-bold ph-file-text\">\n      Order ORD-1042 for Orchard Supply.\n    </star-tab>\n    <star-tab value=\"items\" label=\"Items\" [badge]=\"12\">Twelve items in two boxes.</star-tab>\n    <star-tab value=\"billing\" label=\"Billing\" disabled>Billing is not available.</star-tab>\n    <star-tab value=\"history\" label=\"History\">Created on Monday.</star-tab>\n  </star-tabs>\n  <p class=\"docs-output\" role=\"status\">Selected: {{ tab() ?? 'details' }}</p>\n</div>",
@@ -6522,6 +6712,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "tree-select/form": "<div class=\"docs-stack\">\n  <star-field label=\"Department\" [state]=\"hire.department()\">\n    <star-tree-select\n      [formField]=\"hire.department\"\n      [nodes]=\"departments\"\n      placeholder=\"Select a department\"\n      ariaLabel=\"Hire department\"\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ hire().valid() }}</p>\n</div>",
   "tree-select/multiple": "<div class=\"docs-stack\">\n  <star-tree-select\n    [nodes]=\"departments\"\n    selectionMode=\"multiple\"\n    [(value)]=\"nodes\"\n    placeholder=\"Select nodes\"\n    ariaLabel=\"Nodes\"\n  />\n  <p class=\"docs-output\" role=\"status\">Nodes: {{ nodes().join(', ') || 'none' }}</p>\n  <star-tree-select\n    [nodes]=\"departments\"\n    disabled\n    placeholder=\"Disabled\"\n    ariaLabel=\"Disabled department\"\n  />\n</div>",
   "tree-select/single": "<div class=\"docs-stack\">\n  <star-tree-select\n    [nodes]=\"departments\"\n    [(value)]=\"department\"\n    placeholder=\"Select a department\"\n    ariaLabel=\"Department\"\n    showClear\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Department: {{ department().join(', ') || 'none' }}\n  </p>\n</div>",
+  "tree-select/slots": "<star-tree-select\n  [nodes]=\"projects\"\n  [(expanded)]=\"projectsOpen\"\n  [(value)]=\"project\"\n  filter\n  placeholder=\"Select a project\"\n  ariaLabel=\"Project\"\n>\n  <ng-template starHeader>\n    <p class=\"docs-output\">Active projects</p>\n  </ng-template>\n  <ng-template starNode [starNodeOf]=\"projects\" let-node let-level=\"level\">\n    {{ node.label }}\n    @if (node.data) {\n      <small>(owner {{ node.data.owner }}, level {{ level }})</small>\n    }\n  </ng-template>\n  <ng-template starIcon=\"toggle\"\n    ><i class=\"ph-bold ph-arrow-right\" aria-hidden=\"true\"></i\n  ></ng-template>\n  <ng-template starEmpty let-text>No project matches {{ text }}.</ng-template>\n  <ng-template starFooter>\n    <p class=\"docs-output\">3 projects</p>\n  </ng-template>\n</star-tree-select>",
   "tree-select/virtual": "<div class=\"docs-stack\">\n  <star-tree-select\n    [nodes]=\"large.nodes\"\n    [(expanded)]=\"largeOpen\"\n    selectionMode=\"checkbox\"\n    [(value)]=\"largeTeams\"\n    virtualScroll\n    [virtualItemSize]=\"34\"\n    filter\n    placeholder=\"Select orders\"\n    ariaLabel=\"Orders by site\"\n  />\n  <p class=\"docs-output\" role=\"status\">{{ largeTeams().length }} orders checked</p>\n</div>",
   "tree-table/basic": "<div class=\"docs-stack\">\n  <star-tree-table\n    [nodes]=\"departments\"\n    [columns]=\"columns\"\n    [(expanded)]=\"open\"\n    ariaLabel=\"Departments\"\n  />\n  <p class=\"docs-output\" role=\"status\">Open: {{ open().join(', ') || 'none' }}</p>\n</div>",
   "tree-table/columns": "<star-tree-table\n  [nodes]=\"departments\"\n  [columns]=\"wideColumns\"\n  [expanded]=\"allOpen\"\n  ariaLabel=\"Departments with fixed columns\"\n/>",
@@ -6531,5 +6722,6 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "tree/form": "<div class=\"docs-stack\">\n  <star-field label=\"Folders to share\" [state]=\"share.folders()\">\n    <star-tree\n      [formField]=\"share.folders\"\n      [nodes]=\"folders\"\n      selectionMode=\"checkbox\"\n      scrollHeight=\"12rem\"\n      ariaLabel=\"Folders to share\"\n    />\n  </star-field>\n\n  <p class=\"docs-output\" role=\"status\">Valid: {{ share().valid() }}</p>\n</div>",
   "tree/multiple": "<star-tree\n  [nodes]=\"folders\"\n  selectionMode=\"multiple\"\n  [(value)]=\"picked\"\n  [(expanded)]=\"multipleOpen\"\n  scrollHeight=\"16rem\"\n  ariaLabel=\"Folders to back up\"\n/>",
   "tree/single": "<div class=\"docs-stack\">\n  <star-tree\n    [nodes]=\"folders\"\n    selectionMode=\"single\"\n    [(value)]=\"selected\"\n    [(expanded)]=\"singleOpen\"\n    scrollHeight=\"16rem\"\n    ariaLabel=\"Folder\"\n    (nodeSelect)=\"lastNode.set($event.label)\"\n  />\n\n  <p class=\"docs-output\" role=\"status\">Selected: {{ selected().join(', ') || 'none' }}</p>\n\n  <p class=\"docs-output\" role=\"status\">Last node: {{ lastNode() }}</p>\n</div>",
+  "tree/slots": "<star-tree\n  [nodes]=\"projects\"\n  [(expanded)]=\"projectsOpen\"\n  filter\n  scrollHeight=\"16rem\"\n  ariaLabel=\"Projects\"\n>\n  <ng-template starHeader>\n    <p class=\"docs-output\">Active projects</p>\n  </ng-template>\n  <ng-template starNode [starNodeOf]=\"projects\" let-node let-level=\"level\">\n    {{ node.label }}\n    @if (node.data) {\n      <small>(owner {{ node.data.owner }}, level {{ level }})</small>\n    }\n  </ng-template>\n  <ng-template starIcon=\"toggle\"\n    ><i class=\"ph-bold ph-arrow-right\" aria-hidden=\"true\"></i\n  ></ng-template>\n  <ng-template starEmpty let-text>No project matches {{ text }}.</ng-template>\n  <ng-template starFooter>\n    <p class=\"docs-output\">3 projects</p>\n  </ng-template>\n</star-tree>",
   "tree/virtual": "<div class=\"docs-stack\">\n  <star-tree\n    [nodes]=\"large.nodes\"\n    [(expanded)]=\"largeOpen\"\n    selectionMode=\"checkbox\"\n    [(value)]=\"largeChecked\"\n    virtualScroll\n    [virtualItemSize]=\"34\"\n    filter\n    scrollHeight=\"20rem\"\n    ariaLabel=\"Orders by site\"\n  />\n\n  <p class=\"docs-output\" role=\"status\">\n    {{ large.count }} nodes, {{ largeChecked().length }} orders checked\n  </p>\n</div>"
 };

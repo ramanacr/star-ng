@@ -1,8 +1,11 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { StarButton } from '@star-ng/ui/button';
+import { STAR_SLOTS } from '@star-ng/ui/core';
+import { StarInput } from '@star-ng/ui/field';
 import {
   StarCellTemplate,
   StarColumn,
+  StarHeaderCellTemplate,
   StarRowExpansionTemplate,
   StarTable,
 } from '@star-ng/ui/table';
@@ -26,6 +29,9 @@ import {
     StarTable,
     StarCellTemplate,
     StarRowExpansionTemplate,
+    StarHeaderCellTemplate,
+    STAR_SLOTS,
+    StarInput,
     StarTag,
     StarButton,
     DocsFill,
@@ -182,8 +188,55 @@ import {
         </docs-fill>
       </docs-example>
 
+      <docs-example
+        heading="Slots"
+        source="table/slots"
+        [script]="slotsScript"
+        note="Content child templates change parts of the table. starHeaderCell with a column field replaces the header label; the sort button, the sort icon, the resize handle and aria-sort stay. starGroup replaces the label and the count of a group heading, and the toggle stays. starEmpty gets the global filter text. starLoading replaces the skeleton rows while loading is true. Content with starTableSummary goes below the table and above the paginator."
+      >
+        <div class="docs-stack">
+          <input
+            starInput
+            type="search"
+            aria-label="Search orders"
+            placeholder="Search orders"
+            [value]="slotQuery()"
+            (input)="slotQuery.set($any($event.target).value)"
+          />
+          <star-button size="sm" variant="secondary" (pressed)="slotLoading.set(!slotLoading())">
+            {{ slotLoading() ? 'Stop loading' : 'Start loading' }}
+          </star-button>
+          <docs-fill>
+            <star-table
+              [value]="slotOrders"
+              [columns]="columns"
+              dataKey="id"
+              ariaLabel="Orders by status"
+              groupBy="status"
+              [globalFilter]="slotQuery()"
+              [loading]="slotLoading()"
+            >
+              <ng-template starHeaderCell="total" let-column>
+                {{ column.header }} (USD)
+              </ng-template>
+              <ng-template starGroup let-status let-count="count">
+                {{ status }}: {{ count }} orders
+              </ng-template>
+              <ng-template starEmpty let-text>No order matches "{{ text }}".</ng-template>
+              <ng-template starLoading>Loading the orders.</ng-template>
+              <p starTableSummary class="docs-output">{{ slotOrders.length }} orders in total</p>
+            </star-table>
+          </docs-fill>
+        </div>
+      </docs-example>
+
       <docs-api
-        [of]="['StarTable', 'StarCellTemplate', 'StarRowExpansionTemplate']"
+        [of]="[
+          'StarTable',
+          'StarCellTemplate',
+          'StarRowExpansionTemplate',
+          'StarHeaderCellTemplate',
+        ]"
         [slots]="slots"
         [cssVars]="cssVars"
         [keyboard]="keyboard"
@@ -262,11 +315,50 @@ readonly severityOf = (status: Order['status']) => STATUS_SEVERITY[status];`;
   { field: 'total', header: 'Total', align: 'end', format: (row) => formatMoney(row.total) },
 ];`;
   protected readonly statesScript = `readonly loading = signal(false);`;
+  protected readonly slotOrders: readonly Order[] = ORDERS.slice(0, 8);
+  protected readonly slotQuery = signal('');
+  protected readonly slotLoading = signal(false);
+  protected readonly slotsScript = `// Import STAR_SLOTS from '@star-ng/ui/core', StarHeaderCellTemplate and StarInput in the component imports.
+readonly slotOrders: readonly Order[] = ORDERS.slice(0, 8);
+readonly columns: StarColumn<Order>[] = [
+  { field: 'id', header: 'Order', sortable: true },
+  { field: 'customer', header: 'Customer', sortable: true },
+  { field: 'product', header: 'Product', sortable: true },
+  { field: 'status', header: 'Status', sortable: true },
+  { field: 'total', header: 'Total', sortable: true, align: 'end', format: (row) => formatMoney(row.total) },
+];
+readonly slotQuery = signal('');
+readonly slotLoading = signal(false);`;
 
   protected readonly slots: readonly DocsRow[] = [
     {
       name: '[starTableCaption]',
       description: 'Content slot above the table (and above the Columns button): a title.',
+    },
+    {
+      name: '[starTableSummary]',
+      description:
+        'Content slot directly below the table and above the paginator: a total or a short note.',
+    },
+    {
+      name: 'ng-template[starHeaderCell="<field>"]',
+      description:
+        'Content child. Replaces the header label of the column with that field. The sort button, the sort icon and rank, the resize handle and aria-sort stay. On a sortable column the content is inside the sort button: do not add focusable elements. The context has $implicit (the column).',
+    },
+    {
+      name: 'ng-template[starGroup]',
+      description:
+        'Content child. Replaces the label and the row count of a group heading (groupBy). The toggle button and aria-expanded stay. The context has $implicit (the group label) and count (the rows of that group on the current page). Do not put focusable elements in it: the content goes inside the toggle button.',
+    },
+    {
+      name: 'ng-template[starEmpty]',
+      description:
+        "Content child. Replaces the empty message. $implicit is the globalFilter text, '' when there is none.",
+    },
+    {
+      name: 'ng-template[starLoading]',
+      description:
+        'Content child. Replaces the skeleton rows while loading is true: one row with one cell over all columns.',
     },
     {
       name: 'ng-template[starCell="<field>"]',
@@ -458,6 +550,11 @@ readonly severityOf = (status: Order['status']) => STATUS_SEVERITY[status];`;
       name: 'StarCellContext<T>',
       type: '{ $implicit: T; value: unknown; index: number }',
       description: 'Context of a starCell template.',
+    },
+    {
+      name: 'StarHeaderCellContext<T>',
+      type: '{ $implicit: StarColumn<T> }',
+      description: 'Context of a starHeaderCell template.',
     },
     {
       name: 'StarRowContext<T>',

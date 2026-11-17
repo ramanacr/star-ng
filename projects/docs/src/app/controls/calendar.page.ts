@@ -1,10 +1,18 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { compareDays, isoDay, StarCalendar, StarDateRange } from '@star-ng/ui/date-picker';
+import { StarFooterTemplate, StarHeaderTemplate } from '@star-ng/ui/core';
+import {
+  compareDays,
+  isoDay,
+  sameDay,
+  StarCalendar,
+  StarDateRange,
+  StarDateTemplate,
+} from '@star-ng/ui/date-picker';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
   selector: 'docs-calendar-page',
-  imports: [DOCS, StarCalendar],
+  imports: [DOCS, StarCalendar, StarDateTemplate, StarHeaderTemplate, StarFooterTemplate],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <docs-page
@@ -88,6 +96,38 @@ import { DOCS, DocsRow } from '../shared/docs';
         </div>
       </docs-example>
 
+      <docs-example
+        heading="Slots"
+        source="calendar/slots"
+        [script]="slotsScript"
+        note="Content child templates change parts of the calendar. starDate replaces the content of a day button and gets the date, today, selected, disabled and outside: here a dot marks the days when an invoice is due. The button keeps its accessible name, so a screen reader does not announce the dot: give the information in text too. starHeader adds content above the calendar and starFooter below the grid. Do not put buttons or links in starDate: the calendar owns the focus and the keys."
+      >
+        <div class="docs-stack">
+          <star-calendar
+            class="star-calendar--inline"
+            [selected]="payDate()"
+            (dateSelect)="payDate.set($event)"
+            locale="en-GB"
+            [firstDayOfWeek]="1"
+          >
+            <ng-template starHeader>
+              <p class="docs-output docs-due-note">Invoices due in November 2026</p>
+            </ng-template>
+            <ng-template starDate let-date>
+              <span class="docs-due" [class.docs-due--marked]="isDue(date)">{{
+                date.getDate()
+              }}</span>
+            </ng-template>
+            <ng-template starFooter>
+              <p class="docs-output docs-due-note">
+                A dot marks a due date: 5, 12 and 26 November.
+              </p>
+            </ng-template>
+          </star-calendar>
+          <p class="docs-output" role="status">Payment date: {{ iso(payDate()) }}</p>
+        </div>
+      </docs-example>
+
       <h2>Right-to-left</h2>
       <p>
         The grid follows the page direction: the week starts on the right and Arrow left moves to
@@ -96,7 +136,7 @@ import { DOCS, DocsRow } from '../shared/docs';
         Right-to-left guide.
       </p>
 
-      <docs-api [of]="['StarCalendar']" [cssVars]="cssVars" [keyboard]="keyboard" />
+      <docs-api [of]="['StarCalendar']" [slots]="slots" [cssVars]="cssVars" [keyboard]="keyboard" />
 
       <h2>Technical notes</h2>
       <p>
@@ -106,6 +146,25 @@ import { DOCS, DocsRow } from '../shared/docs';
         calendar that sits on the page. The date picker popup does not use it.
       </p>
     </docs-page>
+  `,
+  styles: `
+    .docs-due {
+      position: relative;
+    }
+    .docs-due--marked::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      width: 0.3rem;
+      height: 0.3rem;
+      border-radius: 50%;
+      background: currentColor;
+      transform: translateX(-50%);
+    }
+    .docs-due-note {
+      margin: var(--star-space-2) 0;
+    }
   `,
 })
 export class CalendarPage {
@@ -153,6 +212,53 @@ pick(date: Date): void {
   protected readonly monthsScript = `readonly stay = signal<Date | null>(new Date(2026, 10, 17));
 readonly minDate = new Date(2026, 9, 12);
 readonly maxDate = new Date(2026, 11, 20);`;
+
+  protected readonly dueDates: readonly Date[] = [
+    new Date(2026, 10, 5),
+    new Date(2026, 10, 12),
+    new Date(2026, 10, 26),
+  ];
+  protected readonly payDate = signal<Date | null>(new Date(2026, 10, 17));
+  protected readonly isDue = (date: Date) => this.dueDates.some((due) => sameDay(due, date));
+  protected readonly slotsScript = `// Import StarHeaderTemplate and StarFooterTemplate from '@star-ng/ui/core' and StarDateTemplate in the component imports.
+readonly dueDates: readonly Date[] = [
+  new Date(2026, 10, 5),
+  new Date(2026, 10, 12),
+  new Date(2026, 10, 26),
+];
+readonly payDate = signal<Date | null>(new Date(2026, 10, 17));
+readonly isDue = (date: Date) => this.dueDates.some((due) => sameDay(due, date));
+readonly iso = (date: Date | null) => (date ? isoDay(date) : 'none');
+
+// Component styles: the dot below the day number.
+// .docs-due { position: relative; }
+// .docs-due--marked::after {
+//   content: '';
+//   position: absolute;
+//   top: 100%;
+//   left: 50%;
+//   width: 0.3rem;
+//   height: 0.3rem;
+//   border-radius: 50%;
+//   background: currentColor;
+//   transform: translateX(-50%);
+// }`;
+
+  protected readonly slots: readonly DocsRow[] = [
+    {
+      name: 'ng-template[starDate]',
+      description:
+        'Content child. Replaces the content of a day button. The button keeps its accessible name (the full date), aria-current, aria-disabled and the keys. The context has $implicit (the date), today, selected, disabled and outside. Do not add focusable elements: the calendar owns the keys. With two or more months the template applies to every month.',
+    },
+    {
+      name: 'ng-template[starHeader]',
+      description: 'Content child. Content at the top of the calendar, above the month and year.',
+    },
+    {
+      name: 'ng-template[starFooter]',
+      description: 'Content child. Content at the bottom of the calendar, below the grid.',
+    },
+  ];
 
   protected readonly cssVars: readonly DocsRow[] = [
     { name: '--star-primary', description: 'Chosen day and the marker of today.' },

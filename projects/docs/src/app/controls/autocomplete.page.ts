@@ -5,6 +5,7 @@ import {
   StarAutoCompleteSearch,
   StarMultiAutoComplete,
 } from '@star-ng/ui/autocomplete';
+import { STAR_SLOTS } from '@star-ng/ui/core';
 import { StarField } from '@star-ng/ui/field';
 import { StarOptionTemplate } from '@star-ng/ui/select';
 import { DOCS, DocsRow } from '../shared/docs';
@@ -15,6 +16,12 @@ interface Person {
   readonly team: string;
 }
 
+interface OfficeCity {
+  readonly code: string;
+  readonly name: string;
+  readonly country: string;
+}
+
 @Component({
   selector: 'docs-autocomplete-page',
   imports: [
@@ -22,6 +29,7 @@ interface Person {
     StarAutoComplete,
     StarMultiAutoComplete,
     StarOptionTemplate,
+    STAR_SLOTS,
     StarField,
     FormField,
   ],
@@ -173,6 +181,37 @@ interface Person {
         </div>
       </docs-example>
 
+      <docs-example
+        heading="Slots"
+        source="autocomplete/slots"
+        [script]="slotsScript"
+        note="starHeader and starFooter sit above and below the list. starEmpty gets the typed text. starGroup gets the label and the count. starLoading shows while loading is true."
+      >
+        <div class="docs-stack">
+          <star-autocomplete
+            [options]="officeCities"
+            [(value)]="officeCity"
+            optionLabel="name"
+            optionValue="code"
+            optionGroup="country"
+            placeholder="Search a city"
+            ariaLabel="Office city"
+          >
+            <ng-template starHeader>
+              <p class="docs-output">Cities with an office</p>
+            </ng-template>
+            <ng-template starGroup let-country let-count="count">
+              {{ country }} ({{ count }})
+            </ng-template>
+            <ng-template starEmpty let-text>No city matches {{ text }}.</ng-template>
+            <ng-template starFooter>
+              <p class="docs-output">{{ officeCities.length }} cities</p>
+            </ng-template>
+          </star-autocomplete>
+          <p class="docs-output" role="status">City: {{ officeCity() ?? 'none' }}</p>
+        </div>
+      </docs-example>
+
       <h2>Right-to-left</h2>
       <p>
         The suggestion list is aligned with the start edge of the field: the right edge in a
@@ -225,7 +264,14 @@ export class AutocompletePage {
     (_, index) => `Ticket ${String(index + 1).padStart(5, '0')}`,
   );
 
+  protected readonly officeCities: readonly OfficeCity[] = [
+    { code: 'BER', name: 'Berlin', country: 'Germany' },
+    { code: 'PAR', name: 'Paris', country: 'France' },
+    { code: 'PUN', name: 'Pune', country: 'India' },
+  ];
+
   protected readonly city = signal<string | null>(null);
+  protected readonly officeCity = signal<string | null>(null);
   protected readonly dropdownCity = signal<string | null>(null);
   protected readonly person = signal<string | null>(null);
   protected readonly chosen = signal<readonly string[]>([]);
@@ -268,6 +314,13 @@ search(event: StarAutoCompleteSearch): void {
     this.searching.set(false);
   }, 400);
 }`;
+  protected readonly slotsScript = `// Import STAR_SLOTS from '@star-ng/ui/core' in the component imports.
+readonly officeCities: readonly OfficeCity[] = [
+  { code: 'BER', name: 'Berlin', country: 'Germany' },
+  { code: 'PAR', name: 'Paris', country: 'France' },
+  { code: 'PUN', name: 'Pune', country: 'India' },
+];
+readonly officeCity = signal<string | null>(null);`;
   protected readonly largeScript = `readonly tickets: readonly string[] = Array.from(
   { length: 10_000 },
   (_, index) => \`Ticket \${String(index + 1).padStart(5, '0')}\`,
@@ -283,6 +336,28 @@ readonly task = form(this.taskModel, (path) => {
       name: 'ng-template[starOption]',
       description:
         'Content child. Draws the text of one suggestion. The context has $implicit, selected and index. A template replaces the match highlight.',
+    },
+    {
+      name: 'ng-template[starHeader]',
+      description: 'Content child. Content at the top of the suggestion panel, above the list.',
+    },
+    {
+      name: 'ng-template[starFooter]',
+      description: 'Content child. Content at the bottom of the suggestion panel, below the list.',
+    },
+    {
+      name: 'ng-template[starEmpty]',
+      description: 'Content child. Replaces the empty message. $implicit is the typed text.',
+    },
+    {
+      name: 'ng-template[starLoading]',
+      description:
+        'Content child. Shown while the loading input is true. Set loading while your completeMethod request runs.',
+    },
+    {
+      name: 'ng-template[starGroup]',
+      description:
+        'Content child. Replaces the text of a group heading. $implicit is the label and count is the number of suggestions in the group.',
     },
   ];
   protected readonly cssVars: readonly DocsRow[] = [

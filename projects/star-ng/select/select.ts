@@ -1,8 +1,10 @@
 import { CdkConnectedOverlay, CdkOverlayOrigin } from '@angular/cdk/overlay';
 import { NgTemplateOutlet } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, model } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, forwardRef, model } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
+import { STAR_SLOT_HOST, starSlot } from '@star-ng/ui/core';
 import { StarOptionListBase } from './option-list-base';
+import { StarSelectedContext } from './select-slots';
 
 /**
  * Single-choice dropdown (PrimeNG `p-select`): typed options, `optionLabel` / `optionValue` /
@@ -19,6 +21,7 @@ import { StarOptionListBase } from './option-list-base';
   selector: 'star-select',
   imports: [CdkConnectedOverlay, CdkOverlayOrigin, NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarSelect) }],
   host: {
     class: 'star-select',
     '[class.star-select--open]': 'open()',
@@ -49,7 +52,13 @@ import { StarOptionListBase } from './option-list-base';
         (blur)="onTriggerBlur()"
       >
         @if (selectedOption(); as option) {
-          <span class="star-select__value">{{ labelOf(option) }}</span>
+          <span class="star-select__value">
+            @if (selectedSlot(); as custom) {
+              <ng-container *ngTemplateOutlet="custom; context: { $implicit: option }" />
+            } @else {
+              <ng-container>{{ labelOf(option) }}</ng-container>
+            }
+          </span>
         } @else {
           <span class="star-select__placeholder">{{
             placeholder() ?? text.selectPlaceholder
@@ -63,7 +72,11 @@ import { StarOptionListBase } from './option-list-base';
           [attr.aria-label]="text.clear"
           (click)="clear()"
         >
-          <i class="ph-bold ph-x" aria-hidden="true"></i>
+          @if (iconSlot('clear'); as icon) {
+            <span aria-hidden="true"><ng-container *ngTemplateOutlet="icon" /></span>
+          } @else {
+            <i class="ph-bold ph-x" aria-hidden="true"></i>
+          }
         </button>
       }
       @if (loading()) {
@@ -73,7 +86,13 @@ import { StarOptionListBase } from './option-list-base';
           [attr.aria-label]="text.loading"
         ></i>
       } @else {
-        <i class="ph-bold ph-caret-down star-select__caret" aria-hidden="true"></i>
+        @if (iconSlot('dropdown'); as icon) {
+          <span class="star-select__caret" aria-hidden="true"
+            ><ng-container *ngTemplateOutlet="icon"
+          /></span>
+        } @else {
+          <i class="ph-bold ph-caret-down star-select__caret" aria-hidden="true"></i>
+        }
       }
     </div>
 
@@ -89,9 +108,16 @@ import { StarOptionListBase } from './option-list-base';
       (overlayOutsideClick)="onOutsideClick($event)"
     >
       <div class="star-panel" (mousedown)="onPanelMousedown($event)">
+        @if (headerSlot(); as header) {
+          <ng-container *ngTemplateOutlet="header" />
+        }
         @if (filter()) {
           <div class="star-panel__filter">
-            <i class="ph-bold ph-magnifying-glass" aria-hidden="true"></i>
+            @if (iconSlot('filter'); as icon) {
+              <span aria-hidden="true"><ng-container *ngTemplateOutlet="icon" /></span>
+            } @else {
+              <i class="ph-bold ph-magnifying-glass" aria-hidden="true"></i>
+            }
             <input
               #filterInput
               type="text"
@@ -119,6 +145,11 @@ import { StarOptionListBase } from './option-list-base';
           [attr.aria-labelledby]="ariaLabelledBy()"
           (scroll)="onListScroll($event)"
         >
+          @if (loadingRow(); as loader) {
+            <li class="star-listbox__empty" role="presentation">
+              <ng-container *ngTemplateOutlet="loader" />
+            </li>
+          }
           @if (virtualWindow().before) {
             <li
               class="star-listbox__spacer"
@@ -128,7 +159,13 @@ import { StarOptionListBase } from './option-list-base';
           }
           @for (row of renderedRows(); track row.key) {
             @if (row.kind === 'group') {
-              <li class="star-listbox__group" role="presentation" [id]="row.id">{{ row.label }}</li>
+              <li class="star-listbox__group" role="presentation" [id]="row.id">
+                @if (groupSlot(); as custom) {
+                  <ng-container *ngTemplateOutlet="custom; context: groupContext(row.label)" />
+                } @else {
+                  <ng-container>{{ row.label }}</ng-container>
+                }
+              </li>
             } @else {
               @let option = row.option;
               @let i = row.index;
@@ -158,12 +195,26 @@ import { StarOptionListBase } from './option-list-base';
                   }
                 </span>
                 @if (isSelected(option)) {
-                  <i class="ph-bold ph-check star-listbox__check" aria-hidden="true"></i>
+                  @if (iconSlot('check'); as icon) {
+                    <span class="star-listbox__check" aria-hidden="true"
+                      ><ng-container *ngTemplateOutlet="icon"
+                    /></span>
+                  } @else {
+                    <i class="ph-bold ph-check star-listbox__check" aria-hidden="true"></i>
+                  }
                 }
               </li>
             }
           } @empty {
-            <li class="star-listbox__empty" role="presentation">{{ emptyText() }}</li>
+            @if (!loadingRow()) {
+              <li class="star-listbox__empty" role="presentation">
+                @if (emptySlot(); as custom) {
+                  <ng-container *ngTemplateOutlet="custom; context: emptyContext()" />
+                } @else {
+                  <ng-container>{{ emptyText() }}</ng-container>
+                }
+              </li>
+            }
           }
           @if (virtualWindow().after) {
             <li
@@ -173,6 +224,9 @@ import { StarOptionListBase } from './option-list-base';
             ></li>
           }
         </ul>
+        @if (footerSlot(); as footer) {
+          <ng-container *ngTemplateOutlet="footer" />
+        }
       </div>
     </ng-template>
   `,
@@ -184,6 +238,12 @@ export class StarSelect<TOption = unknown, TValue = TOption>
   readonly value = model<TValue | null>(null);
 
   protected readonly closeOnChoose = true;
+
+  protected readonly selectedSlot = starSlot<StarSelectedContext<TOption>>(
+    this.slots,
+    this,
+    'selected',
+  );
 
   /** The option that matches the current value, or `undefined`. */
   protected readonly selectedOption = computed(() => {
