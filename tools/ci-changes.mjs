@@ -126,7 +126,7 @@ export const RULES = [
   },
   {
     name: 'build tools',
-    test: /^tools\/(build-pages|build-styles|check-names|check-package|gen-docs-data|pages-fallback|release-version|smoke-consumer|visual-update)\.mjs$/,
+    test: /^tools\/(build-pages|build-styles|check-names|check-package|gen-docs-data|pages-fallback|release-notes|release-version|smoke-consumer|visual-update)(\.test)?\.mjs$/,
     needs: BUILD,
     why: 'a changed generator output shows as a change in projects/docs (a full run); the rest do not touch the docs build',
   },
