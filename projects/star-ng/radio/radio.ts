@@ -11,6 +11,7 @@ import {
   output,
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
+import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/ui/field';
 
 /**
  * Radio group (PrimeNG `p-radiobutton` used as a group). The group owns the value; each
@@ -31,7 +32,8 @@ import type { FormValueControl } from '@angular/forms/signals';
     role: 'radiogroup',
     '[class.star-radio-group--horizontal]': "orientation() === 'horizontal'",
     '[attr.aria-label]': 'ariaLabel()',
-    '[attr.aria-labelledby]': 'ariaLabelledBy()',
+    '[attr.aria-labelledby]': 'labelledBy()',
+    '[attr.aria-describedby]': 'fieldDescribedBy()',
     '[attr.aria-required]': 'required() || null',
     '[attr.aria-invalid]': 'showInvalid() || null',
     '[attr.aria-disabled]': 'disabled() || null',
@@ -54,8 +56,17 @@ export class StarRadioGroup<T = unknown> implements FormValueControl<T | null> {
 
   private readonly fallbackName = inject(_IdGenerator).getId('star-radio-group-');
   readonly groupName = computed(() => this.name() || this.fallbackName);
-  protected readonly showInvalid = computed(() => this.invalid() && this.touched());
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+  /** The parent `star-field` when it labels the group (a radio group is not labelable). */
+  private readonly field = injectStarFieldLink(null, () => this.focus());
+  /** Invalid after touch, or while the parent `star-field` shows an error. */
+  protected readonly showInvalid = computed(
+    () => (this.invalid() && this.touched()) || !!this.field?.errorText(),
+  );
+  protected readonly labelledBy = computed(() =>
+    starFieldLabelledBy(this.field, this.ariaLabel(), this.ariaLabelledBy()),
+  );
+  protected readonly fieldDescribedBy = computed(() => starJoinIds(this.field?.describedBy()));
 
   isSelected(value: T): boolean {
     return Object.is(this.value(), value);

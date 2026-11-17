@@ -39,6 +39,7 @@ import {
   starSlotMap,
   StarWindowRow,
 } from '@star-ng/ui/core';
+import { StarField, starFieldLabelledBy, starJoinIds } from '@star-ng/ui/field';
 
 /** Context of the custom option template: `<ng-template starOption let-option let-selected="selected">`. */
 export interface StarOptionContext<T> {
@@ -94,6 +95,8 @@ export abstract class StarOptionListBase<TOption, TValue> {
   private readonly ids = inject(_IdGenerator);
   private readonly document = inject(DOCUMENT);
   private readonly injector = inject(Injector);
+  /** The parent `star-field`, if any: its label, hint and error name and describe the control. */
+  protected readonly field = inject(StarField, { optional: true });
 
   readonly options = input<readonly TOption[]>([]);
   readonly optionLabel = input<StarOptionKey<TOption> | null>(null);
@@ -162,7 +165,16 @@ export abstract class StarOptionListBase<TOption, TValue> {
   protected readonly open = signal(false);
   protected readonly filterValue = signal('');
   protected readonly activeIndex = signal(-1);
-  protected readonly showInvalid = computed(() => this.invalid() && this.touched());
+  /** Invalid after touch, or while the parent `star-field` shows an error. */
+  protected readonly showInvalid = computed(
+    () => (this.invalid() && this.touched()) || !!this.field?.errorText(),
+  );
+  /** `aria-labelledby` of the trigger: `ariaLabelledBy`, else the `star-field` label. */
+  protected readonly labelledBy = computed(() =>
+    starFieldLabelledBy(this.field, this.ariaLabel(), this.ariaLabelledBy()),
+  );
+  /** `aria-describedby` of the trigger: the hint or error of the parent `star-field`. */
+  protected readonly fieldDescribedBy = computed(() => starJoinIds(this.field?.describedBy()));
   protected readonly interactive = computed(() => !this.disabled() && !this.readonly());
 
   protected readonly visibleOptions = computed(() => {

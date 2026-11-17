@@ -42,6 +42,12 @@ import {
   starSlotMap,
 } from '@star-ng/ui/core';
 import {
+  injectStarFieldLink,
+  StarField,
+  starFieldLabelledBy,
+  starJoinIds,
+} from '@star-ng/ui/field';
+import {
   checkStates,
   flattenVisible,
   navigationTarget,
@@ -185,6 +191,7 @@ function filterNodes(nodes: readonly StarTreeNode[], query: string): StarTreeNod
         role="tree"
         [itemSize]="virtualItemSize()"
         [attr.aria-label]="ariaLabel()"
+        [attr.aria-labelledby]="labelledBy()"
         [attr.aria-multiselectable]="multiselectable()"
         [attr.tabindex]="activeRendered() ? -1 : 0"
         [style.height]="viewportHeight()"
@@ -207,6 +214,7 @@ function filterNodes(nodes: readonly StarTreeNode[], query: string): StarTreeNod
         class="star-tree__list"
         role="tree"
         [attr.aria-label]="ariaLabel()"
+        [attr.aria-labelledby]="labelledBy()"
         [attr.aria-multiselectable]="multiselectable()"
         [style.max-height]="scrollHeight()"
       >
@@ -274,6 +282,12 @@ export class StarTree implements FormValueControl<readonly string[]> {
   );
   protected readonly emptyContext = computed<StarEmptyContext>(() => ({ $implicit: this.query() }));
   private readonly viewport = viewChild(CdkVirtualScrollViewport);
+  /**
+   * The parent `star-field` when it labels the tree (a `ul` tree is not labelable). Inside a tree
+   * select the select owns the label, so this is `null` there.
+   */
+  private readonly field = injectStarFieldLink(null, () => this.focus());
+  protected readonly labelledBy = computed(() => starFieldLabelledBy(this.field, this.ariaLabel()));
   private readonly filtered = computed(() => filterNodes(this.nodes(), this.query()));
 
   private readonly index = computed(() => {
@@ -616,7 +630,7 @@ const POSITIONS: ConnectedPosition[] = [
     class: 'star-select star-tree-select',
     '[class.star-select--open]': 'open()',
     '[class.star-select--disabled]': 'disabled()',
-    '[class.star-select--invalid]': 'invalid() && touched()',
+    '[class.star-select--invalid]': 'showInvalid()',
   },
   template: `
     <div class="star-select__control" cdkOverlayOrigin #origin="cdkOverlayOrigin">
@@ -629,6 +643,9 @@ const POSITIONS: ConnectedPosition[] = [
         [disabled]="disabled()"
         [attr.aria-expanded]="open()"
         [attr.aria-label]="triggerName()"
+        [attr.aria-labelledby]="labelledBy()"
+        [attr.aria-describedby]="fieldDescribedBy()"
+        [attr.aria-invalid]="showInvalid() || null"
         (click)="open.set(!open())"
         (keydown.arrowdown)="$event.preventDefault(); open.set(true)"
         (blur)="!open() && touch.emit()"
@@ -679,7 +696,7 @@ const POSITIONS: ConnectedPosition[] = [
           scrollHeight="18rem"
           [virtualScroll]="virtualScroll()"
           [virtualItemSize]="virtualItemSize()"
-          [ariaLabel]="ariaLabel()"
+          [ariaLabel]="ariaLabel() ?? (field?.label() || null)"
           [nodeTemplate]="nodeSlot()"
           [emptyTemplate]="emptySlot()"
           [toggleIconTemplate]="toggleIcon()"
@@ -697,6 +714,8 @@ export class StarTreeSelect implements FormValueControl<readonly string[]> {
   private readonly directionSync = inject(StarDirectionService);
   protected readonly text = inject(STAR_UI_TEXT);
   protected readonly inputId = inject(_IdGenerator).getId('star-tree-select-');
+  /** The parent `star-field`, if any: its label, hint and error name and describe the trigger. */
+  protected readonly field = inject(StarField, { optional: true });
   protected readonly positions = POSITIONS;
 
   readonly value = model<readonly string[]>([]);
@@ -756,6 +775,29 @@ export class StarTreeSelect implements FormValueControl<readonly string[]> {
     if (!label) return null;
     return `${label}: ${this.summary() || (this.placeholder() ?? this.text.selectPlaceholder)}`;
   });
+
+  /** Invalid after touch, or while the parent `star-field` shows an error. */
+  protected readonly showInvalid = computed(
+    () => (this.invalid() && this.touched()) || !!this.field?.errorText(),
+  );
+  /**
+   * `aria-labelledby` without `ariaLabel`: the `star-field` label and the button itself, so the
+   * name is the label and the text on the button (WCAG 2.5.3).
+   */
+  protected readonly labelledBy = computed(() => {
+    const label = starFieldLabelledBy(this.field, this.ariaLabel());
+    return label ? `${label} ${this.inputId}` : null;
+  });
+  protected readonly fieldDescribedBy = computed(() => starJoinIds(this.field?.describedBy()));
+
+  constructor() {
+    // A label `for` a button would click it (and open the panel). The trigger takes its name with
+    // aria-labelledby instead, and a click on the label only focuses it.
+    this.field?.linkControl(
+      () => this.inputId,
+      () => this.focus(),
+    );
+  }
 
   protected close(focus = false): void {
     if (!this.open()) return;

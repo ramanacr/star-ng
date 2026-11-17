@@ -103,6 +103,8 @@ export abstract class StarAutoCompleteBase<TOption, TValue> extends StarOptionLi
 
   constructor() {
     super();
+    // The trigger is a native input: the field label points at it with \`for\`.
+    this.field?.linkControl(this.inputId);
     inject(DestroyRef).onDestroy(() => clearTimeout(this.searchTimer));
     // New results: show them from the top and highlight the first one (autoHighlight) or nothing.
     effect(() => {
@@ -254,6 +256,7 @@ const TEMPLATE = `
         [attr.aria-label]="ariaLabel()"
         [attr.aria-labelledby]="ariaLabelledBy()"
         [attr.aria-required]="required() || null"
+        [attr.aria-describedby]="fieldDescribedBy()"
         [attr.aria-invalid]="showInvalid() || null"
         [attr.aria-expanded]="panelVisible()"
         [attr.aria-controls]="panelVisible() ? listId : null"
@@ -309,7 +312,7 @@ const TEMPLATE = `
         [style.--star-item-size.px]="virtualScroll() ? virtualItemSize() : null"
         [style.max-height]="scrollHeight()"
         [attr.aria-label]="ariaLabel()"
-        [attr.aria-labelledby]="ariaLabelledBy()"
+        [attr.aria-labelledby]="labelledBy()"
         (scroll)="onListScroll($event)"
       >
         @if (loadingRow(); as loader) {
