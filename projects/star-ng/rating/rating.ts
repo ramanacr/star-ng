@@ -4,6 +4,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  ElementRef,
   inject,
   input,
   model,
@@ -12,6 +13,7 @@ import {
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
 import { STAR_UI_TEXT } from '@star-ng/ui/core';
+import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/ui/field';
 
 /**
  * Star rating (PrimeNG `p-rating`) as a native radio group: Arrow keys change the rating,
@@ -24,7 +26,9 @@ import { STAR_UI_TEXT } from '@star-ng/ui/core';
   host: {
     class: 'star-rating',
     role: 'radiogroup',
-    '[attr.aria-label]': 'ariaLabel() ?? text.ratingLabel',
+    '[attr.aria-label]': 'labelledBy() ? null : (ariaLabel() ?? text.ratingLabel)',
+    '[attr.aria-labelledby]': 'labelledBy()',
+    '[attr.aria-describedby]': 'fieldDescribedBy()',
     '[class.star-rating--readonly]': 'readonly() || disabled()',
     '(mouseleave)': 'hover.set(null)',
   },
@@ -60,6 +64,17 @@ export class StarRating implements FormValueControl<number | null> {
   readonly disabled = input(false, { transform: booleanAttribute });
   readonly readonly = input(false, { transform: booleanAttribute });
   readonly touch = output<void>();
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+  /** The parent `star-field` when it labels the rating (a radio group is not labelable). */
+  private readonly field = injectStarFieldLink(null, () => this.focus());
+  protected readonly labelledBy = computed(() => starFieldLabelledBy(this.field, this.ariaLabel()));
+  protected readonly fieldDescribedBy = computed(() => starJoinIds(this.field?.describedBy()));
+
+  /** Focuses the chosen star, else the first one. */
+  focus(options?: FocusOptions): void {
+    const radios = [...this.host.nativeElement.querySelectorAll<HTMLInputElement>('input')];
+    (radios.find((radio) => radio.checked) ?? radios[0])?.focus(options);
+  }
 
   protected readonly hover = signal<number | null>(null);
   protected readonly stars = computed(() => Array.from({ length: this.count() }, (_, i) => i + 1));

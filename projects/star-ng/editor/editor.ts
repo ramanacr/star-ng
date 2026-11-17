@@ -3,6 +3,7 @@ import {
   booleanAttribute,
   ChangeDetectionStrategy,
   Component,
+  computed,
   ElementRef,
   inject,
   input,
@@ -15,6 +16,7 @@ import {
 import type { FormValueControl } from '@angular/forms/signals';
 import { DomSanitizer } from '@angular/platform-browser';
 import { STAR_UI_TEXT, StarUiText } from '@star-ng/ui/core';
+import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/ui/field';
 import { StarToolbar } from '@star-ng/ui/layout';
 
 interface EditorCommand {
@@ -92,6 +94,8 @@ const COMMANDS: readonly EditorCommand[] = [
       [attr.tabindex]="disabled() ? -1 : 0"
       [attr.contenteditable]="disabled() || readonly() ? 'false' : 'true'"
       [attr.aria-label]="ariaLabel()"
+      [attr.aria-labelledby]="labelledBy()"
+      [attr.aria-describedby]="fieldDescribedBy()"
       [attr.aria-readonly]="readonly() || null"
       [attr.aria-disabled]="disabled() || null"
       [attr.data-placeholder]="placeholder()"
@@ -127,6 +131,10 @@ export class StarEditor implements FormValueControl<string> {
     return this.text[cmd.label] as string;
   }
   private readonly area = viewChild.required<ElementRef<HTMLDivElement>>('area');
+  /** The parent `star-field` when it labels the area (a `div` textbox is not labelable). */
+  private readonly field = injectStarFieldLink(null, () => this.focus());
+  protected readonly labelledBy = computed(() => starFieldLabelledBy(this.field, this.ariaLabel()));
+  protected readonly fieldDescribedBy = computed(() => starJoinIds(this.field?.describedBy()));
   private readonly active = signal<ReadonlySet<string>>(new Set());
   private lastWritten: string | null = null;
 

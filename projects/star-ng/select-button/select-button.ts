@@ -11,6 +11,7 @@ import {
 } from '@angular/core';
 import type { FormCheckboxControl, FormValueControl } from '@angular/forms/signals';
 import { optionText, readOption, starInlineKey, StarOptionKey } from '@star-ng/ui/core';
+import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/ui/field';
 
 /**
  * Segmented choice (PrimeNG `p-selectbutton`). Single mode is a radio group (Arrow keys move and
@@ -25,6 +26,8 @@ import { optionText, readOption, starInlineKey, StarOptionKey } from '@star-ng/u
     class: 'star-segmented',
     '[attr.role]': "multiple() ? 'group' : 'radiogroup'",
     '[attr.aria-label]': 'ariaLabel()',
+    '[attr.aria-labelledby]': 'labelledBy()',
+    '[attr.aria-describedby]': 'fieldDescribedBy()',
     '[attr.aria-disabled]': 'disabled() || null',
     '[class.star-segmented--invalid]': 'invalid() && touched()',
     '[class.star-segmented--sm]': "size() === 'sm'",
@@ -56,6 +59,8 @@ export class StarSelectButton<TOption = unknown, TValue = TOption> implements Fo
   TValue | readonly TValue[] | null
 > {
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+  /** The parent `star-field` when it labels the group (a group is not labelable). */
+  private readonly field = injectStarFieldLink(null, () => this.focus());
 
   readonly value = model<TValue | readonly TValue[] | null>(null);
   readonly options = input<readonly TOption[]>([]);
@@ -72,6 +77,16 @@ export class StarSelectButton<TOption = unknown, TValue = TOption> implements Fo
   readonly invalid = input(false, { transform: booleanAttribute });
   readonly touched = input(false, { transform: booleanAttribute });
   readonly touch = output<void>();
+
+  protected readonly labelledBy = computed(() => starFieldLabelledBy(this.field, this.ariaLabel()));
+  protected readonly fieldDescribedBy = computed(() => starJoinIds(this.field?.describedBy()));
+
+  /** Focuses the button in the tab order (the chosen one, else the first). */
+  focus(options?: FocusOptions): void {
+    const buttons = [...this.host.nativeElement.querySelectorAll<HTMLButtonElement>('button')];
+    const enabled = buttons.filter((button) => !button.disabled);
+    (enabled.find((button) => button.tabIndex === 0) ?? enabled[0])?.focus(options);
+  }
 
   private readonly selectedIndex = computed(() =>
     this.options().findIndex((option) => this.isSelected(option)),

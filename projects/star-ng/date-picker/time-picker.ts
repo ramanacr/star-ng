@@ -17,6 +17,7 @@ import {
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
 import { STAR_UI_TEXT, StarDirectionService } from '@star-ng/ui/core';
+import { injectStarFieldLink, starJoinIds } from '@star-ng/ui/field';
 import { StarTimeColumns } from './time-columns';
 
 const PANEL_POSITIONS: ConnectedPosition[] = [
@@ -44,7 +45,7 @@ const PANEL_POSITIONS: ConnectedPosition[] = [
     class: 'star-time star-date',
     '[class.star-date--open]': 'open()',
     '[class.star-date--disabled]': 'disabled()',
-    '[class.star-date--invalid]': '(invalid() && touched())',
+    '[class.star-date--invalid]': 'showInvalid()',
     '[class.star-date--sm]': "size() === 'sm'",
   },
   template: `
@@ -64,7 +65,8 @@ const PANEL_POSITIONS: ConnectedPosition[] = [
         [required]="required()"
         [attr.aria-label]="ariaLabel()"
         [attr.aria-controls]="open() ? panelId : null"
-        [attr.aria-invalid]="(invalid() && touched()) || null"
+        [attr.aria-describedby]="fieldDescribedBy()"
+        [attr.aria-invalid]="showInvalid() || null"
         (change)="onChange(input.value)"
         (keydown)="onInputKeydown($event)"
         (blur)="touch.emit()"
@@ -127,6 +129,8 @@ export class StarTimePicker implements FormValueControl<string | null> {
   protected readonly text = inject(STAR_UI_TEXT);
   private readonly ids = inject(_IdGenerator);
   private readonly injector = inject(Injector);
+  /** The parent `star-field` when it labels the input (with `for`); its hint or error describes it. */
+  private readonly field = injectStarFieldLink(() => this.inputId());
 
   /** `HH:mm` in the 24-hour clock, or `null`. */
   readonly value = model<string | null>(null);
@@ -157,6 +161,11 @@ export class StarTimePicker implements FormValueControl<string | null> {
   protected readonly panelId = this.ids.getId('star-time-panel-');
   protected readonly open = signal(false);
   protected readonly interactive = computed(() => !this.disabled() && !this.readonly());
+  /** Invalid after touch, or while the parent `star-field` shows an error. */
+  protected readonly showInvalid = computed(
+    () => (this.invalid() && this.touched()) || !!this.field?.errorText(),
+  );
+  protected readonly fieldDescribedBy = computed(() => starJoinIds(this.field?.describedBy()));
   protected readonly step = computed(() => this.minuteStep() * 60);
 
   private readonly input = viewChild.required<ElementRef<HTMLInputElement>>('input');

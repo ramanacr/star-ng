@@ -1,3 +1,4 @@
+import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 import { example, openPage } from './support';
 
@@ -161,5 +162,48 @@ test.describe('forms guide', () => {
     await expect(confirmed).toBeDisabled();
     // A disabled control leaves the value of a Reactive Forms group.
     await expect(live.getByRole('status')).not.toContainText('confirmed');
+  });
+
+  test('a star-field label names and focuses each StarNG control (#55)', async ({ page }) => {
+    await openPage(page, '/guides/forms', 'Forms');
+    const live = example(page, 'Labels');
+    const controls = [
+      { label: 'Warehouse', control: live.getByRole('combobox', { name: 'Warehouse' }) },
+      { label: 'Notify teams', control: live.getByRole('combobox', { name: 'Notify teams' }) },
+      {
+        label: 'Destination city',
+        control: live.getByRole('combobox', { name: 'Destination city' }),
+      },
+      { label: 'Ship date', control: live.getByRole('textbox', { name: 'Ship date' }) },
+      { label: 'Pickup time', control: live.locator('star-time-picker input') },
+      { label: 'Cost center', control: live.getByRole('button', { name: /^Cost center/ }) },
+    ];
+    for (const { label, control } of controls) {
+      // getByLabel finds the control through label[for] or aria-labelledby.
+      const byLabel = live.getByLabel(label);
+      await expect(byLabel, label).toHaveCount(1);
+      await expect(byLabel, label).toBeVisible();
+      await expect(control, label).toHaveCount(1);
+      await live.locator('label.star-field__label', { hasText: label }).click();
+      await expect(control, label).toBeFocused();
+      await expect(byLabel, label).toBeFocused();
+    }
+    await expect(live.getByRole('combobox', { name: 'Warehouse' })).toHaveAccessibleDescription(
+      'The order ships from here.',
+    );
+  });
+
+  test('the Labels example has no axe violations (#55)', async ({ page }) => {
+    await openPage(page, '/guides/forms', 'Forms');
+    await expect(example(page, 'Labels').locator('star-field')).toHaveCount(6);
+    const results = await new AxeBuilder({ page })
+      .include('docs-example .docs-example__live')
+      .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice'])
+      .analyze();
+    const found = results.violations.map(
+      (violation) =>
+        `${violation.id}: ${violation.nodes.map((n) => n.target.join(' ')).join(', ')}`,
+    );
+    expect(found).toEqual([]);
   });
 });

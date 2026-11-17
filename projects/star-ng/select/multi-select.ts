@@ -45,8 +45,9 @@ import { StarChipContext } from './select-slots';
         [attr.aria-controls]="open() ? listId : null"
         [attr.aria-activedescendant]="activeId()"
         [attr.aria-label]="ariaLabel()"
-        [attr.aria-labelledby]="ariaLabelledBy()"
+        [attr.aria-labelledby]="labelledBy()"
         [attr.aria-required]="required() || null"
+        [attr.aria-describedby]="fieldDescribedBy()"
         [attr.aria-invalid]="showInvalid() || null"
         [attr.aria-disabled]="disabled() || null"
         [attr.aria-readonly]="readonly() || null"
@@ -192,7 +193,7 @@ import { StarChipContext } from './select-slots';
           [style.--star-item-size.px]="virtualScroll() ? virtualItemSize() : null"
           [style.max-height]="scrollHeight()"
           [attr.aria-label]="ariaLabel()"
-          [attr.aria-labelledby]="ariaLabelledBy()"
+          [attr.aria-labelledby]="labelledBy()"
           (scroll)="onListScroll($event)"
         >
           @if (loadingRow(); as loader) {
@@ -295,6 +296,13 @@ export class StarMultiSelect<TOption = unknown, TValue = TOption>
   readonly showToggleAll = input(true);
 
   protected readonly closeOnChoose = false;
+
+  constructor() {
+    super();
+    // The trigger is a `div`, not a labelable element: the field label names it with
+    // aria-labelledby, and a click on the label focuses it.
+    this.linkField(() => this.focus());
+  }
 
   protected readonly chipSlot = starSlot<StarChipContext<TOption>>(this.slots, this, 'chip');
 

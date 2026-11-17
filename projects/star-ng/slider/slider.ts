@@ -4,13 +4,16 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  ElementRef,
   inject,
   input,
   model,
   output,
+  viewChild,
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
 import { STAR_UI_TEXT } from '@star-ng/ui/core';
+import { injectStarFieldLink, starJoinIds } from '@star-ng/ui/field';
 
 /**
  * Slider (PrimeNG `p-slider`) on native `<input type="range">`: full keyboard and screen-reader
@@ -33,6 +36,7 @@ import { STAR_UI_TEXT } from '@star-ng/ui/core';
       [value]="value()"
       [disabled]="disabled() || readonly()"
       [attr.aria-label]="ariaLabel()"
+      [attr.aria-describedby]="fieldDescribedBy()"
       [attr.aria-valuetext]="valueText()"
       [style.--star-fill]="percent() + '%'"
       (input)="value.set(+range.value)"
@@ -56,6 +60,9 @@ export class StarSlider implements FormValueControl<number> {
   readonly format = input<(value: number) => string>(String);
   readonly ariaLabel = input<string | null>(null);
   readonly inputId = input(inject(_IdGenerator).getId('star-slider-'));
+  /** The parent `star-field` when it labels the slider: the label points at the input. */
+  private readonly field = injectStarFieldLink(this.inputId);
+  protected readonly fieldDescribedBy = computed(() => starJoinIds(this.field?.describedBy()));
   readonly disabled = input(false, { transform: booleanAttribute });
   readonly readonly = input(false, { transform: booleanAttribute });
   readonly touch = output<void>();
@@ -90,7 +97,8 @@ export class StarSlider implements FormValueControl<number> {
         [step]="step()"
         [value]="value()[0]"
         [disabled]="disabled()"
-        [attr.aria-label]="text.sliderMinimum(ariaLabel() ?? '')"
+        [attr.aria-label]="text.sliderMinimum(groupLabel())"
+        [attr.aria-describedby]="fieldDescribedBy()"
         [attr.aria-valuetext]="format()(value()[0])"
         (input)="setLow(+low.value, low)"
         (blur)="touch.emit()"
@@ -104,7 +112,8 @@ export class StarSlider implements FormValueControl<number> {
         [step]="step()"
         [value]="value()[1]"
         [disabled]="disabled()"
-        [attr.aria-label]="text.sliderMaximum(ariaLabel() ?? '')"
+        [attr.aria-label]="text.sliderMaximum(groupLabel())"
+        [attr.aria-describedby]="fieldDescribedBy()"
         [attr.aria-valuetext]="format()(value()[1])"
         (input)="setHigh(+high.value, high)"
         (blur)="touch.emit()"
@@ -128,6 +137,21 @@ export class StarRangeSlider implements FormValueControl<readonly [number, numbe
   readonly ariaLabel = input<string | null>(null);
   readonly disabled = input(false, { transform: booleanAttribute });
   readonly touch = output<void>();
+
+  private readonly low = viewChild.required<ElementRef<HTMLInputElement>>('low');
+  /**
+   * The parent `star-field` when it labels the slider. Two inputs share one label, so the label
+   * has no `for`: each input names itself with the label text, and a click focuses the low one.
+   */
+  private readonly field = injectStarFieldLink(null, () => this.focus());
+  /** `ariaLabel`, else the `star-field` label text. */
+  protected readonly groupLabel = computed(() => this.ariaLabel() ?? (this.field?.label() || ''));
+  protected readonly fieldDescribedBy = computed(() => starJoinIds(this.field?.describedBy()));
+
+  /** Focuses the handle of the low value. */
+  focus(options?: FocusOptions): void {
+    this.low().nativeElement.focus(options);
+  }
 
   private toPercent(value: number): number {
     return ((value - this.bounds()[0]) / Math.max(1, this.bounds()[1] - this.bounds()[0])) * 100;

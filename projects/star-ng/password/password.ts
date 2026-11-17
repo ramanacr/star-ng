@@ -14,7 +14,7 @@ import {
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
 import { STAR_UI_TEXT, StarUiText } from '@star-ng/ui/core';
-import { StarField } from '@star-ng/ui/field';
+import { injectStarFieldLink } from '@star-ng/ui/field';
 
 export interface StarPasswordRule {
   readonly label: string;
@@ -117,7 +117,7 @@ export function starPasswordRules(text: StarUiText, minLength = 12): readonly St
 })
 export class StarPassword implements FormValueControl<string> {
   protected readonly text = inject(STAR_UI_TEXT);
-  private readonly field = inject(StarField, { optional: true });
+  private readonly field = injectStarFieldLink(() => this.inputId());
   private readonly ids = inject(_IdGenerator);
 
   readonly value = model('');
@@ -155,9 +155,6 @@ export class StarPassword implements FormValueControl<string> {
         .join(' ') || null,
   );
 
-  constructor() {
-    this.field?.linkControl(this.inputId);
-  }
   protected readonly masked = signal(true);
   protected readonly bars = [0, 1, 2, 3];
   private readonly input = viewChild.required<ElementRef<HTMLInputElement>>('input');

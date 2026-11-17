@@ -12,6 +12,7 @@ import {
   viewChild,
 } from '@angular/core';
 import type { FormCheckboxControl } from '@angular/forms/signals';
+import { injectStarFieldLink, starJoinIds } from '@star-ng/ui/field';
 
 /**
  * Checkbox (PrimeNG `p-checkbox` binary mode). Native `<input type="checkbox">` for full
@@ -43,7 +44,7 @@ import type { FormCheckboxControl } from '@angular/forms/signals';
         [attr.aria-invalid]="showInvalid() || null"
         [attr.aria-readonly]="readonly() || null"
         [attr.aria-label]="ariaLabel()"
-        [attr.aria-describedby]="ariaDescribedBy()"
+        [attr.aria-describedby]="describedBy()"
         (change)="onChange(box)"
         (blur)="touch.emit()"
       />
@@ -78,8 +79,16 @@ export class StarCheckbox implements FormCheckboxControl {
 
   private readonly box = viewChild.required<ElementRef<HTMLInputElement>>('box');
 
-  /** Errors show only after the user has visited the control. */
-  protected readonly showInvalid = computed(() => this.invalid() && this.touched());
+  /** The parent `star-field` when it labels the box: the label points at the input. */
+  private readonly field = injectStarFieldLink(this.inputId);
+  /** Errors show only after the user has visited the control, or while the field shows one. */
+  protected readonly showInvalid = computed(
+    () => (this.invalid() && this.touched()) || !!this.field?.errorText(),
+  );
+  /** `ariaDescribedBy` and the hint or error of the parent `star-field`. */
+  protected readonly describedBy = computed(() =>
+    starJoinIds(this.ariaDescribedBy(), this.field?.describedBy()),
+  );
 
   protected onChange(box: HTMLInputElement): void {
     if (this.readonly()) {

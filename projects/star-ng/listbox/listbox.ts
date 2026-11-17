@@ -48,6 +48,7 @@ import {
   starSlot,
   StarWindowRow,
 } from '@star-ng/ui/core';
+import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/ui/field';
 import { StarOptionTemplate } from '@star-ng/ui/select';
 
 /**
@@ -100,6 +101,8 @@ import { StarOptionTemplate } from '@star-ng/ui/select';
         [maxBufferPx]="itemSize() * 8"
         [attr.tabindex]="disabled() ? -1 : 0"
         [attr.aria-label]="ariaLabel()"
+        [attr.aria-labelledby]="labelledBy()"
+        [attr.aria-describedby]="fieldDescribedBy()"
         [attr.aria-multiselectable]="multiple() || null"
         [attr.aria-activedescendant]="activeId()"
         [attr.aria-disabled]="disabled() || null"
@@ -177,6 +180,8 @@ import { StarOptionTemplate } from '@star-ng/ui/select';
         [id]="listId"
         [attr.tabindex]="disabled() ? -1 : 0"
         [attr.aria-label]="ariaLabel()"
+        [attr.aria-labelledby]="labelledBy()"
+        [attr.aria-describedby]="fieldDescribedBy()"
         [attr.aria-multiselectable]="multiple() || null"
         [attr.aria-activedescendant]="activeId()"
         [attr.aria-disabled]="disabled() || null"
@@ -290,6 +295,10 @@ export class StarListbox<TOption = unknown, TValue = TOption> implements FormVal
   protected readonly groupSlot = starSlot<StarGroupContext>(this.slots, this, 'group');
   private readonly list = viewChild<unknown, ElementRef<HTMLElement>>('list', { read: ElementRef });
   private readonly viewport = viewChild(CdkVirtualScrollViewport);
+  /** The parent `star-field` when it labels the list (a `ul` listbox is not labelable). */
+  private readonly field = injectStarFieldLink(null, () => this.focus());
+  protected readonly labelledBy = computed(() => starFieldLabelledBy(this.field, this.ariaLabel()));
+  protected readonly fieldDescribedBy = computed(() => starJoinIds(this.field?.describedBy()));
   private readonly injector = inject(Injector);
   protected readonly query = signal('');
   protected readonly active = signal(-1);

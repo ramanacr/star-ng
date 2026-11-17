@@ -15,6 +15,7 @@ import {
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
 import { STAR_UI_TEXT } from '@star-ng/ui/core';
+import { injectStarFieldLink, starJoinIds } from '@star-ng/ui/field';
 
 export interface StarRejectedFile {
   readonly file: File;
@@ -107,7 +108,7 @@ export function fileMatchesAccept(file: File, accept: string): boolean {
         [attr.accept]="accept() || null"
         [multiple]="multiple()"
         [disabled]="disabled() || readonly()"
-        [attr.aria-describedby]="hintId"
+        [attr.aria-describedby]="describedBy()"
         (change)="onPicked(input)"
         (blur)="touch.emit()"
       />
@@ -253,6 +254,12 @@ export class StarFileUpload implements FormValueControl<readonly File[]> {
 
   protected readonly inputId = this.ids.getId('star-upload-');
   protected readonly hintId = this.ids.getId('star-upload-hint-');
+  /** The parent `star-field` when it labels the file input: the label points at it. */
+  private readonly field = injectStarFieldLink(() => this.inputId);
+  /** The hint of the control and the hint or error of the parent `star-field`. */
+  protected readonly describedBy = computed(() =>
+    starJoinIds(this.hint() ? this.hintId : null, this.field?.describedBy()),
+  );
   protected readonly dragging = signal(false);
   protected readonly rejected = signal<readonly StarRejectedFile[]>([]);
   protected readonly dropIndex = signal<number | null>(null);

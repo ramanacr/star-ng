@@ -19,6 +19,7 @@ import {
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
 import { STAR_UI_TEXT, StarDirectionService, starIsRtl } from '@star-ng/ui/core';
+import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/ui/field';
 
 /**
  * Knob (PrimeNG `p-knob`): circular value dial, `role="slider"` with Arrow / PageUp / PageDown /
@@ -34,9 +35,12 @@ import { STAR_UI_TEXT, StarDirectionService, starIsRtl } from '@star-ng/ui/core'
       viewBox="0 0 100 100"
       [attr.width]="size()"
       [attr.height]="size()"
+      #dial
       role="slider"
       [attr.tabindex]="disabled() ? -1 : 0"
       [attr.aria-label]="ariaLabel()"
+      [attr.aria-labelledby]="labelledBy()"
+      [attr.aria-describedby]="fieldDescribedBy()"
       [attr.aria-valuemin]="lowest()"
       [attr.aria-valuemax]="highest()"
       [attr.aria-valuenow]="value()"
@@ -66,6 +70,15 @@ export class StarKnob implements FormValueControl<number> {
   readonly readonly = input(false, { transform: booleanAttribute });
   readonly touch = output<void>();
   protected readonly id = inject(_IdGenerator).getId('star-knob-');
+  private readonly dial = viewChild.required<ElementRef<SVGSVGElement>>('dial');
+  /** The parent `star-field` when it labels the knob: an SVG slider is not labelable. */
+  private readonly field = injectStarFieldLink(null, () => this.focus());
+  protected readonly labelledBy = computed(() => starFieldLabelledBy(this.field, this.ariaLabel()));
+  protected readonly fieldDescribedBy = computed(() => starJoinIds(this.field?.describedBy()));
+
+  focus(options?: FocusOptions): void {
+    this.dial().nativeElement.focus(options);
+  }
 
   protected readonly lowest = computed(() => this.min() ?? 0);
   protected readonly highest = computed(() => this.max() ?? 100);
@@ -272,7 +285,9 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
     <div
       class="star-color__swatches"
       role="radiogroup"
-      [attr.aria-label]="ariaLabel() ?? text.colorLabel"
+      [attr.aria-label]="labelledBy() ? null : (ariaLabel() ?? text.colorLabel)"
+      [attr.aria-labelledby]="labelledBy()"
+      [attr.aria-describedby]="fieldDescribedBy()"
     >
       @for (swatch of shownSwatches(); track swatch) {
         <button
@@ -305,7 +320,7 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
       class="star-input star-input--sm star-color__hex"
       [value]="value()"
       [disabled]="disabled()"
-      [attr.aria-label]="text.hexValue(ariaLabel() ?? text.colorLabel)"
+      [attr.aria-label]="text.hexValue(ariaLabel() ?? (field?.label() || text.colorLabel))"
       maxlength="7"
       (change)="onHex($any($event.target))"
       (blur)="touch.emit()"
@@ -411,6 +426,19 @@ export class StarColorPicker implements FormValueControl<string> {
   readonly ariaLabel = input<string | null>(null);
   readonly disabled = input(false, { transform: booleanAttribute });
   readonly touch = output<void>();
+  /** The parent `star-field` when it labels the swatch group (a group is not labelable). */
+  protected readonly field = injectStarFieldLink(null, () => this.focus());
+  protected readonly labelledBy = computed(() => starFieldLabelledBy(this.field, this.ariaLabel()));
+  protected readonly fieldDescribedBy = computed(() => starJoinIds(this.field?.describedBy()));
+
+  /** Focuses the chosen swatch, else the first one. */
+  focus(options?: FocusOptions): void {
+    const swatches = [
+      ...this.host.nativeElement.querySelectorAll<HTMLButtonElement>('.star-color__swatch'),
+    ];
+    const chosen = swatches.find((swatch) => swatch.getAttribute('aria-checked') === 'true');
+    (chosen ?? swatches[0])?.focus(options);
+  }
 
   constructor() {
     // Browser only (this callback does not run on the server). One read, no theme-change watcher.
