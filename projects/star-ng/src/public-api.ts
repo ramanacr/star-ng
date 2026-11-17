@@ -9,6 +9,7 @@ export * from '@star-ng/ui/autocomplete';
 export * from '@star-ng/ui/avatar';
 export * from '@star-ng/ui/badge';
 export * from '@star-ng/ui/banner';
+export * from '@star-ng/ui/bottom-nav';
 export * from '@star-ng/ui/breadcrumb';
 export * from '@star-ng/ui/button';
 export * from '@star-ng/ui/card';

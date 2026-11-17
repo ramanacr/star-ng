@@ -353,6 +353,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         load: () => import('./controls/breadcrumb.page').then((m) => m.BreadcrumbPage),
       },
       {
+        label: 'Bottom navigation',
+        path: 'controls/bottom-nav',
+        keywords: 'bottom nav tab bar mobile navigation bar destinations badge',
+        load: () => import('./controls/bottom-nav.page').then((m) => m.BottomNavPage),
+      },
+      {
         label: 'Paginator',
         path: 'controls/paginator',
         keywords: 'pages rows per page first last report',
