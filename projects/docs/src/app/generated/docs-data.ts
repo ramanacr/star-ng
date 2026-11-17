@@ -1774,6 +1774,129 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarDropdown": {
+    "kind": "component",
+    "selector": "star-dropdown",
+    "entry": "@star-ng/ui/dropdown",
+    "description": "Drop-down list (Ignite UI `igx-drop-down`): a list of items that opens from any trigger and reports the chosen item. It is not bound to a form value; for a form field use `star-select`. For a list of commands (menu semantics) use `star-menu`.",
+    "inputs": [
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Name of the list for screen readers."
+      },
+      {
+        "name": "ariaLabelledBy",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Id of an element that names the list."
+      },
+      {
+        "name": "closeOnSelect",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Closes the list after an item is chosen."
+      },
+      {
+        "name": "maxHeight",
+        "type": "string",
+        "default": "'20rem'",
+        "required": false,
+        "description": "CSS max height of the list; it scrolls when it is taller."
+      }
+    ],
+    "models": [
+      {
+        "name": "value",
+        "type": "unknown",
+        "default": "undefined",
+        "required": false,
+        "description": "The chosen value. The item with this value is shown as selected."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "selectionChange",
+        "type": "StarDropdownSelection",
+        "default": null,
+        "required": false,
+        "description": "Emits when the user chooses an item."
+      },
+      {
+        "name": "opened",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "closed",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
+  "StarDropdownItem": {
+    "kind": "component",
+    "selector": "star-dropdown-item",
+    "entry": "@star-ng/ui/dropdown",
+    "description": "One entry of `star-dropdown` (Ignite UI `igx-drop-down-item`). The content is the label. `header` makes a group heading and `divider` a line; neither can be chosen.",
+    "inputs": [
+      {
+        "name": "value",
+        "type": "unknown",
+        "default": "undefined",
+        "required": false,
+        "description": "Value that `selectionChange` and `value` of the drop-down get for this item."
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The item shows but cannot be chosen."
+      },
+      {
+        "name": "header",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Renders a group heading. It is not an option."
+      },
+      {
+        "name": "divider",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Renders a divider line. It is not an option."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
+  "StarDropdownTrigger": {
+    "kind": "directive",
+    "selector": "[starDropdownTrigger]",
+    "entry": "@star-ng/ui/dropdown",
+    "description": "Opens a `star-dropdown` from any element: a button, a `star-button` or a link. A click toggles the list; Arrow down opens it on the first option and Arrow up on the last. The element that takes the focus (the inner button of a `star-button`) gets `aria-haspopup=\"listbox\"`, `aria-expanded` and, while open, `aria-controls`.",
+    "inputs": [
+      {
+        "name": "starDropdownTrigger",
+        "type": "StarDropdown",
+        "default": null,
+        "required": true,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
   "StarEditor": {
     "kind": "component",
     "selector": "star-editor",
@@ -6658,6 +6781,8 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "dock/left": "<star-dock [items]=\"apps\" position=\"left\" ariaLabel=\"Apps on the left\" />",
   "drawer/basic": "<star-button leadingIcon=\"ph-bold ph-sidebar-simple\" (pressed)=\"basicOpen.set(true)\">\n  Open details\n</star-button>\n<star-drawer [(visible)]=\"basicOpen\" header=\"Order ORD-1042\" dismissableMask>\n  <div class=\"docs-stack\">\n    <p class=\"docs-output\">Orchard Supply, 12 items, ships on Friday.</p>\n    <star-field label=\"Internal note\">\n      <textarea starInput autoResize rows=\"3\"></textarea>\n    </star-field>\n  </div>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button variant=\"ghost\" (pressed)=\"basicOpen.set(false)\">Close</star-button>\n  </div>\n</star-drawer>",
   "drawer/position": "<div class=\"docs-row\">\n  @for (item of positions; track item) {\n    <star-button variant=\"secondary\" (pressed)=\"openAt(item)\">{{ item }}</star-button>\n  }\n</div>\n<star-drawer\n  [(visible)]=\"positionOpen\"\n  [position]=\"position()\"\n  [drawerSize]=\"position() === 'top' || position() === 'bottom' ? '14rem' : '22rem'\"\n  [header]=\"'Drawer at the ' + position()\"\n>\n  <p>This drawer is pinned to the {{ position() }} edge.</p>\n</star-drawer>",
+  "dropdown/basic": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button\n      variant=\"secondary\"\n      trailingIcon=\"ph-bold ph-caret-down\"\n      [starDropdownTrigger]=\"formats\"\n    >\n      Export as\n    </star-button>\n  </div>\n  <star-dropdown\n    #formats\n    ariaLabel=\"Export format\"\n    [(value)]=\"format\"\n    (selectionChange)=\"onSelect($event)\"\n  >\n    <star-dropdown-item header>Documents</star-dropdown-item>\n    <star-dropdown-item value=\"pdf\">PDF</star-dropdown-item>\n    <star-dropdown-item value=\"docx\" disabled>Word document</star-dropdown-item>\n    <star-dropdown-item divider />\n    <star-dropdown-item header>Data</star-dropdown-item>\n    <star-dropdown-item value=\"csv\">CSV</star-dropdown-item>\n    <star-dropdown-item value=\"xlsx\">Spreadsheet</star-dropdown-item>\n    <star-dropdown-item value=\"json\">JSON</star-dropdown-item>\n  </star-dropdown>\n  <p class=\"docs-output\" role=\"status\">Export format: {{ chosen() }}</p>\n</div>",
+  "dropdown/multiple": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" [starDropdownTrigger]=\"cities\">\n      Add a city\n    </star-button>\n  </div>\n  <star-dropdown\n    #cities\n    ariaLabel=\"Cities\"\n    [closeOnSelect]=\"false\"\n    (selectionChange)=\"added.set(added() + $event.label + ' ')\"\n  >\n    <star-dropdown-item value=\"berlin\">Berlin</star-dropdown-item>\n    <star-dropdown-item value=\"lisbon\">Lisbon</star-dropdown-item>\n    <star-dropdown-item value=\"oslo\">Oslo</star-dropdown-item>\n    <star-dropdown-item value=\"toronto\">Toronto</star-dropdown-item>\n  </star-dropdown>\n  <p class=\"docs-output\" role=\"status\">Added: {{ added() || 'none' }}</p>\n</div>",
   "editor/basic": "<div class=\"docs-stack\">\n  <star-editor\n    [(value)]=\"note\"\n    ariaLabel=\"Delivery note\"\n    placeholder=\"Write the delivery note\"\n  />\n  <pre class=\"docs-output\" role=\"group\" aria-label=\"Value of the editor\">{{ note() }}</pre>\n</div>",
   "editor/sanitize": "<div class=\"docs-stack\">\n  <star-editor [(value)]=\"unsafe\" ariaLabel=\"Sanitized content\" />\n  <pre class=\"docs-output\" aria-label=\"Value after sanitizing\">{{ unsafe() }}</pre>\n</div>",
   "editor/size": "<div class=\"docs-stack\">\n  <star-editor\n    [(value)]=\"comment\"\n    ariaLabel=\"Order comment\"\n    placeholder=\"Add a comment\"\n    minHeight=\"4rem\"\n  />\n</div>",

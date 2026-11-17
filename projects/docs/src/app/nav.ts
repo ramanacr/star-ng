@@ -277,6 +277,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         load: () => import('./controls/split-button.page').then((m) => m.SplitButtonPage),
       },
       {
+        label: 'Drop-down',
+        path: 'controls/dropdown',
+        keywords: 'dropdown list listbox choose trigger popup',
+        load: () => import('./controls/dropdown.page').then((m) => m.DropdownPage),
+      },
+      {
         label: 'Menubar',
         path: 'controls/menubar',
         keywords: 'top bar file edit view dropdown',
