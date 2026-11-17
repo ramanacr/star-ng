@@ -36,7 +36,7 @@ const FOCUSABLE =
   template: `
     @let c = config();
     <!-- Backdrop click only; keyboard users close with Escape. -->
-    <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
+    <!-- eslint-disable-next-line @angular-eslint/template/interactive-supports-focus -->
     <dialog
       #dialog
       class="star-bottom-sheet"

@@ -143,6 +143,8 @@ export class StarConfirmService {
       (hidden)="onPopupHidden()"
     >
       @if (popup) {
+        <!-- Catches Tab from the buttons inside; it is not a control itself. -->
+        <!-- eslint-disable-next-line @angular-eslint/template/interactive-supports-focus -->
         <div
           class="star-confirm-popup"
           (keydown.tab)="cycleTab($event)"
