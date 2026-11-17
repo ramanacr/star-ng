@@ -455,13 +455,35 @@ code {
   width: 100%;
   max-width: 26rem;
 }
-// A table needs the full width of the live area. The 26rem cap is for forms and small controls.
-.docs-stack:has(star-table, star-tree-table) {
+// A table, a data view or an org chart needs the full width of the live area. The 26rem cap is for forms and small
+// controls, and for a demo of a narrow table (docs-stack--narrow).
+.docs-stack:not(.docs-stack--narrow):has(
+    star-table,
+    star-tree-table,
+    star-data-view,
+    star-org-chart
+  ) {
   max-width: none;
 }
-.docs-example__live > star-table,
-.docs-example__live > star-tree-table {
+// The live area is a wrapping flex row, so a block control placed straight in it would shrink to its
+// content. These controls are wide by design: they fill the row.
+.docs-example__live
+  > :is(
+    star-table,
+    star-tree-table,
+    star-data-view,
+    star-timeline,
+    star-org-chart,
+    star-editor,
+    star-menubar,
+    star-paginator,
+    star-scroll-panel
+  ) {
   flex: 1 1 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+.docs-example__live > .docs-stack {
   min-width: 0;
 }
 .docs-row {
@@ -474,6 +496,8 @@ code {
   margin: 0;
   color: var(--star-text-muted);
   font: var(--star-type-body);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 .docs-table-wrap {

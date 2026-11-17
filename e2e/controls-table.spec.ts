@@ -1190,14 +1190,16 @@ test.describe('table: width', () => {
       await openPage(page, path, heading);
       const widths = await page.locator('.docs-example__live').evaluateAll((lives) =>
         lives.flatMap((live) =>
-          [...live.querySelectorAll('star-table, star-tree-table')].map((table) => {
-            const style = getComputedStyle(live);
-            return {
-              table: table.getBoundingClientRect().width,
-              live:
-                live.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight),
-            };
-          }),
+          [...live.querySelectorAll('star-table, star-tree-table')]
+            .filter((table) => !table.closest('.docs-stack--narrow'))
+            .map((table) => {
+              const style = getComputedStyle(live);
+              return {
+                table: table.getBoundingClientRect().width,
+                live:
+                  live.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight),
+              };
+            }),
         ),
       );
       expect(widths.length).toBeGreaterThan(0);
