@@ -18,6 +18,7 @@ import {
   TemplateRef,
 } from '@angular/core';
 import { STAR_SLOT_HOST, STAR_UI_TEXT, starInlineKey, StarSlot, starSlot } from '@star-ng/ui/core';
+import { injectStarFieldLink, starJoinIds } from '@star-ng/ui/field';
 import type { StarDateContext } from './date-slots';
 import {
   addDays,
@@ -65,7 +66,12 @@ export function isoWeek(date: Date): number {
   imports: [NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarCalendar) }],
-  host: { class: 'star-calendar' },
+  host: {
+    class: 'star-calendar',
+    '[attr.role]': "labelledBy() ? 'group' : null",
+    '[attr.aria-labelledby]': 'labelledBy()',
+    '[attr.aria-describedby]': 'labelledBy() ? fieldDescribedBy() : null',
+  },
   template: `
     @if (headerSlot(); as header) {
       <ng-container *ngTemplateOutlet="header" />
@@ -261,6 +267,14 @@ export class StarCalendar {
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly injector = inject(Injector);
   protected readonly titleId = inject(_IdGenerator).getId('star-calendar-title-');
+  /**
+   * The parent `star-field` when it labels an inline calendar: the calendar is a group named by
+   * the label, and a click on the label focuses the active day. In the popup of a date picker
+   * the picker owns the label, so this is `null` there.
+   */
+  private readonly field = injectStarFieldLink(null, () => this.focusActive());
+  protected readonly labelledBy = computed(() => this.field?.labelledBy() ?? null);
+  protected readonly fieldDescribedBy = computed(() => starJoinIds(this.field?.describedBy()));
   protected readonly sameDay = sameDay;
 
   readonly mode = input<'single' | 'range' | 'multiple'>('single');

@@ -26,6 +26,7 @@ import {
   StarSlot,
   starSlot,
 } from '@star-ng/ui/core';
+import { injectStarFieldLink, starJoinIds } from '@star-ng/ui/field';
 import { StarCalendar, StarCalendarView } from './calendar';
 import type { StarDateContext } from './date-slots';
 import {
@@ -68,6 +69,11 @@ export abstract class StarDateInputBase<TValue> {
   private readonly directionSync = inject(StarDirectionService);
   protected readonly text = inject(STAR_UI_TEXT);
   private readonly ids = inject(_IdGenerator);
+  /**
+   * The parent `star-field` when it labels this picker: the label points at the input with `for`,
+   * the hint or error describes it.
+   */
+  protected readonly field = injectStarFieldLink(() => this.inputId());
 
   abstract readonly value: ReturnType<typeof model<TValue>>;
 
@@ -113,7 +119,11 @@ export abstract class StarDateInputBase<TValue> {
   protected readonly positions = PANEL_POSITIONS;
   protected readonly panelId = this.ids.getId('star-date-panel-');
   protected readonly open = signal(false);
-  protected readonly showInvalid = computed(() => this.invalid() && this.touched());
+  /** Invalid after touch, or while the parent `star-field` shows an error. */
+  protected readonly showInvalid = computed(
+    () => (this.invalid() && this.touched()) || !!this.field?.errorText(),
+  );
+  protected readonly fieldDescribedBy = computed(() => starJoinIds(this.field?.describedBy()));
   protected readonly interactive = computed(() => !this.disabled() && !this.readonly());
   protected readonly hint = computed(() => this.placeholder() ?? formatHint(this.locale()));
 
@@ -346,6 +356,7 @@ const TEMPLATE = `
       [required]="required()"
       [attr.aria-label]="ariaLabel()"
       [attr.aria-controls]="open() ? panelId : null"
+      [attr.aria-describedby]="fieldDescribedBy()"
       [attr.aria-invalid]="showInvalid() || null"
       (input)="typed.set(input.value)"
       (click)="readonlyInput() && togglePanel()"

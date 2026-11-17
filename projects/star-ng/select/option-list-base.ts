@@ -40,6 +40,7 @@ import {
   starSlotMap,
   StarWindowRow,
 } from '@star-ng/ui/core';
+import { StarField, starFieldLabelledBy, starJoinIds } from '@star-ng/ui/field';
 
 /** Context of the custom option template: `<ng-template starOption let-option let-selected="selected">`. */
 export interface StarOptionContext<T> {
@@ -108,6 +109,13 @@ export abstract class StarOptionListBase<TOption, TValue> {
   private readonly ids = inject(_IdGenerator);
   private readonly document = inject(DOCUMENT);
   private readonly injector = inject(Injector);
+  private readonly parentField = inject(StarField, { optional: true });
+  private readonly destroyRef = inject(DestroyRef);
+  /**
+   * The parent `star-field` when this control owns its label (see `linkField`), else `null`. Its
+   * label, hint and error name and describe the control.
+   */
+  protected field: StarField | null = null;
 
   readonly options = input<readonly TOption[]>([]);
   readonly optionLabel = input<StarOptionKey<TOption> | null>(null);
@@ -196,7 +204,16 @@ export abstract class StarOptionListBase<TOption, TValue> {
       return -1;
     },
   });
-  protected readonly showInvalid = computed(() => this.invalid() && this.touched());
+  /** Invalid after touch, or while the parent `star-field` shows an error. */
+  protected readonly showInvalid = computed(
+    () => (this.invalid() && this.touched()) || !!this.field?.errorText(),
+  );
+  /** `aria-labelledby` of the trigger: `ariaLabelledBy`, else the `star-field` label. */
+  protected readonly labelledBy = computed(() =>
+    starFieldLabelledBy(this.field, this.ariaLabel(), this.ariaLabelledBy()),
+  );
+  /** `aria-describedby` of the trigger: the hint or error of the parent `star-field`. */
+  protected readonly fieldDescribedBy = computed(() => starJoinIds(this.field?.describedBy()));
   protected readonly interactive = computed(() => !this.disabled() && !this.readonly());
 
   protected readonly visibleOptions = computed(() => {
@@ -341,7 +358,16 @@ export abstract class StarOptionListBase<TOption, TValue> {
   private typeaheadTimer: ReturnType<typeof setTimeout> | undefined;
 
   constructor() {
-    inject(DestroyRef).onDestroy(() => clearTimeout(this.typeaheadTimer));
+    this.destroyRef.onDestroy(() => clearTimeout(this.typeaheadTimer));
+  }
+
+  /**
+   * Links the control to a parent `star-field` (call it in the constructor of the subclass). A
+   * trigger that is not labelable passes `focus` (see `StarField.linkControl`).
+   */
+  protected linkField(focus?: () => void): void {
+    const parent = this.parentField;
+    this.field = parent?.linkControl(this.inputId, focus, this.destroyRef) ? parent : null;
   }
 
   /** True when the option is part of the current value. */

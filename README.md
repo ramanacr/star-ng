@@ -23,7 +23,7 @@ Control groups: buttons; forms (field, input, checkbox, radio, switch, number, p
 | `@angular/core`, `@angular/common`, `@angular/forms` | 22 or later                                    |
 | `@angular/cdk`                                       | 22 or later                                    |
 | `@angular/router`                                    | 22 or later                                    |
-| `@phosphor-icons/web`                                | 2.1 or later (icons that the controls draw)    |
+| `@phosphor-icons/web`                                | 2.1 or later, optional (default icons)         |
 | `rxjs`                                               | 7.8 or later                                   |
 | `@jsverse/transloco`                                 | 8 or later, optional (`@star-ng/ui/transloco`) |
 

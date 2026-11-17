@@ -3,6 +3,7 @@ import {
   booleanAttribute,
   ChangeDetectionStrategy,
   Component,
+  computed,
   ElementRef,
   inject,
   input,
@@ -11,6 +12,7 @@ import {
   viewChild,
 } from '@angular/core';
 import type { FormCheckboxControl } from '@angular/forms/signals';
+import { injectStarFieldLink, starJoinIds } from '@star-ng/ui/field';
 
 /**
  * On/off switch (PrimeNG `p-toggleswitch`). Native checkbox with `role="switch"`, so Space toggles
@@ -41,6 +43,7 @@ import type { FormCheckboxControl } from '@angular/forms/signals';
         [attr.aria-checked]="checked()"
         [attr.aria-readonly]="readonly() || null"
         [attr.aria-label]="ariaLabel()"
+        [attr.aria-describedby]="fieldDescribedBy()"
         (change)="onChange(box)"
         (blur)="touch.emit()"
       />
@@ -62,6 +65,9 @@ export class StarToggleSwitch implements FormCheckboxControl {
   readonly name = input('');
   readonly size = input<'sm' | 'md'>('md');
   readonly inputId = input(inject(_IdGenerator).getId('star-switch-'));
+  /** The parent `star-field` when it labels the switch: the label points at the input. */
+  private readonly field = injectStarFieldLink(this.inputId);
+  protected readonly fieldDescribedBy = computed(() => starJoinIds(this.field?.describedBy()));
   readonly ariaLabel = input<string | null>(null);
   /** Set false when the switch has no visible label (then set `ariaLabel`). */
   readonly hasLabel = input(true, { transform: booleanAttribute });

@@ -12,7 +12,7 @@ import {
   viewChild,
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
-import { StarField } from '@star-ng/ui/field';
+import { injectStarFieldLink } from '@star-ng/ui/field';
 
 /** Mask slot tokens (PrimeNG `p-inputmask` syntax): `9` digit, `a` letter, `*` letter or digit. */
 const TOKENS: Record<string, RegExp> = { '9': /\d/, a: /\p{L}/u, '*': /[\p{L}\d]/u };
@@ -77,15 +77,11 @@ export function unmask(mask: string, masked: string, slotChar = '_'): string {
   `,
 })
 export class StarInputMask implements FormValueControl<string> {
-  protected readonly field = inject(StarField, { optional: true });
+  protected readonly field = injectStarFieldLink(() => this.inputId());
   /** Invalid after touch, or while the parent `star-field` shows an error. */
   protected readonly showInvalid = computed(
     () => (this.invalid() && this.touched()) || !!this.field?.errorText(),
   );
-
-  constructor() {
-    this.field?.linkControl(this.inputId);
-  }
 
   readonly value = model('');
   readonly mask = input.required<string>();

@@ -16,7 +16,7 @@ import {
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
 import { STAR_UI_TEXT } from '@star-ng/ui/core';
-import { StarField } from '@star-ng/ui/field';
+import { injectStarFieldLink } from '@star-ng/ui/field';
 
 /**
  * Number field (PrimeNG `p-inputnumber`): locale formatting with `Intl.NumberFormat`
@@ -92,15 +92,11 @@ import { StarField } from '@star-ng/ui/field';
 })
 export class StarInputNumber implements FormValueControl<number | null> {
   protected readonly uiText = inject(STAR_UI_TEXT);
-  protected readonly field = inject(StarField, { optional: true });
+  protected readonly field = injectStarFieldLink(() => this.inputId());
   /** Invalid after touch, or while the parent `star-field` shows an error. */
   protected readonly showInvalid = computed(
     () => (this.invalid() && this.touched()) || !!this.field?.errorText(),
   );
-
-  constructor() {
-    this.field?.linkControl(this.inputId);
-  }
 
   readonly value = model<number | null>(null);
   readonly mode = input<'decimal' | 'currency' | 'percent' | 'unit'>('decimal');

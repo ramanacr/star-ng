@@ -12,6 +12,7 @@ import {
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
 import { STAR_UI_TEXT, starInlineKey } from '@star-ng/ui/core';
+import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/ui/field';
 
 /**
  * One-time code field (PrimeNG `p-inputotp`): one box per character, auto-advance, Backspace
@@ -26,8 +27,10 @@ import { STAR_UI_TEXT, starInlineKey } from '@star-ng/ui/core';
   host: {
     class: 'star-otp',
     role: 'group',
-    '[attr.aria-label]': 'ariaLabel() ?? text.otpLabel',
-    '[class.star-otp--invalid]': 'invalid() && touched()',
+    '[attr.aria-label]': 'labelledBy() ? null : (ariaLabel() ?? text.otpLabel)',
+    '[attr.aria-labelledby]': 'labelledBy()',
+    '[attr.aria-describedby]': 'fieldDescribedBy()',
+    '[class.star-otp--invalid]': '(invalid() && touched()) || !!field?.errorText()',
   },
   template: `
     @for (slot of slots(); track slot) {
@@ -65,6 +68,11 @@ export class StarInputOtp implements FormValueControl<string> {
   readonly touched = input(false, { transform: booleanAttribute });
   readonly touch = output<void>();
   readonly completed = output<string>();
+
+  /** The parent `star-field` when it labels the group (several inputs: no single `for`). */
+  protected readonly field = injectStarFieldLink(null, () => this.focus());
+  protected readonly labelledBy = computed(() => starFieldLabelledBy(this.field, this.ariaLabel()));
+  protected readonly fieldDescribedBy = computed(() => starJoinIds(this.field?.describedBy()));
 
   private readonly boxes = viewChildren<ElementRef<HTMLInputElement>>('box');
   protected readonly slots = computed(() => Array.from({ length: this.length() }, (_, i) => i));

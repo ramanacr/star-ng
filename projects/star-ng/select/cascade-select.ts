@@ -7,11 +7,13 @@ import {
   Component,
   computed,
   contentChildren,
+  ElementRef,
   forwardRef,
   inject,
   input,
   model,
   output,
+  viewChild,
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
 import {
@@ -24,6 +26,7 @@ import {
   StarSlot,
   starSlot,
 } from '@star-ng/ui/core';
+import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/ui/field';
 import { STAR_MENU_POSITIONS, StarMenu, StarMenuInDialog, StarMenuItem } from '@star-ng/ui/menu';
 import type { StarCascadeOptionContext } from './select-slots';
 
@@ -67,13 +70,14 @@ interface CascadeItem<TOption> extends StarMenuItem {
   host: {
     class: 'star-select star-cascade',
     '[class.star-select--disabled]': 'disabled()',
-    '[class.star-select--invalid]': 'invalid() && touched()',
+    '[class.star-select--invalid]': 'showInvalid()',
     '[class.star-select--sm]': "size() === 'sm'",
   },
   template: `
     <div class="star-select__control">
       <button
         #trigger="cdkMenuTriggerFor"
+        #button
         type="button"
         class="star-select__trigger star-cascade__trigger"
         [id]="inputId()"
@@ -82,7 +86,9 @@ interface CascadeItem<TOption> extends StarMenuItem {
         [cdkMenuPosition]="positions"
         [disabled]="disabled() || readonly()"
         [attr.aria-label]="triggerName()"
-        [attr.aria-invalid]="(invalid() && touched()) || null"
+        [attr.aria-labelledby]="labelledBy()"
+        [attr.aria-describedby]="fieldDescribedBy()"
+        [attr.aria-invalid]="showInvalid() || null"
         (cdkMenuClosed)="touch.emit()"
       >
         @if (selected(); as leaf) {
@@ -105,7 +111,11 @@ interface CascadeItem<TOption> extends StarMenuItem {
       }
       <i class="ph-bold ph-caret-down star-select__caret" aria-hidden="true"></i>
     </div>
-    <star-menu #menu [ariaLabel]="ariaLabel()" [itemTemplate]="optionSlot() ? optionItem : null" />
+    <star-menu
+      #menu
+      [ariaLabel]="ariaLabel() ?? (field?.label() || null)"
+      [itemTemplate]="optionSlot() ? optionItem : null"
+    />
     <ng-template #optionItem let-item>
       <ng-container *ngTemplateOutlet="optionSlot(); context: optionContext(item)" />
     </ng-template>
@@ -119,6 +129,7 @@ export class StarCascadeSelect<
   private readonly directionSync = inject(StarDirectionService);
   protected readonly text = inject(STAR_UI_TEXT);
   protected readonly positions = STAR_MENU_POSITIONS;
+  private readonly button = viewChild.required<ElementRef<HTMLButtonElement>>('button');
 
   readonly value = model<TValue | null>(null);
   readonly options = input<readonly TOption[]>([]);
@@ -138,6 +149,12 @@ export class StarCascadeSelect<
   readonly size = input<'sm' | 'md'>('md');
   readonly ariaLabel = input<string | null>(null);
   readonly inputId = input(inject(_IdGenerator).getId('star-cascade-'));
+  /**
+   * The parent `star-field` when it labels this control. A label `for` a button would click it
+   * (and open the menu), so the trigger takes its name with aria-labelledby, and a click on the
+   * label only focuses it.
+   */
+  protected readonly field = injectStarFieldLink(this.inputId, () => this.focus());
 
   readonly disabled = input(false, { transform: booleanAttribute });
   readonly readonly = input(false, { transform: booleanAttribute });
@@ -147,6 +164,24 @@ export class StarCascadeSelect<
   readonly touch = output<void>();
   /** The user chose a leaf. */
   readonly optionSelect = output<TOption>();
+
+  /** Invalid after touch, or while the parent `star-field` shows an error. */
+  protected readonly showInvalid = computed(
+    () => (this.invalid() && this.touched()) || !!this.field?.errorText(),
+  );
+  /**
+   * `aria-labelledby` without `ariaLabel`: the `star-field` label and the button itself, so the
+   * name is the label and the text on the button (WCAG 2.5.3).
+   */
+  protected readonly labelledBy = computed(() => {
+    const label = starFieldLabelledBy(this.field, this.ariaLabel());
+    return label ? `${label} ${this.inputId()}` : null;
+  });
+  protected readonly fieldDescribedBy = computed(() => starJoinIds(this.field?.describedBy()));
+
+  focus(options?: FocusOptions): void {
+    this.button().nativeElement.focus(options);
+  }
 
   private childrenOf(option: TOption): readonly TOption[] {
     const children = readOption(option, this.optionChildren());
