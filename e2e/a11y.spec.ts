@@ -265,6 +265,46 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'select panel with lazy loading rows',
+    path: 'controls/select',
+    open: async (page) => {
+      await example(page, 'Lazy loading')
+        .getByRole('combobox', { name: 'Order, loaded on demand' })
+        .click();
+      const list = page.getByRole('listbox', { name: 'Order, loaded on demand' });
+      await expect(list.getByRole('option').first()).toBeVisible();
+    },
+  },
+  {
+    name: 'editable select panel',
+    path: 'controls/select',
+    open: async (page) => {
+      await example(page, 'Editable').getByRole('combobox', { name: 'City, editable' }).fill('r');
+      await expect(page.getByRole('listbox', { name: 'City, editable' })).toBeVisible();
+    },
+  },
+  {
+    name: 'multi-select panel with an Add row',
+    path: 'controls/multi-select',
+    open: async (page) => {
+      await example(page, 'Custom values').getByRole('combobox', { name: 'Order labels' }).click();
+      await page.locator('.star-panel__filter').getByRole('searchbox').fill('Archive');
+      await expect(page.getByRole('option', { name: 'Add “Archive”' })).toBeVisible();
+    },
+  },
+  {
+    name: 'autocomplete with an Add row',
+    path: 'controls/autocomplete',
+    open: async (page) => {
+      const input = example(page, 'Custom values').getByRole('combobox', {
+        name: 'Keywords with new ones',
+      });
+      await input.click();
+      await input.pressSequentially('ui');
+      await expect(page.getByRole('option', { name: 'Add “ui”' })).toBeVisible();
+    },
+  },
+  {
     name: 'date picker popup',
     path: 'controls/date-picker',
     open: async (page) => {

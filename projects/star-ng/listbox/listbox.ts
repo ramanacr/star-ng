@@ -14,6 +14,7 @@ import {
   computed,
   contentChild,
   contentChildren,
+  DestroyRef,
   effect,
   ElementRef,
   forwardRef,
@@ -65,6 +66,9 @@ import {
   StarSelectionChangingEvent,
 } from '@star-ng/ui/select';
 import { StarListboxDropEvent, starListboxDropIndex } from './listbox-dragdrop';
+
+/** Listboxes by list id, so a drop can find the options of the list it came from. */
+const DROP_LISTS = new Map<string, { options(): readonly unknown[] }>();
 
 /**
  * Inline list choice (PrimeNG `p-listbox`): single or `multiple` (checkboxes), filter,
@@ -509,13 +513,14 @@ export class StarListbox<TOption = unknown, TValue = TOption> implements FormVal
   protected onDrop(event: CdkDragDrop<unknown, unknown, TOption>): void {
     const sameList = event.previousContainer === event.container;
     const item = event.item.data;
-    const source = event.previousContainer.data;
-    const sourceOptions = source instanceof StarListbox ? source.options() : null;
+    // The source listbox, to give the index in its options (not in its shown, filtered options).
+    const sourceOptions = DROP_LISTS.get(event.previousContainer.id)?.options();
+    const previousIndex = sourceOptions?.indexOf(item) ?? -1;
     this.dropped.emit({
       item,
-      from: source,
+      from: event.previousContainer.data,
       to: event.container.data,
-      previousIndex: sourceOptions ? sourceOptions.indexOf(item) : event.previousIndex,
+      previousIndex: previousIndex >= 0 ? previousIndex : event.previousIndex,
       index: starListboxDropIndex(this.options(), this.visible(), event.currentIndex, sameList),
     });
   }
@@ -671,6 +676,8 @@ export class StarListbox<TOption = unknown, TValue = TOption> implements FormVal
   private readonly lazyRequests = new StarLazyRequests();
 
   constructor() {
+    DROP_LISTS.set(this.listId, this);
+    inject(DestroyRef).onDestroy(() => DROP_LISTS.delete(this.listId));
     // `lazy`: ask for the options of the rendered rows that are not loaded, and for a new filter.
     effect(() => {
       if (!this.lazy()) return;
