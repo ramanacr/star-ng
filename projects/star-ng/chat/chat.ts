@@ -347,7 +347,8 @@ export class StarChat {
       // A message without a valid time stays in the day of the message before it.
       const key = valid ? dayKey(date) : (previous?.day ?? '');
       if (valid && previous?.day !== key) {
-        rows.push({ kind: 'day', key: `day-${key}`, label: day.format(date) });
+        // The same day can come back when messages are out of order: the row index keeps keys unique.
+        rows.push({ kind: 'day', key: `day-${key}-${rows.length}`, label: day.format(date) });
       }
       const first =
         !previous ||

@@ -249,6 +249,20 @@ describe('StarChat', () => {
     expect(messages()[1].querySelector('time')).toBeNull();
   });
 
+  it('gives every day separator its own key (m6)', async () => {
+    const { host, fixture, root } = await setupChat();
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    host.messages.set([
+      { id: 'a', author: ANA, text: 'One', timestamp: at(17, 9) },
+      { id: 'b', author: ANA, text: 'Two', timestamp: at(18, 9) },
+      { id: 'c', author: ANA, text: 'Three', timestamp: at(17, 10) },
+    ]);
+    await fixture.whenStable();
+    expect(root.querySelectorAll('[role=separator]').length).toBe(3);
+    expect(warn.mock.calls.some((call) => String(call[0]).includes('NG0955'))).toBe(false);
+    warn.mockRestore();
+  });
+
   it('asks for older messages at the top and keeps the scroll position', async () => {
     const { host, fixture, root } = await setupChat();
     const scroll = root.querySelector<HTMLElement>('.star-chat__scroll')!;
