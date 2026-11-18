@@ -292,4 +292,6 @@ export const STAR_UI_TEXT_DE: StarUiText = {
   retry: 'Erneut versuchen',
   stop: 'Stoppen',
   newMessages: (count) => `${count} neue Nachrichten`,
+  aiPromptShortcutHint: 'Mit Strg+Eingabe senden.',
+  copyFailed: 'Kopieren fehlgeschlagen',
 };

@@ -401,6 +401,25 @@ describe('StarAiPrompt', () => {
     expect(live()).toBe('Copied');
   });
 
+  it('names the send shortcut and shows it as a hint (m16)', async () => {
+    const { root, field } = await setup();
+    expect(field.getAttribute('aria-keyshortcuts')).toBe('Control+Enter Meta+Enter');
+    const hint = root.querySelector(`[id="${field.getAttribute('aria-describedby')}"]`);
+    expect(hint?.textContent?.trim()).toBe('Press Control+Enter to send.');
+  });
+
+  it('announces a failed copy (m16)', async () => {
+    const { fixture, host, button, live } = await setup();
+    const writeText = vi.fn().mockRejectedValue(new Error('denied'));
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
+    host.outputs.set([{ id: 'o3', prompt: 'X', text: 'Done', status: 'done' }]);
+    await fixture.whenStable();
+    button('Copy')!.click();
+    await new Promise((resolve) => setTimeout(resolve));
+    await fixture.whenStable();
+    expect(live()).toBe('Copy failed');
+  });
+
   it('shows a failed output', async () => {
     const { fixture, root, host, live } = await setup();
     host.outputs.set([{ id: 'o2', prompt: 'X', text: '', status: 'streaming' }]);

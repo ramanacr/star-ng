@@ -235,6 +235,11 @@
 .star-ai-prompt__field {
   resize: vertical;
 }
+.star-ai-prompt__hint {
+  margin: 0;
+  color: var(--star-text-muted);
+  font: var(--star-type-body-sm);
+}
 .star-ai-prompt__chips {
   display: flex;
   flex-wrap: wrap;

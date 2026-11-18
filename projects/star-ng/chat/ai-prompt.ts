@@ -1,3 +1,4 @@
+import { _IdGenerator } from '@angular/cdk/a11y';
 import {
   booleanAttribute,
   ChangeDetectionStrategy,
@@ -58,11 +59,14 @@ export interface StarAiPromptOutput {
         rows="3"
         [attr.aria-label]="ariaLabel() ?? text.aiPrompt"
         [attr.placeholder]="placeholder() ?? text.aiPromptPlaceholder"
+        aria-keyshortcuts="Control+Enter Meta+Enter"
+        [attr.aria-describedby]="hintId"
         [disabled]="disabled()"
         [value]="prompt()"
         (input)="prompt.set(field.value)"
         (keydown)="onKeydown($event)"
       ></textarea>
+      <p class="star-ai-prompt__hint" [id]="hintId">{{ text.aiPromptShortcutHint }}</p>
       @if (suggestions().length) {
         <div class="star-ai-prompt__chips" role="group" [attr.aria-label]="text.promptSuggestions">
           @for (suggestion of suggestions(); track $index) {
@@ -168,6 +172,7 @@ export class StarAiPrompt {
   /** The text of the prompt field. */
   readonly prompt = signal('');
   protected readonly status = signal('');
+  protected readonly hintId = inject(_IdGenerator).getId('star-ai-prompt-hint-');
   private readonly field = viewChild.required<ElementRef<HTMLTextAreaElement>>('field');
   private readonly previous = new Map<string, StarAiPromptStatus>();
   private toggle = false;
@@ -214,9 +219,13 @@ export class StarAiPrompt {
 
   protected copy(item: StarAiPromptOutput): void {
     const clipboard = this.document.defaultView?.navigator?.clipboard;
-    clipboard?.writeText(item.text).then(
+    if (!clipboard?.writeText) {
+      this.announce(this.text.copyFailed);
+      return;
+    }
+    clipboard.writeText(item.text).then(
       () => this.announce(this.text.copied),
-      () => undefined,
+      () => this.announce(this.text.copyFailed),
     );
   }
 
