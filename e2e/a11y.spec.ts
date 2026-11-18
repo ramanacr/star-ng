@@ -922,6 +922,14 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'table with column groups (two header levels)',
+    path: 'controls/table-layout',
+    open: async (page) => {
+      const live = example(page, 'Column groups');
+      await expect(live.locator('th.star-table__column-group').first()).toBeVisible();
+    },
+  },
+  {
     name: 'table with a filter select open',
     path: 'controls/table-sort-filter',
     open: async (page) => {

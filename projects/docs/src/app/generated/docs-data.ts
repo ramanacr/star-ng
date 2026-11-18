@@ -1678,6 +1678,23 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ]
   },
+  "StarColumnGroupHeaderTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starColumnGroupHeader]",
+    "entry": "@star-ng/ui/table",
+    "description": "Replaces the label of a column group header cell in `star-table`: `<ng-template starColumnGroupHeader let-group>…</ng-template>` for all groups, or `starColumnGroupHeader=\"Q1\"` for the group with that `header`. PrimeNG header group template, Ignite UI `igxHeader` of a column group.",
+    "inputs": [
+      {
+        "name": "starColumnGroupHeader",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "`header` of the group, or empty for every group."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
   "StarCommandPalette": {
     "kind": "component",
     "selector": "star-command-palette",
@@ -6986,6 +7003,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Pin buttons in the Columns panel: \"Pin to start\", \"Pin to end\" and \"Unpin\" for each column. Pinned columns move to their side; with `reorderableColumns` they move within their side."
       },
       {
+        "name": "columnGroups",
+        "type": "readonly StarColumnGroup[]",
+        "default": "[]",
+        "required": false,
+        "description": "Column groups: header cells that span the columns of a group, in extra header rows above the column headers (`{ header, children }`, children are column fields or nested groups). Columns of a group stay together: a moved column stays inside its group, a hidden column shrinks the group, and a group is pinned when all its columns are. Body cells name their group headers with `headers`. PrimeNG header column groups, Ignite UI `igx-column-group`, AG Grid `ColGroupDef`."
+      },
+      {
         "name": "multiSort",
         "type": "boolean",
         "default": "false",
@@ -9457,6 +9481,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "table-export/print-long": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button\n      size=\"sm\"\n      variant=\"secondary\"\n      leadingIcon=\"ph-bold ph-printer\"\n      (pressed)=\"longTable.print()\"\n    >\n      Print invoices\n    </star-button>\n  </div>\n  <docs-fill>\n    <star-table\n      #longTable\n      ariaLabel=\"Invoices\"\n      [value]=\"invoices\"\n      [columns]=\"invoiceColumns\"\n      dataKey=\"id\"\n      selectionMode=\"multiple\"\n      [hiddenColumns]=\"['region']\"\n      paginator\n      [rows]=\"10\"\n    >\n      <ng-template starCell=\"open\" [starCellOf]=\"invoices\" let-row>\n        <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"opened.set(row.id)\">\n          Open\n        </star-button>\n      </ng-template>\n    </star-table>\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Opened: {{ opened() || 'none' }}</p>\n</div>",
   "table-export/print-wide": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button\n      size=\"sm\"\n      variant=\"secondary\"\n      leadingIcon=\"ph-bold ph-printer\"\n      (pressed)=\"wideTable.print()\"\n    >\n      Print wide table\n    </star-button>\n  </div>\n  <docs-fill>\n    <star-table\n      #wideTable\n      ariaLabel=\"Wide orders\"\n      [value]=\"wideRows\"\n      [columns]=\"wideColumns\"\n      dataKey=\"Order\"\n    />\n  </docs-fill>\n</div>",
   "table-export/text": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"show(preview.toCsv())\">\n      Comma separated\n    </star-button>\n    <star-button\n      size=\"sm\"\n      variant=\"secondary\"\n      (pressed)=\"show(preview.toCsv({ separator: ';' }))\"\n    >\n      Semicolon separated\n    </star-button>\n    <star-button\n      size=\"sm\"\n      variant=\"secondary\"\n      (pressed)=\"show(preview.toCsv({ rows: [orders[40]] }))\"\n    >\n      Rows from the options\n    </star-button>\n  </div>\n  <docs-fill>\n    <star-table\n      #preview\n      ariaLabel=\"Order preview\"\n      [value]=\"orders.slice(0, 3)\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n    />\n  </docs-fill>\n  <pre class=\"docs-output\" aria-label=\"CSV text\" tabindex=\"0\">{{ text() }}</pre>\n</div>",
+  "table-layout/column-groups": "<docs-fill>\n  <star-table\n    [value]=\"sales\"\n    [columns]=\"salesColumns\"\n    [columnGroups]=\"salesGroups\"\n    dataKey=\"id\"\n    ariaLabel=\"Sales by region and quarter\"\n    columnToggle\n    reorderableColumns\n  >\n    <ng-template starColumnGroupHeader=\"Q2\" let-group let-span=\"span\">\n      {{ group.header }}, {{ span }} months\n    </ng-template>\n  </star-table>\n</docs-fill>",
   "table-layout/expansion": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-toggle-switch [(checked)]=\"single\">One row open at a time</star-toggle-switch>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"detailed.expandAll()\">\n      Expand all\n    </star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"detailed.collapseAll()\">\n      Collapse all\n    </star-button>\n  </div>\n  <docs-fill>\n    <star-table\n      #detailed\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with detail\"\n      [rowExpandMode]=\"single() ? 'single' : 'multiple'\"\n      [(expandedKeys)]=\"expanded\"\n      paginator\n      [rows]=\"4\"\n    >\n      <ng-template starRowExpansion [starRowExpansionOf]=\"orders\" let-row>\n        <dl class=\"detail\">\n          <dt>Email</dt>\n          <dd>{{ row.email }}</dd>\n          <dt>Quantity</dt>\n          <dd>{{ row.quantity }} x {{ row.product }}</dd>\n        </dl>\n      </ng-template>\n    </star-table>\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Open: {{ expanded().join(', ') || 'none' }}</p>\n</div>",
   "table-layout/footer": "<docs-fill>\n  <star-table\n    [value]=\"orders.slice(0, 6)\"\n    [columns]=\"footerColumns\"\n    dataKey=\"id\"\n    ariaLabel=\"Orders with totals\"\n  />\n</docs-fill>",
   "table-layout/groups": "<div class=\"docs-stack\">\n  <star-toggle-switch [(checked)]=\"grouped\">Group by region</star-toggle-switch>\n  <docs-fill>\n    <star-table\n      [value]=\"orders.slice(0, 12)\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders in groups\"\n      [groupBy]=\"grouped() ? 'region' : null\"\n      [(collapsedGroups)]=\"closed\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Closed: {{ closed().join(', ') || 'none' }}</p>\n</div>",

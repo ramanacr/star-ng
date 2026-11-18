@@ -1,5 +1,10 @@
 export * from './table';
 export {
+  StarColumnGroupHeaderTemplate,
+  type StarColumnGroup,
+  type StarColumnGroupHeaderContext,
+} from './table-column-groups';
+export {
   starCellError,
   type StarBatchChanges,
   type StarCellValidator,

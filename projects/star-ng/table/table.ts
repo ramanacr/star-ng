@@ -49,6 +49,15 @@ import { StarPopover } from '@star-ng/ui/popover';
 import { StarMultiSelect, StarSelect } from '@star-ng/ui/select';
 import { StarSkeleton } from '@star-ng/ui/skeleton';
 import {
+  clusterColumns,
+  groupPaths,
+  headerAssociations,
+  headerRows,
+  parentGroupOf,
+  StarColumnGroup,
+  StarColumnGroupHeaderContext,
+} from './table-column-groups';
+import {
   sameEditValue,
   StarBatchChanges,
   starCellError,
@@ -87,6 +96,7 @@ import {
   pinPlacements,
   pinSideOf,
   sameHeaderWidths,
+  spanPlacement,
   StarColumnPinEvent,
   StarColumnPins,
   StarHeaderWidths,
@@ -521,110 +531,167 @@ export class StarRowExpansionTemplate<T = unknown> {
         [attr.aria-rowcount]="ariaRowCount()"
       >
         <thead>
-          <tr [attr.aria-rowindex]="virtualScroll() ? 1 : null">
-            @if (reorderableRows()) {
-              <th class="star-table__reorder" scope="col" data-lead="reorder">
-                <span class="star-sr-only">{{ text.reorderRows }}</span>
-              </th>
-            }
-            @if (expandable()) {
-              <th class="star-table__expander" scope="col" data-lead="expander">
-                <span class="star-sr-only">{{ text.rowDetails }}</span>
-              </th>
-            }
-            @if (selectionMode() === 'multiple') {
-              <th class="star-table__select" scope="col" data-lead="select">
-                <star-checkbox
-                  #allBox
-                  [checked]="headerState() === true"
-                  [indeterminate]="headerState() === 'mixed'"
-                  [ariaLabel]="
-                    selectionPageOnly() && paginator() ? text.selectPageRows : text.selectAllRows
-                  "
-                  [disabled]="!headerEnabled()"
-                  (click)="boxEvent = $event"
-                  (checkedChange)="togglePage($event, allBox)"
-                />
-              </th>
-            } @else if (selectionMode() === 'single') {
-              <th class="star-table__select" scope="col" data-lead="select">
-                <span class="star-sr-only">{{ text.selectRow }}</span>
-              </th>
-            }
-            @for (column of visibleColumns(); track column.field) {
-              <th
-                scope="col"
-                [style.width]="widthOf(column)"
-                [style.min-width]="resizedWidth(column)"
-                [style.max-width]="resizedWidth(column)"
-                [starTablePin]="pinOf(column)"
-                [attr.data-field]="column.field"
-                [class]="'star-table__th star-table__cell--' + (column.align ?? 'start')"
-                [class.star-table__th--drop]="dropField() === column.field"
-                [attr.aria-sort]="ariaSort(column)"
-                [attr.draggable]="reorderableColumns() ? 'true' : null"
-                (dragstart)="onDragStart(column, $event)"
-                (dragover)="onDragOver(column, $event)"
-                (drop)="onDrop(column, $event)"
-                (dragend)="endDrag()"
-              >
-                @if (column.sortable) {
-                  <button
-                    type="button"
-                    class="star-table__sort"
-                    [attr.title]="multiSort() ? text.sortMultiHint : null"
-                    (click)="sortBy(column, $event)"
+          @for (headerRow of headerLayout(); track $index; let rowIndex = $index) {
+            <tr [attr.aria-rowindex]="virtualScroll() ? rowIndex + 1 : null">
+              @if (rowIndex === 0) {
+                @if (reorderableRows()) {
+                  <th
+                    class="star-table__reorder"
+                    [attr.rowspan]="headRowSpan()"
+                    scope="col"
+                    data-lead="reorder"
                   >
-                    <ng-container *ngTemplateOutlet="headerLabel; context: { $implicit: column }" />
-                    <i [class]="sortIcon(column)" aria-hidden="true"></i>
-                    @if (sortRank(column); as rank) {
-                      <span class="star-table__sort-rank">{{ rank }}</span>
+                    <span class="star-sr-only">{{ text.reorderRows }}</span>
+                  </th>
+                }
+                @if (expandable()) {
+                  <th
+                    class="star-table__expander"
+                    [attr.rowspan]="headRowSpan()"
+                    scope="col"
+                    data-lead="expander"
+                  >
+                    <span class="star-sr-only">{{ text.rowDetails }}</span>
+                  </th>
+                }
+                @if (selectionMode() === 'multiple') {
+                  <th
+                    class="star-table__select"
+                    [attr.rowspan]="headRowSpan()"
+                    scope="col"
+                    data-lead="select"
+                  >
+                    <star-checkbox
+                      #allBox
+                      [checked]="headerState() === true"
+                      [indeterminate]="headerState() === 'mixed'"
+                      [ariaLabel]="
+                        selectionPageOnly() && paginator()
+                          ? text.selectPageRows
+                          : text.selectAllRows
+                      "
+                      [disabled]="!headerEnabled()"
+                      (click)="boxEvent = $event"
+                      (checkedChange)="togglePage($event, allBox)"
+                    />
+                  </th>
+                } @else if (selectionMode() === 'single') {
+                  <th
+                    class="star-table__select"
+                    [attr.rowspan]="headRowSpan()"
+                    scope="col"
+                    data-lead="select"
+                  >
+                    <span class="star-sr-only">{{ text.selectRow }}</span>
+                  </th>
+                }
+              }
+              @for (cell of headerRow; track cell.key) {
+                @if (cell.kind === 'group') {
+                  <th
+                    scope="colgroup"
+                    class="star-table__th star-table__column-group"
+                    [attr.colspan]="cell.columns.length"
+                    [attr.id]="headerIds()?.cells?.get(cell.key) ?? null"
+                    [starTablePin]="groupPinOf(cell.columns)"
+                  >
+                    @if (groupHeaderSlot(cell.group.header); as custom) {
+                      <ng-container
+                        *ngTemplateOutlet="
+                          custom;
+                          context: { $implicit: cell.group, span: cell.columns.length }
+                        "
+                      />
+                    } @else {
+                      {{ cell.group.header }}
                     }
-                  </button>
+                  </th>
                 } @else {
-                  <ng-container *ngTemplateOutlet="headerLabel; context: { $implicit: column }" />
+                  @let column = cell.column;
+                  <th
+                    scope="col"
+                    [attr.rowspan]="cell.rowspan > 1 ? cell.rowspan : null"
+                    [attr.id]="headerIds()?.cells?.get(cell.key) ?? null"
+                    [style.width]="widthOf(column)"
+                    [style.min-width]="resizedWidth(column)"
+                    [style.max-width]="resizedWidth(column)"
+                    [starTablePin]="pinOf(column)"
+                    [attr.data-field]="column.field"
+                    [class]="'star-table__th star-table__cell--' + (column.align ?? 'start')"
+                    [class.star-table__th--drop]="dropField() === column.field"
+                    [attr.aria-sort]="ariaSort(column)"
+                    [attr.draggable]="reorderableColumns() ? 'true' : null"
+                    (dragstart)="onDragStart(column, $event)"
+                    (dragover)="onDragOver(column, $event)"
+                    (drop)="onDrop(column, $event)"
+                    (dragend)="endDrag()"
+                  >
+                    @if (column.sortable) {
+                      <button
+                        type="button"
+                        class="star-table__sort"
+                        [attr.title]="multiSort() ? text.sortMultiHint : null"
+                        (click)="sortBy(column, $event)"
+                      >
+                        <ng-container
+                          *ngTemplateOutlet="headerLabel; context: { $implicit: column }"
+                        />
+                        <i [class]="sortIcon(column)" aria-hidden="true"></i>
+                        @if (sortRank(column); as rank) {
+                          <span class="star-table__sort-rank">{{ rank }}</span>
+                        }
+                      </button>
+                    } @else {
+                      <ng-container
+                        *ngTemplateOutlet="headerLabel; context: { $implicit: column }"
+                      />
+                    }
+                    @if (column.filter && filterDisplay() === 'menu') {
+                      <star-table-filter-menu
+                        [header]="column.header"
+                        [type]="column.filter"
+                        [value]="filters()[column.field]"
+                        [matchModes]="column.filterMatchModes ?? []"
+                        [defaultMode]="column.filterMatchMode ?? null"
+                        [choices]="
+                          column.filter === 'select' || column.filter === 'multiselect'
+                            ? filterChoices(column)
+                            : []
+                        "
+                        [maxRules]="filterMaxRules()"
+                        [showApply]="showApplyButton()"
+                        (filterChange)="setFilter(column.field, $event ?? '')"
+                      />
+                    }
+                    @if (resizableColumns()) {
+                      <span
+                        class="star-table__resizer"
+                        role="separator"
+                        aria-orientation="vertical"
+                        tabindex="0"
+                        [attr.aria-label]="text.resizeColumn(column.header)"
+                        [attr.aria-valuenow]="resizeNow(column)"
+                        [attr.aria-valuemin]="minColumnWidth"
+                        [attr.aria-valuemax]="resizeMax(column)"
+                        (pointerdown)="startResize(column, $event)"
+                        (keydown)="onResizeKey(column, $event)"
+                      ></span>
+                    }
+                  </th>
                 }
-                @if (column.filter && filterDisplay() === 'menu') {
-                  <star-table-filter-menu
-                    [header]="column.header"
-                    [type]="column.filter"
-                    [value]="filters()[column.field]"
-                    [matchModes]="column.filterMatchModes ?? []"
-                    [defaultMode]="column.filterMatchMode ?? null"
-                    [choices]="
-                      column.filter === 'select' || column.filter === 'multiselect'
-                        ? filterChoices(column)
-                        : []
-                    "
-                    [maxRules]="filterMaxRules()"
-                    [showApply]="showApplyButton()"
-                    (filterChange)="setFilter(column.field, $event ?? '')"
-                  />
-                }
-                @if (resizableColumns()) {
-                  <span
-                    class="star-table__resizer"
-                    role="separator"
-                    aria-orientation="vertical"
-                    tabindex="0"
-                    [attr.aria-label]="text.resizeColumn(column.header)"
-                    [attr.aria-valuenow]="resizeNow(column)"
-                    [attr.aria-valuemin]="minColumnWidth"
-                    [attr.aria-valuemax]="resizeMax(column)"
-                    (pointerdown)="startResize(column, $event)"
-                    (keydown)="onResizeKey(column, $event)"
-                  ></span>
-                }
-              </th>
-            }
-            @if (rowEditMode()) {
-              <th class="star-table__row-actions" scope="col">
-                <span class="star-sr-only">{{ text.rowActions }}</span>
-              </th>
-            }
-          </tr>
+              }
+              @if (rowIndex === 0 && rowEditMode()) {
+                <th class="star-table__row-actions" [attr.rowspan]="headRowSpan()" scope="col">
+                  <span class="star-sr-only">{{ text.rowActions }}</span>
+                </th>
+              }
+            </tr>
+          }
           @if (hasColumnFilters()) {
-            <tr class="star-table__filters" [attr.aria-rowindex]="virtualScroll() ? 2 : null">
+            <tr
+              class="star-table__filters"
+              [attr.aria-rowindex]="virtualScroll() ? headerLayout().length + 1 : null"
+            >
               @if (reorderableRows()) {
                 <td class="star-table__reorder"></td>
               }
@@ -845,6 +912,7 @@ export class StarRowExpansionTemplate<T = unknown> {
                     <td
                       [class]="'star-table__cell--' + (column.align ?? 'start')"
                       [starTablePin]="pinOf(column)"
+                      [attr.headers]="headerIds()?.headers?.get(column.field) ?? null"
                       [class.star-table__cell--changed]="isChanged(row, column)"
                       [attr.data-label]="column.header"
                     >
@@ -1296,6 +1364,15 @@ export class StarTable<T> {
   readonly pinnedColumns = model<StarColumnPins>({});
   /** The user (or `pinColumn()`) pinned or unpinned a column. AG Grid `columnPinned`. */
   readonly columnPin = output<StarColumnPinEvent>();
+  /**
+   * Column groups: header cells that span the columns of a group, in extra header rows above the
+   * column headers (`{ header, children }`, children are column fields or nested groups). Columns
+   * of a group stay together: a moved column stays inside its group, a hidden column shrinks the
+   * group, and a group is pinned when all its columns are. Body cells name their group headers
+   * with `headers`. PrimeNG header column groups, Ignite UI `igx-column-group`, AG Grid
+   * `ColGroupDef`.
+   */
+  readonly columnGroups = input<readonly StarColumnGroup[]>([]);
 
   /**
    * Sort by more than one column: Shift + click (or Shift + Enter) on a header adds it as the
@@ -1433,10 +1510,25 @@ export class StarTable<T> {
   protected readonly radioName = `star-table-${Math.random().toString(36).slice(2)}`;
   protected readonly clickable = computed(() => this.selectionMode() === 'single');
 
-  /** All columns in display order: start pins, then `columnOrder`, then end pins. */
+  /** Groups above each column field (`columnGroups`). */
+  private readonly groupPaths = computed(() => groupPaths(this.columnGroups()));
+
+  /**
+   * All columns in display order: start pins, then `columnOrder`, then end pins. The columns of a
+   * group stay together within each side.
+   */
   protected readonly orderedColumns = computed(() => {
     const pins = this.pinnedColumns();
-    return orderColumns(this.columns(), this.columnOrder(), (column) => pinSideOf(column, pins));
+    const sideOf = (column: StarColumn<T>) => pinSideOf(column, pins);
+    const ordered = orderColumns(this.columns(), this.columnOrder(), sideOf);
+    const paths = this.groupPaths();
+    if (!paths.size) return ordered;
+    return (['start', null, 'end'] as const).flatMap((side) =>
+      clusterColumns(
+        ordered.filter((column) => sideOf(column) === side),
+        paths,
+      ),
+    );
   });
 
   protected readonly visibleColumns = computed(() => {
@@ -1609,8 +1701,39 @@ export class StarTable<T> {
         this.responsiveLayout() === 'stack'),
   );
 
-  /** Header rows: the column headings, and the filter row when there is one. */
-  private readonly headerRows = computed(() => (this.hasColumnFilters() ? 2 : 1));
+  /** Header rows: the group rows, the column headings, and the filter row when there is one. */
+  private readonly headerRows = computed(
+    () => this.headerLayout().length + (this.hasColumnFilters() ? 1 : 0),
+  );
+
+  /** Rows of header cells: group rows (`columnGroups`), then the column headers. */
+  protected readonly headerLayout = computed(() =>
+    headerRows(this.visibleColumns(), this.groupPaths()),
+  );
+  /** `rowspan` of the cells that span all header rows (selection, expander, actions). */
+  protected readonly headRowSpan = computed(() => {
+    const rows = this.headerLayout().length;
+    return rows > 1 ? rows : null;
+  });
+  /** Ids of the header cells and the `headers` of each body cell, with column groups only. */
+  protected readonly headerIds = computed(() =>
+    this.columnGroups().length ? headerAssociations(this.headerLayout(), this.radioName) : null,
+  );
+  protected readonly groupHeaderSlots = starSlotMap<StarColumnGroupHeaderContext>(
+    this.slots,
+    this,
+    'columnGroupHeader',
+  );
+
+  protected groupHeaderSlot(header: string) {
+    const slots = this.groupHeaderSlots();
+    return slots.get(header) ?? slots.get('') ?? null;
+  }
+
+  /** A group header cell is pinned when all its columns are pinned on one side. */
+  protected groupPinOf(columns: readonly StarColumn<T>[]): StarPinPlacement | null {
+    return spanPlacement(columns.map((column) => this.pinOf(column)));
+  }
 
   /** `aria-rowcount` with virtual scroll: header, body (headings, rows, detail rows) and footer. */
   protected readonly ariaRowCount = computed(() => {
@@ -2243,8 +2366,9 @@ export class StarTable<T> {
   }
 
   /**
-   * Moves a column to the place of another column. A pinned column moves within its side only:
-   * a move to a column of another side does nothing.
+   * Moves a column to the place of another column. A pinned column moves within its side only,
+   * and a column of a group within its group: a move to a column of another side or group does
+   * nothing.
    */
   moveColumn(field: string, targetField: string): void {
     if (!this.canMoveTo(field, targetField)) return;
@@ -2260,7 +2384,14 @@ export class StarTable<T> {
     const columns = this.orderedColumns();
     const from = columns.find((column) => column.field === field);
     const to = columns.find((column) => column.field === targetField);
-    return !!from && !!to && from !== to && this.sideOf(from) === this.sideOf(to);
+    const paths = this.groupPaths();
+    return (
+      !!from &&
+      !!to &&
+      from !== to &&
+      this.sideOf(from) === this.sideOf(to) &&
+      parentGroupOf(field, paths) === parentGroupOf(targetField, paths)
+    );
   }
 
   /** The neighbour column in the panel list, when the column can take its place. */

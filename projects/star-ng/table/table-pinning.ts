@@ -182,3 +182,20 @@ export const PIN_ACTIONS = [
   { side: 'end', key: 'end', label: 'pinColumnEnd', icon: 'ph-bold ph-arrow-line-right' },
   { side: null, key: 'unpin', label: 'unpinColumn', icon: 'ph-bold ph-push-pin-slash' },
 ] as const;
+
+/**
+ * Placement of a cell that spans columns (a column group header): pinned when all its columns are
+ * pinned on one side, at the offset of the column next to the edge of that side.
+ */
+export function spanPlacement(
+  placements: readonly (StarPinPlacement | null)[],
+): StarPinPlacement | null {
+  const first = placements[0];
+  if (!first || placements.some((placement) => placement?.side !== first.side)) return null;
+  const outer = first.side === 'start' ? first : placements[placements.length - 1]!;
+  return {
+    side: first.side,
+    offset: outer.offset,
+    edge: placements.some((placement) => placement!.edge),
+  };
+}

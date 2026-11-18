@@ -1,9 +1,15 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { StarButton } from '@star-ng/ui/button';
-import { StarColumn, StarRowExpansionTemplate, StarTable } from '@star-ng/ui/table';
+import {
+  StarColumn,
+  StarColumnGroupHeaderTemplate,
+  StarRowExpansionTemplate,
+  StarTable,
+} from '@star-ng/ui/table';
 import { StarToggleSwitch } from '@star-ng/ui/toggle-switch';
 import { DOCS, DocsRow } from '../shared/docs';
 import { DocsFill, formatMoney, Order, orderColumns, ORDERS } from './table-demo';
+import { CITY_SALES, CitySales, SALES_GROUPS, salesColumns } from './table-sales-demo';
 
 interface LogEntry {
   readonly id: string;
@@ -57,7 +63,15 @@ const LOG: readonly LogEntry[] = Array.from({ length: 5000 }, (_, i) => ({
 
 @Component({
   selector: 'docs-table-layout-page',
-  imports: [DOCS, StarTable, StarRowExpansionTemplate, StarButton, StarToggleSwitch, DocsFill],
+  imports: [
+    DOCS,
+    StarTable,
+    StarRowExpansionTemplate,
+    StarColumnGroupHeaderTemplate,
+    StarButton,
+    StarToggleSwitch,
+    DocsFill,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <docs-page
@@ -142,6 +156,29 @@ const LOG: readonly LogEntry[] = Array.from({ length: 5000 }, (_, i) => ({
             dataKey="id"
             ariaLabel="Orders with totals"
           />
+        </docs-fill>
+      </docs-example>
+
+      <docs-example
+        heading="Column groups"
+        source="table-layout/column-groups"
+        [script]="columnGroupScript"
+        note="columnGroups adds header rows above the column headers: each group header spans its columns (colspan), and a column outside a group spans all header rows (rowspan). Groups nest. A group header has scope colgroup, and each body cell names its group and column headers with the headers attribute. Hide a month in the Columns panel: its group gets narrower. A moved column stays inside its group. An ng-template with starColumnGroupHeader replaces the label of a group (here Q2)."
+      >
+        <docs-fill>
+          <star-table
+            [value]="sales"
+            [columns]="salesColumns"
+            [columnGroups]="salesGroups"
+            dataKey="id"
+            ariaLabel="Sales by region and quarter"
+            columnToggle
+            reorderableColumns
+          >
+            <ng-template starColumnGroupHeader="Q2" let-group let-span="span">
+              {{ group.header }}, {{ span }} months
+            </ng-template>
+          </star-table>
         </docs-fill>
       </docs-example>
 
@@ -262,7 +299,7 @@ const LOG: readonly LogEntry[] = Array.from({ length: 5000 }, (_, i) => ({
       </docs-example>
 
       <docs-api
-        [of]="['StarTable', 'StarRowExpansionTemplate']"
+        [of]="['StarTable', 'StarRowExpansionTemplate', 'StarColumnGroupHeaderTemplate']"
         [slots]="slots"
         [keyboard]="keyboard"
       />
@@ -353,6 +390,20 @@ export class TableLayoutPage {
     },
   ];
 
+  protected readonly sales: readonly CitySales[] = CITY_SALES;
+  protected readonly salesColumns: StarColumn<CitySales>[] = salesColumns();
+  protected readonly salesGroups = SALES_GROUPS;
+  protected readonly columnGroupScript = `readonly salesGroups: StarColumnGroup[] = [
+  { header: 'Location', children: ['region', 'city'] },
+  {
+    header: 'Sales',
+    children: [
+      { header: 'Q1', children: ['jan', 'feb', 'mar'] },
+      { header: 'Q2', children: ['apr', 'may', 'jun'] },
+    ],
+  },
+];`;
+
   protected readonly log: readonly LogEntry[] = LOG;
   protected readonly logColumns: StarColumn<LogEntry>[] = [
     { field: 'id', header: 'Entry', width: '8rem', sortable: true },
@@ -422,6 +473,11 @@ readonly closed = signal<readonly string[]>([]);`;
 }));`;
 
   protected readonly slots: readonly DocsRow[] = [
+    {
+      name: 'ng-template[starColumnGroupHeader]',
+      description:
+        'Label of a column group header: starColumnGroupHeader="Q1" for one group (by header), empty for all groups. The context has $implicit (the group) and span (its rendered columns).',
+    },
     {
       name: 'ng-template[starRowExpansion]',
       description:

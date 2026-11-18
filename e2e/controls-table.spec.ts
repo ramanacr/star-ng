@@ -1195,6 +1195,36 @@ test.describe('table: layout', () => {
     expect(money(await footer.nth(3).textContent())).toBeCloseTo(sum(totals), 2);
   });
 
+  test('spans column groups over their columns and names them in the cells', async ({ page }) => {
+    await openPage(page, '/controls/table-layout', 'Table layout');
+    const live = example(page, 'Column groups');
+    const table = live.getByRole('table', { name: 'Sales by region and quarter' });
+    await expect(table.locator('thead tr')).toHaveCount(3);
+    const sales = table.getByRole('columnheader', { name: 'Sales', exact: true });
+    await expect(sales).toHaveAttribute('colspan', '6');
+    await expect(sales).toHaveAttribute('scope', 'colgroup');
+    await expect(table.getByRole('columnheader', { name: 'Q2, 3 months' })).toBeVisible();
+    // The cell of March names Sales, Q1 and Mar.
+    const ids = (await bodyRows(table).first().locator('td').nth(4).getAttribute('headers'))!;
+    const names = await Promise.all(
+      ids.split(' ').map((id) => table.locator(`[id="${id}"]`).innerText()),
+    );
+    expect(names.map((name) => name.trim())).toEqual(['Sales', 'Q1', 'Mar']);
+    // The group is as wide as its columns.
+    const q1 = (await table.getByRole('columnheader', { name: 'Q1' }).boundingBox())!;
+    const jan = (await table.getByRole('columnheader', { name: 'Jan' }).boundingBox())!;
+    const mar = (await table.getByRole('columnheader', { name: 'Mar' }).boundingBox())!;
+    expect(Math.abs(q1.x - jan.x)).toBeLessThan(2);
+    expect(Math.abs(q1.x + q1.width - (mar.x + mar.width))).toBeLessThan(2);
+
+    // Hiding a month shrinks its group.
+    await live.getByRole('button', { name: 'Columns' }).click();
+    await page.getByRole('checkbox', { name: 'Feb' }).uncheck();
+    await page.keyboard.press('Escape');
+    await expect(table.getByRole('columnheader', { name: 'Q1' })).toHaveAttribute('colspan', '2');
+    await expect(sales).toHaveAttribute('colspan', '5');
+  });
+
   test('stacks the rows as label and value lines in a narrow table', async ({ page }) => {
     await openPage(page, '/controls/table-layout', 'Table layout');
     const live = example(page, 'Stacked layout');

@@ -168,8 +168,12 @@ star-select.star-table__filter {
     td {
       display: block;
     }
-    // Header row: only what the user can act on (select all, sort) stays, as a wrap row.
-    thead tr:first-child {
+    // Header rows: only what the user can act on (select all, sort) stays, as a wrap row. A
+    // row of column group headers only has nothing left.
+    thead tr:not(.star-table__filters):not(:has(.star-table__sort, .star-table__select)) {
+      display: none;
+    }
+    thead tr:not(.star-table__filters) {
       display: flex;
       flex-wrap: wrap;
       gap: 0.25rem 1rem;
@@ -319,6 +323,12 @@ star-select.star-table__filter {
     opacity: 0.35;
     cursor: default;
   }
+}
+// A column group header (`columnGroups`): spans the columns of the group, with a line at the
+// start of the group.
+.star-table__column-group {
+  text-align: center;
+  border-inline-start: 1px solid var(--star-border);
 }
 .star-table__th {
   position: relative;
