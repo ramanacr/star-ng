@@ -5,6 +5,7 @@ import {
   booleanAttribute,
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   DOCUMENT,
   effect,
   ElementRef,
@@ -261,6 +262,9 @@ export class StarWindow {
       }
       previous = state;
     });
+    // Destroyed while open (for example its page went away): leave the stack, so the order and
+    // the cascade of the other windows stay right. No `closed` output from a destroyed component.
+    inject(DestroyRef).onDestroy(() => this.markClosed(false));
     afterRenderEffect({
       write: () => {
         const element = this.dialog().nativeElement;
@@ -496,10 +500,11 @@ export class StarWindow {
     );
   }
 
-  private markClosed(): void {
+  /** Leaves the stack once per open; emits `closed` unless the window is being destroyed. */
+  private markClosed(emit = true): void {
     if (!this.isOpen) return;
     this.isOpen = false;
     this.stack.remove(this);
-    this.closed.emit();
+    if (emit) this.closed.emit();
   }
 }

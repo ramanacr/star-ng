@@ -8,6 +8,7 @@ import {
   StarWindowRef,
   StarWindowService,
   StarWindowSize,
+  StarWindowStack,
   StarWindowState,
 } from '@star-ng/ui/window';
 
@@ -277,6 +278,14 @@ describe('StarWindow', () => {
     dialog.querySelector('p')!.dispatchEvent(event);
     await fixture.whenStable();
     expect(fixture.componentInstance.open()).toBe(true);
+  });
+
+  it('leaves the stack when it is destroyed while open', async () => {
+    const { fixture } = await setup();
+    const stack = TestBed.inject(StarWindowStack);
+    expect(stack.openCount()).toBe(1);
+    fixture.destroy();
+    expect(stack.openCount()).toBe(0);
   });
 
   it('reads its texts from STAR_UI_TEXT', async () => {
