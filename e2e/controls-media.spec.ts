@@ -275,6 +275,14 @@ test.describe('editor', () => {
     await expect(area.locator('a')).toHaveCount(0);
     await expect(valueOf(live)).toContainText('Tracking');
 
+    // A host name without a scheme is accepted and gets https:// (no browser URL check).
+    await page.keyboard.press('Control+A');
+    await link.click();
+    await address.fill('example.com/x');
+    await page.keyboard.press('Enter');
+    await expect(address).toHaveCount(0);
+    await expect(area.locator('a')).toHaveAttribute('href', 'https://example.com/x');
+
     // Escape closes the form and the focus goes back to the text.
     await link.click();
     // The form moves the focus to its field after it renders; Escape works from there.

@@ -200,8 +200,11 @@ describe('StarEditor link popover', () => {
     expect(button('Link').getAttribute('aria-expanded')).toBe('true');
     const popover = el.querySelector<HTMLElement>('star-editor-link')!;
     expect(popover.getAttribute('role')).toBe('group');
-    const field = popover.querySelector<HTMLInputElement>('input[type=url]')!;
+    const field = popover.querySelector<HTMLInputElement>('input[inputmode=url]')!;
     expect(document.activeElement).toBe(field);
+    // No native URL check: it would block "example.com/x" and "/orders/1".
+    expect(field.type).toBe('text');
+    expect(popover.querySelector('form')!.noValidate).toBe(true);
     expect(popover.textContent).not.toContain('Remove link');
 
     // An unsafe address is refused with a message.
@@ -237,7 +240,7 @@ describe('StarEditor link popover', () => {
     button('Link').click();
     await fixture.whenStable();
     let popover = el.querySelector<HTMLElement>('star-editor-link')!;
-    const field = popover.querySelector<HTMLInputElement>('input[type=url]')!;
+    const field = popover.querySelector<HTMLInputElement>('input[inputmode=url]')!;
     expect(field.value).toBe('https://example.com/a');
     key(field, { key: 'Escape' });
     await fixture.whenStable();

@@ -64,12 +64,14 @@ export function starEditorSetLink(anchor: HTMLAnchorElement, value: StarEditorLi
     '(keydown.escape)': 'onEscape($event)',
   },
   template: `
-    <form class="star-editor__link-form" (submit)="submit($event)">
+    <!-- novalidate and type="text": the browser check of type="url" refuses a host name
+      without a scheme and a path on the site, which the editor accepts. -->
+    <form class="star-editor__link-form" novalidate (submit)="submit($event)">
       <label class="star-editor__link-label" [for]="inputId">{{ text.editorLinkPrompt }}</label>
       <input
         #address
         class="star-input star-input--sm"
-        type="url"
+        type="text"
         inputmode="url"
         autocomplete="url"
         [id]="inputId"
