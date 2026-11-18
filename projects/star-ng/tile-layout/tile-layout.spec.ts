@@ -261,3 +261,30 @@ describe('StarTileLayout', () => {
     expect(live()).toBe('Tile a 2/4');
   });
 });
+
+@Component({
+  imports: [StarTileLayout, StarTile],
+  template: `
+    <star-tile-layout>
+      <star-tile key="plain">Body only</star-tile>
+      <star-tile key="titled"><span starTileHeader>Titled</span>Body</star-tile>
+    </star-tile-layout>
+  `,
+})
+class PlainHost {}
+
+describe('StarTile without a label', () => {
+  it('falls back to the key as its name when there is no header either', async () => {
+    const fixture = TestBed.createComponent(PlainHost);
+    await fixture.whenStable();
+    const [plain, titled] = [
+      ...(fixture.nativeElement as HTMLElement).querySelectorAll<HTMLElement>('star-tile'),
+    ];
+    expect(plain.getAttribute('aria-label')).toBe('plain');
+    expect(plain.hasAttribute('aria-labelledby')).toBe(false);
+    expect(titled.hasAttribute('aria-label')).toBe(false);
+    expect(titled.getAttribute('aria-labelledby')).toBe(
+      titled.querySelector('.star-tile__header')?.id,
+    );
+  });
+});

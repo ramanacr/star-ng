@@ -1,6 +1,7 @@
 import { _IdGenerator } from '@angular/cdk/a11y';
 import { CdkDrag, CdkDragDrop, CdkDropList, moveItemInArray } from '@angular/cdk/drag-drop';
 import {
+  afterEveryRender,
   afterNextRender,
   booleanAttribute,
   ChangeDetectionStrategy,
@@ -249,7 +250,7 @@ export class StarTileLayout {
 
 /**
  * One tile of `star-tile-layout` (Material `mat-grid-tile`, Kendo UI `TileLayoutItem`). It is a
- * `role="group"` named by `label`, or by its header when there is no `label`.
+ * `role="group"` named by `label`, else by its header, else by its `key`.
  *
  * Areas: `[starTileHeader]` (title row) and the default content (body). In a reorderable or
  * resizable layout the tile is focusable; the keys work while the tile itself has the focus,
@@ -262,8 +263,8 @@ export class StarTileLayout {
   host: {
     class: 'star-tile',
     role: 'group',
-    '[attr.aria-label]': 'label() || null',
-    '[attr.aria-labelledby]': 'label() ? null : headerId',
+    '[attr.aria-label]': 'label() || (hasHeader() ? null : key())',
+    '[attr.aria-labelledby]': 'label() || !hasHeader() ? null : headerId',
     '[attr.aria-describedby]': 'layout.interactive() ? layout.hintId : null',
     '[attr.tabindex]': 'layout.interactive() ? 0 : null',
     '[style.--star-tile-col-span]': 'colSpan()',
@@ -307,8 +308,17 @@ export class StarTile {
   /** @internal The column span, never wider than the columns in force. */
   readonly spanNow = computed(() => Math.min(this.colSpan(), this.layout.columnsNow()));
 
+  /** @internal `true` while the header area has content; without it the key names the tile. */
+  readonly hasHeader = signal(false);
+
   constructor() {
     effect(() => (this.drag.disabled = !this.layout.reorderable()));
+    // The header is projected content: check after each render whether it has any.
+    afterEveryRender(() => {
+      const header = this.element.querySelector('.star-tile__header');
+      const has = !!header && (header.children.length > 0 || !!header.textContent?.trim());
+      if (has !== this.hasHeader()) this.hasHeader.set(has);
+    });
   }
 
   /** @internal Name for the announcements: the label, the header text or the key. */
