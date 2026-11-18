@@ -1043,6 +1043,18 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'query builder with a nested group and incomplete rules',
+    path: 'controls/query-builder',
+    open: async (page) => {
+      const live = example(page, 'Filter a table');
+      await live.getByRole('button', { name: 'Add group' }).first().click();
+      await expect(live.locator('.star-query__group')).toHaveCount(2);
+      // Leave the builder, so the incomplete rule shows its invalid state.
+      await live.getByRole('status').click();
+      await expect(live.locator('.star-query__rule--invalid')).toHaveCount(1);
+    },
+  },
+  {
     name: 'tree with a loading row',
     path: 'controls/tree',
     open: async (page) => {

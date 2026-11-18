@@ -302,6 +302,32 @@ export interface StarUiText {
     max: string,
   ) => string;
   readonly meterValue: (value: string, total: number) => string;
+  // Query builder
+  /** Name of a group whose rules must all match. */
+  readonly queryGroupAll: string;
+  /** Name of a group where one rule must match. */
+  readonly queryGroupAny: string;
+  readonly queryField: string;
+  readonly queryValue: string;
+  readonly addGroup: string;
+  readonly removeGroup: string;
+  /** Hint of a focused rule row. */
+  readonly queryRuleHint: string;
+  readonly queryRuleRemoved: (rule: string) => string;
+  readonly queryRuleRestored: (rule: string) => string;
+  readonly queryTrue: string;
+  readonly queryFalse: string;
+  /** Words that join the rules in the summary text. */
+  readonly queryAnd: string;
+  readonly queryOr: string;
+  /** Summary of a query without rules. */
+  readonly queryEmpty: string;
+  /** One rule in the summary text, for example "Total greater than 100". */
+  readonly queryRuleSummary: (field: string, mode: string, value: string) => string;
+  /** The two values of a `between` rule in the summary text. */
+  readonly queryRange: (min: string, max: string) => string;
+  /** Error of a query with rules that have no value. */
+  readonly queryIncomplete: string;
 }
 
 export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
@@ -572,6 +598,24 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   chartDescription: (kind, series, items, min, max) =>
     `${kind} with ${series} series and ${items} ${items === 1 ? 'item' : 'items'}, values from ${min} to ${max}. The same data is in the table.`,
   meterValue: (value, total) => `${value} of ${total}`,
+
+  queryGroupAll: 'Match all of',
+  queryGroupAny: 'Match any of',
+  queryField: 'Field',
+  queryValue: 'Value',
+  addGroup: 'Add group',
+  removeGroup: 'Remove group',
+  queryRuleHint: 'Delete removes the rule. Alt and the up or down arrow move it.',
+  queryRuleRemoved: (rule) => `${rule} removed. Press Control and Z to undo.`,
+  queryRuleRestored: (rule) => `${rule} restored.`,
+  queryTrue: 'Yes',
+  queryFalse: 'No',
+  queryAnd: 'and',
+  queryOr: 'or',
+  queryEmpty: 'No conditions',
+  queryRuleSummary: (field, mode, value) => `${field} ${mode.toLocaleLowerCase('en')} ${value}`,
+  queryRange: (min, max) => `${min} and ${max}`,
+  queryIncomplete: 'Complete or remove the rules without a value.',
 };
 
 /** Parameter names of the function entries, in call order (used for `{{ name }}` in translations). */
@@ -629,6 +673,10 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   previewImage: ['alt'],
   meterValue: ['value', 'total'],
   chartDescription: ['kind', 'series', 'items', 'min', 'max'],
+  queryRuleRemoved: ['rule'],
+  queryRuleRestored: ['rule'],
+  queryRuleSummary: ['field', 'mode', 'value'],
+  queryRange: ['min', 'max'],
 };
 
 export const STAR_UI_TEXT = new InjectionToken<StarUiText>('STAR_UI_TEXT', {

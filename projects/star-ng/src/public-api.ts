@@ -45,6 +45,7 @@ export * from '@star-ng/ui/panel';
 export * from '@star-ng/ui/password';
 export * from '@star-ng/ui/popover';
 export * from '@star-ng/ui/progress-bar';
+export * from '@star-ng/ui/query-builder';
 export * from '@star-ng/ui/radio';
 export * from '@star-ng/ui/rating';
 export * from '@star-ng/ui/select';

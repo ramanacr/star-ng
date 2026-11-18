@@ -4033,6 +4033,135 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarKanban": {
+    "kind": "component",
+    "selector": "star-kanban",
+    "entry": "@star-ng/ui/kanban",
+    "description": "Kanban board (Syncfusion `ejs-kanban`, Kendo UI `kendo-taskboard`; Ignite UI has none): columns of cards, optional swimlanes, work-in-progress limits and collapsible columns.",
+    "inputs": [
+      {
+        "name": "columns",
+        "type": "readonly StarKanbanColumn[]",
+        "default": "[]",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "items",
+        "type": "readonly T[]",
+        "default": "[]",
+        "required": false,
+        "description": "The cards. The board never changes this array or its items."
+      },
+      {
+        "name": "columnKey",
+        "type": "StarKanbanAccessor<T, string>",
+        "default": null,
+        "required": true,
+        "description": "Column key of an item: a property name or a function."
+      },
+      {
+        "name": "itemKey",
+        "type": "StarKanbanAccessor<T, unknown>",
+        "default": "'id'",
+        "required": false,
+        "description": "Unique key of an item (default: the `id` property)."
+      },
+      {
+        "name": "order",
+        "type": "StarKanbanAccessor<T, number> | null",
+        "default": "null",
+        "required": false,
+        "description": "Number that sorts the cards in a cell (default: the order of `items`)."
+      },
+      {
+        "name": "itemLabel",
+        "type": "StarKanbanAccessor<T, string> | null",
+        "default": "null",
+        "required": false,
+        "description": "Name of a card in the announcements (default: its key)."
+      },
+      {
+        "name": "swimlanes",
+        "type": "readonly StarKanbanSwimlane[]",
+        "default": "[]",
+        "required": false,
+        "description": "Rows of the board; empty for a board without swimlanes."
+      },
+      {
+        "name": "swimlaneKey",
+        "type": "StarKanbanAccessor<T, string> | null",
+        "default": "null",
+        "required": false,
+        "description": "Swimlane key of an item. Items with an unknown key go to the first lane."
+      },
+      {
+        "name": "enforceLimits",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Blocks a move into a column that has `limit` items or more."
+      },
+      {
+        "name": "collapsible",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows a button that collapses and expands each column."
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Turns drag and drop and the keyboard moves off."
+      }
+    ],
+    "models": [
+      {
+        "name": "collapsed",
+        "type": "readonly string[]",
+        "default": "[]",
+        "required": false,
+        "description": "Keys of the collapsed columns."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "itemMove",
+        "type": "StarKanbanMove<T>",
+        "default": null,
+        "required": false,
+        "description": "Emits each move of a card; the owner applies it to `items`."
+      }
+    ]
+  },
+  "StarKanbanCard": {
+    "kind": "directive",
+    "selector": "ng-template[starKanbanCard]",
+    "entry": "@star-ng/ui/kanban",
+    "description": "Template of a card. Context: the item (`let-task`), `column` and `swimlane`.",
+    "inputs": [
+      {
+        "name": "starKanbanCard",
+        "type": "readonly T[] | '' | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "Type of the items, for type checking the template context: `[starKanbanCard]=\"tasks()\"`."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
+  "StarKanbanHeader": {
+    "kind": "directive",
+    "selector": "ng-template[starKanbanHeader]",
+    "entry": "@star-ng/ui/kanban",
+    "description": "Template of a column header. Context: the column, `count`, `over` and `collapsed`.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
   "StarKnob": {
     "kind": "component",
     "selector": "star-knob",
@@ -5730,6 +5859,84 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "null",
         "required": false,
         "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
+  "StarQueryBuilder": {
+    "kind": "component",
+    "selector": "star-query-builder",
+    "entry": "@star-ng/ui/query-builder",
+    "description": "Query builder: nested groups of filter rules joined with \"and\" or \"or\" (Ignite UI `igx-query-builder`, Syncfusion `ejs-querybuilder`, Kendo UI `kendo-filter`). Each rule has a field, a match mode (the modes of the `star-table` filter) and a value editor by field type.",
+    "inputs": [
+      {
+        "name": "fields",
+        "type": "readonly StarQueryField<never>[]",
+        "default": "[]",
+        "required": false,
+        "description": "Fields that a rule can test."
+      },
+      {
+        "name": "maxDepth",
+        "type": "number",
+        "default": "3",
+        "required": false,
+        "description": "Most levels of groups, the root group included."
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "invalid",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Set by Signal Forms (`[formField]`) or by hand."
+      },
+      {
+        "name": "touched",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Set by Signal Forms (`[formField]`); the builder also counts as touched once the focus left it."
+      }
+    ],
+    "models": [
+      {
+        "name": "value",
+        "type": "StarQueryGroup",
+        "default": "{ operator: 'and', rules: [] }",
+        "required": false,
+        "description": "The query. The builder writes a new object on every change."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "touch",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "Emits when the focus leaves the builder (Signal Forms marks the field touched)."
+      }
+    ]
+  },
+  "StarQueryValue": {
+    "kind": "directive",
+    "selector": "ng-template[starQueryValue]",
+    "entry": "@star-ng/ui/query-builder",
+    "description": "Custom value editor of `star-query-builder`. Give field keys to use it for those fields only; without a value it serves every field.",
+    "inputs": [
+      {
+        "name": "starQueryValue",
+        "type": "string | readonly string[]",
+        "default": "''",
+        "required": false,
+        "description": "Field keys that this editor serves; empty for every field."
       }
     ],
     "models": [],
@@ -9354,6 +9561,10 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "progress-bar/basic": "<div class=\"docs-stack\">\n  <star-progress-bar [value]=\"value()\" showValue ariaLabel=\"Upload\" />\n  <div class=\"docs-row\">\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"step(-20)\">Less</star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"step(20)\">More</star-button>\n  </div>\n</div>",
   "progress-bar/indeterminate": "<div class=\"docs-stack\">\n  <star-progress-bar indeterminate ariaLabel=\"Loading\" />\n</div>",
   "progress-bar/severities": "<div class=\"docs-stack\">\n  <star-progress-bar [value]=\"60\" ariaLabel=\"Primary\" />\n  <star-progress-bar [value]=\"80\" severity=\"success\" ariaLabel=\"Success\" />\n  <star-progress-bar [value]=\"45\" severity=\"warn\" ariaLabel=\"Warning\" />\n  <star-progress-bar [value]=\"25\" severity=\"danger\" ariaLabel=\"Danger\" />\n  <star-progress-bar [value]=\"70\" severity=\"info\" size=\"sm\" ariaLabel=\"Info, thin\" />\n</div>",
+  "query-builder/custom": "<div class=\"docs-stack\">\n  <star-query-builder [fields]=\"customFields\" [(value)]=\"custom\">\n    <ng-template starQueryValue=\"region\" let-rule let-setValue=\"setValue\">\n      <star-select-button\n        size=\"sm\"\n        [options]=\"regions\"\n        [value]=\"regionOf(rule.value)\"\n        (valueChange)=\"setValue($event)\"\n        ariaLabel=\"Region\"\n      />\n    </ng-template>\n  </star-query-builder>\n  <p class=\"docs-output\" role=\"status\">\n    {{ customSummary() }} ({{ customRows().length }} orders)\n  </p>\n</div>",
+  "query-builder/forms": "<div class=\"docs-stack\">\n  <star-query-builder [fields]=\"fields\" [formField]=\"filter\" />\n  <p class=\"docs-output\" role=\"status\">\n    {{ filter().valid() ? 'Valid query.' : filter().errors()[0]?.message }}\n  </p>\n</div>",
+  "query-builder/nested": "<star-query-builder [fields]=\"fields\" [maxDepth]=\"3\" [(value)]=\"nested\" />",
+  "query-builder/table": "<div class=\"docs-stack\">\n  <star-query-builder [fields]=\"fields\" [(value)]=\"query\" />\n  <p class=\"docs-output\" role=\"status\">{{ summary() }} ({{ rows().length }} orders)</p>\n  <docs-fill>\n    <star-table\n      [value]=\"rows()\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Filtered orders\"\n      paginator\n      [rows]=\"5\"\n    />\n  </docs-fill>\n</div>",
   "radio/basic": "<star-radio-group [(value)]=\"plan\" ariaLabel=\"Plan\">\n  <star-radio value=\"starter\">Starter</star-radio>\n  <star-radio value=\"team\">Team</star-radio>\n  <star-radio value=\"business\">Business</star-radio>\n</star-radio-group>\n<p class=\"docs-output\" role=\"status\">Plan: {{ plan() }}</p>",
   "radio/disabled": "<star-radio-group [(value)]=\"delivery\" ariaLabel=\"Delivery\">\n  <star-radio value=\"standard\">Standard</star-radio>\n  <star-radio value=\"express\">Express</star-radio>\n  <star-radio value=\"pickup\" disabled>Pick-up (not available)</star-radio>\n</star-radio-group>",
   "radio/horizontal": "<star-radio-group [(value)]=\"size\" orientation=\"horizontal\" ariaLabel=\"Size\">\n  <star-radio value=\"s\">Small</star-radio>\n  <star-radio value=\"m\">Medium</star-radio>\n  <star-radio value=\"l\">Large</star-radio>\n</star-radio-group>",

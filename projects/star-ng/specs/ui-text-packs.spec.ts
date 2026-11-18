@@ -20,9 +20,21 @@ const SAME_AS_ENGLISH: Record<string, readonly Name[]> = {
     'chartX',
     'chartY',
     'minute',
+    // A rule summary only joins its parts: "Total größer als 100" (the mode text is translated).
+    'queryRuleSummary',
   ],
-  // "Color", "Editor" and "Total" are the Spanish words too. "X" and "Y" are axis names in every language.
-  es: ['colorLabel', 'editorLabel', 'chartTotal', 'chartX', 'chartY'],
+  // "Color", "Editor" and "Total" are the Spanish words too. "X" and "Y" are axis names in every
+  // language. "No" is the Spanish answer too.
+  // A rule summary only joins its parts (the mode text is translated).
+  es: [
+    'colorLabel',
+    'editorLabel',
+    'chartTotal',
+    'chartX',
+    'chartY',
+    'queryFalse',
+    'queryRuleSummary',
+  ],
 };
 
 const PACKS: Record<string, StarUiText> = { de: STAR_UI_TEXT_DE, es: STAR_UI_TEXT_ES };
@@ -35,6 +47,10 @@ const TEXT_PARAMS: Record<string, readonly string[]> = {
   fileMaxSize: ['size'],
   meterValue: ['value'],
   chartDescription: ['kind', 'min', 'max'],
+  queryRuleRemoved: ['rule'],
+  queryRuleRestored: ['rule'],
+  queryRuleSummary: ['field', 'mode', 'value'],
+  queryRange: ['min', 'max'],
 };
 const TEXT_NAMES = new Set(['label', 'column', 'name', 'alt']);
 

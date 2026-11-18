@@ -574,6 +574,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         load: () => import('./controls/table-sort-filter.page').then((m) => m.TableSortFilterPage),
       },
       {
+        label: 'Query builder',
+        path: 'controls/query-builder',
+        keywords: 'filter builder conditions rules groups and or predicate advanced search',
+        load: () => import('./controls/query-builder.page').then((m) => m.QueryBuilderPage),
+      },
+      {
         label: 'Table paging',
         path: 'controls/table-paging',
         keywords: 'pagination paginator lazy server side load rows per page',
