@@ -655,6 +655,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         keywords: 'tiny inline chart trend line area bar win loss table cell micro',
         load: () => import('./controls/sparkline.page').then((m) => m.SparklinePage),
       },
+      {
+        label: 'Gauge',
+        path: 'controls/gauge',
+        keywords: 'linear radial arc gauge meter dial needle scale ranges ticks kpi',
+        load: () => import('./controls/gauge.page').then((m) => m.GaugePage),
+      },
     ],
   },
   {

@@ -3160,6 +3160,123 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "outputs": []
   },
+  "StarGaugeBase": {
+    "kind": "directive",
+    "selector": "",
+    "entry": "@star-ng/ui/gauge",
+    "description": "Shared inputs and behaviour of `star-linear-gauge` and `star-radial-gauge`: the value and the scale, ranges, ticks, labels, formatting, motion and the optional interactive (slider) mode with keyboard, pointer and Signal Forms support.",
+    "inputs": [
+      {
+        "name": "min",
+        "type": "number | undefined",
+        "default": "0",
+        "required": false,
+        "description": "Lowest value of the scale. Also bound from a Signal Forms `min()` rule."
+      },
+      {
+        "name": "max",
+        "type": "number | undefined",
+        "default": "100",
+        "required": false,
+        "description": "Highest value of the scale. Also bound from a Signal Forms `max()` rule."
+      },
+      {
+        "name": "ranges",
+        "type": "readonly StarGaugeRange[]",
+        "default": "[]",
+        "required": false,
+        "description": "Coloured bands of the scale."
+      },
+      {
+        "name": "ticks",
+        "type": "StarGaugeTicks",
+        "default": "{ major: 5, minor: 2 }",
+        "required": false,
+        "description": "Major intervals (`major`) or the value between major ticks (`step`), and `minor` parts per interval."
+      },
+      {
+        "name": "labels",
+        "type": "boolean | Intl.NumberFormatOptions",
+        "default": "true",
+        "required": false,
+        "description": "Labels of the major ticks: `true` (default), `false`, or `Intl.NumberFormat` options that format the labels and the value text, for example `{ style: 'percent' }`."
+      },
+      {
+        "name": "locale",
+        "type": "string | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "Locale of the numbers (`Intl.NumberFormat`). Default: the runtime locale."
+      },
+      {
+        "name": "animate",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Animates the pointer when the value changes. Off when the user prefers reduced motion."
+      },
+      {
+        "name": "interactive",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Lets the user set the value: the gauge becomes a slider (keyboard and pointer)."
+      },
+      {
+        "name": "step",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Step of the keyboard and the pointer in interactive mode."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Label for assistive technology."
+      },
+      {
+        "name": "ariaLabelledby",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Id of the element that labels the gauge."
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "readonly",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [
+      {
+        "name": "value",
+        "type": "number",
+        "default": "0",
+        "required": false,
+        "description": "The value. Two-way bindable; a Signal Forms field in interactive mode."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "touch",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "Emits when an interactive gauge loses the focus."
+      }
+    ]
+  },
   "StarGroupTemplate": {
     "kind": "directive",
     "selector": "ng-template[starGroup]",
@@ -4114,6 +4231,30 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       }
     ]
+  },
+  "StarLinearGauge": {
+    "kind": "component",
+    "selector": "star-linear-gauge",
+    "entry": "@star-ng/ui/gauge",
+    "description": "Linear gauge: a value on a straight scale with ranges, ticks and labels. Kendo UI `kendo-lineargauge`, Ignite UI `igx-linear-gauge` and Syncfusion `ejs-lineargauge` are the equivalents.",
+    "inputs": [
+      {
+        "name": "pointer",
+        "type": "StarGaugePointer",
+        "default": "'bar'",
+        "required": false,
+        "description": "`bar` (default), `needle` or `marker`."
+      },
+      {
+        "name": "orientation",
+        "type": "StarGaugeOrientation",
+        "default": "'horizontal'",
+        "required": false,
+        "description": "`horizontal` (default) or `vertical` (the scale runs from the bottom)."
+      }
+    ],
+    "models": [],
+    "outputs": []
   },
   "StarList": {
     "kind": "component",
@@ -5730,6 +5871,44 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "null",
         "required": false,
         "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
+  "StarRadialGauge": {
+    "kind": "component",
+    "selector": "star-radial-gauge",
+    "entry": "@star-ng/ui/gauge",
+    "description": "Radial (arc) gauge: a value on a circular scale with ranges, ticks and labels. Kendo UI `kendo-radialgauge` and `kendo-arcgauge`, Ignite UI `igx-radial-gauge` and Syncfusion `ejs-circulargauge` are the equivalents.",
+    "inputs": [
+      {
+        "name": "pointer",
+        "type": "StarGaugePointer",
+        "default": "'needle'",
+        "required": false,
+        "description": "`needle` (default), `bar` or `marker`."
+      },
+      {
+        "name": "startAngle",
+        "type": "number",
+        "default": "225",
+        "required": false,
+        "description": "Angle of the lowest value, in math degrees (0 points right, 90 up)."
+      },
+      {
+        "name": "endAngle",
+        "type": "unknown",
+        "default": "-45",
+        "required": false,
+        "description": "Angle of the highest value, in math degrees. Smaller than `startAngle`: the arc runs clockwise."
+      },
+      {
+        "name": "arcWidth",
+        "type": "number",
+        "default": "10",
+        "required": false,
+        "description": "Width of the arc, in units of the 200 × 200 view box."
       }
     ],
     "models": [],
@@ -9152,6 +9331,10 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "forms/two-way": "<star-checkbox [(checked)]=\"remember\">Remember this device</star-checkbox>\n<p class=\"docs-output\" role=\"status\">{{ remember() }}</p>",
   "galleria/basic": "<star-galleria\n  style=\"width: 100%; max-width: 40rem\"\n  [images]=\"images\"\n  ariaLabel=\"Site photos\"\n/>",
   "galleria/model": "<star-galleria\n  style=\"width: 100%; max-width: 40rem\"\n  [images]=\"images\"\n  [(activeIndex)]=\"active\"\n  ariaLabel=\"Linked photos\"\n/>\n<p class=\"docs-output\" role=\"status\">Active index: {{ active() }}</p>",
+  "gauge/interactive": "<div class=\"docs-stack\">\n  <star-field label=\"Volume\">\n    <star-linear-gauge interactive [step]=\"5\" [formField]=\"model.volume\" />\n  </star-field>\n  <star-radial-gauge pointer=\"bar\" [value]=\"settings().volume\" ariaLabel=\"Volume level\" />\n  <p>Volume: {{ settings().volume }}</p>\n</div>",
+  "gauge/linear": "<div class=\"docs-stack\">\n  <star-linear-gauge\n    [value]=\"load()\"\n    [ranges]=\"zones\"\n    [ticks]=\"{ step: 25, minor: 5 }\"\n    ariaLabel=\"Server load\"\n  />\n  <star-linear-gauge\n    [value]=\"load()\"\n    pointer=\"marker\"\n    [ranges]=\"zones\"\n    ariaLabel=\"Server load, marker\"\n  />\n  <div class=\"docs-row\">\n    <star-linear-gauge\n      orientation=\"vertical\"\n      [value]=\"72\"\n      [max]=\"120\"\n      [ticks]=\"{ major: 6, minor: 2 }\"\n      ariaLabel=\"Response time\"\n    />\n    <star-linear-gauge\n      orientation=\"vertical\"\n      pointer=\"needle\"\n      [value]=\"18\"\n      [min]=\"-20\"\n      [max]=\"40\"\n      [ranges]=\"cold\"\n      ariaLabel=\"Room temperature\"\n    />\n  </div>\n</div>",
+  "gauge/pointers": "<div class=\"docs-row\">\n  <star-radial-gauge [value]=\"62\" pointer=\"bar\" [arcWidth]=\"16\" ariaLabel=\"Disk use\" />\n  <star-radial-gauge\n    [value]=\"38\"\n    pointer=\"marker\"\n    [startAngle]=\"180\"\n    [endAngle]=\"0\"\n    [ticks]=\"{ major: 4, minor: 5 }\"\n    ariaLabel=\"Memory use\"\n  />\n</div>",
+  "gauge/radial": "<div class=\"docs-stack\">\n  <star-radial-gauge\n    [value]=\"load()\"\n    [ranges]=\"zones\"\n    [labels]=\"{ style: 'unit', unit: 'percent' }\"\n    locale=\"en-US\"\n    ariaLabel=\"Server load\"\n  />\n  <div class=\"docs-row\">\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"change(-15)\">Less</star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"change(15)\">More</star-button>\n  </div>\n</div>",
   "getting-started/result": "<star-button leadingIcon=\"ph-bold ph-plus\">New order</star-button>",
   "i18n/spinner": "<star-spinner />\n<docs-german-text />",
   "i18n/switch": "<div class=\"docs-stack\">\n  <star-select-button\n    [options]=\"languages\"\n    optionLabel=\"label\"\n    optionValue=\"id\"\n    [(value)]=\"language.choice\"\n    [allowEmpty]=\"false\"\n    ariaLabel=\"Language\"\n  />\n  <star-paginator [totalRecords]=\"95\" />\n  <star-field label=\"City\">\n    <star-select [options]=\"cities\" [(value)]=\"city\" filter ariaLabel=\"City\" />\n  </star-field>\n  <star-field label=\"Attachments\">\n    <star-file-upload multiple [maxFileSize]=\"1000000\" [fileLimit]=\"3\" />\n  </star-field>\n  <star-field label=\"New password\">\n    <star-password value=\"abc\" feedback />\n  </star-field>\n</div>",

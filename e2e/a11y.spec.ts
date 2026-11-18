@@ -1130,6 +1130,18 @@ const STATES: readonly State[] = [
     },
   },
 
+  {
+    name: 'interactive gauge after keyboard input',
+    path: 'controls/gauge',
+    open: async (page) => {
+      const live = example(page, 'Interactive with Signal Forms');
+      const gauge = live.getByRole('slider', { name: 'Volume' });
+      await gauge.focus();
+      await page.keyboard.press('End');
+      await expect(gauge).toHaveAttribute('aria-valuenow', '100');
+    },
+  },
+
   // Steps and media.
   {
     name: 'stepper on the second step',
