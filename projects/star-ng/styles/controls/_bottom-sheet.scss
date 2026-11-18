@@ -26,8 +26,6 @@ html:has(dialog.star-bottom-sheet--modal[open]) {
     display var(--star-duration-slow) allow-discrete;
 
   &[open] {
-    display: flex;
-    flex-direction: column;
     translate: 0 0;
 
     @starting-style {
@@ -54,10 +52,18 @@ html:has(dialog.star-bottom-sheet--modal[open]) {
     }
   }
 }
-// A non-modal sheet floats above the page: a border separates it.
+// A non-modal sheet is not in the top layer: it stacks above the page, below the CDK overlay
+// container (z-index 1000), so a menu opened from the sheet stays on top. A border separates it.
 .star-bottom-sheet:not(.star-bottom-sheet--modal) {
+  z-index: 999;
   border: 1px solid var(--star-border);
   border-bottom: 0;
+}
+// Fills the dialog, so only a click on the ::backdrop has the <dialog> itself as its target.
+.star-bottom-sheet__surface {
+  display: flex;
+  flex-direction: column;
+  max-height: inherit;
 }
 // Decorative grip: a hint that the sheet belongs to the bottom edge.
 .star-bottom-sheet__handle {

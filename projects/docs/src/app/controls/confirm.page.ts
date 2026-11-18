@@ -128,8 +128,8 @@ import { DOCS, DocsRow } from '../shared/docs';
         dialog has the role <code>alertdialog</code>, and the question is its accessible name
         through the header. The popup is a <code>star-popover</code> with the role
         <code>alertdialog</code> and <code>aria-modal="false"</code>, so it stays above an open
-        modal dialog. The CDK places it below or above the target, whichever has space, and a focus
-        trap keeps Tab inside it.
+        modal dialog. The CDK places it below or above the target, whichever has space, and Tab and
+        Shift+Tab cycle between its buttons.
       </p>
     </docs-page>
   `,

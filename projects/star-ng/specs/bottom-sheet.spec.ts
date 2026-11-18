@@ -152,6 +152,43 @@ describe('StarBottomSheet', () => {
     show.mockRestore();
   });
 
+  it('closes on a backdrop click only, not on the handle row or the padding', async () => {
+    const { service } = await setup();
+    const ref = service.open(ExportOrder, { data: { id: 'A' } });
+    await settle();
+    const dialog = sheet()!;
+    const surface = dialog.querySelector<HTMLElement>('.star-bottom-sheet__surface')!;
+    // The surface wraps the handle and the body, so a click there never targets the dialog.
+    expect(surface.parentElement).toBe(dialog);
+    expect(surface.contains(dialog.querySelector('.star-bottom-sheet__handle'))).toBe(true);
+    expect(surface.contains(dialog.querySelector('.star-bottom-sheet__body'))).toBe(true);
+    dialog.querySelector<HTMLElement>('.star-bottom-sheet__handle')!.click();
+    surface.click();
+    dialog.querySelector<HTMLElement>('.star-bottom-sheet__body')!.click();
+    await settle();
+    expect(sheet()?.hasAttribute('open')).toBe(true);
+
+    // The ::backdrop: the click target is the dialog itself.
+    dialog.click();
+    await expect(ref.closed).resolves.toBeUndefined();
+  });
+
+  it('two open() calls in one tick give one sheet and dismiss the first one', async () => {
+    const { service } = await setup();
+    const first = service.open(ExportOrder, { data: { id: 'A' } });
+    const second = service.open(ExportOrder, { data: { id: 'B' } });
+    await expect(first.closed).resolves.toBeUndefined();
+    await settle();
+    const sheets = document.querySelectorAll('dialog.star-bottom-sheet');
+    expect(sheets.length).toBe(1);
+    expect(sheets[0].hasAttribute('open')).toBe(true);
+    expect(sheets[0].textContent).toContain('Order B');
+    second.dismiss('done');
+    await expect(second.closed).resolves.toBe('done');
+    await settle();
+    expect(document.querySelectorAll('dialog.star-bottom-sheet').length).toBe(0);
+  });
+
   it('keeps one sheet open at a time', async () => {
     const { service } = await setup();
     const first = service.open(ExportOrder, { data: { id: 'A' } });

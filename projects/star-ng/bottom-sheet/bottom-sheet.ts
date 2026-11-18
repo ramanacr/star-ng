@@ -49,17 +49,19 @@ const FOCUSABLE =
       (click)="onClick($event)"
       (keydown.escape)="onEscape()"
     >
-      <div class="star-bottom-sheet__handle" aria-hidden="true"></div>
-      <div class="star-bottom-sheet__body">
-        @if (content(); as content) {
-          @if (isTemplate(content)) {
-            <ng-container
-              *ngTemplateOutlet="content; context: templateContext(); injector: contentInjector()"
-            />
-          } @else {
-            <ng-container *ngComponentOutlet="content; injector: contentInjector()" />
+      <div class="star-bottom-sheet__surface">
+        <div class="star-bottom-sheet__handle" aria-hidden="true"></div>
+        <div class="star-bottom-sheet__body">
+          @if (content(); as content) {
+            @if (isTemplate(content)) {
+              <ng-container
+                *ngTemplateOutlet="content; context: templateContext(); injector: contentInjector()"
+              />
+            } @else {
+              <ng-container *ngComponentOutlet="content; injector: contentInjector()" />
+            }
           }
-        }
+        </div>
       </div>
     </dialog>
   `,
@@ -72,6 +74,8 @@ export class StarBottomSheetContainer {
   readonly templateContext = input.required<StarBottomSheetContext>();
   private readonly dialog = viewChild.required<ElementRef<HTMLDialogElement>>('dialog');
   private isOpen = false;
+  /** Closed before the first render: the dialog must never open. */
+  private cancelled = false;
   /** Set by the service: asks the ref to dismiss (Escape, backdrop). */
   dismiss: () => void = () => undefined;
   /** Set by the service: runs once after the sheet closed. */
@@ -80,6 +84,7 @@ export class StarBottomSheetContainer {
   constructor() {
     afterNextRender({
       write: () => {
+        if (this.cancelled) return;
         const element = this.dialog().nativeElement;
         if (this.config().hasBackdrop === false) element.show?.();
         else element.showModal?.();
@@ -100,6 +105,13 @@ export class StarBottomSheetContainer {
 
   /** Closes the native dialog; `hidden` runs once. */
   close(): void {
+    if (!this.isOpen) {
+      // Dismissed before the first render (for example two open() calls in one tick).
+      if (this.cancelled) return;
+      this.cancelled = true;
+      this.hidden();
+      return;
+    }
     const element = this.dialog().nativeElement;
     if (element.open) element.close();
     this.markHidden();
@@ -136,7 +148,7 @@ export class StarBottomSheetContainer {
   }
 
   protected onClick(event: MouseEvent): void {
-    // A click whose target is the <dialog> itself landed on the ::backdrop (the content fills it).
+    // A click whose target is the <dialog> itself landed on the ::backdrop: the surface fills it.
     if (
       event.target === this.dialog().nativeElement &&
       this.config().hasBackdrop !== false &&
