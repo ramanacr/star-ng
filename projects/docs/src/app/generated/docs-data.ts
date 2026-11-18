@@ -6821,7 +6821,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-tree",
     "entry": "@star-ng/ui/tree",
-    "description": "Tree (PrimeNG `p-tree`): expand / collapse, single, multiple or checkbox selection (checkbox mode selects whole branches and shows mixed parents), filter, and the WAI-ARIA tree keyboard model (Up / Down, Right opens or enters, Left closes or goes to the parent, Home / End, Enter / Space select, `*` expands siblings).",
+    "description": "Tree (PrimeNG `p-tree`, Ignite `igx-tree`): expand / collapse, single, multiple or checkbox selection (checkbox mode propagates up and down and shows mixed parents), filter in lenient or strict mode, lazy children, a row context menu, drag and drop with a keyboard alternative, and the WAI-ARIA tree keyboard model (Up / Down, Right opens or enters, Left closes or goes to the parent, Home / End, Enter / Space select, `*` expands siblings).",
     "inputs": [
       {
         "name": "nodes",
@@ -6845,6 +6845,27 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
+        "name": "filterMode",
+        "type": "TreeFilterMode",
+        "default": "'strict'",
+        "required": false,
+        "description": "How the filter keeps nodes (PrimeNG `filterMode`). `'strict'` (the default): only the matching paths show, and a match shows only its matching descendants. `'lenient'`: a match shows with all its descendants. Both show the ancestors of a match open."
+      },
+      {
+        "name": "filterBy",
+        "type": "string | readonly string[]",
+        "default": "'label'",
+        "required": false,
+        "description": "The node fields that the filter searches (PrimeNG `filterBy`): `label` (the default), another node property, or a field of `data`. One field or a list."
+      },
+      {
+        "name": "filterLocale",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Locale of the filter compare (PrimeNG `filterLocale`), for example `de`. Case and accents never count; with a locale, the compare follows the letters of that language."
+      },
+      {
         "name": "scrollHeight",
         "type": "string | null",
         "default": "null",
@@ -6863,7 +6884,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "number",
         "default": "34",
         "required": false,
-        "description": "Row height in pixels in windowed rendering. Keep it equal to the real height of a row."
+        "description": "Row height in pixels in windowed rendering. Keep it equal to the real row height."
       },
       {
         "name": "ariaLabel",
@@ -6878,6 +6899,69 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "false",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "propagateSelectionUp",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Checkbox mode (PrimeNG `propagateSelectionUp`): a parent is checked when all its selectable children are checked, and mixed when some are. Locked nodes (`disabled`, `selectable: false`) do not count and keep their state."
+      },
+      {
+        "name": "propagateSelectionDown",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Checkbox mode (PrimeNG `propagateSelectionDown`): checking a node checks its descendants, except locked nodes and their subtrees. With both propagations on, `value` holds the leaf keys (and locked keys); parents are derived."
+      },
+      {
+        "name": "loadingMode",
+        "type": "StarTreeLoadingMode",
+        "default": "'row'",
+        "required": false,
+        "description": "Lazy children: `'row'` (the default) shows a loading row under an open node whose `loading` is true; `'icon'` shows a spinner in its toggle. With `virtualScroll` the icon always shows, because every row has the same height."
+      },
+      {
+        "name": "contextMenu",
+        "type": "readonly StarMenuItem[]",
+        "default": "[]",
+        "required": false,
+        "description": "Items of the node context menu (PrimeNG `contextMenu`): right click, Shift+F10 or the context menu key on a node. Empty: no menu, and the browser menu shows."
+      },
+      {
+        "name": "draggableNodes",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The user can drag nodes (PrimeNG `draggableNodes`, Ignite drag and drop). With `droppableNodes`, Ctrl+Shift and the arrow keys move the focused node too. A node with `draggable: false` or `disabled` stays."
+      },
+      {
+        "name": "droppableNodes",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The tree accepts drops (PrimeNG `droppableNodes`)."
+      },
+      {
+        "name": "draggableScope",
+        "type": "StarTreeDragScope",
+        "default": "null",
+        "required": false,
+        "description": "Scope of the nodes dragged from this tree (PrimeNG `draggableScope`), for cross-tree drops."
+      },
+      {
+        "name": "droppableScope",
+        "type": "StarTreeDragScope",
+        "default": "null",
+        "required": false,
+        "description": "Scopes this tree accepts from other trees (PrimeNG `droppableScope`)."
+      },
+      {
+        "name": "validateDrop",
+        "type": "StarTreeDropValidator | null",
+        "default": "null",
+        "required": false,
+        "description": "Extra rule for drops (PrimeNG `validateDrop`); return false to refuse a drop."
       }
     ],
     "models": [
@@ -6909,7 +6993,56 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "StarTreeNode",
         "default": null,
         "required": false,
-        "description": ""
+        "description": "The user selected or checked a node (PrimeNG `onNodeSelect`)."
+      },
+      {
+        "name": "nodeUnselect",
+        "type": "StarTreeNode",
+        "default": null,
+        "required": false,
+        "description": "The user unselected or unchecked a node (PrimeNG `onNodeUnselect`)."
+      },
+      {
+        "name": "nodeExpand",
+        "type": "StarTreeNodeEvent",
+        "default": null,
+        "required": false,
+        "description": "The user opened a node (PrimeNG `onNodeExpand`). For a lazy node, load its children here."
+      },
+      {
+        "name": "nodeCollapse",
+        "type": "StarTreeNodeEvent",
+        "default": null,
+        "required": false,
+        "description": "The user closed a node (PrimeNG `onNodeCollapse`)."
+      },
+      {
+        "name": "nodeDoubleClick",
+        "type": "StarTreeNodeEvent",
+        "default": null,
+        "required": false,
+        "description": "Double click on a node (PrimeNG `onNodeDoubleClick`)."
+      },
+      {
+        "name": "nodeContextMenu",
+        "type": "StarTreeNodeEvent",
+        "default": null,
+        "required": false,
+        "description": "Right click, Shift+F10 or the context menu key on a node (PrimeNG `onNodeContextMenuSelect`)."
+      },
+      {
+        "name": "contextMenuSelect",
+        "type": "StarTreeContextMenuEvent",
+        "default": null,
+        "required": false,
+        "description": "The user chose an item of the node context menu."
+      },
+      {
+        "name": "nodeDrop",
+        "type": "StarTreeNodeDropEvent",
+        "default": null,
+        "required": false,
+        "description": "A node was dropped, by pointer or keyboard (PrimeNG `onNodeDrop`). Move it in `nodes`."
       }
     ]
   },
@@ -6939,6 +7072,55 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "false",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "filterMode",
+        "type": "TreeFilterMode",
+        "default": "'strict'",
+        "required": false,
+        "description": "Filter mode of the panel tree (PrimeNG `filterMode`, see `star-tree`)."
+      },
+      {
+        "name": "filterBy",
+        "type": "string | readonly string[]",
+        "default": "'label'",
+        "required": false,
+        "description": "Node fields that the filter searches (PrimeNG `filterBy`, see `star-tree`)."
+      },
+      {
+        "name": "filterLocale",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Locale of the filter compare (PrimeNG `filterLocale`)."
+      },
+      {
+        "name": "propagateSelectionUp",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Checkbox mode: parents follow their children (PrimeNG `propagateSelectionUp`)."
+      },
+      {
+        "name": "propagateSelectionDown",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Checkbox mode: children follow their parent (PrimeNG `propagateSelectionDown`)."
+      },
+      {
+        "name": "loadingMode",
+        "type": "StarTreeLoadingMode",
+        "default": "'row'",
+        "required": false,
+        "description": "How a lazy node shows that its children load (see `star-tree`)."
+      },
+      {
+        "name": "display",
+        "type": "'comma' | 'chip'",
+        "default": "'comma'",
+        "required": false,
+        "description": "How the trigger shows a multiple or checkbox value (PrimeNG `display`): `'comma'` (the default) joins the labels, `'chip'` shows a chip per label. Past `maxSelectedLabels` both show the count."
       },
       {
         "name": "virtualScroll",
@@ -7027,6 +7209,34 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": ""
+      },
+      {
+        "name": "nodeSelect",
+        "type": "StarTreeNode",
+        "default": null,
+        "required": false,
+        "description": "The user selected a node in the panel (PrimeNG `onNodeSelect`)."
+      },
+      {
+        "name": "nodeUnselect",
+        "type": "StarTreeNode",
+        "default": null,
+        "required": false,
+        "description": "The user unselected a node in the panel (PrimeNG `onNodeUnselect`)."
+      },
+      {
+        "name": "nodeExpand",
+        "type": "StarTreeNodeEvent",
+        "default": null,
+        "required": false,
+        "description": "The user opened a node in the panel. For a lazy node, load its children here."
+      },
+      {
+        "name": "nodeCollapse",
+        "type": "StarTreeNodeEvent",
+        "default": null,
+        "required": false,
+        "description": "The user closed a node in the panel."
       }
     ]
   },
@@ -7737,7 +7947,9 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "tooltip/icon": "<button\n  type=\"button\"\n  class=\"star-btn star-btn--secondary star-btn--icon\"\n  aria-label=\"Export orders\"\n  starTooltip=\"Export orders to CSV\"\n>\n  <i class=\"ph-bold ph-export\" aria-hidden=\"true\"></i>\n</button>",
   "tooltip/positions": "<star-button variant=\"secondary\" starTooltip=\"Shown on hover and focus\">Top</star-button>\n<star-button\n  variant=\"secondary\"\n  starTooltip=\"Below the button\"\n  starTooltipPosition=\"bottom\"\n>\n  Bottom\n</star-button>\n<star-button variant=\"secondary\" starTooltip=\"On the left\" starTooltipPosition=\"left\">\n  Left\n</star-button>\n<star-button variant=\"secondary\" starTooltip=\"On the right\" starTooltipPosition=\"right\">\n  Right\n</star-button>\n<star-button variant=\"secondary\" starTooltip=\"At the start\" starTooltipPosition=\"start\">\n  Start\n</star-button>\n<star-button variant=\"secondary\" starTooltip=\"At the end\" starTooltipPosition=\"end\">\n  End\n</star-button>",
   "tree-select/checkbox": "<div class=\"docs-stack\">\n  <star-tree-select\n    [nodes]=\"departments\"\n    selectionMode=\"checkbox\"\n    [(value)]=\"teams\"\n    filter\n    placeholder=\"Select teams\"\n    ariaLabel=\"Teams\"\n  />\n  <p class=\"docs-output\" role=\"status\">Teams: {{ teams().join(', ') || 'none' }}</p>\n</div>",
+  "tree-select/chips": "<div class=\"docs-stack\">\n  <star-tree-select\n    [nodes]=\"orgUnits\"\n    selectionMode=\"checkbox\"\n    [(value)]=\"units\"\n    display=\"chip\"\n    filter\n    filterMode=\"lenient\"\n    [filterBy]=\"['label', 'lead']\"\n    showClear\n    placeholder=\"Select units\"\n    ariaLabel=\"Units\"\n  />\n  <p class=\"docs-output\" role=\"status\">Units: {{ units().join(', ') || 'none' }}</p>\n</div>",
   "tree-select/form": "<div class=\"docs-stack\">\n  <star-field label=\"Department\" [state]=\"hire.department()\">\n    <star-tree-select\n      [formField]=\"hire.department\"\n      [nodes]=\"departments\"\n      placeholder=\"Select a department\"\n      ariaLabel=\"Hire department\"\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ hire().valid() }}</p>\n</div>",
+  "tree-select/lazy": "<div class=\"docs-stack\">\n  <star-tree-select\n    [nodes]=\"projectNodes()\"\n    [(expanded)]=\"lazyOpen\"\n    [(value)]=\"team\"\n    placeholder=\"Select a team\"\n    ariaLabel=\"Team\"\n    (nodeExpand)=\"loadProject($event.node)\"\n  />\n  <p class=\"docs-output\" role=\"status\">Team: {{ team().join(', ') || 'none' }}</p>\n</div>",
   "tree-select/multiple": "<div class=\"docs-stack\">\n  <star-tree-select\n    [nodes]=\"departments\"\n    selectionMode=\"multiple\"\n    [(value)]=\"nodes\"\n    placeholder=\"Select nodes\"\n    ariaLabel=\"Nodes\"\n  />\n  <p class=\"docs-output\" role=\"status\">Nodes: {{ nodes().join(', ') || 'none' }}</p>\n  <star-tree-select\n    [nodes]=\"departments\"\n    disabled\n    placeholder=\"Disabled\"\n    ariaLabel=\"Disabled department\"\n  />\n</div>",
   "tree-select/single": "<div class=\"docs-stack\">\n  <star-tree-select\n    [nodes]=\"departments\"\n    [(value)]=\"department\"\n    placeholder=\"Select a department\"\n    ariaLabel=\"Department\"\n    showClear\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Department: {{ department().join(', ') || 'none' }}\n  </p>\n</div>",
   "tree-select/slots": "<star-tree-select\n  [nodes]=\"projects\"\n  [(expanded)]=\"projectsOpen\"\n  [(value)]=\"project\"\n  filter\n  placeholder=\"Select a project\"\n  ariaLabel=\"Project\"\n>\n  <ng-template starHeader>\n    <p class=\"docs-output\">Active projects</p>\n  </ng-template>\n  <ng-template starNode [starNodeOf]=\"projects\" let-node let-level=\"level\">\n    {{ node.label }}\n    @if (node.data) {\n      <small>(owner {{ node.data.owner }}, level {{ level }})</small>\n    }\n  </ng-template>\n  <ng-template starIcon=\"toggle\"\n    ><i class=\"ph-bold ph-arrow-right\" aria-hidden=\"true\"></i\n  ></ng-template>\n  <ng-template starEmpty let-text>No project matches {{ text }}.</ng-template>\n  <ng-template starFooter>\n    <p class=\"docs-output\">3 projects</p>\n  </ng-template>\n</star-tree-select>",
@@ -7754,8 +7966,14 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "tree-table/virtual": "<div class=\"docs-stack\">\n  <star-tree-table\n    [nodes]=\"large.nodes\"\n    [columns]=\"virtualColumns\"\n    [(expanded)]=\"largeOpen\"\n    virtualScroll\n    scrollHeight=\"20rem\"\n    ariaLabel=\"Stock by site\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    {{ large.count }} rows, {{ largeOpen().length }} branches open\n  </p>\n</div>",
   "tree/basic": "<star-tree [nodes]=\"folders\" [(expanded)]=\"open\" scrollHeight=\"16rem\" ariaLabel=\"Folders\" />",
   "tree/checkbox": "<div class=\"docs-stack\">\n  <star-tree\n    [nodes]=\"folders\"\n    selectionMode=\"checkbox\"\n    [(value)]=\"checked\"\n    [(expanded)]=\"checkboxOpen\"\n    filter\n    scrollHeight=\"16rem\"\n    ariaLabel=\"Folders to sync\"\n  />\n\n  <p class=\"docs-output\" role=\"status\">Leaves: {{ checked().join(', ') || 'none' }}</p>\n</div>",
+  "tree/context-menu": "<div class=\"docs-stack\">\n  <star-tree\n    [nodes]=\"departments\"\n    [expanded]=\"['eng']\"\n    [contextMenu]=\"nodeActions\"\n    scrollHeight=\"16rem\"\n    ariaLabel=\"Departments with actions\"\n    (contextMenuSelect)=\"lastAction.set($event.item.label + ' ' + $event.node.label)\"\n    (nodeDoubleClick)=\"lastAction.set('double click ' + $event.node.label)\"\n  />\n\n  <p class=\"docs-output\" role=\"status\">Last action: {{ lastAction() }}</p>\n</div>",
+  "tree/drag-drop": "<div class=\"docs-stack\">\n  <star-tree\n    [nodes]=\"movable()\"\n    [(expanded)]=\"movableOpen\"\n    draggableNodes\n    droppableNodes\n    [validateDrop]=\"noDropInPeople\"\n    scrollHeight=\"18rem\"\n    ariaLabel=\"Departments to arrange\"\n    (nodeDrop)=\"onDrop($event)\"\n  />\n\n  <p class=\"docs-output\" role=\"status\">Last move: {{ lastMove() }}</p>\n</div>",
+  "tree/filter-modes": "<star-tree\n  [nodes]=\"departments\"\n  [(expanded)]=\"filterOpen\"\n  filter\n  filterMode=\"lenient\"\n  [filterBy]=\"['label', 'lead']\"\n  scrollHeight=\"16rem\"\n  ariaLabel=\"Departments by lead\"\n/>",
   "tree/form": "<div class=\"docs-stack\">\n  <star-field label=\"Folders to share\" [state]=\"share.folders()\">\n    <star-tree\n      [formField]=\"share.folders\"\n      [nodes]=\"folders\"\n      selectionMode=\"checkbox\"\n      scrollHeight=\"12rem\"\n      ariaLabel=\"Folders to share\"\n    />\n  </star-field>\n\n  <p class=\"docs-output\" role=\"status\">Valid: {{ share().valid() }}</p>\n</div>",
+  "tree/lazy": "<star-tree\n  [nodes]=\"projectNodes()\"\n  [(expanded)]=\"lazyOpen\"\n  scrollHeight=\"16rem\"\n  ariaLabel=\"Projects and teams\"\n  (nodeExpand)=\"loadProject($event.node)\"\n/>",
+  "tree/methods": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"apiTree().expandAll()\">\n      Expand all\n    </star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"apiTree().collapseAll()\">\n      Collapse all\n    </star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"apiTree().scrollToNode('tax')\">\n      Show Tax\n    </star-button>\n  </div>\n  <star-tree\n    #apiTree\n    [nodes]=\"departments\"\n    [(expanded)]=\"apiOpen\"\n    scrollHeight=\"10rem\"\n    ariaLabel=\"Departments for the methods\"\n  />\n</div>",
   "tree/multiple": "<star-tree\n  [nodes]=\"folders\"\n  selectionMode=\"multiple\"\n  [(value)]=\"picked\"\n  [(expanded)]=\"multipleOpen\"\n  scrollHeight=\"16rem\"\n  ariaLabel=\"Folders to back up\"\n/>",
+  "tree/propagation": "<div class=\"docs-stack\">\n  <star-tree\n    [nodes]=\"departments\"\n    selectionMode=\"checkbox\"\n    [(value)]=\"lockedChecked\"\n    [expanded]=\"['fin']\"\n    scrollHeight=\"16rem\"\n    ariaLabel=\"Departments to audit\"\n    (nodeSelect)=\"lastChange.set('checked ' + $event.label)\"\n    (nodeUnselect)=\"lastChange.set('unchecked ' + $event.label)\"\n  />\n\n  <p class=\"docs-output\" role=\"status\">\n    Value: {{ lockedChecked().join(', ') || 'none' }}. Last change: {{ lastChange() }}\n  </p>\n</div>",
   "tree/single": "<div class=\"docs-stack\">\n  <star-tree\n    [nodes]=\"folders\"\n    selectionMode=\"single\"\n    [(value)]=\"selected\"\n    [(expanded)]=\"singleOpen\"\n    scrollHeight=\"16rem\"\n    ariaLabel=\"Folder\"\n    (nodeSelect)=\"lastNode.set($event.label)\"\n  />\n\n  <p class=\"docs-output\" role=\"status\">Selected: {{ selected().join(', ') || 'none' }}</p>\n\n  <p class=\"docs-output\" role=\"status\">Last node: {{ lastNode() }}</p>\n</div>",
   "tree/slots": "<star-tree\n  [nodes]=\"projects\"\n  [(expanded)]=\"projectsOpen\"\n  filter\n  scrollHeight=\"16rem\"\n  ariaLabel=\"Projects\"\n>\n  <ng-template starHeader>\n    <p class=\"docs-output\">Active projects</p>\n  </ng-template>\n  <ng-template starNode [starNodeOf]=\"projects\" let-node let-level=\"level\">\n    {{ node.label }}\n    @if (node.data) {\n      <small>(owner {{ node.data.owner }}, level {{ level }})</small>\n    }\n  </ng-template>\n  <ng-template starIcon=\"toggle\"\n    ><i class=\"ph-bold ph-arrow-right\" aria-hidden=\"true\"></i\n  ></ng-template>\n  <ng-template starEmpty let-text>No project matches {{ text }}.</ng-template>\n  <ng-template starFooter>\n    <p class=\"docs-output\">3 projects</p>\n  </ng-template>\n</star-tree>",
   "tree/virtual": "<div class=\"docs-stack\">\n  <star-tree\n    [nodes]=\"large.nodes\"\n    [(expanded)]=\"largeOpen\"\n    selectionMode=\"checkbox\"\n    [(value)]=\"largeChecked\"\n    virtualScroll\n    [virtualItemSize]=\"34\"\n    filter\n    scrollHeight=\"20rem\"\n    ariaLabel=\"Orders by site\"\n  />\n\n  <p class=\"docs-output\" role=\"status\">\n    {{ large.count }} nodes, {{ largeChecked().length }} orders checked\n  </p>\n</div>",

@@ -1,16 +1,36 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  effect,
+  resource,
+  signal,
+  untracked,
+  viewChild,
+} from '@angular/core';
 
 import { form, FormField, minLength } from '@angular/forms/signals';
 
+import { StarButton } from '@star-ng/ui/button';
+
 import { StarField } from '@star-ng/ui/field';
+
+import type { StarMenuItem } from '@star-ng/ui/menu';
 
 import { STAR_SLOTS } from '@star-ng/ui/core';
 
-import { StarNodeTemplate, StarTree, StarTreeNode } from '@star-ng/ui/tree';
+import {
+  StarNodeTemplate,
+  StarTree,
+  StarTreeDropValidator,
+  StarTreeNode,
+  StarTreeNodeDropEvent,
+} from '@star-ng/ui/tree';
 
 import { DOCS, DocsRow } from '../shared/docs';
 
 import { buildLargeTree } from './large-tree';
+
+import { DEPARTMENTS, LAZY_PROJECTS, loadTeams, moveNode } from './tree-depth';
 
 interface Project {
   readonly owner: string;
@@ -19,14 +39,14 @@ interface Project {
 @Component({
   selector: 'docs-tree-page',
 
-  imports: [DOCS, StarTree, StarNodeTemplate, STAR_SLOTS, StarField, FormField],
+  imports: [DOCS, StarTree, StarNodeTemplate, STAR_SLOTS, StarField, FormField, StarButton],
 
   changeDetection: ChangeDetectionStrategy.OnPush,
 
   template: `
     <docs-page
       heading="Tree"
-      lead="A hierarchy of nodes with expand and collapse, optional selection (single, multiple or checkbox) and a filter. It follows the WAI-ARIA tree keyboard model."
+      lead="A hierarchy of nodes with expand and collapse, optional selection (single, multiple or checkbox), a filter, lazy children, a context menu and drag and drop. It follows the WAI-ARIA tree keyboard model."
       importFrom="import { StarTree, StarTreeNode } from '@star-ng/ui/tree';"
     >
       <docs-example
@@ -93,6 +113,129 @@ interface Project {
           />
 
           <p class="docs-output" role="status">Leaves: {{ checked().join(', ') || 'none' }}</p>
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="Filter modes"
+        source="tree/filter-modes"
+        note="filterMode lenient keeps a matching node with all its descendants (they follow the expanded keys); strict (the default) keeps only the matching paths. Both open the ancestors of a match. filterBy lists the fields to search: label, another node property or a field of data. filterLocale sets the language of the compare; case and accents never count. Try the name of a lead, for example Chen."
+      >
+        <star-tree
+          [nodes]="departments"
+          [(expanded)]="filterOpen"
+          filter
+          filterMode="lenient"
+          [filterBy]="['label', 'lead']"
+          scrollHeight="16rem"
+          ariaLabel="Departments by lead"
+        />
+      </docs-example>
+
+      <docs-example
+        heading="Checkbox propagation and locked nodes"
+        source="tree/propagation"
+        note="propagateSelectionUp (default true) checks a parent when all its selectable children are checked and shows it mixed when some are. propagateSelectionDown (default true) checks the descendants with the node. A disabled node or one with selectable false is locked: it keeps its state, and it does not count for its parent. nodeSelect and nodeUnselect fire for each user change."
+      >
+        <div class="docs-stack">
+          <star-tree
+            [nodes]="departments"
+            selectionMode="checkbox"
+            [(value)]="lockedChecked"
+            [expanded]="['fin']"
+            scrollHeight="16rem"
+            ariaLabel="Departments to audit"
+            (nodeSelect)="lastChange.set('checked ' + $event.label)"
+            (nodeUnselect)="lastChange.set('unchecked ' + $event.label)"
+          />
+
+          <p class="docs-output" role="status">
+            Value: {{ lockedChecked().join(', ') || 'none' }}. Last change: {{ lastChange() }}
+          </p>
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="Lazy children"
+        source="tree/lazy"
+        [script]="lazyScript"
+        note="A node with leaf false shows the toggle before it has children. Opening it emits nodeExpand: the owner sets loading on the node, loads the children (here with resource() and fake data after a short delay, no network) and puts them into a new copy of the nodes. While loading is true the open node shows a loading row (loadingMode row, the default) or a spinner in its toggle (loadingMode icon), and aria-busy."
+      >
+        <star-tree
+          [nodes]="projectNodes()"
+          [(expanded)]="lazyOpen"
+          scrollHeight="16rem"
+          ariaLabel="Projects and teams"
+          (nodeExpand)="loadProject($event.node)"
+        />
+      </docs-example>
+
+      <docs-example
+        heading="Drag and drop"
+        source="tree/drag-drop"
+        [script]="dragScript"
+        note="draggableNodes and droppableNodes let the user move nodes. The tree never changes nodes: nodeDrop gives dragNode, dropNode and position (before, after or inside), and the owner moves the node. The keyboard alternative: on a focused node, Ctrl+Shift+Arrow up or down moves it before the previous or after the next sibling, Ctrl+Shift+Arrow right moves it into the previous sibling, and Ctrl+Shift+Arrow left moves it out to the parent level (mirrored in right-to-left). A live region announces each move. validateDrop refuses a drop (here: nothing goes inside People). For drops between trees, give the source a draggableScope and the target a matching droppableScope; the event then has fromTree."
+      >
+        <div class="docs-stack">
+          <star-tree
+            [nodes]="movable()"
+            [(expanded)]="movableOpen"
+            draggableNodes
+            droppableNodes
+            [validateDrop]="noDropInPeople"
+            scrollHeight="18rem"
+            ariaLabel="Departments to arrange"
+            (nodeDrop)="onDrop($event)"
+          />
+
+          <p class="docs-output" role="status">Last move: {{ lastMove() }}</p>
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="Context menu and events"
+        source="tree/context-menu"
+        note="contextMenu adds a menu on right click, Shift+F10 or the context menu key; contextMenuSelect gives the node and the item. nodeContextMenu and nodeDoubleClick fire with the node too."
+      >
+        <div class="docs-stack">
+          <star-tree
+            [nodes]="departments"
+            [expanded]="['eng']"
+            [contextMenu]="nodeActions"
+            scrollHeight="16rem"
+            ariaLabel="Departments with actions"
+            (contextMenuSelect)="lastAction.set($event.item.label + ' ' + $event.node.label)"
+            (nodeDoubleClick)="lastAction.set('double click ' + $event.node.label)"
+          />
+
+          <p class="docs-output" role="status">Last action: {{ lastAction() }}</p>
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="Methods"
+        source="tree/methods"
+        note="expandAll opens every branch that has children (lazy nodes stay closed), collapseAll closes all, expandPath opens the ancestors of a key, and scrollToNode opens them and scrolls the row into view. Get the tree with viewChild(StarTree)."
+      >
+        <div class="docs-stack">
+          <div class="docs-row">
+            <star-button size="sm" variant="secondary" (pressed)="apiTree().expandAll()">
+              Expand all
+            </star-button>
+            <star-button size="sm" variant="secondary" (pressed)="apiTree().collapseAll()">
+              Collapse all
+            </star-button>
+            <star-button size="sm" variant="secondary" (pressed)="apiTree().scrollToNode('tax')">
+              Show Tax
+            </star-button>
+          </div>
+          <star-tree
+            #apiTree
+            [nodes]="departments"
+            [(expanded)]="apiOpen"
+            scrollHeight="10rem"
+            ariaLabel="Departments for the methods"
+          />
         </div>
       </docs-example>
 
@@ -235,6 +378,81 @@ export class TreePage {
 
   protected readonly open = signal<readonly string[]>(['docs']);
 
+  protected readonly departments = DEPARTMENTS;
+
+  protected readonly filterOpen = signal<readonly string[]>([]);
+
+  protected readonly lockedChecked = signal<readonly string[]>(['audit']);
+
+  protected readonly lastChange = signal('none');
+
+  // ---- lazy children ----
+  protected readonly projectNodes = signal<readonly StarTreeNode[]>(LAZY_PROJECTS);
+
+  protected readonly lazyOpen = signal<readonly string[]>([]);
+
+  /** Projects whose teams are requested, in order; the first one loads now. */
+  private readonly projectQueue = signal<readonly string[]>([]);
+
+  private readonly projectTeams = resource({
+    params: () => this.projectQueue()[0],
+    loader: ({ params, abortSignal }) => loadTeams(params, abortSignal),
+  });
+
+  // ---- drag and drop ----
+  protected readonly movable = signal<readonly StarTreeNode[]>(DEPARTMENTS);
+
+  protected readonly movableOpen = signal<readonly string[]>(['eng', 'fin']);
+
+  protected readonly lastMove = signal('none');
+
+  protected readonly noDropInPeople: StarTreeDropValidator = (_drag, target, position) =>
+    !(target.key === 'people' && position === 'inside');
+
+  // ---- context menu ----
+  protected readonly nodeActions: readonly StarMenuItem[] = [
+    { label: 'Rename', icon: 'ph-bold ph-pencil-simple' },
+    { label: 'Archive', icon: 'ph-bold ph-archive' },
+  ];
+
+  protected readonly lastAction = signal('none');
+
+  // ---- methods ----
+  protected readonly apiTree = viewChild.required<StarTree>('apiTree');
+
+  protected readonly apiOpen = signal<readonly string[]>([]);
+
+  constructor() {
+    // A project's teams arrived: put them into a new copy of the nodes, then load the next one.
+    effect(() => {
+      if (this.projectTeams.status() !== 'resolved') return;
+      const key = this.projectQueue()[0];
+      const teams = this.projectTeams.value();
+      if (!key || !teams) return;
+      untracked(() => {
+        this.projectNodes.update((nodes) =>
+          nodes.map((node) =>
+            node.key === key ? { ...node, loading: false, children: teams } : node,
+          ),
+        );
+        this.projectQueue.update((queue) => queue.slice(1));
+      });
+    });
+  }
+
+  protected loadProject(node: StarTreeNode): void {
+    if (node.children || node.loading || node.leaf !== false) return;
+    this.projectNodes.update((nodes) =>
+      nodes.map((n) => (n.key === node.key ? { ...n, loading: true } : n)),
+    );
+    this.projectQueue.update((queue) => [...queue, node.key]);
+  }
+
+  protected onDrop(event: StarTreeNodeDropEvent): void {
+    this.movable.update((nodes) => moveNode(nodes, event));
+    this.lastMove.set(`${event.dragNode.label} ${event.position} ${event.dropNode.label}`);
+  }
+
   protected readonly singleOpen = signal<readonly string[]>(['docs']);
 
   protected readonly multipleOpen = signal<readonly string[]>(['media']);
@@ -300,6 +518,51 @@ export class TreePage {
 ];
 
 readonly open = signal<readonly string[]>(['docs']);`;
+
+  protected readonly lazyScript = `readonly projectNodes = signal<readonly StarTreeNode[]>([
+  { key: 'atlas', label: 'Project Atlas', leaf: false },
+  { key: 'beacon', label: 'Project Beacon', leaf: false },
+]);
+/** Projects whose teams are requested, in order; the first one loads now. */
+private readonly projectQueue = signal<readonly string[]>([]);
+private readonly projectTeams = resource({
+  params: () => this.projectQueue()[0],
+  // Fake server call: resolves with the teams after a short delay.
+  loader: ({ params, abortSignal }) => loadTeams(params, abortSignal),
+});
+
+constructor() {
+  effect(() => {
+    if (this.projectTeams.status() !== 'resolved') return;
+    const key = this.projectQueue()[0];
+    const teams = this.projectTeams.value();
+    if (!key || !teams) return;
+    untracked(() => {
+      this.projectNodes.update((nodes) =>
+        nodes.map((node) => (node.key === key ? { ...node, loading: false, children: teams } : node)),
+      );
+      this.projectQueue.update((queue) => queue.slice(1));
+    });
+  });
+}
+
+loadProject(node: StarTreeNode): void {
+  if (node.children || node.loading || node.leaf !== false) return;
+  this.projectNodes.update((nodes) =>
+    nodes.map((n) => (n.key === node.key ? { ...n, loading: true } : n)),
+  );
+  this.projectQueue.update((queue) => [...queue, node.key]);
+}`;
+
+  protected readonly dragScript = `readonly movable = signal<readonly StarTreeNode[]>(DEPARTMENTS);
+
+readonly noDropInPeople: StarTreeDropValidator = (_drag, target, position) =>
+  !(target.key === 'people' && position === 'inside');
+
+onDrop(event: StarTreeNodeDropEvent): void {
+  // moveNode removes event.dragNode and puts it before, after or inside event.dropNode.
+  this.movable.update((nodes) => moveNode(nodes, event));
+}`;
 
   protected readonly checkboxScript = `readonly checked = signal<readonly string[]>([]);
 
@@ -378,6 +641,11 @@ readonly share = form(this.shareModel, (path) => {
     { name: '--star-accent', description: 'Focus ring of a row.' },
 
     { name: '--star-tree-level', description: 'Set on each row: the depth that sets the indent.' },
+
+    {
+      name: '--star-tree-drop-color',
+      description: 'Drop line and drop box while a node is dragged (default --star-primary).',
+    },
   ];
 
   protected readonly keyboard: readonly DocsRow[] = [
@@ -404,6 +672,26 @@ readonly share = form(this.shareModel, (path) => {
     },
 
     { name: '*', description: 'Opens every branch at the level of the focused node.' },
+
+    {
+      name: 'Ctrl+Shift+Arrow up / down',
+
+      description:
+        'With draggableNodes and droppableNodes: moves the node before the previous or after the next sibling (nodeDrop).',
+    },
+
+    {
+      name: 'Ctrl+Shift+Arrow right / left',
+
+      description:
+        'Moves the node into the previous sibling, or out to the level of its parent. Mirrored in right-to-left.',
+    },
+
+    {
+      name: 'Shift+F10 / Context menu key',
+
+      description: 'Opens the context menu of the node (contextMenu).',
+    },
 
     {
       name: 'With virtualScroll',
