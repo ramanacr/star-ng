@@ -71,17 +71,19 @@ describe('tree drop rules', () => {
 @Component({
   imports: [StarTree],
   template: `
-    <star-tree
-      class="one"
-      [nodes]="nodes"
-      [expanded]="['eng']"
-      [draggableNodes]="drag()"
-      droppableNodes
-      draggableScope="org"
-      [validateDrop]="validate()"
-      ariaLabel="Departments"
-      (nodeDrop)="drops.push($event)"
-    />
+    @if (showFirst()) {
+      <star-tree
+        class="one"
+        [nodes]="nodes"
+        [expanded]="['eng']"
+        [draggableNodes]="drag()"
+        droppableNodes
+        draggableScope="org"
+        [validateDrop]="validate()"
+        ariaLabel="Departments"
+        (nodeDrop)="drops.push($event)"
+      />
+    }
     <star-tree
       class="two"
       [nodes]="others"
@@ -96,18 +98,39 @@ class DndHost {
   readonly nodes = NODES;
   readonly others: StarTreeNode[] = [{ key: 'old', label: 'Old teams' }];
   readonly drag = signal(true);
+  readonly showFirst = signal(true);
   readonly scope = signal<string | null>('org');
   readonly validate = signal<StarTreeDropValidator | null>(null);
   readonly drops: StarTreeNodeDropEvent[] = [];
   readonly otherDrops: StarTreeNodeDropEvent[] = [];
 }
 
-/** A drag event as the browser sends it (jsdom has no DragEvent), at a vertical offset in a row. */
-function dragEvent(type: string, target: HTMLElement, offset = 20): Event {
+/** The data of a drag: the types it carries, as the browser shows them during dragover. */
+class FakeDataTransfer {
+  effectAllowed = 'all';
+  dropEffect = 'none';
+  readonly types: string[];
+  constructor(types: readonly string[] = []) {
+    this.types = [...types];
+  }
+  setData(type: string): void {
+    if (!this.types.includes(type)) this.types.push(type);
+  }
+}
+
+/** The data of the current tree drag: dragstart fills it, later events of the drag share it. */
+let transfer = new FakeDataTransfer();
+
+/**
+ * A drag event as the browser sends it (jsdom has no DragEvent), at a vertical offset in a row.
+ * `dragstart` begins a new drag; pass `data` for a drag that comes from outside (a file, a text).
+ */
+function dragEvent(type: string, target: HTMLElement, offset = 20, data?: FakeDataTransfer): Event {
+  if (type === 'dragstart' && !data) transfer = new FakeDataTransfer();
   const event = new Event(type, { bubbles: true, cancelable: true });
   const top = target.getBoundingClientRect().top;
   Object.defineProperty(event, 'clientY', { value: top + offset });
-  Object.defineProperty(event, 'dataTransfer', { value: null });
+  Object.defineProperty(event, 'dataTransfer', { value: data ?? transfer });
   target.dispatchEvent(event);
   return event;
 }
@@ -242,5 +265,47 @@ describe('StarTree drag and drop', () => {
     el.setAttribute('dir', 'rtl');
     await press(row('ops'), 'ArrowLeft', { ctrlKey: true, shiftKey: true });
     expect(host.drops.at(-1)).toMatchObject({ dropNode: { key: 'web' }, position: 'inside' });
+  });
+
+  it('a tree drag carries its own data type', async () => {
+    const { row } = await setup();
+    dragEvent('dragstart', row('web'));
+    expect(transfer.types).toContain('application/x-star-tree');
+  });
+
+  it('ignores an outside drag after a tree drag that never ended', async () => {
+    const { fixture, host, row } = await setup();
+    // The source row leaves the DOM or the user presses Escape: no dragend reaches the tree.
+    dragEvent('dragstart', row('web'));
+    const files = new FakeDataTransfer(['Files']);
+    const over = dragEvent('dragover', row('hr'), 20, files);
+    await fixture.whenStable();
+    expect(over.defaultPrevented).toBe(false);
+    expect(row('hr').className).not.toMatch(/drop-/);
+    dragEvent('drop', row('hr'), 20, files);
+    expect(host.drops).toEqual([]);
+  });
+
+  it('a new drag start clears a stale drag', async () => {
+    const { fixture, row } = await setup();
+    dragEvent('dragstart', row('web'));
+    await fixture.whenStable();
+    expect(row('web').classList).toContain('star-tree__item--dragging');
+    // A drag from a row that cannot drag (for example a text selection) starts a new drag.
+    dragEvent('dragstart', row('qa'));
+    await fixture.whenStable();
+    expect(row('web').classList).not.toContain('star-tree__item--dragging');
+  });
+
+  it('destroying the source tree clears its drag', async () => {
+    const { fixture, host, row } = await setup();
+    dragEvent('dragstart', row('web'));
+    host.showFirst.set(false);
+    await fixture.whenStable();
+    const other = fixture.nativeElement.querySelector(
+      'star-tree.two [data-key="old"]',
+    ) as HTMLElement;
+    other.getBoundingClientRect = () => ({ top: 0, height: 40, bottom: 40 }) as DOMRect;
+    expect(dragEvent('dragover', other).defaultPrevented).toBe(false);
   });
 });

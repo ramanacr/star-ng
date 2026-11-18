@@ -1,7 +1,7 @@
 // Drag and drop of tree nodes: the pure drop rules (position under the pointer, scopes, the
 // targets of the keyboard moves) and the shared drag state that lets one tree drop a node from
 // another. The tree never changes `nodes`: it emits `nodeDrop` and the owner moves the node.
-import { computed, effect, inject, Injectable, signal, untracked } from '@angular/core';
+import { computed, DestroyRef, effect, inject, Injectable, signal, untracked } from '@angular/core';
 import type { StarTreeNode } from './tree';
 import { BranchLike, parentsOf } from './tree-model';
 
@@ -130,6 +130,18 @@ export function keyboardDrop<N extends BranchLike<N>>(
   }
 }
 
+/**
+ * The data type that marks a tree drag. A drag without it (a file, a text, a link) is never a
+ * tree drop, also when an old tree drag did not end cleanly.
+ */
+export const STAR_TREE_DRAG_TYPE = 'application/x-star-tree';
+
+/** The drag carries the tree data type (read during dragover and drop). */
+function isTreeDrag(event: DragEvent): boolean {
+  const types = event.dataTransfer?.types;
+  return !!types && Array.from(types).includes(STAR_TREE_DRAG_TYPE);
+}
+
 /** What a tree gives its drag-and-drop controller. */
 export interface TreeDndHost {
   /** The tree itself: the source of a drag, and `fromTree` of a cross-tree drop. */
@@ -170,6 +182,10 @@ export class TreeDndController {
     // A drag that ends anywhere (a drop on another tree, Escape) clears the indicator here.
     effect(() => {
       if (!this.state.active()) untracked(() => this.indicator.set(null));
+    });
+    // The source tree goes away during its drag: no dragend will come.
+    inject(DestroyRef).onDestroy(() => {
+      if (this.state.active()?.source === this.host.owner) this.state.active.set(null);
     });
   }
 
@@ -222,6 +238,9 @@ export class TreeDndController {
   }
 
   dragStart(event: DragEvent): void {
+    // A new drag begins: a tree drag that did not end cleanly (its row left the DOM, Escape)
+    // is over.
+    if (this.state.active()) this.state.active.set(null);
     const row = this.row(event.target);
     if (!row || !this.canDrag(row.node)) return;
     this.state.active.set({
@@ -231,12 +250,13 @@ export class TreeDndController {
     });
     if (event.dataTransfer) {
       event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData(STAR_TREE_DRAG_TYPE, row.node.key);
       event.dataTransfer.setData('text/plain', row.node.label);
     }
   }
 
   dragOver(event: DragEvent): void {
-    const drag = this.state.active();
+    const drag = isTreeDrag(event) ? this.state.active() : null;
     const row = this.row(event.target);
     if (!drag || !row) {
       this.indicator.set(null);
@@ -263,7 +283,7 @@ export class TreeDndController {
   }
 
   drop(event: DragEvent): void {
-    const drag = this.state.active();
+    const drag = isTreeDrag(event) ? this.state.active() : null;
     const indicator = this.indicator();
     const target = indicator && this.host.node(indicator.key);
     if (!drag || !indicator || !target) return;
