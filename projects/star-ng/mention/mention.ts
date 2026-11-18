@@ -331,6 +331,7 @@ export class StarMention<T = unknown> {
   });
 
   private overlayRef: OverlayRef | null = null;
+  private scrollListening = false;
   private strategy: FlexibleConnectedPositionStrategy | null = null;
   /** Increments for every search, so a late answer for an older query is dropped. */
   private searchId = 0;
@@ -348,7 +349,10 @@ export class StarMention<T = unknown> {
       });
     });
     afterNextRender(() => this.refresh());
-    inject(DestroyRef).onDestroy(() => this.overlayRef?.dispose());
+    inject(DestroyRef).onDestroy(() => {
+      this.listenToScroll(false);
+      this.overlayRef?.dispose();
+    });
   }
 
   /** Text of a suggestion. */
@@ -391,6 +395,7 @@ export class StarMention<T = unknown> {
     this.context.set(null);
     this.items.set([]);
     this.loading.set(false);
+    this.listenToScroll(false);
     this.overlayRef?.detach();
   }
 
@@ -481,7 +486,8 @@ export class StarMention<T = unknown> {
   }
 
   /** Attaches the panel at the caret, or moves it there. */
-  private show(context: MentionContext): void {
+  /** The caret of the trigger in viewport coordinates, and whether it is inside the field box. */
+  private caretOrigin(context: MentionContext) {
     const field = this.host.nativeElement;
     const caret = starCaretCoordinates(field, context.start);
     const rect = field.getBoundingClientRect();
@@ -491,6 +497,60 @@ export class StarMention<T = unknown> {
       width: 0,
       height: caret.height,
     };
+    const box = this.visibleBox(rect);
+    const visible =
+      origin.y + origin.height > box.top &&
+      origin.y < box.bottom &&
+      origin.x >= box.left &&
+      origin.x <= box.right;
+    return { origin, visible };
+  }
+
+  /** The part of the field box that the viewport and the scrolling ancestors do not clip. */
+  private visibleBox(rect: DOMRect) {
+    const field = this.host.nativeElement;
+    const view = field.ownerDocument.defaultView;
+    const box = { top: rect.top, bottom: rect.bottom, left: rect.left, right: rect.right };
+    const clip = (other: { top: number; bottom: number; left: number; right: number }) => {
+      box.top = Math.max(box.top, other.top);
+      box.bottom = Math.min(box.bottom, other.bottom);
+      box.left = Math.max(box.left, other.left);
+      box.right = Math.min(box.right, other.right);
+    };
+    if (view) clip({ top: 0, left: 0, bottom: view.innerHeight, right: view.innerWidth });
+    for (let parent = field.parentElement; parent && view; parent = parent.parentElement) {
+      const overflow = view.getComputedStyle(parent);
+      if (/(auto|scroll|hidden|clip)/.test(overflow.overflowX + overflow.overflowY)) {
+        clip(parent.getBoundingClientRect());
+      }
+    }
+    return box;
+  }
+
+  /** A scroll of the page, a container or the field: follow the caret, or close when it is hidden. */
+  private readonly onScroll = (): void => {
+    const context = this.context();
+    if (!context || !this.overlayRef?.hasAttached()) return;
+    const { origin, visible } = this.caretOrigin(context);
+    if (!visible) {
+      this.close();
+      return;
+    }
+    this.strategy?.setOrigin(origin);
+    this.overlayRef.updatePosition();
+  };
+
+  private listenToScroll(on: boolean): void {
+    const doc = this.host.nativeElement.ownerDocument;
+    if (on === this.scrollListening) return;
+    this.scrollListening = on;
+    // Capture: a scroll event does not bubble, so this catches every scrolling container.
+    if (on) doc.addEventListener('scroll', this.onScroll, { capture: true, passive: true });
+    else doc.removeEventListener('scroll', this.onScroll, { capture: true });
+  }
+
+  private show(context: MentionContext): void {
+    const { origin } = this.caretOrigin(context);
     if (!this.overlayRef) {
       this.strategy = createFlexibleConnectedPositionStrategy(this.injector, origin)
         .withPositions(POSITIONS)
@@ -512,6 +572,7 @@ export class StarMention<T = unknown> {
       panel.setInput('owner', this);
     }
     this.overlayRef.updatePosition();
+    this.listenToScroll(true);
   }
 
   protected onKeydown(raw: Event): void {

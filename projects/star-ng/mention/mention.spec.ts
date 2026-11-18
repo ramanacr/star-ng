@@ -199,6 +199,35 @@ describe('StarMention', () => {
     expect(document.querySelector('[role=option] .custom')?.textContent).toBe('Jonas Berg!');
   });
 
+  it('follows the caret when the page scrolls, and closes when the caret scrolls out (I4)', async () => {
+    const { fixture, field, type } = await setup();
+    let box = { top: 100, bottom: 160, left: 10, right: 310 };
+    const rect = vi.spyOn(field, 'getBoundingClientRect').mockImplementation(
+      () =>
+        ({
+          ...box,
+          x: box.left,
+          y: box.top,
+          width: box.right - box.left,
+          height: box.bottom - box.top,
+          toJSON: () => ({}),
+        }) as DOMRect,
+    );
+    await type('@an');
+    expect(options().length).toBe(2);
+    const reads = rect.mock.calls.length;
+    document.dispatchEvent(new Event('scroll'));
+    await fixture.whenStable();
+    expect(rect.mock.calls.length).toBeGreaterThan(reads);
+    expect(options().length).toBe(2);
+    box = { top: -300, bottom: -240, left: 10, right: 310 };
+    document.body.dispatchEvent(new Event('scroll'));
+    await fixture.whenStable();
+    expect(options().length).toBe(0);
+    expect(field.getAttribute('aria-activedescendant')).toBeNull();
+    rect.mockRestore();
+  });
+
   it('closes when the caret leaves the mention or the field loses focus', async () => {
     const { fixture, field, type } = await setup();
     await type('@an');
