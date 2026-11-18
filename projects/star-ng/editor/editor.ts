@@ -1,10 +1,12 @@
 import { _IdGenerator } from '@angular/cdk/a11y';
+import { NgTemplateOutlet } from '@angular/common';
 import {
   afterRenderEffect,
   booleanAttribute,
   ChangeDetectionStrategy,
   Component,
   computed,
+  contentChild,
   ElementRef,
   inject,
   input,
@@ -44,8 +46,10 @@ import {
   StarEditorBlockFormat,
   StarEditorCommand,
   starEditorGroups,
+  StarEditorToolbarContext,
   StarEditorToolbarItem,
   starEditorToolbarMove,
+  StarEditorToolbarTemplate,
 } from './editor-toolbar';
 
 /** Inline formats that `document.queryCommandState` reports. */
@@ -90,7 +94,7 @@ const FORMAT_TAGS: Readonly<Record<string, StarEditorCommand>> = {
  */
 @Component({
   selector: 'star-editor',
-  imports: [StarEditorLink],
+  imports: [StarEditorLink, NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-editor',
@@ -99,60 +103,70 @@ const FORMAT_TAGS: Readonly<Record<string, StarEditorCommand>> = {
     '[class.star-editor--over]': 'over()',
   },
   template: `
-    <div
-      #toolbarElement
-      class="star-toolbar star-editor__toolbar"
-      role="toolbar"
-      [attr.aria-label]="text.editorFormatting(ariaLabel() ?? text.editorLabel)"
-      [attr.aria-controls]="areaId"
-    >
-      @for (group of groups(); track $index; let first = $first) {
-        @if (!first) {
-          <span class="star-editor__separator" role="separator" aria-orientation="vertical"></span>
-        }
-        <div class="star-toolbar__group">
-          @for (cmd of group; track cmd) {
-            @if (cmd === 'formatBlock') {
-              <select
-                class="star-editor__select"
-                data-editor-control
-                [attr.aria-label]="text.editorTextStyle"
-                [attr.tabindex]="cmd === rovingCommand() ? 0 : -1"
-                [disabled]="locked()"
-                (keydown)="onToolbarKeydown($event)"
-                (focus)="onToolbarFocus($event)"
-                (change)="exec('formatBlock', $any($event.target).value)"
-              >
-                @for (option of blockFormats; track option) {
-                  <option [value]="option" [selected]="option === blockFormat()">
-                    {{
-                      option === 'p' ? text.editorParagraph : text.editorHeadingLevel(+option[1])
-                    }}
-                  </option>
-                }
-              </select>
-            } @else {
-              <button
-                type="button"
-                class="star-editor__btn"
-                data-editor-control
-                [attr.aria-label]="label(cmd)"
-                [attr.aria-pressed]="pressed(cmd)"
-                [attr.aria-expanded]="cmd === 'link' ? linkOpen() : null"
-                [attr.tabindex]="cmd === rovingCommand() ? 0 : -1"
-                [disabled]="locked()"
-                (keydown)="onToolbarKeydown($event)"
-                (focus)="onToolbarFocus($event)"
-                (mousedown)="$event.preventDefault()"
-                (click)="exec(cmd)"
-              >
-                <i [class]="icon(cmd)" aria-hidden="true"></i>
-              </button>
-            }
+    @if (customToolbar(); as custom) {
+      <div class="star-editor__custom-toolbar">
+        <ng-container *ngTemplateOutlet="custom.template; context: toolbarContext()" />
+      </div>
+    } @else {
+      <div
+        #toolbarElement
+        class="star-toolbar star-editor__toolbar"
+        role="toolbar"
+        [attr.aria-label]="text.editorFormatting(ariaLabel() ?? text.editorLabel)"
+        [attr.aria-controls]="areaId"
+      >
+        @for (group of groups(); track $index; let first = $first) {
+          @if (!first) {
+            <span
+              class="star-editor__separator"
+              role="separator"
+              aria-orientation="vertical"
+            ></span>
           }
-        </div>
-      }
-    </div>
+          <div class="star-toolbar__group">
+            @for (cmd of group; track cmd) {
+              @if (cmd === 'formatBlock') {
+                <select
+                  class="star-editor__select"
+                  data-editor-control
+                  [attr.aria-label]="text.editorTextStyle"
+                  [attr.tabindex]="cmd === rovingCommand() ? 0 : -1"
+                  [disabled]="locked()"
+                  (keydown)="onToolbarKeydown($event)"
+                  (focus)="onToolbarFocus($event)"
+                  (change)="exec('formatBlock', $any($event.target).value)"
+                >
+                  @for (option of blockFormats; track option) {
+                    <option [value]="option" [selected]="option === blockFormat()">
+                      {{
+                        option === 'p' ? text.editorParagraph : text.editorHeadingLevel(+option[1])
+                      }}
+                    </option>
+                  }
+                </select>
+              } @else {
+                <button
+                  type="button"
+                  class="star-editor__btn"
+                  data-editor-control
+                  [attr.aria-label]="label(cmd)"
+                  [attr.aria-pressed]="pressed(cmd)"
+                  [attr.aria-expanded]="cmd === 'link' ? linkOpen() : null"
+                  [attr.tabindex]="cmd === rovingCommand() ? 0 : -1"
+                  [disabled]="locked()"
+                  (keydown)="onToolbarKeydown($event)"
+                  (focus)="onToolbarFocus($event)"
+                  (mousedown)="$event.preventDefault()"
+                  (click)="exec(cmd)"
+                >
+                  <i [class]="icon(cmd)" aria-hidden="true"></i>
+                </button>
+              }
+            }
+          </div>
+        }
+      </div>
+    }
     @if (linkOpen()) {
       <star-editor-link
         [initialUrl]="linkUrl()"
@@ -243,6 +257,21 @@ export class StarEditor implements FormValueControl<string> {
   readonly toolbar = input<readonly StarEditorToolbarItem[]>(STAR_EDITOR_DEFAULT_TOOLBAR);
   readonly touch = output<void>();
 
+  /** The `starEditorToolbar` template that replaces the toolbar. */
+  protected readonly customToolbar = contentChild(StarEditorToolbarTemplate);
+  private readonly execBound = (command: StarEditorCommand, value?: string) =>
+    this.exec(command, value);
+  private readonly isActiveBound = (command: StarEditorCommand) => this.isActive(command);
+  /** A new context when the state changes, so the template shows it. */
+  protected readonly toolbarContext = computed<StarEditorToolbarContext>(() => {
+    this.active();
+    return {
+      $implicit: this.execBound,
+      exec: this.execBound,
+      isActive: this.isActiveBound,
+      disabled: this.locked(),
+    };
+  });
   protected readonly blockFormats: readonly StarEditorBlockFormat[] = ['p', 'h1', 'h2', 'h3'];
   protected readonly groups = computed(() => starEditorGroups(this.toolbar()));
   private readonly commands = computed(() => this.groups().flat());

@@ -1,3 +1,4 @@
+import { Directive, inject, TemplateRef } from '@angular/core';
 import type { StarUiText } from '@star-ng/ui/core';
 
 /**
@@ -100,6 +101,37 @@ export const STAR_EDITOR_BUTTONS: Readonly<
   undo: { label: 'editorUndo', icon: 'ph-bold ph-arrow-counter-clockwise', toggle: false },
   redo: { label: 'editorRedo', icon: 'ph-bold ph-arrow-clockwise', toggle: false },
 };
+
+/** Context of the `starEditorToolbar` template. */
+export interface StarEditorToolbarContext {
+  /** Runs a command on the selection: `exec('bold')`, `exec('formatBlock', 'h2')`. */
+  readonly exec: (command: StarEditorCommand, value?: string) => void;
+  /** True when the format of the command is on at the caret. */
+  readonly isActive: (command: StarEditorCommand) => boolean;
+  /** True while the editor is disabled or read-only: turn the controls off. */
+  readonly disabled: boolean;
+  /** The same as `exec` (`let-exec` or `let-tools`). */
+  readonly $implicit: (command: StarEditorCommand, value?: string) => void;
+}
+
+/**
+ * Replaces the toolbar of `star-editor`:
+ * `<ng-template starEditorToolbar let-exec="exec" let-isActive="isActive">…</ng-template>`.
+ * Give the container `role="toolbar"` and a name, and stop `mousedown` on its buttons
+ * (`$event.preventDefault()`) so the text keeps its selection. PrimeNG `#header` template of
+ * `p-editor`.
+ */
+@Directive({ selector: 'ng-template[starEditorToolbar]' })
+export class StarEditorToolbarTemplate {
+  readonly template = inject<TemplateRef<StarEditorToolbarContext>>(TemplateRef);
+
+  static ngTemplateContextGuard(
+    _dir: StarEditorToolbarTemplate,
+    _ctx: unknown,
+  ): _ctx is StarEditorToolbarContext {
+    return true;
+  }
+}
 
 /** The commands of a `toolbar` list in groups, without unknown names and empty groups. */
 export function starEditorGroups(

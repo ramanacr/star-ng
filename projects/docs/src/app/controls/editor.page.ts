@@ -1,10 +1,15 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { STAR_EDITOR_FULL_TOOLBAR, StarEditor, StarEditorToolbarItem } from '@star-ng/ui/editor';
+import {
+  STAR_EDITOR_FULL_TOOLBAR,
+  StarEditor,
+  StarEditorToolbarItem,
+  StarEditorToolbarTemplate,
+} from '@star-ng/ui/editor';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
   selector: 'docs-editor-page',
-  imports: [DOCS, StarEditor],
+  imports: [DOCS, StarEditor, StarEditorToolbarTemplate],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <docs-page
@@ -84,6 +89,50 @@ import { DOCS, DocsRow } from '../shared/docs';
       </docs-example>
 
       <docs-example
+        heading="Own toolbar template"
+        source="editor/toolbar-slot"
+        note="ng-template starEditorToolbar replaces the toolbar. Its context has exec(command, value?), isActive(command) and disabled. Give the container role toolbar and a name, and stop mousedown on the buttons so the text keeps its selection."
+      >
+        <div class="docs-stack">
+          <star-editor ariaLabel="Release note" minHeight="4rem">
+            <ng-template
+              starEditorToolbar
+              let-exec="exec"
+              let-isActive="isActive"
+              let-disabled="disabled"
+            >
+              <div
+                class="star-toolbar star-editor__toolbar"
+                role="toolbar"
+                aria-label="Release note tools"
+              >
+                <button
+                  type="button"
+                  class="star-btn star-btn--ghost star-btn--sm"
+                  [attr.aria-pressed]="isActive('bold')"
+                  [disabled]="disabled"
+                  (mousedown)="$event.preventDefault()"
+                  (click)="exec('bold')"
+                >
+                  Bold
+                </button>
+                <button
+                  type="button"
+                  class="star-btn star-btn--ghost star-btn--sm"
+                  [attr.aria-pressed]="isActive('code')"
+                  [disabled]="disabled"
+                  (mousedown)="$event.preventDefault()"
+                  (click)="exec('code')"
+                >
+                  Code
+                </button>
+              </div>
+            </ng-template>
+          </star-editor>
+        </div>
+      </docs-example>
+
+      <docs-example
         heading="Placeholder and height"
         source="editor/size"
         [script]="sizeScript"
@@ -123,7 +172,12 @@ import { DOCS, DocsRow } from '../shared/docs';
         </div>
       </docs-example>
 
-      <docs-api [of]="['StarEditor']" [cssVars]="cssVars" [keyboard]="keyboard" />
+      <docs-api
+        [of]="['StarEditor', 'StarEditorToolbarTemplate']"
+        [slots]="slots"
+        [cssVars]="cssVars"
+        [keyboard]="keyboard"
+      />
 
       <h2>What the editor does with HTML</h2>
       <p>
@@ -210,6 +264,13 @@ readonly fullToolbar = STAR_EDITOR_FULL_TOOLBAR;`;
   '<p onclick="alert(1)" style="color: red">Order <b>ORD-1042</b> <script>alert(1)</script><a href="javascript:alert(1)">open</a></p>',
 );`;
 
+  protected readonly slots: readonly DocsRow[] = [
+    {
+      name: 'ng-template starEditorToolbar',
+      description:
+        'Replaces the toolbar. Context: exec(command, value?), isActive(command), disabled; $implicit is exec.',
+    },
+  ];
   protected readonly cssVars: readonly DocsRow[] = [
     { name: '--star-border', description: 'Border of the editor and line under the toolbar.' },
     { name: '--star-surface-muted', description: 'Background of the toolbar.' },

@@ -6,6 +6,7 @@ import {
   StarEditor,
   starEditorSafeUrl,
   StarEditorToolbarItem,
+  StarEditorToolbarTemplate,
 } from '@star-ng/ui/editor';
 
 @Component({
@@ -405,5 +406,55 @@ describe('StarEditor paste', () => {
     const { area, host } = await setupPaste(true);
     paste(area, { 'text/html': '<b>bold</b>', 'text/plain': ' & more' });
     expect(host.html()).toBe('<p>Start &amp; more</p>');
+  });
+});
+
+@Component({
+  imports: [StarEditor, StarEditorToolbarTemplate],
+  template: `
+    <star-editor [(value)]="html" [readonly]="readonly()" ariaLabel="Memo">
+      <ng-template
+        starEditorToolbar
+        let-exec="exec"
+        let-isActive="isActive"
+        let-disabled="disabled"
+      >
+        <div role="toolbar" aria-label="Memo tools" class="own">
+          <button
+            type="button"
+            [attr.aria-pressed]="isActive('code')"
+            [disabled]="disabled"
+            (click)="exec('code')"
+          >
+            Code
+          </button>
+        </div>
+      </ng-template>
+    </star-editor>
+  `,
+})
+class SlotHost {
+  readonly html = signal('<p>Order ORD-1</p>');
+  readonly readonly = signal(false);
+}
+
+describe('StarEditor toolbar slot', () => {
+  it('replaces the toolbar; the context runs commands and reads their state', async () => {
+    const fixture = TestBed.createComponent(SlotHost);
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.querySelectorAll('[role=toolbar]').length).toBe(1);
+    expect(el.querySelector('[role=toolbar]')!.classList).toContain('own');
+    expect(el.querySelector('[data-editor-control]')).toBeNull();
+    const area = el.querySelector<HTMLElement>('.star-editor__area')!;
+    const button = el.querySelector<HTMLButtonElement>('.own button')!;
+    select(area.querySelector('p')!, 6, 11);
+    button.click();
+    await fixture.whenStable();
+    expect(fixture.componentInstance.html()).toBe('<p>Order <code>ORD-1</code></p>');
+    expect(button.getAttribute('aria-pressed')).toBe('true');
+    fixture.componentInstance.readonly.set(true);
+    await fixture.whenStable();
+    expect(button.disabled).toBe(true);
   });
 });
