@@ -1,12 +1,15 @@
 import { _IdGenerator } from '@angular/cdk/a11y';
 import {
+  afterNextRender,
   afterRenderEffect,
   booleanAttribute,
   ChangeDetectionStrategy,
   Component,
   DOCUMENT,
+  effect,
   ElementRef,
   inject,
+  Injector,
   input,
   model,
   numberAttribute,
@@ -132,34 +135,31 @@ export class StarWindowStack {
         <h2 class="star-window__title" [id]="titleId">{{ header() }}</h2>
         <ng-content select="[starWindowHeader]" />
         <div class="star-window__actions">
-          @if (minimizable() && state() !== 'minimized') {
+          <!-- Stable toggles: the focused button stays when the state changes. -->
+          @if (minimizable()) {
             <button
               type="button"
               class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
-              [attr.aria-label]="text.minimize"
-              (click)="minimize()"
+              [attr.aria-label]="state() === 'minimized' ? text.restore : text.minimize"
+              (click)="toggleMinimized()"
             >
-              <i class="ph-bold ph-minus" aria-hidden="true"></i>
+              <i
+                [class]="state() === 'minimized' ? 'ph-bold ph-copy-simple' : 'ph-bold ph-minus'"
+                aria-hidden="true"
+              ></i>
             </button>
           }
-          @if (state() !== 'normal') {
+          @if (maximizable()) {
             <button
               type="button"
               class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
-              [attr.aria-label]="text.restore"
-              (click)="restore()"
+              [attr.aria-label]="state() === 'maximized' ? text.restore : text.maximize"
+              (click)="toggleMaximized()"
             >
-              <i class="ph-bold ph-copy-simple" aria-hidden="true"></i>
-            </button>
-          }
-          @if (maximizable() && state() !== 'maximized') {
-            <button
-              type="button"
-              class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
-              [attr.aria-label]="text.maximize"
-              (click)="maximize()"
-            >
-              <i class="ph-bold ph-square" aria-hidden="true"></i>
+              <i
+                [class]="state() === 'maximized' ? 'ph-bold ph-copy-simple' : 'ph-bold ph-square'"
+                aria-hidden="true"
+              ></i>
             </button>
           }
           @if (closable()) {
@@ -193,6 +193,7 @@ export class StarWindow {
   protected readonly text = inject(STAR_UI_TEXT);
   private readonly document = inject(DOCUMENT);
   private readonly stack = inject(StarWindowStack);
+  private readonly injector = inject(Injector);
 
   /** Open state. */
   readonly visible = model(false);
@@ -234,6 +235,32 @@ export class StarWindow {
   private isOpen = false;
 
   constructor() {
+    // When a state change hides the focused element (for example the content of a window that
+    // is minimized), the focus would fall to <body>: it goes to the title bar instead.
+    let previous: StarWindowState | null = null;
+    effect(() => {
+      const state = this.state();
+      if (previous !== null && state !== previous) {
+        const element = this.dialog().nativeElement;
+        const active = this.document.activeElement;
+        const hadFocus = !!active && element.contains(active);
+        afterNextRender(
+          () => {
+            const now = this.document.activeElement;
+            const lost =
+              !now ||
+              now === this.document.body ||
+              !element.contains(now) ||
+              !!(now as HTMLElement).closest?.('[hidden]');
+            if (hadFocus && lost) {
+              element.querySelector<HTMLElement>('.star-window__titlebar')?.focus();
+            }
+          },
+          { injector: this.injector },
+        );
+      }
+      previous = state;
+    });
     afterRenderEffect({
       write: () => {
         const element = this.dialog().nativeElement;
@@ -277,6 +304,16 @@ export class StarWindow {
 
   restore(): void {
     this.state.set('normal');
+  }
+
+  /** Minimizes, or restores a minimized window (the first title bar toggle). */
+  protected toggleMinimized(): void {
+    this.state.set(this.state() === 'minimized' ? 'normal' : 'minimized');
+  }
+
+  /** Maximizes, or restores a maximized window (the second title bar toggle). */
+  protected toggleMaximized(): void {
+    this.state.set(this.state() === 'maximized' ? 'normal' : 'maximized');
   }
 
   /** Moves the window by a number of pixels, within the viewport when `keepInViewport` is on. */

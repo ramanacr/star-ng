@@ -229,6 +229,45 @@ describe('StarWindow', () => {
     expect(order(first)).toBe(1);
   });
 
+  it('keeps the focus in the window when a title bar button is used with the keyboard', async () => {
+    const { fixture, dialog, button } = await setup();
+    // jsdom has no show(): mark the dialog open so its content can take the focus.
+    dialog.setAttribute('open', '');
+    const minimize = button('Minimize')!;
+    minimize.focus();
+    minimize.click();
+    await fixture.whenStable();
+    expect(fixture.componentInstance.state()).toBe('minimized');
+    // The same button is now "Restore" and keeps the focus.
+    expect(document.activeElement).toBe(minimize);
+    expect(minimize.getAttribute('aria-label')).toBe('Restore');
+    minimize.click();
+    await fixture.whenStable();
+    expect(fixture.componentInstance.state()).toBe('normal');
+    expect(document.activeElement).toBe(minimize);
+
+    const maximize = button('Maximize')!;
+    maximize.focus();
+    maximize.click();
+    await fixture.whenStable();
+    expect(fixture.componentInstance.state()).toBe('maximized');
+    expect(document.activeElement).toBe(maximize);
+    expect(maximize.getAttribute('aria-label')).toBe('Restore');
+    maximize.click();
+    await fixture.whenStable();
+    expect(fixture.componentInstance.state()).toBe('normal');
+    expect(document.activeElement).toBe(maximize);
+  });
+
+  it('moves the focus to the title bar when minimizing hides the focused content', async () => {
+    const { fixture, dialog, titlebar } = await setup();
+    dialog.setAttribute('open', '');
+    dialog.querySelector<HTMLButtonElement>('.inner')!.focus();
+    fixture.componentInstance.state.set('minimized');
+    await fixture.whenStable();
+    expect(document.activeElement).toBe(titlebar);
+  });
+
   it('reads its texts from STAR_UI_TEXT', async () => {
     TestBed.configureTestingModule({
       providers: [provideStarUiText({ minimize: 'Minimieren', windowHint: 'Hinweis' })],
