@@ -231,4 +231,15 @@ describe('StarTree context menu', () => {
     expect(event.defaultPrevented).toBe(false);
     expect(host.contexts.map((e) => e.node.key)).toEqual(['ops']);
   });
+
+  it('a menu that closes as the tree is destroyed does not touch the tree later', async () => {
+    const { fixture } = await setup();
+    const tree = fixture.debugElement.query((d) => d.componentInstance instanceof StarTree)
+      .componentInstance as StarTree;
+    const focusRow = vi.spyOn(tree as unknown as { focusRow: () => void }, 'focusRow');
+    (tree as unknown as { onMenuClosed: () => void }).onMenuClosed();
+    fixture.destroy();
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    expect(focusRow).not.toHaveBeenCalled();
+  });
 });

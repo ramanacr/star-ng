@@ -16,6 +16,7 @@ import {
   Component,
   computed,
   contentChildren,
+  DestroyRef,
   effect,
   ElementRef,
   forwardRef,
@@ -603,8 +604,11 @@ export class StarTree implements FormValueControl<readonly string[]> {
 
   // ---- context menu ----
   private menuNode: StarTreeNode | null = null;
+  /** The focus return after the menu closes; cancelled when the tree is destroyed. */
+  private menuFocusTimer: ReturnType<typeof setTimeout> | undefined;
 
   constructor() {
+    inject(DestroyRef).onDestroy(() => clearTimeout(this.menuFocusTimer));
     effect((onCleanup) => {
       const viewport = this.viewport();
       if (!viewport) {
@@ -809,7 +813,8 @@ export class StarTree implements FormValueControl<readonly string[]> {
 
   /** The menu closed: the focus goes back to the row when it has nowhere else to be. */
   protected onMenuClosed(): void {
-    setTimeout(() => {
+    clearTimeout(this.menuFocusTimer);
+    this.menuFocusTimer = setTimeout(() => {
       const active = this.doc.activeElement;
       if (!active || active === this.doc.body) this.focusRow(this.focusKey());
     });
