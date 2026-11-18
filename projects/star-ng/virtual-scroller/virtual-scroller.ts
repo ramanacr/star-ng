@@ -89,6 +89,9 @@ export class StarVirtualItemTemplate<T = unknown> extends StarSlot<StarVirtualIt
  * the real position. Do not put focusable elements in the items: an item that scrolls out of view
  * leaves the DOM, and its focus is lost. For a selectable list, use `star-listbox` with
  * `virtualScroll`.
+ *
+ * With an empty `items` array the viewport does not render, so it never emits a range. Lazy mode
+ * therefore needs an array of the full length, with placeholders for the items not loaded yet.
  */
 @Component({
   selector: 'star-virtual-scroller',
@@ -250,12 +253,13 @@ export class StarVirtualScroller<T = unknown> {
     effect((onCleanup) => {
       const viewport = this.viewport();
       if (!viewport) return;
+      // Read here, so a new orientation or item size runs the effect again and measures again.
+      const horizontal = this.orientation() === 'horizontal';
+      this.size();
       const element = viewport.getElementRef().nativeElement;
       const measure = () => {
         // `start` is the inline start (left in LTR, right in RTL); `top` the block start.
-        this.offset.set(
-          viewport.measureScrollOffset(this.orientation() === 'horizontal' ? 'start' : 'top'),
-        );
+        this.offset.set(viewport.measureScrollOffset(horizontal ? 'start' : 'top'));
         this.viewportSize.set(viewport.getViewportSize());
       };
       const scrolled = viewport.elementScrolled().subscribe(measure);
@@ -298,7 +302,8 @@ export class StarVirtualScroller<T = unknown> {
   }
 
   private emitLazy(range: { readonly start: number; readonly end: number }): void {
-    if (!this.lazy()) return;
+    // The CDK range is {0, 0} until the viewport attaches its strategy: that is not a range to load.
+    if (!this.lazy() || range.end <= range.start) return;
     const next = { first: range.start, last: range.end };
     const previous = this.lastLazy;
     if (previous && previous.first === next.first && previous.last === next.last) return;

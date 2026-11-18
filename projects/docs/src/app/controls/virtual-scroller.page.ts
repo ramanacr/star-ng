@@ -114,7 +114,7 @@ function fetchOrderPage(page: number, abortSignal: AbortSignal): Promise<readonl
         heading="Lazy loading with resource()"
         source="virtual-scroller/lazy"
         [script]="lazyScript"
-        note="With lazy, the scroller emits lazyLoad with the rendered range. The page loads the missing pages with resource() (here from a local generator with a short delay) and shows a placeholder until a page arrives."
+        note="With lazy, the scroller emits lazyLoad with the rendered range. The page loads the missing pages with resource() (here from a local generator with a short delay) and shows a placeholder until a page arrives. Pass an array of the full length with placeholders: with an empty items array the viewport does not render, so no range is emitted."
       >
         <star-virtual-scroller
           [items]="lazyOrders()"

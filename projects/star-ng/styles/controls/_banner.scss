@@ -53,8 +53,8 @@
   margin-inline-start: auto;
 }
 .star-banner__dismiss {
-  width: 2rem;
-  height: 2rem;
+  inline-size: 2rem;
+  block-size: 2rem;
 }
 
 @keyframes star-banner-in {

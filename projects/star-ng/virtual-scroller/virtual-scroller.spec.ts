@@ -153,8 +153,7 @@ describe('StarVirtualScroller', () => {
     const { fixture, host } = await setup();
     expect(host.ranges).toEqual([]);
     host.lazy.set(true);
-    // A new array makes the viewport render again, which emits the range.
-    host.items.set([...ORDERS]);
+    // Switching to lazy makes the effect emit the range that is rendered now.
     await fixture.whenStable();
     host.scroller().scrollToIndex(2_000);
     await fixture.whenStable();
@@ -166,6 +165,33 @@ describe('StarVirtualScroller', () => {
     // The same range is not emitted twice in a row.
     const pairs = host.ranges.map((r) => `${r.first}-${r.last}`);
     expect(pairs.every((pair, i) => i === 0 || pair !== pairs[i - 1])).toBe(true);
+  });
+
+  it('mounted in lazy mode, never emits an empty range and emits a new range on scroll', async () => {
+    const fixture = TestBed.createComponent(Host);
+    fixture.componentInstance.lazy.set(true);
+    await fixture.whenStable();
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    await fixture.whenStable();
+    const host = fixture.componentInstance;
+    expect(host.ranges.length).toBeGreaterThan(0);
+    const rendered = host.scroller()['viewport']()!.getRenderedRange();
+    expect(host.ranges[0].last).toBeGreaterThan(host.ranges[0].first);
+    expect(host.ranges[0]).toEqual({ first: rendered.start, last: rendered.end });
+    expect(host.ranges.every((r) => r.last > r.first)).toBe(true);
+
+    const before = host.ranges.length;
+    const viewport = (fixture.nativeElement as HTMLElement).querySelector<HTMLElement>(
+      '#orders cdk-virtual-scroll-viewport',
+    )!;
+    host.scroller().scrollToIndex(2_000);
+    viewport.dispatchEvent(new Event('scroll'));
+    await fixture.whenStable();
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    await fixture.whenStable();
+    expect(host.ranges.length).toBeGreaterThan(before);
+    expect(host.ranges.every((r) => r.last > r.first)).toBe(true);
+    expect(host.ranges.at(-1)!.first).toBeGreaterThan(1_000);
   });
 
   it('shows the loading slot over the items and sets aria-busy', async () => {

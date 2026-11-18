@@ -13,7 +13,7 @@
 // Sticky and fixed bars stay below the notch or status bar of the device.
 .star-app-bar--sticky {
   position: sticky;
-  top: env(safe-area-inset-top, 0px);
+  inset-block-start: env(safe-area-inset-top, 0px);
 }
 .star-app-bar--fixed {
   position: fixed;

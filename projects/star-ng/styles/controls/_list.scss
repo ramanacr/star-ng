@@ -18,7 +18,7 @@
   padding-inline-end: 0.75rem;
 
   .star-list--divider & + & {
-    border-top: 1px solid var(--star-border);
+    border-block-start: 1px solid var(--star-border);
   }
   > [starListItemEnd] {
     flex: none;
