@@ -410,6 +410,44 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'drop-down list',
+    path: 'controls/dropdown',
+    open: async (page) => {
+      await example(page, 'Choose from a list').getByRole('button', { name: 'Export as' }).click();
+      await expect(page.getByRole('listbox', { name: 'Export format' })).toBeFocused();
+    },
+  },
+  {
+    name: 'action strip shown by the focus',
+    path: 'controls/action-strip',
+    open: async (page) => {
+      const edit = example(page, 'Row actions')
+        .getByRole('toolbar', { name: 'Order 1001 actions' })
+        .getByRole('button', { name: 'Edit' });
+      await edit.focus();
+      await expect(edit).toBeVisible();
+    },
+  },
+  {
+    name: 'action strip in a table row',
+    path: 'controls/action-strip',
+    open: async (page) => {
+      const row = example(page, 'In a table row').getByRole('row').nth(1);
+      await row.getByRole('cell').first().hover();
+      await expect(row.getByRole('toolbar')).toHaveCSS('opacity', '1');
+    },
+  },
+  {
+    name: 'action strip with its menu',
+    path: 'controls/action-strip',
+    open: async (page) => {
+      await example(page, 'More actions in a menu')
+        .getByRole('button', { name: 'More actions' })
+        .click();
+      await expect(popup(page).getByRole('menu')).toBeVisible();
+    },
+  },
+  {
     name: 'theme switch of the docs header',
     path: 'controls/theme-switch',
     open: async (page) => {
@@ -487,11 +525,39 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'confirm popup with danger severity',
+    path: 'controls/confirm',
+    open: async (page) => {
+      await example(page, 'Delete from a row')
+        .getByRole('button', { name: 'Delete INV-2041' })
+        .click();
+      await expect(page.getByRole('alertdialog')).toBeVisible();
+    },
+  },
+  {
     name: 'drawer',
     path: 'controls/drawer',
     open: async (page) => {
       await example(page, 'Details drawer').getByRole('button', { name: 'Open details' }).click();
       await expect(page.getByRole('dialog')).toBeVisible();
+    },
+  },
+  {
+    name: 'bottom sheet with a component',
+    path: 'controls/bottom-sheet',
+    open: async (page) => {
+      await example(page, 'Sheet from a component')
+        .getByRole('button', { name: 'Export invoice' })
+        .click();
+      await expect(page.getByRole('dialog', { name: 'Export invoice INV-2041' })).toBeVisible();
+    },
+  },
+  {
+    name: 'action sheet',
+    path: 'controls/bottom-sheet',
+    open: async (page) => {
+      await example(page, 'Action sheet').getByRole('button', { name: 'Order actions' }).click();
+      await expect(page.getByRole('dialog', { name: 'Order ORD-1042 actions' })).toBeVisible();
     },
   },
   {

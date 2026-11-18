@@ -90,3 +90,39 @@ textarea.star-input--auto-resize {
   margin-inline-start: 0.15rem;
   color: var(--star-danger);
 }
+
+// In-field top-aligned label (StarIftaLabel): the label sits inside the box of the control,
+// above the value. The text box of the control gets more space at the top for it. The label
+// lets the pointer through, so a click on it reaches the control (and opens a select).
+.star-ifta__box {
+  position: relative;
+  display: block;
+}
+.star-ifta__label {
+  position: absolute;
+  z-index: 1;
+  inset-block-start: 0.5rem;
+  inset-inline-start: 0.875rem;
+  max-width: calc(100% - 1.75rem);
+  overflow: hidden;
+  color: var(--star-text-muted);
+  font: var(--star-type-body-sm);
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  pointer-events: none;
+}
+.star-ifta__box:focus-within .star-ifta__label {
+  color: var(--star-accent);
+}
+.star-ifta__box {
+  .star-input,
+  .star-number__input,
+  .star-password__input,
+  .star-select__trigger,
+  .star-date__input,
+  .star-time__input {
+    padding-block-start: 1.625rem;
+    padding-block-end: 0.5rem;
+  }
+}

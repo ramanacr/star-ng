@@ -81,6 +81,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         keywords: 'action submit loading icon',
         load: () => import('./controls/button.page').then((m) => m.ButtonPage),
       },
+      {
+        label: 'Button group',
+        path: 'controls/button-group',
+        keywords: 'buttons joined bar toolbar segmented',
+        load: () => import('./controls/button-group.page').then((m) => m.ButtonGroupPage),
+      },
     ],
   },
   {
@@ -91,6 +97,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         path: 'controls/field',
         keywords: 'text textarea label hint error starInput',
         load: () => import('./controls/field.page').then((m) => m.FieldPage),
+      },
+      {
+        label: 'In-field label',
+        path: 'controls/ifta-label',
+        keywords: 'ifta label inside top aligned field input select',
+        load: () => import('./controls/ifta-label.page').then((m) => m.IftaLabelPage),
       },
       {
         label: 'Checkbox',
@@ -265,6 +277,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         load: () => import('./controls/split-button.page').then((m) => m.SplitButtonPage),
       },
       {
+        label: 'Drop-down',
+        path: 'controls/dropdown',
+        keywords: 'dropdown list listbox choose trigger popup',
+        load: () => import('./controls/dropdown.page').then((m) => m.DropdownPage),
+      },
+      {
         label: 'Menubar',
         path: 'controls/menubar',
         keywords: 'top bar file edit view dropdown',
@@ -335,16 +353,34 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         keywords: 'actions bar roving focus',
         load: () => import('./controls/toolbar.page').then((m) => m.ToolbarPage),
       },
+      {
+        label: 'Action strip',
+        path: 'controls/action-strip',
+        keywords: 'row actions hover toolbar overlay card icon buttons',
+        load: () => import('./controls/action-strip.page').then((m) => m.ActionStripPage),
+      },
     ],
   },
   {
     label: 'Navigation',
     items: [
       {
+        label: 'App bar',
+        path: 'controls/app-bar',
+        keywords: 'navbar toolbar header top bar title actions sticky banner landmark',
+        load: () => import('./controls/app-bar.page').then((m) => m.AppBarPage),
+      },
+      {
         label: 'Breadcrumb',
         path: 'controls/breadcrumb',
         keywords: 'path trail home location',
         load: () => import('./controls/breadcrumb.page').then((m) => m.BreadcrumbPage),
+      },
+      {
+        label: 'Bottom navigation',
+        path: 'controls/bottom-nav',
+        keywords: 'bottom nav tab bar mobile navigation bar destinations badge',
+        load: () => import('./controls/bottom-nav.page').then((m) => m.BottomNavPage),
       },
       {
         label: 'Paginator',
@@ -374,6 +410,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         path: 'controls/drawer',
         keywords: 'side sheet panel left right top bottom',
         load: () => import('./controls/drawer.page').then((m) => m.DrawerPage),
+      },
+      {
+        label: 'Bottom sheet',
+        path: 'controls/bottom-sheet',
+        keywords: 'action sheet mobile bottom panel slide up choices service',
+        load: () => import('./controls/bottom-sheet.page').then((m) => m.BottomSheetPage),
       },
       {
         label: 'Popover',
@@ -411,10 +453,22 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         load: () => import('./controls/badge.page').then((m) => m.BadgePage),
       },
       {
+        label: 'Overlay badge',
+        path: 'controls/overlay-badge',
+        keywords: 'badge corner notification count dot icon button',
+        load: () => import('./controls/overlay-badge.page').then((m) => m.OverlayBadgePage),
+      },
+      {
         label: 'Avatar',
         path: 'controls/avatar',
         keywords: 'initials image icon person user',
         load: () => import('./controls/avatar.page').then((m) => m.AvatarPage),
+      },
+      {
+        label: 'Avatar group',
+        path: 'controls/avatar-group',
+        keywords: 'avatars stack overlap team members more',
+        load: () => import('./controls/avatar-group.page').then((m) => m.AvatarGroupPage),
       },
       {
         label: 'Chip',
@@ -433,6 +487,18 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         path: 'controls/skeleton',
         keywords: 'placeholder loading shimmer',
         load: () => import('./controls/skeleton.page').then((m) => m.SkeletonPage),
+      },
+      {
+        label: 'List',
+        path: 'controls/list',
+        keywords: 'list item nav list action list subheader avatar divider dense',
+        load: () => import('./controls/list.page').then((m) => m.ListPage),
+      },
+      {
+        label: 'Virtual scroller',
+        path: 'controls/virtual-scroller',
+        keywords: 'virtual scroll windowing large list lazy load infinite performance',
+        load: () => import('./controls/virtual-scroller.page').then((m) => m.VirtualScrollerPage),
       },
       {
         label: 'Tree table',
@@ -535,6 +601,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         path: 'controls/message',
         keywords: 'inline alert severity closable banner',
         load: () => import('./controls/message.page').then((m) => m.MessagePage),
+      },
+      {
+        label: 'Banner',
+        path: 'controls/banner',
+        keywords: 'notice page alert persistent dismiss announcement',
+        load: () => import('./controls/banner.page').then((m) => m.BannerPage),
       },
       {
         label: 'Progress bar',

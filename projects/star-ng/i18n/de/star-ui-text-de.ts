@@ -13,14 +13,17 @@ const forCount = (count: number, one: string, other: string): string =>
  */
 export const STAR_UI_TEXT_DE: StarUiText = {
   close: 'Schließen',
+  dismiss: 'Ausblenden',
   clear: 'Leeren',
   loading: 'Wird geladen',
   actions: 'Aktionen',
   moreActions: 'Weitere Aktionen',
+  bottomSheet: 'Unteres Panel',
   ofTotal: (index, total) => `${index} von ${total}`,
   expandItem: (label) => `${label} aufklappen`,
   collapseItem: (label) => `${label} zuklappen`,
   removeItem: (label) => `${label} entfernen`,
+  moreCount: (count) => `${count} weitere`,
   tagsHint:
     'Mit der Eingabetaste oder einem Komma hinzufügen. Die Rücktaste entfernt den letzten Eintrag.',
   tagAdded: (label) => `${label} hinzugefügt`,

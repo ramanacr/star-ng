@@ -135,3 +135,37 @@
   display: inline-block;
   animation: star-spin 0.8s linear infinite;
 }
+
+// Button group (StarButtonGroup): adjacent buttons share their borders; only the outer corners
+// are round. A direct child is a `star-button`, a `.star-btn` or a `star-split-button`.
+.star-button-group {
+  display: inline-flex;
+  align-items: stretch;
+  vertical-align: middle;
+
+  .star-btn {
+    border-radius: 0;
+
+    // The button under the pointer or with the focus comes to the front, so its border and its
+    // focus ring show in full.
+    &:hover,
+    &:focus-visible {
+      position: relative;
+      z-index: 1;
+    }
+  }
+  > * + * {
+    margin-inline-start: -1px;
+  }
+  > .star-btn:first-child,
+  > :first-child > .star-btn:not(.star-split__toggle),
+  > .star-split:first-child > .star-split__main > .star-btn {
+    border-start-start-radius: var(--star-button-radius);
+    border-end-start-radius: var(--star-button-radius);
+  }
+  > .star-btn:last-child,
+  > :last-child > .star-btn {
+    border-start-end-radius: var(--star-button-radius);
+    border-end-end-radius: var(--star-button-radius);
+  }
+}
