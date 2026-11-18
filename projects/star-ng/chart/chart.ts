@@ -1,12 +1,16 @@
 import { _IdGenerator } from '@angular/cdk/a11y';
+import { NgTemplateOutlet } from '@angular/common';
 import {
   booleanAttribute,
   ChangeDetectionStrategy,
   Component,
   computed,
+  contentChild,
+  ElementRef,
   inject,
   input,
   linkedSignal,
+  output,
   signal,
 } from '@angular/core';
 import { STAR_UI_TEXT } from '@star-ng/ui/core';
@@ -34,6 +38,17 @@ import {
   toFinite,
   truncateLabel,
 } from './chart-geometry';
+import {
+  starChartClampCursor,
+  starChartMoveCursor,
+  StarChartPointCursor,
+  StarChartPointInfo,
+  StarChartPointRows,
+  StarChartPointSelectEvent,
+  StarChartPointTarget,
+  StarChartTooltip,
+  StarChartTooltipContext,
+} from './chart-interaction';
 
 export interface StarChartSeries {
   readonly label: string;
@@ -112,6 +127,7 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
  */
 @Component({
   selector: 'star-chart',
+  imports: [NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-chart' },
   template: `
@@ -160,105 +176,343 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
         </ul>
       }
 
-      <div
-        class="star-chart__plot"
-        [hidden]="showTable()"
-        aria-hidden="true"
-        (mouseleave)="hover.set(null)"
-      >
-        @switch (kind()) {
-          @case ('round') {
-            <svg [attr.viewBox]="'0 0 ' + W + ' ' + H" class="star-chart__svg">
-              <g [attr.transform]="'translate(' + W / 2 + ',' + H / 2 + ')'">
-                @for (slice of slices(); track slice.label; let i = $index) {
-                  <path
-                    class="star-chart__slice"
-                    [attr.d]="slice.path"
-                    [style.fill]="slice.color"
-                    [class.star-chart__mark--dim]="hover() !== null && hover() !== i"
-                    (mouseenter)="hover.set(i)"
-                  />
+      <div class="star-chart__frame" [hidden]="showTable()">
+        <div class="star-chart__plot" aria-hidden="true" (mouseleave)="hover.set(null)">
+          @switch (kind()) {
+            @case ('round') {
+              <svg [attr.viewBox]="'0 0 ' + W + ' ' + H" class="star-chart__svg">
+                <g [attr.transform]="'translate(' + W / 2 + ',' + H / 2 + ')'">
+                  @for (slice of slices(); track slice.label; let i = $index) {
+                    <path
+                      class="star-chart__slice"
+                      [attr.d]="slice.path"
+                      [style.fill]="slice.color"
+                      [class.star-chart__mark--dim]="hover() !== null && hover() !== i"
+                      (mouseenter)="hover.set(i)"
+                    />
+                  }
+                  @if (type() === 'doughnut') {
+                    <text class="star-chart__total" y="-2" text-anchor="middle">
+                      {{ format(total()) }}
+                    </text>
+                    <text class="star-chart__total-label" y="18" text-anchor="middle">
+                      {{ text.chartTotal }}
+                    </text>
+                  }
+                </g>
+              </svg>
+              @if (hover() !== null) {
+                @let slice = slices()[hover()!];
+                @if (slice) {
+                  <div class="star-chart__tip" [style.left.%]="50" [style.top.%]="8">
+                    @if (tooltipTemplate(); as custom) {
+                      <ng-container
+                        *ngTemplateOutlet="custom.template; context: tooltipContext()"
+                      />
+                    } @else {
+                      <span class="star-chart__swatch" [style.background]="slice.color"></span>
+                      {{ slice.label }}: <strong>{{ format(slice.value) }}</strong> ({{
+                        slice.percent
+                      }}%)
+                    }
+                  </div>
                 }
-                @if (type() === 'doughnut') {
-                  <text class="star-chart__total" y="-2" text-anchor="middle">
-                    {{ format(total()) }}
-                  </text>
-                  <text class="star-chart__total-label" y="18" text-anchor="middle">
-                    {{ text.chartTotal }}
-                  </text>
-                }
-              </g>
-            </svg>
-            @if (hover() !== null) {
-              @let slice = slices()[hover()!];
-              @if (slice) {
-                <div class="star-chart__tip" [style.left.%]="50" [style.top.%]="8">
-                  <span class="star-chart__swatch" [style.background]="slice.color"></span>
-                  {{ slice.label }}: <strong>{{ format(slice.value) }}</strong> ({{
-                    slice.percent
-                  }}%)
-                </div>
               }
             }
-          }
-          @case ('radar') {
-            @let plot = radar();
-            <svg [attr.viewBox]="'0 0 ' + RW + ' ' + RH" class="star-chart__svg">
-              <g [attr.transform]="'translate(' + RW / 2 + ',' + RH / 2 + ')'">
-                @for (ring of plot.rings; track ring.value) {
-                  <path class="star-chart__ring" [attr.d]="ring.path" />
-                }
-                @for (spoke of plot.spokes; track $index) {
-                  <line
-                    class="star-chart__grid"
-                    x1="0"
-                    y1="0"
-                    [attr.x2]="spoke.x"
-                    [attr.y2]="spoke.y"
-                  />
-                }
-                @if (hover() !== null && plot.spokes[hover()!]) {
-                  <line
-                    class="star-chart__crosshair"
-                    x1="0"
-                    y1="0"
-                    [attr.x2]="plot.spokes[hover()!].x"
-                    [attr.y2]="plot.spokes[hover()!].y"
-                  />
-                }
-                @for (polygon of plot.polygons; track polygon.label) {
-                  <path
-                    class="star-chart__mark star-chart__polygon"
-                    [attr.d]="polygon.path"
-                    [style.--mark]="polygon.color"
-                  />
-                }
-                @for (polygon of plot.polygons; track polygon.label) {
-                  @for (vertex of polygon.vertices; track vertex.index) {
+            @case ('radar') {
+              @let plot = radar();
+              <svg [attr.viewBox]="'0 0 ' + RW + ' ' + RH" class="star-chart__svg">
+                <g [attr.transform]="'translate(' + RW / 2 + ',' + RH / 2 + ')'">
+                  @for (ring of plot.rings; track ring.value) {
+                    <path class="star-chart__ring" [attr.d]="ring.path" />
+                  }
+                  @for (spoke of plot.spokes; track $index) {
+                    <line
+                      class="star-chart__grid"
+                      x1="0"
+                      y1="0"
+                      [attr.x2]="spoke.x"
+                      [attr.y2]="spoke.y"
+                    />
+                  }
+                  @if (hover() !== null && plot.spokes[hover()!]) {
+                    <line
+                      class="star-chart__crosshair"
+                      x1="0"
+                      y1="0"
+                      [attr.x2]="plot.spokes[hover()!].x"
+                      [attr.y2]="plot.spokes[hover()!].y"
+                    />
+                  }
+                  @for (polygon of plot.polygons; track polygon.label) {
                     <path
-                      class="star-chart__mark star-chart__vertex"
-                      [attr.d]="vertex.shape"
+                      class="star-chart__mark star-chart__polygon"
+                      [attr.d]="polygon.path"
                       [style.--mark]="polygon.color"
                     />
                   }
+                  @for (polygon of plot.polygons; track polygon.label) {
+                    @for (vertex of polygon.vertices; track vertex.index) {
+                      <path
+                        class="star-chart__mark star-chart__vertex"
+                        [attr.d]="vertex.shape"
+                        [style.--mark]="polygon.color"
+                      />
+                    }
+                  }
+                  @for (ring of plot.rings; track ring.value) {
+                    <text
+                      class="star-chart__ring-label"
+                      [attr.x]="4"
+                      [attr.y]="-ring.radius + 11"
+                      text-anchor="start"
+                    >
+                      {{ ring.text }}
+                    </text>
+                  }
+                  @for (label of plot.labels; track $index) {
+                    <text
+                      class="star-chart__axis"
+                      [attr.x]="label.x"
+                      [attr.y]="label.y"
+                      [attr.dy]="label.dy"
+                      [attr.text-anchor]="label.anchor"
+                    >
+                      {{ label.text }}
+                      @if (label.text !== label.full) {
+                        <title>{{ label.full }}</title>
+                      }
+                    </text>
+                  }
+                  @for (hit of plot.hits; track $index; let i = $index) {
+                    <path class="star-chart__hit" [attr.d]="hit" (mouseenter)="hover.set(i)" />
+                  }
+                </g>
+              </svg>
+              @if (hover() !== null && labels()[hover()!] !== undefined) {
+                <div class="star-chart__tip star-chart__tip--corner">
+                  @if (tooltipTemplate(); as custom) {
+                    <ng-container *ngTemplateOutlet="custom.template; context: tooltipContext()" />
+                  } @else {
+                    <span class="star-chart__tip-title">{{ labels()[hover()!] }}</span>
+                    @for (s of drawn(); track s.label; let si = $index) {
+                      <span class="star-chart__tip-row">
+                        <span class="star-chart__swatch" [style.background]="color(si)"></span>
+                        {{ s.label }}: <strong>{{ cell(s, hover()!) }}</strong>
+                      </span>
+                    }
+                  }
+                </div>
+              }
+            }
+            @case ('polar') {
+              @let plot = polar();
+              <svg [attr.viewBox]="'0 0 ' + RW + ' ' + RH" class="star-chart__svg">
+                <g [attr.transform]="'translate(' + RW / 2 + ',' + RH / 2 + ')'">
+                  @for (ring of plot.rings; track ring.value) {
+                    <circle class="star-chart__ring" [attr.r]="ring.radius" />
+                  }
+                  @for (sector of plot.sectors; track sector.index) {
+                    @if (sector.path) {
+                      <path
+                        class="star-chart__mark star-chart__sector"
+                        [attr.d]="sector.path"
+                        [style.--mark]="color(0)"
+                        [class.star-chart__mark--dim]="hover() !== null && hover() !== sector.index"
+                      />
+                    }
+                  }
+                  @for (ring of plot.rings; track ring.value) {
+                    <text
+                      class="star-chart__ring-label"
+                      [attr.x]="ring.x"
+                      [attr.y]="ring.y"
+                      text-anchor="start"
+                    >
+                      {{ ring.text }}
+                    </text>
+                  }
+                  @for (sector of plot.sectors; track sector.index) {
+                    <text
+                      class="star-chart__axis"
+                      [attr.x]="sector.label.x"
+                      [attr.y]="sector.label.y"
+                      [attr.dy]="sector.label.dy"
+                      [attr.text-anchor]="sector.label.anchor"
+                    >
+                      {{ sector.label.text }}
+                      @if (sector.label.text !== sector.label.full) {
+                        <title>{{ sector.label.full }}</title>
+                      }
+                    </text>
+                  }
+                  @for (sector of plot.sectors; track sector.index) {
+                    <path
+                      class="star-chart__hit"
+                      [attr.d]="sector.hit"
+                      (mouseenter)="hover.set(sector.index)"
+                    />
+                  }
+                </g>
+              </svg>
+              @if (hover() !== null) {
+                @let sector = plot.sectors[hover()!];
+                @if (sector) {
+                  <div class="star-chart__tip star-chart__tip--corner">
+                    @if (tooltipTemplate(); as custom) {
+                      <ng-container
+                        *ngTemplateOutlet="custom.template; context: tooltipContext()"
+                      />
+                    } @else {
+                      <span class="star-chart__tip-title">{{ sector.label.full }}</span>
+                      <span class="star-chart__tip-row">
+                        <span class="star-chart__swatch" [style.background]="color(0)"></span>
+                        {{ valueName() }}: <strong>{{ format(sector.value) }}</strong>
+                      </span>
+                    }
+                  </div>
                 }
-                @for (ring of plot.rings; track ring.value) {
-                  <text
-                    class="star-chart__ring-label"
-                    [attr.x]="4"
-                    [attr.y]="-ring.radius + 11"
-                    text-anchor="start"
-                  >
-                    {{ ring.text }}
-                  </text>
-                }
-                @for (label of plot.labels; track $index) {
+              }
+            }
+            @case ('scatter') {
+              @let plot = scatter();
+              <svg [attr.viewBox]="'0 0 ' + W + ' ' + H" class="star-chart__svg">
+                @for (tick of plot.yTicks; track tick.value) {
+                  <line
+                    class="star-chart__grid"
+                    [attr.x1]="SP.left"
+                    [attr.x2]="W - SP.right"
+                    [attr.y1]="tick.position"
+                    [attr.y2]="tick.position"
+                  />
                   <text
                     class="star-chart__axis"
-                    [attr.x]="label.x"
-                    [attr.y]="label.y"
-                    [attr.dy]="label.dy"
-                    [attr.text-anchor]="label.anchor"
+                    [attr.x]="SP.left - 8"
+                    [attr.y]="tick.position + 4"
+                    text-anchor="end"
+                  >
+                    {{ tick.text }}
+                  </text>
+                }
+                @for (tick of plot.xTicks; track tick.value) {
+                  <line
+                    class="star-chart__grid"
+                    [attr.x1]="tick.position"
+                    [attr.x2]="tick.position"
+                    [attr.y1]="SP.top"
+                    [attr.y2]="H - SP.bottom"
+                  />
+                  <text
+                    class="star-chart__axis"
+                    [attr.x]="tick.position"
+                    [attr.y]="H - SP.bottom + 16"
+                    text-anchor="middle"
+                  >
+                    {{ tick.text }}
+                  </text>
+                }
+                @if (categoryLabel()) {
+                  <text
+                    class="star-chart__axis-title"
+                    [attr.x]="W - SP.right"
+                    [attr.y]="H - 4"
+                    text-anchor="end"
+                  >
+                    {{ categoryLabel() }}
+                  </text>
+                }
+                @if (valueLabel()) {
+                  <text class="star-chart__axis-title" x="4" y="12" text-anchor="start">
+                    {{ valueLabel() }}
+                  </text>
+                }
+                @for (point of plot.points; track point.index) {
+                  <path
+                    class="star-chart__mark star-chart__point"
+                    [attr.d]="point.shape"
+                    [style.--mark]="point.color"
+                    [class.star-chart__mark--dim]="hover() !== null && hover() !== point.index"
+                  />
+                }
+                @for (point of plot.points; track point.index) {
+                  <circle
+                    class="star-chart__hit"
+                    r="10"
+                    [attr.cx]="point.px"
+                    [attr.cy]="point.py"
+                    (mouseenter)="hover.set(point.index)"
+                  />
+                }
+              </svg>
+              @if (hover() !== null) {
+                @let point = plot.points[hover()!];
+                @if (point) {
+                  <div
+                    class="star-chart__tip star-chart__tip--point"
+                    [style.left.%]="(point.px / W) * 100"
+                    [style.top.%]="(point.py / H) * 100"
+                    [style.translate]="
+                      point.px / W > 0.7 ? '-100% 0' : point.px / W < 0.3 ? '0 0' : null
+                    "
+                  >
+                    @if (tooltipTemplate(); as custom) {
+                      <ng-container
+                        *ngTemplateOutlet="custom.template; context: tooltipContext()"
+                      />
+                    } @else {
+                      <span class="star-chart__tip-title">{{ point.seriesLabel }}</span>
+                      <span class="star-chart__tip-row">
+                        <svg class="star-chart__swatch-shape" viewBox="-6 -6 12 12">
+                          <path
+                            class="star-chart__mark star-chart__marker"
+                            [attr.d]="point.legendShape"
+                            [style.--mark]="point.color"
+                          />
+                        </svg>
+                        {{ xName() }}: <strong>{{ precise(point.x) }}</strong>
+                      </span>
+                      <span class="star-chart__tip-row star-chart__tip-indent">
+                        {{ yName() }}: <strong>{{ precise(point.y) }}</strong>
+                      </span>
+                    }
+                  </div>
+                }
+              }
+            }
+            @default {
+              <svg [attr.viewBox]="'0 0 ' + W + ' ' + H" class="star-chart__svg">
+                @for (tick of ticks(); track tick) {
+                  <line
+                    class="star-chart__grid"
+                    [attr.x1]="PAD.left"
+                    [attr.x2]="W - PAD.right"
+                    [attr.y1]="y(tick)"
+                    [attr.y2]="y(tick)"
+                  />
+                  <text
+                    class="star-chart__axis"
+                    [attr.x]="PAD.left - 8"
+                    [attr.y]="y(tick) + 4"
+                    text-anchor="end"
+                  >
+                    {{ yTick()(tick) }}
+                  </text>
+                }
+                @if (yScale().min < 0) {
+                  <line
+                    class="star-chart__baseline"
+                    [attr.x1]="PAD.left"
+                    [attr.x2]="W - PAD.right"
+                    [attr.y1]="y(0)"
+                    [attr.y2]="y(0)"
+                  />
+                }
+                @for (label of axisLabels(); track $index; let i = $index) {
+                  <text
+                    class="star-chart__axis"
+                    [attr.x]="x(i)"
+                    [attr.y]="H - 12"
+                    text-anchor="middle"
                   >
                     {{ label.text }}
                     @if (label.text !== label.full) {
@@ -266,311 +520,131 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                     }
                   </text>
                 }
-                @for (hit of plot.hits; track $index; let i = $index) {
-                  <path class="star-chart__hit" [attr.d]="hit" (mouseenter)="hover.set(i)" />
-                }
-              </g>
-            </svg>
-            @if (hover() !== null && labels()[hover()!] !== undefined) {
-              <div class="star-chart__tip star-chart__tip--corner">
-                <span class="star-chart__tip-title">{{ labels()[hover()!] }}</span>
-                @for (s of drawn(); track s.label; let si = $index) {
-                  <span class="star-chart__tip-row">
-                    <span class="star-chart__swatch" [style.background]="color(si)"></span>
-                    {{ s.label }}: <strong>{{ cell(s, hover()!) }}</strong>
-                  </span>
-                }
-              </div>
-            }
-          }
-          @case ('polar') {
-            @let plot = polar();
-            <svg [attr.viewBox]="'0 0 ' + RW + ' ' + RH" class="star-chart__svg">
-              <g [attr.transform]="'translate(' + RW / 2 + ',' + RH / 2 + ')'">
-                @for (ring of plot.rings; track ring.value) {
-                  <circle class="star-chart__ring" [attr.r]="ring.radius" />
-                }
-                @for (sector of plot.sectors; track sector.index) {
-                  @if (sector.path) {
+                @if (type() === 'bar') {
+                  @for (bar of bars(); track bar.key) {
                     <path
-                      class="star-chart__mark star-chart__sector"
-                      [attr.d]="sector.path"
-                      [style.--mark]="color(0)"
-                      [class.star-chart__mark--dim]="hover() !== null && hover() !== sector.index"
+                      class="star-chart__bar"
+                      [attr.d]="bar.path"
+                      [style.fill]="bar.color"
+                      [class.star-chart__mark--dim]="hover() !== null && hover() !== bar.index"
                     />
                   }
-                }
-                @for (ring of plot.rings; track ring.value) {
-                  <text
-                    class="star-chart__ring-label"
-                    [attr.x]="ring.x"
-                    [attr.y]="ring.y"
-                    text-anchor="start"
-                  >
-                    {{ ring.text }}
-                  </text>
-                }
-                @for (sector of plot.sectors; track sector.index) {
-                  <text
-                    class="star-chart__axis"
-                    [attr.x]="sector.label.x"
-                    [attr.y]="sector.label.y"
-                    [attr.dy]="sector.label.dy"
-                    [attr.text-anchor]="sector.label.anchor"
-                  >
-                    {{ sector.label.text }}
-                    @if (sector.label.text !== sector.label.full) {
-                      <title>{{ sector.label.full }}</title>
-                    }
-                  </text>
-                }
-                @for (sector of plot.sectors; track sector.index) {
-                  <path
-                    class="star-chart__hit"
-                    [attr.d]="sector.hit"
-                    (mouseenter)="hover.set(sector.index)"
-                  />
-                }
-              </g>
-            </svg>
-            @if (hover() !== null) {
-              @let sector = plot.sectors[hover()!];
-              @if (sector) {
-                <div class="star-chart__tip star-chart__tip--corner">
-                  <span class="star-chart__tip-title">{{ sector.label.full }}</span>
-                  <span class="star-chart__tip-row">
-                    <span class="star-chart__swatch" [style.background]="color(0)"></span>
-                    {{ valueName() }}: <strong>{{ format(sector.value) }}</strong>
-                  </span>
-                </div>
-              }
-            }
-          }
-          @case ('scatter') {
-            @let plot = scatter();
-            <svg [attr.viewBox]="'0 0 ' + W + ' ' + H" class="star-chart__svg">
-              @for (tick of plot.yTicks; track tick.value) {
-                <line
-                  class="star-chart__grid"
-                  [attr.x1]="SP.left"
-                  [attr.x2]="W - SP.right"
-                  [attr.y1]="tick.position"
-                  [attr.y2]="tick.position"
-                />
-                <text
-                  class="star-chart__axis"
-                  [attr.x]="SP.left - 8"
-                  [attr.y]="tick.position + 4"
-                  text-anchor="end"
-                >
-                  {{ tick.text }}
-                </text>
-              }
-              @for (tick of plot.xTicks; track tick.value) {
-                <line
-                  class="star-chart__grid"
-                  [attr.x1]="tick.position"
-                  [attr.x2]="tick.position"
-                  [attr.y1]="SP.top"
-                  [attr.y2]="H - SP.bottom"
-                />
-                <text
-                  class="star-chart__axis"
-                  [attr.x]="tick.position"
-                  [attr.y]="H - SP.bottom + 16"
-                  text-anchor="middle"
-                >
-                  {{ tick.text }}
-                </text>
-              }
-              @if (categoryLabel()) {
-                <text
-                  class="star-chart__axis-title"
-                  [attr.x]="W - SP.right"
-                  [attr.y]="H - 4"
-                  text-anchor="end"
-                >
-                  {{ categoryLabel() }}
-                </text>
-              }
-              @if (valueLabel()) {
-                <text class="star-chart__axis-title" x="4" y="12" text-anchor="start">
-                  {{ valueLabel() }}
-                </text>
-              }
-              @for (point of plot.points; track point.index) {
-                <path
-                  class="star-chart__mark star-chart__point"
-                  [attr.d]="point.shape"
-                  [style.--mark]="point.color"
-                  [class.star-chart__mark--dim]="hover() !== null && hover() !== point.index"
-                />
-              }
-              @for (point of plot.points; track point.index) {
-                <circle
-                  class="star-chart__hit"
-                  r="10"
-                  [attr.cx]="point.px"
-                  [attr.cy]="point.py"
-                  (mouseenter)="hover.set(point.index)"
-                />
-              }
-            </svg>
-            @if (hover() !== null) {
-              @let point = plot.points[hover()!];
-              @if (point) {
-                <div
-                  class="star-chart__tip star-chart__tip--point"
-                  [style.left.%]="(point.px / W) * 100"
-                  [style.top.%]="(point.py / H) * 100"
-                  [style.translate]="
-                    point.px / W > 0.7 ? '-100% 0' : point.px / W < 0.3 ? '0 0' : null
-                  "
-                >
-                  <span class="star-chart__tip-title">{{ point.seriesLabel }}</span>
-                  <span class="star-chart__tip-row">
-                    <svg class="star-chart__swatch-shape" viewBox="-6 -6 12 12">
-                      <path
-                        class="star-chart__mark star-chart__marker"
-                        [attr.d]="point.legendShape"
-                        [style.--mark]="point.color"
-                      />
-                    </svg>
-                    {{ xName() }}: <strong>{{ precise(point.x) }}</strong>
-                  </span>
-                  <span class="star-chart__tip-row star-chart__tip-indent">
-                    {{ yName() }}: <strong>{{ precise(point.y) }}</strong>
-                  </span>
-                </div>
-              }
-            }
-          }
-          @default {
-            <svg [attr.viewBox]="'0 0 ' + W + ' ' + H" class="star-chart__svg">
-              @for (tick of ticks(); track tick) {
-                <line
-                  class="star-chart__grid"
-                  [attr.x1]="PAD.left"
-                  [attr.x2]="W - PAD.right"
-                  [attr.y1]="y(tick)"
-                  [attr.y2]="y(tick)"
-                />
-                <text
-                  class="star-chart__axis"
-                  [attr.x]="PAD.left - 8"
-                  [attr.y]="y(tick) + 4"
-                  text-anchor="end"
-                >
-                  {{ yTick()(tick) }}
-                </text>
-              }
-              @if (yScale().min < 0) {
-                <line
-                  class="star-chart__baseline"
-                  [attr.x1]="PAD.left"
-                  [attr.x2]="W - PAD.right"
-                  [attr.y1]="y(0)"
-                  [attr.y2]="y(0)"
-                />
-              }
-              @for (label of axisLabels(); track $index; let i = $index) {
-                <text
-                  class="star-chart__axis"
-                  [attr.x]="x(i)"
-                  [attr.y]="H - 12"
-                  text-anchor="middle"
-                >
-                  {{ label.text }}
-                  @if (label.text !== label.full) {
-                    <title>{{ label.full }}</title>
+                } @else if (type() === 'stacked-bar') {
+                  @for (segment of segments(); track segment.key) {
+                    <rect
+                      class="star-chart__mark star-chart__segment"
+                      [attr.x]="segment.x"
+                      [attr.y]="segment.y"
+                      [attr.width]="segment.width"
+                      [attr.height]="segment.height"
+                      [style.--mark]="segment.color"
+                      [class.star-chart__mark--dim]="hover() !== null && hover() !== segment.index"
+                    />
                   }
-                </text>
-              }
-              @if (type() === 'bar') {
-                @for (bar of bars(); track bar.key) {
-                  <path
-                    class="star-chart__bar"
-                    [attr.d]="bar.path"
-                    [style.fill]="bar.color"
-                    [class.star-chart__mark--dim]="hover() !== null && hover() !== bar.index"
-                  />
-                }
-              } @else if (type() === 'stacked-bar') {
-                @for (segment of segments(); track segment.key) {
-                  <rect
-                    class="star-chart__mark star-chart__segment"
-                    [attr.x]="segment.x"
-                    [attr.y]="segment.y"
-                    [attr.width]="segment.width"
-                    [attr.height]="segment.height"
-                    [style.--mark]="segment.color"
-                    [class.star-chart__mark--dim]="hover() !== null && hover() !== segment.index"
-                  />
-                }
-              } @else {
-                @if (hover() !== null) {
-                  <line
-                    class="star-chart__crosshair"
-                    [attr.x1]="x(hover()!)"
-                    [attr.x2]="x(hover()!)"
-                    [attr.y1]="PAD.top"
-                    [attr.y2]="H - PAD.bottom"
-                  />
-                }
-                @for (line of lines(); track line.label) {
-                  @if (type() === 'area') {
-                    <path class="star-chart__area" [attr.d]="line.area" [style.fill]="line.color" />
-                  }
-                  <path class="star-chart__line" [attr.d]="line.path" [style.stroke]="line.color" />
+                } @else {
                   @if (hover() !== null) {
-                    <circle
-                      class="star-chart__dot"
-                      r="4.5"
-                      [attr.cx]="x(hover()!)"
-                      [attr.cy]="y(line.data[hover()!] ?? 0)"
-                      [style.fill]="line.color"
+                    <line
+                      class="star-chart__crosshair"
+                      [attr.x1]="x(hover()!)"
+                      [attr.x2]="x(hover()!)"
+                      [attr.y1]="PAD.top"
+                      [attr.y2]="H - PAD.bottom"
                     />
                   }
-                }
-              }
-              <!-- Hit targets: one full-height column per category, wider than the marks. -->
-              @for (label of labels(); track $index; let i = $index) {
-                <rect
-                  class="star-chart__hit"
-                  [attr.x]="x(i) - band() / 2"
-                  [attr.y]="PAD.top"
-                  [attr.width]="band()"
-                  [attr.height]="H - PAD.top - PAD.bottom"
-                  (mouseenter)="hover.set(i)"
-                />
-              }
-            </svg>
-            @if (hover() !== null) {
-              <div
-                class="star-chart__tip"
-                [style.left.%]="(x(hover()!) / W) * 100"
-                [style.top.%]="6"
-              >
-                <span class="star-chart__tip-title">{{ labels()[hover()!] }}</span>
-                @for (s of drawn(); track s.label; let si = $index) {
-                  <span class="star-chart__tip-row">
-                    <span class="star-chart__swatch" [style.background]="color(si)"></span>
-                    {{ s.label }}: <strong>{{ cell(s, hover()!) }}</strong>
-                    @if (type() === 'stacked-bar' && percent()) {
-                      ({{ share(stack()[hover()!]?.segments?.[si]) }}%)
+                  @for (line of lines(); track line.label) {
+                    @if (type() === 'area') {
+                      <path
+                        class="star-chart__area"
+                        [attr.d]="line.area"
+                        [style.fill]="line.color"
+                      />
                     }
-                  </span>
+                    <path
+                      class="star-chart__line"
+                      [attr.d]="line.path"
+                      [style.stroke]="line.color"
+                    />
+                    @if (hover() !== null) {
+                      <circle
+                        class="star-chart__dot"
+                        r="4.5"
+                        [attr.cx]="x(hover()!)"
+                        [attr.cy]="y(line.data[hover()!] ?? 0)"
+                        [style.fill]="line.color"
+                      />
+                    }
+                  }
                 }
-                @if (type() === 'stacked-bar') {
-                  <span class="star-chart__tip-row star-chart__tip-total">
-                    {{ text.chartTotal }}:
-                    <strong>{{ format(stack()[hover()!]?.total ?? 0) }}</strong>
-                  </span>
+                <!-- Hit targets: one full-height column per category, wider than the marks. -->
+                @for (label of labels(); track $index; let i = $index) {
+                  <rect
+                    class="star-chart__hit"
+                    [attr.x]="x(i) - band() / 2"
+                    [attr.y]="PAD.top"
+                    [attr.width]="band()"
+                    [attr.height]="H - PAD.top - PAD.bottom"
+                    (mouseenter)="hover.set(i)"
+                  />
                 }
-              </div>
+              </svg>
+              @if (hover() !== null) {
+                <div
+                  class="star-chart__tip"
+                  [style.left.%]="(x(hover()!) / W) * 100"
+                  [style.top.%]="6"
+                >
+                  @if (tooltipTemplate(); as custom) {
+                    <ng-container *ngTemplateOutlet="custom.template; context: tooltipContext()" />
+                  } @else {
+                    <span class="star-chart__tip-title">{{ labels()[hover()!] }}</span>
+                    @for (s of drawn(); track s.label; let si = $index) {
+                      <span class="star-chart__tip-row">
+                        <span class="star-chart__swatch" [style.background]="color(si)"></span>
+                        {{ s.label }}: <strong>{{ cell(s, hover()!) }}</strong>
+                        @if (type() === 'stacked-bar' && percent()) {
+                          ({{ share(stack()[hover()!]?.segments?.[si]) }}%)
+                        }
+                      </span>
+                    }
+                    @if (type() === 'stacked-bar') {
+                      <span class="star-chart__tip-row star-chart__tip-total">
+                        {{ text.chartTotal }}:
+                        <strong>{{ format(stack()[hover()!]?.total ?? 0) }}</strong>
+                      </span>
+                    }
+                  }
+                </div>
+              }
             }
           }
-        }
+        </div>
+        <!-- Keyboard and screen reader access to the data points: one focus target per point. -->
+        <div
+          class="star-chart__points"
+          role="group"
+          [attr.aria-label]="text.chartPoints(title())"
+          [attr.aria-describedby]="pointsHintId"
+        >
+          @for (row of pointRows(); track $index; let r = $index) {
+            @for (point of row; track point.index; let c = $index) {
+              <span
+                class="star-chart__target"
+                role="img"
+                [attr.data-point]="r + '-' + c"
+                [attr.tabindex]="r === cursor().row && c === cursor().col ? 0 : -1"
+                [attr.aria-label]="point.name"
+                [style.left.%]="point.left"
+                [style.top.%]="point.top"
+                (focus)="onPointFocus(r, c, point)"
+                (blur)="hover.set(null)"
+                (mouseenter)="hover.set(point.hover)"
+                (click)="selectPoint(point)"
+                (keydown)="onPointKeydown($event)"
+              ></span>
+            }
+          }
+          <span class="star-sr-only" [id]="pointsHintId">{{ text.chartPointsHint }}</span>
+        </div>
       </div>
 
       <table class="star-chart__table" [class.star-sr-only]="!showTable()">
@@ -704,8 +778,23 @@ export class StarChart {
   /** Start the table view open. */
   readonly table = input(false, { transform: booleanAttribute });
 
+  /**
+   * A data point was clicked, or Enter or Space was pressed on a focused one. PrimeNG
+   * `onDataSelect`.
+   */
+  readonly pointSelect = output<StarChartPointSelectEvent>();
+
   protected readonly showTable = linkedSignal(() => this.table());
   protected readonly hover = signal<number | null>(null);
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+  protected readonly pointsHintId = this.ids.getId('star-chart-points-hint-');
+  /** Custom tooltip content (`ng-template starChartTooltip`). */
+  protected readonly tooltipTemplate = contentChild(StarChartTooltip);
+  /** The focus target in the tab order (roving tabindex). */
+  private readonly cursorState = signal<StarChartPointCursor>({ row: 0, col: 0 });
+  protected readonly cursor = computed(() =>
+    starChartClampCursor(this.pointRows(), this.cursorState()),
+  );
 
   private readonly numberFormat = computed(
     () => new Intl.NumberFormat(this.locale(), { maximumFractionDigits: 1 }),
@@ -863,7 +952,15 @@ export class StarChart {
         const path =
           `M${left},${base}V${top + r}Q${left},${top} ${left + r},${top}` +
           `H${left + barWidth - r}Q${left + barWidth},${top} ${left + barWidth},${top + r}V${base}Z`;
-        return { key: `${i}-${si}`, index: i, path, color: this.color(si) };
+        return {
+          key: `${i}-${si}`,
+          index: i,
+          series: si,
+          cx: left + barWidth / 2,
+          top,
+          path,
+          color: this.color(si),
+        };
       }),
     );
   });
@@ -948,12 +1045,16 @@ export class StarChart {
         ? `M0,-${outer}A${outer},${outer} 0 1 1 -0.01,-${outer}Z`
         : `M0,0L${p(outer, a0)}A${outer},${outer} 0 ${large} 1 ${p(outer, a1)}Z`;
       const path = inner ? ring : wedge;
+      const mid = a0 + (a1 - a0) / 2;
+      const at = (outer + inner) / 2;
       return {
         label: item.label,
         value: item.value,
         percent: Math.round((item.value / total) * 1000) / 10,
         color: this.color(i),
         path,
+        x: at * Math.cos(mid),
+        y: at * Math.sin(mid),
       };
     });
   });
@@ -1003,6 +1104,8 @@ export class StarChart {
           path: polygonPath(points),
           vertices: points.map((p, index) => ({
             index,
+            x: p.x,
+            y: p.y,
             shape: markerPath(si, p.x, p.y, MARKER_RADIUS - 1),
           })),
         };
@@ -1076,11 +1179,13 @@ export class StarChart {
         text: yText(value),
       })),
       points: drawn.flatMap((s, si) =>
-        s.points.map((p) => {
+        s.points.map((p, local) => {
           const px = scalePosition(p.x, scales.x, left, right);
           const py = scalePosition(p.y, scales.y, bottom, top);
           return {
             index: index++,
+            local,
+            series: si,
             seriesLabel: s.label,
             color: this.color(si),
             x: p.x,
@@ -1095,4 +1200,172 @@ export class StarChart {
       ),
     };
   });
+
+  // ---------- Data point focus, tooltip and selection ----------
+
+  /** One focus target per data point, in percent of the plot, one row per drawn series. */
+  protected readonly pointRows = computed<StarChartPointRows>(() => {
+    const labels = this.labels();
+    const target = (
+      seriesIndex: number,
+      series: string,
+      index: number,
+      label: string,
+      value: number,
+      left: number,
+      top: number,
+      hover: number,
+      shown = this.format(value),
+    ): StarChartPointTarget => ({
+      seriesIndex,
+      series,
+      index,
+      label,
+      value,
+      left,
+      top,
+      hover,
+      name: this.text.chartPointLabel(series, label, shown),
+    });
+    switch (this.kind()) {
+      case 'round': {
+        const name = this.series()[0]?.label ?? this.text.chartValue;
+        return [
+          this.slices().map((s, i) =>
+            target(
+              0,
+              name,
+              i,
+              s.label,
+              s.value,
+              ((W / 2 + s.x) / W) * 100,
+              ((H / 2 + s.y) / H) * 100,
+              i,
+            ),
+          ),
+        ];
+      }
+      case 'radar':
+        return this.radar().polygons.map((polygon, si) =>
+          polygon.vertices.map((v) =>
+            target(
+              si,
+              polygon.label,
+              v.index,
+              labels[v.index] ?? '',
+              toFinite(this.drawn()[si]?.data[v.index]),
+              ((RADIAL_W / 2 + v.x) / RADIAL_W) * 100,
+              ((RADIAL_H / 2 + v.y) / RADIAL_H) * 100,
+              v.index,
+            ),
+          ),
+        );
+      case 'polar': {
+        const name = this.valueName();
+        return [
+          this.polar().sectors.map((s) => {
+            const at = polarPoint(Math.max(s.radius * 0.6, 8), s.mid);
+            return target(
+              0,
+              name,
+              s.index,
+              s.label.full,
+              s.value,
+              ((RADIAL_W / 2 + at.x) / RADIAL_W) * 100,
+              ((RADIAL_H / 2 + at.y) / RADIAL_H) * 100,
+              s.index,
+            );
+          }),
+        ];
+      }
+      case 'scatter': {
+        const rows: StarChartPointTarget[][] = [];
+        for (const p of this.scatter().points) {
+          (rows[p.series] ??= []).push(
+            target(
+              p.series,
+              p.seriesLabel,
+              p.local,
+              this.precise(p.x),
+              p.y,
+              (p.px / W) * 100,
+              (p.py / H) * 100,
+              p.index,
+              this.precise(p.y),
+            ),
+          );
+        }
+        return rows.filter(Boolean);
+      }
+      default:
+        return this.drawn().map((s, si) =>
+          labels.map((label, i) => {
+            const value = toFinite(s.data[i]);
+            let top = this.y(value);
+            let left = this.x(i);
+            if (this.type() === 'bar') {
+              const bar = this.bars().find((b) => b.index === i && b.series === si);
+              left = bar?.cx ?? left;
+            } else if (this.type() === 'stacked-bar') {
+              const segment = this.stack()[i]?.segments[si];
+              top = this.y(segment ? segment.end : 0);
+            }
+            return target(si, s.label, i, label, value, (left / W) * 100, (top / H) * 100, i);
+          }),
+        );
+    }
+  });
+
+  /** Points that the tooltip shows: every point at the hover index. */
+  protected readonly tooltipContext = computed<StarChartTooltipContext>(() => {
+    const hover = this.hover();
+    const points: StarChartPointInfo[] = this.pointRows()
+      .flat()
+      .filter((point) => point.hover === hover)
+      .map(({ seriesIndex, index, value, series, label }) => ({
+        seriesIndex,
+        index,
+        value,
+        series,
+        label,
+      }));
+    const label = this.kind() === 'scatter' ? (points[0]?.series ?? '') : (points[0]?.label ?? '');
+    return { $implicit: points, points, label };
+  });
+
+  protected onPointFocus(row: number, col: number, point: StarChartPointTarget): void {
+    this.cursorState.set({ row, col });
+    this.hover.set(point.hover);
+  }
+
+  protected selectPoint(point: StarChartPointTarget): void {
+    this.pointSelect.emit({
+      seriesIndex: point.seriesIndex,
+      index: point.index,
+      value: point.value,
+    });
+  }
+
+  /** Arrow keys, Home and End move between the points; Enter and Space select one. */
+  protected onPointKeydown(event: KeyboardEvent): void {
+    const rows = this.pointRows();
+    const cursor = this.cursor();
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      const point = rows[cursor.row]?.[cursor.col];
+      if (point) this.selectPoint(point);
+      return;
+    }
+    if (event.key === 'Escape') {
+      this.hover.set(null);
+      return;
+    }
+    const next = starChartMoveCursor(rows, cursor, event.key);
+    if (!next) return;
+    event.preventDefault();
+    this.cursorState.set(next);
+    this.host.nativeElement
+      .querySelector<HTMLElement>(`[data-point="${next.row}-${next.col}"]`)
+      ?.focus();
+  }
 }

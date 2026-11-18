@@ -211,6 +211,9 @@ export interface StarUiText {
   readonly editorLinkInvalid: string;
   readonly editorCharacterCount: (count: number, max: number) => string;
   readonly editorCharactersLeft: (count: number) => string;
+  readonly chartPoints: (title: string) => string;
+  readonly chartPointsHint: string;
+  readonly chartPointLabel: (series: string, label: string, value: string) => string;
   // Navigation and layout
   readonly breadcrumb: string;
   readonly stepperLabel: string;
@@ -462,6 +465,9 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
     'Enter a web address (https://…), an e-mail address (mailto:…) or a phone number (tel:…).',
   editorCharacterCount: (count, max) => `${count} of ${max} characters`,
   editorCharactersLeft: (count) => (count === 1 ? '1 character left' : `${count} characters left`),
+  chartPoints: (title) => `${title}: data points`,
+  chartPointsHint: 'Arrow keys move between the points and the series. Enter selects a point.',
+  chartPointLabel: (series, label, value) => `${series}, ${label}: ${value}`,
   breadcrumb: 'Breadcrumb',
   stepperLabel: 'Progress',
   stepCompleted: '(completed)',
@@ -553,6 +559,8 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   editorHeadingLevel: ['level'],
   editorCharacterCount: ['count', 'max'],
   editorCharactersLeft: ['count'],
+  chartPoints: ['title'],
+  chartPointLabel: ['series', 'label', 'value'],
   editorFormatting: ['label'],
   showImage: ['alt'],
   previewImage: ['alt'],

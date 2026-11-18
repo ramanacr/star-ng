@@ -213,6 +213,9 @@ export const STAR_UI_TEXT_ES: StarUiText = {
   editorCharacterCount: (count, max) => `${count} de ${max} caracteres`,
   editorCharactersLeft: (count) =>
     count === 1 ? 'Queda 1 carácter' : `Quedan ${count} caracteres`,
+  chartPoints: (title) => `${title}: puntos de datos`,
+  chartPointsHint: 'Las flechas mueven entre los puntos y las series. Intro selecciona un punto.',
+  chartPointLabel: (series, label, value) => `${series}, ${label}: ${value}`,
   breadcrumb: 'Ruta de navegación',
   stepperLabel: 'Progreso',
   stepCompleted: '(completado)',

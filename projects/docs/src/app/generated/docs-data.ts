@@ -1258,6 +1258,23 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ],
     "models": [],
+    "outputs": [
+      {
+        "name": "pointSelect",
+        "type": "StarChartPointSelectEvent",
+        "default": null,
+        "required": false,
+        "description": "A data point was clicked, or Enter or Space was pressed on a focused one. PrimeNG `onDataSelect`."
+      }
+    ]
+  },
+  "StarChartTooltip": {
+    "kind": "directive",
+    "selector": "ng-template[starChartTooltip]",
+    "entry": "@star-ng/ui/chart",
+    "description": "Content of the chart tooltip: `<ng-template starChartTooltip let-points let-label=\"label\">`. It shows on hover and on keyboard focus of a data point. PrimeNG / Chart.js `plugins.tooltip.callbacks`.",
+    "inputs": [],
+    "models": [],
     "outputs": []
   },
   "StarCheckbox": {
@@ -8181,6 +8198,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "chart/area": "<star-chart\n  type=\"area\"\n  title=\"Orders per month, area\"\n  [labels]=\"months\"\n  [series]=\"orders\"\n/>",
   "chart/bar": "<star-chart\n  type=\"bar\"\n  title=\"Orders per month\"\n  [labels]=\"months\"\n  [series]=\"orders\"\n  categoryLabel=\"Month\"\n/>",
   "chart/doughnut": "<star-chart\n  type=\"doughnut\"\n  title=\"Traffic by channel\"\n  [labels]=\"channels\"\n  [series]=\"traffic\"\n/>",
+  "chart/interaction": "<div class=\"docs-stack\">\n  <star-chart\n    type=\"line\"\n    title=\"Orders per month, interactive\"\n    [labels]=\"months\"\n    [series]=\"orders\"\n    (pointSelect)=\"picked.set($event)\"\n  >\n    <ng-template starChartTooltip let-points let-label=\"label\">\n      <span class=\"star-chart__tip-title\">{{ label }}</span>\n      @for (point of points; track point.seriesIndex) {\n        <span class=\"star-chart__tip-row\"\n          >{{ point.series }}: {{ point.value }} orders</span\n        >\n      }\n    </ng-template>\n  </star-chart>\n  <p class=\"docs-output\" role=\"status\">\n    Selected:\n    {{\n      picked()\n        ? orders[picked()!.seriesIndex].label +\n          ', ' +\n          months[picked()!.index] +\n          ': ' +\n          picked()!.value\n        : 'none'\n    }}\n  </p>\n</div>",
   "chart/line": "<star-chart\n  type=\"line\"\n  title=\"Orders per month, line\"\n  [labels]=\"months\"\n  [series]=\"orders\"\n/>",
   "chart/long-labels": "<div class=\"docs-chart-narrow\">\n  <star-chart\n    type=\"stacked-bar\"\n    title=\"Orders by region\"\n    [labels]=\"longRegions\"\n    [series]=\"regionChannels\"\n  />\n</div>\n<div class=\"docs-chart-narrow\">\n  <star-chart\n    type=\"radar\"\n    title=\"Detailed ratings\"\n    [labels]=\"longCriteria\"\n    [series]=\"ratings\"\n  />\n</div>",
   "chart/pie": "<star-chart type=\"pie\" title=\"Revenue by region\" [labels]=\"regions\" [series]=\"revenue\" />",

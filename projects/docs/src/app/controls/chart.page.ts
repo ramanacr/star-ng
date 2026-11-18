@@ -1,10 +1,16 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { StarChart, StarChartPointSeries, StarChartSeries } from '@star-ng/ui/chart';
+import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import {
+  StarChart,
+  StarChartPointSelectEvent,
+  StarChartPointSeries,
+  StarChartSeries,
+  StarChartTooltip,
+} from '@star-ng/ui/chart';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
   selector: 'docs-chart-page',
-  imports: [DOCS, StarChart],
+  imports: [DOCS, StarChart, StarChartTooltip],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <docs-page
@@ -179,6 +185,44 @@ import { DOCS, DocsRow } from '../shared/docs';
       </docs-example>
 
       <docs-example
+        heading="Keyboard, tooltip template and point selection"
+        source="chart/interaction"
+        [script]="interactionScript"
+        note="Tab moves to the data points: one tab stop for the chart. Arrow Right and Arrow Left move along a series, Arrow Down and Arrow Up to the next or the previous series, Home and End to the ends. The tooltip shows on hover and on focus. ng-template starChartTooltip replaces its content (context: the points, and label). A click, or Enter or Space on a focused point, emits pointSelect."
+      >
+        <div class="docs-stack">
+          <star-chart
+            type="line"
+            title="Orders per month, interactive"
+            [labels]="months"
+            [series]="orders"
+            (pointSelect)="picked.set($event)"
+          >
+            <ng-template starChartTooltip let-points let-label="label">
+              <span class="star-chart__tip-title">{{ label }}</span>
+              @for (point of points; track point.seriesIndex) {
+                <span class="star-chart__tip-row"
+                  >{{ point.series }}: {{ point.value }} orders</span
+                >
+              }
+            </ng-template>
+          </star-chart>
+          <p class="docs-output" role="status">
+            Selected:
+            {{
+              picked()
+                ? orders[picked()!.seriesIndex].label +
+                  ', ' +
+                  months[picked()!.index] +
+                  ': ' +
+                  picked()!.value
+                : 'none'
+            }}
+          </p>
+        </div>
+      </docs-example>
+
+      <docs-example
         heading="Sizing"
         source="chart/sizing"
         note="The chart fills the width of its container and keeps its aspect ratio. Set the width on a wrapper."
@@ -267,11 +311,25 @@ import { DOCS, DocsRow } from '../shared/docs';
         the Right-to-left guide.
       </p>
 
-      <docs-api [of]="['StarChart']" [cssVars]="cssVars" [keyboard]="keyboard" />
+      <docs-api
+        [of]="['StarChart', 'StarChartTooltip']"
+        [slots]="slots"
+        [cssVars]="cssVars"
+        [keyboard]="keyboard"
+      />
     </docs-page>
   `,
 })
 export class ChartPage {
+  protected readonly picked = signal<StarChartPointSelectEvent | null>(null);
+  protected readonly interactionScript = `readonly picked = signal<StarChartPointSelectEvent | null>(null);`;
+  protected readonly slots: readonly DocsRow[] = [
+    {
+      name: 'ng-template starChartTooltip',
+      description:
+        'Content of the tooltip. Context: $implicit and points (seriesIndex, index, value, series, label of each point at the hover position), label (the category, or the series for scatter).',
+    },
+  ];
   protected readonly months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
   protected readonly orders: StarChartSeries[] = [
     { label: 'Received', data: [120, 150, 170, 140, 190, 210] },
@@ -377,7 +435,18 @@ export class ChartPage {
     {
       name: 'Tab, then Enter or Space',
       description:
-        'Focuses the Table / Chart button and switches the view. The marks have no keyboard focus: the table gives the same data. The chart has an accessible name (the title) and a description: the kind of chart, the number of series and items, and the range of values.',
+        'Focuses the Table / Chart button and switches the view. The chart has an accessible name (the title) and a description: the kind of chart, the number of series and items, and the range of values.',
     },
+    {
+      name: 'Tab to the data points',
+      description:
+        'One tab stop for all points. Each point reads its series, category and value, and shows the tooltip.',
+    },
+    {
+      name: 'Arrow Right / Arrow Left, Home / End',
+      description: 'Moves along the series. The plot keeps left to right in right-to-left pages.',
+    },
+    { name: 'Arrow Down / Arrow Up', description: 'Moves to the next or the previous series.' },
+    { name: 'Enter / Space', description: 'Selects the focused point (pointSelect).' },
   ];
 }
