@@ -225,10 +225,14 @@ function findTrigger(
 
 /** Label text that is safe to insert: one line, no control characters. */
 function plainLabel(label: string): string {
-  return label
-    .replace(/[\r\n\t\u2028\u2029]+/g, ' ')
-    .replace(/\p{Cc}/gu, '')
-    .trim();
+  return (
+    label
+      .replace(/[\r\n\t\u2028\u2029]+/g, ' ')
+      .replace(/\p{Cc}/gu, '')
+      // Bidi embedding, override and isolate marks can flip how the text around the mention reads.
+      .replace(/[\u202A-\u202E\u2066-\u2069]/g, '')
+      .trim()
+  );
 }
 
 /**

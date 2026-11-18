@@ -191,6 +191,15 @@ describe('StarMention', () => {
     expect(document.querySelector('img')).toBeNull();
   });
 
+  it('strips bidi control characters from an inserted label (m9)', async () => {
+    const { host, fixture, field, type, press } = await setup();
+    host.suggestions.set([{ id: 8, name: 'Eve\u202Egnp.exe\u202C \u2066x\u2069' }]);
+    await fixture.whenStable();
+    await type('@eve');
+    await press('Enter');
+    expect(field.value).toBe('@Evegnp.exe x ');
+  });
+
   it('renders the starMentionItem slot', async () => {
     const { host, fixture, type } = await setup();
     host.custom.set(true);
