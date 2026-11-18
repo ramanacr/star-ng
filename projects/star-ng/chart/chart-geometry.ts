@@ -81,6 +81,57 @@ export function niceScale(
   return { min: ticks[0], max: ticks[count], step, ticks };
 }
 
+/** Fixed ends and a fixed step for a value axis; `null` or a missing value means "from the data". */
+export interface StarChartScaleBounds {
+  readonly min?: number | null;
+  readonly max?: number | null;
+  readonly stepSize?: number | null;
+}
+
+/** A finite number, or `null`. */
+function finiteOrNull(value: number | null | undefined): number | null {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
+}
+
+/**
+ * A value axis for `dataMin` to `dataMax` with fixed ends and step where they are given. A
+ * given `min` or `max` is an end of the axis as it is; the other end is a round number. With
+ * `stepSize` the ticks start at the lower end and go up by that step (at most 50 ticks); the
+ * upper end is always a tick. `includeZero` applies only while `min` is not given.
+ */
+export function boundedScale(
+  dataMin: number,
+  dataMax: number,
+  options: StarChartScaleOptions & StarChartScaleBounds = {},
+): StarChartScale {
+  const fixedMin = finiteOrNull(options.min);
+  const fixedMax = finiteOrNull(options.max);
+  const step = finiteOrNull(options.stepSize);
+  const wantStep = step !== null && step > 0 ? step : null;
+  if (fixedMin === null && fixedMax === null && wantStep === null)
+    return niceScale(dataMin, dataMax, options);
+  const nice = niceScale(fixedMin ?? dataMin, fixedMax ?? dataMax, {
+    ...options,
+    includeZero: fixedMin === null && options.includeZero,
+  });
+  const by = wantStep ?? nice.step;
+  let lo = fixedMin ?? (wantStep ? Math.floor(nice.min / by + 1e-9) * by : nice.min);
+  let hi = fixedMax ?? (wantStep ? Math.ceil(nice.max / by - 1e-9) * by : nice.max);
+  if (!(hi > lo)) hi = lo + (by > 0 ? by : 1);
+  lo = clean(lo, by);
+  hi = clean(hi, by);
+  if (wantStep === null) {
+    // Fixed ends: the round ticks between them, and the ends themselves.
+    const inner = nice.ticks.filter((t) => t > lo + by * 1e-6 && t < hi - by * 1e-6);
+    return { min: lo, max: hi, step: by, ticks: [lo, ...inner, hi] };
+  }
+  const count = Math.floor((hi - lo) / by + 1e-9);
+  if (!(by > 0) || count > 50) return { ...niceScale(lo, hi), min: lo, max: hi };
+  const ticks = Array.from({ length: count + 1 }, (_, i) => clean(lo + i * by, by));
+  if (hi - ticks[ticks.length - 1] > by * 1e-6) ticks.push(hi);
+  return { min: lo, max: hi, step: by, ticks };
+}
+
 function fallbackScale(lo: number, hi: number): StarChartScale {
   return { min: lo, max: hi, step: hi - lo, ticks: lo === hi ? [lo] : [lo, hi] };
 }

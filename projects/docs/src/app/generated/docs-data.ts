@@ -1250,6 +1250,41 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
+        "name": "valueFormat",
+        "type": "Intl.NumberFormatOptions | null",
+        "default": "null",
+        "required": false,
+        "description": "How values show in the tooltip, the table and the value axis: `Intl.NumberFormat` options, for example `{ style: 'currency', currency: 'EUR' }` (Chart.js tick `callback`)."
+      },
+      {
+        "name": "min",
+        "type": "number | null",
+        "default": "null",
+        "required": false,
+        "description": "Lowest value of the value axis (bar, stacked bar, line, area). Default: from the data."
+      },
+      {
+        "name": "max",
+        "type": "number | null",
+        "default": "null",
+        "required": false,
+        "description": "Highest value of the value axis. Values beyond the ends stop at the end."
+      },
+      {
+        "name": "stepSize",
+        "type": "number | null",
+        "default": "null",
+        "required": false,
+        "description": "Distance between the ticks of the value axis. Default: a round step."
+      },
+      {
+        "name": "horizontal",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Bar and stacked bar: the bars run along the line and the categories go down the side (Chart.js `indexAxis: 'y'`). Series `type` and `axis` do not apply."
+      },
+      {
         "name": "table",
         "type": "boolean",
         "default": "false",
@@ -8212,7 +8247,9 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "cascade-select/states": "<div class=\"docs-stack\">\n  <star-cascade-select\n    [options]=\"places\"\n    optionLabel=\"name\"\n    optionValue=\"code\"\n    optionDisabled=\"closed\"\n    placeholder=\"One city is closed\"\n    ariaLabel=\"City with a closed office\"\n  />\n  <star-cascade-select\n    [options]=\"places\"\n    optionLabel=\"name\"\n    optionValue=\"code\"\n    size=\"sm\"\n    disabled\n    placeholder=\"Disabled\"\n    ariaLabel=\"Disabled city\"\n  />\n</div>",
   "chart/area": "<star-chart\n  type=\"area\"\n  title=\"Orders per month, area\"\n  [labels]=\"months\"\n  [series]=\"orders\"\n/>",
   "chart/bar": "<star-chart\n  type=\"bar\"\n  title=\"Orders per month\"\n  [labels]=\"months\"\n  [series]=\"orders\"\n  categoryLabel=\"Month\"\n/>",
+  "chart/combo": "<star-chart type=\"bar\" title=\"Orders and return rate\" [labels]=\"months\" [series]=\"combo\" />",
   "chart/doughnut": "<star-chart\n  type=\"doughnut\"\n  title=\"Traffic by channel\"\n  [labels]=\"channels\"\n  [series]=\"traffic\"\n/>",
+  "chart/horizontal": "<star-chart\n  type=\"bar\"\n  horizontal\n  title=\"Orders per region\"\n  [labels]=\"longRegions\"\n  [series]=\"regionChannels\"\n/>",
   "chart/interaction": "<div class=\"docs-stack\">\n  <star-chart\n    type=\"line\"\n    title=\"Orders per month, interactive\"\n    [labels]=\"months\"\n    [series]=\"orders\"\n    (pointSelect)=\"picked.set($event)\"\n  >\n    <ng-template starChartTooltip let-points let-label=\"label\">\n      <span class=\"star-chart__tip-title\">{{ label }}</span>\n      @for (point of points; track point.seriesIndex) {\n        <span class=\"star-chart__tip-row\"\n          >{{ point.series }}: {{ point.value }} orders</span\n        >\n      }\n    </ng-template>\n  </star-chart>\n  <p class=\"docs-output\" role=\"status\">\n    Selected:\n    {{\n      picked()\n        ? orders[picked()!.seriesIndex].label +\n          ', ' +\n          months[picked()!.index] +\n          ': ' +\n          picked()!.value\n        : 'none'\n    }}\n  </p>\n</div>",
   "chart/legend": "<div class=\"docs-stack\">\n  <star-chart\n    type=\"line\"\n    title=\"Orders by channel\"\n    [labels]=\"months\"\n    [series]=\"channelOrders\"\n    [(hiddenSeries)]=\"hiddenChannels\"\n    legendPosition=\"end\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Hidden series: {{ hiddenChannels().join(', ') || 'none' }}\n  </p>\n</div>",
   "chart/line": "<star-chart\n  type=\"line\"\n  title=\"Orders per month, line\"\n  [labels]=\"months\"\n  [series]=\"orders\"\n/>",
@@ -8225,6 +8262,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "chart/stacked-bar": "<star-chart\n  type=\"stacked-bar\"\n  title=\"Orders per month by channel\"\n  [labels]=\"months\"\n  [series]=\"channelOrders\"\n  categoryLabel=\"Month\"\n/>",
   "chart/stacked-bar-percent": "<star-chart\n  type=\"stacked-bar\"\n  title=\"Share of orders by channel\"\n  [labels]=\"months\"\n  [series]=\"channelOrders\"\n  categoryLabel=\"Month\"\n  percent\n/>",
   "chart/table": "<star-chart\n  type=\"bar\"\n  title=\"Revenue by region, table\"\n  [labels]=\"regions\"\n  [series]=\"revenue\"\n  categoryLabel=\"Region\"\n  table\n/>",
+  "chart/value-format": "<star-chart\n  type=\"bar\"\n  title=\"Revenue per region\"\n  locale=\"en-US\"\n  [labels]=\"regions\"\n  [series]=\"revenue\"\n  [valueFormat]=\"euro\"\n  [min]=\"0\"\n  [max]=\"60000\"\n  [stepSize]=\"15000\"\n/>",
   "checkbox/basic": "<star-checkbox [(checked)]=\"subscribed\">Send me product news</star-checkbox>\n<p class=\"docs-output\" role=\"status\">Subscribed: {{ subscribed() }}</p>",
   "checkbox/form": "<star-checkbox [formField]=\"terms.accept\">I accept the terms</star-checkbox>\n<p class=\"docs-output\" role=\"status\">Valid: {{ terms().valid() }}</p>",
   "checkbox/indeterminate": "<star-checkbox [(checked)]=\"all\" [(indeterminate)]=\"some\">All regions</star-checkbox>",

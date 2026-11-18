@@ -187,3 +187,99 @@ describe('StarChart legend', () => {
     expect(el.querySelector('.star-chart__legend button')).toBeNull();
   });
 });
+
+@Component({
+  imports: [StarChart],
+  template: `
+    <star-chart
+      [type]="type()"
+      title="Revenue"
+      locale="en-US"
+      [labels]="['North', 'South', 'East']"
+      [series]="series()"
+      [valueFormat]="valueFormat()"
+      [min]="min()"
+      [max]="max()"
+      [stepSize]="stepSize()"
+      [horizontal]="horizontal()"
+    />
+  `,
+})
+class AxisHost {
+  readonly type = signal<StarChartType>('bar');
+  readonly series = signal<StarChartSeries[]>([{ label: 'Revenue', data: [1200, 2400, 3600] }]);
+  readonly valueFormat = signal<Intl.NumberFormatOptions | null>(null);
+  readonly min = signal<number | null>(null);
+  readonly max = signal<number | null>(null);
+  readonly stepSize = signal<number | null>(null);
+  readonly horizontal = signal(false);
+}
+
+describe('StarChart axes and formatting', () => {
+  async function setup(change: (host: AxisHost) => void) {
+    const fixture = TestBed.createComponent(AxisHost);
+    change(fixture.componentInstance);
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+    const ticks = () =>
+      [...el.querySelectorAll('.star-chart__svg text.star-chart__axis')].map((t) =>
+        t.textContent?.trim(),
+      );
+    return { el, ticks, fixture };
+  }
+
+  it('formats values with valueFormat in the axis, the table and the points', async () => {
+    const { el, ticks } = await setup((h) =>
+      h.valueFormat.set({ style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }),
+    );
+    expect(ticks()).toContain('€4,000');
+    expect(el.querySelector('tbody td')?.textContent?.trim()).toBe('€1,200');
+    expect(el.querySelector('.star-chart__target')?.getAttribute('aria-label')).toBe(
+      'Revenue, North: €1,200',
+    );
+  });
+
+  it('uses min, max and stepSize for the value axis', async () => {
+    const { ticks } = await setup((h) => {
+      h.min.set(1000);
+      h.max.set(5000);
+      h.stepSize.set(1000);
+    });
+    expect(ticks().slice(0, 5)).toEqual(['1,000', '2,000', '3,000', '4,000', '5,000']);
+  });
+
+  it('keeps round ticks between fixed ends without a step', async () => {
+    const { ticks } = await setup((h) => h.max.set(4500));
+    expect(ticks().slice(0, 4)).toEqual(['0', '2,000', '4,000', '4,500']);
+  });
+
+  it('draws horizontal bars with the categories down the side', async () => {
+    const { el } = await setup((h) => h.horizontal.set(true));
+    const labels = [...el.querySelectorAll<SVGTextElement>('.star-chart__svg text')].filter(
+      (t) => t.textContent?.trim() === 'North',
+    );
+    expect(labels.length).toBe(1);
+    expect(labels[0].getAttribute('text-anchor')).toBe('end');
+    const bar = el.querySelector('.star-chart__bar')!.getAttribute('d')!;
+    // A horizontal bar starts at the value 0 on the left and runs right.
+    expect(bar.startsWith('M104,')).toBe(true);
+    expect(el.querySelectorAll('.star-chart__bar').length).toBe(3);
+  });
+
+  it('draws a combo of bars and a line on a second value axis', async () => {
+    const { el, ticks } = await setup((h) =>
+      h.series.set([
+        { label: 'Revenue', data: [1200, 2400, 3600] },
+        { label: 'Margin', data: [5, 12, 9], type: 'line', axis: 'secondary' },
+      ]),
+    );
+    expect(el.querySelectorAll('.star-chart__bar').length).toBe(3);
+    expect(el.querySelectorAll('.star-chart__line').length).toBe(1);
+    // The second axis has its own ticks at the end of the plot.
+    const secondary = [...el.querySelectorAll<SVGTextElement>('.star-chart__svg text')].filter(
+      (t) => t.getAttribute('x') === '592',
+    );
+    expect(secondary.map((t) => t.textContent?.trim())).toEqual(['0', '5', '10', '15']);
+    expect(ticks()).toContain('4,000');
+  });
+});

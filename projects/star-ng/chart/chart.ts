@@ -18,6 +18,7 @@ import { STAR_UI_TEXT } from '@star-ng/ui/core';
 import {
   areaRadius,
   axisAngles,
+  boundedScale,
   cleanPoints,
   labelAnchor,
   labelOffset,
@@ -54,6 +55,16 @@ import {
 export interface StarChartSeries {
   readonly label: string;
   readonly data: readonly number[];
+  /**
+   * Bar, line and area charts: draw this series as bars or as a line, for a combo chart (Chart.js
+   * dataset `type`). Default: the chart type.
+   */
+  readonly type?: 'bar' | 'line';
+  /**
+   * Bar, line and area charts (not horizontal): `'secondary'` measures this series on a second
+   * value axis at the end of the plot (Chart.js `yAxisID`). Default `'primary'`.
+   */
+  readonly axis?: 'primary' | 'secondary';
 }
 
 /** One point of a scatter series. */
@@ -527,55 +538,58 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
               }
               @default {
                 <svg [attr.viewBox]="'0 0 ' + W + ' ' + H" class="star-chart__svg">
-                  @for (tick of ticks(); track tick) {
+                  @for (tick of valueTicks(); track tick.value) {
                     <line
                       class="star-chart__grid"
-                      [attr.x1]="PAD.left"
-                      [attr.x2]="W - PAD.right"
-                      [attr.y1]="y(tick)"
-                      [attr.y2]="y(tick)"
+                      [attr.x1]="tick.x1"
+                      [attr.x2]="tick.x2"
+                      [attr.y1]="tick.y1"
+                      [attr.y2]="tick.y2"
                     />
                     <text
                       class="star-chart__axis"
-                      [attr.x]="PAD.left - 8"
-                      [attr.y]="y(tick) + 4"
-                      text-anchor="end"
+                      [attr.x]="tick.tx"
+                      [attr.y]="tick.ty"
+                      [attr.text-anchor]="tick.anchor"
                     >
-                      {{ yTick()(tick) }}
+                      {{ tick.text }}
                     </text>
                   }
-                  @if (yScale().min < 0) {
+                  @for (tick of secondaryTicks(); track tick.value) {
+                    <text
+                      class="star-chart__axis"
+                      [attr.x]="tick.tx"
+                      [attr.y]="tick.ty"
+                      text-anchor="start"
+                    >
+                      {{ tick.text }}
+                    </text>
+                  }
+                  @if (baseline(); as base) {
                     <line
                       class="star-chart__baseline"
-                      [attr.x1]="PAD.left"
-                      [attr.x2]="W - PAD.right"
-                      [attr.y1]="y(0)"
-                      [attr.y2]="y(0)"
+                      [attr.x1]="base.x1"
+                      [attr.x2]="base.x2"
+                      [attr.y1]="base.y1"
+                      [attr.y2]="base.y2"
                     />
                   }
-                  @for (label of axisLabels(); track $index; let i = $index) {
-                    <text
-                      class="star-chart__axis"
-                      [attr.x]="x(i)"
-                      [attr.y]="H - 12"
-                      text-anchor="middle"
-                    >
-                      {{ label.text }}
-                      @if (label.text !== label.full) {
-                        <title>{{ label.full }}</title>
-                      }
-                    </text>
-                  }
-                  @if (type() === 'bar') {
-                    @for (bar of bars(); track bar.key) {
-                      <path
-                        class="star-chart__bar"
-                        [attr.d]="bar.path"
-                        [style.fill]="bar.color"
-                        [class.star-chart__mark--dim]="hover() !== null && hover() !== bar.index"
-                      />
+                  @for (label of axisLabels(); track $index) {
+                    @if (label.show) {
+                      <text
+                        class="star-chart__axis"
+                        [attr.x]="label.x"
+                        [attr.y]="label.y"
+                        [attr.text-anchor]="label.anchor"
+                      >
+                        {{ label.text }}
+                        @if (label.text !== label.full) {
+                          <title>{{ label.full }}</title>
+                        }
+                      </text>
                     }
-                  } @else if (type() === 'stacked-bar') {
+                  }
+                  @if (type() === 'stacked-bar') {
                     @for (segment of segments(); track segment.key) {
                       <rect
                         class="star-chart__mark star-chart__segment"
@@ -590,16 +604,24 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                       />
                     }
                   } @else {
-                    @if (hover() !== null) {
+                    @for (bar of bars(); track bar.key) {
+                      <path
+                        class="star-chart__bar"
+                        [attr.d]="bar.path"
+                        [style.fill]="bar.color"
+                        [class.star-chart__mark--dim]="hover() !== null && hover() !== bar.index"
+                      />
+                    }
+                    @if (hover() !== null && lines().length) {
                       <line
                         class="star-chart__crosshair"
                         [attr.x1]="x(hover()!)"
                         [attr.x2]="x(hover()!)"
-                        [attr.y1]="PAD.top"
-                        [attr.y2]="H - PAD.bottom"
+                        [attr.y1]="pad().top"
+                        [attr.y2]="H - pad().bottom"
                       />
                     }
-                    @for (line of lines(); track line.label) {
+                    @for (line of lines(); track line.slot) {
                       @if (type() === 'area') {
                         <path
                           class="star-chart__area"
@@ -617,20 +639,20 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                           class="star-chart__dot"
                           r="4.5"
                           [attr.cx]="x(hover()!)"
-                          [attr.cy]="y(line.data[hover()!] ?? 0)"
+                          [attr.cy]="y(line.data[hover()!] ?? 0, line.secondary)"
                           [style.fill]="line.color"
                         />
                       }
                     }
                   }
-                  <!-- Hit targets: one full-height column per category, wider than the marks. -->
-                  @for (label of labels(); track $index; let i = $index) {
+                  <!-- Hit targets: one full band per category, wider than the marks. -->
+                  @for (hit of hits(); track $index; let i = $index) {
                     <rect
                       class="star-chart__hit"
-                      [attr.x]="x(i) - band() / 2"
-                      [attr.y]="PAD.top"
-                      [attr.width]="band()"
-                      [attr.height]="H - PAD.top - PAD.bottom"
+                      [attr.x]="hit.x"
+                      [attr.y]="hit.y"
+                      [attr.width]="hit.width"
+                      [attr.height]="hit.height"
                       (mouseenter)="hover.set(i)"
                     />
                   }
@@ -638,8 +660,8 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                 @if (hover() !== null) {
                   <div
                     class="star-chart__tip"
-                    [style.left.%]="(x(hover()!) / W) * 100"
-                    [style.top.%]="6"
+                    [style.left.%]="tipAt().left"
+                    [style.top.%]="tipAt().top"
                   >
                     @if (tooltipTemplate(); as custom) {
                       <ng-container
@@ -829,6 +851,22 @@ export class StarChart {
   /** Scatter and polar area: name of the y axis and column, or of the value column. */
   readonly valueLabel = input<string | null>(null);
   readonly locale = input<string | undefined>(undefined);
+  /**
+   * How values show in the tooltip, the table and the value axis: `Intl.NumberFormat` options,
+   * for example `{ style: 'currency', currency: 'EUR' }` (Chart.js tick `callback`).
+   */
+  readonly valueFormat = input<Intl.NumberFormatOptions | null>(null);
+  /** Lowest value of the value axis (bar, stacked bar, line, area). Default: from the data. */
+  readonly min = input<number | null>(null);
+  /** Highest value of the value axis. Values beyond the ends stop at the end. */
+  readonly max = input<number | null>(null);
+  /** Distance between the ticks of the value axis. Default: a round step. */
+  readonly stepSize = input<number | null>(null);
+  /**
+   * Bar and stacked bar: the bars run along the line and the categories go down the side
+   * (Chart.js `indexAxis: 'y'`). Series `type` and `axis` do not apply.
+   */
+  readonly horizontal = input(false, { transform: booleanAttribute });
   /** Start the table view open. */
   readonly table = input(false, { transform: booleanAttribute });
   /**
@@ -859,7 +897,7 @@ export class StarChart {
   );
 
   private readonly numberFormat = computed(
-    () => new Intl.NumberFormat(this.locale(), { maximumFractionDigits: 1 }),
+    () => new Intl.NumberFormat(this.locale(), this.valueFormat() ?? { maximumFractionDigits: 1 }),
   );
   private readonly preciseFormat = computed(
     () => new Intl.NumberFormat(this.locale(), { maximumFractionDigits: 3 }),
@@ -875,7 +913,16 @@ export class StarChart {
   /** Axis tick text: just enough decimals to show every tick exactly. */
   private tickFormatter(ticks: readonly number[], suffix = ''): (value: number) => string {
     const digits = tickDecimals(ticks);
-    const formatter = new Intl.NumberFormat(this.locale(), { maximumFractionDigits: digits });
+    const options: Intl.NumberFormatOptions = { ...this.valueFormat() };
+    // Ticks show just enough decimals, unless `valueFormat` fixes them.
+    if (options.maximumFractionDigits === undefined) {
+      options.maximumFractionDigits = Math.max(digits, options.minimumFractionDigits ?? 0);
+      options.minimumFractionDigits = Math.min(
+        options.minimumFractionDigits ?? 0,
+        options.maximumFractionDigits,
+      );
+    }
+    const formatter = new Intl.NumberFormat(this.locale(), options);
     return (value) => formatter.format(value) + suffix;
   }
 
@@ -888,6 +935,8 @@ export class StarChart {
     this.series().map((s) => ({
       label: s.label,
       data: (s.data as readonly (number | StarChartPoint)[]).map(valueOf),
+      type: (s as StarChartSeries).type,
+      axis: (s as StarChartSeries).axis,
     })),
   );
   /**
@@ -993,6 +1042,28 @@ export class StarChart {
 
   // ---------- Axis charts: bar, stacked bar, line, area ----------
 
+  /** Bars along the line, categories down the side: bar and stacked bar with `horizontal`. */
+  protected readonly isHorizontal = computed(
+    () => this.horizontal() && (this.type() === 'bar' || this.type() === 'stacked-bar'),
+  );
+  /** How a drawn series looks: its own `type`, else the chart type. Stacked bars ignore it. */
+  private seriesKind(series: StarChartSeries): 'bar' | 'line' {
+    if (this.type() === 'stacked-bar' || this.isHorizontal()) return 'bar';
+    return series.type ?? (this.type() === 'bar' ? 'bar' : 'line');
+  }
+  /** The series uses the second value axis (vertical bar, line and area charts only). */
+  private onSecondary(series: StarChartSeries): boolean {
+    return !this.isHorizontal() && this.type() !== 'stacked-bar' && series.axis === 'secondary';
+  }
+  protected readonly hasSecondary = computed(() => this.drawn().some((s) => this.onSecondary(s)));
+  /** Room around the plot: more at the start for category names, at the end for a 2nd axis. */
+  protected readonly pad = computed(() => ({
+    top: PAD.top,
+    right: this.hasSecondary() ? 56 : PAD.right,
+    bottom: this.isHorizontal() ? 28 : PAD.bottom,
+    left: this.isHorizontal() ? 104 : PAD.left,
+  }));
+
   protected readonly stack = computed(() =>
     stackColumns(
       this.drawn().map((s) => s.data),
@@ -1000,56 +1071,171 @@ export class StarChart {
       this.percent(),
     ),
   );
+  /** The value axis: from the data, or from `min`, `max` and `stepSize`. */
   protected readonly yScale = computed<StarChartScale>(() => {
+    const bounds = { min: this.min(), max: this.max(), stepSize: this.stepSize() };
     if (this.type() === 'stacked-bar') {
       const { min, max } = stackExtent(this.stack());
-      return niceScale(min, max, { includeZero: true });
+      return boundedScale(min, max, { includeZero: true, ...bounds });
     }
-    return niceScale(0, extentOf(this.numeric().flatMap((s) => s.data)).max, {
-      includeZero: true,
+    const { min, max } = extentOf(
+      this.drawn()
+        .filter((s) => !this.onSecondary(s))
+        .flatMap((s) => s.data),
+    );
+    return boundedScale(min, max, { includeZero: true, ...bounds });
+  });
+  /** The second value axis, at the end of the plot. */
+  protected readonly secondaryScale = computed<StarChartScale>(() => {
+    const { min, max } = extentOf(
+      this.drawn()
+        .filter((s) => this.onSecondary(s))
+        .flatMap((s) => s.data),
+    );
+    return niceScale(min, max, { includeZero: true });
+  });
+  protected readonly band = computed(() => {
+    const pad = this.pad();
+    const length = this.isHorizontal() ? H - pad.top - pad.bottom : W - pad.left - pad.right;
+    return length / Math.max(1, this.labels().length);
+  });
+
+  /** Position of a category along the category axis. */
+  protected x(index: number): number {
+    const pad = this.pad();
+    return (this.isHorizontal() ? pad.top : pad.left) + this.band() * (index + 0.5);
+  }
+  /** Position of a value along a value axis. Values outside the axis stop at its ends. */
+  protected y(value: number, secondary = false): number {
+    const { min, max } = secondary ? this.secondaryScale() : this.yScale();
+    const pad = this.pad();
+    const share = (Math.min(Math.max(value, min), max) - min) / (max - min || 1);
+    return this.isHorizontal()
+      ? pad.left + share * (W - pad.left - pad.right)
+      : pad.top + (1 - share) * (H - pad.top - pad.bottom);
+  }
+
+  /** Grid lines and tick labels of the value axis. */
+  protected readonly valueTicks = computed(() => {
+    const scale = this.yScale();
+    const pad = this.pad();
+    const text = this.tickFormatter(
+      scale.ticks,
+      this.type() === 'stacked-bar' && this.percent() ? '%' : '',
+    );
+    return scale.ticks.map((value) => {
+      const at = this.y(value);
+      return this.isHorizontal()
+        ? {
+            value,
+            text: text(value),
+            x1: at,
+            x2: at,
+            y1: pad.top,
+            y2: H - pad.bottom,
+            tx: at,
+            ty: H - pad.bottom + 18,
+            anchor: 'middle',
+          }
+        : {
+            value,
+            text: text(value),
+            x1: pad.left,
+            x2: W - pad.right,
+            y1: at,
+            y2: at,
+            tx: pad.left - 8,
+            ty: at + 4,
+            anchor: 'end',
+          };
     });
   });
-  protected readonly ticks = computed(() => this.yScale().ticks);
-  protected readonly yTick = computed(() =>
-    this.tickFormatter(this.ticks(), this.type() === 'stacked-bar' && this.percent() ? '%' : ''),
-  );
-  protected readonly band = computed(
-    () => (W - PAD.left - PAD.right) / Math.max(1, this.labels().length),
-  );
-  /** Category labels cut to the width of their column, with the full text as a title. */
+  /** Tick labels of the second value axis, at the end of the plot. */
+  protected readonly secondaryTicks = computed(() => {
+    if (!this.hasSecondary()) return [];
+    const scale = this.secondaryScale();
+    const text = this.tickFormatter(scale.ticks);
+    const x = W - this.pad().right + 8;
+    return scale.ticks.map((value) => ({
+      value,
+      text: text(value),
+      tx: x,
+      ty: this.y(value, true) + 4,
+    }));
+  });
+  /** The zero line, when the value axis has negative values. */
+  protected readonly baseline = computed(() => {
+    if (!(this.yScale().min < 0)) return null;
+    const pad = this.pad();
+    const at = this.y(0);
+    return this.isHorizontal()
+      ? { x1: at, x2: at, y1: pad.top, y2: H - pad.bottom }
+      : { x1: pad.left, x2: W - pad.right, y1: at, y2: at };
+  });
+  /** Category labels cut to their room, with the full text as a title. */
   protected readonly axisLabels = computed(() => {
-    const max = Math.max(3, Math.floor(this.band() / 6.5));
-    return this.labels().map((label) => ({ text: truncateLabel(label, max), full: label }));
+    const pad = this.pad();
+    const horizontal = this.isHorizontal();
+    const max = Math.max(3, Math.floor((horizontal ? pad.left - 12 : this.band()) / 6.5));
+    return this.labels().map((label, i) => ({
+      text: truncateLabel(label, max),
+      full: label,
+      show: true,
+      x: horizontal ? pad.left - 8 : this.x(i),
+      y: horizontal ? this.x(i) + 4 : H - 12,
+      anchor: horizontal ? 'end' : 'middle',
+    }));
+  });
+  /** Hover targets: one band per category, wider than the marks. */
+  protected readonly hits = computed(() => {
+    const pad = this.pad();
+    const band = this.band();
+    return this.labels().map((_, i) =>
+      this.isHorizontal()
+        ? { x: pad.left, y: this.x(i) - band / 2, width: W - pad.left - pad.right, height: band }
+        : { x: this.x(i) - band / 2, y: pad.top, width: band, height: H - pad.top - pad.bottom },
+    );
+  });
+  /** Where the tooltip of the hovered category goes, in percent of the plot. */
+  protected readonly tipAt = computed(() => {
+    const hover = this.hover() ?? 0;
+    return this.isHorizontal()
+      ? { left: 50, top: ((this.x(hover) + this.band() / 2) / H) * 100 }
+      : { left: (this.x(hover) / W) * 100, top: 6 };
   });
 
-  protected x(index: number): number {
-    return PAD.left + this.band() * (index + 0.5);
-  }
-  protected y(value: number): number {
-    const { min, max } = this.yScale();
-    return PAD.top + (1 - (value - min) / (max - min || 1)) * (H - PAD.top - PAD.bottom);
-  }
-
-  /** Grouped bars: 2px gap between neighbours, 4px rounded top, square base. */
+  /** Grouped bars: 2px gap between neighbours, 4px rounded end, square base. */
   protected readonly bars = computed(() => {
-    const series = this.drawn();
-    const groupWidth = Math.min(this.band() * 0.7, 28 * series.length + 2 * (series.length - 1));
-    const barWidth = (groupWidth - 2 * (series.length - 1)) / Math.max(1, series.length);
-    const base = this.y(0);
+    const series = this.drawn().filter((s) => this.seriesKind(s) === 'bar');
+    const horizontal = this.isHorizontal();
+    const count = Math.max(1, series.length);
+    const group = Math.min(this.band() * 0.7, 28 * count + 2 * (count - 1));
+    const thickness = (group - 2 * (count - 1)) / count;
     return this.labels().flatMap((_, i) =>
       series.map((s, si) => {
-        const left = this.x(i) - groupWidth / 2 + si * (barWidth + 2);
-        const top = this.y(toFinite(s.data[i]));
-        const r = Math.min(4, barWidth / 2, Math.max(0, base - top));
-        const path =
-          `M${left},${base}V${top + r}Q${left},${top} ${left + r},${top}` +
-          `H${left + barWidth - r}Q${left + barWidth},${top} ${left + barWidth},${top + r}V${base}Z`;
+        const secondary = this.onSecondary(s);
+        const base = this.y(0, secondary);
+        const end = this.y(toFinite(s.data[i]), secondary);
+        const start = this.x(i) - group / 2 + si * (thickness + 2);
+        let path: string;
+        if (horizontal) {
+          const r = Math.min(4, thickness / 2, Math.max(0, end - base));
+          path =
+            `M${base},${start}H${end - r}Q${end},${start} ${end},${start + r}` +
+            `V${start + thickness - r}Q${end},${start + thickness} ${end - r},${start + thickness}` +
+            `H${base}Z`;
+        } else {
+          const r = Math.min(4, thickness / 2, Math.max(0, base - end));
+          path =
+            `M${start},${base}V${end + r}Q${start},${end} ${start + r},${end}` +
+            `H${start + thickness - r}Q${start + thickness},${end} ${start + thickness},${end + r}V${base}Z`;
+        }
         return {
-          key: `${i}-${si}`,
+          key: `${i}-${s.slot}`,
           index: i,
-          series: si,
-          cx: left + barWidth / 2,
-          top,
+          slot: s.slot,
+          center: start + thickness / 2,
+          end,
           path,
           color: this.color(s.slot),
         };
@@ -1059,20 +1245,22 @@ export class StarChart {
 
   /** Stacked bars: one rectangle per value that is not 0, outlined in a darker tone. */
   protected readonly segments = computed(() => {
-    const width = Math.min(this.band() * 0.6, 64);
+    const thickness = Math.min(this.band() * 0.6, 64);
+    const horizontal = this.isHorizontal();
     return this.stack().flatMap((column, i) =>
       column.segments
         .filter((segment) => segment.start !== segment.end)
         .map((segment) => {
           const a = this.y(segment.start);
           const b = this.y(segment.end);
+          const across = this.x(i) - thickness / 2;
           return {
             key: `${i}-${segment.series}`,
             index: i,
-            x: this.x(i) - width / 2,
-            y: Math.min(a, b),
-            width,
-            height: Math.abs(a - b),
+            x: horizontal ? Math.min(a, b) : across,
+            y: horizontal ? across : Math.min(a, b),
+            width: horizontal ? Math.abs(a - b) : thickness,
+            height: horizontal ? thickness : Math.abs(a - b),
             color: this.color(this.drawn()[segment.series]?.slot ?? segment.series),
           };
         }),
@@ -1084,18 +1272,29 @@ export class StarChart {
     return segment ? Math.round(Math.abs(segment.end - segment.start) * 10) / 10 : 0;
   }
 
+  /** Lines (line and area charts, and series with `type: 'line'` in a bar chart). */
   protected readonly lines = computed(() =>
-    this.drawn().map((s) => ({
-      label: s.label,
-      data: s.data,
-      color: this.color(s.slot),
-      path: s.data.map((v, i) => `${i ? 'L' : 'M'}${this.x(i)},${this.y(v)}`).join(''),
-      // Area: the line, then down to the baseline and back to the first point.
-      area: s.data.length
-        ? s.data.map((v, i) => `${i ? 'L' : 'M'}${this.x(i)},${this.y(v)}`).join('') +
-          `L${this.x(s.data.length - 1)},${this.y(0)}L${this.x(0)},${this.y(0)}Z`
-        : '',
-    })),
+    this.drawn()
+      .filter((s) => this.seriesKind(s) === 'line')
+      .map((s) => {
+        const secondary = this.onSecondary(s);
+        const path = s.data
+          .map((v, i) => `${i ? 'L' : 'M'}${this.x(i)},${this.y(v, secondary)}`)
+          .join('');
+        const base = this.y(0, secondary);
+        return {
+          label: s.label,
+          slot: s.slot,
+          secondary,
+          data: s.data,
+          color: this.color(s.slot),
+          path,
+          // Area: the line, then down to the baseline and back to the first point.
+          area: s.data.length
+            ? `${path}L${this.x(s.data.length - 1)},${base}L${this.x(0)},${base}Z`
+            : '',
+        };
+      }),
   );
 
   // ---------- Doughnut and pie ----------
@@ -1394,22 +1593,26 @@ export class StarChart {
         }
         return rows.filter(Boolean);
       }
-      default:
+      default: {
+        const horizontal = this.isHorizontal();
         return this.drawn().map((s, si) =>
           labels.map((label, i) => {
             const value = toFinite(s.data[i]);
-            let top = this.y(value);
-            let left = this.x(i);
-            if (this.type() === 'bar') {
-              const bar = this.bars().find((b) => b.index === i && b.series === si);
-              left = bar?.cx ?? left;
-            } else if (this.type() === 'stacked-bar') {
+            let along = this.y(value, this.onSecondary(s));
+            let across = this.x(i);
+            if (this.type() === 'stacked-bar') {
               const segment = this.stack()[i]?.segments[si];
-              top = this.y(segment ? segment.end : 0);
+              along = this.y(segment ? segment.end : 0);
+            } else if (this.seriesKind(s) === 'bar') {
+              const bar = this.bars().find((b) => b.index === i && b.slot === s.slot);
+              across = bar?.center ?? across;
             }
+            const left = horizontal ? along : across;
+            const top = horizontal ? across : along;
             return target(s.slot, s.label, i, label, value, (left / W) * 100, (top / H) * 100, i);
           }),
         );
+      }
     }
   });
 

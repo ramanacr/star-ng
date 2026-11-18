@@ -223,6 +223,47 @@ import { DOCS, DocsRow } from '../shared/docs';
       </docs-example>
 
       <docs-example
+        heading="Value format and axis range"
+        source="chart/value-format"
+        note="valueFormat takes Intl.NumberFormat options for the axis, the tooltip, the table and the names of the points. min, max and stepSize fix the value axis; values beyond an end stop at that end."
+      >
+        <star-chart
+          type="bar"
+          title="Revenue per region"
+          locale="en-US"
+          [labels]="regions"
+          [series]="revenue"
+          [valueFormat]="euro"
+          [min]="0"
+          [max]="60000"
+          [stepSize]="15000"
+        />
+      </docs-example>
+
+      <docs-example
+        heading="Horizontal bars"
+        source="chart/horizontal"
+        note="horizontal turns a bar or stacked bar chart on its side: the bars run along the line and the category names go down the side, with room for long names."
+      >
+        <star-chart
+          type="bar"
+          horizontal
+          title="Orders per region"
+          [labels]="longRegions"
+          [series]="regionChannels"
+        />
+      </docs-example>
+
+      <docs-example
+        heading="Combo chart with a second axis"
+        source="chart/combo"
+        [script]="comboScript"
+        note="In a bar, line or area chart, a series can set type ('bar' or 'line') and axis ('primary' or 'secondary'). Here the order count is bars on the left axis and the return rate is a line on a second axis at the end of the plot."
+      >
+        <star-chart type="bar" title="Orders and return rate" [labels]="months" [series]="combo" />
+      </docs-example>
+
+      <docs-example
         heading="Legend: hide series and placement"
         source="chart/legend"
         [script]="legendScript"
@@ -342,6 +383,24 @@ import { DOCS, DocsRow } from '../shared/docs';
   `,
 })
 export class ChartPage {
+  protected readonly euro: Intl.NumberFormatOptions = {
+    style: 'currency',
+    currency: 'EUR',
+    maximumFractionDigits: 0,
+  };
+  protected readonly combo: StarChartSeries[] = [
+    { label: 'Orders', data: [120, 150, 170, 140, 190, 210] },
+    {
+      label: 'Return rate (%)',
+      data: [4.2, 3.8, 5.1, 4.6, 3.2, 2.9],
+      type: 'line',
+      axis: 'secondary',
+    },
+  ];
+  protected readonly comboScript = `readonly combo: StarChartSeries[] = [
+  { label: 'Orders', data: [120, 150, 170, 140, 190, 210] },
+  { label: 'Return rate (%)', data: [4.2, 3.8, 5.1, 4.6, 3.2, 2.9], type: 'line', axis: 'secondary' },
+];`;
   protected readonly hiddenChannels = signal<readonly number[]>([2]);
   protected readonly legendScript = `readonly hiddenChannels = signal<readonly number[]>([2]);`;
   protected readonly picked = signal<StarChartPointSelectEvent | null>(null);
