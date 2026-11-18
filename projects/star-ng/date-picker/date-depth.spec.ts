@@ -893,4 +893,28 @@ describe('date pickers: typed text and the time limits', () => {
     await type('Hours', '21/11/2026 07:00');
     expect(host.visit()).toEqual(new Date(2026, 10, 20, 8, 0));
   });
+
+  it('checks typed range times against minTime, maxTime and the time of minDate', async () => {
+    const { host, type } = await setup();
+    await type('Hours range', '05/11/2026 07:00 - 06/11/2026 12:00');
+    expect(host.shift()).toBeNull();
+    await type('Hours range', '05/11/2026 09:00 - 06/11/2026 19:00');
+    expect(host.shift()).toBeNull();
+    // 09:00 on the day of minDate is before its time, 10:00.
+    await type('Hours range', '02/11/2026 09:00 - 03/11/2026 12:00');
+    expect(host.shift()).toBeNull();
+    // Without times, the fallback 00:00 and 23:59 move into the limits.
+    await type('Hours range', '05/11/2026 - 06/11/2026');
+    expect(host.shift()).toEqual({
+      start: new Date(2026, 10, 5, 8, 0),
+      end: new Date(2026, 10, 6, 18, 0),
+    });
+    await type('Hours range', '02/11/2026 - 03/11/2026');
+    expect(host.shift()?.start).toEqual(new Date(2026, 10, 2, 10, 0));
+    await type('Hours range', '05/11/2026 09:00 - 06/11/2026 17:00');
+    expect(host.shift()).toEqual({
+      start: new Date(2026, 10, 5, 9, 0),
+      end: new Date(2026, 10, 6, 17, 0),
+    });
+  });
 });
