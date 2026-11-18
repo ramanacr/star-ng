@@ -1,4 +1,3 @@
-import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { DOCUMENT, NgTemplateOutlet } from '@angular/common';
 import {
   afterNextRender,
@@ -35,6 +34,7 @@ import {
   readOption,
   STAR_SLOT_HOST,
   STAR_UI_TEXT,
+  StarAnnouncer,
   StarEmptyContext,
   StarGroupContext,
   starIsRtl,
@@ -1199,7 +1199,7 @@ export class StarTable<T> {
 
   /** The cell in edit mode: `<row key>|<field>` text, or `null`. */
   private readonly editing = signal<string | null>(null);
-  private readonly announcer = inject(LiveAnnouncer);
+  private readonly announcer = inject(StarAnnouncer);
   /** Editor values of the rows (or the cell) in edit. */
   private readonly drafts = new StarEditDrafts();
   /** Pending change set of `batchEdit`. */

@@ -11,6 +11,7 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - Per-control default tokens (Material `MAT_*_DEFAULT_OPTIONS`): `STAR_SELECT_DEFAULTS` / `provideStarSelectDefaults`, `STAR_DATE_PICKER_DEFAULTS` / `provideStarDatePickerDefaults`, `STAR_TABLE_DEFAULTS` / `provideStarTableDefaults`, `STAR_DIALOG_DEFAULTS` / `provideStarDialogDefaults` (dialog and drawer), `STAR_TOAST_DEFAULTS` / `provideStarToastDefaults`. New type `StarToastPosition`.
 - Docs: the API tables list the inherited inputs, models and outputs of a control, marked "inherited from" the base class (select family, autocomplete, date pickers, dialog and drawer). `tools/gen-docs-data.mjs` and `tools/agent-data.mjs` share `tools/api-inheritance.mjs`.
 - Docs: pages "Action sheet" (`StarActionSheet`) and "Bottom sheet container" (`StarBottomSheetContainer`) with examples.
+- `StarAnnouncer` (`@star-ng/ui/core`): screen-reader announcements through the CDK `LiveAnnouncer`, with de-duplication of the same message within `STAR_ANNOUNCER_DEDUPE_MS`. The table announces its edit messages through it.
 - Overlay badge (`star-overlay-badge`, `@star-ng/ui/badge`): a badge on a corner of any content, with screen-reader text (PrimeNG `p-overlaybadge`).
 - Avatar group (`star-avatar-group`, `@star-ng/ui/avatar`): overlapping avatars with a `max` and a "+N" entry (PrimeNG `p-avatargroup`).
 - Button group (`star-button-group`, `@star-ng/ui/button`): joins adjacent buttons and split buttons into one bar (PrimeNG `p-buttongroup`).
