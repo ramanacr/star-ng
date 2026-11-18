@@ -7232,7 +7232,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "StarTableSelectionChangingEvent<T>",
         "default": null,
         "required": false,
-        "description": "Fires before the selection changes, with the rows now and after. Call `cancel()` to keep the old selection (Ignite UI grid `rowSelectionChanging`)."
+        "description": "Fires before the selection changes, with the rows now and after. Call `cancel()` to keep the old selection (Ignite UI grid `rowSelectionChanging`). It fires only for changes that the user makes (check box, radio, row click, keyboard), not when the owner sets `selection`, `selectionKeys` or `selectAll`, and not when the table puts a cancelled change back."
       },
       {
         "name": "rowSelect",
