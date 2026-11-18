@@ -106,6 +106,9 @@ describe('StarTreeSelect pass-through', () => {
     await fixture.whenStable();
     const chips = [...el.querySelectorAll('.star-chip')].map((c) => c.textContent?.trim());
     expect(chips).toEqual(['Web', 'Operations']);
+    // The name contains the visible text (WCAG 2.5.3).
+    expect(trigger.getAttribute('aria-label')).toBe('Department: Web Operations');
+    expect(trigger.textContent?.replace(/\s+/g, ' ').trim()).toBe('Web Operations');
     host.mode.set('single');
     await fixture.whenStable();
     expect(el.querySelector('.star-chip')).toBeNull();

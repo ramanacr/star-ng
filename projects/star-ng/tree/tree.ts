@@ -1055,7 +1055,8 @@ const POSITIONS: ConnectedPosition[] = [
         @if (chips(); as list) {
           <span class="star-select__chips">
             @for (label of list; track $index) {
-              <span class="star-chip star-chip--sm">{{ label }}</span>
+              <!-- A space between the chips keeps the visible text equal to the name. -->
+              {{ $first ? '' : ' ' }}<span class="star-chip star-chip--sm">{{ label }}</span>
             }
           </span>
         } @else if (summary()) {
@@ -1223,7 +1224,9 @@ export class StarTreeSelect implements FormValueControl<readonly string[]> {
   protected readonly triggerName = computed(() => {
     const label = this.ariaLabel();
     if (!label) return null;
-    return `${label}: ${this.summary() || (this.placeholder() ?? this.text.selectPlaceholder)}`;
+    // Chips show the labels without commas: the name follows the visible text (WCAG 2.5.3).
+    const shown = this.chips()?.join(' ') ?? this.summary();
+    return `${label}: ${shown || (this.placeholder() ?? this.text.selectPlaceholder)}`;
   });
 
   /** Invalid after touch, or while the parent `star-field` shows an error. */
