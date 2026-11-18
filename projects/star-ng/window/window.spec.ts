@@ -37,6 +37,7 @@ function pointer(target: Element, type: string, x: number, y: number): void {
       (stateChange)="states.push($event)"
     >
       <p>Body</p>
+      <button type="button" class="inner">Inner</button>
     </star-window>
     <star-window [(visible)]="otherOpen" ariaLabel="Other" [position]="{ x: 10, y: 10 }">
       <p>Other body</p>
@@ -202,6 +203,30 @@ describe('StarWindow', () => {
       .dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
     await fixture.whenStable();
     expect(order(first)).toBeGreaterThan(order(second));
+  });
+
+  it('keeps the stacking order small and below the CDK overlay container', async () => {
+    const { fixture, dialogs } = await setup();
+    fixture.componentInstance.otherOpen.set(true);
+    await fixture.whenStable();
+    const [first, second] = dialogs();
+    const order = (element: HTMLElement) =>
+      Number(element.style.getPropertyValue('--star-window-order'));
+    // Many focus changes: the orders are renumbered 1..n, not counted up.
+    for (let i = 0; i < 50; i++) {
+      for (const dialog of [first, second]) {
+        dialog.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+      }
+    }
+    await fixture.whenStable();
+    expect([order(first), order(second)].sort()).toEqual([1, 2]);
+    expect(order(second)).toBe(2);
+    // Closing a window takes it out of the stack.
+    fixture.componentInstance.otherOpen.set(false);
+    await fixture.whenStable();
+    first.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
+    await fixture.whenStable();
+    expect(order(first)).toBe(1);
   });
 
   it('reads its texts from STAR_UI_TEXT', async () => {

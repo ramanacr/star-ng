@@ -215,6 +215,28 @@ test.describe('window', () => {
     await expect(live.getByRole('status')).toContainText('Notes: normal');
   });
 
+  test('shows a select panel opened in a window above the window', async ({ page }) => {
+    await openPage(page, '/controls/window', 'Window');
+    await example(page, 'Windows in the page').getByRole('button', { name: 'Open notes' }).click();
+    const notes = page.getByRole('dialog', { name: 'Notes' });
+    await notes.getByRole('combobox', { name: 'Priority' }).click();
+    const option = page.getByRole('option', { name: 'High' });
+    await expect(option).toBeVisible();
+    // The window must not cover the panel: the option is the element at its own center.
+    const box = (await option.boundingBox())!;
+    const onTop = await page.evaluate(
+      ([x, y]) => document.elementFromPoint(x, y)?.closest('[role=option]')?.textContent?.trim(),
+      [box.x + box.width / 2, box.y + box.height / 2],
+    );
+    expect(onTop).toBe('High');
+    await option.click();
+    await expect(notes.getByRole('combobox', { name: 'Priority' })).toContainText('High');
+    // The window stays below the CDK overlay container.
+    expect(
+      await notes.evaluate((element) => Number(getComputedStyle(element).zIndex)),
+    ).toBeLessThan(1000);
+  });
+
   test('stacks windows, maximizes and closes', async ({ page }) => {
     await openPage(page, '/controls/window', 'Window');
     const live = example(page, 'Windows in the page');

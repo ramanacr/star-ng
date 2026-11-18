@@ -38,32 +38,39 @@ const KEY_STEP = 16;
 const CASCADE = 32;
 
 /**
- * Stacking order of the windows of the application. `StarWindow` uses it; the service also opens
- * windows from code (`StarWindowService.open`).
+ * Stacking order of the open windows of the application, back to front. `StarWindow` uses it; the
+ * service also opens windows from code (`StarWindowService.open`). The orders are renumbered
+ * 1..n on every change, so they stay small: the CSS adds them to `--star-window-z` (900) and caps
+ * the result below the CDK overlay container (1000).
  */
 @Service()
 export class StarWindowStack {
-  private top = 0;
-  private open = 0;
+  private readonly windows: StarWindow[] = [];
 
-  /** @internal The next, highest stacking order. */
-  next(): number {
-    return ++this.top;
+  /** @internal Puts the window in front, or adds it. */
+  raise(window: StarWindow): void {
+    if (this.windows[this.windows.length - 1] === window) return;
+    this.remove(window, false);
+    this.windows.push(window);
+    this.renumber();
   }
 
-  /** @internal The highest stacking order given so far. */
-  current(): number {
-    return this.top;
+  /** @internal Takes a closed window out of the stack. */
+  remove(window: StarWindow, renumber = true): void {
+    const index = this.windows.indexOf(window);
+    if (index < 0) return;
+    this.windows.splice(index, 1);
+    window.order.set(0);
+    if (renumber) this.renumber();
   }
 
-  /** @internal Counts open windows, for the cascade of new windows. Returns the index. */
-  opened(): number {
-    return this.open++;
+  /** Number of open windows. */
+  openCount(): number {
+    return this.windows.length;
   }
 
-  /** @internal */
-  closed(): void {
-    this.open = Math.max(0, this.open - 1);
+  private renumber(): void {
+    this.windows.forEach((window, index) => window.order.set(index + 1));
   }
 }
 
@@ -233,7 +240,7 @@ export class StarWindow {
         const visible = this.visible();
         if (visible && !this.isOpen) {
           this.isOpen = true;
-          const index = this.stack.opened();
+          const index = this.stack.openCount();
           this.toFront();
           element.show?.();
           if (!this.position()) this.center(element, index);
@@ -252,9 +259,7 @@ export class StarWindow {
 
   /** Brings the window in front of the other windows. */
   toFront(): void {
-    if (this.order() === 0 || this.order() !== this.stack.current()) {
-      this.order.set(this.stack.next());
-    }
+    if (this.isOpen) this.stack.raise(this);
   }
 
   /** Closes the window. */
@@ -455,7 +460,7 @@ export class StarWindow {
   private markClosed(): void {
     if (!this.isOpen) return;
     this.isOpen = false;
-    this.stack.closed();
+    this.stack.remove(this);
     this.closed.emit();
   }
 }

@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { StarButton } from '@star-ng/ui/button';
+import { StarSelect } from '@star-ng/ui/select';
 import {
   STAR_WINDOW_DATA,
   StarWindow,
@@ -30,7 +31,7 @@ export class DocsOrderWindow {
 
 @Component({
   selector: 'docs-window-page',
-  imports: [DOCS, StarButton, StarWindow],
+  imports: [DOCS, StarButton, StarSelect, StarWindow],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <docs-page
@@ -62,6 +63,12 @@ export class DocsOrderWindow {
           >
             <p>Call the warehouse in Lisbon before noon.</p>
             <p>Check the open orders of the week.</p>
+            <star-select
+              [options]="priorities"
+              [(value)]="priority"
+              placeholder="Priority"
+              ariaLabel="Priority"
+            />
           </star-window>
           <star-window header="Order summary" [(visible)]="summaryOpen" closeOnEscape>
             <dl class="docs-stack">
@@ -114,6 +121,8 @@ export class WindowPage {
   protected readonly notesSize = signal<StarWindowSize | null>(null);
   protected readonly notesState = signal<StarWindowState>('normal');
   protected readonly summaryOpen = signal(false);
+  protected readonly priorities: readonly string[] = ['Low', 'Normal', 'High'];
+  protected readonly priority = signal<string | null>(null);
   protected readonly result = signal('none');
   private count = 0;
 
@@ -139,7 +148,9 @@ export class WindowPage {
 readonly notesAt = signal<StarWindowPosition | null>(null);
 readonly notesSize = signal<StarWindowSize | null>(null);
 readonly notesState = signal<StarWindowState>('normal');
-readonly summaryOpen = signal(false);`;
+readonly summaryOpen = signal(false);
+readonly priorities = ['Low', 'Normal', 'High'];
+readonly priority = signal<string | null>(null);`;
   protected readonly serviceScript = `private readonly windows = inject(StarWindowService);
 readonly result = signal('none');
 
@@ -167,7 +178,11 @@ readonly ref = inject(StarWindowRef<string>);
   ];
   protected readonly cssVars: readonly DocsRow[] = [
     { name: '--star-window-width', description: 'Width before the user resizes (default 28rem).' },
-    { name: '--star-window-z', description: 'Base z-index of the window stack (default 1000).' },
+    {
+      name: '--star-window-z',
+      description:
+        'Base z-index of the window stack (default 900). The z-index stays at 999 or lower, below the CDK overlay container (1000), so popups opened in a window stay on top.',
+    },
     { name: '--star-surface-muted', description: 'Background of the title bar.' },
     { name: '--star-shadow-xl', description: 'Shadow of the window.' },
     { name: '--star-accent', description: 'Focus ring of the title bar.' },
