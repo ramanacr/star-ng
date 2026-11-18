@@ -4748,7 +4748,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "string | undefined",
         "default": "undefined",
         "required": false,
-        "description": "Locale for the file sizes (default: the application locale)."
+        "description": "Locale for the file sizes. Default: `locale` of `provideStarNg`, else the browser locale."
       },
       {
         "name": "fileStatus",
@@ -10935,7 +10935,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "string | undefined",
         "default": "undefined",
         "required": false,
-        "description": ""
+        "description": "Locale of the event dates. Default: `locale` of `provideStarNg`, else the browser locale."
       },
       {
         "name": "ariaLabel",

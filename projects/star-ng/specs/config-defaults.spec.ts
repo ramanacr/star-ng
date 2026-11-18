@@ -4,7 +4,9 @@ import { StarChart } from '@star-ng/ui/chart';
 import { provideStarNg, StarConfig } from '@star-ng/ui/core';
 import { StarCalendar, StarDatePicker, StarTimePicker } from '@star-ng/ui/date-picker';
 import { StarInput } from '@star-ng/ui/field';
+import { StarFileUpload } from '@star-ng/ui/file-upload';
 import { StarInputNumber } from '@star-ng/ui/input-number';
+import { StarTimeline } from '@star-ng/ui/layout';
 import { StarListbox } from '@star-ng/ui/listbox';
 import {
   StarCascadeSelect,
@@ -106,7 +108,7 @@ describe('provideStarNg defaults in the controls', () => {
     expect(TestBed.createComponent(StarSelect).componentInstance.size()).toBe('md');
   });
 
-  it('date pickers, calendar and chart read locale; date and time pickers read size', () => {
+  it('date pickers, calendar, chart, file upload and timeline read locale; date and time pickers read size', () => {
     configure({ locale: 'es', size: 'small' });
     const picker = TestBed.createComponent(StarDatePicker).componentInstance;
     expect(picker.locale()).toBe('es');
@@ -114,6 +116,8 @@ describe('provideStarNg defaults in the controls', () => {
     expect(TestBed.createComponent(StarTimePicker).componentInstance.size()).toBe('sm');
     expect(TestBed.createComponent(StarCalendar).componentInstance.locale()).toBe('es');
     expect(TestBed.createComponent(StarChart).componentInstance.locale()).toBe('es');
+    expect(TestBed.createComponent(StarFileUpload).componentInstance.locale()).toBe('es');
+    expect(TestBed.createComponent(StarTimeline).componentInstance.locale()).toBe('es');
   });
 
   it('tree and tree select read locale as filterLocale; table reads size', () => {
