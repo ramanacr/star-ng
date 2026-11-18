@@ -5,6 +5,7 @@ import {
   StarTab,
   StarTabCloseEvent,
   StarTabContent,
+  StarTabHeader,
   StarTabReorderEvent,
   StarTabs,
 } from '@star-ng/ui/tabs';
@@ -12,7 +13,7 @@ import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
   selector: 'docs-tabs-page',
-  imports: [DOCS, StarTabs, StarTab, StarTabContent, StarField, StarInput],
+  imports: [DOCS, StarTabs, StarTab, StarTabContent, StarTabHeader, StarField, StarInput],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <docs-page
@@ -161,6 +162,30 @@ import { DOCS, DocsRow } from '../shared/docs';
         </div>
       </docs-example>
 
+      <docs-example
+        heading="Custom tab labels"
+        source="tabs/header"
+        note="ng-template starTabHeader replaces the label of the tabs. Its context has the tab (let-tab), active and index. Written in star-tab, it is the label of that tab only. It renders inside the tab button: use text and icons, not buttons or links."
+      >
+        <div class="docs-stack">
+          <star-tabs ariaLabel="Order queues">
+            <ng-template starTabHeader let-tab let-active="active">
+              <i
+                class="ph-bold"
+                [class.ph-folder-open]="active"
+                [class.ph-folder]="!active"
+                aria-hidden="true"
+              ></i>
+              <span>{{ tab.label() }}</span>
+              <span class="star-badge star-badge--secondary star-badge--sm">{{ tab.badge() }}</span>
+            </ng-template>
+            <star-tab value="new" label="New" [badge]="4">Four new orders.</star-tab>
+            <star-tab value="packed" label="Packed" [badge]="9">Nine packed orders.</star-tab>
+            <star-tab value="shipped" label="Shipped" [badge]="27">27 shipped orders.</star-tab>
+          </star-tabs>
+        </div>
+      </docs-example>
+
       <h2>Right-to-left</h2>
       <p>
         With <code>dir="rtl"</code> the first tab is on the right. Arrow left moves to the next tab
@@ -169,7 +194,7 @@ import { DOCS, DocsRow } from '../shared/docs';
       </p>
 
       <docs-api
-        [of]="['StarTabs', 'StarTab', 'StarTabContent']"
+        [of]="['StarTabs', 'StarTab', 'StarTabContent', 'StarTabHeader']"
         [slots]="slots"
         [cssVars]="cssVars"
         [keyboard]="keyboard"
@@ -229,6 +254,11 @@ moveBoard(event: StarTabReorderEvent): void {
     {
       name: '(default)',
       description: 'Inside star-tab: the panel content. Inside star-tabs: the tabs.',
+    },
+    {
+      name: 'ng-template starTabHeader',
+      description:
+        'Custom tab label. Context: $implicit and tab (the StarTab), active, index. In star-tab: for that tab only; in star-tabs: for every tab.',
     },
     {
       name: 'ng-template starTabContent',

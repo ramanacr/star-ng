@@ -5,6 +5,7 @@ import {
   StarTab,
   StarTabCloseEvent,
   StarTabContent,
+  StarTabHeader,
   StarTabReorderEvent,
   StarTabs,
 } from '@star-ng/ui/tabs';
@@ -382,5 +383,40 @@ describe('StarTabs reorderable', () => {
     key(tabs[0], { key: 'ArrowLeft', ctrlKey: true, shiftKey: true });
     await fixture.whenStable();
     expect(labels(el)).toEqual(['Two', 'One', 'Three']);
+  });
+});
+
+@Component({
+  imports: [StarTabs, StarTab, StarTabHeader],
+  template: `
+    <star-tabs [(value)]="tab" ariaLabel="Queues">
+      <ng-template starTabHeader let-tab let-active="active" let-index="index">
+        <span class="custom">{{ index + 1 }}. {{ tab.label() }}{{ active ? ' (open)' : '' }}</span>
+      </ng-template>
+      <star-tab value="a" label="Inbox">A</star-tab>
+      <star-tab value="b" label="Sent">
+        <ng-template starTabHeader let-tab>Own {{ tab.label() }}</ng-template>
+        B
+      </star-tab>
+    </star-tabs>
+  `,
+})
+class HeaderHost {
+  readonly tab = signal<string | null>(null);
+}
+
+describe('StarTabs header slot', () => {
+  it('renders the header template in the tab, a tab template first', async () => {
+    const fixture = TestBed.createComponent(HeaderHost);
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+    const tabs = [...el.querySelectorAll<HTMLElement>('[role=tab]')];
+    expect(tabs.map((tab) => tab.textContent?.trim())).toEqual(['1. Inbox (open)', 'Own Sent']);
+    expect(tabs[0].querySelector('.custom')).not.toBeNull();
+    // The panel does not show the header template.
+    expect(el.querySelectorAll('[role=tabpanel]')[1].textContent?.trim()).toBe('B');
+    fixture.componentInstance.tab.set('b');
+    await fixture.whenStable();
+    expect(tabs[0].textContent?.trim()).toBe('1. Inbox');
   });
 });

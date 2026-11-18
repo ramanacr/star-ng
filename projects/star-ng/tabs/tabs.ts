@@ -58,6 +58,32 @@ export interface StarTabReorderEvent {
   readonly currentIndex: number;
 }
 
+/** Context of the `starTabHeader` template. */
+export interface StarTabHeaderContext {
+  /** The tab (`let-tab`): `value()`, `label()`, `icon()`, `badge()`, `disabled()`. */
+  readonly $implicit: StarTab;
+  readonly tab: StarTab;
+  /** True for the selected tab. */
+  readonly active: boolean;
+  /** Position of the tab among all tabs. */
+  readonly index: number;
+}
+
+/**
+ * Custom tab label: `<ng-template starTabHeader let-tab let-active="active">…</ng-template>`.
+ * Written in `star-tab`, it is the label of that tab; written directly in `star-tabs`, it is the
+ * label of every tab that has none of its own. It renders inside the tab button, so it must not
+ * hold buttons, links or fields. PrimeNG `p-tab` content, Material `mat-tab-label`.
+ */
+@Directive({ selector: 'ng-template[starTabHeader]' })
+export class StarTabHeader {
+  readonly template = inject<TemplateRef<StarTabHeaderContext>>(TemplateRef);
+
+  static ngTemplateContextGuard(_dir: StarTabHeader, _ctx: unknown): _ctx is StarTabHeaderContext {
+    return true;
+  }
+}
+
 /**
  * Lazy tab body: `<ng-template starTabContent>…</ng-template>`. It renders on the first activation
  * of the tab (see `lazy` and `cache` of `star-tabs`). Material `matTabContent`.
@@ -112,6 +138,8 @@ export class StarTab {
   readonly panelId = this.ids.getId('star-tabpanel-');
 
   protected readonly lazy = contentChild(StarTabContent);
+  /** The own header template of this tab. */
+  readonly header = contentChild(StarTabHeader);
   readonly active = computed(() => this.tabs.selected() === this.value());
   /**
    * Whether the `starTabContent` template is rendered: always without `lazy`; else from the first
@@ -142,7 +170,7 @@ export class StarTab {
  */
 @Component({
   selector: 'star-tabs',
-  imports: [CdkDropList, CdkDrag],
+  imports: [CdkDropList, CdkDrag, NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-tabs',
@@ -210,14 +238,23 @@ export class StarTab {
               (click)="select(tab)"
               (keydown)="onKeydown($event, tab)"
             >
-              @if (tab.icon(); as icon) {
-                <i [class]="icon" aria-hidden="true"></i>
-              }
-              <span>{{ tab.label() }}</span>
-              @if (tab.badge() !== null) {
-                <span class="star-badge star-badge--secondary star-badge--sm">{{
-                  tab.badge()
-                }}</span>
+              @if (tab.header()?.template ?? header()?.template; as headerTemplate) {
+                <ng-container
+                  *ngTemplateOutlet="
+                    headerTemplate;
+                    context: { $implicit: tab, tab, active: tab.active(), index: i }
+                  "
+                />
+              } @else {
+                @if (tab.icon(); as icon) {
+                  <i [class]="icon" aria-hidden="true"></i>
+                }
+                <span>{{ tab.label() }}</span>
+                @if (tab.badge() !== null) {
+                  <span class="star-badge star-badge--secondary star-badge--sm">{{
+                    tab.badge()
+                  }}</span>
+                }
               }
             </button>
             @if (tab.closable()) {
@@ -321,6 +358,8 @@ export class StarTabs {
   readonly tabReorder = output<StarTabReorderEvent>();
 
   protected readonly tabs = contentChildren(StarTab);
+  /** The header template for all tabs: only one written directly in `star-tabs`. */
+  protected readonly header = contentChild(StarTabHeader, { descendants: false });
   private readonly buttons = viewChildren<ElementRef<HTMLButtonElement>>('tabButton');
   private readonly list = viewChild.required<ElementRef<HTMLElement>>('list');
   protected readonly vertical = computed(() => this.orientation() === 'vertical');
