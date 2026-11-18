@@ -42,6 +42,7 @@ export const STAR_UI_TEXT_ES: StarUiText = {
     `${count} ${forCount(count, 'elemento seleccionado', 'elementos seleccionados')}`,
   searching: 'Buscando…',
   showOptions: 'Mostrar opciones',
+  addCustomValue: (label) => `Añadir «${label}»`,
   resultsAvailable: (count) =>
     `${count} ${forCount(count, 'resultado disponible', 'resultados disponibles')}`,
 

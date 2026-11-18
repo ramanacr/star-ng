@@ -91,7 +91,10 @@ export abstract class StarAutoCompleteBase<TOption, TValue> extends StarOptionLi
     () =>
       this.open() &&
       this.queryLongEnough() &&
-      (this.visibleOptions().length > 0 || this.loading() || this.showEmptyMessage()),
+      (this.visibleOptions().length > 0 ||
+        this.customRow() !== null ||
+        this.loading() ||
+        this.showEmptyMessage()),
   );
 
   protected readonly liveText = computed(() => {
@@ -145,6 +148,8 @@ export abstract class StarAutoCompleteBase<TOption, TValue> extends StarOptionLi
   protected labelForValue(value: TValue): string {
     const option = this.optionForValue(value);
     if (option !== undefined) return this.labelOf(option);
+    // A typed text that became a value (`allowCustomValues`) is its own label.
+    if (typeof value === 'string') return value;
     return this.optionValue() === null ? this.labelOf(value as unknown as TOption) : String(value);
   }
 
@@ -391,7 +396,7 @@ const TEMPLATE = `
           </li>
           }
         } @empty {
-          @if (!loadingRow()) {
+          @if (!loadingRow() && customRow() === null) {
             <li class="star-listbox__empty" role="presentation">
               @if (emptySlot(); as custom) {
                 <ng-container *ngTemplateOutlet="custom; context: emptyContext()" />
@@ -403,6 +408,22 @@ const TEMPLATE = `
         }
         @if (virtualWindow().after) {
           <li class="star-listbox__spacer" role="presentation" [style.height.px]="virtualWindow().after"></li>
+        }
+        @if (customRow(); as custom) {
+          <!-- Keyboard is handled on the combobox via aria-activedescendant (WAI-ARIA combobox pattern). -->
+          <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
+          <li
+            class="star-listbox__option star-listbox__option--add"
+            role="option"
+            [id]="addRowId"
+            [class.star-listbox__option--active]="isAddRow(activeIndex())"
+            [attr.aria-selected]="isAddRow(activeIndex())"
+            (click)="addCustom(custom)"
+            (mousemove)="activeIndex.set(visibleOptions().length)"
+          >
+            <i class="ph-bold ph-plus" aria-hidden="true"></i>
+            <span class="star-listbox__label">{{ text.addCustomValue(custom) }}</span>
+          </li>
         }
       </ul>
       @if (footerSlot(); as footer) {
@@ -513,6 +534,13 @@ export class StarMultiAutoComplete<TOption = unknown, TValue = TOption>
   readonly value = model<readonly TValue[]>([]);
   /** Maximum number of chips (0 = no limit). */
   readonly selectionLimit = input(0);
+  /**
+   * A row "Add “text”" at the end of the list adds the typed text as a new value (a string) when no
+   * option has that label. `customValueAdd` fires. Ignite UI combo `allowCustomValues`.
+   */
+  readonly allowCustomValues = input(false, { transform: booleanAttribute });
+  /** With `allowCustomValues`: the text that became a new value. Ignite UI combo `addition`. */
+  readonly customValueAdd = output<string>();
 
   protected readonly isMultiple = true;
   protected readonly hasValue = computed(() => this.value().length > 0);
@@ -539,6 +567,25 @@ export class StarMultiAutoComplete<TOption = unknown, TValue = TOption>
   }
 
   protected onBlurCommit(): void {
+    this.setText('');
+  }
+
+  protected override customRowText(): string | null {
+    const text = this.query().trim();
+    if (!this.allowCustomValues() || !text) return null;
+    const lower = text.toLocaleLowerCase();
+    const taken =
+      [...(this.suggestions() ?? []), ...this.options()].some(
+        (option) => option !== undefined && this.labelOf(option).toLocaleLowerCase() === lower,
+      ) || this.value().some((value) => this.labelForValue(value).toLocaleLowerCase() === lower);
+    return taken ? null : text;
+  }
+
+  protected override addCustom(text: string): void {
+    const limit = this.selectionLimit();
+    if (!this.interactive() || (limit > 0 && this.value().length >= limit)) return;
+    this.value.update((values) => [...values, text as unknown as TValue]);
+    this.customValueAdd.emit(text);
     this.setText('');
   }
 

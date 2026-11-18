@@ -238,6 +238,26 @@ interface Parcel {
       </p>
 
       <docs-example
+        heading="Custom values"
+        source="multi-select/custom-values"
+        note="With filter and allowCustomValues, a row Add “text” at the end of the list adds the filter text as a new value when no option has that label. customValueAdd fires with the text: here it adds the text to the options too."
+      >
+        <div class="docs-stack">
+          <star-multi-select
+            [options]="labels()"
+            [(value)]="pickedLabels"
+            filter
+            allowCustomValues
+            display="chip"
+            placeholder="Labels"
+            ariaLabel="Order labels"
+            (customValueAdd)="addLabel($event)"
+          />
+          <p class="docs-output" role="status">Labels: {{ pickedLabels().join(', ') || 'none' }}</p>
+        </div>
+      </docs-example>
+
+      <docs-example
         heading="Lazy loading"
         source="multi-select/lazy"
         [script]="lazyScript"
@@ -270,6 +290,12 @@ interface Parcel {
   `,
 })
 export class MultiSelectPage {
+  protected readonly labels = signal<readonly string[]>(['Urgent', 'Review', 'On hold']);
+  protected readonly pickedLabels = signal<readonly string[]>([]);
+
+  protected addLabel(label: string): void {
+    this.labels.update((all) => [...all, label]);
+  }
   protected readonly lazyList = lazyOrders();
   protected readonly lazyPicked = signal<readonly number[]>([]);
   protected readonly lazyScript = `// A fake order service (no network) and the list state, in lazy-orders.ts:

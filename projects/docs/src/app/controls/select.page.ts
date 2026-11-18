@@ -274,6 +274,30 @@ interface Shipment {
       </p>
 
       <docs-example
+        heading="Editable"
+        source="select/editable"
+        note="editable makes the trigger a text field (a combobox with list autocomplete). The typed text filters the options; Enter or leaving the field chooses the option with that exact label. With allowCustomValue other text becomes the value and customValue fires; without it, the text goes back to the label of the value."
+      >
+        <div class="docs-stack">
+          <star-select
+            [options]="cities"
+            optionLabel="name"
+            optionValue="code"
+            [(value)]="editedCity"
+            editable
+            allowCustomValue
+            showClear
+            placeholder="Type or choose a city"
+            ariaLabel="City, editable"
+            (customValue)="lastCustom.set($event)"
+          />
+          <p class="docs-output" role="status">
+            Value: {{ editedCity() ?? 'none' }}. Last custom text: {{ lastCustom() ?? 'none' }}
+          </p>
+        </div>
+      </docs-example>
+
+      <docs-example
         heading="Lazy loading"
         source="select/lazy"
         [script]="lazyScript"
@@ -313,6 +337,8 @@ interface Shipment {
   `,
 })
 export class SelectPage {
+  protected readonly editedCity = signal<string | null>(null);
+  protected readonly lastCustom = signal<string | null>(null);
   protected readonly lazyList = lazyOrders();
   protected readonly lazyOrder = signal<number | null>(null);
   protected readonly lazyScript = `// A fake order service (no network) and the list state, in lazy-orders.ts:

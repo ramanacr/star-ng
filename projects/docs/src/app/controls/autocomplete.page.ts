@@ -231,6 +231,27 @@ interface OfficeCity {
       </p>
 
       <docs-example
+        heading="Custom values"
+        source="autocomplete/custom-values"
+        note="With allowCustomValues the list ends with a row Add “text” when no option has the typed label. Choosing it adds the text as a chip and fires customValueAdd."
+      >
+        <div class="docs-stack">
+          <star-multi-autocomplete
+            [options]="keywords"
+            [(value)]="customKeywords"
+            allowCustomValues
+            placeholder="Add a keyword"
+            ariaLabel="Keywords with new ones"
+            (customValueAdd)="lastKeyword.set($event)"
+          />
+          <p class="docs-output" role="status">
+            Keywords: {{ customKeywords().join(', ') || 'none' }}. New:
+            {{ lastKeyword() ?? 'none' }}
+          </p>
+        </div>
+      </docs-example>
+
+      <docs-example
         heading="Lazy loading"
         source="autocomplete/lazy"
         [script]="lazyScript"
@@ -268,6 +289,8 @@ interface OfficeCity {
   `,
 })
 export class AutocompletePage {
+  protected readonly customKeywords = signal<readonly string[]>([]);
+  protected readonly lastKeyword = signal<string | null>(null);
   protected readonly lazyList = lazyOrders();
   protected readonly lazyOrder = signal<number | null>(null);
   protected readonly lazyScript = `// A fake order service (no network) and the list state, in lazy-orders.ts:

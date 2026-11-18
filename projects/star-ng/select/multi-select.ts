@@ -1,12 +1,14 @@
 import { CdkConnectedOverlay, CdkOverlayOrigin } from '@angular/cdk/overlay';
 import { NgTemplateOutlet } from '@angular/common';
 import {
+  booleanAttribute,
   ChangeDetectionStrategy,
   Component,
   computed,
   forwardRef,
   input,
   model,
+  output,
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
 import { STAR_SLOT_HOST, starSlot } from '@star-ng/ui/core';
@@ -55,12 +57,12 @@ import { StarChipContext } from './select-slots';
         (keydown)="onKeydown($event)"
         (blur)="onTriggerBlur()"
       >
-        @if (selectedOptions().length === 0) {
+        @if (selectedCount() === 0) {
           <span class="star-select__placeholder">{{
             placeholder() ?? text.selectPlaceholder
           }}</span>
         } @else if (collapsed()) {
-          <span class="star-select__value">{{ text.selectedItems(selectedOptions().length) }}</span>
+          <span class="star-select__value">{{ text.selectedItems(selectedCount()) }}</span>
         } @else if (display() === 'chip') {
           <span class="star-select__chips">
             @for (option of selectedOptions(); track $index) {
@@ -87,12 +89,28 @@ import { StarChipContext } from './select-slots';
                 </span>
               }
             }
+            @for (custom of customValues(); track $index) {
+              <span class="star-chip star-chip--sm">
+                {{ custom }}
+                @if (interactive()) {
+                  <button
+                    type="button"
+                    class="star-chip__remove"
+                    tabindex="-1"
+                    [attr.aria-label]="text.removeItem(custom + '')"
+                    (click)="$event.stopPropagation(); removeValue(custom)"
+                  >
+                    <i class="ph-bold ph-x" aria-hidden="true"></i>
+                  </button>
+                }
+              </span>
+            }
           </span>
         } @else {
           <span class="star-select__value">{{ selectedLabels() }}</span>
         }
       </div>
-      @if (showClear() && selectedOptions().length && interactive()) {
+      @if (showClear() && selectedCount() && interactive()) {
         <button
           type="button"
           class="star-select__icon-btn"
@@ -270,7 +288,7 @@ import { StarChipContext } from './select-slots';
               </li>
             }
           } @empty {
-            @if (!loadingRow()) {
+            @if (!loadingRow() && customRow() === null) {
               <li class="star-listbox__empty" role="presentation">
                 @if (emptySlot(); as custom) {
                   <ng-container *ngTemplateOutlet="custom; context: emptyContext()" />
@@ -286,6 +304,22 @@ import { StarChipContext } from './select-slots';
               role="presentation"
               [style.height.px]="virtualWindow().after"
             ></li>
+          }
+          @if (customRow(); as custom) {
+            <!-- Keyboard is handled on the combobox via aria-activedescendant (WAI-ARIA combobox pattern). -->
+            <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
+            <li
+              class="star-listbox__option star-listbox__option--add"
+              role="option"
+              aria-selected="false"
+              [id]="addRowId"
+              [class.star-listbox__option--active]="isAddRow(activeIndex())"
+              (click)="addCustom(custom)"
+              (mousemove)="activeIndex.set(visibleOptions().length)"
+            >
+              <i class="ph-bold ph-plus" aria-hidden="true"></i>
+              <span class="star-listbox__label">{{ text.addCustomValue(custom) }}</span>
+            </li>
           }
         </ul>
         @if (footerSlot(); as footer) {
@@ -307,6 +341,14 @@ export class StarMultiSelect<TOption = unknown, TValue = TOption>
   /** Maximum number of selected items (0 = no limit). Hides "select all". */
   readonly selectionLimit = input(0);
   readonly showToggleAll = input(true);
+  /**
+   * With `filter`: a row "Add “text”" at the end of the list adds the filter text as a new value
+   * (a string) when no option has that label. `customValueAdd` fires; add a matching option to
+   * `options` there, else the chip shows the text. Ignite UI combo `allowCustomValues`.
+   */
+  readonly allowCustomValues = input(false, { transform: booleanAttribute });
+  /** With `allowCustomValues`: the text that became a new value. Ignite UI combo `addition`. */
+  readonly customValueAdd = output<string>();
 
   protected readonly closeOnChoose = false;
 
@@ -336,16 +378,48 @@ export class StarMultiSelect<TOption = unknown, TValue = TOption>
   }
 
   protected readonly selectedOptions = computed(() =>
-    this.options().filter((option) => this.isSelected(option)),
+    this.options().filter((option) => option !== undefined && this.isSelected(option)),
   );
-  protected readonly collapsed = computed(
-    () => this.selectedOptions().length > this.maxSelectedLabels(),
+  /** With `allowCustomValues`: values that no option has (added texts), shown as their text. */
+  protected readonly customValues = computed<readonly TValue[]>(() => {
+    if (!this.allowCustomValues()) return [];
+    const known = this.selectedOptions().map((option) => this.valueOf(option));
+    return this.value().filter((value) => !known.some((v) => this.equals(v, value)));
+  });
+  protected readonly selectedCount = computed(
+    () => this.selectedOptions().length + this.customValues().length,
   );
+  protected readonly collapsed = computed(() => this.selectedCount() > this.maxSelectedLabels());
   protected readonly selectedLabels = computed(() =>
-    this.selectedOptions()
-      .map((option) => this.labelOf(option))
-      .join(', '),
+    [
+      ...this.selectedOptions().map((option) => this.labelOf(option)),
+      ...this.customValues().map(String),
+    ].join(', '),
   );
+
+  protected override customRowText(): string | null {
+    const text = this.filterValue().trim();
+    if (!this.allowCustomValues() || !this.filter() || !text) return null;
+    const lower = text.toLocaleLowerCase();
+    const taken =
+      this.options().some(
+        (option) => option !== undefined && this.labelOf(option).toLocaleLowerCase() === lower,
+      ) || this.value().some((value) => String(value).toLocaleLowerCase() === lower);
+    return taken ? null : text;
+  }
+
+  protected override addCustom(text: string): void {
+    const limit = this.selectionLimit();
+    if (!this.interactive() || (limit > 0 && this.value().length >= limit)) return;
+    this.value.update((values) => [...values, text as unknown as TValue]);
+    this.customValueAdd.emit(text);
+    // The filter starts again, so the next text can be typed.
+    this.clearFilterText();
+  }
+
+  removeValue(value: TValue): void {
+    this.value.update((values) => values.filter((v) => !this.equals(v, value)));
+  }
 
   private readonly selectableVisible = computed(() =>
     this.visibleOptions().filter((option) => !this.isDisabled(option)),

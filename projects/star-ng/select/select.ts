@@ -1,6 +1,16 @@
 import { CdkConnectedOverlay, CdkOverlayOrigin } from '@angular/cdk/overlay';
 import { NgTemplateOutlet } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, forwardRef, model } from '@angular/core';
+import {
+  booleanAttribute,
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  forwardRef,
+  input,
+  linkedSignal,
+  model,
+  output,
+} from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
 import { STAR_SLOT_HOST, starSlot } from '@star-ng/ui/core';
 import { StarOptionListBase } from './option-list-base';
@@ -31,42 +41,71 @@ import { StarSelectedContext } from './select-slots';
   },
   template: `
     <div class="star-select__control" cdkOverlayOrigin #origin="cdkOverlayOrigin">
-      <div
-        #trigger
-        class="star-select__trigger"
-        role="combobox"
-        aria-haspopup="listbox"
-        [id]="inputId()"
-        [attr.tabindex]="disabled() ? -1 : 0"
-        [attr.aria-expanded]="open()"
-        [attr.aria-controls]="open() ? listId : null"
-        [attr.aria-activedescendant]="activeId()"
-        [attr.aria-label]="ariaLabel()"
-        [attr.aria-labelledby]="labelledBy()"
-        [attr.aria-required]="required() || null"
-        [attr.aria-describedby]="fieldDescribedBy()"
-        [attr.aria-invalid]="showInvalid() || null"
-        [attr.aria-disabled]="disabled() || null"
-        [attr.aria-readonly]="readonly() || null"
-        (click)="toggle()"
-        (keydown)="onKeydown($event)"
-        (blur)="onTriggerBlur()"
-      >
-        @if (selectedOption(); as option) {
-          <span class="star-select__value">
-            @if (selectedSlot(); as custom) {
-              <ng-container *ngTemplateOutlet="custom; context: { $implicit: option }" />
-            } @else {
-              <ng-container>{{ labelOf(option) }}</ng-container>
-            }
-          </span>
-        } @else {
-          <span class="star-select__placeholder">{{
-            placeholder() ?? text.selectPlaceholder
-          }}</span>
-        }
-      </div>
-      @if (showClear() && selectedOption() !== undefined && interactive()) {
+      @if (editable()) {
+        <input
+          #trigger
+          type="text"
+          class="star-select__trigger star-select__input"
+          role="combobox"
+          aria-autocomplete="list"
+          autocomplete="off"
+          [id]="inputId()"
+          [attr.name]="name() || null"
+          [value]="editText()"
+          [disabled]="disabled()"
+          [readOnly]="readonly()"
+          [attr.placeholder]="placeholder() ?? text.selectPlaceholder"
+          [attr.aria-expanded]="open()"
+          [attr.aria-controls]="open() ? listId : null"
+          [attr.aria-activedescendant]="activeId()"
+          [attr.aria-label]="ariaLabel()"
+          [attr.aria-labelledby]="labelledBy()"
+          [attr.aria-required]="required() || null"
+          [attr.aria-describedby]="fieldDescribedBy()"
+          [attr.aria-invalid]="showInvalid() || null"
+          (click)="openPanel()"
+          (input)="onEditInput(trigger.value)"
+          (keydown)="onEditKeydown($event)"
+          (blur)="onEditBlur()"
+        />
+      } @else {
+        <div
+          #trigger
+          class="star-select__trigger"
+          role="combobox"
+          aria-haspopup="listbox"
+          [id]="inputId()"
+          [attr.tabindex]="disabled() ? -1 : 0"
+          [attr.aria-expanded]="open()"
+          [attr.aria-controls]="open() ? listId : null"
+          [attr.aria-activedescendant]="activeId()"
+          [attr.aria-label]="ariaLabel()"
+          [attr.aria-labelledby]="labelledBy()"
+          [attr.aria-required]="required() || null"
+          [attr.aria-describedby]="fieldDescribedBy()"
+          [attr.aria-invalid]="showInvalid() || null"
+          [attr.aria-disabled]="disabled() || null"
+          [attr.aria-readonly]="readonly() || null"
+          (click)="toggle()"
+          (keydown)="onKeydown($event)"
+          (blur)="onTriggerBlur()"
+        >
+          @if (selectedOption(); as option) {
+            <span class="star-select__value">
+              @if (selectedSlot(); as custom) {
+                <ng-container *ngTemplateOutlet="custom; context: { $implicit: option }" />
+              } @else {
+                <ng-container>{{ labelOf(option) }}</ng-container>
+              }
+            </span>
+          } @else {
+            <span class="star-select__placeholder">{{
+              placeholder() ?? text.selectPlaceholder
+            }}</span>
+          }
+        </div>
+      }
+      @if (showClear() && hasValue() && interactive()) {
         <button
           type="button"
           class="star-select__icon-btn"
@@ -120,7 +159,7 @@ import { StarSelectedContext } from './select-slots';
         @if (headerSlot(); as header) {
           <ng-container *ngTemplateOutlet="header" />
         }
-        @if (filter()) {
+        @if (filter() && !editable()) {
           <div class="star-panel__filter">
             @if (iconSlot('filter'); as icon) {
               <span aria-hidden="true"><ng-container *ngTemplateOutlet="icon" /></span>
@@ -250,6 +289,19 @@ export class StarSelect<TOption = unknown, TValue = TOption>
   implements FormValueControl<TValue | null>
 {
   readonly value = model<TValue | null>(null);
+  /**
+   * A combobox with a text field (PrimeNG `editable`): the typed text filters the options, and an
+   * exact label chooses its option on Enter or blur. Other text becomes the value with
+   * `allowCustomValue`, else the text goes back to the label of the value.
+   */
+  readonly editable = input(false, { transform: booleanAttribute });
+  /**
+   * With `editable`: typed text that is no option label becomes the value (as a string) on Enter or
+   * blur, and `customValue` fires. Ignite UI combo `allowCustomValues` for one value.
+   */
+  readonly allowCustomValue = input(false, { transform: booleanAttribute });
+  /** With `editable` and `allowCustomValue`: the typed text that became the value. */
+  readonly customValue = output<string>();
 
   protected readonly closeOnChoose = true;
 
@@ -273,6 +325,93 @@ export class StarSelect<TOption = unknown, TValue = TOption>
     return this.options().find((option) => this.equals(this.valueOf(option), value));
   });
 
+  /** True when there is a value to clear: an option, or a custom text of the editable select. */
+  protected readonly hasValue = computed(
+    () => this.selectedOption() !== undefined || (this.editable() && this.value() !== null),
+  );
+
+  /** Text of the value: the option label, or the custom text. */
+  private readonly valueText = computed(() => {
+    const option = this.selectedOption();
+    if (option !== undefined) return this.labelOf(option);
+    const value = this.value();
+    return value === null || !this.allowCustomValue() ? '' : String(value);
+  });
+
+  /** Text of the editable field. Goes back to the text of the value when the value changes. */
+  protected readonly editText = linkedSignal(() => this.valueText());
+
+  protected override filterOn(): boolean {
+    return this.filter() || this.editable();
+  }
+
+  /** Sets the field text, in the signal and in the DOM (see the autocomplete `setText`). */
+  private setEditText(text: string): void {
+    this.editText.set(text);
+    const field = this.trigger().nativeElement;
+    if (field instanceof HTMLInputElement) field.value = text;
+  }
+
+  protected onEditInput(text: string): void {
+    this.editText.set(text);
+    this.openPanel();
+    this.onFilterInput(text);
+  }
+
+  protected onEditKeydown(event: KeyboardEvent): void {
+    // Home and End move the caret in the text field.
+    if (event.key === 'Home' || event.key === 'End') return;
+    if (event.key === 'Enter' && (!this.open() || this.activeIndex() < 0)) {
+      event.preventDefault();
+      this.commitEdit();
+      this.closePanel();
+      return;
+    }
+    this.onKeydown(event);
+  }
+
+  protected onEditBlur(): void {
+    if (this.open()) return;
+    this.commitEdit();
+    this.touch.emit();
+  }
+
+  protected override dismiss(): void {
+    super.dismiss();
+    if (this.editable()) this.commitEdit();
+  }
+
+  /**
+   * Applies the typed text: an exact option label chooses the option, an empty text clears the
+   * value, other text becomes the value with `allowCustomValue`, or goes back to the value text.
+   */
+  private commitEdit(): void {
+    if (!this.editable() || !this.interactive()) return;
+    const text = this.editText().trim();
+    if (text === this.valueText()) return;
+    if (!text) {
+      this.value.set(null);
+      this.setEditText('');
+      return;
+    }
+    const lower = text.toLocaleLowerCase();
+    const exact = this.options().find(
+      (option) =>
+        option !== undefined &&
+        !this.isDisabled(option) &&
+        this.labelOf(option).toLocaleLowerCase() === lower,
+    );
+    if (exact !== undefined) {
+      this.choose(exact);
+    } else if (this.allowCustomValue()) {
+      this.value.set(text as unknown as TValue);
+      this.customValue.emit(text);
+      this.setEditText(text);
+    } else {
+      this.setEditText(this.valueText());
+    }
+  }
+
   protected isSelected(option: TOption): boolean {
     const value = this.value();
     return value !== null && this.equals(this.valueOf(option), value);
@@ -280,6 +419,7 @@ export class StarSelect<TOption = unknown, TValue = TOption>
 
   protected choose(option: TOption): void {
     this.value.set(this.valueOf(option));
+    if (this.editable()) this.setEditText(this.labelOf(option));
   }
 
   protected initialActiveIndex(): number {
@@ -289,6 +429,7 @@ export class StarSelect<TOption = unknown, TValue = TOption>
 
   clear(): void {
     this.value.set(null);
+    if (this.editable()) this.setEditText('');
     this.focus();
   }
 }

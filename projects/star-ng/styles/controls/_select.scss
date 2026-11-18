@@ -51,6 +51,25 @@
     cursor: not-allowed;
   }
 }
+// Editable select: the trigger is a text field.
+.star-select__input {
+  border: 0;
+  background: none;
+  font-family: inherit;
+  cursor: text;
+
+  &::placeholder {
+    color: var(--star-text-muted);
+    opacity: 1;
+  }
+  .star-select--disabled & {
+    cursor: not-allowed;
+  }
+}
+// The "Add …" row of `allowCustomValues`.
+.star-listbox__option--add {
+  color: var(--star-primary-text);
+}
 .star-cascade__trigger {
   border: 0;
   background: none;

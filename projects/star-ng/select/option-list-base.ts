@@ -269,11 +269,16 @@ export abstract class StarOptionListBase<TOption, TValue> {
     const query = this.filterValue();
     const all = this.options();
     const options =
-      !this.filter() || !query || this.lazy()
+      !this.filterOn() || !query || this.lazy()
         ? all
         : all.filter((option) => this.matchesQuery(option, query));
     return this.groupedOrder(options);
   });
+
+  /** True when the typed text filters the list: `filter` (the editable select also filters). */
+  protected filterOn(): boolean {
+    return this.filter();
+  }
 
   /** True when the option matches the filter text (`filterBy`, `filterMatchMode`, `filterLocale`). */
   protected matchesQuery(option: TOption, query: string): boolean {
@@ -397,11 +402,41 @@ export abstract class StarOptionListBase<TOption, TValue> {
   protected readonly activeId = computed(() => {
     const index = this.activeIndex();
     if (!this.open() || index < 0 || this.panelFocused()) return null;
+    if (this.isAddRow(index)) return this.addRowId;
     const row = this.layout().rowOfOption[index];
     return row !== undefined && starListRowRendered(row, this.virtualWindow())
       ? this.optionId(index)
       : null;
   });
+
+  // ---- The "Add …" row (allowCustomValues) ----
+
+  /**
+   * Text of the row that adds the typed text as a new value, or `null` for no row. The row is the
+   * last one of the list, after the options; its index is `visibleOptions().length`. Multi-select
+   * and the multiple autocomplete show it with `allowCustomValues`.
+   */
+  protected customRowText(): string | null {
+    return null;
+  }
+
+  /** Adds the text of the "Add …" row as a value. */
+  protected addCustom(_text: string): void {
+    // Controls without the row add nothing.
+  }
+
+  protected readonly customRow = computed(() => this.customRowText());
+  protected readonly addRowId = `${this.listId}-add`;
+
+  /** True when `index` is the "Add …" row. */
+  protected isAddRow(index: number): boolean {
+    return this.customRow() !== null && index === this.visibleOptions().length;
+  }
+
+  /** Options plus the "Add …" row: the rows the keyboard moves over. */
+  private optionCount(): number {
+    return this.visibleOptions().length + (this.customRow() === null ? 0 : 1);
+  }
 
   /** The heading of the group, only while its row is in the DOM (the id must exist). */
   protected describedBy(row: Extract<StarListRow<TOption>, { kind: 'option' }>): string | null {
@@ -677,6 +712,13 @@ export abstract class StarOptionListBase<TOption, TValue> {
     this.activeIndex.set(this.firstEnabledFrom(0, 1));
   }
 
+  /** Empties the filter text, in the signal and in the field. */
+  protected clearFilterText(): void {
+    this.onFilterInput('');
+    const field = this.filterInput()?.nativeElement;
+    if (field) field.value = '';
+  }
+
   /**
    * Shows the list from its top. The window and the scroll position of the element change
    * together: a new list that is still long would else keep the old position of the element
@@ -723,7 +765,7 @@ export abstract class StarOptionListBase<TOption, TValue> {
         this.activeIndex.set(
           event.key === 'Home'
             ? this.firstEnabledFrom(0, 1)
-            : this.firstEnabledFrom(this.visibleOptions().length - 1, -1),
+            : this.firstEnabledFrom(this.optionCount() - 1, -1),
         );
         this.scrollActiveIntoView();
         return;
@@ -787,6 +829,11 @@ export abstract class StarOptionListBase<TOption, TValue> {
   }
 
   private chooseActive(thenClose = false): void {
+    const text = this.customRow();
+    if (text !== null && this.isAddRow(this.activeIndex())) {
+      this.addCustom(text);
+      return;
+    }
     const option = this.visibleOptions()[this.activeIndex()];
     if (option === undefined || this.isDisabled(option)) return;
     this.choose(option);
@@ -794,7 +841,7 @@ export abstract class StarOptionListBase<TOption, TValue> {
   }
 
   private moveActive(step: 1 | -1): void {
-    const count = this.visibleOptions().length;
+    const count = this.optionCount();
     if (!count) return;
     const start = this.activeIndex() < 0 ? (step === 1 ? 0 : count - 1) : this.activeIndex() + step;
     const next = this.firstEnabledFrom(Math.min(Math.max(start, 0), count - 1), step);
@@ -821,8 +868,9 @@ export abstract class StarOptionListBase<TOption, TValue> {
 
   protected firstEnabledFrom(start: number, step: 1 | -1): number {
     const options = this.visibleOptions();
-    for (let i = start; i >= 0 && i < options.length; i += step) {
-      if (!this.isDisabled(options[i])) return i;
+    const count = this.optionCount();
+    for (let i = start; i >= 0 && i < count; i += step) {
+      if (i === options.length || !this.isDisabled(options[i])) return i;
     }
     return -1;
   }
@@ -872,7 +920,7 @@ export abstract class StarOptionListBase<TOption, TValue> {
 
   private scrollActiveIntoView(): void {
     if (!this.open() || this.activeIndex() < 0) return;
-    if (this.virtualScroll()) {
+    if (this.virtualScroll() && !this.isAddRow(this.activeIndex())) {
       // The active line may not be rendered yet: move the list so its position is in view.
       const list = this.listElement();
       const layout = this.layout();

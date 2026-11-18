@@ -41,6 +41,8 @@ export interface StarUiText {
   readonly selectedItems: (count: number) => string;
   readonly searching: string;
   readonly showOptions: string;
+  /** The row that adds typed text as a new value (multi-select, multiple autocomplete). */
+  readonly addCustomValue: (label: string) => string;
   readonly resultsAvailable: (count: number) => string;
   // Table, paginator, data view
   readonly pagination: string;
@@ -241,6 +243,7 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   selectedItems: (count) => `${count} items selected`,
   searching: 'Searching…',
   showOptions: 'Show options',
+  addCustomValue: (label) => `Add “${label}”`,
   resultsAvailable: (count) => (count === 1 ? '1 result available' : `${count} results available`),
 
   pagination: 'Pagination',
@@ -421,6 +424,7 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   tagLimit: ['max'],
   selectedItems: ['count'],
   resultsAvailable: ['count'],
+  addCustomValue: ['label'],
   page: ['page'],
   pageReport: ['first', 'last', 'total'],
   filterBy: ['column'],
