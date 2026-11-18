@@ -433,3 +433,21 @@ describe('StarChart responsive labels', () => {
     }
   });
 });
+
+describe('StarChart table with a hidden series', () => {
+  it('keeps the stacked total of every series in the table', async () => {
+    const fixture = TestBed.createComponent(LegendHost);
+    fixture.componentInstance.type.set('stacked-bar');
+    fixture.componentInstance.hidden.set([1]);
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+    const rows = [...el.querySelectorAll('tbody tr')].map((row) =>
+      [...row.children].map((cell) => cell.textContent?.trim()),
+    );
+    // Jan: 10 + 8 + 1, Feb: 20 + 18 + 2, also while "Shipped" is hidden.
+    expect(rows).toEqual([
+      ['Jan', '10', '8', '1', '19'],
+      ['Feb', '20', '18', '2', '40'],
+    ]);
+  });
+});

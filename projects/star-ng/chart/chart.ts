@@ -794,7 +794,7 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                   <td>{{ cell(s, i) }}</td>
                 }
                 @if (type() === 'stacked-bar') {
-                  <td>{{ format(stack()[i]?.total ?? 0) }}</td>
+                  <td>{{ format(tableStack()[i]?.total ?? 0) }}</td>
                 }
               </tr>
             }
@@ -1302,6 +1302,19 @@ export class StarChart {
         }),
     );
   });
+
+  /**
+   * The stack of every series (not only the shown ones), for the Total column of the table:
+   * the table keeps hidden series, so its total does too.
+   */
+  protected readonly tableStack = computed(() =>
+    stackColumns(
+      this.numeric()
+        .slice(0, STAR_CHART_SLOTS)
+        .map((s) => s.data),
+      this.labels().length,
+    ),
+  );
 
   /** Share of a stack segment in its column, in percent (percent mode). */
   protected share(segment: StarChartStackSegment | undefined): number {
