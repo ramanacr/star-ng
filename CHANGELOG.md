@@ -98,6 +98,7 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 
 ### Changed
 
+- Editor: `star-editor` now declares `maxLength` (the `FormValueControl` input), so a Signal Forms field with a `maxLength` rule now sets it: the editor shows a counter and stops typing at the limit. The editor counts the characters of text; the form rule counts the length of the value, which is HTML with `format="html"` (tags included). Keep the rule for the stored size, or use `format="text"` when both must count the same.
 - Table: the selection check boxes and radios now name their row ("Select row ORD-1001", from the first visible column or `rowLabel`), and the header check box of a paginated table with `selectionPageOnly` is named "Select all rows on this page". Tests that match the old name "Select row" exactly must change.
 - Table: `StarFilterValue` also includes `StarFilterConstraint`. Code that narrows a filter value with `typeof value === 'object'` or `Array.isArray` must also handle the rule object (it has `operator` and `rules`).
 - Tree table: the component moved to its own file `data-display/tree-table.ts`; the import path `@star-ng/ui/data-display` does not change.
