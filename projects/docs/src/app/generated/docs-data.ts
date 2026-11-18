@@ -1890,7 +1890,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "number",
         "default": "0",
         "required": false,
-        "description": "Autoplay interval in milliseconds (0 = off)."
+        "description": "Autoplay interval in milliseconds (0 = off). It does not advance while motion is reduced (system setting or `reducedMotion: 'always'`)."
       },
       {
         "name": "ariaLabel",

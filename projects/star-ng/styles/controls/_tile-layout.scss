@@ -117,7 +117,7 @@
 .star-tile.cdk-drag-animating {
   transition: transform var(--star-duration-base) $ease;
 }
-@media (prefers-reduced-motion: reduce) {
+@include star-reduced-motion {
   .star-tile-layout.cdk-drop-list-dragging .star-tile:not(.cdk-drag-placeholder),
   .star-tile.cdk-drag-animating {
     transition: none;

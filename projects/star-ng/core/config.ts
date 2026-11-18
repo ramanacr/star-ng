@@ -60,8 +60,10 @@ export interface StarConfig {
   readonly filterMatchMode?: StarFilterMatchMode;
   /**
    * `system` (default) follows the `prefers-reduced-motion` setting of the operating system.
-   * `always` turns the StarNG transitions and animations off for everyone
-   * (`data-star-motion="reduced"` on `<html>`). PrimeNG `ripple: false` is the nearest option.
+   * `always` applies the reduced-motion rules of the system setting for everyone
+   * (`data-star-motion="reduced"` on `<html>`): the same transitions stop, the motion durations are
+   * 0, and the ripple, the carousel autoplay and smooth scrolling stop (`starPrefersReducedMotion`).
+   * Spinners keep turning. PrimeNG `ripple: false` is the nearest option.
    */
   readonly reducedMotion?: 'system' | 'always';
   /**

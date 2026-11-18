@@ -118,7 +118,7 @@
   border-radius: 0;
 }
 
-@media (prefers-reduced-motion: reduce) {
+@include star-reduced-motion {
   .star-drawer,
   .star-drawer::backdrop {
     animation: none;

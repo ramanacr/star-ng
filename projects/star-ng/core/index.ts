@@ -8,6 +8,7 @@ export * from './filter-match';
 export * from './filter-service';
 export * from './format';
 export * from './list-windowing';
+export * from './motion';
 export * from './options';
 export * from './reactive-forms';
 export * from './slots';

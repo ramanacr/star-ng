@@ -214,7 +214,7 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
+@include star-reduced-motion {
   .star-carousel__dot::before,
   .star-image__stage img {
     transition: none;

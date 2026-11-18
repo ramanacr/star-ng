@@ -145,7 +145,7 @@ html:has(dialog.star-bottom-sheet--modal[open]) {
   border-radius: 0;
 }
 
-@media (prefers-reduced-motion: reduce) {
+@include star-reduced-motion {
   .star-bottom-sheet,
   .star-bottom-sheet::backdrop {
     animation: none;
