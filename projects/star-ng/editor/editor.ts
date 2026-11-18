@@ -180,6 +180,7 @@ const FORMAT_TAGS: Readonly<Record<string, StarEditorCommand>> = {
       [style.min-height]="minHeight()"
       (beforeinput)="onBeforeInput($event)"
       (input)="onInput()"
+      (paste)="onPaste($event)"
       (keyup)="refreshState()"
       (mouseup)="refreshState()"
       (blur)="touch.emit()"
@@ -233,6 +234,12 @@ export class StarEditor implements FormValueControl<string> {
    * The toolbar: command names in order, with `'|'` between groups. Unknown names are left out.
    * `STAR_EDITOR_FULL_TOOLBAR` has every command. PrimeNG toolbar formats (Quill `toolbar`).
    */
+  /**
+   * Paste plain text only. Without it, pasted HTML is sanitized (no scripts, no style elements
+   * or attributes, no event handlers) before it goes in. PrimeNG has no equivalent (Quill
+   * clipboard matchers).
+   */
+  readonly pasteAsText = input(false, { transform: booleanAttribute });
   readonly toolbar = input<readonly StarEditorToolbarItem[]>(STAR_EDITOR_DEFAULT_TOOLBAR);
   readonly touch = output<void>();
 
@@ -333,6 +340,54 @@ export class StarEditor implements FormValueControl<string> {
     this.value.set(value);
     this.length.set(length);
     this.refreshState();
+  }
+
+  /**
+   * Inserts the clipboard: sanitized HTML, or plain text with `pasteAsText`, with `format="text"`
+   * or when the HTML would pass `maxLength` (then the text is cut to fit).
+   */
+  protected onPaste(event: ClipboardEvent): void {
+    const data = event.clipboardData;
+    if (this.locked() || !data) return;
+    event.preventDefault();
+    const area = this.area().nativeElement;
+    const range = starEditorRange(area);
+    if (!range) return;
+    const max = this.maxLength();
+    const room =
+      max === undefined ? Infinity : Math.max(0, max - this.length() + range.toString().length);
+    const html = data.getData('text/html');
+    let clean = '';
+    if (html && !this.pasteAsText() && this.format() === 'html') {
+      clean = this.sanitize(html);
+      // A template is inert: its images do not load while the text is measured.
+      const probe = area.ownerDocument.createElement('template');
+      probe.innerHTML = clean;
+      if (starEditorPlainLength(probe.content) > room) clean = '';
+    }
+    const doc = area.ownerDocument;
+    if (clean) {
+      if (!doc.execCommand?.('insertHTML', false, clean)) {
+        range.deleteContents();
+        const fragment = range.createContextualFragment(clean);
+        const last = fragment.lastChild;
+        range.insertNode(fragment);
+        if (last) range.setStartAfter(last);
+        range.collapse(true);
+        starEditorRestore(range);
+      }
+    } else {
+      const text = data.getData('text/plain').slice(0, room === Infinity ? undefined : room);
+      if (text && !doc.execCommand?.('insertText', false, text)) {
+        range.deleteContents();
+        const node = doc.createTextNode(text);
+        range.insertNode(node);
+        range.setStartAfter(node);
+        range.collapse(true);
+        starEditorRestore(range);
+      }
+    }
+    this.onInput();
   }
 
   /** Stops text input that would pass `maxLength`. Line breaks and deletions pass. */

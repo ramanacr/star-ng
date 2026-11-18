@@ -2426,11 +2426,18 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
+        "name": "pasteAsText",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Paste plain text only. Without it, pasted HTML is sanitized (no scripts, no style elements or attributes, no event handlers) before it goes in. PrimeNG has no equivalent (Quill clipboard matchers)."
+      },
+      {
         "name": "toolbar",
         "type": "readonly StarEditorToolbarItem[]",
         "default": "STAR_EDITOR_DEFAULT_TOOLBAR",
         "required": false,
-        "description": "The toolbar: command names in order, with `'|'` between groups. Unknown names are left out. `STAR_EDITOR_FULL_TOOLBAR` has every command. PrimeNG toolbar formats (Quill `toolbar`)."
+        "description": ""
       }
     ],
     "models": [
@@ -8232,6 +8239,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "editor/basic": "<div class=\"docs-stack\">\n  <star-editor\n    [(value)]=\"note\"\n    ariaLabel=\"Delivery note\"\n    placeholder=\"Write the delivery note\"\n  />\n  <pre class=\"docs-output\" role=\"group\" aria-label=\"Value of the editor\">{{ note() }}</pre>\n</div>",
   "editor/full-toolbar": "<div class=\"docs-stack\">\n  <star-editor [(value)]=\"report\" [toolbar]=\"fullToolbar\" ariaLabel=\"Shipping report\" />\n  <pre class=\"docs-output\" role=\"group\" aria-label=\"Value of the full editor\">{{\n    report()\n  }}</pre>\n</div>",
   "editor/own-toolbar": "<div class=\"docs-stack\">\n  <star-editor [toolbar]=\"shortToolbar\" ariaLabel=\"Short comment\" minHeight=\"4rem\" />\n</div>",
+  "editor/paste": "<div class=\"docs-stack\">\n  <star-editor ariaLabel=\"Pasted with formats\" minHeight=\"4rem\" />\n  <star-editor pasteAsText ariaLabel=\"Pasted as plain text\" minHeight=\"4rem\" />\n</div>",
   "editor/sanitize": "<div class=\"docs-stack\">\n  <star-editor [(value)]=\"unsafe\" ariaLabel=\"Sanitized content\" />\n  <pre class=\"docs-output\" aria-label=\"Value after sanitizing\">{{ unsafe() }}</pre>\n</div>",
   "editor/size": "<div class=\"docs-stack\">\n  <star-editor\n    [(value)]=\"comment\"\n    ariaLabel=\"Order comment\"\n    placeholder=\"Add a comment\"\n    minHeight=\"4rem\"\n  />\n</div>",
   "editor/states": "<div class=\"docs-stack\">\n  <star-editor [value]=\"saved()\" ariaLabel=\"Saved note\" readonly />\n  <star-editor [value]=\"saved()\" ariaLabel=\"Locked note\" disabled />\n</div>",

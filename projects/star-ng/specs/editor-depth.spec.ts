@@ -355,3 +355,55 @@ describe('StarEditor format and maxLength', () => {
     expect(area.innerHTML).toBe('<p>A <b>b</b></p>');
   });
 });
+
+@Component({
+  imports: [StarEditor],
+  template: `<star-editor [(value)]="html" [pasteAsText]="asText()" ariaLabel="Body" />`,
+})
+class PasteHost {
+  readonly html = signal('<p>Start</p>');
+  readonly asText = signal(false);
+}
+
+/** A paste event with clipboard data (jsdom has no ClipboardEvent). */
+function paste(target: Element, data: Record<string, string>): Event {
+  const event = new Event('paste', { bubbles: true, cancelable: true });
+  Object.defineProperty(event, 'clipboardData', {
+    value: { getData: (type: string) => data[type] ?? '' },
+  });
+  target.dispatchEvent(event);
+  return event;
+}
+
+describe('StarEditor paste', () => {
+  async function setupPaste(asText: boolean) {
+    const fixture = TestBed.createComponent(PasteHost);
+    fixture.componentInstance.asText.set(asText);
+    await fixture.whenStable();
+    const area = (fixture.nativeElement as HTMLElement).querySelector<HTMLElement>(
+      '.star-editor__area',
+    )!;
+    select(area.querySelector('p')!, 5, 5);
+    return { area, host: fixture.componentInstance };
+  }
+
+  it('pastes sanitized HTML: no script, style or event handler', async () => {
+    const { area, host } = await setupPaste(false);
+    const event = paste(area, {
+      'text/html':
+        '<style>p { color: red }</style><b onclick="alert(1)" style="color: red">bold</b><script>alert(1)</script><img src="x" onerror="alert(1)">',
+      'text/plain': 'bold',
+    });
+    expect(event.defaultPrevented).toBe(true);
+    const html = host.html();
+    expect(html).toContain('<b>bold</b>');
+    expect(html).not.toMatch(/script|onclick|onerror|style|color/);
+    expect(area.innerHTML).not.toMatch(/script|onclick|onerror|style=/);
+  });
+
+  it('pastes plain text with pasteAsText', async () => {
+    const { area, host } = await setupPaste(true);
+    paste(area, { 'text/html': '<b>bold</b>', 'text/plain': ' & more' });
+    expect(host.html()).toBe('<p>Start &amp; more</p>');
+  });
+});

@@ -7,7 +7,7 @@
 const ZWSP = String.fromCharCode(0x200b);
 
 /** Number of text characters in the area (line breaks and caret holders do not count). */
-export function starEditorPlainLength(area: HTMLElement): number {
+export function starEditorPlainLength(area: Node): number {
   return (area.textContent ?? '').split(ZWSP).join('').length;
 }
 

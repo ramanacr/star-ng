@@ -73,6 +73,17 @@ import { DOCS, DocsRow } from '../shared/docs';
       </docs-example>
 
       <docs-example
+        heading="Paste as plain text"
+        source="editor/paste"
+        note="By default, pasted HTML is sanitized before it goes in: no script, no style element or attribute, no event handler. With pasteAsText, a paste inserts only the plain text. Copy formatted text from another page and paste it in both editors."
+      >
+        <div class="docs-stack">
+          <star-editor ariaLabel="Pasted with formats" minHeight="4rem" />
+          <star-editor pasteAsText ariaLabel="Pasted as plain text" minHeight="4rem" />
+        </div>
+      </docs-example>
+
+      <docs-example
         heading="Placeholder and height"
         source="editor/size"
         [script]="sizeScript"
