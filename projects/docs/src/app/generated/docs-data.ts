@@ -5879,7 +5879,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "boolean",
         "default": null,
         "required": false,
-        "description": "Emits after a check with `validateOnly`: `true` when the value has only allowed characters."
+        "description": "Emits with `validateOnly` when the result of the check changes: `true` when the value has only allowed characters."
       }
     ]
   },
