@@ -1,6 +1,11 @@
 import { Component, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { StarDialog, StarDialogDimensions, StarDialogPoint } from '@star-ng/ui/dialog';
+import {
+  StarDialog,
+  StarDialogDimensions,
+  StarDialogPoint,
+  StarDialogPosition,
+} from '@star-ng/ui/dialog';
 
 // jsdom has no HTMLDialogElement methods. Minimal stand-ins (real browsers implement these).
 const dialogProto = HTMLDialogElement.prototype as Partial<HTMLDialogElement>;
@@ -330,5 +335,32 @@ describe('StarDialog maximizable', () => {
     dialog.dispatchEvent(new Event('cancel', { cancelable: true }));
     await fixture.whenStable();
     expect(fixture.componentInstance.open()).toBe(false);
+  });
+});
+
+@Component({
+  imports: [StarDialog],
+  template: `<star-dialog [(visible)]="open" header="Placed" [position]="position()" />`,
+})
+class PositionHost {
+  readonly open = signal(true);
+  readonly position = signal<StarDialogPosition>('center');
+}
+
+describe('StarDialog position', () => {
+  it('sets one logical position class, center by default', async () => {
+    const fixture = TestBed.createComponent(PositionHost);
+    await fixture.whenStable();
+    const dialog = (fixture.nativeElement as HTMLElement).querySelector('dialog')!;
+    const positions = () => [...dialog.classList].filter((name) => name.includes('--at-'));
+    expect(positions()).toEqual(['star-dialog--at-center']);
+    expect(dialog.classList).toContain('star-dialog--md');
+
+    for (const position of ['top', 'bottom-end', 'start'] as const) {
+      fixture.componentInstance.position.set(position);
+      await fixture.whenStable();
+      expect(positions()).toEqual([`star-dialog--at-${position}`]);
+    }
+    expect(dialog.classList).toContain('star-dialog');
   });
 });

@@ -1,6 +1,11 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { StarButton } from '@star-ng/ui/button';
-import { StarDialog, StarDialogService, StarDialogSize } from '@star-ng/ui/dialog';
+import {
+  StarDialog,
+  StarDialogPosition,
+  StarDialogService,
+  StarDialogSize,
+} from '@star-ng/ui/dialog';
 import { StarField, StarInput } from '@star-ng/ui/field';
 import { StarContextMenu, StarMenu, StarMenuItem, StarMenuTrigger } from '@star-ng/ui/menu';
 import { StarCascadeSelect } from '@star-ng/ui/select';
@@ -14,6 +19,17 @@ interface Place {
 }
 
 const SIZES: readonly StarDialogSize[] = ['sm', 'md', 'lg', 'xl', 'full'];
+const POSITIONS: readonly StarDialogPosition[] = [
+  'center',
+  'top',
+  'bottom',
+  'start',
+  'end',
+  'top-start',
+  'top-end',
+  'bottom-start',
+  'bottom-end',
+];
 
 @Component({
   selector: 'docs-dialog-page',
@@ -215,6 +231,27 @@ const SIZES: readonly StarDialogSize[] = ['sm', 'md', 'lg', 'xl', 'full'];
       </docs-example>
 
       <docs-example
+        heading="Position"
+        source="dialog/position"
+        [script]="positionScript"
+        note="position places the dialog in the window (PrimeNG position): center (default), top, bottom, start, end, top-start, top-end, bottom-start or bottom-end, 1rem from the edge. start and end follow the writing direction: end is the right edge in a left-to-right page and the left edge in a right-to-left page."
+      >
+        <div class="docs-row">
+          @for (item of positions; track item) {
+            <star-button variant="secondary" (pressed)="openAt(item)">{{ item }}</star-button>
+          }
+        </div>
+        <star-dialog
+          [(visible)]="positionOpen"
+          [position]="position()"
+          size="sm"
+          [header]="'Position ' + position()"
+        >
+          <p>This dialog is at the {{ position() }} position.</p>
+        </star-dialog>
+      </docs-example>
+
+      <docs-example
         heading="Dialog from code"
         source="dialog/service"
         [script]="serviceScript"
@@ -340,6 +377,9 @@ export class DialogPage {
   protected readonly resizeNote = signal('not resized');
   protected readonly maximizeOpen = signal(false);
   protected readonly maximizedState = signal(false);
+  protected readonly positions = POSITIONS;
+  protected readonly positionOpen = signal(false);
+  protected readonly position = signal<StarDialogPosition>('center');
   protected readonly note = signal('Call the customer before delivery.');
   protected readonly place = signal<string | null>(null);
   protected readonly lastAction = signal('none');
@@ -374,6 +414,11 @@ export class DialogPage {
       items: [{ label: 'North queue' }, { label: 'South queue' }],
     },
   ];
+
+  protected openAt(position: StarDialogPosition): void {
+    this.position.set(position);
+    this.positionOpen.set(true);
+  }
 
   protected openSize(size: StarDialogSize): void {
     this.size.set(size);
@@ -410,6 +455,16 @@ readonly dragNote = signal('not moved');`;
 readonly resizeNote = signal('not resized');`;
   protected readonly maximizeScript = `readonly maximizeOpen = signal(false);
 readonly maximizedState = signal(false);`;
+  protected readonly positionScript = `readonly positions: readonly StarDialogPosition[] = [
+  'center', 'top', 'bottom', 'start', 'end', 'top-start', 'top-end', 'bottom-start', 'bottom-end',
+];
+readonly positionOpen = signal(false);
+readonly position = signal<StarDialogPosition>('center');
+
+openAt(position: StarDialogPosition): void {
+  this.position.set(position);
+  this.positionOpen.set(true);
+}`;
   protected readonly serviceScript = `private readonly dialogs = inject(StarDialogService);
 readonly note = signal('Call the customer before delivery.');
 

@@ -100,6 +100,55 @@ html:has(dialog.star-dialog--modal[open]) {
   touch-action: none;
   user-select: none;
 }
+// Position: 1rem from the chosen edges. Logical margins, so start and end mirror in RTL.
+.star-dialog--at-top:not(.star-dialog--placed, .star-dialog--maximized) {
+  position: fixed;
+  inset: 0;
+  margin-block: 1rem auto;
+  margin-inline: auto;
+}
+.star-dialog--at-bottom:not(.star-dialog--placed, .star-dialog--maximized) {
+  position: fixed;
+  inset: 0;
+  margin-block: auto 1rem;
+  margin-inline: auto;
+}
+.star-dialog--at-start:not(.star-dialog--placed, .star-dialog--maximized) {
+  position: fixed;
+  inset: 0;
+  margin-block: auto;
+  margin-inline: 1rem auto;
+}
+.star-dialog--at-end:not(.star-dialog--placed, .star-dialog--maximized) {
+  position: fixed;
+  inset: 0;
+  margin-block: auto;
+  margin-inline: auto 1rem;
+}
+.star-dialog--at-top-start:not(.star-dialog--placed, .star-dialog--maximized) {
+  position: fixed;
+  inset: 0;
+  margin-block: 1rem auto;
+  margin-inline: 1rem auto;
+}
+.star-dialog--at-top-end:not(.star-dialog--placed, .star-dialog--maximized) {
+  position: fixed;
+  inset: 0;
+  margin-block: 1rem auto;
+  margin-inline: auto 1rem;
+}
+.star-dialog--at-bottom-start:not(.star-dialog--placed, .star-dialog--maximized) {
+  position: fixed;
+  inset: 0;
+  margin-block: auto 1rem;
+  margin-inline: 1rem auto;
+}
+.star-dialog--at-bottom-end:not(.star-dialog--placed, .star-dialog--maximized) {
+  position: fixed;
+  inset: 0;
+  margin-block: auto 1rem;
+  margin-inline: auto 1rem;
+}
 // Moved by a drag or resized: left / top come from inline styles.
 .star-dialog--placed {
   position: fixed;

@@ -23,6 +23,21 @@ import {
 import { resizeFrame } from './dialog-resize';
 
 /**
+ * Place of a dialog in the window. `start` and `end` follow the writing direction: `end` is the
+ * right edge in left-to-right and the left edge in right-to-left.
+ */
+export type StarDialogPosition =
+  | 'center'
+  | 'top'
+  | 'bottom'
+  | 'start'
+  | 'end'
+  | 'top-start'
+  | 'top-end'
+  | 'bottom-start'
+  | 'bottom-end';
+
+/**
  * Dialog (PrimeNG `p-dialog`) built on the native `<dialog>` element: top-layer rendering,
  * focus trap, focus restore and Escape handling come from the browser. Entry / exit animate
  * with `@starting-style`; page scroll locks with `:has(dialog[open])`.
@@ -48,7 +63,7 @@ import { resizeFrame } from './dialog-resize';
     <dialog
       #dialog
       class="star-dialog"
-      [class]="'star-dialog--' + size()"
+      [class]="'star-dialog--' + size() + ' star-dialog--at-' + position()"
       [class.star-dialog--modal]="modal()"
       [class.star-dialog--placed]="free() && placed() !== null"
       [class.star-dialog--resized]="free() && sized() !== null"
@@ -135,6 +150,11 @@ import { resizeFrame } from './dialog-resize';
 export class StarDialog extends StarDialogBase {
   private readonly document = inject(DOCUMENT);
 
+  /**
+   * Place in the window (PrimeNG `position`): `center` (default), an edge or a corner, 1rem from
+   * the window edge. Logical: `start` and `end` change sides in right-to-left.
+   */
+  readonly position = input<StarDialogPosition>('center');
   /**
    * The header drags the dialog with the pointer (PrimeNG `draggable`). The move button in the
    * header moves it with Alt + the arrow keys, 10 pixels per press.
