@@ -523,3 +523,27 @@ describe('StarEditor drop', () => {
     expect(fixture.componentInstance.html()).toBe('<p>Start<i>x</i></p>');
   });
 });
+
+describe('StarEditor state outside the area', () => {
+  it('ignores the document state without a selection in the area, and refreshes on focus', async () => {
+    const { area, button, fixture } = await setup((h) => h.html.set('<p><b>Bold</b> text</p>'));
+    const outside = document.createElement('p');
+    outside.textContent = 'Outside';
+    document.body.append(outside);
+    const original = document.queryCommandState;
+    document.queryCommandState = (() => true) as typeof document.queryCommandState;
+    try {
+      select(outside);
+      area.dispatchEvent(new KeyboardEvent('keyup'));
+      await fixture.whenStable();
+      expect(button('Bold').getAttribute('aria-pressed')).toBe('false');
+      select(area.querySelector('b')!);
+      area.dispatchEvent(new FocusEvent('focus'));
+      await fixture.whenStable();
+      expect(button('Bold').getAttribute('aria-pressed')).toBe('true');
+    } finally {
+      document.queryCommandState = original;
+      outside.remove();
+    }
+  });
+});

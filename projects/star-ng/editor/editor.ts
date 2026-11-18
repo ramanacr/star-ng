@@ -197,6 +197,7 @@ const FORMAT_TAGS: Readonly<Record<string, StarEditorCommand>> = {
       (input)="onInput()"
       (paste)="onPaste($event)"
       (drop)="onDrop($event)"
+      (focus)="refreshState()"
       (keyup)="refreshState()"
       (mouseup)="refreshState()"
       (blur)="touch.emit()"
@@ -620,7 +621,8 @@ export class StarEditor implements FormValueControl<string> {
     const path = starEditorPath(range?.startContainer ?? null, area);
     for (const tag of path) if (FORMAT_TAGS[tag]) on.add(FORMAT_TAGS[tag]);
     const doc = area.ownerDocument;
-    for (const command of NATIVE_STATES) {
+    // The browser state is for the whole document: read it only for a selection in this area.
+    for (const command of range ? NATIVE_STATES : []) {
       try {
         if (doc.queryCommandState?.(command)) on.add(command);
       } catch {
