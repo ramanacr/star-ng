@@ -276,6 +276,7 @@ export interface StarUiText {
   readonly chartPointsHint: string;
   readonly chartPointLabel: (series: string, label: string, value: string) => string;
   readonly chartLegend: string;
+  readonly chartSecondaryAxis: (label: string) => string;
   // Navigation and layout
   readonly breadcrumb: string;
   readonly stepperLabel: string;
@@ -578,6 +579,7 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   chartPointsHint: 'Arrow keys move between the points and the series. Enter selects a point.',
   chartPointLabel: (series, label, value) => `${series}, ${label}: ${value}`,
   chartLegend: 'Legend: show or hide a series',
+  chartSecondaryAxis: (label) => `${label} (right axis)`,
   breadcrumb: 'Breadcrumb',
   stepperLabel: 'Progress',
   stepCompleted: '(completed)',
@@ -681,6 +683,7 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   editorCharactersLeft: ['count'],
   chartPoints: ['title'],
   chartPointLabel: ['series', 'label', 'value'],
+  chartSecondaryAxis: ['label'],
   editorFormatting: ['label'],
   showImage: ['alt'],
   previewImage: ['alt'],

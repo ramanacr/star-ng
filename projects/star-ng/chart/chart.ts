@@ -565,6 +565,16 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                       {{ tick.text }}
                     </text>
                   }
+                  @if (secondaryTitle()) {
+                    <text
+                      class="star-chart__axis-title"
+                      [attr.x]="W - 4"
+                      y="10"
+                      text-anchor="end"
+                    >
+                      {{ secondaryTitle() }}
+                    </text>
+                  }
                   @for (tick of secondaryTicks(); track tick.value) {
                     <text
                       class="star-chart__axis"
@@ -1008,7 +1018,9 @@ export class StarChart {
     const hidden = new Set(this.hiddenSeries());
     const series = this.kind() === 'scatter' ? this.series() : this.numeric();
     return series.slice(0, STAR_CHART_SLOTS).map((s, i) => ({
-      label: s.label,
+      label: this.onSecondary(s as StarChartSeries)
+        ? this.text.chartSecondaryAxis(s.label)
+        : s.label,
       slot: i,
       hidden: hidden.has(i),
       color: this.color(i),
@@ -1136,7 +1148,7 @@ export class StarChart {
       scale.ticks,
       this.type() === 'stacked-bar' && this.percent() ? '%' : '',
     );
-    return scale.ticks.map((value) => {
+    return this.inRange(scale).map((value) => {
       const at = this.y(value);
       return this.isHorizontal()
         ? {
@@ -1169,13 +1181,29 @@ export class StarChart {
     const scale = this.secondaryScale();
     const text = this.tickFormatter(scale.ticks);
     const x = W - this.pad().right + 8;
-    return scale.ticks.map((value) => ({
+    return this.inRange(scale).map((value) => ({
       value,
       text: text(value),
       tx: x,
       ty: this.y(value, true) + 4,
     }));
   });
+  /** Ticks inside the ends of the scale: a tick outside would draw beyond the plot. */
+  private inRange(scale: StarChartScale): number[] {
+    const slack = Math.abs(scale.max - scale.min) * 1e-9;
+    return scale.ticks.filter((t) => t >= scale.min - slack && t <= scale.max + slack);
+  }
+
+  /** Title of the second value axis: the names of its series. */
+  protected readonly secondaryTitle = computed(() =>
+    this.hasSecondary()
+      ? this.drawn()
+          .filter((s) => this.onSecondary(s))
+          .map((s) => s.label)
+          .join(', ')
+      : '',
+  );
+
   /** The zero line, when the value axis has negative values. */
   protected readonly baseline = computed(() => {
     if (!(this.yScale().min < 0)) return null;

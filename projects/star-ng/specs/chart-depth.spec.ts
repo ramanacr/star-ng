@@ -451,3 +451,28 @@ describe('StarChart table with a hidden series', () => {
     ]);
   });
 });
+
+describe('StarChart second axis title', () => {
+  it('names the second axis and marks its series in the legend', async () => {
+    const fixture = TestBed.createComponent(AxisHost);
+    fixture.componentInstance.series.set([
+      { label: 'Revenue', data: [1200, 2400, 3600] },
+      { label: 'Orders', data: [10, 20, 30] },
+      { label: 'Margin', data: [5, 12, 9], type: 'line', axis: 'secondary' },
+    ]);
+    fixture.componentInstance.min.set(2000);
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+    const title = el.querySelector('.star-chart__svg .star-chart__axis-title');
+    expect(title?.textContent?.trim()).toBe('Margin');
+    const legend = [...el.querySelectorAll('.star-chart__legend button')].map((b) =>
+      b.textContent?.trim(),
+    );
+    expect(legend).toEqual(['Revenue', 'Orders', 'Margin (right axis)']);
+    // Every tick of the value axis is inside its ends.
+    const ticks = [...el.querySelectorAll<SVGLineElement>('.star-chart__grid')].map((line) =>
+      Number(line.getAttribute('y1')),
+    );
+    expect(ticks.every((y) => y >= 16 && y <= 244)).toBe(true);
+  });
+});

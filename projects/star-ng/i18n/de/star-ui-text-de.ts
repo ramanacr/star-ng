@@ -264,6 +264,7 @@ export const STAR_UI_TEXT_DE: StarUiText = {
   chartPointsHint: 'Pfeiltasten wechseln zwischen Punkten und Reihen. Eingabe wählt einen Punkt.',
   chartPointLabel: (series, label, value) => `${series}, ${label}: ${value}`,
   chartLegend: 'Legende: Reihe ein- oder ausblenden',
+  chartSecondaryAxis: (label) => `${label} (rechte Achse)`,
   breadcrumb: 'Brotkrümelnavigation',
   stepperLabel: 'Fortschritt',
   stepCompleted: '(abgeschlossen)',
