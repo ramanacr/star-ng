@@ -133,14 +133,25 @@ export class StarEditorToolbarTemplate {
   }
 }
 
-/** The commands of a `toolbar` list in groups, without unknown names and empty groups. */
+/**
+ * The commands of a `toolbar` list in groups, without unknown names (also inherited object
+ * names such as `toString`), repeated commands and empty groups.
+ */
 export function starEditorGroups(
   items: readonly StarEditorToolbarItem[],
 ): readonly (readonly StarEditorCommand[])[] {
   const groups: StarEditorCommand[][] = [[]];
+  const seen = new Set<string>();
   for (const item of items) {
     if (item === '|') groups.push([]);
-    else if (item === 'formatBlock' || item in STAR_EDITOR_BUTTONS) groups.at(-1)!.push(item);
+    else if (
+      !seen.has(item) &&
+      (item === 'formatBlock' || Object.hasOwn(STAR_EDITOR_BUTTONS, item))
+    ) {
+      // A command shows once: its first place wins.
+      seen.add(item);
+      groups.at(-1)!.push(item);
+    }
   }
   return groups.filter((group) => group.length);
 }

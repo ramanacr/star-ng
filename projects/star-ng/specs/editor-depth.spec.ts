@@ -105,7 +105,15 @@ describe('StarEditor toolbar', () => {
 
   it('leaves out unknown names and empty groups', async () => {
     const { el } = await setup((host) =>
-      host.toolbar.set(['bold', '|', '|', 'nothing' as never, 'italic']),
+      host.toolbar.set([
+        'bold',
+        '|',
+        '|',
+        'nothing' as never,
+        'toString' as never,
+        'italic',
+        'bold',
+      ]),
     );
     expect(el.querySelectorAll('[data-editor-control]').length).toBe(2);
     expect(el.querySelectorAll('[role=separator]').length).toBe(1);
