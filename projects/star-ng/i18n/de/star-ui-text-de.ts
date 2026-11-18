@@ -43,6 +43,7 @@ export const STAR_UI_TEXT_DE: StarUiText = {
   selectedItems: (count) => `${count} ${forCount(count, 'Element', 'Elemente')} ausgewählt`,
   searching: 'Suche läuft…',
   showOptions: 'Optionen anzeigen',
+  addCustomValue: (label) => `„${label}“ hinzufügen`,
   resultsAvailable: (count) => `${count} ${forCount(count, 'Ergebnis', 'Ergebnisse')} verfügbar`,
 
   pagination: 'Seitennavigation',

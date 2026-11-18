@@ -1,10 +1,21 @@
 import { CdkConnectedOverlay, CdkOverlayOrigin } from '@angular/cdk/overlay';
 import { NgTemplateOutlet } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, forwardRef, model } from '@angular/core';
+import {
+  booleanAttribute,
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  forwardRef,
+  input,
+  linkedSignal,
+  model,
+  output,
+} from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
 import { STAR_SLOT_HOST, starSlot } from '@star-ng/ui/core';
 import { StarOptionListBase } from './option-list-base';
 import { StarSelectedContext } from './select-slots';
+import { starSelectionChanging, StarSelectionChangingEvent } from './selection-changing';
 
 /**
  * Single-choice dropdown (PrimeNG `p-select`): typed options, `optionLabel` / `optionValue` /
@@ -31,42 +42,71 @@ import { StarSelectedContext } from './select-slots';
   },
   template: `
     <div class="star-select__control" cdkOverlayOrigin #origin="cdkOverlayOrigin">
-      <div
-        #trigger
-        class="star-select__trigger"
-        role="combobox"
-        aria-haspopup="listbox"
-        [id]="inputId()"
-        [attr.tabindex]="disabled() ? -1 : 0"
-        [attr.aria-expanded]="open()"
-        [attr.aria-controls]="open() ? listId : null"
-        [attr.aria-activedescendant]="activeId()"
-        [attr.aria-label]="ariaLabel()"
-        [attr.aria-labelledby]="labelledBy()"
-        [attr.aria-required]="required() || null"
-        [attr.aria-describedby]="fieldDescribedBy()"
-        [attr.aria-invalid]="showInvalid() || null"
-        [attr.aria-disabled]="disabled() || null"
-        [attr.aria-readonly]="readonly() || null"
-        (click)="toggle()"
-        (keydown)="onKeydown($event)"
-        (blur)="onTriggerBlur()"
-      >
-        @if (selectedOption(); as option) {
-          <span class="star-select__value">
-            @if (selectedSlot(); as custom) {
-              <ng-container *ngTemplateOutlet="custom; context: { $implicit: option }" />
-            } @else {
-              <ng-container>{{ labelOf(option) }}</ng-container>
-            }
-          </span>
-        } @else {
-          <span class="star-select__placeholder">{{
-            placeholder() ?? text.selectPlaceholder
-          }}</span>
-        }
-      </div>
-      @if (showClear() && selectedOption() !== undefined && interactive()) {
+      @if (editable()) {
+        <input
+          #trigger
+          type="text"
+          class="star-select__trigger star-select__input"
+          role="combobox"
+          aria-autocomplete="list"
+          autocomplete="off"
+          [id]="inputId()"
+          [attr.name]="name() || null"
+          [value]="editText()"
+          [disabled]="disabled()"
+          [readOnly]="readonly()"
+          [attr.placeholder]="placeholder() ?? text.selectPlaceholder"
+          [attr.aria-expanded]="open()"
+          [attr.aria-controls]="open() ? listId : null"
+          [attr.aria-activedescendant]="activeId()"
+          [attr.aria-label]="ariaLabel()"
+          [attr.aria-labelledby]="labelledBy()"
+          [attr.aria-required]="required() || null"
+          [attr.aria-describedby]="fieldDescribedBy()"
+          [attr.aria-invalid]="showInvalid() || null"
+          (click)="openPanel()"
+          (input)="onEditInput(trigger.value)"
+          (keydown)="onEditKeydown($event)"
+          (blur)="onEditBlur()"
+        />
+      } @else {
+        <div
+          #trigger
+          class="star-select__trigger"
+          role="combobox"
+          aria-haspopup="listbox"
+          [id]="inputId()"
+          [attr.tabindex]="disabled() ? -1 : 0"
+          [attr.aria-expanded]="open()"
+          [attr.aria-controls]="open() ? listId : null"
+          [attr.aria-activedescendant]="activeId()"
+          [attr.aria-label]="ariaLabel()"
+          [attr.aria-labelledby]="labelledBy()"
+          [attr.aria-required]="required() || null"
+          [attr.aria-describedby]="fieldDescribedBy()"
+          [attr.aria-invalid]="showInvalid() || null"
+          [attr.aria-disabled]="disabled() || null"
+          [attr.aria-readonly]="readonly() || null"
+          (click)="toggle()"
+          (keydown)="onKeydown($event)"
+          (blur)="onTriggerBlur()"
+        >
+          @if (selectedOption(); as option) {
+            <span class="star-select__value">
+              @if (selectedSlot(); as custom) {
+                <ng-container *ngTemplateOutlet="custom; context: { $implicit: option }" />
+              } @else {
+                <ng-container>{{ labelOf(option) }}</ng-container>
+              }
+            </span>
+          } @else {
+            <span class="star-select__placeholder">{{
+              placeholder() ?? text.selectPlaceholder
+            }}</span>
+          }
+        </div>
+      }
+      @if (showClear() && hasValue() && interactive()) {
         <button
           type="button"
           class="star-select__icon-btn"
@@ -99,7 +139,7 @@ import { StarSelectedContext } from './select-slots';
 
     <ng-template
       cdkConnectedOverlay
-      cdkConnectedOverlayUsePopover="inline"
+      [cdkConnectedOverlayUsePopover]="popoverLocation()"
       cdkConnectedOverlayMatchWidth
       [cdkConnectedOverlayOrigin]="origin"
       [cdkConnectedOverlayOpen]="open()"
@@ -112,6 +152,8 @@ import { StarSelectedContext } from './select-slots';
       <!-- eslint-disable-next-line @angular-eslint/template/interactive-supports-focus -->
       <div
         class="star-panel"
+        [class]="panelClasses()"
+        [style]="panelStyle()"
         (mousedown)="onPanelMousedown($event)"
         (keydown)="onPanelKeydown($event)"
         (focusin)="onPanelFocusin($event)"
@@ -120,7 +162,7 @@ import { StarSelectedContext } from './select-slots';
         @if (headerSlot(); as header) {
           <ng-container *ngTemplateOutlet="header" />
         }
-        @if (filter()) {
+        @if (filter() && !editable()) {
           <div class="star-panel__filter">
             @if (iconSlot('filter'); as icon) {
               <span aria-hidden="true"><ng-container *ngTemplateOutlet="icon" /></span>
@@ -152,6 +194,7 @@ import { StarSelectedContext } from './select-slots';
           [style.max-height]="scrollHeight()"
           [attr.aria-label]="ariaLabel()"
           [attr.aria-labelledby]="labelledBy()"
+          [attr.aria-busy]="lazyBusy() || null"
           (scroll)="onListScroll($event)"
         >
           @if (loadingRow(); as loader) {
@@ -185,6 +228,7 @@ import { StarSelectedContext } from './select-slots';
                 role="option"
                 [id]="optionId(i)"
                 [class.star-listbox__option--active]="activeIndex() === i"
+                [class.star-listbox__option--loading]="option === undefined"
                 [class.star-listbox__option--selected]="isSelected(option)"
                 [attr.aria-selected]="isSelected(option)"
                 [attr.aria-disabled]="isDisabled(option) || null"
@@ -192,10 +236,13 @@ import { StarSelectedContext } from './select-slots';
                 [attr.aria-setsize]="virtualScroll() ? visibleOptions().length : null"
                 [attr.aria-posinset]="virtualScroll() ? i + 1 : null"
                 (click)="onOptionClick(option, i)"
-                (mousemove)="isDisabled(option) || activeIndex.set(i)"
+                (mousemove)="onOptionHover(i)"
               >
                 <span class="star-listbox__label">
-                  @if (optionTemplate(); as custom) {
+                  @if (option === undefined) {
+                    <span class="star-skeleton star-listbox__skeleton" aria-hidden="true"></span>
+                    <span class="star-sr-only">{{ text.loading }}</span>
+                  } @else if (optionTemplate(); as custom) {
                     <ng-container
                       *ngTemplateOutlet="custom.template; context: optionContext(option, i)"
                     />
@@ -245,6 +292,30 @@ export class StarSelect<TOption = unknown, TValue = TOption>
   implements FormValueControl<TValue | null>
 {
   readonly value = model<TValue | null>(null);
+  /**
+   * A combobox with a text field (PrimeNG `editable`): the typed text filters the options, and an
+   * exact label chooses its option on Enter or blur. Other text becomes the value with
+   * `allowCustomValue`, else the text goes back to the label of the value.
+   */
+  readonly editable = input(false, { transform: booleanAttribute });
+  /**
+   * With `editable`: typed text that is no option label becomes the value (as a string) on Enter or
+   * blur, and `customValue` fires. Ignite UI combo `allowCustomValues` for one value.
+   */
+  readonly allowCustomValue = input(false, { transform: booleanAttribute });
+  /** With `editable` and `allowCustomValue`: the typed text that became the value. */
+  readonly customValue = output<string>();
+  /**
+   * Moving the active option with the keys also chooses it, and the panel stays open (default
+   * `false`). PrimeNG `selectOnFocus`. Only on `star-select`: the multi-select toggles options and
+   * the autocomplete would rewrite the typed text.
+   */
+  readonly selectOnFocus = input(false, { transform: booleanAttribute });
+  /**
+   * Fires before the value changes by a user action. Call `cancel()` on the event to keep the old
+   * value. Ignite UI combo `selectionChanging`.
+   */
+  readonly selectionChanging = output<StarSelectionChangingEvent<TValue | null>>();
 
   protected readonly closeOnChoose = true;
 
@@ -265,25 +336,133 @@ export class StarSelect<TOption = unknown, TValue = TOption>
   protected readonly selectedOption = computed(() => {
     const value = this.value();
     if (value === null) return undefined;
-    return this.options().find((option) => this.equals(this.valueOf(option), value));
+    return this.options().find(
+      (option) => option !== undefined && this.equals(this.valueOf(option), value),
+    );
   });
+
+  /** True when there is a value to clear: an option, or a custom text of the editable select. */
+  protected readonly hasValue = computed(
+    () => this.selectedOption() !== undefined || (this.editable() && this.value() !== null),
+  );
+
+  /** Text of the value: the option label, or the custom text. */
+  private readonly valueText = computed(() => {
+    const option = this.selectedOption();
+    if (option !== undefined) return this.labelOf(option);
+    const value = this.value();
+    return value === null || !this.allowCustomValue() ? '' : String(value);
+  });
+
+  /** Text of the editable field. Goes back to the text of the value when the value changes. */
+  protected readonly editText = linkedSignal(() => this.valueText());
+
+  protected override selectsOnFocus(): boolean {
+    return this.selectOnFocus();
+  }
+
+  protected override filterOn(): boolean {
+    return this.filter() || this.editable();
+  }
+
+  /** Sets the field text, in the signal and in the DOM (see the autocomplete `setText`). */
+  private setEditText(text: string): void {
+    this.editText.set(text);
+    const field = this.trigger().nativeElement;
+    if (field instanceof HTMLInputElement) field.value = text;
+  }
+
+  protected onEditInput(text: string): void {
+    this.editText.set(text);
+    this.openPanel();
+    this.onFilterInput(text);
+  }
+
+  protected onEditKeydown(event: KeyboardEvent): void {
+    // Home and End move the caret in the text field.
+    if (event.key === 'Home' || event.key === 'End') return;
+    if (event.key === 'Enter' && (!this.open() || this.activeIndex() < 0)) {
+      event.preventDefault();
+      this.commitEdit();
+      this.closePanel();
+      return;
+    }
+    this.onKeydown(event);
+  }
+
+  protected onEditBlur(): void {
+    if (this.open()) return;
+    this.commitEdit();
+    this.touch.emit();
+  }
+
+  protected override dismiss(): void {
+    super.dismiss();
+    if (this.editable()) this.commitEdit();
+  }
+
+  /**
+   * Applies the typed text: an exact option label chooses the option, an empty text clears the
+   * value, other text becomes the value with `allowCustomValue`, or goes back to the value text.
+   */
+  private commitEdit(): void {
+    if (!this.editable() || !this.interactive()) return;
+    const text = this.editText().trim();
+    if (text === this.valueText()) return;
+    if (!text) {
+      this.setEditText(this.change(null) ? '' : this.valueText());
+      return;
+    }
+    const lower = text.toLocaleLowerCase();
+    const exact = this.options().find(
+      (option) =>
+        option !== undefined &&
+        !this.isDisabled(option) &&
+        this.labelOf(option).toLocaleLowerCase() === lower,
+    );
+    if (exact !== undefined) {
+      this.choose(exact);
+    } else if (this.allowCustomValue() && this.change(text as unknown as TValue)) {
+      this.customValue.emit(text);
+      this.setEditText(text);
+    } else {
+      this.setEditText(this.valueText());
+    }
+  }
 
   protected isSelected(option: TOption): boolean {
     const value = this.value();
-    return value !== null && this.equals(this.valueOf(option), value);
+    return option !== undefined && value !== null && this.equals(this.valueOf(option), value);
   }
 
   protected choose(option: TOption): void {
-    this.value.set(this.valueOf(option));
+    const changed = this.change(this.valueOf(option));
+    if (this.editable()) this.setEditText(changed ? this.labelOf(option) : this.valueText());
+  }
+
+  /**
+   * Sets the value after `selectionChanging`, and returns `false` when a handler cancelled. The
+   * same value again fires no event.
+   */
+  private change(next: TValue | null): boolean {
+    const previous = this.value();
+    const same =
+      previous === next || (previous !== null && next !== null && this.equals(previous, next));
+    if (same) return true;
+    if (!starSelectionChanging(this.selectionChanging, previous, next)) return false;
+    this.value.set(next);
+    return true;
   }
 
   protected initialActiveIndex(): number {
     const index = this.visibleOptions().findIndex((option) => this.isSelected(option));
-    return index >= 0 ? index : this.firstEnabledFrom(0, 1);
+    if (index >= 0) return index;
+    return this.autoOptionFocus() ? this.firstEnabledFrom(0, 1) : -1;
   }
 
   clear(): void {
-    this.value.set(null);
+    if (!this.change(null)) return;
+    if (this.editable()) this.setEditText('');
     this.focus();
   }
 }
