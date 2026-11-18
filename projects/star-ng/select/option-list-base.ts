@@ -9,6 +9,7 @@ import {
   contentChildren,
   DestroyRef,
   Directive,
+  effect,
   ElementRef,
   inject,
   Injector,
@@ -17,6 +18,7 @@ import {
   output,
   signal,
   TemplateRef,
+  untracked,
   viewChild,
 } from '@angular/core';
 import {
@@ -31,8 +33,11 @@ import {
   starFilterTexts,
   StarGroupContext,
   StarIconSlotName,
+  StarLazyLoadEvent,
+  StarLazyRequests,
   starListKeyboardTarget,
   starListLayout,
+  starListLazyRange,
   starListPageSize,
   starListRevealOffset,
   starListRevealRows,
@@ -68,6 +73,14 @@ export class StarOptionTemplate<T = unknown> {
   ): _ctx is StarOptionContext<T> {
     return true;
   }
+}
+
+/**
+ * Transform of the `options` input: the array may hold `undefined` for options that a `lazy` list
+ * has not loaded yet. The controls check for `undefined` where it matters.
+ */
+export function starLazyOptions<T>(options: readonly (T | undefined)[]): readonly T[] {
+  return options as readonly T[];
 }
 
 /** One rendered line of the option list: a group heading or an option. */
@@ -120,7 +133,13 @@ export abstract class StarOptionListBase<TOption, TValue> {
    */
   protected field: StarField | null = null;
 
-  readonly options = input<readonly TOption[]>([]);
+  /**
+   * The options. With `lazy`, an entry may be `undefined` while it is not loaded: the list shows a
+   * loading row for it, and the keyboard skips it.
+   */
+  readonly options = input<readonly TOption[], readonly (TOption | undefined)[]>([], {
+    transform: starLazyOptions,
+  });
   readonly optionLabel = input<StarOptionKey<TOption> | null>(null);
   /** Value stored in the form. Omit to store the whole option. */
   readonly optionValue = input<StarOptionKey<TOption> | null>(null);
@@ -142,6 +161,13 @@ export abstract class StarOptionListBase<TOption, TValue> {
   readonly virtualScroll = input(false, { transform: booleanAttribute });
   /** Line height in pixels with `virtualScroll`. */
   readonly virtualItemSize = input(40);
+  /**
+   * Loads the options on demand (PrimeNG `lazy` with `onLazyLoad`). Use it with `virtualScroll`
+   * and an `options` array of the full length, with `undefined` for the options that are not loaded.
+   * The control emits `lazyLoad` when the rows in view need such options, and when the filter text
+   * changes. The filter then does not filter the options in the browser: the event has the text.
+   */
+  readonly lazy = input(false, { transform: booleanAttribute });
 
   readonly placeholder = input<string | null>(null);
   readonly filter = input(false, { transform: booleanAttribute });
@@ -185,6 +211,8 @@ export abstract class StarOptionListBase<TOption, TValue> {
   readonly opened = output<void>();
   readonly closed = output<void>();
   readonly filterChange = output<string>();
+  /** With `lazy`: the options from `first` to `last` are needed for the filter text `filter`. PrimeNG `onLazyLoad`. */
+  readonly lazyLoad = output<StarLazyLoadEvent>();
 
   protected readonly optionTemplate = contentChild(StarOptionTemplate);
   /** All slot directives written inside this control. The picks below filter them by host. */
@@ -241,7 +269,9 @@ export abstract class StarOptionListBase<TOption, TValue> {
     const query = this.filterValue();
     const all = this.options();
     const options =
-      !this.filter() || !query ? all : all.filter((option) => this.matchesQuery(option, query));
+      !this.filter() || !query || this.lazy()
+        ? all
+        : all.filter((option) => this.matchesQuery(option, query));
     return this.groupedOrder(options);
   });
 
@@ -314,6 +344,32 @@ export abstract class StarOptionListBase<TOption, TValue> {
     const { start, end } = this.virtualWindow();
     return start === 0 && end === rows.length ? rows : rows.slice(start, end);
   });
+
+  /** True while a rendered row is an option that is not loaded yet (`aria-busy` of the list). */
+  protected readonly lazyBusy = computed(() =>
+    this.renderedRows().some((row) => row.kind === 'option' && row.option === undefined),
+  );
+
+  /** Filter text of a `lazyLoad` request. The autocomplete sends its typed text. */
+  protected lazyFilterText(): string {
+    return this.filterValue();
+  }
+
+  private readonly lazyRequests = new StarLazyRequests();
+
+  /** Emits `lazyLoad` when the rows in view need options that are not loaded (see `lazy`). */
+  private requestLazyRows(): void {
+    if (!this.lazy() || !this.open()) return;
+    const window = this.virtualWindow();
+    const range = starListLazyRange(this.layout(), window, (option) => option === undefined);
+    const filter = this.lazyFilterText();
+    const size = Math.max(1, this.virtualItemSize());
+    const page = Math.ceil((this.listHeight() || VIRTUAL_FALLBACK_HEIGHT) / size) + VIRTUAL_BUFFER;
+    untracked(() => {
+      const event = this.lazyRequests.next(range, filter, page);
+      if (event) this.lazyLoad.emit(event);
+    });
+  }
 
   protected onListScroll(event: Event): void {
     if (!this.virtualScroll()) return;
@@ -388,6 +444,7 @@ export abstract class StarOptionListBase<TOption, TValue> {
 
   constructor() {
     this.destroyRef.onDestroy(() => clearTimeout(this.typeaheadTimer));
+    effect(() => this.requestLazyRows());
   }
 
   /**
@@ -422,7 +479,9 @@ export abstract class StarOptionListBase<TOption, TValue> {
     return readOption(option, this.optionValue()) as TValue;
   }
 
+  /** Disabled options, and options that are not loaded yet (`lazy`), cannot be chosen. */
   protected isDisabled(option: TOption): boolean {
+    if (option === undefined) return true;
     const key = this.optionDisabled();
     return key ? !!readOption(option, key) : false;
   }

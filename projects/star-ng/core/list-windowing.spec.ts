@@ -1,4 +1,5 @@
 import {
+  StarLazyRequests,
   starListAriaPosition as ariaPosition,
   starListLayout as buildLayout,
   starListRowRendered as isRowRendered,
@@ -7,6 +8,7 @@ import {
   starListPageSize as pageSize,
   starListRevealOffset as revealOffset,
   starListRevealRows as revealRows,
+  starListLazyRange,
   starListTypeaheadIndex as typeaheadIndex,
 } from './list-windowing';
 
@@ -178,5 +180,41 @@ describe('windowed list: ARIA values', () => {
   it('gives each option the size of the whole list and its position in it', () => {
     expect(ariaPosition(0, 10_000)).toEqual({ setsize: 10_000, posinset: 1 });
     expect(ariaPosition(9_999, 10_000)).toEqual({ setsize: 10_000, posinset: 10_000 });
+  });
+});
+
+describe('lazy loading helpers', () => {
+  const options = ['a', undefined, 'c', undefined];
+  const layout = buildLayout(options, null, 'l');
+
+  it('finds the options of a range and whether one is missing', () => {
+    expect(starListLazyRange(layout, { start: 0, end: 1 }, (o) => o === undefined)).toEqual({
+      first: 0,
+      last: 0,
+      missing: false,
+    });
+    expect(starListLazyRange(layout, { start: 1, end: 4 }, (o) => o === undefined)).toEqual({
+      first: 1,
+      last: 3,
+      missing: true,
+    });
+    expect(starListLazyRange(layout, { start: 4, end: 9 }, (o) => o === undefined)).toBeNull();
+  });
+
+  it('asks once per range, and again for a new filter from index 0', () => {
+    const requests = new StarLazyRequests();
+    expect(requests.next(null, '', 20)).toEqual({ first: 0, last: 19, filter: '' });
+    expect(requests.next(null, '', 20)).toBeNull();
+    expect(requests.next({ first: 10, last: 19, missing: true }, '', 20)).toEqual({
+      first: 10,
+      last: 19,
+      filter: '',
+    });
+    expect(requests.next({ first: 10, last: 19, missing: true }, '', 20)).toBeNull();
+    expect(requests.next({ first: 10, last: 19, missing: false }, 'ber', 20)).toEqual({
+      first: 0,
+      last: 9,
+      filter: 'ber',
+    });
   });
 });

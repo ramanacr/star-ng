@@ -4,6 +4,7 @@ import { STAR_SLOTS } from '@star-ng/ui/core';
 import { StarField } from '@star-ng/ui/field';
 import { StarChipTemplate, StarMultiSelect, StarOptionTemplate } from '@star-ng/ui/select';
 import { DOCS, DocsRow } from '../shared/docs';
+import { lazyOrders } from '../shared/lazy-orders';
 
 interface Department {
   readonly id: string;
@@ -236,6 +237,29 @@ interface Parcel {
         page. See the Right-to-left guide.
       </p>
 
+      <docs-example
+        heading="Lazy loading"
+        source="multi-select/lazy"
+        [script]="lazyScript"
+        note="lazy with virtualScroll loads the options page by page through lazyLoad. Options that are not loaded are undefined in the array and show as loading rows. Select all works on the loaded options."
+      >
+        <div class="docs-stack">
+          <star-multi-select
+            [options]="lazyList.options()"
+            optionLabel="name"
+            optionValue="id"
+            [(value)]="lazyPicked"
+            lazy
+            virtualScroll
+            filter
+            placeholder="Select orders"
+            ariaLabel="Orders, loaded on demand"
+            (lazyLoad)="lazyList.load($event)"
+          />
+          <p class="docs-output" role="status">Selected: {{ lazyPicked().length }}</p>
+        </div>
+      </docs-example>
+
       <docs-api
         [of]="['StarMultiSelect', 'StarOptionListBase', 'StarChipTemplate']"
         [slots]="slots"
@@ -246,6 +270,31 @@ interface Parcel {
   `,
 })
 export class MultiSelectPage {
+  protected readonly lazyList = lazyOrders();
+  protected readonly lazyPicked = signal<readonly number[]>([]);
+  protected readonly lazyScript = `// A fake order service (no network) and the list state, in lazy-orders.ts:
+// fetchOrderPage({ first, last, filter }) waits 400 ms and returns { first, rows, total, filter }.
+export function lazyOrders() {
+  const request = signal<StarLazyLoadEvent | undefined>(undefined);
+  const page = resource({
+    params: request,
+    loader: ({ params, abortSignal }) => fetchOrderPage(params, abortSignal),
+  });
+  // The full-length array, with undefined where a page is not loaded yet.
+  const options = linkedSignal<LazyOrderPage | undefined, readonly (LazyOrder | undefined)[]>({
+    source: () => (page.hasValue() ? page.value() : undefined),
+    computation: (next, previous) => {
+      if (!next) return previous?.value ?? [];
+      const keep = previous?.source?.filter === next.filter && previous.value.length === next.total;
+      const rows = keep ? [...previous.value] : Array.from<LazyOrder | undefined>({ length: next.total });
+      next.rows.forEach((row, i) => (rows[next.first + i] = row));
+      return rows;
+    },
+  });
+  return { options: options.asReadonly(), load: (event: StarLazyLoadEvent) => request.set(event) };
+}
+
+readonly lazyList = lazyOrders();`;
   protected readonly departments: readonly Department[] = [
     { id: 'fin', name: 'Finance', site: 'Berlin' },
     { id: 'hr', name: 'People', site: 'Berlin' },

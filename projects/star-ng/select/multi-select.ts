@@ -202,6 +202,7 @@ import { StarChipContext } from './select-slots';
           [style.max-height]="scrollHeight()"
           [attr.aria-label]="ariaLabel()"
           [attr.aria-labelledby]="labelledBy()"
+          [attr.aria-busy]="lazyBusy() || null"
           (scroll)="onListScroll($event)"
         >
           @if (loadingRow(); as loader) {
@@ -235,6 +236,7 @@ import { StarChipContext } from './select-slots';
                 role="option"
                 [id]="optionId(i)"
                 [class.star-listbox__option--active]="activeIndex() === i"
+                [class.star-listbox__option--loading]="option === undefined"
                 [class.star-listbox__option--selected]="isSelected(option)"
                 [attr.aria-selected]="isSelected(option)"
                 [attr.aria-disabled]="isDisabled(option) || null"
@@ -254,7 +256,10 @@ import { StarChipContext } from './select-slots';
                   }
                 </span>
                 <span class="star-listbox__label">
-                  @if (optionTemplate(); as custom) {
+                  @if (option === undefined) {
+                    <span class="star-skeleton star-listbox__skeleton" aria-hidden="true"></span>
+                    <span class="star-sr-only">{{ text.loading }}</span>
+                  } @else if (optionTemplate(); as custom) {
                     <ng-container
                       *ngTemplateOutlet="custom.template; context: optionContext(option, i)"
                     />

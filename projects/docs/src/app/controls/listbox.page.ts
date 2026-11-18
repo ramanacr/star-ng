@@ -5,6 +5,7 @@ import { StarField } from '@star-ng/ui/field';
 import { StarListbox } from '@star-ng/ui/listbox';
 import { StarOptionTemplate } from '@star-ng/ui/select';
 import { DOCS, DocsRow } from '../shared/docs';
+import { lazyOrders } from '../shared/lazy-orders';
 
 interface Queue {
   readonly id: string;
@@ -249,6 +250,29 @@ const REGIONS = ['Central', 'East', 'North', 'South', 'West'];
         </star-listbox>
       </docs-example>
 
+      <docs-example
+        heading="Lazy loading"
+        source="listbox/lazy"
+        [script]="lazyScript"
+        note="lazy with virtualScroll loads the rows in view through lazyLoad. The list has aria-busy while it shows rows that are not loaded."
+      >
+        <div class="docs-stack">
+          <star-listbox
+            [options]="lazyList.options()"
+            optionLabel="name"
+            optionValue="id"
+            [(value)]="lazyOrder"
+            lazy
+            virtualScroll
+            filter
+            scrollHeight="14rem"
+            ariaLabel="Order, loaded on demand"
+            (lazyLoad)="lazyList.load($event)"
+          />
+          <p class="docs-output" role="status">Order: {{ lazyOrder() ?? 'none' }}</p>
+        </div>
+      </docs-example>
+
       <docs-api
         [of]="['StarListbox', 'StarOptionTemplate']"
         [slots]="slots"
@@ -259,6 +283,31 @@ const REGIONS = ['Central', 'East', 'North', 'South', 'West'];
   `,
 })
 export class ListboxPage {
+  protected readonly lazyList = lazyOrders();
+  protected readonly lazyOrder = signal<number | readonly number[] | null>(null);
+  protected readonly lazyScript = `// A fake order service (no network) and the list state, in lazy-orders.ts:
+// fetchOrderPage({ first, last, filter }) waits 400 ms and returns { first, rows, total, filter }.
+export function lazyOrders() {
+  const request = signal<StarLazyLoadEvent | undefined>(undefined);
+  const page = resource({
+    params: request,
+    loader: ({ params, abortSignal }) => fetchOrderPage(params, abortSignal),
+  });
+  // The full-length array, with undefined where a page is not loaded yet.
+  const options = linkedSignal<LazyOrderPage | undefined, readonly (LazyOrder | undefined)[]>({
+    source: () => (page.hasValue() ? page.value() : undefined),
+    computation: (next, previous) => {
+      if (!next) return previous?.value ?? [];
+      const keep = previous?.source?.filter === next.filter && previous.value.length === next.total;
+      const rows = keep ? [...previous.value] : Array.from<LazyOrder | undefined>({ length: next.total });
+      next.rows.forEach((row, i) => (rows[next.first + i] = row));
+      return rows;
+    },
+  });
+  return { options: options.asReadonly(), load: (event: StarLazyLoadEvent) => request.set(event) };
+}
+
+readonly lazyList = lazyOrders();`;
   protected readonly queues: readonly Queue[] = [
     { id: 'intake', name: 'Intake', site: 'Berlin' },
     { id: 'billing', name: 'Billing', site: 'Berlin' },

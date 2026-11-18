@@ -9,6 +9,7 @@ import { STAR_SLOTS } from '@star-ng/ui/core';
 import { StarField } from '@star-ng/ui/field';
 import { StarOptionTemplate } from '@star-ng/ui/select';
 import { DOCS, DocsRow } from '../shared/docs';
+import { lazyOrders } from '../shared/lazy-orders';
 
 interface Person {
   readonly id: string;
@@ -229,6 +230,29 @@ interface OfficeCity {
         right-to-left page. See the Right-to-left guide.
       </p>
 
+      <docs-example
+        heading="Lazy loading"
+        source="autocomplete/lazy"
+        [script]="lazyScript"
+        note="lazy with virtualScroll asks for the suggestions in view through lazyLoad; the filter of the event is the typed text."
+      >
+        <div class="docs-stack">
+          <star-autocomplete
+            [options]="lazyList.options()"
+            optionLabel="name"
+            optionValue="id"
+            [(value)]="lazyOrder"
+            lazy
+            virtualScroll
+            dropdown
+            placeholder="Type an order number"
+            ariaLabel="Order, loaded on demand"
+            (lazyLoad)="lazyList.load($event)"
+          />
+          <p class="docs-output" role="status">Order: {{ lazyOrder() ?? 'none' }}</p>
+        </div>
+      </docs-example>
+
       <docs-api
         [of]="[
           'StarAutoComplete',
@@ -244,6 +268,31 @@ interface OfficeCity {
   `,
 })
 export class AutocompletePage {
+  protected readonly lazyList = lazyOrders();
+  protected readonly lazyOrder = signal<number | null>(null);
+  protected readonly lazyScript = `// A fake order service (no network) and the list state, in lazy-orders.ts:
+// fetchOrderPage({ first, last, filter }) waits 400 ms and returns { first, rows, total, filter }.
+export function lazyOrders() {
+  const request = signal<StarLazyLoadEvent | undefined>(undefined);
+  const page = resource({
+    params: request,
+    loader: ({ params, abortSignal }) => fetchOrderPage(params, abortSignal),
+  });
+  // The full-length array, with undefined where a page is not loaded yet.
+  const options = linkedSignal<LazyOrderPage | undefined, readonly (LazyOrder | undefined)[]>({
+    source: () => (page.hasValue() ? page.value() : undefined),
+    computation: (next, previous) => {
+      if (!next) return previous?.value ?? [];
+      const keep = previous?.source?.filter === next.filter && previous.value.length === next.total;
+      const rows = keep ? [...previous.value] : Array.from<LazyOrder | undefined>({ length: next.total });
+      next.rows.forEach((row, i) => (rows[next.first + i] = row));
+      return rows;
+    },
+  });
+  return { options: options.asReadonly(), load: (event: StarLazyLoadEvent) => request.set(event) };
+}
+
+readonly lazyList = lazyOrders();`;
   protected readonly cities: readonly string[] = [
     'Amsterdam',
     'Berlin',

@@ -4,6 +4,7 @@ import { STAR_SLOTS } from '@star-ng/ui/core';
 import { StarField } from '@star-ng/ui/field';
 import { StarOptionTemplate, StarSelect, StarSelectedTemplate } from '@star-ng/ui/select';
 import { DOCS, DocsRow } from '../shared/docs';
+import { lazyOrders } from '../shared/lazy-orders';
 
 interface Country {
   readonly code: string;
@@ -272,6 +273,29 @@ interface Shipment {
         page. See the Right-to-left guide.
       </p>
 
+      <docs-example
+        heading="Lazy loading"
+        source="select/lazy"
+        [script]="lazyScript"
+        note="lazy with virtualScroll loads the options page by page. The options array has the full length and holds undefined for the options that are not loaded: they show as loading rows, and the keyboard skips them. lazyLoad gives first, last and the filter text; here an Angular resource() loads the page from a fake service. The filter does not filter in the browser: the service gets the text."
+      >
+        <div class="docs-stack">
+          <star-select
+            [options]="lazyList.options()"
+            optionLabel="name"
+            optionValue="id"
+            [(value)]="lazyOrder"
+            lazy
+            virtualScroll
+            filter
+            placeholder="Select an order"
+            ariaLabel="Order, loaded on demand"
+            (lazyLoad)="lazyList.load($event)"
+          />
+          <p class="docs-output" role="status">Order: {{ lazyOrder() ?? 'none' }}</p>
+        </div>
+      </docs-example>
+
       <docs-api
         [of]="['StarSelect', 'StarOptionListBase', 'StarOptionTemplate', 'StarSelectedTemplate']"
         [slots]="slots"
@@ -289,6 +313,31 @@ interface Shipment {
   `,
 })
 export class SelectPage {
+  protected readonly lazyList = lazyOrders();
+  protected readonly lazyOrder = signal<number | null>(null);
+  protected readonly lazyScript = `// A fake order service (no network) and the list state, in lazy-orders.ts:
+// fetchOrderPage({ first, last, filter }) waits 400 ms and returns { first, rows, total, filter }.
+export function lazyOrders() {
+  const request = signal<StarLazyLoadEvent | undefined>(undefined);
+  const page = resource({
+    params: request,
+    loader: ({ params, abortSignal }) => fetchOrderPage(params, abortSignal),
+  });
+  // The full-length array, with undefined where a page is not loaded yet.
+  const options = linkedSignal<LazyOrderPage | undefined, readonly (LazyOrder | undefined)[]>({
+    source: () => (page.hasValue() ? page.value() : undefined),
+    computation: (next, previous) => {
+      if (!next) return previous?.value ?? [];
+      const keep = previous?.source?.filter === next.filter && previous.value.length === next.total;
+      const rows = keep ? [...previous.value] : Array.from<LazyOrder | undefined>({ length: next.total });
+      next.rows.forEach((row, i) => (rows[next.first + i] = row));
+      return rows;
+    },
+  });
+  return { options: options.asReadonly(), load: (event: StarLazyLoadEvent) => request.set(event) };
+}
+
+readonly lazyList = lazyOrders();`;
   protected readonly countries: readonly Country[] = [
     { code: 'DE', name: 'Germany', region: 'Europe' },
     { code: 'FR', name: 'France', region: 'Europe' },

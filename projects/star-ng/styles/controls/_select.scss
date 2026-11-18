@@ -197,6 +197,22 @@
     cursor: not-allowed;
   }
 }
+// A `lazy` option that is not loaded yet: a skeleton bar, not a disabled option.
+.star-listbox__option--loading {
+  cursor: progress;
+
+  &[aria-disabled='true'] {
+    opacity: 1;
+    cursor: progress;
+  }
+  .star-check__box {
+    visibility: hidden;
+  }
+}
+.star-listbox__skeleton {
+  width: 60%;
+  height: 0.75rem;
+}
 .star-listbox__option--active {
   background: var(--star-surface-muted);
   outline: 1px solid var(--star-border);

@@ -161,3 +161,68 @@ export function starListHeight(scrollHeight: string, rowCount: number, itemSize:
 export function starListRowRendered(row: number, range: { start: number; end: number }): boolean {
   return row >= range.start && row < range.end;
 }
+
+/**
+ * Event of `lazyLoad` on the list controls (PrimeNG `onLazyLoad`): the control needs the options
+ * from index `first` to `last` (both included), for the filter text `filter`. Load them and put
+ * them into the `options` array at the same indexes. Until then the array holds `undefined` there:
+ * the control shows a loading row for each one.
+ */
+export interface StarLazyLoadEvent {
+  readonly first: number;
+  readonly last: number;
+  readonly filter: string;
+}
+
+/**
+ * Options of the rows in the rendered range `[start, end)`: the first and the last option index,
+ * and whether one of them is not loaded yet (`isMissing`). `null` when the range has no option.
+ */
+export function starListLazyRange<T>(
+  layout: StarWindowLayout<T>,
+  range: { start: number; end: number },
+  isMissing: (option: T) => boolean,
+): { first: number; last: number; missing: boolean } | null {
+  let first = -1;
+  let last = -1;
+  let missing = false;
+  const end = Math.min(range.end, layout.rows.length);
+  for (let i = Math.max(0, range.start); i < end; i++) {
+    const row = layout.rows[i];
+    if (row.kind !== 'option') continue;
+    if (first < 0) first = row.index;
+    last = row.index;
+    if (isMissing(row.option)) missing = true;
+  }
+  return first < 0 ? null : { first, last, missing };
+}
+
+/**
+ * Decides when a lazy list asks for options: when the rendered rows have an option that is not
+ * loaded, or when the filter text has changed (also for the first request). A range is asked for
+ * once; the same range with the same filter does not fire again. A new filter asks for the rows in
+ * view from index 0. Without rendered options (an empty array) it asks for the first `pageSize`
+ * options.
+ */
+export class StarLazyRequests {
+  private lastKey = '';
+  private lastFilter: string | null = null;
+
+  next(
+    range: { first: number; last: number; missing: boolean } | null,
+    filter: string,
+    pageSize: number,
+  ): StarLazyLoadEvent | null {
+    const changed = filter !== this.lastFilter;
+    if (!changed && !range?.missing) return null;
+    // A new filter starts at the top of the list.
+    const size = range ? range.last - range.first + 1 : Math.max(1, pageSize);
+    const first = changed || !range ? 0 : range.first;
+    const last = first + size - 1;
+    const key = `${first}:${last}:${filter}`;
+    if (key === this.lastKey) return null;
+    this.lastKey = key;
+    this.lastFilter = filter;
+    return { first, last, filter };
+  }
+}

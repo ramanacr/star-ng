@@ -22,6 +22,7 @@ import {
   model,
   output,
   signal,
+  untracked,
   viewChild,
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
@@ -36,10 +37,13 @@ import {
   StarFilterMatchMode,
   starFilterTexts,
   StarGroupContext,
+  StarLazyLoadEvent,
+  StarLazyRequests,
   starListAriaPosition,
   starListHeight,
   starListKeyboardTarget,
   starListLayout,
+  starListLazyRange,
   StarListNavigationKey,
   starListPageSize,
   starListRevealOffset,
@@ -52,7 +56,7 @@ import {
   StarWindowRow,
 } from '@star-ng/ui/core';
 import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/ui/field';
-import { StarOptionTemplate } from '@star-ng/ui/select';
+import { starLazyOptions, StarOptionTemplate } from '@star-ng/ui/select';
 
 /**
  * Inline list choice (PrimeNG `p-listbox`): single or `multiple` (checkboxes), filter,
@@ -109,6 +113,7 @@ import { StarOptionTemplate } from '@star-ng/ui/select';
         [attr.aria-multiselectable]="multiple() || null"
         [attr.aria-activedescendant]="activeId()"
         [attr.aria-disabled]="disabled() || null"
+        [attr.aria-busy]="lazyBusy() || null"
         [style.--star-item-size.px]="itemSize()"
         [style.height]="viewportHeight()"
         (keydown)="onKeydown($event)"
@@ -135,6 +140,7 @@ import { StarOptionTemplate } from '@star-ng/ui/select';
               role="option"
               [id]="listId + '-' + i"
               [class.star-listbox__option--active]="active() === i"
+              [class.star-listbox__option--loading]="option === undefined"
               [class.star-listbox__option--selected]="isSelected(option)"
               [attr.aria-selected]="isSelected(option)"
               [attr.aria-disabled]="isDisabled(option) || null"
@@ -151,7 +157,10 @@ import { StarOptionTemplate } from '@star-ng/ui/select';
                 </span>
               }
               <span class="star-listbox__label">
-                @if (optionTemplate(); as custom) {
+                @if (option === undefined) {
+                  <span class="star-skeleton star-listbox__skeleton" aria-hidden="true"></span>
+                  <span class="star-sr-only">{{ text.loading }}</span>
+                } @else if (optionTemplate(); as custom) {
                   <ng-container
                     *ngTemplateOutlet="
                       custom.template;
@@ -179,6 +188,7 @@ import { StarOptionTemplate } from '@star-ng/ui/select';
         [attr.aria-multiselectable]="multiple() || null"
         [attr.aria-activedescendant]="activeId()"
         [attr.aria-disabled]="disabled() || null"
+        [attr.aria-busy]="lazyBusy() || null"
         [style.max-height]="scrollHeight()"
         (keydown)="onKeydown($event)"
         (focus)="onFocus()"
@@ -201,6 +211,7 @@ import { StarOptionTemplate } from '@star-ng/ui/select';
             role="option"
             [id]="listId + '-' + i"
             [class.star-listbox__option--active]="active() === i"
+            [class.star-listbox__option--loading]="option === undefined"
             [class.star-listbox__option--selected]="isSelected(option)"
             [attr.aria-selected]="isSelected(option)"
             [attr.aria-disabled]="isDisabled(option) || null"
@@ -215,7 +226,10 @@ import { StarOptionTemplate } from '@star-ng/ui/select';
               </span>
             }
             <span class="star-listbox__label">
-              @if (optionTemplate(); as custom) {
+              @if (option === undefined) {
+                <span class="star-skeleton star-listbox__skeleton" aria-hidden="true"></span>
+                <span class="star-sr-only">{{ text.loading }}</span>
+              } @else if (optionTemplate(); as custom) {
                 <ng-container
                   *ngTemplateOutlet="
                     custom.template;
@@ -252,7 +266,13 @@ export class StarListbox<TOption = unknown, TValue = TOption> implements FormVal
   protected readonly listId = inject(_IdGenerator).getId('star-listbox-');
 
   readonly value = model<TValue | readonly TValue[] | null>(null);
-  readonly options = input<readonly TOption[]>([]);
+  /**
+   * The options. With `lazy`, an entry may be `undefined` while it is not loaded: the list shows a
+   * loading row for it, and the keyboard skips it.
+   */
+  readonly options = input<readonly TOption[], readonly (TOption | undefined)[]>([], {
+    transform: starLazyOptions,
+  });
   readonly optionLabel = input<StarOptionKey<TOption> | null>(null);
   readonly optionValue = input<StarOptionKey<TOption> | null>(null);
   readonly optionDisabled = input<StarOptionKey<TOption> | null>(null);
@@ -280,11 +300,20 @@ export class StarListbox<TOption = unknown, TValue = TOption> implements FormVal
   readonly virtualScroll = input(false, { transform: booleanAttribute });
   /** Row height in pixels with `virtualScroll`. */
   readonly virtualItemSize = input(40);
+  /**
+   * Loads the options on demand (PrimeNG `lazy` with `onLazyLoad`). Use it with `virtualScroll`
+   * and an `options` array of the full length, with `undefined` for the options that are not
+   * loaded. The list emits `lazyLoad` when the rows in view need such options, and when the filter
+   * text changes (the filter then does not filter in the browser).
+   */
+  readonly lazy = input(false, { transform: booleanAttribute });
   readonly ariaLabel = input<string | null>(null);
   readonly disabled = input(false, { transform: booleanAttribute });
   readonly invalid = input(false, { transform: booleanAttribute });
   readonly touched = input(false, { transform: booleanAttribute });
   readonly touch = output<void>();
+  /** With `lazy`: the options from `first` to `last` are needed for the filter text `filter`. PrimeNG `onLazyLoad`. */
+  readonly lazyLoad = output<StarLazyLoadEvent>();
 
   protected readonly optionTemplate = contentChild(StarOptionTemplate);
   /** All slot directives written inside this control. The picks below filter them by host. */
@@ -307,16 +336,17 @@ export class StarListbox<TOption = unknown, TValue = TOption> implements FormVal
 
   protected readonly visible = computed(() => {
     const query = this.query();
-    const options = query
-      ? this.options().filter((option) =>
-          starFilterMatchAny(
-            starFilterTexts(option, this.filterBy(), (o) => this.labelOf(o)),
-            query,
-            this.filterMatchMode(),
-            this.filterLocale(),
-          ),
-        )
-      : this.options();
+    const options =
+      query && !this.lazy()
+        ? this.options().filter((option) =>
+            starFilterMatchAny(
+              starFilterTexts(option, this.filterBy(), (o) => this.labelOf(o)),
+              query,
+              this.filterMatchMode(),
+              this.filterLocale(),
+            ),
+          )
+        : this.options();
     if (!this.optionGroup()) return options;
     // Keep each group together, in the order in which the groups first appear.
     const order = new Map<string, number>();
@@ -415,7 +445,33 @@ export class StarListbox<TOption = unknown, TValue = TOption> implements FormVal
     return `${this.listId}-${index}`;
   });
 
+  /** True while a rendered row is an option that is not loaded yet (`aria-busy` of the list). */
+  protected readonly lazyBusy = computed(() => {
+    if (!this.lazy()) return false;
+    const range = this.virtualScroll()
+      ? this.renderedRange()
+      : { start: 0, end: this.layout().rows.length };
+    return !!starListLazyRange(this.layout(), range, (option) => option === undefined)?.missing;
+  });
+
+  private readonly lazyRequests = new StarLazyRequests();
+
   constructor() {
+    // `lazy`: ask for the options of the rendered rows that are not loaded, and for a new filter.
+    effect(() => {
+      if (!this.lazy()) return;
+      const layout = this.layout();
+      const range = this.virtualScroll()
+        ? this.renderedRange()
+        : { start: 0, end: layout.rows.length };
+      const lazyRange = starListLazyRange(layout, range, (option) => option === undefined);
+      const query = this.query();
+      const page = Math.ceil(256 / this.itemSize()) + 4;
+      untracked(() => {
+        const event = this.lazyRequests.next(lazyRange, query, page);
+        if (event) this.lazyLoad.emit(event);
+      });
+    });
     effect((onCleanup) => {
       const viewport = this.viewport();
       if (!viewport) return;
@@ -448,7 +504,9 @@ export class StarListbox<TOption = unknown, TValue = TOption> implements FormVal
   protected labelOf(option: TOption): string {
     return optionText(option, this.optionLabel());
   }
+  /** Disabled options, and options that are not loaded yet (`lazy`), cannot be chosen. */
   protected isDisabled(option: TOption): boolean {
+    if (option === undefined) return true;
     const key = this.optionDisabled();
     return key ? !!readOption(option, key) : false;
   }
@@ -523,6 +581,16 @@ export class StarListbox<TOption = unknown, TValue = TOption> implements FormVal
     if (offset !== null) viewport.scrollToOffset(offset);
   }
 
+  /** First loaded option from `start` in the direction `step` (then back), or -1. */
+  private loadedFrom(options: readonly TOption[], start: number, step: 1 | -1): number {
+    for (const dir of [step, -step]) {
+      for (let i = start; i >= 0 && i < options.length; i += dir) {
+        if (options[i] !== undefined) return i;
+      }
+    }
+    return -1;
+  }
+
   protected onKeydown(event: KeyboardEvent): void {
     const options = this.visible();
     if (!options.length || this.disabled()) return;
@@ -530,11 +598,15 @@ export class StarListbox<TOption = unknown, TValue = TOption> implements FormVal
     const page = starListPageSize(this.viewport()?.getViewportSize() || 256, this.itemSize());
     const move = (key: StarListNavigationKey | number) => {
       event.preventDefault();
-      this.active.set(
+      const target =
         typeof key === 'number'
           ? key
-          : starListKeyboardTarget(key, this.active(), options.length, page),
-      );
+          : starListKeyboardTarget(key, this.active(), options.length, page);
+      // Options that are not loaded yet (`lazy`) are skipped in the direction of the key.
+      const step = key === 'ArrowUp' || key === 'PageUp' || key === 'End' ? -1 : 1;
+      const loaded = this.loadedFrom(options, target, step);
+      if (loaded < 0) return;
+      this.active.set(loaded);
       this.reveal(this.active());
       if (!this.multiple() && !fromInput) {
         const option = options[this.active()];

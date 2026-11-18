@@ -75,7 +75,7 @@ export abstract class StarAutoCompleteBase<TOption, TValue> extends StarOptionLi
     const query = this.query();
     const candidates =
       remote ??
-      (this.showAll() || !query
+      (this.showAll() || !query || this.lazy()
         ? this.options()
         : this.options().filter((option) => this.matchesQuery(option, query)));
     return this.groupedOrder(
@@ -107,13 +107,25 @@ export abstract class StarAutoCompleteBase<TOption, TValue> extends StarOptionLi
     this.linkField();
     inject(DestroyRef).onDestroy(() => clearTimeout(this.searchTimer));
     // New results: show them from the top and highlight the first one (autoHighlight) or nothing.
+    // With `lazy`, loaded pages replace placeholders: the list stays where it is until the text
+    // changes.
+    let lastQuery: string | null = null;
     effect(() => {
       this.visibleOptions();
+      const query = this.lazy() ? this.query() : null;
       untracked(() => {
+        const sameQuery = query !== null && query === lastQuery;
+        lastQuery = query;
+        if (this.lazy() && sameQuery) return;
         this.resetScroll();
         this.activeIndex.set(this.autoHighlight() ? this.firstEnabledFrom(0, 1) : -1);
       });
     });
+  }
+
+  /** With `lazy`, the request has the typed text. */
+  protected override lazyFilterText(): string {
+    return this.query();
   }
 
   protected initialActiveIndex(): number {
@@ -326,7 +338,8 @@ const TEMPLATE = `
         [style.max-height]="scrollHeight()"
         [attr.aria-label]="ariaLabel()"
         [attr.aria-labelledby]="labelledBy()"
-        (scroll)="onListScroll($event)"
+        [attr.aria-busy]="lazyBusy() || null"
+          (scroll)="onListScroll($event)"
       >
         @if (loadingRow(); as loader) {
           <li class="star-listbox__empty" role="presentation">
@@ -355,6 +368,7 @@ const TEMPLATE = `
             role="option"
             [id]="optionId(i)"
             [class.star-listbox__option--active]="activeIndex() === i"
+                [class.star-listbox__option--loading]="option === undefined"
             [attr.aria-selected]="activeIndex() === i"
             [attr.aria-disabled]="isDisabled(option) || null"
             [attr.aria-describedby]="describedBy(row)"
@@ -364,7 +378,10 @@ const TEMPLATE = `
             (mousemove)="isDisabled(option) || activeIndex.set(i)"
           >
             <span class="star-listbox__label">
-              @if (optionTemplate(); as custom) {
+              @if (option === undefined) {
+                <span class="star-skeleton star-listbox__skeleton" aria-hidden="true"></span>
+                <span class="star-sr-only">{{ text.loading }}</span>
+              } @else if (optionTemplate(); as custom) {
                 <ng-container *ngTemplateOutlet="custom.template; context: optionContext(option, i)" />
               } @else {
                 @let parts = highlight(labelOf(option));
