@@ -10,6 +10,7 @@ import {
   StarDateRangePicker,
   StarDateTemplate,
   StarMultiDatePicker,
+  StarSpecialDate,
 } from '@star-ng/ui/date-picker';
 import { StarField } from '@star-ng/ui/field';
 import { DOCS, DocsRow } from '../shared/docs';
@@ -154,6 +155,71 @@ import { DOCS, DocsRow } from '../shared/docs';
       </docs-example>
 
       <docs-example
+        heading="Opening hours"
+        source="date-picker/time-limits"
+        [script]="timeLimitsScript"
+        note="minTime and maxTime limit the time of every day with showTime, as HH:mm or HH:mm:ss text: here a visit from 08:00 to 18:30. The columns disable the other times, typed text outside them is not taken, and a new day keeps its time inside them. They add to minDate and maxDate."
+      >
+        <div class="docs-stack">
+          <star-date-picker
+            [(value)]="visit"
+            locale="en-GB"
+            showTime
+            minTime="08:00"
+            maxTime="18:30"
+            [stepMinute]="15"
+            ariaLabel="Site visit"
+          />
+          <p class="docs-output" role="status">Visit: {{ iso(visit()) }} {{ clock(visit()) }}</p>
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="Display and input formats"
+        source="date-picker/display-input-format"
+        [script]="displayFormatScript"
+        note="displayFormat sets the text while the field does not have the focus (a long date here). inputFormat sets the text while the user edits it; typed text is read in the order of day, month and year of that format, and the month names of the locale are accepted too (3 December 2026). Both default to dateFormat. keepInvalid keeps typed text that is not a date: the field is marked invalid and the value becomes null, so a required check fails."
+      >
+        <div class="docs-stack">
+          <star-date-picker
+            [(value)]="dueDate"
+            locale="en-GB"
+            [displayFormat]="displayLong"
+            [inputFormat]="inputNumeric"
+            keepInvalid
+            ariaLabel="Invoice due date"
+          />
+          <p class="docs-output" role="status">Due: {{ iso(dueDate()) }}</p>
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="ISO text values"
+        source="date-picker/data-type"
+        [script]="dataTypeScript"
+        note="dataType='string' gives ISO text instead of Date objects: yyyy-mm-dd, or yyyy-mm-ddTHH:mm (with seconds when showSeconds is on) with showTime. The text is a local date without a time zone, the form that a JSON API often uses. The range and the multiple-date picker have dataType too."
+      >
+        <div class="docs-stack">
+          <star-date-picker
+            [(value)]="issuedOn"
+            locale="en-GB"
+            dataType="string"
+            ariaLabel="Invoice issued on"
+          />
+          <star-date-range-picker
+            [(value)]="billingPeriod"
+            locale="en-GB"
+            dataType="string"
+            ariaLabel="Billing period"
+          />
+          <p class="docs-output" role="status">
+            Issued: {{ issuedOn() ?? 'none' }}. Period: {{ billingPeriod()?.start ?? 'none' }} to
+            {{ billingPeriod()?.end ?? 'none' }}
+          </p>
+        </div>
+      </docs-example>
+
+      <docs-example
         heading="Date and time"
         source="date-picker/time"
         [script]="timeScript"
@@ -191,6 +257,90 @@ import { DOCS, DocsRow } from '../shared/docs';
             Shift: {{ iso(shift()?.start) }} {{ clock(shift()?.start) }} to {{ iso(shift()?.end) }}
             {{ clock(shift()?.end) }}
           </p>
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="Seconds and steps"
+        source="date-picker/seconds"
+        [script]="secondsScript"
+        note="showSeconds adds a second column, and the text shows hh:mm:ss. stepHour, stepMinute and stepSecond set the values of the hour, minute and second columns (PrimeNG stepHour, stepMinute and stepSecond). Typed text with seconds is read in both clocks, for example 17/11/2026 14:30:15 or 17/11/2026 2:30:15 pm."
+      >
+        <div class="docs-stack">
+          <star-date-picker
+            [(value)]="invoiceSent"
+            locale="en-GB"
+            showTime
+            showSeconds
+            [stepHour]="1"
+            [stepMinute]="5"
+            [stepSecond]="15"
+            ariaLabel="Invoice sent at"
+          />
+          <p class="docs-output" role="status">
+            Sent: {{ iso(invoiceSent()) }} {{ clock(invoiceSent(), true) }}
+          </p>
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="Special dates"
+        source="date-picker/special-dates"
+        [script]="specialScript"
+        note="specialDates marks days in the calendar with a dot, for example holidays and invoice due dates. The accessible name of the day gets the kind and the label, for example 'Holiday: Company day'. See the calendar page for the details."
+      >
+        <div class="docs-stack">
+          <star-date-picker
+            [(value)]="paymentDate"
+            locale="en-GB"
+            [specialDates]="companyDays"
+            ariaLabel="Payment date"
+          />
+          <p class="docs-output" role="status">Payment: {{ iso(paymentDate()) }}</p>
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="Events"
+        source="date-picker/events"
+        [script]="eventsScript"
+        note="todayClick gives the date of today when the user chooses Today, and clearClick tells when the user chooses Clear (in the button bar or the clear button of the field). monthChange, yearChange and viewChange come from the calendar in the popup, as on the calendar."
+      >
+        <div class="docs-stack">
+          <star-date-picker
+            [(value)]="eventsDate"
+            locale="en-GB"
+            showButtonBar
+            showClear
+            (todayClick)="lastEvent.set('Today')"
+            (clearClick)="lastEvent.set('Clear')"
+            (monthChange)="lastEvent.set('Month ' + $event.month + '/' + $event.year)"
+            ariaLabel="Invoice review date"
+          />
+          <p class="docs-output" role="status">Last event: {{ lastEvent() }}</p>
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="Touch mode"
+        source="date-picker/touch"
+        [script]="touchScript"
+        note="touchUI opens the popup as a modal sheet in the middle of the window, in a native dialog with a backdrop and larger days. breakpoint='640px' does the same only when the window is 640px wide or less, and keeps the popover on a wider window. The keyboard model does not change; Escape and a click on the backdrop close the sheet."
+      >
+        <div class="docs-stack">
+          <star-date-picker
+            [(value)]="touchDate"
+            locale="en-GB"
+            touchUI
+            ariaLabel="Delivery date, touch"
+          />
+          <star-date-picker
+            [(value)]="touchDate"
+            locale="en-GB"
+            breakpoint="640px"
+            ariaLabel="Delivery date, small window"
+          />
+          <p class="docs-output" role="status">Delivery: {{ iso(touchDate()) }}</p>
         </div>
       </docs-example>
 
@@ -373,10 +523,12 @@ import { DOCS, DocsRow } from '../shared/docs';
 export class DatePickerPage {
   protected readonly iso = (date: Date | null | undefined): string =>
     date ? isoDay(date) : 'none';
-  protected readonly clock = (date: Date | null | undefined): string =>
-    date
-      ? `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
-      : '';
+  protected readonly clock = (date: Date | null | undefined, seconds = false): string => {
+    if (!date) return '';
+    const pad = (part: number) => String(part).padStart(2, '0');
+    const time = `${pad(date.getHours())}:${pad(date.getMinutes())}`;
+    return seconds ? `${time}:${pad(date.getSeconds())}` : time;
+  };
 
   protected readonly delivery = signal<Date | null>(new Date(2026, 10, 17));
   protected readonly booking = signal<StarDateRange | null>({
@@ -405,11 +557,34 @@ export class DatePickerPage {
     year: 'numeric',
   };
 
+  protected readonly visit = signal<Date | null>(new Date(2026, 10, 18, 10, 0));
+  protected readonly dueDate = signal<Date | null>(new Date(2026, 11, 15));
+  protected readonly displayLong: Intl.DateTimeFormatOptions = { dateStyle: 'long' };
+  protected readonly inputNumeric: Intl.DateTimeFormatOptions = {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  };
+  protected readonly issuedOn = signal<string | null>('2026-11-17');
+  protected readonly billingPeriod = signal<StarDateRange<string> | null>({
+    start: '2026-11-01',
+    end: '2026-11-30',
+  });
+
   protected readonly meeting = signal<Date | null>(new Date(2026, 10, 17, 9, 30));
   protected readonly shift = signal<StarDateRange | null>({
     start: new Date(2026, 10, 16, 8, 0),
     end: new Date(2026, 10, 20, 17, 30),
   });
+  protected readonly touchDate = signal<Date | null>(new Date(2026, 10, 24));
+  protected readonly eventsDate = signal<Date | null>(new Date(2026, 10, 17));
+  protected readonly lastEvent = signal('none');
+  protected readonly paymentDate = signal<Date | null>(new Date(2026, 11, 2));
+  protected readonly companyDays: readonly StarSpecialDate[] = [
+    { date: '2026-12-04', label: 'Company day', kind: 'holiday' },
+    { date: '2026-12-15', label: 'Invoice due', kind: 'event' },
+  ];
+  protected readonly invoiceSent = signal<Date | null>(new Date(2026, 10, 17, 14, 30, 15));
   protected readonly reportMonth = signal<Date | null>(new Date(2026, 10, 1));
   protected readonly reportYear = signal<Date | null>(new Date(2026, 0, 1));
 
@@ -447,6 +622,24 @@ readonly longFormat: Intl.DateTimeFormatOptions = {
   start: new Date(2026, 10, 16, 8, 0),
   end: new Date(2026, 10, 20, 17, 30),
 });`;
+  protected readonly timeLimitsScript = `readonly visit = signal<Date | null>(new Date(2026, 10, 18, 10, 0));`;
+  protected readonly displayFormatScript = `readonly dueDate = signal<Date | null>(new Date(2026, 11, 15));
+readonly displayLong: Intl.DateTimeFormatOptions = { dateStyle: 'long' };
+readonly inputNumeric: Intl.DateTimeFormatOptions = { day: '2-digit', month: '2-digit', year: 'numeric' };`;
+  protected readonly dataTypeScript = `readonly issuedOn = signal<string | null>('2026-11-17');
+readonly billingPeriod = signal<StarDateRange<string> | null>({
+  start: '2026-11-01',
+  end: '2026-11-30',
+});`;
+  protected readonly touchScript = `readonly touchDate = signal<Date | null>(new Date(2026, 10, 24));`;
+  protected readonly eventsScript = `readonly eventsDate = signal<Date | null>(new Date(2026, 10, 17));
+readonly lastEvent = signal('none');`;
+  protected readonly specialScript = `readonly paymentDate = signal<Date | null>(new Date(2026, 11, 2));
+readonly companyDays: readonly StarSpecialDate[] = [
+  { date: '2026-12-04', label: 'Company day', kind: 'holiday' },
+  { date: '2026-12-15', label: 'Invoice due', kind: 'event' },
+];`;
+  protected readonly secondsScript = `readonly invoiceSent = signal<Date | null>(new Date(2026, 10, 17, 14, 30, 15));`;
   protected readonly formScript = `readonly orderModel = signal<{ deliveryDate: Date | null }>({ deliveryDate: null });
 readonly order = form(this.orderModel, (path) => {
   required(path.deliveryDate, { message: 'Choose a delivery date.' });
@@ -487,7 +680,7 @@ readonly iso = (date: Date | null) => (date ? isoDay(date) : 'none');
     {
       name: 'ng-template[starDate]',
       description:
-        'Content child. Replaces the content of a day button. The button keeps its accessible name (the full date), aria-current, aria-disabled and the keys. The context has $implicit (the date), today, selected, disabled and outside. Do not add focusable elements: the calendar owns the keys. With two or more months the template applies to every month.',
+        'Content child. Replaces the content of a day button. The button keeps its accessible name (the full date), aria-current, aria-disabled and the keys. The context has $implicit (the date), today, selected, disabled, outside and special (the entry of specialDates, or null). Do not add focusable elements: the calendar owns the keys. With two or more months the template applies to every month.',
     },
     {
       name: 'ng-template[starHeader]',
@@ -512,6 +705,15 @@ readonly iso = (date: Date | null) => (date ? isoDay(date) : 'none');
       description: 'Today marker, chosen day, and chosen hour and minute.',
     },
     { name: '--star-primary-soft', description: 'Fill between the two ends of a range.' },
+    { name: '--star-scrim-modal', description: 'Backdrop of the sheet (touchUI, breakpoint).' },
+    {
+      name: '--star-calendar-special',
+      description: 'Dot of a special date. Default: --star-accent.',
+    },
+    {
+      name: '--star-calendar-holiday',
+      description: 'Dot of a holiday (special date). Default: --star-warning.',
+    },
   ];
   protected readonly keyboard: readonly DocsRow[] = [
     { name: 'Arrow down / Alt + Arrow down', description: 'In the field: opens the popup.' },
@@ -545,7 +747,11 @@ readonly iso = (date: Date | null) => (date ? isoDay(date) : 'none');
   ];
 
   protected readonly helpers: readonly DocsRow[] = [
-    { name: 'StarDateRange', description: 'Interface { start: Date | null; end: Date | null }.' },
+    {
+      name: 'StarDateRange',
+      description:
+        "Interface { start: T | null; end: T | null }. T is Date by default, or string with dataType='string'.",
+    },
     { name: 'startOfDay(date)', description: 'The same calendar day at local midnight.' },
     {
       name: 'addDays(date, days)',
@@ -593,9 +799,9 @@ readonly iso = (date: Date | null) => (date ? isoDay(date) : 'none');
       description: 'Placeholder text such as dd/mm/yyyy or mm/dd/yyyy for the locale.',
     },
     {
-      name: 'parseDate(text, locale)',
+      name: 'parseDate(text, locale, format?)',
       description:
-        'Reads typed text: ISO yyyy-mm-dd, or the numeric order of the locale with any separator. Returns null when the text is not a real date.',
+        'Reads typed text: ISO yyyy-mm-dd, or the order of day, month and year of the locale (or of the optional Intl.DateTimeFormat options) with any separator. The month names of the locale are accepted. Returns null when the text is not a real date.',
     },
     {
       name: 'isoWeek(date)',

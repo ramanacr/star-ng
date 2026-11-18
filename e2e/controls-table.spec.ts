@@ -365,6 +365,74 @@ test.describe('table: sorting and filtering', () => {
     const totals = (await column(table, 6).allTextContents()).map(money);
     expect(totals).toEqual([...totals].sort((a, b) => a - b));
   });
+
+  test('filter menu: a dialog with rules, Enter applies, focus returns, Tab stays inside', async ({
+    page,
+  }) => {
+    await openPage(page, '/controls/table-sort-filter', 'Table sorting and filtering');
+    const live = example(page, 'Filter menu');
+    const table = live.getByRole('table', { name: 'Invoices with filter menus' });
+    await expect(table.locator('.star-table__filters')).toHaveCount(0);
+    const button = table.getByRole('button', { name: 'Filter Customer', exact: true });
+    await expect(button).toHaveAttribute('aria-haspopup', 'dialog');
+    await expect(button).toHaveAttribute('aria-expanded', 'false');
+    await button.click();
+    const dialog = page.getByRole('dialog', { name: 'Filter Customer' });
+    await expect(dialog).toBeVisible();
+    await expect(button).toHaveAttribute('aria-expanded', 'true');
+    await dialog.getByRole('combobox', { name: 'Match mode' }).selectOption('startsWith');
+    await dialog.getByRole('textbox', { name: 'Filter by Customer' }).fill('ava');
+    // Tab and Shift + Tab stay inside the dialog.
+    for (let i = 0; i < 6; i++) await page.keyboard.press('Tab');
+    await expect(dialog.locator(':focus')).toHaveCount(1);
+    await dialog.getByRole('textbox', { name: 'Filter by Customer' }).press('Enter');
+    await expect(dialog).toBeHidden();
+    const active = table.getByRole('button', { name: 'Filter Customer, active' });
+    await expect(active).toBeFocused();
+    await expect(column(table, 2)).toHaveText(['Ava Stone', 'Ava Stone', 'Ava Stone', 'Ava Stone']);
+
+    // Two number rules joined with Match any.
+    await table.getByRole('button', { name: 'Filter Total' }).click();
+    const total = page.getByRole('dialog', { name: 'Filter Total' });
+    await expect(total.getByRole('combobox', { name: 'Match mode' })).toHaveValue('gte');
+    await total.getByRole('spinbutton', { name: 'Filter by Total' }).fill('400');
+    await total.getByRole('button', { name: 'Add rule' }).click();
+    await total.getByRole('combobox', { name: 'Match mode' }).nth(1).selectOption('lt');
+    await total.getByRole('spinbutton', { name: 'Filter by Total' }).nth(1).fill('10');
+    await total.getByRole('combobox', { name: 'Combine rules' }).selectOption('or');
+    await total.getByRole('button', { name: 'Apply' }).click();
+    await expect(live.getByRole('status')).toContainText('"operator":"or"');
+
+    // Escape closes without a change; Clear removes the filter.
+    await active.click();
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await expect(active).toBeFocused();
+    await active.click();
+    await page
+      .getByRole('dialog', { name: 'Filter Customer' })
+      .getByRole('button', { name: 'Clear' })
+      .click();
+    await expect(table.getByRole('button', { name: 'Filter Customer', exact: true })).toBeFocused();
+  });
+
+  test('custom match mode: Within 7 days', async ({ page }) => {
+    await openPage(page, '/controls/table-sort-filter', 'Table sorting and filtering');
+    const live = example(page, 'Custom match mode');
+    const table = live.getByRole('table', { name: 'Orders with a custom match mode' });
+    await table.getByRole('button', { name: 'Filter Placed' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Filter Placed' });
+    const mode = dialog.getByRole('combobox', { name: 'Match mode' });
+    await expect(mode.locator('option')).toHaveText([
+      'Within 7 days',
+      'Date is',
+      'Date is before',
+      'Date is after',
+    ]);
+    await dialog.getByLabel('Filter by Placed').fill('2026-01-07');
+    await dialog.getByRole('button', { name: 'Apply' }).click();
+    await expect(live.locator('.star-paginator__report')).toContainText('of 5');
+  });
 });
 
 test.describe('table: paging', () => {
@@ -508,6 +576,69 @@ test.describe('table: selection', () => {
     await page.keyboard.press('ArrowUp');
     await expect(live.getByRole('status')).toHaveText('Chosen: ORD-1002');
     await expect(radios.nth(1)).toBeChecked();
+  });
+
+  test('meta-key selection: click, Ctrl + click, Shift + click and the keyboard', async ({
+    page,
+  }) => {
+    await openPage(page, '/controls/table-selection', 'Table selection');
+    const live = example(page, 'Meta-key selection');
+    const table = live.getByRole('table', { name: 'Orders with meta-key selection' });
+    const status = live.getByRole('status');
+    const cell = (index: number) => bodyRows(table).nth(index).locator('td').nth(2);
+    await cell(1).click();
+    await expect(status).toContainText('1 selected. Selected ORD-1002');
+    await cell(3).click({ modifiers: ['ControlOrMeta'] });
+    await expect(status).toContainText('2 selected');
+    await cell(5).click({ modifiers: ['Shift'] });
+    await expect(status).toContainText('3 selected');
+    await expect(bodyRows(table).nth(4)).toHaveAttribute('aria-selected', 'true');
+    await cell(0).click();
+    await expect(status).toContainText('1 selected');
+
+    // The rows are one tab stop; the arrow keys move, Space and Shift + arrow select.
+    await expect(bodyRows(table).nth(0)).toBeFocused();
+    await expect(bodyRows(table).nth(1)).toHaveAttribute('tabindex', '-1');
+    await page.keyboard.press('ArrowDown');
+    await expect(bodyRows(table).nth(1)).toBeFocused();
+    await page.keyboard.press('Space');
+    await expect(status).toContainText('2 selected');
+    await page.keyboard.press('Shift+ArrowDown');
+    await page.keyboard.press('Shift+ArrowDown');
+    await expect(bodyRows(table).nth(3)).toBeFocused();
+    await expect(status).toContainText('4 selected');
+    await expect(
+      bodyRows(table).nth(3).getByRole('checkbox', { name: 'Select row ORD-1004' }),
+    ).toBeChecked();
+  });
+
+  test('check box selection: select-all of the filter result, unselectable rows, cancel', async ({
+    page,
+  }) => {
+    await openPage(page, '/controls/table-selection', 'Table selection');
+    const live = example(page, 'Check box selection');
+    const table = live.getByRole('table', { name: 'Orders with selectable rows' });
+    const status = live.getByRole('status');
+    const header = table.locator('thead').getByRole('checkbox', { name: 'Select all rows' });
+    // Cancelled orders cannot be selected.
+    const cancelled = bodyRows(table).filter({ hasText: 'Cancelled' }).first();
+    await expect(cancelled.getByRole('checkbox')).toBeDisabled();
+
+    const boxes = table.locator('tbody').getByRole('checkbox', { disabled: false });
+    await boxes.nth(0).check();
+    await expect(status).toHaveText('1 selected');
+    await expect(header).toHaveJSProperty('indeterminate', true);
+    // Shift + Space on a later box selects the range from the last toggled row.
+    await boxes.nth(2).focus();
+    await page.keyboard.press('Shift+Space');
+    await expect(status).toHaveText('3 selected');
+    await expect(boxes.nth(1)).toBeChecked();
+
+    // All selectable orders are more than 20: the example cancels the change.
+    await header.click();
+    await expect(status).toHaveText('3 selected, more than 20 refused');
+    await expect(header).not.toBeChecked();
+    await expect(header).toHaveJSProperty('indeterminate', true);
   });
 
   test('emits the row of a click and ignores a click on a control', async ({ page }) => {

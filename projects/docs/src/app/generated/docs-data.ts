@@ -1725,6 +1725,20 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Shows the ISO 8601 week number at the start of each week."
       },
       {
+        "name": "showOtherMonths",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Shows the days of the month before and after in the first and last week (PrimeNG `showOtherMonths`). Off: those cells are empty. With two or more months they are always empty."
+      },
+      {
+        "name": "selectOtherMonths",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "The shown days of the month before and after can be chosen (PrimeNG `selectOtherMonths`). Off: they are shown but disabled (`aria-disabled`)."
+      },
+      {
         "name": "range",
         "type": "StarDateRange | null",
         "default": "null",
@@ -1781,6 +1795,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "BCP 47 locale for names. Default: `locale` of `provideStarNg`, else the browser locale."
       },
       {
+        "name": "specialDates",
+        "type": "readonly StarSpecialDate[]",
+        "default": "[]",
+        "required": false,
+        "description": "Marked days, for example holidays or due dates (Ignite UI `specialDates`). The day gets a dot, and its accessible name gets the kind and the label: \"12 March 2026, Holiday: Company day\". The `starDate` context has the entry as `special`."
+      },
+      {
         "name": "dateTemplate",
         "type": "TemplateRef<StarDateContext> | null",
         "default": "null",
@@ -1796,6 +1817,27 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": ""
+      },
+      {
+        "name": "monthChange",
+        "type": "StarCalendarMonthChange",
+        "default": null,
+        "required": false,
+        "description": "The user moved to another month (arrows, keys, the month view, or a day of another month). With two or more months, the first shown month. PrimeNG `onMonthChange`, Ignite UI `viewDateChanged`."
+      },
+      {
+        "name": "yearChange",
+        "type": "StarCalendarYearChange",
+        "default": null,
+        "required": false,
+        "description": "The user moved to another year (PrimeNG `onYearChange`)."
+      },
+      {
+        "name": "viewChange",
+        "type": "StarCalendarView",
+        "default": null,
+        "required": false,
+        "description": "The user switched between the day, month and year views (Ignite UI `activeViewChanged`)."
       }
     ]
   },
@@ -2638,7 +2680,49 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "Intl.DateTimeFormatOptions",
         "default": "DEFAULT_DATE_FORMAT",
         "required": false,
-        "description": "`Intl.DateTimeFormat` options for the input text (default numeric day / month / year)."
+        "description": "`Intl.DateTimeFormat` options for the input text (default numeric day / month / year). The shared default of `displayFormat` and `inputFormat`."
+      },
+      {
+        "name": "displayFormat",
+        "type": "Intl.DateTimeFormatOptions | null",
+        "default": "null",
+        "required": false,
+        "description": "`Intl.DateTimeFormat` options of the text while the field does not have the focus, for example `{ dateStyle: 'long' }` (Ignite UI `displayFormat`). Default: `dateFormat`."
+      },
+      {
+        "name": "inputFormat",
+        "type": "Intl.DateTimeFormatOptions | null",
+        "default": "null",
+        "required": false,
+        "description": "`Intl.DateTimeFormat` options of the text while the field has the focus (Ignite UI `inputFormat`, PrimeNG `dateFormat`). Typed text is read in the order of day, month and year of this format, with any separators; the month names of the locale are accepted too. Default: `dateFormat`."
+      },
+      {
+        "name": "keepInvalid",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Keeps typed text that is not a valid date (PrimeNG `keepInvalid`). The field is marked invalid (`aria-invalid`) and the value becomes empty, so a required check fails. Without it, such text goes back to the text of the value."
+      },
+      {
+        "name": "dataType",
+        "type": "'date' | 'string'",
+        "default": "'date'",
+        "required": false,
+        "description": "Type of the value (PrimeNG `dataType`): `'date'` (default) gives `Date` objects, `'string'` gives ISO text: `yyyy-mm-dd`, or `yyyy-mm-ddTHH:mm` (`yyyy-mm-ddTHH:mm:ss` with `showSeconds`) with `showTime`. The text that the picker writes is a local date and time, without a time zone. A value may be a `Date` or ISO text in both modes; the picker also reads fractional seconds and a zone (`2026-11-22T13:30:15.123Z`, `...+01:00`), as server JSON often has them, and shows that instant in local time."
+      },
+      {
+        "name": "touchUI",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Opens the popup as a modal sheet in the middle of the window, in a native `<dialog>` with a backdrop, and with larger days for touch (PrimeNG `touchUI`). The keyboard model does not change; Escape and a click on the backdrop close it. While it is open, the page does not scroll (the scroll lock of `star-dialog`)."
+      },
+      {
+        "name": "breakpoint",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Window width at or below which the popup opens as a sheet (as `touchUI`): a CSS length, for example `'640px'` or `'40rem'`, used in the media query `(max-width: <breakpoint>)` (PrimeNG `breakpoint`). The width is checked when the popup opens. While the sheet is open, the page does not scroll."
       },
       {
         "name": "numberOfMonths",
@@ -2655,11 +2739,67 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Shows the ISO 8601 week number at the start of each week."
       },
       {
+        "name": "showOtherMonths",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Shows the days of the month before and after (PrimeNG `showOtherMonths`)."
+      },
+      {
+        "name": "selectOtherMonths",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "The shown days of the month before and after can be chosen (PrimeNG `selectOtherMonths`)."
+      },
+      {
+        "name": "specialDates",
+        "type": "readonly StarSpecialDate[]",
+        "default": "[]",
+        "required": false,
+        "description": "Marked days in the calendar, for example holidays (Ignite UI `specialDates`). The kind and the label are part of the accessible name of the day."
+      },
+      {
         "name": "hourFormat",
         "type": "'24' | '12'",
         "default": "'24'",
         "required": false,
         "description": "Clock of the typed time with `showTime`: `'24'` (14:30) or `'12'` (2:30 PM). Both forms are accepted when the user types."
+      },
+      {
+        "name": "showSeconds",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Adds seconds to the time with `showTime`: the text is `hh:mm:ss` and the popup has a second column (PrimeNG `showSeconds`)."
+      },
+      {
+        "name": "minTime",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Earliest and latest time of every day with `showTime`, `HH:mm` or `HH:mm:ss`, for example opening hours (Ignite UI `minValue` / `maxValue` of the time part). They add to `minDate` / `maxDate`: the columns disable the other times, typed text outside them is not taken, and a picked day moves its time into them."
+      },
+      {
+        "name": "maxTime",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "stepHour",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Hour step of the time columns with `showTime` (PrimeNG `stepHour`)."
+      },
+      {
+        "name": "stepSecond",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Second step of the time columns with `showSeconds` (PrimeNG `stepSecond`)."
       },
       {
         "name": "showButtonBar",
@@ -2768,6 +2908,41 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": ""
+      },
+      {
+        "name": "monthChange",
+        "type": "StarCalendarMonthChange",
+        "default": null,
+        "required": false,
+        "description": "The user moved the calendar to another month (PrimeNG `onMonthChange`)."
+      },
+      {
+        "name": "yearChange",
+        "type": "StarCalendarYearChange",
+        "default": null,
+        "required": false,
+        "description": "The user moved the calendar to another year (PrimeNG `onYearChange`)."
+      },
+      {
+        "name": "viewChange",
+        "type": "StarCalendarView",
+        "default": null,
+        "required": false,
+        "description": "The user switched the calendar between the day, month and year views."
+      },
+      {
+        "name": "todayClick",
+        "type": "Date",
+        "default": null,
+        "required": false,
+        "description": "The user chose Today in the button bar, after the value changed; the event is today (PrimeNG `onTodayClick`). Not emitted when today cannot be chosen."
+      },
+      {
+        "name": "clearClick",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "The user chose Clear in the button bar or the clear button, after the value was cleared (PrimeNG `onClearClick`)."
       }
     ]
   },
@@ -2846,7 +3021,55 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "Intl.DateTimeFormatOptions",
         "default": "DEFAULT_DATE_FORMAT",
         "required": false,
-        "description": "`Intl.DateTimeFormat` options for the input text (default numeric day / month / year).",
+        "description": "`Intl.DateTimeFormat` options for the input text (default numeric day / month / year). The shared default of `displayFormat` and `inputFormat`.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "displayFormat",
+        "type": "Intl.DateTimeFormatOptions | null",
+        "default": "null",
+        "required": false,
+        "description": "`Intl.DateTimeFormat` options of the text while the field does not have the focus, for example `{ dateStyle: 'long' }` (Ignite UI `displayFormat`). Default: `dateFormat`.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "inputFormat",
+        "type": "Intl.DateTimeFormatOptions | null",
+        "default": "null",
+        "required": false,
+        "description": "`Intl.DateTimeFormat` options of the text while the field has the focus (Ignite UI `inputFormat`, PrimeNG `dateFormat`). Typed text is read in the order of day, month and year of this format, with any separators; the month names of the locale are accepted too. Default: `dateFormat`.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "keepInvalid",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Keeps typed text that is not a valid date (PrimeNG `keepInvalid`). The field is marked invalid (`aria-invalid`) and the value becomes empty, so a required check fails. Without it, such text goes back to the text of the value.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "dataType",
+        "type": "'date' | 'string'",
+        "default": "'date'",
+        "required": false,
+        "description": "Type of the value (PrimeNG `dataType`): `'date'` (default) gives `Date` objects, `'string'` gives ISO text: `yyyy-mm-dd`, or `yyyy-mm-ddTHH:mm` (`yyyy-mm-ddTHH:mm:ss` with `showSeconds`) with `showTime`. The text that the picker writes is a local date and time, without a time zone. A value may be a `Date` or ISO text in both modes; the picker also reads fractional seconds and a zone (`2026-11-22T13:30:15.123Z`, `...+01:00`), as server JSON often has them, and shows that instant in local time.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "touchUI",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Opens the popup as a modal sheet in the middle of the window, in a native `<dialog>` with a backdrop, and with larger days for touch (PrimeNG `touchUI`). The keyboard model does not change; Escape and a click on the backdrop close it. While it is open, the page does not scroll (the scroll lock of `star-dialog`).",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "breakpoint",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Window width at or below which the popup opens as a sheet (as `touchUI`): a CSS length, for example `'640px'` or `'40rem'`, used in the media query `(max-width: <breakpoint>)` (PrimeNG `breakpoint`). The width is checked when the popup opens. While the sheet is open, the page does not scroll.",
         "inheritedFrom": "StarDateInputBase"
       },
       {
@@ -2866,11 +3089,75 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "inheritedFrom": "StarDateInputBase"
       },
       {
+        "name": "showOtherMonths",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Shows the days of the month before and after (PrimeNG `showOtherMonths`).",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "selectOtherMonths",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "The shown days of the month before and after can be chosen (PrimeNG `selectOtherMonths`).",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "specialDates",
+        "type": "readonly StarSpecialDate[]",
+        "default": "[]",
+        "required": false,
+        "description": "Marked days in the calendar, for example holidays (Ignite UI `specialDates`). The kind and the label are part of the accessible name of the day.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
         "name": "hourFormat",
         "type": "'24' | '12'",
         "default": "'24'",
         "required": false,
         "description": "Clock of the typed time with `showTime`: `'24'` (14:30) or `'12'` (2:30 PM). Both forms are accepted when the user types.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "showSeconds",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Adds seconds to the time with `showTime`: the text is `hh:mm:ss` and the popup has a second column (PrimeNG `showSeconds`).",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "minTime",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Earliest and latest time of every day with `showTime`, `HH:mm` or `HH:mm:ss`, for example opening hours (Ignite UI `minValue` / `maxValue` of the time part). They add to `minDate` / `maxDate`: the columns disable the other times, typed text outside them is not taken, and a picked day moves its time into them.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "maxTime",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "stepHour",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Hour step of the time columns with `showTime` (PrimeNG `stepHour`).",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "stepSecond",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Second step of the time columns with `showSeconds` (PrimeNG `stepSecond`).",
         "inheritedFrom": "StarDateInputBase"
       },
       {
@@ -2994,10 +3281,10 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [
       {
         "name": "value",
-        "type": "Date | null",
+        "type": "T | null",
         "default": "null",
         "required": false,
-        "description": ""
+        "description": "The date: a `Date`, or ISO text with `dataType: 'string'`."
       }
     ],
     "outputs": [
@@ -3023,6 +3310,46 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "monthChange",
+        "type": "StarCalendarMonthChange",
+        "default": null,
+        "required": false,
+        "description": "The user moved the calendar to another month (PrimeNG `onMonthChange`).",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "yearChange",
+        "type": "StarCalendarYearChange",
+        "default": null,
+        "required": false,
+        "description": "The user moved the calendar to another year (PrimeNG `onYearChange`).",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "viewChange",
+        "type": "StarCalendarView",
+        "default": null,
+        "required": false,
+        "description": "The user switched the calendar between the day, month and year views.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "todayClick",
+        "type": "Date",
+        "default": null,
+        "required": false,
+        "description": "The user chose Today in the button bar, after the value changed; the event is today (PrimeNG `onTodayClick`). Not emitted when today cannot be chosen.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "clearClick",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "The user chose Clear in the button bar or the clear button, after the value was cleared (PrimeNG `onClearClick`).",
         "inheritedFrom": "StarDateInputBase"
       },
       {
@@ -3109,7 +3436,55 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "Intl.DateTimeFormatOptions",
         "default": "DEFAULT_DATE_FORMAT",
         "required": false,
-        "description": "`Intl.DateTimeFormat` options for the input text (default numeric day / month / year).",
+        "description": "`Intl.DateTimeFormat` options for the input text (default numeric day / month / year). The shared default of `displayFormat` and `inputFormat`.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "displayFormat",
+        "type": "Intl.DateTimeFormatOptions | null",
+        "default": "null",
+        "required": false,
+        "description": "`Intl.DateTimeFormat` options of the text while the field does not have the focus, for example `{ dateStyle: 'long' }` (Ignite UI `displayFormat`). Default: `dateFormat`.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "inputFormat",
+        "type": "Intl.DateTimeFormatOptions | null",
+        "default": "null",
+        "required": false,
+        "description": "`Intl.DateTimeFormat` options of the text while the field has the focus (Ignite UI `inputFormat`, PrimeNG `dateFormat`). Typed text is read in the order of day, month and year of this format, with any separators; the month names of the locale are accepted too. Default: `dateFormat`.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "keepInvalid",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Keeps typed text that is not a valid date (PrimeNG `keepInvalid`). The field is marked invalid (`aria-invalid`) and the value becomes empty, so a required check fails. Without it, such text goes back to the text of the value.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "dataType",
+        "type": "'date' | 'string'",
+        "default": "'date'",
+        "required": false,
+        "description": "Type of the value (PrimeNG `dataType`): `'date'` (default) gives `Date` objects, `'string'` gives ISO text: `yyyy-mm-dd`, or `yyyy-mm-ddTHH:mm` (`yyyy-mm-ddTHH:mm:ss` with `showSeconds`) with `showTime`. The text that the picker writes is a local date and time, without a time zone. A value may be a `Date` or ISO text in both modes; the picker also reads fractional seconds and a zone (`2026-11-22T13:30:15.123Z`, `...+01:00`), as server JSON often has them, and shows that instant in local time.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "touchUI",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Opens the popup as a modal sheet in the middle of the window, in a native `<dialog>` with a backdrop, and with larger days for touch (PrimeNG `touchUI`). The keyboard model does not change; Escape and a click on the backdrop close it. While it is open, the page does not scroll (the scroll lock of `star-dialog`).",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "breakpoint",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Window width at or below which the popup opens as a sheet (as `touchUI`): a CSS length, for example `'640px'` or `'40rem'`, used in the media query `(max-width: <breakpoint>)` (PrimeNG `breakpoint`). The width is checked when the popup opens. While the sheet is open, the page does not scroll.",
         "inheritedFrom": "StarDateInputBase"
       },
       {
@@ -3129,11 +3504,75 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "inheritedFrom": "StarDateInputBase"
       },
       {
+        "name": "showOtherMonths",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Shows the days of the month before and after (PrimeNG `showOtherMonths`).",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "selectOtherMonths",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "The shown days of the month before and after can be chosen (PrimeNG `selectOtherMonths`).",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "specialDates",
+        "type": "readonly StarSpecialDate[]",
+        "default": "[]",
+        "required": false,
+        "description": "Marked days in the calendar, for example holidays (Ignite UI `specialDates`). The kind and the label are part of the accessible name of the day.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
         "name": "hourFormat",
         "type": "'24' | '12'",
         "default": "'24'",
         "required": false,
         "description": "Clock of the typed time with `showTime`: `'24'` (14:30) or `'12'` (2:30 PM). Both forms are accepted when the user types.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "showSeconds",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Adds seconds to the time with `showTime`: the text is `hh:mm:ss` and the popup has a second column (PrimeNG `showSeconds`).",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "minTime",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Earliest and latest time of every day with `showTime`, `HH:mm` or `HH:mm:ss`, for example opening hours (Ignite UI `minValue` / `maxValue` of the time part). They add to `minDate` / `maxDate`: the columns disable the other times, typed text outside them is not taken, and a picked day moves its time into them.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "maxTime",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "stepHour",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Hour step of the time columns with `showTime` (PrimeNG `stepHour`).",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "stepSecond",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Second step of the time columns with `showSeconds` (PrimeNG `stepSecond`).",
         "inheritedFrom": "StarDateInputBase"
       },
       {
@@ -3237,7 +3676,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "boolean",
         "default": "false",
         "required": false,
-        "description": "Adds a time of day to both ends. A new start is at 00:00 and a new end at 23:59; the popup has start and end time columns and stays open until the user chooses Done."
+        "description": "Adds a time of day to both ends. A new start is at 00:00 and a new end at 23:59 (23:59:59 with `showSeconds`); the popup has start and end time columns and stays open until the user chooses Done."
       },
       {
         "name": "stepMinute",
@@ -3250,10 +3689,10 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [
       {
         "name": "value",
-        "type": "StarDateRange | null",
+        "type": "StarDateRange<T> | null",
         "default": "null",
         "required": false,
-        "description": ""
+        "description": "The range: two `Date`s, or ISO text with `dataType: 'string'`."
       }
     ],
     "outputs": [
@@ -3279,6 +3718,46 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "monthChange",
+        "type": "StarCalendarMonthChange",
+        "default": null,
+        "required": false,
+        "description": "The user moved the calendar to another month (PrimeNG `onMonthChange`).",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "yearChange",
+        "type": "StarCalendarYearChange",
+        "default": null,
+        "required": false,
+        "description": "The user moved the calendar to another year (PrimeNG `onYearChange`).",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "viewChange",
+        "type": "StarCalendarView",
+        "default": null,
+        "required": false,
+        "description": "The user switched the calendar between the day, month and year views.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "todayClick",
+        "type": "Date",
+        "default": null,
+        "required": false,
+        "description": "The user chose Today in the button bar, after the value changed; the event is today (PrimeNG `onTodayClick`). Not emitted when today cannot be chosen.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "clearClick",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "The user chose Clear in the button bar or the clear button, after the value was cleared (PrimeNG `onClearClick`).",
         "inheritedFrom": "StarDateInputBase"
       },
       {
@@ -6572,7 +7051,55 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "Intl.DateTimeFormatOptions",
         "default": "DEFAULT_DATE_FORMAT",
         "required": false,
-        "description": "`Intl.DateTimeFormat` options for the input text (default numeric day / month / year).",
+        "description": "`Intl.DateTimeFormat` options for the input text (default numeric day / month / year). The shared default of `displayFormat` and `inputFormat`.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "displayFormat",
+        "type": "Intl.DateTimeFormatOptions | null",
+        "default": "null",
+        "required": false,
+        "description": "`Intl.DateTimeFormat` options of the text while the field does not have the focus, for example `{ dateStyle: 'long' }` (Ignite UI `displayFormat`). Default: `dateFormat`.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "inputFormat",
+        "type": "Intl.DateTimeFormatOptions | null",
+        "default": "null",
+        "required": false,
+        "description": "`Intl.DateTimeFormat` options of the text while the field has the focus (Ignite UI `inputFormat`, PrimeNG `dateFormat`). Typed text is read in the order of day, month and year of this format, with any separators; the month names of the locale are accepted too. Default: `dateFormat`.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "keepInvalid",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Keeps typed text that is not a valid date (PrimeNG `keepInvalid`). The field is marked invalid (`aria-invalid`) and the value becomes empty, so a required check fails. Without it, such text goes back to the text of the value.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "dataType",
+        "type": "'date' | 'string'",
+        "default": "'date'",
+        "required": false,
+        "description": "Type of the value (PrimeNG `dataType`): `'date'` (default) gives `Date` objects, `'string'` gives ISO text: `yyyy-mm-dd`, or `yyyy-mm-ddTHH:mm` (`yyyy-mm-ddTHH:mm:ss` with `showSeconds`) with `showTime`. The text that the picker writes is a local date and time, without a time zone. A value may be a `Date` or ISO text in both modes; the picker also reads fractional seconds and a zone (`2026-11-22T13:30:15.123Z`, `...+01:00`), as server JSON often has them, and shows that instant in local time.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "touchUI",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Opens the popup as a modal sheet in the middle of the window, in a native `<dialog>` with a backdrop, and with larger days for touch (PrimeNG `touchUI`). The keyboard model does not change; Escape and a click on the backdrop close it. While it is open, the page does not scroll (the scroll lock of `star-dialog`).",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "breakpoint",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Window width at or below which the popup opens as a sheet (as `touchUI`): a CSS length, for example `'640px'` or `'40rem'`, used in the media query `(max-width: <breakpoint>)` (PrimeNG `breakpoint`). The width is checked when the popup opens. While the sheet is open, the page does not scroll.",
         "inheritedFrom": "StarDateInputBase"
       },
       {
@@ -6592,11 +7119,75 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "inheritedFrom": "StarDateInputBase"
       },
       {
+        "name": "showOtherMonths",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Shows the days of the month before and after (PrimeNG `showOtherMonths`).",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "selectOtherMonths",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "The shown days of the month before and after can be chosen (PrimeNG `selectOtherMonths`).",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "specialDates",
+        "type": "readonly StarSpecialDate[]",
+        "default": "[]",
+        "required": false,
+        "description": "Marked days in the calendar, for example holidays (Ignite UI `specialDates`). The kind and the label are part of the accessible name of the day.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
         "name": "hourFormat",
         "type": "'24' | '12'",
         "default": "'24'",
         "required": false,
         "description": "Clock of the typed time with `showTime`: `'24'` (14:30) or `'12'` (2:30 PM). Both forms are accepted when the user types.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "showSeconds",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Adds seconds to the time with `showTime`: the text is `hh:mm:ss` and the popup has a second column (PrimeNG `showSeconds`).",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "minTime",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Earliest and latest time of every day with `showTime`, `HH:mm` or `HH:mm:ss`, for example opening hours (Ignite UI `minValue` / `maxValue` of the time part). They add to `minDate` / `maxDate`: the columns disable the other times, typed text outside them is not taken, and a picked day moves its time into them.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "maxTime",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "stepHour",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Hour step of the time columns with `showTime` (PrimeNG `stepHour`).",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "stepSecond",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Second step of the time columns with `showSeconds` (PrimeNG `stepSecond`).",
         "inheritedFrom": "StarDateInputBase"
       },
       {
@@ -6706,10 +7297,10 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [
       {
         "name": "value",
-        "type": "readonly Date[]",
+        "type": "readonly T[]",
         "default": "[]",
         "required": false,
-        "description": ""
+        "description": "The days: `Date`s, or ISO text with `dataType: 'string'`."
       }
     ],
     "outputs": [
@@ -6735,6 +7326,46 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "monthChange",
+        "type": "StarCalendarMonthChange",
+        "default": null,
+        "required": false,
+        "description": "The user moved the calendar to another month (PrimeNG `onMonthChange`).",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "yearChange",
+        "type": "StarCalendarYearChange",
+        "default": null,
+        "required": false,
+        "description": "The user moved the calendar to another year (PrimeNG `onYearChange`).",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "viewChange",
+        "type": "StarCalendarView",
+        "default": null,
+        "required": false,
+        "description": "The user switched the calendar between the day, month and year views.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "todayClick",
+        "type": "Date",
+        "default": null,
+        "required": false,
+        "description": "The user chose Today in the button bar, after the value changed; the event is today (PrimeNG `onTodayClick`). Not emitted when today cannot be chosen.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "clearClick",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "The user chose Clear in the button bar or the clear button, after the value was cleared (PrimeNG `onClearClick`).",
         "inheritedFrom": "StarDateInputBase"
       }
     ]
@@ -9480,6 +10111,48 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Case- and accent-insensitive text search over all columns."
       },
       {
+        "name": "globalFilterFields",
+        "type": "readonly string[] | null",
+        "default": "null",
+        "required": false,
+        "description": "Fields that the global filter searches (PrimeNG `globalFilterFields`). `null` or an empty list (default): all columns."
+      },
+      {
+        "name": "globalFilterMatchMode",
+        "type": "StarFilterMatchMode",
+        "default": "'contains'",
+        "required": false,
+        "description": "How the global filter text matches (default `contains`). A row passes when one searched cell matches; with `notContains`, when no searched cell has the text."
+      },
+      {
+        "name": "filterLocale",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Locale of the text filters (PrimeNG `filterLocale`): with it, `Intl.Collator` compares the folded texts, so letters that the locale treats as equal match. Default: no locale."
+      },
+      {
+        "name": "filterDisplay",
+        "type": "'row' | 'menu'",
+        "default": "'row'",
+        "required": false,
+        "description": "Where the column filters show (PrimeNG `filterDisplay`): `'row'` (default), a second header row; `'menu'`, a filter button in each header cell that opens a filter menu with match modes, \"Match all\" / \"Match any\" rules, Clear and Apply."
+      },
+      {
+        "name": "filterMaxRules",
+        "type": "number",
+        "default": "2",
+        "required": false,
+        "description": "Most rules per column in the filter menu (PrimeNG `maxConstraints`)."
+      },
+      {
+        "name": "showApplyButton",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Apply button in the filter menu (PrimeNG `showApplyButton`). `false`: every change in the menu filters at once."
+      },
+      {
         "name": "lazy",
         "type": "boolean",
         "default": "false",
@@ -9498,7 +10171,35 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "'single' | 'multiple' | null",
         "default": "null",
         "required": false,
-        "description": ""
+        "description": "Row selection. It adds the selection column: a check box per row and a tri-state header check box (`'multiple'`, PrimeNG `p-tableCheckbox` / `p-tableHeaderCheckbox`), or a radio per row (`'single'`, PrimeNG `p-tableRadioButton`)."
+      },
+      {
+        "name": "metaKeySelection",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Meta-key selection (PrimeNG `metaKeySelection`): a click selects only that row, Ctrl / Cmd + click toggles it, Shift + click selects a range. Rows become focusable (one tab stop): Arrow Up / Down move, Space toggles, Shift + Space and Shift + Arrow extend the range (a range only grows; Shift + Arrow back toward the anchor does not clear rows). The Arrow keys move between rendered rows: with virtual scroll, only within the rendered window. Default off: only single mode selects on a click."
+      },
+      {
+        "name": "selectionPageOnly",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "The header check box selects the rows of the current page only (PrimeNG `selectionPageOnly`). Default `true`, so a paginated table keeps its page-only header check box. Set it to `false` to select every selectable row of the current filter result, on all pages. Without a paginator the page holds all rows, so both values select the same rows."
+      },
+      {
+        "name": "rowSelectable",
+        "type": "((row: T) => boolean) | null",
+        "default": "null",
+        "required": false,
+        "description": "Rows that can be selected (PrimeNG `rowSelectable`). Other rows get a disabled check box and are skipped by the header check box, ranges and clicks."
+      },
+      {
+        "name": "rowLabel",
+        "type": "((row: T) => string) | null",
+        "default": "null",
+        "required": false,
+        "description": "Text that names a row in its check box (\"Select row Order 1042\"). Default: the text of the first visible column."
       },
       {
         "name": "rowExpandMode",
@@ -9619,7 +10320,21 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "readonly T[]",
         "default": "[]",
         "required": false,
-        "description": ""
+        "description": "Selected rows. Two-way. Rows match by `dataKey`, so new row objects stay selected."
+      },
+      {
+        "name": "selectionKeys",
+        "type": "readonly unknown[] | null",
+        "default": "null",
+        "required": false,
+        "description": "Keys (`dataKey`) of the selected rows (PrimeNG `selectionKeys`). Two-way. Bind an array to make the keys the source of the selection: it survives a lazy reload or an edit that gives new row objects, and keys of rows that are not in `value` (other lazy pages) stay selected. `selection` then follows the keys: it holds the row objects of the keys that are in `value` (fresh objects), plus the objects it already had for the other keys. `exportCsv({ selectionOnly })` uses the same rows. `null` (default): the keys come from `selection`."
+      },
+      {
+        "name": "selectAll",
+        "type": "boolean | null",
+        "default": "null",
+        "required": false,
+        "description": "State of the header check box when the owner decides what \"all\" means (PrimeNG `selectAll`), for lazy data. Two-way. `null` (default): the table selects the rows itself. With a boolean, the header check box shows it and a toggle only sets it and emits `headerCheckboxToggle`."
       },
       {
         "name": "expandedKeys",
@@ -9755,6 +10470,115 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": ""
+      },
+      {
+        "name": "filter",
+        "type": "StarTableFilterEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "After each change of `filters` (filter row, filter menu or the owner) or of `globalFilter`, in client mode: the filters and the rows that pass them (PrimeNG `onFilter`). A change of `globalFilterFields`, `globalFilterMatchMode` or `filterLocale` does not emit it. In lazy mode, `lazyLoad` carries the filters."
+      },
+      {
+        "name": "selectionChanging",
+        "type": "StarTableSelectionChangingEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "Fires before the selection changes, with the rows now and after. Call `cancel()` to keep the old selection (Ignite UI grid `rowSelectionChanging`). It fires only for changes that the user makes (check box, radio, row click, keyboard), not when the owner sets `selection`, `selectionKeys` or `selectAll`, and not when the table puts a cancelled change back."
+      },
+      {
+        "name": "rowSelect",
+        "type": "StarRowSelectEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "A row joined the selection (PrimeNG `onRowSelect`)."
+      },
+      {
+        "name": "rowUnselect",
+        "type": "StarRowSelectEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "A row left the selection (PrimeNG `onRowUnselect`)."
+      },
+      {
+        "name": "headerCheckboxToggle",
+        "type": "StarHeaderCheckboxToggleEvent",
+        "default": null,
+        "required": false,
+        "description": "The header check box was toggled (PrimeNG `onHeaderCheckboxToggle`)."
+      }
+    ]
+  },
+  "StarTableFilterMenu": {
+    "kind": "component",
+    "selector": "star-table-filter-menu",
+    "entry": "@star-ng/ui/table",
+    "description": "Filter menu of a `star-table` column (PrimeNG `p-columnFilter` with `display=\"menu\"`). The table renders it in the header cell when `filterDisplay` is `'menu'`. A button with `aria-haspopup=\"dialog\"` opens a labelled dialog (focus trap, focus goes back to the button) with the match mode, the value field(s) of the filter type, \"Match all\" / \"Match any\", \"Add rule\", Clear and Apply.",
+    "inputs": [
+      {
+        "name": "header",
+        "type": "string",
+        "default": null,
+        "required": true,
+        "description": "Column header text, for the names of the button and the dialog."
+      },
+      {
+        "name": "type",
+        "type": "StarColumnFilterType",
+        "default": null,
+        "required": true,
+        "description": ""
+      },
+      {
+        "name": "value",
+        "type": "StarFilterValue | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "The current filter value of the column."
+      },
+      {
+        "name": "matchModes",
+        "type": "readonly StarTableMatchMode[]",
+        "default": "[]",
+        "required": false,
+        "description": "Match modes to offer (default: the modes of the type)."
+      },
+      {
+        "name": "defaultMode",
+        "type": "StarTableMatchMode | null",
+        "default": "null",
+        "required": false,
+        "description": "Mode of a new rule (default: the first of `modes`)."
+      },
+      {
+        "name": "choices",
+        "type": "readonly string[]",
+        "default": "[]",
+        "required": false,
+        "description": "Choices of a `'select'` or `'multiselect'` filter."
+      },
+      {
+        "name": "maxRules",
+        "type": "number",
+        "default": "2",
+        "required": false,
+        "description": "Most rules that \"Add rule\" allows (PrimeNG `maxConstraints`)."
+      },
+      {
+        "name": "showApply",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Apply button; without it every change applies at once (PrimeNG `showApplyButton`)."
+      }
+    ],
+    "models": [],
+    "outputs": [
+      {
+        "name": "filterChange",
+        "type": "StarFilterValue | null",
+        "default": null,
+        "required": false,
+        "description": "The new filter value; `null` removes the filter."
       }
     ]
   },
@@ -10009,14 +10833,14 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-time-columns",
     "entry": "@star-ng/ui/date-picker",
-    "description": "The hour, minute and (in the 12-hour clock) am / pm columns of a time panel. `star-time-picker` shows them in its panel, and the date pickers show them under the calendar with `showTime`. The value is 24-hour `HH:mm` text, or `null`. Times outside `min` … `max` are disabled, and the minutes follow `stepMinute`. Each column is a listbox: Arrow up / down, Home and End move in a column, Arrow left / right move to the column that is on that side.",
+    "description": "The hour, minute, second (with `showSeconds`) and (in the 12-hour clock) am / pm columns of a time panel. `star-time-picker` shows them in its panel, and the date pickers show them under the calendar with `showTime`. The value is 24-hour `HH:mm` text (`HH:mm:ss` with `showSeconds`), or `null`. Times outside `min` … `max` are disabled, and the columns follow `stepHour`, `stepMinute` and `stepSecond`. Each column is a listbox: Arrow up / down, Home and End move in a column, Arrow left / right move to the column that is on that side.",
     "inputs": [
       {
         "name": "min",
         "type": "string | undefined",
         "default": "undefined",
         "required": false,
-        "description": "Earliest and latest time, `HH:mm`."
+        "description": "Earliest and latest time, `HH:mm` or `HH:mm:ss`."
       },
       {
         "name": "max",
@@ -10026,11 +10850,32 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
+        "name": "stepHour",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Hours of the hour column: 0, then every `stepHour` hours."
+      },
+      {
         "name": "stepMinute",
         "type": "number",
         "default": "1",
         "required": false,
         "description": "Minutes of the minute column: 0, then every `stepMinute` minutes."
+      },
+      {
+        "name": "stepSecond",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Seconds of the second column: 0, then every `stepSecond` seconds."
+      },
+      {
+        "name": "showSeconds",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Adds a second column; the value is `HH:mm:ss`."
       },
       {
         "name": "hourFormat",
@@ -10053,7 +10898,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "string | null",
         "default": "null",
         "required": false,
-        "description": "`HH:mm` in the 24-hour clock, or `null`."
+        "description": "`HH:mm` (or `HH:mm:ss` with `showSeconds`) in the 24-hour clock, or `null`."
       }
     ],
     "outputs": []
@@ -10116,14 +10961,14 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-time-picker",
     "entry": "@star-ng/ui/date-picker",
-    "description": "Time picker: a time of day without a date (PrimeNG `p-datepicker timeOnly`). The value is 24-hour `HH:mm` text, or `null`.",
+    "description": "Time picker: a time of day without a date (PrimeNG `p-datepicker timeOnly`, Ignite UI `igx-time-picker`). The value is 24-hour `HH:mm` text (`HH:mm:ss` with `showSeconds`), or `null`.",
     "inputs": [
       {
         "name": "min",
         "type": "string | undefined",
         "default": "undefined",
         "required": false,
-        "description": "Earliest and latest time, `HH:mm`."
+        "description": "Earliest and latest time, `HH:mm` or `HH:mm:ss` (PrimeNG `minDate` / `maxDate` with `timeOnly`, Ignite UI `minValue` / `maxValue`)."
       },
       {
         "name": "max",
@@ -10133,11 +10978,32 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
+        "name": "stepHour",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Hour step of the panel's hour column (PrimeNG `stepHour`)."
+      },
+      {
         "name": "stepMinute",
         "type": "number",
         "default": "1",
         "required": false,
         "description": "Minute step of the field's arrow keys and of the panel's minute column."
+      },
+      {
+        "name": "stepSecond",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Second step of the panel's second column and, with `showSeconds`, of the field's arrow keys."
+      },
+      {
+        "name": "showSeconds",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Adds seconds: the field and the panel show them, and the value is `HH:mm:ss`."
       },
       {
         "name": "hourFormat",
@@ -10216,7 +11082,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "string | null",
         "default": "null",
         "required": false,
-        "description": "`HH:mm` in the 24-hour clock, or `null`."
+        "description": "`HH:mm` (or `HH:mm:ss` with `showSeconds`) in the 24-hour clock, or `null`."
       }
     ],
     "outputs": [
@@ -11529,10 +12395,13 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "button/states": "<star-button [loading]=\"saving()\" (pressed)=\"save()\">Save changes</star-button>\n<star-button variant=\"secondary\" disabled>Disabled</star-button>\n<p class=\"docs-output\" role=\"status\">Saved {{ saves() }} times</p>",
   "button/variants": "<star-button variant=\"primary\">Save</star-button>\n<star-button variant=\"secondary\">Cancel</star-button>\n<star-button variant=\"ghost\">Skip</star-button>\n<star-button variant=\"success\">Approve</star-button>\n<star-button variant=\"warning\">Hold</star-button>\n<star-button variant=\"danger\">Delete</star-button>\n<star-button variant=\"ghost-danger\">Remove</star-button>",
   "calendar/basic": "<div class=\"docs-stack\">\n  <star-calendar\n    class=\"star-calendar--inline\"\n    [selected]=\"shipDate()\"\n    (dateSelect)=\"shipDate.set($event)\"\n    locale=\"en-GB\"\n    [firstDayOfWeek]=\"1\"\n  />\n  <p class=\"docs-output\" role=\"status\">Ship date: {{ iso(shipDate()) }}</p>\n</div>",
+  "calendar/events": "<div class=\"docs-stack\">\n  <star-calendar\n    class=\"star-calendar--inline\"\n    [selected]=\"eventsDate()\"\n    (dateSelect)=\"eventsDate.set($event)\"\n    (monthChange)=\"shownMonth.set($event.month + '/' + $event.year)\"\n    (viewChange)=\"shownView.set($event)\"\n    locale=\"en-GB\"\n    [firstDayOfWeek]=\"1\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Shown month: {{ shownMonth() }}. View: {{ shownView() }}\n  </p>\n</div>",
   "calendar/granularity": "<div class=\"docs-stack\">\n  <star-calendar\n    class=\"star-calendar--inline\"\n    granularity=\"month\"\n    [selected]=\"reportMonth()\"\n    (dateSelect)=\"reportMonth.set($event)\"\n    locale=\"en-GB\"\n  />\n  <p class=\"docs-output\" role=\"status\">Month: {{ iso(reportMonth()) }}</p>\n</div>",
   "calendar/months": "<star-calendar\n  class=\"star-calendar--inline\"\n  [selected]=\"stay()\"\n  (dateSelect)=\"stay.set($event)\"\n  [numberOfMonths]=\"2\"\n  showWeek\n  [minDate]=\"minDate\"\n  [maxDate]=\"maxDate\"\n  [disabledDays]=\"[0]\"\n  locale=\"en-GB\"\n  [firstDayOfWeek]=\"1\"\n/>",
+  "calendar/other-months": "<div class=\"docs-stack\">\n  <star-calendar\n    class=\"star-calendar--inline\"\n    [selected]=\"closingDate()\"\n    (dateSelect)=\"closingDate.set($event)\"\n    [selectOtherMonths]=\"false\"\n    locale=\"en-GB\"\n    [firstDayOfWeek]=\"1\"\n  />\n  <star-calendar\n    class=\"star-calendar--inline\"\n    [selected]=\"closingDate()\"\n    (dateSelect)=\"closingDate.set($event)\"\n    [showOtherMonths]=\"false\"\n    locale=\"en-GB\"\n    [firstDayOfWeek]=\"1\"\n  />\n  <p class=\"docs-output\" role=\"status\">Closing date: {{ iso(closingDate()) }}</p>\n</div>",
   "calendar/range": "<div class=\"docs-stack\">\n  <star-calendar\n    class=\"star-calendar--inline\"\n    mode=\"range\"\n    [range]=\"booking()\"\n    (dateSelect)=\"pick($event)\"\n    locale=\"en-GB\"\n    [firstDayOfWeek]=\"1\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Booking: {{ iso(booking()?.start) }} to {{ iso(booking()?.end) }}\n  </p>\n</div>",
   "calendar/slots": "<div class=\"docs-stack\">\n  <star-calendar\n    class=\"star-calendar--inline\"\n    [selected]=\"payDate()\"\n    (dateSelect)=\"payDate.set($event)\"\n    locale=\"en-GB\"\n    [firstDayOfWeek]=\"1\"\n  >\n    <ng-template starHeader>\n      <p class=\"docs-output docs-due-note\">Invoices due in November 2026</p>\n    </ng-template>\n    <ng-template starDate let-date>\n      <span class=\"docs-due\" [class.docs-due--marked]=\"isDue(date)\">{{\n        date.getDate()\n      }}</span>\n    </ng-template>\n    <ng-template starFooter>\n      <p class=\"docs-output docs-due-note\">\n        A dot marks a due date: 5, 12 and 26 November.\n      </p>\n    </ng-template>\n  </star-calendar>\n  <p class=\"docs-output\" role=\"status\">Payment date: {{ iso(payDate()) }}</p>\n</div>",
+  "calendar/special-dates": "<div class=\"docs-stack\">\n  <star-calendar\n    class=\"star-calendar--inline\"\n    [selected]=\"reviewDate()\"\n    (dateSelect)=\"reviewDate.set($event)\"\n    [specialDates]=\"companyDays\"\n    locale=\"en-GB\"\n    [firstDayOfWeek]=\"1\"\n  />\n  <p class=\"docs-output\" role=\"status\">Review date: {{ iso(reviewDate()) }}</p>\n</div>",
   "card/basic": "<div class=\"docs-stack\">\n  <star-card header=\"Open orders\" subheader=\"Last 30 days\">\n    <star-button starCardActions variant=\"ghost\" size=\"sm\">View all</star-button>\n    <p>Forty-two orders are open. Nine are late.</p>\n    <div starCardFooter class=\"docs-row\">\n      <star-button size=\"sm\">Export</star-button>\n      <star-button size=\"sm\" variant=\"secondary\">Filter</star-button>\n    </div>\n  </star-card>\n</div>",
   "card/plain": "<div class=\"docs-stack\">\n  <star-card>\n    <p>A card with only a body.</p>\n  </star-card>\n</div>",
   "carousel/autoplay": "<star-carousel\n  style=\"width: 100%; max-width: 40rem\"\n  [items]=\"photos\"\n  [autoplay]=\"4000\"\n  ariaLabel=\"Automatic photos\"\n>\n  <ng-template starCarouselItem [starCarouselItemOf]=\"photos\" let-photo>\n    <img\n      style=\"display: block; width: 100%; height: auto\"\n      [src]=\"photo.src\"\n      [alt]=\"photo.label\"\n    />\n  </ng-template>\n</star-carousel>",
@@ -11585,16 +12454,23 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "data-view/slots": "<div class=\"docs-stack\">\n  <star-data-view [items]=\"products.slice(0, 3)\">\n    <ng-template starHeader>\n      <p class=\"docs-output\">Today's picks</p>\n    </ng-template>\n    <ng-template starDataViewItem [starDataViewItemOf]=\"products\" let-p>\n      <strong>{{ p.name }}</strong>\n      <div>{{ '$' + p.price }}</div>\n    </ng-template>\n    <ng-template starFooter>\n      <p class=\"docs-output\">Prices include tax.</p>\n    </ng-template>\n  </star-data-view>\n  <star-data-view [items]=\"[]\">\n    <ng-template starDataViewItem let-item>{{ item }}</ng-template>\n    <ng-template starEmpty let-text>\n      <span style=\"color: var(--star-text-muted)\">Nothing to show yet.</span>\n    </ng-template>\n  </star-data-view>\n</div>",
   "data-view/sorting": "<star-data-view [items]=\"sorted()\">\n  <div starDataViewHeader>\n    <star-button size=\"sm\" variant=\"secondary\" (click)=\"sortBy.set('name')\">\n      Sort by name\n    </star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (click)=\"sortBy.set('price')\">\n      Sort by price\n    </star-button>\n  </div>\n  <ng-template starDataViewItem [starDataViewItemOf]=\"sorted()\" let-p>\n    <strong>{{ p.name }}</strong>\n    <div>{{ '$' + p.price }}</div>\n  </ng-template>\n</star-data-view>",
   "date-picker/basic": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"delivery\"\n    locale=\"en-GB\"\n    [firstDayOfWeek]=\"1\"\n    ariaLabel=\"Delivery date\"\n    showButtonBar\n  />\n  <p class=\"docs-output\" role=\"status\">Delivery: {{ iso(delivery()) }}</p>\n</div>",
+  "date-picker/data-type": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"issuedOn\"\n    locale=\"en-GB\"\n    dataType=\"string\"\n    ariaLabel=\"Invoice issued on\"\n  />\n  <star-date-range-picker\n    [(value)]=\"billingPeriod\"\n    locale=\"en-GB\"\n    dataType=\"string\"\n    ariaLabel=\"Billing period\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Issued: {{ issuedOn() ?? 'none' }}. Period: {{ billingPeriod()?.start ?? 'none' }} to\n    {{ billingPeriod()?.end ?? 'none' }}\n  </p>\n</div>",
+  "date-picker/display-input-format": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"dueDate\"\n    locale=\"en-GB\"\n    [displayFormat]=\"displayLong\"\n    [inputFormat]=\"inputNumeric\"\n    keepInvalid\n    ariaLabel=\"Invoice due date\"\n  />\n  <p class=\"docs-output\" role=\"status\">Due: {{ iso(dueDate()) }}</p>\n</div>",
+  "date-picker/events": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"eventsDate\"\n    locale=\"en-GB\"\n    showButtonBar\n    showClear\n    (todayClick)=\"lastEvent.set('Today')\"\n    (clearClick)=\"lastEvent.set('Clear')\"\n    (monthChange)=\"lastEvent.set('Month ' + $event.month + '/' + $event.year)\"\n    ariaLabel=\"Invoice review date\"\n  />\n  <p class=\"docs-output\" role=\"status\">Last event: {{ lastEvent() }}</p>\n</div>",
   "date-picker/form": "<div class=\"docs-stack\">\n  <star-field label=\"Delivery date\" for=\"date-form-delivery\" [state]=\"order.deliveryDate()\">\n    <star-date-picker\n      inputId=\"date-form-delivery\"\n      [formField]=\"order.deliveryDate\"\n      locale=\"en-GB\"\n      [minDate]=\"minDate\"\n      ariaLabel=\"Required delivery date\"\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ order().valid() }}</p>\n</div>",
   "date-picker/format": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"invoiceDate\"\n    locale=\"en-GB\"\n    [dateFormat]=\"longFormat\"\n    ariaLabel=\"Invoice date\"\n    placeholder=\"dd/mm/yyyy\"\n  />\n  <star-date-picker\n    [value]=\"invoiceDate()\"\n    locale=\"en-GB\"\n    readonlyInput\n    ariaLabel=\"Invoice date, pick only\"\n  />\n  <p class=\"docs-output\" role=\"status\">Invoice: {{ iso(invoiceDate()) }}</p>\n</div>",
   "date-picker/limits": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"slot\"\n    [minDate]=\"minDate\"\n    [maxDate]=\"maxDate\"\n    [disabledDays]=\"weekend\"\n    [disabledDates]=\"closedDays\"\n    [dateDisabled]=\"isMonthStart\"\n    locale=\"en-GB\"\n    ariaLabel=\"Pick-up date\"\n  />\n  <p class=\"docs-output\" role=\"status\">Pick-up: {{ iso(slot()) }}</p>\n</div>",
   "date-picker/locale": "<div class=\"docs-stack\">\n  <star-date-picker\n    [value]=\"germanDate\"\n    locale=\"de-DE\"\n    [firstDayOfWeek]=\"1\"\n    showWeek\n    ariaLabel=\"Lieferdatum\"\n  />\n  <star-date-picker\n    [value]=\"americanDate\"\n    locale=\"en-US\"\n    [firstDayOfWeek]=\"0\"\n    [numberOfMonths]=\"2\"\n    ariaLabel=\"Delivery date (US)\"\n  />\n</div>",
   "date-picker/multiple": "<div class=\"docs-stack\">\n  <star-multi-date-picker\n    [(value)]=\"visits\"\n    [maxDates]=\"4\"\n    locale=\"en-GB\"\n    ariaLabel=\"Visit days\"\n    showClear\n  />\n  <p class=\"docs-output\" role=\"status\">Days: {{ visits().length }}</p>\n</div>",
   "date-picker/range": "<div class=\"docs-stack\">\n  <star-date-range-picker [(value)]=\"booking\" locale=\"en-GB\" ariaLabel=\"Booking range\" />\n  <p class=\"docs-output\" role=\"status\">\n    Booking: {{ iso(booking()?.start) }} to {{ iso(booking()?.end) }}\n  </p>\n</div>",
+  "date-picker/seconds": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"invoiceSent\"\n    locale=\"en-GB\"\n    showTime\n    showSeconds\n    [stepHour]=\"1\"\n    [stepMinute]=\"5\"\n    [stepSecond]=\"15\"\n    ariaLabel=\"Invoice sent at\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Sent: {{ iso(invoiceSent()) }} {{ clock(invoiceSent(), true) }}\n  </p>\n</div>",
   "date-picker/slots": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"payDate\"\n    locale=\"en-GB\"\n    [firstDayOfWeek]=\"1\"\n    showButtonBar\n    ariaLabel=\"Payment date\"\n  >\n    <ng-template starHeader>\n      <p class=\"docs-output docs-due-note\">Invoices due in November 2026</p>\n    </ng-template>\n    <ng-template starDate let-date>\n      <span class=\"docs-due\" [class.docs-due--marked]=\"isDue(date)\">{{\n        date.getDate()\n      }}</span>\n    </ng-template>\n    <ng-template starFooter>\n      <p class=\"docs-output docs-due-note\">\n        A dot marks a due date: 5, 12 and 26 November.\n      </p>\n    </ng-template>\n  </star-date-picker>\n  <p class=\"docs-output\" role=\"status\">Payment date: {{ iso(payDate()) }}</p>\n</div>",
+  "date-picker/special-dates": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"paymentDate\"\n    locale=\"en-GB\"\n    [specialDates]=\"companyDays\"\n    ariaLabel=\"Payment date\"\n  />\n  <p class=\"docs-output\" role=\"status\">Payment: {{ iso(paymentDate()) }}</p>\n</div>",
   "date-picker/states": "<div class=\"docs-stack\">\n  <star-date-picker size=\"sm\" locale=\"en-GB\" ariaLabel=\"Small date picker\" />\n  <star-date-picker disabled locale=\"en-GB\" ariaLabel=\"Disabled date picker\" />\n  <star-date-picker\n    [value]=\"delivery()\"\n    readonly\n    locale=\"en-GB\"\n    ariaLabel=\"Read-only date picker\"\n  />\n</div>",
   "date-picker/time": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"meeting\"\n    locale=\"en-GB\"\n    showTime\n    [stepMinute]=\"15\"\n    ariaLabel=\"Meeting start\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Meeting: {{ iso(meeting()) }} {{ clock(meeting()) }}\n  </p>\n</div>",
+  "date-picker/time-limits": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"visit\"\n    locale=\"en-GB\"\n    showTime\n    minTime=\"08:00\"\n    maxTime=\"18:30\"\n    [stepMinute]=\"15\"\n    ariaLabel=\"Site visit\"\n  />\n  <p class=\"docs-output\" role=\"status\">Visit: {{ iso(visit()) }} {{ clock(visit()) }}</p>\n</div>",
   "date-picker/time-range": "<div class=\"docs-stack\">\n  <star-date-range-picker\n    [(value)]=\"shift\"\n    locale=\"en-GB\"\n    showTime\n    [stepMinute]=\"15\"\n    ariaLabel=\"Shift\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Shift: {{ iso(shift()?.start) }} {{ clock(shift()?.start) }} to {{ iso(shift()?.end) }}\n    {{ clock(shift()?.end) }}\n  </p>\n</div>",
+  "date-picker/touch": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"touchDate\"\n    locale=\"en-GB\"\n    touchUI\n    ariaLabel=\"Delivery date, touch\"\n  />\n  <star-date-picker\n    [(value)]=\"touchDate\"\n    locale=\"en-GB\"\n    breakpoint=\"640px\"\n    ariaLabel=\"Delivery date, small window\"\n  />\n  <p class=\"docs-output\" role=\"status\">Delivery: {{ iso(touchDate()) }}</p>\n</div>",
   "date-picker/views": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"reportMonth\"\n    view=\"month\"\n    locale=\"en-GB\"\n    ariaLabel=\"Report month\"\n  />\n  <star-date-picker\n    [(value)]=\"reportYear\"\n    view=\"year\"\n    locale=\"en-GB\"\n    ariaLabel=\"Report year\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Month: {{ iso(reportMonth()) }}, year: {{ iso(reportYear()) }}\n  </p>\n</div>",
   "dialog/basic": "<star-button (pressed)=\"basicOpen.set(true)\">Edit order</star-button>\n<star-dialog [(visible)]=\"basicOpen\" header=\"Edit order ORD-1042\">\n  <span starDialogHeader class=\"docs-output\">Last saved at 10:42</span>\n  <div class=\"docs-stack\">\n    <star-field label=\"Customer\">\n      <input starInput value=\"Orchard Supply\" />\n    </star-field>\n    <star-field label=\"Delivery note\" hint=\"The driver reads this note.\">\n      <textarea starInput rows=\"3\">Leave at the loading dock.</textarea>\n    </star-field>\n  </div>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button variant=\"ghost\" (pressed)=\"basicOpen.set(false)\">Cancel</star-button>\n    <star-button (pressed)=\"basicOpen.set(false)\">Save</star-button>\n  </div>\n</star-dialog>",
   "dialog/close-rules": "<div class=\"docs-row\">\n  <star-button variant=\"secondary\" (pressed)=\"maskOpen.set(true)\"\n    >Backdrop click</star-button\n  >\n  <star-button variant=\"secondary\" (pressed)=\"lockedOpen.set(true)\">Locked</star-button>\n  <star-button variant=\"secondary\" (pressed)=\"floatOpen.set(true)\">Non-modal</star-button>\n</div>\n<star-dialog [(visible)]=\"maskOpen\" header=\"Closes on a backdrop click\" dismissableMask>\n  <p>Click outside this window to close it.</p>\n</star-dialog>\n<star-dialog\n  [(visible)]=\"lockedOpen\"\n  header=\"Locked dialog\"\n  [closable]=\"false\"\n  [closeOnEscape]=\"false\"\n>\n  <p>This dialog has no close button and ignores Escape.</p>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button (pressed)=\"lockedOpen.set(false)\">Done</star-button>\n  </div>\n</star-dialog>\n<star-dialog [(visible)]=\"floatOpen\" header=\"Non-modal dialog\" [modal]=\"false\">\n  <p>The page behind this window stays usable.</p>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button (pressed)=\"floatOpen.set(false)\">Close</star-button>\n  </div>\n</star-dialog>",
@@ -11813,12 +12689,16 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "table-paging/client": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Paged orders\"\n      paginator\n      [(first)]=\"first\"\n      [(rows)]=\"rows\"\n      [rowsPerPageOptions]=\"[5, 10, 20]\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">first = {{ first() }}, rows = {{ rows() }}</p>\n</div>",
   "table-paging/lazy": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"lazyRows()\"\n      [columns]=\"lazyColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders from the server\"\n      lazy\n      paginator\n      [rows]=\"5\"\n      [rowsPerPageOptions]=\"[5, 10]\"\n      [totalRecords]=\"lazyTotal()\"\n      [loading]=\"lazyLoading()\"\n      (lazyLoad)=\"load($event)\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Last request: {{ request() }}</p>\n</div>",
   "table-selection/actions": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"actionOrders()\"\n      [columns]=\"actionColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with actions\"\n      selectionMode=\"single\"\n      [(selection)]=\"actionSelection\"\n    >\n      <ng-template starCell=\"status\" [starCellOf]=\"actionOrders()\" let-row>\n        <star-tag [severity]=\"severityOf(row.status)\" [value]=\"row.status\" rounded />\n      </ng-template>\n      <ng-template starCell=\"actions\" [starCellOf]=\"actionOrders()\" let-row>\n        <star-button\n          size=\"sm\"\n          variant=\"secondary\"\n          [disabled]=\"row.status === 'Cancelled'\"\n          (pressed)=\"cancel(row)\"\n        >\n          Cancel {{ row.id }}\n        </star-button>\n      </ng-template>\n    </star-table>\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">\n    Selected: {{ actionSelection()[0]?.id ?? 'none' }}\n  </p>\n</div>",
+  "table-selection/checkbox": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with selectable rows\"\n      selectionMode=\"multiple\"\n      [(selectionKeys)]=\"keys\"\n      [rowSelectable]=\"notCancelled\"\n      [selectionPageOnly]=\"false\"\n      (selectionChanging)=\"limit($event)\"\n      paginator\n      [rows]=\"5\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">\n    {{ keys()?.length ?? 0 }} selected{{ refused() ? ', more than 20 refused' : '' }}\n  </p>\n</div>",
   "table-selection/click": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders.slice(0, 5)\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with row click\"\n      (rowClick)=\"opened.set($event.id)\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Opened: {{ opened() ?? 'none' }}</p>\n</div>",
+  "table-selection/meta": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders.slice(0, 8)\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with meta-key selection\"\n      selectionMode=\"multiple\"\n      metaKeySelection\n      [(selection)]=\"metaSelected\"\n      (rowSelect)=\"lastEvent.set('Selected ' + $event.row.id)\"\n      (rowUnselect)=\"lastEvent.set('Cleared ' + $event.row.id)\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">\n    {{ metaSelected().length }} selected. {{ lastEvent() }}\n  </p>\n</div>",
   "table-selection/multiple": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"selectOpen()\">\n      Select open orders\n    </star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"selected.set([])\">\n      Clear selection\n    </star-button>\n  </div>\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with checkboxes\"\n      selectionMode=\"multiple\"\n      [(selection)]=\"selected\"\n      paginator\n      [rows]=\"5\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">{{ selected().length }} selected</p>\n</div>",
   "table-selection/single": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with one choice\"\n      selectionMode=\"single\"\n      [(selection)]=\"chosen\"\n      paginator\n      [rows]=\"5\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Chosen: {{ chosen()[0]?.id ?? 'none' }}</p>\n</div>",
   "table-sort-filter/columns": "<div class=\"docs-stack\">\n  <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"filtered.clearFilters()\">\n    Clear filters\n  </star-button>\n  <docs-fill>\n    <star-table\n      #filtered\n      [value]=\"orders\"\n      [columns]=\"filterColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with column filters\"\n      [(filters)]=\"filters\"\n      paginator\n      [rows]=\"4\"\n    >\n      <ng-template starCell=\"status\" [starCellOf]=\"orders\" let-row>\n        <star-tag [severity]=\"severityOf(row.status)\" [value]=\"row.status\" rounded />\n      </ng-template>\n    </star-table>\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Filters: {{ filterText() }}</p>\n</div>",
   "table-sort-filter/combined": "<div class=\"docs-stack\">\n  <input\n    starInput\n    type=\"search\"\n    aria-label=\"Search combined orders\"\n    placeholder=\"Search combined orders\"\n    [value]=\"combinedQuery()\"\n    (input)=\"combinedQuery.set($any($event.target).value)\"\n  />\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"filterColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with search, filters and sort\"\n      [globalFilter]=\"combinedQuery()\"\n      size=\"sm\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n</div>",
+  "table-sort-filter/custom": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"customColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with a custom match mode\"\n      filterDisplay=\"menu\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n</div>",
   "table-sort-filter/global": "<div class=\"docs-stack\">\n  <input\n    starInput\n    type=\"search\"\n    aria-label=\"Search orders\"\n    placeholder=\"Search orders\"\n    [value]=\"query()\"\n    (input)=\"query.set($any($event.target).value)\"\n  />\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"sortColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Searchable orders\"\n      [globalFilter]=\"query()\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n</div>",
+  "table-sort-filter/menu": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"menuColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Invoices with filter menus\"\n      filterDisplay=\"menu\"\n      [(filters)]=\"menuFilters\"\n      (filter)=\"menuCount.set($event.filteredValue.length)\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">\n    {{ menuCount() ?? orders.length }} invoices match. Filters: {{ menuText() }}\n  </p>\n</div>",
   "table-sort-filter/multi": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"sortColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders sorted by several columns\"\n      multiSort\n      [(sortMeta)]=\"sortMeta\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Sorts: {{ sortText() }}</p>\n</div>",
   "table-sort-filter/sort": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"sortColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Sortable orders\"\n      [(sortField)]=\"sortField\"\n      [(sortOrder)]=\"sortOrder\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">\n    Sort: {{ sortField() ?? 'none' }} ({{ sortOrder() === 1 ? 'ascending' : 'descending' }})\n  </p>\n</div>",
   "table/basic": "<docs-fill>\n  <star-table\n    [value]=\"orders\"\n    [columns]=\"columns\"\n    dataKey=\"id\"\n    ariaLabel=\"Orders\"\n    paginator\n    [rows]=\"5\"\n  />\n</docs-fill>",
@@ -11842,6 +12722,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "time-picker/form": "<div class=\"docs-stack\">\n  <star-field label=\"Pick-up time\" for=\"time-form-pickup\" [state]=\"slot.pickup()\">\n    <star-time-picker\n      inputId=\"time-form-pickup\"\n      [formField]=\"slot.pickup\"\n      ariaLabel=\"Pick-up time\"\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ slot().valid() }}</p>\n</div>",
   "time-picker/hour-format": "<div class=\"docs-stack\">\n  <star-time-picker [(value)]=\"cutOff\" hourFormat=\"12\" ariaLabel=\"Cut-off time\" />\n  <p class=\"docs-output\" role=\"status\">Cut-off: {{ cutOff() ?? 'none' }}</p>\n</div>",
   "time-picker/limits": "<div class=\"docs-stack\">\n  <star-time-picker\n    [(value)]=\"opening\"\n    min=\"08:00\"\n    max=\"18:00\"\n    [stepMinute]=\"15\"\n    hourFormat=\"24\"\n    ariaLabel=\"Opening time\"\n  />\n  <p class=\"docs-output\" role=\"status\">Opening: {{ opening() ?? 'none' }}</p>\n</div>",
+  "time-picker/seconds": "<div class=\"docs-stack\">\n  <star-time-picker\n    [(value)]=\"exportAt\"\n    showSeconds\n    min=\"06:00:00\"\n    max=\"20:00:00\"\n    [stepHour]=\"2\"\n    [stepMinute]=\"15\"\n    [stepSecond]=\"10\"\n    ariaLabel=\"Export time\"\n  />\n  <p class=\"docs-output\" role=\"status\">Export: {{ exportAt() ?? 'none' }}</p>\n</div>",
   "time-picker/states": "<div class=\"docs-stack\">\n  <star-time-picker size=\"sm\" ariaLabel=\"Small time picker\" />\n  <star-time-picker disabled [value]=\"'09:30'\" ariaLabel=\"Disabled time picker\" />\n  <star-time-picker readonly [value]=\"'09:30'\" ariaLabel=\"Read-only time picker\" />\n</div>",
   "timeline/alternate": "<star-timeline [events]=\"events\" align=\"alternate\" ariaLabel=\"Order history, alternating\" />",
   "timeline/basic": "<star-timeline [events]=\"events\" ariaLabel=\"Order history\" />",

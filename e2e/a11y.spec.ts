@@ -356,6 +356,45 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'date picker popup with special dates',
+    path: 'controls/date-picker',
+    open: async (page) => {
+      await example(page, 'Special dates').getByRole('button', { name: 'Choose date' }).click();
+      await expect(page.locator('.star-calendar__day--special').first()).toBeVisible();
+    },
+  },
+  {
+    name: 'date picker touch sheet',
+    path: 'controls/date-picker',
+    open: async (page) => {
+      await example(page, 'Touch mode')
+        .getByRole('button', { name: 'Choose date' })
+        .first()
+        .click();
+      await expect(page.locator('dialog.star-date__sheet')).toBeVisible();
+    },
+  },
+  {
+    name: 'date picker with kept invalid text',
+    path: 'controls/date-picker',
+    open: async (page) => {
+      const input = example(page, 'Display and input formats').getByRole('textbox', {
+        name: 'Invoice due date',
+      });
+      await input.fill('31/02/2026');
+      await input.press('Tab');
+      await expect(input).toHaveAttribute('aria-invalid', 'true');
+    },
+  },
+  {
+    name: 'time picker panel with seconds',
+    path: 'controls/time-picker',
+    open: async (page) => {
+      await example(page, 'Seconds and steps').getByRole('button', { name: 'Choose time' }).click();
+      await expect(page.getByRole('listbox', { name: 'Second' })).toBeVisible();
+    },
+  },
+  {
     name: 'month view of the date picker',
     path: 'controls/date-picker',
     open: async (page) => {
@@ -977,6 +1016,28 @@ const STATES: readonly State[] = [
       await editor.fill('Changed customer');
       await editor.press('Enter');
       await expect(batch.locator('.star-table__cell--changed')).toHaveCount(1);
+    },
+  },
+  {
+    name: 'table with a filter menu open (two rules)',
+    path: 'controls/table-sort-filter',
+    open: async (page) => {
+      await example(page, 'Filter menu').getByRole('button', { name: 'Filter Total' }).click();
+      const dialog = page.getByRole('dialog', { name: 'Filter Total' });
+      await expect(dialog).toBeVisible();
+      await dialog.getByRole('button', { name: 'Add rule' }).click();
+      await expect(dialog.getByRole('group')).toHaveCount(2);
+    },
+  },
+  {
+    name: 'table with the header check box mixed and an unselectable row',
+    path: 'controls/table-selection',
+    open: async (page) => {
+      const live = example(page, 'Check box selection');
+      await live.locator('tbody').getByRole('checkbox', { disabled: false }).first().check();
+      await expect(
+        live.locator('thead').getByRole('checkbox', { name: 'Select all rows' }),
+      ).toHaveJSProperty('indeterminate', true);
     },
   },
   {

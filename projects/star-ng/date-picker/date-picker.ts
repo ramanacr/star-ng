@@ -2,8 +2,10 @@ import { _IdGenerator } from '@angular/cdk/a11y';
 import { CdkConnectedOverlay, CdkOverlayOrigin, ConnectedPosition } from '@angular/cdk/overlay';
 import { NgTemplateOutlet } from '@angular/common';
 import {
+  afterNextRender,
   booleanAttribute,
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   computed,
   contentChildren,
@@ -11,6 +13,7 @@ import {
   ElementRef,
   forwardRef,
   inject,
+  Injector,
   input,
   linkedSignal,
   model,
@@ -28,8 +31,31 @@ import {
   starSlot,
 } from '@star-ng/ui/core';
 import { injectStarFieldLink, starJoinIds } from '@star-ng/ui/field';
-import { StarCalendar, StarCalendarView } from './calendar';
+import {
+  StarCalendar,
+  StarCalendarMonthChange,
+  StarCalendarView,
+  StarCalendarYearChange,
+} from './calendar';
+import {
+  starAtTime as atTime,
+  starAtStepTime,
+  starClampTime,
+  starDates,
+  starDayTimeLimits,
+  starFormatDateTime,
+  starFromDate,
+  starMapRange,
+  starParseIso,
+  starParsePeriod,
+  starSplitDateTime,
+  StarTimeLimits,
+  starTimeOf,
+  starWithTime as withTime,
+} from './date-format';
 import { STAR_DATE_PICKER_DEFAULTS } from './date-picker-defaults';
+import { STAR_DATE_HOST, STAR_DATE_TEMPLATE } from './date-picker.template';
+import { StarDateSheet } from './date-sheet';
 import type { StarDateContext } from './date-slots';
 import {
   compareDays,
@@ -39,21 +65,10 @@ import {
   parseDate,
   sameDay,
   StarDateRange,
+  StarSpecialDate,
   startOfDay,
 } from './date-utils';
 import { StarTimeColumns } from './time-columns';
-
-/** Time part of the input text: 24-hour clock, so typed text parses the same in every locale. */
-const TIME_FORMAT: Intl.DateTimeFormatOptions = {
-  hour: '2-digit',
-  minute: '2-digit',
-  hourCycle: 'h23',
-};
-
-/** The calendar day of `date` at the given local time. */
-function atTime(date: Date, hours: number, minutes: number): Date {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate(), hours, minutes);
-}
 
 const PANEL_POSITIONS: ConnectedPosition[] = [
   { originX: 'start', originY: 'bottom', overlayX: 'start', overlayY: 'top', offsetY: 6 },
@@ -99,17 +114,87 @@ export abstract class StarDateInputBase<TValue> {
   readonly firstDayOfWeek = input<number | null>(this.defaults.firstDayOfWeek ?? null);
   /** BCP 47 locale for names and formats. Default: `locale` of `provideStarNg`, else the browser locale. */
   readonly locale = input<string | undefined>(this.defaults.locale ?? undefined);
-  /** `Intl.DateTimeFormat` options for the input text (default numeric day / month / year). */
+  /**
+   * `Intl.DateTimeFormat` options for the input text (default numeric day / month / year). The
+   * shared default of `displayFormat` and `inputFormat`.
+   */
   readonly dateFormat = input<Intl.DateTimeFormatOptions>(DEFAULT_DATE_FORMAT);
+  /**
+   * `Intl.DateTimeFormat` options of the text while the field does not have the focus, for
+   * example `{ dateStyle: 'long' }` (Ignite UI `displayFormat`). Default: `dateFormat`.
+   */
+  readonly displayFormat = input<Intl.DateTimeFormatOptions | null>(null);
+  /**
+   * `Intl.DateTimeFormat` options of the text while the field has the focus (Ignite UI
+   * `inputFormat`, PrimeNG `dateFormat`). Typed text is read in the order of day, month and year
+   * of this format, with any separators; the month names of the locale are accepted too.
+   * Default: `dateFormat`.
+   */
+  readonly inputFormat = input<Intl.DateTimeFormatOptions | null>(null);
+  /**
+   * Keeps typed text that is not a valid date (PrimeNG `keepInvalid`). The field is marked
+   * invalid (`aria-invalid`) and the value becomes empty, so a required check fails. Without
+   * it, such text goes back to the text of the value.
+   */
+  readonly keepInvalid = input(false, { transform: booleanAttribute });
+  /**
+   * Type of the value (PrimeNG `dataType`): `'date'` (default) gives `Date` objects, `'string'`
+   * gives ISO text: `yyyy-mm-dd`, or `yyyy-mm-ddTHH:mm` (`yyyy-mm-ddTHH:mm:ss` with
+   * `showSeconds`) with `showTime`. The text that the picker writes is a local date and time,
+   * without a time zone. A value may be a `Date` or ISO text in both modes; the picker also reads
+   * fractional seconds and a zone (`2026-11-22T13:30:15.123Z`, `...+01:00`), as server JSON often
+   * has them, and shows that instant in local time.
+   */
+  readonly dataType = input<'date' | 'string'>('date');
+  /**
+   * Opens the popup as a modal sheet in the middle of the window, in a native `<dialog>` with a
+   * backdrop, and with larger days for touch (PrimeNG `touchUI`). The keyboard model does not
+   * change; Escape and a click on the backdrop close it. While it is open, the page does not
+   * scroll (the scroll lock of `star-dialog`).
+   */
+  readonly touchUI = input(false, { transform: booleanAttribute });
+  /**
+   * Window width at or below which the popup opens as a sheet (as `touchUI`): a CSS length, for
+   * example `'640px'` or `'40rem'`, used in the media query `(max-width: <breakpoint>)` (PrimeNG
+   * `breakpoint`). The width is checked when the popup opens. While the sheet is open, the page
+   * does not scroll.
+   */
+  readonly breakpoint = input<string | null>(null);
   /** Months shown side by side in the popup. */
   readonly numberOfMonths = input(1);
   /** Shows the ISO 8601 week number at the start of each week. */
   readonly showWeek = input(this.defaults.showWeek ?? false, { transform: booleanAttribute });
+  /** Shows the days of the month before and after (PrimeNG `showOtherMonths`). */
+  readonly showOtherMonths = input(true, { transform: booleanAttribute });
+  /** The shown days of the month before and after can be chosen (PrimeNG `selectOtherMonths`). */
+  readonly selectOtherMonths = input(true, { transform: booleanAttribute });
+  /**
+   * Marked days in the calendar, for example holidays (Ignite UI `specialDates`). The kind and
+   * the label are part of the accessible name of the day.
+   */
+  readonly specialDates = input<readonly StarSpecialDate[]>([]);
   /**
    * Clock of the typed time with `showTime`: `'24'` (14:30) or `'12'` (2:30 PM). Both forms
    * are accepted when the user types.
    */
   readonly hourFormat = input<'24' | '12'>(this.defaults.hourFormat ?? '24');
+  /**
+   * Adds seconds to the time with `showTime`: the text is `hh:mm:ss` and the popup has a second
+   * column (PrimeNG `showSeconds`).
+   */
+  readonly showSeconds = input(false, { transform: booleanAttribute });
+  /**
+   * Earliest and latest time of every day with `showTime`, `HH:mm` or `HH:mm:ss`, for example
+   * opening hours (Ignite UI `minValue` / `maxValue` of the time part). They add to `minDate` /
+   * `maxDate`: the columns disable the other times, typed text outside them is not taken, and a
+   * picked day moves its time into them.
+   */
+  readonly minTime = input<string | null>(null);
+  readonly maxTime = input<string | null>(null);
+  /** Hour step of the time columns with `showTime` (PrimeNG `stepHour`). */
+  readonly stepHour = input(1);
+  /** Second step of the time columns with `showSeconds` (PrimeNG `stepSecond`). */
+  readonly stepSecond = input(1);
   readonly showButtonBar = input(this.defaults.showButtonBar ?? false, {
     transform: booleanAttribute,
   });
@@ -131,14 +216,43 @@ export abstract class StarDateInputBase<TValue> {
   readonly touch = output<void>();
   readonly opened = output<void>();
   readonly closed = output<void>();
+  /** The user moved the calendar to another month (PrimeNG `onMonthChange`). */
+  readonly monthChange = output<StarCalendarMonthChange>();
+  /** The user moved the calendar to another year (PrimeNG `onYearChange`). */
+  readonly yearChange = output<StarCalendarYearChange>();
+  /** The user switched the calendar between the day, month and year views. */
+  readonly viewChange = output<StarCalendarView>();
+  /**
+   * The user chose Today in the button bar, after the value changed; the event is today
+   * (PrimeNG `onTodayClick`). Not emitted when today cannot be chosen.
+   */
+  readonly todayClick = output<Date>();
+  /**
+   * The user chose Clear in the button bar or the clear button, after the value was cleared
+   * (PrimeNG `onClearClick`).
+   */
+  readonly clearClick = output<void>();
 
   protected readonly positions = PANEL_POSITIONS;
   protected readonly viewportMargin = PANEL_VIEWPORT_MARGIN;
   protected readonly panelId = this.ids.getId('star-date-panel-');
   protected readonly open = signal(false);
-  /** Invalid after touch, or while the parent `star-field` shows an error. */
+  /** The touch mode: the open popup is a modal sheet (`touchUI` or `breakpoint`). */
+  protected readonly sheet = new StarDateSheet();
+  private readonly sheetDialog = viewChild<ElementRef<HTMLDialogElement>>('sheetDialog');
+  private readonly injector = inject(Injector);
+  private readonly changeDetector = inject(ChangeDetectorRef);
+  /**
+   * Invalid after touch, while the parent `star-field` shows an error, or while the field keeps
+   * text that is not a date (`keepInvalid`).
+   */
   protected readonly showInvalid = computed(
-    () => (this.invalid() && this.touched()) || !!this.field?.errorText(),
+    () => (this.invalid() && this.touched()) || !!this.field?.errorText() || this.textInvalid(),
+  );
+  /** The field has the focus: the text follows `inputFormat`, else `displayFormat`. */
+  protected readonly editing = signal(false);
+  private readonly textFormat = computed(
+    () => (this.editing() ? this.inputFormat() : this.displayFormat()) ?? this.dateFormat(),
   );
   protected readonly fieldDescribedBy = computed(() => starJoinIds(this.field?.describedBy()));
   protected readonly interactive = computed(() => !this.disabled() && !this.readonly());
@@ -167,14 +281,31 @@ export abstract class StarDateInputBase<TValue> {
 
   /** Text for the current value. */
   protected abstract readonly displayText: () => string;
+  /** Typed text that is not a date, kept with `keepInvalid`. It resets when the value changes. */
+  private readonly keptText = linkedSignal<TValue, string | null>({
+    source: () => this.value(),
+    computation: () => null,
+  });
+  /** The field keeps text that is not a date. */
+  protected readonly textInvalid = computed(() => this.keptText() !== null);
   /** Text the user is typing; resets when the value changes. */
-  protected readonly typed = linkedSignal(() => this.displayText());
+  protected readonly typed = linkedSignal(() => this.keptText() ?? this.displayText());
   protected abstract parseText(text: string): TValue | undefined;
   protected abstract emptyValue(): TValue;
   protected abstract pickToday(today: Date): void;
 
   protected format(date: Date | null): string {
-    return formatDate(date, this.locale(), this.dateFormat());
+    return formatDate(date, this.locale(), this.textFormat());
+  }
+
+  /** A value of the model as a date: ISO text is read as a local date and time. */
+  protected toDate(value: Date | string | null | undefined): Date | null {
+    return starParseIso(value);
+  }
+
+  /** A date as a value of the model: the date, or ISO text with `dataType: 'string'`. */
+  protected fromDate(date: Date): Date | string {
+    return starFromDate(date, this.dataType(), this.timeEnabled(), this.showSeconds());
   }
 
   protected allowed(date: Date): boolean {
@@ -191,13 +322,34 @@ export abstract class StarDateInputBase<TValue> {
 
   openPanel(): void {
     if (!this.interactive() || this.open()) return;
+    const sheet = this.sheet.decide(this.touchUI(), this.breakpoint());
     this.open.set(true);
     this.opened.emit();
+    if (!sheet) return;
+    afterNextRender(
+      () => {
+        this.sheet.show(this.sheetDialog()?.nativeElement);
+        this.calendar()?.focusActive();
+      },
+      { injector: this.injector },
+    );
+  }
+
+  protected onSheetCancel(event: Event): void {
+    event.preventDefault();
+    this.closePanel();
+  }
+
+  protected onSheetClick(event: MouseEvent): void {
+    if (!this.sheet.isBackdropClick(event)) return;
+    this.closePanel();
+    this.touch.emit();
   }
 
   closePanel(focusInput = true): void {
     if (!this.open()) return;
     this.open.set(false);
+    this.sheet.close(this.sheetDialog()?.nativeElement);
     if (focusInput) this.input().nativeElement.focus();
     this.closed.emit();
   }
@@ -217,13 +369,23 @@ export abstract class StarDateInputBase<TValue> {
     this.touch.emit();
   }
 
-  /** Applies typed text: valid dates set the value, invalid text reverts. */
+  /**
+   * Applies typed text: valid dates set the value. Invalid text reverts, or with `keepInvalid`
+   * stays, marked invalid, and the value becomes empty.
+   */
   protected commitTyped(): void {
     const text = this.typed();
     if (text === this.displayText()) return;
     const parsed = text.trim() ? this.parseText(text) : this.emptyValue();
-    if (parsed === undefined) this.revertText();
-    else this.value.set(parsed);
+    if (parsed !== undefined) {
+      this.value.set(parsed);
+    } else if (this.keepInvalid()) {
+      this.value.set(this.emptyValue());
+      // After the value: a new value resets the kept text.
+      this.keptText.set(text);
+    } else {
+      this.revertText();
+    }
   }
 
   /**
@@ -236,8 +398,26 @@ export abstract class StarDateInputBase<TValue> {
     this.input().nativeElement.value = text;
   }
 
+  /**
+   * Switches the text to `inputFormat` at once, before the user types: a render after the focus
+   * would replace text that is typed right after it. So the render runs here. When the text
+   * changes, all of it is selected, so typing replaces it (as after Tab); a mouse click still
+   * places the caret, because the browser sets it after the focus event.
+   */
+  protected onInputFocus(): void {
+    if (this.editing()) return;
+    this.editing.set(true);
+    // Without displayFormat or inputFormat the text does not change: no render is needed.
+    if (!this.displayFormat() && !this.inputFormat()) return;
+    const input = this.input().nativeElement;
+    const before = input.value;
+    this.changeDetector.detectChanges();
+    if (input.value !== before) input.select();
+  }
+
   protected onInputBlur(): void {
     this.commitTyped();
+    this.editing.set(false);
     if (!this.open()) this.touch.emit();
   }
 
@@ -262,7 +442,16 @@ export abstract class StarDateInputBase<TValue> {
   }
 
   protected today(): void {
-    this.pickToday(startOfDay(new Date()));
+    const today = startOfDay(new Date());
+    // The month and year views choose the month or year of today, which is always shown.
+    if (this.granularity() === 'day' && !this.allowed(today)) return;
+    this.pickToday(today);
+    this.todayClick.emit(today);
+  }
+
+  protected onClearClick(): void {
+    this.clear();
+    this.clearClick.emit();
   }
 
   clear(): void {
@@ -275,221 +464,92 @@ export abstract class StarDateInputBase<TValue> {
   }
 
   protected parseOne(text: string): Date | null | undefined {
-    const date = parseDate(text, this.locale());
+    const date = parseDate(text, this.locale(), this.inputFormat() ?? this.dateFormat());
     return date && this.allowed(date) ? date : undefined;
   }
 
   /**
-   * "<date> hh:mm" or "<date>, hh:mm". A date without a time takes the fallback time.
+   * "<date> hh:mm[:ss]" or "<date>, hh:mm[:ss] am". A date without a time takes the fallback
+   * time, moved into the limits (`clampTime`). A typed time outside the limits is not taken.
    * `undefined`: the text is not a valid date and time.
    */
-  protected parseDateTime(text: string, hours: number, minutes: number): Date | undefined {
-    const match =
-      /^(.*?)[,\s]+(\d{1,2})[:.](\d{2})\s*([ap])\.?\s?m?\.?$|^(.*?)[,\s]+(\d{1,2})[:.](\d{2})$/i.exec(
-        text.trim(),
-      );
-    const date = this.parseOne(match ? (match[1] ?? match[5]) : text);
+  protected parseDateTime(text: string, fallback: Date): Date | undefined {
+    const time = starSplitDateTime(text);
+    if (time === undefined) return undefined;
+    const date = this.parseOne(time ? time.date : text);
     if (!date) return undefined;
-    if (!match) return atTime(date, hours, minutes);
-    let h = Number(match[2] ?? match[6]);
-    const m = Number(match[3] ?? match[7]);
-    const meridiem = match[4]?.toLowerCase();
-    if (meridiem) {
-      if (h < 1 || h > 12) return undefined;
-      h = (h % 12) + (meridiem === 'p' ? 12 : 0);
+    if (!time) {
+      return this.clampTime(
+        atTime(date, fallback.getHours(), fallback.getMinutes(), fallback.getSeconds()),
+      );
     }
-    return h > 23 || m > 59 ? undefined : atTime(date, h, m);
+    // Without the second column the seconds are 0.
+    const typed = atTime(date, time.hours, time.minutes, this.showSeconds() ? time.seconds : 0);
+    return this.clampTime(typed).getTime() === typed.getTime() ? typed : undefined;
   }
 
-  /** `date` moved into `minDate` … `maxDate`, compared to the minute. */
+  private readonly limits = computed<StarTimeLimits>(() => ({
+    minDate: this.minDate(),
+    maxDate: this.maxDate(),
+    minTime: this.minTime(),
+    maxTime: this.maxTime(),
+  }));
+
+  /** `date` moved into `minTime` … `maxTime` of its day, then into `minDate` … `maxDate`. */
   protected clampTime(date: Date): Date {
-    const min = this.minDate();
-    const max = this.maxDate();
-    if (min && date.getTime() < min.getTime()) return new Date(min);
-    if (max && date.getTime() > max.getTime()) return new Date(max);
-    return date;
+    return starClampTime(date, this.limits());
   }
 
-  /** Earliest and latest time of the day of `date`: `minDate` / `maxDate` when it is that day. */
+  /** Earliest and latest time of the day of `date` (`minTime` / `maxTime`, `minDate` / `maxDate`). */
   protected timeLimits(date: Date | null | undefined): { min?: string; max?: string } {
-    const min = this.minDate();
-    const max = this.maxDate();
-    return {
-      min: date && min && sameDay(date, min) ? timeOf(min) : undefined,
-      max: date && max && sameDay(date, max) ? timeOf(max) : undefined,
-    };
+    return starDayTimeLimits(date, this.limits(), this.showSeconds());
   }
 
   protected timeHint(): string {
-    return this.hourFormat() === '12' ? ' hh:mm am' : ' hh:mm';
+    const seconds = this.showSeconds() ? ':ss' : '';
+    return this.hourFormat() === '12' ? ` hh:mm${seconds} am` : ` hh:mm${seconds}`;
   }
 
   protected formatDateTime(date: Date | null): string {
-    return formatDate(date, this.locale(), {
-      ...this.dateFormat(),
-      ...TIME_FORMAT,
-      hourCycle: this.hourFormat() === '12' ? 'h12' : 'h23',
-    });
+    return starFormatDateTime(
+      date,
+      this.locale(),
+      this.textFormat(),
+      this.hourFormat(),
+      this.showSeconds(),
+    );
+  }
+
+  /** `hh:mm` of a date, or `hh:mm:ss` with `showSeconds`. */
+  protected timeOf(date: Date | null | undefined): string {
+    return starTimeOf(date, this.showSeconds());
+  }
+
+  /** `date` at the time of day now, rounded down to the hour, minute and second steps. */
+  protected atCurrentTime(date: Date, stepMinute: number): Date {
+    const seconds = this.showSeconds() ? this.stepSecond() : 0;
+    return starAtStepTime(date, new Date(), [this.stepHour(), stepMinute, seconds]);
   }
 }
 
 /** One set of time columns in the popup. */
 export interface StarTimeField {
   readonly label: string;
-  /** `hh:mm`, or `''` when the date is not chosen yet. */
+  /** `hh:mm` (`hh:mm:ss` with `showSeconds`), or `''` when the date is not chosen yet. */
   readonly value: string;
   readonly set: (time: string) => void;
-  /** Earliest and latest time on the chosen day, `hh:mm` (from `minDate` / `maxDate`). */
+  /** Earliest and latest time on the chosen day, `hh:mm` or `hh:mm:ss` (from `minDate` / `maxDate`). */
   readonly min?: string;
   readonly max?: string;
 }
-
-function timeOf(date: Date | null | undefined): string {
-  const pad = (part: number) => String(part).padStart(2, '0');
-  return date ? `${pad(date.getHours())}:${pad(date.getMinutes())}` : '';
-}
-
-/** `date` at the `hh:mm` time, or `null` when either is missing. */
-function withTime(date: Date | null | undefined, time: string): Date | null {
-  const match = /^(\d{2}):(\d{2})/.exec(time);
-  return date && match ? atTime(date, Number(match[1]), Number(match[2])) : null;
-}
-
-const TEMPLATE = `
-  <div #control class="star-date__control" cdkOverlayOrigin #origin="cdkOverlayOrigin">
-    <input
-      #input
-      type="text"
-      class="star-date__input"
-      autocomplete="off"
-      inputmode="numeric"
-      aria-haspopup="dialog"
-      [id]="inputId()"
-      [attr.name]="name() || null"
-      [value]="typed()"
-      [attr.placeholder]="hint()"
-      [disabled]="disabled()"
-      [readOnly]="readonly() || readonlyInput()"
-      [required]="required()"
-      [attr.aria-label]="ariaLabel()"
-      [attr.aria-controls]="open() ? panelId : null"
-      [attr.aria-describedby]="fieldDescribedBy()"
-      [attr.aria-invalid]="showInvalid() || null"
-      (input)="typed.set(input.value)"
-      (click)="readonlyInput() && togglePanel()"
-      (keydown)="onInputKeydown($event)"
-      (blur)="onInputBlur()"
-    />
-    @if (showClear() && hasValue() && interactive()) {
-      <button type="button" class="star-select__icon-btn" [attr.aria-label]="text.clear" (click)="clear()">
-        <i class="ph-bold ph-x" aria-hidden="true"></i>
-      </button>
-    }
-    <button
-      type="button"
-      class="star-date__toggle"
-      [disabled]="!interactive()"
-      aria-haspopup="dialog"
-      [attr.aria-label]="text.chooseDate"
-      [attr.aria-expanded]="open()"
-      [attr.aria-controls]="open() ? panelId : null"
-      (click)="togglePanel()"
-    >
-      <i class="ph-bold ph-calendar-blank" aria-hidden="true"></i>
-    </button>
-  </div>
-
-  <ng-template
-    cdkConnectedOverlay
-    cdkConnectedOverlayUsePopover="inline"
-    [cdkConnectedOverlayOrigin]="origin"
-    [cdkConnectedOverlayOpen]="open()"
-    [cdkConnectedOverlayPositions]="positions"
-    [cdkConnectedOverlayPush]="true"
-    [cdkConnectedOverlayViewportMargin]="viewportMargin"
-    (attach)="onAttached()"
-    (detach)="closePanel(false)"
-    (overlayOutsideClick)="onOutsideClick($event)"
-  >
-    <div
-      class="star-panel star-date__panel"
-      [class.star-date__panel--time]="timeEnabled()"
-      [class.star-date__panel--months]="numberOfMonths() > 1"
-      role="dialog"
-      [id]="panelId"
-      [attr.aria-label]="text.chooseDate"
-      (keydown)="onPanelKeydown($event)"
-    >
-      @if (headerSlot(); as header) {
-        <ng-container *ngTemplateOutlet="header" />
-      }
-      <star-calendar
-        [mode]="mode"
-        [selected]="calendarSelected()"
-        [range]="calendarRange()"
-        [selectedDates]="calendarDates()"
-        [granularity]="granularity()"
-        [numberOfMonths]="numberOfMonths()"
-        [showWeek]="showWeek()"
-        [minDate]="minDate()"
-        [maxDate]="maxDate()"
-        [disabledDates]="disabledDates()"
-        [disabledDays]="disabledDays()"
-        [dateDisabled]="dateDisabled()"
-        [firstDayOfWeek]="firstDayOfWeek()"
-        [locale]="locale()"
-        [dateTemplate]="dateSlot()"
-        (dateSelect)="onDateSelect($event)"
-      />
-      @if (timeEnabled()) {
-        <div class="star-date__time">
-          @for (field of timeFields(); track field.label) {
-            <div class="star-date__time-field" role="group" [attr.aria-label]="field.label">
-              <span class="star-date__time-label" aria-hidden="true">{{ field.label }}</span>
-              <star-time-columns
-                [value]="field.value || null"
-                [min]="field.min"
-                [max]="field.max"
-                [stepMinute]="timeStep() / 60"
-                [hourFormat]="hourFormat()"
-                [disabled]="!field.value"
-                (valueChange)="$event && field.set($event)"
-              />
-            </div>
-          }
-        </div>
-        <div class="star-date__done">
-          <button type="button" class="star-btn star-btn--primary star-btn--sm" (click)="closePanel()">{{ text.done }}</button>
-        </div>
-      }
-      @if (showButtonBar()) {
-        <div class="star-date__bar">
-          <button type="button" class="star-btn star-btn--ghost star-btn--sm" (click)="today()">{{ text.today }}</button>
-          <button type="button" class="star-btn star-btn--ghost star-btn--sm" (click)="clear()">{{ text.clear }}</button>
-        </div>
-      }
-      <!-- The footer is last, below the button bar. PrimeNG \`#footer\` template. -->
-      @if (footerSlot(); as footer) {
-        <ng-container *ngTemplateOutlet="footer" />
-      }
-    </div>
-  </ng-template>
-`;
-
-const HOST = {
-  class: 'star-date',
-  '[class.star-date--open]': 'open()',
-  '[class.star-date--disabled]': 'disabled()',
-  '[class.star-date--invalid]': 'showInvalid()',
-  '[class.star-date--sm]': "size() === 'sm'",
-};
 
 /**
  * Date picker (PrimeNG `p-datepicker`): typed entry (`dd/mm/yyyy` or the locale's order, or ISO),
  * calendar popup with month / year views, min / max, disabled dates and weekdays, Today / Clear.
  *
- * `showTime` adds a time of day: the value keeps hours and minutes, the text is
- * `dd/mm/yyyy, hh:mm` in the 24-hour clock, and the popup has hour and minute columns (a
+ * `showTime` adds a time of day: the value keeps hours and minutes (and seconds with
+ * `showSeconds`), the text is `dd/mm/yyyy, hh:mm` in the 24-hour clock, and the popup has hour
+ * and minute columns (a
  * StarNG panel, not the popup of the browser) and stays open until the user chooses Done. With
  * `showTime`, `minDate` / `maxDate` also limit the time: the columns disable the times outside
  * the limits, and a value outside the limits moves to the nearest limit.
@@ -498,20 +558,25 @@ const HOST = {
  * text is `mm/yyyy` or `yyyy`.
  *
  * `<star-date-picker [formField]="form.receivedOn" [maxDate]="today" showButtonBar />`
+ *
+ * The type parameter `T` is the type of the value: `Date` (default) or `string`. Pair it with
+ * `dataType`: `T` = `string` needs `dataType="string"`, or the picker writes `Date`s into a
+ * string model. Angular infers `T` from `[(value)]` or `[formField]`.
  */
 @Component({
   selector: 'star-date-picker',
   imports: [CdkConnectedOverlay, CdkOverlayOrigin, NgTemplateOutlet, StarCalendar, StarTimeColumns],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarDatePicker) }],
-  host: HOST,
-  template: TEMPLATE,
+  host: STAR_DATE_HOST,
+  template: STAR_DATE_TEMPLATE,
 })
-export class StarDatePicker
-  extends StarDateInputBase<Date | null>
-  implements FormValueControl<Date | null>
+export class StarDatePicker<T extends Date | string = Date>
+  extends StarDateInputBase<T | null>
+  implements FormValueControl<T | null>
 {
-  readonly value = model<Date | null>(null);
+  /** The date: a `Date`, or ISO text with `dataType: 'string'`. */
+  readonly value = model<T | null>(null);
   /** Adds a time of day (hours and minutes) to the value. */
   readonly showTime = input(false, { transform: booleanAttribute });
   /** Minute step of the time columns. */
@@ -531,7 +596,7 @@ export class StarDatePicker
     return formatHint(this.locale()) + (this.showTime() ? this.timeHint() : '');
   });
   protected readonly displayText = () => {
-    const value = this.value();
+    const value = this.date();
     if (!value) return '';
     if (this.view() === 'year') return String(value.getFullYear());
     if (this.view() === 'month') {
@@ -539,46 +604,25 @@ export class StarDatePicker
     }
     return this.timeEnabled() ? this.formatDateTime(value) : this.format(value);
   };
-  protected readonly hasValue = computed(() => this.value() !== null);
-  protected readonly calendarSelected = this.value;
+  protected readonly hasValue = computed(() => this.date() !== null);
+  /** The value as a date. */
+  protected readonly date = computed(() => this.toDate(this.value()));
+  protected readonly calendarSelected = this.date;
   protected readonly calendarRange = signal<StarDateRange | null>(null);
 
-  protected parseText(text: string): Date | null | undefined {
-    if (this.view() !== 'day') return this.parsePeriod(text.trim());
+  protected parseText(text: string): T | null | undefined {
+    const date = this.parseDay(text);
+    return date ? (this.fromDate(date) as T) : date;
+  }
+
+  private parseDay(text: string): Date | null | undefined {
+    const view = this.view();
+    if (view !== 'day') return starParsePeriod(text.trim(), view, this.minDate(), this.maxDate());
     if (!this.timeEnabled()) return this.parseOne(text);
-    const current = this.value();
-    const date = this.parseDateTime(text, current?.getHours() ?? 0, current?.getMinutes() ?? 0);
-    return date && this.clampTime(date).getTime() === date.getTime() ? date : undefined;
+    return this.parseDateTime(text, this.date() ?? new Date(2000, 0, 1));
   }
 
-  /** `mm/yyyy`, `yyyy-mm` or `yyyy`: the first day of that month or year. */
-  private parsePeriod(text: string): Date | undefined {
-    const year = /^(\d{4})$/.exec(text);
-    const month = /^(\d{1,2})[/.\- ](\d{4})$/.exec(text);
-    const iso = /^(\d{4})-(\d{1,2})$/.exec(text);
-    let date: Date | null = null;
-    if (this.view() === 'year' && year) date = new Date(Number(year[1]), 0, 1);
-    else if (this.view() === 'month' && month)
-      date = new Date(Number(month[2]), Number(month[1]) - 1, 1);
-    else if (this.view() === 'month' && iso) date = new Date(Number(iso[1]), Number(iso[2]) - 1, 1);
-    if (!date || date.getMonth() > 11 || Number.isNaN(date.getTime())) return undefined;
-    if (month && (Number(month[1]) < 1 || Number(month[1]) > 12)) return undefined;
-    if (iso && (Number(iso[2]) < 1 || Number(iso[2]) > 12)) return undefined;
-    return this.periodAllowed(date) ? date : undefined;
-  }
-
-  /** A month or year is allowed when any part of it is inside `minDate` … `maxDate`. */
-  private periodAllowed(first: Date): boolean {
-    const last =
-      this.view() === 'year'
-        ? new Date(first.getFullYear(), 11, 31)
-        : new Date(first.getFullYear(), first.getMonth() + 1, 0);
-    const min = this.minDate();
-    const max = this.maxDate();
-    return (!min || compareDays(last, min) >= 0) && (!max || compareDays(first, max) <= 0);
-  }
-
-  protected emptyValue(): Date | null {
+  protected emptyValue(): T | null {
     return null;
   }
 
@@ -588,7 +632,7 @@ export class StarDatePicker
     if (this.view() === 'year') return this.onDateSelect(new Date(today.getFullYear(), 0, 1));
     if (!this.allowed(today)) return;
     if (!this.timeEnabled()) return this.onDateSelect(today);
-    this.setValue(this.atCurrentTime(today));
+    this.setValue(this.atCurrentTime(today, this.stepMinute()));
   }
 
   protected onDateSelect(date: Date): void {
@@ -598,9 +642,11 @@ export class StarDatePicker
       return;
     }
     // Keep the time already chosen; a first pick starts at the current time.
-    const current = this.value();
+    const current = this.date();
     this.setValue(
-      current ? atTime(date, current.getHours(), current.getMinutes()) : this.atCurrentTime(date),
+      current
+        ? atTime(date, current.getHours(), current.getMinutes(), current.getSeconds())
+        : this.atCurrentTime(date, this.stepMinute()),
     );
   }
 
@@ -608,26 +654,19 @@ export class StarDatePicker
     return [
       {
         label: this.text.time,
-        value: timeOf(this.value()),
-        ...this.timeLimits(this.value()),
+        value: this.timeOf(this.date()),
+        ...this.timeLimits(this.date()),
         set: (time) => {
-          const next = withTime(this.value(), time);
+          const next = withTime(this.date(), time);
           if (next) this.setValue(next);
         },
       },
     ];
   }
 
-  /** `date` at the current time of day, rounded down to the minute step. */
-  private atCurrentTime(date: Date): Date {
-    const now = new Date();
-    const step = Math.max(1, this.stepMinute());
-    return atTime(date, now.getHours(), now.getMinutes() - (now.getMinutes() % step));
-  }
-
   private setValue(date: Date): void {
     const next = this.timeEnabled() ? this.clampTime(date) : date;
-    this.value.set(next);
+    this.value.set(this.fromDate(next) as T);
     this.dateSelect.emit(next);
   }
 }
@@ -636,22 +675,30 @@ export class StarDatePicker
  * Date range picker (PrimeNG `p-datepicker selectionMode="range"`). Value: `{ start, end }`.
  * First click sets the start, second click the end (swapped if earlier); hovering previews.
  * Type `01/11/2026 – 15/11/2026` (any separator between the two dates).
+ *
+ * The type parameter `T` is the type of the value: `Date` (default) or `string`, for both ends. Pair it with
+ * `dataType`: `T` = `string` needs `dataType="string"`, or the picker writes `Date`s into a
+ * string model. Angular infers `T` from `[(value)]` or `[formField]`.
  */
 @Component({
   selector: 'star-date-range-picker',
   imports: [CdkConnectedOverlay, CdkOverlayOrigin, NgTemplateOutlet, StarCalendar, StarTimeColumns],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarDateRangePicker) }],
-  host: { ...HOST, class: 'star-date star-date--range' },
-  template: TEMPLATE,
+  host: { ...STAR_DATE_HOST, class: 'star-date star-date--range' },
+  template: STAR_DATE_TEMPLATE,
 })
-export class StarDateRangePicker
-  extends StarDateInputBase<StarDateRange | null>
-  implements FormValueControl<StarDateRange | null>
+export class StarDateRangePicker<T extends Date | string = Date>
+  extends StarDateInputBase<StarDateRange<T> | null>
+  implements FormValueControl<StarDateRange<T> | null>
 {
-  readonly value = model<StarDateRange | null>(null);
+  /** The range: two `Date`s, or ISO text with `dataType: 'string'`. */
+  readonly value = model<StarDateRange<T> | null>(null);
+  /** The value as dates. */
+  protected readonly range = computed(() => starMapRange(this.value(), (day) => this.toDate(day)));
   /**
-   * Adds a time of day to both ends. A new start is at 00:00 and a new end at 23:59; the popup
+   * Adds a time of day to both ends. A new start is at 00:00 and a new end at 23:59 (23:59:59
+   * with `showSeconds`); the popup
    * has start and end time columns and stays open until the user chooses Done.
    */
   readonly showTime = input(false, { transform: booleanAttribute });
@@ -670,15 +717,15 @@ export class StarDateRangePicker
     this.showTime() ? this.formatDateTime(date) : this.format(date);
 
   protected override timeFields(): readonly StarTimeField[] {
-    const range = this.value();
+    const range = this.range();
     const update = (edge: 'start' | 'end') => (time: string) => {
-      const current = this.value();
+      const current = this.range();
       const next = withTime(current?.[edge], time);
       if (!current?.start || !next) return;
       const changed = { ...current, [edge]: this.clampTime(next) };
       // Keep the order when both ends are on the same day.
       if (changed.end && changed.start && changed.end.getTime() < changed.start.getTime()) return;
-      this.value.set(changed);
+      this.setRange(changed);
       if (changed.end) this.rangeSelect.emit(changed);
     };
     const start = this.timeLimits(range?.start);
@@ -688,39 +735,44 @@ export class StarDateRangePicker
     return [
       {
         label: this.text.startTime,
-        value: timeOf(range?.start),
+        value: this.timeOf(range?.start),
         set: update('start'),
         min: start.min,
-        max: sameDate ? timeOf(range?.end) : start.max,
+        max: sameDate ? this.timeOf(range?.end) : start.max,
       },
       {
         label: this.text.endTime,
-        value: timeOf(range?.end),
+        value: this.timeOf(range?.end),
         set: update('end'),
-        min: sameDate ? timeOf(range?.start) : end.min,
+        min: sameDate ? this.timeOf(range?.start) : end.min,
         max: end.max,
       },
     ];
   }
-  protected readonly hasValue = computed(() => !!this.value()?.start);
+  protected readonly hasValue = computed(() => !!this.range()?.start);
   protected readonly calendarSelected = signal<Date | null>(null);
-  protected readonly calendarRange = this.value;
+  protected readonly calendarRange = this.range;
 
   protected readonly displayText = () => {
-    const range = this.value();
+    const range = this.range();
     if (!range?.start) return '';
     return range.end
       ? `${this.show(range.start)} – ${this.show(range.end)}`
       : `${this.show(range.start)} – `;
   };
 
-  protected parseText(text: string): StarDateRange | null | undefined {
+  protected parseText(text: string): StarDateRange<T> | null | undefined {
+    const range = this.parseRange(text);
+    return range && this.toValue(range);
+  }
+
+  private parseRange(text: string): StarDateRange | null | undefined {
     // Two dates, each written with its own separators, split on a dash or "to" between them.
     const parts = text.split(/\s+[–—-]\s*|\s+to\s+/i).filter((part) => part.trim());
     if (parts.length !== 2) return undefined;
     if (this.showTime()) {
-      const from = this.parseDateTime(parts[0], 0, 0);
-      const to = this.parseDateTime(parts[1], 23, 59);
+      const from = this.parseDateTime(parts[0], new Date(2000, 0, 1));
+      const to = this.parseDateTime(parts[1], this.endOfDay(new Date(2000, 0, 1)));
       if (!from || !to) return undefined;
       return from.getTime() <= to.getTime() ? { start: from, end: to } : { start: to, end: from };
     }
@@ -730,27 +782,40 @@ export class StarDateRangePicker
     return compareDays(start, end) <= 0 ? { start, end } : { start: end, end: start };
   }
 
-  protected emptyValue(): StarDateRange | null {
+  protected emptyValue(): StarDateRange<T> | null {
     return null;
+  }
+
+  private toValue(range: StarDateRange): StarDateRange<T> {
+    return starMapRange(range, (day) => (day ? (this.fromDate(day) as T) : null))!;
+  }
+
+  private setRange(range: StarDateRange): void {
+    this.value.set(this.toValue(range));
+  }
+
+  /** The last time of the day: 23:59, or 23:59:59 with `showSeconds`. */
+  private endOfDay(date: Date): Date {
+    return atTime(date, 23, 59, this.showSeconds() ? 59 : 0);
   }
 
   protected pickToday(today: Date): void {
     if (!this.allowed(today)) return;
     if (this.showTime()) {
-      this.value.set({
+      this.setRange({
         start: this.clampTime(atTime(today, 0, 0)),
-        end: this.clampTime(atTime(today, 23, 59)),
+        end: this.clampTime(this.endOfDay(today)),
       });
       return;
     }
-    this.value.set({ start: today, end: today });
+    this.setRange({ start: today, end: today });
     this.closePanel();
   }
 
   protected onDateSelect(date: Date): void {
-    const range = this.value();
+    const range = this.range();
     if (!range?.start || range.end) {
-      this.value.set({
+      this.setRange({
         start: this.showTime() ? this.clampTime(atTime(date, 0, 0)) : date,
         end: null,
       });
@@ -761,10 +826,10 @@ export class StarDateRangePicker
     const next = this.showTime()
       ? {
           start: this.clampTime(atTime(first, 0, 0)),
-          end: this.clampTime(atTime(last, 23, 59)),
+          end: this.clampTime(this.endOfDay(last)),
         }
       : { start: first, end: last };
-    this.value.set(next);
+    this.setRange(next);
     this.rangeSelect.emit(next);
     // With a time, the popup stays open for the time fields.
     if (!this.showTime()) this.closePanel();
@@ -775,35 +840,46 @@ export class StarDateRangePicker
  * Multiple-date picker (PrimeNG `p-datepicker selectionMode="multiple"`). Value: a list of
  * days in date order. A click adds a day or removes it; the popup stays open. Type the dates
  * with a comma or a semicolon between them.
+ *
+ * The type parameter `T` is the type of the value: `Date` (default) or `string`, for each day. Pair it with
+ * `dataType`: `T` = `string` needs `dataType="string"`, or the picker writes `Date`s into a
+ * string model. Angular infers `T` from `[(value)]` or `[formField]`.
  */
 @Component({
   selector: 'star-multi-date-picker',
   imports: [CdkConnectedOverlay, CdkOverlayOrigin, NgTemplateOutlet, StarCalendar, StarTimeColumns],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarMultiDatePicker) }],
-  host: { ...HOST, class: 'star-date star-date--multiple' },
-  template: TEMPLATE,
+  host: { ...STAR_DATE_HOST, class: 'star-date star-date--multiple' },
+  template: STAR_DATE_TEMPLATE,
 })
-export class StarMultiDatePicker
-  extends StarDateInputBase<readonly Date[]>
-  implements FormValueControl<readonly Date[]>
+export class StarMultiDatePicker<T extends Date | string = Date>
+  extends StarDateInputBase<readonly T[]>
+  implements FormValueControl<readonly T[]>
 {
-  readonly value = model<readonly Date[]>([]);
+  /** The days: `Date`s, or ISO text with `dataType: 'string'`. */
+  readonly value = model<readonly T[]>([]);
+  /** The value as dates. */
+  protected readonly dates = computed(() => starDates(this.value()));
   /** Largest number of days (0 = no limit). A click on a new day does nothing at the limit. */
   readonly maxDates = input(0);
 
   protected readonly mode = 'multiple' as const;
-  protected readonly hasValue = computed(() => this.value().length > 0);
+  protected readonly hasValue = computed(() => this.dates().length > 0);
   protected readonly calendarSelected = signal<Date | null>(null);
   protected readonly calendarRange = signal<StarDateRange | null>(null);
-  protected override readonly calendarDates = this.value;
+  protected override readonly calendarDates = this.dates;
 
   protected readonly displayText = () =>
-    this.value()
+    this.dates()
       .map((date) => this.format(date))
       .join(', ');
 
-  protected parseText(text: string): readonly Date[] | undefined {
+  protected parseText(text: string): readonly T[] | undefined {
+    return this.parseDays(text)?.map((day) => this.fromDate(day) as T);
+  }
+
+  private parseDays(text: string): readonly Date[] | undefined {
     const dates: Date[] = [];
     for (const part of text.split(/\s*[,;]\s*/).filter((item) => item.trim())) {
       const date = this.parseOne(part);
@@ -814,22 +890,26 @@ export class StarMultiDatePicker
     return dates.sort((a, b) => a.getTime() - b.getTime());
   }
 
-  protected emptyValue(): readonly Date[] {
+  protected emptyValue(): readonly T[] {
     return [];
   }
 
+  private setDates(days: readonly Date[]): void {
+    this.value.set(days.map((day) => this.fromDate(day) as T));
+  }
+
   protected pickToday(today: Date): void {
-    if (this.allowed(today) && !this.value().some((day) => sameDay(day, today))) {
+    if (this.allowed(today) && !this.dates().some((day) => sameDay(day, today))) {
       this.onDateSelect(today);
     }
   }
 
   protected onDateSelect(date: Date): void {
-    const days = this.value();
+    const days = this.dates();
     if (days.some((day) => sameDay(day, date))) {
-      this.value.set(days.filter((day) => !sameDay(day, date)));
+      this.setDates(days.filter((day) => !sameDay(day, date)));
     } else if (this.maxDates() <= 0 || days.length < this.maxDates()) {
-      this.value.set([...days, date].sort((a, b) => a.getTime() - b.getTime()));
+      this.setDates([...days, date].sort((a, b) => a.getTime() - b.getTime()));
     }
   }
 }

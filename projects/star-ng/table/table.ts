@@ -30,12 +30,14 @@ import { StarCheckbox } from '@star-ng/ui/checkbox';
 import {
   compareValues,
   injectStarControlDefaults,
-  matchesFilter,
   readOption,
   STAR_SLOT_HOST,
   STAR_UI_TEXT,
   StarAnnouncer,
   StarEmptyContext,
+  starFilterMatchAny,
+  StarFilterMatchMode,
+  StarFilterService,
   StarGroupContext,
   starIsRtl,
   StarOptionKey,
@@ -68,6 +70,23 @@ import {
   StarExportCell,
   stylePrintDocument,
 } from './table-export';
+import {
+  hasBound,
+  isRange,
+  StarColumnFilters,
+  StarColumnFilterType,
+  StarFilterValue,
+  starIsActiveFilter,
+  starMatchesFilter,
+  StarTableMatchMode,
+} from './table-filter';
+import { StarTableFilterMenu } from './table-filter-menu';
+import {
+  StarHeaderCheckboxToggleEvent,
+  StarRowSelectEvent,
+  StarTableSelection,
+  StarTableSelectionChangingEvent,
+} from './table-selection';
 import type { StarHeaderCellContext, StarRowEditActionsContext } from './table-slots';
 import {
   anchorOf,
@@ -79,6 +98,18 @@ import {
   VirtualItem,
   VirtualLayout,
 } from './virtual-heights';
+// Public filter types only; the matching helpers stay internal.
+export {
+  STAR_TABLE_MATCH_MODES,
+  type StarColumnFilters,
+  type StarColumnFilterType,
+  type StarFilterConstraint,
+  type StarFilterRule,
+  type StarFilterRuleValue,
+  type StarFilterValue,
+  type StarRangeFilter,
+  type StarTableMatchMode,
+} from './table-filter';
 
 export interface StarColumn<T> extends StarColumnRules<T> {
   /** Unique column id; also the property read when `value` is not set. */
@@ -92,14 +123,27 @@ export interface StarColumn<T> extends StarColumnRules<T> {
   readonly width?: string;
   readonly align?: 'start' | 'center' | 'end';
   /**
-   * Column filter, shown in a second header row.
-   * - `'text'`: the display text contains the query (case- and accent-insensitive).
+   * Column filter, shown in a second header row (`filterDisplay="row"`) or in a filter menu of
+   * the header cell (`filterDisplay="menu"`, PrimeNG `p-columnFilter`).
+   * - `'text'`: the display text contains the query (case- and accent-insensitive; the mode is
+   *   `filterMatchMode`).
    * - `'select'`: the display text equals the choice.
    * - `'multiselect'`: the display text is one of the choices (value: text list).
    * - `'number'`: the cell value is in a range (value: `{ min, max }` numbers).
    * - `'date'`: the cell day is in a range (value: `{ min, max }` as `yyyy-mm-dd`).
    */
-  readonly filter?: 'text' | 'select' | 'multiselect' | 'number' | 'date';
+  readonly filter?: StarColumnFilterType;
+  /**
+   * Match modes that the filter menu offers for this column, for example
+   * `['contains', 'equals']` or a mode registered with `StarFilterService` (PrimeNG
+   * `matchModeOptions`). Default: all modes of the filter type.
+   */
+  readonly filterMatchModes?: readonly StarTableMatchMode[];
+  /**
+   * Default match mode (PrimeNG `matchMode`): of a new rule in the filter menu, and of a text
+   * value in the filter row. Default: the first mode of the type (`contains`, `equals`, `dateIs`).
+   */
+  readonly filterMatchMode?: StarTableMatchMode;
   /** Choices of a `'select'` or `'multiselect'` filter (default: the distinct display texts in `value`, sorted). */
   readonly filterOptions?: readonly string[];
   /** `false` leaves the column out of every export (CSV, Excel, print). */
@@ -138,40 +182,6 @@ export interface StarCellEditEvent<T> {
   /** New value: text, or a number / `null` for the `'number'` editor. */
   readonly value: string | number | null;
   readonly previous: unknown;
-}
-
-/** Range of a `'number'` filter (numbers) or a `'date'` filter (`yyyy-mm-dd` text). */
-export interface StarRangeFilter {
-  readonly min?: number | string | null;
-  readonly max?: number | string | null;
-}
-
-/** Text (`'text'`, `'select'`), text list (`'multiselect'`) or range (`'number'`, `'date'`). */
-export type StarFilterValue = string | readonly string[] | StarRangeFilter;
-
-/** Column filter values by column `field`. An empty or missing value means "no filter". */
-export type StarColumnFilters = Readonly<Record<string, StarFilterValue>>;
-
-function isRange(value: StarFilterValue | undefined): value is StarRangeFilter {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
-function hasBound(bound: number | string | null | undefined): bound is number | string {
-  return bound !== null && bound !== undefined && bound !== '';
-}
-
-function isActiveFilter(value: StarFilterValue | undefined): value is StarFilterValue {
-  if (isRange(value)) return hasBound(value.min) || hasBound(value.max);
-  return !!value && value.length > 0;
-}
-
-/** Local calendar day of a cell value as `yyyy-mm-dd`, or `''` when it is not a date. */
-function dayKey(value: unknown): string {
-  if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}/.test(value)) return value.slice(0, 10);
-  const date = value instanceof Date ? value : new Date(value as string | number);
-  if (value === null || value === undefined || Number.isNaN(date.getTime())) return '';
-  const pad = (part: number) => String(part).padStart(2, '0');
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
 export interface StarExportOptions<T = unknown> {
@@ -261,6 +271,12 @@ export type StarSortOrder = 1 | -1;
 export interface StarSortState {
   readonly field: string | null;
   readonly order: StarSortOrder;
+}
+
+/** `filter` output: the column filters and the rows that pass all filters. */
+export interface StarTableFilterEvent<T> {
+  readonly filters: StarColumnFilters;
+  readonly filteredValue: readonly T[];
 }
 
 export interface StarLazyLoadEvent extends StarSortState {
@@ -373,6 +389,7 @@ export class StarRowExpansionTemplate<T = unknown> {
     StarSelect,
     StarPopover,
     StarSkeleton,
+    StarTableFilterMenu,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
@@ -476,11 +493,15 @@ export class StarRowExpansionTemplate<T = unknown> {
             @if (selectionMode() === 'multiple') {
               <th class="star-table__select" scope="col">
                 <star-checkbox
-                  [checked]="pageState() === true"
-                  [indeterminate]="pageState() === 'mixed'"
-                  [ariaLabel]="text.selectAllRows"
-                  [disabled]="!pageRows().length"
-                  (checkedChange)="togglePage($event)"
+                  #allBox
+                  [checked]="headerState() === true"
+                  [indeterminate]="headerState() === 'mixed'"
+                  [ariaLabel]="
+                    selectionPageOnly() && paginator() ? text.selectPageRows : text.selectAllRows
+                  "
+                  [disabled]="!headerEnabled()"
+                  (click)="boxEvent = $event"
+                  (checkedChange)="togglePage($event, allBox)"
                 />
               </th>
             } @else if (selectionMode() === 'single') {
@@ -521,6 +542,23 @@ export class StarRowExpansionTemplate<T = unknown> {
                   </button>
                 } @else {
                   <ng-container *ngTemplateOutlet="headerLabel; context: { $implicit: column }" />
+                }
+                @if (column.filter && filterDisplay() === 'menu') {
+                  <star-table-filter-menu
+                    [header]="column.header"
+                    [type]="column.filter"
+                    [value]="filters()[column.field]"
+                    [matchModes]="column.filterMatchModes ?? []"
+                    [defaultMode]="column.filterMatchMode ?? null"
+                    [choices]="
+                      column.filter === 'select' || column.filter === 'multiselect'
+                        ? filterChoices(column)
+                        : []
+                    "
+                    [maxRules]="filterMaxRules()"
+                    [showApply]="showApplyButton()"
+                    (filterChange)="setFilter(column.field, $event ?? '')"
+                  />
                 }
                 @if (resizableColumns()) {
                   <span
@@ -695,8 +733,11 @@ export class StarRowExpansionTemplate<T = unknown> {
                   [class.star-table__row--editing]="isRowInEdit(row)"
                   [class.star-table__row--deleted]="isDeleted(row)"
                   [attr.aria-selected]="selectionMode() ? isSelected(row) : null"
+                  [attr.tabindex]="rowTabIndex(row)"
+                  [attr.data-select-key]="selectionMode() ? rowKeyText(row) : null"
                   (click)="onRowClick(row, $event)"
-                  (keydown)="onRowKey(row, $event)"
+                  (focusin)="onRowFocus(row)"
+                  (keydown)="onRowKey(row, $event); onSelectionKey(row, $event)"
                 >
                   @if (reorderableRows()) {
                     <td class="star-table__reorder">
@@ -737,10 +778,12 @@ export class StarRowExpansionTemplate<T = unknown> {
                   @if (selectionMode() === 'multiple') {
                     <td class="star-table__select">
                       <star-checkbox
+                        #rowBox
                         [checked]="isSelected(row)"
-                        [ariaLabel]="text.selectRow"
-                        (checkedChange)="toggleRow(row)"
-                        (click)="$event.stopPropagation()"
+                        [disabled]="!canSelect(row)"
+                        [ariaLabel]="selectRowLabel(row)"
+                        (checkedChange)="toggleRow(row, rowBox)"
+                        (click)="$event.stopPropagation(); boxEvent = $event"
                       />
                     </td>
                   } @else if (selectionMode() === 'single') {
@@ -750,8 +793,10 @@ export class StarRowExpansionTemplate<T = unknown> {
                         class="star-table__radio"
                         [name]="radioName"
                         [checked]="isSelected(row)"
-                        [attr.aria-label]="text.selectRow"
-                        (change)="selectOnly(row)"
+                        [disabled]="!canSelect(row)"
+                        [attr.data-select-key]="rowKeyText(row)"
+                        [attr.aria-label]="selectRowLabel(row)"
+                        (change)="selectOnly(row, $event)"
                         (click)="$event.stopPropagation()"
                       />
                     </td>
@@ -1037,6 +1082,7 @@ export class StarTable<T> {
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly injector = inject(Injector);
   private readonly appRef = inject(ApplicationRef);
+  private readonly filterService = inject(StarFilterService);
 
   readonly value = input.required<readonly T[]>();
   readonly columns = input.required<readonly StarColumn<T>[]>();
@@ -1089,6 +1135,34 @@ export class StarTable<T> {
   readonly sortOrder = model<StarSortOrder>(1);
   /** Case- and accent-insensitive text search over all columns. */
   readonly globalFilter = input('');
+  /**
+   * Fields that the global filter searches (PrimeNG `globalFilterFields`). `null` or an empty
+   * list (default): all columns.
+   */
+  readonly globalFilterFields = input<readonly string[] | null>(null);
+  /**
+   * How the global filter text matches (default `contains`). A row passes when one searched cell
+   * matches; with `notContains`, when no searched cell has the text.
+   */
+  readonly globalFilterMatchMode = input<StarFilterMatchMode>('contains');
+  /**
+   * Locale of the text filters (PrimeNG `filterLocale`): with it, `Intl.Collator` compares the
+   * folded texts, so letters that the locale treats as equal match. Default: no locale.
+   */
+  readonly filterLocale = input<string | null>(null);
+  /**
+   * Where the column filters show (PrimeNG `filterDisplay`): `'row'` (default), a second header
+   * row; `'menu'`, a filter button in each header cell that opens a filter menu with match modes,
+   * "Match all" / "Match any" rules, Clear and Apply.
+   */
+  readonly filterDisplay = input<'row' | 'menu'>('row');
+  /** Most rules per column in the filter menu (PrimeNG `maxConstraints`). */
+  readonly filterMaxRules = input(2);
+  /**
+   * Apply button in the filter menu (PrimeNG `showApplyButton`). `false`: every change in the
+   * menu filters at once.
+   */
+  readonly showApplyButton = input(true, { transform: booleanAttribute });
   /** Column filter values by column `field` (columns with `filter` set). Two-way. */
   readonly filters = model<StarColumnFilters>({});
 
@@ -1097,8 +1171,67 @@ export class StarTable<T> {
   /** Total rows on the server (lazy mode). */
   readonly totalRecords = input(0);
 
+  /**
+   * Row selection. It adds the selection column: a check box per row and a tri-state header check
+   * box (`'multiple'`, PrimeNG `p-tableCheckbox` / `p-tableHeaderCheckbox`), or a radio per row
+   * (`'single'`, PrimeNG `p-tableRadioButton`).
+   */
   readonly selectionMode = input<'single' | 'multiple' | null>(null);
+  /**
+   * Selected rows. Two-way. Rows match by `dataKey`, so new row objects stay selected.
+   *
+   * In key mode (`selectionKeys` is an array), `selection` follows the keys. It can emit
+   * `selectionChange` at the first render, when the keys resolve to the rows in `value`. Single
+   * mode and a plain click replace the whole selection, including keys whose rows are not loaded
+   * (for example rows of other lazy pages).
+   */
   readonly selection = model<readonly T[]>([]);
+  /**
+   * Keys (`dataKey`) of the selected rows (PrimeNG `selectionKeys`). Two-way. Bind an array to
+   * make the keys the source of the selection: it survives a lazy reload or an edit that gives
+   * new row objects, and keys of rows that are not in `value` (other lazy pages) stay selected.
+   * `selection` then follows the keys: it holds the row objects of the keys that are in `value`
+   * (fresh objects), plus the objects it already had for the other keys. `exportCsv({
+   * selectionOnly })` uses the same rows. `null` (default): the keys come from `selection`.
+   *
+   * Do not derive `selectionKeys` from `selection` in the owner: keys that are not resolved to a
+   * loaded row would be lost. Single mode and a plain click replace the whole selection,
+   * including keys whose rows are not loaded. `selection` can emit `selectionChange` at the first
+   * render in key mode.
+   */
+  readonly selectionKeys = model<readonly unknown[] | null>(null);
+  /**
+   * State of the header check box when the owner decides what "all" means (PrimeNG `selectAll`),
+   * for lazy data. Two-way. `null` (default): the table selects the rows itself. With a boolean,
+   * the header check box shows it and a toggle only sets it and emits `headerCheckboxToggle`.
+   */
+  readonly selectAll = model<boolean | null>(null);
+  /**
+   * Meta-key selection (PrimeNG `metaKeySelection`): a click selects only that row, Ctrl / Cmd +
+   * click toggles it, Shift + click selects a range. Rows become focusable (one tab stop): Arrow
+   * Up / Down move, Space toggles, Shift + Space and Shift + Arrow extend the range (a range only
+   * grows; Shift + Arrow back toward the anchor does not clear rows). The Arrow keys move between
+   * rendered rows: with virtual scroll, only within the rendered window. Default off: only single
+   * mode selects on a click.
+   */
+  readonly metaKeySelection = input(false, { transform: booleanAttribute });
+  /**
+   * The header check box selects the rows of the current page only (PrimeNG `selectionPageOnly`).
+   * Default `true`, so a paginated table keeps its page-only header check box. Set it to `false`
+   * to select every selectable row of the current filter result, on all pages. Without a
+   * paginator the page holds all rows, so both values select the same rows.
+   */
+  readonly selectionPageOnly = input(true, { transform: booleanAttribute });
+  /**
+   * Rows that can be selected (PrimeNG `rowSelectable`). Other rows get a disabled check box and
+   * are skipped by the header check box, ranges and clicks.
+   */
+  readonly rowSelectable = input<((row: T) => boolean) | null>(null);
+  /**
+   * Text that names a row in its check box ("Select row Order 1042"). Default: the text of the
+   * first visible column.
+   */
+  readonly rowLabel = input<((row: T) => string) | null>(null);
 
   /**
    * Keys (`dataKey`) of the expanded rows. Two-way. Rows expand only when the table has an
@@ -1196,6 +1329,26 @@ export class StarTable<T> {
   /** `commitEdits()` with `batchEdit`: all pending changes. Ignite `transactions.commit`. */
   readonly batchSave = output<StarBatchChanges<T>>();
   readonly lazyLoad = output<StarLazyLoadEvent>();
+  /**
+   * After each change of `filters` (filter row, filter menu or the owner) or of `globalFilter`, in
+   * client mode: the filters and the rows that pass them (PrimeNG `onFilter`). A change of
+   * `globalFilterFields`, `globalFilterMatchMode` or `filterLocale` does not emit it. In lazy
+   * mode, `lazyLoad` carries the filters.
+   */
+  readonly filter = output<StarTableFilterEvent<T>>();
+  /**
+   * Fires before the selection changes, with the rows now and after. Call `cancel()` to keep the
+   * old selection (Ignite UI grid `rowSelectionChanging`). It fires only for changes that the
+   * user makes (check box, radio, row click, keyboard), not when the owner sets `selection`,
+   * `selectionKeys` or `selectAll`, and not when the table puts a cancelled change back.
+   */
+  readonly selectionChanging = output<StarTableSelectionChangingEvent<T>>();
+  /** A row joined the selection (PrimeNG `onRowSelect`). */
+  readonly rowSelect = output<StarRowSelectEvent<T>>();
+  /** A row left the selection (PrimeNG `onRowUnselect`). */
+  readonly rowUnselect = output<StarRowSelectEvent<T>>();
+  /** The header check box was toggled (PrimeNG `onHeaderCheckboxToggle`). */
+  readonly headerCheckboxToggle = output<StarHeaderCheckboxToggleEvent>();
 
   /** The cell in edit mode: `<row key>|<field>` text, or `null`. */
   private readonly editing = signal<string | null>(null);
@@ -1259,8 +1412,9 @@ export class StarTable<T> {
   protected readonly dropField = signal<string | null>(null);
   private resizing = false;
 
-  protected readonly hasColumnFilters = computed(() =>
-    this.visibleColumns().some((column) => column.filter),
+  /** The second header row with the column filters (`filterDisplay="row"`). */
+  protected readonly hasColumnFilters = computed(
+    () => this.filterDisplay() === 'row' && this.visibleColumns().some((column) => column.filter),
   );
 
   /** Columns that have a filter value now, with that value. */
@@ -1268,7 +1422,7 @@ export class StarTable<T> {
     const filters = this.filters();
     return this.columns().flatMap((column) => {
       const query = filters[column.field];
-      return column.filter && isActiveFilter(query) ? [{ column, query }] : [];
+      return column.filter && starIsActiveFilter(query) ? [{ column, query }] : [];
     });
   });
 
@@ -1277,10 +1431,21 @@ export class StarTable<T> {
     const query = this.globalFilter();
     const active = this.activeFilters();
     if (!query && !active.length) return this.value();
+    const fields = this.globalFilterFields();
+    const searched = fields?.length
+      ? this.columns().filter((column) => fields.includes(column.field))
+      : this.columns();
+    const mode = this.globalFilterMatchMode();
+    const locale = this.filterLocale();
     return this.value().filter(
       (row) =>
         (!query ||
-          this.columns().some((column) => matchesFilter(this.cellText(row, column), query))) &&
+          starFilterMatchAny(
+            searched.map((column) => this.cellText(row, column)),
+            query,
+            mode,
+            locale,
+          )) &&
         active.every(({ column, query: value }) => this.matchesColumnFilter(row, column, value)),
     );
   });
@@ -1812,15 +1977,19 @@ export class StarTable<T> {
       (this.rowEditMode() ? 1 : 0),
   );
 
-  /** Selection state of the rows on the current page, for the header checkbox. */
-  protected readonly pageState = computed<boolean | 'mixed'>(() => {
-    const rows = this.pageRows();
-    const count = rows.filter((row) => this.isSelected(row)).length;
-    if (!rows.length || count === 0) return false;
-    return count === rows.length ? true : 'mixed';
-  });
-
   constructor() {
+    // Key mode: `selection` follows the keys and `value` (owner key changes, a lazy reload, an
+    // edit that gives new row objects).
+    effect(() => {
+      if (!this.selectionKeys()) return;
+      const rows = this.select.rowsOfKeys();
+      untracked(() => {
+        const current = this.selection();
+        if (rows.length !== current.length || rows.some((row, i) => row !== current[i])) {
+          this.selection.set(rows);
+        }
+      });
+    });
     let editingBefore = new Set<unknown>();
     effect(() => {
       const editing = this.editingRowSet();
@@ -1829,12 +1998,17 @@ export class StarTable<T> {
       untracked(() => removed.forEach((key) => this.drafts.clear(key)));
     });
     // A new filter goes back to page 1. Lazy tables also load the first page on init.
+    let firstFilter = true;
     effect(() => {
       this.globalFilter();
       this.filters();
       untracked(() => {
         this.first.set(0);
         this.emitLazy();
+        if (!firstFilter && !this.lazy()) {
+          this.filter.emit({ filters: this.filters(), filteredValue: this.filtered() });
+        }
+        firstFilter = false;
       });
     });
     afterRenderEffect({ read: () => this.measureFrozen() });
@@ -2769,26 +2943,15 @@ export class StarTable<T> {
   }
 
   private matchesColumnFilter(row: T, column: StarColumn<T>, value: StarFilterValue): boolean {
-    if (isRange(value)) {
-      const raw = this.cellValue(row, column);
-      if (column.filter === 'date') {
-        const day = dayKey(raw);
-        return (
-          !!day &&
-          (!hasBound(value.min) || day >= String(value.min)) &&
-          (!hasBound(value.max) || day <= String(value.max))
-        );
-      }
-      const amount = raw === null || raw === undefined || raw === '' ? NaN : Number(raw);
-      return (
-        !Number.isNaN(amount) &&
-        (!hasBound(value.min) || amount >= Number(value.min)) &&
-        (!hasBound(value.max) || amount <= Number(value.max))
-      );
-    }
-    const text = this.cellText(row, column);
-    if (typeof value !== 'string') return value.includes(text);
-    return column.filter === 'select' ? text === value : matchesFilter(text, value);
+    const cell = { raw: this.cellValue(row, column), text: this.cellText(row, column) };
+    return starMatchesFilter(
+      cell,
+      column.filter,
+      value,
+      column.filterMatchMode,
+      this.filterLocale(),
+      (name) => this.filterService.get(name)?.fn,
+    );
   }
 
   protected filterValue(field: string): string {
@@ -2836,7 +2999,7 @@ export class StarTable<T> {
   } {
     return {
       columns: this.visibleColumns().filter((column) => column.exportable !== false),
-      rows: options.rows ?? (options.selectionOnly ? this.selection() : this.sorted()),
+      rows: options.rows ?? (options.selectionOnly ? this.select.rowsOfKeys() : this.sorted()),
     };
   }
 
@@ -3015,43 +3178,158 @@ export class StarTable<T> {
     return index < 0 ? null : index + 1;
   }
 
-  /** Keys of the selected rows: a look-up per row stays fast with 50,000 selected rows. */
-  private readonly selectedKeys = computed(
-    () => new Set(this.selection().map((row) => this.trackKey(row))),
-  );
+  /** Selection logic (`table-selection.ts`). */
+  private readonly select = new StarTableSelection<T>({
+    mode: this.selectionMode,
+    selection: this.selection,
+    selectionKeys: this.selectionKeys,
+    selectAll: this.selectAll,
+    metaKeySelection: this.metaKeySelection,
+    pageOnly: this.selectionPageOnly,
+    rowSelectable: this.rowSelectable,
+    keyOf: (row) => this.trackKey(row),
+    rows: computed(() => (this.lazy() ? this.pageRows() : this.withAdded())),
+    pageRows: this.pageRows,
+    knownRows: this.value,
+    changing: this.selectionChanging,
+    rowSelect: this.rowSelect,
+    rowUnselect: this.rowUnselect,
+    headerToggle: this.headerCheckboxToggle,
+  });
+  protected readonly headerState = this.select.headerState;
+  protected readonly headerEnabled = this.select.headerEnabled;
+  /** Key of the row that is the tab stop with `metaKeySelection` (default: the first row). */
+  private readonly activeRow = signal<{ readonly key: unknown } | null>(null);
 
   protected isSelected(row: T): boolean {
-    return this.selectedKeys().has(this.trackKey(row));
+    return this.select.isSelected(row);
   }
 
-  protected toggleRow(row: T): void {
-    const key = this.trackKey(row);
-    this.selection.update((selection) =>
-      this.isSelected(row)
-        ? selection.filter((selected) => !Object.is(this.trackKey(selected), key))
-        : [...selection, row],
+  protected canSelect(row: T): boolean {
+    return this.select.selectable(row);
+  }
+
+  /** Name of the check box or radio of a row: "Select row Order 1042". */
+  protected selectRowLabel(row: T): string {
+    const custom = this.rowLabel();
+    const first = this.visibleColumns()[0];
+    const label = custom ? custom(row) : first ? this.cellText(row, first) : '';
+    return label ? this.text.selectRowOf(label) : this.text.selectRow;
+  }
+
+  /** `tabindex` of a row: rows are one tab stop with `metaKeySelection`, else not focusable. */
+  protected rowTabIndex(row: T): number | null {
+    const stop = this.tabStop();
+    if (!stop) return null;
+    return Object.is(stop.key, this.trackKey(row)) ? 0 : -1;
+  }
+
+  /**
+   * The row that is the tab stop: the last focused row while it is rendered, else the first
+   * rendered row (with virtual scroll, the first row of the window).
+   */
+  private readonly tabStop = computed<{ readonly key: unknown } | null>(() => {
+    if (!this.metaKeySelection() || !this.selectionMode()) return null;
+    const rows = this.bodyEntries().flatMap((entry) => (entry.kind === 'row' ? [entry.row] : []));
+    const active = this.activeRow();
+    if (active && rows.some((row) => Object.is(this.trackKey(row), active.key))) return active;
+    return { key: rows.length ? this.trackKey(rows[0]) : undefined };
+  });
+
+  protected onRowFocus(row: T): void {
+    if (this.metaKeySelection()) this.activeRow.set({ key: this.trackKey(row) });
+  }
+
+  /** True while a cancelled change puts a check box back: its `checkedChange` is not a toggle. */
+  private restoring = false;
+  /**
+   * The click on a check box: it comes before `checkedChange`, which has no event, and becomes
+   * the `originalEvent` of the selection events.
+   */
+  protected boxEvent: Event | null = null;
+
+  private takeBoxEvent(): Event | null {
+    const event = this.boxEvent;
+    this.boxEvent = null;
+    return event;
+  }
+
+  protected toggleRow(row: T, box?: StarCheckbox): void {
+    if (this.restoring) {
+      this.boxEvent = null;
+      return;
+    }
+    if (this.select.toggle(row, this.takeBoxEvent()) || !box) return;
+    // A cancelled change: the box shows the selection again (its model and its element).
+    this.restore(() => box.checked.set(this.isSelected(row)));
+    const input = this.body()?.nativeElement.querySelector<HTMLInputElement>(
+      `tr[data-select-key="${CSS.escape(this.rowKeyText(row))}"] td.star-table__select input`,
     );
+    if (input) input.checked = this.isSelected(row);
   }
 
-  protected selectOnly(row: T): void {
-    this.selection.set([row]);
+  protected selectOnly(row: T, event: Event): void {
+    const radio = event.target as HTMLInputElement;
+    if (this.select.selectOnly(row, event)) return;
+    // A cancelled change: the radios show the selection again.
+    radio.checked = false;
+    const body = this.body()?.nativeElement;
+    for (const item of this.pageRows()) {
+      const input = body?.querySelector<HTMLInputElement>(
+        `input.star-table__radio[data-select-key="${CSS.escape(this.rowKeyText(item))}"]`,
+      );
+      if (input) input.checked = this.isSelected(item);
+    }
   }
 
-  protected togglePage(checked: boolean): void {
-    const page = this.pageRows();
-    const keys = new Set(page.map((row) => this.trackKey(row)));
-    this.selection.update((selection) => {
-      const others = selection.filter((row) => !keys.has(this.trackKey(row)));
-      return checked ? [...others, ...page] : others;
+  protected togglePage(checked: boolean, box?: StarCheckbox): void {
+    if (this.restoring) {
+      this.boxEvent = null;
+      return;
+    }
+    if (this.select.toggleAll(checked, this.takeBoxEvent()) || !box) return;
+    const state = this.headerState();
+    this.restore(() => {
+      box.checked.set(state === true);
+      box.indeterminate.set(state === 'mixed');
     });
+    const input = this.host.nativeElement.querySelector<HTMLInputElement>(
+      'thead th.star-table__select input',
+    );
+    if (input) {
+      input.checked = state === true;
+      input.indeterminate = state === 'mixed';
+    }
+  }
+
+  /** Runs `change` (it sets a check box model, which emits `checkedChange`) as a restore. */
+  private restore(change: () => void): void {
+    this.restoring = true;
+    try {
+      change();
+    } finally {
+      this.restoring = false;
+    }
   }
 
   protected onRowClick(row: T, event: MouseEvent): void {
     // A click on a control, or in the list of a choice editor, is not a click on the row.
     const control = 'button, a, input, select, textarea, .star-table__editor';
     if ((event.target as HTMLElement).closest(control)) return;
-    if (this.selectionMode() === 'single') this.selectOnly(row);
+    this.select.click(row, event);
     this.rowClick.emit(row);
+  }
+
+  /** Space, Shift + Space and the Arrow keys on a row or on its selection control. */
+  protected onSelectionKey(row: T, event: KeyboardEvent): void {
+    this.select.keydown(row, event, (tr) => {
+      const key = tr.dataset['selectKey'];
+      const next = this.pageRows().find((item) => this.rowKeyText(item) === key);
+      if (next !== undefined && this.metaKeySelection()) {
+        this.activeRow.set({ key: this.trackKey(next) });
+      }
+      return next;
+    });
   }
 
   protected emitLazy(): void {

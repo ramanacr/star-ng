@@ -7,6 +7,7 @@ import {
   StarCalendar,
   StarDateRange,
   StarDateTemplate,
+  StarSpecialDate,
 } from '@star-ng/ui/date-picker';
 import { DOCS, DocsRow } from '../shared/docs';
 
@@ -77,6 +78,74 @@ import { DOCS, DocsRow } from '../shared/docs';
           locale="en-GB"
           [firstDayOfWeek]="1"
         />
+      </docs-example>
+
+      <docs-example
+        heading="Days of other months"
+        source="calendar/other-months"
+        [script]="otherMonthsScript"
+        note="showOtherMonths (default true) shows the days of the month before and after in the first and last week; off, those cells are empty. selectOtherMonths (default true) lets the user choose them; off, they stay visible but disabled. The date pickers have both inputs too."
+      >
+        <div class="docs-stack">
+          <star-calendar
+            class="star-calendar--inline"
+            [selected]="closingDate()"
+            (dateSelect)="closingDate.set($event)"
+            [selectOtherMonths]="false"
+            locale="en-GB"
+            [firstDayOfWeek]="1"
+          />
+          <star-calendar
+            class="star-calendar--inline"
+            [selected]="closingDate()"
+            (dateSelect)="closingDate.set($event)"
+            [showOtherMonths]="false"
+            locale="en-GB"
+            [firstDayOfWeek]="1"
+          />
+          <p class="docs-output" role="status">Closing date: {{ iso(closingDate()) }}</p>
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="Special dates"
+        source="calendar/special-dates"
+        [script]="specialScript"
+        note="specialDates marks days with a dot: a list of { date, label, kind }. The date is a Date or yyyy-mm-dd text. The kind 'holiday' and 'event' have a UI text and a style; other text is used as it is. The accessible name of the day gets the kind and the label, for example 'Friday 4 December 2026, Holiday: Company day', so the dot is not the only sign. The starDate context has the entry as special."
+      >
+        <div class="docs-stack">
+          <star-calendar
+            class="star-calendar--inline"
+            [selected]="reviewDate()"
+            (dateSelect)="reviewDate.set($event)"
+            [specialDates]="companyDays"
+            locale="en-GB"
+            [firstDayOfWeek]="1"
+          />
+          <p class="docs-output" role="status">Review date: {{ iso(reviewDate()) }}</p>
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="Navigation events"
+        source="calendar/events"
+        [script]="eventsScript"
+        note="monthChange gives { month, year } (month 1 to 12) when the user moves to another month: with the arrows, the keys, the month view or a day of another month. yearChange gives { year }, and viewChange gives 'day', 'month' or 'year'. Use them to load the invoices of the shown month. The date pickers have the same events."
+      >
+        <div class="docs-stack">
+          <star-calendar
+            class="star-calendar--inline"
+            [selected]="eventsDate()"
+            (dateSelect)="eventsDate.set($event)"
+            (monthChange)="shownMonth.set($event.month + '/' + $event.year)"
+            (viewChange)="shownView.set($event)"
+            locale="en-GB"
+            [firstDayOfWeek]="1"
+          />
+          <p class="docs-output" role="status">
+            Shown month: {{ shownMonth() }}. View: {{ shownView() }}
+          </p>
+        </div>
       </docs-example>
 
       <docs-example
@@ -178,6 +247,16 @@ export class CalendarPage {
   });
   protected readonly stay = signal<Date | null>(new Date(2026, 10, 17));
   protected readonly reportMonth = signal<Date | null>(new Date(2026, 10, 1));
+  protected readonly reviewDate = signal<Date | null>(new Date(2026, 11, 2));
+  protected readonly companyDays: readonly StarSpecialDate[] = [
+    { date: '2026-12-04', label: 'Company day', kind: 'holiday' },
+    { date: '2026-12-10', label: 'Invoice run', kind: 'event' },
+    { date: '2026-12-21', label: 'Year-end closing', kind: 'event' },
+  ];
+  protected readonly eventsDate = signal<Date | null>(new Date(2026, 10, 17));
+  protected readonly shownMonth = signal('11/2026');
+  protected readonly shownView = signal('day');
+  protected readonly closingDate = signal<Date | null>(new Date(2026, 10, 30));
   protected readonly minDate = new Date(2026, 9, 12);
   protected readonly maxDate = new Date(2026, 11, 20);
 
@@ -209,6 +288,16 @@ pick(date: Date): void {
     this.booking.set({ start: range.start, end: date });
   }
 }`;
+  protected readonly specialScript = `readonly reviewDate = signal<Date | null>(new Date(2026, 11, 2));
+readonly companyDays: readonly StarSpecialDate[] = [
+  { date: '2026-12-04', label: 'Company day', kind: 'holiday' },
+  { date: '2026-12-10', label: 'Invoice run', kind: 'event' },
+  { date: '2026-12-21', label: 'Year-end closing', kind: 'event' },
+];`;
+  protected readonly eventsScript = `readonly eventsDate = signal<Date | null>(new Date(2026, 10, 17));
+readonly shownMonth = signal('11/2026');
+readonly shownView = signal('day');`;
+  protected readonly otherMonthsScript = `readonly closingDate = signal<Date | null>(new Date(2026, 10, 30));`;
   protected readonly monthsScript = `readonly stay = signal<Date | null>(new Date(2026, 10, 17));
 readonly minDate = new Date(2026, 9, 12);
 readonly maxDate = new Date(2026, 11, 20);`;
@@ -248,7 +337,7 @@ readonly iso = (date: Date | null) => (date ? isoDay(date) : 'none');
     {
       name: 'ng-template[starDate]',
       description:
-        'Content child. Replaces the content of a day button. The button keeps its accessible name (the full date), aria-current, aria-disabled and the keys. The context has $implicit (the date), today, selected, disabled and outside. Do not add focusable elements: the calendar owns the keys. With two or more months the template applies to every month.',
+        'Content child. Replaces the content of a day button. The button keeps its accessible name (the full date), aria-current, aria-disabled and the keys. The context has $implicit (the date), today, selected, disabled, outside and special (the entry of specialDates, or null). Do not add focusable elements: the calendar owns the keys. With two or more months the template applies to every month.',
     },
     {
       name: 'ng-template[starHeader]',
@@ -267,6 +356,14 @@ readonly iso = (date: Date | null) => (date ? isoDay(date) : 'none');
     { name: '--star-focus-ring', description: 'Focus ring of a day.' },
     { name: '--star-text-muted', description: 'Days of other months.' },
     { name: '--star-text-soft', description: 'Disabled days.' },
+    {
+      name: '--star-calendar-special',
+      description: 'Dot of a special date. Default: --star-accent.',
+    },
+    {
+      name: '--star-calendar-holiday',
+      description: "Dot of a special date of the kind 'holiday'. Default: --star-warning.",
+    },
     { name: '--star-border', description: 'Border of the inline calendar.' },
   ];
   protected readonly keyboard: readonly DocsRow[] = [

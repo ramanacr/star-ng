@@ -5,6 +5,7 @@ export * from './clock';
 export * from './config';
 export * from './direction';
 export * from './filter-match';
+export * from './filter-service';
 export * from './format';
 export * from './list-windowing';
 export * from './options';
