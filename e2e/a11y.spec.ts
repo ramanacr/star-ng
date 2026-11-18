@@ -525,11 +525,39 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'confirm popup with danger severity',
+    path: 'controls/confirm',
+    open: async (page) => {
+      await example(page, 'Delete from a row')
+        .getByRole('button', { name: 'Delete INV-2041' })
+        .click();
+      await expect(page.getByRole('alertdialog')).toBeVisible();
+    },
+  },
+  {
     name: 'drawer',
     path: 'controls/drawer',
     open: async (page) => {
       await example(page, 'Details drawer').getByRole('button', { name: 'Open details' }).click();
       await expect(page.getByRole('dialog')).toBeVisible();
+    },
+  },
+  {
+    name: 'bottom sheet with a component',
+    path: 'controls/bottom-sheet',
+    open: async (page) => {
+      await example(page, 'Sheet from a component')
+        .getByRole('button', { name: 'Export invoice' })
+        .click();
+      await expect(page.getByRole('dialog', { name: 'Export invoice INV-2041' })).toBeVisible();
+    },
+  },
+  {
+    name: 'action sheet',
+    path: 'controls/bottom-sheet',
+    open: async (page) => {
+      await example(page, 'Action sheet').getByRole('button', { name: 'Order actions' }).click();
+      await expect(page.getByRole('dialog', { name: 'Order ORD-1042 actions' })).toBeVisible();
     },
   },
   {
