@@ -102,13 +102,13 @@ describe('tree model', () => {
 
   it('computes check states of all nodes in one pass', () => {
     const isLeaf = (k: string) => /i\d$/.test(k);
-    const states = checkStates(nodes, new Set(['g0s0i0', 'g0s0i1']), isLeaf);
+    const states = checkStates(nodes, new Set(['g0s0i0', 'g0s0i1']), true);
     expect(states.get('g0s0i0')).toBe(true);
     expect(states.get('g0s0i2')).toBe(false);
     expect(states.get('g0s0')).toBe('mixed');
     expect(states.get('g0')).toBe('mixed');
     expect(states.get('g1')).toBe(false);
-    const full = checkStates(nodes, new Set(subtreeKeys(nodes[0]).filter(isLeaf)), isLeaf);
+    const full = checkStates(nodes, new Set(subtreeKeys(nodes[0]).filter(isLeaf)), true);
     expect(full.get('g0s3')).toBe(true);
     expect(full.get('g0')).toBe(true);
     expect(full.get('g1')).toBe(false);
