@@ -247,6 +247,8 @@ function isTextEntry(target: EventTarget | null): boolean {
   return target instanceof HTMLInputElement && TEXT_INPUTS.has(target.type);
 }
 
+/** A number in plain decimal syntax: optional sign, digits, optional decimal part and exponent. */
+const DECIMAL_NUMBER = /^[+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?$/i;
 /** Smallest width, in pixels, that the user can give a column. */
 const MIN_COLUMN_WIDTH = 48;
 /** `aria-valuemax` of a resize handle. The column width itself has no upper limit. */
@@ -788,6 +790,7 @@ export class StarRowExpansionTemplate<T = unknown> {
                           <input
                             class="star-input star-input--sm star-table__editor"
                             type="text"
+                            [attr.inputmode]="column.editor === 'number' ? 'decimal' : null"
                             [attr.data-row-editor]="rowKeyText(row)"
                             [attr.aria-label]="text.editCell(column.header)"
                             [attr.aria-invalid]="rowError ? 'true' : null"
@@ -2254,9 +2257,18 @@ export class StarTable<T> {
     return value === null || value === undefined ? '' : String(value);
   }
 
-  /** Value of an editor text: a number or `null` for the `'number'` editor, else the text. */
+  /**
+   * Value of an editor text: a number or `null` for the `'number'` editor, else the text. The
+   * number editor accepts only a finite number in plain decimal syntax (sign, digits, decimal
+   * part, exponent); other text ("Infinity", "0x10", "0b1", "1e999") gives `NaN`.
+   */
   private parseEditor(column: StarColumn<T>, text: string): string | number | null {
-    return column.editor === 'number' ? (text.trim() === '' ? null : Number(text)) : text;
+    if (column.editor !== 'number') return text;
+    const trimmed = text.trim();
+    if (trimmed === '') return null;
+    if (!DECIMAL_NUMBER.test(trimmed)) return Number.NaN;
+    const value = Number(trimmed);
+    return Number.isFinite(value) ? value : Number.NaN;
   }
 
   /**
@@ -2287,7 +2299,8 @@ export class StarTable<T> {
    * Editor text in row edit: the raw text the user typed, as typed ("-0", "1e2", "abc"). The bound
    * value is what the editor already shows, so the table never writes over the user's typing, and
    * an editor that is rendered again (page change, virtual scroll, a column shown again, undo)
-   * shows the same text. Validation and Save use the parsed value (`draftValue`).
+   * shows the same text. A field the user has not typed in shows the current cell value, so it
+   * follows a batch undo, redo or discard. Validation and Save use the parsed value (`draftValue`).
    */
   protected draftText(row: T, column: StarColumn<T>): string {
     return this.drafts.text(this.trackKey(row), column.field) ?? this.editText(row, column);
@@ -2431,13 +2444,9 @@ export class StarTable<T> {
   initRowEdit(row: T): void {
     if (!this.rowEditMode() || this.isRowInEdit(row) || this.isDeleted(row)) return;
     const key = this.trackKey(row);
+    // No raw texts yet: an editor shows the current cell value until the user types in it, so a
+    // batch undo, redo or discard while the row is open shows the new value (and Save keeps it).
     this.drafts.clear(key);
-    // The editors start with the cell values as their raw texts.
-    for (const column of this.columns()) {
-      if (this.isEditable(row, column)) {
-        this.drafts.setText(key, column.field, this.editText(row, column));
-      }
-    }
     this.editingRowKeys.update((keys) => [...keys, key]);
     this.rowEditInit.emit({ row });
     this.focusAfterRender(`[data-row-editor="${CSS.escape(this.rowKeyText(row))}"]`, true);

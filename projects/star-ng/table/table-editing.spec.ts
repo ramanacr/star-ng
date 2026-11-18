@@ -801,4 +801,100 @@ describe('StarTable edit fixes', () => {
     expect(messages()).toContain('Enter a number.');
     expect(host.log.map(([name]) => name)).toEqual(['editInit']);
   });
+
+  it('asks for a decimal keyboard on the row-mode number editor', async () => {
+    const { host, row, stable } = await setup({ mode: 'row' });
+    host.table().initRowEdit(ORDERS[0]);
+    await stable();
+    const [customer, , quantity] = row(0).querySelectorAll<HTMLElement>('[data-row-editor]');
+    expect(quantity.getAttribute('type')).toBe('text');
+    expect(quantity.getAttribute('inputmode')).toBe('decimal');
+    expect(customer.hasAttribute('inputmode')).toBe(false);
+  });
+
+  it('shows the new value in an open row after a batch undo, redo or discard (row mode)', async () => {
+    const { host, row, cell, stable } = await setup({ mode: 'row', batch: true });
+    const customer = () => row(0).querySelector<HTMLInputElement>('[data-row-editor]')!;
+    host.table().initRowEdit(ORDERS[0]);
+    await stable();
+    customer().value = 'Changed';
+    customer().dispatchEvent(new Event('input'));
+    host.table().saveRowEdit(ORDERS[0]);
+    await stable();
+    host.table().initRowEdit(ORDERS[0]);
+    await stable();
+    expect(customer().value).toBe('Changed');
+    host.table().undo();
+    await stable();
+    expect(host.editingKeys()).toEqual(['ORD-1']);
+    expect(customer().value).toBe('North Office');
+    host.table().redo();
+    await stable();
+    expect(customer().value).toBe('Changed');
+    host.table().discardEdits();
+    await stable();
+    expect(customer().value).toBe('North Office');
+    // Typing in another field does not write over the untouched one; Save keeps the shown value.
+    const quantity = row(0).querySelectorAll<HTMLInputElement>('[data-row-editor]')[2];
+    let writes = 0;
+    const own = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!;
+    Object.defineProperty(customer(), 'value', {
+      configurable: true,
+      get: () => own.get!.call(customer()),
+      set: (next: string) => {
+        writes++;
+        own.set!.call(customer(), next);
+      },
+    });
+    quantity.value = '3';
+    quantity.dispatchEvent(new Event('input'));
+    await stable();
+    expect(writes).toBe(0);
+    host.table().saveRowEdit(ORDERS[0]);
+    await stable();
+    expect(host.table().pendingChanges().updated).toEqual([
+      { row: ORDERS[0], changes: { quantity: 3 }, previous: { quantity: 2 } },
+    ]);
+    expect(cell(0, 1).textContent?.trim()).toBe('North Office');
+  });
+
+  it('accepts only finite numbers in plain decimal syntax in the number editor', async () => {
+    const { host, row, stable, el } = await setup({ mode: 'row' });
+    host.table().initRowEdit(ORDERS[0]);
+    await stable();
+    const quantity = row(0).querySelectorAll<HTMLInputElement>('[data-row-editor]')[2];
+    const error = () => el.querySelector('.star-table__error')?.textContent?.trim() ?? null;
+    for (const text of ['Infinity', '-Infinity', '0x10', '0b1', '0o7', '1e999', '1,5', '2 3']) {
+      quantity.value = text;
+      quantity.dispatchEvent(new Event('input'));
+      await stable();
+      expect([text, error()]).toEqual([text, 'Enter a number.']);
+    }
+    for (const text of ['3', '+3', ' 3 ', '3.', '3.5', '.5e1', '2E0', '30e-1']) {
+      quantity.value = text;
+      quantity.dispatchEvent(new Event('input'));
+      await stable();
+      expect([text, error()]).toEqual([text, null]);
+    }
+    host.table().saveRowEdit(ORDERS[0]);
+    expect(host.log.at(-1)?.[1]).toMatchObject({ changes: { quantity: 3 } });
+  });
+
+  it('keeps a cell editor open on Enter with a number text outside plain decimal syntax', async () => {
+    const { host, cell, stable, el, messages } = await setup();
+    cell(0, 3).querySelector<HTMLButtonElement>('.star-table__edit')!.click();
+    await stable();
+    const editor = el.querySelector<HTMLInputElement>('input.star-table__editor')!;
+    // A number field sanitizes its value; this stands for any text that reaches the parser.
+    Object.defineProperty(editor, 'value', { configurable: true, value: '0x10' });
+    editor.dispatchEvent(new Event('input'));
+    key(editor, 'Enter');
+    await stable();
+    editor.dispatchEvent(new Event('blur'));
+    await stable();
+    expect(el.querySelector('input.star-table__editor')).toBe(editor);
+    expect(el.querySelector('.star-table__error')?.textContent?.trim()).toBe('Enter a number.');
+    expect(messages()).toContain('Enter a number.');
+    expect(host.log.map(([name]) => name)).toEqual(['editInit']);
+  });
 });
