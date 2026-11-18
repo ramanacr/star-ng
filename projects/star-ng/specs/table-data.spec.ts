@@ -83,7 +83,7 @@ describe('StarTable', () => {
     expect(el.querySelector('.star-table__empty')?.textContent).toContain('No records found');
   });
 
-  it('selects rows and the header checkbox selects the page', async () => {
+  it('selects rows and the header checkbox selects the page by default', async () => {
     const { fixture, el } = await setup();
     const rowBoxes = () => [...el.querySelectorAll<HTMLInputElement>('tbody input[type=checkbox]')];
     rowBoxes()[0].click();

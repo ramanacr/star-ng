@@ -7245,6 +7245,48 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Case- and accent-insensitive text search over all columns."
       },
       {
+        "name": "globalFilterFields",
+        "type": "readonly string[] | null",
+        "default": "null",
+        "required": false,
+        "description": "Fields that the global filter searches (PrimeNG `globalFilterFields`). `null` or an empty list (default): all columns."
+      },
+      {
+        "name": "globalFilterMatchMode",
+        "type": "StarFilterMatchMode",
+        "default": "'contains'",
+        "required": false,
+        "description": "How the global filter text matches (default `contains`). A row passes when one searched cell matches; with `notContains`, when no searched cell has the text."
+      },
+      {
+        "name": "filterLocale",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Locale of the text filters (PrimeNG `filterLocale`): with it, `Intl.Collator` compares the folded texts, so letters that the locale treats as equal match. Default: no locale."
+      },
+      {
+        "name": "filterDisplay",
+        "type": "'row' | 'menu'",
+        "default": "'row'",
+        "required": false,
+        "description": "Where the column filters show (PrimeNG `filterDisplay`): `'row'` (default), a second header row; `'menu'`, a filter button in each header cell that opens a filter menu with match modes, \"Match all\" / \"Match any\" rules, Clear and Apply."
+      },
+      {
+        "name": "filterMaxRules",
+        "type": "number",
+        "default": "2",
+        "required": false,
+        "description": "Most rules per column in the filter menu (PrimeNG `maxConstraints`)."
+      },
+      {
+        "name": "showApplyButton",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Apply button in the filter menu (PrimeNG `showApplyButton`). `false`: every change in the menu filters at once."
+      },
+      {
         "name": "lazy",
         "type": "boolean",
         "default": "false",
@@ -7263,7 +7305,35 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "'single' | 'multiple' | null",
         "default": "null",
         "required": false,
-        "description": ""
+        "description": "Row selection. It adds the selection column: a check box per row and a tri-state header check box (`'multiple'`, PrimeNG `p-tableCheckbox` / `p-tableHeaderCheckbox`), or a radio per row (`'single'`, PrimeNG `p-tableRadioButton`)."
+      },
+      {
+        "name": "metaKeySelection",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Meta-key selection (PrimeNG `metaKeySelection`): a click selects only that row, Ctrl / Cmd + click toggles it, Shift + click selects a range. Rows become focusable (one tab stop): Arrow Up / Down move, Space toggles, Shift + Space and Shift + Arrow extend the range (a range only grows; Shift + Arrow back toward the anchor does not clear rows). The Arrow keys move between rendered rows: with virtual scroll, only within the rendered window. Default off: only single mode selects on a click."
+      },
+      {
+        "name": "selectionPageOnly",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "The header check box selects the rows of the current page only (PrimeNG `selectionPageOnly`). Default `true`, so a paginated table keeps its page-only header check box. Set it to `false` to select every selectable row of the current filter result, on all pages. Without a paginator the page holds all rows, so both values select the same rows."
+      },
+      {
+        "name": "rowSelectable",
+        "type": "((row: T) => boolean) | null",
+        "default": "null",
+        "required": false,
+        "description": "Rows that can be selected (PrimeNG `rowSelectable`). Other rows get a disabled check box and are skipped by the header check box, ranges and clicks."
+      },
+      {
+        "name": "rowLabel",
+        "type": "((row: T) => string) | null",
+        "default": "null",
+        "required": false,
+        "description": "Text that names a row in its check box (\"Select row Order 1042\"). Default: the text of the first visible column."
       },
       {
         "name": "rowExpandMode",
@@ -7384,7 +7454,21 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "readonly T[]",
         "default": "[]",
         "required": false,
-        "description": ""
+        "description": "Selected rows. Two-way. Rows match by `dataKey`, so new row objects stay selected."
+      },
+      {
+        "name": "selectionKeys",
+        "type": "readonly unknown[] | null",
+        "default": "null",
+        "required": false,
+        "description": "Keys (`dataKey`) of the selected rows (PrimeNG `selectionKeys`). Two-way. Bind an array to make the keys the source of the selection: it survives a lazy reload or an edit that gives new row objects, and keys of rows that are not in `value` (other lazy pages) stay selected. `selection` then follows the keys: it holds the row objects of the keys that are in `value` (fresh objects), plus the objects it already had for the other keys. `exportCsv({ selectionOnly })` uses the same rows. `null` (default): the keys come from `selection`."
+      },
+      {
+        "name": "selectAll",
+        "type": "boolean | null",
+        "default": "null",
+        "required": false,
+        "description": "State of the header check box when the owner decides what \"all\" means (PrimeNG `selectAll`), for lazy data. Two-way. `null` (default): the table selects the rows itself. With a boolean, the header check box shows it and a toggle only sets it and emits `headerCheckboxToggle`."
       },
       {
         "name": "expandedKeys",
@@ -7520,6 +7604,115 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": ""
+      },
+      {
+        "name": "filter",
+        "type": "StarTableFilterEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "After each change of `filters` (filter row, filter menu or the owner) or of `globalFilter`, in client mode: the filters and the rows that pass them (PrimeNG `onFilter`). A change of `globalFilterFields`, `globalFilterMatchMode` or `filterLocale` does not emit it. In lazy mode, `lazyLoad` carries the filters."
+      },
+      {
+        "name": "selectionChanging",
+        "type": "StarTableSelectionChangingEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "Fires before the selection changes, with the rows now and after. Call `cancel()` to keep the old selection (Ignite UI grid `rowSelectionChanging`). It fires only for changes that the user makes (check box, radio, row click, keyboard), not when the owner sets `selection`, `selectionKeys` or `selectAll`, and not when the table puts a cancelled change back."
+      },
+      {
+        "name": "rowSelect",
+        "type": "StarRowSelectEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "A row joined the selection (PrimeNG `onRowSelect`)."
+      },
+      {
+        "name": "rowUnselect",
+        "type": "StarRowSelectEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "A row left the selection (PrimeNG `onRowUnselect`)."
+      },
+      {
+        "name": "headerCheckboxToggle",
+        "type": "StarHeaderCheckboxToggleEvent",
+        "default": null,
+        "required": false,
+        "description": "The header check box was toggled (PrimeNG `onHeaderCheckboxToggle`)."
+      }
+    ]
+  },
+  "StarTableFilterMenu": {
+    "kind": "component",
+    "selector": "star-table-filter-menu",
+    "entry": "@star-ng/ui/table",
+    "description": "Filter menu of a `star-table` column (PrimeNG `p-columnFilter` with `display=\"menu\"`). The table renders it in the header cell when `filterDisplay` is `'menu'`. A button with `aria-haspopup=\"dialog\"` opens a labelled dialog (focus trap, focus goes back to the button) with the match mode, the value field(s) of the filter type, \"Match all\" / \"Match any\", \"Add rule\", Clear and Apply.",
+    "inputs": [
+      {
+        "name": "header",
+        "type": "string",
+        "default": null,
+        "required": true,
+        "description": "Column header text, for the names of the button and the dialog."
+      },
+      {
+        "name": "type",
+        "type": "StarColumnFilterType",
+        "default": null,
+        "required": true,
+        "description": ""
+      },
+      {
+        "name": "value",
+        "type": "StarFilterValue | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "The current filter value of the column."
+      },
+      {
+        "name": "matchModes",
+        "type": "readonly StarTableMatchMode[]",
+        "default": "[]",
+        "required": false,
+        "description": "Match modes to offer (default: the modes of the type)."
+      },
+      {
+        "name": "defaultMode",
+        "type": "StarTableMatchMode | null",
+        "default": "null",
+        "required": false,
+        "description": "Mode of a new rule (default: the first of `modes`)."
+      },
+      {
+        "name": "choices",
+        "type": "readonly string[]",
+        "default": "[]",
+        "required": false,
+        "description": "Choices of a `'select'` or `'multiselect'` filter."
+      },
+      {
+        "name": "maxRules",
+        "type": "number",
+        "default": "2",
+        "required": false,
+        "description": "Most rules that \"Add rule\" allows (PrimeNG `maxConstraints`)."
+      },
+      {
+        "name": "showApply",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Apply button; without it every change applies at once (PrimeNG `showApplyButton`)."
+      }
+    ],
+    "models": [],
+    "outputs": [
+      {
+        "name": "filterChange",
+        "type": "StarFilterValue | null",
+        "default": null,
+        "required": false,
+        "description": "The new filter value; `null` removes the filter."
       }
     ]
   },
@@ -9637,12 +9830,16 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "table-paging/client": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Paged orders\"\n      paginator\n      [(first)]=\"first\"\n      [(rows)]=\"rows\"\n      [rowsPerPageOptions]=\"[5, 10, 20]\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">first = {{ first() }}, rows = {{ rows() }}</p>\n</div>",
   "table-paging/lazy": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"lazyRows()\"\n      [columns]=\"lazyColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders from the server\"\n      lazy\n      paginator\n      [rows]=\"5\"\n      [rowsPerPageOptions]=\"[5, 10]\"\n      [totalRecords]=\"lazyTotal()\"\n      [loading]=\"lazyLoading()\"\n      (lazyLoad)=\"load($event)\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Last request: {{ request() }}</p>\n</div>",
   "table-selection/actions": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"actionOrders()\"\n      [columns]=\"actionColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with actions\"\n      selectionMode=\"single\"\n      [(selection)]=\"actionSelection\"\n    >\n      <ng-template starCell=\"status\" [starCellOf]=\"actionOrders()\" let-row>\n        <star-tag [severity]=\"severityOf(row.status)\" [value]=\"row.status\" rounded />\n      </ng-template>\n      <ng-template starCell=\"actions\" [starCellOf]=\"actionOrders()\" let-row>\n        <star-button\n          size=\"sm\"\n          variant=\"secondary\"\n          [disabled]=\"row.status === 'Cancelled'\"\n          (pressed)=\"cancel(row)\"\n        >\n          Cancel {{ row.id }}\n        </star-button>\n      </ng-template>\n    </star-table>\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">\n    Selected: {{ actionSelection()[0]?.id ?? 'none' }}\n  </p>\n</div>",
+  "table-selection/checkbox": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with selectable rows\"\n      selectionMode=\"multiple\"\n      [(selectionKeys)]=\"keys\"\n      [rowSelectable]=\"notCancelled\"\n      [selectionPageOnly]=\"false\"\n      (selectionChanging)=\"limit($event)\"\n      paginator\n      [rows]=\"5\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">\n    {{ keys()?.length ?? 0 }} selected{{ refused() ? ', more than 20 refused' : '' }}\n  </p>\n</div>",
   "table-selection/click": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders.slice(0, 5)\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with row click\"\n      (rowClick)=\"opened.set($event.id)\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Opened: {{ opened() ?? 'none' }}</p>\n</div>",
+  "table-selection/meta": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders.slice(0, 8)\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with meta-key selection\"\n      selectionMode=\"multiple\"\n      metaKeySelection\n      [(selection)]=\"metaSelected\"\n      (rowSelect)=\"lastEvent.set('Selected ' + $event.row.id)\"\n      (rowUnselect)=\"lastEvent.set('Cleared ' + $event.row.id)\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">\n    {{ metaSelected().length }} selected. {{ lastEvent() }}\n  </p>\n</div>",
   "table-selection/multiple": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"selectOpen()\">\n      Select open orders\n    </star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"selected.set([])\">\n      Clear selection\n    </star-button>\n  </div>\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with checkboxes\"\n      selectionMode=\"multiple\"\n      [(selection)]=\"selected\"\n      paginator\n      [rows]=\"5\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">{{ selected().length }} selected</p>\n</div>",
   "table-selection/single": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with one choice\"\n      selectionMode=\"single\"\n      [(selection)]=\"chosen\"\n      paginator\n      [rows]=\"5\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Chosen: {{ chosen()[0]?.id ?? 'none' }}</p>\n</div>",
   "table-sort-filter/columns": "<div class=\"docs-stack\">\n  <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"filtered.clearFilters()\">\n    Clear filters\n  </star-button>\n  <docs-fill>\n    <star-table\n      #filtered\n      [value]=\"orders\"\n      [columns]=\"filterColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with column filters\"\n      [(filters)]=\"filters\"\n      paginator\n      [rows]=\"4\"\n    >\n      <ng-template starCell=\"status\" [starCellOf]=\"orders\" let-row>\n        <star-tag [severity]=\"severityOf(row.status)\" [value]=\"row.status\" rounded />\n      </ng-template>\n    </star-table>\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Filters: {{ filterText() }}</p>\n</div>",
   "table-sort-filter/combined": "<div class=\"docs-stack\">\n  <input\n    starInput\n    type=\"search\"\n    aria-label=\"Search combined orders\"\n    placeholder=\"Search combined orders\"\n    [value]=\"combinedQuery()\"\n    (input)=\"combinedQuery.set($any($event.target).value)\"\n  />\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"filterColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with search, filters and sort\"\n      [globalFilter]=\"combinedQuery()\"\n      size=\"sm\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n</div>",
+  "table-sort-filter/custom": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"customColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with a custom match mode\"\n      filterDisplay=\"menu\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n</div>",
   "table-sort-filter/global": "<div class=\"docs-stack\">\n  <input\n    starInput\n    type=\"search\"\n    aria-label=\"Search orders\"\n    placeholder=\"Search orders\"\n    [value]=\"query()\"\n    (input)=\"query.set($any($event.target).value)\"\n  />\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"sortColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Searchable orders\"\n      [globalFilter]=\"query()\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n</div>",
+  "table-sort-filter/menu": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"menuColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Invoices with filter menus\"\n      filterDisplay=\"menu\"\n      [(filters)]=\"menuFilters\"\n      (filter)=\"menuCount.set($event.filteredValue.length)\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">\n    {{ menuCount() ?? orders.length }} invoices match. Filters: {{ menuText() }}\n  </p>\n</div>",
   "table-sort-filter/multi": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"sortColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders sorted by several columns\"\n      multiSort\n      [(sortMeta)]=\"sortMeta\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Sorts: {{ sortText() }}</p>\n</div>",
   "table-sort-filter/sort": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"sortColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Sortable orders\"\n      [(sortField)]=\"sortField\"\n      [(sortOrder)]=\"sortOrder\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">\n    Sort: {{ sortField() ?? 'none' }} ({{ sortOrder() === 1 ? 'ascending' : 'descending' }})\n  </p>\n</div>",
   "table/basic": "<docs-fill>\n  <star-table\n    [value]=\"orders\"\n    [columns]=\"columns\"\n    dataKey=\"id\"\n    ariaLabel=\"Orders\"\n    paginator\n    [rows]=\"5\"\n  />\n</docs-fill>",
