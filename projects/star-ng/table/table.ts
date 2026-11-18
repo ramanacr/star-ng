@@ -96,7 +96,18 @@ import {
   VirtualItem,
   VirtualLayout,
 } from './virtual-heights';
-export * from './table-filter';
+// Public filter types only; the matching helpers stay internal.
+export {
+  STAR_TABLE_MATCH_MODES,
+  type StarColumnFilters,
+  type StarColumnFilterType,
+  type StarFilterConstraint,
+  type StarFilterRule,
+  type StarFilterRuleValue,
+  type StarFilterValue,
+  type StarRangeFilter,
+  type StarTableMatchMode,
+} from './table-filter';
 
 export interface StarColumn<T> extends StarColumnRules<T> {
   /** Unique column id; also the property read when `value` is not set. */

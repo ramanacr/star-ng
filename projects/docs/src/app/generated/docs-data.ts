@@ -6689,14 +6689,14 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "readonly string[] | null",
         "default": "null",
         "required": false,
-        "description": "Fields that the global filter searches (PrimeNG `globalFilterFields`). Default: all columns."
+        "description": "Fields that the global filter searches (PrimeNG `globalFilterFields`). `null` or an empty list (default): all columns."
       },
       {
         "name": "globalFilterMatchMode",
         "type": "StarFilterMatchMode",
         "default": "'contains'",
         "required": false,
-        "description": "How the global filter text matches a cell (default `contains`)."
+        "description": "How the global filter text matches (default `contains`). A row passes when one searched cell matches; with `notContains`, when no searched cell has the text."
       },
       {
         "name": "filterLocale",
@@ -6752,7 +6752,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "boolean",
         "default": "false",
         "required": false,
-        "description": "Meta-key selection (PrimeNG `metaKeySelection`): a click selects only that row, Ctrl / Cmd + click toggles it, Shift + click selects a range. Rows become focusable (one tab stop): Arrow Up / Down move, Space toggles, Shift + Space and Shift + Arrow extend the range. Default off: only single mode selects on a click."
+        "description": "Meta-key selection (PrimeNG `metaKeySelection`): a click selects only that row, Ctrl / Cmd + click toggles it, Shift + click selects a range. Rows become focusable (one tab stop): Arrow Up / Down move, Space toggles, Shift + Space and Shift + Arrow extend the range (a range only grows; Shift + Arrow back toward the anchor does not clear rows). The Arrow keys move between rendered rows: with virtual scroll, only within the rendered window. Default off: only single mode selects on a click."
       },
       {
         "name": "selectionPageOnly",
@@ -6901,7 +6901,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "readonly unknown[] | null",
         "default": "null",
         "required": false,
-        "description": "Keys (`dataKey`) of the selected rows (PrimeNG `selectionKeys`). Two-way. Bind an array to make the keys the source of the selection: it survives a lazy reload or an edit that gives new row objects, and `selection` then holds the current row objects. `null` (default): the keys come from `selection`."
+        "description": "Keys (`dataKey`) of the selected rows (PrimeNG `selectionKeys`). Two-way. Bind an array to make the keys the source of the selection: it survives a lazy reload or an edit that gives new row objects, and keys of rows that are not in `value` (other lazy pages) stay selected. `selection` then follows the keys: it holds the row objects of the keys that are in `value` (fresh objects), plus the objects it already had for the other keys. `exportCsv({ selectionOnly })` uses the same rows. `null` (default): the keys come from `selection`."
       },
       {
         "name": "selectAll",
@@ -7050,7 +7050,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "StarTableFilterEvent<T>",
         "default": null,
         "required": false,
-        "description": "After each filter change in client mode (column filters or global filter): the filters and the rows that pass them (PrimeNG `onFilter`). In lazy mode, `lazyLoad` carries the filters."
+        "description": "After each change of `filters` (filter row, filter menu or the owner) or of `globalFilter`, in client mode: the filters and the rows that pass them (PrimeNG `onFilter`). A change of `globalFilterFields`, `globalFilterMatchMode` or `filterLocale` does not emit it. In lazy mode, `lazyLoad` carries the filters."
       },
       {
         "name": "selectionChanging",

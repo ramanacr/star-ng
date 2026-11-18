@@ -10,6 +10,10 @@ export {
   type StarRowEvent,
 } from './table-editing';
 export * from './table-export';
-export * from './table-filter-menu';
-export * from './table-selection';
+// The selection logic and the filter menu component are internal parts of `star-table`.
+export type {
+  StarHeaderCheckboxToggleEvent,
+  StarRowSelectEvent,
+  StarTableSelectionChangingEvent,
+} from './table-selection';
 export * from './table-slots';
