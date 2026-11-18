@@ -98,6 +98,7 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 
 ### Changed
 
+- Tabs: each tab button is now inside a wrapper element (`span.star-tabs__item`, which also holds the close button of a closable tab), and the tab list is inside `div.star-tabs__nav`. Styles or tests that select `.star-tabs__list > .star-tabs__tab` must use `.star-tabs__list .star-tabs__tab`.
 - Editor: `star-editor` now declares `maxLength` (the `FormValueControl` input), so a Signal Forms field with a `maxLength` rule now sets it: the editor shows a counter and stops typing at the limit. The editor counts the characters of text; the form rule counts the length of the value, which is HTML with `format="html"` (tags included). Keep the rule for the stored size, or use `format="text"` when both must count the same.
 - Table: the selection check boxes and radios now name their row ("Select row ORD-1001", from the first visible column or `rowLabel`), and the header check box of a paginated table with `selectionPageOnly` is named "Select all rows on this page". Tests that match the old name "Select row" exactly must change.
 - Table: `StarFilterValue` also includes `StarFilterConstraint`. Code that narrows a filter value with `typeof value === 'object'` or `Array.isArray` must also handle the rule object (it has `operator` and `rules`).
