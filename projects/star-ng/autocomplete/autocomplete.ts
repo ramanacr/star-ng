@@ -318,7 +318,7 @@ const TEMPLATE = `
 
   <ng-template
     cdkConnectedOverlay
-    cdkConnectedOverlayUsePopover="inline"
+    [cdkConnectedOverlayUsePopover]="popoverLocation()"
     cdkConnectedOverlayMatchWidth
     [cdkConnectedOverlayOrigin]="origin"
     [cdkConnectedOverlayOpen]="panelVisible()"
@@ -330,6 +330,8 @@ const TEMPLATE = `
     <!-- The panel handles keys and focus that bubble up from its header and footer. -->
     <div
       class="star-panel"
+      [class]="panelClasses()"
+      [style]="panelStyle()"
       (mousedown)="onPanelMousedown($event)"
       (keydown)="onPanelKeydown($event)"
       (focusin)="onPanelFocusin($event)"

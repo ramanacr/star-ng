@@ -144,7 +144,7 @@ import { starSelectionChanging, StarSelectionChangingEvent } from './selection-c
 
     <ng-template
       cdkConnectedOverlay
-      cdkConnectedOverlayUsePopover="inline"
+      [cdkConnectedOverlayUsePopover]="popoverLocation()"
       cdkConnectedOverlayMatchWidth
       [cdkConnectedOverlayOrigin]="origin"
       [cdkConnectedOverlayOpen]="open()"
@@ -157,6 +157,8 @@ import { starSelectionChanging, StarSelectionChangingEvent } from './selection-c
       <!-- eslint-disable-next-line @angular-eslint/template/interactive-supports-focus -->
       <div
         class="star-panel"
+        [class]="panelClasses()"
+        [style]="panelStyle()"
         (mousedown)="onPanelMousedown($event)"
         (keydown)="onPanelKeydown($event)"
         (focusin)="onPanelFocusin($event)"

@@ -3823,6 +3823,27 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
+        "name": "panelClass",
+        "type": "string | readonly string[] | null",
+        "default": "null",
+        "required": false,
+        "description": "Extra CSS classes of the panel (the `.star-panel` element). PrimeNG `panelStyleClass`."
+      },
+      {
+        "name": "panelStyle",
+        "type": "Record<string, string> | null",
+        "default": "null",
+        "required": false,
+        "description": "Inline styles of the panel, for example `{ 'min-width': '20rem' }`. PrimeNG `panelStyle`."
+      },
+      {
+        "name": "appendTo",
+        "type": "'self' | 'body'",
+        "default": "'self'",
+        "required": false,
+        "description": "Where the panel is in the DOM (PrimeNG `appendTo`). `self` (default): next to the control. `body`: in the overlay container at the end of the body, for parents that clip their content. Both are native popovers in the top layer, so the panel also shows above a modal dialog."
+      },
+      {
         "name": "size",
         "type": "'sm' | 'md'",
         "default": "'md'",
@@ -6929,6 +6950,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "select/keyboard-options": "<div class=\"docs-stack\">\n  <star-select\n    [options]=\"cities\"\n    optionLabel=\"name\"\n    optionValue=\"code\"\n    [(value)]=\"keyedCity\"\n    selectOnFocus\n    [autoOptionFocus]=\"false\"\n    [focusOnHover]=\"false\"\n    placeholder=\"Arrow keys choose\"\n    ariaLabel=\"City, keys choose\"\n  />\n  <p class=\"docs-output\" role=\"status\">City: {{ keyedCity() ?? 'none' }}</p>\n</div>",
   "select/large": "<div class=\"docs-stack\">\n  <star-select\n    [options]=\"shipments\"\n    optionLabel=\"name\"\n    optionValue=\"id\"\n    optionGroup=\"region\"\n    [(value)]=\"shipment\"\n    placeholder=\"10,000 shipments\"\n    ariaLabel=\"Shipment\"\n    virtualScroll\n    filter\n  />\n  <p class=\"docs-output\" role=\"status\">Shipment: {{ shipment() ?? 'none' }}</p>\n</div>",
   "select/lazy": "<div class=\"docs-stack\">\n  <star-select\n    [options]=\"lazyList.options()\"\n    optionLabel=\"name\"\n    optionValue=\"id\"\n    [(value)]=\"lazyOrder\"\n    lazy\n    virtualScroll\n    filter\n    placeholder=\"Select an order\"\n    ariaLabel=\"Order, loaded on demand\"\n    (lazyLoad)=\"lazyList.load($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">Order: {{ lazyOrder() ?? 'none' }}</p>\n</div>",
+  "select/panel-options": "<div class=\"docs-stack\">\n  <star-select\n    [options]=\"cities\"\n    optionLabel=\"name\"\n    optionValue=\"code\"\n    [(value)]=\"panelCity\"\n    panelClass=\"orders-panel\"\n    [panelStyle]=\"{ 'min-width': '22rem' }\"\n    appendTo=\"body\"\n    placeholder=\"Wide panel in the body\"\n    ariaLabel=\"City, panel in the body\"\n  />\n</div>",
   "select/selection-changing": "<div class=\"docs-stack\">\n  <star-select\n    [options]=\"cities\"\n    optionLabel=\"name\"\n    optionValue=\"code\"\n    [(value)]=\"guardedCity\"\n    placeholder=\"Select a city (not Paris)\"\n    ariaLabel=\"City, Paris refused\"\n    (selectionChanging)=\"guardCity($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    City: {{ guardedCity() ?? 'none' }}. {{ guardMessage() }}\n  </p>\n</div>",
   "select/slots": "<star-select\n  [options]=\"cities\"\n  optionLabel=\"name\"\n  optionValue=\"code\"\n  optionGroup=\"country\"\n  [(value)]=\"city\"\n  placeholder=\"Select a city\"\n  ariaLabel=\"City\"\n  filter\n  showClear\n>\n  <ng-template starHeader>\n    <p class=\"docs-output\">Cities with an office</p>\n  </ng-template>\n  <ng-template starGroup let-country let-count=\"count\">\n    {{ country }} ({{ count }})\n  </ng-template>\n  <ng-template starEmpty let-text>No city matches {{ text }}.</ng-template>\n  <ng-template starSelected [starSelectedOf]=\"cities\" let-item>\n    {{ item.code }} · {{ item.name }}\n  </ng-template>\n  <ng-template starFooter>\n    <p class=\"docs-output\">{{ cities.length }} cities</p>\n  </ng-template>\n</star-select>",
   "select/states": "<div class=\"docs-stack\">\n  <star-select [options]=\"regions\" size=\"sm\" placeholder=\"Small\" ariaLabel=\"Small select\" />\n  <star-select [options]=\"regions\" disabled placeholder=\"Disabled\" ariaLabel=\"Disabled\" />\n  <star-select [options]=\"regions\" [value]=\"'EMEA'\" readonly ariaLabel=\"Read-only\" />\n  <star-select [options]=\"[]\" loading placeholder=\"Loading options\" ariaLabel=\"Loading\" />\n</div>",

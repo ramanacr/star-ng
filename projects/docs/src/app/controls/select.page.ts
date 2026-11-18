@@ -345,6 +345,26 @@ interface Shipment {
       </docs-example>
 
       <docs-example
+        heading="Panel options"
+        source="select/panel-options"
+        note='panelClass and panelStyle style the panel. appendTo="body" puts the panel in the overlay container at the end of the body, for a parent that clips its content; the default self keeps it next to the control. Both stay native popovers, so the panel shows above a modal dialog too.'
+      >
+        <div class="docs-stack">
+          <star-select
+            [options]="cities"
+            optionLabel="name"
+            optionValue="code"
+            [(value)]="panelCity"
+            panelClass="orders-panel"
+            [panelStyle]="{ 'min-width': '22rem' }"
+            appendTo="body"
+            placeholder="Wide panel in the body"
+            ariaLabel="City, panel in the body"
+          />
+        </div>
+      </docs-example>
+
+      <docs-example
         heading="Lazy loading"
         source="select/lazy"
         [script]="lazyScript"
@@ -384,6 +404,7 @@ interface Shipment {
   `,
 })
 export class SelectPage {
+  protected readonly panelCity = signal<string | null>(null);
   protected readonly keyedCity = signal<string | null>(null);
   protected readonly guardedCity = signal<string | null>(null);
   protected readonly guardMessage = signal('');

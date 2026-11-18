@@ -207,6 +207,16 @@ export abstract class StarOptionListBase<TOption, TValue> {
   readonly loading = input(false, { transform: booleanAttribute });
   readonly emptyMessage = input<string | null>(null);
   readonly scrollHeight = input('16rem');
+  /** Extra CSS classes of the panel (the `.star-panel` element). PrimeNG `panelStyleClass`. */
+  readonly panelClass = input<string | readonly string[] | null>(null);
+  /** Inline styles of the panel, for example `{ 'min-width': '20rem' }`. PrimeNG `panelStyle`. */
+  readonly panelStyle = input<Record<string, string> | null>(null);
+  /**
+   * Where the panel is in the DOM (PrimeNG `appendTo`). `self` (default): next to the control.
+   * `body`: in the overlay container at the end of the body, for parents that clip their content.
+   * Both are native popovers in the top layer, so the panel also shows above a modal dialog.
+   */
+  readonly appendTo = input<'self' | 'body'>('self');
   readonly size = input<'sm' | 'md'>('md');
   readonly ariaLabel = input<string | null>(null);
   readonly ariaLabelledBy = input<string | null>(null);
@@ -242,6 +252,15 @@ export abstract class StarOptionListBase<TOption, TValue> {
   private readonly filterInput = viewChild<ElementRef<HTMLInputElement>>('filterInput');
 
   protected readonly positions = PANEL_POSITIONS;
+  /** CDK popover location of the panel for `appendTo`. */
+  protected readonly popoverLocation = computed(() =>
+    this.appendTo() === 'body' ? ('global' as const) : ('inline' as const),
+  );
+  /** `panelClass` as a class list for the `[class]` binding. */
+  protected readonly panelClasses = computed(() => {
+    const value = this.panelClass();
+    return typeof value === 'string' ? value : (value ?? []).join(' ');
+  });
   protected readonly listId = this.ids.getId('star-listbox-');
   protected readonly open = signal(false);
   protected readonly filterValue = signal('');
