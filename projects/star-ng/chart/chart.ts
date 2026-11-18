@@ -1733,21 +1733,19 @@ export class StarChart {
   }
 
   /**
-   * A click on the plot selects the point nearest to the pointer among the points at the hover
-   * position (the focus targets let the pointer through to the marks).
+   * A click on the plot selects the data point nearest to the pointer (the focus targets let the
+   * pointer through to the marks).
    */
   protected onPlotClick(event: MouseEvent): void {
     const target = event.target as Element | null;
     const frame = target?.closest('.star-chart__plot')?.parentElement;
-    const hover = this.hover();
-    if (!frame || hover === null) return;
+    if (!frame) return;
     const box = frame.getBoundingClientRect();
     const left = box.width ? ((event.clientX - box.left) / box.width) * 100 : 0;
     const top = box.height ? ((event.clientY - box.top) / box.height) * 100 : 0;
     let best: StarChartPointTarget | null = null;
     let distance = Infinity;
     for (const point of this.pointRows().flat()) {
-      if (point.hover !== hover) continue;
       const d = (point.left - left) ** 2 + (point.top - top) ** 2;
       if (d < distance) [best, distance] = [point, d];
     }

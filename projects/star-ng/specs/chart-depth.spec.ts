@@ -98,12 +98,17 @@ describe('StarChart interaction', () => {
 
   it('selects the point nearest to a click on the plot', async () => {
     const { el, host, fixture } = await setup();
-    const hit = el.querySelectorAll('.star-chart__hit')[1];
-    hit.dispatchEvent(new MouseEvent('mouseenter'));
+    const frame = el.querySelector<HTMLElement>('.star-chart__frame')!;
+    frame.getBoundingClientRect = () => ({ left: 0, top: 0, width: 640, height: 280 }) as DOMRect;
     await fixture.whenStable();
-    hit.dispatchEvent(new MouseEvent('click', { bubbles: true }));
-    expect(host.selected.length).toBe(1);
-    expect(host.selected[0].index).toBe(1);
+    // The second point of "Received" (Feb, 20) is at x 320 of 640.
+    const target = el.querySelectorAll<HTMLElement>('.star-chart__target')[1];
+    const left = (parseFloat(target.style.left) / 100) * 640;
+    const top = (parseFloat(target.style.top) / 100) * 280;
+    el.querySelectorAll('.star-chart__hit')[1].dispatchEvent(
+      new MouseEvent('click', { bubbles: true, clientX: left + 2, clientY: top + 1 }),
+    );
+    expect(host.selected).toEqual([{ seriesIndex: 0, index: 1, value: 20 }]);
   });
 
   it('renders the tooltip template with the points at the hover index', async () => {
