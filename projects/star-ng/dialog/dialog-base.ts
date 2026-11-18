@@ -92,6 +92,7 @@ export abstract class StarDialogBase {
           if (this.modal()) element.showModal?.();
           else element.show?.();
           this.isOpen = true;
+          this.afterOpen();
           if (this.focusOnShow()) this.focusInitial(element);
           else element.focus({ preventScroll: true });
           this.shown.emit();
@@ -112,6 +113,11 @@ export abstract class StarDialogBase {
   /** The header with its title is rendered. */
   protected titleShown(): boolean {
     return this.showHeader();
+  }
+
+  /** Runs once after each open, before the focus moves and `shown` is emitted. */
+  protected afterOpen(): void {
+    // Overridden by subclasses.
   }
 
   /** Runs once after each close, before `hidden` is emitted. */

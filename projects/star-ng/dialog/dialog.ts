@@ -333,11 +333,33 @@ export class StarDialog extends StarDialogBase {
     };
   }
 
-  /** Window size when `keepInViewport` is on, otherwise `null`. */
+  /**
+   * Visible page area without the scrollbars when `keepInViewport` is on, otherwise `null`.
+   * Falls back to the window size when the root element reports no size.
+   */
   protected viewport(): StarDialogDimensions | null {
     const view = this.document.defaultView;
     if (!this.keepInViewport() || !view) return null;
-    return { width: view.innerWidth, height: view.innerHeight };
+    const root = this.document.documentElement;
+    return {
+      width: root.clientWidth || view.innerWidth,
+      height: root.clientHeight || view.innerHeight,
+    };
+  }
+
+  /** A remembered position and size come back inside the window, which may have shrunk. */
+  protected override afterOpen(): void {
+    const placed = this.placed();
+    const sized = this.sized();
+    const viewport = this.viewport();
+    if (!viewport || (!placed && !sized)) return;
+    const frame = this.frame();
+    const size = {
+      width: Math.min(frame.width, viewport.width),
+      height: Math.min(frame.height, viewport.height),
+    };
+    if (sized) this.sized.set(size);
+    if (placed) this.placed.set(clampToViewport({ x: frame.left, y: frame.top }, size, viewport));
   }
 
   private moveTo(frame: StarDialogFrame, x: number, y: number): void {

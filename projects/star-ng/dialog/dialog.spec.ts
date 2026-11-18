@@ -561,3 +561,46 @@ describe('StarDialog pointer tracking ends with the dialog', () => {
     expect(dialog.style.left).toBe('120px');
   });
 });
+
+describe('StarDialog viewport without the scrollbar', () => {
+  const root = document.documentElement;
+  const setClient = (width: number, height: number) => {
+    Object.defineProperty(root, 'clientWidth', { configurable: true, value: width });
+    Object.defineProperty(root, 'clientHeight', { configurable: true, value: height });
+  };
+  afterEach(() => {
+    delete (root as unknown as Record<string, unknown>)['clientWidth'];
+    delete (root as unknown as Record<string, unknown>)['clientHeight'];
+  });
+
+  it('clamps a drag to the client area of the page, not the window with its scrollbar', async () => {
+    setClient(900, 700);
+    const { fixture, dialog } = await setup();
+    pointer('pointerdown', dialog.querySelector('header')!, 0, 0);
+    pointer('pointermove', window, 5000, 5000);
+    pointer('pointerup', window, 5000, 5000);
+    await fixture.whenStable();
+    expect(dialog.style.left).toBe('600px');
+    expect(dialog.style.top).toBe('500px');
+  });
+
+  it('pulls a remembered position and size back into a smaller window on reopen', async () => {
+    setClient(1000, 700);
+    const { fixture, dialog } = await setup();
+    fixture.componentInstance.remember.set(true);
+    pointer('pointerdown', dialog.querySelector('header')!, 0, 0);
+    pointer('pointermove', window, 600, 400);
+    pointer('pointerup', window, 600, 400);
+    await fixture.whenStable();
+    expect(dialog.style.left).toBe('700px');
+    expect(dialog.style.top).toBe('450px');
+
+    fixture.componentInstance.open.set(false);
+    await fixture.whenStable();
+    setClient(800, 500);
+    fixture.componentInstance.open.set(true);
+    await fixture.whenStable();
+    expect(dialog.style.left).toBe('500px');
+    expect(dialog.style.top).toBe('300px');
+  });
+});
