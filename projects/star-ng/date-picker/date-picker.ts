@@ -402,9 +402,11 @@ export abstract class StarDateInputBase<TValue> {
    */
   protected onInputFocus(): void {
     if (this.editing()) return;
+    this.editing.set(true);
+    // Without displayFormat or inputFormat the text does not change: no render is needed.
+    if (!this.displayFormat() && !this.inputFormat()) return;
     const input = this.input().nativeElement;
     const before = input.value;
-    this.editing.set(true);
     this.changeDetector.detectChanges();
     if (input.value !== before) input.select();
   }

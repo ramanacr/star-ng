@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { ChangeDetectorRef, Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { StarCalendar } from './calendar';
 import { starIsoText, starParseIso, starSplitDateTime, starTimeFormat } from './date-format';
@@ -1116,5 +1116,24 @@ describe('date slot context', () => {
       outside: false,
     };
     expect(context.special ?? null).toBeNull();
+  });
+});
+
+describe('date picker: focus without display or input format', () => {
+  it('runs no extra render on focus when no format can change the text', async () => {
+    const fixture = TestBed.createComponent(FormatHost);
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+    const plain = el.querySelector<HTMLInputElement>('input[aria-label="Kept"]')!;
+    const styled = el.querySelector<HTMLInputElement>('input[aria-label="Due"]')!;
+    const ref = fixture.debugElement
+      .query((node) => node.nativeElement === plain.closest('star-date-picker'))
+      .injector.get(ChangeDetectorRef);
+    const spy = vi.spyOn(Object.getPrototypeOf(ref), 'detectChanges');
+    plain.dispatchEvent(new Event('focus'));
+    expect(spy).not.toHaveBeenCalled();
+    styled.dispatchEvent(new Event('focus'));
+    expect(spy).toHaveBeenCalled();
+    spy.mockRestore();
   });
 });
