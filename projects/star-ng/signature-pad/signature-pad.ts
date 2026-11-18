@@ -322,6 +322,8 @@ export class StarSignaturePad implements FormValueControl<string> {
   private pointerId: number | null = null;
   /** Size of the drawing area in CSS pixels. */
   private size = { ...FALLBACK_SIZE };
+  /** True once `size` was measured (not the fallback). */
+  private measured = false;
   private imageElement: HTMLImageElement | null = null;
   /** The last value this pad emitted, to tell outside changes from its own. */
   private emitted = '';
@@ -539,10 +541,25 @@ export class StarSignaturePad implements FormValueControl<string> {
     const rect = canvas.getBoundingClientRect();
     if (!rect.width || !rect.height) return;
     const ratio = canvas.ownerDocument.defaultView?.devicePixelRatio || 1;
+    const previous = this.measured ? this.size : null;
     this.size = { width: rect.width, height: rect.height };
+    this.measured = true;
+    // Points are in CSS pixels: a new size scales them, so the signature keeps its place and shape.
+    const scaled = !!previous && (previous.width !== rect.width || previous.height !== rect.height);
+    if (scaled) {
+      const scale = (stroke: readonly StarSignaturePoint[]) =>
+        stroke.map((point) => ({
+          x: round((point.x * rect.width) / previous.width),
+          y: round((point.y * rect.height) / previous.height),
+          pressure: point.pressure,
+        }));
+      this.strokeList.update((strokes) => strokes.map(scale));
+      if (this.current) this.current = scale(this.current);
+    }
     canvas.width = Math.round(rect.width * ratio);
     canvas.height = Math.round(rect.height * ratio);
     this.redraw();
+    if (scaled && !this.isEmpty()) this.commit();
   }
 
   private loadImage(value: string): void {

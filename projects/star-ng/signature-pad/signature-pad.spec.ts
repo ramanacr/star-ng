@@ -420,6 +420,64 @@ describe('StarSignaturePad themes', () => {
   });
 });
 
+describe('StarSignaturePad resize (I3)', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('scales the strokes to the new size and keeps them inside the value', async () => {
+    fakeCanvas();
+    let size = { width: 400, height: 100 };
+    vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(
+      () =>
+        ({
+          left: 0,
+          top: 0,
+          x: 0,
+          y: 0,
+          right: size.width,
+          bottom: size.height,
+          width: size.width,
+          height: size.height,
+          toJSON: () => ({}),
+        }) as DOMRect,
+    );
+    let resize = () => undefined as void;
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        constructor(callback: () => void) {
+          resize = callback;
+        }
+        observe(): void {}
+        disconnect(): void {}
+      },
+    );
+    const fixture = TestBed.createComponent(ThemeHost);
+    await fixture.whenStable();
+    const canvas = (fixture.nativeElement as HTMLElement).querySelector('canvas')!;
+    const svgOf = () => decodeURIComponent(fixture.componentInstance.value().split(',')[1]);
+    pointer(canvas, 'pointerdown', 300, 50);
+    pointer(canvas, 'pointermove', 390, 50);
+    pointer(canvas, 'pointerup', 390, 50);
+    await fixture.whenStable();
+    expect(svgOf()).toContain('width="400"');
+    size = { width: 200, height: 100 };
+    resize();
+    await fixture.whenStable();
+    // The value follows the resize at once, with the old stroke scaled into the new width.
+    expect(svgOf()).toContain('width="200"');
+    expect(svgOf()).toContain('d="M150 50L195 50"');
+    pointer(canvas, 'pointerdown', 10, 10);
+    pointer(canvas, 'pointermove', 20, 20);
+    pointer(canvas, 'pointerup', 20, 20);
+    await fixture.whenStable();
+    const svg = svgOf();
+    expect(svg).toContain('d="M150 50L195 50"');
+    expect(svg).toContain('d="M10 10L20 20"');
+    const xs = [...svg.matchAll(/[ML](\d+(?:\.\d+)?) /g)].map((m) => Number(m[1]));
+    expect(Math.max(...xs)).toBeLessThanOrEqual(200);
+  });
+});
+
 describe('StarSignaturePad on the server', () => {
   it('does not touch the canvas while rendered on the server', async () => {
     const getContext = vi.spyOn(HTMLCanvasElement.prototype, 'getContext');
