@@ -1636,6 +1636,15 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ]
   },
+  "StarColumnCellTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starColumnCell]",
+    "entry": "@star-ng/ui/multi-column-combobox",
+    "description": "Content of each cell of `star-multi-column-combobox`: `<ng-template starColumnCell let-row let-column=\"column\">`. Switch on `column.field` for per-column content. Do not put focusable elements in it: the focus stays in the text field.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
   "StarCommandPalette": {
     "kind": "component",
     "selector": "star-command-palette",
@@ -4558,6 +4567,45 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Fires before the value changes by a user action. Call `cancel()` on the event to keep the old value. Ignite UI combo `selectionChanging`."
       }
     ]
+  },
+  "StarMultiColumnCombobox": {
+    "kind": "component",
+    "selector": "star-multi-column-combobox",
+    "entry": "@star-ng/ui/multi-column-combobox",
+    "description": "Multi-column combobox (Kendo UI `MultiColumnComboBox`, Ignite UI `igx-combo` with an item template of columns): a text field over a grid-like listbox. Each option shows one cell per column under a header row. Typing filters the rows over every column (`filterFields`, accent and case insensitive with `starFilterMatch`), Enter chooses the active row.",
+    "inputs": [
+      {
+        "name": "columns",
+        "type": "readonly StarComboboxColumn<TOption>[]",
+        "default": "[]",
+        "required": false,
+        "description": "The columns: `{ field, header, width? }`."
+      },
+      {
+        "name": "filterFields",
+        "type": "readonly StarOptionKey<TOption>[] | null",
+        "default": "null",
+        "required": false,
+        "description": "Fields the typed text searches. `null` (default): `filterBy` when it is set, else every column field. Kendo UI `filterable` searches the text field only; this searches what the user sees."
+      },
+      {
+        "name": "panelMinWidth",
+        "type": "string | number",
+        "default": "'20rem'",
+        "required": false,
+        "description": "Minimum width of the panel (CSS length or pixels). The panel is at least as wide as the field."
+      }
+    ],
+    "models": [
+      {
+        "name": "value",
+        "type": "TValue | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "outputs": []
   },
   "StarMultiDatePicker": {
     "kind": "component",
@@ -8790,6 +8838,10 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "message/severities": "<div class=\"docs-stack\">\n  <star-message>Your changes are saved as a draft.</star-message>\n  <star-message severity=\"success\">The invoice was sent.</star-message>\n  <star-message severity=\"warn\">The card expires next month.</star-message>\n  <star-message severity=\"error\">The payment was declined.</star-message>\n</div>",
   "meter-group/basic": "<div class=\"docs-stack\">\n  <star-meter-group [items]=\"storage\" [max]=\"100\" unit=\"GB\" ariaLabel=\"Storage used\" />\n</div>",
   "meter-group/sum": "<div class=\"docs-stack\">\n  <star-meter-group [items]=\"regions\" ariaLabel=\"Orders by region\" />\n</div>",
+  "multi-column-combobox/basic": "<div class=\"docs-stack\">\n  <star-multi-column-combobox\n    [options]=\"products\"\n    [columns]=\"columns\"\n    optionLabel=\"name\"\n    optionValue=\"sku\"\n    [(value)]=\"sku\"\n    placeholder=\"Find a product\"\n    ariaLabel=\"Product\"\n    showClear\n  />\n  <p class=\"docs-output\" role=\"status\">Value: {{ sku() ?? 'none' }}</p>\n</div>",
+  "multi-column-combobox/form": "<div class=\"docs-stack\">\n  <star-field label=\"Product\" [state]=\"f.product()\">\n    <star-multi-column-combobox\n      [formField]=\"f.product\"\n      [options]=\"products\"\n      [columns]=\"columns\"\n      optionLabel=\"name\"\n      optionValue=\"sku\"\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ f.product().valid() ? 'yes' : 'no' }}</p>\n</div>",
+  "multi-column-combobox/templates": "<star-multi-column-combobox\n  [options]=\"products\"\n  [columns]=\"columns\"\n  optionLabel=\"name\"\n  optionValue=\"sku\"\n  [filterFields]=\"['name']\"\n  filterMatchMode=\"startsWith\"\n  ariaLabel=\"Product by name\"\n  placeholder=\"Name starts with…\"\n>\n  <ng-template starColumnCell let-row let-column=\"column\">\n    @if ($any(column).field === 'stock') {\n      <span [class.stock-out]=\"$any(row).stock === 0\">\n        {{ $any(row).stock === 0 ? 'Out of stock' : $any(row).stock + ' left' }}\n      </span>\n    } @else {\n      {{ $any(row)[$any(column).field] }}\n    }\n  </ng-template>\n  <ng-template starEmpty let-query>No product name starts with “{{ query }}”.</ng-template>\n  <ng-template starFooter>\n    <div class=\"footer\">{{ products.length }} products</div>\n  </ng-template>\n</star-multi-column-combobox>",
+  "multi-column-combobox/virtual": "<star-multi-column-combobox\n  [options]=\"parts\"\n  [columns]=\"partColumns\"\n  optionLabel=\"code\"\n  optionValue=\"id\"\n  virtualScroll\n  [virtualItemSize]=\"40\"\n  ariaLabel=\"Part\"\n  placeholder=\"Part code or description\"\n/>",
   "multi-select/basic": "<div class=\"docs-stack\">\n  <star-multi-select\n    [options]=\"departments\"\n    optionLabel=\"name\"\n    optionValue=\"id\"\n    [(value)]=\"chosen\"\n    placeholder=\"Select departments\"\n    ariaLabel=\"Departments\"\n  />\n  <p class=\"docs-output\" role=\"status\">Chosen: {{ chosen().join(', ') || 'none' }}</p>\n</div>",
   "multi-select/chips": "<star-multi-select\n  [options]=\"departments\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  [(value)]=\"chips\"\n  display=\"chip\"\n  placeholder=\"Select departments\"\n  ariaLabel=\"Departments as chips\"\n  filter\n  showClear\n/>",
   "multi-select/custom-values": "<div class=\"docs-stack\">\n  <star-multi-select\n    [options]=\"labels()\"\n    [(value)]=\"pickedLabels\"\n    filter\n    allowCustomValues\n    display=\"chip\"\n    placeholder=\"Labels\"\n    ariaLabel=\"Order labels\"\n    (customValueAdd)=\"addLabel($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">Labels: {{ pickedLabels().join(', ') || 'none' }}</p>\n</div>",

@@ -230,6 +230,13 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         load: () => import('./controls/autocomplete.page').then((m) => m.AutocompletePage),
       },
       {
+        label: 'Multi-column combobox',
+        path: 'controls/multi-column-combobox',
+        keywords: 'combobox columns grid table dropdown filter virtual kendo multicolumn',
+        load: () =>
+          import('./controls/multi-column-combobox.page').then((m) => m.MultiColumnComboboxPage),
+      },
+      {
         label: 'Tree',
         path: 'controls/tree',
         keywords: 'hierarchy nodes folders checkbox expand',

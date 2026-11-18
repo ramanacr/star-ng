@@ -577,6 +577,16 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'multi-column combobox open with a filter',
+    path: 'controls/multi-column-combobox',
+    open: async (page) => {
+      const field = example(page, 'Products in columns').getByRole('combobox', { name: 'Product' });
+      await field.click();
+      await field.fill('lamp');
+      await expect(page.getByRole('option', { name: /Desk lamp/ })).toBeVisible();
+    },
+  },
+  {
     name: 'app sidebar collapsed with a group open',
     path: 'controls/app-sidebar',
     open: async (page) => {

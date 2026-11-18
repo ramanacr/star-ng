@@ -40,6 +40,7 @@ export * from '@star-ng/ui/listbox';
 export * from '@star-ng/ui/media';
 export * from '@star-ng/ui/menu';
 export * from '@star-ng/ui/message';
+export * from '@star-ng/ui/multi-column-combobox';
 export * from '@star-ng/ui/paginator';
 export * from '@star-ng/ui/panel';
 export * from '@star-ng/ui/password';
