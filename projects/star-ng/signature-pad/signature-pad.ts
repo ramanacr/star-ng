@@ -12,6 +12,7 @@ import {
   inject,
   Injector,
   input,
+  isDevMode,
   model,
   numberAttribute,
   output,
@@ -334,8 +335,16 @@ export class StarSignaturePad implements FormValueControl<string> {
         this.emitted = value;
         this.strokeList.set([]);
         this.typed.set('');
-        this.image.set(value || null);
-        this.loadImage(value);
+        // Only a data URL of an image is drawn: another URL would taint the canvas, and then the
+        // PNG export throws. Any other value shows an empty pad.
+        const image = value && /^data:image\//i.test(value.trim()) ? value : null;
+        if (value && !image && isDevMode()) {
+          console.warn(
+            `star-signature-pad: the value must be a data:image/ URL; "${value.slice(0, 40)}" is shown as an empty pad.`,
+          );
+        }
+        this.image.set(image);
+        this.loadImage(image ?? '');
         this.redraw();
       });
     });
@@ -502,7 +511,13 @@ export class StarSignaturePad implements FormValueControl<string> {
     // Without a 2D context (old engines) the SVG is the only picture there is.
     if (!context) return this.svgValue();
     this.paint(context, offscreen.width, this.exportColor(), this.exportBackground(), false);
-    return offscreen.toDataURL('image/png');
+    try {
+      return offscreen.toDataURL('image/png');
+    } catch {
+      // A tainted canvas (for example an image that a browser treats as cross-origin) cannot be
+      // read; the SVG holds the same picture.
+      return this.svgValue();
+    }
   }
 
   /** The stroke color: the input, else the token on the host. */
@@ -533,7 +548,7 @@ export class StarSignaturePad implements FormValueControl<string> {
   private loadImage(value: string): void {
     this.imageElement = null;
     const view = this.host.nativeElement.ownerDocument.defaultView;
-    if (!value || !view || typeof view.Image !== 'function') return;
+    if (!this.browser || !value || !view || typeof view.Image !== 'function') return;
     const image = new view.Image();
     image.onload = () => {
       if (this.image() !== value) return;

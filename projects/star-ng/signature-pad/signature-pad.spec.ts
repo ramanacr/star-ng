@@ -269,6 +269,35 @@ describe('StarSignaturePad', () => {
     expect(last).toBeGreaterThan(calls.lastIndexOf('strokeStyle=#123456'));
   });
 
+  it('ignores a value that is not a data:image URL, with a dev-mode warning (I2)', async () => {
+    const { host, fixture, button } = await setup();
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const image = vi.spyOn(window, 'Image');
+    host.value.set('https://example.test/signature.png');
+    await fixture.whenStable();
+    expect(host.pad().isEmpty()).toBe(true);
+    expect(button('Clear signature')?.disabled).toBe(true);
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(String(warn.mock.calls[0][0])).toContain('data:image/');
+    expect(image).not.toHaveBeenCalled();
+    host.value.set('data:image/png;base64,QUJD');
+    await fixture.whenStable();
+    expect(host.pad().isEmpty()).toBe(false);
+    expect(image).toHaveBeenCalledTimes(1);
+  });
+
+  it('falls back to the SVG value when the PNG export throws (I2)', async () => {
+    const { host, draw } = await setup();
+    vi.mocked(HTMLCanvasElement.prototype.toDataURL).mockImplementation(() => {
+      throw new DOMException('The canvas has been tainted', 'SecurityError');
+    });
+    await draw([
+      [1, 1],
+      [4, 4],
+    ]);
+    expect(host.value().startsWith('data:image/svg+xml;charset=utf-8,')).toBe(true);
+  });
+
   it('uses exportColor and exportBackground for the value', async () => {
     const fixture = TestBed.createComponent(ExportHost);
     fakeCanvas();
@@ -394,11 +423,13 @@ describe('StarSignaturePad themes', () => {
 describe('StarSignaturePad on the server', () => {
   it('does not touch the canvas while rendered on the server', async () => {
     const getContext = vi.spyOn(HTMLCanvasElement.prototype, 'getContext');
+    const image = vi.spyOn(window, 'Image');
     TestBed.configureTestingModule({ providers: [{ provide: PLATFORM_ID, useValue: 'server' }] });
     const fixture = TestBed.createComponent(Host);
     fixture.componentInstance.value.set('data:image/png;base64,BBB');
     await fixture.whenStable();
     expect(getContext).not.toHaveBeenCalled();
+    expect(image).not.toHaveBeenCalled();
     expect(fixture.componentInstance.pad().isEmpty()).toBe(false);
   });
 });
