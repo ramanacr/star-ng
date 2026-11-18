@@ -4,6 +4,7 @@
  * `@star-ng/ui/transloco` is not re-exported here: it needs the optional peer `@jsverse/transloco`.
  */
 export * from '@star-ng/ui/accordion';
+export * from '@star-ng/ui/action-strip';
 export * from '@star-ng/ui/autocomplete';
 export * from '@star-ng/ui/avatar';
 export * from '@star-ng/ui/badge';
@@ -18,6 +19,7 @@ export * from '@star-ng/ui/data-display';
 export * from '@star-ng/ui/date-picker';
 export * from '@star-ng/ui/dialog';
 export * from '@star-ng/ui/drawer';
+export * from '@star-ng/ui/dropdown';
 export * from '@star-ng/ui/editor';
 export * from '@star-ng/ui/field';
 export * from '@star-ng/ui/file-upload';
