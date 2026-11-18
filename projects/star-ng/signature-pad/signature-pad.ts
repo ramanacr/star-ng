@@ -357,6 +357,18 @@ export class StarSignaturePad implements FormValueControl<string> {
       this.backgroundColor();
       untracked(() => this.redraw());
     });
+    // A new format, export ink or stroke width changes the stored picture.
+    let started = false;
+    effect(() => {
+      this.valueFormat();
+      this.exportColor();
+      this.exportBackground();
+      this.strokeWidth();
+      untracked(() => {
+        if (started && !this.isEmpty()) this.commit();
+        started = true;
+      });
+    });
     afterNextRender(() => {
       this.measure();
       this.watchTheme();

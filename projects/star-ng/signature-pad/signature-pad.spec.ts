@@ -298,6 +298,24 @@ describe('StarSignaturePad', () => {
     expect(host.value().startsWith('data:image/svg+xml;charset=utf-8,')).toBe(true);
   });
 
+  it('writes the value again when the format or the stroke width changes (m11)', async () => {
+    const { host, fixture, draw } = await setup();
+    host.format.set('svg');
+    await fixture.whenStable();
+    expect(host.value()).toBe('');
+    host.format.set('png');
+    await fixture.whenStable();
+    await draw([
+      [1, 1],
+      [4, 4],
+    ]);
+    expect(host.value()).toBe('data:image/png;base64,AAA');
+    host.format.set('svg');
+    await fixture.whenStable();
+    expect(host.value().startsWith('data:image/svg+xml')).toBe(true);
+    expect(decodeURIComponent(host.value())).toContain('stroke-width="3"');
+  });
+
   it('uses exportColor and exportBackground for the value', async () => {
     const fixture = TestBed.createComponent(ExportHost);
     fakeCanvas();
