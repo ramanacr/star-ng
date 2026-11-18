@@ -19,6 +19,13 @@
   // Code blocks: a neutral fill, one step away from the surface.
   --docs-code-fill: color-mix(in srgb, var(--star-text-strong) 4%, var(--star-surface));
   --docs-accent-line: linear-gradient(90deg, var(--star-primary), var(--star-accent));
+  // Logo mark: the brackets and the star (brand/starng-mark.svg and starng-mark-dark.svg).
+  --docs-logo-brackets: #4f46e5;
+  --docs-logo-star: #f59e0b;
+}
+[data-theme='dark'] {
+  --docs-logo-brackets: #a5b4fc;
+  --docs-logo-star: #fbbf24;
 }
 
 *,
@@ -116,18 +123,20 @@ code {
   text-decoration: none;
 }
 .docs-header__mark {
-  display: inline-grid;
-  place-items: center;
+  display: block;
+  flex: none;
   width: 2rem;
   height: 2rem;
-  border-radius: var(--star-radius-md);
-  background: linear-gradient(135deg, var(--star-primary), var(--star-accent));
-  color: var(--star-on-tone);
-  box-shadow: var(--star-shadow-sm);
-
-  i {
-    font-size: 1.125rem;
-  }
+}
+.docs-header__mark-brackets {
+  fill: none;
+  stroke: var(--docs-logo-brackets);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.docs-header__mark-star {
+  fill: var(--docs-logo-star);
 }
 .docs-header__spacer {
   flex: 1;

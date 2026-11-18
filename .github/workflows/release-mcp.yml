@@ -1,0 +1,275 @@
+# Release of the npm package `@star-ng/mcp` (the MCP server in projects/mcp). See RELEASING.md,
+# section "Releasing @star-ng/mcp", for the steps and the one-time setup.
+#
+# - Push a tag `mcp-v<version>` (for example `mcp-v0.2.0`) on a commit of `main`: verify, pack,
+#   publish. The tags of @star-ng/ui are `v<version>`: release.yml never starts for an `mcp-v` tag,
+#   and this workflow never starts for a `v` tag.
+# - "Run workflow" by hand (Actions, "Release MCP"): a DRY RUN. It verifies and packs, uploads the
+#   tarball as an artifact, and never publishes.
+#
+# Authentication is npm Trusted Publishing (OIDC): there is NO npm token in this repository.
+# On npmjs.com, the trusted publisher of @star-ng/mcp names THIS file (`release-mcp.yml`) and the
+# environment `npm`. Only the `publish` job has `id-token: write`. It runs only for a tag push and
+# only when the repository variable NPM_PUBLISH is `true` (the same switch as release.yml).
+#
+# The package has no dependencies and no build step. Its data snapshot
+# (data/mcp/components.json) is made from the library and docs source by `pnpm test:mcp`.
+# Third-party actions are pinned to full commit SHAs (version in the trailing comment).
+name: Release MCP
+
+on:
+  push:
+    tags: ['mcp-v*']
+  workflow_dispatch:
+
+# Least privilege for every job. The publish job adds `id-token: write`.
+permissions:
+  contents: read
+
+# Two runs for the same ref never run together, and a running release is never cancelled.
+concurrency:
+  group: release-mcp-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    name: verify and pack
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      version: ${{ steps.release.outputs.version }}
+      dist_tag: ${{ steps.release.outputs.dist_tag }}
+      tarball: ${{ steps.pack.outputs.tarball }}
+    steps:
+      # Full history: the tag commit is checked to be part of `main`.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      # The data generator reads the library source with the TypeScript compiler API.
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+
+      # The tag must be `mcp-v` plus the version in projects/mcp/package.json. A dry run (no tag)
+      # uses the version of the package. The dist-tag is `next` for a prerelease, else `latest`.
+      - name: Check the version and choose the dist-tag
+        id: release
+        env:
+          TAG: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
+        run: node tools/release-version.mjs --package mcp "$TAG"
+
+      - name: Check that the tag is on main
+        if: github.ref_type == 'tag'
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin main
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "::error title=Tag not on main::The tag $GITHUB_REF_NAME points to a commit that is not on main. Release only from main."
+            exit 1
+          fi
+
+      # Writes projects/mcp/data/mcp/components.json (the snapshot that the package bundles) and
+      # runs the server tests on it.
+      - name: Make the data snapshot and test the server
+        run: pnpm test:mcp
+
+      # The package must hold exactly these files: no tests, no other generated data.
+      - name: Pack the tarball and check its files
+        id: pack
+        env:
+          VERSION: ${{ steps.release.outputs.version }}
+        run: |
+          set -euo pipefail
+          mkdir -p release
+          npm pack ./projects/mcp --pack-destination ./release --ignore-scripts
+          tarball="star-ng-mcp-${VERSION}.tgz"
+          test -f "release/${tarball}" || { echo "::error::Expected release/${tarball} was not made."; ls -l release; exit 1; }
+          tar -tzf "release/${tarball}" | sort > files.txt
+          printf '%s\n' \
+            package/README.md \
+            package/bin/star-ng-mcp.mjs \
+            package/data/mcp/components.json \
+            package/package.json \
+            package/src/catalog.mjs \
+            package/src/server.mjs | sort > expected.txt
+          if ! diff -u expected.txt files.txt; then
+            echo "::error title=Package files::The tarball does not hold exactly the expected files (see the diff above)."
+            exit 1
+          fi
+          echo "tarball=${tarball}" >> "$GITHUB_OUTPUT"
+
+      # Installs the packed tarball into an empty project and talks to the installed server.
+      - name: Smoke test of the packed server
+        env:
+          TARBALL: ${{ steps.pack.outputs.tarball }}
+        run: |
+          set -euo pipefail
+          mkdir smoke
+          (cd smoke && npm init -y > /dev/null && npm install "$GITHUB_WORKSPACE/release/${TARBALL}" --ignore-scripts --no-audit --no-fund)
+          node tools/smoke-mcp.mjs smoke
+
+      - name: Upload the tarball
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: star-ng-mcp-tarball
+          path: release/*.tgz
+          retention-days: 14
+          if-no-files-found: error
+
+      - name: Job summary
+        env:
+          VERSION: ${{ steps.release.outputs.version }}
+          DIST_TAG: ${{ steps.release.outputs.dist_tag }}
+          TARBALL: ${{ steps.pack.outputs.tarball }}
+          REF: ${{ github.ref_type == 'tag' && github.ref_name || 'dry run (no tag)' }}
+        run: |
+          set -euo pipefail
+          size=$(stat -c%s "release/${TARBALL}")
+          {
+            echo "## Release check: @star-ng/mcp ${VERSION}"
+            echo
+            echo "| Item | Value |"
+            echo "| --- | --- |"
+            echo "| Version | \`${VERSION}\` |"
+            echo "| Dist-tag | \`${DIST_TAG}\` |"
+            echo "| Trigger | ${REF} |"
+            echo "| Tarball | \`${TARBALL}\` |"
+            echo "| Tarball size | $((size / 1024)) kB |"
+            echo
+            if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+              echo "The publish job runs next if the repository variable \`NPM_PUBLISH\` is \`true\`."
+            else
+              echo "Dry run: nothing is published."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  publish:
+    name: publish to npm
+    needs: verify
+    # Only for a tag push (never a manual run), and only when npm is set up.
+    if: github.event_name == 'push' && github.ref_type == 'tag' && vars.NPM_PUBLISH == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: npm
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: star-ng-mcp-tarball
+          path: release
+
+      # Trusted Publishing needs npm 11.5.1 or later. Node 22 ships npm 10.
+      - name: Install a current npm
+        run: |
+          npm install -g npm@11.20.0
+          npm --version
+
+      # The tarball path starts with `./`: without it npm reads `release/x.tgz` as GitHub shorthand.
+      - name: Publish with provenance
+        env:
+          VERSION: ${{ needs.verify.outputs.version }}
+          DIST_TAG: ${{ needs.verify.outputs.dist_tag }}
+          TARBALL: ${{ needs.verify.outputs.tarball }}
+        run: |
+          set -euo pipefail
+          test -f "./release/${TARBALL}"
+          npm publish "./release/${TARBALL}" --access public --provenance --tag "${DIST_TAG}"
+          {
+            echo "## Published @star-ng/mcp ${VERSION}"
+            echo
+            echo "Dist-tag: \`${DIST_TAG}\`. Package page: https://www.npmjs.com/package/@star-ng/mcp/v/${VERSION}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # Checks the version that `publish` made. Read-only: no id-token and no environment. It never
+  # publishes, so "Re-run failed jobs" or "Re-run job" on this job alone is always safe.
+  verify-published:
+    name: verify published package
+    needs: [verify, publish]
+    if: needs.publish.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      # Only for tools/smoke-mcp.mjs.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+
+      - name: Install a current npm
+        run: |
+          npm install -g npm@11.20.0
+          npm --version
+
+      # A new version can need some minutes before the registry answers for it. Poll the exact
+      # version with a growing delay (5 s, doubled up to 60 s) and a budget of 15 minutes.
+      - name: Wait for the version in the registry
+        env:
+          VERSION: ${{ needs.verify.outputs.version }}
+          POLL_BUDGET_SECONDS: '900'
+        run: |
+          set -euo pipefail
+          spec="@star-ng/mcp@${VERSION}"
+          start=$SECONDS
+          delay=5
+          attempt=1
+          until npm view "$spec" version --prefer-online > /dev/null 2>&1; do
+            elapsed=$((SECONDS - start))
+            if [ "$elapsed" -ge "$POLL_BUDGET_SECONDS" ]; then
+              echo "::error title=Version not in the registry::${spec} did not appear in the npm registry within ${POLL_BUDGET_SECONDS} seconds. The job 'publish to npm' succeeded, so the registry may only be slow. Do NOT re-run the publish job: a version can be published only once. Check 'npm view ${spec} version', then re-run only the job 'verify published package'."
+              exit 1
+            fi
+            echo "${spec} is not available yet (attempt ${attempt}, ${elapsed} s of ${POLL_BUDGET_SECONDS} s). Waiting ${delay} seconds."
+            sleep "$delay"
+            attempt=$((attempt + 1))
+            delay=$((delay * 2 > 60 ? 60 : delay * 2))
+          done
+          echo "${spec} is available after $((SECONDS - start)) s (attempt ${attempt})."
+
+      # Installs the published version into an empty project, checks the registry signature and
+      # the provenance attestation, and talks to the installed server.
+      - name: Verify signature, provenance and the server
+        env:
+          VERSION: ${{ needs.verify.outputs.version }}
+        run: |
+          set -euo pipefail
+          mkdir scratch
+          (
+            cd scratch
+            npm init -y > /dev/null
+            npm install "@star-ng/mcp@${VERSION}" --ignore-scripts --no-audit --no-fund
+            npm audit signatures | tee audit.txt
+            if ! grep -Eq "verified attestations?" audit.txt; then
+              echo "::error::npm audit signatures reports no verified provenance attestation."
+              exit 1
+            fi
+          )
+          node tools/smoke-mcp.mjs scratch
+          {
+            echo "## Verified @star-ng/mcp ${VERSION}"
+            echo
+            echo "\`npm audit signatures\`:"
+            echo
+            echo '```'
+            cat scratch/audit.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
