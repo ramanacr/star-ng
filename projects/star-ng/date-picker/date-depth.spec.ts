@@ -1,7 +1,8 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { starSplitDateTime, starTimeFormat } from './date-format';
-import { StarDatePicker, StarDateRangePicker } from './date-picker';
+import { starIsoText, starParseIso, starSplitDateTime, starTimeFormat } from './date-format';
+import { StarDatePicker, StarDateRangePicker, StarMultiDatePicker } from './date-picker';
+import { parseDate, StarDateRange } from './date-utils';
 import { StarTimePicker } from './time-picker';
 
 /** The time columns of one time in the open popup (`Time`, `Start time` or `End time`). */
@@ -222,5 +223,172 @@ describe('date picker: seconds', () => {
       end: new Date(2026, 10, 3, 23, 59, 59),
     });
     expect(field('Window').value).toBe('02/11/2026, 00:00:00 – 03/11/2026, 23:59:59');
+  });
+});
+
+describe('date utils: input format and month names', () => {
+  it('reads the order of the input format and the month names of the locale', () => {
+    const iso: Intl.DateTimeFormatOptions = { year: 'numeric', month: '2-digit', day: '2-digit' };
+    expect(parseDate('22 November 2026', 'en-GB')).toEqual(new Date(2026, 10, 22));
+    expect(parseDate('Nov 22, 2026', 'en-US')).toEqual(new Date(2026, 10, 22));
+    expect(parseDate('Sunday, 22 November 2026', 'en-GB')).toEqual(new Date(2026, 10, 22));
+    expect(parseDate('22. November 2026', 'de-DE')).toEqual(new Date(2026, 10, 22));
+    expect(parseDate('22 de noviembre de 2026', 'es-ES')).toEqual(new Date(2026, 10, 22));
+    // The order of the format, not of the locale: month first.
+    const monthFirst: Intl.DateTimeFormatOptions = {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+    };
+    expect(parseDate('11/22/2026', 'en-US', monthFirst)).toEqual(new Date(2026, 10, 22));
+    expect(parseDate('2026/11/22', 'sv-SE', iso)).toEqual(new Date(2026, 10, 22));
+  });
+
+  it('converts ISO text and dates for the string data type', () => {
+    expect(starParseIso('2026-11-22')).toEqual(new Date(2026, 10, 22));
+    expect(starParseIso('2026-11-22T14:30')).toEqual(new Date(2026, 10, 22, 14, 30));
+    expect(starParseIso('2026-11-22T14:30:15')).toEqual(new Date(2026, 10, 22, 14, 30, 15));
+    expect(starParseIso('2026-02-30')).toBeNull();
+    expect(starParseIso('22/11/2026')).toBeNull();
+    expect(starIsoText(new Date(2026, 10, 22, 9, 5, 7))).toBe('2026-11-22');
+    expect(starIsoText(new Date(2026, 10, 22, 9, 5, 7), true)).toBe('2026-11-22T09:05');
+    expect(starIsoText(new Date(2026, 10, 22, 9, 5, 7), true, true)).toBe('2026-11-22T09:05:07');
+  });
+});
+
+@Component({
+  imports: [StarDatePicker, StarDateRangePicker, StarMultiDatePicker],
+  template: `
+    <star-date-picker
+      locale="en-GB"
+      ariaLabel="Due"
+      [displayFormat]="longFormat"
+      [inputFormat]="numeric"
+      [(value)]="due"
+    />
+    <star-date-picker locale="en-GB" ariaLabel="Kept" keepInvalid [(value)]="kept" />
+    <star-date-picker locale="en-GB" ariaLabel="Iso" dataType="string" [(value)]="iso" />
+    <star-date-picker
+      locale="en-GB"
+      ariaLabel="Iso time"
+      dataType="string"
+      showTime
+      showSeconds
+      [(value)]="isoTime"
+    />
+    <star-date-range-picker
+      locale="en-GB"
+      ariaLabel="Iso range"
+      dataType="string"
+      [(value)]="isoRange"
+    />
+    <star-multi-date-picker
+      locale="en-GB"
+      ariaLabel="Iso days"
+      dataType="string"
+      [(value)]="isoDays"
+    />
+  `,
+})
+class FormatHost {
+  readonly longFormat: Intl.DateTimeFormatOptions = { dateStyle: 'long' };
+  readonly numeric: Intl.DateTimeFormatOptions = {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  };
+  readonly due = signal<Date | null>(new Date(2026, 10, 22));
+  readonly kept = signal<Date | null>(new Date(2026, 10, 22));
+  readonly iso = signal<string | null>('2026-11-22');
+  readonly isoTime = signal<string | null>('2026-11-22T14:30:15');
+  readonly isoRange = signal<StarDateRange<string> | null>({
+    start: '2026-11-02',
+    end: '2026-11-05',
+  });
+  readonly isoDays = signal<readonly string[]>(['2026-11-05']);
+}
+
+describe('date picker: formats, keepInvalid and the string data type', () => {
+  afterEach(() => document.querySelectorAll('.star-date__panel').forEach((item) => item.remove()));
+
+  async function setup() {
+    const fixture = TestBed.createComponent(FormatHost);
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+    const field = (label: string) =>
+      el.querySelector<HTMLInputElement>(`input[aria-label="${label}"]`)!;
+    const type = async (label: string, text: string) => {
+      const input = field(label);
+      input.dispatchEvent(new Event('focus'));
+      await fixture.whenStable();
+      input.value = text;
+      input.dispatchEvent(new Event('input'));
+      input.dispatchEvent(new Event('blur'));
+      await fixture.whenStable();
+    };
+    return { fixture, host: fixture.componentInstance, field, type };
+  }
+
+  it('shows the display format, and the input format while the field has the focus', async () => {
+    const { fixture, host, field, type } = await setup();
+    expect(field('Due').value).toBe('22 November 2026');
+    field('Due').dispatchEvent(new Event('focus'));
+    await fixture.whenStable();
+    expect(field('Due').value).toBe('22/11/2026');
+    field('Due').dispatchEvent(new Event('blur'));
+    await fixture.whenStable();
+    expect(field('Due').value).toBe('22 November 2026');
+
+    await type('Due', '3 December 2026');
+    expect(host.due()).toEqual(new Date(2026, 11, 3));
+    expect(field('Due').value).toBe('3 December 2026');
+  });
+
+  it('keeps invalid text with keepInvalid, marks the field invalid and empties the value', async () => {
+    const { host, field, type } = await setup();
+    await type('Kept', '31/02/2026');
+    expect(field('Kept').value).toBe('31/02/2026');
+    expect(field('Kept').getAttribute('aria-invalid')).toBe('true');
+    expect(field('Kept').closest('star-date-picker')?.classList).toContain('star-date--invalid');
+    expect(host.kept()).toBeNull();
+
+    await type('Kept', '28/02/2026');
+    expect(host.kept()).toEqual(new Date(2026, 1, 28));
+    expect(field('Kept').getAttribute('aria-invalid')).toBeNull();
+    expect(field('Kept').value).toBe('28/02/2026');
+  });
+
+  it('reverts invalid text without keepInvalid', async () => {
+    const { host, field, type } = await setup();
+    await type('Iso', 'not a date');
+    expect(field('Iso').value).toBe('22/11/2026');
+    expect(field('Iso').getAttribute('aria-invalid')).toBeNull();
+    expect(host.iso()).toBe('2026-11-22');
+  });
+
+  it('round-trips ISO text with dataType string', async () => {
+    const { fixture, host, field, type } = await setup();
+    expect(field('Iso').value).toBe('22/11/2026');
+    await type('Iso', '01/12/2026');
+    expect(host.iso()).toBe('2026-12-01');
+
+    expect(field('Iso time').value).toBe('22/11/2026, 14:30:15');
+    await type('Iso time', '23/11/2026 08:00:05');
+    expect(host.isoTime()).toBe('2026-11-23T08:00:05');
+
+    expect(field('Iso range').value).toBe('02/11/2026 – 05/11/2026');
+    await type('Iso range', '10/11/2026 - 03/11/2026');
+    expect(host.isoRange()).toEqual({ start: '2026-11-03', end: '2026-11-10' });
+
+    expect(field('Iso days').value).toBe('05/11/2026');
+    field('Iso days').dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'ArrowDown', altKey: true, bubbles: true }),
+    );
+    await fixture.whenStable();
+    document.querySelector<HTMLButtonElement>('[data-date="2026-11-12"]')!.click();
+    await fixture.whenStable();
+    expect(host.isoDays()).toEqual(['2026-11-05', '2026-11-12']);
+    const chosen = document.querySelector('[data-date="2026-11-05"]')?.closest('td');
+    expect(chosen?.getAttribute('aria-selected')).toBe('true');
   });
 });

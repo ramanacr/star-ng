@@ -3,9 +3,10 @@
  * Formatting and parsing use `Intl`, so the order of day / month / year follows the locale.
  */
 
-export interface StarDateRange {
-  readonly start: Date | null;
-  readonly end: Date | null;
+/** A range of dates. `T` is `string` for the ISO text of `dataType: 'string'`. */
+export interface StarDateRange<T extends Date | string = Date> {
+  readonly start: T | null;
+  readonly end: T | null;
 }
 
 /** Same calendar day at local midnight. */
@@ -106,16 +107,44 @@ export function formatHint(locale: string | undefined): string {
 }
 
 /**
+ * Text with the locale's month name (long or short, for example `November` or `Nov.`) written
+ * as the month number between spaces. Text without letters does not change.
+ */
+function monthNamesToNumbers(text: string, locale: string | undefined): string {
+  if (!/\p{L}/u.test(text)) return text;
+  const lower = text.toLocaleLowerCase(locale);
+  for (const month of ['long', 'short'] as const) {
+    const format = new Intl.DateTimeFormat(locale, { month });
+    for (let index = 0; index < 12; index++) {
+      const name = format
+        .format(new Date(2026, index, 1))
+        .toLocaleLowerCase(locale)
+        .replace(/\.$/, '');
+      if (name && lower.includes(name)) return lower.replace(name, ` ${index + 1} `);
+    }
+  }
+  return text;
+}
+
+/**
  * Parses typed text. Accepts ISO `yyyy-mm-dd` and the locale's numeric order with any
  * separators (`22/11/2026`, `22.11.26`, `11-22-2026` in en-US). Returns null when invalid.
+ *
+ * `format` (the `inputFormat` of a picker) gives the order of day, month and year when it is
+ * not the locale's numeric order. The locale's month names are accepted too
+ * (`22 November 2026`, `Nov 22, 2026`). Other words, for example a weekday, are ignored.
  */
-export function parseDate(text: string, locale: string | undefined): Date | null {
+export function parseDate(
+  text: string,
+  locale: string | undefined,
+  format: Intl.DateTimeFormatOptions = DEFAULT_DATE_FORMAT,
+): Date | null {
   const value = text.trim();
   if (!value) return null;
   const iso = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(value);
   const numbers = iso
     ? [iso[1], iso[2], iso[3]].map(Number)
-    : value.split(/\D+/).filter(Boolean).map(Number);
+    : monthNamesToNumbers(value, locale).split(/\D+/).filter(Boolean).map(Number);
   if (numbers.length !== 3) return null;
 
   let year: number;
@@ -124,7 +153,11 @@ export function parseDate(text: string, locale: string | undefined): Date | null
   if (iso) {
     [year, month, day] = numbers;
   } else {
-    const order: string[] = new Intl.DateTimeFormat(locale, DEFAULT_DATE_FORMAT)
+    const order: string[] = new Intl.DateTimeFormat(locale, {
+      year: format.year ?? 'numeric',
+      month: format.month ?? '2-digit',
+      day: format.day ?? '2-digit',
+    })
       .formatToParts(new Date(2026, 10, 22))
       .map((part): string => part.type)
       .filter((type) => type === 'day' || type === 'month' || type === 'year');

@@ -66,3 +66,35 @@ export function starSplitDateTime(text: string): StarTypedDateTime | null | unde
   if (hours > 23 || minutes > 59 || seconds > 59) return undefined;
   return { date: match[1], hours, minutes, seconds };
 }
+
+/**
+ * ISO text of a date for the `dataType: 'string'` value: `yyyy-mm-dd`, or
+ * `yyyy-mm-ddTHH:mm` (`yyyy-mm-ddTHH:mm:ss` with `seconds`) with `time`. Local time, no zone.
+ */
+export function starIsoText(date: Date, time = false, seconds = false): string {
+  const pad = (part: number) => String(part).padStart(2, '0');
+  const day = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+  return time ? `${day}T${starTimeOf(date, seconds)}` : day;
+}
+
+/**
+ * The local date of ISO text (`yyyy-mm-dd`, `yyyy-mm-ddTHH:mm` or `yyyy-mm-ddTHH:mm:ss`), a
+ * `Date` as it is, or `null` for text that is not such a date.
+ */
+export function starParseIso(value: Date | string | null | undefined): Date | null {
+  if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value;
+  const match = /^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2})(?::(\d{2}))?)?$/.exec(value ?? '');
+  if (!match) return null;
+  const [year, month, day, hours, minutes, seconds] = match
+    .slice(1)
+    .map((part) => Number(part ?? 0));
+  const date = new Date(year, month - 1, day, hours, minutes, seconds);
+  return date.getFullYear() === year &&
+    date.getMonth() === month - 1 &&
+    date.getDate() === day &&
+    hours < 24 &&
+    minutes < 60 &&
+    seconds < 60
+    ? date
+    : null;
+}

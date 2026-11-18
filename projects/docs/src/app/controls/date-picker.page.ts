@@ -154,6 +154,51 @@ import { DOCS, DocsRow } from '../shared/docs';
       </docs-example>
 
       <docs-example
+        heading="Display and input formats"
+        source="date-picker/display-input-format"
+        [script]="displayFormatScript"
+        note="displayFormat sets the text while the field does not have the focus (a long date here). inputFormat sets the text while the user edits it; typed text is read in the order of day, month and year of that format, and the month names of the locale are accepted too (3 December 2026). Both default to dateFormat. keepInvalid keeps typed text that is not a date: the field is marked invalid and the value becomes null, so a required check fails."
+      >
+        <div class="docs-stack">
+          <star-date-picker
+            [(value)]="dueDate"
+            locale="en-GB"
+            [displayFormat]="displayLong"
+            [inputFormat]="inputNumeric"
+            keepInvalid
+            ariaLabel="Invoice due date"
+          />
+          <p class="docs-output" role="status">Due: {{ iso(dueDate()) }}</p>
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="ISO text values"
+        source="date-picker/data-type"
+        [script]="dataTypeScript"
+        note="dataType='string' gives ISO text instead of Date objects: yyyy-mm-dd, or yyyy-mm-ddTHH:mm (with seconds when showSeconds is on) with showTime. The text is a local date without a time zone, the form that a JSON API often uses. The range and the multiple-date picker have dataType too."
+      >
+        <div class="docs-stack">
+          <star-date-picker
+            [(value)]="issuedOn"
+            locale="en-GB"
+            dataType="string"
+            ariaLabel="Invoice issued on"
+          />
+          <star-date-range-picker
+            [(value)]="billingPeriod"
+            locale="en-GB"
+            dataType="string"
+            ariaLabel="Billing period"
+          />
+          <p class="docs-output" role="status">
+            Issued: {{ issuedOn() ?? 'none' }}. Period: {{ billingPeriod()?.start ?? 'none' }} to
+            {{ billingPeriod()?.end ?? 'none' }}
+          </p>
+        </div>
+      </docs-example>
+
+      <docs-example
         heading="Date and time"
         source="date-picker/time"
         [script]="timeScript"
@@ -430,6 +475,19 @@ export class DatePickerPage {
     year: 'numeric',
   };
 
+  protected readonly dueDate = signal<Date | null>(new Date(2026, 11, 15));
+  protected readonly displayLong: Intl.DateTimeFormatOptions = { dateStyle: 'long' };
+  protected readonly inputNumeric: Intl.DateTimeFormatOptions = {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  };
+  protected readonly issuedOn = signal<string | null>('2026-11-17');
+  protected readonly billingPeriod = signal<StarDateRange<string> | null>({
+    start: '2026-11-01',
+    end: '2026-11-30',
+  });
+
   protected readonly meeting = signal<Date | null>(new Date(2026, 10, 17, 9, 30));
   protected readonly shift = signal<StarDateRange | null>({
     start: new Date(2026, 10, 16, 8, 0),
@@ -472,6 +530,14 @@ readonly longFormat: Intl.DateTimeFormatOptions = {
   protected readonly shiftScript = `readonly shift = signal<StarDateRange | null>({
   start: new Date(2026, 10, 16, 8, 0),
   end: new Date(2026, 10, 20, 17, 30),
+});`;
+  protected readonly displayFormatScript = `readonly dueDate = signal<Date | null>(new Date(2026, 11, 15));
+readonly displayLong: Intl.DateTimeFormatOptions = { dateStyle: 'long' };
+readonly inputNumeric: Intl.DateTimeFormatOptions = { day: '2-digit', month: '2-digit', year: 'numeric' };`;
+  protected readonly dataTypeScript = `readonly issuedOn = signal<string | null>('2026-11-17');
+readonly billingPeriod = signal<StarDateRange<string> | null>({
+  start: '2026-11-01',
+  end: '2026-11-30',
 });`;
   protected readonly secondsScript = `readonly invoiceSent = signal<Date | null>(new Date(2026, 10, 17, 14, 30, 15));`;
   protected readonly formScript = `readonly orderModel = signal<{ deliveryDate: Date | null }>({ deliveryDate: null });
@@ -572,7 +638,11 @@ readonly iso = (date: Date | null) => (date ? isoDay(date) : 'none');
   ];
 
   protected readonly helpers: readonly DocsRow[] = [
-    { name: 'StarDateRange', description: 'Interface { start: Date | null; end: Date | null }.' },
+    {
+      name: 'StarDateRange',
+      description:
+        "Interface { start: T | null; end: T | null }. T is Date by default, or string with dataType='string'.",
+    },
     { name: 'startOfDay(date)', description: 'The same calendar day at local midnight.' },
     {
       name: 'addDays(date, days)',
@@ -620,9 +690,9 @@ readonly iso = (date: Date | null) => (date ? isoDay(date) : 'none');
       description: 'Placeholder text such as dd/mm/yyyy or mm/dd/yyyy for the locale.',
     },
     {
-      name: 'parseDate(text, locale)',
+      name: 'parseDate(text, locale, format?)',
       description:
-        'Reads typed text: ISO yyyy-mm-dd, or the numeric order of the locale with any separator. Returns null when the text is not a real date.',
+        'Reads typed text: ISO yyyy-mm-dd, or the order of day, month and year of the locale (or of the optional Intl.DateTimeFormat options) with any separator. The month names of the locale are accepted. Returns null when the text is not a real date.',
     },
     {
       name: 'isoWeek(date)',

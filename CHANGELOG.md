@@ -35,6 +35,9 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - UI text for table editing in English, German and Spanish.
 - Date and time pickers: seconds and steps. `showSeconds`, `stepHour` and `stepSecond` (next to `stepMinute`) on `star-time-picker` and on `star-date-picker` / `star-date-range-picker` with `showTime`; the time panel gets a second column, and the text and the value include the seconds (PrimeNG `showSeconds`, `stepHour`, `stepSecond`).
 - UI text `second` (English, German, Spanish).
+- Date pickers: `displayFormat` (text without the focus) and `inputFormat` (text while editing, read in the order of that format, with the locale's month names) next to the shared `dateFormat` (Ignite UI `displayFormat` / `inputFormat`); `parseDate` takes an optional format.
+- Date pickers: `keepInvalid` keeps typed text that is not a date, marks the field invalid and empties the value (PrimeNG `keepInvalid`).
+- Date pickers: `dataType: 'date' | 'string'`; with `'string'` the value is local ISO text (`yyyy-mm-dd`, `yyyy-mm-ddTHH:mm[:ss]` with `showTime`). The pickers and `StarDateRange` take a type parameter that defaults to `Date` (PrimeNG `dataType`).
 
 ### Changed
 
