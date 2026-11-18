@@ -57,6 +57,9 @@ const COLUMNS: StarColumn<Order>[] = [
     [editMode]="mode()"
     [hiddenColumns]="hidden()"
     [reorderableRows]="reorder()"
+    [paginator]="paged()"
+    [rows]="2"
+    [globalFilter]="query()"
     [batchEdit]="batch()"
     [(editingRowKeys)]="editingKeys"
     (cellEdit)="log.push(['cellEdit', $event])"
@@ -87,6 +90,8 @@ class EditingHost {
   readonly keyed = signal(true);
   readonly hidden = signal<readonly string[]>([]);
   readonly reorder = signal(false);
+  readonly paged = signal(false);
+  readonly query = signal('');
   readonly editingKeys = signal<readonly unknown[]>([]);
   readonly log: [
     string,
@@ -113,6 +118,7 @@ async function setup(
     custom?: boolean;
     keyed?: boolean;
     reorder?: boolean;
+    paged?: boolean;
     rows?: Order[];
   } = {},
 ) {
@@ -123,6 +129,7 @@ async function setup(
   host.customActions.set(options.custom ?? false);
   host.keyed.set(options.keyed ?? true);
   host.reorder.set(options.reorder ?? false);
+  host.paged.set(options.paged ?? false);
   if (options.rows) host.rows.set(options.rows);
   const announcer = TestBed.inject(LiveAnnouncer);
   const announce = vi.spyOn(announcer, 'announce').mockResolvedValue();
@@ -687,5 +694,51 @@ describe('StarTable edit fixes', () => {
     const moves = row(3).querySelectorAll<HTMLButtonElement>('.star-table__reorder button');
     expect(moves.length).toBe(2);
     expect([...moves].every((button) => button.disabled)).toBe(true);
+  });
+
+  it('shows the draft again when a row editor is rendered again (page change)', async () => {
+    const { host, row, stable } = await setup({ mode: 'row', paged: true });
+    host.table().initRowEdit(ORDERS[0]);
+    await stable();
+    const editor = row(0).querySelector<HTMLInputElement>('[data-row-editor]')!;
+    editor.value = 'Typed Office';
+    editor.dispatchEvent(new Event('input'));
+    await stable();
+    host.table().first.set(2);
+    await stable();
+    expect(row(0).querySelector('[data-row-editor]')).toBeNull();
+    host.table().first.set(0);
+    await stable();
+    const again = row(0).querySelector<HTMLInputElement>('[data-row-editor]')!;
+    expect(again).not.toBe(editor);
+    expect(again.value).toBe('Typed Office');
+    host.table().saveRowEdit(ORDERS[0]);
+    expect(host.log.at(-1)?.[1]).toMatchObject({ changes: { customer: 'Typed Office' } });
+  });
+
+  it('keeps the edit of a filtered-out row on undo', async () => {
+    const { host, stable } = await setup({ mode: 'row', batch: true });
+    host.table().deleteRow(ORDERS[1]);
+    host.table().initRowEdit(ORDERS[2]);
+    host.query.set('North');
+    await stable();
+    host.table().undo();
+    await stable();
+    expect(host.editingKeys()).toEqual(['ORD-3']);
+  });
+
+  it('keeps a cell editor open with a message for text that is not a number', async () => {
+    const { host, cell, stable, el, messages } = await setup();
+    cell(0, 3).querySelector<HTMLButtonElement>('.star-table__edit')!.click();
+    await stable();
+    const editor = el.querySelector<HTMLInputElement>('input.star-table__editor')!;
+    Object.defineProperty(editor, 'validity', { value: { badInput: true } });
+    editor.dispatchEvent(new Event('input'));
+    key(editor, 'Enter');
+    await stable();
+    expect(el.querySelector('input.star-table__editor')).toBe(editor);
+    expect(el.querySelector('.star-table__error')?.textContent?.trim()).toBe('Enter a number.');
+    expect(messages()).toContain('Enter a number.');
+    expect(host.log.map(([name]) => name)).toEqual(['editInit']);
   });
 });

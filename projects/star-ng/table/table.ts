@@ -793,7 +793,7 @@ export class StarRowExpansionTemplate<T = unknown> {
                             [attr.aria-invalid]="rowError ? 'true' : null"
                             [attr.aria-describedby]="rowError ? errorId(i, column) : null"
                             [attr.aria-required]="column.required || null"
-                            [value]="editText(row, column)"
+                            [value]="draftText(row, column)"
                             (input)="setDraft(row, column, $any($event.target))"
                             (keydown)="onRowEditorKey(row, $event)"
                           />
@@ -2280,10 +2280,24 @@ export class StarTable<T> {
       : this.cellValue(row, column);
   }
 
-  /** Editor text in row edit. */
+  /** Last editor text of a cell that was a value, by `editKey` (see `draftText`). */
+  private readonly lastDraftText = new Map<string, string>();
+
+  /**
+   * Editor text in row edit: the draft, so an editor that is rendered again (page change, virtual
+   * scroll, a column shown again, undo) shows what Save will store. While a number field holds
+   * text that is not a number (`NaN`, for example "-" while typing), it is the last valid text:
+   * the bound value does not change, so the table does not clear what the user types.
+   */
   protected draftText(row: T, column: StarColumn<T>): string {
     const value = this.draftValue(row, column);
-    return value === null || value === undefined ? '' : String(value);
+    const key = this.editKey(row, column);
+    if (typeof value === 'number' && Number.isNaN(value)) {
+      return this.lastDraftText.get(key) ?? this.editText(row, column);
+    }
+    const text = value === null || value === undefined ? '' : String(value);
+    this.lastDraftText.set(key, text);
+    return text;
   }
 
   /** Validators get the row with the editor values, so a rule can compare fields. */
@@ -2349,12 +2363,9 @@ export class StarTable<T> {
     // Enter removes the editor, which also fires `blur`: only the first event commits.
     if (!this.isEditing(row, column)) return;
     const previous = this.rawValue(row, column);
-    // Text that is not a number: the browser gives '' (`validity.badInput`); emit nothing.
+    // Text that is not a number: the browser gives '' (`validity.badInput`). The value is NaN,
+    // which fails validation: the editor stays open with its message.
     const value = badInput ? Number.NaN : this.parseEditor(column, text);
-    if (typeof value === 'number' && Number.isNaN(value)) {
-      this.closeEditor(row, column);
-      return;
-    }
     const error = this.errorOf(row, column, value);
     if (error) {
       // A text or number editor stays open with its message; the value is not saved.
@@ -2428,6 +2439,7 @@ export class StarTable<T> {
     if (!this.rowEditMode() || this.isRowInEdit(row) || this.isDeleted(row)) return;
     const key = this.trackKey(row);
     this.drafts.clear(key);
+    this.forgetDraftText(row);
     this.editingRowKeys.update((keys) => [...keys, key]);
     this.rowEditInit.emit({ row });
     this.focusAfterRender(`[data-row-editor="${CSS.escape(this.rowKeyText(row))}"]`, true);
@@ -2498,9 +2510,18 @@ export class StarTable<T> {
     this.focusAfterRender(`[data-row-edit="${CSS.escape(this.rowKeyText(row))}"]`);
   }
 
+  /** Drops the remembered editor texts of a row (`draftText`), so a new edit starts clean. */
+  private forgetDraftText(row: T): void {
+    const prefix = `${this.rowKeyText(row)}|`;
+    for (const key of [...this.lastDraftText.keys()]) {
+      if (key.startsWith(prefix)) this.lastDraftText.delete(key);
+    }
+  }
+
   private endRowEdit(row: T): void {
     const key = this.trackKey(row);
     this.drafts.clear(key);
+    this.forgetDraftText(row);
     if (this.editingRowSet().has(key)) {
       this.editingRowKeys.update((keys) => keys.filter((other) => !Object.is(other, key)));
     }
@@ -2590,6 +2611,9 @@ export class StarTable<T> {
    * Emits `batchSave` with all pending changes, then empties the set and its history. First it
    * checks the new and changed rows with the column rules: with an invalid value it emits nothing,
    * announces it, and opens the editor of the first invalid cell on the page with its message.
+   * When the invalid rows are all on other pages, it only blocks and announces (no editor opens);
+   * with `lazy` that is the only option, as the table holds one page. In row mode, a new row that
+   * is open and was never saved is not part of the change set, so the commit leaves it out.
    */
   commitEdits(): void {
     const changes = this.batch.changes();
@@ -2665,7 +2689,15 @@ export class StarTable<T> {
 
   /** Ends the edit of rows that left the table (an undone or discarded new row). */
   private pruneEditing(): void {
-    const present = new Set(this.withAdded().map((row) => this.trackKey(row)));
+    // All rows the table holds, also rows that a filter or a page hides: their edits stay open.
+    const present = new Set(
+      [
+        ...this.value(),
+        ...this.newRows().map((added) => added.row),
+        ...this.batch.addedTop(),
+        ...this.batch.addedBottom(),
+      ].map((row) => this.trackKey(row)),
+    );
     const gone = this.editingRowKeys().filter((key) => !present.has(key));
     for (const key of gone) this.drafts.clear(key);
     if (gone.length) this.editingRowKeys.update((keys) => keys.filter((key) => present.has(key)));
