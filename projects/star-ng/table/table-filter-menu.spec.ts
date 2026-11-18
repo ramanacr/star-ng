@@ -37,7 +37,12 @@ class Host {
   readonly rows = INVOICES;
   readonly columns: StarColumn<Invoice>[] = [
     { field: 'customer', header: 'Customer', filter: 'text' },
-    { field: 'status', header: 'Status', filter: 'multiselect' },
+    {
+      field: 'status',
+      header: 'Status',
+      filter: 'multiselect',
+      filterMatchModes: ['in', 'equals'],
+    },
     { field: 'amount', header: 'Amount', filter: 'number' },
     { field: 'id', header: 'Invoice', filter: 'number', filterMatchModes: ['gt', 'lt', 'even'] },
   ];
@@ -217,6 +222,26 @@ describe('StarTable filter menu', () => {
     });
     expect(names()).toEqual(['Oslo Parts']);
     expect(document.querySelector('.star-popover')).not.toBeNull();
+  });
+
+  it('a loaded range on a column without between still shows between', async () => {
+    const { open, host, fixture, stable } = await setup();
+    host.filters.set({ id: { min: 2, max: 3 } });
+    await fixture.whenStable();
+    const dialog = await open('id');
+    const mode = dialog.querySelector<HTMLSelectElement>('select[aria-label="Match mode"]')!;
+    expect(mode.value).toBe('between');
+    expect([...mode.options].map((o) => o.value)).toContain('between');
+    expect(dialog.querySelector<HTMLInputElement>('input[aria-label="Invoice from"]')!.value).toBe(
+      '2',
+    );
+    await stable();
+  });
+
+  it('choice columns have no match mode select, also with filterMatchModes', async () => {
+    const { open } = await setup();
+    const dialog = await open('status');
+    expect(dialog.querySelector('select[aria-label="Match mode"]')).toBeNull();
   });
 
   it('a between rule has two labelled fields', async () => {

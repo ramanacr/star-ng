@@ -174,7 +174,7 @@ function matchNumber(raw: unknown, mode: string, value: StarFilterRuleValue): bo
 function matchDate(raw: unknown, mode: string, value: StarFilterRuleValue): boolean {
   const day = dayKey(raw);
   if (!day) return false;
-  if (mode === 'between') return isRange(value) && inRange(day, value, String);
+  if (mode === 'between') return isRange(value) && inRange(day, value, dayKey);
   const target = dayKey(value);
   switch (mode) {
     case 'dateIsNot':

@@ -137,6 +137,21 @@ describe('StarTable filter rules', () => {
     expect(ids()).toEqual(['Málaga Trading', 'Berlin Supplies']);
   });
 
+  it('date between compares the days of the bounds', async () => {
+    const { ids, apply } = await setup();
+    await apply({
+      due: {
+        operator: 'and',
+        rules: [
+          { matchMode: 'between', value: { min: '2026-03-01T12:00:00', max: '2026-03-15T08:00' } },
+        ],
+      },
+    });
+    expect(ids()).toEqual(['Málaga Trading', 'Berlin Supplies']);
+    await apply({ due: { min: '2026-03-15T23:59', max: null } });
+    expect(ids()).toEqual(['Berlin Supplies', 'Oslo Parts']);
+  });
+
   it('in mode for choice lists', async () => {
     const { ids, apply } = await setup();
     await apply({

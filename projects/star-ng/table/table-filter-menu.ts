@@ -87,7 +87,7 @@ const MODE_TEXT: Readonly<Record<string, keyof StarUiText>> = {
         @for (rule of draft(); track $index; let i = $index) {
           <fieldset class="star-table-filter__rule">
             <legend class="star-sr-only">{{ text.filterRule(i + 1) }}</legend>
-            @if (modes().length > 1) {
+            @if (showModes()) {
               <select
                 class="star-input star-input--sm"
                 [attr.aria-label]="text.matchMode"
@@ -225,9 +225,19 @@ export class StarTableFilterMenu {
     const type = this.type();
     return type !== 'select' && type !== 'multiselect' && this.draft().length < this.maxRules();
   });
-  protected readonly modes = computed(() =>
-    this.matchModes().length ? this.matchModes() : STAR_TABLE_MATCH_MODES[this.type()],
-  );
+  protected readonly modes = computed(() => {
+    const modes = this.matchModes().length
+      ? this.matchModes()
+      : STAR_TABLE_MATCH_MODES[this.type()];
+    // A range value (old shape, or set by the owner) needs `between` in the list.
+    const range = this.draft().some((rule) => rule.matchMode === 'between');
+    return range && !modes.includes('between') ? [...modes, 'between'] : modes;
+  });
+  /** Choice columns match by `in` only: no match mode select. */
+  protected readonly showModes = computed(() => {
+    const type = this.type();
+    return type !== 'select' && type !== 'multiselect' && this.modes().length > 1;
+  });
   private readonly firstMode = computed(() => this.defaultMode() ?? this.modes()[0]);
 
   constructor() {
