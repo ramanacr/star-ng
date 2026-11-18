@@ -6690,7 +6690,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "string",
         "default": "''",
         "required": false,
-        "description": "The signature as a data URL (PNG or SVG), `''` while the pad is empty."
+        "description": "The signature as a data URL (PNG or SVG), `''` while the pad is empty. Only `data:image/` values are drawn; another value stays in the form but the pad shows it as empty."
       }
     ],
     "outputs": [
