@@ -105,6 +105,13 @@
   inset-block: auto 0;
   border-radius: var(--star-radius-2xl) var(--star-radius-2xl) 0 0;
 }
+// Full screen: covers the window, slides in from the edge of its position.
+.star-drawer--full {
+  inset: 0;
+  width: 100vw;
+  height: 100dvh;
+  border-radius: 0;
+}
 
 @media (prefers-reduced-motion: reduce) {
   .star-drawer,

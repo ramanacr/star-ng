@@ -59,6 +59,45 @@ type DrawerPosition = 'left' | 'right' | 'start' | 'end' | 'top' | 'bottom';
         </star-drawer>
       </docs-example>
 
+      <docs-example
+        heading="Modes"
+        source="drawer/modes"
+        [script]="modesScript"
+        note="modal=false opens the drawer without a backdrop (native show()): the page stays usable and its scroll is not blocked. fullScreen covers the whole window. dismissible (PrimeNG dismissible) closes the drawer on a backdrop click, the same as dismissableMask. blockScroll is on by default for a modal drawer. shown and hidden report the open and the close."
+      >
+        <div class="docs-stack">
+          <p class="docs-output" role="status">Last event: {{ modeEvent() }}</p>
+          <div class="docs-row">
+            <star-button variant="secondary" (pressed)="floatOpen.set(true)">Non-modal</star-button>
+            <star-button variant="secondary" (pressed)="fullOpen.set(true)"
+              >Full screen</star-button
+            >
+          </div>
+        </div>
+        <star-drawer
+          [(visible)]="floatOpen"
+          header="Filters"
+          position="start"
+          drawerSize="20rem"
+          [modal]="false"
+          (shown)="modeEvent.set('non-modal shown')"
+          (hidden)="modeEvent.set('non-modal hidden')"
+        >
+          <p>The page behind this drawer stays usable.</p>
+        </star-drawer>
+        <star-drawer
+          [(visible)]="fullOpen"
+          header="Invoice INV-2041"
+          position="bottom"
+          fullScreen
+          dismissible
+          (shown)="modeEvent.set('full screen shown')"
+          (hidden)="modeEvent.set('full screen hidden')"
+        >
+          <p>This drawer covers the window. Escape or the close button closes it.</p>
+        </star-drawer>
+      </docs-example>
+
       <h2>Right-to-left</h2>
       <p>
         <code>left</code> and <code>right</code> are the physical edges of the screen. Use
@@ -98,6 +137,9 @@ export class DrawerPage {
   protected readonly basicOpen = signal(false);
   protected readonly positionOpen = signal(false);
   protected readonly position = signal<DrawerPosition>('right');
+  protected readonly floatOpen = signal(false);
+  protected readonly fullOpen = signal(false);
+  protected readonly modeEvent = signal('none');
 
   protected openAt(position: DrawerPosition): void {
     this.position.set(position);
@@ -113,6 +155,10 @@ openAt(position: 'left' | 'right' | 'start' | 'end' | 'top' | 'bottom'): void {
   this.position.set(position);
   this.positionOpen.set(true);
 }`;
+
+  protected readonly modesScript = `readonly floatOpen = signal(false);
+readonly fullOpen = signal(false);
+readonly modeEvent = signal('none');`;
 
   protected readonly slots: readonly DocsRow[] = [
     { name: '(default)', description: 'The body of the drawer.' },

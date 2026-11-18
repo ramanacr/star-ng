@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { booleanAttribute, ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { StarDialogBase } from '@star-ng/ui/dialog';
 
 /**
@@ -9,6 +9,10 @@ import { StarDialogBase } from '@star-ng/ui/dialog';
  * edge in RTL). Use `start` / `end` for a drawer that must switch sides in right-to-left.
  *
  * `<star-drawer [(visible)]="detailsOpen" header="ORD-1042" position="right" size="32rem">…</star-drawer>`
+ *
+ * Modes: a modal drawer (default) has a backdrop, traps the focus and blocks the page scroll.
+ * `modal=false` opens it with `show()`: no backdrop, the page stays usable. `fullScreen` covers the
+ * whole window. `dismissible` or `dismissableMask` close it on a backdrop click.
  */
 @Component({
   selector: 'star-drawer',
@@ -21,6 +25,7 @@ import { StarDialogBase } from '@star-ng/ui/dialog';
       class="star-drawer"
       [class]="'star-drawer star-drawer--' + position()"
       [class.star-dialog--modal]="modal()"
+      [class.star-drawer--full]="fullScreen()"
       [class.star-dialog--block-scroll]="scrollBlocked()"
       [attr.tabindex]="focusOnShow() ? null : -1"
       [style.--star-drawer-size]="drawerSize()"
@@ -58,7 +63,22 @@ import { StarDialogBase } from '@star-ng/ui/dialog';
   `,
 })
 export class StarDrawer extends StarDialogBase {
+  /**
+   * Edge of the window (PrimeNG `position`). `start` and `end` follow the writing direction;
+   * `left` and `right` are physical. Default `'right'`.
+   */
   readonly position = input<'left' | 'right' | 'start' | 'end' | 'top' | 'bottom'>('right');
   /** Width (left / right / start / end) or height (top / bottom). */
   readonly drawerSize = input('28rem');
+  /** Covers the whole window (PrimeNG `fullScreen`). The drawer still slides in from its edge. */
+  readonly fullScreen = input(false, { transform: booleanAttribute });
+  /**
+   * A click on the backdrop closes the drawer (PrimeNG `dismissible`). Same effect as
+   * `dismissableMask`; default false, so a drawer without either stays open.
+   */
+  readonly dismissible = input(false, { transform: booleanAttribute });
+
+  protected override closesOnBackdrop(): boolean {
+    return this.dismissible() || this.dismissableMask();
+  }
 }

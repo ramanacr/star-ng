@@ -2177,7 +2177,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "'left' | 'right' | 'start' | 'end' | 'top' | 'bottom'",
         "default": "'right'",
         "required": false,
-        "description": ""
+        "description": "Edge of the window (PrimeNG `position`). `start` and `end` follow the writing direction; `left` and `right` are physical. Default `'right'`."
       },
       {
         "name": "drawerSize",
@@ -2185,6 +2185,20 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "'28rem'",
         "required": false,
         "description": "Width (left / right / start / end) or height (top / bottom)."
+      },
+      {
+        "name": "fullScreen",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Covers the whole window (PrimeNG `fullScreen`). The drawer still slides in from its edge."
+      },
+      {
+        "name": "dismissible",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "A click on the backdrop closes the drawer (PrimeNG `dismissible`). Same effect as `dismissableMask`; default false, so a drawer without either stays open."
       }
     ],
     "models": [],
@@ -7435,6 +7449,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "dock/basic": "<div class=\"docs-stack\">\n  <star-dock [items]=\"apps\" ariaLabel=\"Apps\" (itemClick)=\"last.set($event.label ?? '')\" />\n  <p class=\"docs-output\" role=\"status\">Opened: {{ last() }}</p>\n</div>",
   "dock/left": "<star-dock [items]=\"apps\" position=\"left\" ariaLabel=\"Apps on the left\" />",
   "drawer/basic": "<star-button leadingIcon=\"ph-bold ph-sidebar-simple\" (pressed)=\"basicOpen.set(true)\">\n  Open details\n</star-button>\n<star-drawer [(visible)]=\"basicOpen\" header=\"Order ORD-1042\" dismissableMask>\n  <div class=\"docs-stack\">\n    <p class=\"docs-output\">Orchard Supply, 12 items, ships on Friday.</p>\n    <star-field label=\"Internal note\">\n      <textarea starInput autoResize rows=\"3\"></textarea>\n    </star-field>\n  </div>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button variant=\"ghost\" (pressed)=\"basicOpen.set(false)\">Close</star-button>\n  </div>\n</star-drawer>",
+  "drawer/modes": "<div class=\"docs-stack\">\n  <p class=\"docs-output\" role=\"status\">Last event: {{ modeEvent() }}</p>\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"floatOpen.set(true)\">Non-modal</star-button>\n    <star-button variant=\"secondary\" (pressed)=\"fullOpen.set(true)\">Full screen</star-button>\n  </div>\n</div>\n<star-drawer\n  [(visible)]=\"floatOpen\"\n  header=\"Filters\"\n  position=\"start\"\n  drawerSize=\"20rem\"\n  [modal]=\"false\"\n  (shown)=\"modeEvent.set('non-modal shown')\"\n  (hidden)=\"modeEvent.set('non-modal hidden')\"\n>\n  <p>The page behind this drawer stays usable.</p>\n</star-drawer>\n<star-drawer\n  [(visible)]=\"fullOpen\"\n  header=\"Invoice INV-2041\"\n  position=\"bottom\"\n  fullScreen\n  dismissible\n  (shown)=\"modeEvent.set('full screen shown')\"\n  (hidden)=\"modeEvent.set('full screen hidden')\"\n>\n  <p>This drawer covers the window. Escape or the close button closes it.</p>\n</star-drawer>",
   "drawer/position": "<div class=\"docs-row\">\n  @for (item of positions; track item) {\n    <star-button variant=\"secondary\" (pressed)=\"openAt(item)\">{{ item }}</star-button>\n  }\n</div>\n<star-drawer\n  [(visible)]=\"positionOpen\"\n  [position]=\"position()\"\n  [drawerSize]=\"position() === 'top' || position() === 'bottom' ? '14rem' : '22rem'\"\n  [header]=\"'Drawer at the ' + position()\"\n>\n  <p>This drawer is pinned to the {{ position() }} edge.</p>\n</star-drawer>",
   "dropdown/basic": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button\n      variant=\"secondary\"\n      trailingIcon=\"ph-bold ph-caret-down\"\n      [starDropdownTrigger]=\"formats\"\n    >\n      Export as\n    </star-button>\n  </div>\n  <star-dropdown\n    #formats\n    ariaLabel=\"Export format\"\n    [(value)]=\"format\"\n    (selectionChange)=\"onSelect($event)\"\n  >\n    <star-dropdown-item header>Documents</star-dropdown-item>\n    <star-dropdown-item value=\"pdf\">PDF</star-dropdown-item>\n    <star-dropdown-item value=\"docx\" disabled>Word document</star-dropdown-item>\n    <star-dropdown-item divider />\n    <star-dropdown-item header>Data</star-dropdown-item>\n    <star-dropdown-item value=\"csv\">CSV</star-dropdown-item>\n    <star-dropdown-item value=\"xlsx\">Spreadsheet</star-dropdown-item>\n    <star-dropdown-item value=\"json\">JSON</star-dropdown-item>\n  </star-dropdown>\n  <p class=\"docs-output\" role=\"status\">Export format: {{ chosen() }}</p>\n</div>",
   "dropdown/keep-open": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" [starDropdownTrigger]=\"cities\">\n      Add a city\n    </star-button>\n  </div>\n  <star-dropdown\n    #cities\n    ariaLabel=\"Cities\"\n    [closeOnSelect]=\"false\"\n    (selectionChange)=\"added.set(added() + $event.label + ' ')\"\n  >\n    <star-dropdown-item value=\"berlin\">Berlin</star-dropdown-item>\n    <star-dropdown-item value=\"lisbon\">Lisbon</star-dropdown-item>\n    <star-dropdown-item value=\"oslo\">Oslo</star-dropdown-item>\n    <star-dropdown-item value=\"toronto\">Toronto</star-dropdown-item>\n  </star-dropdown>\n  <p class=\"docs-output\" role=\"status\">Added: {{ added() || 'none' }}</p>\n</div>",
