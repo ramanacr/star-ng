@@ -237,6 +237,16 @@ export class StarVirtualScroller<T = unknown> {
   });
 
   constructor() {
+    // Lazy mode asks for the range in view at once, so the first page loads without a scroll.
+    // Without lazy mode, the last range is forgotten: a later switch to lazy emits again.
+    effect(() => {
+      const viewport = this.viewport();
+      if (!this.lazy()) {
+        this.lastLazy = null;
+        return;
+      }
+      if (viewport) this.emitLazy(viewport.getRenderedRange());
+    });
     effect((onCleanup) => {
       const viewport = this.viewport();
       if (!viewport) return;
