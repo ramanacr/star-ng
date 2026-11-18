@@ -2870,7 +2870,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "number | undefined",
         "default": "undefined",
         "required": false,
-        "description": "Most characters of text (line breaks do not count). Typing stops at the limit, a counter shows under the area and describes it, and a live message gives the rest near the end. PrimeNG has no equivalent."
+        "description": "Most characters of text (line breaks do not count). Typing stops at the limit, a counter shows under the area and describes it, and a live message gives the rest near the end. A Signal Forms `maxLength` rule sets it too; note that the rule checks the length of the value (HTML, tags included, with `format=\"html\"`), while the editor counts text. PrimeNG has no equivalent."
       },
       {
         "name": "placeholder",
