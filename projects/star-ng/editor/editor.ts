@@ -245,15 +245,15 @@ export class StarEditor implements FormValueControl<string> {
   readonly invalid = input(false, { transform: booleanAttribute });
   readonly touched = input(false, { transform: booleanAttribute });
   /**
-   * The toolbar: command names in order, with `'|'` between groups. Unknown names are left out.
-   * `STAR_EDITOR_FULL_TOOLBAR` has every command. PrimeNG toolbar formats (Quill `toolbar`).
-   */
-  /**
    * Paste plain text only. Without it, pasted HTML is sanitized (no scripts, no style elements
    * or attributes, no event handlers) before it goes in. PrimeNG has no equivalent (Quill
    * clipboard matchers).
    */
   readonly pasteAsText = input(false, { transform: booleanAttribute });
+  /**
+   * The toolbar: command names in order, with `'|'` between groups. Unknown names are left out.
+   * `STAR_EDITOR_FULL_TOOLBAR` has every command. PrimeNG toolbar formats (Quill `toolbar`).
+   */
   readonly toolbar = input<readonly StarEditorToolbarItem[]>(STAR_EDITOR_DEFAULT_TOOLBAR);
   readonly touch = output<void>();
 

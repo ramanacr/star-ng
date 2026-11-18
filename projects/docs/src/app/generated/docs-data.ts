@@ -2933,7 +2933,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "readonly StarEditorToolbarItem[]",
         "default": "STAR_EDITOR_DEFAULT_TOOLBAR",
         "required": false,
-        "description": ""
+        "description": "The toolbar: command names in order, with `'|'` between groups. Unknown names are left out. `STAR_EDITOR_FULL_TOOLBAR` has every command. PrimeNG toolbar formats (Quill `toolbar`)."
       }
     ],
     "models": [
@@ -7564,7 +7564,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "boolean",
         "default": "true",
         "required": false,
-        "description": ""
+        "description": "Content in `ng-template starTabContent` renders on the first activation of its tab (the default). `false` renders every template at once. Content placed directly in `star-tab` always renders at once. PrimeNG `lazy`."
       },
       {
         "name": "cache",

@@ -338,11 +338,6 @@ export class StarTabs {
    */
   readonly scrollable = input(false, { transform: booleanAttribute });
   /**
-   * Content in `ng-template starTabContent` renders on the first activation of its tab (the
-   * default). `false` renders every template at once. Content placed directly in `star-tab`
-   * always renders at once. PrimeNG `lazy`.
-   */
-  /**
    * `'vertical'` puts the tabs in a column at the start of the panels; Arrow Up and Arrow Down
    * move between them. PrimeNG has no equivalent, Material `mat-tab-nav` has none either.
    */
@@ -354,6 +349,11 @@ export class StarTabs {
    * key. `star-tabs` emits `tabReorder`; the owner reorders its list. PrimeNG has no equivalent.
    */
   readonly reorderable = input(false, { transform: booleanAttribute });
+  /**
+   * Content in `ng-template starTabContent` renders on the first activation of its tab (the
+   * default). `false` renders every template at once. Content placed directly in `star-tab`
+   * always renders at once. PrimeNG `lazy`.
+   */
   readonly lazy = input(true, { transform: booleanAttribute });
   /**
    * Keeps rendered `starTabContent` alive (hidden) when its tab is not active, so it keeps its
