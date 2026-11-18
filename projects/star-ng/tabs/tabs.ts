@@ -1,4 +1,5 @@
 import { _IdGenerator } from '@angular/cdk/a11y';
+import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
 import { NgTemplateOutlet } from '@angular/common';
 import {
   afterNextRender,
@@ -45,6 +46,16 @@ export interface StarTabCloseEvent {
   cancel(): void;
   /** True after `cancel()`. */
   readonly canceled: boolean;
+}
+
+/**
+ * Event of `tabReorder`: a tab was dragged, or moved with Control+Shift and an arrow key, to a new
+ * place. Both indexes are positions among all tabs, ready for `moveItemInArray` of
+ * `@angular/cdk/drag-drop`. The owner reorders its list. PrimeNG has no equivalent.
+ */
+export interface StarTabReorderEvent {
+  readonly previousIndex: number;
+  readonly currentIndex: number;
 }
 
 /**
@@ -131,6 +142,7 @@ export class StarTab {
  */
 @Component({
   selector: 'star-tabs',
+  imports: [CdkDropList, CdkDrag],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-tabs',
@@ -167,11 +179,21 @@ export class StarTab {
         role="tablist"
         [attr.aria-orientation]="orientation()"
         [attr.aria-label]="ariaLabel()"
+        cdkDropList
+        [cdkDropListOrientation]="orientation()"
+        [cdkDropListLockAxis]="vertical() ? 'y' : 'x'"
+        [cdkDropListDisabled]="!reorderable()"
+        (cdkDropListDropped)="onDrop($event)"
         (scroll)="measure()"
       >
         @for (tab of tabs(); track tab.value(); let i = $index) {
-          <!-- A plain wrapper: the tab list owns the tab through it. -->
-          <span class="star-tabs__item" [class.star-tabs__item--closable]="tab.closable()">
+          <!-- A plain wrapper: the tab list owns the tab through it. It is the drag item. -->
+          <span
+            class="star-tabs__item"
+            [class.star-tabs__item--closable]="tab.closable()"
+            cdkDrag
+            [cdkDragDisabled]="!reorderable() || tab.disabled()"
+          >
             <button
               #tabButton
               type="button"
@@ -181,8 +203,8 @@ export class StarTab {
               [class.star-tabs__tab--active]="tab.active()"
               [attr.aria-selected]="tab.active()"
               [attr.aria-controls]="tab.panelId"
-              [attr.aria-keyshortcuts]="tab.closable() && !tab.disabled() ? 'Delete' : null"
-              [attr.aria-describedby]="tab.closable() && !tab.disabled() ? closeHintId : null"
+              [attr.aria-keyshortcuts]="shortcuts(tab)"
+              [attr.aria-describedby]="describedBy(tab)"
               [attr.tabindex]="tab.value() === focusValue() ? 0 : -1"
               [disabled]="tab.disabled()"
               (click)="select(tab)"
@@ -222,6 +244,10 @@ export class StarTab {
       @if (closeHint()) {
         <span class="star-sr-only" [id]="closeHintId">{{ text.tabCloseHint }}</span>
       }
+      @if (reorderable()) {
+        <span class="star-sr-only" [id]="reorderHintId">{{ text.tabReorderHint }}</span>
+        <span class="star-sr-only star-tabs__live" aria-live="polite">{{ announcement() }}</span>
+      }
       @if (scrollable()) {
         <button
           type="button"
@@ -247,6 +273,7 @@ export class StarTabs {
   protected readonly text = inject(STAR_UI_TEXT);
   private readonly injector = inject(Injector);
   protected readonly closeHintId = inject(_IdGenerator).getId('star-tabs-close-hint-');
+  protected readonly reorderHintId = inject(_IdGenerator).getId('star-tabs-reorder-hint-');
 
   readonly value = model<string | null>(null);
   readonly variant = input<'line' | 'pill'>('line');
@@ -270,6 +297,11 @@ export class StarTabs {
   readonly orientation = input<'horizontal' | 'vertical'>('horizontal');
   /** Position of the tabs along the list: at the start, centered, at the end, or filling it. */
   readonly alignment = input<'start' | 'center' | 'end' | 'stretch'>('start');
+  /**
+   * Tabs can be dragged to a new place (CDK drag-drop), or moved with Control+Shift and an arrow
+   * key. `star-tabs` emits `tabReorder`; the owner reorders its list. PrimeNG has no equivalent.
+   */
+  readonly reorderable = input(false, { transform: booleanAttribute });
   readonly lazy = input(true, { transform: booleanAttribute });
   /**
    * Keeps rendered `starTabContent` alive (hidden) when its tab is not active, so it keeps its
@@ -285,6 +317,8 @@ export class StarTabs {
    * previous one at the end). PrimeNG `onClose`, Material has no equivalent.
    */
   readonly tabClose = output<StarTabCloseEvent>();
+  /** A tab was dragged or moved with the keyboard (`reorderable`). Reorder your list. */
+  readonly tabReorder = output<StarTabReorderEvent>();
 
   protected readonly tabs = contentChildren(StarTab);
   private readonly buttons = viewChildren<ElementRef<HTMLButtonElement>>('tabButton');
@@ -304,6 +338,8 @@ export class StarTabs {
   );
   /** Roving tabindex target; follows the selection, moves with arrows in manual mode. */
   protected readonly focusValue = linkedSignal(() => this.selected());
+  /** Live text after a move (`reorderable`). */
+  protected readonly announcement = signal('');
   /** The hint of the Delete key, once for all closable tabs. */
   protected readonly closeHint = computed(() => this.tabs().some((tab) => tab.closable()));
 
@@ -403,7 +439,63 @@ export class StarTabs {
     }
   }
 
+  /** `aria-keyshortcuts` of a tab: Delete when it closes, the move keys when it moves. */
+  protected shortcuts(tab: StarTab): string | null {
+    const keys: string[] = [];
+    if (tab.closable() && !tab.disabled()) keys.push('Delete');
+    if (this.reorderable()) {
+      keys.push(
+        ...(this.vertical()
+          ? ['Control+Shift+ArrowUp', 'Control+Shift+ArrowDown']
+          : ['Control+Shift+ArrowLeft', 'Control+Shift+ArrowRight']),
+      );
+    }
+    return keys.join(' ') || null;
+  }
+
+  protected describedBy(tab: StarTab): string | null {
+    const ids: string[] = [];
+    if (tab.closable() && !tab.disabled()) ids.push(this.closeHintId);
+    if (this.reorderable()) ids.push(this.reorderHintId);
+    return ids.join(' ') || null;
+  }
+
+  protected onDrop(event: CdkDragDrop<unknown>): void {
+    this.reorder(event.previousIndex, event.currentIndex, false);
+  }
+
+  /** Emits `tabReorder`, announces the new position and, from the keyboard, keeps the focus. */
+  private reorder(previousIndex: number, currentIndex: number, fromKeyboard: boolean): void {
+    const tabs = this.tabs();
+    const moved = tabs[previousIndex];
+    if (!moved || previousIndex === currentIndex) return;
+    this.tabReorder.emit({ previousIndex, currentIndex });
+    this.announcement.set(this.text.itemPosition(moved.label(), currentIndex + 1, tabs.length));
+    if (!fromKeyboard) return;
+    // Moving a focused element in the DOM drops its focus: give it back after the render.
+    afterNextRender(
+      () => {
+        const position = this.tabs().indexOf(moved);
+        this.buttons()[position]?.nativeElement.focus();
+      },
+      { injector: this.injector },
+    );
+  }
+
   protected onKeydown(event: KeyboardEvent, current: StarTab): void {
+    if (this.reorderable() && event.ctrlKey && event.shiftKey && !event.altKey) {
+      const [forward, back] = this.vertical()
+        ? ['ArrowDown', 'ArrowUp']
+        : ['ArrowRight', 'ArrowLeft'];
+      const key = starInlineKey(event);
+      if (key === forward || key === back) {
+        event.preventDefault();
+        const from = this.tabs().indexOf(current);
+        const to = Math.min(Math.max(from + (key === forward ? 1 : -1), 0), this.tabs().length - 1);
+        this.reorder(from, to, true);
+        return;
+      }
+    }
     if (event.key === 'Delete' && current.closable()) {
       event.preventDefault();
       this.close(current, this.tabs().indexOf(current), true);

@@ -192,6 +192,7 @@ export const STAR_UI_TEXT_ES: StarUiText = {
 
   tabClose: (label) => `Cerrar ${label}`,
   tabCloseHint: 'Pulse Supr para cerrar la pestaña.',
+  tabReorderHint: 'Pulse Control+Mayús y una tecla de flecha para mover la pestaña.',
   breadcrumb: 'Ruta de navegación',
   stepperLabel: 'Progreso',
   stepCompleted: '(completado)',

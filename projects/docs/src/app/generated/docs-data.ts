@@ -6765,6 +6765,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Position of the tabs along the list: at the start, centered, at the end, or filling it."
       },
       {
+        "name": "reorderable",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Tabs can be dragged to a new place (CDK drag-drop), or moved with Control+Shift and an arrow key. `star-tabs` emits `tabReorder`; the owner reorders its list. PrimeNG has no equivalent."
+      },
+      {
         "name": "lazy",
         "type": "boolean",
         "default": "true",
@@ -6802,6 +6809,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": "A closable tab asked to close (close button or Delete key). Remove the tab from your list, or call `cancel()`. When the closed tab was selected, the next tab is selected (the previous one at the end). PrimeNG `onClose`, Material has no equivalent."
+      },
+      {
+        "name": "tabReorder",
+        "type": "StarTabReorderEvent",
+        "default": null,
+        "required": false,
+        "description": "A tab was dragged or moved with the keyboard (`reorderable`). Reorder your list."
       }
     ]
   },
@@ -8349,6 +8363,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "tabs/cache": "<div class=\"docs-stack\">\n  <star-tabs [cache]=\"false\" ariaLabel=\"Notes\">\n    <star-tab value=\"draft\" label=\"Draft\">\n      <ng-template starTabContent>\n        <star-field label=\"Draft note\"><input starInput /></star-field>\n      </ng-template>\n    </star-tab>\n    <star-tab value=\"final\" label=\"Final\">\n      <ng-template starTabContent>The final note is empty.</ng-template>\n    </star-tab>\n  </star-tabs>\n</div>",
   "tabs/closable": "<div class=\"docs-stack\">\n  <star-tabs\n    scrollable\n    [(value)]=\"openFile\"\n    ariaLabel=\"Open files\"\n    (tabClose)=\"closeFile($event)\"\n  >\n    @for (file of files(); track file) {\n      <star-tab [value]=\"file\" [label]=\"file\" [closable]=\"file !== 'summary.txt'\">\n        Content of {{ file }}.\n      </star-tab>\n    }\n  </star-tabs>\n  <p class=\"docs-output\" role=\"status\">Open: {{ files().join(', ') }}</p>\n</div>",
   "tabs/pill": "<div class=\"docs-stack\">\n  <star-tabs variant=\"pill\" [selectOnFocus]=\"false\" ariaLabel=\"Report views\">\n    <star-tab value=\"daily\" label=\"Daily\">Daily totals.</star-tab>\n    <star-tab value=\"weekly\" label=\"Weekly\">\n      <ng-template starTabContent>Weekly totals, loaded on first use.</ng-template>\n    </star-tab>\n    <star-tab value=\"monthly\" label=\"Monthly\">Monthly totals.</star-tab>\n  </star-tabs>\n</div>",
+  "tabs/reorderable": "<div class=\"docs-stack\">\n  <star-tabs reorderable ariaLabel=\"Project boards\" (tabReorder)=\"moveBoard($event)\">\n    @for (board of boards(); track board) {\n      <star-tab [value]=\"board\" [label]=\"board\">Board {{ board }}.</star-tab>\n    }\n  </star-tabs>\n  <p class=\"docs-output\" role=\"status\">Order: {{ boards().join(', ') }}</p>\n</div>",
   "tabs/scrollable": "<div class=\"docs-stack\">\n  <star-tabs scrollable ariaLabel=\"Monthly reports\">\n    @for (month of months; track month) {\n      <star-tab [value]=\"month\" [label]=\"month\">Report for {{ month }}.</star-tab>\n    }\n  </star-tabs>\n</div>",
   "tabs/vertical": "<star-tabs orientation=\"vertical\" ariaLabel=\"Account settings\">\n  <star-tab value=\"profile\" label=\"Profile\" icon=\"ph-bold ph-user\"\n    >Profile settings.</star-tab\n  >\n  <star-tab value=\"billing\" label=\"Billing\" icon=\"ph-bold ph-receipt\">\n    Billing settings.\n  </star-tab>\n  <star-tab value=\"alerts\" label=\"Alerts\" icon=\"ph-bold ph-bell\">Alert settings.</star-tab>\n</star-tabs>",
   "tag/icon": "<star-tag severity=\"success\" icon=\"ph-bold ph-check\" rounded>Shipped</star-tag>\n<star-tag severity=\"warn\" icon=\"ph-bold ph-clock\" rounded>Waiting</star-tag>",

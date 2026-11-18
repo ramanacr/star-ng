@@ -1,6 +1,13 @@
+import { moveItemInArray } from '@angular/cdk/drag-drop';
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { StarField, StarInput } from '@star-ng/ui/field';
-import { StarTab, StarTabCloseEvent, StarTabContent, StarTabs } from '@star-ng/ui/tabs';
+import {
+  StarTab,
+  StarTabCloseEvent,
+  StarTabContent,
+  StarTabReorderEvent,
+  StarTabs,
+} from '@star-ng/ui/tabs';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -138,6 +145,22 @@ import { DOCS, DocsRow } from '../shared/docs';
         </div>
       </docs-example>
 
+      <docs-example
+        heading="Reorderable tabs"
+        source="tabs/reorderable"
+        [script]="reorderScript"
+        note="With reorderable, a tab can be dragged to a new place. From the keyboard, Control+Shift and Arrow Right or Arrow Left move the focused tab, and a live message reads the new position. tabReorder reports both indexes; the owner reorders its list."
+      >
+        <div class="docs-stack">
+          <star-tabs reorderable ariaLabel="Project boards" (tabReorder)="moveBoard($event)">
+            @for (board of boards(); track board) {
+              <star-tab [value]="board" [label]="board">Board {{ board }}.</star-tab>
+            }
+          </star-tabs>
+          <p class="docs-output" role="status">Order: {{ boards().join(', ') }}</p>
+        </div>
+      </docs-example>
+
       <h2>Right-to-left</h2>
       <p>
         With <code>dir="rtl"</code> the first tab is on the right. Arrow left moves to the next tab
@@ -168,6 +191,23 @@ readonly files = signal(['summary.txt', 'orders.csv', 'invoices.csv', 'cities.cs
 closeFile(event: StarTabCloseEvent): void {
   // Call event.cancel() instead to keep the tab.
   this.files.update((files) => files.filter((file) => file !== event.value));
+}`;
+  protected readonly boards = signal(['Backlog', 'In progress', 'Review', 'Done']);
+  protected moveBoard(event: StarTabReorderEvent): void {
+    this.boards.update((boards) => {
+      const next = [...boards];
+      moveItemInArray(next, event.previousIndex, event.currentIndex);
+      return next;
+    });
+  }
+  protected readonly reorderScript = `readonly boards = signal(['Backlog', 'In progress', 'Review', 'Done']);
+
+moveBoard(event: StarTabReorderEvent): void {
+  this.boards.update((boards) => {
+    const next = [...boards];
+    moveItemInArray(next, event.previousIndex, event.currentIndex);
+    return next;
+  });
 }`;
   protected readonly basicScript = `readonly tab = signal<string | null>(null);`;
   protected readonly months = [
@@ -221,6 +261,11 @@ closeFile(event: StarTabCloseEvent): void {
         'With scrollable: pointer only, not in the tab order and hidden from screen readers. The arrow keys reach every tab.',
     },
     { name: 'Enter / Space', description: 'Selects the focused tab (manual activation).' },
+    {
+      name: 'Control+Shift+Arrow Right / Arrow Left',
+      description:
+        'With reorderable: moves the focused tab one place (Arrow Down and Arrow Up when vertical). Mirrored in right-to-left.',
+    },
     {
       name: 'Delete',
       description:

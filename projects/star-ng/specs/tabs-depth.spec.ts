@@ -1,6 +1,13 @@
+import { moveItemInArray } from '@angular/cdk/drag-drop';
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { StarTab, StarTabCloseEvent, StarTabContent, StarTabs } from '@star-ng/ui/tabs';
+import {
+  StarTab,
+  StarTabCloseEvent,
+  StarTabContent,
+  StarTabReorderEvent,
+  StarTabs,
+} from '@star-ng/ui/tabs';
 
 /** Gives an element a fake scroll size; jsdom has no layout. */
 function fakeScroll(element: HTMLElement, client: number, total: number): void {
@@ -302,5 +309,78 @@ describe('StarTabs orientation and alignment', () => {
     await fixture.whenStable();
     expect(host.classList).toContain('star-tabs--align-center');
     expect(host.classList).not.toContain('star-tabs--align-stretch');
+  });
+});
+
+@Component({
+  imports: [StarTabs, StarTab],
+  template: `
+    <star-tabs
+      reorderable
+      [(value)]="tab"
+      [attr.dir]="dir()"
+      ariaLabel="Boards"
+      (tabReorder)="onReorder($event)"
+    >
+      @for (name of names(); track name) {
+        <star-tab [value]="name" [label]="name">{{ name }}</star-tab>
+      }
+    </star-tabs>
+  `,
+})
+class ReorderHost {
+  readonly tab = signal<string | null>(null);
+  readonly dir = signal<'ltr' | 'rtl'>('ltr');
+  readonly names = signal(['One', 'Two', 'Three']);
+  readonly events: StarTabReorderEvent[] = [];
+  onReorder(event: StarTabReorderEvent): void {
+    this.events.push(event);
+    this.names.update((names) => {
+      const next = [...names];
+      moveItemInArray(next, event.previousIndex, event.currentIndex);
+      return next;
+    });
+  }
+}
+
+describe('StarTabs reorderable', () => {
+  const labels = (el: HTMLElement) =>
+    [...el.querySelectorAll('[role=tab]')].map((tab) => tab.textContent?.trim());
+
+  it('moves the focused tab with Control+Shift+Arrow keys and announces the position', async () => {
+    const fixture = TestBed.createComponent(ReorderHost);
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+    let tabs = [...el.querySelectorAll<HTMLElement>('[role=tab]')];
+    expect(tabs[0].getAttribute('aria-keyshortcuts')).toBe(
+      'Control+Shift+ArrowLeft Control+Shift+ArrowRight',
+    );
+    expect(el.querySelector('[role=tablist]')!.classList).toContain('cdk-drop-list');
+    tabs[0].focus();
+    key(tabs[0], { key: 'ArrowRight', ctrlKey: true, shiftKey: true });
+    await fixture.whenStable();
+    const host = fixture.componentInstance;
+    expect(host.events).toEqual([{ previousIndex: 0, currentIndex: 1 }]);
+    expect(labels(el)).toEqual(['Two', 'One', 'Three']);
+    expect(host.tab()).toBeNull(); // moving does not select
+    tabs = [...el.querySelectorAll<HTMLElement>('[role=tab]')];
+    expect(document.activeElement).toBe(tabs[1]);
+    expect(el.querySelector('.star-tabs__live')?.textContent?.trim()).toBe('One, position 2 of 3');
+
+    // No move past the start.
+    key(tabs[0], { key: 'ArrowLeft', ctrlKey: true, shiftKey: true });
+    await fixture.whenStable();
+    expect(host.events.length).toBe(1);
+  });
+
+  it('mirrors the move keys in right-to-left', async () => {
+    const fixture = TestBed.createComponent(ReorderHost);
+    fixture.componentInstance.dir.set('rtl');
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+    const tabs = [...el.querySelectorAll<HTMLElement>('[role=tab]')];
+    key(tabs[0], { key: 'ArrowLeft', ctrlKey: true, shiftKey: true });
+    await fixture.whenStable();
+    expect(labels(el)).toEqual(['Two', 'One', 'Three']);
   });
 });

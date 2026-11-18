@@ -192,6 +192,7 @@ export interface StarUiText {
   readonly editorLinkPrompt: string;
   readonly tabClose: (label: string) => string;
   readonly tabCloseHint: string;
+  readonly tabReorderHint: string;
   // Navigation and layout
   readonly breadcrumb: string;
   readonly stepperLabel: string;
@@ -423,6 +424,7 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
 
   tabClose: (label) => `Close ${label}`,
   tabCloseHint: 'Press Delete to close the tab.',
+  tabReorderHint: 'Press Control+Shift and an arrow key to move the tab.',
   breadcrumb: 'Breadcrumb',
   stepperLabel: 'Progress',
   stepCompleted: '(completed)',

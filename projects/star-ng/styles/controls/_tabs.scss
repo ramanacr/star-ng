@@ -245,3 +245,20 @@
   flex: 1 1 auto;
   width: auto;
 }
+// Reorderable: the dragged tab follows the pointer; the others make room.
+.star-tabs__item.cdk-drag-preview {
+  border-radius: var(--star-radius-md);
+  background: var(--star-surface);
+  box-shadow: var(--star-shadow-md);
+}
+.star-tabs__item.cdk-drag-placeholder {
+  opacity: 0.4;
+}
+.star-tabs__list.cdk-drop-list-dragging .star-tabs__item:not(.cdk-drag-placeholder) {
+  transition: transform var(--star-duration-base) ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .star-tabs__list.cdk-drop-list-dragging .star-tabs__item:not(.cdk-drag-placeholder) {
+    transition: none;
+  }
+}

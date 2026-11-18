@@ -55,6 +55,7 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - Tabs: `closable` on `star-tab` shows a close button, and the Delete key closes the focused tab. The output `tabClose({ value, index, cancel() })` lets the owner remove the tab or keep it; the selection and the focus move to the neighbour tab. `STAR_UI_TEXT.tabClose` and `tabCloseHint` with German and Spanish texts (PrimeNG `closable`, `onClose`).
 - Tabs: `lazy` (default `true`: `starTabContent` renders on the first activation; `false` renders every template at once) and `cache` (default `true`: rendered panels stay alive, hidden; `false` destroys the content of a tab that is not active) (PrimeNG `lazy`, `cache`, Material `preserveContent`).
 - Tabs: `orientation` (`horizontal` or `vertical`, with `aria-orientation`; Arrow Up and Arrow Down move in a vertical list, Arrow Left and Arrow Right stay mirrored in right-to-left) and `alignment` (`start`, `center`, `end`, `stretch`).
+- Tabs: `reorderable` lets the user drag a tab to a new place (CDK drag-drop) or move the focused tab with Control+Shift and an arrow key (mirrored in right-to-left), with a live announcement of the new position. The output `tabReorder({ previousIndex, currentIndex })` lets the owner reorder its list. `STAR_UI_TEXT.tabReorderHint` with German and Spanish texts.
 
 ### Changed
 
