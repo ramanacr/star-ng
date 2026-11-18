@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarTab, StarTabContent, StarTabs } from '@star-ng/ui/tabs';
+import { StarTab, StarTabCloseEvent, StarTabContent, StarTabs } from '@star-ng/ui/tabs';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -61,6 +61,29 @@ import { DOCS, DocsRow } from '../shared/docs';
         </div>
       </docs-example>
 
+      <docs-example
+        heading="Closable tabs"
+        source="tabs/closable"
+        [script]="closableScript"
+        note="A closable tab has a close button, and the Delete key closes the focused tab. tabClose reports the value and the index; the owner removes the tab, or calls cancel() to keep it. When the selected tab closes, the next one is selected."
+      >
+        <div class="docs-stack">
+          <star-tabs
+            scrollable
+            [(value)]="openFile"
+            ariaLabel="Open files"
+            (tabClose)="closeFile($event)"
+          >
+            @for (file of files(); track file) {
+              <star-tab [value]="file" [label]="file" [closable]="file !== 'summary.txt'">
+                Content of {{ file }}.
+              </star-tab>
+            }
+          </star-tabs>
+          <p class="docs-output" role="status">Open: {{ files().join(', ') }}</p>
+        </div>
+      </docs-example>
+
       <h2>Right-to-left</h2>
       <p>
         With <code>dir="rtl"</code> the first tab is on the right. Arrow left moves to the next tab
@@ -80,6 +103,18 @@ import { DOCS, DocsRow } from '../shared/docs';
 export class TabsPage {
   protected readonly tab = signal<string | null>(null);
 
+  protected readonly openFile = signal<string | null>('orders.csv');
+  protected readonly files = signal(['summary.txt', 'orders.csv', 'invoices.csv', 'cities.csv']);
+  protected closeFile(event: StarTabCloseEvent): void {
+    this.files.update((files) => files.filter((file) => file !== event.value));
+  }
+  protected readonly closableScript = `readonly openFile = signal<string | null>('orders.csv');
+readonly files = signal(['summary.txt', 'orders.csv', 'invoices.csv', 'cities.csv']);
+
+closeFile(event: StarTabCloseEvent): void {
+  // Call event.cancel() instead to keep the tab.
+  this.files.update((files) => files.filter((file) => file !== event.value));
+}`;
   protected readonly basicScript = `readonly tab = signal<string | null>(null);`;
   protected readonly months = [
     'January',
@@ -127,6 +162,11 @@ export class TabsPage {
         'With scrollable: pointer only, not in the tab order and hidden from screen readers. The arrow keys reach every tab.',
     },
     { name: 'Enter / Space', description: 'Selects the focused tab (manual activation).' },
+    {
+      name: 'Delete',
+      description:
+        'Closes the focused tab when it is closable (tabClose). The focus moves to the next tab.',
+    },
     {
       name: 'Tab',
       description: 'Only the selected tab is in the tab order. The next stop is the panel.',

@@ -1,12 +1,15 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { StarTab, StarTabs } from '@star-ng/ui/tabs';
+import { StarTab, StarTabCloseEvent, StarTabs } from '@star-ng/ui/tabs';
 
 /** Gives an element a fake scroll size; jsdom has no layout. */
 function fakeScroll(element: HTMLElement, client: number, total: number): void {
   Object.defineProperty(element, 'clientWidth', { configurable: true, value: client });
   Object.defineProperty(element, 'scrollWidth', { configurable: true, value: total });
 }
+
+const key = (target: Element, init: KeyboardEventInit) =>
+  target.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, cancelable: true, ...init }));
 
 @Component({
   imports: [StarTabs, StarTab],
@@ -89,5 +92,90 @@ describe('StarTabs scrollable', () => {
     const el = fixture.nativeElement as HTMLElement;
     expect(el.querySelector('.star-tabs__scroll')).toBeNull();
     expect(el.querySelector('star-tabs')!.classList).not.toContain('star-tabs--scrollable');
+  });
+});
+
+@Component({
+  imports: [StarTabs, StarTab],
+  template: `
+    <star-tabs [(value)]="tab" ariaLabel="Files" (tabClose)="onClose($event)">
+      @for (name of names(); track name) {
+        <star-tab [value]="name" [label]="name" [closable]="name !== 'Fixed'">{{ name }}</star-tab>
+      }
+    </star-tabs>
+  `,
+})
+class CloseHost {
+  readonly tab = signal<string | null>('Two');
+  readonly names = signal(['One', 'Two', 'Three', 'Fixed']);
+  readonly events: StarTabCloseEvent[] = [];
+  keep = false;
+  onClose(event: StarTabCloseEvent): void {
+    this.events.push(event);
+    if (this.keep) event.cancel();
+    else this.names.update((names) => names.filter((name) => name !== event.value));
+  }
+}
+
+describe('StarTabs closable', () => {
+  it('has a close button per closable tab, outside the tab, named "Close {label}"', async () => {
+    const fixture = TestBed.createComponent(CloseHost);
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+    const closes = [...el.querySelectorAll<HTMLButtonElement>('.star-tabs__close')];
+    expect(closes.map((button) => button.getAttribute('aria-label'))).toEqual([
+      'Close One',
+      'Close Two',
+      'Close Three',
+    ]);
+    for (const button of closes) {
+      expect(button.closest('[role=tab]')).toBeNull();
+      expect(button.tabIndex).toBe(-1);
+      expect(button.getAttribute('aria-hidden')).toBe('true');
+    }
+    const tabs = [...el.querySelectorAll<HTMLElement>('[role=tab]')];
+    expect(tabs[0].getAttribute('aria-keyshortcuts')).toBe('Delete');
+    expect(tabs[3].getAttribute('aria-keyshortcuts')).toBeNull();
+    const hint = document.getElementById(tabs[0].getAttribute('aria-describedby')!);
+    expect(hint?.textContent?.trim()).toBe('Press Delete to close the tab.');
+  });
+
+  it('emits tabClose on a click; the owner removes the tab and the next one is selected', async () => {
+    const fixture = TestBed.createComponent(CloseHost);
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+    el.querySelectorAll<HTMLButtonElement>('.star-tabs__close')[1].click();
+    await fixture.whenStable();
+    const host = fixture.componentInstance;
+    expect(host.events.map((e) => [e.value, e.index])).toEqual([['Two', 1]]);
+    expect(host.names()).toEqual(['One', 'Three', 'Fixed']);
+    expect(host.tab()).toBe('Three');
+  });
+
+  it('closes the focused tab with Delete, moves the focus, and cancel() keeps the tab', async () => {
+    const fixture = TestBed.createComponent(CloseHost);
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+    const host = fixture.componentInstance;
+    let tabs = [...el.querySelectorAll<HTMLElement>('[role=tab]')];
+    tabs[2].focus();
+    key(tabs[2], { key: 'Delete' });
+    await fixture.whenStable();
+    expect(host.names()).toEqual(['One', 'Two', 'Fixed']);
+    expect(host.tab()).toBe('Two'); // the closed tab was not selected
+    tabs = [...el.querySelectorAll<HTMLElement>('[role=tab]')];
+    expect(document.activeElement).toBe(tabs[2]); // "Fixed" took the place
+
+    // A handler that calls cancel() keeps the tab.
+    host.keep = true;
+    key(tabs[1], { key: 'Delete' });
+    await fixture.whenStable();
+    expect(host.events.at(-1)?.canceled).toBe(true);
+    expect(host.names()).toEqual(['One', 'Two', 'Fixed']);
+    expect(host.tab()).toBe('Two');
+
+    // Delete on a tab that is not closable does nothing.
+    key(tabs[2], { key: 'Delete' });
+    expect(host.events.length).toBe(2);
   });
 });

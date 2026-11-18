@@ -1,6 +1,7 @@
 import { _IdGenerator } from '@angular/cdk/a11y';
 import { NgTemplateOutlet } from '@angular/common';
 import {
+  afterNextRender,
   afterRenderEffect,
   booleanAttribute,
   ChangeDetectionStrategy,
@@ -13,6 +14,7 @@ import {
   ElementRef,
   forwardRef,
   inject,
+  Injector,
   input,
   linkedSignal,
   model,
@@ -23,13 +25,27 @@ import {
   viewChild,
   viewChildren,
 } from '@angular/core';
-import { starInlineKey, starIsRtl } from '@star-ng/ui/core';
+import { STAR_UI_TEXT, starInlineKey, starIsRtl } from '@star-ng/ui/core';
 import {
   STAR_TABS_NO_OVERFLOW,
   starTabsOverflow,
   starTabsReveal,
   starTabsScrollPage,
 } from './tabs-scroll';
+
+/**
+ * Event of `tabClose`: a close button or the Delete key asked to close a tab. The owner removes
+ * the tab from its list. Call `cancel()` to keep it (PrimeNG `onClose`, cancelable).
+ */
+export interface StarTabCloseEvent {
+  readonly value: string;
+  /** Position of the tab among all tabs. */
+  readonly index: number;
+  /** Keeps the tab: the selection and the focus do not move. */
+  cancel(): void;
+  /** True after `cancel()`. */
+  readonly canceled: boolean;
+}
 
 /** Lazy tab body: `<ng-template starTabContent>…</ng-template>` renders on first activation only. */
 @Directive({ selector: 'ng-template[starTabContent]' })
@@ -72,6 +88,11 @@ export class StarTab {
   readonly icon = input<string | null>(null);
   readonly badge = input<string | number | null>(null);
   readonly disabled = input(false, { transform: booleanAttribute });
+  /**
+   * Shows a close button on the tab, and the Delete key closes it. `star-tabs` emits `tabClose`;
+   * the owner removes the tab. PrimeNG `closable`.
+   */
+  readonly closable = input(false, { transform: booleanAttribute });
 
   readonly tabId = this.ids.getId('star-tab-');
   readonly panelId = this.ids.getId('star-tabpanel-');
@@ -128,31 +149,59 @@ export class StarTab {
         [attr.aria-label]="ariaLabel()"
         (scroll)="measure()"
       >
-        @for (tab of tabs(); track tab.value()) {
-          <button
-            #tabButton
-            type="button"
-            role="tab"
-            class="star-tabs__tab"
-            [id]="tab.tabId"
-            [class.star-tabs__tab--active]="tab.active()"
-            [attr.aria-selected]="tab.active()"
-            [attr.aria-controls]="tab.panelId"
-            [attr.tabindex]="tab.value() === focusValue() ? 0 : -1"
-            [disabled]="tab.disabled()"
-            (click)="select(tab)"
-            (keydown)="onKeydown($event, tab)"
-          >
-            @if (tab.icon(); as icon) {
-              <i [class]="icon" aria-hidden="true"></i>
+        @for (tab of tabs(); track tab.value(); let i = $index) {
+          <!-- A plain wrapper: the tab list owns the tab through it. -->
+          <span class="star-tabs__item" [class.star-tabs__item--closable]="tab.closable()">
+            <button
+              #tabButton
+              type="button"
+              role="tab"
+              class="star-tabs__tab"
+              [id]="tab.tabId"
+              [class.star-tabs__tab--active]="tab.active()"
+              [attr.aria-selected]="tab.active()"
+              [attr.aria-controls]="tab.panelId"
+              [attr.aria-keyshortcuts]="tab.closable() && !tab.disabled() ? 'Delete' : null"
+              [attr.aria-describedby]="tab.closable() && !tab.disabled() ? closeHintId : null"
+              [attr.tabindex]="tab.value() === focusValue() ? 0 : -1"
+              [disabled]="tab.disabled()"
+              (click)="select(tab)"
+              (keydown)="onKeydown($event, tab)"
+            >
+              @if (tab.icon(); as icon) {
+                <i [class]="icon" aria-hidden="true"></i>
+              }
+              <span>{{ tab.label() }}</span>
+              @if (tab.badge() !== null) {
+                <span class="star-badge star-badge--secondary star-badge--sm">{{
+                  tab.badge()
+                }}</span>
+              }
+            </button>
+            @if (tab.closable()) {
+              <!--
+              A tab list may own only tabs, so the close button is for the pointer: the Delete key
+              closes the focused tab, and the tab describes the key (aria-keyshortcuts).
+            -->
+              <button
+                type="button"
+                class="star-tabs__close"
+                tabindex="-1"
+                aria-hidden="true"
+                [attr.aria-label]="text.tabClose(tab.label())"
+                [title]="text.tabClose(tab.label())"
+                [disabled]="tab.disabled()"
+                (click)="close(tab, i, false)"
+              >
+                <i class="ph-bold ph-x" aria-hidden="true"></i>
+              </button>
             }
-            <span>{{ tab.label() }}</span>
-            @if (tab.badge() !== null) {
-              <span class="star-badge star-badge--secondary star-badge--sm">{{ tab.badge() }}</span>
-            }
-          </button>
+          </span>
         }
       </div>
+      @if (closeHint()) {
+        <span class="star-sr-only" [id]="closeHintId">{{ text.tabCloseHint }}</span>
+      }
       @if (scrollable()) {
         <button
           type="button"
@@ -170,6 +219,10 @@ export class StarTab {
   `,
 })
 export class StarTabs {
+  protected readonly text = inject(STAR_UI_TEXT);
+  private readonly injector = inject(Injector);
+  protected readonly closeHintId = inject(_IdGenerator).getId('star-tabs-close-hint-');
+
   readonly value = model<string | null>(null);
   readonly variant = input<'line' | 'pill'>('line');
   /** `false`: arrow keys move focus only; Enter / Space activate (manual activation). */
@@ -182,6 +235,12 @@ export class StarTabs {
   readonly scrollable = input(false, { transform: booleanAttribute });
 
   readonly changed = output<string>();
+  /**
+   * A closable tab asked to close (close button or Delete key). Remove the tab from your list,
+   * or call `cancel()`. When the closed tab was selected, the next tab is selected (the
+   * previous one at the end). PrimeNG `onClose`, Material has no equivalent.
+   */
+  readonly tabClose = output<StarTabCloseEvent>();
 
   protected readonly tabs = contentChildren(StarTab);
   private readonly buttons = viewChildren<ElementRef<HTMLButtonElement>>('tabButton');
@@ -200,6 +259,8 @@ export class StarTabs {
   );
   /** Roving tabindex target; follows the selection, moves with arrows in manual mode. */
   protected readonly focusValue = linkedSignal(() => this.selected());
+  /** The hint of the Delete key, once for all closable tabs. */
+  protected readonly closeHint = computed(() => this.tabs().some((tab) => tab.closable()));
 
   constructor() {
     let observer: ResizeObserver | null = null;
@@ -255,7 +316,53 @@ export class StarTabs {
     this.changed.emit(tab.value());
   }
 
+  /**
+   * Emits `tabClose`. Unless a handler cancels it, the selection moves from the closed tab to its
+   * neighbour, and from the keyboard the focus follows.
+   */
+  protected close(tab: StarTab, index: number, fromKeyboard: boolean): void {
+    if (!tab.closable() || tab.disabled()) return;
+    let canceled = false;
+    this.tabClose.emit({
+      value: tab.value(),
+      index,
+      cancel: () => {
+        canceled = true;
+      },
+      get canceled() {
+        return canceled;
+      },
+    });
+    if (canceled) return;
+    const enabled = this.tabs().filter((other) => other === tab || !other.disabled());
+    const at = enabled.indexOf(tab);
+    const neighbour = enabled[at + 1] ?? enabled[at - 1];
+    const wasSelected = tab.value() === this.selected();
+    const hadFocus = fromKeyboard || tab.value() === this.focusValue();
+    if (!neighbour || neighbour === tab) return;
+    if (wasSelected) {
+      this.value.set(neighbour.value());
+      this.changed.emit(neighbour.value());
+    }
+    if (hadFocus) this.focusValue.set(neighbour.value());
+    if (fromKeyboard) {
+      // The owner removes the tab in its handler; focus the neighbour once the list rendered.
+      afterNextRender(
+        () => {
+          const position = this.tabs().indexOf(neighbour);
+          this.buttons()[position]?.nativeElement.focus();
+        },
+        { injector: this.injector },
+      );
+    }
+  }
+
   protected onKeydown(event: KeyboardEvent, current: StarTab): void {
+    if (event.key === 'Delete' && current.closable()) {
+      event.preventDefault();
+      this.close(current, this.tabs().indexOf(current), true);
+      return;
+    }
     const enabled = this.tabs().filter((tab) => !tab.disabled());
     const index = enabled.indexOf(current);
     let next: StarTab | undefined;

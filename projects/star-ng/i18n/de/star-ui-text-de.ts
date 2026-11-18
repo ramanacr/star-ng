@@ -189,6 +189,8 @@ export const STAR_UI_TEXT_DE: StarUiText = {
   editorLink: 'Link',
   editorLinkPrompt: 'Linkadresse (https://…)',
 
+  tabClose: (label) => `${label} schließen`,
+  tabCloseHint: 'Entf drücken, um den Tab zu schließen.',
   breadcrumb: 'Brotkrümelnavigation',
   stepperLabel: 'Fortschritt',
   stepCompleted: '(abgeschlossen)',

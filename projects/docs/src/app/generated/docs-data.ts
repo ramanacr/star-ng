@@ -6291,6 +6291,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "false",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "closable",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows a close button on the tab, and the Delete key closes it. `star-tabs` emits `tabClose`; the owner removes the tab. PrimeNG `closable`."
       }
     ],
     "models": [],
@@ -6760,6 +6767,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": ""
+      },
+      {
+        "name": "tabClose",
+        "type": "StarTabCloseEvent",
+        "default": null,
+        "required": false,
+        "description": "A closable tab asked to close (close button or Delete key). Remove the tab from your list, or call `cancel()`. When the closed tab was selected, the next tab is selected (the previous one at the end). PrimeNG `onClose`, Material has no equivalent."
       }
     ]
   },
@@ -8303,6 +8317,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "table/states": "<div class=\"docs-stack\">\n  <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"loading.set(!loading())\">\n    {{ loading() ? 'Stop loading' : 'Start loading' }}\n  </star-button>\n  <star-table\n    [value]=\"orders.slice(0, 3)\"\n    [columns]=\"columns\"\n    dataKey=\"id\"\n    ariaLabel=\"Orders being loaded\"\n    [loading]=\"loading()\"\n  />\n  <star-table\n    [value]=\"[]\"\n    [columns]=\"columns\"\n    ariaLabel=\"No orders\"\n    emptyMessage=\"No orders yet. Add the first one.\"\n  />\n</div>",
   "table/templates": "<docs-fill>\n  <star-table\n    [value]=\"orders\"\n    [columns]=\"columns\"\n    dataKey=\"id\"\n    ariaLabel=\"Orders with status tags\"\n    paginator\n    [rows]=\"5\"\n  >\n    <ng-template starCell=\"status\" [starCellOf]=\"orders\" let-row>\n      <star-tag [severity]=\"severityOf(row.status)\" [value]=\"row.status\" rounded />\n    </ng-template>\n    <ng-template starCell=\"customer\" [starCellOf]=\"orders\" let-row let-value=\"value\">\n      <strong>{{ value }}</strong>\n      <br />\n      <small>{{ row.email }}</small>\n    </ng-template>\n  </star-table>\n</docs-fill>",
   "tabs/basic": "<div class=\"docs-stack\">\n  <star-tabs [(value)]=\"tab\" ariaLabel=\"Order sections\">\n    <star-tab value=\"details\" label=\"Details\" icon=\"ph-bold ph-file-text\">\n      Order ORD-1042 for Orchard Supply.\n    </star-tab>\n    <star-tab value=\"items\" label=\"Items\" [badge]=\"12\">Twelve items in two boxes.</star-tab>\n    <star-tab value=\"billing\" label=\"Billing\" disabled>Billing is not available.</star-tab>\n    <star-tab value=\"history\" label=\"History\">Created on Monday.</star-tab>\n  </star-tabs>\n  <p class=\"docs-output\" role=\"status\">Selected: {{ tab() ?? 'details' }}</p>\n</div>",
+  "tabs/closable": "<div class=\"docs-stack\">\n  <star-tabs\n    scrollable\n    [(value)]=\"openFile\"\n    ariaLabel=\"Open files\"\n    (tabClose)=\"closeFile($event)\"\n  >\n    @for (file of files(); track file) {\n      <star-tab [value]=\"file\" [label]=\"file\" [closable]=\"file !== 'summary.txt'\">\n        Content of {{ file }}.\n      </star-tab>\n    }\n  </star-tabs>\n  <p class=\"docs-output\" role=\"status\">Open: {{ files().join(', ') }}</p>\n</div>",
   "tabs/pill": "<div class=\"docs-stack\">\n  <star-tabs variant=\"pill\" [selectOnFocus]=\"false\" ariaLabel=\"Report views\">\n    <star-tab value=\"daily\" label=\"Daily\">Daily totals.</star-tab>\n    <star-tab value=\"weekly\" label=\"Weekly\">\n      <ng-template starTabContent>Weekly totals, loaded on first use.</ng-template>\n    </star-tab>\n    <star-tab value=\"monthly\" label=\"Monthly\">Monthly totals.</star-tab>\n  </star-tabs>\n</div>",
   "tabs/scrollable": "<div class=\"docs-stack\">\n  <star-tabs scrollable ariaLabel=\"Monthly reports\">\n    @for (month of months; track month) {\n      <star-tab [value]=\"month\" [label]=\"month\">Report for {{ month }}.</star-tab>\n    }\n  </star-tabs>\n</div>",
   "tag/icon": "<star-tag severity=\"success\" icon=\"ph-bold ph-check\" rounded>Shipped</star-tag>\n<star-tag severity=\"warn\" icon=\"ph-bold ph-clock\" rounded>Waiting</star-tag>",

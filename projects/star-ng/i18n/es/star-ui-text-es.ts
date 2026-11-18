@@ -190,6 +190,8 @@ export const STAR_UI_TEXT_ES: StarUiText = {
   editorLink: 'Enlace',
   editorLinkPrompt: 'Dirección del enlace (https://…)',
 
+  tabClose: (label) => `Cerrar ${label}`,
+  tabCloseHint: 'Pulse Supr para cerrar la pestaña.',
   breadcrumb: 'Ruta de navegación',
   stepperLabel: 'Progreso',
   stepCompleted: '(completado)',

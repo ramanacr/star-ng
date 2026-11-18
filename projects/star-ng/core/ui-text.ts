@@ -190,6 +190,8 @@ export interface StarUiText {
   readonly editorClearFormatting: string;
   readonly editorLink: string;
   readonly editorLinkPrompt: string;
+  readonly tabClose: (label: string) => string;
+  readonly tabCloseHint: string;
   // Navigation and layout
   readonly breadcrumb: string;
   readonly stepperLabel: string;
@@ -419,6 +421,8 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   editorLink: 'Link',
   editorLinkPrompt: 'Link address (https://…)',
 
+  tabClose: (label) => `Close ${label}`,
+  tabCloseHint: 'Press Delete to close the tab.',
   breadcrumb: 'Breadcrumb',
   stepperLabel: 'Progress',
   stepCompleted: '(completed)',
@@ -506,6 +510,7 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   fileTypeNotAllowed: ['name'],
   fileTooLarge: ['name', 'max'],
   fileLimitReached: ['limit'],
+  tabClose: ['label'],
   editorFormatting: ['label'],
   showImage: ['alt'],
   previewImage: ['alt'],
