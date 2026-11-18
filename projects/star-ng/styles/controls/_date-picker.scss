@@ -80,12 +80,19 @@
 }
 .star-date__panel {
   padding: 0.75rem;
+  // Safety net: the overlay pushes a popup that fits neither below nor above the field into the
+  // window, 8px from the edges. A popup that is still too high or too wide for the window
+  // scrolls inside, so every part of it (for example Done) can be reached.
+  max-width: calc(100vw - 1rem);
+  max-height: calc(100dvh - 1rem);
+  overflow: auto;
+  overscroll-behavior: contain;
 }
+// Time part of the date pickers (showTime). Narrow window: under the calendar, with short
+// columns. Wide window: see the row layout below.
 .star-date__time {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-end;
-  justify-content: space-between;
   gap: 0.75rem;
   margin-top: 0.5rem;
   padding-top: 0.5rem;
@@ -99,9 +106,69 @@
   font: var(--star-type-label);
   color: var(--star-text-muted);
 }
-// Under the calendar the time columns are shorter than in the time picker's own panel.
 .star-date__time .star-time__column {
   max-height: 9rem;
+}
+.star-date__done {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+}
+
+// Row layout of showTime: the calendar, then the time part at its inline end (right, or left in
+// right-to-left). The calendar sets the height of the row; the time columns fill that height and
+// scroll inside. The header slot, Done, the button bar and the footer slot keep the full width.
+// The grid columns follow the direction of the page, so the order is logical. The overlay pane
+// is as wide as its content, so a container query cannot measure it: media queries choose the
+// layout from the window width.
+@mixin time-row {
+  display: grid;
+  grid-template-columns: auto auto;
+  column-gap: 0.75rem;
+
+  > * {
+    grid-column: 1 / -1;
+  }
+  > .star-calendar {
+    grid-column: 1;
+  }
+  > .star-date__time {
+    grid-column: 2;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    // No height of its own: the row is as high as the calendar, and the time part fills it.
+    height: 0;
+    min-height: 100%;
+    margin-top: 0;
+    padding-top: 0;
+    padding-inline-start: 0.75rem;
+    border-top: 0;
+    border-inline-start: 1px solid var(--star-border);
+  }
+  .star-date__time-field {
+    // A start and an end time share the height.
+    flex: 1 1 0;
+    min-height: 0;
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+  .star-time__columns {
+    min-height: 0;
+  }
+  .star-date__time .star-time__column {
+    max-height: none;
+  }
+}
+// One month and the time columns: about 30rem wide.
+@media (width >= 36rem) {
+  .star-date__panel--time:not(.star-date__panel--months) {
+    @include time-row;
+  }
+}
+// Several months and the time columns: about 43rem wide for two months.
+@media (width >= 54rem) {
+  .star-date__panel--time.star-date__panel--months {
+    @include time-row;
+  }
 }
 .star-time__columns--disabled .star-time__cell {
   cursor: not-allowed;
