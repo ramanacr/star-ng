@@ -47,6 +47,10 @@
   overflow: hidden;
   text-overflow: ellipsis;
 
+  &:focus-visible {
+    outline: none;
+  }
+
   .star-select--disabled & {
     cursor: not-allowed;
   }
