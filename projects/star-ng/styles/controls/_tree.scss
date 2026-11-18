@@ -127,3 +127,66 @@
     white-space: nowrap;
   }
 }
+
+// Lazy children: the loading row under an open node whose children load.
+.star-tree__loading {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding-block: 0.375rem;
+  padding-inline: calc(0.5rem + var(--star-tree-level, 0) * 1.25rem) 0.5rem;
+  color: var(--star-text-muted);
+  font: var(--star-type-body);
+}
+@media (prefers-reduced-motion: reduce) {
+  .star-tree .star-spin {
+    animation: none;
+  }
+}
+
+// The context menu wrapper takes no box: the list keeps its layout.
+.star-tree__body {
+  display: contents;
+}
+
+// Drag and drop. `--star-tree-drop-color` sets the drop line and box (default: the primary color).
+.star-tree__item[draggable='true'] {
+  cursor: grab;
+}
+.star-tree__item--dragging {
+  opacity: 0.5;
+}
+// The indicator is a pseudo-element, so the focus ring (a box shadow) of the focused row and the
+// indicator show together.
+.star-tree__item--drop-before,
+.star-tree__item--drop-after,
+.star-tree__item--drop-inside {
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    pointer-events: none;
+  }
+}
+.star-tree__item--drop-before::before,
+.star-tree__item--drop-after::before {
+  inset-inline: 0.25rem;
+  height: 2px;
+  background: var(--star-tree-drop-color, var(--star-primary));
+}
+.star-tree__item--drop-before::before {
+  top: 0;
+}
+.star-tree__item--drop-after::before {
+  bottom: 0;
+}
+.star-tree__item--drop-inside {
+  background: var(--star-primary-soft);
+
+  &::before {
+    inset: 0;
+    border: 2px dashed var(--star-tree-drop-color, var(--star-primary));
+    border-radius: inherit;
+  }
+}

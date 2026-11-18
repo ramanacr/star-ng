@@ -27,6 +27,14 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - Tree table: frozen, resizable and reorderable columns (`columnWidths`, `columnOrder`).
 - Tree table: cell edit (`editable`, `editor`, `cellEdit`) with treegrid cell navigation (`cellNavigation`).
 - Tree table: row context menu (`contextMenu`, `contextMenuSelect`) with right click, Shift+F10 and the context menu key.
+- Tree: drag and drop (`draggableNodes`, `droppableNodes`, `draggableScope`, `droppableScope`, `validateDrop`, `nodeDrop` with `before`, `after`, `inside` and `fromTree`). Ctrl+Shift and the arrow keys move the focused node, with a live announcement. The tree never changes `nodes`.
+- Tree: lazy children (`leaf: false`, `loading`, `loadingMode` row or icon, `nodeExpand`, `nodeCollapse`).
+- Tree: `filterMode` lenient or strict, `filterBy` and `filterLocale`.
+- Tree: checkbox `propagateSelectionUp` / `propagateSelectionDown`; locked nodes (`disabled`, `selectable: false`) keep their state.
+- Tree: `nodeUnselect`, `nodeDoubleClick`, `nodeContextMenu`, and a node context menu (`contextMenu`, `contextMenuSelect`) with right click, Shift+F10 and the context menu key.
+- Tree: methods `expandAll`, `collapseAll`, `expandPath` and `scrollToNode`.
+- Tree select: `filterMode`, `filterBy`, `filterLocale`, `propagateSelectionUp`, `propagateSelectionDown`, `loadingMode`, lazy children, `display` comma or chip, and the outputs `nodeSelect`, `nodeUnselect`, `nodeExpand`, `nodeCollapse`.
+- UI texts `treeMoveHint`, `treeMovedBefore`, `treeMovedAfter`, `treeMovedInside`, `treeMoveNotAllowed` (English, German, Spanish).
 - Select, multi-select and autocomplete: `filterBy`, `filterMatchMode`, `filterLocale` and `resetFilterOnHide`; listbox: `filterBy`, `filterMatchMode` and `filterLocale`. New helper `starFilterMatch` in `@star-ng/ui/core`.
 - Select, multi-select, autocomplete and listbox: lazy loading (`lazy`, `lazyLoad` with `StarListLazyLoadEvent`, `resetLazy()` to ask again after a failed load). Options that are not loaded are `undefined` in the array, show as skeleton rows, are skipped by the keyboard, and the list has `aria-busy`.
 - Select: `editable` with `allowCustomValue` and `customValue`. Multi-select and multiple autocomplete: `allowCustomValues` with an "Add “text”" row and `customValueAdd`.
@@ -42,6 +50,17 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - Table: batch edit (`batchEdit`, `pendingChanges`, `commitEdits` / `batchSave`, `discardEdits`, `undo` / `redo` with Ctrl+Z, Ctrl+Y, Ctrl+Shift+Z), with changed-cell and deleted-row marks.
 - Table: `addRow()` / `deleteRow()` with `rowAdd` / `rowDelete`.
 - UI text for table editing in English, German and Spanish.
+- Date and time pickers: seconds and steps. `showSeconds`, `stepHour` and `stepSecond` (next to `stepMinute`) on `star-time-picker` and on `star-date-picker` / `star-date-range-picker` with `showTime`; the time panel gets a second column, and the text and the value include the seconds (PrimeNG `showSeconds`, `stepHour`, `stepSecond`).
+- UI text `second` (English, German, Spanish).
+- Date pickers: `displayFormat` (text without the focus) and `inputFormat` (text while editing, read in the order of that format, with the locale's month names) next to the shared `dateFormat` (Ignite UI `displayFormat` / `inputFormat`); `parseDate` takes an optional format.
+- Date pickers: `keepInvalid` keeps typed text that is not a date, marks the field invalid and empties the value (PrimeNG `keepInvalid`).
+- Date pickers: `dataType: 'date' | 'string'`; with `'string'` the value is local ISO text (`yyyy-mm-dd`, `yyyy-mm-ddTHH:mm[:ss]` with `showTime`); the pickers also read fractional seconds and a zone (`Z`, `+01:00`) in a given value. The pickers and `StarDateRange` take a type parameter that defaults to `Date` (PrimeNG `dataType`).
+- Calendar and date pickers: `showOtherMonths` (default `true`) shows or empties the days of the month before and after; `selectOtherMonths` (default `true`) makes them choosable or disabled (PrimeNG `showOtherMonths`, `selectOtherMonths`).
+- Calendar and date pickers: `specialDates` (`StarSpecialDate`: `date`, `label`, `kind`) marks days with a token-styled dot and adds the kind and label to the accessible name of the day; the `starDate` context gets `special` (Ignite UI `specialDates`).
+- UI text `holiday`, `event` and `specialDate` (English, German, Spanish).
+- Calendar and date pickers: `monthChange` (`{ month, year }`, month 1–12), `yearChange` (`{ year }`) and `viewChange` (`'day' | 'month' | 'year'`) on navigation; the date pickers also emit `todayClick` (today's date) and `clearClick` (PrimeNG `onMonthChange`, `onYearChange`, `onTodayClick`, `onClearClick`).
+- Date pickers: `touchUI` opens the popup as a centered modal sheet in a native `<dialog>` with larger days, and `breakpoint` (a CSS length, for example `'640px'`) does so only on a window that is not wider; the page does not scroll under the sheet, and the keyboard model stays (PrimeNG `touchUI`, `breakpoint`).
+- Date pickers with `showTime`: `minTime` / `maxTime` limit the time of every day (`HH:mm` or `HH:mm:ss`), together with `minDate` / `maxDate`. `star-time-picker` keeps its `min` / `max` for the same purpose; its 12-hour clock works with seconds.
 - Tile layout (`star-tile-layout`, `star-tile`, new entry `@star-ng/ui/tile-layout`): a CSS grid of tiles with column and row spans, reorder by drag and drop or Control and the arrow keys (`order` model), resize by Control, Shift and the arrow keys or a corner handle (`tileResize`), and container-query breakpoints (Material `mat-grid-list`, Kendo UI TileLayout). UI texts `tileMoveHint`, `tileResizeHint` and `tileSize` (English, German, Spanish).
 - Command palette (`star-command-palette`, `StarCommandTemplate`, new entry `@star-ng/ui/command-palette`): a modal search over commands on a native `<dialog>`, opened with a global `hotkey` (default Control+K or Command+K), with ranked accent-insensitive filtering, groups, recent commands, `commandRun`, and the `starCommand`, `starEmpty` and `starLoading` slots (PrimeNG `p-commandmenu`). UI texts `commandPalette`, `commandPlaceholder` and `recentCommands` (English, German, Spanish).
 - App sidebar (`star-app-sidebar`, `star-app-sidebar-header`, `star-app-sidebar-section`, `star-app-sidebar-item`, `star-app-sidebar-footer`, new entry `@star-ng/ui/app-sidebar`): the main navigation as a `<nav>` landmark, with router links (`aria-current="page"`), badges, nested items, a `collapsed` model (icons with tooltips), an `overlay` mode that uses a drawer below a breakpoint, and roving focus with the arrow keys (PrimeNG 22 `p-sidebar`). UI text `mainNavigation` (English, German, Spanish).
@@ -63,6 +82,9 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 ### Changed
 
 - Tree table: the component moved to its own file `data-display/tree-table.ts`; the import path `@star-ng/ui/data-display` does not change.
+- Tree: `nodeSelect` no longer fires when a node turns off in multiple or checkbox mode; `nodeUnselect` fires instead. To react to every change, listen to `nodeUnselect` or `valueChange`.
+- Tree: in checkbox mode, a parent key in `value` shows the parent checked, and a click on a branch also checks its descendants that a filter hides.
+- Tree and tree table share the check, lock and filter helpers (`@star-ng/ui/tree`); the tree table works as before.
 - `StarDialog` and `StarDrawer` now extend the new abstract base class `StarDialogBase` (`@star-ng/ui/dialog`), which holds the shared inputs and outputs. `StarDrawer` no longer extends `StarDialog`; its inputs and outputs do not change.
 - The page scroll lock of a dialog and a drawer uses the new class `star-dialog--block-scroll` (CSS `html:has(dialog.star-dialog--block-scroll[open])`) instead of `star-dialog--modal`. A modal still blocks the scroll by default.
 - `starViewportWidth(when?)` takes an optional condition; `star-dialog` and `star-toast` add the window resize listener only while `breakpoints` is set.

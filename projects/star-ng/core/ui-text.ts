@@ -132,6 +132,12 @@ export interface StarUiText {
   readonly moveDown: string;
   readonly moveBottom: string;
   readonly itemPosition: (label: string, position: number, total: number) => string;
+  // Tree: move a node (drag and drop, Ctrl+Shift+arrow keys)
+  readonly treeMoveHint: string;
+  readonly treeMovedBefore: (label: string, target: string) => string;
+  readonly treeMovedAfter: (label: string, target: string) => string;
+  readonly treeMovedInside: (label: string, target: string) => string;
+  readonly treeMoveNotAllowed: (label: string) => string;
   readonly transfer: string;
   readonly moveSelectedToTarget: string;
   readonly moveAllToTarget: string;
@@ -157,7 +163,13 @@ export interface StarUiText {
   readonly chooseTime: string;
   readonly hour: string;
   readonly minute: string;
+  readonly second: string;
   readonly dayPeriod: string;
+  /** Kinds of a special date in the calendar (`specialDates`). */
+  readonly holiday: string;
+  readonly event: string;
+  /** A special date without a kind. */
+  readonly specialDate: string;
   // Inputs
   readonly increase: string;
   readonly decrease: string;
@@ -426,6 +438,11 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   moveDown: 'Move down',
   moveBottom: 'Move to bottom',
   itemPosition: (label, position, total) => `${label}, position ${position} of ${total}`,
+  treeMoveHint: 'Use Control, Shift and the arrow keys to move the node.',
+  treeMovedBefore: (label, target) => `${label} moved before ${target}`,
+  treeMovedAfter: (label, target) => `${label} moved after ${target}`,
+  treeMovedInside: (label, target) => `${label} moved into ${target}`,
+  treeMoveNotAllowed: (label) => `${label} cannot move there`,
   transfer: 'Transfer',
   moveSelectedToTarget: 'Move selected to target',
   moveAllToTarget: 'Move all to target',
@@ -451,7 +468,11 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   chooseTime: 'Choose time',
   hour: 'Hour',
   minute: 'Minute',
+  second: 'Second',
   dayPeriod: 'AM or PM',
+  holiday: 'Holiday',
+  event: 'Event',
+  specialDate: 'Special date',
 
   increase: 'Increase',
   decrease: 'Decrease',
@@ -614,6 +635,10 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   moveColumnEarlier: ['column'],
   moveColumnLater: ['column'],
   itemPosition: ['label', 'position', 'total'],
+  treeMovedBefore: ['label', 'target'],
+  treeMovedAfter: ['label', 'target'],
+  treeMovedInside: ['label', 'target'],
+  treeMoveNotAllowed: ['label'],
   tileSize: ['label', 'columns', 'rows'],
   passwordRuleLength: ['min'],
   otpCharacter: ['position', 'total'],

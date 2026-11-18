@@ -14,10 +14,13 @@ import {
 import { STAR_UI_TEXT, starInlineKey } from '@star-ng/ui/core';
 
 /** One part of the time: a column of the panel. */
-type TimePart = 'hour' | 'minute' | 'period';
+type TimePart = 'hour' | 'minute' | 'second' | 'period';
 
 interface TimeCell {
-  /** Hour 0–23 (24-hour clock) or 1–12 (12-hour clock), minute 0–59, or period 0 (am) / 1 (pm). */
+  /**
+   * Hour 0–23 (24-hour clock) or 1–12 (12-hour clock), minute or second 0–59, or period 0 (am) /
+   * 1 (pm).
+   */
   readonly value: number;
   readonly label: string;
   readonly selected: boolean;
@@ -30,21 +33,34 @@ interface TimeColumn {
   readonly cells: readonly TimeCell[];
 }
 
-const DAY_MINUTES = 24 * 60;
+const DAY_SECONDS = 24 * 60 * 60;
 
-/** Minutes after midnight of `HH:mm` text, or `null` when the text is not a time. */
+/** Minutes after midnight of `HH:mm` (or `HH:mm:ss`) text, or `null` when the text is not a time. */
 export function starTimeToMinutes(text: string | null | undefined): number | null {
-  const match = /^(\d{2}):(\d{2})/.exec(text ?? '');
+  const seconds = starTimeToSeconds(text);
+  return seconds === null ? null : Math.floor(seconds / 60);
+}
+
+/** Seconds after midnight of `HH:mm` or `HH:mm:ss` text, or `null` when the text is not a time. */
+export function starTimeToSeconds(text: string | null | undefined): number | null {
+  const match = /^(\d{2}):(\d{2})(?::(\d{2}))?/.exec(text ?? '');
   if (!match) return null;
   const hours = Number(match[1]);
   const minutes = Number(match[2]);
-  return hours > 23 || minutes > 59 ? null : hours * 60 + minutes;
+  const seconds = Number(match[3] ?? 0);
+  return hours > 23 || minutes > 59 || seconds > 59 ? null : hours * 3600 + minutes * 60 + seconds;
 }
 
-/** `HH:mm` text of minutes after midnight. */
-function toText(total: number): string {
+/** `HH:mm` text of seconds after midnight, or `HH:mm:ss` with `withSeconds`. */
+export function starTimeText(total: number, withSeconds = false): string {
   const pad = (part: number) => String(part).padStart(2, '0');
-  return `${pad(Math.floor(total / 60))}:${pad(total % 60)}`;
+  const text = `${pad(Math.floor(total / 3600))}:${pad(Math.floor(total / 60) % 60)}`;
+  return withSeconds ? `${text}:${pad(total % 60)}` : text;
+}
+
+/** A whole step of at least 1. */
+function wholeStep(value: number): number {
+  return Math.max(1, Math.floor(value) || 1);
 }
 
 /** `true` when the locale writes the hour in the 12-hour clock (with am and pm). */
@@ -65,10 +81,11 @@ function periodNames(locale?: string): readonly [string, string] {
 }
 
 /**
- * The hour, minute and (in the 12-hour clock) am / pm columns of a time panel. `star-time-picker`
- * shows them in its panel, and the date pickers show them under the calendar with `showTime`.
- * The value is 24-hour `HH:mm` text, or `null`. Times outside `min` … `max` are disabled, and
- * the minutes follow `stepMinute`. Each column is a listbox: Arrow up / down, Home and End move
+ * The hour, minute, second (with `showSeconds`) and (in the 12-hour clock) am / pm columns of a
+ * time panel. `star-time-picker` shows them in its panel, and the date pickers show them under
+ * the calendar with `showTime`. The value is 24-hour `HH:mm` text (`HH:mm:ss` with
+ * `showSeconds`), or `null`. Times outside `min` … `max` are disabled, and the columns follow
+ * `stepHour`, `stepMinute` and `stepSecond`. Each column is a listbox: Arrow up / down, Home and End move
  * in a column, Arrow left / right move to the column that is on that side.
  *
  * `<star-time-columns [(value)]="time" min="08:00" max="18:00" [stepMinute]="15" />`
@@ -114,13 +131,19 @@ export class StarTimeColumns {
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly injector = inject(Injector);
 
-  /** `HH:mm` in the 24-hour clock, or `null`. */
+  /** `HH:mm` (or `HH:mm:ss` with `showSeconds`) in the 24-hour clock, or `null`. */
   readonly value = model<string | null>(null);
-  /** Earliest and latest time, `HH:mm`. */
+  /** Earliest and latest time, `HH:mm` or `HH:mm:ss`. */
   readonly min = input<string | undefined>(undefined);
   readonly max = input<string | undefined>(undefined);
+  /** Hours of the hour column: 0, then every `stepHour` hours. */
+  readonly stepHour = input(1);
   /** Minutes of the minute column: 0, then every `stepMinute` minutes. */
   readonly stepMinute = input(1);
+  /** Seconds of the second column: 0, then every `stepSecond` seconds. */
+  readonly stepSecond = input(1);
+  /** Adds a second column; the value is `HH:mm:ss`. */
+  readonly showSeconds = input(false, { transform: booleanAttribute });
   /**
    * Clock of the columns: `'24'` (an hour column 00–23) or `'12'` (1–12 and an am / pm column).
    * Default: the clock of the browser locale. The value is always 24-hour text.
@@ -129,22 +152,25 @@ export class StarTimeColumns {
   /** Every cell is disabled, for example while a date picker has no date. */
   readonly disabled = input(false, { transform: booleanAttribute });
 
-  private readonly minuteStep = computed(() => Math.max(1, Math.floor(this.stepMinute())));
+  private readonly hourStep = computed(() => wholeStep(this.stepHour()));
+  private readonly minuteStep = computed(() => wholeStep(this.stepMinute()));
+  /** Without the second column, only second 0 is offered. */
+  private readonly secondStep = computed(() =>
+    this.showSeconds() ? wholeStep(this.stepSecond()) : 60,
+  );
   private readonly twelveHours = computed(() => {
     const format = this.hourFormat();
     return format ? format === '12' : localeUses12Hours();
   });
-  private readonly lower = computed(() => starTimeToMinutes(this.min()) ?? 0);
-  private readonly upper = computed(() => starTimeToMinutes(this.max()) ?? DAY_MINUTES - 1);
-  /** Minutes of the minute column. */
-  private readonly minutes = computed(() => {
-    const list: number[] = [];
-    for (let minute = 0; minute < 60; minute += this.minuteStep()) list.push(minute);
-    return list;
-  });
+  private readonly lower = computed(() => starTimeToSeconds(this.min()) ?? 0);
+  private readonly upper = computed(() => starTimeToSeconds(this.max()) ?? DAY_SECONDS - 1);
+  /** Hours (0–23), minutes and seconds that the columns offer: 0, then every step. */
+  private readonly hourList = computed(() => series(24, this.hourStep()));
+  private readonly minuteList = computed(() => series(60, this.minuteStep()));
+  private readonly secondList = computed(() => series(60, this.secondStep()));
 
-  /** The value in minutes after midnight, or `null`. */
-  private readonly current = computed(() => starTimeToMinutes(this.value()));
+  /** The value in seconds after midnight, or `null`. */
+  private readonly current = computed(() => starTimeToSeconds(this.value()));
   /**
    * The time that the columns show: the value, or else the first time that can be chosen. A
    * click in one column keeps the other parts of this time.
@@ -152,18 +178,28 @@ export class StarTimeColumns {
   private readonly base = computed(() => {
     const current = this.current();
     if (current !== null) return current;
-    return this.allowedTimes()[0] ?? 0;
+    const first = this.offeredMinutes()[0];
+    return first ? first.minute * 60 + first.first : 0;
   });
-  /** Every time that the columns offer: on the minute step and inside `min` … `max`. */
-  private readonly allowedTimes = computed(() => {
-    const times: number[] = [];
-    for (let hour = 0; hour < 24; hour++) {
-      for (const minute of this.minutes()) {
-        const time = hour * 60 + minute;
-        if (this.inLimits(time)) times.push(time);
+  /**
+   * Every minute of the day that has an offered time (on the steps, inside `min` … `max`), with
+   * its first and last offered second. At most 24 x 60 entries: the seconds are computed, not
+   * listed, so the second column does not cost 86,400 times.
+   */
+  private readonly offeredMinutes = computed(() => {
+    const step = this.secondStep();
+    const lastSecond = this.secondList()[this.secondList().length - 1];
+    const minutes: OfferedMinute[] = [];
+    for (const hour of this.hourList())
+      for (const minute of this.minuteList()) {
+        const start = hour * 3600 + minute * 60;
+        const low = Math.max(this.lower() - start, 0);
+        const high = Math.min(this.upper() - start, lastSecond);
+        const first = Math.ceil(low / step) * step;
+        const last = Math.floor(high / step) * step;
+        if (first <= last) minutes.push({ minute: hour * 60 + minute, first, last });
       }
-    }
-    return times;
+    return minutes;
   });
 
   /** Focused value of each column (roving tab stop). */
@@ -173,34 +209,55 @@ export class StarTimeColumns {
     const base = this.base();
     const chosen = this.current() !== null;
     const off = this.disabled();
-    const baseHour = Math.floor(base / 60);
-    const baseMinute = base % 60;
+    const baseHour = Math.floor(base / 3600);
+    const baseMinute = Math.floor(base / 60) % 60;
+    const baseSecond = base % 60;
     const pm = baseHour >= 12 ? 1 : 0;
     const pad = (part: number) => String(part).padStart(2, '0');
+    const twelve = this.twelveHours();
+    const offered = this.offeredMinutes();
+    // Hours and minutes of the day (hour * 60 + minute) that have an offered time.
+    const offeredHours = new Set(offered.map((entry) => Math.floor(entry.minute / 60)));
+    const offeredMinutes = new Set(offered.map((entry) => entry.minute));
 
-    const hourValues = this.twelveHours()
-      ? [12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
-      : Array.from({ length: 24 }, (_, hour) => hour);
+    // In the 12-hour clock the hours on the step are those of the period that the columns show.
+    const hourValues = twelve
+      ? [12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].filter((value) =>
+          this.hourList().includes(this.hour24(value, pm)),
+        )
+      : this.hourList();
     const hours: TimeCell[] = hourValues.map((value) => {
       const hour = this.hour24(value, pm);
       return {
         value,
-        label: this.twelveHours() ? String(value) : pad(value),
+        label: twelve ? String(value) : pad(value),
         selected: chosen && hour === baseHour,
-        disabled: off || !this.minutes().some((minute) => this.inLimits(hour * 60 + minute)),
+        disabled: off || !offeredHours.has(hour),
       };
     });
-    const minutes: TimeCell[] = this.minutes().map((value) => ({
+    const minutes: TimeCell[] = this.minuteList().map((value) => ({
       value,
       label: pad(value),
       selected: chosen && value === baseMinute,
-      disabled: off || !this.inLimits(baseHour * 60 + value),
+      disabled: off || !offeredMinutes.has(baseHour * 60 + value),
     }));
     const columns: TimeColumn[] = [
       { part: 'hour', label: this.text.hour, cells: hours },
       { part: 'minute', label: this.text.minute, cells: minutes },
     ];
-    if (this.twelveHours()) {
+    if (this.showSeconds()) {
+      columns.push({
+        part: 'second',
+        label: this.text.second,
+        cells: this.secondList().map((value) => ({
+          value,
+          label: pad(value),
+          selected: chosen && value === baseSecond,
+          disabled: off || !this.inLimits(baseHour * 3600 + baseMinute * 60 + value),
+        })),
+      });
+    }
+    if (twelve) {
       const names = periodNames();
       columns.push({
         part: 'period',
@@ -209,7 +266,7 @@ export class StarTimeColumns {
           value,
           label: names[value],
           selected: chosen && value === pm,
-          disabled: off || !this.allowedTimes().some((time) => (time >= 12 * 60 ? 1 : 0) === value),
+          disabled: off || ![...offeredHours].some((hour) => (hour >= 12 ? 1 : 0) === value),
         })),
       });
     }
@@ -287,15 +344,21 @@ export class StarTimeColumns {
       ?.cells.find((item) => item.value === value);
     if (!cell || cell.disabled) return;
     const base = this.base();
-    let hour = Math.floor(base / 60);
-    let minute = base % 60;
+    let hour = Math.floor(base / 3600);
+    let minute = Math.floor(base / 60) % 60;
+    let second = base % 60;
     if (part === 'hour') hour = this.twelveHours() ? this.hour24(value, hour >= 12 ? 1 : 0) : value;
     else if (part === 'minute') minute = value;
+    else if (part === 'second') second = value;
     else hour = (hour % 12) + value * 12;
-    // A minute that is not on the step (for example 23:59) moves down to the step.
+    // A part that is not on its step (for example 23:59) moves down to the step.
+    if (part !== 'hour' && part !== 'period') hour -= hour % this.hourStep();
     if (part !== 'minute') minute -= minute % this.minuteStep();
+    if (part !== 'second') second -= second % this.secondStep();
     this.activate(part, value);
-    this.value.set(toText(this.nearestAllowed(hour * 60 + minute)));
+    this.value.set(
+      starTimeText(this.nearestAllowed(hour * 3600 + minute * 60 + second), this.showSeconds()),
+    );
   }
 
   /** Focuses a cell at once, so a key pressed right after a move acts on the new cell. */
@@ -332,10 +395,31 @@ export class StarTimeColumns {
 
   /** `time` when the columns offer it, else the offered time that is nearest to it. */
   private nearestAllowed(time: number): number {
-    const times = this.allowedTimes();
-    if (times.includes(time) || times.length === 0) return time;
-    return times.reduce((best, next) =>
-      Math.abs(next - time) < Math.abs(best - time) ? next : best,
-    );
+    const step = this.secondStep();
+    let best: number | null = null;
+    for (const entry of this.offeredMinutes()) {
+      // The offered second of this minute that is nearest to `time`.
+      const start = entry.minute * 60;
+      const second = Math.min(
+        entry.last,
+        Math.max(entry.first, Math.round((time - start) / step) * step),
+      );
+      const candidate = start + second;
+      if (candidate === time) return time;
+      if (best === null || Math.abs(candidate - time) < Math.abs(best - time)) best = candidate;
+    }
+    return best ?? time;
   }
+}
+
+/** A minute of the day (hour * 60 + minute) with its first and last offered second. */
+interface OfferedMinute {
+  readonly minute: number;
+  readonly first: number;
+  readonly last: number;
+}
+
+/** 0 … `end` - 1 in steps of `by`. */
+function series(end: number, by: number): number[] {
+  return Array.from({ length: Math.ceil(end / by) }, (_, index) => index * by);
 }

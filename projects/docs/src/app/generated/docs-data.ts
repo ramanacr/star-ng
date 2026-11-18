@@ -1078,6 +1078,20 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Shows the ISO 8601 week number at the start of each week."
       },
       {
+        "name": "showOtherMonths",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Shows the days of the month before and after in the first and last week (PrimeNG `showOtherMonths`). Off: those cells are empty. With two or more months they are always empty."
+      },
+      {
+        "name": "selectOtherMonths",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "The shown days of the month before and after can be chosen (PrimeNG `selectOtherMonths`). Off: they are shown but disabled (`aria-disabled`)."
+      },
+      {
         "name": "range",
         "type": "StarDateRange | null",
         "default": "null",
@@ -1134,6 +1148,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
+        "name": "specialDates",
+        "type": "readonly StarSpecialDate[]",
+        "default": "[]",
+        "required": false,
+        "description": "Marked days, for example holidays or due dates (Ignite UI `specialDates`). The day gets a dot, and its accessible name gets the kind and the label: \"12 March 2026, Holiday: Company day\". The `starDate` context has the entry as `special`."
+      },
+      {
         "name": "dateTemplate",
         "type": "TemplateRef<StarDateContext> | null",
         "default": "null",
@@ -1149,6 +1170,27 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": ""
+      },
+      {
+        "name": "monthChange",
+        "type": "StarCalendarMonthChange",
+        "default": null,
+        "required": false,
+        "description": "The user moved to another month (arrows, keys, the month view, or a day of another month). With two or more months, the first shown month. PrimeNG `onMonthChange`, Ignite UI `viewDateChanged`."
+      },
+      {
+        "name": "yearChange",
+        "type": "StarCalendarYearChange",
+        "default": null,
+        "required": false,
+        "description": "The user moved to another year (PrimeNG `onYearChange`)."
+      },
+      {
+        "name": "viewChange",
+        "type": "StarCalendarView",
+        "default": null,
+        "required": false,
+        "description": "The user switched between the day, month and year views (Ignite UI `activeViewChanged`)."
       }
     ]
   },
@@ -2072,7 +2114,49 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "Intl.DateTimeFormatOptions",
         "default": "DEFAULT_DATE_FORMAT",
         "required": false,
-        "description": "`Intl.DateTimeFormat` options for the input text (default numeric day / month / year)."
+        "description": "`Intl.DateTimeFormat` options for the input text (default numeric day / month / year). The shared default of `displayFormat` and `inputFormat`."
+      },
+      {
+        "name": "displayFormat",
+        "type": "Intl.DateTimeFormatOptions | null",
+        "default": "null",
+        "required": false,
+        "description": "`Intl.DateTimeFormat` options of the text while the field does not have the focus, for example `{ dateStyle: 'long' }` (Ignite UI `displayFormat`). Default: `dateFormat`."
+      },
+      {
+        "name": "inputFormat",
+        "type": "Intl.DateTimeFormatOptions | null",
+        "default": "null",
+        "required": false,
+        "description": "`Intl.DateTimeFormat` options of the text while the field has the focus (Ignite UI `inputFormat`, PrimeNG `dateFormat`). Typed text is read in the order of day, month and year of this format, with any separators; the month names of the locale are accepted too. Default: `dateFormat`."
+      },
+      {
+        "name": "keepInvalid",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Keeps typed text that is not a valid date (PrimeNG `keepInvalid`). The field is marked invalid (`aria-invalid`) and the value becomes empty, so a required check fails. Without it, such text goes back to the text of the value."
+      },
+      {
+        "name": "dataType",
+        "type": "'date' | 'string'",
+        "default": "'date'",
+        "required": false,
+        "description": "Type of the value (PrimeNG `dataType`): `'date'` (default) gives `Date` objects, `'string'` gives ISO text: `yyyy-mm-dd`, or `yyyy-mm-ddTHH:mm` (`yyyy-mm-ddTHH:mm:ss` with `showSeconds`) with `showTime`. The text that the picker writes is a local date and time, without a time zone. A value may be a `Date` or ISO text in both modes; the picker also reads fractional seconds and a zone (`2026-11-22T13:30:15.123Z`, `...+01:00`), as server JSON often has them, and shows that instant in local time."
+      },
+      {
+        "name": "touchUI",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Opens the popup as a modal sheet in the middle of the window, in a native `<dialog>` with a backdrop, and with larger days for touch (PrimeNG `touchUI`). The keyboard model does not change; Escape and a click on the backdrop close it. While it is open, the page does not scroll (the scroll lock of `star-dialog`)."
+      },
+      {
+        "name": "breakpoint",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Window width at or below which the popup opens as a sheet (as `touchUI`): a CSS length, for example `'640px'` or `'40rem'`, used in the media query `(max-width: <breakpoint>)` (PrimeNG `breakpoint`). The width is checked when the popup opens. While the sheet is open, the page does not scroll."
       },
       {
         "name": "numberOfMonths",
@@ -2089,11 +2173,67 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Shows the ISO 8601 week number at the start of each week."
       },
       {
+        "name": "showOtherMonths",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Shows the days of the month before and after (PrimeNG `showOtherMonths`)."
+      },
+      {
+        "name": "selectOtherMonths",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "The shown days of the month before and after can be chosen (PrimeNG `selectOtherMonths`)."
+      },
+      {
+        "name": "specialDates",
+        "type": "readonly StarSpecialDate[]",
+        "default": "[]",
+        "required": false,
+        "description": "Marked days in the calendar, for example holidays (Ignite UI `specialDates`). The kind and the label are part of the accessible name of the day."
+      },
+      {
         "name": "hourFormat",
         "type": "'24' | '12'",
         "default": "'24'",
         "required": false,
         "description": "Clock of the typed time with `showTime`: `'24'` (14:30) or `'12'` (2:30 PM). Both forms are accepted when the user types."
+      },
+      {
+        "name": "showSeconds",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Adds seconds to the time with `showTime`: the text is `hh:mm:ss` and the popup has a second column (PrimeNG `showSeconds`)."
+      },
+      {
+        "name": "minTime",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Earliest and latest time of every day with `showTime`, `HH:mm` or `HH:mm:ss`, for example opening hours (Ignite UI `minValue` / `maxValue` of the time part). They add to `minDate` / `maxDate`: the columns disable the other times, typed text outside them is not taken, and a picked day moves its time into them."
+      },
+      {
+        "name": "maxTime",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "stepHour",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Hour step of the time columns with `showTime` (PrimeNG `stepHour`)."
+      },
+      {
+        "name": "stepSecond",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Second step of the time columns with `showSeconds` (PrimeNG `stepSecond`)."
       },
       {
         "name": "showButtonBar",
@@ -2202,6 +2342,41 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": ""
+      },
+      {
+        "name": "monthChange",
+        "type": "StarCalendarMonthChange",
+        "default": null,
+        "required": false,
+        "description": "The user moved the calendar to another month (PrimeNG `onMonthChange`)."
+      },
+      {
+        "name": "yearChange",
+        "type": "StarCalendarYearChange",
+        "default": null,
+        "required": false,
+        "description": "The user moved the calendar to another year (PrimeNG `onYearChange`)."
+      },
+      {
+        "name": "viewChange",
+        "type": "StarCalendarView",
+        "default": null,
+        "required": false,
+        "description": "The user switched the calendar between the day, month and year views."
+      },
+      {
+        "name": "todayClick",
+        "type": "Date",
+        "default": null,
+        "required": false,
+        "description": "The user chose Today in the button bar, after the value changed; the event is today (PrimeNG `onTodayClick`). Not emitted when today cannot be chosen."
+      },
+      {
+        "name": "clearClick",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "The user chose Clear in the button bar or the clear button, after the value was cleared (PrimeNG `onClearClick`)."
       }
     ]
   },
@@ -2236,10 +2411,10 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [
       {
         "name": "value",
-        "type": "Date | null",
+        "type": "T | null",
         "default": "null",
         "required": false,
-        "description": ""
+        "description": "The date: a `Date`, or ISO text with `dataType: 'string'`."
       }
     ],
     "outputs": [
@@ -2263,7 +2438,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "boolean",
         "default": "false",
         "required": false,
-        "description": "Adds a time of day to both ends. A new start is at 00:00 and a new end at 23:59; the popup has start and end time columns and stays open until the user chooses Done."
+        "description": "Adds a time of day to both ends. A new start is at 00:00 and a new end at 23:59 (23:59:59 with `showSeconds`); the popup has start and end time columns and stays open until the user chooses Done."
       },
       {
         "name": "stepMinute",
@@ -2276,10 +2451,10 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [
       {
         "name": "value",
-        "type": "StarDateRange | null",
+        "type": "StarDateRange<T> | null",
         "default": "null",
         "required": false,
-        "description": ""
+        "description": "The range: two `Date`s, or ISO text with `dataType: 'string'`."
       }
     ],
     "outputs": [
@@ -4906,10 +5081,10 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [
       {
         "name": "value",
-        "type": "readonly Date[]",
+        "type": "readonly T[]",
         "default": "[]",
         "required": false,
-        "description": ""
+        "description": "The days: `Date`s, or ISO text with `dataType: 'string'`."
       }
     ],
     "outputs": []
@@ -7647,14 +7822,14 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-time-columns",
     "entry": "@star-ng/ui/date-picker",
-    "description": "The hour, minute and (in the 12-hour clock) am / pm columns of a time panel. `star-time-picker` shows them in its panel, and the date pickers show them under the calendar with `showTime`. The value is 24-hour `HH:mm` text, or `null`. Times outside `min` … `max` are disabled, and the minutes follow `stepMinute`. Each column is a listbox: Arrow up / down, Home and End move in a column, Arrow left / right move to the column that is on that side.",
+    "description": "The hour, minute, second (with `showSeconds`) and (in the 12-hour clock) am / pm columns of a time panel. `star-time-picker` shows them in its panel, and the date pickers show them under the calendar with `showTime`. The value is 24-hour `HH:mm` text (`HH:mm:ss` with `showSeconds`), or `null`. Times outside `min` … `max` are disabled, and the columns follow `stepHour`, `stepMinute` and `stepSecond`. Each column is a listbox: Arrow up / down, Home and End move in a column, Arrow left / right move to the column that is on that side.",
     "inputs": [
       {
         "name": "min",
         "type": "string | undefined",
         "default": "undefined",
         "required": false,
-        "description": "Earliest and latest time, `HH:mm`."
+        "description": "Earliest and latest time, `HH:mm` or `HH:mm:ss`."
       },
       {
         "name": "max",
@@ -7664,11 +7839,32 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
+        "name": "stepHour",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Hours of the hour column: 0, then every `stepHour` hours."
+      },
+      {
         "name": "stepMinute",
         "type": "number",
         "default": "1",
         "required": false,
         "description": "Minutes of the minute column: 0, then every `stepMinute` minutes."
+      },
+      {
+        "name": "stepSecond",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Seconds of the second column: 0, then every `stepSecond` seconds."
+      },
+      {
+        "name": "showSeconds",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Adds a second column; the value is `HH:mm:ss`."
       },
       {
         "name": "hourFormat",
@@ -7691,7 +7887,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "string | null",
         "default": "null",
         "required": false,
-        "description": "`HH:mm` in the 24-hour clock, or `null`."
+        "description": "`HH:mm` (or `HH:mm:ss` with `showSeconds`) in the 24-hour clock, or `null`."
       }
     ],
     "outputs": []
@@ -7754,14 +7950,14 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-time-picker",
     "entry": "@star-ng/ui/date-picker",
-    "description": "Time picker: a time of day without a date (PrimeNG `p-datepicker timeOnly`). The value is 24-hour `HH:mm` text, or `null`.",
+    "description": "Time picker: a time of day without a date (PrimeNG `p-datepicker timeOnly`, Ignite UI `igx-time-picker`). The value is 24-hour `HH:mm` text (`HH:mm:ss` with `showSeconds`), or `null`.",
     "inputs": [
       {
         "name": "min",
         "type": "string | undefined",
         "default": "undefined",
         "required": false,
-        "description": "Earliest and latest time, `HH:mm`."
+        "description": "Earliest and latest time, `HH:mm` or `HH:mm:ss` (PrimeNG `minDate` / `maxDate` with `timeOnly`, Ignite UI `minValue` / `maxValue`)."
       },
       {
         "name": "max",
@@ -7771,11 +7967,32 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
+        "name": "stepHour",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Hour step of the panel's hour column (PrimeNG `stepHour`)."
+      },
+      {
         "name": "stepMinute",
         "type": "number",
         "default": "1",
         "required": false,
         "description": "Minute step of the field's arrow keys and of the panel's minute column."
+      },
+      {
+        "name": "stepSecond",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Second step of the panel's second column and, with `showSeconds`, of the field's arrow keys."
+      },
+      {
+        "name": "showSeconds",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Adds seconds: the field and the panel show them, and the value is `HH:mm:ss`."
       },
       {
         "name": "hourFormat",
@@ -7854,7 +8071,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "string | null",
         "default": "null",
         "required": false,
-        "description": "`HH:mm` in the 24-hour clock, or `null`."
+        "description": "`HH:mm` (or `HH:mm:ss` with `showSeconds`) in the 24-hour clock, or `null`."
       }
     ],
     "outputs": [
@@ -8175,7 +8392,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-tree",
     "entry": "@star-ng/ui/tree",
-    "description": "Tree (PrimeNG `p-tree`): expand / collapse, single, multiple or checkbox selection (checkbox mode selects whole branches and shows mixed parents), filter, and the WAI-ARIA tree keyboard model (Up / Down, Right opens or enters, Left closes or goes to the parent, Home / End, Enter / Space select, `*` expands siblings).",
+    "description": "Tree (PrimeNG `p-tree`, Ignite `igx-tree`): expand / collapse, single, multiple or checkbox selection (checkbox mode propagates up and down and shows mixed parents), filter in lenient or strict mode, lazy children, a row context menu, drag and drop with a keyboard alternative, and the WAI-ARIA tree keyboard model (Up / Down, Right opens or enters, Left closes or goes to the parent, Home / End, Enter / Space select, `*` expands siblings).",
     "inputs": [
       {
         "name": "nodes",
@@ -8199,6 +8416,27 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
+        "name": "filterMode",
+        "type": "TreeFilterMode",
+        "default": "'strict'",
+        "required": false,
+        "description": "How the filter keeps nodes (PrimeNG `filterMode`). `'strict'` (the default): only the matching paths show, and a match shows only its matching descendants. `'lenient'`: a match shows with all its descendants. Both show the ancestors of a match open."
+      },
+      {
+        "name": "filterBy",
+        "type": "string | readonly string[]",
+        "default": "'label'",
+        "required": false,
+        "description": "The node fields that the filter searches (PrimeNG `filterBy`): `label` (the default), another node property, or a field of `data`. One field or a list."
+      },
+      {
+        "name": "filterLocale",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Locale of the filter compare (PrimeNG `filterLocale`), for example `de`. Case and accents never count; with a locale, the compare follows the letters of that language."
+      },
+      {
         "name": "scrollHeight",
         "type": "string | null",
         "default": "null",
@@ -8217,7 +8455,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "number",
         "default": "34",
         "required": false,
-        "description": "Row height in pixels in windowed rendering. Keep it equal to the real height of a row."
+        "description": "Row height in pixels in windowed rendering. Keep it equal to the real row height."
       },
       {
         "name": "ariaLabel",
@@ -8232,6 +8470,69 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "false",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "propagateSelectionUp",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Checkbox mode (PrimeNG `propagateSelectionUp`): a parent is checked when all its selectable children are checked, and mixed when some are. Locked nodes (`disabled`, `selectable: false`) do not count and keep their state."
+      },
+      {
+        "name": "propagateSelectionDown",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Checkbox mode (PrimeNG `propagateSelectionDown`): checking a node checks its descendants, except locked nodes and their subtrees. With both propagations on, `value` holds the leaf keys (and locked keys); parents are derived."
+      },
+      {
+        "name": "loadingMode",
+        "type": "StarTreeLoadingMode",
+        "default": "'row'",
+        "required": false,
+        "description": "Lazy children: `'row'` (the default) shows a loading row under an open node whose `loading` is true; `'icon'` shows a spinner in its toggle. With `virtualScroll` the icon always shows, because every row has the same height."
+      },
+      {
+        "name": "contextMenu",
+        "type": "readonly StarMenuItem[]",
+        "default": "[]",
+        "required": false,
+        "description": "Items of the node context menu (PrimeNG `contextMenu`): right click, Shift+F10 or the context menu key on a node. Empty: no menu, and the browser menu shows."
+      },
+      {
+        "name": "draggableNodes",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The user can drag nodes (PrimeNG `draggableNodes`, Ignite drag and drop). With `droppableNodes`, Ctrl+Shift and the arrow keys move the focused node too (not while a filter query is active). A node with `draggable: false` or `disabled` stays."
+      },
+      {
+        "name": "droppableNodes",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The tree accepts drops (PrimeNG `droppableNodes`)."
+      },
+      {
+        "name": "draggableScope",
+        "type": "StarTreeDragScope",
+        "default": "null",
+        "required": false,
+        "description": "Scope of the nodes dragged from this tree (PrimeNG `draggableScope`), for cross-tree drops."
+      },
+      {
+        "name": "droppableScope",
+        "type": "StarTreeDragScope",
+        "default": "null",
+        "required": false,
+        "description": "Scopes this tree accepts from other trees (PrimeNG `droppableScope`)."
+      },
+      {
+        "name": "validateDrop",
+        "type": "StarTreeDropValidator | null",
+        "default": "null",
+        "required": false,
+        "description": "Extra rule for drops (PrimeNG `validateDrop`); return false to refuse a drop."
       }
     ],
     "models": [
@@ -8263,7 +8564,56 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "StarTreeNode",
         "default": null,
         "required": false,
-        "description": ""
+        "description": "The user selected or checked a node (PrimeNG `onNodeSelect`)."
+      },
+      {
+        "name": "nodeUnselect",
+        "type": "StarTreeNode",
+        "default": null,
+        "required": false,
+        "description": "The user unselected or unchecked a node (PrimeNG `onNodeUnselect`)."
+      },
+      {
+        "name": "nodeExpand",
+        "type": "StarTreeNodeEvent",
+        "default": null,
+        "required": false,
+        "description": "The user opened a node (PrimeNG `onNodeExpand`). For a lazy node, load its children here."
+      },
+      {
+        "name": "nodeCollapse",
+        "type": "StarTreeNodeEvent",
+        "default": null,
+        "required": false,
+        "description": "The user closed a node (PrimeNG `onNodeCollapse`)."
+      },
+      {
+        "name": "nodeDoubleClick",
+        "type": "StarTreeNodeEvent",
+        "default": null,
+        "required": false,
+        "description": "Double click on a node (PrimeNG `onNodeDoubleClick`)."
+      },
+      {
+        "name": "nodeContextMenu",
+        "type": "StarTreeNodeEvent",
+        "default": null,
+        "required": false,
+        "description": "Right click, Shift+F10 or the context menu key on a node (PrimeNG `onNodeContextMenuSelect`)."
+      },
+      {
+        "name": "contextMenuSelect",
+        "type": "StarTreeContextMenuEvent",
+        "default": null,
+        "required": false,
+        "description": "The user chose an item of the node context menu."
+      },
+      {
+        "name": "nodeDrop",
+        "type": "StarTreeNodeDropEvent",
+        "default": null,
+        "required": false,
+        "description": "A node was dropped, by pointer or keyboard (PrimeNG `onNodeDrop`). Move it in `nodes`."
       }
     ]
   },
@@ -8293,6 +8643,55 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "false",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "filterMode",
+        "type": "TreeFilterMode",
+        "default": "'strict'",
+        "required": false,
+        "description": "Filter mode of the panel tree (PrimeNG `filterMode`, see `star-tree`)."
+      },
+      {
+        "name": "filterBy",
+        "type": "string | readonly string[]",
+        "default": "'label'",
+        "required": false,
+        "description": "Node fields that the filter searches (PrimeNG `filterBy`, see `star-tree`)."
+      },
+      {
+        "name": "filterLocale",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Locale of the filter compare (PrimeNG `filterLocale`)."
+      },
+      {
+        "name": "propagateSelectionUp",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Checkbox mode: parents follow their children (PrimeNG `propagateSelectionUp`)."
+      },
+      {
+        "name": "propagateSelectionDown",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Checkbox mode: children follow their parent (PrimeNG `propagateSelectionDown`)."
+      },
+      {
+        "name": "loadingMode",
+        "type": "StarTreeLoadingMode",
+        "default": "'row'",
+        "required": false,
+        "description": "How a lazy node shows that its children load (see `star-tree`)."
+      },
+      {
+        "name": "display",
+        "type": "'comma' | 'chip'",
+        "default": "'comma'",
+        "required": false,
+        "description": "How the trigger shows a multiple or checkbox value (PrimeNG `display`): `'comma'` (the default) joins the labels, `'chip'` shows a chip per label. Past `maxSelectedLabels` both show the count."
       },
       {
         "name": "virtualScroll",
@@ -8381,6 +8780,34 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": ""
+      },
+      {
+        "name": "nodeSelect",
+        "type": "StarTreeNode",
+        "default": null,
+        "required": false,
+        "description": "The user selected a node in the panel (PrimeNG `onNodeSelect`)."
+      },
+      {
+        "name": "nodeUnselect",
+        "type": "StarTreeNode",
+        "default": null,
+        "required": false,
+        "description": "The user unselected a node in the panel (PrimeNG `onNodeUnselect`)."
+      },
+      {
+        "name": "nodeExpand",
+        "type": "StarTreeNodeEvent",
+        "default": null,
+        "required": false,
+        "description": "The user opened a node in the panel. For a lazy node, load its children here."
+      },
+      {
+        "name": "nodeCollapse",
+        "type": "StarTreeNodeEvent",
+        "default": null,
+        "required": false,
+        "description": "The user closed a node in the panel."
       }
     ]
   },
@@ -8953,10 +9380,13 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "button/states": "<star-button [loading]=\"saving()\" (pressed)=\"save()\">Save changes</star-button>\n<star-button variant=\"secondary\" disabled>Disabled</star-button>\n<p class=\"docs-output\" role=\"status\">Saved {{ saves() }} times</p>",
   "button/variants": "<star-button variant=\"primary\">Save</star-button>\n<star-button variant=\"secondary\">Cancel</star-button>\n<star-button variant=\"ghost\">Skip</star-button>\n<star-button variant=\"success\">Approve</star-button>\n<star-button variant=\"warning\">Hold</star-button>\n<star-button variant=\"danger\">Delete</star-button>\n<star-button variant=\"ghost-danger\">Remove</star-button>",
   "calendar/basic": "<div class=\"docs-stack\">\n  <star-calendar\n    class=\"star-calendar--inline\"\n    [selected]=\"shipDate()\"\n    (dateSelect)=\"shipDate.set($event)\"\n    locale=\"en-GB\"\n    [firstDayOfWeek]=\"1\"\n  />\n  <p class=\"docs-output\" role=\"status\">Ship date: {{ iso(shipDate()) }}</p>\n</div>",
+  "calendar/events": "<div class=\"docs-stack\">\n  <star-calendar\n    class=\"star-calendar--inline\"\n    [selected]=\"eventsDate()\"\n    (dateSelect)=\"eventsDate.set($event)\"\n    (monthChange)=\"shownMonth.set($event.month + '/' + $event.year)\"\n    (viewChange)=\"shownView.set($event)\"\n    locale=\"en-GB\"\n    [firstDayOfWeek]=\"1\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Shown month: {{ shownMonth() }}. View: {{ shownView() }}\n  </p>\n</div>",
   "calendar/granularity": "<div class=\"docs-stack\">\n  <star-calendar\n    class=\"star-calendar--inline\"\n    granularity=\"month\"\n    [selected]=\"reportMonth()\"\n    (dateSelect)=\"reportMonth.set($event)\"\n    locale=\"en-GB\"\n  />\n  <p class=\"docs-output\" role=\"status\">Month: {{ iso(reportMonth()) }}</p>\n</div>",
   "calendar/months": "<star-calendar\n  class=\"star-calendar--inline\"\n  [selected]=\"stay()\"\n  (dateSelect)=\"stay.set($event)\"\n  [numberOfMonths]=\"2\"\n  showWeek\n  [minDate]=\"minDate\"\n  [maxDate]=\"maxDate\"\n  [disabledDays]=\"[0]\"\n  locale=\"en-GB\"\n  [firstDayOfWeek]=\"1\"\n/>",
+  "calendar/other-months": "<div class=\"docs-stack\">\n  <star-calendar\n    class=\"star-calendar--inline\"\n    [selected]=\"closingDate()\"\n    (dateSelect)=\"closingDate.set($event)\"\n    [selectOtherMonths]=\"false\"\n    locale=\"en-GB\"\n    [firstDayOfWeek]=\"1\"\n  />\n  <star-calendar\n    class=\"star-calendar--inline\"\n    [selected]=\"closingDate()\"\n    (dateSelect)=\"closingDate.set($event)\"\n    [showOtherMonths]=\"false\"\n    locale=\"en-GB\"\n    [firstDayOfWeek]=\"1\"\n  />\n  <p class=\"docs-output\" role=\"status\">Closing date: {{ iso(closingDate()) }}</p>\n</div>",
   "calendar/range": "<div class=\"docs-stack\">\n  <star-calendar\n    class=\"star-calendar--inline\"\n    mode=\"range\"\n    [range]=\"booking()\"\n    (dateSelect)=\"pick($event)\"\n    locale=\"en-GB\"\n    [firstDayOfWeek]=\"1\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Booking: {{ iso(booking()?.start) }} to {{ iso(booking()?.end) }}\n  </p>\n</div>",
   "calendar/slots": "<div class=\"docs-stack\">\n  <star-calendar\n    class=\"star-calendar--inline\"\n    [selected]=\"payDate()\"\n    (dateSelect)=\"payDate.set($event)\"\n    locale=\"en-GB\"\n    [firstDayOfWeek]=\"1\"\n  >\n    <ng-template starHeader>\n      <p class=\"docs-output docs-due-note\">Invoices due in November 2026</p>\n    </ng-template>\n    <ng-template starDate let-date>\n      <span class=\"docs-due\" [class.docs-due--marked]=\"isDue(date)\">{{\n        date.getDate()\n      }}</span>\n    </ng-template>\n    <ng-template starFooter>\n      <p class=\"docs-output docs-due-note\">\n        A dot marks a due date: 5, 12 and 26 November.\n      </p>\n    </ng-template>\n  </star-calendar>\n  <p class=\"docs-output\" role=\"status\">Payment date: {{ iso(payDate()) }}</p>\n</div>",
+  "calendar/special-dates": "<div class=\"docs-stack\">\n  <star-calendar\n    class=\"star-calendar--inline\"\n    [selected]=\"reviewDate()\"\n    (dateSelect)=\"reviewDate.set($event)\"\n    [specialDates]=\"companyDays\"\n    locale=\"en-GB\"\n    [firstDayOfWeek]=\"1\"\n  />\n  <p class=\"docs-output\" role=\"status\">Review date: {{ iso(reviewDate()) }}</p>\n</div>",
   "card/basic": "<div class=\"docs-stack\">\n  <star-card header=\"Open orders\" subheader=\"Last 30 days\">\n    <star-button starCardActions variant=\"ghost\" size=\"sm\">View all</star-button>\n    <p>Forty-two orders are open. Nine are late.</p>\n    <div starCardFooter class=\"docs-row\">\n      <star-button size=\"sm\">Export</star-button>\n      <star-button size=\"sm\" variant=\"secondary\">Filter</star-button>\n    </div>\n  </star-card>\n</div>",
   "card/plain": "<div class=\"docs-stack\">\n  <star-card>\n    <p>A card with only a body.</p>\n  </star-card>\n</div>",
   "carousel/autoplay": "<star-carousel\n  style=\"width: 100%; max-width: 40rem\"\n  [items]=\"photos\"\n  [autoplay]=\"4000\"\n  ariaLabel=\"Automatic photos\"\n>\n  <ng-template starCarouselItem [starCarouselItemOf]=\"photos\" let-photo>\n    <img\n      style=\"display: block; width: 100%; height: auto\"\n      [src]=\"photo.src\"\n      [alt]=\"photo.label\"\n    />\n  </ng-template>\n</star-carousel>",
@@ -9006,16 +9436,23 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "data-view/slots": "<div class=\"docs-stack\">\n  <star-data-view [items]=\"products.slice(0, 3)\">\n    <ng-template starHeader>\n      <p class=\"docs-output\">Today's picks</p>\n    </ng-template>\n    <ng-template starDataViewItem [starDataViewItemOf]=\"products\" let-p>\n      <strong>{{ p.name }}</strong>\n      <div>{{ '$' + p.price }}</div>\n    </ng-template>\n    <ng-template starFooter>\n      <p class=\"docs-output\">Prices include tax.</p>\n    </ng-template>\n  </star-data-view>\n  <star-data-view [items]=\"[]\">\n    <ng-template starDataViewItem let-item>{{ item }}</ng-template>\n    <ng-template starEmpty let-text>\n      <span style=\"color: var(--star-text-muted)\">Nothing to show yet.</span>\n    </ng-template>\n  </star-data-view>\n</div>",
   "data-view/sorting": "<star-data-view [items]=\"sorted()\">\n  <div starDataViewHeader>\n    <star-button size=\"sm\" variant=\"secondary\" (click)=\"sortBy.set('name')\">\n      Sort by name\n    </star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (click)=\"sortBy.set('price')\">\n      Sort by price\n    </star-button>\n  </div>\n  <ng-template starDataViewItem [starDataViewItemOf]=\"sorted()\" let-p>\n    <strong>{{ p.name }}</strong>\n    <div>{{ '$' + p.price }}</div>\n  </ng-template>\n</star-data-view>",
   "date-picker/basic": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"delivery\"\n    locale=\"en-GB\"\n    [firstDayOfWeek]=\"1\"\n    ariaLabel=\"Delivery date\"\n    showButtonBar\n  />\n  <p class=\"docs-output\" role=\"status\">Delivery: {{ iso(delivery()) }}</p>\n</div>",
+  "date-picker/data-type": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"issuedOn\"\n    locale=\"en-GB\"\n    dataType=\"string\"\n    ariaLabel=\"Invoice issued on\"\n  />\n  <star-date-range-picker\n    [(value)]=\"billingPeriod\"\n    locale=\"en-GB\"\n    dataType=\"string\"\n    ariaLabel=\"Billing period\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Issued: {{ issuedOn() ?? 'none' }}. Period: {{ billingPeriod()?.start ?? 'none' }} to\n    {{ billingPeriod()?.end ?? 'none' }}\n  </p>\n</div>",
+  "date-picker/display-input-format": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"dueDate\"\n    locale=\"en-GB\"\n    [displayFormat]=\"displayLong\"\n    [inputFormat]=\"inputNumeric\"\n    keepInvalid\n    ariaLabel=\"Invoice due date\"\n  />\n  <p class=\"docs-output\" role=\"status\">Due: {{ iso(dueDate()) }}</p>\n</div>",
+  "date-picker/events": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"eventsDate\"\n    locale=\"en-GB\"\n    showButtonBar\n    showClear\n    (todayClick)=\"lastEvent.set('Today')\"\n    (clearClick)=\"lastEvent.set('Clear')\"\n    (monthChange)=\"lastEvent.set('Month ' + $event.month + '/' + $event.year)\"\n    ariaLabel=\"Invoice review date\"\n  />\n  <p class=\"docs-output\" role=\"status\">Last event: {{ lastEvent() }}</p>\n</div>",
   "date-picker/form": "<div class=\"docs-stack\">\n  <star-field label=\"Delivery date\" for=\"date-form-delivery\" [state]=\"order.deliveryDate()\">\n    <star-date-picker\n      inputId=\"date-form-delivery\"\n      [formField]=\"order.deliveryDate\"\n      locale=\"en-GB\"\n      [minDate]=\"minDate\"\n      ariaLabel=\"Required delivery date\"\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ order().valid() }}</p>\n</div>",
   "date-picker/format": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"invoiceDate\"\n    locale=\"en-GB\"\n    [dateFormat]=\"longFormat\"\n    ariaLabel=\"Invoice date\"\n    placeholder=\"dd/mm/yyyy\"\n  />\n  <star-date-picker\n    [value]=\"invoiceDate()\"\n    locale=\"en-GB\"\n    readonlyInput\n    ariaLabel=\"Invoice date, pick only\"\n  />\n  <p class=\"docs-output\" role=\"status\">Invoice: {{ iso(invoiceDate()) }}</p>\n</div>",
   "date-picker/limits": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"slot\"\n    [minDate]=\"minDate\"\n    [maxDate]=\"maxDate\"\n    [disabledDays]=\"weekend\"\n    [disabledDates]=\"closedDays\"\n    [dateDisabled]=\"isMonthStart\"\n    locale=\"en-GB\"\n    ariaLabel=\"Pick-up date\"\n  />\n  <p class=\"docs-output\" role=\"status\">Pick-up: {{ iso(slot()) }}</p>\n</div>",
   "date-picker/locale": "<div class=\"docs-stack\">\n  <star-date-picker\n    [value]=\"germanDate\"\n    locale=\"de-DE\"\n    [firstDayOfWeek]=\"1\"\n    showWeek\n    ariaLabel=\"Lieferdatum\"\n  />\n  <star-date-picker\n    [value]=\"americanDate\"\n    locale=\"en-US\"\n    [firstDayOfWeek]=\"0\"\n    [numberOfMonths]=\"2\"\n    ariaLabel=\"Delivery date (US)\"\n  />\n</div>",
   "date-picker/multiple": "<div class=\"docs-stack\">\n  <star-multi-date-picker\n    [(value)]=\"visits\"\n    [maxDates]=\"4\"\n    locale=\"en-GB\"\n    ariaLabel=\"Visit days\"\n    showClear\n  />\n  <p class=\"docs-output\" role=\"status\">Days: {{ visits().length }}</p>\n</div>",
   "date-picker/range": "<div class=\"docs-stack\">\n  <star-date-range-picker [(value)]=\"booking\" locale=\"en-GB\" ariaLabel=\"Booking range\" />\n  <p class=\"docs-output\" role=\"status\">\n    Booking: {{ iso(booking()?.start) }} to {{ iso(booking()?.end) }}\n  </p>\n</div>",
+  "date-picker/seconds": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"invoiceSent\"\n    locale=\"en-GB\"\n    showTime\n    showSeconds\n    [stepHour]=\"1\"\n    [stepMinute]=\"5\"\n    [stepSecond]=\"15\"\n    ariaLabel=\"Invoice sent at\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Sent: {{ iso(invoiceSent()) }} {{ clock(invoiceSent(), true) }}\n  </p>\n</div>",
   "date-picker/slots": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"payDate\"\n    locale=\"en-GB\"\n    [firstDayOfWeek]=\"1\"\n    showButtonBar\n    ariaLabel=\"Payment date\"\n  >\n    <ng-template starHeader>\n      <p class=\"docs-output docs-due-note\">Invoices due in November 2026</p>\n    </ng-template>\n    <ng-template starDate let-date>\n      <span class=\"docs-due\" [class.docs-due--marked]=\"isDue(date)\">{{\n        date.getDate()\n      }}</span>\n    </ng-template>\n    <ng-template starFooter>\n      <p class=\"docs-output docs-due-note\">\n        A dot marks a due date: 5, 12 and 26 November.\n      </p>\n    </ng-template>\n  </star-date-picker>\n  <p class=\"docs-output\" role=\"status\">Payment date: {{ iso(payDate()) }}</p>\n</div>",
+  "date-picker/special-dates": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"paymentDate\"\n    locale=\"en-GB\"\n    [specialDates]=\"companyDays\"\n    ariaLabel=\"Payment date\"\n  />\n  <p class=\"docs-output\" role=\"status\">Payment: {{ iso(paymentDate()) }}</p>\n</div>",
   "date-picker/states": "<div class=\"docs-stack\">\n  <star-date-picker size=\"sm\" locale=\"en-GB\" ariaLabel=\"Small date picker\" />\n  <star-date-picker disabled locale=\"en-GB\" ariaLabel=\"Disabled date picker\" />\n  <star-date-picker\n    [value]=\"delivery()\"\n    readonly\n    locale=\"en-GB\"\n    ariaLabel=\"Read-only date picker\"\n  />\n</div>",
   "date-picker/time": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"meeting\"\n    locale=\"en-GB\"\n    showTime\n    [stepMinute]=\"15\"\n    ariaLabel=\"Meeting start\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Meeting: {{ iso(meeting()) }} {{ clock(meeting()) }}\n  </p>\n</div>",
+  "date-picker/time-limits": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"visit\"\n    locale=\"en-GB\"\n    showTime\n    minTime=\"08:00\"\n    maxTime=\"18:30\"\n    [stepMinute]=\"15\"\n    ariaLabel=\"Site visit\"\n  />\n  <p class=\"docs-output\" role=\"status\">Visit: {{ iso(visit()) }} {{ clock(visit()) }}</p>\n</div>",
   "date-picker/time-range": "<div class=\"docs-stack\">\n  <star-date-range-picker\n    [(value)]=\"shift\"\n    locale=\"en-GB\"\n    showTime\n    [stepMinute]=\"15\"\n    ariaLabel=\"Shift\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Shift: {{ iso(shift()?.start) }} {{ clock(shift()?.start) }} to {{ iso(shift()?.end) }}\n    {{ clock(shift()?.end) }}\n  </p>\n</div>",
+  "date-picker/touch": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"touchDate\"\n    locale=\"en-GB\"\n    touchUI\n    ariaLabel=\"Delivery date, touch\"\n  />\n  <star-date-picker\n    [(value)]=\"touchDate\"\n    locale=\"en-GB\"\n    breakpoint=\"640px\"\n    ariaLabel=\"Delivery date, small window\"\n  />\n  <p class=\"docs-output\" role=\"status\">Delivery: {{ iso(touchDate()) }}</p>\n</div>",
   "date-picker/views": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"reportMonth\"\n    view=\"month\"\n    locale=\"en-GB\"\n    ariaLabel=\"Report month\"\n  />\n  <star-date-picker\n    [(value)]=\"reportYear\"\n    view=\"year\"\n    locale=\"en-GB\"\n    ariaLabel=\"Report year\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Month: {{ iso(reportMonth()) }}, year: {{ iso(reportYear()) }}\n  </p>\n</div>",
   "dialog/basic": "<star-button (pressed)=\"basicOpen.set(true)\">Edit order</star-button>\n<star-dialog [(visible)]=\"basicOpen\" header=\"Edit order ORD-1042\">\n  <span starDialogHeader class=\"docs-output\">Last saved at 10:42</span>\n  <div class=\"docs-stack\">\n    <star-field label=\"Customer\">\n      <input starInput value=\"Orchard Supply\" />\n    </star-field>\n    <star-field label=\"Delivery note\" hint=\"The driver reads this note.\">\n      <textarea starInput rows=\"3\">Leave at the loading dock.</textarea>\n    </star-field>\n  </div>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button variant=\"ghost\" (pressed)=\"basicOpen.set(false)\">Cancel</star-button>\n    <star-button (pressed)=\"basicOpen.set(false)\">Save</star-button>\n  </div>\n</star-dialog>",
   "dialog/close-rules": "<div class=\"docs-row\">\n  <star-button variant=\"secondary\" (pressed)=\"maskOpen.set(true)\"\n    >Backdrop click</star-button\n  >\n  <star-button variant=\"secondary\" (pressed)=\"lockedOpen.set(true)\">Locked</star-button>\n  <star-button variant=\"secondary\" (pressed)=\"floatOpen.set(true)\">Non-modal</star-button>\n</div>\n<star-dialog [(visible)]=\"maskOpen\" header=\"Closes on a backdrop click\" dismissableMask>\n  <p>Click outside this window to close it.</p>\n</star-dialog>\n<star-dialog\n  [(visible)]=\"lockedOpen\"\n  header=\"Locked dialog\"\n  [closable]=\"false\"\n  [closeOnEscape]=\"false\"\n>\n  <p>This dialog has no close button and ignores Escape.</p>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button (pressed)=\"lockedOpen.set(false)\">Done</star-button>\n  </div>\n</star-dialog>\n<star-dialog [(visible)]=\"floatOpen\" header=\"Non-modal dialog\" [modal]=\"false\">\n  <p>The page behind this window stays usable.</p>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button (pressed)=\"floatOpen.set(false)\">Close</star-button>\n  </div>\n</star-dialog>",
@@ -9274,6 +9711,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "time-picker/form": "<div class=\"docs-stack\">\n  <star-field label=\"Pick-up time\" for=\"time-form-pickup\" [state]=\"slot.pickup()\">\n    <star-time-picker\n      inputId=\"time-form-pickup\"\n      [formField]=\"slot.pickup\"\n      ariaLabel=\"Pick-up time\"\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ slot().valid() }}</p>\n</div>",
   "time-picker/hour-format": "<div class=\"docs-stack\">\n  <star-time-picker [(value)]=\"cutOff\" hourFormat=\"12\" ariaLabel=\"Cut-off time\" />\n  <p class=\"docs-output\" role=\"status\">Cut-off: {{ cutOff() ?? 'none' }}</p>\n</div>",
   "time-picker/limits": "<div class=\"docs-stack\">\n  <star-time-picker\n    [(value)]=\"opening\"\n    min=\"08:00\"\n    max=\"18:00\"\n    [stepMinute]=\"15\"\n    hourFormat=\"24\"\n    ariaLabel=\"Opening time\"\n  />\n  <p class=\"docs-output\" role=\"status\">Opening: {{ opening() ?? 'none' }}</p>\n</div>",
+  "time-picker/seconds": "<div class=\"docs-stack\">\n  <star-time-picker\n    [(value)]=\"exportAt\"\n    showSeconds\n    min=\"06:00:00\"\n    max=\"20:00:00\"\n    [stepHour]=\"2\"\n    [stepMinute]=\"15\"\n    [stepSecond]=\"10\"\n    ariaLabel=\"Export time\"\n  />\n  <p class=\"docs-output\" role=\"status\">Export: {{ exportAt() ?? 'none' }}</p>\n</div>",
   "time-picker/states": "<div class=\"docs-stack\">\n  <star-time-picker size=\"sm\" ariaLabel=\"Small time picker\" />\n  <star-time-picker disabled [value]=\"'09:30'\" ariaLabel=\"Disabled time picker\" />\n  <star-time-picker readonly [value]=\"'09:30'\" ariaLabel=\"Read-only time picker\" />\n</div>",
   "timeline/alternate": "<star-timeline [events]=\"events\" align=\"alternate\" ariaLabel=\"Order history, alternating\" />",
   "timeline/basic": "<star-timeline [events]=\"events\" ariaLabel=\"Order history\" />",
@@ -9295,7 +9733,9 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "tooltip/icon": "<button\n  type=\"button\"\n  class=\"star-btn star-btn--secondary star-btn--icon\"\n  aria-label=\"Export orders\"\n  starTooltip=\"Export orders to CSV\"\n>\n  <i class=\"ph-bold ph-export\" aria-hidden=\"true\"></i>\n</button>",
   "tooltip/positions": "<star-button variant=\"secondary\" starTooltip=\"Shown on hover and focus\">Top</star-button>\n<star-button\n  variant=\"secondary\"\n  starTooltip=\"Below the button\"\n  starTooltipPosition=\"bottom\"\n>\n  Bottom\n</star-button>\n<star-button variant=\"secondary\" starTooltip=\"On the left\" starTooltipPosition=\"left\">\n  Left\n</star-button>\n<star-button variant=\"secondary\" starTooltip=\"On the right\" starTooltipPosition=\"right\">\n  Right\n</star-button>\n<star-button variant=\"secondary\" starTooltip=\"At the start\" starTooltipPosition=\"start\">\n  Start\n</star-button>\n<star-button variant=\"secondary\" starTooltip=\"At the end\" starTooltipPosition=\"end\">\n  End\n</star-button>",
   "tree-select/checkbox": "<div class=\"docs-stack\">\n  <star-tree-select\n    [nodes]=\"departments\"\n    selectionMode=\"checkbox\"\n    [(value)]=\"teams\"\n    filter\n    placeholder=\"Select teams\"\n    ariaLabel=\"Teams\"\n  />\n  <p class=\"docs-output\" role=\"status\">Teams: {{ teams().join(', ') || 'none' }}</p>\n</div>",
+  "tree-select/chips": "<div class=\"docs-stack\">\n  <star-tree-select\n    [nodes]=\"orgUnits\"\n    selectionMode=\"checkbox\"\n    [(value)]=\"units\"\n    display=\"chip\"\n    filter\n    filterMode=\"lenient\"\n    [filterBy]=\"['label', 'lead']\"\n    showClear\n    placeholder=\"Select units\"\n    ariaLabel=\"Units\"\n  />\n  <p class=\"docs-output\" role=\"status\">Units: {{ units().join(', ') || 'none' }}</p>\n</div>",
   "tree-select/form": "<div class=\"docs-stack\">\n  <star-field label=\"Department\" [state]=\"hire.department()\">\n    <star-tree-select\n      [formField]=\"hire.department\"\n      [nodes]=\"departments\"\n      placeholder=\"Select a department\"\n      ariaLabel=\"Hire department\"\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ hire().valid() }}</p>\n</div>",
+  "tree-select/lazy": "<div class=\"docs-stack\">\n  <star-tree-select\n    [nodes]=\"projectNodes()\"\n    [(expanded)]=\"lazyOpen\"\n    [(value)]=\"team\"\n    placeholder=\"Select a team\"\n    ariaLabel=\"Team\"\n    (nodeExpand)=\"loadProject($event.node)\"\n  />\n  <p class=\"docs-output\" role=\"status\">Team: {{ team().join(', ') || 'none' }}</p>\n</div>",
   "tree-select/multiple": "<div class=\"docs-stack\">\n  <star-tree-select\n    [nodes]=\"departments\"\n    selectionMode=\"multiple\"\n    [(value)]=\"nodes\"\n    placeholder=\"Select nodes\"\n    ariaLabel=\"Nodes\"\n  />\n  <p class=\"docs-output\" role=\"status\">Nodes: {{ nodes().join(', ') || 'none' }}</p>\n  <star-tree-select\n    [nodes]=\"departments\"\n    disabled\n    placeholder=\"Disabled\"\n    ariaLabel=\"Disabled department\"\n  />\n</div>",
   "tree-select/single": "<div class=\"docs-stack\">\n  <star-tree-select\n    [nodes]=\"departments\"\n    [(value)]=\"department\"\n    placeholder=\"Select a department\"\n    ariaLabel=\"Department\"\n    showClear\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Department: {{ department().join(', ') || 'none' }}\n  </p>\n</div>",
   "tree-select/slots": "<star-tree-select\n  [nodes]=\"projects\"\n  [(expanded)]=\"projectsOpen\"\n  [(value)]=\"project\"\n  filter\n  placeholder=\"Select a project\"\n  ariaLabel=\"Project\"\n>\n  <ng-template starHeader>\n    <p class=\"docs-output\">Active projects</p>\n  </ng-template>\n  <ng-template starNode [starNodeOf]=\"projects\" let-node let-level=\"level\">\n    {{ node.label }}\n    @if (node.data) {\n      <small>(owner {{ node.data.owner }}, level {{ level }})</small>\n    }\n  </ng-template>\n  <ng-template starIcon=\"toggle\"\n    ><i class=\"ph-bold ph-arrow-right\" aria-hidden=\"true\"></i\n  ></ng-template>\n  <ng-template starEmpty let-text>No project matches {{ text }}.</ng-template>\n  <ng-template starFooter>\n    <p class=\"docs-output\">3 projects</p>\n  </ng-template>\n</star-tree-select>",
@@ -9312,8 +9752,14 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "tree-table/virtual": "<div class=\"docs-stack\">\n  <star-tree-table\n    [nodes]=\"large.nodes\"\n    [columns]=\"virtualColumns\"\n    [(expanded)]=\"largeOpen\"\n    virtualScroll\n    scrollHeight=\"20rem\"\n    ariaLabel=\"Stock by site\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    {{ large.count }} rows, {{ largeOpen().length }} branches open\n  </p>\n</div>",
   "tree/basic": "<star-tree [nodes]=\"folders\" [(expanded)]=\"open\" scrollHeight=\"16rem\" ariaLabel=\"Folders\" />",
   "tree/checkbox": "<div class=\"docs-stack\">\n  <star-tree\n    [nodes]=\"folders\"\n    selectionMode=\"checkbox\"\n    [(value)]=\"checked\"\n    [(expanded)]=\"checkboxOpen\"\n    filter\n    scrollHeight=\"16rem\"\n    ariaLabel=\"Folders to sync\"\n  />\n\n  <p class=\"docs-output\" role=\"status\">Leaves: {{ checked().join(', ') || 'none' }}</p>\n</div>",
+  "tree/context-menu": "<div class=\"docs-stack\">\n  <star-tree\n    [nodes]=\"departments\"\n    [expanded]=\"['eng']\"\n    [contextMenu]=\"nodeActions\"\n    scrollHeight=\"16rem\"\n    ariaLabel=\"Departments with actions\"\n    (contextMenuSelect)=\"lastAction.set($event.item.label + ' ' + $event.node.label)\"\n    (nodeDoubleClick)=\"lastAction.set('double click ' + $event.node.label)\"\n  />\n\n  <p class=\"docs-output\" role=\"status\">Last action: {{ lastAction() }}</p>\n</div>",
+  "tree/drag-drop": "<div class=\"docs-stack\">\n  <star-tree\n    [nodes]=\"movable()\"\n    [(expanded)]=\"movableOpen\"\n    draggableNodes\n    droppableNodes\n    [validateDrop]=\"noDropInPeople\"\n    scrollHeight=\"18rem\"\n    ariaLabel=\"Departments to arrange\"\n    (nodeDrop)=\"onDrop($event)\"\n  />\n\n  <p class=\"docs-output\" role=\"status\">Last move: {{ lastMove() }}</p>\n</div>",
+  "tree/filter-modes": "<star-tree\n  [nodes]=\"departments\"\n  [(expanded)]=\"filterOpen\"\n  filter\n  filterMode=\"lenient\"\n  [filterBy]=\"['label', 'lead']\"\n  scrollHeight=\"16rem\"\n  ariaLabel=\"Departments by lead\"\n/>",
   "tree/form": "<div class=\"docs-stack\">\n  <star-field label=\"Folders to share\" [state]=\"share.folders()\">\n    <star-tree\n      [formField]=\"share.folders\"\n      [nodes]=\"folders\"\n      selectionMode=\"checkbox\"\n      scrollHeight=\"12rem\"\n      ariaLabel=\"Folders to share\"\n    />\n  </star-field>\n\n  <p class=\"docs-output\" role=\"status\">Valid: {{ share().valid() }}</p>\n</div>",
+  "tree/lazy": "<star-tree\n  [nodes]=\"projectNodes()\"\n  [(expanded)]=\"lazyOpen\"\n  scrollHeight=\"16rem\"\n  ariaLabel=\"Projects and teams\"\n  (nodeExpand)=\"loadProject($event.node)\"\n/>",
+  "tree/methods": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"apiTree.expandAll()\">\n      Expand all\n    </star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"apiTree.collapseAll()\">\n      Collapse all\n    </star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"apiTree.scrollToNode('tax')\">\n      Show Tax\n    </star-button>\n  </div>\n  <star-tree\n    #apiTree\n    [nodes]=\"departments\"\n    [(expanded)]=\"apiOpen\"\n    scrollHeight=\"10rem\"\n    ariaLabel=\"Departments for the methods\"\n  />\n</div>",
   "tree/multiple": "<star-tree\n  [nodes]=\"folders\"\n  selectionMode=\"multiple\"\n  [(value)]=\"picked\"\n  [(expanded)]=\"multipleOpen\"\n  scrollHeight=\"16rem\"\n  ariaLabel=\"Folders to back up\"\n/>",
+  "tree/propagation": "<div class=\"docs-stack\">\n  <star-tree\n    [nodes]=\"departments\"\n    selectionMode=\"checkbox\"\n    [(value)]=\"lockedChecked\"\n    [expanded]=\"['fin']\"\n    scrollHeight=\"16rem\"\n    ariaLabel=\"Departments to audit\"\n    (nodeSelect)=\"lastChange.set('checked ' + $event.label)\"\n    (nodeUnselect)=\"lastChange.set('unchecked ' + $event.label)\"\n  />\n\n  <p class=\"docs-output\" role=\"status\">\n    Value: {{ lockedChecked().join(', ') || 'none' }}. Last change: {{ lastChange() }}\n  </p>\n</div>",
   "tree/single": "<div class=\"docs-stack\">\n  <star-tree\n    [nodes]=\"folders\"\n    selectionMode=\"single\"\n    [(value)]=\"selected\"\n    [(expanded)]=\"singleOpen\"\n    scrollHeight=\"16rem\"\n    ariaLabel=\"Folder\"\n    (nodeSelect)=\"lastNode.set($event.label)\"\n  />\n\n  <p class=\"docs-output\" role=\"status\">Selected: {{ selected().join(', ') || 'none' }}</p>\n\n  <p class=\"docs-output\" role=\"status\">Last node: {{ lastNode() }}</p>\n</div>",
   "tree/slots": "<star-tree\n  [nodes]=\"projects\"\n  [(expanded)]=\"projectsOpen\"\n  filter\n  scrollHeight=\"16rem\"\n  ariaLabel=\"Projects\"\n>\n  <ng-template starHeader>\n    <p class=\"docs-output\">Active projects</p>\n  </ng-template>\n  <ng-template starNode [starNodeOf]=\"projects\" let-node let-level=\"level\">\n    {{ node.label }}\n    @if (node.data) {\n      <small>(owner {{ node.data.owner }}, level {{ level }})</small>\n    }\n  </ng-template>\n  <ng-template starIcon=\"toggle\"\n    ><i class=\"ph-bold ph-arrow-right\" aria-hidden=\"true\"></i\n  ></ng-template>\n  <ng-template starEmpty let-text>No project matches {{ text }}.</ng-template>\n  <ng-template starFooter>\n    <p class=\"docs-output\">3 projects</p>\n  </ng-template>\n</star-tree>",
   "tree/virtual": "<div class=\"docs-stack\">\n  <star-tree\n    [nodes]=\"large.nodes\"\n    [(expanded)]=\"largeOpen\"\n    selectionMode=\"checkbox\"\n    [(value)]=\"largeChecked\"\n    virtualScroll\n    [virtualItemSize]=\"34\"\n    filter\n    scrollHeight=\"20rem\"\n    ariaLabel=\"Orders by site\"\n  />\n\n  <p class=\"docs-output\" role=\"status\">\n    {{ large.count }} nodes, {{ largeChecked().length }} orders checked\n  </p>\n</div>",
