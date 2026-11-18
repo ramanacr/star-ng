@@ -410,7 +410,15 @@ export class StarMention<T = unknown> {
 
   protected onInput(): void {
     this.refresh();
+    this.pruneInserted();
     this.evaluate();
+  }
+
+  /** Forgets inserted mentions that are no longer in the text. */
+  private pruneInserted(): void {
+    const text = this.text();
+    const kept = this.inserted().filter((entry) => starMentionsIn(text, [entry]).length > 0);
+    if (kept.length !== this.inserted().length) this.inserted.set(kept);
   }
 
   protected onBlur(): void {

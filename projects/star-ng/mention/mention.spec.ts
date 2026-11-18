@@ -200,6 +200,21 @@ describe('StarMention', () => {
     expect(field.value).toBe('@Evegnp.exe x ');
   });
 
+  it('forgets inserted mentions that left the text (m10)', async () => {
+    const { host, fixture, field, type, press } = await setup();
+    host.suggestions.set(() => USERS.slice(2));
+    await fixture.whenStable();
+    await type('@jo');
+    await press('Enter');
+    expect(host.mention().mentions().length).toBe(1);
+    await type('');
+    expect(host.mention().mentions().length).toBe(0);
+    // The same text typed by hand later is not an inserted mention any more.
+    await type('@Jonas Berg ');
+    expect(field.value).toBe('@Jonas Berg ');
+    expect(host.mention().mentions().length).toBe(0);
+  });
+
   it('renders the starMentionItem slot', async () => {
     const { host, fixture, type } = await setup();
     host.custom.set(true);
