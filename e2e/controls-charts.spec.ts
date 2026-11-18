@@ -146,9 +146,76 @@ test.describe('chart', () => {
     );
   });
 
+  test('data points: one tab stop, arrow keys, tooltip template and pointSelect', async ({
+    page,
+  }) => {
+    await openPage(page, PATH, 'Chart');
+    const live = example(page, 'Keyboard, tooltip template and point selection');
+    const points = live.getByRole('group', { name: 'Orders per month, interactive: data points' });
+    const first = points.getByRole('img', { name: 'Received, Jan: 120' });
+    await expect(points.locator('[tabindex="0"]')).toHaveCount(1);
+    await first.focus();
+    const tip = live.locator('.star-chart__tip');
+    await expect(tip).toContainText('Received: 120 orders');
+    await expect(tip).toContainText('Shipped: 110 orders');
+    await page.keyboard.press('ArrowRight');
+    await expect(points.getByRole('img', { name: 'Received, Feb: 150' })).toBeFocused();
+    await expect(tip).toContainText('Feb');
+    await page.keyboard.press('ArrowDown');
+    await expect(points.getByRole('img', { name: 'Shipped, Feb: 140' })).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(live.getByRole('status')).toHaveText('Selected: Shipped, Feb: 140');
+    await points.getByRole('img', { name: 'Received, Jun: 210' }).click();
+    await expect(live.getByRole('status')).toHaveText('Selected: Received, Jun: 210');
+  });
+
+  test('export: the SVG document is self-contained and the PNG is an image', async ({ page }) => {
+    await openPage(page, PATH, 'Chart');
+    const live = example(page, 'Export as SVG or PNG');
+    const svgDownload = page.waitForEvent('download');
+    await live.getByRole('button', { name: 'Download SVG' }).click();
+    const svg = await svgDownload;
+    expect(svg.suggestedFilename()).toBe('orders.svg');
+    const text = await (await svg.createReadStream()).toArray();
+    const content = Buffer.concat(text).toString('utf8');
+    expect(content).toContain('<title>Orders per month, export</title>');
+    expect(content).not.toContain('var(--');
+    expect(content).toMatch(/fill:rgb/);
+    const pngDownload = page.waitForEvent('download');
+    await live.getByRole('button', { name: 'Download PNG' }).click();
+    const png = await pngDownload;
+    expect(png.suggestedFilename()).toBe('orders.png');
+    const bytes = Buffer.concat(await (await png.createReadStream()).toArray());
+    expect(bytes.subarray(1, 4).toString('ascii')).toBe('PNG');
+  });
+
+  test('a horizontal bar chart and a combo chart with a second axis', async ({ page }) => {
+    await openPage(page, PATH, 'Chart');
+    const horizontal = example(page, 'Horizontal bars');
+    await expect(horizontal.locator('.star-chart__bar')).toHaveCount(6);
+    const bar = await horizontal.locator('.star-chart__bar').first().boundingBox();
+    expect(bar!.width).toBeGreaterThan(bar!.height);
+    const combo = example(page, 'Combo chart with a second axis');
+    await expect(combo.locator('.star-chart__bar')).toHaveCount(6);
+    await expect(combo.locator('.star-chart__line')).toHaveCount(1);
+    const value = example(page, 'Value format and axis range');
+    await expect(value.locator('text.star-chart__axis').first()).toHaveText('€0');
+  });
+
+  test('a narrow chart thins its category labels and keeps the view box', async ({ page }) => {
+    await openPage(page, PATH, 'Chart');
+    const live = example(page, 'Sizing');
+    const chart = live.locator('star-chart').filter({ hasText: 'Visits per month, narrow' });
+    const svg = chart.locator('svg.star-chart__svg');
+    await expect(svg).toHaveClass(/star-chart__svg--zoom/);
+    await expect(svg).toHaveAttribute('viewBox', '0 0 640 280');
+    await expect(chart.locator('.star-chart__axis--category')).toHaveCount(6);
+    await expect(chart.locator('.star-chart__target')).toHaveCount(12);
+  });
+
   test('the chart fills its container and keeps its aspect ratio', async ({ page }) => {
     await openPage(page, PATH, 'Chart');
-    const svg = example(page, 'Sizing').locator('svg.star-chart__svg');
+    const svg = example(page, 'Sizing').locator('svg.star-chart__svg').first();
     const box = (await svg.boundingBox())!;
     expect(box.width).toBeLessThanOrEqual(22 * 16 + 1);
     expect(box.width / box.height).toBeCloseTo(640 / 280, 1);

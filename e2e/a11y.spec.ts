@@ -1209,6 +1209,15 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'chart tooltip shown on a focused data point',
+    path: 'controls/chart',
+    open: async (page) => {
+      const live = example(page, 'Keyboard, tooltip template and point selection');
+      await live.getByRole('img', { name: 'Received, Jan: 120' }).focus();
+      await expect(live.locator('.star-chart__tip')).toBeVisible();
+    },
+  },
+  {
     name: 'vertical tabs with the second tab selected',
     path: 'controls/tabs',
     open: async (page) => {
