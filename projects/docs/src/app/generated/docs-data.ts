@@ -1437,6 +1437,90 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ]
   },
+  "StarCommandPalette": {
+    "kind": "component",
+    "selector": "star-command-palette",
+    "entry": "@star-ng/ui/command-palette",
+    "description": "Command palette (PrimeNG `p-commandmenu`): a modal search over commands, opened with a global shortcut (`hotkey`, default Control+K or Command+K) or with `[(visible)]`.",
+    "inputs": [
+      {
+        "name": "commands",
+        "type": "readonly StarCommand[]",
+        "default": "[]",
+        "required": false,
+        "description": "The commands."
+      },
+      {
+        "name": "hotkey",
+        "type": "string | null",
+        "default": "'mod+k'",
+        "required": false,
+        "description": "Global shortcut that opens and closes the palette, for example `mod+k` (Control+K, or Command+K on a Mac), `ctrl+shift+p` or `/`. `null` or `''` turns it off."
+      },
+      {
+        "name": "placeholder",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Placeholder of the search field. Defaults to the `commandPlaceholder` text."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Accessible name of the palette. Defaults to the `commandPalette` text."
+      },
+      {
+        "name": "loading",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows the loading slot (or the \"Loading\" text) after the options, for async commands."
+      },
+      {
+        "name": "maxRecent",
+        "type": "number",
+        "default": "5",
+        "required": false,
+        "description": "Number of recent commands shown first with an empty filter. `0` hides them."
+      }
+    ],
+    "models": [
+      {
+        "name": "visible",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Open state."
+      },
+      {
+        "name": "query",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "The filter text. Two-way, for example to load commands for it."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "commandRun",
+        "type": "StarCommand",
+        "default": null,
+        "required": false,
+        "description": "Emits the command the user ran, after its `run` function."
+      }
+    ]
+  },
+  "StarCommandTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starCommand]",
+    "entry": "@star-ng/ui/command-palette",
+    "description": "Content of each option of `star-command-palette`: `<ng-template starCommand let-command>`. Do not put focusable elements in it: the focus stays in the search field.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
   "StarConfirmHost": {
     "kind": "component",
     "selector": "star-confirm-host",
@@ -7377,6 +7461,8 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "color-picker/basic": "<star-color-picker [(value)]=\"color\" ariaLabel=\"Label color\" />\n<p class=\"docs-output\" role=\"status\">Value: {{ color() }}</p>",
   "color-picker/disabled": "<star-color-picker value=\"#64748b\" disabled ariaLabel=\"Locked color\" />",
   "color-picker/swatches": "<star-color-picker\n  [(value)]=\"category\"\n  [swatches]=\"['#0f766e', '#b45309', '#7c3aed', '#be123c']\"\n  ariaLabel=\"Category color\"\n/>",
+  "command-palette/basic": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"open.set(true)\">\n      Open command palette\n    </star-button>\n  </div>\n  <star-command-palette\n    [commands]=\"commands\"\n    [(visible)]=\"open\"\n    (commandRun)=\"last.set($event.label)\"\n  />\n  <p class=\"docs-output\" role=\"status\">Last command: {{ last() }}</p>\n</div>",
+  "command-palette/templates": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"peopleOpen.set(true)\">\n      Find a person\n    </star-button>\n  </div>\n  <star-command-palette\n    [commands]=\"people\"\n    [(visible)]=\"peopleOpen\"\n    [hotkey]=\"null\"\n    [maxRecent]=\"0\"\n    placeholder=\"Search people\"\n    ariaLabel=\"Find a person\"\n    (commandRun)=\"person.set($event.label)\"\n  >\n    <ng-template starCommand let-command>\n      <i class=\"ph ph-user-circle\" aria-hidden=\"true\"></i>\n      <span class=\"option\">\n        <span>{{ command.label }}</span>\n        <small>{{ command.group }} · {{ command.keywords?.[0] }}</small>\n      </span>\n    </ng-template>\n    <ng-template starEmpty let-query>No person matches “{{ query }}”.</ng-template>\n  </star-command-palette>\n  <p class=\"docs-output\" role=\"status\">Chosen: {{ person() }}</p>\n</div>",
   "confirm/dialog": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button\n      variant=\"ghost-danger\"\n      leadingIcon=\"ph-bold ph-trash\"\n      (pressed)=\"deleteOrder()\"\n    >\n      Delete order\n    </star-button>\n  </div>\n  <p class=\"docs-output\" role=\"status\">Result: {{ result() }}</p>\n</div>",
   "confirm/options": "<div class=\"docs-row\">\n  <star-button variant=\"secondary\" (pressed)=\"publish()\">Publish price list</star-button>\n  <star-button variant=\"secondary\" (pressed)=\"acknowledge()\">Show notice</star-button>\n</div>",
   "confirm/popup": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button\n      variant=\"ghost\"\n      leadingIcon=\"ph-bold ph-archive\"\n      (pressed)=\"archive($event)\"\n    >\n      Archive\n    </star-button>\n  </div>\n  <p class=\"docs-output\" role=\"status\">Archive result: {{ popupResult() }}</p>\n</div>",

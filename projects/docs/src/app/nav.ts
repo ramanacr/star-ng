@@ -306,6 +306,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         keywords: 'accordion side navigation sections tree',
         load: () => import('./controls/panel-menu.page').then((m) => m.PanelMenuPage),
       },
+      {
+        label: 'Command palette',
+        path: 'controls/command-palette',
+        keywords: 'command menu cmdk search actions hotkey ctrl k spotlight quick open',
+        load: () => import('./controls/command-palette.page').then((m) => m.CommandPalettePage),
+      },
     ],
   },
   {

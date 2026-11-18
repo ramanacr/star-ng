@@ -86,6 +86,11 @@ export interface StarUiText {
   readonly tileResizeHint: string;
   /** Announcement after a tile resize. */
   readonly tileSize: (label: string, columns: number, rows: number) => string;
+  // Command palette
+  readonly commandPalette: string;
+  readonly commandPlaceholder: string;
+  /** Heading of the recent commands. */
+  readonly recentCommands: string;
   // Order list, pick list
   readonly moveSelectedItem: string;
   readonly orderListHint: string;
@@ -292,6 +297,9 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   tileResizeHint: 'Press Control, Shift and an arrow key to resize the tile.',
   tileSize: (label, columns, rows) =>
     `${label}: ${columns} ${columns === 1 ? 'column' : 'columns'}, ${rows} ${rows === 1 ? 'row' : 'rows'}`,
+  commandPalette: 'Command palette',
+  commandPlaceholder: 'Type a command or search',
+  recentCommands: 'Recent',
 
   moveSelectedItem: 'Move selected item',
   orderListHint: 'Use Alt and the arrow keys to move the selected item.',

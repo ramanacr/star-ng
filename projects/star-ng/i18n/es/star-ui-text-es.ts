@@ -83,6 +83,9 @@ export const STAR_UI_TEXT_ES: StarUiText = {
   tileResizeHint: 'Control, Mayús y las teclas de flecha cambian el tamaño del mosaico.',
   tileSize: (label, columns, rows) =>
     `${label}: ${columns} ${forCount(columns, 'columna', 'columnas')}, ${rows} ${forCount(rows, 'fila', 'filas')}`,
+  commandPalette: 'Paleta de comandos',
+  commandPlaceholder: 'Escribir un comando o buscar',
+  recentCommands: 'Recientes',
 
   moveSelectedItem: 'Mover el elemento seleccionado',
   orderListHint: 'Alt y las teclas de flecha mueven el elemento seleccionado.',

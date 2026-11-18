@@ -82,6 +82,9 @@ export const STAR_UI_TEXT_DE: StarUiText = {
     'Drücken Sie Strg, Umschalt und eine Pfeiltaste, um die Größe der Kachel zu ändern.',
   tileSize: (label, columns, rows) =>
     `${label}: ${columns} ${forCount(columns, 'Spalte', 'Spalten')}, ${rows} ${forCount(rows, 'Zeile', 'Zeilen')}`,
+  commandPalette: 'Befehlspalette',
+  commandPlaceholder: 'Befehl eingeben oder suchen',
+  recentCommands: 'Zuletzt verwendet',
 
   moveSelectedItem: 'Ausgewähltes Element verschieben',
   orderListHint: 'Mit Alt und den Pfeiltasten verschieben Sie das ausgewählte Element.',

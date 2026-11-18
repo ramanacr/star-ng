@@ -20,6 +20,7 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - `star-bottom-nav`, `star-bottom-nav-item` (`@star-ng/ui/bottom-nav`): mobile tab bar for buttons or router links with badges and keyboard support.
 - UI text `dismiss` (English, German, Spanish).
 - Tile layout (`star-tile-layout`, `star-tile`, new entry `@star-ng/ui/tile-layout`): a CSS grid of tiles with column and row spans, reorder by drag and drop or Control and the arrow keys (`order` model), resize by Control, Shift and the arrow keys or a corner handle (`tileResize`), and container-query breakpoints (Material `mat-grid-list`, Kendo UI TileLayout). UI texts `tileMoveHint`, `tileResizeHint` and `tileSize` (English, German, Spanish).
+- Command palette (`star-command-palette`, `StarCommandTemplate`, new entry `@star-ng/ui/command-palette`): a modal search over commands on a native `<dialog>`, opened with a global `hotkey` (default Control+K or Command+K), with ranked accent-insensitive filtering, groups, recent commands, `commandRun`, and the `starCommand`, `starEmpty` and `starLoading` slots (PrimeNG `p-commandmenu`). UI texts `commandPalette`, `commandPlaceholder` and `recentCommands` (English, German, Spanish).
 
 ## [0.3.1] - 2026-11-18
 
