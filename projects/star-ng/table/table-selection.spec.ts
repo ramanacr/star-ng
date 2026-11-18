@@ -273,6 +273,29 @@ describe('StarTable selection', () => {
     expect(host.changing).toHaveLength(3);
   });
 
+  it('a check box change that puts a box back clears the stale click event', async () => {
+    const { host, fixture, boxes, header } = await setup();
+    const table = host.table() as unknown as {
+      restoring: boolean;
+      boxEvent: Event | null;
+      toggleRow(row: Order): void;
+      togglePage(checked: boolean): void;
+    };
+    for (const act of [() => table.toggleRow(ORDERS[0]), () => table.togglePage(true)]) {
+      table.restoring = true;
+      table.boxEvent = new Event('click');
+      act();
+      table.restoring = false;
+      expect(table.boxEvent).toBeNull();
+    }
+    await fixture.whenStable();
+    // The next real click still carries its own event.
+    boxes()[0].click();
+    await fixture.whenStable();
+    expect(host.selection().map((r) => r.id)).toEqual([1]);
+    expect(header()).toBeTruthy();
+  });
+
   it('a cancelled radio change keeps the old radio checked', async () => {
     const { host, fixture, el, ids } = await setup((h) => h.mode.set('single'));
     const radios = () => [...el.querySelectorAll<HTMLInputElement>('tbody input[type=radio]')];

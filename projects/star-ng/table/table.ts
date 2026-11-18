@@ -1165,7 +1165,14 @@ export class StarTable<T> {
    * (`'single'`, PrimeNG `p-tableRadioButton`).
    */
   readonly selectionMode = input<'single' | 'multiple' | null>(null);
-  /** Selected rows. Two-way. Rows match by `dataKey`, so new row objects stay selected. */
+  /**
+   * Selected rows. Two-way. Rows match by `dataKey`, so new row objects stay selected.
+   *
+   * In key mode (`selectionKeys` is an array), `selection` follows the keys. It can emit
+   * `selectionChange` at the first render, when the keys resolve to the rows in `value`. Single
+   * mode and a plain click replace the whole selection, including keys whose rows are not loaded
+   * (for example rows of other lazy pages).
+   */
   readonly selection = model<readonly T[]>([]);
   /**
    * Keys (`dataKey`) of the selected rows (PrimeNG `selectionKeys`). Two-way. Bind an array to
@@ -1174,6 +1181,11 @@ export class StarTable<T> {
    * `selection` then follows the keys: it holds the row objects of the keys that are in `value`
    * (fresh objects), plus the objects it already had for the other keys. `exportCsv({
    * selectionOnly })` uses the same rows. `null` (default): the keys come from `selection`.
+   *
+   * Do not derive `selectionKeys` from `selection` in the owner: keys that are not resolved to a
+   * loaded row would be lost. Single mode and a plain click replace the whole selection,
+   * including keys whose rows are not loaded. `selection` can emit `selectionChange` at the first
+   * render in key mode.
    */
   readonly selectionKeys = model<readonly unknown[] | null>(null);
   /**
@@ -1314,7 +1326,9 @@ export class StarTable<T> {
   readonly filter = output<StarTableFilterEvent<T>>();
   /**
    * Fires before the selection changes, with the rows now and after. Call `cancel()` to keep the
-   * old selection (Ignite UI grid `rowSelectionChanging`).
+   * old selection (Ignite UI grid `rowSelectionChanging`). It fires only for changes that the
+   * user makes (check box, radio, row click, keyboard), not when the owner sets `selection`,
+   * `selectionKeys` or `selectAll`, and not when the table puts a cancelled change back.
    */
   readonly selectionChanging = output<StarTableSelectionChangingEvent<T>>();
   /** A row joined the selection (PrimeNG `onRowSelect`). */
@@ -3229,7 +3243,10 @@ export class StarTable<T> {
   }
 
   protected toggleRow(row: T, box?: StarCheckbox): void {
-    if (this.restoring) return;
+    if (this.restoring) {
+      this.boxEvent = null;
+      return;
+    }
     if (this.select.toggle(row, this.takeBoxEvent()) || !box) return;
     // A cancelled change: the box shows the selection again (its model and its element).
     this.restore(() => box.checked.set(this.isSelected(row)));
@@ -3254,7 +3271,10 @@ export class StarTable<T> {
   }
 
   protected togglePage(checked: boolean, box?: StarCheckbox): void {
-    if (this.restoring) return;
+    if (this.restoring) {
+      this.boxEvent = null;
+      return;
+    }
     if (this.select.toggleAll(checked, this.takeBoxEvent()) || !box) return;
     const state = this.headerState();
     this.restore(() => {
