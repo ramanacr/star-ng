@@ -288,6 +288,20 @@ describe('StarWindow', () => {
     expect(stack.openCount()).toBe(0);
   });
 
+  it('names the title bar group, and renders no empty heading without a header', async () => {
+    const { root, dialog, titlebar } = await setup();
+    expect(titlebar.getAttribute('role')).toBe('group');
+    expect(root.querySelector(`#${titlebar.getAttribute('aria-labelledby')}`)?.textContent).toBe(
+      'Notes',
+    );
+    const other = root.querySelectorAll('dialog')[1];
+    const otherBar = other.querySelector('.star-window__titlebar')!;
+    expect(other.querySelector('h2')).toBeNull();
+    expect(otherBar.getAttribute('aria-label')).toBe('Other');
+    expect(otherBar.hasAttribute('aria-labelledby')).toBe(false);
+    expect(dialog.querySelector('h2')).not.toBeNull();
+  });
+
   it('reads its texts from STAR_UI_TEXT', async () => {
     TestBed.configureTestingModule({
       providers: [provideStarUiText({ minimize: 'Minimieren', windowHint: 'Hinweis' })],

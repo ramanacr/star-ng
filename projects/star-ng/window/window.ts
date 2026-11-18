@@ -128,12 +128,20 @@ export class StarWindowStack {
       <div
         class="star-window__titlebar"
         tabindex="0"
+        role="group"
+        [attr.aria-labelledby]="header() ? titleId : null"
+        [attr.aria-label]="header() ? null : ariaLabel()"
         [attr.aria-describedby]="hintId"
         (keydown)="onTitleKeydown($event)"
         (pointerdown)="onDragStart($event)"
         (dblclick)="onTitleDoubleClick($event)"
       >
-        <h2 class="star-window__title" [id]="titleId">{{ header() }}</h2>
+        @if (header()) {
+          <h2 class="star-window__title" [id]="titleId">{{ header() }}</h2>
+        } @else {
+          <!-- Keeps the buttons at the inline end without a title. -->
+          <span class="star-window__title" aria-hidden="true"></span>
+        }
         <ng-content select="[starWindowHeader]" />
         <div class="star-window__actions">
           <!-- Stable toggles: the focused button stays when the state changes. -->
