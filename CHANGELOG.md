@@ -27,6 +27,14 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - Tree table: frozen, resizable and reorderable columns (`columnWidths`, `columnOrder`).
 - Tree table: cell edit (`editable`, `editor`, `cellEdit`) with treegrid cell navigation (`cellNavigation`).
 - Tree table: row context menu (`contextMenu`, `contextMenuSelect`) with right click, Shift+F10 and the context menu key.
+- Tree: drag and drop (`draggableNodes`, `droppableNodes`, `draggableScope`, `droppableScope`, `validateDrop`, `nodeDrop` with `before`, `after`, `inside` and `fromTree`). Ctrl+Shift and the arrow keys move the focused node, with a live announcement. The tree never changes `nodes`.
+- Tree: lazy children (`leaf: false`, `loading`, `loadingMode` row or icon, `nodeExpand`, `nodeCollapse`).
+- Tree: `filterMode` lenient or strict, `filterBy` and `filterLocale`.
+- Tree: checkbox `propagateSelectionUp` / `propagateSelectionDown`; locked nodes (`disabled`, `selectable: false`) keep their state.
+- Tree: `nodeUnselect`, `nodeDoubleClick`, `nodeContextMenu`, and a node context menu (`contextMenu`, `contextMenuSelect`) with right click, Shift+F10 and the context menu key.
+- Tree: methods `expandAll`, `collapseAll`, `expandPath` and `scrollToNode`.
+- Tree select: `filterMode`, `filterBy`, `filterLocale`, `propagateSelectionUp`, `propagateSelectionDown`, `loadingMode`, lazy children, `display` comma or chip, and the outputs `nodeSelect`, `nodeUnselect`, `nodeExpand`, `nodeCollapse`.
+- UI texts `treeMoveHint`, `treeMovedBefore`, `treeMovedAfter`, `treeMovedInside`, `treeMoveNotAllowed` (English, German, Spanish).
 - Select, multi-select and autocomplete: `filterBy`, `filterMatchMode`, `filterLocale` and `resetFilterOnHide`; listbox: `filterBy`, `filterMatchMode` and `filterLocale`. New helper `starFilterMatch` in `@star-ng/ui/core`.
 - Select, multi-select, autocomplete and listbox: lazy loading (`lazy`, `lazyLoad` with `StarListLazyLoadEvent`, `resetLazy()` to ask again after a failed load). Options that are not loaded are `undefined` in the array, show as skeleton rows, are skipped by the keyboard, and the list has `aria-busy`.
 - Select: `editable` with `allowCustomValue` and `customValue`. Multi-select and multiple autocomplete: `allowCustomValues` with an "Add “text”" row and `customValueAdd`.
@@ -59,6 +67,9 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 ### Changed
 
 - Tree table: the component moved to its own file `data-display/tree-table.ts`; the import path `@star-ng/ui/data-display` does not change.
+- Tree: `nodeSelect` no longer fires when a node turns off in multiple or checkbox mode; `nodeUnselect` fires instead. To react to every change, listen to `nodeUnselect` or `valueChange`.
+- Tree: in checkbox mode, a parent key in `value` shows the parent checked, and a click on a branch also checks its descendants that a filter hides.
+- Tree and tree table share the check, lock and filter helpers (`@star-ng/ui/tree`); the tree table works as before.
 - `StarDialog` and `StarDrawer` now extend the new abstract base class `StarDialogBase` (`@star-ng/ui/dialog`), which holds the shared inputs and outputs. `StarDrawer` no longer extends `StarDialog`; its inputs and outputs do not change.
 - The page scroll lock of a dialog and a drawer uses the new class `star-dialog--block-scroll` (CSS `html:has(dialog.star-dialog--block-scroll[open])`) instead of `star-dialog--modal`. A modal still blocks the scroll by default.
 - `starViewportWidth(when?)` takes an optional condition; `star-dialog` and `star-toast` add the window resize listener only while `breakpoints` is set.
