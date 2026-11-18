@@ -483,7 +483,9 @@ export class StarRowExpansionTemplate<T = unknown> {
                   #allBox
                   [checked]="headerState() === true"
                   [indeterminate]="headerState() === 'mixed'"
-                  [ariaLabel]="selectionPageOnly() ? text.selectPageRows : text.selectAllRows"
+                  [ariaLabel]="
+                    selectionPageOnly() && paginator() ? text.selectPageRows : text.selectAllRows
+                  "
                   [disabled]="!headerEnabled()"
                   (checkedChange)="togglePage($event, allBox)"
                 />
@@ -1171,9 +1173,11 @@ export class StarTable<T> {
   readonly metaKeySelection = input(false, { transform: booleanAttribute });
   /**
    * The header check box selects the rows of the current page only (PrimeNG `selectionPageOnly`).
-   * Default: all rows of the current filter result.
+   * Default `true`, so a paginated table keeps its page-only header check box. Set it to `false`
+   * to select every selectable row of the current filter result, on all pages. Without a
+   * paginator the page holds all rows, so both values select the same rows.
    */
-  readonly selectionPageOnly = input(false, { transform: booleanAttribute });
+  readonly selectionPageOnly = input(true, { transform: booleanAttribute });
   /**
    * Rows that can be selected (PrimeNG `rowSelectable`). Other rows get a disabled check box and
    * are skipped by the header check box, ranges and clicks.

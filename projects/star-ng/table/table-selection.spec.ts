@@ -107,10 +107,14 @@ describe('StarTable selection', () => {
     expect(header().getAttribute('aria-label')).toBe('Select all rows');
     host.pageOnly.set(true);
     await fixture.whenStable();
+    // Without a paginator the page is all rows.
+    expect(header().getAttribute('aria-label')).toBe('Select all rows');
+    host.paginator.set(true);
+    await fixture.whenStable();
     expect(header().getAttribute('aria-label')).toBe('Select all rows on this page');
   });
 
-  it('the header check box selects the whole filter result, mixed when some are selected', async () => {
+  it('selectionPageOnly false: the header check box selects the whole filter result, mixed when some are selected', async () => {
     const { host, fixture, boxes, header, ids } = await setup((h) => h.paginator.set(true));
     boxes()[0].click();
     await fixture.whenStable();

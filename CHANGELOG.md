@@ -42,7 +42,7 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - Table: batch edit (`batchEdit`, `pendingChanges`, `commitEdits` / `batchSave`, `discardEdits`, `undo` / `redo` with Ctrl+Z, Ctrl+Y, Ctrl+Shift+Z), with changed-cell and deleted-row marks.
 - Table: `addRow()` / `deleteRow()` with `rowAdd` / `rowDelete`.
 - UI text for table editing in English, German and Spanish.
-- Table: selection depth: `metaKeySelection` (click, Ctrl / Cmd + click, Shift + click; rows as one tab stop with Arrow keys, Space, Shift + Space and Shift + Arrow), `selectionPageOnly`, `rowSelectable`, two-way `selectionKeys` and `selectAll`, `rowLabel`, outputs `rowSelect`, `rowUnselect`, `headerCheckboxToggle` and the cancelable `selectionChanging`. Row check boxes and radios are named with the row ("Select row ORD-1001").
+- Table: selection depth: `metaKeySelection` (click, Ctrl / Cmd + click, Shift + click; rows as one tab stop with Arrow keys, Space, Shift + Space and Shift + Arrow), `selectionPageOnly` (default `true`, the page-only header check box of before; `false` selects the whole filter result on all pages), `rowSelectable`, two-way `selectionKeys` and `selectAll`, `rowLabel`, outputs `rowSelect`, `rowUnselect`, `headerCheckboxToggle` and the cancelable `selectionChanging`. Row check boxes and radios are named with the row ("Select row ORD-1001").
 - `STAR_UI_TEXT.selectRowOf` and `selectPageRows` with German and Spanish texts.
 - Table: filter rules. `StarFilterValue` also takes `StarFilterConstraint` (`operator` `and` / `or`, `rules` of `StarFilterRule` with `matchMode` and `value`); the old text, text list and range values work as before. Match modes: text `contains`, `startsWith`, `endsWith`, `equals`, `notContains`; number `equals`, `notEquals`, `lt`, `lte`, `gt`, `gte`, `between`; date `dateIs`, `dateIsNot`, `dateBefore`, `dateAfter`, `between`; lists `in`. Column `filterMatchModes` and `filterMatchMode`; table `filterLocale`, `globalFilterFields`, `globalFilterMatchMode` and the `filter` output (`filters`, `filteredValue`).
 - `StarFilterService` (`@star-ng/ui/core`): `register(name, fn, label)` adds a custom match mode for the table filters (PrimeNG `FilterService.register`).
@@ -51,7 +51,6 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 
 ### Changed
 
-- Table: the header check box now selects every selectable row of the filter result (all pages), like PrimeNG. Set `selectionPageOnly` to keep the old page-only behaviour.
 - Tree table: the component moved to its own file `data-display/tree-table.ts`; the import path `@star-ng/ui/data-display` does not change.
 
 ## [0.3.1] - 2026-11-18

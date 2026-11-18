@@ -24,7 +24,7 @@ import { DocsFill, Order, orderColumns, ORDERS, STATUS_SEVERITY } from './table-
         heading="Multiple selection"
         source="table-selection/multiple"
         [script]="multipleScript"
-        note="selectionMode multiple adds a checkbox to each row. With selectionPageOnly the header checkbox selects the rows of the current page: it is checked when all are selected and mixed when some are. selection is a two-way model."
+        note="selectionMode multiple adds a checkbox to each row. The header checkbox selects the rows of the current page: it is checked when all are selected and mixed when some are. selection is a two-way model."
       >
         <div class="docs-stack">
           <div class="docs-row">
@@ -43,7 +43,6 @@ import { DocsFill, Order, orderColumns, ORDERS, STATUS_SEVERITY } from './table-
               ariaLabel="Orders with checkboxes"
               selectionMode="multiple"
               [(selection)]="selected"
-              selectionPageOnly
               paginator
               [rows]="5"
             />
@@ -56,7 +55,7 @@ import { DocsFill, Order, orderColumns, ORDERS, STATUS_SEVERITY } from './table-
         heading="Check box selection"
         source="table-selection/checkbox"
         [script]="checkboxScript"
-        note="Without selectionPageOnly the header checkbox selects every row of the filter result, on all pages. rowSelectable disables the checkbox of cancelled orders; the header checkbox and ranges skip them. selectionKeys holds the dataKey of each selected row, so the selection survives new row objects. selectionChanging fires before each change: this example cancels a selection of more than 20 orders. Shift + Space on a checkbox selects the rows from the last toggled row."
+        note="With selectionPageOnly set to false the header checkbox selects every row of the filter result, on all pages. rowSelectable disables the checkbox of cancelled orders; the header checkbox and ranges skip them. selectionKeys holds the dataKey of each selected row, so the selection survives new row objects. selectionChanging fires before each change: this example cancels a selection of more than 20 orders. Shift + Space on a checkbox selects the rows from the last toggled row."
       >
         <div class="docs-stack">
           <docs-fill>
@@ -68,6 +67,7 @@ import { DocsFill, Order, orderColumns, ORDERS, STATUS_SEVERITY } from './table-
               selectionMode="multiple"
               [(selectionKeys)]="keys"
               [rowSelectable]="notCancelled"
+              [selectionPageOnly]="false"
               (selectionChanging)="limit($event)"
               paginator
               [rows]="5"
@@ -276,7 +276,7 @@ cancel(order: Order): void {
     {
       name: 'Space',
       description:
-        'On a row checkbox or radio button: selects or clears the row. On the header checkbox: selects or clears the filter result (the page with selectionPageOnly). On a focused row (metaKeySelection): toggles the row.',
+        'On a row checkbox or radio button: selects or clears the row. On the header checkbox: selects or clears the rows of the page (the whole filter result with selectionPageOnly false). On a focused row (metaKeySelection): toggles the row.',
     },
     {
       name: 'Shift + Space',
