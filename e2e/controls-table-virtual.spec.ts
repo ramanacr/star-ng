@@ -264,7 +264,7 @@ test.describe('table virtual scroll with rows of different heights', () => {
     expect(await focused()).toBe(middle.id);
     await page.keyboard.press('Shift+Tab');
     await expect.poll(focused).toBe(ticket(number - 1));
-    await expect(page.locator(':focus')).toHaveAttribute('aria-label', 'Select row');
+    await expect(page.locator(':focus')).toHaveAttribute('aria-label', /^Select row /);
     await expect(bodyRows(table).filter({ hasText: ticket(number - 1) })).toBeInViewport();
   });
 

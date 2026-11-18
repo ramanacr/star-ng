@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { StarButton } from '@star-ng/ui/button';
+import { StarFilterService } from '@star-ng/ui/core';
 import { StarInput } from '@star-ng/ui/field';
 import {
   StarCellTemplate,
@@ -131,6 +132,53 @@ import { DocsFill, formatDay, formatMoney, Order, ORDERS, STATUS_SEVERITY } from
       </docs-example>
 
       <docs-example
+        heading="Filter menu"
+        source="table-sort-filter/menu"
+        [script]="menuScript"
+        note="filterDisplay menu puts a filter button in each header cell instead of the second header row. The menu has a match mode per rule (filterMatchModes limits the list, filterMatchMode sets the first one), up to filterMaxRules rules joined by Match all or Match any, and Clear and Apply. The value of a rule column is a StarFilterConstraint; select and multiselect columns keep their old values."
+      >
+        <div class="docs-stack">
+          <docs-fill>
+            <star-table
+              [value]="orders"
+              [columns]="menuColumns"
+              dataKey="id"
+              ariaLabel="Invoices with filter menus"
+              filterDisplay="menu"
+              [(filters)]="menuFilters"
+              (filter)="menuCount.set($event.filteredValue.length)"
+              paginator
+              [rows]="4"
+            />
+          </docs-fill>
+          <p class="docs-output" role="status">
+            {{ menuCount() ?? orders.length }} invoices match. Filters: {{ menuText() }}
+          </p>
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="Custom match mode"
+        source="table-sort-filter/custom"
+        [script]="customScript"
+        note="StarFilterService.register adds a match mode with a name, a function and a menu label. Here the Placed column offers Within 7 days: the order was placed at most 7 days before or after the chosen date."
+      >
+        <div class="docs-stack">
+          <docs-fill>
+            <star-table
+              [value]="orders"
+              [columns]="customColumns"
+              dataKey="id"
+              ariaLabel="Orders with a custom match mode"
+              filterDisplay="menu"
+              paginator
+              [rows]="4"
+            />
+          </docs-fill>
+        </div>
+      </docs-example>
+
+      <docs-example
         heading="Combined"
         source="table-sort-filter/combined"
         note="Filters, the global filter and the sort work together. The global filter narrows the rows first, then the column filters, then the sort orders what is left."
@@ -170,6 +218,16 @@ import { DocsFill, formatDay, formatMoney, Order, ORDERS, STATUS_SEVERITY } from
         list. The number filter compares the cell value, and the date filter compares the local
         calendar day of the cell value, so a <code>format</code> function does not change what a
         range matches.
+      </p>
+      <p>
+        The text match modes use <code>starFilterMatch</code> of <code>@star-ng/ui/core</code>, the
+        same matcher as the select controls. Set <code>filterLocale</code> to compare with the rules
+        of a language. <code>globalFilterFields</code> limits the global filter to some columns, and
+        <code>globalFilterMatchMode</code> changes how it matches. The <code>filter</code> output
+        gives the filters and the filtered rows after each change; in lazy mode the filters go to
+        the server in <code>lazyLoad</code>. The filter button names the column and its state
+        ("Filter Status, active"), has <code>aria-haspopup="dialog"</code> and
+        <code>aria-expanded</code>, and the menu is a labelled dialog that keeps the focus inside.
       </p>
       <p>
         <code>aria-sort</code> is set on one header only: the first sort column. The other sortable
@@ -240,9 +298,95 @@ export class TableSortFilterPage {
     },
   ];
 
+  protected readonly menuFilters = signal<StarColumnFilters>({});
+  protected readonly menuCount = signal<number | null>(null);
+  protected menuText(): string {
+    return JSON.stringify(this.menuFilters());
+  }
+  protected readonly menuColumns: StarColumn<Order>[] = [
+    { field: 'id', header: 'Invoice' },
+    { field: 'customer', header: 'Customer', filter: 'text' },
+    { field: 'status', header: 'Status', filter: 'multiselect' },
+    {
+      field: 'placed',
+      header: 'Placed',
+      filter: 'date',
+      value: (row) => row.placed,
+      format: (row) => formatDay(row.placed),
+    },
+    {
+      field: 'total',
+      header: 'Total',
+      align: 'end',
+      filter: 'number',
+      filterMatchMode: 'gte',
+      format: (row) => formatMoney(row.total),
+    },
+  ];
+
+  protected readonly customColumns: StarColumn<Order>[] = [
+    { field: 'id', header: 'Order' },
+    { field: 'customer', header: 'Customer' },
+    {
+      field: 'placed',
+      header: 'Placed',
+      filter: 'date',
+      filterMatchModes: ['within7Days', 'dateIs', 'dateBefore', 'dateAfter'],
+      value: (row) => row.placed,
+      format: (row) => formatDay(row.placed),
+    },
+  ];
+
+  constructor() {
+    inject(StarFilterService).register(
+      'within7Days',
+      (value, filter) => {
+        if (!(value instanceof Date) || typeof filter !== 'string') return false;
+        const [year, month, day] = filter.split('-').map(Number);
+        const days = (value.getTime() - new Date(year, month - 1, day).getTime()) / 86_400_000;
+        return Math.abs(days) <= 7;
+      },
+      'Within 7 days',
+    );
+  }
+
   protected readonly sortScript = `readonly sortField = signal<string | null>(null);
 readonly sortOrder = signal<StarSortOrder>(1); // 1 ascending, -1 descending`;
   protected readonly multiScript = `readonly sortMeta = signal<readonly StarSortState[]>([]);`;
+  protected readonly menuScript = `readonly menuFilters = signal<StarColumnFilters>({});
+readonly menuCount = signal<number | null>(null);
+readonly menuColumns: StarColumn<Order>[] = [
+  { field: 'id', header: 'Invoice' },
+  { field: 'customer', header: 'Customer', filter: 'text' },
+  { field: 'status', header: 'Status', filter: 'multiselect' },
+  { field: 'placed', header: 'Placed', filter: 'date', value: (row) => row.placed },
+  { field: 'total', header: 'Total', filter: 'number', filterMatchMode: 'gte' },
+];`;
+  protected readonly customScript = `// Import StarFilterService from '@star-ng/ui/core'.
+readonly customColumns: StarColumn<Order>[] = [
+  { field: 'id', header: 'Order' },
+  { field: 'customer', header: 'Customer' },
+  {
+    field: 'placed',
+    header: 'Placed',
+    filter: 'date',
+    filterMatchModes: ['within7Days', 'dateIs', 'dateBefore', 'dateAfter'],
+    value: (row) => row.placed,
+  },
+];
+
+constructor() {
+  inject(StarFilterService).register(
+    'within7Days',
+    (value, filter) => {
+      if (!(value instanceof Date) || typeof filter !== 'string') return false;
+      const [year, month, day] = filter.split('-').map(Number);
+      const days = (value.getTime() - new Date(year, month - 1, day).getTime()) / 86_400_000;
+      return Math.abs(days) <= 7;
+    },
+    'Within 7 days',
+  );
+}`;
   protected readonly globalScript = `readonly query = signal('');`;
   protected readonly filterScript = `readonly filters = signal<StarColumnFilters>({});
 readonly filterColumns: StarColumn<Order>[] = [
@@ -278,6 +422,19 @@ readonly filterColumns: StarColumn<Order>[] = [
     {
       name: 'Tab',
       description: 'Moves from the header buttons to the filter fields of the second header row.',
+    },
+    {
+      name: 'Enter / Space',
+      description:
+        'On a filter button (filterDisplay menu): opens the filter menu. Tab stays inside the menu.',
+    },
+    {
+      name: 'Escape',
+      description: 'In the filter menu: closes it and moves the focus back to the filter button.',
+    },
+    {
+      name: 'Enter',
+      description: 'In a text field of the filter menu: applies the rules.',
     },
   ];
 }

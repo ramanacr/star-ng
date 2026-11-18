@@ -65,12 +65,43 @@ export interface StarUiText {
   readonly noData: string;
   readonly selectRow: string;
   readonly selectAllRows: string;
+  /** Name of a row check box or radio, with the row text: "Select row Order 1042". */
+  readonly selectRowOf: (label: string) => string;
+  /** Header check box with `selectionPageOnly`. */
+  readonly selectPageRows: string;
   readonly filterBy: (column: string) => string;
   readonly filterAll: string;
   readonly filterMin: (column: string) => string;
   readonly filterMax: (column: string) => string;
   readonly filterMinShort: string;
   readonly filterMaxShort: string;
+  /** Filter menu of a table column (`filterDisplay="menu"`). */
+  readonly filterMenu: (column: string) => string;
+  readonly filterMenuActive: (column: string) => string;
+  readonly filterOperator: string;
+  readonly matchAll: string;
+  readonly matchAny: string;
+  readonly matchMode: string;
+  readonly filterRule: (index: number) => string;
+  readonly addRule: string;
+  readonly removeRule: (index: number) => string;
+  readonly applyFilter: string;
+  readonly matchContains: string;
+  readonly matchStartsWith: string;
+  readonly matchEndsWith: string;
+  readonly matchEquals: string;
+  readonly matchNotContains: string;
+  readonly matchNotEquals: string;
+  readonly matchLt: string;
+  readonly matchLte: string;
+  readonly matchGt: string;
+  readonly matchGte: string;
+  readonly matchBetween: string;
+  readonly matchDateIs: string;
+  readonly matchDateIsNot: string;
+  readonly matchDateBefore: string;
+  readonly matchDateAfter: string;
+  readonly matchIn: string;
   readonly expandRow: string;
   readonly collapseRow: string;
   readonly rowDetails: string;
@@ -322,12 +353,40 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   noData: 'No records found',
   selectRow: 'Select row',
   selectAllRows: 'Select all rows',
+  selectRowOf: (label) => `Select row ${label}`,
+  selectPageRows: 'Select all rows on this page',
   filterBy: (column) => `Filter by ${column}`,
   filterAll: 'All',
   filterMin: (column) => `${column} from`,
   filterMax: (column) => `${column} to`,
   filterMinShort: 'Min',
   filterMaxShort: 'Max',
+  filterMenu: (column) => `Filter ${column}`,
+  filterMenuActive: (column) => `Filter ${column}, active`,
+  filterOperator: 'Combine rules',
+  matchAll: 'Match all',
+  matchAny: 'Match any',
+  matchMode: 'Match mode',
+  filterRule: (index) => `Rule ${index}`,
+  addRule: 'Add rule',
+  removeRule: (index) => `Remove rule ${index}`,
+  applyFilter: 'Apply',
+  matchContains: 'Contains',
+  matchStartsWith: 'Starts with',
+  matchEndsWith: 'Ends with',
+  matchEquals: 'Equals',
+  matchNotContains: 'Does not contain',
+  matchNotEquals: 'Not equals',
+  matchLt: 'Less than',
+  matchLte: 'Less than or equal to',
+  matchGt: 'Greater than',
+  matchGte: 'Greater than or equal to',
+  matchBetween: 'Between',
+  matchDateIs: 'Date is',
+  matchDateIsNot: 'Date is not',
+  matchDateBefore: 'Date is before',
+  matchDateAfter: 'Date is after',
+  matchIn: 'Is one of',
   expandRow: 'Expand row',
   collapseRow: 'Collapse row',
   rowDetails: 'Details',
@@ -533,8 +592,13 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   page: ['page'],
   pageReport: ['first', 'last', 'total'],
   filterBy: ['column'],
+  selectRowOf: ['label'],
   filterMin: ['column'],
   filterMax: ['column'],
+  filterMenu: ['column'],
+  filterMenuActive: ['column'],
+  filterRule: ['index'],
+  removeRule: ['index'],
   editCell: ['column'],
   valueMin: ['min'],
   valueMax: ['max'],
