@@ -475,7 +475,9 @@ test.describe('date helpers', () => {
   test('the helpers section lists the exported functions', async ({ page }) => {
     await openPage(page, '/controls/date-picker', 'Date picker');
     const table = page.getByRole('table', { name: 'Exports of date-utils' });
-    await expect(table.getByRole('rowheader', { name: 'parseDate(text, locale)' })).toBeVisible();
+    await expect(
+      table.getByRole('rowheader', { name: 'parseDate(text, locale, format?)' }),
+    ).toBeVisible();
     await expect(table.getByRole('rowheader', { name: 'isoDay(date)' })).toBeVisible();
   });
 });

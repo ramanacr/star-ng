@@ -335,6 +335,8 @@ describe('date picker: formats, keepInvalid and the string data type', () => {
     const { fixture, host, field, type } = await setup();
     expect(field('Due').value).toBe('22 November 2026');
     field('Due').dispatchEvent(new Event('focus'));
+    // At once, so text typed right after the focus is not replaced by a later render.
+    expect(field('Due').value).toBe('22/11/2026');
     await fixture.whenStable();
     expect(field('Due').value).toBe('22/11/2026');
     field('Due').dispatchEvent(new Event('blur'));

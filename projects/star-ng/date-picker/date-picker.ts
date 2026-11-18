@@ -333,6 +333,9 @@ export abstract class StarDateInputBase<TValue> {
   closePanel(focusInput = true): void {
     if (!this.open()) return;
     this.open.set(false);
+    // Close the modal sheet first: closing a modal dialog gives the focus back to the element
+    // that had it before, which would undo the focus on the input.
+    this.sheetDialog()?.nativeElement.close?.();
     if (focusInput) this.input().nativeElement.focus();
     this.closed.emit();
   }
@@ -381,8 +384,23 @@ export abstract class StarDateInputBase<TValue> {
     this.input().nativeElement.value = text;
   }
 
+  /**
+   * Switches the text to `inputFormat` at once, before the user types: a later render would
+   * replace text that is typed right after the focus. A field that the focus selected all of
+   * (Tab) stays selected.
+   */
   protected onInputFocus(): void {
+    if (this.editing()) return;
+    const input = this.input().nativeElement;
+    const all =
+      input.value.length > 0 &&
+      input.selectionStart === 0 &&
+      input.selectionEnd === input.value.length;
     this.editing.set(true);
+    const text = this.typed();
+    if (input.value === text) return;
+    input.value = text;
+    if (all) input.select();
   }
 
   protected onInputBlur(): void {
