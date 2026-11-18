@@ -74,7 +74,8 @@ export class StarDrawer extends StarDialogBase {
   readonly fullScreen = input(false, { transform: booleanAttribute });
   /**
    * A click on the backdrop closes the drawer (PrimeNG `dismissible`). Same effect as
-   * `dismissableMask`; default false, so a drawer without either stays open.
+   * `dismissableMask`. The default is false, which differs from PrimeNG (default true): a drawer
+   * without `dismissible` or `dismissableMask` stays open on a backdrop click.
    */
   readonly dismissible = input(false, { transform: booleanAttribute });
 

@@ -83,8 +83,10 @@ export class StarToastService {
   /** Every toast that closes, with the reason (timeout, close or clear). */
   readonly closed: Observable<StarToastCloseEvent> = this.closedEvents.asObservable();
   /**
-   * Identical severity, summary, detail and key while still visible is ignored (default true).
-   * Set it to false to allow copies; an outlet with `preventOpenDuplicates` still ignores them.
+   * Identical severity, summary, detail and key while still visible is ignored (default true),
+   * for every outlet. Not the same as the outlet input `star-toast` `preventDuplicates`, which
+   * ignores a message that the outlet has ever shown (PrimeNG meaning). Set this to false to
+   * allow copies; an outlet with `preventOpenDuplicates` still ignores visible copies.
    */
   preventDuplicates = true;
 
@@ -284,8 +286,9 @@ export class StarToast {
   /** Newest messages beyond this count wait until older ones close. */
   readonly stackLimit = input(5);
   /**
-   * Ignores a message with the same severity, summary and detail as one that this outlet showed
-   * before, also after it closed (PrimeNG `preventDuplicates`).
+   * Ignores a message with the same severity, summary and detail as one that this outlet has
+   * ever shown, also after it closed (PrimeNG `preventDuplicates`). Not the same as the service
+   * flag `StarToastService.preventDuplicates`, which only ignores a copy while visible.
    */
   readonly preventDuplicates = input(false, { transform: booleanAttribute });
   /**

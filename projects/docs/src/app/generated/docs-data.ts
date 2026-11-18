@@ -2198,7 +2198,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "boolean",
         "default": "false",
         "required": false,
-        "description": "A click on the backdrop closes the drawer (PrimeNG `dismissible`). Same effect as `dismissableMask`; default false, so a drawer without either stays open."
+        "description": "A click on the backdrop closes the drawer (PrimeNG `dismissible`). Same effect as `dismissableMask`. The default is false, which differs from PrimeNG (default true): a drawer without `dismissible` or `dismissableMask` stays open on a backdrop click."
       }
     ],
     "models": [],
@@ -6712,7 +6712,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "boolean",
         "default": "false",
         "required": false,
-        "description": "Ignores a message with the same severity, summary and detail as one that this outlet showed before, also after it closed (PrimeNG `preventDuplicates`)."
+        "description": "Ignores a message with the same severity, summary and detail as one that this outlet has ever shown, also after it closed (PrimeNG `preventDuplicates`). Not the same as the service flag `StarToastService.preventDuplicates`, which only ignores a copy while visible."
       },
       {
         "name": "preventOpenDuplicates",

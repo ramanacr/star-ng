@@ -51,7 +51,7 @@ import { DOCS, DocsRow } from '../shared/docs';
         heading="Duplicates per outlet"
         source="toast/outlet-duplicates"
         [script]="outletDuplicatesScript"
-        note="preventDuplicates on star-toast (PrimeNG preventDuplicates) ignores a message with the same severity, summary and detail as one that this outlet showed before, also after it closed. preventOpenDuplicates (PrimeNG preventOpenDuplicates) ignores only a copy of a message that is visible now; the service does that for every outlet by default, so this input matters when StarToastService.preventDuplicates is false."
+        note="Two rules have the name preventDuplicates. The service flag StarToastService.preventDuplicates (default true) ignores a copy while the first message is visible, for every outlet. The outlet input preventDuplicates on star-toast (PrimeNG preventDuplicates, default false) ignores a message that this outlet has ever shown, also after it closed: here the second click shows nothing. The outlet input preventOpenDuplicates (PrimeNG preventOpenDuplicates) ignores only a copy of a visible message, for this outlet; it matters when the service flag is false."
       >
         <star-button size="sm" variant="secondary" (pressed)="remind()">Show reminder</star-button>
         <star-toast position="bottom-end" key="reminder" preventDuplicates />
@@ -327,7 +327,8 @@ shortNote(): void {
     { name: 'messages', description: 'Read-only signal with the messages that are visible now.' },
     {
       name: 'preventDuplicates',
-      description: 'true (default): an identical visible message is ignored.',
+      description:
+        'true (default): a copy of a visible message is ignored, for every outlet. The star-toast input preventDuplicates is different: it ignores a message that the outlet has ever shown.',
     },
   ];
 
