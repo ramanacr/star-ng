@@ -812,6 +812,20 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Shows the ISO 8601 week number at the start of each week."
       },
       {
+        "name": "showOtherMonths",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Shows the days of the month before and after in the first and last week (PrimeNG `showOtherMonths`). Off: those cells are empty. With two or more months they are always empty."
+      },
+      {
+        "name": "selectOtherMonths",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "The shown days of the month before and after can be chosen (PrimeNG `selectOtherMonths`). Off: they are shown but disabled (`aria-disabled`)."
+      },
+      {
         "name": "range",
         "type": "StarDateRange | null",
         "default": "null",
@@ -1652,6 +1666,20 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "false",
         "required": false,
         "description": "Shows the ISO 8601 week number at the start of each week."
+      },
+      {
+        "name": "showOtherMonths",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Shows the days of the month before and after (PrimeNG `showOtherMonths`)."
+      },
+      {
+        "name": "selectOtherMonths",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "The shown days of the month before and after can be chosen (PrimeNG `selectOtherMonths`)."
       },
       {
         "name": "hourFormat",
@@ -7625,6 +7653,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "calendar/basic": "<div class=\"docs-stack\">\n  <star-calendar\n    class=\"star-calendar--inline\"\n    [selected]=\"shipDate()\"\n    (dateSelect)=\"shipDate.set($event)\"\n    locale=\"en-GB\"\n    [firstDayOfWeek]=\"1\"\n  />\n  <p class=\"docs-output\" role=\"status\">Ship date: {{ iso(shipDate()) }}</p>\n</div>",
   "calendar/granularity": "<div class=\"docs-stack\">\n  <star-calendar\n    class=\"star-calendar--inline\"\n    granularity=\"month\"\n    [selected]=\"reportMonth()\"\n    (dateSelect)=\"reportMonth.set($event)\"\n    locale=\"en-GB\"\n  />\n  <p class=\"docs-output\" role=\"status\">Month: {{ iso(reportMonth()) }}</p>\n</div>",
   "calendar/months": "<star-calendar\n  class=\"star-calendar--inline\"\n  [selected]=\"stay()\"\n  (dateSelect)=\"stay.set($event)\"\n  [numberOfMonths]=\"2\"\n  showWeek\n  [minDate]=\"minDate\"\n  [maxDate]=\"maxDate\"\n  [disabledDays]=\"[0]\"\n  locale=\"en-GB\"\n  [firstDayOfWeek]=\"1\"\n/>",
+  "calendar/other-months": "<div class=\"docs-stack\">\n  <star-calendar\n    class=\"star-calendar--inline\"\n    [selected]=\"closingDate()\"\n    (dateSelect)=\"closingDate.set($event)\"\n    [selectOtherMonths]=\"false\"\n    locale=\"en-GB\"\n    [firstDayOfWeek]=\"1\"\n  />\n  <star-calendar\n    class=\"star-calendar--inline\"\n    [selected]=\"closingDate()\"\n    (dateSelect)=\"closingDate.set($event)\"\n    [showOtherMonths]=\"false\"\n    locale=\"en-GB\"\n    [firstDayOfWeek]=\"1\"\n  />\n  <p class=\"docs-output\" role=\"status\">Closing date: {{ iso(closingDate()) }}</p>\n</div>",
   "calendar/range": "<div class=\"docs-stack\">\n  <star-calendar\n    class=\"star-calendar--inline\"\n    mode=\"range\"\n    [range]=\"booking()\"\n    (dateSelect)=\"pick($event)\"\n    locale=\"en-GB\"\n    [firstDayOfWeek]=\"1\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Booking: {{ iso(booking()?.start) }} to {{ iso(booking()?.end) }}\n  </p>\n</div>",
   "calendar/slots": "<div class=\"docs-stack\">\n  <star-calendar\n    class=\"star-calendar--inline\"\n    [selected]=\"payDate()\"\n    (dateSelect)=\"payDate.set($event)\"\n    locale=\"en-GB\"\n    [firstDayOfWeek]=\"1\"\n  >\n    <ng-template starHeader>\n      <p class=\"docs-output docs-due-note\">Invoices due in November 2026</p>\n    </ng-template>\n    <ng-template starDate let-date>\n      <span class=\"docs-due\" [class.docs-due--marked]=\"isDue(date)\">{{\n        date.getDate()\n      }}</span>\n    </ng-template>\n    <ng-template starFooter>\n      <p class=\"docs-output docs-due-note\">\n        A dot marks a due date: 5, 12 and 26 November.\n      </p>\n    </ng-template>\n  </star-calendar>\n  <p class=\"docs-output\" role=\"status\">Payment date: {{ iso(payDate()) }}</p>\n</div>",
   "card/basic": "<div class=\"docs-stack\">\n  <star-card header=\"Open orders\" subheader=\"Last 30 days\">\n    <star-button starCardActions variant=\"ghost\" size=\"sm\">View all</star-button>\n    <p>Forty-two orders are open. Nine are late.</p>\n    <div starCardFooter class=\"docs-row\">\n      <star-button size=\"sm\">Export</star-button>\n      <star-button size=\"sm\" variant=\"secondary\">Filter</star-button>\n    </div>\n  </star-card>\n</div>",

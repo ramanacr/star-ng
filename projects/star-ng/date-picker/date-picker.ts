@@ -123,6 +123,10 @@ export abstract class StarDateInputBase<TValue> {
   readonly numberOfMonths = input(1);
   /** Shows the ISO 8601 week number at the start of each week. */
   readonly showWeek = input(false, { transform: booleanAttribute });
+  /** Shows the days of the month before and after (PrimeNG `showOtherMonths`). */
+  readonly showOtherMonths = input(true, { transform: booleanAttribute });
+  /** The shown days of the month before and after can be chosen (PrimeNG `selectOtherMonths`). */
+  readonly selectOtherMonths = input(true, { transform: booleanAttribute });
   /**
    * Clock of the typed time with `showTime`: `'24'` (14:30) or `'12'` (2:30 PM). Both forms
    * are accepted when the user types.
@@ -497,6 +501,8 @@ const TEMPLATE = `
         [granularity]="granularity()"
         [numberOfMonths]="numberOfMonths()"
         [showWeek]="showWeek()"
+        [showOtherMonths]="showOtherMonths()"
+        [selectOtherMonths]="selectOtherMonths()"
         [minDate]="minDate()"
         [maxDate]="maxDate()"
         [disabledDates]="disabledDates()"

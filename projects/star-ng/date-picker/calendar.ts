@@ -40,7 +40,7 @@ interface DayCell {
   readonly key: string;
   readonly label: string;
   readonly outside: boolean;
-  /** Not rendered: a day of another month when two or more months show. */
+  /** Not rendered: a day of another month with `showOtherMonths` off or two or more months. */
   readonly blank: boolean;
   readonly today: boolean;
   readonly disabled: boolean;
@@ -179,7 +179,7 @@ export function isoWeek(date: Date): number {
                             [attr.aria-label]="cell.label"
                             [attr.aria-current]="cell.today ? 'date' : null"
                             [attr.aria-disabled]="cell.disabled || null"
-                            (click)="choose(cell.date)"
+                            (click)="cell.disabled || choose(cell.date)"
                             (mouseenter)="hover.set(cell.date)"
                             (focus)="focused.set(cell.date)"
                           >
@@ -290,6 +290,16 @@ export class StarCalendar {
   readonly numberOfMonths = input(1);
   /** Shows the ISO 8601 week number at the start of each week. */
   readonly showWeek = input(false, { transform: booleanAttribute });
+  /**
+   * Shows the days of the month before and after in the first and last week (PrimeNG
+   * `showOtherMonths`). Off: those cells are empty. With two or more months they are always empty.
+   */
+  readonly showOtherMonths = input(true, { transform: booleanAttribute });
+  /**
+   * The shown days of the month before and after can be chosen (PrimeNG `selectOtherMonths`).
+   * Off: they are shown but disabled (`aria-disabled`).
+   */
+  readonly selectOtherMonths = input(true, { transform: booleanAttribute });
   readonly range = input<StarDateRange | null>(null);
   readonly minDate = input<Date | null>(null);
   readonly maxDate = input<Date | null>(null);
@@ -373,6 +383,8 @@ export class StarCalendar {
     const fullLabel = new Intl.DateTimeFormat(this.locale(), { dateStyle: 'full' });
     const monthLabel = new Intl.DateTimeFormat(this.locale(), { month: 'long', year: 'numeric' });
     const many = this.monthCount() > 1;
+    const hideOther = many || !this.showOtherMonths();
+    const lockOther = !this.selectOtherMonths();
     return Array.from({ length: this.monthCount() }, (_, index) => {
       const month = addMonths(this.viewStart(), index);
       return {
@@ -388,9 +400,9 @@ export class StarCalendar {
                 key: isoDay(date),
                 label: fullLabel.format(date),
                 outside,
-                blank: many && outside,
+                blank: hideOther && outside,
                 today: sameDay(date, this.today),
-                disabled: this.isDisabled(date),
+                disabled: this.isDisabled(date) || (lockOther && outside),
               };
             }),
           }))

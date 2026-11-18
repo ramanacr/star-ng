@@ -80,6 +80,33 @@ import { DOCS, DocsRow } from '../shared/docs';
       </docs-example>
 
       <docs-example
+        heading="Days of other months"
+        source="calendar/other-months"
+        [script]="otherMonthsScript"
+        note="showOtherMonths (default true) shows the days of the month before and after in the first and last week; off, those cells are empty. selectOtherMonths (default true) lets the user choose them; off, they stay visible but disabled. The date pickers have both inputs too."
+      >
+        <div class="docs-stack">
+          <star-calendar
+            class="star-calendar--inline"
+            [selected]="closingDate()"
+            (dateSelect)="closingDate.set($event)"
+            [selectOtherMonths]="false"
+            locale="en-GB"
+            [firstDayOfWeek]="1"
+          />
+          <star-calendar
+            class="star-calendar--inline"
+            [selected]="closingDate()"
+            (dateSelect)="closingDate.set($event)"
+            [showOtherMonths]="false"
+            locale="en-GB"
+            [firstDayOfWeek]="1"
+          />
+          <p class="docs-output" role="status">Closing date: {{ iso(closingDate()) }}</p>
+        </div>
+      </docs-example>
+
+      <docs-example
         heading="Month view"
         source="calendar/granularity"
         note="granularity='month' (or 'year') shows only the month view and emits the first day of the chosen month."
@@ -178,6 +205,7 @@ export class CalendarPage {
   });
   protected readonly stay = signal<Date | null>(new Date(2026, 10, 17));
   protected readonly reportMonth = signal<Date | null>(new Date(2026, 10, 1));
+  protected readonly closingDate = signal<Date | null>(new Date(2026, 10, 30));
   protected readonly minDate = new Date(2026, 9, 12);
   protected readonly maxDate = new Date(2026, 11, 20);
 
@@ -209,6 +237,7 @@ pick(date: Date): void {
     this.booking.set({ start: range.start, end: date });
   }
 }`;
+  protected readonly otherMonthsScript = `readonly closingDate = signal<Date | null>(new Date(2026, 10, 30));`;
   protected readonly monthsScript = `readonly stay = signal<Date | null>(new Date(2026, 10, 17));
 readonly minDate = new Date(2026, 9, 12);
 readonly maxDate = new Date(2026, 11, 20);`;

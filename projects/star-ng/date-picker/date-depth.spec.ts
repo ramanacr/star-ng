@@ -1,5 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { StarCalendar } from './calendar';
 import { starIsoText, starParseIso, starSplitDateTime, starTimeFormat } from './date-format';
 import { StarDatePicker, StarDateRangePicker, StarMultiDatePicker } from './date-picker';
 import { parseDate, StarDateRange } from './date-utils';
@@ -390,5 +391,78 @@ describe('date picker: formats, keepInvalid and the string data type', () => {
     expect(host.isoDays()).toEqual(['2026-11-05', '2026-11-12']);
     const chosen = document.querySelector('[data-date="2026-11-05"]')?.closest('td');
     expect(chosen?.getAttribute('aria-selected')).toBe('true');
+  });
+});
+
+@Component({
+  imports: [StarCalendar, StarDatePicker],
+  template: `
+    <star-calendar
+      locale="en-GB"
+      [firstDayOfWeek]="1"
+      [selected]="hidden()"
+      [showOtherMonths]="false"
+      (dateSelect)="hidden.set($event)"
+    />
+    <star-calendar
+      locale="en-GB"
+      [firstDayOfWeek]="1"
+      [selected]="locked()"
+      [selectOtherMonths]="false"
+      (dateSelect)="locked.set($event)"
+    />
+    <star-date-picker
+      locale="en-GB"
+      ariaLabel="Other months"
+      [firstDayOfWeek]="1"
+      [showOtherMonths]="false"
+      [(value)]="picked"
+    />
+  `,
+})
+class OtherMonthsHost {
+  readonly hidden = signal<Date | null>(new Date(2026, 10, 18));
+  readonly locked = signal<Date | null>(new Date(2026, 10, 18));
+  readonly picked = signal<Date | null>(new Date(2026, 10, 18));
+}
+
+describe('calendar: days of other months', () => {
+  afterEach(() => document.querySelectorAll('.star-date__panel').forEach((item) => item.remove()));
+
+  it('hides them with showOtherMonths off, and disables them with selectOtherMonths off', async () => {
+    const fixture = TestBed.createComponent(OtherMonthsHost);
+    await fixture.whenStable();
+    const [hidden, locked] = [
+      ...(fixture.nativeElement as HTMLElement).querySelectorAll('star-calendar'),
+    ];
+    // November 2026 starts on a Sunday: Monday 26 October is the first cell.
+    expect(hidden.querySelector('[data-date="2026-10-26"]')).toBeNull();
+    expect(hidden.querySelector('[data-date="2026-11-01"]')).not.toBeNull();
+    expect(hidden.querySelectorAll('tbody tr')[0].querySelectorAll('td').length).toBe(7);
+
+    const outside = locked.querySelector<HTMLButtonElement>('[data-date="2026-10-26"]')!;
+    expect(outside.classList).toContain('star-calendar__day--outside');
+    expect(outside.getAttribute('aria-disabled')).toBe('true');
+    outside.click();
+    await fixture.whenStable();
+    expect(fixture.componentInstance.locked()).toEqual(new Date(2026, 10, 18));
+    const inside = locked.querySelector<HTMLButtonElement>('[data-date="2026-11-02"]')!;
+    expect(inside.getAttribute('aria-disabled')).toBeNull();
+    inside.click();
+    await fixture.whenStable();
+    expect(fixture.componentInstance.locked()).toEqual(new Date(2026, 10, 2));
+  });
+
+  it('passes showOtherMonths from the date picker to its calendar', async () => {
+    const fixture = TestBed.createComponent(OtherMonthsHost);
+    await fixture.whenStable();
+    const input = (fixture.nativeElement as HTMLElement).querySelector<HTMLInputElement>(
+      'input[aria-label="Other months"]',
+    )!;
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', altKey: true }));
+    await fixture.whenStable();
+    const panel = document.querySelector('.star-date__panel')!;
+    expect(panel.querySelector('[data-date="2026-10-26"]')).toBeNull();
+    expect(panel.querySelector('[data-date="2026-11-30"]')).not.toBeNull();
   });
 });
