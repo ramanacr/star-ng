@@ -40,3 +40,42 @@ export class StarHeaderCellTemplate<T = unknown> extends StarSlot<StarHeaderCell
     return true;
   }
 }
+
+/** Context of the row edit actions slot. */
+export interface StarRowEditActionsContext<T = unknown> {
+  /** The row in edit. */
+  readonly $implicit: T;
+  /** The row in edit. */
+  readonly row: T;
+  /** Saves the row (blocked while a value is not valid). */
+  readonly save: () => void;
+  /** Cancels the edit of the row. */
+  readonly cancel: () => void;
+  /** `true` when all editors of the row hold valid values. */
+  readonly valid: boolean;
+}
+
+/**
+ * Replaces the Save and Cancel buttons of a row in edit (`editMode="row"`):
+ * `<ng-template starRowEditActions let-save="save" let-cancel="cancel" let-valid="valid">…</ng-template>`.
+ * PrimeNG `pSaveEditableRow` / `pCancelEditableRow` buttons. The content goes in the actions
+ * cell of the row. Enter in an editor still saves and Escape still cancels.
+ */
+@Directive({
+  selector: 'ng-template[starRowEditActions]',
+  providers: [{ provide: StarSlot, useExisting: StarRowEditActionsTemplate }],
+})
+export class StarRowEditActionsTemplate<T = unknown> extends StarSlot<
+  StarRowEditActionsContext<T>
+> {
+  readonly name = 'rowEditActions';
+  /** Optional: pass the table rows to type `let-row` in strict templates. */
+  readonly starRowEditActionsOf = input<readonly T[] | null>(null);
+
+  static ngTemplateContextGuard<T>(
+    _dir: StarRowEditActionsTemplate<T>,
+    _ctx: unknown,
+  ): _ctx is StarRowEditActionsContext<T> {
+    return true;
+  }
+}

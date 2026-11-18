@@ -774,6 +774,36 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'table with a row in edit and a validation message',
+    path: 'controls/table-edit',
+    open: async (page) => {
+      const live = example(page, 'Row edit with validation');
+      await live.getByRole('button', { name: 'Edit row' }).first().click();
+      const customer = live.getByRole('textbox', { name: 'Edit Customer' });
+      await customer.fill('');
+      await expect(customer).toHaveAttribute('aria-invalid', 'true');
+      await expect(live.locator('.star-table__error')).toBeVisible();
+    },
+  },
+  {
+    name: 'table with a new row in edit and a changed batch cell',
+    path: 'controls/table-edit',
+    open: async (page) => {
+      const live = example(page, 'Add and delete rows');
+      await live.getByRole('button', { name: 'Add order' }).click();
+      await expect(live.locator('.star-table__row--editing')).toHaveCount(1);
+      const batch = example(page, 'Batch edit with undo');
+      await batch
+        .getByRole('button', { name: /^Edit Customer/ })
+        .first()
+        .click();
+      const editor = batch.getByRole('textbox', { name: 'Edit Customer' });
+      await editor.fill('Changed customer');
+      await editor.press('Enter');
+      await expect(batch.locator('.star-table__cell--changed')).toHaveCount(1);
+    },
+  },
+  {
     name: 'table with a filter select open (Region)',
     path: 'controls/table-sort-filter',
     open: async (page) => {

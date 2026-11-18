@@ -27,6 +27,12 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - Tree table: frozen, resizable and reorderable columns (`columnWidths`, `columnOrder`).
 - Tree table: cell edit (`editable`, `editor`, `cellEdit`) with treegrid cell navigation (`cellNavigation`).
 - Tree table: row context menu (`contextMenu`, `contextMenuSelect`) with right click, Shift+F10 and the context menu key.
+- Table: edit lifecycle events `editInit` and `editCancel` for cell edit (`cellEdit` unchanged).
+- Table: row edit mode (`editMode="row"`, two-way `editingRowKeys`, `rowEditInit` / `rowEditSave` / `rowEditCancel`, F2, Enter, Escape) and the `starRowEditActions` slot.
+- Table: column validation (`required`, `min`, `max`, `pattern`, `validators`) with messages linked by `aria-describedby`; saves are blocked while invalid.
+- Table: batch edit (`batchEdit`, `pendingChanges`, `commitEdits` / `batchSave`, `discardEdits`, `undo` / `redo` with Ctrl+Z, Ctrl+Y, Ctrl+Shift+Z), with changed-cell and deleted-row marks.
+- Table: `addRow()` / `deleteRow()` with `rowAdd` / `rowDelete`.
+- UI text for table editing in English, German and Spanish.
 
 ### Changed
 

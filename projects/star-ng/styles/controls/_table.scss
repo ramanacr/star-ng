@@ -531,3 +531,44 @@ star-select.star-table__editor {
     color: var(--star-text-soft);
   }
 }
+
+// Edit depth: row edit mode, validation and batch edit.
+.star-table__row-actions {
+  width: 4.5rem;
+  white-space: nowrap;
+  text-align: end;
+
+  .star-table__toggle[aria-disabled='true'] {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+.star-table__row--editing > td {
+  background: var(--star-accent-soft);
+}
+.star-table__error {
+  display: block;
+  margin-block-start: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--star-danger);
+  white-space: normal;
+  // Own surface: the message stays readable on a tinted row or a changed cell.
+  inline-size: fit-content;
+  padding: 0.125rem 0.375rem;
+  border-radius: var(--star-radius-sm);
+  background: var(--star-surface);
+}
+// A pending change of batch edit: a mark at the inline start of the cell.
+.star-table__cell--changed {
+  box-shadow: inset 3px 0 0 var(--star-warning);
+  background: var(--star-warning-soft);
+}
+.star-table__cell--changed:dir(rtl) {
+  box-shadow: inset -3px 0 0 var(--star-warning);
+}
+.star-table__row--deleted > td {
+  color: var(--star-text-muted);
+  text-decoration: line-through;
+}
