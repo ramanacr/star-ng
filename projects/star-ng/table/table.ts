@@ -34,7 +34,7 @@ import {
   STAR_SLOT_HOST,
   STAR_UI_TEXT,
   StarEmptyContext,
-  starFilterMatch,
+  starFilterMatchAny,
   StarFilterMatchMode,
   StarFilterService,
   StarGroupContext,
@@ -1113,10 +1113,14 @@ export class StarTable<T> {
   /** Case- and accent-insensitive text search over all columns. */
   readonly globalFilter = input('');
   /**
-   * Fields that the global filter searches (PrimeNG `globalFilterFields`). Default: all columns.
+   * Fields that the global filter searches (PrimeNG `globalFilterFields`). `null` or an empty
+   * list (default): all columns.
    */
   readonly globalFilterFields = input<readonly string[] | null>(null);
-  /** How the global filter text matches a cell (default `contains`). */
+  /**
+   * How the global filter text matches (default `contains`). A row passes when one searched cell
+   * matches; with `notContains`, when no searched cell has the text.
+   */
   readonly globalFilterMatchMode = input<StarFilterMatchMode>('contains');
   /**
    * Locale of the text filters (PrimeNG `filterLocale`): with it, `Intl.Collator` compares the
@@ -1291,8 +1295,10 @@ export class StarTable<T> {
   readonly batchSave = output<StarBatchChanges<T>>();
   readonly lazyLoad = output<StarLazyLoadEvent>();
   /**
-   * After each filter change in client mode (column filters or global filter): the filters and
-   * the rows that pass them (PrimeNG `onFilter`). In lazy mode, `lazyLoad` carries the filters.
+   * After each change of `filters` (filter row, filter menu or the owner) or of `globalFilter`, in
+   * client mode: the filters and the rows that pass them (PrimeNG `onFilter`). A change of
+   * `globalFilterFields`, `globalFilterMatchMode` or `filterLocale` does not emit it. In lazy
+   * mode, `lazyLoad` carries the filters.
    */
   readonly filter = output<StarTableFilterEvent<T>>();
   /**
@@ -1389,7 +1395,7 @@ export class StarTable<T> {
     const active = this.activeFilters();
     if (!query && !active.length) return this.value();
     const fields = this.globalFilterFields();
-    const searched = fields
+    const searched = fields?.length
       ? this.columns().filter((column) => fields.includes(column.field))
       : this.columns();
     const mode = this.globalFilterMatchMode();
@@ -1397,8 +1403,11 @@ export class StarTable<T> {
     return this.value().filter(
       (row) =>
         (!query ||
-          searched.some((column) =>
-            starFilterMatch(this.cellText(row, column), query, mode, locale),
+          starFilterMatchAny(
+            searched.map((column) => this.cellText(row, column)),
+            query,
+            mode,
+            locale,
           )) &&
         active.every(({ column, query: value }) => this.matchesColumnFilter(row, column, value)),
     );

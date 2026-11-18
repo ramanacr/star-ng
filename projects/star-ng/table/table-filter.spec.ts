@@ -55,7 +55,7 @@ class Host {
   readonly filters = signal<StarColumnFilters>({});
   readonly query = signal('');
   readonly fields = signal<readonly string[] | null>(null);
-  readonly globalMode = signal<'contains' | 'startsWith'>('contains');
+  readonly globalMode = signal<'contains' | 'startsWith' | 'notContains'>('contains');
   readonly locale = signal<string | null>(null);
   readonly lazy = signal(false);
   readonly events: StarTableFilterEvent<Invoice>[] = [];
@@ -217,6 +217,37 @@ describe('StarTable filter rules', () => {
     host.locale.set('de');
     await fixture.whenStable();
     expect(ids()).toEqual(['Zürich Office']);
+  });
+
+  it('global filter notContains keeps rows where no searched field has the text', async () => {
+    const { host, fixture, ids } = await setup((h) => {
+      h.fields.set(['customer', 'status']);
+      h.globalMode.set('notContains');
+    });
+    host.query.set('o');
+    await fixture.whenStable();
+    // Málaga Trading / Paid: no "o" in either field. Berlin Supplies is Open.
+    expect(ids()).toEqual(['Málaga Trading']);
+    // An empty field list searches all columns.
+    host.fields.set([]);
+    host.globalMode.set('contains');
+    host.query.set('2026-02');
+    await fixture.whenStable();
+    expect(ids()).toEqual(['Zürich Office']);
+  });
+
+  it('a text value on a number or date column still means contains', async () => {
+    const { ids, apply } = await setup();
+    await apply({ amount: '12' });
+    expect(ids()).toEqual(['Málaga Trading']);
+    await apply({ due: '03-1' });
+    expect(ids()).toEqual(['Berlin Supplies']);
+    const cell = (raw: number) => ({ raw, text: String(raw) });
+    expect(starMatchesFilter(cell(112), 'number', '12', undefined)).toBe(true);
+    expect(starMatchesFilter(cell(12.5), 'number', '12', undefined)).toBe(true);
+    expect(starMatchesFilter(cell(21), 'number', '12', undefined)).toBe(false);
+    // With a column match mode, the mode decides.
+    expect(starMatchesFilter(cell(112), 'number', '12', 'equals')).toBe(false);
   });
 
   it('emits filter with the filters and the filtered rows (client mode)', async () => {

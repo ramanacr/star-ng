@@ -241,5 +241,8 @@ export function starMatchesFilter(
   }
   if (typeof value !== 'string') return value.includes(cell.text);
   if (type === 'select') return cell.text === value;
-  return starMatchesRule(cell, type, { matchMode: mode ?? 'contains', value }, locale, custom);
+  // A text without a column mode keeps its old meaning on every column: the display text
+  // contains it (also on a number or date column).
+  if (!mode) return starFilterMatch(cell.text, value, 'contains', locale);
+  return starMatchesRule(cell, type, { matchMode: mode, value }, locale, custom);
 }
