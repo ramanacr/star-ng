@@ -120,13 +120,23 @@ function signalMember(member, source) {
       if (property.name.getText() === 'transform') transform = property.initializer.getText();
     }
   }
+  // `input(this.defaults.size ?? 'md')`: the default comes from the global configuration
+  // (`provideStarNg`) or a default token when one is set; the table shows the built-in fallback.
+  let fallback = first;
+  while (
+    fallback &&
+    ts.isBinaryExpression(fallback) &&
+    fallback.operatorToken.kind === ts.SyntaxKind.QuestionQuestionToken
+  ) {
+    fallback = fallback.right;
+  }
   let type = typeArgument;
   if (!type && transform === 'booleanAttribute') type = 'boolean';
   if (!type && transform === 'numberAttribute') type = 'number';
   if (!type && kind === 'output') type = 'void';
-  if (!type) type = required ? 'unknown' : inferType(first);
+  if (!type) type = required ? 'unknown' : inferType(fallback);
 
-  let defaultText = kind === 'output' || required || !first ? null : first.getText();
+  let defaultText = kind === 'output' || required || !fallback ? null : fallback.getText();
   // An id from the CDK id generator: a string, unique per instance.
   if (defaultText && defaultText.includes('.getId(')) {
     if (!typeArgument) type = 'string';

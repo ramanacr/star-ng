@@ -16,7 +16,7 @@ import {
   viewChild,
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
-import { STAR_UI_TEXT, StarDirectionService } from '@star-ng/ui/core';
+import { injectStarControlDefaults, STAR_UI_TEXT, StarDirectionService } from '@star-ng/ui/core';
 import { injectStarFieldLink, starJoinIds } from '@star-ng/ui/field';
 import { StarTimeColumns } from './time-columns';
 
@@ -130,6 +130,7 @@ export class StarTimePicker implements FormValueControl<string | null> {
   private readonly directionSync = inject(StarDirectionService);
   protected readonly text = inject(STAR_UI_TEXT);
   private readonly ids = inject(_IdGenerator);
+  private readonly defaults = injectStarControlDefaults(['sm', 'md']);
   private readonly injector = inject(Injector);
   /** The parent `star-field` when it labels the input (with `for`); its hint or error describes it. */
   private readonly field = injectStarFieldLink(() => this.inputId());
@@ -147,7 +148,8 @@ export class StarTimePicker implements FormValueControl<string | null> {
    * always 24-hour text.
    */
   readonly hourFormat = input<'12' | '24' | undefined>(undefined);
-  readonly size = input<'sm' | 'md'>('md');
+  /** Size. Default: `size` of `provideStarNg` (`small` or `medium`), else `md`. */
+  readonly size = input<'sm' | 'md'>(this.defaults.size ?? 'md');
   readonly ariaLabel = input<string | null>(null);
   readonly inputId = input(this.ids.getId('star-time-'));
   readonly name = input('');

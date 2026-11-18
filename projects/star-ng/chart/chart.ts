@@ -9,7 +9,7 @@ import {
   linkedSignal,
   signal,
 } from '@angular/core';
-import { STAR_UI_TEXT } from '@star-ng/ui/core';
+import { injectStarControlDefaults, STAR_UI_TEXT } from '@star-ng/ui/core';
 import {
   areaRadius,
   axisAngles,
@@ -646,6 +646,7 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
 })
 export class StarChart {
   protected readonly text = inject(STAR_UI_TEXT);
+  private readonly defaults = injectStarControlDefaults([]);
   protected readonly W = W;
   protected readonly H = H;
   protected readonly RW = RADIAL_W;
@@ -700,7 +701,8 @@ export class StarChart {
   readonly categoryLabel = input<string | null>(null);
   /** Scatter and polar area: name of the y axis and column, or of the value column. */
   readonly valueLabel = input<string | null>(null);
-  readonly locale = input<string | undefined>(undefined);
+  /** BCP 47 locale of the number format. Default: `locale` of `provideStarNg`, else the browser locale. */
+  readonly locale = input<string | undefined>(this.defaults.locale ?? undefined);
   /** Start the table view open. */
   readonly table = input(false, { transform: booleanAttribute });
 

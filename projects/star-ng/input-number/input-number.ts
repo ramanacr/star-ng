@@ -15,7 +15,7 @@ import {
   viewChild,
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
-import { STAR_UI_TEXT } from '@star-ng/ui/core';
+import { injectStarControlDefaults, STAR_UI_TEXT, StarInputVariant } from '@star-ng/ui/core';
 import { injectStarFieldLink } from '@star-ng/ui/field';
 
 /**
@@ -34,6 +34,7 @@ import { injectStarFieldLink } from '@star-ng/ui/field';
     '[class.star-number--disabled]': 'disabled()',
     '[class.star-number--invalid]': 'showInvalid()',
     '[class.star-number--buttons]': 'showButtons()',
+    '[class.star-number--filled]': "variant() === 'filled'",
   },
   template: `
     <div class="star-number__control">
@@ -91,6 +92,7 @@ import { injectStarFieldLink } from '@star-ng/ui/field';
   `,
 })
 export class StarInputNumber implements FormValueControl<number | null> {
+  private readonly defaults = injectStarControlDefaults([]);
   protected readonly uiText = inject(STAR_UI_TEXT);
   protected readonly field = injectStarFieldLink(() => this.inputId());
   /** Invalid after touch, or while the parent `star-field` shows an error. */
@@ -111,7 +113,10 @@ export class StarInputNumber implements FormValueControl<number | null> {
   readonly prefix = input('');
   /** Text after the number, for example ` kg`. */
   readonly suffix = input('');
-  readonly locale = input<string | undefined>(undefined);
+  /** BCP 47 locale of the number format. Default: `locale` of `provideStarNg`, else the browser locale. */
+  readonly locale = input<string | undefined>(this.defaults.locale ?? undefined);
+  /** Look: border on every side, or a filled surface. Default: `inputVariant` of `provideStarNg`, else `outlined`. PrimeNG `variant`. */
+  readonly variant = input<StarInputVariant>(this.defaults.inputVariant ?? 'outlined');
   /** Default: the Intl default for the mode (0 for decimal, 2 for most currencies). */
   readonly minFractionDigits = input<number | undefined>(undefined);
   /** Default: the Intl default for the mode (3 for decimal, 2 for most currencies). */

@@ -34,6 +34,7 @@ import {
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
 import {
+  injectStarControlDefaults,
   STAR_SLOT_HOST,
   STAR_UI_TEXT,
   StarDirectionService,
@@ -345,6 +346,7 @@ const MOVE_KEYS: Readonly<Record<string, TreeMoveDirection>> = {
 })
 export class StarTree implements FormValueControl<readonly string[]> {
   protected readonly text = inject(STAR_UI_TEXT);
+  private readonly defaults = injectStarControlDefaults([]);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly doc = inject(DOCUMENT);
   private readonly injector = inject(Injector);
@@ -368,9 +370,10 @@ export class StarTree implements FormValueControl<readonly string[]> {
   readonly filterBy = input<string | readonly string[]>('label');
   /**
    * Locale of the filter compare (PrimeNG `filterLocale`), for example `de`. Case and accents never
-   * count; with a locale, the compare follows the letters of that language.
+   * count; with a locale, the compare follows the letters of that language. Default: `locale` of
+   * `provideStarNg`.
    */
-  readonly filterLocale = input<string | null>(null);
+  readonly filterLocale = input<string | null>(this.defaults.locale ?? null);
   /** Maximum height of the tree (a CSS length, for example `16rem`). The tree scrolls inside it. */
   readonly scrollHeight = input<string | null>(null);
   /**
@@ -1162,6 +1165,7 @@ export class StarTreeSelect implements FormValueControl<readonly string[]> {
   /** Keeps the CDK direction (overlays and menus) in step with `<html dir>`. */
   private readonly directionSync = inject(StarDirectionService);
   protected readonly text = inject(STAR_UI_TEXT);
+  private readonly defaults = injectStarControlDefaults([]);
   protected readonly inputId = inject(_IdGenerator).getId('star-tree-select-');
   /**
    * The parent `star-field` when it labels this control. A label `for` a button would click it
@@ -1183,8 +1187,8 @@ export class StarTreeSelect implements FormValueControl<readonly string[]> {
   readonly filterMode = input<TreeFilterMode>('strict');
   /** Node fields that the filter searches (PrimeNG `filterBy`, see `star-tree`). */
   readonly filterBy = input<string | readonly string[]>('label');
-  /** Locale of the filter compare (PrimeNG `filterLocale`). */
-  readonly filterLocale = input<string | null>(null);
+  /** Locale of the filter compare (PrimeNG `filterLocale`). Default: `locale` of `provideStarNg`. */
+  readonly filterLocale = input<string | null>(this.defaults.locale ?? null);
   /** Checkbox mode: parents follow their children (PrimeNG `propagateSelectionUp`). */
   readonly propagateSelectionUp = input(true, { transform: booleanAttribute });
   /** Checkbox mode: children follow their parent (PrimeNG `propagateSelectionDown`). */

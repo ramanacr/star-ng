@@ -30,6 +30,7 @@ import { StarButton } from '@star-ng/ui/button';
 import { StarCheckbox } from '@star-ng/ui/checkbox';
 import {
   compareValues,
+  injectStarControlDefaults,
   matchesFilter,
   readOption,
   STAR_SLOT_HOST,
@@ -1026,6 +1027,8 @@ export class StarRowExpansionTemplate<T = unknown> {
 })
 export class StarTable<T> {
   protected readonly text = inject(STAR_UI_TEXT);
+  /** Defaults from `provideStarNg`. */
+  protected readonly defaults = injectStarControlDefaults(['sm', 'md']);
   private readonly document = inject(DOCUMENT);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly injector = inject(Injector);
@@ -1038,7 +1041,8 @@ export class StarTable<T> {
   readonly loading = input(false, { transform: booleanAttribute });
   readonly emptyMessage = input<string | null>(null);
   readonly striped = input(false, { transform: booleanAttribute });
-  readonly size = input<'sm' | 'md'>('md');
+  /** Row density. Default: `size` of `provideStarNg` (`small` or `medium`), else `md`. */
+  readonly size = input<'sm' | 'md'>(this.defaults.size ?? 'md');
   readonly stickyHeader = input(false, { transform: booleanAttribute });
   readonly scrollHeight = input<string | null>(null);
   /**

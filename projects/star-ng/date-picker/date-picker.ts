@@ -20,6 +20,7 @@ import {
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
 import {
+  injectStarControlDefaults,
   STAR_SLOT_HOST,
   STAR_UI_TEXT,
   StarDirectionService,
@@ -75,6 +76,8 @@ export abstract class StarDateInputBase<TValue> {
   private readonly directionSync = inject(StarDirectionService);
   protected readonly text = inject(STAR_UI_TEXT);
   private readonly ids = inject(_IdGenerator);
+  /** Defaults from `provideStarNg`. */
+  protected readonly defaults = injectStarControlDefaults(['sm', 'md']);
   /**
    * The parent `star-field` when it labels this picker: the label points at the input with `for`,
    * the hint or error describes it.
@@ -90,8 +93,8 @@ export abstract class StarDateInputBase<TValue> {
   readonly disabledDays = input<readonly number[]>([]);
   readonly dateDisabled = input<((date: Date) => boolean) | null>(null);
   readonly firstDayOfWeek = input<number | null>(null);
-  /** BCP 47 locale for names and formats. Default: the browser locale. */
-  readonly locale = input<string | undefined>(undefined);
+  /** BCP 47 locale for names and formats. Default: `locale` of `provideStarNg`, else the browser locale. */
+  readonly locale = input<string | undefined>(this.defaults.locale ?? undefined);
   /** `Intl.DateTimeFormat` options for the input text (default numeric day / month / year). */
   readonly dateFormat = input<Intl.DateTimeFormatOptions>(DEFAULT_DATE_FORMAT);
   /** Months shown side by side in the popup. */
@@ -107,7 +110,8 @@ export abstract class StarDateInputBase<TValue> {
   readonly showClear = input(false, { transform: booleanAttribute });
   /** Disables typing; the date can only be picked. */
   readonly readonlyInput = input(false, { transform: booleanAttribute });
-  readonly size = input<'sm' | 'md'>('md');
+  /** Size. Default: `size` of `provideStarNg` (`small` or `medium`), else `md`. */
+  readonly size = input<'sm' | 'md'>(this.defaults.size ?? 'md');
   readonly ariaLabel = input<string | null>(null);
   readonly inputId = input(this.ids.getId('star-date-'));
 

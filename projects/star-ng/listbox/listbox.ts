@@ -31,6 +31,7 @@ import {
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
 import {
+  injectStarControlDefaults,
   optionText,
   readOption,
   STAR_SLOT_HOST,
@@ -369,6 +370,7 @@ export class StarListbox<TOption = unknown, TValue = TOption> implements FormVal
   TValue | readonly TValue[] | null
 > {
   protected readonly text = inject(STAR_UI_TEXT);
+  private readonly defaults = injectStarControlDefaults([]);
   protected readonly listId = inject(_IdGenerator).getId('star-listbox-');
   protected readonly hintId = inject(_IdGenerator).getId('star-listbox-hint-');
   /** Id of the list element: pass the listbox in `connectedTo` of another listbox to connect them. */
@@ -412,10 +414,12 @@ export class StarListbox<TOption = unknown, TValue = TOption> implements FormVal
   readonly filter = input(false, { transform: booleanAttribute });
   /** Option fields that the filter searches (one key or a list). Default: the label. PrimeNG `filterBy`. */
   readonly filterBy = input<StarFilterBy<TOption>>(null);
-  /** How the filter text must match (default `contains`). PrimeNG `filterMatchMode`. */
-  readonly filterMatchMode = input<StarFilterMatchMode>('contains');
-  /** Locale of the filter compare (`Intl.Collator`, sensitivity `base`). PrimeNG `filterLocale`. */
-  readonly filterLocale = input<string | null>(null);
+  /** How the filter text must match (default `contains`, or `filterMatchMode` of `provideStarNg`). PrimeNG `filterMatchMode`. */
+  readonly filterMatchMode = input<StarFilterMatchMode>(
+    this.defaults.filterMatchMode ?? 'contains',
+  );
+  /** Locale of the filter compare (`Intl.Collator`, sensitivity `base`). Default: `locale` of `provideStarNg`. PrimeNG `filterLocale`. */
+  readonly filterLocale = input<string | null>(this.defaults.locale ?? null);
   /** Height of the list. With `virtualScroll` it is the height of the list, or less for a short list. */
   readonly scrollHeight = input('16rem');
   /**

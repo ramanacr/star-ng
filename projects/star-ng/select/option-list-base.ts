@@ -22,6 +22,7 @@ import {
   viewChild,
 } from '@angular/core';
 import {
+  injectStarControlDefaults,
   optionText,
   readOption,
   STAR_UI_TEXT,
@@ -127,6 +128,8 @@ export abstract class StarOptionListBase<TOption, TValue> {
   private readonly injector = inject(Injector);
   private readonly parentField = inject(StarField, { optional: true });
   private readonly destroyRef = inject(DestroyRef);
+  /** Defaults from `provideStarNg`. */
+  protected readonly defaults = injectStarControlDefaults(['sm', 'md']);
   /**
    * The parent `star-field` when this control owns its label (see `linkField`), else `null`. Its
    * label, hint and error name and describe the control.
@@ -185,14 +188,20 @@ export abstract class StarOptionListBase<TOption, TValue> {
    * functions). Default: the label. PrimeNG `filterBy`.
    */
   readonly filterBy = input<StarFilterBy<TOption>>(null);
-  /** How the filter text must match: `contains` (default), `startsWith`, `endsWith`, `equals` or `notContains`. PrimeNG `filterMatchMode`. */
-  readonly filterMatchMode = input<StarFilterMatchMode>('contains');
+  /**
+   * How the filter text must match: `contains` (default), `startsWith`, `endsWith`, `equals` or
+   * `notContains`. The default comes from `filterMatchMode` of `provideStarNg` when it is set.
+   * PrimeNG `filterMatchMode`.
+   */
+  readonly filterMatchMode = input<StarFilterMatchMode>(
+    this.defaults.filterMatchMode ?? 'contains',
+  );
   /**
    * Locale of the filter compare, for example `de` or `tr`. The compare uses `Intl.Collator` with
    * sensitivity `base`, so case and accents do not count. Default: case and accents do not count,
-   * without locale rules. PrimeNG `filterLocale`.
+   * without locale rules; `locale` of `provideStarNg` when it is set. PrimeNG `filterLocale`.
    */
-  readonly filterLocale = input<string | null>(null);
+  readonly filterLocale = input<string | null>(this.defaults.locale ?? null);
   /**
    * Clears the filter text when the panel closes (default `true`). Set `false` to keep the text,
    * and the filtered list, for the next opening. PrimeNG `resetFilterOnHide` (there default `false`).
@@ -211,9 +220,11 @@ export abstract class StarOptionListBase<TOption, TValue> {
    * `body`: in the overlay container at the end of the body, for parents that clip their content.
    * Both are native popovers in the top layer, so the panel also shows above a modal dialog. The
    * control reads it when the overlay is created (the first opening): a later change has no effect.
+   * The default comes from `overlay.appendTo` of `provideStarNg` when it is set.
    */
-  readonly appendTo = input<'self' | 'body'>('self');
-  readonly size = input<'sm' | 'md'>('md');
+  readonly appendTo = input<'self' | 'body'>(this.defaults.appendTo ?? 'self');
+  /** Size. Default: `size` of `provideStarNg` (`small` or `medium`), else `md`. */
+  readonly size = input<'sm' | 'md'>(this.defaults.size ?? 'md');
   readonly ariaLabel = input<string | null>(null);
   readonly ariaLabelledBy = input<string | null>(null);
   readonly inputId = input(this.ids.getId('star-select-'));

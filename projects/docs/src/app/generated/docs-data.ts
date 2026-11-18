@@ -1064,7 +1064,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "string | undefined",
         "default": "undefined",
         "required": false,
-        "description": ""
+        "description": "BCP 47 locale for names. Default: `locale` of `provideStarNg`, else the browser locale."
       },
       {
         "name": "dateTemplate",
@@ -1255,7 +1255,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "'sm' | 'md'",
         "default": "'md'",
         "required": false,
-        "description": ""
+        "description": "Size. Default: `size` of `provideStarNg` (`small` or `medium`), else `md`."
       },
       {
         "name": "ariaLabel",
@@ -1417,7 +1417,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "string | undefined",
         "default": "undefined",
         "required": false,
-        "description": ""
+        "description": "BCP 47 locale of the number format. Default: `locale` of `provideStarNg`, else the browser locale."
       },
       {
         "name": "table",
@@ -1885,7 +1885,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "string | undefined",
         "default": "undefined",
         "required": false,
-        "description": "BCP 47 locale for names and formats. Default: the browser locale."
+        "description": "BCP 47 locale for names and formats. Default: `locale` of `provideStarNg`, else the browser locale."
       },
       {
         "name": "dateFormat",
@@ -1941,7 +1941,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "'sm' | 'md'",
         "default": "'md'",
         "required": false,
-        "description": ""
+        "description": "Size. Default: `size` of `provideStarNg` (`small` or `medium`), else `md`."
       },
       {
         "name": "ariaLabel",
@@ -3236,7 +3236,14 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "'sm' | 'md' | 'lg'",
         "default": "'md'",
         "required": false,
-        "description": ""
+        "description": "Size. Default: `size` of `provideStarNg`, else `md`."
+      },
+      {
+        "name": "variant",
+        "type": "StarInputVariant",
+        "default": "'outlined'",
+        "required": false,
+        "description": "Look: border on every side, or a filled surface. Default: `inputVariant` of `provideStarNg`, else `outlined`. PrimeNG `variant`."
       },
       {
         "name": "invalid",
@@ -3466,7 +3473,14 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "string | undefined",
         "default": "undefined",
         "required": false,
-        "description": ""
+        "description": "BCP 47 locale of the number format. Default: `locale` of `provideStarNg`, else the browser locale."
+      },
+      {
+        "name": "variant",
+        "type": "StarInputVariant",
+        "default": "'outlined'",
+        "required": false,
+        "description": "Look: border on every side, or a filled surface. Default: `inputVariant` of `provideStarNg`, else `outlined`. PrimeNG `variant`."
       },
       {
         "name": "minFractionDigits",
@@ -4073,14 +4087,14 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "StarFilterMatchMode",
         "default": "'contains'",
         "required": false,
-        "description": "How the filter text must match (default `contains`). PrimeNG `filterMatchMode`."
+        "description": "How the filter text must match (default `contains`, or `filterMatchMode` of `provideStarNg`). PrimeNG `filterMatchMode`."
       },
       {
         "name": "filterLocale",
         "type": "string | null",
         "default": "null",
         "required": false,
-        "description": "Locale of the filter compare (`Intl.Collator`, sensitivity `base`). PrimeNG `filterLocale`."
+        "description": "Locale of the filter compare (`Intl.Collator`, sensitivity `base`). Default: `locale` of `provideStarNg`. PrimeNG `filterLocale`."
       },
       {
         "name": "scrollHeight",
@@ -4785,14 +4799,14 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "StarFilterMatchMode",
         "default": "'contains'",
         "required": false,
-        "description": "How the filter text must match: `contains` (default), `startsWith`, `endsWith`, `equals` or `notContains`. PrimeNG `filterMatchMode`."
+        "description": "How the filter text must match: `contains` (default), `startsWith`, `endsWith`, `equals` or `notContains`. The default comes from `filterMatchMode` of `provideStarNg` when it is set. PrimeNG `filterMatchMode`."
       },
       {
         "name": "filterLocale",
         "type": "string | null",
         "default": "null",
         "required": false,
-        "description": "Locale of the filter compare, for example `de` or `tr`. The compare uses `Intl.Collator` with sensitivity `base`, so case and accents do not count. Default: case and accents do not count, without locale rules. PrimeNG `filterLocale`."
+        "description": "Locale of the filter compare, for example `de` or `tr`. The compare uses `Intl.Collator` with sensitivity `base`, so case and accents do not count. Default: case and accents do not count, without locale rules; `locale` of `provideStarNg` when it is set. PrimeNG `filterLocale`."
       },
       {
         "name": "resetFilterOnHide",
@@ -4848,14 +4862,14 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "'self' | 'body'",
         "default": "'self'",
         "required": false,
-        "description": "Where the panel is in the DOM (PrimeNG `appendTo`). `self` (default): next to the control. `body`: in the overlay container at the end of the body, for parents that clip their content. Both are native popovers in the top layer, so the panel also shows above a modal dialog. The control reads it when the overlay is created (the first opening): a later change has no effect."
+        "description": "Where the panel is in the DOM (PrimeNG `appendTo`). `self` (default): next to the control. `body`: in the overlay container at the end of the body, for parents that clip their content. Both are native popovers in the top layer, so the panel also shows above a modal dialog. The control reads it when the overlay is created (the first opening): a later change has no effect. The default comes from `overlay.appendTo` of `provideStarNg` when it is set."
       },
       {
         "name": "size",
         "type": "'sm' | 'md'",
         "default": "'md'",
         "required": false,
-        "description": ""
+        "description": "Size. Default: `size` of `provideStarNg` (`small` or `medium`), else `md`."
       },
       {
         "name": "ariaLabel",
@@ -6612,7 +6626,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "'sm' | 'md'",
         "default": "'md'",
         "required": false,
-        "description": ""
+        "description": "Row density. Default: `size` of `provideStarNg` (`small` or `medium`), else `md`."
       },
       {
         "name": "stickyHeader",
@@ -7356,7 +7370,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "'sm' | 'md'",
         "default": "'md'",
         "required": false,
-        "description": ""
+        "description": "Size. Default: `size` of `provideStarNg` (`small` or `medium`), else `md`."
       },
       {
         "name": "ariaLabel",
@@ -7784,7 +7798,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "string | null",
         "default": "null",
         "required": false,
-        "description": "Locale of the filter compare (PrimeNG `filterLocale`), for example `de`. Case and accents never count; with a locale, the compare follows the letters of that language."
+        "description": "Locale of the filter compare (PrimeNG `filterLocale`), for example `de`. Case and accents never count; with a locale, the compare follows the letters of that language. Default: `locale` of `provideStarNg`."
       },
       {
         "name": "scrollHeight",
@@ -8013,7 +8027,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "string | null",
         "default": "null",
         "required": false,
-        "description": "Locale of the filter compare (PrimeNG `filterLocale`)."
+        "description": "Locale of the filter compare (PrimeNG `filterLocale`). Default: `locale` of `provideStarNg`."
       },
       {
         "name": "propagateSelectionUp",

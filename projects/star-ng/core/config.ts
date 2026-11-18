@@ -128,6 +128,50 @@ export function injectStarConfig(): StarConfig {
 }
 
 /**
+ * Input defaults of one control, already mapped to the names of the control. An entry that is
+ * `undefined` means "not configured": the control then uses its built-in default.
+ */
+export interface StarControlDefaults<TSize extends 'sm' | 'md' | 'lg' = 'sm' | 'md'> {
+  readonly size?: TSize;
+  readonly inputVariant?: StarInputVariant;
+  readonly appendTo?: 'body' | 'self';
+  readonly filterMatchMode?: StarFilterMatchMode;
+  readonly locale?: string;
+}
+
+/**
+ * The defaults of a control from the global configuration, merged with a per-control default token
+ * (`overrides`, for example `inject(STAR_SELECT_DEFAULTS)`). The token wins; an entry that the token
+ * leaves `undefined` keeps the global value. Call it in a field initializer:
+ *
+ * ```ts
+ * private readonly defaults = injectStarControlDefaults(['sm', 'md']);
+ * readonly size = input<'sm' | 'md'>(this.defaults.size ?? 'md');
+ * ```
+ */
+export function injectStarControlDefaults<
+  TSize extends 'sm' | 'md' | 'lg',
+  TOverrides extends object = object,
+>(
+  sizes: readonly TSize[],
+  overrides?: TOverrides | null,
+): StarControlDefaults<TSize> & Partial<TOverrides> {
+  const config = injectStarConfig();
+  const size = config.size ? starConfigSize<TSize | 'md'>(config.size, 'md', sizes) : undefined;
+  const merged: Record<string, unknown> = {
+    size: size && (sizes as readonly string[]).includes(size) ? size : undefined,
+    inputVariant: config.inputVariant,
+    appendTo: config.overlay?.appendTo,
+    filterMatchMode: config.filterMatchMode,
+    locale: config.locale,
+  };
+  for (const [key, value] of Object.entries(overrides ?? {})) {
+    if (value !== undefined) merged[key] = value;
+  }
+  return merged as StarControlDefaults<TSize> & Partial<TOverrides>;
+}
+
+/**
  * Maps the configured size to the size names of a control. A size that the control does not have
  * (for example `large` on a control with only `sm` and `md`) gives `fallback`.
  */

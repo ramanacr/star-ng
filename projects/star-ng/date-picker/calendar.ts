@@ -17,7 +17,14 @@ import {
   signal,
   TemplateRef,
 } from '@angular/core';
-import { STAR_SLOT_HOST, STAR_UI_TEXT, starInlineKey, StarSlot, starSlot } from '@star-ng/ui/core';
+import {
+  injectStarControlDefaults,
+  STAR_SLOT_HOST,
+  STAR_UI_TEXT,
+  starInlineKey,
+  StarSlot,
+  starSlot,
+} from '@star-ng/ui/core';
 import { injectStarFieldLink, starJoinIds } from '@star-ng/ui/field';
 import type { StarDateContext } from './date-slots';
 import {
@@ -264,6 +271,7 @@ export function isoWeek(date: Date): number {
 })
 export class StarCalendar {
   protected readonly text = inject(STAR_UI_TEXT);
+  private readonly defaults = injectStarControlDefaults([]);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly injector = inject(Injector);
   protected readonly titleId = inject(_IdGenerator).getId('star-calendar-title-');
@@ -300,7 +308,8 @@ export class StarCalendar {
   readonly dateDisabled = input<((date: Date) => boolean) | null>(null);
   /** 0 = Sunday. Default: the locale's first day of the week. */
   readonly firstDayOfWeek = input<number | null>(null);
-  readonly locale = input<string | undefined>(undefined);
+  /** BCP 47 locale for names. Default: `locale` of `provideStarNg`, else the browser locale. */
+  readonly locale = input<string | undefined>(this.defaults.locale ?? undefined);
   /** Set by the date pickers. In your own markup, use the `starDate` slot. */
   readonly dateTemplate = input<TemplateRef<StarDateContext> | null>(null);
 
