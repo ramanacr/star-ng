@@ -9,7 +9,8 @@ const BYTE_UNITS = ['byte', 'kilobyte', 'megabyte', 'gigabyte', 'terabyte', 'pet
 
 /**
  * A byte count as text with `Intl.NumberFormat` units: `1.2 MB`, `512 byte`, `3,4 GB` in German.
- * Steps of 1024. `digits` is the maximum number of fraction digits above one kilobyte (default 1).
+ * Steps of 1024 with the unit names of `Intl` (kB, MB), as most file managers show them; `Intl`
+ * has no KiB units. `digits` is the maximum number of fraction digits above one kilobyte (default 1).
  * Returns `''` for `null`, `undefined` or a value that is not a finite number.
  */
 export function starFormatFileSize(
@@ -53,7 +54,8 @@ function toTime(value: StarDateInput): number {
 /**
  * The time from `now` to `value` as text with `Intl.RelativeTimeFormat`: "5 minutes ago",
  * "in 2 days", "yesterday" (with `numeric: 'auto'`, the default). The largest unit that is at least
- * one wins. Returns `''` for an empty or invalid date.
+ * one wins. Returns `''` for an empty or invalid date. A month is 4.348 weeks and a year 12 months:
+ * an approximation, not calendar arithmetic.
  */
 export function starFormatRelativeTime(
   value: StarDateInput | null | undefined,
