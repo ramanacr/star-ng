@@ -34,6 +34,8 @@ export interface StarUiText {
   // Clipboard (`starCopy`)
   readonly copied: string;
   readonly copyFailed: string;
+  /** Validation message of `starKeyFilter` with `validateOnly`. */
+  readonly keyFilterInvalid: string;
   // Tags field
   readonly tagsHint: string;
   readonly tagAdded: (label: string) => string;
@@ -289,6 +291,7 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   moreCount: (count) => `${count} more`,
   copied: 'Copied',
   copyFailed: 'Copy failed',
+  keyFilterInvalid: 'The value has a character that is not allowed.',
   tagsHint: 'Press Enter or comma to add. Backspace removes the last item.',
   tagAdded: (label) => `${label} added`,
   tagRemoved: (label) => `${label} removed`,

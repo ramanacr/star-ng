@@ -5365,6 +5365,45 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarKeyFilter": {
+    "kind": "directive",
+    "selector": "input[starKeyFilter], textarea[starKeyFilter]",
+    "entry": "@star-ng/ui/utility",
+    "description": "Lets the user type only the allowed characters into an `input` or a `textarea` (PrimeNG `pKeyFilter`). The filter is a preset (`int`, `num`, `money`, `hex`, `alpha`, `alphanum`, `email`) or a `RegExp` that one allowed character matches.",
+    "inputs": [
+      {
+        "name": "starKeyFilter",
+        "type": "StarKeyFilterRule",
+        "default": null,
+        "required": true,
+        "description": "The allowed characters: a preset name or a `RegExp` for one character."
+      },
+      {
+        "name": "validateOnly",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Does not block; marks a value with characters that are not allowed as invalid. PrimeNG `pValidateOnly`."
+      },
+      {
+        "name": "validationMessage",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Message of the native validation error with `validateOnly`. Default: the `keyFilterInvalid` UI text."
+      }
+    ],
+    "models": [],
+    "outputs": [
+      {
+        "name": "validChange",
+        "type": "boolean",
+        "default": null,
+        "required": false,
+        "description": "Emits after a check with `validateOnly`: `true` when the value has only allowed characters."
+      }
+    ]
+  },
   "StarKnob": {
     "kind": "component",
     "selector": "star-knob",

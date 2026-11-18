@@ -659,3 +659,8 @@ mark.star-highlight {
   color: inherit;
   border-radius: var(--star-radius-xs);
 }
+
+// `starKeyFilter` with `validateOnly`: a value with a character that is not allowed.
+.star-input.star-key-filter--invalid {
+  border-color: var(--star-danger);
+}
