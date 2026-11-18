@@ -281,6 +281,27 @@ import { DOCS, DocsRow } from '../shared/docs';
       </docs-example>
 
       <docs-example
+        heading="Events"
+        source="date-picker/events"
+        [script]="eventsScript"
+        note="todayClick gives the date of today when the user chooses Today, and clearClick tells when the user chooses Clear (in the button bar or the clear button of the field). monthChange, yearChange and viewChange come from the calendar in the popup, as on the calendar."
+      >
+        <div class="docs-stack">
+          <star-date-picker
+            [(value)]="eventsDate"
+            locale="en-GB"
+            showButtonBar
+            showClear
+            (todayClick)="lastEvent.set('Today')"
+            (clearClick)="lastEvent.set('Clear')"
+            (monthChange)="lastEvent.set('Month ' + $event.month + '/' + $event.year)"
+            ariaLabel="Invoice review date"
+          />
+          <p class="docs-output" role="status">Last event: {{ lastEvent() }}</p>
+        </div>
+      </docs-example>
+
+      <docs-example
         heading="Month and year views"
         source="date-picker/views"
         note="view='month' or view='year' chooses a month or a year. The value is the first day of it, and the text is mm/yyyy or yyyy. In the day view, a click on the month name or the year in the popup header opens the month or the year view for a fast jump."
@@ -511,6 +532,8 @@ export class DatePickerPage {
     start: new Date(2026, 10, 16, 8, 0),
     end: new Date(2026, 10, 20, 17, 30),
   });
+  protected readonly eventsDate = signal<Date | null>(new Date(2026, 10, 17));
+  protected readonly lastEvent = signal('none');
   protected readonly paymentDate = signal<Date | null>(new Date(2026, 11, 2));
   protected readonly companyDays: readonly StarSpecialDate[] = [
     { date: '2026-12-04', label: 'Company day', kind: 'holiday' },
@@ -562,6 +585,8 @@ readonly billingPeriod = signal<StarDateRange<string> | null>({
   start: '2026-11-01',
   end: '2026-11-30',
 });`;
+  protected readonly eventsScript = `readonly eventsDate = signal<Date | null>(new Date(2026, 10, 17));
+readonly lastEvent = signal('none');`;
   protected readonly specialScript = `readonly paymentDate = signal<Date | null>(new Date(2026, 11, 2));
 readonly companyDays: readonly StarSpecialDate[] = [
   { date: '2026-12-04', label: 'Company day', kind: 'holiday' },

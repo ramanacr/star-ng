@@ -27,7 +27,12 @@ import {
   starSlot,
 } from '@star-ng/ui/core';
 import { injectStarFieldLink, starJoinIds } from '@star-ng/ui/field';
-import { StarCalendar, StarCalendarView } from './calendar';
+import {
+  StarCalendar,
+  StarCalendarMonthChange,
+  StarCalendarView,
+  StarCalendarYearChange,
+} from './calendar';
 import {
   starAtTime as atTime,
   starIsoText,
@@ -165,6 +170,16 @@ export abstract class StarDateInputBase<TValue> {
   readonly touch = output<void>();
   readonly opened = output<void>();
   readonly closed = output<void>();
+  /** The user moved the calendar to another month (PrimeNG `onMonthChange`). */
+  readonly monthChange = output<StarCalendarMonthChange>();
+  /** The user moved the calendar to another year (PrimeNG `onYearChange`). */
+  readonly yearChange = output<StarCalendarYearChange>();
+  /** The user switched the calendar between the day, month and year views. */
+  readonly viewChange = output<StarCalendarView>();
+  /** The user chose Today in the button bar; the value is today (PrimeNG `onTodayClick`). */
+  readonly todayClick = output<Date>();
+  /** The user chose Clear in the button bar or the clear button (PrimeNG `onClearClick`). */
+  readonly clearClick = output<void>();
 
   protected readonly positions = PANEL_POSITIONS;
   protected readonly viewportMargin = PANEL_VIEWPORT_MARGIN;
@@ -338,7 +353,14 @@ export abstract class StarDateInputBase<TValue> {
   }
 
   protected today(): void {
-    this.pickToday(startOfDay(new Date()));
+    const today = startOfDay(new Date());
+    this.todayClick.emit(today);
+    this.pickToday(today);
+  }
+
+  protected onClearClick(): void {
+    this.clearClick.emit();
+    this.clear();
   }
 
   clear(): void {
@@ -457,7 +479,7 @@ const TEMPLATE = `
       (blur)="onInputBlur()"
     />
     @if (showClear() && hasValue() && interactive()) {
-      <button type="button" class="star-select__icon-btn" [attr.aria-label]="text.clear" (click)="clear()">
+      <button type="button" class="star-select__icon-btn" [attr.aria-label]="text.clear" (click)="onClearClick()">
         <i class="ph-bold ph-x" aria-hidden="true"></i>
       </button>
     }
@@ -519,6 +541,9 @@ const TEMPLATE = `
         [locale]="locale()"
         [dateTemplate]="dateSlot()"
         (dateSelect)="onDateSelect($event)"
+        (monthChange)="monthChange.emit($event)"
+        (yearChange)="yearChange.emit($event)"
+        (viewChange)="viewChange.emit($event)"
       />
       @if (timeEnabled()) {
         <div class="star-date__time">
@@ -547,7 +572,7 @@ const TEMPLATE = `
       @if (showButtonBar()) {
         <div class="star-date__bar">
           <button type="button" class="star-btn star-btn--ghost star-btn--sm" (click)="today()">{{ text.today }}</button>
-          <button type="button" class="star-btn star-btn--ghost star-btn--sm" (click)="clear()">{{ text.clear }}</button>
+          <button type="button" class="star-btn star-btn--ghost star-btn--sm" (click)="onClearClick()">{{ text.clear }}</button>
         </div>
       }
       <!-- The footer is last, below the button bar. PrimeNG \`#footer\` template. -->

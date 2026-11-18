@@ -532,3 +532,100 @@ describe('calendar: special dates', () => {
     expect(day.getAttribute('aria-label')).toBe(`${full(20)}, Event: Invoice run`);
   });
 });
+
+@Component({
+  imports: [StarCalendar, StarDatePicker],
+  template: `
+    <star-calendar
+      locale="en-GB"
+      [selected]="day"
+      (monthChange)="log.push('month ' + $event.month + '/' + $event.year)"
+      (yearChange)="log.push('year ' + $event.year)"
+      (viewChange)="log.push('view ' + $event)"
+    />
+    <star-date-picker
+      locale="en-GB"
+      ariaLabel="Events"
+      showButtonBar
+      showClear
+      [(value)]="picked"
+      (monthChange)="log.push('picker month ' + $event.month)"
+      (todayClick)="log.push('today')"
+      (clearClick)="log.push('clear')"
+    />
+  `,
+})
+class EventsHost {
+  readonly day = new Date(2026, 11, 15);
+  readonly picked = signal<Date | null>(new Date(2026, 11, 15));
+  readonly log: string[] = [];
+}
+
+describe('calendar and date picker: events', () => {
+  afterEach(() => document.querySelectorAll('.star-date__panel').forEach((item) => item.remove()));
+
+  it('emits monthChange, yearChange and viewChange on navigation', async () => {
+    const fixture = TestBed.createComponent(EventsHost);
+    await fixture.whenStable();
+    const calendar = (fixture.nativeElement as HTMLElement).querySelector('star-calendar')!;
+    const log = fixture.componentInstance.log;
+    const nav = calendar.querySelectorAll<HTMLButtonElement>('.star-calendar__nav');
+    nav[1].click();
+    await fixture.whenStable();
+    expect(log).toEqual(['month 1/2027', 'year 2027']);
+    nav[0].click();
+    await fixture.whenStable();
+    expect(log.slice(2)).toEqual(['month 12/2026', 'year 2026']);
+
+    // A move inside the month is no month change.
+    const day = calendar.querySelector<HTMLElement>('[data-date="2026-12-15"]')!;
+    day.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+    await fixture.whenStable();
+    expect(log.length).toBe(4);
+    day.dispatchEvent(new KeyboardEvent('keydown', { key: 'PageUp', bubbles: true }));
+    await fixture.whenStable();
+    expect(log.slice(4)).toEqual(['month 11/2026']);
+
+    calendar.querySelector<HTMLButtonElement>('.star-calendar__title-btn')!.click();
+    await fixture.whenStable();
+    expect(log.slice(5)).toEqual(['view month']);
+    calendar.querySelector<HTMLButtonElement>('.star-calendar__pick[data-pick="2"]')!.click();
+    await fixture.whenStable();
+    expect(log.slice(6)).toEqual(['month 3/2026', 'view day']);
+  });
+
+  it('emits todayClick and clearClick in the date picker, and passes monthChange', async () => {
+    const fixture = TestBed.createComponent(EventsHost);
+    await fixture.whenStable();
+    const host = fixture.componentInstance;
+    const input = (fixture.nativeElement as HTMLElement).querySelector<HTMLInputElement>(
+      'input[aria-label="Events"]',
+    )!;
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', altKey: true }));
+    await fixture.whenStable();
+    const panel = document.querySelector('.star-date__panel')!;
+    panel.querySelectorAll<HTMLButtonElement>('.star-calendar__nav')[1].click();
+    await fixture.whenStable();
+    expect(host.log).toContain('picker month 1');
+
+    const bar = panel.querySelectorAll<HTMLButtonElement>('.star-date__bar button');
+    bar[0].click();
+    await fixture.whenStable();
+    expect(host.log).toContain('today');
+    // Today closes the popup: open it again for Clear.
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', altKey: true }));
+    await fixture.whenStable();
+    document.querySelectorAll<HTMLButtonElement>('.star-date__bar button')[1].click();
+    await fixture.whenStable();
+    expect(host.log.at(-1)).toBe('clear');
+    expect(host.picked()).toBeNull();
+
+    host.picked.set(new Date(2026, 11, 15));
+    await fixture.whenStable();
+    (fixture.nativeElement as HTMLElement)
+      .querySelector<HTMLButtonElement>('star-date-picker .star-select__icon-btn')!
+      .click();
+    await fixture.whenStable();
+    expect(host.log.filter((entry) => entry === 'clear').length).toBe(2);
+  });
+});

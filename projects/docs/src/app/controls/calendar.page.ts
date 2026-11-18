@@ -127,6 +127,28 @@ import { DOCS, DocsRow } from '../shared/docs';
       </docs-example>
 
       <docs-example
+        heading="Navigation events"
+        source="calendar/events"
+        [script]="eventsScript"
+        note="monthChange gives { month, year } (month 1 to 12) when the user moves to another month: with the arrows, the keys, the month view or a day of another month. yearChange gives { year }, and viewChange gives 'day', 'month' or 'year'. Use them to load the invoices of the shown month. The date pickers have the same events."
+      >
+        <div class="docs-stack">
+          <star-calendar
+            class="star-calendar--inline"
+            [selected]="eventsDate()"
+            (dateSelect)="eventsDate.set($event)"
+            (monthChange)="shownMonth.set($event.month + '/' + $event.year)"
+            (viewChange)="shownView.set($event)"
+            locale="en-GB"
+            [firstDayOfWeek]="1"
+          />
+          <p class="docs-output" role="status">
+            Shown month: {{ shownMonth() }}. View: {{ shownView() }}
+          </p>
+        </div>
+      </docs-example>
+
+      <docs-example
         heading="Month view"
         source="calendar/granularity"
         note="granularity='month' (or 'year') shows only the month view and emits the first day of the chosen month."
@@ -231,6 +253,9 @@ export class CalendarPage {
     { date: '2026-12-10', label: 'Invoice run', kind: 'event' },
     { date: '2026-12-21', label: 'Year-end closing', kind: 'event' },
   ];
+  protected readonly eventsDate = signal<Date | null>(new Date(2026, 10, 17));
+  protected readonly shownMonth = signal('11/2026');
+  protected readonly shownView = signal('day');
   protected readonly closingDate = signal<Date | null>(new Date(2026, 10, 30));
   protected readonly minDate = new Date(2026, 9, 12);
   protected readonly maxDate = new Date(2026, 11, 20);
@@ -269,6 +294,9 @@ readonly companyDays: readonly StarSpecialDate[] = [
   { date: '2026-12-10', label: 'Invoice run', kind: 'event' },
   { date: '2026-12-21', label: 'Year-end closing', kind: 'event' },
 ];`;
+  protected readonly eventsScript = `readonly eventsDate = signal<Date | null>(new Date(2026, 10, 17));
+readonly shownMonth = signal('11/2026');
+readonly shownView = signal('day');`;
   protected readonly otherMonthsScript = `readonly closingDate = signal<Date | null>(new Date(2026, 10, 30));`;
   protected readonly monthsScript = `readonly stay = signal<Date | null>(new Date(2026, 10, 17));
 readonly minDate = new Date(2026, 9, 12);

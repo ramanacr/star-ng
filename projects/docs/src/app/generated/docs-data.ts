@@ -904,6 +904,27 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": ""
+      },
+      {
+        "name": "monthChange",
+        "type": "StarCalendarMonthChange",
+        "default": null,
+        "required": false,
+        "description": "The user moved to another month (arrows, keys, the month view, or a day of another month). With two or more months, the first shown month. PrimeNG `onMonthChange`, Ignite UI `viewDateChanged`."
+      },
+      {
+        "name": "yearChange",
+        "type": "StarCalendarYearChange",
+        "default": null,
+        "required": false,
+        "description": "The user moved to another year (PrimeNG `onYearChange`)."
+      },
+      {
+        "name": "viewChange",
+        "type": "StarCalendarView",
+        "default": null,
+        "required": false,
+        "description": "The user switched between the day, month and year views (Ignite UI `activeViewChanged`)."
       }
     ]
   },
@@ -1830,6 +1851,41 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": ""
+      },
+      {
+        "name": "monthChange",
+        "type": "StarCalendarMonthChange",
+        "default": null,
+        "required": false,
+        "description": "The user moved the calendar to another month (PrimeNG `onMonthChange`)."
+      },
+      {
+        "name": "yearChange",
+        "type": "StarCalendarYearChange",
+        "default": null,
+        "required": false,
+        "description": "The user moved the calendar to another year (PrimeNG `onYearChange`)."
+      },
+      {
+        "name": "viewChange",
+        "type": "StarCalendarView",
+        "default": null,
+        "required": false,
+        "description": "The user switched the calendar between the day, month and year views."
+      },
+      {
+        "name": "todayClick",
+        "type": "Date",
+        "default": null,
+        "required": false,
+        "description": "The user chose Today in the button bar; the value is today (PrimeNG `onTodayClick`)."
+      },
+      {
+        "name": "clearClick",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "The user chose Clear in the button bar or the clear button (PrimeNG `onClearClick`)."
       }
     ]
   },
@@ -7665,6 +7721,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "button/states": "<star-button [loading]=\"saving()\" (pressed)=\"save()\">Save changes</star-button>\n<star-button variant=\"secondary\" disabled>Disabled</star-button>\n<p class=\"docs-output\" role=\"status\">Saved {{ saves() }} times</p>",
   "button/variants": "<star-button variant=\"primary\">Save</star-button>\n<star-button variant=\"secondary\">Cancel</star-button>\n<star-button variant=\"ghost\">Skip</star-button>\n<star-button variant=\"success\">Approve</star-button>\n<star-button variant=\"warning\">Hold</star-button>\n<star-button variant=\"danger\">Delete</star-button>\n<star-button variant=\"ghost-danger\">Remove</star-button>",
   "calendar/basic": "<div class=\"docs-stack\">\n  <star-calendar\n    class=\"star-calendar--inline\"\n    [selected]=\"shipDate()\"\n    (dateSelect)=\"shipDate.set($event)\"\n    locale=\"en-GB\"\n    [firstDayOfWeek]=\"1\"\n  />\n  <p class=\"docs-output\" role=\"status\">Ship date: {{ iso(shipDate()) }}</p>\n</div>",
+  "calendar/events": "<div class=\"docs-stack\">\n  <star-calendar\n    class=\"star-calendar--inline\"\n    [selected]=\"eventsDate()\"\n    (dateSelect)=\"eventsDate.set($event)\"\n    (monthChange)=\"shownMonth.set($event.month + '/' + $event.year)\"\n    (viewChange)=\"shownView.set($event)\"\n    locale=\"en-GB\"\n    [firstDayOfWeek]=\"1\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Shown month: {{ shownMonth() }}. View: {{ shownView() }}\n  </p>\n</div>",
   "calendar/granularity": "<div class=\"docs-stack\">\n  <star-calendar\n    class=\"star-calendar--inline\"\n    granularity=\"month\"\n    [selected]=\"reportMonth()\"\n    (dateSelect)=\"reportMonth.set($event)\"\n    locale=\"en-GB\"\n  />\n  <p class=\"docs-output\" role=\"status\">Month: {{ iso(reportMonth()) }}</p>\n</div>",
   "calendar/months": "<star-calendar\n  class=\"star-calendar--inline\"\n  [selected]=\"stay()\"\n  (dateSelect)=\"stay.set($event)\"\n  [numberOfMonths]=\"2\"\n  showWeek\n  [minDate]=\"minDate\"\n  [maxDate]=\"maxDate\"\n  [disabledDays]=\"[0]\"\n  locale=\"en-GB\"\n  [firstDayOfWeek]=\"1\"\n/>",
   "calendar/other-months": "<div class=\"docs-stack\">\n  <star-calendar\n    class=\"star-calendar--inline\"\n    [selected]=\"closingDate()\"\n    (dateSelect)=\"closingDate.set($event)\"\n    [selectOtherMonths]=\"false\"\n    locale=\"en-GB\"\n    [firstDayOfWeek]=\"1\"\n  />\n  <star-calendar\n    class=\"star-calendar--inline\"\n    [selected]=\"closingDate()\"\n    (dateSelect)=\"closingDate.set($event)\"\n    [showOtherMonths]=\"false\"\n    locale=\"en-GB\"\n    [firstDayOfWeek]=\"1\"\n  />\n  <p class=\"docs-output\" role=\"status\">Closing date: {{ iso(closingDate()) }}</p>\n</div>",
@@ -7718,6 +7775,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "date-picker/basic": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"delivery\"\n    locale=\"en-GB\"\n    [firstDayOfWeek]=\"1\"\n    ariaLabel=\"Delivery date\"\n    showButtonBar\n  />\n  <p class=\"docs-output\" role=\"status\">Delivery: {{ iso(delivery()) }}</p>\n</div>",
   "date-picker/data-type": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"issuedOn\"\n    locale=\"en-GB\"\n    dataType=\"string\"\n    ariaLabel=\"Invoice issued on\"\n  />\n  <star-date-range-picker\n    [(value)]=\"billingPeriod\"\n    locale=\"en-GB\"\n    dataType=\"string\"\n    ariaLabel=\"Billing period\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Issued: {{ issuedOn() ?? 'none' }}. Period: {{ billingPeriod()?.start ?? 'none' }} to\n    {{ billingPeriod()?.end ?? 'none' }}\n  </p>\n</div>",
   "date-picker/display-input-format": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"dueDate\"\n    locale=\"en-GB\"\n    [displayFormat]=\"displayLong\"\n    [inputFormat]=\"inputNumeric\"\n    keepInvalid\n    ariaLabel=\"Invoice due date\"\n  />\n  <p class=\"docs-output\" role=\"status\">Due: {{ iso(dueDate()) }}</p>\n</div>",
+  "date-picker/events": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"eventsDate\"\n    locale=\"en-GB\"\n    showButtonBar\n    showClear\n    (todayClick)=\"lastEvent.set('Today')\"\n    (clearClick)=\"lastEvent.set('Clear')\"\n    (monthChange)=\"lastEvent.set('Month ' + $event.month + '/' + $event.year)\"\n    ariaLabel=\"Invoice review date\"\n  />\n  <p class=\"docs-output\" role=\"status\">Last event: {{ lastEvent() }}</p>\n</div>",
   "date-picker/form": "<div class=\"docs-stack\">\n  <star-field label=\"Delivery date\" for=\"date-form-delivery\" [state]=\"order.deliveryDate()\">\n    <star-date-picker\n      inputId=\"date-form-delivery\"\n      [formField]=\"order.deliveryDate\"\n      locale=\"en-GB\"\n      [minDate]=\"minDate\"\n      ariaLabel=\"Required delivery date\"\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ order().valid() }}</p>\n</div>",
   "date-picker/format": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"invoiceDate\"\n    locale=\"en-GB\"\n    [dateFormat]=\"longFormat\"\n    ariaLabel=\"Invoice date\"\n    placeholder=\"dd/mm/yyyy\"\n  />\n  <star-date-picker\n    [value]=\"invoiceDate()\"\n    locale=\"en-GB\"\n    readonlyInput\n    ariaLabel=\"Invoice date, pick only\"\n  />\n  <p class=\"docs-output\" role=\"status\">Invoice: {{ iso(invoiceDate()) }}</p>\n</div>",
   "date-picker/limits": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"slot\"\n    [minDate]=\"minDate\"\n    [maxDate]=\"maxDate\"\n    [disabledDays]=\"weekend\"\n    [disabledDates]=\"closedDays\"\n    [dateDisabled]=\"isMonthStart\"\n    locale=\"en-GB\"\n    ariaLabel=\"Pick-up date\"\n  />\n  <p class=\"docs-output\" role=\"status\">Pick-up: {{ iso(slot()) }}</p>\n</div>",
