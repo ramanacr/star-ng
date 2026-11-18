@@ -237,6 +237,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
           import('./controls/multi-column-combobox.page').then((m) => m.MultiColumnComboboxPage),
       },
       {
+        label: 'Mention',
+        path: 'controls/mention',
+        keywords: 'mention at sign hashtag tag people suggestions textarea caret',
+        load: () => import('./controls/mention.page').then((m) => m.MentionPage),
+      },
+      {
         label: 'Tree',
         path: 'controls/tree',
         keywords: 'hierarchy nodes folders checkbox expand',

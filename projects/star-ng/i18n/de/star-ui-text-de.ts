@@ -258,4 +258,5 @@ export const STAR_UI_TEXT_DE: StarUiText = {
   typeYourName: 'Geben Sie Ihren Namen ein',
   signatureCleared: 'Unterschrift gelöscht',
   strokeUndone: 'Letzter Strich entfernt',
+  mentionSuggestions: 'Vorschläge',
 };

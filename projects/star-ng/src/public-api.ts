@@ -38,6 +38,7 @@ export * from '@star-ng/ui/layout';
 export * from '@star-ng/ui/list';
 export * from '@star-ng/ui/listbox';
 export * from '@star-ng/ui/media';
+export * from '@star-ng/ui/mention';
 export * from '@star-ng/ui/menu';
 export * from '@star-ng/ui/message';
 export * from '@star-ng/ui/multi-column-combobox';

@@ -4305,6 +4305,100 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ]
   },
+  "StarMention": {
+    "kind": "directive",
+    "selector": "textarea[starMention], input[starMention]",
+    "entry": "@star-ng/ui/mention",
+    "description": "Mentions in a text field (Syncfusion `ejs-mention`; PrimeNG has the mention pattern in its autocomplete examples, Kendo UI and Ignite UI have none): type a trigger such as `@` or `#` at the start of a word, and a list of suggestions opens at the caret. Enter, Tab or a click inserts `trigger + label + ' '` as plain text.",
+    "inputs": [
+      {
+        "name": "triggers",
+        "type": "readonly string[]",
+        "default": "['@']",
+        "required": false,
+        "description": "Characters that start a mention. Default `['@']`, for example `['@', '#']`."
+      },
+      {
+        "name": "suggestions",
+        "type": "readonly T[] | StarMentionSource<T>",
+        "default": "[]",
+        "required": false,
+        "description": "The suggestions: an array that the typed text filters (by the label, `filterMatchMode`), or a function `(query, trigger) => T[] | Promise<T[]>` that returns them (for a server search)."
+      },
+      {
+        "name": "optionLabel",
+        "type": "StarOptionKey<T> | null",
+        "default": "null",
+        "required": false,
+        "description": "Property or function that gives the text of a suggestion. Default: the suggestion itself."
+      },
+      {
+        "name": "filterMatchMode",
+        "type": "StarFilterMatchMode",
+        "default": "'contains'",
+        "required": false,
+        "description": "How the typed text filters an array of suggestions (accent and case insensitive)."
+      },
+      {
+        "name": "maxSuggestions",
+        "type": "number",
+        "default": "10",
+        "required": false,
+        "description": "Most suggestions shown at once."
+      }
+    ],
+    "models": [],
+    "outputs": [
+      {
+        "name": "mentionSearch",
+        "type": "StarMentionSearchEvent",
+        "default": null,
+        "required": false,
+        "description": "Emits when the user types after a trigger: the trigger and the text typed after it."
+      },
+      {
+        "name": "mentionSelect",
+        "type": "StarMentionSelectEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "Emits after a suggestion was inserted."
+      }
+    ]
+  },
+  "StarMentionItemTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starMentionItem]",
+    "entry": "@star-ng/ui/mention",
+    "description": "Content of each suggestion of `starMention`. Name the field with a template reference: `<textarea starMention #m=\"starMention\">` and `<ng-template [starMentionItem]=\"m\" let-item>`.",
+    "inputs": [
+      {
+        "name": "starMentionItem",
+        "type": "StarMention<T>",
+        "default": null,
+        "required": true,
+        "description": "The `starMention` field this template belongs to."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
+  "StarMentionPanel": {
+    "kind": "component",
+    "selector": "star-mention-panel",
+    "entry": "@star-ng/ui/mention",
+    "description": "The suggestion panel of `starMention`. Internal: the directive attaches it at the caret.",
+    "inputs": [
+      {
+        "name": "owner",
+        "type": "StarMention<unknown>",
+        "default": null,
+        "required": true,
+        "description": "The directive that owns the panel."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
   "StarMenu": {
     "kind": "component",
     "selector": "star-menu",
@@ -8825,6 +8919,9 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "listbox/virtual": "<div class=\"docs-stack\">\n  <star-listbox\n    [options]=\"invoiceNumbers\"\n    [(value)]=\"invoice\"\n    virtualScroll\n    filter\n    scrollHeight=\"16rem\"\n    ariaLabel=\"Invoice number\"\n  />\n  <p class=\"docs-output\" role=\"status\">Invoice: {{ invoice() ?? 'none' }}</p>\n</div>",
   "listbox/virtual-groups": "<div class=\"docs-stack\">\n  <star-listbox\n    [options]=\"shipments\"\n    optionLabel=\"name\"\n    optionValue=\"id\"\n    optionGroup=\"region\"\n    optionDisabled=\"held\"\n    [(value)]=\"picked\"\n    multiple\n    virtualScroll\n    [virtualItemSize]=\"36\"\n    scrollHeight=\"16rem\"\n    ariaLabel=\"Shipments\"\n  >\n    <ng-template starOption [starOptionOf]=\"shipments\" let-item let-selected=\"selected\">\n      {{ item.name }}\n    </ng-template>\n  </star-listbox>\n  <p class=\"docs-output\" role=\"status\">Picked: {{ pickedCount() }}</p>\n</div>",
   "mega-menu/basic": "<div class=\"docs-stack\">\n  <star-mega-menu\n    ariaLabel=\"Catalogue\"\n    [items]=\"catalogue\"\n    (itemClick)=\"last.set($event.label ?? '')\"\n  />\n  <p class=\"docs-output\" role=\"status\">Last action: {{ last() }}</p>\n</div>",
+  "mention/basic": "<div class=\"docs-stack\">\n  <textarea\n    class=\"star-input\"\n    aria-label=\"Comment\"\n    placeholder=\"Write a comment, type @ to mention someone\"\n    starMention\n    #comment=\"starMention\"\n    [suggestions]=\"people\"\n    optionLabel=\"name\"\n    (mentionSelect)=\"last.set($any($event.item).name)\"\n  ></textarea>\n  <p class=\"docs-output\" role=\"status\">\n    Last mention: {{ last() }}. In the text: {{ names(comment.mentions()) }}\n  </p>\n</div>",
+  "mention/form": "<div class=\"docs-stack\">\n  <star-field label=\"Assign to\" hint=\"Type @ and a name\">\n    <input\n      starInput\n      [formField]=\"f.assignee\"\n      starMention\n      [suggestions]=\"people\"\n      optionLabel=\"name\"\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Model: {{ model().assignee || '(empty)' }}</p>\n</div>",
+  "mention/triggers": "<div class=\"docs-stack\">\n  <textarea\n    class=\"star-input\"\n    aria-label=\"Message\"\n    placeholder=\"Type @ for people or # for topics\"\n    starMention\n    #message=\"starMention\"\n    [triggers]=\"['@', '#']\"\n    [suggestions]=\"search\"\n    [optionLabel]=\"label\"\n    (mentionSearch)=\"query.set($event)\"\n  ></textarea>\n  <ng-template [starMentionItem]=\"message\" let-item>\n    @if ($any(item).tag) {\n      <span>#{{ $any(item).tag }}</span>\n    } @else {\n      <span class=\"person\">\n        <span>{{ $any(item).name }}</span>\n        <small>{{ $any(item).team }}</small>\n      </span>\n    }\n  </ng-template>\n  <p class=\"docs-output\" role=\"status\">\n    Search: {{ query() ? query()!.trigger + query()!.query : 'none' }}\n  </p>\n</div>",
   "menu/icon-trigger": "<button\n  type=\"button\"\n  class=\"star-btn star-btn--secondary star-btn--icon\"\n  aria-label=\"Row actions\"\n  [starMenuTrigger]=\"rowMenu\"\n>\n  <i class=\"ph-bold ph-dots-three-vertical\" aria-hidden=\"true\"></i>\n</button>\n<star-menu #rowMenu [items]=\"fileItems\" />",
   "menu/icons": "<star-button variant=\"secondary\" [starMenuTrigger]=\"editMenu\">Edit</star-button>\n<star-menu #editMenu [items]=\"editItems\" />",
   "menu/inline": "<star-menu inline ariaLabel=\"Inline menu\" [items]=\"viewItems\" />",

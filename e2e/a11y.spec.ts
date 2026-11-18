@@ -587,6 +587,17 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'mention suggestions open',
+    path: 'controls/mention',
+    open: async (page) => {
+      const field = example(page, 'Mention people').getByRole('textbox', { name: 'Comment' });
+      await field.click();
+      await field.pressSequentially('Hello @an');
+      await expect(page.getByRole('listbox', { name: 'Suggestions' })).toBeVisible();
+      await expect(page.getByRole('option', { name: 'Ana Silva' })).toBeVisible();
+    },
+  },
+  {
     name: 'app sidebar collapsed with a group open',
     path: 'controls/app-sidebar',
     open: async (page) => {

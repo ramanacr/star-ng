@@ -278,6 +278,9 @@ export interface StarUiText {
   readonly typeYourName: string;
   readonly signatureCleared: string;
   readonly strokeUndone: string;
+  // Mention
+  /** Name of the suggestion list of `starMention`. */
+  readonly mentionSuggestions: string;
 }
 
 export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
@@ -523,6 +526,7 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   typeYourName: 'Type your name',
   signatureCleared: 'Signature cleared',
   strokeUndone: 'Last stroke removed',
+  mentionSuggestions: 'Suggestions',
 };
 
 /** Parameter names of the function entries, in call order (used for `{{ name }}` in translations). */
