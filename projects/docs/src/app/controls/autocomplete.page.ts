@@ -252,6 +252,49 @@ interface OfficeCity {
       </docs-example>
 
       <docs-example
+        heading="Force selection"
+        source="autocomplete/force-selection"
+        note="With forceSelection, text that is no option label clears the field and the value when the field loses focus. Without it (the default) the text goes back to the label of the value. optionSelect and optionUnselect fire when an option is chosen or the value is cleared."
+      >
+        <div class="docs-stack">
+          <star-autocomplete
+            [options]="cities"
+            [(value)]="forcedCity"
+            forceSelection
+            showClear
+            placeholder="Type a city, then leave the field"
+            ariaLabel="City, listed only"
+            (optionSelect)="cityEvent.set('Selected ' + $event)"
+            (optionUnselect)="cityEvent.set('Removed ' + $event)"
+          />
+          <p class="docs-output" role="status">
+            City: {{ forcedCity() ?? 'none' }}. {{ cityEvent() }}
+          </p>
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="Token entry"
+        source="autocomplete/tokens"
+        note="In star-multi-autocomplete, separator ends a chip while typing (here a comma or a semicolon), addOnTab makes a chip on Tab and keeps the focus in the field, and addOnBlur makes a chip when the field loses focus. The text must be an option label, or any text with allowCustomValues. unique off lets a keyword be chosen twice."
+      >
+        <div class="docs-stack">
+          <star-multi-autocomplete
+            [options]="keywords"
+            [(value)]="tokens"
+            [separator]="tokenSeparator"
+            addOnTab
+            addOnBlur
+            allowCustomValues
+            [unique]="false"
+            placeholder="Type keywords, separated by commas"
+            ariaLabel="Keywords as tokens"
+          />
+          <p class="docs-output" role="status">Keywords: {{ tokens().join(', ') || 'none' }}</p>
+        </div>
+      </docs-example>
+
+      <docs-example
         heading="Lazy loading"
         source="autocomplete/lazy"
         [script]="lazyScript"
@@ -289,6 +332,10 @@ interface OfficeCity {
   `,
 })
 export class AutocompletePage {
+  protected readonly forcedCity = signal<string | null>(null);
+  protected readonly cityEvent = signal('');
+  protected readonly tokens = signal<readonly string[]>([]);
+  protected readonly tokenSeparator = /[,;]/;
   protected readonly customKeywords = signal<readonly string[]>([]);
   protected readonly lastKeyword = signal<string | null>(null);
   protected readonly lazyList = lazyOrders();
@@ -498,5 +545,9 @@ readonly task = form(this.taskModel, (path) => {
     },
     { name: 'Backspace', description: 'Multiple: in an empty field it removes the last chip.' },
     { name: 'Home / End', description: 'Move the caret in the text, as in any text field.' },
+    {
+      name: 'Tab (star-multi-autocomplete with addOnTab)',
+      description: 'Makes a chip from the typed text and keeps the focus in the field.',
+    },
   ];
 }

@@ -120,8 +120,16 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-autocomplete",
     "entry": "@star-ng/ui/autocomplete",
-    "description": "Autocomplete (PrimeNG `p-autocomplete`). Local mode filters `options`; server mode listens to `(completeMethod)` and shows `[suggestions]`. Only listed options can be chosen (force selection): unmatched text reverts on blur, an exact label match is taken.",
-    "inputs": [],
+    "description": "Autocomplete (PrimeNG `p-autocomplete`). Local mode filters `options`; server mode listens to `(completeMethod)` and shows `[suggestions]`. Only listed options can be chosen: on blur an exact label match is taken, and other text reverts to the label of the value (or clears it with `forceSelection`).",
+    "inputs": [
+      {
+        "name": "forceSelection",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "On blur, text that is no option label clears the text and the value (PrimeNG `forceSelection`). Default `false`: the text goes back to the label of the value."
+      }
+    ],
     "models": [
       {
         "name": "value",
@@ -137,7 +145,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "TOption",
         "default": null,
         "required": false,
-        "description": ""
+        "description": "An option was chosen. Same as `optionSelect` (kept for compatibility)."
       },
       {
         "name": "selectionChanging",
@@ -205,6 +213,20 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": "Fires (debounced) when the user types; load `suggestions` in reply (PrimeNG `completeMethod`)."
+      },
+      {
+        "name": "optionSelect",
+        "type": "TOption",
+        "default": null,
+        "required": false,
+        "description": "An option was chosen (also from typed text). PrimeNG `onSelect`."
+      },
+      {
+        "name": "optionUnselect",
+        "type": "TValue",
+        "default": null,
+        "required": false,
+        "description": "A value was removed by the user: a chip, Backspace, or the clear of a single value. PrimeNG `onUnselect`."
       }
     ]
   },
@@ -3559,6 +3581,34 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "false",
         "required": false,
         "description": "A row \"Add “text”\" at the end of the list adds the typed text as a new value (a string) when no option has that label. `customValueAdd` fires. Ignite UI combo `allowCustomValues`."
+      },
+      {
+        "name": "unique",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "A value appears once (default `true`): chosen options leave the list. Off: an option can be chosen again. PrimeNG `unique`."
+      },
+      {
+        "name": "addOnBlur",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Typed text becomes a chip when the field loses focus (PrimeNG `addOnBlur`). The text must be an option label, or any text with `allowCustomValues`."
+      },
+      {
+        "name": "addOnTab",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Typed text becomes a chip on Tab; focus then stays in the field (PrimeNG `addOnTab`)."
+      },
+      {
+        "name": "separator",
+        "type": "string | RegExp | null",
+        "default": "null",
+        "required": false,
+        "description": "Text or pattern that ends a chip while typing, for example `','` or `/[,;]/` (PrimeNG `separator`). Typed or pasted text is split there; each part becomes a chip as with `addOnBlur`."
       }
     ],
     "models": [
@@ -6759,6 +6809,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "autocomplete/async": "<div class=\"docs-stack\">\n  <star-autocomplete\n    [suggestions]=\"results()\"\n    [loading]=\"searching()\"\n    [minQueryLength]=\"2\"\n    [delay]=\"150\"\n    (completeMethod)=\"search($event)\"\n    optionLabel=\"name\"\n    optionValue=\"id\"\n    [(value)]=\"found\"\n    placeholder=\"Type 2 letters of a name\"\n    ariaLabel=\"Colleague\"\n    showClear\n  />\n  <p class=\"docs-output\" role=\"status\">Colleague: {{ found() ?? 'none' }}</p>\n</div>",
   "autocomplete/custom-values": "<div class=\"docs-stack\">\n  <star-multi-autocomplete\n    [options]=\"keywords\"\n    [(value)]=\"customKeywords\"\n    allowCustomValues\n    placeholder=\"Add a keyword\"\n    ariaLabel=\"Keywords with new ones\"\n    (customValueAdd)=\"lastKeyword.set($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Keywords: {{ customKeywords().join(', ') || 'none' }}. New:\n    {{ lastKeyword() ?? 'none' }}\n  </p>\n</div>",
   "autocomplete/dropdown": "<star-autocomplete\n  [options]=\"cities\"\n  [(value)]=\"dropdownCity\"\n  placeholder=\"Search a city\"\n  ariaLabel=\"City with dropdown\"\n  dropdown\n  autoHighlight\n  showClear\n/>",
+  "autocomplete/force-selection": "<div class=\"docs-stack\">\n  <star-autocomplete\n    [options]=\"cities\"\n    [(value)]=\"forcedCity\"\n    forceSelection\n    showClear\n    placeholder=\"Type a city, then leave the field\"\n    ariaLabel=\"City, listed only\"\n    (optionSelect)=\"cityEvent.set('Selected ' + $event)\"\n    (optionUnselect)=\"cityEvent.set('Removed ' + $event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    City: {{ forcedCity() ?? 'none' }}. {{ cityEvent() }}\n  </p>\n</div>",
   "autocomplete/form": "<div class=\"docs-stack\">\n  <star-field label=\"Assignee\" for=\"autocomplete-form-assignee\" [state]=\"task.assignee()\">\n    <star-autocomplete\n      inputId=\"autocomplete-form-assignee\"\n      [formField]=\"task.assignee\"\n      [options]=\"people\"\n      optionLabel=\"name\"\n      optionValue=\"id\"\n      placeholder=\"Search a person\"\n      showClear\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ task().valid() }}</p>\n</div>",
   "autocomplete/large": "<div class=\"docs-stack\">\n  <star-autocomplete\n    [options]=\"tickets\"\n    [(value)]=\"ticket\"\n    placeholder=\"Search 10,000 tickets\"\n    ariaLabel=\"Ticket\"\n    virtualScroll\n    dropdown\n  />\n  <p class=\"docs-output\" role=\"status\">Ticket: {{ ticket() ?? 'none' }}</p>\n</div>",
   "autocomplete/lazy": "<div class=\"docs-stack\">\n  <star-autocomplete\n    [options]=\"lazyList.options()\"\n    optionLabel=\"name\"\n    optionValue=\"id\"\n    [(value)]=\"lazyOrder\"\n    lazy\n    virtualScroll\n    dropdown\n    placeholder=\"Type an order number\"\n    ariaLabel=\"Order, loaded on demand\"\n    (lazyLoad)=\"lazyList.load($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">Order: {{ lazyOrder() ?? 'none' }}</p>\n</div>",
@@ -6766,6 +6817,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "autocomplete/multiple": "<div class=\"docs-stack\">\n  <star-multi-autocomplete\n    [options]=\"keywords\"\n    [(value)]=\"chosen\"\n    [selectionLimit]=\"4\"\n    placeholder=\"Add a keyword\"\n    ariaLabel=\"Keywords\"\n    dropdown\n    autoHighlight\n    showClear\n  />\n  <p class=\"docs-output\" role=\"status\">Keywords: {{ chosen().join(', ') || 'none' }}</p>\n</div>",
   "autocomplete/objects": "<star-autocomplete\n  [options]=\"people\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  optionGroup=\"team\"\n  [(value)]=\"person\"\n  placeholder=\"Search a person\"\n  ariaLabel=\"Person\"\n>\n  <ng-template starOption [starOptionOf]=\"people\" let-item>\n    <span>\n      {{ item.name }}\n      <small>{{ item.team }}</small>\n    </span>\n  </ng-template>\n</star-autocomplete>",
   "autocomplete/slots": "<div class=\"docs-stack\">\n  <star-autocomplete\n    [options]=\"officeCities\"\n    [(value)]=\"officeCity\"\n    [loading]=\"officesLoading()\"\n    optionLabel=\"name\"\n    optionValue=\"code\"\n    optionGroup=\"country\"\n    placeholder=\"Search a city\"\n    ariaLabel=\"Office city\"\n  >\n    <ng-template starHeader>\n      <p class=\"docs-output\">Cities with an office</p>\n    </ng-template>\n    <ng-template starGroup let-country let-count=\"count\">\n      {{ country }} ({{ count }})\n    </ng-template>\n    <ng-template starEmpty let-text>No city matches {{ text }}.</ng-template>\n    <ng-template starLoading>\n      <p class=\"docs-output\">Loading the office list...</p>\n    </ng-template>\n    <ng-template starFooter>\n      <p class=\"docs-output\">{{ officeCities.length }} cities</p>\n      <button\n        type=\"button\"\n        class=\"star-btn star-btn--sm star-btn--ghost\"\n        (click)=\"reloadOffices()\"\n      >\n        Reload\n      </button>\n    </ng-template>\n  </star-autocomplete>\n  <p class=\"docs-output\" role=\"status\">City: {{ officeCity() ?? 'none' }}</p>\n</div>",
+  "autocomplete/tokens": "<div class=\"docs-stack\">\n  <star-multi-autocomplete\n    [options]=\"keywords\"\n    [(value)]=\"tokens\"\n    [separator]=\"tokenSeparator\"\n    addOnTab\n    addOnBlur\n    allowCustomValues\n    [unique]=\"false\"\n    placeholder=\"Type keywords, separated by commas\"\n    ariaLabel=\"Keywords as tokens\"\n  />\n  <p class=\"docs-output\" role=\"status\">Keywords: {{ tokens().join(', ') || 'none' }}</p>\n</div>",
   "avatar/basic": "<star-avatar name=\"Jane Doe\" />\n<star-avatar name=\"Sam Lee\" shape=\"square\" />\n<star-avatar />\n<star-avatar name=\"Ava Stone\" icon=\"ph-bold ph-buildings\" />",
   "avatar/image": "<star-avatar name=\"Broken Image\" image=\"data:,\" size=\"lg\" />",
   "avatar/sizes": "<star-avatar name=\"Jane Doe\" size=\"sm\" />\n<star-avatar name=\"Jane Doe\" size=\"md\" />\n<star-avatar name=\"Jane Doe\" size=\"lg\" />\n<star-avatar name=\"Jane Doe\" size=\"xl\" />",
