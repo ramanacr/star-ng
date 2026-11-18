@@ -259,15 +259,25 @@ export class StarSignaturePad implements FormValueControl<string> {
   readonly value = model('');
   /** Format of the value. `svg` is built from the stroke points and scales without loss. */
   readonly valueFormat = input<StarSignatureFormat>('png');
-  /** Color of the strokes. Defaults to the `--star-signature-stroke` token (the strong text color). */
+  /**
+   * Color of the strokes on screen. Defaults to the `--star-signature-stroke` token (the strong text
+   * color), so it follows the theme. The value uses `exportColor`.
+   */
   readonly strokeColor = input<string | null>(null);
   /** Width of a stroke in CSS pixels. A pen with pressure draws from half to one and a half times it. */
   readonly strokeWidth = input(2, { transform: numberAttribute });
   /**
-   * Fill of the drawing area, also in the value. `null` (default): transparent, the page surface
-   * shows through and a PNG keeps transparent pixels.
+   * Fill of the drawing area on screen. `null` (default): transparent, the page surface shows
+   * through. The value uses `exportBackground`.
    */
   readonly backgroundColor = input<string | null>(null);
+  /**
+   * Ink of the stored value (PNG or SVG). A stored signature is a document, not UI: it does not
+   * follow the theme. Default black.
+   */
+  readonly exportColor = input('#000000');
+  /** Fill of the stored value. `null` (default): transparent pixels. */
+  readonly exportBackground = input<string | null>(null);
   /** Shows a Draw / Type switch: the user may type the name instead of drawing (keyboard access). */
   readonly allowTyped = input(false, { transform: booleanAttribute });
   /** Accessible name of the group. Defaults to the `signaturePad` text or the `star-field` label. */
@@ -338,6 +348,7 @@ export class StarSignaturePad implements FormValueControl<string> {
     });
     afterNextRender(() => {
       this.measure();
+      this.watchTheme();
       const canvas = this.canvas()?.nativeElement;
       if (!canvas) return;
       if (typeof ResizeObserver === 'undefined') return;
@@ -436,6 +447,27 @@ export class StarSignaturePad implements FormValueControl<string> {
     this.status.set(message + (this.announceToggle ? '' : ' '));
   }
 
+  /** Redraws the screen ink when the theme changes (`data-theme`, `class` or the system scheme). */
+  private watchTheme(): void {
+    const doc = this.host.nativeElement.ownerDocument;
+    const view = doc.defaultView;
+    const redraw = () => this.redraw();
+    const destroyRef = this.injector.get(DestroyRef);
+    if (view && typeof view.MutationObserver === 'function') {
+      const observer = new view.MutationObserver(redraw);
+      observer.observe(doc.documentElement, {
+        attributes: true,
+        attributeFilter: ['data-theme', 'class', 'style'],
+      });
+      destroyRef.onDestroy(() => observer.disconnect());
+    }
+    const scheme = view?.matchMedia?.('(prefers-color-scheme: dark)');
+    if (scheme?.addEventListener) {
+      scheme.addEventListener('change', redraw);
+      destroyRef.onDestroy(() => scheme.removeEventListener('change', redraw));
+    }
+  }
+
   /** Writes the value from the current content. */
   private commit(): void {
     let value = '';
@@ -450,20 +482,27 @@ export class StarSignaturePad implements FormValueControl<string> {
     const svg = starSignatureSvg({
       ...this.size,
       strokes: this.strokeList(),
-      strokeColor: this.resolvedColor(),
+      strokeColor: this.exportColor(),
       strokeWidth: this.strokeWidth(),
-      backgroundColor: this.backgroundColor(),
+      backgroundColor: this.exportBackground(),
       typedText: this.typed(),
       image: this.image(),
     });
     return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
   }
 
+  /** The PNG value, drawn on an offscreen canvas with the export ink and fill. */
   private pngValue(): string {
     const canvas = this.canvas()?.nativeElement;
-    // Without a 2D context (server, old engines) the SVG is the only picture there is.
-    if (!canvas || !this.browser || !canvas.getContext('2d')) return this.svgValue();
-    return canvas.toDataURL('image/png');
+    if (!canvas || !this.browser) return this.svgValue();
+    const offscreen = canvas.ownerDocument.createElement('canvas');
+    offscreen.width = canvas.width || Math.round(this.size.width);
+    offscreen.height = canvas.height || Math.round(this.size.height);
+    const context = offscreen.getContext('2d');
+    // Without a 2D context (old engines) the SVG is the only picture there is.
+    if (!context) return this.svgValue();
+    this.paint(context, offscreen.width, this.exportColor(), this.exportBackground(), false);
+    return offscreen.toDataURL('image/png');
   }
 
   /** The stroke color: the input, else the token on the host. */
@@ -504,16 +543,26 @@ export class StarSignaturePad implements FormValueControl<string> {
     image.src = value;
   }
 
-  /** Draws the background, the earlier image, the strokes and the typed name. */
+  /** Draws the screen canvas: theme ink and screen fill, and the stroke being drawn. */
   private redraw(): void {
     if (!this.browser) return;
     const canvas = this.canvas()?.nativeElement;
     const context = canvas?.getContext?.('2d');
     if (!canvas || !context) return;
-    const ratio = canvas.width / (this.size.width || FALLBACK_SIZE.width) || 1;
+    this.paint(context, canvas.width, this.resolvedColor(), this.backgroundColor(), true);
+  }
+
+  /** Draws the background, the earlier image, the strokes and the typed name on a context. */
+  private paint(
+    context: CanvasRenderingContext2D,
+    pixelWidth: number,
+    color: string,
+    background: string | null,
+    withCurrent: boolean,
+  ): void {
+    const ratio = pixelWidth / (this.size.width || FALLBACK_SIZE.width) || 1;
     context.setTransform(ratio, 0, 0, ratio, 0, 0);
     context.clearRect(0, 0, this.size.width, this.size.height);
-    const background = this.backgroundColor();
     if (background) {
       context.fillStyle = background;
       context.fillRect(0, 0, this.size.width, this.size.height);
@@ -521,12 +570,12 @@ export class StarSignaturePad implements FormValueControl<string> {
     if (this.imageElement) {
       context.drawImage(this.imageElement, 0, 0, this.size.width, this.size.height);
     }
-    const color = this.resolvedColor();
     context.strokeStyle = color;
     context.fillStyle = color;
     context.lineCap = 'round';
     context.lineJoin = 'round';
-    const strokes = this.current ? [...this.strokeList(), this.current] : this.strokeList();
+    const strokes =
+      withCurrent && this.current ? [...this.strokeList(), this.current] : this.strokeList();
     for (const stroke of strokes) this.drawStroke(context, stroke);
     const typed = this.typed().trim();
     if (typed) {

@@ -81,6 +81,27 @@ class Host {
   touched = 0;
 }
 
+@Component({
+  imports: [StarSignaturePad],
+  template: `<star-signature-pad
+    [(value)]="value"
+    valueFormat="svg"
+    exportColor="#0000ff"
+    exportBackground="#ffffee"
+  />`,
+})
+class ExportHost {
+  readonly value = signal('');
+}
+
+@Component({
+  imports: [StarSignaturePad],
+  template: `<star-signature-pad [(value)]="value" valueFormat="svg" />`,
+})
+class ThemeHost {
+  readonly value = signal('');
+}
+
 async function setup() {
   const calls = fakeCanvas();
   const fixture = TestBed.createComponent(Host);
@@ -229,7 +250,36 @@ describe('StarSignaturePad', () => {
     expect(host.value().startsWith('data:image/svg+xml;charset=utf-8,')).toBe(true);
     const svg = decodeURIComponent(host.value().split(',')[1]);
     expect(svg).toContain('d="M0 0Q10 10 15 5L20 0"');
-    expect(svg).toContain('stroke="#123456"');
+    // The stored value uses the export ink, not the display ink.
+    expect(svg).toContain('stroke="#000000"');
+    expect(svg).not.toContain('#123456');
+  });
+
+  it('draws the PNG value on an offscreen canvas with the export ink (I1)', async () => {
+    const { host, canvas, draw, calls } = await setup();
+    const toDataURL = vi.mocked(HTMLCanvasElement.prototype.toDataURL);
+    await draw([
+      [1, 1],
+      [5, 5],
+    ]);
+    expect(host.value()).toBe('data:image/png;base64,AAA');
+    const exported = toDataURL.mock.contexts.at(-1) as HTMLCanvasElement;
+    expect(exported).not.toBe(canvas);
+    const last = calls.lastIndexOf('strokeStyle=#000000');
+    expect(last).toBeGreaterThan(calls.lastIndexOf('strokeStyle=#123456'));
+  });
+
+  it('uses exportColor and exportBackground for the value', async () => {
+    const fixture = TestBed.createComponent(ExportHost);
+    fakeCanvas();
+    await fixture.whenStable();
+    const canvas = (fixture.nativeElement as HTMLElement).querySelector('canvas')!;
+    pointer(canvas, 'pointerdown', 1, 1);
+    pointer(canvas, 'pointerup', 2, 2);
+    await fixture.whenStable();
+    const svg = decodeURIComponent(fixture.componentInstance.value().split(',')[1]);
+    expect(svg).toContain('stroke="#0000ff"');
+    expect(svg).toContain('<rect width="100%" height="100%" fill="#ffffee"/>');
   });
 
   it('undoes the last stroke and clears the pad, with live announcements', async () => {
@@ -313,6 +363,31 @@ describe('StarSignaturePad', () => {
     await fixture.whenStable();
     expect(field.value).toBe('');
     expect(host.value()).toBe('');
+  });
+});
+
+describe('StarSignaturePad themes', () => {
+  afterEach(() => document.documentElement.removeAttribute('data-theme'));
+
+  it('draws with the theme ink, stores the export ink, and redraws on a theme change (I1)', async () => {
+    const calls = fakeCanvas();
+    const fixture = TestBed.createComponent(ThemeHost);
+    const pad = (fixture.nativeElement as HTMLElement).querySelector<HTMLElement>(
+      'star-signature-pad',
+    )!;
+    await fixture.whenStable();
+    pad.style.setProperty('--star-signature-stroke', '#eeeeee');
+    const canvas = pad.querySelector('canvas')!;
+    pointer(canvas, 'pointerdown', 1, 1);
+    pointer(canvas, 'pointerup', 2, 2);
+    await fixture.whenStable();
+    expect(calls).toContain('strokeStyle=#eeeeee');
+    const svg = decodeURIComponent(fixture.componentInstance.value().split(',')[1]);
+    expect(svg).toContain('stroke="#000000"');
+    pad.style.setProperty('--star-signature-stroke', '#111111');
+    document.documentElement.setAttribute('data-theme', 'dark');
+    await new Promise((resolve) => setTimeout(resolve));
+    expect(calls).toContain('strokeStyle=#111111');
   });
 });
 

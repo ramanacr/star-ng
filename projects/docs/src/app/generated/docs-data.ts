@@ -6604,7 +6604,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "string | null",
         "default": "null",
         "required": false,
-        "description": "Color of the strokes. Defaults to the `--star-signature-stroke` token (the strong text color)."
+        "description": "Color of the strokes on screen. Defaults to the `--star-signature-stroke` token (the strong text color), so it follows the theme. The value uses `exportColor`."
       },
       {
         "name": "strokeWidth",
@@ -6618,7 +6618,21 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "string | null",
         "default": "null",
         "required": false,
-        "description": "Fill of the drawing area, also in the value. `null` (default): transparent, the page surface shows through and a PNG keeps transparent pixels."
+        "description": "Fill of the drawing area on screen. `null` (default): transparent, the page surface shows through. The value uses `exportBackground`."
+      },
+      {
+        "name": "exportColor",
+        "type": "string",
+        "default": "'#000000'",
+        "required": false,
+        "description": "Ink of the stored value (PNG or SVG). A stored signature is a document, not UI: it does not follow the theme. Default black."
+      },
+      {
+        "name": "exportBackground",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Fill of the stored value. `null` (default): transparent pixels."
       },
       {
         "name": "allowTyped",
@@ -9636,7 +9650,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "select/virtual": "<star-select\n  [options]=\"orders\"\n  [(value)]=\"order\"\n  placeholder=\"5,000 orders\"\n  ariaLabel=\"Order\"\n  virtualScroll\n  filter\n/>",
   "signature-pad/basic": "<div class=\"docs-stack\">\n  <star-signature-pad [(value)]=\"signature\" ariaLabel=\"Customer signature\" />\n  @if (signature()) {\n    <img class=\"preview\" [src]=\"signature()\" alt=\"Preview of the signature\" />\n  }\n  <p class=\"docs-output\" role=\"status\">Value: {{ summary() }}</p>\n</div>",
   "signature-pad/disabled": "<star-signature-pad disabled ariaLabel=\"Signature (locked)\" />",
-  "signature-pad/form": "<div class=\"docs-stack\">\n  <star-field label=\"Signature\" [state]=\"f.signature()\">\n    <star-signature-pad\n      [formField]=\"f.signature\"\n      allowTyped\n      strokeColor=\"#000000\"\n      backgroundColor=\"#ffffff\"\n    />\n  </star-field>\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"model.set({ signature: '' })\">\n      Reset\n    </star-button>\n  </div>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ f.signature().valid() ? 'yes' : 'no' }}</p>\n</div>",
+  "signature-pad/form": "<div class=\"docs-stack\">\n  <star-field label=\"Signature\" [state]=\"f.signature()\">\n    <star-signature-pad [formField]=\"f.signature\" allowTyped exportBackground=\"#ffffff\" />\n  </star-field>\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"model.set({ signature: '' })\">\n      Reset\n    </star-button>\n  </div>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ f.signature().valid() ? 'yes' : 'no' }}</p>\n</div>",
   "signature-pad/typed": "<star-signature-pad\n  [(value)]=\"typedSignature\"\n  allowTyped\n  valueFormat=\"svg\"\n  [strokeWidth]=\"2.5\"\n  ariaLabel=\"Approver signature\"\n/>\n<p class=\"docs-output\" role=\"status\">\n  Format: {{ typedSignature() ? typedSignature().slice(0, 26) + '…' : '(empty)' }}\n</p>",
   "skeleton/basic": "<div class=\"docs-row\">\n  <star-skeleton shape=\"circle\" size=\"3rem\" />\n  <div class=\"docs-stack\">\n    <star-skeleton width=\"60%\" height=\"1rem\" />\n    <star-skeleton width=\"90%\" height=\"0.75rem\" />\n    <star-skeleton width=\"40%\" height=\"0.75rem\" animation=\"none\" />\n  </div>\n</div>",
   "skeleton/loading": "<div class=\"docs-stack\">\n  @if (loading()) {\n    <star-skeleton height=\"1.25rem\" width=\"50%\" />\n    <star-skeleton height=\"0.75rem\" />\n  } @else {\n    <strong>Orchard Supply</strong>\n    <span>12 items, ships on Friday.</span>\n  }\n  <div class=\"docs-row\">\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"loading.set(!loading())\">\n      {{ loading() ? 'Show content' : 'Show skeleton' }}\n    </star-button>\n  </div>\n</div>",

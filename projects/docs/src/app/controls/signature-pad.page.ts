@@ -58,16 +58,11 @@ import { DOCS, DocsRow } from '../shared/docs';
       <docs-example
         heading="In a form, required"
         source="signature-pad/form"
-        note="Signal Forms: required fails on an empty pad. Reactive Forms work through SignalFormControl, like the other fields. The default stroke color follows the theme (light ink in the dark theme); this pad sets strokeColor and backgroundColor, so the stored image looks the same in both themes."
+        note="Signal Forms: required fails on an empty pad. Reactive Forms work through SignalFormControl, like the other fields. The ink on screen follows the theme; the stored value uses exportColor (black by default) and exportBackground, so it looks the same in both themes. This pad stores a white background."
       >
         <div class="docs-stack">
           <star-field label="Signature" [state]="f.signature()">
-            <star-signature-pad
-              [formField]="f.signature"
-              allowTyped
-              strokeColor="#000000"
-              backgroundColor="#ffffff"
-            />
+            <star-signature-pad [formField]="f.signature" allowTyped exportBackground="#ffffff" />
           </star-field>
           <div class="docs-row">
             <star-button variant="secondary" (pressed)="model.set({ signature: '' })">
