@@ -287,6 +287,26 @@ const POSITIONS: readonly StarDialogPosition[] = [
       </docs-example>
 
       <docs-example
+        heading="Headless"
+        source="dialog/headless"
+        [script]="headlessScript"
+        note="headless renders only your content in the dialog box: no header, no title and no close button (PrimeNG headless template). The starDialogFooter slot still works. Your content takes over two duties: name the dialog with ariaLabelledby (the id of your heading) or ariaLabel, and give a button that closes it. Escape still closes the dialog when closeOnEscape is on."
+      >
+        <star-button variant="secondary" (pressed)="headlessOpen.set(true)">
+          Open headless dialog
+        </star-button>
+        <star-dialog [(visible)]="headlessOpen" headless ariaLabelledby="docs-headless-title">
+          <div class="docs-stack docs-headless">
+            <h2 id="docs-headless-title">Shipping label for ORD-1042</h2>
+            <p>Your content draws its own heading, padding and buttons.</p>
+            <div class="docs-row">
+              <star-button (pressed)="headlessOpen.set(false)">Done</star-button>
+            </div>
+          </div>
+        </star-dialog>
+      </docs-example>
+
+      <docs-example
         heading="Dialog from code"
         source="dialog/service"
         [script]="serviceScript"
@@ -419,6 +439,7 @@ export class DialogPage {
   protected readonly position = signal<StarDialogPosition>('center');
   protected readonly responsiveOpen = signal(false);
   protected readonly scrollOpen = signal(false);
+  protected readonly headlessOpen = signal(false);
   protected readonly note = signal('Call the customer before delivery.');
   protected readonly place = signal<string | null>(null);
   protected readonly lastAction = signal('none');
@@ -506,6 +527,7 @@ openAt(position: StarDialogPosition): void {
 }`;
   protected readonly responsiveScript = `readonly responsiveOpen = signal(false);
 readonly scrollOpen = signal(false);`;
+  protected readonly headlessScript = `readonly headlessOpen = signal(false);`;
   protected readonly serviceScript = `private readonly dialogs = inject(StarDialogService);
 readonly note = signal('Call the customer before delivery.');
 

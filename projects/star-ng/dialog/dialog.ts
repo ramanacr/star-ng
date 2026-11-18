@@ -60,7 +60,7 @@ export type StarDialogPosition =
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <!-- Backdrop click only; keyboard users close with Escape (native cancel event). -->
-    <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
+    <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events -->
     <dialog
       #dialog
       class="star-dialog"
@@ -71,19 +71,20 @@ export type StarDialogPosition =
       [class.star-dialog--placed]="free() && placed() !== null"
       [class.star-dialog--resized]="free() && sized() !== null"
       [class.star-dialog--maximized]="maximized()"
+      [class.star-dialog--headless]="headless()"
       [style.width]="cssWidth()"
       [style.height.px]="free() ? sized()?.height : null"
       [style.left.px]="free() ? placed()?.x : null"
       [style.top.px]="free() ? placed()?.y : null"
-      [attr.aria-labelledby]="header() ? headerId : null"
-      [attr.aria-label]="header() ? null : ariaLabel()"
+      [attr.aria-labelledby]="labelledBy()"
+      [attr.aria-label]="label()"
       [attr.role]="role()"
       (cancel)="onCancel($event)"
       (close)="onNativeClose()"
       (click)="onDialogClick($event)"
     >
       <div class="star-dialog__surface">
-        @if (showHeader()) {
+        @if (titleShown()) {
           <!-- Pointer drag on the whole header; the keyboard moves the dialog from the move button. -->
           <header
             class="star-dialog__header"
@@ -188,6 +189,14 @@ export class StarDialog extends StarDialogBase {
   /** The dialog fills the window. Two-way bindable. */
   readonly maximized = model(false);
 
+  /**
+   * Renders only your content in the dialog box: no header, no title and no close button
+   * (PrimeNG `headless` template). Your content must name the dialog (`ariaLabel`, or
+   * `ariaLabelledby` with the id of your heading) and give a way to close it; Escape still closes
+   * it when `closeOnEscape` is on.
+   */
+  readonly headless = input(false, { transform: booleanAttribute });
+
   /** Position of the top left corner after a drag, in pixels from the window (PrimeNG `onDragEnd`). */
   readonly dragEnd = output<StarDialogPoint>();
   /** Size of the dialog after a resize, in pixels (PrimeNG `onResizeEnd`). */
@@ -273,6 +282,10 @@ export class StarDialog extends StarDialogBase {
       this.isRtl(),
     );
     this.emitResizeEnd();
+  }
+
+  protected override titleShown(): boolean {
+    return this.showHeader() && !this.headless();
   }
 
   protected override afterClose(): void {

@@ -162,6 +162,10 @@ html:has(dialog.star-dialog--block-scroll[open]) {
   padding: 0.5rem 1.5rem 1.5rem;
   font: var(--star-type-body-lg);
 }
+// Headless: the content draws its own header, padding and close button.
+.star-dialog--headless .star-dialog__body {
+  padding: 0;
+}
 .star-dialog__footer {
   display: flex;
   flex-wrap: wrap;

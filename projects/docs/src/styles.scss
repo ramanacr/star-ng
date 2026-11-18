@@ -456,6 +456,15 @@ code {
     background: var(--star-surface);
   }
 }
+// The content of a headless dialog draws its own padding.
+.docs-headless {
+  padding: var(--star-space-6);
+
+  h2 {
+    margin: 0;
+    font: var(--star-type-title);
+  }
+}
 // A block that fills the width of the live area (forms, stacked rows).
 .docs-stack {
   display: flex;

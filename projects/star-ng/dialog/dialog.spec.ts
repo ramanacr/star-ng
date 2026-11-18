@@ -458,3 +458,42 @@ describe('StarDialog blockScroll, focusOnShow and breakpoints', () => {
     expect(dialog.style.width).toBe('100vw');
   });
 });
+
+@Component({
+  imports: [StarDialog],
+  template: `
+    <star-dialog [(visible)]="open" headless ariaLabelledby="own-title" header="Ignored">
+      <h2 id="own-title">Shipping label</h2>
+      <button type="button" (click)="open.set(false)">Done</button>
+      <span starDialogHeader>Header slot</span>
+      <div starDialogFooter class="footer">Footer slot</div>
+    </star-dialog>
+    <star-dialog [visible]="true" header="Hidden title" [showHeader]="false" />
+  `,
+})
+class HeadlessHost {
+  readonly open = signal(true);
+}
+
+describe('StarDialog headless', () => {
+  it('renders only the content and the footer slot, named by the given id', async () => {
+    const fixture = TestBed.createComponent(HeadlessHost);
+    await fixture.whenStable();
+    const [dialog, hidden] = (fixture.nativeElement as HTMLElement).querySelectorAll('dialog');
+    expect(dialog.classList).toContain('star-dialog--headless');
+    expect(dialog.querySelector('header')).toBeNull();
+    expect(dialog.querySelector('[aria-label=Close]')).toBeNull();
+    expect(dialog.textContent).not.toContain('Header slot');
+    expect(dialog.querySelector('.footer')?.textContent).toBe('Footer slot');
+    expect(dialog.getAttribute('aria-labelledby')).toBe('own-title');
+    expect(dialog.hasAttribute('aria-label')).toBe(false);
+
+    dialog.querySelector('button')!.click();
+    await fixture.whenStable();
+    expect(dialog.open).toBe(false);
+
+    // A header that is not shown still names the dialog.
+    expect(hidden.getAttribute('aria-label')).toBe('Hidden title');
+    expect(hidden.hasAttribute('aria-labelledby')).toBe(false);
+  });
+});

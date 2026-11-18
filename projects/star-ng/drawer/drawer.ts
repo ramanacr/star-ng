@@ -15,7 +15,7 @@ import { StarDialogBase } from '@star-ng/ui/dialog';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <!-- Backdrop click only; keyboard users close with Escape (native cancel event). -->
-    <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
+    <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events -->
     <dialog
       #dialog
       class="star-drawer"
@@ -24,8 +24,8 @@ import { StarDialogBase } from '@star-ng/ui/dialog';
       [class.star-dialog--block-scroll]="scrollBlocked()"
       [attr.tabindex]="focusOnShow() ? null : -1"
       [style.--star-drawer-size]="drawerSize()"
-      [attr.aria-labelledby]="header() ? headerId : null"
-      [attr.aria-label]="header() ? null : ariaLabel()"
+      [attr.aria-labelledby]="labelledBy()"
+      [attr.aria-label]="label()"
       (cancel)="onCancel($event)"
       (close)="onNativeClose()"
       (click)="onDialogClick($event)"

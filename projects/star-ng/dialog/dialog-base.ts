@@ -46,7 +46,10 @@ export abstract class StarDialogBase {
   readonly dismissableMask = input(false, { transform: booleanAttribute });
   readonly showHeader = input(true, { transform: booleanAttribute });
   readonly role = input<'dialog' | 'alertdialog'>('dialog');
+  /** Accessible name when there is no visible header title. */
   readonly ariaLabel = input<string | null>(null);
+  /** Id of the element that names the dialog, for example your own heading in a headless dialog. */
+  readonly ariaLabelledby = input<string | null>(null);
   /**
    * Stops the page behind from scrolling while open, and gives the scroll back after the close
    * (PrimeNG `blockScroll`). Default: on for a modal, off for a non-modal.
@@ -67,6 +70,15 @@ export abstract class StarDialogBase {
   protected readonly headerId = inject(_IdGenerator).getId('star-dialog-title-');
   protected readonly dialog = viewChild.required<ElementRef<HTMLDialogElement>>('dialog');
   private isOpen = false;
+
+  /** `aria-labelledby`: the given id, or the header title when it is shown. */
+  protected readonly labelledBy = computed(
+    () => this.ariaLabelledby() ?? (this.header() && this.titleShown() ? this.headerId : null),
+  );
+  /** `aria-label` when nothing labels the dialog by id: `ariaLabel`, or the hidden `header`. */
+  protected readonly label = computed(() =>
+    this.labelledBy() ? null : (this.ariaLabel() ?? (this.header() || null)),
+  );
 
   /** Page scroll is blocked while this dialog is open. */
   protected readonly scrollBlocked = computed(() => this.blockScroll() ?? this.modal());
@@ -95,6 +107,11 @@ export abstract class StarDialogBase {
 
   close(): void {
     this.visible.set(false);
+  }
+
+  /** The header with its title is rendered. */
+  protected titleShown(): boolean {
+    return this.showHeader();
   }
 
   /** Runs once after each close, before `hidden` is emitted. */
