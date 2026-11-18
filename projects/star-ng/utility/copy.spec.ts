@@ -72,17 +72,17 @@ describe('starCopy', () => {
     const { fixture, announce } = await click(true);
     expect(TestBed.inject(StarClipboard).copy).toHaveBeenCalledWith('ORD-1042');
     expect(fixture.componentInstance.result()).toBe(true);
-    expect(announce).toHaveBeenCalledWith('Copied');
+    expect(announce).toHaveBeenCalledWith('Copied', 'polite', { source: 'starCopy' });
   });
 
   it('emits false and announces the failure', async () => {
     const { fixture, announce } = await click(false);
     expect(fixture.componentInstance.result()).toBe(false);
-    expect(announce).toHaveBeenCalledWith('Copy failed');
+    expect(announce).toHaveBeenCalledWith('Copy failed', 'polite', { source: 'starCopy' });
   });
 
   it('announces in the language of the UI texts', async () => {
     const { announce } = await click(true, [provideStarUiText(STAR_UI_TEXT_DE)]);
-    expect(announce).toHaveBeenCalledWith('Kopiert');
+    expect(announce).toHaveBeenCalledWith('Kopiert', 'polite', { source: 'starCopy' });
   });
 });

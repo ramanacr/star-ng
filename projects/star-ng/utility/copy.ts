@@ -30,7 +30,9 @@ export class StarCopy {
   async copy(): Promise<boolean> {
     const done = await this.clipboard.copy(this.starCopy());
     if (this.copyAnnounce()) {
-      void this.announcer.announce(done ? this.text.copied : this.text.copyFailed);
+      void this.announcer.announce(done ? this.text.copied : this.text.copyFailed, 'polite', {
+        source: 'starCopy',
+      });
     }
     this.copied.emit(done);
     return done;
