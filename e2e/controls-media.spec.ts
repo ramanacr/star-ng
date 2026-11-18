@@ -322,6 +322,75 @@ test.describe('editor', () => {
     await expect(live.getByRole('button', { name: 'Bold' }).last()).toBeDisabled();
   });
 
+  test('full toolbar: text style, inline code and center alignment', async ({ page }) => {
+    await openPage(page, '/controls/editor', 'Editor');
+    const live = example(page, 'Full toolbar');
+    const area = live.getByRole('textbox', { name: 'Shipping report' });
+    const toolbar = live.getByRole('toolbar', { name: 'Shipping report formatting' });
+    await expect(toolbar.locator('[tabindex="0"]')).toHaveCount(1);
+
+    await area.locator('p').click();
+    await page.keyboard.press('End');
+    await page.keyboard.press('Shift+Home');
+    await live.getByRole('button', { name: 'Center' }).click();
+    await expect(area.locator('p')).toHaveClass('star-text-center');
+    await expect(live.getByRole('button', { name: 'Center' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    await expect(valueOf(live)).toContainText('<p class="star-text-center">');
+
+    await area.locator('b').dblclick();
+    await live.getByRole('button', { name: 'Code' }).click();
+    await expect(area.locator('code')).toHaveText('orders');
+
+    await area.locator('p').click();
+    await live.getByRole('combobox', { name: 'Text style' }).selectOption('h1');
+    await expect(area.locator('h1')).toHaveCount(1);
+    await expect(valueOf(live)).toContainText('<h1');
+
+    // Arrow keys move through the toolbar, the select included.
+    await live.getByRole('button', { name: 'Redo' }).focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(live.getByRole('combobox', { name: 'Text style' })).toBeFocused();
+    await page.keyboard.press('ArrowRight');
+    await expect(live.getByRole('button', { name: 'Bold' })).toBeFocused();
+  });
+
+  test('maxLength stops typing and the counter describes the area', async ({ page }) => {
+    await openPage(page, '/controls/editor', 'Editor');
+    const live = example(page, 'Plain text and a length limit');
+    const area = live.getByRole('textbox', { name: 'Delivery summary' });
+    await expect(area).toHaveAccessibleDescription(/of 120 characters/);
+    await area.click();
+    await page.keyboard.press('Control+End');
+    await page.keyboard.type('x'.repeat(100));
+    await expect(live.locator('.star-editor__counter')).toHaveText('120 of 120 characters');
+    await expect(valueOf(live)).toContainText('Deliver before noon.');
+    expect((await valueOf(live).textContent())!.replace(/\n/g, '').length).toBe(120);
+  });
+
+  test('pasteAsText inserts plain text, the other editor sanitizes HTML', async ({ page }) => {
+    await openPage(page, '/controls/editor', 'Editor');
+    const live = example(page, 'Paste as plain text');
+    const paste = (name: string) =>
+      live.getByRole('textbox', { name }).evaluate((area) => {
+        area.focus();
+        const data = new DataTransfer();
+        data.setData('text/html', '<b onclick="alert(1)">Bold</b><script>alert(1)</script>');
+        data.setData('text/plain', 'Bold');
+        area.dispatchEvent(
+          new ClipboardEvent('paste', { clipboardData: data, bubbles: true, cancelable: true }),
+        );
+        return area.innerHTML;
+      });
+    const formatted = await paste('Pasted with formats');
+    expect(formatted).toContain('<b>Bold</b>');
+    expect(formatted).not.toMatch(/onclick|script/);
+    const plain = await paste('Pasted as plain text');
+    expect(plain).toBe('Bold');
+  });
+
   test('has no console errors', async ({ page }) => {
     const errors = collectErrors(page);
     await openPage(page, '/controls/editor', 'Editor');

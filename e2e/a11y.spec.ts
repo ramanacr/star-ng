@@ -1199,6 +1199,16 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'editor link popover open',
+    path: 'controls/editor',
+    open: async (page) => {
+      const live = example(page, 'Full toolbar');
+      await live.getByRole('textbox', { name: 'Shipping report' }).locator('a').click();
+      await live.getByRole('button', { name: 'Link' }).click();
+      await expect(live.getByRole('button', { name: 'Remove link' })).toBeVisible();
+    },
+  },
+  {
     name: 'vertical tabs with the second tab selected',
     path: 'controls/tabs',
     open: async (page) => {
