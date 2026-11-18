@@ -1059,10 +1059,10 @@ test.describe('toast', () => {
     await live.getByRole('button', { name: 'Show a 3 second note' }).click();
     const note = page.locator('.star-toast', { hasText: 'Note 1' });
     await note.getByRole('button', { name: 'Close' }).click();
-    await expect(live.getByRole('status')).toHaveText('Last close: Note 1: close');
+    await expect(live.locator('.docs-output')).toHaveText('Last close: Note 1: close');
     await live.getByRole('button', { name: 'Show a 3 second note' }).click();
     await live.getByRole('button', { name: 'Clear notes' }).click();
-    await expect(live.getByRole('status')).toHaveText('Last close: Note 2: clear');
+    await expect(live.locator('.docs-output')).toHaveText('Last close: Note 2: clear');
   });
 
   test('removes a message with Enter on its close button', async ({ page }) => {
