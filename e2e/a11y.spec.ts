@@ -1046,6 +1046,28 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'table with a filter menu open (two rules)',
+    path: 'controls/table-sort-filter',
+    open: async (page) => {
+      await example(page, 'Filter menu').getByRole('button', { name: 'Filter Total' }).click();
+      const dialog = page.getByRole('dialog', { name: 'Filter Total' });
+      await expect(dialog).toBeVisible();
+      await dialog.getByRole('button', { name: 'Add rule' }).click();
+      await expect(dialog.getByRole('group')).toHaveCount(2);
+    },
+  },
+  {
+    name: 'table with the header check box mixed and an unselectable row',
+    path: 'controls/table-selection',
+    open: async (page) => {
+      const live = example(page, 'Check box selection');
+      await live.locator('tbody').getByRole('checkbox', { disabled: false }).first().check();
+      await expect(
+        live.locator('thead').getByRole('checkbox', { name: 'Select all rows' }),
+      ).toHaveJSProperty('indeterminate', true);
+    },
+  },
+  {
     name: 'table with a filter select open (Region)',
     path: 'controls/table-sort-filter',
     open: async (page) => {
