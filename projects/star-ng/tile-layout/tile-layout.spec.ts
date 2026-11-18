@@ -15,7 +15,7 @@ function key(target: Element, key: string, init: KeyboardEventInit = {}): Keyboa
   template: `
     <div [attr.dir]="dir()">
       <star-tile-layout
-        [columns]="3"
+        [columns]="columns()"
         rowHeight="8rem"
         gap="0.5rem"
         [breakpoints]="{ sm: 1, md: 2 }"
@@ -43,6 +43,7 @@ class TileHost {
   readonly dir = signal<'ltr' | 'rtl'>('ltr');
   readonly reorderable = signal(true);
   readonly resizable = signal(true);
+  readonly columns = signal(3);
   readonly order = signal<readonly string[]>(['a', 'b', 'c', 'd']);
   readonly spans: Record<string, number> = { a: 1, b: 2, c: 1, d: 1 };
   readonly resized: StarTileResize[] = [];
@@ -165,6 +166,64 @@ describe('StarTileLayout', () => {
     key(tile('a'), 'ArrowLeft', { ctrlKey: true, shiftKey: true });
     key(tile('a'), 'ArrowUp', { ctrlKey: true, shiftKey: true });
     expect(fixture.componentInstance.resized.length).toBe(2);
+  });
+
+  it('keeps the stored column span on a row-only resize at a narrow width', async () => {
+    const { fixture, tile } = await setup();
+    const host = fixture.componentInstance;
+    host.spans['b'] = 3;
+    host.columns.set(1);
+    await fixture.whenStable();
+    const b = tile('b');
+    expect(b.style.getPropertyValue('--star-tile-col-span-now')).toBe('1');
+    key(b, 'ArrowDown', { ctrlKey: true, shiftKey: true });
+    await fixture.whenStable();
+    expect(host.spans['b']).toBe(3);
+    expect(b.style.getPropertyValue('--star-tile-row-span')).toBe('2');
+    expect(host.resized).toEqual([{ key: 'b', colSpan: 3, rowSpan: 2 }]);
+    // Wider or narrower than the one column in force: nothing changes.
+    key(b, 'ArrowRight', { ctrlKey: true, shiftKey: true });
+    key(b, 'ArrowLeft', { ctrlKey: true, shiftKey: true });
+    await fixture.whenStable();
+    expect(host.spans['b']).toBe(3);
+    expect(host.resized.length).toBe(1);
+  });
+
+  it('steps the column span from the span in force', async () => {
+    const { fixture, tile } = await setup();
+    const host = fixture.componentInstance;
+    host.spans['b'] = 3;
+    host.columns.set(2);
+    await fixture.whenStable();
+    // 2 columns in force: one step narrower is 1, not 2.
+    key(tile('b'), 'ArrowLeft', { ctrlKey: true, shiftKey: true });
+    await fixture.whenStable();
+    expect(host.spans['b']).toBe(1);
+    expect(host.resized).toEqual([{ key: 'b', colSpan: 1, rowSpan: 1 }]);
+  });
+
+  it('keeps the stored column span when a pointer resize does not change the width', async () => {
+    const { fixture, tile } = await setup();
+    const host = fixture.componentInstance;
+    host.spans['b'] = 3;
+    host.columns.set(1);
+    await fixture.whenStable();
+    const b = tile('b');
+    // jsdom has no layout: give the grid and the tile a size (one 300px column, 100px rows).
+    Object.defineProperty(b.parentElement!, 'clientWidth', { value: 300 });
+    Object.defineProperty(b, 'offsetHeight', { value: 100 });
+    b.getBoundingClientRect = () => ({ width: 300, height: 100 }) as DOMRect;
+    const handle = b.querySelector('.star-tile__resize')!;
+    const press = (type: string, x: number, y: number) =>
+      handle.dispatchEvent(
+        new MouseEvent(type, { button: 0, clientX: x, clientY: y, bubbles: true }),
+      );
+    press('pointerdown', 300, 100);
+    press('pointermove', 300, 210);
+    press('pointerup', 300, 210);
+    await fixture.whenStable();
+    expect(host.spans['b']).toBe(3);
+    expect(host.resized).toEqual([{ key: 'b', colSpan: 3, rowSpan: 2 }]);
   });
 
   it('writes the order after a drop', async () => {

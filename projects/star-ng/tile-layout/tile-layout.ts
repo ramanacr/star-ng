@@ -189,19 +189,31 @@ export class StarTileLayout {
     this.commitOrder(keys, key, to);
   }
 
-  /** Changes the spans of a tile by the given steps, as the keyboard does. */
+  /**
+   * Changes the spans of a tile by the given steps, as the keyboard does. A column step starts
+   * from the span in force (never wider than the columns now); a row-only step keeps the stored
+   * column span, so a tile that is narrow in a narrow layout is wide again in a wide one.
+   */
   resize(tile: StarTile, columns: number, rows: number): void {
-    this.setSpans(tile, tile.colSpan() + columns, tile.rowSpan() + rows, true);
+    this.setSpans(tile, columns === 0 ? null : tile.spanNow() + columns, tile.rowSpan() + rows);
   }
 
-  /** @internal Sets the spans within the limits; emits `tileResize` when they change. */
-  setSpans(tile: StarTile, colSpan: number, rowSpan: number, announce: boolean): boolean {
-    const nextCol = clamp(Math.round(colSpan), 1, this.currentColumns());
+  /**
+   * @internal Sets the spans within the limits; emits `tileResize` when they change. A `null`
+   * column span, or one that clamps to the span in force, keeps the stored column span.
+   */
+  setSpans(tile: StarTile, colSpan: number | null, rowSpan: number): boolean {
+    let nextCol = tile.colSpan();
+    if (colSpan !== null) {
+      const clamped = clamp(Math.round(colSpan), 1, this.currentColumns());
+      if (clamped !== tile.spanNow()) nextCol = clamped;
+    }
     const nextRow = clamp(Math.round(rowSpan), 1, MAX_ROW_SPAN);
     if (nextCol === tile.colSpan() && nextRow === tile.rowSpan()) return false;
     tile.colSpan.set(nextCol);
     tile.rowSpan.set(nextRow);
-    if (announce) this.announcement.set(this.text.tileSize(tile.name(), nextCol, nextRow));
+    const shown = Math.min(nextCol, this.currentColumns());
+    this.announcement.set(this.text.tileSize(tile.name(), shown, nextRow));
     this.tileResize.emit({ key: tile.key(), colSpan: nextCol, rowSpan: nextRow });
     return true;
   }
@@ -292,8 +304,8 @@ export class StarTile {
   /** @internal */
   readonly headerId = inject(_IdGenerator).getId('star-tile-header-');
   protected readonly resizing = signal(false);
-  /** The column span, never wider than the columns in force. */
-  protected readonly spanNow = computed(() => Math.min(this.colSpan(), this.layout.columnsNow()));
+  /** @internal The column span, never wider than the columns in force. */
+  readonly spanNow = computed(() => Math.min(this.colSpan(), this.layout.columnsNow()));
 
   constructor() {
     effect(() => (this.drag.disabled = !this.layout.reorderable()));
@@ -350,6 +362,7 @@ export class StarTile {
     const rect = element.getBoundingClientRect();
     const rtl = starIsRtl(element);
     const startCol = this.colSpan();
+    const startSpan = this.spanNow();
     const startRow = this.rowSpan();
     this.resizing.set(true);
     const handle = event.currentTarget as HTMLElement;
@@ -357,9 +370,13 @@ export class StarTile {
     const onMove = (move: PointerEvent) => {
       const dx = (move.clientX - start.x) * (rtl ? -1 : 1);
       const dy = move.clientY - start.y;
-      this.colSpan.set(
-        clamp(Math.round((rect.width + dx + columnGap) / (cellWidth + columnGap)), 1, columns),
+      const span = clamp(
+        Math.round((rect.width + dx + columnGap) / (cellWidth + columnGap)),
+        1,
+        columns,
       );
+      // The width did not change: keep the stored span (it may be wider than the columns now).
+      this.colSpan.set(span === startSpan ? startCol : span);
       this.rowSpan.set(
         clamp(Math.round((rect.height + dy + rowGap) / (cellHeight + rowGap)), 1, MAX_ROW_SPAN),
       );
@@ -375,7 +392,7 @@ export class StarTile {
         // Report the final spans once, from the start values.
         this.colSpan.set(startCol);
         this.rowSpan.set(startRow);
-        this.layout.setSpans(this, colSpan, rowSpan, true);
+        this.layout.setSpans(this, colSpan === startCol ? null : colSpan, rowSpan);
       }
     };
     handle.addEventListener('pointermove', onMove);
