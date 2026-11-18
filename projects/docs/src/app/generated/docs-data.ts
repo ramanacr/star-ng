@@ -6375,11 +6375,11 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-tree-table",
     "entry": "@star-ng/ui/data-display",
-    "description": "Tree table (PrimeNG `p-treetable`): hierarchical rows with expand / collapse in a table, `role=\"treegrid\"`, Right / Left on a row expand / collapse, Up / Down, Home and End move between rows. Node `data` holds the column values; the first column shows the tree toggle.",
+    "description": "Tree table (PrimeNG `p-treeTable`, Ignite `igx-tree-grid`): hierarchical rows with expand / collapse in a table, `role=\"treegrid\"`. Node `data` holds the column values; the first column shows the tree toggle.",
     "inputs": [
       {
         "name": "nodes",
-        "type": "readonly TreeTableNode[]",
+        "type": "readonly StarTreeTableNode[]",
         "default": "[]",
         "required": false,
         "description": ""
@@ -6410,14 +6410,98 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "boolean",
         "default": "false",
         "required": false,
-        "description": "Windowed rendering for large tables: only the rows in and near the viewport are in the DOM. Needs `scrollHeight`, and every row gets the fixed height `virtualItemSize` with its text on one line. Without `scrollHeight` the table renders all rows as usual."
+        "description": "Windowed rendering for large tables: only the rows in and near the viewport are in the DOM. Needs `scrollHeight`, and every row gets the fixed height `virtualItemSize` with its text on one line. Without `scrollHeight` the table renders all rows as usual. PrimeNG `virtualScroll`."
       },
       {
         "name": "virtualItemSize",
         "type": "number",
         "default": "TREE_TABLE_ROW_HEIGHT",
         "required": false,
-        "description": "Row height in pixels in windowed rendering. The default is the natural height of a row of this table."
+        "description": "Row height in pixels in windowed rendering. The default is the natural height of a row of this table. PrimeNG `virtualScrollItemSize`."
+      },
+      {
+        "name": "multiSort",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Sort by more than one column: Shift + click (or Shift + Enter) on a header adds it as the next sort column. A plain click sorts by that column only. PrimeNG `sortMode=\"multiple\"`."
+      },
+      {
+        "name": "filter",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows a search field above the table that sets `globalFilter`."
+      },
+      {
+        "name": "filterMode",
+        "type": "TreeFilterMode",
+        "default": "'lenient'",
+        "required": false,
+        "description": "`'lenient'`: a matching node shows with its ancestors and all its descendants. `'strict'`: only the matching paths show. The ancestors of a match show open. PrimeNG `filterMode`."
+      },
+      {
+        "name": "paginator",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Pages over the top-level rows; the children of a row stay on its page."
+      },
+      {
+        "name": "rowsPerPageOptions",
+        "type": "readonly number[]",
+        "default": "[10, 25, 50]",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "selectionMode",
+        "type": "'single' | 'multiple' | 'checkbox' | null",
+        "default": "null",
+        "required": false,
+        "description": "`'single'` and `'multiple'`: a click or Space selects a row. `'checkbox'`: each row has a check box, and the checks propagate (see `propagateSelectionUp` / `Down`). PrimeNG `selectionMode`."
+      },
+      {
+        "name": "propagateSelectionUp",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Checkbox mode: a parent is checked when all its children are, and shows mixed when some are."
+      },
+      {
+        "name": "propagateSelectionDown",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Checkbox mode: checking a node checks all its descendants."
+      },
+      {
+        "name": "lazy",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Lazy children: a node with `leaf: false` shows an expander although it has no children yet. Opening it emits `nodeExpand`; the owner loads the children and sets `loading` meanwhile."
+      },
+      {
+        "name": "resizableColumns",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The user can change a column width: drag the header edge, or use the arrow keys on it."
+      },
+      {
+        "name": "reorderableColumns",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The user can move a column: drag its header, or use its move buttons."
+      },
+      {
+        "name": "contextMenu",
+        "type": "readonly StarMenuItem[]",
+        "default": "[]",
+        "required": false,
+        "description": "Items of the row context menu (right click, Shift+F10 or the context menu key on a row). Empty: no menu, and the browser menu shows. PrimeNG `contextMenu`."
       }
     ],
     "models": [
@@ -6427,9 +6511,122 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "[]",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "sortField",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Sort column (the first sort column with `multiSort`). Two-way. PrimeNG `sortField`."
+      },
+      {
+        "name": "sortOrder",
+        "type": "StarSortOrder",
+        "default": "1",
+        "required": false,
+        "description": "`1` ascending, `-1` descending. Two-way. PrimeNG `sortOrder`."
+      },
+      {
+        "name": "sortMeta",
+        "type": "readonly StarSortState[]",
+        "default": "[]",
+        "required": false,
+        "description": "Sort columns in priority order with `multiSort`. Two-way. PrimeNG `multiSortMeta`."
+      },
+      {
+        "name": "globalFilter",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "Case- and accent-insensitive text search over all columns. Two-way. PrimeNG `filterGlobal`."
+      },
+      {
+        "name": "filters",
+        "type": "Readonly<Record<string, string>>",
+        "default": "{}",
+        "required": false,
+        "description": "Column filter texts by column `field` (columns with `filter` set). Two-way."
+      },
+      {
+        "name": "first",
+        "type": "number",
+        "default": "0",
+        "required": false,
+        "description": "Index of the first top-level row of the page. Two-way."
+      },
+      {
+        "name": "rows",
+        "type": "number",
+        "default": "10",
+        "required": false,
+        "description": "Top-level rows per page. Two-way."
+      },
+      {
+        "name": "selection",
+        "type": "readonly string[]",
+        "default": "[]",
+        "required": false,
+        "description": "Keys of the selected nodes. Two-way."
+      },
+      {
+        "name": "columnWidths",
+        "type": "Readonly<Record<string, number>>",
+        "default": "{}",
+        "required": false,
+        "description": "Column widths in pixels by `field`, set by the user. Two-way."
+      },
+      {
+        "name": "columnOrder",
+        "type": "readonly string[]",
+        "default": "[]",
+        "required": false,
+        "description": "Column `field`s in display order. Columns not in the list keep their place after it. Two-way."
       }
     ],
-    "outputs": []
+    "outputs": [
+      {
+        "name": "nodeSelect",
+        "type": "StarTreeTableNodeEvent",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "nodeUnselect",
+        "type": "StarTreeTableNodeEvent",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "nodeExpand",
+        "type": "StarTreeTableNodeEvent",
+        "default": null,
+        "required": false,
+        "description": "The user opened a node. With `lazy`, load the children of `node` here."
+      },
+      {
+        "name": "nodeCollapse",
+        "type": "StarTreeTableNodeEvent",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "cellEdit",
+        "type": "StarTreeTableCellEditEvent",
+        "default": null,
+        "required": false,
+        "description": "The user changed an editable cell (see `StarTreeTableColumn.editable`)."
+      },
+      {
+        "name": "contextMenuSelect",
+        "type": "StarTreeTableContextMenuEvent",
+        "default": null,
+        "required": false,
+        "description": "The user chose an item of the row context menu."
+      }
+    ]
   }
 };
 
@@ -6753,8 +6950,14 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "tree-select/slots": "<star-tree-select\n  [nodes]=\"projects\"\n  [(expanded)]=\"projectsOpen\"\n  [(value)]=\"project\"\n  filter\n  placeholder=\"Select a project\"\n  ariaLabel=\"Project\"\n>\n  <ng-template starHeader>\n    <p class=\"docs-output\">Active projects</p>\n  </ng-template>\n  <ng-template starNode [starNodeOf]=\"projects\" let-node let-level=\"level\">\n    {{ node.label }}\n    @if (node.data) {\n      <small>(owner {{ node.data.owner }}, level {{ level }})</small>\n    }\n  </ng-template>\n  <ng-template starIcon=\"toggle\"\n    ><i class=\"ph-bold ph-arrow-right\" aria-hidden=\"true\"></i\n  ></ng-template>\n  <ng-template starEmpty let-text>No project matches {{ text }}.</ng-template>\n  <ng-template starFooter>\n    <p class=\"docs-output\">3 projects</p>\n  </ng-template>\n</star-tree-select>",
   "tree-select/virtual": "<div class=\"docs-stack\">\n  <star-tree-select\n    [nodes]=\"large.nodes\"\n    [(expanded)]=\"largeOpen\"\n    selectionMode=\"checkbox\"\n    [(value)]=\"largeTeams\"\n    virtualScroll\n    [virtualItemSize]=\"34\"\n    filter\n    placeholder=\"Select orders\"\n    ariaLabel=\"Orders by site\"\n  />\n  <p class=\"docs-output\" role=\"status\">{{ largeTeams().length }} orders checked</p>\n</div>",
   "tree-table/basic": "<div class=\"docs-stack\">\n  <star-tree-table\n    [nodes]=\"departments\"\n    [columns]=\"columns\"\n    [(expanded)]=\"open\"\n    ariaLabel=\"Departments\"\n  />\n  <p class=\"docs-output\" role=\"status\">Open: {{ open().join(', ') || 'none' }}</p>\n</div>",
+  "tree-table/checkbox": "<div class=\"docs-stack\">\n  <star-tree-table\n    [nodes]=\"firstProjects\"\n    [columns]=\"projectColumns\"\n    [expanded]=\"['website', 'website-content', 'shop']\"\n    selectionMode=\"checkbox\"\n    [(selection)]=\"checked\"\n    ariaLabel=\"Projects to bill\"\n  />\n  <p class=\"docs-output\" role=\"status\">Selected: {{ checked().join(', ') || 'none' }}</p>\n</div>",
+  "tree-table/column-features": "<div class=\"docs-stack\">\n  <div style=\"max-width: 32rem\">\n    <star-tree-table\n      [nodes]=\"twoProjects\"\n      [columns]=\"frozenColumns\"\n      [expanded]=\"['website']\"\n      resizableColumns\n      reorderableColumns\n      [(columnWidths)]=\"widths\"\n      [(columnOrder)]=\"order\"\n      ariaLabel=\"Projects with frozen name\"\n    />\n  </div>\n  <p class=\"docs-output\" role=\"status\">Order: {{ order().join(', ') || 'default' }}</p>\n</div>",
   "tree-table/columns": "<star-tree-table\n  [nodes]=\"departments\"\n  [columns]=\"wideColumns\"\n  [expanded]=\"allOpen\"\n  ariaLabel=\"Departments with fixed columns\"\n/>",
+  "tree-table/context-menu": "<div class=\"docs-stack\">\n  <star-tree-table\n    [nodes]=\"firstProjects\"\n    [columns]=\"projectColumns\"\n    [expanded]=\"['website']\"\n    [contextMenu]=\"rowActions\"\n    (contextMenuSelect)=\"onRowAction($event)\"\n    ariaLabel=\"Projects with actions\"\n  />\n  <p class=\"docs-output\" role=\"status\">Last action: {{ lastAction() }}</p>\n</div>",
+  "tree-table/edit": "<div class=\"docs-stack\">\n  <star-tree-table\n    [nodes]=\"editable()\"\n    [columns]=\"editColumns\"\n    [expanded]=\"['website', 'shop']\"\n    (cellEdit)=\"saveEdit($event)\"\n    ariaLabel=\"Editable projects\"\n  />\n  <p class=\"docs-output\" role=\"status\">Last edit: {{ lastEdit() }}</p>\n</div>",
+  "tree-table/lazy": "<div class=\"docs-stack\">\n  <star-tree-table\n    [nodes]=\"folders()\"\n    [columns]=\"folderColumns\"\n    [(expanded)]=\"folderOpen\"\n    lazy\n    (nodeExpand)=\"loadFolder($event.node)\"\n    ariaLabel=\"Folders\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    {{ folderQueue().length ? 'Loading ' + folderQueue()[0] : 'Idle' }}\n  </p>\n</div>",
   "tree-table/slots": "<div class=\"docs-stack\">\n  <star-tree-table\n    [nodes]=\"departments\"\n    [columns]=\"columns\"\n    [expanded]=\"allOpen\"\n    ariaLabel=\"Departments with slots\"\n  >\n    <ng-template starHeader>\n      <p class=\"docs-output\">Budget by department</p>\n    </ng-template>\n    <ng-template starNode [starNodeOf]=\"departments\" let-node let-level=\"level\">\n      <strong [style.color]=\"level === 1 ? 'var(--star-text)' : 'var(--star-text-muted)'\">\n        {{ node.label }}\n      </strong>\n      <small>(level {{ level }})</small>\n    </ng-template>\n    <ng-template starFooter>\n      <p class=\"docs-output\">Figures in millions.</p>\n    </ng-template>\n  </star-tree-table>\n  <star-tree-table [nodes]=\"[]\" [columns]=\"columns\" ariaLabel=\"Empty departments\">\n    <ng-template starEmpty let-text>No departments yet.</ng-template>\n  </star-tree-table>\n</div>",
+  "tree-table/sort-filter": "<div class=\"docs-stack\">\n  <star-tree-table\n    [nodes]=\"projects\"\n    [columns]=\"projectColumns\"\n    [(expanded)]=\"projectOpen\"\n    [(sortField)]=\"sortField\"\n    [(sortOrder)]=\"sortOrder\"\n    multiSort\n    filter\n    [(globalFilter)]=\"query\"\n    [filterMode]=\"strict() ? 'strict' : 'lenient'\"\n    paginator\n    [rows]=\"5\"\n    [rowsPerPageOptions]=\"[5, 10]\"\n    ariaLabel=\"Projects\"\n  />\n  <label class=\"docs-output\">\n    <input type=\"checkbox\" [checked]=\"strict()\" (change)=\"strict.set(!strict())\" />\n    Strict filter mode\n  </label>\n  <p class=\"docs-output\" role=\"status\">\n    Sort: {{ sortField() ?? 'none' }} {{ sortOrder() === 1 ? 'ascending' : 'descending' }},\n    search: {{ query() || 'none' }}\n  </p>\n</div>",
   "tree-table/virtual": "<div class=\"docs-stack\">\n  <star-tree-table\n    [nodes]=\"large.nodes\"\n    [columns]=\"virtualColumns\"\n    [(expanded)]=\"largeOpen\"\n    virtualScroll\n    scrollHeight=\"20rem\"\n    ariaLabel=\"Stock by site\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    {{ large.count }} rows, {{ largeOpen().length }} branches open\n  </p>\n</div>",
   "tree/basic": "<star-tree [nodes]=\"folders\" [(expanded)]=\"open\" scrollHeight=\"16rem\" ariaLabel=\"Folders\" />",
   "tree/checkbox": "<div class=\"docs-stack\">\n  <star-tree\n    [nodes]=\"folders\"\n    selectionMode=\"checkbox\"\n    [(value)]=\"checked\"\n    [(expanded)]=\"checkboxOpen\"\n    filter\n    scrollHeight=\"16rem\"\n    ariaLabel=\"Folders to sync\"\n  />\n\n  <p class=\"docs-output\" role=\"status\">Leaves: {{ checked().join(', ') || 'none' }}</p>\n</div>",
