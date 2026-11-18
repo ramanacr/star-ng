@@ -10122,14 +10122,14 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "StarFilterMatchMode",
         "default": "'contains'",
         "required": false,
-        "description": "How the global filter text matches (default `contains`). A row passes when one searched cell matches; with `notContains`, when no searched cell has the text."
+        "description": "How the global filter text matches (default `contains`). A row passes when one searched cell matches; with `notContains`, when no searched cell has the text. The default comes from `provideStarTableDefaults`, then `filterMatchMode` of `provideStarNg`."
       },
       {
         "name": "filterLocale",
         "type": "string | null",
         "default": "null",
         "required": false,
-        "description": "Locale of the text filters (PrimeNG `filterLocale`): with it, `Intl.Collator` compares the folded texts, so letters that the locale treats as equal match. Default: no locale."
+        "description": "Locale of the text filters (PrimeNG `filterLocale`): with it, `Intl.Collator` compares the folded texts, so letters that the locale treats as equal match. Default: `locale` of `provideStarNg`, else none."
       },
       {
         "name": "filterDisplay",

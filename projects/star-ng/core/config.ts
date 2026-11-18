@@ -53,8 +53,9 @@ export interface StarConfig {
   /** Defaults of the overlay controls. PrimeNG `zIndex` and `appendTo`. */
   readonly overlay?: StarOverlayConfig;
   /**
-   * Default `filterMatchMode` of the controls that have one (select family, listbox).
-   * PrimeNG `filterMatchModeOptions`. Custom modes register with the filter service of the table.
+   * Default text match mode of the select family, the listbox and the table global filter
+   * (`globalFilterMatchMode`). PrimeNG `filterMatchModeOptions`. Custom modes of the table filter
+   * menu register with `StarFilterService` (`@star-ng/ui/core`).
    */
   readonly filterMatchMode?: StarFilterMatchMode;
   /**

@@ -122,4 +122,11 @@ describe('provideStarNg defaults in the controls', () => {
     expect(TestBed.createComponent(StarTreeSelect).componentInstance.filterLocale()).toBe('tr');
     expect(TestBed.createComponent(StarTable).componentInstance.size()).toBe('sm');
   });
+
+  it('table reads filterMatchMode for the global filter and locale for its filters', () => {
+    configure({ filterMatchMode: 'startsWith', locale: 'de' });
+    const table = TestBed.createComponent(StarTable).componentInstance;
+    expect(table.globalFilterMatchMode()).toBe('startsWith');
+    expect(table.filterLocale()).toBe('de');
+  });
 });

@@ -1142,14 +1142,19 @@ export class StarTable<T> {
   readonly globalFilterFields = input<readonly string[] | null>(null);
   /**
    * How the global filter text matches (default `contains`). A row passes when one searched cell
-   * matches; with `notContains`, when no searched cell has the text.
+   * matches; with `notContains`, when no searched cell has the text. The default comes from
+   * `provideStarTableDefaults`, then `filterMatchMode` of `provideStarNg`.
    */
-  readonly globalFilterMatchMode = input<StarFilterMatchMode>('contains');
+  readonly globalFilterMatchMode = input<StarFilterMatchMode>(
+    this.defaults.filterMatchMode ?? 'contains',
+  );
   /**
    * Locale of the text filters (PrimeNG `filterLocale`): with it, `Intl.Collator` compares the
-   * folded texts, so letters that the locale treats as equal match. Default: no locale.
+   * folded texts, so letters that the locale treats as equal match. Default: `locale` of `provideStarNg`, else none.
    */
-  readonly filterLocale = input<string | null>(null);
+  readonly filterLocale = input<string | null>(
+    this.defaults.filterLocale ?? this.defaults.locale ?? null,
+  );
   /**
    * Where the column filters show (PrimeNG `filterDisplay`): `'row'` (default), a second header
    * row; `'menu'`, a filter button in each header cell that opens a filter menu with match modes,

@@ -76,6 +76,8 @@ describe('per-control default tokens', () => {
           striped: true,
           stickyHeader: true,
           rowsPerPageOptions: [5, 10],
+          filterMatchMode: 'equals',
+          filterLocale: 'tr',
         }),
       ],
     });
@@ -84,6 +86,8 @@ describe('per-control default tokens', () => {
     expect(table.striped()).toBe(true);
     expect(table.stickyHeader()).toBe(true);
     expect(table.rowsPerPageOptions()).toEqual([5, 10]);
+    expect(table.globalFilterMatchMode()).toBe('equals');
+    expect(table.filterLocale()).toBe('tr');
   });
 
   it('STAR_DIALOG_DEFAULTS applies to dialogs and drawers', () => {
