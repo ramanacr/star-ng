@@ -3725,6 +3725,27 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Loads the options on demand (PrimeNG `lazy` with `onLazyLoad`). Use it with `virtualScroll` and an `options` array of the full length, with `undefined` for the options that are not loaded. The control emits `lazyLoad` when the rows in view need such options, and when the filter text changes. The filter then does not filter the options in the browser: the event has the text."
       },
       {
+        "name": "focusOnHover",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Moving the pointer over an option makes it the active option (default `true`). PrimeNG `focusOnHover`."
+      },
+      {
+        "name": "selectOnFocus",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Single choice (select, autocomplete): moving the active option with the keys also chooses it, and the panel stays open (default `false`). PrimeNG `selectOnFocus`."
+      },
+      {
+        "name": "autoOptionFocus",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "When the panel opens without a chosen option, the first enabled option is active (default `true`). Off: no option is active until a key moves. The autocomplete uses `autoHighlight`. PrimeNG `autoOptionFocus`."
+      },
+      {
         "name": "placeholder",
         "type": "string | null",
         "default": "null",
@@ -6905,6 +6926,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "select/filter-match": "<div class=\"docs-stack\">\n  <star-select\n    [options]=\"cities\"\n    optionLabel=\"name\"\n    optionValue=\"code\"\n    [filterBy]=\"['code', 'name']\"\n    filterMatchMode=\"startsWith\"\n    filterLocale=\"de\"\n    [resetFilterOnHide]=\"false\"\n    [(value)]=\"matchedCity\"\n    placeholder=\"Type a code or a name\"\n    ariaLabel=\"City by code or name\"\n    filter\n  />\n  <p class=\"docs-output\" role=\"status\">City: {{ matchedCity() ?? 'none' }}</p>\n</div>",
   "select/form": "<div class=\"docs-stack\">\n  <star-field label=\"Office country\" for=\"select-form-country\" [state]=\"office.country()\">\n    <star-select\n      inputId=\"select-form-country\"\n      [formField]=\"office.country\"\n      [options]=\"countries\"\n      optionLabel=\"name\"\n      optionValue=\"code\"\n      placeholder=\"Select a country\"\n      ariaLabel=\"Office country\"\n      showClear\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ office().valid() }}</p>\n</div>",
   "select/groups": "<star-select\n  [options]=\"countries\"\n  optionLabel=\"name\"\n  optionValue=\"code\"\n  optionGroup=\"region\"\n  [(value)]=\"grouped\"\n  placeholder=\"Grouped by region\"\n  ariaLabel=\"Country by region\"\n/>",
+  "select/keyboard-options": "<div class=\"docs-stack\">\n  <star-select\n    [options]=\"cities\"\n    optionLabel=\"name\"\n    optionValue=\"code\"\n    [(value)]=\"keyedCity\"\n    selectOnFocus\n    [autoOptionFocus]=\"false\"\n    [focusOnHover]=\"false\"\n    placeholder=\"Arrow keys choose\"\n    ariaLabel=\"City, keys choose\"\n  />\n  <p class=\"docs-output\" role=\"status\">City: {{ keyedCity() ?? 'none' }}</p>\n</div>",
   "select/large": "<div class=\"docs-stack\">\n  <star-select\n    [options]=\"shipments\"\n    optionLabel=\"name\"\n    optionValue=\"id\"\n    optionGroup=\"region\"\n    [(value)]=\"shipment\"\n    placeholder=\"10,000 shipments\"\n    ariaLabel=\"Shipment\"\n    virtualScroll\n    filter\n  />\n  <p class=\"docs-output\" role=\"status\">Shipment: {{ shipment() ?? 'none' }}</p>\n</div>",
   "select/lazy": "<div class=\"docs-stack\">\n  <star-select\n    [options]=\"lazyList.options()\"\n    optionLabel=\"name\"\n    optionValue=\"id\"\n    [(value)]=\"lazyOrder\"\n    lazy\n    virtualScroll\n    filter\n    placeholder=\"Select an order\"\n    ariaLabel=\"Order, loaded on demand\"\n    (lazyLoad)=\"lazyList.load($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">Order: {{ lazyOrder() ?? 'none' }}</p>\n</div>",
   "select/selection-changing": "<div class=\"docs-stack\">\n  <star-select\n    [options]=\"cities\"\n    optionLabel=\"name\"\n    optionValue=\"code\"\n    [(value)]=\"guardedCity\"\n    placeholder=\"Select a city (not Paris)\"\n    ariaLabel=\"City, Paris refused\"\n    (selectionChanging)=\"guardCity($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    City: {{ guardedCity() ?? 'none' }}. {{ guardMessage() }}\n  </p>\n</div>",

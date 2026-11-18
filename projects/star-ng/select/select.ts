@@ -234,7 +234,7 @@ import { starSelectionChanging, StarSelectionChangingEvent } from './selection-c
                 [attr.aria-setsize]="virtualScroll() ? visibleOptions().length : null"
                 [attr.aria-posinset]="virtualScroll() ? i + 1 : null"
                 (click)="onOptionClick(option, i)"
-                (mousemove)="isDisabled(option) || activeIndex.set(i)"
+                (mousemove)="onOptionHover(i)"
               >
                 <span class="star-listbox__label">
                   @if (option === undefined) {
@@ -442,7 +442,8 @@ export class StarSelect<TOption = unknown, TValue = TOption>
 
   protected initialActiveIndex(): number {
     const index = this.visibleOptions().findIndex((option) => this.isSelected(option));
-    return index >= 0 ? index : this.firstEnabledFrom(0, 1);
+    if (index >= 0) return index;
+    return this.autoOptionFocus() ? this.firstEnabledFrom(0, 1) : -1;
   }
 
   clear(): void {

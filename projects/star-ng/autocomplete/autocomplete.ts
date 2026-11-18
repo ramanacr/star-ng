@@ -384,7 +384,7 @@ const TEMPLATE = `
             [attr.aria-setsize]="virtualScroll() ? visibleOptions().length : null"
             [attr.aria-posinset]="virtualScroll() ? i + 1 : null"
             (click)="onOptionClick(option, i)"
-            (mousemove)="isDisabled(option) || activeIndex.set(i)"
+            (mousemove)="onOptionHover(i)"
           >
             <span class="star-listbox__label">
               @if (option === undefined) {
@@ -423,7 +423,7 @@ const TEMPLATE = `
             [class.star-listbox__option--active]="isAddRow(activeIndex())"
             [attr.aria-selected]="isAddRow(activeIndex())"
             (click)="addCustom(custom)"
-            (mousemove)="activeIndex.set(visibleOptions().length)"
+            (mousemove)="onOptionHover(visibleOptions().length)"
           >
             <i class="ph-bold ph-plus" aria-hidden="true"></i>
             <span class="star-listbox__label">{{ text.addCustomValue(custom) }}</span>

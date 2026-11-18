@@ -263,7 +263,7 @@ import { starSelectionChanging, StarSelectionChangingEvent } from './selection-c
                 [attr.aria-setsize]="virtualScroll() ? visibleOptions().length : null"
                 [attr.aria-posinset]="virtualScroll() ? i + 1 : null"
                 (click)="onOptionClick(option, i)"
-                (mousemove)="isDisabled(option) || activeIndex.set(i)"
+                (mousemove)="onOptionHover(i)"
               >
                 <span class="star-check__box" aria-hidden="true">
                   @if (isSelected(option)) {
@@ -316,7 +316,7 @@ import { starSelectionChanging, StarSelectionChangingEvent } from './selection-c
               [id]="addRowId"
               [class.star-listbox__option--active]="isAddRow(activeIndex())"
               (click)="addCustom(custom)"
-              (mousemove)="activeIndex.set(visibleOptions().length)"
+              (mousemove)="onOptionHover(visibleOptions().length)"
             >
               <i class="ph-bold ph-plus" aria-hidden="true"></i>
               <span class="star-listbox__label">{{ text.addCustomValue(custom) }}</span>
@@ -481,7 +481,7 @@ export class StarMultiSelect<TOption = unknown, TValue = TOption>
   }
 
   protected initialActiveIndex(): number {
-    return this.firstEnabledFrom(0, 1);
+    return this.autoOptionFocus() ? this.firstEnabledFrom(0, 1) : -1;
   }
 
   remove(option: TOption): void {

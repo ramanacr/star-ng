@@ -168,6 +168,19 @@ export abstract class StarOptionListBase<TOption, TValue> {
    * changes. The filter then does not filter the options in the browser: the event has the text.
    */
   readonly lazy = input(false, { transform: booleanAttribute });
+  /** Moving the pointer over an option makes it the active option (default `true`). PrimeNG `focusOnHover`. */
+  readonly focusOnHover = input(true, { transform: booleanAttribute });
+  /**
+   * Single choice (select, autocomplete): moving the active option with the keys also chooses it,
+   * and the panel stays open (default `false`). PrimeNG `selectOnFocus`.
+   */
+  readonly selectOnFocus = input(false, { transform: booleanAttribute });
+  /**
+   * When the panel opens without a chosen option, the first enabled option is active (default
+   * `true`). Off: no option is active until a key moves. The autocomplete uses `autoHighlight`.
+   * PrimeNG `autoOptionFocus`.
+   */
+  readonly autoOptionFocus = input(true, { transform: booleanAttribute });
 
   readonly placeholder = input<string | null>(null);
   readonly filter = input(false, { transform: booleanAttribute });
@@ -730,6 +743,22 @@ export abstract class StarOptionListBase<TOption, TValue> {
     if (list) list.scrollTop = 0;
   }
 
+  /** Pointer over an option (or the "Add …" row): it becomes active with `focusOnHover`. */
+  protected onOptionHover(index: number): void {
+    if (!this.focusOnHover()) return;
+    const option = this.visibleOptions()[index];
+    if (this.isAddRow(index) || (option !== undefined && !this.isDisabled(option))) {
+      this.activeIndex.set(index);
+    }
+  }
+
+  /** With `selectOnFocus`: chooses the active option after a key moved it (single choice only). */
+  private selectActiveOnFocus(): void {
+    if (!this.selectOnFocus() || !this.closeOnChoose || !this.open()) return;
+    const option = this.visibleOptions()[this.activeIndex()];
+    if (option !== undefined && !this.isDisabled(option)) this.choose(option);
+  }
+
   protected onOptionClick(option: TOption, index: number): void {
     if (this.isDisabled(option)) return;
     this.activeIndex.set(index);
@@ -768,6 +797,7 @@ export abstract class StarOptionListBase<TOption, TValue> {
             : this.firstEnabledFrom(this.optionCount() - 1, -1),
         );
         this.scrollActiveIntoView();
+        this.selectActiveOnFocus();
         return;
       case 'PageDown':
       case 'PageUp':
@@ -847,6 +877,7 @@ export abstract class StarOptionListBase<TOption, TValue> {
     const next = this.firstEnabledFrom(Math.min(Math.max(start, 0), count - 1), step);
     if (next >= 0) this.activeIndex.set(next);
     this.scrollActiveIntoView();
+    this.selectActiveOnFocus();
   }
 
   /** Page up / Page down: moves the active option by the lines in view, over all options. */
@@ -864,6 +895,7 @@ export abstract class StarOptionListBase<TOption, TValue> {
     const found = next >= 0 ? next : this.firstEnabledFrom(target, step === 1 ? -1 : 1);
     if (found >= 0) this.activeIndex.set(found);
     this.scrollActiveIntoView();
+    this.selectActiveOnFocus();
   }
 
   protected firstEnabledFrom(start: number, step: 1 | -1): number {

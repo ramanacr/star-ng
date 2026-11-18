@@ -324,6 +324,27 @@ interface Shipment {
       </docs-example>
 
       <docs-example
+        heading="Keyboard options"
+        source="select/keyboard-options"
+        note="selectOnFocus chooses the option that the arrow keys move to, and the panel stays open. autoOptionFocus off opens the panel with no active option. focusOnHover off keeps the active option where the keys put it when the pointer moves. The defaults keep the usual behaviour: hover moves the active option, keys do not choose, and the first option is active."
+      >
+        <div class="docs-stack">
+          <star-select
+            [options]="cities"
+            optionLabel="name"
+            optionValue="code"
+            [(value)]="keyedCity"
+            selectOnFocus
+            [autoOptionFocus]="false"
+            [focusOnHover]="false"
+            placeholder="Arrow keys choose"
+            ariaLabel="City, keys choose"
+          />
+          <p class="docs-output" role="status">City: {{ keyedCity() ?? 'none' }}</p>
+        </div>
+      </docs-example>
+
+      <docs-example
         heading="Lazy loading"
         source="select/lazy"
         [script]="lazyScript"
@@ -363,6 +384,7 @@ interface Shipment {
   `,
 })
 export class SelectPage {
+  protected readonly keyedCity = signal<string | null>(null);
   protected readonly guardedCity = signal<string | null>(null);
   protected readonly guardMessage = signal('');
 
@@ -539,6 +561,10 @@ readonly office = form(this.officeModel, (path) => {
         'With virtualScroll: moves the active option by the lines in view, over all options. Disabled options are skipped.',
     },
     { name: 'Enter / Space', description: 'Chooses the active option and closes the panel.' },
+    {
+      name: 'Arrow keys with selectOnFocus',
+      description: 'Choose the option they move to. The panel stays open.',
+    },
     { name: 'Alt + Arrow up', description: 'Chooses the active option and closes the panel.' },
     {
       name: 'Letter keys',
