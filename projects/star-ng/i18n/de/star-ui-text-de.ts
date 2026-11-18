@@ -17,6 +17,7 @@ export const STAR_UI_TEXT_DE: StarUiText = {
   loading: 'Wird geladen',
   actions: 'Aktionen',
   moreActions: 'Weitere Aktionen',
+  bottomSheet: 'Unteres Panel',
   ofTotal: (index, total) => `${index} von ${total}`,
   expandItem: (label) => `${label} aufklappen`,
   collapseItem: (label) => `${label} zuklappen`,

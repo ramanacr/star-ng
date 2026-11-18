@@ -1,3 +1,10 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="projects/docs/public/brand/starng-logo-dark.svg" />
+    <img src="projects/docs/public/brand/starng-logo.svg" alt="StarNG" height="64" />
+  </picture>
+</p>
+
 # StarNG
 
 [![npm version](https://img.shields.io/npm/v/@star-ng/ui)](https://www.npmjs.com/package/@star-ng/ui)
@@ -128,6 +135,17 @@ The tests run in Chromium only (Playwright). Firefox and Safari are not tested. 
 The target is WCAG 2.2 level AA. CI runs an automated axe scan on every docs page in the light and dark themes, and on 65 opened states. Unit tests and keyboard tests cover roles, states and key handling.
 
 Not tested: screen-reader output, zoom and reflow, forced-colors mode. An automated scan finds only some problems. Your application must also name every control and set the page language. See the [accessibility guide](https://ramanacr.github.io/star-ng/guides/accessibility).
+
+## Use with AI coding agents
+
+StarNG gives coding agents (Claude Code, Cursor, Copilot, Codex and others) its setup, API and example markup in two ways:
+
+1. Plain text on the docs site: [llms.txt](https://ramanacr.github.io/star-ng/llms.txt) is a short index, and [llms-full.txt](https://ramanacr.github.io/star-ng/llms-full.txt) has the API of every control and all example markup.
+2. The MCP server [`@star-ng/mcp`](https://github.com/ramanacr/star-ng/tree/main/projects/mcp). It runs on your computer and has tools to search controls, read their API and examples, and check the StarNG markup that the agent writes. For Claude Code:
+
+   ```bash
+   claude mcp add star-ng -- npx -y @star-ng/mcp
+   ```
 
 ## Versioning and stability
 

@@ -65,6 +65,31 @@ import { DOCS, DocsRow } from '../shared/docs';
         </div>
       </docs-example>
 
+      <docs-example
+        heading="Delete from a row"
+        source="confirm/popup-row"
+        [script]="rowScript"
+        note="severity danger gives the accept button the danger variant. The first focus stays on the safe choice, reject. The popup is an alertdialog with aria-modal false, and the message is its accessible name. Tab cycles between the two buttons. After an answer the focus returns to the row button."
+      >
+        <div class="docs-stack">
+          <div class="docs-stack">
+            @for (invoice of invoices(); track invoice.id) {
+              <div class="docs-row">
+                <span>{{ invoice.id }}, {{ invoice.amount }}</span>
+                <star-button
+                  size="sm"
+                  variant="ghost-danger"
+                  leadingIcon="ph-bold ph-trash"
+                  [ariaLabel]="'Delete ' + invoice.id"
+                  (pressed)="deleteInvoice(invoice.id, $event)"
+                />
+              </div>
+            }
+          </div>
+          <p class="docs-output" role="status">Invoice result: {{ rowResult() }}</p>
+        </div>
+      </docs-example>
+
       <docs-api
         [of]="['StarConfirmHost']"
         [slots]="slots"
@@ -101,8 +126,10 @@ import { DOCS, DocsRow } from '../shared/docs';
       <p>
         Requests wait in a queue: the host shows one at a time, in the order of the calls. The
         dialog has the role <code>alertdialog</code>, and the question is its accessible name
-        through the header. The popup is a <code>star-popover</code>, so it stays above an open
-        modal dialog.
+        through the header. The popup is a <code>star-popover</code> with the role
+        <code>alertdialog</code> and <code>aria-modal="false"</code>, so it stays above an open
+        modal dialog. The CDK places it below or above the target, whichever has space, and Tab and
+        Shift+Tab cycle between its buttons.
       </p>
     </docs-page>
   `,
@@ -112,6 +139,12 @@ export class ConfirmPage {
 
   protected readonly result = signal('none');
   protected readonly popupResult = signal('none');
+  protected readonly rowResult = signal('none');
+  protected readonly invoices = signal([
+    { id: 'INV-2041', amount: '1,240.00 EUR' },
+    { id: 'INV-2042', amount: '310.50 EUR' },
+    { id: 'INV-2043', amount: '89.90 EUR' },
+  ]);
 
   protected async deleteOrder(): Promise<void> {
     const accepted = await this.confirm.ask({
@@ -156,6 +189,17 @@ export class ConfirmPage {
       target: event.currentTarget as HTMLElement,
     });
     this.popupResult.set(accepted ? 'archived' : 'kept');
+  }
+
+  protected async deleteInvoice(id: string, event: MouseEvent): Promise<void> {
+    const accepted = await this.confirm.ask({
+      message: `Delete invoice ${id}?`,
+      acceptLabel: 'Delete',
+      severity: 'danger',
+      target: event.currentTarget as HTMLElement,
+    });
+    if (accepted) this.invoices.update((list) => list.filter((invoice) => invoice.id !== id));
+    this.rowResult.set(accepted ? `${id} deleted` : `${id} kept`);
   }
 
   protected readonly dialogScript = `private readonly confirm = inject(StarConfirmService);
@@ -206,6 +250,24 @@ async archive(event: MouseEvent): Promise<void> {
   this.popupResult.set(accepted ? 'archived' : 'kept');
 }`;
 
+  protected readonly rowScript = `readonly invoices = signal([
+  { id: 'INV-2041', amount: '1,240.00 EUR' },
+  { id: 'INV-2042', amount: '310.50 EUR' },
+  { id: 'INV-2043', amount: '89.90 EUR' },
+]);
+readonly rowResult = signal('none');
+
+async deleteInvoice(id: string, event: MouseEvent): Promise<void> {
+  const accepted = await this.confirm.ask({
+    message: \`Delete invoice \${id}?\`,
+    acceptLabel: 'Delete',
+    severity: 'danger',
+    target: event.currentTarget as HTMLElement,
+  });
+  if (accepted) this.invoices.update((list) => list.filter((invoice) => invoice.id !== id));
+  this.rowResult.set(accepted ? \`\${id} deleted\` : \`\${id} kept\`);
+}`;
+
   protected readonly serviceRows: readonly DocsRow[] = [
     {
       name: 'ask(options)',
@@ -214,7 +276,8 @@ async archive(event: MouseEvent): Promise<void> {
     },
     {
       name: 'options.header, options.message',
-      description: 'The title and the text of the question.',
+      description:
+        'The title and the text of the question. The header is optional: without it, the message is the accessible name. The popup shows only the message, which is its accessible name.',
     },
     { name: 'options.icon', description: 'Phosphor icon class shown next to the message.' },
     {
@@ -225,6 +288,11 @@ async archive(event: MouseEvent): Promise<void> {
       name: 'options.acceptVariant',
       description: 'Button variant of the accept button. Use danger for a delete.',
     },
+    {
+      name: 'options.severity',
+      description:
+        'default or danger. danger gives the accept button the danger variant, when acceptVariant is not set.',
+    },
     { name: 'options.rejectVisible', description: 'false hides the reject button.' },
     {
       name: 'options.defaultFocus',
@@ -232,13 +300,18 @@ async archive(event: MouseEvent): Promise<void> {
     },
     {
       name: 'options.target',
-      description: 'An element. Shows a popup next to it instead of a dialog.',
+      description:
+        'An element or an ElementRef. Shows a popup next to it instead of a dialog. The focus returns to it after an answer or Escape.',
     },
     { name: 'settle(accepted)', description: 'Resolves the visible request. The host calls it.' },
   ];
 
   protected readonly slots: readonly DocsRow[] = [
-    { name: '(none)', description: 'The host takes everything from the ask options.' },
+    {
+      name: 'ng-template[starConfirmMessage]',
+      description:
+        'Inside star-confirm-host. Replaces the message text of the dialog and the popup. let-options gives the options of ask.',
+    },
   ];
   protected readonly cssVars: readonly DocsRow[] = [
     { name: '--star-primary-soft', description: 'Background of the icon circle.' },
@@ -250,7 +323,7 @@ async archive(event: MouseEvent): Promise<void> {
     { name: 'Escape', description: 'Rejects the question and closes the dialog or the popup.' },
     {
       name: 'Tab / Shift+Tab',
-      description: 'Moves between the buttons. A dialog traps the focus.',
+      description: 'Moves between the buttons. The dialog and the popup trap the focus.',
     },
     { name: 'Enter / Space', description: 'Presses the focused button.' },
   ];

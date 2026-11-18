@@ -255,7 +255,7 @@ describe('StarDatePicker', () => {
     expect(host.date()).toEqual(new Date(2026, 10, 27, 9, 15));
     expect(input.value).toBe('27/11/2026, 09:15');
 
-    document.querySelector<HTMLButtonElement>('.star-date__time > .star-btn')!.click();
+    document.querySelector<HTMLButtonElement>('.star-date__done > .star-btn')!.click();
     await fixture.whenStable();
     expect(expanded(input)).toBe('false');
   });

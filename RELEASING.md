@@ -197,3 +197,66 @@ publish.
 6. Error "OIDC" or "not authorized" in `npm publish`: the trusted publisher on npmjs.com does
    not match this run. The four values must be exactly `ramanacr`, `star-ng`, `release.yml`
    and `npm`. The npm version in the job must be 11.5.1 or later.
+
+## Releasing @star-ng/mcp (the MCP server)
+
+The MCP server in `projects/mcp` is a separate npm package with its own version. The workflow
+`.github/workflows/release-mcp.yml` publishes it when you push a tag `mcp-v<version>` (for example
+`mcp-v0.2.0`). It works like `release.yml`: Trusted Publishing (no npm token), the environment
+`npm` and the switch `NPM_PUBLISH`. The two workflows never start for the tag of the other one:
+`release.yml` takes `v*` tags, `release-mcp.yml` takes `mcp-v*` tags.
+
+The workflow runs these jobs:
+
+1. `verify and pack`: checks the tag against `projects/mcp/package.json`
+   (`node tools/release-version.mjs --package mcp`), checks that the tag is on `main`, runs
+   `pnpm test:mcp` (this also makes the data snapshot `data/mcp/components.json`), packs the
+   tarball, checks that it holds exactly the expected files, installs it into an empty project
+   and runs `tools/smoke-mcp.mjs` on it.
+2. `publish to npm`: publishes the tarball with provenance.
+3. `verify published package`: waits for the version in the registry, checks the signature and
+   the provenance, and runs `tools/smoke-mcp.mjs` on the published package.
+
+There is no GitHub release and no changelog for `@star-ng/mcp`.
+
+### One-time setup for @star-ng/mcp
+
+npm can attach a trusted publisher only to a package that already exists. So the FIRST version
+is published by hand, once:
+
+1. On a clean, current `main`: `pnpm test:mcp`, then `npm pack ./projects/mcp --dry-run`. The
+   list must hold `bin/`, `src/`, `data/mcp/components.json`, `README.md` and `package.json`,
+   and nothing else.
+2. `npm login`, then `npm publish ./projects/mcp --access public`.
+3. On npmjs.com open the package `@star-ng/mcp`, then Settings, then Trusted Publisher, then
+   GitHub Actions. Enter:
+   - Organization or user: `ramanacr`
+   - Repository: `star-ng`
+   - Workflow filename: `release-mcp.yml`
+   - Environment name: `npm`
+4. In the same Settings page, under Publishing access, choose "Require two-factor
+   authentication and disallow tokens".
+5. If the environment `npm` limits the deployment tags (repository Settings, Environments,
+   `npm`), add the pattern `mcp-v*` next to `v*`.
+
+### Release steps for @star-ng/mcp
+
+1. In a pull request, set the new version in `projects/mcp/package.json`. Merge it.
+2. Optional: run the workflow "Release MCP" by hand on `main` (a dry run that never publishes).
+3. Tag the merge commit and push the tag:
+
+   ```bash
+   git switch main && git pull
+   git tag mcp-v0.2.0
+   git push origin mcp-v0.2.0
+   ```
+
+4. Watch the run "Release MCP" in Actions. The rules of "When a publish fails" above apply here
+   too, with the tag `mcp-v<version>` and the package `@star-ng/mcp`.
+
+### When is a new version needed
+
+The snapshot in the package is only the fallback. At start, the server fetches the current data
+from the docs site (`mcp/components.json`, written by `pnpm build:pages`). So a docs deployment
+updates what agents see. A new version of `@star-ng/mcp` is needed only when the server code or
+the format of the data (`schemaVersion`) changes.

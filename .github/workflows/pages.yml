@@ -50,9 +50,12 @@ jobs:
       # build:pages runs `ng build docs --base-href`, which prerenders every page to its own
       # index.html (status 200, content in the HTML), checks that every page was prerendered, then
       # copies the client-rendered shell to 404.html (see tools/pages-fallback.mjs).
+      # Also writes llms.txt, llms-full.txt and mcp/components.json (files for coding agents, see
+      # tools/agent-data.mjs). Their links are absolute: PAGES_SITE_URL is the site address.
       - name: Build the docs for the sub-path
         env:
           BASE_PATH: ${{ steps.pages.outputs.base_path }}
+          PAGES_SITE_URL: ${{ steps.pages.outputs.base_url }}
         run: pnpm build:pages "${BASE_PATH}/"
 
       - name: Upload the Pages artifact

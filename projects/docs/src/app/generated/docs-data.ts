@@ -90,6 +90,15 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarActionSheet": {
+    "kind": "component",
+    "selector": "star-action-sheet",
+    "entry": "@star-ng/ui/bottom-sheet",
+    "description": "List of actions in a bottom sheet (Kendo / DevExtreme ActionSheet). Open it with `StarBottomSheet.openActions(actions)`: the ref resolves with the chosen action, or `undefined` for Cancel, Escape or a backdrop click.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
   "StarAnimateOnScroll": {
     "kind": "directive",
     "selector": "[starAnimateOnScroll]",
@@ -300,6 +309,44 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "string",
         "default": "''",
         "required": false,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
+  "StarBottomSheetContainer": {
+    "kind": "component",
+    "selector": "star-bottom-sheet-container",
+    "entry": "@star-ng/ui/bottom-sheet",
+    "description": "Internal host: the native `<dialog>` of one sheet.",
+    "inputs": [
+      {
+        "name": "content",
+        "type": "Type<unknown> | TemplateRef<unknown>",
+        "default": null,
+        "required": true,
+        "description": ""
+      },
+      {
+        "name": "config",
+        "type": "StarBottomSheetConfig",
+        "default": null,
+        "required": true,
+        "description": ""
+      },
+      {
+        "name": "contentInjector",
+        "type": "Injector",
+        "default": null,
+        "required": true,
+        "description": ""
+      },
+      {
+        "name": "templateContext",
+        "type": "StarBottomSheetContext",
+        "default": null,
+        "required": true,
         "description": ""
       }
     ],
@@ -1103,7 +1150,16 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-confirm-host",
     "entry": "@star-ng/ui/dialog",
-    "description": "",
+    "description": "Shows the questions of `StarConfirmService`: a modal `alertdialog`, or a popup next to `target` (PrimeNG `p-confirmdialog` / `p-confirmpopup`). Place one in the app shell.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
+  "StarConfirmMessageTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starConfirmMessage]",
+    "entry": "@star-ng/ui/dialog",
+    "description": "Replaces the message text of the confirm dialog and popup (PrimeNG `#message` template). Write it inside `star-confirm-host`:",
     "inputs": [],
     "models": [],
     "outputs": []
@@ -4153,7 +4209,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-popover",
     "entry": "@star-ng/ui/popover",
-    "description": "Popover (PrimeNG `p-popover`, formerly OverlayPanel): rich floating content anchored to an element. Native popover (top layer, works in dialogs), closes on outside click and Escape, moves focus in and back to the anchor.",
+    "description": "Popover (PrimeNG `p-popover`, formerly OverlayPanel): rich floating content anchored to an element. Native popover (top layer, works in dialogs), closes on outside click and Escape, moves focus in and back to the anchor. Put `data-autofocus` on the element that should get the first focus; without it the first focusable element gets it.",
     "inputs": [
       {
         "name": "ariaLabel",
@@ -4161,6 +4217,20 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "null",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "ariaLabelledby",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Id of the element that names the popover. Wins over `ariaLabel`."
+      },
+      {
+        "name": "role",
+        "type": "'dialog' | 'alertdialog'",
+        "default": "'dialog'",
+        "required": false,
+        "description": "`alertdialog` for a question that needs an answer (the confirm popup)."
       },
       {
         "name": "focusOnShow",
@@ -6546,6 +6616,9 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "badge/severities": "<star-badge [value]=\"1\" />\n<star-badge [value]=\"2\" severity=\"secondary\" />\n<star-badge [value]=\"3\" severity=\"success\" />\n<star-badge [value]=\"4\" severity=\"info\" />\n<star-badge [value]=\"5\" severity=\"warn\" />\n<star-badge [value]=\"6\" severity=\"danger\" />",
   "badge/sizes": "<star-badge [value]=\"7\" size=\"sm\" />\n<star-badge [value]=\"7\" />\n<star-badge [value]=\"7\" size=\"lg\" />\n<star-badge severity=\"success\" ariaLabel=\"online\" />",
   "block-ui/basic": "<div class=\"docs-stack\">\n  <star-block-ui [blocked]=\"blocked()\" message=\"Saving…\">\n    <div class=\"docs-stack\">\n      <star-field label=\"Note\">\n        <input starInput value=\"Waiting for approval\" />\n      </star-field>\n      <star-field label=\"Reference\">\n        <input starInput value=\"PO-1042\" />\n      </star-field>\n    </div>\n  </star-block-ui>\n  <star-button variant=\"secondary\" (pressed)=\"blockFor(1500)\">\n    Save (blocks for 1.5 s)\n  </star-button>\n  <star-button variant=\"secondary\" (pressed)=\"blocked.set(!blocked())\">\n    {{ blocked() ? 'Unblock' : 'Block' }}\n  </star-button>\n</div>",
+  "bottom-sheet/actions": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button\n      variant=\"secondary\"\n      leadingIcon=\"ph-bold ph-dots-three\"\n      (pressed)=\"orderActions()\"\n    >\n      Order actions\n    </star-button>\n  </div>\n  <p class=\"docs-output\" role=\"status\">Action: {{ action() }}</p>\n</div>",
+  "bottom-sheet/component": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button leadingIcon=\"ph-bold ph-export\" (pressed)=\"exportInvoice()\">\n      Export invoice\n    </star-button>\n  </div>\n  <p class=\"docs-output\" role=\"status\">Export format: {{ format() }}</p>\n</div>",
+  "bottom-sheet/template": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"showProjects(projects)\">\n      Pick a project\n    </star-button>\n  </div>\n  <p class=\"docs-output\" role=\"status\">Project: {{ project() }}</p>\n</div>\n<ng-template #projects let-data let-ref=\"ref\">\n  <div class=\"docs-stack\">\n    <h2 class=\"star-dialog__title\">Projects</h2>\n    @for (name of data; track name) {\n      <star-button variant=\"ghost\" (pressed)=\"ref.dismiss(name)\">{{ name }}</star-button>\n    }\n  </div>\n</ng-template>",
   "breadcrumb/basic": "<star-breadcrumb [home]=\"home\" [items]=\"trail\" ariaLabel=\"Breadcrumb of the guide\" />",
   "breadcrumb/links": "<star-breadcrumb\n  ariaLabel=\"Breadcrumb of the install page\"\n  [items]=\"[\n    { label: 'Docs', url: 'https://example.com/docs' },\n    { label: 'Guides', url: 'https://example.com/docs/guides' },\n    { label: 'Install' },\n  ]\"\n/>",
   "button/full": "<div class=\"docs-stack\">\n  <star-button fullWidth>Continue</star-button>\n</div>",
@@ -6593,6 +6666,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "confirm/dialog": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button\n      variant=\"ghost-danger\"\n      leadingIcon=\"ph-bold ph-trash\"\n      (pressed)=\"deleteOrder()\"\n    >\n      Delete order\n    </star-button>\n  </div>\n  <p class=\"docs-output\" role=\"status\">Result: {{ result() }}</p>\n</div>",
   "confirm/options": "<div class=\"docs-row\">\n  <star-button variant=\"secondary\" (pressed)=\"publish()\">Publish price list</star-button>\n  <star-button variant=\"secondary\" (pressed)=\"acknowledge()\">Show notice</star-button>\n</div>",
   "confirm/popup": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button\n      variant=\"ghost\"\n      leadingIcon=\"ph-bold ph-archive\"\n      (pressed)=\"archive($event)\"\n    >\n      Archive\n    </star-button>\n  </div>\n  <p class=\"docs-output\" role=\"status\">Archive result: {{ popupResult() }}</p>\n</div>",
+  "confirm/popup-row": "<div class=\"docs-stack\">\n  <div class=\"docs-stack\">\n    @for (invoice of invoices(); track invoice.id) {\n      <div class=\"docs-row\">\n        <span>{{ invoice.id }}, {{ invoice.amount }}</span>\n        <star-button\n          size=\"sm\"\n          variant=\"ghost-danger\"\n          leadingIcon=\"ph-bold ph-trash\"\n          [ariaLabel]=\"'Delete ' + invoice.id\"\n          (pressed)=\"deleteInvoice(invoice.id, $event)\"\n        />\n      </div>\n    }\n  </div>\n  <p class=\"docs-output\" role=\"status\">Invoice result: {{ rowResult() }}</p>\n</div>",
   "context-menu/basic": "<div class=\"docs-stack\">\n  <div class=\"docs-output\" tabindex=\"0\" aria-label=\"Order row\" [starContextMenu]=\"rowMenu\">\n    Order 1042: right-click here\n  </div>\n  <star-menu #rowMenu [items]=\"rowItems\" (itemClick)=\"last.set($event.label ?? '')\" />\n  <p class=\"docs-output\" role=\"status\">Last action: {{ last() }}</p>\n</div>",
   "dark-mode/switch": "<div class=\"docs-row\" style=\"min-height: 11rem; align-items: flex-start\">\n  <star-theme-switch />\n</div>",
   "dark-mode/try": "<star-button variant=\"secondary\" (pressed)=\"theme.setMode('system')\">System</star-button>\n<star-button variant=\"secondary\" (pressed)=\"theme.setMode('light')\">Light</star-button>\n<star-button variant=\"secondary\" (pressed)=\"theme.setMode('dark')\">Dark</star-button>\n<p class=\"docs-output\" role=\"status\">\n  Choice: {{ theme.mode() }}. Theme in use: {{ theme.theme() }}.\n</p>",
@@ -6611,6 +6685,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "date-picker/slots": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"payDate\"\n    locale=\"en-GB\"\n    [firstDayOfWeek]=\"1\"\n    showButtonBar\n    ariaLabel=\"Payment date\"\n  >\n    <ng-template starHeader>\n      <p class=\"docs-output docs-due-note\">Invoices due in November 2026</p>\n    </ng-template>\n    <ng-template starDate let-date>\n      <span class=\"docs-due\" [class.docs-due--marked]=\"isDue(date)\">{{\n        date.getDate()\n      }}</span>\n    </ng-template>\n    <ng-template starFooter>\n      <p class=\"docs-output docs-due-note\">\n        A dot marks a due date: 5, 12 and 26 November.\n      </p>\n    </ng-template>\n  </star-date-picker>\n  <p class=\"docs-output\" role=\"status\">Payment date: {{ iso(payDate()) }}</p>\n</div>",
   "date-picker/states": "<div class=\"docs-stack\">\n  <star-date-picker size=\"sm\" locale=\"en-GB\" ariaLabel=\"Small date picker\" />\n  <star-date-picker disabled locale=\"en-GB\" ariaLabel=\"Disabled date picker\" />\n  <star-date-picker\n    [value]=\"delivery()\"\n    readonly\n    locale=\"en-GB\"\n    ariaLabel=\"Read-only date picker\"\n  />\n</div>",
   "date-picker/time": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"meeting\"\n    locale=\"en-GB\"\n    showTime\n    [stepMinute]=\"15\"\n    ariaLabel=\"Meeting start\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Meeting: {{ iso(meeting()) }} {{ clock(meeting()) }}\n  </p>\n</div>",
+  "date-picker/time-range": "<div class=\"docs-stack\">\n  <star-date-range-picker\n    [(value)]=\"shift\"\n    locale=\"en-GB\"\n    showTime\n    [stepMinute]=\"15\"\n    ariaLabel=\"Shift\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Shift: {{ iso(shift()?.start) }} {{ clock(shift()?.start) }} to {{ iso(shift()?.end) }}\n    {{ clock(shift()?.end) }}\n  </p>\n</div>",
   "date-picker/views": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"reportMonth\"\n    view=\"month\"\n    locale=\"en-GB\"\n    ariaLabel=\"Report month\"\n  />\n  <star-date-picker\n    [(value)]=\"reportYear\"\n    view=\"year\"\n    locale=\"en-GB\"\n    ariaLabel=\"Report year\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Month: {{ iso(reportMonth()) }}, year: {{ iso(reportYear()) }}\n  </p>\n</div>",
   "dialog/basic": "<star-button (pressed)=\"basicOpen.set(true)\">Edit order</star-button>\n<star-dialog [(visible)]=\"basicOpen\" header=\"Edit order ORD-1042\">\n  <span starDialogHeader class=\"docs-output\">Last saved at 10:42</span>\n  <div class=\"docs-stack\">\n    <star-field label=\"Customer\">\n      <input starInput value=\"Orchard Supply\" />\n    </star-field>\n    <star-field label=\"Delivery note\" hint=\"The driver reads this note.\">\n      <textarea starInput rows=\"3\">Leave at the loading dock.</textarea>\n    </star-field>\n  </div>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button variant=\"ghost\" (pressed)=\"basicOpen.set(false)\">Cancel</star-button>\n    <star-button (pressed)=\"basicOpen.set(false)\">Save</star-button>\n  </div>\n</star-dialog>",
   "dialog/close-rules": "<div class=\"docs-row\">\n  <star-button variant=\"secondary\" (pressed)=\"maskOpen.set(true)\"\n    >Backdrop click</star-button\n  >\n  <star-button variant=\"secondary\" (pressed)=\"lockedOpen.set(true)\">Locked</star-button>\n  <star-button variant=\"secondary\" (pressed)=\"floatOpen.set(true)\">Non-modal</star-button>\n</div>\n<star-dialog [(visible)]=\"maskOpen\" header=\"Closes on a backdrop click\" dismissableMask>\n  <p>Click outside this window to close it.</p>\n</star-dialog>\n<star-dialog\n  [(visible)]=\"lockedOpen\"\n  header=\"Locked dialog\"\n  [closable]=\"false\"\n  [closeOnEscape]=\"false\"\n>\n  <p>This dialog has no close button and ignores Escape.</p>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button (pressed)=\"lockedOpen.set(false)\">Done</star-button>\n  </div>\n</star-dialog>\n<star-dialog [(visible)]=\"floatOpen\" header=\"Non-modal dialog\" [modal]=\"false\">\n  <p>The page behind this window stays usable.</p>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button (pressed)=\"floatOpen.set(false)\">Close</star-button>\n  </div>\n</star-dialog>",
