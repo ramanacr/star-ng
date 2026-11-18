@@ -515,6 +515,7 @@ test.describe('bottom sheet', () => {
     await expect(live.getByRole('status')).toHaveText('Project: North depot');
 
     await live.getByRole('button', { name: 'Pick a project' }).click();
+    await expect(sheet).toBeVisible();
     await page.keyboard.press('Escape');
     await expect(sheet).toBeHidden();
     await expect(live.getByRole('status')).toHaveText('Project: none');

@@ -104,6 +104,17 @@ describe('StarBottomSheet', () => {
     await expect(ref.closed).resolves.toBe('INV-2041 ok');
   });
 
+  it('closes a template sheet with undefined on Escape', async () => {
+    const { service, fixture } = await setup();
+    const ref = service.open(fixture.componentInstance.tpl(), { data: 'INV-2041' });
+    await settle();
+    expect(sheet()!.hasAttribute('open')).toBe(true);
+    sheet()!.dispatchEvent(new Event('cancel', { cancelable: true }));
+    await expect(ref.closed).resolves.toBeUndefined();
+    await settle();
+    expect(sheet()).toBeNull();
+  });
+
   it('dismisses with undefined on Escape and on a backdrop click, and returns the focus', async () => {
     const { opener, service } = await setup();
     const first = service.open(ExportOrder, { data: { id: 'A' } });
