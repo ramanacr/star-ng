@@ -264,6 +264,39 @@ import { DOCS, DocsRow } from '../shared/docs';
       </docs-example>
 
       <docs-example
+        heading="Export as SVG or PNG"
+        source="chart/export"
+        [script]="exportScript"
+        note="exportSvg() returns the plot as a stand-alone SVG document: the colors of the tokens are resolved and the title is in it. exportPng(scale) draws it on a canvas and resolves to a PNG Blob. Both work in the browser only: on the server exportSvg() returns an empty string and exportPng() resolves to null."
+      >
+        <div class="docs-stack">
+          <star-chart
+            #exported
+            type="bar"
+            title="Orders per month, export"
+            [labels]="months"
+            [series]="orders"
+          />
+          <div class="docs-row">
+            <button
+              type="button"
+              class="star-btn star-btn--secondary"
+              (click)="downloadSvg(exported)"
+            >
+              Download SVG
+            </button>
+            <button
+              type="button"
+              class="star-btn star-btn--secondary"
+              (click)="downloadPng(exported)"
+            >
+              Download PNG
+            </button>
+          </div>
+        </div>
+      </docs-example>
+
+      <docs-example
         heading="Legend: hide series and placement"
         source="chart/legend"
         [script]="legendScript"
@@ -401,6 +434,31 @@ export class ChartPage {
   { label: 'Orders', data: [120, 150, 170, 140, 190, 210] },
   { label: 'Return rate (%)', data: [4.2, 3.8, 5.1, 4.6, 3.2, 2.9], type: 'line', axis: 'secondary' },
 ];`;
+  protected downloadSvg(chart: StarChart): void {
+    const svg = chart.exportSvg();
+    if (svg) this.download(new Blob([svg], { type: 'image/svg+xml' }), 'orders.svg');
+  }
+  protected async downloadPng(chart: StarChart): Promise<void> {
+    const png = await chart.exportPng(2);
+    if (png) this.download(png, 'orders.png');
+  }
+  private download(blob: Blob, name: string): void {
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = name;
+    link.click();
+    URL.revokeObjectURL(link.href);
+  }
+  protected readonly exportScript = `downloadPng(chart: StarChart): void {
+  chart.exportPng(2).then((png) => {
+    if (!png) return;
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(png);
+    link.download = 'orders.png';
+    link.click();
+    URL.revokeObjectURL(link.href);
+  });
+}`;
   protected readonly hiddenChannels = signal<readonly number[]>([2]);
   protected readonly legendScript = `readonly hiddenChannels = signal<readonly number[]>([2]);`;
   protected readonly picked = signal<StarChartPointSelectEvent | null>(null);

@@ -1,5 +1,5 @@
 import { _IdGenerator } from '@angular/cdk/a11y';
-import { NgTemplateOutlet } from '@angular/common';
+import { isPlatformBrowser, NgTemplateOutlet } from '@angular/common';
 import {
   booleanAttribute,
   ChangeDetectionStrategy,
@@ -12,9 +12,11 @@ import {
   linkedSignal,
   model,
   output,
+  PLATFORM_ID,
   signal,
 } from '@angular/core';
 import { STAR_UI_TEXT } from '@star-ng/ui/core';
+import { starChartPng, starChartSvgDocument, starChartViewBox } from './chart-export';
 import {
   areaRadius,
   axisAngles,
@@ -1496,6 +1498,47 @@ export class StarChart {
       ),
     };
   });
+
+  // ---------- Export ----------
+
+  private readonly browser = isPlatformBrowser(inject(PLATFORM_ID));
+
+  /** The background behind the chart: the first fill that is not transparent. */
+  private surface(): string {
+    const view = this.host.nativeElement.ownerDocument.defaultView;
+    for (let node: Element | null = this.host.nativeElement; node; node = node.parentElement) {
+      const color = view?.getComputedStyle(node).backgroundColor;
+      if (color && color !== 'transparent' && color !== 'rgba(0, 0, 0, 0)') return color;
+    }
+    return '#ffffff';
+  }
+
+  private plotSvg(): SVGSVGElement | null {
+    return this.host.nativeElement.querySelector<SVGSVGElement>('.star-chart__plot svg');
+  }
+
+  /**
+   * The plot as a stand-alone SVG document (colors resolved, with the title), for a download or
+   * a report. An empty string on the server. PrimeNG / Chart.js `toBase64Image` gives a PNG only.
+   */
+  exportSvg(): string {
+    const svg = this.browser ? this.plotSvg() : null;
+    if (!svg) return '';
+    return starChartSvgDocument(svg, { title: this.title(), background: this.surface() });
+  }
+
+  /**
+   * The plot as a PNG image, `scale` times the size of the view box (default 2 for sharp
+   * output). `null` on the server or without a canvas. Chart.js `toBase64Image`.
+   */
+  async exportPng(scale = 2): Promise<Blob | null> {
+    const svgDocument = this.exportSvg();
+    const svg = this.plotSvg();
+    const box = svg ? starChartViewBox(svg) : null;
+    if (!svgDocument || !box) return null;
+    const doc = this.host.nativeElement.ownerDocument;
+    return starChartPng(doc, svgDocument, box.width, box.height, scale);
+  }
 
   // ---------- Data point focus, tooltip and selection ----------
 

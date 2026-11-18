@@ -1,5 +1,6 @@
-import { Component, signal } from '@angular/core';
+import { Component, DebugElement, PLATFORM_ID, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import {
   StarChart,
   StarChartPointSelectEvent,
@@ -281,5 +282,68 @@ describe('StarChart axes and formatting', () => {
     );
     expect(secondary.map((t) => t.textContent?.trim())).toEqual(['0', '5', '10', '15']);
     expect(ticks()).toContain('4,000');
+  });
+});
+
+@Component({
+  imports: [StarChart],
+  template: `<star-chart type="bar" title="Orders" [labels]="['Jan', 'Feb']" [series]="series" />`,
+})
+class ExportHost {
+  readonly series: StarChartSeries[] = [{ label: 'Received', data: [10, 20] }];
+}
+
+describe('StarChart export', () => {
+  function chartOf(fixture: { debugElement: DebugElement }): StarChart {
+    return fixture.debugElement.query(By.directive(StarChart)).componentInstance as StarChart;
+  }
+
+  it('exports the plot as an SVG document with a title and without hover targets', async () => {
+    const fixture = TestBed.createComponent(ExportHost);
+    await fixture.whenStable();
+    const svg = chartOf(fixture).exportSvg();
+    expect(svg.startsWith('<svg')).toBe(true);
+    expect(svg).toContain('xmlns="http://www.w3.org/2000/svg"');
+    expect(svg).toContain('<title>Orders</title>');
+    expect(svg).toContain('width="640"');
+    expect(svg.match(/<path/g)?.length).toBe(2);
+    expect(svg).not.toContain('class=');
+    expect(svg).not.toContain('data-export');
+  });
+
+  it('exports a PNG through a canvas', async () => {
+    const fixture = TestBed.createComponent(ExportHost);
+    await fixture.whenStable();
+    const png = new Blob(['png'], { type: 'image/png' });
+    const drawn: number[][] = [];
+    const getContext = vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({
+      drawImage: (_: unknown, ...size: number[]) => drawn.push(size),
+    } as unknown as CanvasRenderingContext2D);
+    const toBlob = vi
+      .spyOn(HTMLCanvasElement.prototype, 'toBlob')
+      .mockImplementation((done: BlobCallback) => done(png));
+    const OriginalImage = window.Image;
+    window.Image = class {
+      onload: (() => void) | null = null;
+      set src(_: string) {
+        setTimeout(() => this.onload?.());
+      }
+    } as unknown as typeof Image;
+    try {
+      expect(await chartOf(fixture).exportPng(3)).toBe(png);
+      expect(drawn).toEqual([[0, 0, 1920, 840]]);
+    } finally {
+      window.Image = OriginalImage;
+      getContext.mockRestore();
+      toBlob.mockRestore();
+    }
+  });
+
+  it('does nothing on the server', async () => {
+    TestBed.configureTestingModule({ providers: [{ provide: PLATFORM_ID, useValue: 'server' }] });
+    const fixture = TestBed.createComponent(ExportHost);
+    await fixture.whenStable();
+    expect(chartOf(fixture).exportSvg()).toBe('');
+    expect(await chartOf(fixture).exportPng()).toBeNull();
   });
 });
