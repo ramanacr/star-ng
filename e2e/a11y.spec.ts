@@ -410,6 +410,35 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'drop-down list',
+    path: 'controls/dropdown',
+    open: async (page) => {
+      await example(page, 'Choose from a list').getByRole('button', { name: 'Export as' }).click();
+      await expect(page.getByRole('listbox', { name: 'Export format' })).toBeFocused();
+    },
+  },
+  {
+    name: 'action strip shown by the focus',
+    path: 'controls/action-strip',
+    open: async (page) => {
+      const edit = example(page, 'Row actions')
+        .getByRole('toolbar', { name: 'Order 1001 actions' })
+        .getByRole('button', { name: 'Edit' });
+      await edit.focus();
+      await expect(edit).toBeVisible();
+    },
+  },
+  {
+    name: 'action strip with its menu',
+    path: 'controls/action-strip',
+    open: async (page) => {
+      await example(page, 'More actions in a menu')
+        .getByRole('button', { name: 'More actions' })
+        .click();
+      await expect(popup(page).getByRole('menu')).toBeVisible();
+    },
+  },
+  {
     name: 'theme switch of the docs header',
     path: 'controls/theme-switch',
     open: async (page) => {
