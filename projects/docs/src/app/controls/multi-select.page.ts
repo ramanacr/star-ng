@@ -2,8 +2,14 @@ import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { form, FormField, minLength } from '@angular/forms/signals';
 import { STAR_SLOTS } from '@star-ng/ui/core';
 import { StarField } from '@star-ng/ui/field';
-import { StarChipTemplate, StarMultiSelect, StarOptionTemplate } from '@star-ng/ui/select';
+import {
+  StarChipTemplate,
+  StarMultiSelect,
+  StarOptionTemplate,
+  StarSelectionChangingEvent,
+} from '@star-ng/ui/select';
 import { DOCS, DocsRow } from '../shared/docs';
+import { lazyOrders } from '../shared/lazy-orders';
 
 interface Department {
   readonly id: string;
@@ -236,6 +242,77 @@ interface Parcel {
         page. See the Right-to-left guide.
       </p>
 
+      <docs-example
+        heading="Custom values"
+        source="multi-select/custom-values"
+        note="With filter and allowCustomValues, a row Add “text” at the end of the list adds the filter text as a new value when no option has that label. customValueAdd fires with the text: here it adds the text to the options too."
+      >
+        <div class="docs-stack">
+          <star-multi-select
+            [options]="labels()"
+            [(value)]="pickedLabels"
+            filter
+            allowCustomValues
+            display="chip"
+            placeholder="Labels"
+            ariaLabel="Order labels"
+            (customValueAdd)="addLabel($event)"
+          />
+          <p class="docs-output" role="status">Labels: {{ pickedLabels().join(', ') || 'none' }}</p>
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="Cancelable selection"
+        source="multi-select/selection-changing"
+        note="selectionChanging fires before each change of the array. Here the handler cancels a change that would leave no city."
+      >
+        <div class="docs-stack">
+          <star-multi-select
+            [options]="cities"
+            optionLabel="name"
+            optionValue="code"
+            [(value)]="keptCities"
+            ariaLabel="Cities, at least one"
+            (selectionChanging)="keepOne($event)"
+          />
+          <p class="docs-output" role="status">Cities: {{ keptCities().join(', ') }}</p>
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="Lazy loading"
+        source="multi-select/lazy"
+        [script]="lazyScript"
+        note="lazy with virtualScroll loads the options page by page through lazyLoad. Options that are not loaded are undefined in the array and show as loading rows. Select all works on the loaded options."
+      >
+        <div class="docs-stack">
+          <star-multi-select
+            #lazyControl
+            [options]="lazyList.options()"
+            optionLabel="name"
+            optionValue="id"
+            [(value)]="lazyPicked"
+            lazy
+            virtualScroll
+            filter
+            placeholder="Select orders"
+            ariaLabel="Orders, loaded on demand"
+            (lazyLoad)="lazyList.load($event)"
+          />
+          <p class="docs-output" role="status">Selected: {{ lazyPicked().length }}</p>
+          @if (lazyList.failed()) {
+            <button
+              type="button"
+              class="star-btn star-btn--sm star-btn--ghost"
+              (click)="lazyControl.resetLazy()"
+            >
+              Retry
+            </button>
+          }
+        </div>
+      </docs-example>
+
       <docs-api
         [of]="['StarMultiSelect', 'StarOptionListBase', 'StarChipTemplate']"
         [slots]="slots"
@@ -246,6 +323,67 @@ interface Parcel {
   `,
 })
 export class MultiSelectPage {
+  protected readonly keptCities = signal<readonly string[]>(['BER']);
+
+  protected keepOne(event: StarSelectionChangingEvent<readonly string[]>): void {
+    if (!event.next.length) event.cancel();
+  }
+  protected readonly labels = signal<readonly string[]>(['Urgent', 'Review', 'On hold']);
+  protected readonly pickedLabels = signal<readonly string[]>([]);
+
+  protected addLabel(label: string): void {
+    this.labels.update((all) => [...all, label]);
+  }
+  protected readonly lazyList = lazyOrders();
+  protected readonly lazyPicked = signal<readonly number[]>([]);
+  protected readonly lazyScript = `// A fake order service (no network) and the list state, in lazy-orders.ts:
+// fetchOrderPage({ first, last, filter }) waits 400 ms and returns { first, rows, total, filter }.
+// lazyLoad asks for each range once, so the requests of one filter collect in a list and
+// resource() loads the ranges that are not in the cache yet (an aborted load loses nothing).
+export function lazyOrders() {
+  const requests = signal<readonly StarListLazyLoadEvent[]>([]);
+  const cache = new Map<number, LazyOrder>();
+  let cacheFilter: string | null = null;
+  let total = 0;
+  const loaded = (r: StarListLazyLoadEvent) => {
+    if (!total) return false;
+    for (let i = r.first; i <= Math.min(r.last, total - 1); i++) if (!cache.has(i)) return false;
+    return true;
+  };
+  const state = resource({
+    params: () => (requests().length ? requests() : undefined),
+    loader: async ({ params, abortSignal }) => {
+      const filter = params[0].filter;
+      if (filter !== cacheFilter) {
+        cache.clear();
+        cacheFilter = filter;
+        total = 0;
+      }
+      const pages = await Promise.all(
+        params.filter((r) => !loaded(r)).map((r) => fetchOrderPage(r, abortSignal)),
+      );
+      for (const page of pages) {
+        total = page.total;
+        page.rows.forEach((row, i) => cache.set(page.first + i, row));
+      }
+      return { filter, total, rows: new Map(cache) };
+    },
+  });
+  // The full-length array, with undefined where an order is not loaded yet.
+  const options = linkedSignal<LazyOrderState | undefined, readonly (LazyOrder | undefined)[]>({
+    source: () => (state.hasValue() ? state.value() : undefined),
+    computation: (next, previous) =>
+      next ? Array.from({ length: next.total }, (_, i) => next.rows.get(i)) : (previous?.value ?? []),
+  });
+  const load = (event: StarListLazyLoadEvent) =>
+    requests.update((list) =>
+      list.length && list[0].filter === event.filter ? [...list, event] : [event],
+    );
+  // On an error, the page shows a Retry button: (click)="lazyControl.resetLazy()".
+  return { options: options.asReadonly(), failed: computed(() => state.status() === 'error'), load };
+}
+
+readonly lazyList = lazyOrders();`;
   protected readonly departments: readonly Department[] = [
     { id: 'fin', name: 'Finance', site: 'Berlin' },
     { id: 'hr', name: 'People', site: 'Berlin' },

@@ -19,6 +19,10 @@ export const STAR_UI_TEXT_ES: StarUiText = {
   actions: 'Acciones',
   moreActions: 'Más acciones',
   bottomSheet: 'Panel inferior',
+  maximize: 'Maximizar',
+  restore: 'Restaurar',
+  moveDialog: 'Mover el diálogo',
+  resizeDialog: 'Cambiar el tamaño del diálogo',
   ofTotal: (index, total) => `${index} de ${total}`,
   expandItem: (label) => `Expandir ${label}`,
   collapseItem: (label) => `Contraer ${label}`,
@@ -44,6 +48,7 @@ export const STAR_UI_TEXT_ES: StarUiText = {
     `${count} ${forCount(count, 'elemento seleccionado', 'elementos seleccionados')}`,
   searching: 'Buscando…',
   showOptions: 'Mostrar opciones',
+  addCustomValue: (label) => `Añadir «${label}»`,
   resultsAvailable: (count) =>
     `${count} ${forCount(count, 'resultado disponible', 'resultados disponibles')}`,
 

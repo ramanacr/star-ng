@@ -47,9 +47,32 @@
   overflow: hidden;
   text-overflow: ellipsis;
 
+  &:focus-visible {
+    outline: none;
+  }
+
   .star-select--disabled & {
     cursor: not-allowed;
   }
+}
+// Editable select: the trigger is a text field.
+.star-select__input {
+  border: 0;
+  background: none;
+  font-family: inherit;
+  cursor: text;
+
+  &::placeholder {
+    color: var(--star-text-muted);
+    opacity: 1;
+  }
+  .star-select--disabled & {
+    cursor: not-allowed;
+  }
+}
+// The "Add …" row of `allowCustomValues`.
+.star-listbox__option--add {
+  color: var(--star-primary-text);
 }
 .star-cascade__trigger {
   border: 0;
@@ -196,6 +219,22 @@
     opacity: 0.45;
     cursor: not-allowed;
   }
+}
+// A `lazy` option that is not loaded yet: a skeleton bar, not a disabled option.
+.star-listbox__option--loading {
+  cursor: progress;
+
+  &[aria-disabled='true'] {
+    opacity: 1;
+    cursor: progress;
+  }
+  .star-check__box {
+    visibility: hidden;
+  }
+}
+.star-listbox__skeleton {
+  width: 60%;
+  height: 0.75rem;
 }
 .star-listbox__option--active {
   background: var(--star-surface-muted);

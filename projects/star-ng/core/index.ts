@@ -1,4 +1,6 @@
+export * from './breakpoints';
 export * from './direction';
+export * from './filter-match';
 export * from './list-windowing';
 export * from './options';
 export * from './reactive-forms';

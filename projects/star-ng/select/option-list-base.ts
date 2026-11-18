@@ -9,6 +9,7 @@ import {
   contentChildren,
   DestroyRef,
   Directive,
+  effect,
   ElementRef,
   inject,
   Injector,
@@ -17,19 +18,26 @@ import {
   output,
   signal,
   TemplateRef,
+  untracked,
   viewChild,
 } from '@angular/core';
 import {
-  matchesFilter,
   optionText,
   readOption,
   STAR_UI_TEXT,
   StarDirectionService,
   StarEmptyContext,
+  StarFilterBy,
+  starFilterMatchAny,
+  StarFilterMatchMode,
+  starFilterTexts,
   StarGroupContext,
   StarIconSlotName,
+  StarLazyRequests,
   starListKeyboardTarget,
   starListLayout,
+  StarListLazyLoadEvent,
+  starListLazyRange,
   starListPageSize,
   starListRevealOffset,
   starListRevealRows,
@@ -65,6 +73,14 @@ export class StarOptionTemplate<T = unknown> {
   ): _ctx is StarOptionContext<T> {
     return true;
   }
+}
+
+/**
+ * Transform of the `options` input: the array may hold `undefined` for options that a `lazy` list
+ * has not loaded yet. The controls check for `undefined` where it matters.
+ */
+export function starLazyOptions<T>(options: readonly (T | undefined)[]): readonly T[] {
+  return options as readonly T[];
 }
 
 /** One rendered line of the option list: a group heading or an option. */
@@ -117,7 +133,13 @@ export abstract class StarOptionListBase<TOption, TValue> {
    */
   protected field: StarField | null = null;
 
-  readonly options = input<readonly TOption[]>([]);
+  /**
+   * The options. With `lazy`, an entry may be `undefined` while it is not loaded: the list shows a
+   * loading row for it, and the keyboard skips it.
+   */
+  readonly options = input<readonly TOption[], readonly (TOption | undefined)[]>([], {
+    transform: starLazyOptions,
+  });
   readonly optionLabel = input<StarOptionKey<TOption> | null>(null);
   /** Value stored in the form. Omit to store the whole option. */
   readonly optionValue = input<StarOptionKey<TOption> | null>(null);
@@ -139,14 +161,58 @@ export abstract class StarOptionListBase<TOption, TValue> {
   readonly virtualScroll = input(false, { transform: booleanAttribute });
   /** Line height in pixels with `virtualScroll`. */
   readonly virtualItemSize = input(40);
+  /**
+   * Loads the options on demand (PrimeNG `lazy` with `onLazyLoad`). Use it with `virtualScroll`
+   * and an `options` array of the full length, with `undefined` for the options that are not loaded.
+   * The control emits `lazyLoad` when the rows in view need such options, and when the filter text
+   * changes. The filter then does not filter the options in the browser: the event has the text.
+   */
+  readonly lazy = input(false, { transform: booleanAttribute });
+  /** Moving the pointer over an option makes it the active option (default `true`). PrimeNG `focusOnHover`. */
+  readonly focusOnHover = input(true, { transform: booleanAttribute });
+  /**
+   * When the panel opens without a chosen option, the first enabled option is active (default
+   * `true`). Off: no option is active until a key moves. The autocomplete uses `autoHighlight`.
+   * PrimeNG `autoOptionFocus`.
+   */
+  readonly autoOptionFocus = input(true, { transform: booleanAttribute });
 
   readonly placeholder = input<string | null>(null);
   readonly filter = input(false, { transform: booleanAttribute });
   readonly filterPlaceholder = input<string | null>(null);
+  /**
+   * Option fields that the filter searches: one key or a list of keys (property names or
+   * functions). Default: the label. PrimeNG `filterBy`.
+   */
+  readonly filterBy = input<StarFilterBy<TOption>>(null);
+  /** How the filter text must match: `contains` (default), `startsWith`, `endsWith`, `equals` or `notContains`. PrimeNG `filterMatchMode`. */
+  readonly filterMatchMode = input<StarFilterMatchMode>('contains');
+  /**
+   * Locale of the filter compare, for example `de` or `tr`. The compare uses `Intl.Collator` with
+   * sensitivity `base`, so case and accents do not count. Default: case and accents do not count,
+   * without locale rules. PrimeNG `filterLocale`.
+   */
+  readonly filterLocale = input<string | null>(null);
+  /**
+   * Clears the filter text when the panel closes (default `true`). Set `false` to keep the text,
+   * and the filtered list, for the next opening. PrimeNG `resetFilterOnHide` (there default `false`).
+   */
+  readonly resetFilterOnHide = input(true, { transform: booleanAttribute });
   readonly showClear = input(false, { transform: booleanAttribute });
   readonly loading = input(false, { transform: booleanAttribute });
   readonly emptyMessage = input<string | null>(null);
   readonly scrollHeight = input('16rem');
+  /** Extra CSS classes of the panel (the `.star-panel` element). PrimeNG `panelStyleClass`. */
+  readonly panelClass = input<string | readonly string[] | null>(null);
+  /** Inline styles of the panel, for example `{ 'min-width': '20rem' }`. PrimeNG `panelStyle`. */
+  readonly panelStyle = input<Record<string, string> | null>(null);
+  /**
+   * Where the panel is in the DOM (PrimeNG `appendTo`). `self` (default): next to the control.
+   * `body`: in the overlay container at the end of the body, for parents that clip their content.
+   * Both are native popovers in the top layer, so the panel also shows above a modal dialog. The
+   * control reads it when the overlay is created (the first opening): a later change has no effect.
+   */
+  readonly appendTo = input<'self' | 'body'>('self');
   readonly size = input<'sm' | 'md'>('md');
   readonly ariaLabel = input<string | null>(null);
   readonly ariaLabelledBy = input<string | null>(null);
@@ -164,6 +230,13 @@ export abstract class StarOptionListBase<TOption, TValue> {
   readonly opened = output<void>();
   readonly closed = output<void>();
   readonly filterChange = output<string>();
+  /**
+   * With `lazy`: the options from `first` to `last` are needed for the filter text `filter`. PrimeNG
+   * `onLazyLoad`. Each range is asked for once per filter text; treat the event as idempotent. A
+   * range that failed to load is asked for again after `resetLazy()`, or when the owner sets new
+   * placeholders with a different array length.
+   */
+  readonly lazyLoad = output<StarListLazyLoadEvent>();
 
   protected readonly optionTemplate = contentChild(StarOptionTemplate);
   /** All slot directives written inside this control. The picks below filter them by host. */
@@ -180,6 +253,15 @@ export abstract class StarOptionListBase<TOption, TValue> {
   private readonly filterInput = viewChild<ElementRef<HTMLInputElement>>('filterInput');
 
   protected readonly positions = PANEL_POSITIONS;
+  /** CDK popover location of the panel for `appendTo`. */
+  protected readonly popoverLocation = computed(() =>
+    this.appendTo() === 'body' ? ('global' as const) : ('inline' as const),
+  );
+  /** `panelClass` as a class list for the `[class]` binding. */
+  protected readonly panelClasses = computed(() => {
+    const value = this.panelClass();
+    return typeof value === 'string' ? value : (value ?? []).join(' ');
+  });
   protected readonly listId = this.ids.getId('star-listbox-');
   protected readonly open = signal(false);
   protected readonly filterValue = signal('');
@@ -220,11 +302,26 @@ export abstract class StarOptionListBase<TOption, TValue> {
     const query = this.filterValue();
     const all = this.options();
     const options =
-      !this.filter() || !query
+      !this.filterOn() || !query || this.lazy()
         ? all
-        : all.filter((option) => matchesFilter(this.labelOf(option), query));
+        : all.filter((option) => this.matchesQuery(option, query));
     return this.groupedOrder(options);
   });
+
+  /** True when the typed text filters the list: `filter` (the editable select also filters). */
+  protected filterOn(): boolean {
+    return this.filter();
+  }
+
+  /** True when the option matches the filter text (`filterBy`, `filterMatchMode`, `filterLocale`). */
+  protected matchesQuery(option: TOption, query: string): boolean {
+    return starFilterMatchAny(
+      starFilterTexts(option, this.filterBy(), (o) => this.labelOf(o)),
+      query,
+      this.filterMatchMode(),
+      this.filterLocale(),
+    );
+  }
 
   /** With `optionGroup`: keeps each group together, in the order the groups first appear. */
   protected groupedOrder(options: readonly TOption[]): readonly TOption[] {
@@ -286,6 +383,46 @@ export abstract class StarOptionListBase<TOption, TValue> {
     return start === 0 && end === rows.length ? rows : rows.slice(start, end);
   });
 
+  /** True while a rendered row is an option that is not loaded yet (`aria-busy` of the list). */
+  protected readonly lazyBusy = computed(() =>
+    this.renderedRows().some((row) => row.kind === 'option' && row.option === undefined),
+  );
+
+  /** Filter text of a `lazyLoad` request. The autocomplete sends its typed text. */
+  protected lazyFilterText(): string {
+    return this.filterValue();
+  }
+
+  private readonly lazyRequests = new StarLazyRequests();
+
+  /** Changes on `resetLazy()`, so the lazy request effect runs again. */
+  private readonly lazyEpoch = signal(0);
+
+  /**
+   * With `lazy`: forgets the ranges that `lazyLoad` asked for and asks again for the rows in view.
+   * Call it to retry after a load failed. PrimeNG has no equivalent (it asks on every scroll).
+   */
+  resetLazy(): void {
+    this.lazyRequests.reset();
+    this.lazyEpoch.update((epoch) => epoch + 1);
+  }
+
+  /** Emits `lazyLoad` when the rows in view need options that are not loaded (see `lazy`). */
+  private requestLazyRows(): void {
+    this.lazyEpoch();
+    if (!this.lazy() || !this.open()) return;
+    const window = this.virtualWindow();
+    const length = this.options().length;
+    const range = starListLazyRange(this.layout(), window, (option) => option === undefined);
+    const filter = this.lazyFilterText();
+    const size = Math.max(1, this.virtualItemSize());
+    const page = Math.ceil((this.listHeight() || VIRTUAL_FALLBACK_HEIGHT) / size) + VIRTUAL_BUFFER;
+    untracked(() => {
+      const event = this.lazyRequests.next(range, filter, page, length);
+      if (event) this.lazyLoad.emit(event);
+    });
+  }
+
   protected onListScroll(event: Event): void {
     if (!this.virtualScroll()) return;
     const list = event.target as HTMLElement;
@@ -312,11 +449,41 @@ export abstract class StarOptionListBase<TOption, TValue> {
   protected readonly activeId = computed(() => {
     const index = this.activeIndex();
     if (!this.open() || index < 0 || this.panelFocused()) return null;
+    if (this.isAddRow(index)) return this.addRowId;
     const row = this.layout().rowOfOption[index];
     return row !== undefined && starListRowRendered(row, this.virtualWindow())
       ? this.optionId(index)
       : null;
   });
+
+  // ---- The "Add …" row (allowCustomValues) ----
+
+  /**
+   * Text of the row that adds the typed text as a new value, or `null` for no row. The row is the
+   * last one of the list, after the options; its index is `visibleOptions().length`. Multi-select
+   * and the multiple autocomplete show it with `allowCustomValues`.
+   */
+  protected customRowText(): string | null {
+    return null;
+  }
+
+  /** Adds the text of the "Add …" row as a value. */
+  protected addCustom(_text: string): void {
+    // Controls without the row add nothing.
+  }
+
+  protected readonly customRow = computed(() => this.customRowText());
+  protected readonly addRowId = `${this.listId}-add`;
+
+  /** True when `index` is the "Add …" row. */
+  protected isAddRow(index: number): boolean {
+    return this.customRow() !== null && index === this.visibleOptions().length;
+  }
+
+  /** Options plus the "Add …" row: the rows the keyboard moves over. */
+  private optionCount(): number {
+    return this.visibleOptions().length + (this.customRow() === null ? 0 : 1);
+  }
 
   /** The heading of the group, only while its row is in the DOM (the id must exist). */
   protected describedBy(row: Extract<StarListRow<TOption>, { kind: 'option' }>): string | null {
@@ -359,6 +526,7 @@ export abstract class StarOptionListBase<TOption, TValue> {
 
   constructor() {
     this.destroyRef.onDestroy(() => clearTimeout(this.typeaheadTimer));
+    effect(() => this.requestLazyRows());
   }
 
   /**
@@ -380,20 +548,26 @@ export abstract class StarOptionListBase<TOption, TValue> {
   protected abstract readonly closeOnChoose: boolean;
 
   labelOf(option: TOption): string {
+    // An option that a `lazy` list has not loaded yet is `undefined`: accessor functions must not see it.
+    if (option === undefined) return '';
     return optionText(option, this.optionLabel() ?? null);
   }
 
   protected groupOf(option: TOption): string {
+    if (option === undefined) return '';
     const key = this.optionGroup();
     const group = key ? readOption(option, key) : null;
     return group === null || group === undefined ? '' : String(group);
   }
 
   protected valueOf(option: TOption): TValue {
+    if (option === undefined) return undefined as TValue;
     return readOption(option, this.optionValue()) as TValue;
   }
 
+  /** Disabled options, and options that are not loaded yet (`lazy`), cannot be chosen. */
   protected isDisabled(option: TOption): boolean {
+    if (option === undefined) return true;
     const key = this.optionDisabled();
     return key ? !!readOption(option, key) : false;
   }
@@ -423,7 +597,7 @@ export abstract class StarOptionListBase<TOption, TValue> {
     this.activeIndex.set(-1);
     this.panelFocused.set(false);
     this.listScrollTop.set(0);
-    if (this.filterValue()) {
+    if (this.filterValue() && this.resetFilterOnHide()) {
       this.filterValue.set('');
       this.filterChange.emit('');
     }
@@ -589,6 +763,13 @@ export abstract class StarOptionListBase<TOption, TValue> {
     this.activeIndex.set(this.firstEnabledFrom(0, 1));
   }
 
+  /** Empties the filter text, in the signal and in the field. */
+  protected clearFilterText(): void {
+    this.onFilterInput('');
+    const field = this.filterInput()?.nativeElement;
+    if (field) field.value = '';
+  }
+
   /**
    * Shows the list from its top. The window and the scroll position of the element change
    * together: a new list that is still long would else keep the old position of the element
@@ -598,6 +779,30 @@ export abstract class StarOptionListBase<TOption, TValue> {
     this.listScrollTop.set(0);
     const list = this.listElement();
     if (list) list.scrollTop = 0;
+  }
+
+  /** Pointer over an option (or the "Add …" row): it becomes active with `focusOnHover`. */
+  protected onOptionHover(index: number): void {
+    if (!this.focusOnHover()) return;
+    const option = this.visibleOptions()[index];
+    if (this.isAddRow(index) || (option !== undefined && !this.isDisabled(option))) {
+      this.activeIndex.set(index);
+    }
+  }
+
+  /**
+   * True when a key move also chooses the active option. Only `star-select` has it (its
+   * `selectOnFocus` input): in an autocomplete, choosing rewrites the typed text and filters again.
+   */
+  protected selectsOnFocus(): boolean {
+    return false;
+  }
+
+  /** Chooses the active option after a key moved it, when `selectsOnFocus()` says so. */
+  private selectActiveOnFocus(): void {
+    if (!this.selectsOnFocus() || !this.open()) return;
+    const option = this.visibleOptions()[this.activeIndex()];
+    if (option !== undefined && !this.isDisabled(option)) this.choose(option);
   }
 
   protected onOptionClick(option: TOption, index: number): void {
@@ -635,9 +840,10 @@ export abstract class StarOptionListBase<TOption, TValue> {
         this.activeIndex.set(
           event.key === 'Home'
             ? this.firstEnabledFrom(0, 1)
-            : this.firstEnabledFrom(this.visibleOptions().length - 1, -1),
+            : this.firstEnabledFrom(this.optionCount() - 1, -1),
         );
         this.scrollActiveIntoView();
+        this.selectActiveOnFocus();
         return;
       case 'PageDown':
       case 'PageUp':
@@ -699,6 +905,11 @@ export abstract class StarOptionListBase<TOption, TValue> {
   }
 
   private chooseActive(thenClose = false): void {
+    const text = this.customRow();
+    if (text !== null && this.isAddRow(this.activeIndex())) {
+      this.addCustom(text);
+      return;
+    }
     const option = this.visibleOptions()[this.activeIndex()];
     if (option === undefined || this.isDisabled(option)) return;
     this.choose(option);
@@ -706,12 +917,13 @@ export abstract class StarOptionListBase<TOption, TValue> {
   }
 
   private moveActive(step: 1 | -1): void {
-    const count = this.visibleOptions().length;
+    const count = this.optionCount();
     if (!count) return;
     const start = this.activeIndex() < 0 ? (step === 1 ? 0 : count - 1) : this.activeIndex() + step;
     const next = this.firstEnabledFrom(Math.min(Math.max(start, 0), count - 1), step);
     if (next >= 0) this.activeIndex.set(next);
     this.scrollActiveIntoView();
+    this.selectActiveOnFocus();
   }
 
   /** Page up / Page down: moves the active option by the lines in view, over all options. */
@@ -729,12 +941,14 @@ export abstract class StarOptionListBase<TOption, TValue> {
     const found = next >= 0 ? next : this.firstEnabledFrom(target, step === 1 ? -1 : 1);
     if (found >= 0) this.activeIndex.set(found);
     this.scrollActiveIntoView();
+    this.selectActiveOnFocus();
   }
 
   protected firstEnabledFrom(start: number, step: 1 | -1): number {
     const options = this.visibleOptions();
-    for (let i = start; i >= 0 && i < options.length; i += step) {
-      if (!this.isDisabled(options[i])) return i;
+    const count = this.optionCount();
+    for (let i = start; i >= 0 && i < count; i += step) {
+      if (i === options.length || !this.isDisabled(options[i])) return i;
     }
     return -1;
   }
@@ -784,7 +998,7 @@ export abstract class StarOptionListBase<TOption, TValue> {
 
   private scrollActiveIntoView(): void {
     if (!this.open() || this.activeIndex() < 0) return;
-    if (this.virtualScroll()) {
+    if (this.virtualScroll() && !this.isAddRow(this.activeIndex())) {
       // The active line may not be rendered yet: move the list so its position is in view.
       const list = this.listElement();
       const layout = this.layout();

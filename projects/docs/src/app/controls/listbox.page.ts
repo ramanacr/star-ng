@@ -1,10 +1,12 @@
+import { moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { form, FormField, minLength } from '@angular/forms/signals';
 import { STAR_SLOTS } from '@star-ng/ui/core';
 import { StarField } from '@star-ng/ui/field';
-import { StarListbox } from '@star-ng/ui/listbox';
+import { StarListbox, StarListboxDropEvent } from '@star-ng/ui/listbox';
 import { StarOptionTemplate } from '@star-ng/ui/select';
 import { DOCS, DocsRow } from '../shared/docs';
+import { lazyOrders } from '../shared/lazy-orders';
 
 interface Queue {
   readonly id: string;
@@ -75,6 +77,25 @@ const REGIONS = ['Central', 'East', 'North', 'South', 'West'];
           />
           <p class="docs-output" role="status">Queues: {{ manyText() }}</p>
         </div>
+      </docs-example>
+
+      <docs-example
+        heading="Filter fields and match mode"
+        source="listbox/filter-match"
+        note="filterBy names the fields that the filter searches. filterMatchMode sets how the text must match, and filterLocale compares with the rules of a language (case and accents do not count). Here the filter finds a city by the start of its code or name."
+      >
+        <star-listbox
+          [options]="cities"
+          optionLabel="name"
+          optionValue="code"
+          [filterBy]="['code', 'name']"
+          filterMatchMode="startsWith"
+          filterLocale="de"
+          [(value)]="matchedCity"
+          filter
+          scrollHeight="12rem"
+          ariaLabel="City by code or name"
+        />
       </docs-example>
 
       <docs-example
@@ -230,6 +251,95 @@ const REGIONS = ['Central', 'East', 'North', 'South', 'West'];
         </star-listbox>
       </docs-example>
 
+      <docs-example
+        heading="Check boxes and select all"
+        source="listbox/checkbox"
+        note="checkbox adds a check box to each option (aria-checked) and a Select all box above the list. It implies multiple. Select all works on the shown, enabled options and shows a mixed state when only some are chosen. A double-click on an option fires optionDblClick."
+      >
+        <div class="docs-stack">
+          <star-listbox
+            [options]="queues"
+            optionLabel="name"
+            optionValue="id"
+            optionDisabled="closed"
+            [(value)]="checkedQueues"
+            checkbox
+            filter
+            scrollHeight="12rem"
+            ariaLabel="Queues with check boxes"
+            (optionDblClick)="lastOpened.set($event.option.name)"
+          />
+          <p class="docs-output" role="status">
+            Queues: {{ checkedText() }}. Double-clicked: {{ lastOpened() ?? 'none' }}
+          </p>
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="Drag and drop"
+        source="listbox/dragdrop"
+        [script]="dragScript"
+        note="dragdrop reorders the options with the CDK drag and drop, and connectedTo lets options move into the other list. Alt + Arrow up and Alt + Arrow down move the active option with the keyboard, and a live region tells the new position. The listbox does not change its options: dropped gives the item, from, to (dropListData), previousIndex and index, ready for moveItemInArray and transferArrayItem."
+      >
+        <div class="docs-row">
+          <star-listbox
+            #availableList
+            [options]="availableOrders()"
+            [(value)]="availablePick"
+            dragdrop
+            dropListData="available"
+            [connectedTo]="[plannedList]"
+            scrollHeight="14rem"
+            ariaLabel="Available orders"
+            (dropped)="moveOrder($event)"
+          />
+          <star-listbox
+            #plannedList
+            [options]="plannedOrders()"
+            [(value)]="plannedPick"
+            dragdrop
+            dropListData="planned"
+            [connectedTo]="[availableList]"
+            scrollHeight="14rem"
+            ariaLabel="Planned orders"
+            (dropped)="moveOrder($event)"
+          />
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="Lazy loading"
+        source="listbox/lazy"
+        [script]="lazyScript"
+        note="lazy with virtualScroll loads the rows in view through lazyLoad. The list has aria-busy while it shows rows that are not loaded."
+      >
+        <div class="docs-stack">
+          <star-listbox
+            #lazyControl
+            [options]="lazyList.options()"
+            optionLabel="name"
+            optionValue="id"
+            [(value)]="lazyOrder"
+            lazy
+            virtualScroll
+            filter
+            scrollHeight="14rem"
+            ariaLabel="Order, loaded on demand"
+            (lazyLoad)="lazyList.load($event)"
+          />
+          <p class="docs-output" role="status">Order: {{ lazyOrder() ?? 'none' }}</p>
+          @if (lazyList.failed()) {
+            <button
+              type="button"
+              class="star-btn star-btn--sm star-btn--ghost"
+              (click)="lazyControl.resetLazy()"
+            >
+              Retry
+            </button>
+          }
+        </div>
+      </docs-example>
+
       <docs-api
         [of]="['StarListbox', 'StarOptionTemplate']"
         [slots]="slots"
@@ -240,6 +350,111 @@ const REGIONS = ['Central', 'East', 'North', 'South', 'West'];
   `,
 })
 export class ListboxPage {
+  protected readonly checkedQueues = signal<string | readonly string[] | null>(['intake']);
+  protected readonly lastOpened = signal<string | null>(null);
+  protected checkedText(): string {
+    const value = this.checkedQueues();
+    return Array.isArray(value) && value.length ? value.join(', ') : 'none';
+  }
+
+  protected readonly availableOrders = signal<readonly string[]>([
+    'Order 1001',
+    'Order 1002',
+    'Order 1003',
+    'Order 1004',
+  ]);
+  protected readonly plannedOrders = signal<readonly string[]>(['Order 1005']);
+  protected readonly availablePick = signal<string | readonly string[] | null>(null);
+  protected readonly plannedPick = signal<string | readonly string[] | null>(null);
+
+  /** Moves the order inside one list, or from one list into the other. */
+  protected moveOrder(event: StarListboxDropEvent<string>): void {
+    const lists = { available: this.availableOrders, planned: this.plannedOrders };
+    const from = lists[event.from as keyof typeof lists];
+    const to = lists[event.to as keyof typeof lists];
+    if (from === to) {
+      const items = [...from()];
+      moveItemInArray(items, event.previousIndex, event.index);
+      from.set(items);
+      return;
+    }
+    const source = [...from()];
+    const target = [...to()];
+    transferArrayItem(source, target, event.previousIndex, event.index);
+    from.set(source);
+    to.set(target);
+  }
+
+  protected readonly dragScript = `// import { moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
+readonly availableOrders = signal<readonly string[]>(['Order 1001', 'Order 1002', 'Order 1003']);
+readonly plannedOrders = signal<readonly string[]>(['Order 1005']);
+
+moveOrder(event: StarListboxDropEvent<string>): void {
+  const lists = { available: this.availableOrders, planned: this.plannedOrders };
+  const from = lists[event.from as keyof typeof lists];
+  const to = lists[event.to as keyof typeof lists];
+  if (from === to) {
+    const items = [...from()];
+    moveItemInArray(items, event.previousIndex, event.index);
+    from.set(items);
+    return;
+  }
+  const source = [...from()];
+  const target = [...to()];
+  transferArrayItem(source, target, event.previousIndex, event.index);
+  from.set(source);
+  to.set(target);
+}`;
+  protected readonly lazyList = lazyOrders();
+  protected readonly lazyOrder = signal<number | readonly number[] | null>(null);
+  protected readonly lazyScript = `// A fake order service (no network) and the list state, in lazy-orders.ts:
+// fetchOrderPage({ first, last, filter }) waits 400 ms and returns { first, rows, total, filter }.
+// lazyLoad asks for each range once, so the requests of one filter collect in a list and
+// resource() loads the ranges that are not in the cache yet (an aborted load loses nothing).
+export function lazyOrders() {
+  const requests = signal<readonly StarListLazyLoadEvent[]>([]);
+  const cache = new Map<number, LazyOrder>();
+  let cacheFilter: string | null = null;
+  let total = 0;
+  const loaded = (r: StarListLazyLoadEvent) => {
+    if (!total) return false;
+    for (let i = r.first; i <= Math.min(r.last, total - 1); i++) if (!cache.has(i)) return false;
+    return true;
+  };
+  const state = resource({
+    params: () => (requests().length ? requests() : undefined),
+    loader: async ({ params, abortSignal }) => {
+      const filter = params[0].filter;
+      if (filter !== cacheFilter) {
+        cache.clear();
+        cacheFilter = filter;
+        total = 0;
+      }
+      const pages = await Promise.all(
+        params.filter((r) => !loaded(r)).map((r) => fetchOrderPage(r, abortSignal)),
+      );
+      for (const page of pages) {
+        total = page.total;
+        page.rows.forEach((row, i) => cache.set(page.first + i, row));
+      }
+      return { filter, total, rows: new Map(cache) };
+    },
+  });
+  // The full-length array, with undefined where an order is not loaded yet.
+  const options = linkedSignal<LazyOrderState | undefined, readonly (LazyOrder | undefined)[]>({
+    source: () => (state.hasValue() ? state.value() : undefined),
+    computation: (next, previous) =>
+      next ? Array.from({ length: next.total }, (_, i) => next.rows.get(i)) : (previous?.value ?? []),
+  });
+  const load = (event: StarListLazyLoadEvent) =>
+    requests.update((list) =>
+      list.length && list[0].filter === event.filter ? [...list, event] : [event],
+    );
+  // On an error, the page shows a Retry button: (click)="lazyControl.resetLazy()".
+  return { options: options.asReadonly(), failed: computed(() => state.status() === 'error'), load };
+}
+
+readonly lazyList = lazyOrders();`;
   protected readonly queues: readonly Queue[] = [
     { id: 'intake', name: 'Intake', site: 'Berlin' },
     { id: 'billing', name: 'Billing', site: 'Berlin' },
@@ -255,6 +470,7 @@ export class ListboxPage {
     { code: 'PUN', name: 'Pune', country: 'India' },
   ];
   protected readonly city = signal<string | readonly string[] | null>(null);
+  protected readonly matchedCity = signal<string | readonly string[] | null>(null);
 
   protected readonly queue = signal<string | readonly string[] | null>(null);
   protected readonly many = signal<string | readonly string[] | null>(['billing']);
@@ -378,6 +594,15 @@ readonly alert = form(this.alertModel, (path) => {
       name: 'Letter keys',
       description:
         'Typeahead: moves to the option that starts with the typed text. With virtualScroll it also finds options that are not drawn. Space chooses the active option and is not typed, so type labels without spaces.',
+    },
+    {
+      name: 'Alt + Arrow up / Alt + Arrow down',
+      description:
+        'With dragdrop: moves the active option one place up or down (the dropped event). A live region tells the new position.',
+    },
+    {
+      name: 'Tab',
+      description: 'With checkbox: the Select all box is a tab stop before the list.',
     },
   ];
 }

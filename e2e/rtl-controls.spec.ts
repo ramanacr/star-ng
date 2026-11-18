@@ -559,12 +559,12 @@ test.describe('right-to-left controls', () => {
       const live = example(page, 'Corners that follow the direction');
       const viewport = page.viewportSize()!;
       await live.getByRole('button', { name: 'Message at the start' }).click();
-      const start = page.locator('.star-toast-stack--bottom-start');
+      const start = live.locator('.star-toast-stack--bottom-start');
       await expect(start.getByText('Corner: start')).toBeVisible();
       // Start is the right side in right-to-left.
       expect((await settledBox(start)).x).toBeGreaterThan(viewport.width / 2);
       await live.getByRole('button', { name: 'Message at the end' }).click();
-      const end = page.locator('.star-toast-stack--bottom-end');
+      const end = live.locator('.star-toast-stack--bottom-end');
       await expect(end.getByText('Corner: end')).toBeVisible();
       const endBox = await settledBox(end);
       expect(endBox.x + endBox.width).toBeLessThan(viewport.width / 2);

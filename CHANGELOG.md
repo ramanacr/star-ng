@@ -27,6 +27,15 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - Tree table: frozen, resizable and reorderable columns (`columnWidths`, `columnOrder`).
 - Tree table: cell edit (`editable`, `editor`, `cellEdit`) with treegrid cell navigation (`cellNavigation`).
 - Tree table: row context menu (`contextMenu`, `contextMenuSelect`) with right click, Shift+F10 and the context menu key.
+- Select, multi-select and autocomplete: `filterBy`, `filterMatchMode`, `filterLocale` and `resetFilterOnHide`; listbox: `filterBy`, `filterMatchMode` and `filterLocale`. New helper `starFilterMatch` in `@star-ng/ui/core`.
+- Select, multi-select, autocomplete and listbox: lazy loading (`lazy`, `lazyLoad` with `StarListLazyLoadEvent`, `resetLazy()` to ask again after a failed load). Options that are not loaded are `undefined` in the array, show as skeleton rows, are skipped by the keyboard, and the list has `aria-busy`.
+- Select: `editable` with `allowCustomValue` and `customValue`. Multi-select and multiple autocomplete: `allowCustomValues` with an "Add “text”" row and `customValueAdd`.
+- Select, multi-select, autocomplete, multiple autocomplete and listbox: cancelable `selectionChanging` (`previous`, `next`, `cancel()`).
+- Select, multi-select and autocomplete: `focusOnHover` and `autoOptionFocus`; select: `selectOnFocus`.
+- Select, multi-select and autocomplete: `panelClass`, `panelStyle` and `appendTo`.
+- Listbox: `checkbox` mode with a tri-state "Select all", drag and drop between listboxes (`dragdrop`, `dropListData`, `connectedTo`, `dropped`, Alt + Arrow keys), and `optionDblClick`.
+- Autocomplete: `forceSelection`, `optionSelect` and `optionUnselect`. Multiple autocomplete: token entry with `separator`, `addOnTab`, `addOnBlur` and `unique`.
+- `STAR_UI_TEXT.addCustomValue` with German and Spanish texts.
 - Table: edit lifecycle events `editInit` and `editCancel` for cell edit (`cellEdit` unchanged).
 - Table: row edit mode (`editMode="row"`, two-way `editingRowKeys`, `rowEditInit` / `rowEditSave` / `rowEditCancel`, F2, Enter, Escape) and the `starRowEditActions` slot.
 - Table: column validation (`required`, `min`, `max`, `pattern`, `validators`) with messages linked by `aria-describedby`; saves are blocked while invalid.
@@ -41,13 +50,32 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - Calendar and date pickers: `showOtherMonths` (default `true`) shows or empties the days of the month before and after; `selectOtherMonths` (default `true`) makes them choosable or disabled (PrimeNG `showOtherMonths`, `selectOtherMonths`).
 - Calendar and date pickers: `specialDates` (`StarSpecialDate`: `date`, `label`, `kind`) marks days with a token-styled dot and adds the kind and label to the accessible name of the day; the `starDate` context gets `special` (Ignite UI `specialDates`).
 - UI text `holiday`, `event` and `specialDate` (English, German, Spanish).
-- Calendar and date pickers: `monthChange` (`{ month, year }`, month 1â€“12), `yearChange` (`{ year }`) and `viewChange` (`'day' | 'month' | 'year'`) on navigation; the date pickers also emit `todayClick` (today's date) and `clearClick` (PrimeNG `onMonthChange`, `onYearChange`, `onTodayClick`, `onClearClick`).
+- Calendar and date pickers: `monthChange` (`{ month, year }`, month 1–12), `yearChange` (`{ year }`) and `viewChange` (`'day' | 'month' | 'year'`) on navigation; the date pickers also emit `todayClick` (today's date) and `clearClick` (PrimeNG `onMonthChange`, `onYearChange`, `onTodayClick`, `onClearClick`).
 - Date pickers: `touchUI` opens the popup as a centered modal sheet in a native `<dialog>` with larger days, and `breakpoint` (for example `'640px'`) does so only on a window that is not wider; the keyboard model stays (PrimeNG `touchUI`, `breakpoint`).
 - Date pickers with `showTime`: `minTime` / `maxTime` limit the time of every day (`HH:mm` or `HH:mm:ss`), together with `minDate` / `maxDate`. `star-time-picker` keeps its `min` / `max` for the same purpose; its 12-hour clock works with seconds.
+- Dialog: `draggable` moves `star-dialog` by its header with the pointer, and with Alt + arrow keys on the move button (name "Move dialog"); `keepInViewport` (default true), `rememberPosition` and the output `dragEnd({ x, y })` (PrimeNG `draggable`, `keepInViewport`, `onDragEnd`). UI texts `maximize`, `restore`, `moveDialog` and `resizeDialog` (English, German, Spanish).
+- Dialog: `resizable` adds a corner handle (name "Resize dialog") that resizes `star-dialog` with the pointer or with Shift + arrow keys, down to 240 x 160 pixels; output `resizeEnd({ width, height })` (PrimeNG `resizable`, `onResizeEnd`).
+- Dialog: `maximizable` adds a Maximize / Restore header button that fills the window; two-way `maximized` model and the outputs `maximize` and `restore` (PrimeNG `maximizable`, `onMaximize`). Escape closes a maximized dialog as before.
+- Dialog: `position` places `star-dialog` at the center (default), an edge or a corner (`top`, `bottom`, `start`, `end`, `top-start`, `top-end`, `bottom-start`, `bottom-end`); logical, so it mirrors in right-to-left (PrimeNG `position`). Type `StarDialogPosition`.
+- Dialog: `breakpoints` (`{ '<max-width>': '<width>' }`) sets the width of `star-dialog` per window size (PrimeNG `breakpoints`). `blockScroll` (dialog and drawer; default on for a modal, off for a non-modal) and `focusOnShow` (default true) (PrimeNG `blockScroll`, `focusOnShow`). `@star-ng/ui/core` exports `starViewportWidth()` and `starBreakpointValue()`.
+- Dialog: `headless` renders only the projected content (no header, no title, no close button; the `[starDialogFooter]` slot stays) (PrimeNG `headless` template). New input `ariaLabelledby` on the dialog and the drawer names the dialog by the id of your own heading.
+- `StarDialogConfig` (`StarDialogService.open`): `position`, `draggable`, `resizable`, `maximizable`, `keepInViewport`, `breakpoints`, `blockScroll` and `focusOnShow`.
+- Drawer: `fullScreen` covers the window and `dismissible` closes `star-drawer` on a backdrop click (PrimeNG `fullScreen`, `dismissible`). `modal=false` (no backdrop, native `show()`), `blockScroll`, `shown` / `hidden` and the logical positions `start`, `end`, `top`, `bottom` are documented and tested.
+- Toast: `star-toast` inputs `preventDuplicates` (ignores a message the outlet showed before, also after it closed) and `preventOpenDuplicates` (ignores a copy of a visible message), `breakpoints` (`{ '<max-width>': { ...styles } }`: full width at the bottom on a narrow window) and the output `closed({ message, reason })` with the reason `timeout`, `close` or `clear` (PrimeNG `preventDuplicates`, `preventOpenDuplicates`, `breakpoints`, `onClose`). `StarToastService.closed` reports every close.
 
 ### Changed
 
 - Tree table: the component moved to its own file `data-display/tree-table.ts`; the import path `@star-ng/ui/data-display` does not change.
+- `StarDialog` and `StarDrawer` now extend the new abstract base class `StarDialogBase` (`@star-ng/ui/dialog`), which holds the shared inputs and outputs. `StarDrawer` no longer extends `StarDialog`; its inputs and outputs do not change.
+- The page scroll lock of a dialog and a drawer uses the new class `star-dialog--block-scroll` (CSS `html:has(dialog.star-dialog--block-scroll[open])`) instead of `star-dialog--modal`. A modal still blocks the scroll by default.
+- `starViewportWidth(when?)` takes an optional condition; `star-dialog` and `star-toast` add the window resize listener only while `breakpoints` is set.
+
+### Fixed
+
+- A dialog or drawer with a `header` and `showHeader` false pointed `aria-labelledby` at a title that was not rendered; it now takes the header text as `aria-label`.
+- A non-modal dialog or drawer (native `show()`, not in the top layer) stacks above sticky page headers (`z-index: 999`, below the CDK overlay container), as a non-modal bottom sheet does.
+- Dialog: a close or a destroy in the middle of a pointer drag or resize stops the tracking; the dialog no longer reopens at the dragged position or emits `dragEnd` / `resizeEnd` after the close. Moves of another pointer are ignored.
+- Dialog: `keepInViewport` clamps to the page area without the scrollbar (`documentElement.clientWidth` / `clientHeight`), and a remembered position and size (`rememberPosition`) come back inside the window on reopen.
 
 ## [0.3.1] - 2026-11-18
 
