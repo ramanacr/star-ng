@@ -388,20 +388,17 @@ export abstract class StarDateInputBase<TValue> {
 
   /**
    * Switches the text to `inputFormat` at once, before the user types: a render after the focus
-   * would replace text that is typed right after it. So the render runs here. A field that was
-   * all selected (Tab, or a select before the focus) stays all selected.
+   * would replace text that is typed right after it. So the render runs here. When the text
+   * changes, all of it is selected, so typing replaces it (as after Tab); a mouse click still
+   * places the caret, because the browser sets it after the focus event.
    */
   protected onInputFocus(): void {
     if (this.editing()) return;
     const input = this.input().nativeElement;
-    const all =
-      input.value.length > 0 &&
-      input.selectionStart === 0 &&
-      input.selectionEnd === input.value.length;
     const before = input.value;
     this.editing.set(true);
     this.changeDetector.detectChanges();
-    if (input.value !== before && all) input.select();
+    if (input.value !== before) input.select();
   }
 
   protected onInputBlur(): void {
