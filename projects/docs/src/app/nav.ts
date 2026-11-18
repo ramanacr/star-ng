@@ -442,6 +442,19 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         load: () => import('./controls/bottom-sheet.page').then((m) => m.BottomSheetPage),
       },
       {
+        label: 'Action sheet',
+        path: 'controls/action-sheet',
+        keywords: 'bottom sheet actions mobile choices cancel openActions',
+        load: () => import('./controls/action-sheet.page').then((m) => m.ActionSheetPage),
+      },
+      {
+        label: 'Bottom sheet container',
+        path: 'controls/bottom-sheet-container',
+        keywords: 'bottom sheet dialog host non-modal backdrop max height panel class',
+        load: () =>
+          import('./controls/bottom-sheet-container.page').then((m) => m.BottomSheetContainerPage),
+      },
+      {
         label: 'Popover',
         path: 'controls/popover',
         keywords: 'overlay panel anchored floating details',

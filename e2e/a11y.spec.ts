@@ -710,6 +710,24 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'action sheet with danger and disabled actions',
+    path: 'controls/action-sheet',
+    open: async (page) => {
+      await example(page, 'Icons, danger and disabled actions')
+        .getByRole('button', { name: 'Project actions' })
+        .click();
+      await expect(page.getByRole('dialog', { name: 'Project North depot actions' })).toBeVisible();
+    },
+  },
+  {
+    name: 'non-modal bottom sheet container',
+    path: 'controls/bottom-sheet-container',
+    open: async (page) => {
+      await example(page, 'Non-modal sheet').getByRole('button', { name: 'Show filters' }).click();
+      await expect(page.getByRole('dialog', { name: 'Order filters' })).toBeVisible();
+    },
+  },
+  {
     name: 'popover',
     path: 'controls/popover',
     open: async (page) => {
