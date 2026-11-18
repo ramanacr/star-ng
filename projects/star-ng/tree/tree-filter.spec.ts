@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { StarTree, StarTreeNode } from './tree';
-import { filterTree, nodeFieldText, treeFilterMatch } from './tree-model';
+import { filterTree, nodeFieldText } from './tree-model';
 
 const NODES: StarTreeNode<{ code: string }>[] = [
   {
@@ -23,24 +23,6 @@ const NODES: StarTreeNode<{ code: string }>[] = [
 ];
 
 describe('tree filter helpers', () => {
-  it('matches without case and accents, in every match mode', () => {
-    expect(treeFilterMatch('Résumé review', 'resume')).toBe(true);
-    expect(treeFilterMatch('Résumé review', 'REVIEW', 'endsWith')).toBe(true);
-    expect(treeFilterMatch('Résumé review', 'review', 'startsWith')).toBe(false);
-    expect(treeFilterMatch('Payroll', 'payroll', 'equals')).toBe(true);
-    expect(treeFilterMatch('Payroll', 'web', 'notContains')).toBe(true);
-    expect(treeFilterMatch('Payroll', '  ')).toBe(true);
-    expect(treeFilterMatch(null, 'x')).toBe(false);
-  });
-
-  it('compares with a collator when a locale is given', () => {
-    // The German collator treats ß as ss; the plain compare does not.
-    expect(treeFilterMatch('Straße', 'STRASSE', 'equals', 'de')).toBe(true);
-    expect(treeFilterMatch('Straße', 'STRASSE', 'equals')).toBe(false);
-    expect(treeFilterMatch('Ärger', 'arg', 'startsWith', 'de')).toBe(true);
-    expect(treeFilterMatch('Résumé review', 'resume', 'contains', 'fr')).toBe(true);
-  });
-
   it('reads the label, a node property or a data field', () => {
     expect(nodeFieldText(NODES[0], 'label')).toBe('Engineering');
     expect(nodeFieldText(NODES[0], 'code')).toBe('E-100');
@@ -65,6 +47,7 @@ describe('tree filter helpers', () => {
       filter
       [filterMode]="mode()"
       [filterBy]="by()"
+      [filterLocale]="locale()"
       [(expanded)]="open"
       ariaLabel="Departments"
     />
@@ -74,6 +57,7 @@ class FilterHost {
   readonly nodes = NODES;
   readonly mode = signal<'lenient' | 'strict'>('strict');
   readonly by = signal<string | readonly string[]>('label');
+  readonly locale = signal<string | null>(null);
   readonly open = signal<readonly string[]>([]);
 }
 
@@ -121,6 +105,16 @@ describe('StarTree filter modes', () => {
     await type('F-21');
     expect(keys()).toEqual(['fin', 'pay']);
     await type('resume');
+    expect(keys()).toEqual(['res']);
+  });
+
+  it('matches with starFilterMatch: no case or accents, and filterLocale', async () => {
+    const { fixture, host, type, keys } = await setup();
+    await type('RESUME');
+    expect(keys()).toEqual(['res']);
+    host.locale.set('de');
+    await fixture.whenStable();
+    await type('résumé');
     expect(keys()).toEqual(['res']);
   });
 });

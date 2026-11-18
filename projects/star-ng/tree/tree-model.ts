@@ -268,69 +268,6 @@ export function filterTree<N extends BranchLike<N>>(
   return { nodes: walk(nodes), ancestors, matches };
 }
 
-/** How a filter compares a text with the query (the modes of `starFilterMatch`). */
-export type TreeFilterMatchMode = 'contains' | 'startsWith' | 'endsWith' | 'equals' | 'notContains';
-
-const collators = new Map<string, Intl.Collator>();
-
-function normalizeText(value: string): string {
-  return value
-    .normalize('NFD')
-    .replace(/\p{Diacritic}/gu, '')
-    .toLocaleLowerCase();
-}
-
-/**
- * Case- and accent-insensitive text match of the tree filter. With a `locale`, an
- * `Intl.Collator(locale, { sensitivity: 'base' })` compares the letters.
- *
- * TODO(wave D1): switch to `starFilterMatch` from `@star-ng/ui/core` when it is on main. This
- * local matcher has the same signature `(value, query, mode, locale)`.
- */
-export function treeFilterMatch(
-  value: unknown,
-  query: string,
-  mode: TreeFilterMatchMode = 'contains',
-  locale?: string | null,
-): boolean {
-  const q = query.trim();
-  if (!q) return true;
-  const text = value === null || value === undefined ? '' : String(value);
-  let same: (a: string, b: string) => boolean;
-  let source = text;
-  let needle = q;
-  if (locale) {
-    let collator = collators.get(locale);
-    if (!collator) {
-      collator = new Intl.Collator(locale, { sensitivity: 'base' });
-      collators.set(locale, collator);
-    }
-    const compare = collator;
-    same = (a, b) => compare.compare(a, b) === 0;
-  } else {
-    source = normalizeText(text);
-    needle = normalizeText(q);
-    same = (a, b) => a === b;
-  }
-  const at = (start: number) => same(source.slice(start, start + needle.length), needle);
-  const found = () => {
-    for (let i = 0; i + needle.length <= source.length; i++) if (at(i)) return true;
-    return false;
-  };
-  switch (mode) {
-    case 'startsWith':
-      return at(0);
-    case 'endsWith':
-      return source.length >= needle.length && at(source.length - needle.length);
-    case 'equals':
-      return same(source, needle);
-    case 'notContains':
-      return !found();
-    default:
-      return found();
-  }
-}
-
 /** Text of a node field for the filter: `label`, another node property, or a `data` field. */
 export function nodeFieldText(node: object, field: string): unknown {
   const own = (node as Record<string, unknown>)[field];

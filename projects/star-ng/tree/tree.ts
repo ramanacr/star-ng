@@ -37,6 +37,7 @@ import {
   STAR_UI_TEXT,
   StarDirectionService,
   StarEmptyContext,
+  starFilterMatch,
   starInlineKey,
   starIsRtl,
   StarSlot,
@@ -68,7 +69,6 @@ import {
   stillFocusable,
   subtreeKeys,
   toggleChecked,
-  treeFilterMatch,
   TreeFilterMode,
   TreeRow,
 } from './tree-model';
@@ -491,7 +491,7 @@ export class StarTree implements FormValueControl<readonly string[]> {
       this.nodes(),
       (node) =>
         fields.some((field) =>
-          treeFilterMatch(nodeFieldText(node, field), query, 'contains', locale),
+          starFilterMatch(nodeFieldText(node, field), query, 'contains', locale),
         ),
       this.filterMode(),
     );
