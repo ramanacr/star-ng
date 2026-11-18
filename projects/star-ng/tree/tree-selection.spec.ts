@@ -22,6 +22,14 @@ const NODES: StarTreeNode[] = [
       { key: 'tax', label: 'Tax', selectable: false },
     ],
   },
+  {
+    key: 'legal',
+    label: 'Legal',
+    children: [
+      { key: 'contracts', label: 'Contracts', disabled: true },
+      { key: 'policy', label: 'Policy', selectable: false },
+    ],
+  },
 ];
 
 const MENU: StarMenuItem[] = [{ label: 'Rename' }, { label: 'Archive' }];
@@ -111,6 +119,20 @@ describe('StarTree selection propagation', () => {
     row('sec').click();
     await settle();
     expect(host.value()).toEqual(['tax']);
+  });
+
+  it('a parent whose children are all locked checks and unchecks itself, with one event each', async () => {
+    const { host, row, settle } = await setup();
+    row('legal').click();
+    await settle();
+    expect(host.value()).toEqual(['legal']);
+    expect(row('legal').getAttribute('aria-checked')).toBe('true');
+    expect(host.selected).toEqual(['legal']);
+    row('legal').click();
+    await settle();
+    expect(host.value()).toEqual([]);
+    expect(row('legal').getAttribute('aria-checked')).toBe('false');
+    expect(host.unselected).toEqual(['legal']);
   });
 
   it('without propagation down a parent checks only itself', async () => {

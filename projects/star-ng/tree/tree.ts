@@ -745,18 +745,30 @@ export class StarTree implements FormValueControl<readonly string[]> {
       on = !this.value().includes(node.key);
       this.value.update((keys) => (on ? [...keys, node.key] : keys.filter((k) => k !== node.key)));
     } else {
-      on = this.checkState(node) !== true;
+      const before = this.checkState(node);
+      on = before !== true;
       const up = this.propagateSelectionUp();
       const down = this.propagateSelectionDown();
       let next = toggleChecked(this.nodes(), node.key, on, this.value(), { up, down });
       if (up && down) {
-        // Both propagations: the value holds leaves (and locked keys); parents are derived.
+        // Both propagations: the value holds leaves (and locked keys); parents are derived. A
+        // node whose children are all locked counts as a leaf: nothing below it can carry it.
         const touched = new Set([...subtreeKeys(node), ...ancestorKeys(this.parents(), node.key)]);
-        next = next.filter((key) => !touched.has(key) || this.isLeaf(key) || this.isLockedKey(key));
+        next = next.filter(
+          (key) => !touched.has(key) || this.isValueLeaf(key) || this.isLockedKey(key),
+        );
       }
       this.value.set(next);
+      // Only a real change of the node's check state is an event.
+      if (this.checkState(node) === before) return;
     }
     (on ? this.nodeSelect : this.nodeUnselect).emit(node);
+  }
+
+  /** A node without children, or whose children are all locked (checkbox value form). */
+  private isValueLeaf(key: string): boolean {
+    const children = this.index().get(key)?.children ?? [];
+    return children.every((child) => isLocked(child));
   }
 
   private isLockedKey(key: string): boolean {
