@@ -120,6 +120,20 @@ type Draft = Readonly<Record<string, unknown>>;
 export class StarEditDrafts {
   private readonly drafts = signal<ReadonlyMap<unknown, Draft>>(new Map());
   private readonly attempted = signal<ReadonlySet<unknown>>(new Set());
+  /** The raw editor texts, by row key and field: what the user typed, as typed. */
+  private readonly texts = signal<ReadonlyMap<unknown, Readonly<Record<string, string>>>>(
+    new Map(),
+  );
+
+  /** The raw text of an editor, or `undefined` when it has none. */
+  text(key: unknown, field: string): string | undefined {
+    return this.texts().get(key)?.[field];
+  }
+
+  /** Keeps the raw text of an editor. It does not count as a change (no error shows). */
+  setText(key: unknown, field: string, text: string): void {
+    this.texts.update((texts) => new Map(texts).set(key, { ...texts.get(key), [field]: text }));
+  }
 
   has(key: unknown, field: string): boolean {
     const draft = this.drafts().get(key);
@@ -154,6 +168,13 @@ export class StarEditDrafts {
   }
 
   clear(key: unknown): void {
+    if (this.texts().has(key)) {
+      this.texts.update((texts) => {
+        const next = new Map(texts);
+        next.delete(key);
+        return next;
+      });
+    }
     if (this.drafts().has(key)) {
       this.drafts.update((drafts) => {
         const next = new Map(drafts);

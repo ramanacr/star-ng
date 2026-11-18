@@ -787,7 +787,7 @@ export class StarRowExpansionTemplate<T = unknown> {
                         } @else {
                           <input
                             class="star-input star-input--sm star-table__editor"
-                            [type]="column.editor === 'number' ? 'number' : 'text'"
+                            type="text"
                             [attr.data-row-editor]="rowKeyText(row)"
                             [attr.aria-label]="text.editCell(column.header)"
                             [attr.aria-invalid]="rowError ? 'true' : null"
@@ -2260,16 +2260,19 @@ export class StarTable<T> {
   }
 
   /**
-   * The user typed in an editor: keep the value, so its error shows at once. A number field with
-   * text that is not a number (`validity.badInput`) keeps `NaN`, which shows a message.
+   * The user typed in an editor: keep the raw text (what the editor shows) and the parsed value
+   * (what validation and Save use), so its error shows at once. Text that is not a number (or
+   * `validity.badInput`) gives `NaN`, which shows a message and blocks Save.
    */
   protected setDraft(
     row: T,
     column: StarColumn<T>,
     editor: HTMLInputElement | HTMLSelectElement,
   ): void {
+    const key = this.trackKey(row);
     const value = editor.validity?.badInput ? Number.NaN : this.parseEditor(column, editor.value);
-    this.drafts.set(this.trackKey(row), column.field, value);
+    this.drafts.set(key, column.field, value);
+    this.drafts.setText(key, column.field, editor.value);
   }
 
   /** Editor value: the draft, else the cell value. */
@@ -2280,24 +2283,14 @@ export class StarTable<T> {
       : this.cellValue(row, column);
   }
 
-  /** Last editor text of a cell that was a value, by `editKey` (see `draftText`). */
-  private readonly lastDraftText = new Map<string, string>();
-
   /**
-   * Editor text in row edit: the draft, so an editor that is rendered again (page change, virtual
-   * scroll, a column shown again, undo) shows what Save will store. While a number field holds
-   * text that is not a number (`NaN`, for example "-" while typing), it is the last valid text:
-   * the bound value does not change, so the table does not clear what the user types.
+   * Editor text in row edit: the raw text the user typed, as typed ("-0", "1e2", "abc"). The bound
+   * value is what the editor already shows, so the table never writes over the user's typing, and
+   * an editor that is rendered again (page change, virtual scroll, a column shown again, undo)
+   * shows the same text. Validation and Save use the parsed value (`draftValue`).
    */
   protected draftText(row: T, column: StarColumn<T>): string {
-    const value = this.draftValue(row, column);
-    const key = this.editKey(row, column);
-    if (typeof value === 'number' && Number.isNaN(value)) {
-      return this.lastDraftText.get(key) ?? this.editText(row, column);
-    }
-    const text = value === null || value === undefined ? '' : String(value);
-    this.lastDraftText.set(key, text);
-    return text;
+    return this.drafts.text(this.trackKey(row), column.field) ?? this.editText(row, column);
   }
 
   /** Validators get the row with the editor values, so a rule can compare fields. */
@@ -2439,7 +2432,12 @@ export class StarTable<T> {
     if (!this.rowEditMode() || this.isRowInEdit(row) || this.isDeleted(row)) return;
     const key = this.trackKey(row);
     this.drafts.clear(key);
-    this.forgetDraftText(row);
+    // The editors start with the cell values as their raw texts.
+    for (const column of this.columns()) {
+      if (this.isEditable(row, column)) {
+        this.drafts.setText(key, column.field, this.editText(row, column));
+      }
+    }
     this.editingRowKeys.update((keys) => [...keys, key]);
     this.rowEditInit.emit({ row });
     this.focusAfterRender(`[data-row-editor="${CSS.escape(this.rowKeyText(row))}"]`, true);
@@ -2510,18 +2508,9 @@ export class StarTable<T> {
     this.focusAfterRender(`[data-row-edit="${CSS.escape(this.rowKeyText(row))}"]`);
   }
 
-  /** Drops the remembered editor texts of a row (`draftText`), so a new edit starts clean. */
-  private forgetDraftText(row: T): void {
-    const prefix = `${this.rowKeyText(row)}|`;
-    for (const key of [...this.lastDraftText.keys()]) {
-      if (key.startsWith(prefix)) this.lastDraftText.delete(key);
-    }
-  }
-
   private endRowEdit(row: T): void {
     const key = this.trackKey(row);
     this.drafts.clear(key);
-    this.forgetDraftText(row);
     if (this.editingRowSet().has(key)) {
       this.editingRowKeys.update((keys) => keys.filter((other) => !Object.is(other, key)));
     }

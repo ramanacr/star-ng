@@ -743,7 +743,7 @@ test.describe('table: editing', () => {
     const customer = table.getByRole('textbox', { name: 'Edit Customer' });
     await expect(customer).toBeFocused();
     await customer.fill('Park Cafe');
-    await table.getByRole('spinbutton', { name: 'Edit Quantity' }).fill('3');
+    await table.getByRole('textbox', { name: 'Edit Quantity' }).fill('3');
     await page.keyboard.press('Enter');
     await expect(live.getByRole('status')).toHaveText('ORD-900 added.');
     await expect(bodyRows(table)).toHaveCount(4);

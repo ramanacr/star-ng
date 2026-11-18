@@ -646,19 +646,79 @@ describe('StarTable edit fixes', () => {
   });
 
   it('shows a message for text that is not a number and keeps the typed text', async () => {
-    const { host, row, stable, el } = await setup({ mode: 'row' });
+    const { host, row, stable, el, names } = await setup({ mode: 'row' });
     host.table().initRowEdit(ORDERS[0]);
     await stable();
     const quantity = row(0).querySelectorAll<HTMLInputElement>('[data-row-editor]')[2];
-    const setter = vi.fn();
-    Object.defineProperty(quantity, 'validity', { value: { badInput: true } });
-    Object.defineProperty(quantity, 'value', { get: () => '', set: setter, configurable: true });
+    quantity.value = 'abc';
     quantity.dispatchEvent(new Event('input'));
     await stable();
+    expect(quantity.value).toBe('abc');
     expect(el.querySelector('.star-table__error')?.textContent?.trim()).toBe('Enter a number.');
     expect(quantity.getAttribute('aria-invalid')).toBe('true');
-    // The table does not write the editor value back while the user types.
-    expect(setter).not.toHaveBeenCalled();
+    host.table().saveRowEdit(ORDERS[0]);
+    expect(names()).not.toContain('rowEditSave');
+  });
+
+  it('keeps the raw text of a number editor while the user types', async () => {
+    const { host, row, stable } = await setup({ mode: 'row' });
+    host.table().initRowEdit(ORDERS[0]);
+    await stable();
+    const quantity = row(0).querySelectorAll<HTMLInputElement>('[data-row-editor]')[2];
+    let writes = 0;
+    const own = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!;
+    for (const text of ['-', '-0', '1', '1e', '1e2', '0', '01']) {
+      own.set!.call(quantity, text);
+      quantity.dispatchEvent(new Event('input'));
+      Object.defineProperty(quantity, 'value', {
+        configurable: true,
+        get: () => own.get!.call(quantity),
+        set: (next: string) => {
+          // A write of the same text leaves the caret; a different text would replace the typing.
+          if (next !== own.get!.call(quantity)) writes++;
+          own.set!.call(quantity, next);
+        },
+      });
+      await stable();
+      expect(quantity.value).toBe(text);
+      delete (quantity as unknown as Record<string, unknown>)['value'];
+    }
+    // The table never wrote another text ("0" for "-0", "100" for "1e2") over the typing.
+    expect(writes).toBe(0);
+  });
+
+  it('shows the typed bad text again after a page change and blocks Save', async () => {
+    const { host, row, stable, names } = await setup({ mode: 'row', paged: true });
+    host.table().initRowEdit(ORDERS[0]);
+    await stable();
+    const quantity = row(0).querySelectorAll<HTMLInputElement>('[data-row-editor]')[2];
+    quantity.value = '7x';
+    quantity.dispatchEvent(new Event('input'));
+    await stable();
+    host.table().first.set(2);
+    await stable();
+    host.table().first.set(0);
+    await stable();
+    const again = row(0).querySelectorAll<HTMLInputElement>('[data-row-editor]')[2];
+    expect(again).not.toBe(quantity);
+    expect(again.value).toBe('7x');
+    expect(again.getAttribute('aria-invalid')).toBe('true');
+    host.table().saveRowEdit(ORDERS[0]);
+    expect(names()).not.toContain('rowEditSave');
+  });
+
+  it('keeps a cell editor open with its message when text that is not a number loses focus', async () => {
+    const { host, cell, stable, el } = await setup();
+    cell(0, 3).querySelector<HTMLButtonElement>('.star-table__edit')!.click();
+    await stable();
+    const editor = el.querySelector<HTMLInputElement>('input.star-table__editor')!;
+    Object.defineProperty(editor, 'validity', { value: { badInput: true } });
+    editor.dispatchEvent(new Event('input'));
+    editor.dispatchEvent(new Event('blur'));
+    await stable();
+    expect(el.querySelector('input.star-table__editor')).toBe(editor);
+    expect(el.querySelector('.star-table__error')?.textContent?.trim()).toBe('Enter a number.');
+    expect(host.log.map(([name]) => name)).toEqual(['editInit']);
   });
 
   it('does not block Save on a hidden column', async () => {
