@@ -351,6 +351,8 @@ export class StarWindow {
   }
 
   protected onKeydown(event: KeyboardEvent): void {
+    // An Escape that a control inside already used (for example to close its popup) is not ours.
+    if (event.defaultPrevented) return;
     if (event.key === 'Escape' && this.closeOnEscape()) {
       event.preventDefault();
       this.close();

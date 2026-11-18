@@ -268,6 +268,17 @@ describe('StarWindow', () => {
     expect(document.activeElement).toBe(titlebar);
   });
 
+  it('ignores an Escape that another handler already used', async () => {
+    const { fixture, dialog } = await setup();
+    fixture.componentInstance.escape.set(true);
+    await fixture.whenStable();
+    const event = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true });
+    event.preventDefault();
+    dialog.querySelector('p')!.dispatchEvent(event);
+    await fixture.whenStable();
+    expect(fixture.componentInstance.open()).toBe(true);
+  });
+
   it('reads its texts from STAR_UI_TEXT', async () => {
     TestBed.configureTestingModule({
       providers: [provideStarUiText({ minimize: 'Minimieren', windowHint: 'Hinweis' })],
