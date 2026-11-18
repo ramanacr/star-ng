@@ -31,8 +31,8 @@ const TEXT_ROOM = 18;
  * character), `ean13`, `upca` (12 or 11 digits get their check digit; a wrong check digit is an
  * error) and `code39`. The symbol keeps the quiet zones of its standard. The barcode is an image
  * (`role="img"`) labelled with the human-readable value. A value that cannot be encoded shows an
- * error text and emits `invalid`. The bars stay dark on light in both themes and in forced
- * colours, so a scanner can read them.
+ * error text and emits `invalid`. The bars stay dark on light in both themes and under forced
+ * colours (`forced-color-adjust: none`), because many scanners cannot read an inverted code.
  *
  * `<star-barcode value="5901234123457" type="ean13" />`
  */

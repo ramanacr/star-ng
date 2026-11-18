@@ -1,11 +1,14 @@
-// QR code: dark modules on a light field in both themes (`--star-code-dark` and
-// `--star-code-light`), and CanvasText on Canvas under forced colours, so a scanner can read it.
+// QR code: dark modules on a light field (`--star-code-dark` on `--star-code-light`) in both
+// themes and under forced colours (`forced-color-adjust: none`): many scanners cannot read an
+// inverted code, which a dark high-contrast theme would give. The error text keeps the system
+// colours.
 .star-qr-code {
   display: inline-block;
   line-height: 0;
   vertical-align: middle;
 }
 .star-qr-code__svg {
+  forced-color-adjust: none;
   display: block;
   max-width: 100%;
   height: auto;
@@ -25,14 +28,4 @@
   color: var(--star-danger);
   font: var(--star-type-body);
   line-height: normal;
-}
-
-@media (forced-colors: active) {
-  .star-qr-code__background,
-  .star-qr-code__image-backdrop {
-    fill: Canvas;
-  }
-  .star-qr-code__modules {
-    fill: CanvasText;
-  }
 }

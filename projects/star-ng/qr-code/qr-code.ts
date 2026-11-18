@@ -40,7 +40,8 @@ function modulePath(modules: readonly (readonly boolean[])[]): string {
  * chosen automatically; `errorCorrection` is L, M (default), Q or H. The symbol keeps a quiet
  * zone of 4 modules and draws its dark modules as one path. An optional centre `image` covers
  * part of the symbol, so it forces level H. The code is an image (`role="img"`) labelled
- * "QR code: value". The modules stay dark on light in both themes and in forced colours.
+ * "QR code: value". The modules stay dark on light in both themes and under forced colours
+ * (`forced-color-adjust: none`), because many scanners cannot read an inverted code.
  *
  * `<star-qr-code value="https://example.com" [size]="160" />`
  */

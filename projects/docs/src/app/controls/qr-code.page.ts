@@ -55,7 +55,7 @@ import { DOCS, DocsRow } from '../shared/docs';
       <docs-example
         heading="Colours"
         source="qr-code/colours"
-        note="foreground and background take a CSS colour or a token. The default tokens --star-code-dark and --star-code-light keep the code dark on light in both themes, because many readers cannot read a light code on a dark field. Under forced colours the code uses the system colours."
+        note="foreground and background take a CSS colour or a token. The default tokens --star-code-dark and --star-code-light keep the code dark on light in both themes, because many readers cannot read a light code on a dark field. Under forced colours the code keeps these colours (forced-color-adjust: none), so a high-contrast theme does not invert it."
       >
         <star-qr-code
           value="INVOICE 2026-0042"
