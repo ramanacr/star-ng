@@ -19,6 +19,18 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - `star-app-bar` (`@star-ng/ui/app-bar`): top bar with start, title and end areas; static, sticky or fixed; safe-area aware.
 - `star-bottom-nav`, `star-bottom-nav-item` (`@star-ng/ui/bottom-nav`): mobile tab bar for buttons or router links with badges and keyboard support.
 - UI text `dismiss` (English, German, Spanish).
+- Tree table: sorting (`sortable` columns, `sortField`, `sortOrder`, `multiSort`, `sortMeta`); siblings sort within their parent.
+- Tree table: global and column filters (`globalFilter`, `filter`, `filters`, `filterMode` lenient or strict).
+- Tree table: paging over the top-level rows (`paginator`, `rows`, `first`).
+- Tree table: selection (`selectionMode` single, multiple or checkbox with `propagateSelectionUp` / `propagateSelectionDown`, `selection` keys, `nodeSelect`, `nodeUnselect`).
+- Tree table: lazy children (`lazy`, `leaf: false`, `loading`, `nodeExpand`, `nodeCollapse`).
+- Tree table: frozen, resizable and reorderable columns (`columnWidths`, `columnOrder`).
+- Tree table: cell edit (`editable`, `editor`, `cellEdit`) with treegrid cell navigation (`cellNavigation`).
+- Tree table: row context menu (`contextMenu`, `contextMenuSelect`) with right click, Shift+F10 and the context menu key.
+
+### Changed
+
+- Tree table: the component moved to its own file `data-display/tree-table.ts`; the import path `@star-ng/ui/data-display` does not change.
 
 ## [0.3.1] - 2026-11-18
 

@@ -62,14 +62,14 @@ export function revealRowOffset(
 }
 
 /**
- * `aria-rowindex` of the row at an index of the visible rows. The header row is row 1, so the
- * first body row is 2.
+ * `aria-rowindex` of the row at an index of the visible rows. The header rows come first (one
+ * by default, two with a filter row), so the first body row is `headerRows + 1`.
  */
-export function ariaRowIndex(index: number): number {
-  return index + 2;
+export function ariaRowIndex(index: number, headerRows = 1): number {
+  return index + headerRows + 1;
 }
 
-/** `aria-rowcount`: the visible rows and the header row. */
-export function ariaRowCount(rowCount: number): number {
-  return rowCount + 1;
+/** `aria-rowcount`: the visible rows and the header rows. */
+export function ariaRowCount(rowCount: number, headerRows = 1): number {
+  return rowCount + headerRows;
 }
