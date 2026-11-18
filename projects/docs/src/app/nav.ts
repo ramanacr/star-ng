@@ -306,6 +306,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         keywords: 'accordion side navigation sections tree',
         load: () => import('./controls/panel-menu.page').then((m) => m.PanelMenuPage),
       },
+      {
+        label: 'Command palette',
+        path: 'controls/command-palette',
+        keywords: 'command menu cmdk search actions hotkey ctrl k spotlight quick open',
+        load: () => import('./controls/command-palette.page').then((m) => m.CommandPalettePage),
+      },
     ],
   },
   {
@@ -359,6 +365,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         keywords: 'row actions hover toolbar overlay card icon buttons',
         load: () => import('./controls/action-strip.page').then((m) => m.ActionStripPage),
       },
+      {
+        label: 'Tile layout',
+        path: 'controls/tile-layout',
+        keywords: 'grid list tiles dashboard reorder resize drag drop span columns responsive',
+        load: () => import('./controls/tile-layout.page').then((m) => m.TileLayoutPage),
+      },
     ],
   },
   {
@@ -369,6 +381,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         path: 'controls/app-bar',
         keywords: 'navbar toolbar header top bar title actions sticky banner landmark',
         load: () => import('./controls/app-bar.page').then((m) => m.AppBarPage),
+      },
+      {
+        label: 'App sidebar',
+        path: 'controls/app-sidebar',
+        keywords: 'side navigation nav menu collapse icons drawer sections router link landmark',
+        load: () => import('./controls/app-sidebar.page').then((m) => m.AppSidebarPage),
       },
       {
         label: 'Breadcrumb',
@@ -410,6 +428,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         path: 'controls/drawer',
         keywords: 'side sheet panel left right top bottom',
         load: () => import('./controls/drawer.page').then((m) => m.DrawerPage),
+      },
+      {
+        label: 'Window',
+        path: 'controls/window',
+        keywords: 'floating window non-modal drag move resize minimize maximize restore stack',
+        load: () => import('./controls/window.page').then((m) => m.WindowPage),
       },
       {
         label: 'Bottom sheet',

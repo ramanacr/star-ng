@@ -102,6 +102,18 @@ export const STAR_UI_TEXT_DE: StarUiText = {
   layout: 'Layout',
   layoutList: 'Liste',
   layoutGrid: 'Raster',
+  tileMoveHint: 'Drücken Sie Strg und eine Pfeiltaste, um die Kachel zu verschieben.',
+  tileResizeHint:
+    'Drücken Sie Strg, Umschalt und eine Pfeiltaste, um die Größe der Kachel zu ändern.',
+  tileSize: (label, columns, rows) =>
+    `${label}: ${columns} ${forCount(columns, 'Spalte', 'Spalten')}, ${rows} ${forCount(rows, 'Zeile', 'Zeilen')}`,
+  commandPalette: 'Befehlspalette',
+  commandPlaceholder: 'Befehl eingeben oder suchen',
+  recentCommands: 'Zuletzt verwendet',
+  mainNavigation: 'Hauptnavigation',
+  minimize: 'Minimieren',
+  windowHint:
+    'Alt und die Pfeiltasten verschieben das Fenster. Umschalt und die Pfeiltasten ändern seine Größe.',
 
   moveSelectedItem: 'Ausgewähltes Element verschieben',
   orderListHint: 'Mit Alt und den Pfeiltasten verschieben Sie das ausgewählte Element.',
