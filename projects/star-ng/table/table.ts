@@ -30,11 +30,13 @@ import { StarButton } from '@star-ng/ui/button';
 import { StarCheckbox } from '@star-ng/ui/checkbox';
 import {
   compareValues,
-  matchesFilter,
   readOption,
   STAR_SLOT_HOST,
   STAR_UI_TEXT,
   StarEmptyContext,
+  starFilterMatch,
+  StarFilterMatchMode,
+  StarFilterService,
   StarGroupContext,
   starIsRtl,
   StarOptionKey,
@@ -67,6 +69,16 @@ import {
   stylePrintDocument,
 } from './table-export';
 import {
+  hasBound,
+  isRange,
+  StarColumnFilters,
+  StarColumnFilterType,
+  StarFilterValue,
+  starIsActiveFilter,
+  starMatchesFilter,
+  StarTableMatchMode,
+} from './table-filter';
+import {
   StarHeaderCheckboxToggleEvent,
   StarRowSelectEvent,
   StarTableSelection,
@@ -83,6 +95,7 @@ import {
   VirtualItem,
   VirtualLayout,
 } from './virtual-heights';
+export * from './table-filter';
 
 export interface StarColumn<T> extends StarColumnRules<T> {
   /** Unique column id; also the property read when `value` is not set. */
@@ -96,14 +109,27 @@ export interface StarColumn<T> extends StarColumnRules<T> {
   readonly width?: string;
   readonly align?: 'start' | 'center' | 'end';
   /**
-   * Column filter, shown in a second header row.
-   * - `'text'`: the display text contains the query (case- and accent-insensitive).
+   * Column filter, shown in a second header row (`filterDisplay="row"`) or in a filter menu of
+   * the header cell (`filterDisplay="menu"`, PrimeNG `p-columnFilter`).
+   * - `'text'`: the display text contains the query (case- and accent-insensitive; the mode is
+   *   `filterMatchMode`).
    * - `'select'`: the display text equals the choice.
    * - `'multiselect'`: the display text is one of the choices (value: text list).
    * - `'number'`: the cell value is in a range (value: `{ min, max }` numbers).
    * - `'date'`: the cell day is in a range (value: `{ min, max }` as `yyyy-mm-dd`).
    */
-  readonly filter?: 'text' | 'select' | 'multiselect' | 'number' | 'date';
+  readonly filter?: StarColumnFilterType;
+  /**
+   * Match modes that the filter menu offers for this column, for example
+   * `['contains', 'equals']` or a mode registered with `StarFilterService` (PrimeNG
+   * `matchModeOptions`). Default: all modes of the filter type.
+   */
+  readonly filterMatchModes?: readonly StarTableMatchMode[];
+  /**
+   * Default match mode (PrimeNG `matchMode`): of a new rule in the filter menu, and of a text
+   * value in the filter row. Default: the first mode of the type (`contains`, `equals`, `dateIs`).
+   */
+  readonly filterMatchMode?: StarTableMatchMode;
   /** Choices of a `'select'` or `'multiselect'` filter (default: the distinct display texts in `value`, sorted). */
   readonly filterOptions?: readonly string[];
   /** `false` leaves the column out of every export (CSV, Excel, print). */
@@ -142,40 +168,6 @@ export interface StarCellEditEvent<T> {
   /** New value: text, or a number / `null` for the `'number'` editor. */
   readonly value: string | number | null;
   readonly previous: unknown;
-}
-
-/** Range of a `'number'` filter (numbers) or a `'date'` filter (`yyyy-mm-dd` text). */
-export interface StarRangeFilter {
-  readonly min?: number | string | null;
-  readonly max?: number | string | null;
-}
-
-/** Text (`'text'`, `'select'`), text list (`'multiselect'`) or range (`'number'`, `'date'`). */
-export type StarFilterValue = string | readonly string[] | StarRangeFilter;
-
-/** Column filter values by column `field`. An empty or missing value means "no filter". */
-export type StarColumnFilters = Readonly<Record<string, StarFilterValue>>;
-
-function isRange(value: StarFilterValue | undefined): value is StarRangeFilter {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
-}
-
-function hasBound(bound: number | string | null | undefined): bound is number | string {
-  return bound !== null && bound !== undefined && bound !== '';
-}
-
-function isActiveFilter(value: StarFilterValue | undefined): value is StarFilterValue {
-  if (isRange(value)) return hasBound(value.min) || hasBound(value.max);
-  return !!value && value.length > 0;
-}
-
-/** Local calendar day of a cell value as `yyyy-mm-dd`, or `''` when it is not a date. */
-function dayKey(value: unknown): string {
-  if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}/.test(value)) return value.slice(0, 10);
-  const date = value instanceof Date ? value : new Date(value as string | number);
-  if (value === null || value === undefined || Number.isNaN(date.getTime())) return '';
-  const pad = (part: number) => String(part).padStart(2, '0');
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
 export interface StarExportOptions<T = unknown> {
@@ -265,6 +257,12 @@ export type StarSortOrder = 1 | -1;
 export interface StarSortState {
   readonly field: string | null;
   readonly order: StarSortOrder;
+}
+
+/** `filter` output: the column filters and the rows that pass all filters. */
+export interface StarTableFilterEvent<T> {
+  readonly filters: StarColumnFilters;
+  readonly filteredValue: readonly T[];
 }
 
 export interface StarLazyLoadEvent extends StarSortState {
@@ -1044,6 +1042,7 @@ export class StarTable<T> {
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly injector = inject(Injector);
   private readonly appRef = inject(ApplicationRef);
+  private readonly filterService = inject(StarFilterService);
 
   readonly value = input.required<readonly T[]>();
   readonly columns = input.required<readonly StarColumn<T>[]>();
@@ -1091,6 +1090,17 @@ export class StarTable<T> {
   readonly sortOrder = model<StarSortOrder>(1);
   /** Case- and accent-insensitive text search over all columns. */
   readonly globalFilter = input('');
+  /**
+   * Fields that the global filter searches (PrimeNG `globalFilterFields`). Default: all columns.
+   */
+  readonly globalFilterFields = input<readonly string[] | null>(null);
+  /** How the global filter text matches a cell (default `contains`). */
+  readonly globalFilterMatchMode = input<StarFilterMatchMode>('contains');
+  /**
+   * Locale of the text filters (PrimeNG `filterLocale`): with it, `Intl.Collator` compares the
+   * folded texts, so letters that the locale treats as equal match. Default: no locale.
+   */
+  readonly filterLocale = input<string | null>(null);
   /** Column filter values by column `field` (columns with `filter` set). Two-way. */
   readonly filters = model<StarColumnFilters>({});
 
@@ -1240,6 +1250,11 @@ export class StarTable<T> {
   readonly batchSave = output<StarBatchChanges<T>>();
   readonly lazyLoad = output<StarLazyLoadEvent>();
   /**
+   * After each filter change in client mode (column filters or global filter): the filters and
+   * the rows that pass them (PrimeNG `onFilter`). In lazy mode, `lazyLoad` carries the filters.
+   */
+  readonly filter = output<StarTableFilterEvent<T>>();
+  /**
    * Fires before the selection changes, with the rows now and after. Call `cancel()` to keep the
    * old selection (Ignite UI grid `rowSelectionChanging`).
    */
@@ -1322,7 +1337,7 @@ export class StarTable<T> {
     const filters = this.filters();
     return this.columns().flatMap((column) => {
       const query = filters[column.field];
-      return column.filter && isActiveFilter(query) ? [{ column, query }] : [];
+      return column.filter && starIsActiveFilter(query) ? [{ column, query }] : [];
     });
   });
 
@@ -1331,10 +1346,18 @@ export class StarTable<T> {
     const query = this.globalFilter();
     const active = this.activeFilters();
     if (!query && !active.length) return this.value();
+    const fields = this.globalFilterFields();
+    const searched = fields
+      ? this.columns().filter((column) => fields.includes(column.field))
+      : this.columns();
+    const mode = this.globalFilterMatchMode();
+    const locale = this.filterLocale();
     return this.value().filter(
       (row) =>
         (!query ||
-          this.columns().some((column) => matchesFilter(this.cellText(row, column), query))) &&
+          searched.some((column) =>
+            starFilterMatch(this.cellText(row, column), query, mode, locale),
+          )) &&
         active.every(({ column, query: value }) => this.matchesColumnFilter(row, column, value)),
     );
   });
@@ -1875,12 +1898,17 @@ export class StarTable<T> {
       untracked(() => removed.forEach((key) => this.drafts.clear(key)));
     });
     // A new filter goes back to page 1. Lazy tables also load the first page on init.
+    let firstFilter = true;
     effect(() => {
       this.globalFilter();
       this.filters();
       untracked(() => {
         this.first.set(0);
         this.emitLazy();
+        if (!firstFilter && !this.lazy()) {
+          this.filter.emit({ filters: this.filters(), filteredValue: this.filtered() });
+        }
+        firstFilter = false;
       });
     });
     afterRenderEffect({ read: () => this.measureFrozen() });
@@ -2815,26 +2843,15 @@ export class StarTable<T> {
   }
 
   private matchesColumnFilter(row: T, column: StarColumn<T>, value: StarFilterValue): boolean {
-    if (isRange(value)) {
-      const raw = this.cellValue(row, column);
-      if (column.filter === 'date') {
-        const day = dayKey(raw);
-        return (
-          !!day &&
-          (!hasBound(value.min) || day >= String(value.min)) &&
-          (!hasBound(value.max) || day <= String(value.max))
-        );
-      }
-      const amount = raw === null || raw === undefined || raw === '' ? NaN : Number(raw);
-      return (
-        !Number.isNaN(amount) &&
-        (!hasBound(value.min) || amount >= Number(value.min)) &&
-        (!hasBound(value.max) || amount <= Number(value.max))
-      );
-    }
-    const text = this.cellText(row, column);
-    if (typeof value !== 'string') return value.includes(text);
-    return column.filter === 'select' ? text === value : matchesFilter(text, value);
+    const cell = { raw: this.cellValue(row, column), text: this.cellText(row, column) };
+    return starMatchesFilter(
+      cell,
+      column.filter,
+      value,
+      column.filterMatchMode,
+      this.filterLocale(),
+      (name) => this.filterService.get(name)?.fn,
+    );
   }
 
   protected filterValue(field: string): string {

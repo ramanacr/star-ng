@@ -6293,6 +6293,27 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Case- and accent-insensitive text search over all columns."
       },
       {
+        "name": "globalFilterFields",
+        "type": "readonly string[] | null",
+        "default": "null",
+        "required": false,
+        "description": "Fields that the global filter searches (PrimeNG `globalFilterFields`). Default: all columns."
+      },
+      {
+        "name": "globalFilterMatchMode",
+        "type": "StarFilterMatchMode",
+        "default": "'contains'",
+        "required": false,
+        "description": "How the global filter text matches a cell (default `contains`)."
+      },
+      {
+        "name": "filterLocale",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Locale of the text filters (PrimeNG `filterLocale`): with it, `Intl.Collator` compares the folded texts, so letters that the locale treats as equal match. Default: no locale."
+      },
+      {
         "name": "lazy",
         "type": "boolean",
         "default": "false",
@@ -6610,6 +6631,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": ""
+      },
+      {
+        "name": "filter",
+        "type": "StarTableFilterEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "After each filter change in client mode (column filters or global filter): the filters and the rows that pass them (PrimeNG `onFilter`). In lazy mode, `lazyLoad` carries the filters."
       },
       {
         "name": "selectionChanging",

@@ -44,6 +44,8 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - UI text for table editing in English, German and Spanish.
 - Table: selection depth: `metaKeySelection` (click, Ctrl / Cmd + click, Shift + click; rows as one tab stop with Arrow keys, Space, Shift + Space and Shift + Arrow), `selectionPageOnly`, `rowSelectable`, two-way `selectionKeys` and `selectAll`, `rowLabel`, outputs `rowSelect`, `rowUnselect`, `headerCheckboxToggle` and the cancelable `selectionChanging`. Row check boxes and radios are named with the row ("Select row ORD-1001").
 - `STAR_UI_TEXT.selectRowOf` and `selectPageRows` with German and Spanish texts.
+- Table: filter rules. `StarFilterValue` also takes `StarFilterConstraint` (`operator` `and` / `or`, `rules` of `StarFilterRule` with `matchMode` and `value`); the old text, text list and range values work as before. Match modes: text `contains`, `startsWith`, `endsWith`, `equals`, `notContains`; number `equals`, `notEquals`, `lt`, `lte`, `gt`, `gte`, `between`; date `dateIs`, `dateIsNot`, `dateBefore`, `dateAfter`, `between`; lists `in`. Column `filterMatchModes` and `filterMatchMode`; table `filterLocale`, `globalFilterFields`, `globalFilterMatchMode` and the `filter` output (`filters`, `filteredValue`).
+- `StarFilterService` (`@star-ng/ui/core`): `register(name, fn, label)` adds a custom match mode for the table filters (PrimeNG `FilterService.register`).
 
 ### Changed
 
