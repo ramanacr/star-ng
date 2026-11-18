@@ -344,4 +344,21 @@ describe('StarTree drag and drop', () => {
     expect(host.drops.at(-1)).toMatchObject({ dropNode: { key: 'lab' }, position: 'inside' });
     expect(host.expands).toEqual(['lab']);
   });
+
+  it('validateDrop also decides the keyboard moves', async () => {
+    const { fixture, host, row, press, live } = await setup();
+    const calls: string[] = [];
+    host.validate.set((drag, target, position) => {
+      calls.push(`${drag.key} ${position} ${target.key}`);
+      return target.key !== 'web';
+    });
+    await fixture.whenStable();
+    row('ops').focus();
+    await press(row('ops'), 'ArrowUp', { ctrlKey: true, shiftKey: true });
+    expect(calls).toContain('ops before web');
+    expect(host.drops).toEqual([]);
+    expect(live()).toBe('Operations cannot move there');
+    await press(row('ops'), 'ArrowLeft', { ctrlKey: true, shiftKey: true });
+    expect(host.drops.at(-1)).toMatchObject({ dropNode: { key: 'eng' }, position: 'after' });
+  });
 });
