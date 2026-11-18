@@ -142,12 +142,15 @@ export abstract class StarDateInputBase<TValue> {
   /**
    * Opens the popup as a modal sheet in the middle of the window, in a native `<dialog>` with a
    * backdrop, and with larger days for touch (PrimeNG `touchUI`). The keyboard model does not
-   * change; Escape and a click on the backdrop close it.
+   * change; Escape and a click on the backdrop close it. While it is open, the page does not
+   * scroll (the scroll lock of `star-dialog`).
    */
   readonly touchUI = input(false, { transform: booleanAttribute });
   /**
-   * Window width at or below which the popup opens as a sheet (as `touchUI`), for example
-   * `'640px'` (PrimeNG `breakpoint`). The width is checked when the popup opens.
+   * Window width at or below which the popup opens as a sheet (as `touchUI`): a CSS length, for
+   * example `'640px'` or `'40rem'`, used in the media query `(max-width: <breakpoint>)` (PrimeNG
+   * `breakpoint`). The width is checked when the popup opens. While the sheet is open, the page
+   * does not scroll.
    */
   readonly breakpoint = input<string | null>(null);
   /** Months shown side by side in the popup. */

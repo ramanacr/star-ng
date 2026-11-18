@@ -859,11 +859,14 @@ test.describe('date and time depth', () => {
     const sheet = page.locator('dialog.star-date__sheet');
     await expect(sheet).toBeVisible();
     await expect(sheet).toHaveAttribute('aria-label', 'Choose date');
+    // The page does not scroll under the sheet.
+    await expect(page.locator('html')).toHaveCSS('overflow', 'hidden');
     await expect(sheet.locator('[data-date="2026-11-24"]')).toBeFocused();
     await page.keyboard.press('ArrowRight');
     await expect(sheet.locator('[data-date="2026-11-25"]')).toBeFocused();
     await page.keyboard.press('Escape');
     await expect(sheet).toHaveCount(0);
+    await expect(page.locator('html')).not.toHaveCSS('overflow', 'hidden');
     await expect(live.getByRole('textbox', { name: 'Delivery date, touch' })).toBeFocused();
 
     await live.getByRole('button', { name: 'Choose date' }).first().click();

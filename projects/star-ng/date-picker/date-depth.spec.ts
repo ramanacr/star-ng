@@ -671,6 +671,8 @@ describe('date picker: touch mode', () => {
     expect(dialog).not.toBeNull();
     expect(dialog.open).toBe(true);
     expect(dialog.getAttribute('aria-label')).toBe('Choose date');
+    // The page does not scroll under the sheet (the scroll lock of star-dialog).
+    expect(dialog.classList).toContain('star-dialog--block-scroll');
     const panel = dialog.querySelector<HTMLElement>('.star-date__panel')!;
     expect(panel.classList).toContain('star-date__panel--sheet');
     // The dialog is the dialog: the panel inside has no second dialog role.

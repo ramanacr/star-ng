@@ -63,12 +63,13 @@ export const STAR_DATE_TEMPLATE = `
   </ng-template>
 
   <!-- touchUI / breakpoint: the same panel in a modal native dialog. Escape fires cancel; a click
-       on the backdrop has the dialog itself as its target. -->
+       on the backdrop has the dialog itself as its target. The class star-dialog--block-scroll
+       locks the page scroll while the sheet is open, as for star-dialog. -->
   @if (open() && sheet.active()) {
     <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
     <dialog
       #sheetDialog
-      class="star-date__sheet"
+      class="star-date__sheet star-dialog--block-scroll"
       [attr.aria-label]="text.chooseDate"
       (cancel)="onSheetCancel($event)"
       (click)="onSheetClick($event)"
