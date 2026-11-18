@@ -9,8 +9,12 @@ test.describe('configuration guide', () => {
   test('starKeyFilter blocks keys that the filter does not allow', async ({ page }) => {
     const live = example(page, 'Filtered fields');
     const quantity = live.getByLabel('Quantity');
-    await quantity.pressSequentially('12a-3.');
-    await expect(quantity).toHaveValue('12-3');
+    // The page is prerendered: keys typed before the hydration reach the plain input. Retry.
+    await expect(async () => {
+      await quantity.fill('');
+      await quantity.pressSequentially('12a-3.');
+      await expect(quantity).toHaveValue('12-3', { timeout: 500 });
+    }).toPass();
     const hex = live.getByLabel('Color code (hex)');
     await hex.pressSequentially('c0ffeg');
     await expect(hex).toHaveValue('c0ffe');
@@ -19,9 +23,12 @@ test.describe('configuration guide', () => {
   test('starKeyFilter with validateOnly shows an error and does not block', async ({ page }) => {
     const live = example(page, 'Filtered fields');
     const reference = live.getByLabel('Reference');
-    await reference.pressSequentially('ORD 1042');
+    await expect(async () => {
+      await reference.fill('');
+      await reference.pressSequentially('ORD 1042');
+      await expect(reference).toHaveAttribute('aria-invalid', 'true', { timeout: 500 });
+    }).toPass();
     await expect(reference).toHaveValue('ORD 1042');
-    await expect(reference).toHaveAttribute('aria-invalid', 'true');
     await expect(live.getByText('Use letters, digits and the underscore only.')).toBeVisible();
     await reference.fill('ORD_1042');
     await expect(reference).not.toHaveAttribute('aria-invalid', 'true');

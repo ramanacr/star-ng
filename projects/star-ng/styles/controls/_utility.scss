@@ -656,7 +656,7 @@
 // `starHighlight` pipe: the matching part of a text.
 mark.star-highlight {
   background: var(--star-warning-soft);
-  color: inherit;
+  color: var(--star-text-strong);
   border-radius: var(--star-radius-xs);
 }
 
