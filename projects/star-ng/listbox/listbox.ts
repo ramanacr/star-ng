@@ -1,4 +1,5 @@
 import { _IdGenerator } from '@angular/cdk/a11y';
+import { CdkDrag, CdkDragDrop, CdkDropList } from '@angular/cdk/drag-drop';
 import {
   CdkFixedSizeVirtualScroll,
   CdkVirtualForOf,
@@ -22,6 +23,7 @@ import {
   model,
   output,
   signal,
+  Signal,
   untracked,
   viewChild,
 } from '@angular/core';
@@ -62,6 +64,7 @@ import {
   starSelectionChanging,
   StarSelectionChangingEvent,
 } from '@star-ng/ui/select';
+import { StarListboxDropEvent, starListboxDropIndex } from './listbox-dragdrop';
 
 /**
  * Inline list choice (PrimeNG `p-listbox`): single or `multiple` (checkboxes), filter,
@@ -72,7 +75,14 @@ import {
  */
 @Component({
   selector: 'star-listbox',
-  imports: [NgTemplateOutlet, CdkVirtualScrollViewport, CdkFixedSizeVirtualScroll, CdkVirtualForOf],
+  imports: [
+    NgTemplateOutlet,
+    CdkVirtualScrollViewport,
+    CdkFixedSizeVirtualScroll,
+    CdkVirtualForOf,
+    CdkDropList,
+    CdkDrag,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarListbox) }],
   host: {
@@ -84,21 +94,45 @@ import {
     @if (headerSlot(); as header) {
       <ng-container *ngTemplateOutlet="header" />
     }
-    @if (filter()) {
+    @if (filter() || checkbox()) {
       <div class="star-panel__filter">
-        <i class="ph-bold ph-magnifying-glass" aria-hidden="true"></i>
-        <input
-          #filterInput
-          type="search"
-          class="star-input star-input--sm"
-          autocomplete="off"
-          [attr.aria-label]="text.filterPlaceholder"
-          [attr.aria-controls]="listId"
-          [placeholder]="text.filterPlaceholder"
-          [value]="query()"
-          (input)="onFilterInput(filterInput.value)"
-          (keydown)="onKeydown($event)"
-        />
+        @if (checkbox()) {
+          <button
+            type="button"
+            class="star-panel__toggle-all"
+            role="checkbox"
+            [attr.aria-checked]="allState()"
+            [attr.aria-label]="text.selectAll"
+            [disabled]="disabled()"
+            (click)="toggleAll()"
+          >
+            <span class="star-check__box" aria-hidden="true">
+              @if (allState() === 'mixed') {
+                <i class="ph-bold ph-minus"></i>
+              } @else if (allState() === true) {
+                <i class="ph-bold ph-check"></i>
+              }
+            </span>
+          </button>
+          @if (!filter()) {
+            <span class="star-panel__toggle-label" aria-hidden="true">{{ text.selectAll }}</span>
+          }
+        }
+        @if (filter()) {
+          <i class="ph-bold ph-magnifying-glass" aria-hidden="true"></i>
+          <input
+            #filterInput
+            type="search"
+            class="star-input star-input--sm"
+            autocomplete="off"
+            [attr.aria-label]="text.filterPlaceholder"
+            [attr.aria-controls]="listId"
+            [placeholder]="text.filterPlaceholder"
+            [value]="query()"
+            (input)="onFilterInput(filterInput.value)"
+            (keydown)="onKeydown($event)"
+          />
+        }
       </div>
     }
     @if (virtualScroll()) {
@@ -115,7 +149,7 @@ import {
         [attr.aria-label]="ariaLabel()"
         [attr.aria-labelledby]="labelledBy()"
         [attr.aria-describedby]="fieldDescribedBy()"
-        [attr.aria-multiselectable]="multiple() || null"
+        [attr.aria-multiselectable]="isMulti() || null"
         [attr.aria-activedescendant]="activeId()"
         [attr.aria-disabled]="disabled() || null"
         [attr.aria-busy]="lazyBusy() || null"
@@ -148,13 +182,15 @@ import {
               [class.star-listbox__option--loading]="option === undefined"
               [class.star-listbox__option--selected]="isSelected(option)"
               [attr.aria-selected]="isSelected(option)"
+              [attr.aria-checked]="checkbox() ? isSelected(option) : null"
               [attr.aria-disabled]="isDisabled(option) || null"
               [attr.aria-describedby]="describedBy(row)"
               [attr.aria-setsize]="position.setsize"
               [attr.aria-posinset]="position.posinset"
               (click)="active.set(i); choose(option)"
+              (dblclick)="onOptionDblClick(option, $event)"
             >
-              @if (multiple()) {
+              @if (isMulti()) {
                 <span class="star-check__box" aria-hidden="true">
                   @if (isSelected(option)) {
                     <i class="ph-bold ph-check"></i>
@@ -180,6 +216,59 @@ import {
           }
         </ng-container>
       </cdk-virtual-scroll-viewport>
+    } @else if (dragdrop()) {
+      <!-- Drag and drop: the list is a CDK drop list and each option a drag item. No group headings. -->
+      <ul
+        #list
+        cdkDropList
+        class="star-listbox star-listbox--dragdrop"
+        role="listbox"
+        [id]="listId"
+        [cdkDropListData]="dropData()"
+        [cdkDropListConnectedTo]="connectedIds()"
+        [cdkDropListDisabled]="disabled()"
+        [attr.tabindex]="disabled() ? -1 : 0"
+        [attr.aria-label]="ariaLabel()"
+        [attr.aria-labelledby]="labelledBy()"
+        [attr.aria-describedby]="dragDescribedBy()"
+        [attr.aria-multiselectable]="isMulti() || null"
+        [attr.aria-activedescendant]="activeId()"
+        [attr.aria-disabled]="disabled() || null"
+        [attr.aria-busy]="lazyBusy() || null"
+        [style.max-height]="scrollHeight()"
+        (cdkDropListDropped)="onDrop($event)"
+        (keydown)="onKeydown($event)"
+        (focus)="onFocus()"
+        (blur)="touch.emit()"
+      >
+        @for (option of visible(); track $index; let i = $index) {
+          <!-- Keyboard is handled on the listbox via aria-activedescendant; Alt + Arrow keys move. -->
+          <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
+          <li
+            cdkDrag
+            class="star-listbox__option"
+            role="option"
+            [cdkDragData]="option"
+            [cdkDragDisabled]="disabled() || isDisabled(option)"
+            [id]="listId + '-' + i"
+            [class.star-listbox__option--active]="active() === i"
+            [class.star-listbox__option--loading]="option === undefined"
+            [class.star-listbox__option--selected]="isSelected(option)"
+            [attr.aria-selected]="isSelected(option)"
+            [attr.aria-checked]="checkbox() ? isSelected(option) : null"
+            [attr.aria-disabled]="isDisabled(option) || null"
+            (click)="active.set(i); choose(option)"
+            (dblclick)="onOptionDblClick(option, $event)"
+          >
+            <i class="ph-bold ph-dots-six-vertical star-listbox__grip" aria-hidden="true"></i>
+            <ng-container
+              *ngTemplateOutlet="optionBody; context: { $implicit: option, index: i }"
+            />
+          </li>
+        }
+      </ul>
+      <p class="star-sr-only" [id]="hintId">{{ text.orderListHint }}</p>
+      <p class="star-sr-only" aria-live="polite">{{ announcement() }}</p>
     } @else {
       <ul
         #list
@@ -190,7 +279,7 @@ import {
         [attr.aria-label]="ariaLabel()"
         [attr.aria-labelledby]="labelledBy()"
         [attr.aria-describedby]="fieldDescribedBy()"
-        [attr.aria-multiselectable]="multiple() || null"
+        [attr.aria-multiselectable]="isMulti() || null"
         [attr.aria-activedescendant]="activeId()"
         [attr.aria-disabled]="disabled() || null"
         [attr.aria-busy]="lazyBusy() || null"
@@ -219,36 +308,43 @@ import {
             [class.star-listbox__option--loading]="option === undefined"
             [class.star-listbox__option--selected]="isSelected(option)"
             [attr.aria-selected]="isSelected(option)"
+            [attr.aria-checked]="checkbox() ? isSelected(option) : null"
             [attr.aria-disabled]="isDisabled(option) || null"
             [attr.aria-describedby]="groupId(i)"
             (click)="active.set(i); choose(option)"
+            (dblclick)="onOptionDblClick(option, $event)"
           >
-            @if (multiple()) {
-              <span class="star-check__box" aria-hidden="true">
-                @if (isSelected(option)) {
-                  <i class="ph-bold ph-check"></i>
-                }
-              </span>
-            }
-            <span class="star-listbox__label">
-              @if (option === undefined) {
-                <span class="star-skeleton star-listbox__skeleton" aria-hidden="true"></span>
-                <span class="star-sr-only">{{ text.loading }}</span>
-              } @else if (optionTemplate(); as custom) {
-                <ng-container
-                  *ngTemplateOutlet="
-                    custom.template;
-                    context: { $implicit: option, selected: isSelected(option), index: i }
-                  "
-                />
-              } @else {
-                {{ labelOf(option) }}
-              }
-            </span>
+            <ng-container
+              *ngTemplateOutlet="optionBody; context: { $implicit: option, index: i }"
+            />
           </li>
         }
       </ul>
     }
+    <ng-template #optionBody let-option let-i="index">
+      @if (isMulti()) {
+        <span class="star-check__box" aria-hidden="true">
+          @if (isSelected(option)) {
+            <i class="ph-bold ph-check"></i>
+          }
+        </span>
+      }
+      <span class="star-listbox__label">
+        @if (option === undefined) {
+          <span class="star-skeleton star-listbox__skeleton" aria-hidden="true"></span>
+          <span class="star-sr-only">{{ text.loading }}</span>
+        } @else if (optionTemplate(); as custom) {
+          <ng-container
+            *ngTemplateOutlet="
+              custom.template;
+              context: { $implicit: option, selected: isSelected(option), index: i }
+            "
+          />
+        } @else {
+          {{ labelOf(option) }}
+        }
+      </span>
+    </ng-template>
     <!-- Outside the listbox: a listbox may contain options and groups only. -->
     @if (!visible().length) {
       <div class="star-listbox__empty" role="presentation">
@@ -269,6 +365,11 @@ export class StarListbox<TOption = unknown, TValue = TOption> implements FormVal
 > {
   protected readonly text = inject(STAR_UI_TEXT);
   protected readonly listId = inject(_IdGenerator).getId('star-listbox-');
+  protected readonly hintId = inject(_IdGenerator).getId('star-listbox-hint-');
+  /** Id of the list element: pass the listbox in `connectedTo` of another listbox to connect them. */
+  get dropListId(): string {
+    return this.listId;
+  }
 
   readonly value = model<TValue | readonly TValue[] | null>(null);
   /**
@@ -287,6 +388,22 @@ export class StarListbox<TOption = unknown, TValue = TOption> implements FormVal
    */
   readonly optionGroup = input<StarOptionKey<TOption> | null>(null);
   readonly multiple = input(false, { transform: booleanAttribute });
+  /**
+   * A check box in each option and a "Select all" box (tri-state) above the list. Implies
+   * `multiple`. The options have `aria-checked`. PrimeNG `checkbox`.
+   */
+  readonly checkbox = input(false, { transform: booleanAttribute });
+  /**
+   * Reorders options by drag and drop (CDK drag-drop), also into another listbox in
+   * `connectedTo` (or in the same `cdkDropListGroup`). Alt + Arrow up / down moves the active
+   * option with the keyboard. The listbox does not change `options`: handle `dropped`. Not with
+   * `virtualScroll`; group headings do not show. PrimeNG `dragdrop`.
+   */
+  readonly dragdrop = input(false, { transform: booleanAttribute });
+  /** With `dragdrop`: data that names this list in `dropped` (`from` / `to`). Default: the listbox. */
+  readonly dropListData = input<unknown>(null);
+  /** With `dragdrop`: other listboxes that take options from this one (template references). */
+  readonly connectedTo = input<readonly { readonly dropListId: string }[]>([]);
   readonly filter = input(false, { transform: booleanAttribute });
   /** Option fields that the filter searches (one key or a list). Default: the label. PrimeNG `filterBy`. */
   readonly filterBy = input<StarFilterBy<TOption>>(null);
@@ -319,6 +436,13 @@ export class StarListbox<TOption = unknown, TValue = TOption> implements FormVal
   readonly touch = output<void>();
   /** With `lazy`: the options from `first` to `last` are needed for the filter text `filter`. PrimeNG `onLazyLoad`. */
   readonly lazyLoad = output<StarLazyLoadEvent>();
+  /** With `dragdrop`: an option was dropped on this list, or moved with Alt + Arrow keys. PrimeNG `onDrop`. */
+  readonly dropped = output<StarListboxDropEvent<TOption>>();
+  /** An option was double-clicked. PrimeNG `onDblClick`. */
+  readonly optionDblClick = output<{
+    readonly option: TOption;
+    readonly originalEvent: MouseEvent;
+  }>();
   /**
    * Fires before the value changes by a user action. Call `cancel()` on the event to keep the old
    * value. Ignite UI `selectionChanging`.
@@ -341,6 +465,85 @@ export class StarListbox<TOption = unknown, TValue = TOption> implements FormVal
   protected readonly fieldDescribedBy = computed(() => starJoinIds(this.field?.describedBy()));
   private readonly injector = inject(Injector);
   protected readonly query = signal('');
+  /** Live text after a keyboard move (`dragdrop`). */
+  protected readonly announcement = signal('');
+  /** Several values: `multiple` or `checkbox`. */
+  protected readonly isMulti = computed(() => this.multiple() || this.checkbox());
+
+  // ---- Checkbox mode ----
+
+  private readonly selectableVisible = computed(() =>
+    this.visible().filter((option) => !this.isDisabled(option)),
+  );
+
+  /** `true`, `false` or `'mixed'` for the "Select all" box (over the shown, enabled options). */
+  protected readonly allState = computed<boolean | 'mixed'>(() => {
+    const options = this.selectableVisible();
+    const selected = options.filter((option) => this.isSelected(option)).length;
+    if (!options.length || selected === 0) return false;
+    return selected === options.length ? true : 'mixed';
+  });
+
+  /** Selects all shown, enabled options, or clears them when all are selected. */
+  protected toggleAll(): void {
+    if (this.disabled()) return;
+    const current = Array.isArray(this.value()) ? (this.value() as readonly TValue[]) : [];
+    const shown = this.selectableVisible().map((option) => this.valueOf(option));
+    const next =
+      this.allState() === true
+        ? current.filter((value) => !shown.some((v) => Object.is(v, value)))
+        : [...current, ...shown.filter((v) => !current.some((value) => Object.is(v, value)))];
+    this.change(next);
+  }
+
+  // ---- Drag and drop ----
+
+  protected readonly dropData: Signal<unknown> = computed(
+    (): unknown => this.dropListData() ?? this,
+  );
+  protected readonly connectedIds = computed(() => this.connectedTo().map((l) => l.dropListId));
+  protected readonly dragDescribedBy = computed(() =>
+    starJoinIds(this.fieldDescribedBy(), this.hintId),
+  );
+
+  protected onDrop(event: CdkDragDrop<unknown, unknown, TOption>): void {
+    const sameList = event.previousContainer === event.container;
+    const item = event.item.data;
+    const source = event.previousContainer.data;
+    const sourceOptions = source instanceof StarListbox ? source.options() : null;
+    this.dropped.emit({
+      item,
+      from: source,
+      to: event.container.data,
+      previousIndex: sourceOptions ? sourceOptions.indexOf(item) : event.previousIndex,
+      index: starListboxDropIndex(this.options(), this.visible(), event.currentIndex, sameList),
+    });
+  }
+
+  /** Alt + Arrow up / down with `dragdrop`: moves the active option one place. */
+  private moveByKey(step: 1 | -1): void {
+    const options = this.visible();
+    const from = this.active();
+    const to = from + step;
+    const item = options[from];
+    if (item === undefined || to < 0 || to >= options.length || this.isDisabled(item)) return;
+    const all = this.options();
+    this.dropped.emit({
+      item,
+      from: this.dropData(),
+      to: this.dropData(),
+      previousIndex: all.indexOf(item),
+      index: all.indexOf(options[to]),
+    });
+    this.active.set(to);
+    this.reveal(to);
+    this.announcement.set(this.text.itemPosition(this.labelOf(item), to + 1, options.length));
+  }
+
+  protected onOptionDblClick(option: TOption, originalEvent: MouseEvent): void {
+    if (option === undefined || this.disabled()) return;
+    this.optionDblClick.emit({ option, originalEvent });
+  }
   protected readonly active = signal(-1);
   private typeahead = '';
   private typeaheadAt = 0;
@@ -541,7 +744,7 @@ export class StarListbox<TOption = unknown, TValue = TOption> implements FormVal
   protected choose(option: TOption): void {
     if (this.disabled() || this.isDisabled(option)) return;
     const optionValue = this.valueOf(option);
-    if (this.multiple()) {
+    if (this.isMulti()) {
       const current = Array.isArray(this.value()) ? (this.value() as readonly TValue[]) : [];
       this.change(
         this.isSelected(option)
@@ -631,11 +834,21 @@ export class StarListbox<TOption = unknown, TValue = TOption> implements FormVal
       if (loaded < 0) return;
       this.active.set(loaded);
       this.reveal(this.active());
-      if (!this.multiple() && !fromInput) {
+      if (!this.isMulti() && !fromInput) {
         const option = options[this.active()];
         if (!this.isDisabled(option)) this.change(this.valueOf(option));
       }
     };
+    if (
+      this.dragdrop() &&
+      event.altKey &&
+      !fromInput &&
+      (event.key === 'ArrowUp' || event.key === 'ArrowDown')
+    ) {
+      event.preventDefault();
+      this.moveByKey(event.key === 'ArrowUp' ? -1 : 1);
+      return;
+    }
     switch (event.key) {
       case 'ArrowDown':
       case 'ArrowUp':

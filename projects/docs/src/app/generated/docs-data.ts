@@ -3152,6 +3152,34 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
+        "name": "checkbox",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "A check box in each option and a \"Select all\" box (tri-state) above the list. Implies `multiple`. The options have `aria-checked`. PrimeNG `checkbox`."
+      },
+      {
+        "name": "dragdrop",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Reorders options by drag and drop (CDK drag-drop), also into another listbox in `connectedTo` (or in the same `cdkDropListGroup`). Alt + Arrow up / down moves the active option with the keyboard. The listbox does not change `options`: handle `dropped`. Not with `virtualScroll`; group headings do not show. PrimeNG `dragdrop`."
+      },
+      {
+        "name": "dropListData",
+        "type": "unknown",
+        "default": "null",
+        "required": false,
+        "description": "With `dragdrop`: data that names this list in `dropped` (`from` / `to`). Default: the listbox."
+      },
+      {
+        "name": "connectedTo",
+        "type": "readonly { readonly dropListId: string }[]",
+        "default": "[]",
+        "required": false,
+        "description": "With `dragdrop`: other listboxes that take options from this one (template references)."
+      },
+      {
         "name": "filter",
         "type": "boolean",
         "default": "false",
@@ -3259,6 +3287,20 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": "With `lazy`: the options from `first` to `last` are needed for the filter text `filter`. PrimeNG `onLazyLoad`."
+      },
+      {
+        "name": "dropped",
+        "type": "StarListboxDropEvent<TOption>",
+        "default": null,
+        "required": false,
+        "description": "With `dragdrop`: an option was dropped on this list, or moved with Alt + Arrow keys. PrimeNG `onDrop`."
+      },
+      {
+        "name": "optionDblClick",
+        "type": "{ readonly option: TOption; readonly originalEvent: MouseEvent; }",
+        "default": null,
+        "required": false,
+        "description": "An option was double-clicked. PrimeNG `onDblClick`."
       },
       {
         "name": "selectionChanging",
@@ -6865,7 +6907,9 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "knob/basic": "<star-knob [(value)]=\"progress\" valueTemplate=\"{value}%\" ariaLabel=\"Progress\" />\n<p class=\"docs-output\" role=\"status\">Value: {{ progress() }}</p>",
   "knob/range": "<star-knob\n  [(value)]=\"temperature\"\n  [min]=\"10\"\n  [max]=\"30\"\n  [step]=\"0.5\"\n  [size]=\"160\"\n  valueTemplate=\"{value}°\"\n  ariaLabel=\"Temperature\"\n/>",
   "knob/states": "<star-knob [value]=\"72\" readonly [size]=\"90\" ariaLabel=\"Disk use\" />\n<star-knob [value]=\"35\" disabled [size]=\"90\" ariaLabel=\"Locked value\" />",
+  "listbox/checkbox": "<div class=\"docs-stack\">\n  <star-listbox\n    [options]=\"queues\"\n    optionLabel=\"name\"\n    optionValue=\"id\"\n    optionDisabled=\"closed\"\n    [(value)]=\"checkedQueues\"\n    checkbox\n    filter\n    scrollHeight=\"12rem\"\n    ariaLabel=\"Queues with check boxes\"\n    (optionDblClick)=\"lastOpened.set($event.option.name)\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Queues: {{ checkedText() }}. Double-clicked: {{ lastOpened() ?? 'none' }}\n  </p>\n</div>",
   "listbox/disabled": "<star-listbox\n  [options]=\"queues\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  [value]=\"'intake'\"\n  disabled\n  scrollHeight=\"8rem\"\n  ariaLabel=\"Disabled queue\"\n/>",
+  "listbox/dragdrop": "<div class=\"docs-row\">\n  <star-listbox\n    #availableList\n    [options]=\"availableOrders()\"\n    [(value)]=\"availablePick\"\n    dragdrop\n    dropListData=\"available\"\n    [connectedTo]=\"[plannedList]\"\n    scrollHeight=\"14rem\"\n    ariaLabel=\"Available orders\"\n    (dropped)=\"moveOrder($event)\"\n  />\n  <star-listbox\n    #plannedList\n    [options]=\"plannedOrders()\"\n    [(value)]=\"plannedPick\"\n    dragdrop\n    dropListData=\"planned\"\n    [connectedTo]=\"[availableList]\"\n    scrollHeight=\"14rem\"\n    ariaLabel=\"Planned orders\"\n    (dropped)=\"moveOrder($event)\"\n  />\n</div>",
   "listbox/filter-match": "<star-listbox\n  [options]=\"cities\"\n  optionLabel=\"name\"\n  optionValue=\"code\"\n  [filterBy]=\"['code', 'name']\"\n  filterMatchMode=\"startsWith\"\n  filterLocale=\"de\"\n  [(value)]=\"matchedCity\"\n  filter\n  scrollHeight=\"12rem\"\n  ariaLabel=\"City by code or name\"\n/>",
   "listbox/form": "<div class=\"docs-stack\">\n  <star-field label=\"Notify queues\" [state]=\"alert.queues()\">\n    <star-listbox\n      [formField]=\"alert.queues\"\n      [options]=\"queues\"\n      optionLabel=\"name\"\n      optionValue=\"id\"\n      multiple\n      scrollHeight=\"10rem\"\n      ariaLabel=\"Notify queues\"\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ alert().valid() }}</p>\n</div>",
   "listbox/groups": "<star-listbox\n  [options]=\"queues\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  optionGroup=\"site\"\n  optionDisabled=\"closed\"\n  [(value)]=\"grouped\"\n  scrollHeight=\"14rem\"\n  ariaLabel=\"Queue by site\"\n/>",

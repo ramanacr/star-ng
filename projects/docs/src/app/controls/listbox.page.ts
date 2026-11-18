@@ -1,8 +1,9 @@
+import { moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { form, FormField, minLength } from '@angular/forms/signals';
 import { STAR_SLOTS } from '@star-ng/ui/core';
 import { StarField } from '@star-ng/ui/field';
-import { StarListbox } from '@star-ng/ui/listbox';
+import { StarListbox, StarListboxDropEvent } from '@star-ng/ui/listbox';
 import { StarOptionTemplate } from '@star-ng/ui/select';
 import { DOCS, DocsRow } from '../shared/docs';
 import { lazyOrders } from '../shared/lazy-orders';
@@ -251,6 +252,62 @@ const REGIONS = ['Central', 'East', 'North', 'South', 'West'];
       </docs-example>
 
       <docs-example
+        heading="Check boxes and select all"
+        source="listbox/checkbox"
+        note="checkbox adds a check box to each option (aria-checked) and a Select all box above the list. It implies multiple. Select all works on the shown, enabled options and shows a mixed state when only some are chosen. A double-click on an option fires optionDblClick."
+      >
+        <div class="docs-stack">
+          <star-listbox
+            [options]="queues"
+            optionLabel="name"
+            optionValue="id"
+            optionDisabled="closed"
+            [(value)]="checkedQueues"
+            checkbox
+            filter
+            scrollHeight="12rem"
+            ariaLabel="Queues with check boxes"
+            (optionDblClick)="lastOpened.set($event.option.name)"
+          />
+          <p class="docs-output" role="status">
+            Queues: {{ checkedText() }}. Double-clicked: {{ lastOpened() ?? 'none' }}
+          </p>
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="Drag and drop"
+        source="listbox/dragdrop"
+        [script]="dragScript"
+        note="dragdrop reorders the options with the CDK drag and drop, and connectedTo lets options move into the other list. Alt + Arrow up and Alt + Arrow down move the active option with the keyboard, and a live region tells the new position. The listbox does not change its options: dropped gives the item, from, to (dropListData), previousIndex and index, ready for moveItemInArray and transferArrayItem."
+      >
+        <div class="docs-row">
+          <star-listbox
+            #availableList
+            [options]="availableOrders()"
+            [(value)]="availablePick"
+            dragdrop
+            dropListData="available"
+            [connectedTo]="[plannedList]"
+            scrollHeight="14rem"
+            ariaLabel="Available orders"
+            (dropped)="moveOrder($event)"
+          />
+          <star-listbox
+            #plannedList
+            [options]="plannedOrders()"
+            [(value)]="plannedPick"
+            dragdrop
+            dropListData="planned"
+            [connectedTo]="[availableList]"
+            scrollHeight="14rem"
+            ariaLabel="Planned orders"
+            (dropped)="moveOrder($event)"
+          />
+        </div>
+      </docs-example>
+
+      <docs-example
         heading="Lazy loading"
         source="listbox/lazy"
         [script]="lazyScript"
@@ -283,6 +340,61 @@ const REGIONS = ['Central', 'East', 'North', 'South', 'West'];
   `,
 })
 export class ListboxPage {
+  protected readonly checkedQueues = signal<string | readonly string[] | null>(['intake']);
+  protected readonly lastOpened = signal<string | null>(null);
+  protected checkedText(): string {
+    const value = this.checkedQueues();
+    return Array.isArray(value) && value.length ? value.join(', ') : 'none';
+  }
+
+  protected readonly availableOrders = signal<readonly string[]>([
+    'Order 1001',
+    'Order 1002',
+    'Order 1003',
+    'Order 1004',
+  ]);
+  protected readonly plannedOrders = signal<readonly string[]>(['Order 1005']);
+  protected readonly availablePick = signal<string | readonly string[] | null>(null);
+  protected readonly plannedPick = signal<string | readonly string[] | null>(null);
+
+  /** Moves the order inside one list, or from one list into the other. */
+  protected moveOrder(event: StarListboxDropEvent<string>): void {
+    const lists = { available: this.availableOrders, planned: this.plannedOrders };
+    const from = lists[event.from as keyof typeof lists];
+    const to = lists[event.to as keyof typeof lists];
+    if (from === to) {
+      const items = [...from()];
+      moveItemInArray(items, event.previousIndex, event.index);
+      from.set(items);
+      return;
+    }
+    const source = [...from()];
+    const target = [...to()];
+    transferArrayItem(source, target, event.previousIndex, event.index);
+    from.set(source);
+    to.set(target);
+  }
+
+  protected readonly dragScript = `// import { moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
+readonly availableOrders = signal<readonly string[]>(['Order 1001', 'Order 1002', 'Order 1003']);
+readonly plannedOrders = signal<readonly string[]>(['Order 1005']);
+
+moveOrder(event: StarListboxDropEvent<string>): void {
+  const lists = { available: this.availableOrders, planned: this.plannedOrders };
+  const from = lists[event.from as keyof typeof lists];
+  const to = lists[event.to as keyof typeof lists];
+  if (from === to) {
+    const items = [...from()];
+    moveItemInArray(items, event.previousIndex, event.index);
+    from.set(items);
+    return;
+  }
+  const source = [...from()];
+  const target = [...to()];
+  transferArrayItem(source, target, event.previousIndex, event.index);
+  from.set(source);
+  to.set(target);
+}`;
   protected readonly lazyList = lazyOrders();
   protected readonly lazyOrder = signal<number | readonly number[] | null>(null);
   protected readonly lazyScript = `// A fake order service (no network) and the list state, in lazy-orders.ts:
@@ -447,6 +559,15 @@ readonly alert = form(this.alertModel, (path) => {
       name: 'Letter keys',
       description:
         'Typeahead: moves to the option that starts with the typed text. With virtualScroll it also finds options that are not drawn. Space chooses the active option and is not typed, so type labels without spaces.',
+    },
+    {
+      name: 'Alt + Arrow up / Alt + Arrow down',
+      description:
+        'With dragdrop: moves the active option one place up or down (the dropped event). A live region tells the new position.',
+    },
+    {
+      name: 'Tab',
+      description: 'With checkbox: the Select all box is a tab stop before the list.',
     },
   ];
 }
