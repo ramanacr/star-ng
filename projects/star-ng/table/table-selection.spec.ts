@@ -124,7 +124,7 @@ describe('StarTable selection', () => {
     await fixture.whenStable();
     expect(ids()).toEqual(ORDERS.map((o) => o.id));
     expect(header().checked).toBe(true);
-    expect(host.toggles).toEqual([{ checked: true, originalEvent: null }]);
+    expect(host.toggles.map((t) => t.checked)).toEqual([true]);
     // With a filter, only the filter result.
     header().click();
     await fixture.whenStable();
@@ -305,6 +305,74 @@ describe('StarTable selection', () => {
     await fixture.whenStable();
     expect(rows()[4].getAttribute('aria-selected')).toBe('true');
     expect(rows()[1].getAttribute('aria-selected')).toBe('false');
+  });
+
+  it('key mode keeps keys that have no row object (other pages, lazy data)', async () => {
+    const { host, fixture, boxes, header } = await setup((h) => {
+      h.keys.set([101, 205]);
+      h.pageOnly.set(true);
+    });
+    boxes()[2].click();
+    await fixture.whenStable();
+    expect(host.keys()).toEqual([101, 205, 3]);
+    expect(host.selection().map((r) => r.id)).toEqual([3]);
+    // The header check box selects and clears only the rows it covers.
+    header().click();
+    await fixture.whenStable();
+    expect(new Set(host.keys())).toEqual(new Set([101, 205, ...ORDERS.map((o) => o.id)]));
+    header().click();
+    await fixture.whenStable();
+    expect(host.keys()).toEqual([101, 205]);
+    expect(host.selection()).toEqual([]);
+  });
+
+  it('key mode keeps selection in step with the keys and value, and exports those rows', async () => {
+    const { host, fixture } = await setup((h) => h.keys.set([]));
+    host.keys.set([2, 4]);
+    await fixture.whenStable();
+    expect(host.selection().map((r) => r.order)).toEqual(['Order 1041', 'Order 1043']);
+    host.rows.set(ORDERS.map((o) => ({ ...o, order: o.order + ' (new)' })));
+    await fixture.whenStable();
+    expect(host.selection().map((r) => r.order)).toEqual(['Order 1041 (new)', 'Order 1043 (new)']);
+    const csv = host.table().toCsv({ selectionOnly: true });
+    expect(csv).toContain('Order 1041 (new)');
+    expect(csv).toContain('Order 1043 (new)');
+    expect(csv).not.toContain('Order 1040');
+  });
+
+  it('passes the DOM event as originalEvent and emits rowUnselect before rowSelect', async () => {
+    const { host, fixture, boxes, el, header } = await setup();
+    boxes()[0].click();
+    await fixture.whenStable();
+    expect(host.selected[0].originalEvent).toBeInstanceOf(Event);
+    header().click();
+    await fixture.whenStable();
+    expect(host.toggles[0].originalEvent).toBeInstanceOf(Event);
+    host.mode.set('single');
+    host.selection.set([]);
+    await fixture.whenStable();
+    const radios = () => [...el.querySelectorAll<HTMLInputElement>('tbody input[type=radio]')];
+    radios()[0].click();
+    await fixture.whenStable();
+    const order: string[] = [];
+    host.table().rowSelect.subscribe((e) => order.push('select ' + e.row.id));
+    host.table().rowUnselect.subscribe((e) => order.push('unselect ' + e.row.id));
+    radios()[1].click();
+    await fixture.whenStable();
+    expect(order).toEqual(['unselect 1', 'select 2']);
+    expect(host.selected.at(-1)?.originalEvent?.type).toBe('change');
+  });
+
+  it('Space on a selected row in single mode clears it, with the key event', async () => {
+    const { host, rows, key, ids } = await setup((h) => {
+      h.mode.set('single');
+      h.meta.set(true);
+    });
+    await key(rows()[1], { key: ' ' });
+    expect(ids()).toEqual([2]);
+    expect(host.selected[0].originalEvent).toBeInstanceOf(KeyboardEvent);
+    await key(rows()[1], { key: ' ' });
+    expect(ids()).toEqual([]);
   });
 
   it('selectAll lets the owner decide what "all" means (lazy data)', async () => {

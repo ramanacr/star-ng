@@ -35,12 +35,13 @@ export interface StarTableSelectionHost<T> {
   readonly rowSelectable: Signal<((row: T) => boolean) | null>;
   /** Row key (`dataKey`, else the row object). */
   readonly keyOf: (row: T) => unknown;
-  /** Rows that "select all" covers when `selectionPageOnly` is off: the filter result. */
-  readonly allRows: Signal<readonly T[]>;
+  /**
+   * The filter result in display order: the scope of the header check box with
+   * `selectionPageOnly` off, and the rows of a range.
+   */
+  readonly rows: Signal<readonly T[]>;
   /** Rows of the current page. */
   readonly pageRows: Signal<readonly T[]>;
-  /** Rows in display order, for ranges. */
-  readonly orderedRows: Signal<readonly T[]>;
   /** Rows that resolve a key to a fresh row object (`value`). */
   readonly knownRows: Signal<readonly T[]>;
   readonly changing: OutputEmitterRef<StarTableSelectionChangingEvent<T>>;
@@ -83,22 +84,55 @@ export function starSelectionRange<T>(
   return rows.slice(Math.min(from, to), Math.max(from, to) + 1);
 }
 
+/** `change` removes every selected key. */
+const ALL = 'all' as const;
+/** `change` removes no key. */
+const NONE: ReadonlySet<unknown> = new Set();
+
 export class StarTableSelection<T> {
   /** Key of the row where a range starts (the last row clicked or toggled). */
   private anchor: { readonly key: unknown } | null = null;
 
   constructor(private readonly host: StarTableSelectionHost<T>) {}
 
-  /** Keys of the selected rows: `selectionKeys` when the owner binds it, else from `selection`. */
-  readonly keys = computed(() => {
-    const keys = this.host.selectionKeys();
-    if (keys) return new Set(keys);
-    return new Set(this.host.selection().map((row) => this.host.keyOf(row)));
+  /** Selected keys in order: `selectionKeys` when the owner binds it, else from `selection`. */
+  private readonly keyList = computed<readonly unknown[]>(
+    () => this.host.selectionKeys() ?? this.host.selection().map((row) => this.host.keyOf(row)),
+  );
+
+  /** The selected keys as a set, for fast look-ups. */
+  readonly keys = computed(() => new Set(this.keyList()));
+
+  /**
+   * Row objects by key: the rows of `selection`, replaced by the rows of `value` in key mode, so
+   * a reload or an edit gives the fresh objects.
+   */
+  private readonly objects = computed(() => {
+    const byKey = new Map<unknown, T>();
+    for (const row of this.host.selection()) byKey.set(this.host.keyOf(row), row);
+    if (this.host.selectionKeys()) {
+      const keys = this.keys();
+      for (const row of this.host.knownRows()) {
+        const key = this.host.keyOf(row);
+        if (keys.has(key)) byKey.set(key, row);
+      }
+    }
+    return byKey;
+  });
+
+  /**
+   * The selected rows as objects. In key mode: the rows of the keys that resolve (a key of a row
+   * that the table never had, for example on another lazy page, has no object).
+   */
+  readonly rowsOfKeys = computed<readonly T[]>(() => {
+    if (!this.host.selectionKeys()) return this.host.selection();
+    const objects = this.objects();
+    return this.keyList().flatMap((key) => (objects.has(key) ? [objects.get(key) as T] : []));
   });
 
   /** Rows that the header check box covers: the filter result, or the page. */
   private readonly scope = computed(() =>
-    (this.host.pageOnly() ? this.host.pageRows() : this.host.allRows()).filter((row) =>
+    (this.host.pageOnly() ? this.host.pageRows() : this.host.rows()).filter((row) =>
       this.selectable(row),
     ),
   );
@@ -126,29 +160,23 @@ export class StarTableSelection<T> {
     return !test || test(row);
   }
 
-  /** Check box of a row (multiple) or a Space on the row: adds or removes the row. */
+  /** Check box of a row, or Space on a row: adds or removes the row (single: the only row). */
   toggle(row: T, event: Event | null): boolean {
     if (!this.selectable(row)) return false;
-    this.anchor = { key: this.host.keyOf(row) };
-    if (this.host.mode() === 'single') {
-      return this.commit(this.isSelected(row) ? [] : [row], event);
-    }
     const key = this.host.keyOf(row);
-    const current = this.current();
-    return this.commit(
-      this.isSelected(row)
-        ? current.filter((selected) => !Object.is(this.host.keyOf(selected), key))
-        : [...current, row],
-      event,
-    );
+    this.anchor = { key };
+    const selected = this.isSelected(row);
+    if (this.host.mode() === 'single') {
+      return selected ? this.change([], ALL, event) : this.change([row], ALL, event);
+    }
+    return selected ? this.change([], new Set([key]), event) : this.change([row], NONE, event);
   }
 
   /** Radio of a row, or a click in single mode: the row becomes the selection. */
   selectOnly(row: T, event: Event | null): boolean {
     if (!this.selectable(row)) return false;
     this.anchor = { key: this.host.keyOf(row) };
-    if (this.isSelected(row) && this.keys().size === 1) return false;
-    return this.commit([row], event);
+    return this.change([row], ALL, event);
   }
 
   /**
@@ -165,22 +193,21 @@ export class StarTableSelection<T> {
     }
     const meta = event.ctrlKey || event.metaKey;
     if (event.shiftKey && mode === 'multiple' && this.anchor) {
-      const range = this.range(row);
-      this.commit(meta ? this.union(this.current(), range) : range, event);
+      this.change(this.range(row), meta ? NONE : ALL, event);
       return;
     }
     if (meta) this.toggle(row, event);
-    else {
-      this.anchor = { key: this.host.keyOf(row) };
-      if (!(this.isSelected(row) && this.keys().size === 1)) this.commit([row], event);
-    }
+    else this.selectOnly(row, event);
   }
 
-  /** Shift + Space or Shift + Arrow: adds the rows from the anchor to `row` (multiple only). */
+  /**
+   * Shift + Space or Shift + Arrow: adds the rows from the anchor to `row` (multiple only). The
+   * range only grows: a move back toward the anchor does not clear rows.
+   */
   extendTo(row: T, event: Event | null): boolean {
     if (this.host.mode() !== 'multiple') return this.selectOnly(row, event);
     if (!this.anchor) this.anchor = { key: this.host.keyOf(row) };
-    return this.commit(this.union(this.current(), this.range(row)), event);
+    return this.change(this.range(row), NONE, event);
   }
 
   /** The header check box: selects or clears every selectable row in its scope. */
@@ -192,9 +219,9 @@ export class StarTableSelection<T> {
       return true;
     }
     const rows = this.scope();
-    const keys = new Set(rows.map((row) => this.host.keyOf(row)));
-    const others = this.current().filter((row) => !keys.has(this.host.keyOf(row)));
-    const done = this.commit(checked ? [...others, ...rows] : others, event, false);
+    const done = checked
+      ? this.change(rows, NONE, event, false)
+      : this.change([], new Set(rows.map((row) => this.host.keyOf(row))), event, false);
     if (done) this.host.headerToggle.emit({ checked, originalEvent: event });
     return done;
   }
@@ -221,8 +248,7 @@ export class StarTableSelection<T> {
     }
     event.preventDefault();
     if (action === 'toggle') {
-      if (mode === 'single') this.click(row, new MouseEvent('click'));
-      else this.toggle(row, event);
+      this.toggle(row, event);
     } else if (action === 'range') {
       this.extendTo(row, event);
     } else {
@@ -255,56 +281,53 @@ export class StarTableSelection<T> {
   private range(row: T): T[] {
     const anchor = this.anchor?.key ?? this.host.keyOf(row);
     return starSelectionRange(
-      this.host.orderedRows(),
+      this.host.rows(),
       this.host.keyOf,
       anchor,
       this.host.keyOf(row),
     ).filter((item) => this.selectable(item));
   }
 
-  private union(current: readonly T[], add: readonly T[]): T[] {
-    const keys = new Set(current.map((row) => this.host.keyOf(row)));
-    return [...current, ...add.filter((row) => !keys.has(this.host.keyOf(row)))];
-  }
-
   /**
-   * The selected rows as objects. With `selectionKeys`, each key resolves to the row of `value`
-   * (fresh objects after a reload or an edit); a key that is not in `value` keeps its old object.
+   * Changes the selection by keys: removes `remove` (or all keys), then adds the keys of `add`.
+   * Keys without a row object stay as they are, so a selection on other lazy pages survives.
+   * `selectionChanging` gets the row objects before and after; `perRow` emits `rowUnselect`,
+   * then `rowSelect`, for each changed row. Returns `false` when nothing changed or a handler
+   * cancelled.
    */
-  private current(): readonly T[] {
-    const keys = this.host.selectionKeys();
-    if (!keys) return this.host.selection();
-    const byKey = new Map<unknown, T>();
-    for (const row of this.host.selection()) byKey.set(this.host.keyOf(row), row);
-    for (const row of this.host.knownRows()) {
-      const key = this.host.keyOf(row);
-      if (byKey.has(key) || keys.includes(key)) byKey.set(key, row);
-    }
-    return keys.flatMap((key) => (byKey.has(key) ? [byKey.get(key) as T] : []));
-  }
-
-  /**
-   * Sets the selection after `selectionChanging`. Returns `false` when nothing changed or a
-   * handler cancelled. `perRow` emits `rowSelect` / `rowUnselect` for each changed row.
-   */
-  private commit(next: readonly T[], event: Event | null, perRow = true): boolean {
-    const previous = this.current();
-    const before = new Set(previous.map((row) => this.host.keyOf(row)));
-    const after = new Set(next.map((row) => this.host.keyOf(row)));
-    if (before.size === after.size && [...after].every((key) => before.has(key))) return false;
+  private change(
+    add: readonly T[],
+    remove: ReadonlySet<unknown> | typeof ALL,
+    event: Event | null,
+    perRow = true,
+  ): boolean {
+    const keyOf = this.host.keyOf;
+    const before = this.keyList();
+    const kept = remove === ALL ? [] : before.filter((key) => !remove.has(key));
+    const keptSet = new Set(kept);
+    const added = add.filter((row) => {
+      const key = keyOf(row);
+      if (keptSet.has(key)) return false;
+      keptSet.add(key);
+      return true;
+    });
+    const after = [...kept, ...added.map((row) => keyOf(row))];
+    const beforeSet = this.keys();
+    if (after.length === beforeSet.size && after.every((key) => beforeSet.has(key))) return false;
+    const objects = new Map(this.objects());
+    for (const row of added) objects.set(keyOf(row), row);
+    const previous = this.rowsOfKeys();
+    const next = after.flatMap((key) => (objects.has(key) ? [objects.get(key) as T] : []));
     if (!starSelectionChanging(this.host.changing, previous, next)) return false;
     this.host.selection.set(next);
-    if (this.host.selectionKeys()) this.host.selectionKeys.set([...after]);
+    if (this.host.selectionKeys()) this.host.selectionKeys.set(after);
     if (perRow) {
-      for (const row of next) {
-        if (!before.has(this.host.keyOf(row))) {
-          this.host.rowSelect.emit({ row, originalEvent: event });
-        }
-      }
+      const afterSet = new Set(after);
       for (const row of previous) {
-        if (!after.has(this.host.keyOf(row))) {
-          this.host.rowUnselect.emit({ row, originalEvent: event });
-        }
+        if (!afterSet.has(keyOf(row))) this.host.rowUnselect.emit({ row, originalEvent: event });
+      }
+      for (const row of added) {
+        if (!beforeSet.has(keyOf(row))) this.host.rowSelect.emit({ row, originalEvent: event });
       }
     }
     return true;

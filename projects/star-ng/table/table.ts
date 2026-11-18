@@ -487,6 +487,7 @@ export class StarRowExpansionTemplate<T = unknown> {
                     selectionPageOnly() && paginator() ? text.selectPageRows : text.selectAllRows
                   "
                   [disabled]="!headerEnabled()"
+                  (click)="boxEvent = $event"
                   (checkedChange)="togglePage($event, allBox)"
                 />
               </th>
@@ -769,7 +770,7 @@ export class StarRowExpansionTemplate<T = unknown> {
                         [disabled]="!canSelect(row)"
                         [ariaLabel]="selectRowLabel(row)"
                         (checkedChange)="toggleRow(row, rowBox)"
-                        (click)="$event.stopPropagation()"
+                        (click)="$event.stopPropagation(); boxEvent = $event"
                       />
                     </td>
                   } @else if (selectionMode() === 'single') {
@@ -782,7 +783,7 @@ export class StarRowExpansionTemplate<T = unknown> {
                         [disabled]="!canSelect(row)"
                         [attr.data-select-key]="rowKeyText(row)"
                         [attr.aria-label]="selectRowLabel(row)"
-                        (change)="selectOnly(row, $any($event.target))"
+                        (change)="selectOnly(row, $event)"
                         (click)="$event.stopPropagation()"
                       />
                     </td>
@@ -1154,8 +1155,10 @@ export class StarTable<T> {
   /**
    * Keys (`dataKey`) of the selected rows (PrimeNG `selectionKeys`). Two-way. Bind an array to
    * make the keys the source of the selection: it survives a lazy reload or an edit that gives
-   * new row objects, and `selection` then holds the current row objects. `null` (default): the
-   * keys come from `selection`.
+   * new row objects, and keys of rows that are not in `value` (other lazy pages) stay selected.
+   * `selection` then follows the keys: it holds the row objects of the keys that are in `value`
+   * (fresh objects), plus the objects it already had for the other keys. `exportCsv({
+   * selectionOnly })` uses the same rows. `null` (default): the keys come from `selection`.
    */
   readonly selectionKeys = model<readonly unknown[] | null>(null);
   /**
@@ -1167,8 +1170,10 @@ export class StarTable<T> {
   /**
    * Meta-key selection (PrimeNG `metaKeySelection`): a click selects only that row, Ctrl / Cmd +
    * click toggles it, Shift + click selects a range. Rows become focusable (one tab stop): Arrow
-   * Up / Down move, Space toggles, Shift + Space and Shift + Arrow extend the range. Default off:
-   * only single mode selects on a click.
+   * Up / Down move, Space toggles, Shift + Space and Shift + Arrow extend the range (a range only
+   * grows; Shift + Arrow back toward the anchor does not clear rows). The Arrow keys move between
+   * rendered rows: with virtual scroll, only within the rendered window. Default off: only single
+   * mode selects on a click.
    */
   readonly metaKeySelection = input(false, { transform: booleanAttribute });
   /**
@@ -1927,6 +1932,18 @@ export class StarTable<T> {
   );
 
   constructor() {
+    // Key mode: `selection` follows the keys and `value` (owner key changes, a lazy reload, an
+    // edit that gives new row objects).
+    effect(() => {
+      if (!this.selectionKeys()) return;
+      const rows = this.select.rowsOfKeys();
+      untracked(() => {
+        const current = this.selection();
+        if (rows.length !== current.length || rows.some((row, i) => row !== current[i])) {
+          this.selection.set(rows);
+        }
+      });
+    });
     let editingBefore = new Set<unknown>();
     effect(() => {
       const editing = this.editingRowSet();
@@ -2936,7 +2953,7 @@ export class StarTable<T> {
   } {
     return {
       columns: this.visibleColumns().filter((column) => column.exportable !== false),
-      rows: options.rows ?? (options.selectionOnly ? this.selection() : this.sorted()),
+      rows: options.rows ?? (options.selectionOnly ? this.select.rowsOfKeys() : this.sorted()),
     };
   }
 
@@ -3125,9 +3142,8 @@ export class StarTable<T> {
     pageOnly: this.selectionPageOnly,
     rowSelectable: this.rowSelectable,
     keyOf: (row) => this.trackKey(row),
-    allRows: computed(() => (this.lazy() ? this.pageRows() : this.withAdded())),
+    rows: computed(() => (this.lazy() ? this.pageRows() : this.withAdded())),
     pageRows: this.pageRows,
-    orderedRows: computed(() => (this.lazy() ? this.pageRows() : this.withAdded())),
     knownRows: this.value,
     changing: this.selectionChanging,
     rowSelect: this.rowSelect,
@@ -3162,10 +3178,13 @@ export class StarTable<T> {
     return Object.is(stop.key, this.trackKey(row)) ? 0 : -1;
   }
 
-  /** The row that is the tab stop: the last focused row on the page, else the first row. */
+  /**
+   * The row that is the tab stop: the last focused row while it is rendered, else the first
+   * rendered row (with virtual scroll, the first row of the window).
+   */
   private readonly tabStop = computed<{ readonly key: unknown } | null>(() => {
     if (!this.metaKeySelection() || !this.selectionMode()) return null;
-    const rows = this.pageRows();
+    const rows = this.bodyEntries().flatMap((entry) => (entry.kind === 'row' ? [entry.row] : []));
     const active = this.activeRow();
     if (active && rows.some((row) => Object.is(this.trackKey(row), active.key))) return active;
     return { key: rows.length ? this.trackKey(rows[0]) : undefined };
@@ -3177,9 +3196,21 @@ export class StarTable<T> {
 
   /** True while a cancelled change puts a check box back: its `checkedChange` is not a toggle. */
   private restoring = false;
+  /**
+   * The click on a check box: it comes before `checkedChange`, which has no event, and becomes
+   * the `originalEvent` of the selection events.
+   */
+  protected boxEvent: Event | null = null;
+
+  private takeBoxEvent(): Event | null {
+    const event = this.boxEvent;
+    this.boxEvent = null;
+    return event;
+  }
 
   protected toggleRow(row: T, box?: StarCheckbox): void {
-    if (this.restoring || this.select.toggle(row, null) || !box) return;
+    if (this.restoring) return;
+    if (this.select.toggle(row, this.takeBoxEvent()) || !box) return;
     // A cancelled change: the box shows the selection again (its model and its element).
     this.restore(() => box.checked.set(this.isSelected(row)));
     const input = this.body()?.nativeElement.querySelector<HTMLInputElement>(
@@ -3188,8 +3219,9 @@ export class StarTable<T> {
     if (input) input.checked = this.isSelected(row);
   }
 
-  protected selectOnly(row: T, radio?: HTMLInputElement): void {
-    if (this.select.selectOnly(row, null) || !radio) return;
+  protected selectOnly(row: T, event: Event): void {
+    const radio = event.target as HTMLInputElement;
+    if (this.select.selectOnly(row, event)) return;
     // A cancelled change: the radios show the selection again.
     radio.checked = false;
     const body = this.body()?.nativeElement;
@@ -3202,7 +3234,8 @@ export class StarTable<T> {
   }
 
   protected togglePage(checked: boolean, box?: StarCheckbox): void {
-    if (this.restoring || this.select.toggleAll(checked, null) || !box) return;
+    if (this.restoring) return;
+    if (this.select.toggleAll(checked, this.takeBoxEvent()) || !box) return;
     const state = this.headerState();
     this.restore(() => {
       box.checked.set(state === true);
