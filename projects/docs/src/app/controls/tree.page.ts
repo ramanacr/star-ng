@@ -5,7 +5,6 @@ import {
   resource,
   signal,
   untracked,
-  viewChild,
 } from '@angular/core';
 
 import { form, FormField, minLength } from '@angular/forms/signals';
@@ -215,17 +214,17 @@ interface Project {
       <docs-example
         heading="Methods"
         source="tree/methods"
-        note="expandAll opens every branch that has children (lazy nodes stay closed), collapseAll closes all, expandPath opens the ancestors of a key, and scrollToNode opens them and scrolls the row into view. Get the tree with viewChild(StarTree)."
+        note="expandAll opens every branch that has children (lazy nodes stay closed), collapseAll closes all, expandPath opens the ancestors of a key, and scrollToNode opens them and scrolls the row into view. Call them on a template reference or on viewChild(StarTree)."
       >
         <div class="docs-stack">
           <div class="docs-row">
-            <star-button size="sm" variant="secondary" (pressed)="apiTree().expandAll()">
+            <star-button size="sm" variant="secondary" (pressed)="apiTree.expandAll()">
               Expand all
             </star-button>
-            <star-button size="sm" variant="secondary" (pressed)="apiTree().collapseAll()">
+            <star-button size="sm" variant="secondary" (pressed)="apiTree.collapseAll()">
               Collapse all
             </star-button>
-            <star-button size="sm" variant="secondary" (pressed)="apiTree().scrollToNode('tax')">
+            <star-button size="sm" variant="secondary" (pressed)="apiTree.scrollToNode('tax')">
               Show Tax
             </star-button>
           </div>
@@ -418,8 +417,6 @@ export class TreePage {
   protected readonly lastAction = signal('none');
 
   // ---- methods ----
-  protected readonly apiTree = viewChild.required<StarTree>('apiTree');
-
   protected readonly apiOpen = signal<readonly string[]>([]);
 
   constructor() {
