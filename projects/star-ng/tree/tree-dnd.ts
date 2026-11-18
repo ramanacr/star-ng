@@ -2,7 +2,7 @@
 // targets of the keyboard moves) and the shared drag state that lets one tree drop a node from
 // another. The tree never changes `nodes`: it emits `nodeDrop` and the owner moves the node.
 import { computed, DestroyRef, effect, inject, Injectable, signal, untracked } from '@angular/core';
-import type { StarTreeNode } from './tree';
+import type { StarTree, StarTreeNode } from './tree';
 import { BranchLike, parentsOf } from './tree-model';
 
 /** Where the dragged node goes, relative to the drop node. */
@@ -23,7 +23,7 @@ export interface StarTreeNodeDropEvent<T = unknown> {
   /** `'before'` or `'after'`: a sibling of `dropNode`. `'inside'`: the last child of `dropNode`. */
   readonly position: StarTreeDropPosition;
   /** The source tree, when the node comes from another tree (cross-tree drop). */
-  readonly fromTree?: object;
+  readonly fromTree?: StarTree;
 }
 
 /**
@@ -40,7 +40,7 @@ export type StarTreeDropValidator<T = unknown> = (
 export interface StarTreeActiveDrag {
   readonly node: StarTreeNode;
   /** The tree that the node comes from. */
-  readonly source: object;
+  readonly source: StarTree;
   readonly scope: StarTreeDragScope;
 }
 
@@ -145,7 +145,7 @@ function isTreeDrag(event: DragEvent): boolean {
 /** What a tree gives its drag-and-drop controller. */
 export interface TreeDndHost {
   /** The tree itself: the source of a drag, and `fromTree` of a cross-tree drop. */
-  readonly owner: object;
+  readonly owner: StarTree;
   readonly element: HTMLElement;
   readonly draggable: () => boolean;
   readonly droppable: () => boolean;

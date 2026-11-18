@@ -228,7 +228,10 @@ describe('StarTree drag and drop', () => {
     expect(host.otherDrops.length).toBe(1);
     expect(host.otherDrops[0].dragNode.key).toBe('ops');
     expect(host.otherDrops[0].position).toBe('inside');
-    expect(host.otherDrops[0].fromTree).toBeInstanceOf(StarTree);
+    // Typed as the tree: the owner can read the source tree without a cast.
+    const from: StarTree | undefined = host.otherDrops[0].fromTree;
+    expect(from).toBeInstanceOf(StarTree);
+    expect(from?.labelFor('ops')).toBe('Operations');
     host.scope.set('mail');
     await fixture.whenStable();
     dragEvent('dragstart', row('ops'));
