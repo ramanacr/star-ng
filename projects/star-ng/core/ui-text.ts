@@ -45,6 +45,8 @@ export interface StarUiText {
   readonly selectedItems: (count: number) => string;
   readonly searching: string;
   readonly showOptions: string;
+  /** The row that adds typed text as a new value (multi-select, multiple autocomplete). */
+  readonly addCustomValue: (label: string) => string;
   readonly resultsAvailable: (count: number) => string;
   // Table, paginator, data view
   readonly pagination: string;
@@ -72,6 +74,26 @@ export interface StarUiText {
   readonly terminalCommand: string;
   readonly compareImages: string;
   readonly editCell: (column: string) => string;
+  readonly editRow: string;
+  readonly saveRow: string;
+  readonly cancelRowEdit: string;
+  readonly rowActions: string;
+  readonly cellChanged: string;
+  readonly rowDeleted: string;
+  readonly valueRequired: string;
+  readonly valueMin: (min: number) => string;
+  readonly valueMax: (max: number) => string;
+  readonly valuePattern: string;
+  readonly valueNumber: string;
+  readonly changeAdded: string;
+  readonly editSaved: string;
+  readonly editCanceled: string;
+  readonly editInvalid: string;
+  readonly editUndone: string;
+  readonly editRedone: string;
+  readonly editsDiscarded: string;
+  readonly rowAdded: string;
+  readonly rowRemoved: string;
   readonly columns: string;
   readonly resizeColumn: (column: string) => string;
   readonly moveColumnEarlier: (column: string) => string;
@@ -267,6 +289,7 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   selectedItems: (count) => `${count} items selected`,
   searching: 'Searching…',
   showOptions: 'Show options',
+  addCustomValue: (label) => `Add “${label}”`,
   resultsAvailable: (count) => (count === 1 ? '1 result available' : `${count} results available`),
 
   pagination: 'Pagination',
@@ -294,6 +317,26 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   terminalCommand: 'Command',
   compareImages: 'Compare images',
   editCell: (column) => `Edit ${column}`,
+  editRow: 'Edit row',
+  saveRow: 'Save',
+  cancelRowEdit: 'Cancel',
+  rowActions: 'Row actions',
+  cellChanged: 'changed',
+  rowDeleted: 'deleted',
+  valueRequired: 'Enter a value.',
+  valueMin: (min) => `Enter ${min} or more.`,
+  valueMax: (max) => `Enter ${max} or less.`,
+  valuePattern: 'Enter the value in the expected format.',
+  valueNumber: 'Enter a number.',
+  changeAdded: 'Change added.',
+  editSaved: 'Changes saved.',
+  editCanceled: 'Edit canceled.',
+  editInvalid: 'Correct the errors, then save.',
+  editUndone: 'Change undone.',
+  editRedone: 'Change redone.',
+  editsDiscarded: 'Changes discarded.',
+  rowAdded: 'Row added.',
+  rowRemoved: 'Row deleted.',
   columns: 'Columns',
   resizeColumn: (column) => `Resize ${column}`,
   moveColumnEarlier: (column) => `Move ${column} earlier`,
@@ -460,12 +503,15 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   tagLimit: ['max'],
   selectedItems: ['count'],
   resultsAvailable: ['count'],
+  addCustomValue: ['label'],
   page: ['page'],
   pageReport: ['first', 'last', 'total'],
   filterBy: ['column'],
   filterMin: ['column'],
   filterMax: ['column'],
   editCell: ['column'],
+  valueMin: ['min'],
+  valueMax: ['max'],
   resizeColumn: ['column'],
   moveColumnEarlier: ['column'],
   moveColumnLater: ['column'],

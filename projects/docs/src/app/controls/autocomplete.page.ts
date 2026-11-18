@@ -9,6 +9,7 @@ import { STAR_SLOTS } from '@star-ng/ui/core';
 import { StarField } from '@star-ng/ui/field';
 import { StarOptionTemplate } from '@star-ng/ui/select';
 import { DOCS, DocsRow } from '../shared/docs';
+import { lazyOrders } from '../shared/lazy-orders';
 
 interface Person {
   readonly id: string;
@@ -229,6 +230,103 @@ interface OfficeCity {
         right-to-left page. See the Right-to-left guide.
       </p>
 
+      <docs-example
+        heading="Custom values"
+        source="autocomplete/custom-values"
+        note="With allowCustomValues the list ends with a row Add “text” when no option has the typed label. Choosing it adds the text as a chip and fires customValueAdd."
+      >
+        <div class="docs-stack">
+          <star-multi-autocomplete
+            [options]="keywords"
+            [(value)]="customKeywords"
+            allowCustomValues
+            placeholder="Add a keyword"
+            ariaLabel="Keywords with new ones"
+            (customValueAdd)="lastKeyword.set($event)"
+          />
+          <p class="docs-output" role="status">
+            Keywords: {{ customKeywords().join(', ') || 'none' }}. New:
+            {{ lastKeyword() ?? 'none' }}
+          </p>
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="Force selection"
+        source="autocomplete/force-selection"
+        note="With forceSelection, text that is no option label clears the field and the value when the field loses focus. Without it (the default) the text goes back to the label of the value. optionSelect and optionUnselect fire when an option is chosen or the value is cleared."
+      >
+        <div class="docs-stack">
+          <star-autocomplete
+            [options]="cities"
+            [(value)]="forcedCity"
+            forceSelection
+            showClear
+            placeholder="Type a city, then leave the field"
+            ariaLabel="City, listed only"
+            (optionSelect)="cityEvent.set('Selected ' + $event)"
+            (optionUnselect)="cityEvent.set('Removed ' + $event)"
+          />
+          <p class="docs-output" role="status">
+            City: {{ forcedCity() ?? 'none' }}. {{ cityEvent() }}
+          </p>
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="Token entry"
+        source="autocomplete/tokens"
+        note="In star-multi-autocomplete, separator ends a chip while typing (here a comma or a semicolon), addOnTab makes a chip on Tab and keeps the focus in the field, and addOnBlur makes a chip when the field loses focus. The text must be an option label, or any text with allowCustomValues. unique off lets a keyword be chosen twice."
+      >
+        <div class="docs-stack">
+          <star-multi-autocomplete
+            [options]="keywords"
+            [(value)]="tokens"
+            [separator]="tokenSeparator"
+            addOnTab
+            addOnBlur
+            allowCustomValues
+            [unique]="false"
+            placeholder="Type keywords, separated by commas"
+            ariaLabel="Keywords as tokens"
+          />
+          <p class="docs-output" role="status">Keywords: {{ tokens().join(', ') || 'none' }}</p>
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="Lazy loading"
+        source="autocomplete/lazy"
+        [script]="lazyScript"
+        note="lazy with virtualScroll asks for the suggestions in view through lazyLoad; the filter of the event is the typed text."
+      >
+        <div class="docs-stack">
+          <star-autocomplete
+            #lazyControl
+            [options]="lazyList.options()"
+            optionLabel="name"
+            optionValue="id"
+            [(value)]="lazyOrder"
+            lazy
+            virtualScroll
+            dropdown
+            placeholder="Type an order number"
+            ariaLabel="Order, loaded on demand"
+            (lazyLoad)="lazyList.load($event)"
+          />
+          <p class="docs-output" role="status">Order: {{ lazyOrder() ?? 'none' }}</p>
+          @if (lazyList.failed()) {
+            <button
+              type="button"
+              class="star-btn star-btn--sm star-btn--ghost"
+              (click)="lazyControl.resetLazy()"
+            >
+              Retry
+            </button>
+          }
+        </div>
+      </docs-example>
+
       <docs-api
         [of]="[
           'StarAutoComplete',
@@ -244,6 +342,62 @@ interface OfficeCity {
   `,
 })
 export class AutocompletePage {
+  protected readonly forcedCity = signal<string | null>(null);
+  protected readonly cityEvent = signal('');
+  protected readonly tokens = signal<readonly string[]>([]);
+  protected readonly tokenSeparator = /[,;]/;
+  protected readonly customKeywords = signal<readonly string[]>([]);
+  protected readonly lastKeyword = signal<string | null>(null);
+  protected readonly lazyList = lazyOrders();
+  protected readonly lazyOrder = signal<number | null>(null);
+  protected readonly lazyScript = `// A fake order service (no network) and the list state, in lazy-orders.ts:
+// fetchOrderPage({ first, last, filter }) waits 400 ms and returns { first, rows, total, filter }.
+// lazyLoad asks for each range once, so the requests of one filter collect in a list and
+// resource() loads the ranges that are not in the cache yet (an aborted load loses nothing).
+export function lazyOrders() {
+  const requests = signal<readonly StarListLazyLoadEvent[]>([]);
+  const cache = new Map<number, LazyOrder>();
+  let cacheFilter: string | null = null;
+  let total = 0;
+  const loaded = (r: StarListLazyLoadEvent) => {
+    if (!total) return false;
+    for (let i = r.first; i <= Math.min(r.last, total - 1); i++) if (!cache.has(i)) return false;
+    return true;
+  };
+  const state = resource({
+    params: () => (requests().length ? requests() : undefined),
+    loader: async ({ params, abortSignal }) => {
+      const filter = params[0].filter;
+      if (filter !== cacheFilter) {
+        cache.clear();
+        cacheFilter = filter;
+        total = 0;
+      }
+      const pages = await Promise.all(
+        params.filter((r) => !loaded(r)).map((r) => fetchOrderPage(r, abortSignal)),
+      );
+      for (const page of pages) {
+        total = page.total;
+        page.rows.forEach((row, i) => cache.set(page.first + i, row));
+      }
+      return { filter, total, rows: new Map(cache) };
+    },
+  });
+  // The full-length array, with undefined where an order is not loaded yet.
+  const options = linkedSignal<LazyOrderState | undefined, readonly (LazyOrder | undefined)[]>({
+    source: () => (state.hasValue() ? state.value() : undefined),
+    computation: (next, previous) =>
+      next ? Array.from({ length: next.total }, (_, i) => next.rows.get(i)) : (previous?.value ?? []),
+  });
+  const load = (event: StarListLazyLoadEvent) =>
+    requests.update((list) =>
+      list.length && list[0].filter === event.filter ? [...list, event] : [event],
+    );
+  // On an error, the page shows a Retry button: (click)="lazyControl.resetLazy()".
+  return { options: options.asReadonly(), failed: computed(() => state.status() === 'error'), load };
+}
+
+readonly lazyList = lazyOrders();`;
   protected readonly cities: readonly string[] = [
     'Amsterdam',
     'Berlin',
@@ -426,5 +580,9 @@ readonly task = form(this.taskModel, (path) => {
     },
     { name: 'Backspace', description: 'Multiple: in an empty field it removes the last chip.' },
     { name: 'Home / End', description: 'Move the caret in the text, as in any text field.' },
+    {
+      name: 'Tab (star-multi-autocomplete with addOnTab)',
+      description: 'Makes a chip from the typed text and keeps the focus in the field.',
+    },
   ];
 }
