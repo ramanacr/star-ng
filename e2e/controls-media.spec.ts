@@ -277,6 +277,8 @@ test.describe('editor', () => {
 
     // Escape closes the form and the focus goes back to the text.
     await link.click();
+    // The form moves the focus to its field after it renders; Escape works from there.
+    await expect(address).toBeFocused();
     await page.keyboard.press('Escape');
     await expect(address).toHaveCount(0);
     await expect(area).toBeFocused();
