@@ -4,9 +4,13 @@
  * `@star-ng/ui/transloco` is not re-exported here: it needs the optional peer `@jsverse/transloco`.
  */
 export * from '@star-ng/ui/accordion';
+export * from '@star-ng/ui/action-strip';
+export * from '@star-ng/ui/app-bar';
 export * from '@star-ng/ui/autocomplete';
 export * from '@star-ng/ui/avatar';
 export * from '@star-ng/ui/badge';
+export * from '@star-ng/ui/banner';
+export * from '@star-ng/ui/bottom-nav';
 export * from '@star-ng/ui/bottom-sheet';
 export * from '@star-ng/ui/breadcrumb';
 export * from '@star-ng/ui/button';
@@ -18,6 +22,7 @@ export * from '@star-ng/ui/data-display';
 export * from '@star-ng/ui/date-picker';
 export * from '@star-ng/ui/dialog';
 export * from '@star-ng/ui/drawer';
+export * from '@star-ng/ui/dropdown';
 export * from '@star-ng/ui/editor';
 export * from '@star-ng/ui/field';
 export * from '@star-ng/ui/file-upload';
@@ -28,6 +33,7 @@ export * from '@star-ng/ui/input-otp';
 export * from '@star-ng/ui/input-tags';
 export * from '@star-ng/ui/knob';
 export * from '@star-ng/ui/layout';
+export * from '@star-ng/ui/list';
 export * from '@star-ng/ui/listbox';
 export * from '@star-ng/ui/media';
 export * from '@star-ng/ui/menu';
@@ -55,3 +61,4 @@ export * from '@star-ng/ui/toggle-switch';
 export * from '@star-ng/ui/tooltip';
 export * from '@star-ng/ui/tree';
 export * from '@star-ng/ui/utility';
+export * from '@star-ng/ui/virtual-scroller';

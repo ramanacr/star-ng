@@ -13,6 +13,7 @@ const forCount = (count: number, one: string, other: string): string =>
  */
 export const STAR_UI_TEXT_ES: StarUiText = {
   close: 'Cerrar',
+  dismiss: 'Descartar',
   clear: 'Borrar',
   loading: 'Cargando',
   actions: 'Acciones',
@@ -22,6 +23,7 @@ export const STAR_UI_TEXT_ES: StarUiText = {
   expandItem: (label) => `Expandir ${label}`,
   collapseItem: (label) => `Contraer ${label}`,
   removeItem: (label) => `Quitar ${label}`,
+  moreCount: (count) => `${count} más`,
   tagsHint: 'Intro o coma para añadir. Retroceso quita el último elemento.',
   tagAdded: (label) => `Se añadió ${label}`,
   tagRemoved: (label) => `Se quitó ${label}`,

@@ -17,6 +17,8 @@
 @use 'controls/slider';
 @use 'controls/knob';
 @use 'controls/menu';
+@use 'controls/dropdown';
+@use 'controls/action-strip';
 @use 'controls/chip';
 @use 'controls/select';
 @use 'controls/autocomplete';
@@ -49,3 +51,8 @@
 @use 'controls/media';
 @use 'controls/table';
 @use 'controls/utility';
+@use 'controls/virtual-scroller';
+@use 'controls/list';
+@use 'controls/banner';
+@use 'controls/app-bar';
+@use 'controls/bottom-nav';
