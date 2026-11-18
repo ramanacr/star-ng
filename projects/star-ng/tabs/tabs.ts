@@ -47,7 +47,10 @@ export interface StarTabCloseEvent {
   readonly canceled: boolean;
 }
 
-/** Lazy tab body: `<ng-template starTabContent>…</ng-template>` renders on first activation only. */
+/**
+ * Lazy tab body: `<ng-template starTabContent>…</ng-template>`. It renders on the first activation
+ * of the tab (see `lazy` and `cache` of `star-tabs`). Material `matTabContent`.
+ */
 @Directive({ selector: 'ng-template[starTabContent]' })
 export class StarTabContent {
   readonly template = inject<TemplateRef<unknown>>(TemplateRef);
@@ -99,10 +102,17 @@ export class StarTab {
 
   protected readonly lazy = contentChild(StarTabContent);
   readonly active = computed(() => this.tabs.selected() === this.value());
-  /** Stays true after the first activation, so lazy content keeps its state. */
-  protected readonly rendered = linkedSignal<boolean, boolean>({
-    source: this.active,
-    computation: (active, previous) => active || (previous?.value ?? false),
+  /**
+   * Whether the `starTabContent` template is rendered: always without `lazy`; else from the first
+   * activation on, and with `cache` off only while the tab is active.
+   */
+  protected readonly rendered = linkedSignal<
+    { active: boolean; lazy: boolean; cache: boolean },
+    boolean
+  >({
+    source: () => ({ active: this.active(), lazy: this.tabs.lazy(), cache: this.tabs.cache() }),
+    computation: (now, previous) =>
+      !now.lazy || now.active || (now.cache && (previous?.value ?? false)),
   });
 }
 
@@ -233,6 +243,18 @@ export class StarTabs {
    * The selected tab scrolls into view. PrimeNG `scrollable`, Material `disablePagination` off.
    */
   readonly scrollable = input(false, { transform: booleanAttribute });
+  /**
+   * Content in `ng-template starTabContent` renders on the first activation of its tab (the
+   * default). `false` renders every template at once. Content placed directly in `star-tab`
+   * always renders at once. PrimeNG `lazy`.
+   */
+  readonly lazy = input(true, { transform: booleanAttribute });
+  /**
+   * Keeps rendered `starTabContent` alive (hidden) when its tab is not active, so it keeps its
+   * state (the default). `false` destroys it and renders it again on the next activation. Only
+   * applies with `lazy`. PrimeNG `cache`, Material `preserveContent`.
+   */
+  readonly cache = input(true, { transform: booleanAttribute });
 
   readonly changed = output<string>();
   /**

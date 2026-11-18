@@ -1,10 +1,11 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { StarField, StarInput } from '@star-ng/ui/field';
 import { StarTab, StarTabCloseEvent, StarTabContent, StarTabs } from '@star-ng/ui/tabs';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
   selector: 'docs-tabs-page',
-  imports: [DOCS, StarTabs, StarTab, StarTabContent],
+  imports: [DOCS, StarTabs, StarTab, StarTabContent, StarField, StarInput],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <docs-page
@@ -57,6 +58,25 @@ import { DOCS, DocsRow } from '../shared/docs';
             @for (month of months; track month) {
               <star-tab [value]="month" [label]="month">Report for {{ month }}.</star-tab>
             }
+          </star-tabs>
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="Lazy panels without cache"
+        source="tabs/cache"
+        note="Content inside ng-template starTabContent renders on the first activation of its tab (lazy, the default). By default it then stays, hidden, and keeps its state. With cache off, the content of a tab that is not active is destroyed: type in a note, switch the tab and come back. With lazy off, every template renders at once."
+      >
+        <div class="docs-stack">
+          <star-tabs [cache]="false" ariaLabel="Notes">
+            <star-tab value="draft" label="Draft">
+              <ng-template starTabContent>
+                <star-field label="Draft note"><input starInput /></star-field>
+              </ng-template>
+            </star-tab>
+            <star-tab value="final" label="Final">
+              <ng-template starTabContent>The final note is empty.</ng-template>
+            </star-tab>
           </star-tabs>
         </div>
       </docs-example>
@@ -138,7 +158,8 @@ closeFile(event: StarTabCloseEvent): void {
     },
     {
       name: 'ng-template starTabContent',
-      description: 'Lazy panel content. It renders when the tab is first selected and then stays.',
+      description:
+        'Lazy panel content. It renders when the tab is first selected and then stays (see lazy and cache).',
     },
   ];
   protected readonly cssVars: readonly DocsRow[] = [

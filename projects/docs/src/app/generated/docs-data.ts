@@ -6307,7 +6307,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "directive",
     "selector": "ng-template[starTabContent]",
     "entry": "@star-ng/ui/tabs",
-    "description": "Lazy tab body: `<ng-template starTabContent>…</ng-template>` renders on first activation only.",
+    "description": "Lazy tab body: `<ng-template starTabContent>…</ng-template>`. It renders on the first activation of the tab (see `lazy` and `cache` of `star-tabs`). Material `matTabContent`.",
     "inputs": [],
     "models": [],
     "outputs": []
@@ -6749,6 +6749,20 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "false",
         "required": false,
         "description": "Keeps the tabs on one line and shows previous and next scroll buttons when they do not fit. The selected tab scrolls into view. PrimeNG `scrollable`, Material `disablePagination` off."
+      },
+      {
+        "name": "lazy",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Content in `ng-template starTabContent` renders on the first activation of its tab (the default). `false` renders every template at once. Content placed directly in `star-tab` always renders at once. PrimeNG `lazy`."
+      },
+      {
+        "name": "cache",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Keeps rendered `starTabContent` alive (hidden) when its tab is not active, so it keeps its state (the default). `false` destroys it and renders it again on the next activation. Only applies with `lazy`. PrimeNG `cache`, Material `preserveContent`."
       }
     ],
     "models": [
@@ -8317,6 +8331,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "table/states": "<div class=\"docs-stack\">\n  <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"loading.set(!loading())\">\n    {{ loading() ? 'Stop loading' : 'Start loading' }}\n  </star-button>\n  <star-table\n    [value]=\"orders.slice(0, 3)\"\n    [columns]=\"columns\"\n    dataKey=\"id\"\n    ariaLabel=\"Orders being loaded\"\n    [loading]=\"loading()\"\n  />\n  <star-table\n    [value]=\"[]\"\n    [columns]=\"columns\"\n    ariaLabel=\"No orders\"\n    emptyMessage=\"No orders yet. Add the first one.\"\n  />\n</div>",
   "table/templates": "<docs-fill>\n  <star-table\n    [value]=\"orders\"\n    [columns]=\"columns\"\n    dataKey=\"id\"\n    ariaLabel=\"Orders with status tags\"\n    paginator\n    [rows]=\"5\"\n  >\n    <ng-template starCell=\"status\" [starCellOf]=\"orders\" let-row>\n      <star-tag [severity]=\"severityOf(row.status)\" [value]=\"row.status\" rounded />\n    </ng-template>\n    <ng-template starCell=\"customer\" [starCellOf]=\"orders\" let-row let-value=\"value\">\n      <strong>{{ value }}</strong>\n      <br />\n      <small>{{ row.email }}</small>\n    </ng-template>\n  </star-table>\n</docs-fill>",
   "tabs/basic": "<div class=\"docs-stack\">\n  <star-tabs [(value)]=\"tab\" ariaLabel=\"Order sections\">\n    <star-tab value=\"details\" label=\"Details\" icon=\"ph-bold ph-file-text\">\n      Order ORD-1042 for Orchard Supply.\n    </star-tab>\n    <star-tab value=\"items\" label=\"Items\" [badge]=\"12\">Twelve items in two boxes.</star-tab>\n    <star-tab value=\"billing\" label=\"Billing\" disabled>Billing is not available.</star-tab>\n    <star-tab value=\"history\" label=\"History\">Created on Monday.</star-tab>\n  </star-tabs>\n  <p class=\"docs-output\" role=\"status\">Selected: {{ tab() ?? 'details' }}</p>\n</div>",
+  "tabs/cache": "<div class=\"docs-stack\">\n  <star-tabs [cache]=\"false\" ariaLabel=\"Notes\">\n    <star-tab value=\"draft\" label=\"Draft\">\n      <ng-template starTabContent>\n        <star-field label=\"Draft note\"><input starInput /></star-field>\n      </ng-template>\n    </star-tab>\n    <star-tab value=\"final\" label=\"Final\">\n      <ng-template starTabContent>The final note is empty.</ng-template>\n    </star-tab>\n  </star-tabs>\n</div>",
   "tabs/closable": "<div class=\"docs-stack\">\n  <star-tabs\n    scrollable\n    [(value)]=\"openFile\"\n    ariaLabel=\"Open files\"\n    (tabClose)=\"closeFile($event)\"\n  >\n    @for (file of files(); track file) {\n      <star-tab [value]=\"file\" [label]=\"file\" [closable]=\"file !== 'summary.txt'\">\n        Content of {{ file }}.\n      </star-tab>\n    }\n  </star-tabs>\n  <p class=\"docs-output\" role=\"status\">Open: {{ files().join(', ') }}</p>\n</div>",
   "tabs/pill": "<div class=\"docs-stack\">\n  <star-tabs variant=\"pill\" [selectOnFocus]=\"false\" ariaLabel=\"Report views\">\n    <star-tab value=\"daily\" label=\"Daily\">Daily totals.</star-tab>\n    <star-tab value=\"weekly\" label=\"Weekly\">\n      <ng-template starTabContent>Weekly totals, loaded on first use.</ng-template>\n    </star-tab>\n    <star-tab value=\"monthly\" label=\"Monthly\">Monthly totals.</star-tab>\n  </star-tabs>\n</div>",
   "tabs/scrollable": "<div class=\"docs-stack\">\n  <star-tabs scrollable ariaLabel=\"Monthly reports\">\n    @for (month of months; track month) {\n      <star-tab [value]=\"month\" [label]=\"month\">Report for {{ month }}.</star-tab>\n    }\n  </star-tabs>\n</div>",

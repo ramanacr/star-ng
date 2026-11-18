@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { StarTab, StarTabCloseEvent, StarTabs } from '@star-ng/ui/tabs';
+import { StarTab, StarTabCloseEvent, StarTabContent, StarTabs } from '@star-ng/ui/tabs';
 
 /** Gives an element a fake scroll size; jsdom has no layout. */
 function fakeScroll(element: HTMLElement, client: number, total: number): void {
@@ -177,5 +177,56 @@ describe('StarTabs closable', () => {
     // Delete on a tab that is not closable does nothing.
     key(tabs[2], { key: 'Delete' });
     expect(host.events.length).toBe(2);
+  });
+});
+
+@Component({
+  imports: [StarTabs, StarTab, StarTabContent],
+  template: `
+    <star-tabs [(value)]="tab" [lazy]="lazy()" [cache]="cache()" ariaLabel="Views">
+      <star-tab value="a" label="A"><ng-template starTabContent>Content A</ng-template></star-tab>
+      <star-tab value="b" label="B"><ng-template starTabContent>Content B</ng-template></star-tab>
+      <star-tab value="c" label="C"><ng-template starTabContent>Content C</ng-template></star-tab>
+    </star-tabs>
+  `,
+})
+class LazyHost {
+  readonly tab = signal('a');
+  readonly lazy = signal(true);
+  readonly cache = signal(true);
+}
+
+describe('StarTabs lazy and cache', () => {
+  const texts = (el: HTMLElement) =>
+    [...el.querySelectorAll('[role=tabpanel]')].map((panel) => panel.textContent?.trim());
+
+  it('renders a panel on its first activation and keeps it by default', async () => {
+    const fixture = TestBed.createComponent(LazyHost);
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+    expect(texts(el)).toEqual(['Content A', '', '']);
+    fixture.componentInstance.tab.set('b');
+    await fixture.whenStable();
+    expect(texts(el)).toEqual(['Content A', 'Content B', '']);
+  });
+
+  it('destroys the content of a panel that is not active without cache', async () => {
+    const fixture = TestBed.createComponent(LazyHost);
+    fixture.componentInstance.cache.set(false);
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+    fixture.componentInstance.tab.set('b');
+    await fixture.whenStable();
+    expect(texts(el)).toEqual(['', 'Content B', '']);
+  });
+
+  it('renders every panel at once when lazy is off', async () => {
+    const fixture = TestBed.createComponent(LazyHost);
+    fixture.componentInstance.lazy.set(false);
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+    expect(texts(el)).toEqual(['Content A', 'Content B', 'Content C']);
+    const panels = [...el.querySelectorAll<HTMLElement>('[role=tabpanel]')];
+    expect(panels.map((panel) => panel.hidden)).toEqual([false, true, true]);
   });
 });
