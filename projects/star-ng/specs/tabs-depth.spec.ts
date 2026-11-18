@@ -188,6 +188,48 @@ describe('StarTabs closable', () => {
   });
 });
 
+describe('StarTabs close button for assistive technology', () => {
+  it('has one named close button for the selected tab, outside the tab list', async () => {
+    const fixture = TestBed.createComponent(CloseHost);
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+    const close = () => el.querySelector<HTMLButtonElement>('.star-tabs__close-selected');
+    const list = el.querySelector('[role=tablist]')!;
+    expect(close()?.textContent?.trim()).toBe('Close Two');
+    expect(close()?.getAttribute('aria-hidden')).toBeNull();
+    expect(close()?.tabIndex).toBe(0);
+    expect(list.contains(close())).toBe(false);
+    expect(close()?.closest('.star-tabs__nav')).not.toBeNull();
+
+    close()!.focus();
+    close()!.click();
+    await fixture.whenStable();
+    const host = fixture.componentInstance;
+    expect(host.names()).toEqual(['One', 'Three', 'Fixed']);
+    expect(host.tab()).toBe('Three');
+    const tabs = [...el.querySelectorAll<HTMLElement>('[role=tab]')];
+    expect(document.activeElement).toBe(tabs[1]);
+    expect(close()?.textContent?.trim()).toBe('Close Three');
+
+    // The selected tab is not closable: no button.
+    host.tab.set('Fixed');
+    await fixture.whenStable();
+    expect(close()).toBeNull();
+  });
+
+  it('moves the focus to the neighbour after a click on a pointer close button', async () => {
+    const fixture = TestBed.createComponent(CloseHost);
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+    const pointer = el.querySelectorAll<HTMLButtonElement>('.star-tabs__close')[0];
+    pointer.focus();
+    pointer.click();
+    await fixture.whenStable();
+    expect(fixture.componentInstance.names()).toEqual(['Two', 'Three', 'Fixed']);
+    expect(document.activeElement?.textContent?.trim()).toBe('Two');
+  });
+});
+
 @Component({
   imports: [StarTabs, StarTab, StarTabContent],
   template: `

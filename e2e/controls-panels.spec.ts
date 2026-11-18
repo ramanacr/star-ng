@@ -338,6 +338,16 @@ test.describe('tabs', () => {
     await live.getByRole('tab', { name: 'summary.txt' }).focus();
     await page.keyboard.press('Delete');
     await expect(status).toHaveText('Open: summary.txt, invoices.csv');
+
+    // The named close button after the tab list closes the selected tab (screen readers, voice).
+    await live.getByRole('tab', { name: 'invoices.csv' }).click();
+    const named = live.getByRole('button', { name: 'Close invoices.csv' });
+    await page.keyboard.press('Tab');
+    await expect(named).toBeFocused();
+    await expect(named).toBeVisible();
+    await page.keyboard.press('Enter');
+    await expect(status).toHaveText('Open: summary.txt');
+    await expect(live.getByRole('tab', { name: 'summary.txt' })).toBeFocused();
   });
 
   test('vertical: the tabs form a column and Arrow Down moves to the next one', async ({

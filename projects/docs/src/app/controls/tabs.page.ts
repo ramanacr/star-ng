@@ -302,6 +302,11 @@ moveBoard(event: StarTabReorderEvent): void {
         'Closes the focused tab when it is closable (tabClose). The focus moves to the next tab.',
     },
     {
+      name: 'Tab from the selected tab',
+      description:
+        'When the selected tab is closable, the next tab stop is its close button ("Close {label}"). It is visually hidden until it has the focus, and it works for screen readers and voice control. The close buttons on the tabs are for the pointer only.',
+    },
+    {
       name: 'Tab',
       description: 'Only the selected tab is in the tab order. The next stop is the panel.',
     },

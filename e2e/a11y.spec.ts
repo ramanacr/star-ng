@@ -1375,6 +1375,16 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'tabs close button of the selected tab focused',
+    path: 'controls/tabs',
+    open: async (page) => {
+      const live = example(page, 'Closable tabs');
+      const close = live.getByRole('button', { name: 'Close orders.csv' });
+      await close.focus();
+      await expect(close).toBeVisible();
+    },
+  },
+  {
     name: 'vertical tabs with the second tab selected',
     path: 'controls/tabs',
     open: async (page) => {

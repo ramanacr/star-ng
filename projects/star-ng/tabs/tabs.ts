@@ -278,6 +278,20 @@ export class StarTab {
           </span>
         }
       </div>
+      @if (closableSelected(); as current) {
+        <!--
+          The close button of the selected tab for assistive technology and voice control, which
+          cannot reach the hidden pointer buttons. It is outside the tab list, and visually
+          hidden until it has the focus.
+        -->
+        <button
+          type="button"
+          class="star-tabs__close-selected"
+          (click)="close(current, tabs().indexOf(current), false)"
+        >
+          {{ text.tabClose(current.label()) }}
+        </button>
+      }
       @if (closeHint()) {
         <span class="star-sr-only" [id]="closeHintId">{{ text.tabCloseHint }}</span>
       }
@@ -309,6 +323,7 @@ export class StarTab {
 export class StarTabs {
   protected readonly text = inject(STAR_UI_TEXT);
   private readonly injector = inject(Injector);
+  private readonly hostElement = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   protected readonly closeHintId = inject(_IdGenerator).getId('star-tabs-close-hint-');
   protected readonly reorderHintId = inject(_IdGenerator).getId('star-tabs-reorder-hint-');
 
@@ -379,6 +394,12 @@ export class StarTabs {
   protected readonly focusValue = linkedSignal(() => this.selected());
   /** Live text after a move (`reorderable`). */
   protected readonly announcement = signal('');
+  /** The selected tab when it can close: the close button after the tab list names it. */
+  protected readonly closableSelected = computed(() => {
+    const selected = this.selected();
+    const tab = this.tabs().find((t) => t.value() === selected);
+    return tab && tab.closable() && !tab.disabled() ? tab : null;
+  });
   /** The hint of the Delete key, once for all closable tabs. */
   protected readonly closeHint = computed(() => this.tabs().some((tab) => tab.closable()));
 
@@ -443,6 +464,12 @@ export class StarTabs {
    */
   protected close(tab: StarTab, index: number, fromKeyboard: boolean): void {
     if (!tab.closable() || tab.disabled()) return;
+    // A close button inside the tabs had the focus: it goes away with the tab, so the focus
+    // moves to the neighbour like after the Delete key.
+    const active = this.hostElement.ownerDocument.activeElement;
+    const fromCloseButton =
+      !!active?.closest('.star-tabs__close, .star-tabs__close-selected') &&
+      this.hostElement.contains(active);
     let canceled = false;
     this.tabClose.emit({
       value: tab.value(),
@@ -459,14 +486,15 @@ export class StarTabs {
     const at = enabled.indexOf(tab);
     const neighbour = enabled[at + 1] ?? enabled[at - 1];
     const wasSelected = tab.value() === this.selected();
-    const hadFocus = fromKeyboard || tab.value() === this.focusValue();
+    const moveFocus = fromKeyboard || fromCloseButton;
+    const hadFocus = moveFocus || tab.value() === this.focusValue();
     if (!neighbour || neighbour === tab) return;
     if (wasSelected) {
       this.value.set(neighbour.value());
       this.changed.emit(neighbour.value());
     }
     if (hadFocus) this.focusValue.set(neighbour.value());
-    if (fromKeyboard) {
+    if (moveFocus) {
       // The owner removes the tab in its handler; focus the neighbour once the list rendered.
       afterNextRender(
         () => {
