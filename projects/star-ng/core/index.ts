@@ -1,6 +1,7 @@
 export * from './breakpoints';
 export * from './direction';
 export * from './filter-match';
+export * from './filter-rules';
 export * from './filter-service';
 export * from './list-windowing';
 export * from './options';
