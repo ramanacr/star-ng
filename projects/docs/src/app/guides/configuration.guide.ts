@@ -1,0 +1,400 @@
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { StarButton } from '@star-ng/ui/button';
+import { StarClock } from '@star-ng/ui/core';
+import { StarField, StarInput } from '@star-ng/ui/field';
+import { provideStarSelectDefaults, StarSelect } from '@star-ng/ui/select';
+import { STAR_PIPES, StarCopy, StarKeyFilter } from '@star-ng/ui/utility';
+import { DOCS, DocsRow } from '../shared/docs';
+
+/** A select whose defaults come from `provideStarSelectDefaults` on this component. */
+@Component({
+  selector: 'docs-compact-select',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [provideStarSelectDefaults({ size: 'sm', filterMatchMode: 'startsWith' })],
+  imports: [StarSelect, StarField],
+  template: `
+    <star-field label="City (starts with)">
+      <star-select [options]="cities" [(value)]="city" filter placeholder="Choose a city" />
+    </star-field>
+  `,
+})
+export class DocsCompactSelect {
+  protected readonly cities = ['Berlin', 'Bern', 'Lisbon', 'Madrid', 'Málaga', 'Oslo', 'Paris'];
+  protected readonly city = signal<string | null>(null);
+}
+
+@Component({
+  selector: 'docs-configuration-guide',
+  imports: [
+    DOCS,
+    DocsCompactSelect,
+    StarButton,
+    StarField,
+    StarInput,
+    StarCopy,
+    StarKeyFilter,
+    STAR_PIPES,
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `
+    <docs-page
+      heading="Configuration"
+      lead="Set the defaults of the controls once, for the whole application: provideStarNg for the common options, and a default token per control for the options of one control family. This page also shows the shared services, pipes and directives of the core and utility entry points."
+      importFrom="import { provideStarNg } from '@star-ng/ui/core';"
+    >
+      <h2>Global configuration</h2>
+      <p>
+        Call <code>provideStarNg()</code> in the providers of the application. Every option is
+        optional. It also sets up the UI texts (<code>uiText</code>), the direction service
+        (<code>direction</code>) and the storage key of the theme (<code>themeStorageKey</code>), so
+        the existing provider functions are not needed next to it. They stay public and keep
+        working.
+      </p>
+      <docs-code [code]="setupCode" label="provideStarNg" />
+      <div class="docs-table-wrap">
+        <table class="docs-table">
+          <caption>
+            Options of provideStarNg
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Option</th>
+              <th scope="col">Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of options; track row.name) {
+              <tr>
+                <th scope="row">
+                  <code>{{ row.name }}</code>
+                </th>
+                <td>{{ row.description }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Precedence</h2>
+      <ol>
+        <li>An input that the template sets on a control wins.</li>
+        <li>
+          Then the default token of the control, for example <code>provideStarSelectDefaults</code>.
+        </li>
+        <li>Then <code>provideStarNg</code>.</li>
+        <li>Then the built-in default of the control (the Default column of each API table).</li>
+      </ol>
+      <p>
+        A control reads its defaults when it is created. <code>StarConfigService.update()</code>
+        changes the configuration at run time: the motion switch and the z-index base follow at
+        once, and controls that are created after the change use the new defaults.
+      </p>
+      <docs-code [code]="updateCode" label="StarConfigService" />
+
+      <docs-example
+        heading="Filled input"
+        source="configuration/filled"
+        note="inputVariant: 'filled' in provideStarNg gives every starInput and star-input-number this look. Here the variant input sets it on one field."
+      >
+        <div class="docs-stack docs-stack--narrow">
+          <star-field label="Project name">
+            <input starInput variant="filled" placeholder="North depot" />
+          </star-field>
+        </div>
+      </docs-example>
+
+      <h2>Default tokens per control</h2>
+      <p>
+        The default tokens follow the Material pattern (<code>MAT_SELECT_CONFIG</code>,
+        <code>MAT_DIALOG_DEFAULT_OPTIONS</code>). Each token has only the inputs that applications
+        commonly set once. Provide a token in the application config, or on one component to change
+        only the controls inside it.
+      </p>
+      <div class="docs-table-wrap">
+        <table class="docs-table">
+          <caption>
+            Default tokens
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Token and provider</th>
+              <th scope="col">Entries</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of tokens; track row.name) {
+              <tr>
+                <th scope="row">
+                  <code>{{ row.name }}</code>
+                </th>
+                <td>{{ row.description }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <docs-example
+        heading="Defaults for one part of the page"
+        source="configuration/select-defaults"
+        [script]="selectDefaultsScript"
+        note="The component provides provideStarSelectDefaults({ size: 'sm', filterMatchMode: 'startsWith' }). The select inside it is small, and its filter finds the cities that start with the typed text."
+      >
+        <div class="docs-stack docs-stack--narrow">
+          <docs-compact-select />
+        </div>
+      </docs-example>
+
+      <h2>Copy to the clipboard</h2>
+      <p>
+        <code>StarClipboard</code> copies text with <code>navigator.clipboard</code> and falls back
+        to the CDK copy. On the server it does nothing. The <code>starCopy</code> directive copies
+        on click, emits <code>copied</code> with true or false, and announces "Copied" (the
+        <code>copied</code> UI text) through <code>StarAnnouncer</code>.
+      </p>
+      <docs-example
+        heading="Copy button"
+        source="configuration/copy"
+        note="The result also goes to screen readers, so the status text below is only for sighted users."
+      >
+        <div class="docs-stack">
+          <div class="docs-row">
+            <star-button
+              variant="secondary"
+              leadingIcon="ph-bold ph-copy"
+              starCopy="ORD-1042"
+              (copied)="copied.set($event ? 'copied' : 'failed')"
+            >
+              Copy order id
+            </star-button>
+          </div>
+          <p class="docs-output">Copy: {{ copied() }}</p>
+        </div>
+      </docs-example>
+
+      <h2>Announcements</h2>
+      <p>
+        <code>StarAnnouncer</code> sends a message to screen readers through the CDK
+        <code>LiveAnnouncer</code>. It announces the same message once when several parts of the
+        page report it within one second. Use it for messages that have no visible place; a control
+        with its own live region keeps it.
+      </p>
+      <docs-code [code]="announceCode" label="StarAnnouncer" />
+
+      <h2>Pipes</h2>
+      <p>
+        The pipes are pure and run on the server. They take the locale from their argument, else
+        from
+        <code>locale</code> of <code>provideStarNg</code>, else the browser locale. Import them one
+        by one or all with <code>STAR_PIPES</code> from <code>&#64;star-ng/ui/utility</code>.
+      </p>
+      <docs-example
+        heading="File size, relative time, highlight and initials"
+        source="configuration/pipes"
+        [script]="pipesScript"
+        note="starRelativeTime is pure: it gets the time from StarClock, a signal that moves every minute (provideStarClock changes the tick). starHighlight returns escaped text with mark elements, for [innerHTML]."
+      >
+        <div class="docs-stack">
+          <ul class="docs-output">
+            @for (file of files; track file.name) {
+              <li>
+                <span [innerHTML]="file.name | starHighlight: 'report'"></span>,
+                {{ file.bytes | starFileSize: 'en-US' }}, changed
+                {{ file.changed | starRelativeTime: clock.now() : 'en-US' }} by
+                <abbr [title]="file.owner">{{ file.owner | starInitials }}</abbr>
+              </li>
+            }
+          </ul>
+        </div>
+      </docs-example>
+
+      <h2>Key filter</h2>
+      <p>
+        <code>starKeyFilter</code> lets the user type only some characters (PrimeNG
+        <code>pKeyFilter</code>). Use a preset (<code>int</code>, <code>num</code>,
+        <code>money</code>, <code>hex</code>, <code>alpha</code>, <code>alphanum</code>,
+        <code>email</code>) or a regular expression for one character. A paste inserts only the
+        allowed characters. An input method (IME) composition is never interrupted. With
+        <code>validateOnly</code> nothing is blocked: the field gets an error instead.
+      </p>
+      <docs-example
+        heading="Filtered fields"
+        source="configuration/key-filter"
+        note="The quantity takes digits and the minus sign, the color code takes 0-9 and a-f. The reference field only checks: type a space to see the error."
+      >
+        <div class="docs-stack docs-stack--narrow">
+          <star-field label="Quantity">
+            <input starInput starKeyFilter="int" inputmode="numeric" />
+          </star-field>
+          <star-field label="Color code (hex)">
+            <input starInput starKeyFilter="hex" maxlength="6" />
+          </star-field>
+          <star-field
+            label="Reference"
+            [error]="referenceValid() ? '' : 'Use letters, digits and the underscore only.'"
+          >
+            <input
+              starInput
+              starKeyFilter="alphanum"
+              validateOnly
+              (validChange)="referenceValid.set($event)"
+            />
+          </star-field>
+        </div>
+      </docs-example>
+
+      <h2>Accessibility</h2>
+      <p>
+        <code>reducedMotion: 'always'</code> turns the StarNG transitions off for every user, as the
+        <code>prefers-reduced-motion</code> setting does for one user. A filled input keeps the
+        visible focus ring and the error border. The copy result and the key filter error reach
+        screen readers: the first through the announcer, the second through the error of the field.
+      </p>
+    </docs-page>
+  `,
+})
+export class ConfigurationGuide {
+  protected readonly clock = inject(StarClock);
+  protected readonly copied = signal('none');
+  protected readonly referenceValid = signal(true);
+
+  private readonly minute = 60_000;
+  protected readonly files = [
+    {
+      name: 'Quarterly report.pdf',
+      bytes: 1_258_291,
+      changed: this.clock.now() - 5 * this.minute,
+      owner: 'Ana Ruiz',
+    },
+    {
+      name: 'Invoice INV-2041.csv',
+      bytes: 18_400,
+      changed: this.clock.now() - 26 * 60 * this.minute,
+      owner: 'Jonas Weber',
+    },
+    {
+      name: 'Site photos.zip',
+      bytes: 3_400_000_000,
+      changed: this.clock.now() - 12 * 24 * 60 * this.minute,
+      owner: 'Lea Martin',
+    },
+  ];
+
+  protected readonly setupCode = `import { provideStarNg } from '@star-ng/ui/core';
+import { STAR_UI_TEXT_DE } from '@star-ng/ui/i18n/de';
+
+bootstrapApplication(App, {
+  providers: [
+    provideStarNg({
+      inputVariant: 'filled',
+      size: 'small',
+      overlay: { appendTo: 'body', zIndexBase: 2000 },
+      filterMatchMode: 'startsWith',
+      reducedMotion: 'system',
+      locale: 'de-DE',
+      uiText: STAR_UI_TEXT_DE,
+      direction: true,
+      themeStorageKey: 'orders-theme',
+    }),
+  ],
+});`;
+
+  protected readonly updateCode = `const config = inject(StarConfigService);
+config.config().locale;                      // a signal
+config.update({ reducedMotion: 'always' });  // merges; overlay merges one level deeper`;
+
+  protected readonly announceCode = `inject(StarAnnouncer).announce('Order ORD-1042 saved');
+inject(StarAnnouncer).announce('The upload failed', 'assertive');`;
+
+  protected readonly selectDefaultsScript = `@Component({
+  selector: 'docs-compact-select',
+  providers: [provideStarSelectDefaults({ size: 'sm', filterMatchMode: 'startsWith' })],
+  imports: [StarSelect, StarField],
+  template: \`
+    <star-field label="City (starts with)">
+      <star-select [options]="cities" [(value)]="city" filter placeholder="Choose a city" />
+    </star-field>
+  \`,
+})
+export class DocsCompactSelect {
+  readonly cities = ['Berlin', 'Bern', 'Lisbon', 'Madrid', 'Málaga', 'Oslo', 'Paris'];
+  readonly city = signal<string | null>(null);
+}`;
+
+  protected readonly pipesScript = `imports: [STAR_PIPES],
+
+readonly clock = inject(StarClock);
+readonly files = [
+  { name: 'Quarterly report.pdf', bytes: 1_258_291, changed: Date.now() - 5 * 60_000, owner: 'Ana Ruiz' },
+  // ...
+];`;
+
+  protected readonly options: readonly DocsRow[] = [
+    {
+      name: 'inputVariant',
+      description:
+        "'outlined' (default) or 'filled'. The default variant of starInput and star-input-number.",
+    },
+    {
+      name: 'size',
+      description:
+        "'small', 'medium' or 'large'. Default size of the input, select family, date and time pickers and table. A control without that size keeps its own default.",
+    },
+    {
+      name: 'overlay.appendTo',
+      description: "'self' or 'body'. Default appendTo of the select family.",
+    },
+    {
+      name: 'overlay.zIndexBase',
+      description:
+        'Base z-index of the overlay container (default 1000), as --star-z-index-base on the html element. Non-modal dialogs, drawers and sheets stay one below it.',
+    },
+    {
+      name: 'filterMatchMode',
+      description:
+        'Default filterMatchMode of the select family and the listbox: contains, startsWith, endsWith, equals or notContains.',
+    },
+    {
+      name: 'reducedMotion',
+      description:
+        "'system' (default) follows prefers-reduced-motion. 'always' turns the StarNG transitions and animations off.",
+    },
+    {
+      name: 'locale',
+      description:
+        'Default locale of the date pickers, calendar, input number, chart, list and tree filters, and the pipes.',
+    },
+    { name: 'uiText', description: 'Overrides of the control texts, as provideStarUiText.' },
+    {
+      name: 'direction',
+      description: 'true starts StarDirectionService, as provideStarDirection.',
+    },
+    {
+      name: 'themeStorageKey',
+      description: 'localStorage key of the theme choice, as STAR_THEME_STORAGE_KEY.',
+    },
+  ];
+
+  protected readonly tokens: readonly DocsRow[] = [
+    {
+      name: 'STAR_SELECT_DEFAULTS, provideStarSelectDefaults',
+      description:
+        'appendTo, size, filterMatchMode, filterLocale, scrollHeight, showClear. Select, multi-select, autocompletes, cascade select (size, showClear) and listbox (filter, scrollHeight).',
+    },
+    {
+      name: 'STAR_DATE_PICKER_DEFAULTS, provideStarDatePickerDefaults',
+      description: 'locale, size, firstDayOfWeek, hourFormat, showButtonBar, showWeek.',
+    },
+    {
+      name: 'STAR_TABLE_DEFAULTS, provideStarTableDefaults',
+      description: 'size, striped, stickyHeader, rowsPerPageOptions.',
+    },
+    {
+      name: 'STAR_DIALOG_DEFAULTS, provideStarDialogDefaults',
+      description: 'size, closable, closeOnEscape, dismissableMask. Dialog and drawer.',
+    },
+    {
+      name: 'STAR_TOAST_DEFAULTS, provideStarToastDefaults',
+      description: 'position, stackLimit, life (when show() sets no life).',
+    },
+  ];
+}

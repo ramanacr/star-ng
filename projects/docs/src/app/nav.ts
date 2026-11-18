@@ -29,6 +29,13 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         load: () => import('./guides/getting-started.guide').then((m) => m.GettingStartedGuide),
       },
       {
+        label: 'Configuration',
+        path: 'guides/configuration',
+        keywords:
+          'provideStarNg config defaults tokens StarConfigService announcer clipboard copy pipes key filter',
+        load: () => import('./guides/configuration.guide').then((m) => m.ConfigurationGuide),
+      },
+      {
         label: 'Theming and tokens',
         path: 'guides/theming',
         keywords: 'css variables colors palette override brand',

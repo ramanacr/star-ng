@@ -728,6 +728,14 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'key filter error in validateOnly mode',
+    path: 'guides/configuration',
+    open: async (page) => {
+      await example(page, 'Filtered fields').getByLabel('Reference').fill('ORD 1042');
+      await expect(page.getByText('Use letters, digits and the underscore only.')).toBeVisible();
+    },
+  },
+  {
     name: 'popover',
     path: 'controls/popover',
     open: async (page) => {
