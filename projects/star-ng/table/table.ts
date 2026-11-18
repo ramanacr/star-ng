@@ -1,3 +1,4 @@
+import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { DOCUMENT, NgTemplateOutlet } from '@angular/common';
 import {
   afterNextRender,
@@ -46,6 +47,17 @@ import { StarPopover } from '@star-ng/ui/popover';
 import { StarMultiSelect, StarSelect } from '@star-ng/ui/select';
 import { StarSkeleton } from '@star-ng/ui/skeleton';
 import {
+  sameEditValue,
+  StarBatchChanges,
+  starCellError,
+  StarColumnRules,
+  StarEditBatch,
+  StarEditCellEvent,
+  StarEditDrafts,
+  StarRowEditSaveEvent,
+  StarRowEvent,
+} from './table-editing';
+import {
   buildPrintDocument,
   buildXlsx,
   fitPrintDocument,
@@ -54,7 +66,7 @@ import {
   StarExportCell,
   stylePrintDocument,
 } from './table-export';
-import type { StarHeaderCellContext } from './table-slots';
+import type { StarHeaderCellContext, StarRowEditActionsContext } from './table-slots';
 import {
   anchorOf,
   anchorShift,
@@ -66,7 +78,7 @@ import {
   VirtualLayout,
 } from './virtual-heights';
 
-export interface StarColumn<T> {
+export interface StarColumn<T> extends StarColumnRules<T> {
   /** Unique column id; also the property read when `value` is not set. */
   readonly field: string;
   readonly header: string;
@@ -211,6 +223,32 @@ type BodyEntry<T> =
       readonly item: number | null;
     };
 
+/** Input types that type text, where Ctrl+Z is the undo of the field. */
+const TEXT_INPUTS = new Set([
+  'text',
+  'search',
+  'email',
+  'url',
+  'tel',
+  'password',
+  'number',
+  'date',
+  'datetime-local',
+  'month',
+  'week',
+  'time',
+]);
+
+/** The element types text, so it keeps its own Ctrl+Z. Checkboxes and buttons do not. */
+function isTextEntry(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false;
+  if (target.isContentEditable) return true;
+  if (target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement) return true;
+  return target instanceof HTMLInputElement && TEXT_INPUTS.has(target.type);
+}
+
+/** A number in plain decimal syntax: optional sign, digits, optional decimal part and exponent. */
+const DECIMAL_NUMBER = /^[+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?$/i;
 /** Smallest width, in pixels, that the user can give a column. */
 const MIN_COLUMN_WIDTH = 48;
 /** `aria-valuemax` of a resize handle. The column width itself has no upper limit. */
@@ -498,6 +536,11 @@ export class StarRowExpansionTemplate<T = unknown> {
                 }
               </th>
             }
+            @if (rowEditMode()) {
+              <th class="star-table__row-actions" scope="col">
+                <span class="star-sr-only">{{ text.rowActions }}</span>
+              </th>
+            }
           </tr>
           @if (hasColumnFilters()) {
             <tr class="star-table__filters" [attr.aria-rowindex]="virtualScroll() ? 2 : null">
@@ -567,6 +610,9 @@ export class StarRowExpansionTemplate<T = unknown> {
                   }
                 </td>
               }
+              @if (rowEditMode()) {
+                <td class="star-table__row-actions"></td>
+              }
             </tr>
           }
         </thead>
@@ -591,6 +637,9 @@ export class StarRowExpansionTemplate<T = unknown> {
                 }
                 @for (column of visibleColumns(); track column.field) {
                   <td><star-skeleton height="0.875rem" [width]="row % 2 ? '70%' : '90%'" /></td>
+                }
+                @if (rowEditMode()) {
+                  <td class="star-table__row-actions"></td>
                 }
               </tr>
             }
@@ -641,8 +690,11 @@ export class StarRowExpansionTemplate<T = unknown> {
                   [class.star-table__row--selected]="isSelected(row)"
                   [class.star-table__row--clickable]="clickable()"
                   [class.star-table__row--expanded]="expandable() && isExpanded(row)"
+                  [class.star-table__row--editing]="isRowInEdit(row)"
+                  [class.star-table__row--deleted]="isDeleted(row)"
                   [attr.aria-selected]="selectionMode() ? isSelected(row) : null"
                   (click)="onRowClick(row, $event)"
+                  (keydown)="onRowKey(row, $event)"
                 >
                   @if (reorderableRows()) {
                     <td class="star-table__reorder">
@@ -702,14 +754,59 @@ export class StarRowExpansionTemplate<T = unknown> {
                       />
                     </td>
                   }
-                  @for (column of visibleColumns(); track column.field) {
+                  @for (column of visibleColumns(); track column.field; let firstCell = $first) {
                     <td
                       [class]="'star-table__cell--' + (column.align ?? 'start')"
                       [class.star-table__cell--frozen]="column.frozen"
+                      [class.star-table__cell--changed]="isChanged(row, column)"
                       [style.inset-inline-start]="frozenOffset(column)"
                       [attr.data-label]="column.header"
                     >
-                      @if (isEditing(row, column)) {
+                      @if (firstCell && isDeleted(row)) {
+                        <span class="star-sr-only">{{ text.rowDeleted }}: </span>
+                      }
+                      @if (isRowInEdit(row) && isEditable(row, column)) {
+                        @let rowError = editorError(row, column);
+                        @if (column.editor === 'select') {
+                          <select
+                            class="star-input star-input--sm star-table__editor"
+                            [attr.data-row-editor]="rowKeyText(row)"
+                            [attr.aria-label]="text.editCell(column.header)"
+                            [attr.aria-invalid]="rowError ? 'true' : null"
+                            [attr.aria-describedby]="rowError ? errorId(i, column) : null"
+                            (change)="setDraft(row, column, $any($event.target))"
+                            (keydown)="onRowEditorKey(row, $event)"
+                          >
+                            @for (choice of column.editOptions ?? []; track choice) {
+                              <option
+                                [value]="choice"
+                                [selected]="choice === draftText(row, column)"
+                              >
+                                {{ choice }}
+                              </option>
+                            }
+                          </select>
+                        } @else {
+                          <input
+                            class="star-input star-input--sm star-table__editor"
+                            type="text"
+                            [attr.inputmode]="column.editor === 'number' ? 'decimal' : null"
+                            [attr.data-row-editor]="rowKeyText(row)"
+                            [attr.aria-label]="text.editCell(column.header)"
+                            [attr.aria-invalid]="rowError ? 'true' : null"
+                            [attr.aria-describedby]="rowError ? errorId(i, column) : null"
+                            [attr.aria-required]="column.required || null"
+                            [value]="draftText(row, column)"
+                            (input)="setDraft(row, column, $any($event.target))"
+                            (keydown)="onRowEditorKey(row, $event)"
+                          />
+                        }
+                        @if (rowError) {
+                          <span class="star-table__error" [id]="errorId(i, column)">{{
+                            rowError
+                          }}</span>
+                        }
+                      } @else if (isEditing(row, column)) {
                         @if (column.editor === 'select') {
                           <!-- A choice commits at once; Escape or closing the list cancels. -->
                           <star-select
@@ -721,20 +818,44 @@ export class StarRowExpansionTemplate<T = unknown> {
                             [ariaLabel]="text.editCell(column.header)"
                             (valueChange)="commitEdit(row, column, $event ?? '')"
                             (closed)="onEditorClosed(row, column)"
-                            (keydown.escape)="cancelEdit($event)"
+                            (keydown.escape)="cancelEdit($event, row, column)"
                           />
                         } @else {
+                          @let cellError = editorError(row, column);
                           <input
                             class="star-input star-input--sm star-table__editor"
                             [type]="column.editor === 'number' ? 'number' : 'text'"
                             [attr.aria-label]="text.editCell(column.header)"
+                            [attr.aria-invalid]="cellError ? 'true' : null"
+                            [attr.aria-describedby]="cellError ? errorId(i, column) : null"
+                            [attr.aria-required]="column.required || null"
                             [value]="editText(row, column)"
-                            (blur)="commitEdit(row, column, $any($event.target).value)"
-                            (keydown.enter)="commitEdit(row, column, $any($event.target).value)"
-                            (keydown.escape)="cancelEdit($event)"
+                            (input)="setDraft(row, column, $any($event.target))"
+                            (blur)="
+                              commitEdit(
+                                row,
+                                column,
+                                $any($event.target).value,
+                                $any($event.target).validity?.badInput
+                              )
+                            "
+                            (keydown.enter)="
+                              commitEdit(
+                                row,
+                                column,
+                                $any($event.target).value,
+                                $any($event.target).validity?.badInput
+                              )
+                            "
+                            (keydown.escape)="cancelEdit($event, row, column)"
                           />
+                          @if (cellError) {
+                            <span class="star-table__error" [id]="errorId(i, column)">{{
+                              cellError
+                            }}</span>
+                          }
                         }
-                      } @else if (isEditable(row, column)) {
+                      } @else if (!rowEditMode() && isEditable(row, column)) {
                         <button
                           type="button"
                           class="star-table__edit"
@@ -751,12 +872,58 @@ export class StarRowExpansionTemplate<T = unknown> {
                               "
                             />
                           </span>
+                          @if (isChanged(row, column)) {
+                            <span class="star-sr-only">, {{ text.cellChanged }}</span>
+                          }
                           <i class="ph-bold ph-pencil-simple" aria-hidden="true"></i>
                         </button>
                       } @else {
                         <ng-container
                           *ngTemplateOutlet="cell; context: { $implicit: row, column, index: i }"
                         />
+                        @if (isChanged(row, column)) {
+                          <span class="star-sr-only">, {{ text.cellChanged }}</span>
+                        }
+                      }
+                    </td>
+                  }
+                  @if (rowEditMode()) {
+                    <td class="star-table__row-actions">
+                      @if (isRowInEdit(row)) {
+                        @if (rowEditActionsSlot(); as custom) {
+                          <ng-container
+                            *ngTemplateOutlet="custom; context: rowActionsContext(row)"
+                          />
+                        } @else {
+                          <button
+                            type="button"
+                            class="star-table__toggle"
+                            [attr.data-row-save]="rowKeyText(row)"
+                            [attr.aria-label]="text.saveRow"
+                            [attr.aria-disabled]="rowValid(row) ? null : 'true'"
+                            (click)="saveRowEdit(row)"
+                          >
+                            <i class="ph-bold ph-check" aria-hidden="true"></i>
+                          </button>
+                          <button
+                            type="button"
+                            class="star-table__toggle"
+                            [attr.aria-label]="text.cancelRowEdit"
+                            (click)="cancelRowEdit(row)"
+                          >
+                            <i class="ph-bold ph-x" aria-hidden="true"></i>
+                          </button>
+                        }
+                      } @else if (!isDeleted(row)) {
+                        <button
+                          type="button"
+                          class="star-table__toggle"
+                          [attr.data-row-edit]="rowKeyText(row)"
+                          [attr.aria-label]="text.editRow"
+                          (click)="initRowEdit(row)"
+                        >
+                          <i class="ph-bold ph-pencil-simple" aria-hidden="true"></i>
+                        </button>
                       }
                     </td>
                   }
@@ -816,6 +983,9 @@ export class StarRowExpansionTemplate<T = unknown> {
                 >
                   {{ footerText(column) }}
                 </td>
+              }
+              @if (rowEditMode()) {
+                <td class="star-table__row-actions"></td>
               }
             </tr>
           </tfoot>
@@ -966,14 +1136,72 @@ export class StarTable<T> {
   readonly stateKey = input<string | null>(null);
   readonly stateStorage = input<'local' | 'session'>('local');
 
+  /**
+   * `'cell'`: each editable cell has its own edit button. `'row'`: an actions column has an Edit
+   * button per row (F2 in a row does the same); all editable cells of the row show editors, with
+   * Save and Cancel. Enter in an editor saves the row, Escape cancels. PrimeNG `editMode`, Ignite
+   * `rowEditable`.
+   */
+  readonly editMode = input<'cell' | 'row'>('cell');
+  /** Keys (`dataKey`) of the rows in edit with `editMode="row"`. Two-way. PrimeNG `editingRowKeys`. */
+  readonly editingRowKeys = model<readonly unknown[]>([]);
+  /**
+   * Batch edit: saved edits, new rows and deleted rows collect in a pending change set instead of
+   * single events. Changed cells are marked, deleted rows are struck through. `commitEdits()`
+   * emits `batchSave`, `discardEdits()` drops the set, `undo()` / `redo()` (Ctrl+Z, Ctrl+Y,
+   * Ctrl+Shift+Z in the table) step through it. With `lazy`, set `dataKey`: the change set keys
+   * rows by `dataKey`, and a new page has new row objects. Ignite `batchEditing`.
+   */
+  readonly batchEdit = input(false, { transform: booleanAttribute });
+
   readonly rowClick = output<T>();
   readonly rowReorder = output<StarRowReorderEvent<T>>();
-  /** The user changed an editable cell (see `StarColumn.editable`). */
+  /**
+   * The user changed an editable cell (see `StarColumn.editable`). Not emitted with `batchEdit`.
+   * PrimeNG `onEditComplete`, Ignite `cellEditDone`.
+   */
   readonly cellEdit = output<StarCellEditEvent<T>>();
+  /** A cell editor opened (cell mode). PrimeNG `onEditInit`, Ignite `cellEditEnter`. */
+  readonly editInit = output<StarEditCellEvent<T>>();
+  /** A cell editor closed without a save (Escape, or a choice list closed without a choice). PrimeNG `onEditCancel`. */
+  readonly editCancel = output<StarEditCellEvent<T>>();
+  /** A row entered edit (row mode). PrimeNG `initRowEdit`, Ignite `rowEditEnter`. */
+  readonly rowEditInit = output<StarRowEvent<T>>();
+  /**
+   * The user saved a row in edit with valid values (row mode, not `batchEdit`). `changes` holds
+   * the changed fields only. PrimeNG `saveRowEdit`, Ignite `rowEditDone`.
+   */
+  readonly rowEditSave = output<StarRowEditSaveEvent<T>>();
+  /** The user canceled the edit of a row. PrimeNG `cancelRowEdit`, Ignite `rowEditExit`. */
+  readonly rowEditCancel = output<StarRowEvent<T>>();
+  /**
+   * A new row to store (not `batchEdit`): from `addRow()` in cell mode at once, in row mode when
+   * the user saves the new row (with the edited values). Ignite `rowAdded`.
+   */
+  readonly rowAdd = output<StarRowEvent<T>>();
+  /** A row to delete, from `deleteRow()` (not `batchEdit`). Ignite `rowDeleted`. */
+  readonly rowDelete = output<StarRowEvent<T>>();
+  /** `commitEdits()` with `batchEdit`: all pending changes. Ignite `transactions.commit`. */
+  readonly batchSave = output<StarBatchChanges<T>>();
   readonly lazyLoad = output<StarLazyLoadEvent>();
 
   /** The cell in edit mode: `<row key>|<field>` text, or `null`. */
   private readonly editing = signal<string | null>(null);
+  private readonly announcer = inject(LiveAnnouncer);
+  /** Editor values of the rows (or the cell) in edit. */
+  private readonly drafts = new StarEditDrafts();
+  /** Pending change set of `batchEdit`. */
+  private readonly batch = new StarEditBatch<T>((row) => this.trackKey(row));
+  /** New rows in row edit that the user did not save yet (without `batchEdit`). */
+  private readonly newRows = signal<readonly { row: T; position: 'top' | 'bottom' }[]>([]);
+  private readonly editingRowSet = computed(() => new Set(this.editingRowKeys()));
+  protected readonly rowEditMode = computed(() => this.editMode() === 'row');
+  /** Pending changes of `batchEdit` (updated, added and deleted rows). Signal. */
+  readonly pendingChanges = this.batch.changes;
+  /** `true` when `undo()` can take back a batch change. Signal. */
+  readonly canUndo = this.batch.canUndo;
+  /** `true` when `redo()` can apply a batch change again. Signal. */
+  readonly canRedo = this.batch.canRedo;
   private readonly cellTemplates = contentChildren(StarCellTemplate);
   private readonly slots = contentChildren(StarSlot, { descendants: true });
   protected readonly emptySlot = starSlot<StarEmptyContext>(this.slots, this, 'empty');
@@ -983,6 +1211,11 @@ export class StarTable<T> {
     this.slots,
     this,
     'headerCell',
+  );
+  protected readonly rowEditActionsSlot = starSlot<StarRowEditActionsContext<T>>(
+    this.slots,
+    this,
+    'rowEditActions',
   );
   private readonly expansion = contentChild(StarRowExpansionTemplate);
   protected readonly expansionTemplate = computed(
@@ -1108,12 +1341,37 @@ export class StarTable<T> {
   );
   private restoredKey: string | null = null;
 
-  protected readonly total = computed(() =>
-    this.lazy() ? this.totalRecords() : this.filtered().length,
-  );
+  /** New rows (`addRow`) at the top and at the bottom, outside sort and filter. */
+  private readonly addedRows = computed(() => {
+    const fresh = this.newRows();
+    return {
+      top: [
+        ...fresh.filter((added) => added.position === 'top').map((added) => added.row),
+        ...this.batch.addedTop(),
+      ],
+      bottom: [
+        ...this.batch.addedBottom(),
+        ...fresh.filter((added) => added.position === 'bottom').map((added) => added.row),
+      ],
+    };
+  });
+
+  /** Sorted rows with the new rows. */
+  private readonly withAdded = computed(() => {
+    const { top, bottom } = this.addedRows();
+    const rows = this.sorted();
+    return top.length || bottom.length ? [...top, ...rows, ...bottom] : rows;
+  });
+
+  protected readonly total = computed(() => {
+    const { top, bottom } = this.addedRows();
+    return (
+      (this.lazy() ? this.totalRecords() : this.filtered().length) + top.length + bottom.length
+    );
+  });
 
   protected readonly pageRows = computed(() => {
-    const rows = this.sorted();
+    const rows = this.withAdded();
     if (this.lazy() || !this.paginator()) return rows;
     return rows.slice(this.first(), this.first() + this.rows());
   });
@@ -1475,6 +1733,7 @@ export class StarTable<T> {
    * outside the window): scroll that row in, then focus its first (or last) control.
    */
   protected onBodyKeydown(event: KeyboardEvent): void {
+    this.onUndoKey(event);
     if (event.key !== 'Tab' || !this.virtualScroll() || event.defaultPrevented) return;
     const body = this.body()?.nativeElement;
     const index = this.itemOf(event.target as Element);
@@ -1537,7 +1796,8 @@ export class StarTable<T> {
       this.visibleColumns().length +
       (this.selectionMode() ? 1 : 0) +
       (this.expandable() ? 1 : 0) +
-      (this.reorderableRows() ? 1 : 0),
+      (this.reorderableRows() ? 1 : 0) +
+      (this.rowEditMode() ? 1 : 0),
   );
 
   /** Selection state of the rows on the current page, for the header checkbox. */
@@ -1549,6 +1809,13 @@ export class StarTable<T> {
   });
 
   constructor() {
+    let editingBefore = new Set<unknown>();
+    effect(() => {
+      const editing = this.editingRowSet();
+      const removed = [...editingBefore].filter((key) => !editing.has(key));
+      editingBefore = editing;
+      untracked(() => removed.forEach((key) => this.drafts.clear(key)));
+    });
     // A new filter goes back to page 1. Lazy tables also load the first page on init.
     effect(() => {
       this.globalFilter();
@@ -1689,7 +1956,10 @@ export class StarTable<T> {
 
   protected canMoveRow(row: T, step: 1 | -1): boolean {
     if (!this.rowOrderIsOwn()) return false;
-    const to = this.value().indexOf(row) + step;
+    const from = this.value().indexOf(row);
+    // A new row (`addRow`) is not in `value` yet: it cannot move.
+    if (from < 0) return false;
+    const to = from + step;
     return to >= 0 && to < this.value().length;
   }
 
@@ -1700,20 +1970,31 @@ export class StarTable<T> {
   }
 
   protected trackKey(row: T): unknown {
-    return readOption(row, this.dataKey());
+    const key = readOption(row, this.dataKey());
+    // A new row (`addRow`) can have no key yet: its object is the key.
+    return key === null || key === undefined ? row : key;
   }
 
   protected cellTemplate(field: string): TemplateRef<StarCellContext<T>> | null {
     return this.cellTemplates().find((t) => t.starCell() === field)?.template ?? null;
   }
 
+  /** Cell value, or the pending value of `batchEdit`. */
   protected cellValue(row: T, column: StarColumn<T>): unknown {
+    const pending = this.batch.pending(row, column.field);
+    return pending ? pending.value : this.rawValue(row, column);
+  }
+
+  /** Cell value in the row (`value`), without pending changes. */
+  private rawValue(row: T, column: StarColumn<T>): unknown {
     return column.value
       ? column.value(row)
       : (row as Record<string, unknown> | null)?.[column.field];
   }
 
   protected cellText(row: T, column: StarColumn<T>): string {
+    const pending = column.format ? this.batch.pending(row, column.field) : null;
+    if (pending) return column.format!({ ...row, [column.field]: pending.value } as T);
     if (column.format) return column.format(row);
     const value = this.cellValue(row, column);
     return value === null || value === undefined ? '' : String(value);
@@ -1939,10 +2220,30 @@ export class StarTable<T> {
   }
 
   protected editKey(row: T, column: StarColumn<T>): string {
-    return `${String(this.trackKey(row))}|${column.field}`;
+    return `${this.rowKeyText(row)}|${column.field}`;
+  }
+
+  /** DOM ids of rows whose key is an object (no `dataKey`, or a new row without a key). */
+  private readonly objectIds = new WeakMap<object, number>();
+  private nextObjectId = 0;
+
+  /**
+   * Row key as text, for the `data-*` attributes that find the edit controls of a row. A text or
+   * number key is used as is; an object key gets its own number, so two rows never share it.
+   */
+  protected rowKeyText(row: T): string {
+    const key = this.trackKey(row);
+    if ((typeof key !== 'object' && typeof key !== 'function') || key === null) return String(key);
+    let id = this.objectIds.get(key);
+    if (id === undefined) {
+      id = ++this.nextObjectId;
+      this.objectIds.set(key, id);
+    }
+    return `star-row-${id}`;
   }
 
   protected isEditable(row: T, column: StarColumn<T>): boolean {
+    if (this.batch.isDeleted(row)) return false;
     return typeof column.editable === 'function' ? column.editable(row) : !!column.editable;
   }
 
@@ -1956,8 +2257,85 @@ export class StarTable<T> {
     return value === null || value === undefined ? '' : String(value);
   }
 
+  /**
+   * Value of an editor text: a number or `null` for the `'number'` editor, else the text. The
+   * number editor accepts only a finite number in plain decimal syntax (sign, digits, decimal
+   * part, exponent); other text ("Infinity", "0x10", "0b1", "1e999") gives `NaN`.
+   */
+  private parseEditor(column: StarColumn<T>, text: string): string | number | null {
+    if (column.editor !== 'number') return text;
+    const trimmed = text.trim();
+    if (trimmed === '') return null;
+    if (!DECIMAL_NUMBER.test(trimmed)) return Number.NaN;
+    const value = Number(trimmed);
+    return Number.isFinite(value) ? value : Number.NaN;
+  }
+
+  /**
+   * The user typed in an editor: keep the raw text (what the editor shows) and the parsed value
+   * (what validation and Save use), so its error shows at once. Text that is not a number (or
+   * `validity.badInput`) gives `NaN`, which shows a message and blocks Save.
+   */
+  protected setDraft(
+    row: T,
+    column: StarColumn<T>,
+    editor: HTMLInputElement | HTMLSelectElement,
+  ): void {
+    const key = this.trackKey(row);
+    const value = editor.validity?.badInput ? Number.NaN : this.parseEditor(column, editor.value);
+    this.drafts.set(key, column.field, value);
+    this.drafts.setText(key, column.field, editor.value);
+  }
+
+  /** Editor value: the draft, else the cell value. */
+  private draftValue(row: T, column: StarColumn<T>): unknown {
+    const key = this.trackKey(row);
+    return this.drafts.has(key, column.field)
+      ? this.drafts.get(key, column.field)
+      : this.cellValue(row, column);
+  }
+
+  /**
+   * Editor text in row edit: the raw text the user typed, as typed ("-0", "1e2", "abc"). The bound
+   * value is what the editor already shows, so the table never writes over the user's typing, and
+   * an editor that is rendered again (page change, virtual scroll, a column shown again, undo)
+   * shows the same text. A field the user has not typed in shows the current cell value, so it
+   * follows a batch undo, redo or discard. Validation and Save use the parsed value (`draftValue`).
+   */
+  protected draftText(row: T, column: StarColumn<T>): string {
+    return this.drafts.text(this.trackKey(row), column.field) ?? this.editText(row, column);
+  }
+
+  /** Validators get the row with the editor values, so a rule can compare fields. */
+  private errorOf(row: T, column: StarColumn<T>, value: unknown): string | null {
+    const draft = this.drafts.values(this.trackKey(row));
+    return starCellError(column, value, draft ? ({ ...row, ...draft } as T) : row, this.text);
+  }
+
+  /** Message of an editor, once the user changed it or tried to save. */
+  protected editorError(row: T, column: StarColumn<T>): string | null {
+    if (!this.drafts.shown(this.trackKey(row), column.field)) return null;
+    return this.errorOf(row, column, this.draftValue(row, column));
+  }
+
+  protected errorId(index: number, column: StarColumn<T>): string {
+    return `${this.radioName}-error-${index}-${this.visibleColumns().indexOf(column)}`;
+  }
+
+  /** The cell has a pending change (`batchEdit`). */
+  protected isChanged(row: T, column: StarColumn<T>): boolean {
+    return !!this.batch.pending(row, column.field);
+  }
+
+  /** The row is deleted in the pending change set (`batchEdit`). */
+  protected isDeleted(row: T): boolean {
+    return this.batch.isDeleted(row);
+  }
+
   protected startEdit(row: T, column: StarColumn<T>): void {
+    this.drafts.clear(this.trackKey(row));
     this.editing.set(this.editKey(row, column));
+    this.editInit.emit({ row, field: column.field });
     if (column.editor !== 'select') {
       this.focusAfterRender('.star-table__editor', true);
       return;
@@ -1980,34 +2358,361 @@ export class StarTable<T> {
    */
   protected onEditorClosed(row: T, column: StarColumn<T>): void {
     if (!this.isEditing(row, column)) return;
+    this.editCancel.emit({ row, field: column.field });
     const editor = this.host.nativeElement.querySelector('.star-table__editor');
     const focused = this.document.activeElement;
     if (editor && focused && editor.contains(focused)) this.closeEditor(row, column);
-    else this.editing.set(null);
+    else this.endCellEdit(row);
   }
 
-  protected commitEdit(row: T, column: StarColumn<T>, text: string): void {
+  protected commitEdit(row: T, column: StarColumn<T>, text: string, badInput = false): void {
     // Enter removes the editor, which also fires `blur`: only the first event commits.
     if (!this.isEditing(row, column)) return;
-    const previous = this.cellValue(row, column);
-    const value = column.editor === 'number' ? (text.trim() === '' ? null : Number(text)) : text;
+    const previous = this.rawValue(row, column);
+    // Text that is not a number: the browser gives '' (`validity.badInput`). The value is NaN,
+    // which fails validation: the editor stays open with its message.
+    const value = badInput ? Number.NaN : this.parseEditor(column, text);
+    const error = this.errorOf(row, column, value);
+    if (error) {
+      // A text or number editor stays open with its message; the value is not saved.
+      const key = this.trackKey(row);
+      this.drafts.set(key, column.field, value);
+      this.drafts.attempt(key);
+      this.announce(error);
+      if (column.editor === 'select') this.closeEditor(row, column);
+      return;
+    }
     this.closeEditor(row, column);
-    if (typeof value === 'number' && Number.isNaN(value)) return;
+    if (this.batchEdit()) {
+      this.batch.change(row, [{ field: column.field, value, original: previous }]);
+      return;
+    }
     if (Object.is(value, previous) || (value === '' && (previous ?? '') === '')) return;
     this.cellEdit.emit({ row, field: column.field, value, previous });
   }
 
-  protected cancelEdit(event: Event): void {
+  protected cancelEdit(event: Event, row: T, column: StarColumn<T>): void {
     event.stopPropagation();
     const key = this.editing();
-    this.editing.set(null);
+    this.endCellEdit(row);
+    this.editCancel.emit({ row, field: column.field });
     if (key) this.focusAfterRender(`[data-edit="${CSS.escape(key)}"]`);
+  }
+
+  private endCellEdit(row: T): void {
+    this.editing.set(null);
+    this.drafts.clear(this.trackKey(row));
   }
 
   private closeEditor(row: T, column: StarColumn<T>): void {
     const key = this.editKey(row, column);
-    this.editing.set(null);
+    this.endCellEdit(row);
     this.focusAfterRender(`[data-edit="${CSS.escape(key)}"]`);
+  }
+
+  private announce(message: string): void {
+    void this.announcer.announce(message, 'polite');
+  }
+
+  // Row edit mode.
+
+  /** The row is in edit (`editMode="row"`). */
+  protected isRowInEdit(row: T): boolean {
+    return this.rowEditMode() && this.editingRowSet().has(this.trackKey(row));
+  }
+
+  /** All editors of the row hold valid values. */
+  protected rowValid(row: T): boolean {
+    return this.visibleColumns().every(
+      (column) =>
+        !this.isEditable(row, column) || !this.errorOf(row, column, this.draftValue(row, column)),
+    );
+  }
+
+  /** Context of the `starRowEditActions` slot. */
+  protected rowActionsContext(row: T): StarRowEditActionsContext<T> {
+    return {
+      $implicit: row,
+      row,
+      valid: this.rowValid(row),
+      save: () => this.saveRowEdit(row),
+      cancel: () => this.cancelRowEdit(row),
+    };
+  }
+
+  /** Opens the editors of a row (`editMode="row"`). PrimeNG `initRowEdit`. */
+  initRowEdit(row: T): void {
+    if (!this.rowEditMode() || this.isRowInEdit(row) || this.isDeleted(row)) return;
+    const key = this.trackKey(row);
+    // No raw texts yet: an editor shows the current cell value until the user types in it, so a
+    // batch undo, redo or discard while the row is open shows the new value (and Save keeps it).
+    this.drafts.clear(key);
+    this.editingRowKeys.update((keys) => [...keys, key]);
+    this.rowEditInit.emit({ row });
+    this.focusAfterRender(`[data-row-editor="${CSS.escape(this.rowKeyText(row))}"]`, true);
+  }
+
+  /**
+   * Saves a row in edit. Blocked while a value is not valid: the messages show and the focus goes
+   * to the first invalid editor. PrimeNG `saveRowEdit`.
+   */
+  saveRowEdit(row: T): void {
+    if (!this.isRowInEdit(row)) return;
+    const key = this.trackKey(row);
+    const keyText = CSS.escape(this.rowKeyText(row));
+    if (!this.rowValid(row)) {
+      this.drafts.attempt(key);
+      this.announce(this.text.editInvalid);
+      this.focusAfterRender(`[data-row-editor="${keyText}"][aria-invalid="true"]`);
+      return;
+    }
+    const cells = this.columns()
+      .filter((column) => this.drafts.has(key, column.field))
+      .map((column) => ({
+        field: column.field,
+        value: this.drafts.get(key, column.field),
+        original: this.rawValue(row, column),
+      }));
+    const added = this.isNewRow(row);
+    const position = this.positionOf(row);
+    this.endRowEdit(row);
+    this.focusAfterRender(`[data-row-edit="${keyText}"]`);
+    if (this.batchEdit()) {
+      // A new row joins the change set on its first valid save, with its values, as one step.
+      if (added) {
+        this.dropNewRow(row);
+        this.batch.add(row, position, cells);
+      } else {
+        this.batch.change(row, cells);
+      }
+      this.announce(this.text.changeAdded);
+      return;
+    }
+    this.announce(this.text.editSaved);
+    const changes: Record<string, unknown> = {};
+    const previous: Record<string, unknown> = {};
+    for (const cell of cells) {
+      if (sameEditValue(cell.value, cell.original)) continue;
+      changes[cell.field] = cell.value;
+      previous[cell.field] = cell.original;
+    }
+    if (added) {
+      this.dropNewRow(row);
+      this.rowAdd.emit({ row: { ...row, ...changes } as T });
+      return;
+    }
+    this.rowEditSave.emit({ row, changes, previous });
+  }
+
+  /**
+   * Closes the editors of a row without a save. A new row that was never saved goes away.
+   * PrimeNG `cancelRowEdit`.
+   */
+  cancelRowEdit(row: T): void {
+    if (!this.isRowInEdit(row)) return;
+    this.endRowEdit(row);
+    this.dropNewRow(row);
+    this.rowEditCancel.emit({ row });
+    this.announce(this.text.editCanceled);
+    this.focusAfterRender(`[data-row-edit="${CSS.escape(this.rowKeyText(row))}"]`);
+  }
+
+  private endRowEdit(row: T): void {
+    const key = this.trackKey(row);
+    this.drafts.clear(key);
+    if (this.editingRowSet().has(key)) {
+      this.editingRowKeys.update((keys) => keys.filter((other) => !Object.is(other, key)));
+    }
+  }
+
+  private isNewRow(row: T): boolean {
+    return this.newRows().some((added) => added.row === row);
+  }
+
+  private positionOf(row: T): 'top' | 'bottom' {
+    return this.newRows().find((added) => added.row === row)?.position ?? 'bottom';
+  }
+
+  private dropNewRow(row: T): void {
+    if (this.isNewRow(row))
+      this.newRows.update((rows) => rows.filter((added) => added.row !== row));
+  }
+
+  /** Enter in a row editor saves the row, Escape cancels. */
+  protected onRowEditorKey(row: T, event: KeyboardEvent): void {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      this.saveRowEdit(row);
+    } else if (event.key === 'Escape') {
+      event.stopPropagation();
+      this.cancelRowEdit(row);
+    }
+  }
+
+  /** F2 in a row opens its editors (`editMode="row"`). */
+  protected onRowKey(row: T, event: KeyboardEvent): void {
+    if (event.key !== 'F2' || !this.rowEditMode() || this.isRowInEdit(row)) return;
+    event.preventDefault();
+    this.initRowEdit(row);
+  }
+
+  // Add, delete and batch edit.
+
+  /**
+   * Adds a new row and returns it. In row mode it opens in edit, and it is only kept on its first
+   * valid save: then `rowAdd` is emitted, or with `batchEdit` the row joins the pending change
+   * set. Cancel drops it. In cell mode, `batchEdit` adds it to the change set at once (`commitEdits`
+   * checks its values), else `rowAdd` is emitted at once. New rows show at the top or the bottom, outside sort
+   * and filter. Ignite `beginAddRowByIndex` and `addRow`.
+   */
+  addRow(partial: Partial<T> = {}, position: 'top' | 'bottom' = 'bottom'): T {
+    const row = { ...partial } as T;
+    if (this.rowEditMode()) {
+      // Row mode (with or without batch): the row stays outside the data until a valid save.
+      this.newRows.update((rows) => [...rows, { row, position }]);
+    } else if (this.batchEdit()) {
+      this.batch.add(row, position);
+      this.announce(this.text.rowAdded);
+    } else {
+      this.rowAdd.emit({ row });
+      return row;
+    }
+    if (this.paginator() && !this.lazy()) {
+      const size = Math.max(1, this.rows());
+      this.first.set(position === 'top' ? 0 : Math.floor((this.total() - 1) / size) * size);
+    }
+    this.initRowEdit(row);
+    return row;
+  }
+
+  /**
+   * Deletes a row. With `batchEdit` the row stays, struck through, until `commitEdits()`, and
+   * `undo()` restores it; a new row goes away. Without it the table emits `rowDelete`, and a new
+   * row that was never saved goes away. Ignite `deleteRow`.
+   */
+  deleteRow(row: T): void {
+    if (this.isNewRow(row)) {
+      this.endRowEdit(row);
+      this.dropNewRow(row);
+    } else if (this.batchEdit()) {
+      this.endRowEdit(row);
+      if (this.editing()?.startsWith(`${this.rowKeyText(row)}|`)) this.endCellEdit(row);
+      this.batch.remove(row);
+      this.announce(this.text.rowRemoved);
+    } else {
+      this.endRowEdit(row);
+      this.rowDelete.emit({ row });
+    }
+  }
+
+  /**
+   * Emits `batchSave` with all pending changes, then empties the set and its history. First it
+   * checks the new and changed rows with the column rules: with an invalid value it emits nothing,
+   * announces it, and opens the editor of the first invalid cell on the page with its message.
+   * When the invalid rows are all on other pages, it only blocks and announces (no editor opens);
+   * with `lazy` that is the only option, as the table holds one page. In row mode, a new row that
+   * is open and was never saved is not part of the change set, so the commit leaves it out.
+   */
+  commitEdits(): void {
+    const changes = this.batch.changes();
+    if (!changes.updated.length && !changes.added.length && !changes.deleted.length) return;
+    if (!this.batchValid()) return;
+    this.batch.reset();
+    this.batchSave.emit(changes);
+    this.announce(this.text.editSaved);
+  }
+
+  /**
+   * Checks the new and the changed rows of the batch (editable, visible columns). On the first
+   * invalid cell: announces it, opens its editor with the message and focuses it.
+   */
+  private batchValid(): boolean {
+    const rows = this.pageRows();
+    const seen = new Set<unknown>();
+    for (const row of rows) {
+      const key = this.trackKey(row);
+      if (seen.has(key) || this.isDeleted(row)) continue;
+      seen.add(key);
+      if (!this.batch.isAdded(row) && !this.visibleColumns().some((c) => this.isChanged(row, c))) {
+        continue;
+      }
+      const column = this.visibleColumns().find(
+        (c) => this.isEditable(row, c) && this.errorOf(row, c, this.cellValue(row, c)),
+      );
+      if (!column) continue;
+      this.announce(this.text.editInvalid);
+      if (this.rowEditMode()) {
+        this.initRowEdit(row);
+        this.drafts.attempt(key);
+        this.focusAfterRender(
+          `[data-row-editor="${CSS.escape(this.rowKeyText(row))}"][aria-invalid="true"]`,
+        );
+      } else {
+        this.startEdit(row, column);
+        this.drafts.attempt(key);
+      }
+      return false;
+    }
+    // Rows on other pages: a check without an editor.
+    const changes = this.batch.changes();
+    const invalid = [...changes.added, ...changes.updated.map((change) => change.row)].some((row) =>
+      this.visibleColumns().some(
+        (c) => this.isEditable(row, c) && this.errorOf(row, c, this.cellValue(row, c)),
+      ),
+    );
+    if (invalid) this.announce(this.text.editInvalid);
+    return !invalid;
+  }
+
+  /** Drops all pending changes and their history. Ignite `transactions.clear`. */
+  discardEdits(): void {
+    this.batch.reset();
+    this.pruneEditing();
+    this.announce(this.text.editsDiscarded);
+  }
+
+  /** Takes back the last batch change. Ctrl+Z in the table. Ignite `transactions.undo`. */
+  undo(): void {
+    if (!this.batch.undo()) return;
+    this.pruneEditing();
+    this.announce(this.text.editUndone);
+  }
+
+  /** Applies the last undone batch change again. Ctrl+Y or Ctrl+Shift+Z in the table. */
+  redo(): void {
+    if (!this.batch.redo()) return;
+    this.pruneEditing();
+    this.announce(this.text.editRedone);
+  }
+
+  /** Ends the edit of rows that left the table (an undone or discarded new row). */
+  private pruneEditing(): void {
+    // All rows the table holds, also rows that a filter or a page hides: their edits stay open.
+    const present = new Set(
+      [
+        ...this.value(),
+        ...this.newRows().map((added) => added.row),
+        ...this.batch.addedTop(),
+        ...this.batch.addedBottom(),
+      ].map((row) => this.trackKey(row)),
+    );
+    const gone = this.editingRowKeys().filter((key) => !present.has(key));
+    for (const key of gone) this.drafts.clear(key);
+    if (gone.length) this.editingRowKeys.update((keys) => keys.filter((key) => present.has(key)));
+  }
+
+  /** Ctrl+Z, Ctrl+Y and Ctrl+Shift+Z with `batchEdit`. A text field keeps its own undo. */
+  private onUndoKey(event: KeyboardEvent): void {
+    if (!this.batchEdit() || !(event.ctrlKey || event.metaKey) || event.altKey) return;
+    if (isTextEntry(event.target)) return;
+    const key = event.key.toLowerCase();
+    if (key === 'z' && !event.shiftKey) {
+      event.preventDefault();
+      this.undo();
+    } else if (key === 'y' || (key === 'z' && event.shiftKey)) {
+      event.preventDefault();
+      this.redo();
+    }
   }
 
   private focusAfterRender(selector: string, select = false): void {

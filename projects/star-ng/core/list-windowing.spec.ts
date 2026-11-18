@@ -1,4 +1,5 @@
 import {
+  StarLazyRequests,
   starListAriaPosition as ariaPosition,
   starListLayout as buildLayout,
   starListRowRendered as isRowRendered,
@@ -7,6 +8,7 @@ import {
   starListPageSize as pageSize,
   starListRevealOffset as revealOffset,
   starListRevealRows as revealRows,
+  starListLazyRange,
   starListTypeaheadIndex as typeaheadIndex,
 } from './list-windowing';
 
@@ -178,5 +180,110 @@ describe('windowed list: ARIA values', () => {
   it('gives each option the size of the whole list and its position in it', () => {
     expect(ariaPosition(0, 10_000)).toEqual({ setsize: 10_000, posinset: 1 });
     expect(ariaPosition(9_999, 10_000)).toEqual({ setsize: 10_000, posinset: 10_000 });
+  });
+});
+
+describe('lazy loading helpers', () => {
+  const options = ['a', undefined, 'c', undefined];
+  const layout = buildLayout(options, null, 'l');
+
+  it('finds the options of a range and whether one is missing', () => {
+    expect(starListLazyRange(layout, { start: 0, end: 1 }, (o) => o === undefined)).toEqual({
+      first: 0,
+      last: 0,
+      missing: false,
+    });
+    expect(starListLazyRange(layout, { start: 1, end: 4 }, (o) => o === undefined)).toEqual({
+      first: 1,
+      last: 3,
+      missing: true,
+    });
+    expect(starListLazyRange(layout, { start: 4, end: 9 }, (o) => o === undefined)).toBeNull();
+  });
+
+  it('asks only for rows not asked for before, and again for a new filter from index 0', () => {
+    const requests = new StarLazyRequests();
+    expect(requests.next(null, '', 20)).toEqual({ first: 0, last: 19, filter: '' });
+    expect(requests.next(null, '', 20)).toBeNull();
+    // Rows 0-19 were asked for: a window that is still loading asks for nothing again.
+    expect(requests.next({ first: 10, last: 19, missing: true }, '', 20)).toBeNull();
+    // Smooth scrolling: each step asks only for the new rows.
+    expect(requests.next({ first: 11, last: 20, missing: true }, '', 20)).toEqual({
+      first: 20,
+      last: 20,
+      filter: '',
+    });
+    expect(requests.next({ first: 12, last: 21, missing: true }, '', 20)).toEqual({
+      first: 21,
+      last: 21,
+      filter: '',
+    });
+    expect(requests.next({ first: 15, last: 21, missing: true }, '', 20)).toBeNull();
+    expect(requests.next({ first: 30, last: 39, missing: false }, '', 20)).toBeNull();
+    expect(requests.next({ first: 10, last: 19, missing: false }, 'ber', 20)).toEqual({
+      first: 0,
+      last: 9,
+      filter: 'ber',
+    });
+    // The new filter forgot the old ranges.
+    expect(requests.next({ first: 15, last: 24, missing: true }, 'ber', 20)).toEqual({
+      first: 15,
+      last: 24,
+      filter: 'ber',
+    });
+  });
+
+  it('merges touching and overlapping ranges', () => {
+    const requests = new StarLazyRequests();
+    requests.next(null, '', 10); // 0-9
+    requests.next({ first: 10, last: 19, missing: true }, '', 10); // 10-19 touches 0-9
+    requests.next({ first: 40, last: 49, missing: true }, '', 10);
+    requests.next({ first: 15, last: 30, missing: true }, '', 10); // 20-30
+    expect(requests.rangeCount).toBe(2);
+    expect(requests.next({ first: 0, last: 30, missing: true }, '', 10)).toBeNull();
+    expect(requests.next({ first: 25, last: 45, missing: true }, '', 10)).toEqual({
+      first: 31,
+      last: 39,
+      filter: '',
+    });
+    expect(requests.rangeCount).toBe(1);
+  });
+
+  it('reset() asks again for the rows in view (a failed first window or a failed page)', () => {
+    const requests = new StarLazyRequests();
+    expect(requests.next(null, '', 20)).toEqual({ first: 0, last: 19, filter: '' });
+    // The first window failed: options stay empty, nothing is asked again ...
+    expect(requests.next(null, '', 20)).toBeNull();
+    requests.reset();
+    // ... until reset.
+    expect(requests.next(null, '', 20)).toEqual({ first: 0, last: 19, filter: '' });
+    // A later page failed and stays missing.
+    expect(requests.next({ first: 30, last: 39, missing: true }, '', 20)).toEqual({
+      first: 30,
+      last: 39,
+      filter: '',
+    });
+    expect(requests.next({ first: 30, last: 39, missing: true }, '', 20)).toBeNull();
+    requests.reset();
+    expect(requests.next({ first: 30, last: 39, missing: true }, '', 20)).toEqual({
+      first: 30,
+      last: 39,
+      filter: '',
+    });
+  });
+
+  it('asks again when the array length changes for the same filter', () => {
+    const requests = new StarLazyRequests();
+    expect(requests.next({ first: 0, last: 9, missing: true }, '', 10, 100)).toEqual({
+      first: 0,
+      last: 9,
+      filter: '',
+    });
+    expect(requests.next({ first: 0, last: 9, missing: true }, '', 10, 100)).toBeNull();
+    expect(requests.next({ first: 0, last: 9, missing: true }, '', 10, 120)).toEqual({
+      first: 0,
+      last: 9,
+      filter: '',
+    });
   });
 });

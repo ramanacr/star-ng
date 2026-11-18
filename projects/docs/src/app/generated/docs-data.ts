@@ -211,8 +211,16 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-autocomplete",
     "entry": "@star-ng/ui/autocomplete",
-    "description": "Autocomplete (PrimeNG `p-autocomplete`). Local mode filters `options`; server mode listens to `(completeMethod)` and shows `[suggestions]`. Only listed options can be chosen (force selection): unmatched text reverts on blur, an exact label match is taken.",
-    "inputs": [],
+    "description": "Autocomplete (PrimeNG `p-autocomplete`). Local mode filters `options`; server mode listens to `(completeMethod)` and shows `[suggestions]`. Only listed options can be chosen: on blur an exact label match is taken, and other text reverts to the label of the value (or clears it with `forceSelection`).",
+    "inputs": [
+      {
+        "name": "forceSelection",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "On blur, text that is no option label clears the text and the value (PrimeNG `forceSelection`). Default `false`: the text goes back to the label of the value."
+      }
+    ],
     "models": [
       {
         "name": "value",
@@ -228,7 +236,14 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "TOption",
         "default": null,
         "required": false,
-        "description": ""
+        "description": "An option was chosen. Same as `optionSelect` (kept for compatibility)."
+      },
+      {
+        "name": "selectionChanging",
+        "type": "StarSelectionChangingEvent<TValue | null>",
+        "default": null,
+        "required": false,
+        "description": "Fires before the value changes by a user action. Call `cancel()` on the event to keep the old value. Ignite UI combo `selectionChanging`."
       }
     ]
   },
@@ -289,6 +304,20 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": "Fires (debounced) when the user types; load `suggestions` in reply (PrimeNG `completeMethod`)."
+      },
+      {
+        "name": "optionSelect",
+        "type": "TOption",
+        "default": null,
+        "required": false,
+        "description": "An option was chosen (also from typed text). PrimeNG `onSelect`."
+      },
+      {
+        "name": "optionUnselect",
+        "type": "TValue",
+        "default": null,
+        "required": false,
+        "description": "A value was removed by the user: a chip, Backspace, or the clear of a single value. PrimeNG `onUnselect`."
       }
     ]
   },
@@ -3568,7 +3597,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "readonly TOption[]",
         "default": "[]",
         "required": false,
-        "description": ""
+        "description": "The options. With `lazy`, an entry may be `undefined` while it is not loaded: the list shows a loading row for it, and the keyboard skips it."
       },
       {
         "name": "optionLabel",
@@ -3606,11 +3635,60 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
+        "name": "checkbox",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "A check box in each option and a \"Select all\" box (tri-state) above the list. Implies `multiple`. The options have `aria-checked`. PrimeNG `checkbox`."
+      },
+      {
+        "name": "dragdrop",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Reorders options by drag and drop (CDK drag-drop), also into another listbox in `connectedTo` (or in the same `cdkDropListGroup`). Alt + Arrow up / down moves the active option with the keyboard. The listbox does not change `options`: handle `dropped`. Not with `virtualScroll`; group headings do not show. PrimeNG `dragdrop`."
+      },
+      {
+        "name": "dropListData",
+        "type": "unknown",
+        "default": "null",
+        "required": false,
+        "description": "With `dragdrop`: data that names this list in `dropped` (`from` / `to`). Default: the listbox."
+      },
+      {
+        "name": "connectedTo",
+        "type": "readonly { readonly dropListId: string }[]",
+        "default": "[]",
+        "required": false,
+        "description": "With `dragdrop`: other listboxes that take options from this one (template references)."
+      },
+      {
         "name": "filter",
         "type": "boolean",
         "default": "false",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "filterBy",
+        "type": "StarFilterBy<TOption>",
+        "default": "null",
+        "required": false,
+        "description": "Option fields that the filter searches (one key or a list). Default: the label. PrimeNG `filterBy`."
+      },
+      {
+        "name": "filterMatchMode",
+        "type": "StarFilterMatchMode",
+        "default": "'contains'",
+        "required": false,
+        "description": "How the filter text must match (default `contains`). PrimeNG `filterMatchMode`."
+      },
+      {
+        "name": "filterLocale",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Locale of the filter compare (`Intl.Collator`, sensitivity `base`). PrimeNG `filterLocale`."
       },
       {
         "name": "scrollHeight",
@@ -3632,6 +3710,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "40",
         "required": false,
         "description": "Row height in pixels with `virtualScroll`."
+      },
+      {
+        "name": "lazy",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Loads the options on demand (PrimeNG `lazy` with `onLazyLoad`). Use it with `virtualScroll` and an `options` array of the full length, with `undefined` for the options that are not loaded. The list emits `lazyLoad` when the rows in view need such options, and when the filter text changes (the filter then does not filter in the browser)."
       },
       {
         "name": "ariaLabel",
@@ -3678,6 +3763,34 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": ""
+      },
+      {
+        "name": "lazyLoad",
+        "type": "StarListLazyLoadEvent",
+        "default": null,
+        "required": false,
+        "description": "With `lazy`: the options from `first` to `last` are needed for the filter text `filter`. PrimeNG `onLazyLoad`. Each range is asked for once per filter text; treat the event as idempotent. A range that failed to load is asked for again after `resetLazy()`, or when the owner sets new placeholders with a different array length."
+      },
+      {
+        "name": "dropped",
+        "type": "StarListboxDropEvent<TOption>",
+        "default": null,
+        "required": false,
+        "description": "With `dragdrop`: an option was dropped on this list, or moved with Alt + Arrow keys. PrimeNG `onDrop`."
+      },
+      {
+        "name": "optionDblClick",
+        "type": "{ readonly option: TOption; readonly originalEvent: MouseEvent; }",
+        "default": null,
+        "required": false,
+        "description": "An option was double-clicked. PrimeNG `onDblClick`."
+      },
+      {
+        "name": "selectionChanging",
+        "type": "StarSelectionChangingEvent<TValue | readonly TValue[] | null>",
+        "default": null,
+        "required": false,
+        "description": "Fires before the value changes by a user action. Call `cancel()` on the event to keep the old value. Ignite UI `selectionChanging`."
       }
     ]
   },
@@ -3991,6 +4104,41 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "0",
         "required": false,
         "description": "Maximum number of chips (0 = no limit)."
+      },
+      {
+        "name": "allowCustomValues",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "A row \"Add “text”\" at the end of the list adds the typed text as a new value (a string) when no option has that label. `customValueAdd` fires. Ignite UI combo `allowCustomValues`."
+      },
+      {
+        "name": "unique",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "A value appears once (default `true`): chosen options leave the list. Off: an option can be chosen again. PrimeNG `unique`."
+      },
+      {
+        "name": "addOnBlur",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Typed text becomes a chip when the field loses focus (PrimeNG `addOnBlur`). The text must be an option label, or any text with `allowCustomValues`."
+      },
+      {
+        "name": "addOnTab",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Typed text becomes a chip on Tab; focus then stays in the field (PrimeNG `addOnTab`)."
+      },
+      {
+        "name": "separator",
+        "type": "string | RegExp | null",
+        "default": "null",
+        "required": false,
+        "description": "Text or pattern that ends a chip while typing, for example `','` or `/[,;]/` (PrimeNG `separator`). Typed or pasted text is split there; each part becomes a chip as with `addOnBlur`."
       }
     ],
     "models": [
@@ -4002,7 +4150,22 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       }
     ],
-    "outputs": []
+    "outputs": [
+      {
+        "name": "customValueAdd",
+        "type": "string",
+        "default": null,
+        "required": false,
+        "description": "With `allowCustomValues`: the text that became a new value. Ignite UI combo `addition`."
+      },
+      {
+        "name": "selectionChanging",
+        "type": "StarSelectionChangingEvent<readonly TValue[]>",
+        "default": null,
+        "required": false,
+        "description": "Fires before the value changes by a user action. Call `cancel()` on the event to keep the old value. Ignite UI combo `selectionChanging`."
+      }
+    ]
   },
   "StarMultiDatePicker": {
     "kind": "component",
@@ -4062,6 +4225,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "true",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "allowCustomValues",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "With `filter`: a row \"Add “text”\" at the end of the list adds the filter text as a new value (a string) when no option has that label. `customValueAdd` fires; add a matching option to `options` there, else the chip shows the text. Ignite UI combo `allowCustomValues`."
       }
     ],
     "models": [
@@ -4073,7 +4243,22 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       }
     ],
-    "outputs": []
+    "outputs": [
+      {
+        "name": "customValueAdd",
+        "type": "string",
+        "default": null,
+        "required": false,
+        "description": "With `allowCustomValues`: the text that became a new value. Ignite UI combo `addition`."
+      },
+      {
+        "name": "selectionChanging",
+        "type": "StarSelectionChangingEvent<readonly TValue[]>",
+        "default": null,
+        "required": false,
+        "description": "Fires before the value changes by a user action. Call `cancel()` on the event to keep the old value. Ignite UI combo `selectionChanging`."
+      }
+    ]
   },
   "StarNodeTemplate": {
     "kind": "directive",
@@ -4103,7 +4288,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "readonly TOption[]",
         "default": "[]",
         "required": false,
-        "description": ""
+        "description": "The options. With `lazy`, an entry may be `undefined` while it is not loaded: the list shows a loading row for it, and the keyboard skips it."
       },
       {
         "name": "optionLabel",
@@ -4155,6 +4340,27 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Line height in pixels with `virtualScroll`."
       },
       {
+        "name": "lazy",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Loads the options on demand (PrimeNG `lazy` with `onLazyLoad`). Use it with `virtualScroll` and an `options` array of the full length, with `undefined` for the options that are not loaded. The control emits `lazyLoad` when the rows in view need such options, and when the filter text changes. The filter then does not filter the options in the browser: the event has the text."
+      },
+      {
+        "name": "focusOnHover",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Moving the pointer over an option makes it the active option (default `true`). PrimeNG `focusOnHover`."
+      },
+      {
+        "name": "autoOptionFocus",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "When the panel opens without a chosen option, the first enabled option is active (default `true`). Off: no option is active until a key moves. The autocomplete uses `autoHighlight`. PrimeNG `autoOptionFocus`."
+      },
+      {
         "name": "placeholder",
         "type": "string | null",
         "default": "null",
@@ -4174,6 +4380,34 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "null",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "filterBy",
+        "type": "StarFilterBy<TOption>",
+        "default": "null",
+        "required": false,
+        "description": "Option fields that the filter searches: one key or a list of keys (property names or functions). Default: the label. PrimeNG `filterBy`."
+      },
+      {
+        "name": "filterMatchMode",
+        "type": "StarFilterMatchMode",
+        "default": "'contains'",
+        "required": false,
+        "description": "How the filter text must match: `contains` (default), `startsWith`, `endsWith`, `equals` or `notContains`. PrimeNG `filterMatchMode`."
+      },
+      {
+        "name": "filterLocale",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Locale of the filter compare, for example `de` or `tr`. The compare uses `Intl.Collator` with sensitivity `base`, so case and accents do not count. Default: case and accents do not count, without locale rules. PrimeNG `filterLocale`."
+      },
+      {
+        "name": "resetFilterOnHide",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Clears the filter text when the panel closes (default `true`). Set `false` to keep the text, and the filtered list, for the next opening. PrimeNG `resetFilterOnHide` (there default `false`)."
       },
       {
         "name": "showClear",
@@ -4202,6 +4436,27 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "'16rem'",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "panelClass",
+        "type": "string | readonly string[] | null",
+        "default": "null",
+        "required": false,
+        "description": "Extra CSS classes of the panel (the `.star-panel` element). PrimeNG `panelStyleClass`."
+      },
+      {
+        "name": "panelStyle",
+        "type": "Record<string, string> | null",
+        "default": "null",
+        "required": false,
+        "description": "Inline styles of the panel, for example `{ 'min-width': '20rem' }`. PrimeNG `panelStyle`."
+      },
+      {
+        "name": "appendTo",
+        "type": "'self' | 'body'",
+        "default": "'self'",
+        "required": false,
+        "description": "Where the panel is in the DOM (PrimeNG `appendTo`). `self` (default): next to the control. `body`: in the overlay container at the end of the body, for parents that clip their content. Both are native popovers in the top layer, so the panel also shows above a modal dialog. The control reads it when the overlay is created (the first opening): a later change has no effect."
       },
       {
         "name": "size",
@@ -4303,6 +4558,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": ""
+      },
+      {
+        "name": "lazyLoad",
+        "type": "StarListLazyLoadEvent",
+        "default": null,
+        "required": false,
+        "description": "With `lazy`: the options from `first` to `last` are needed for the filter text `filter`. PrimeNG `onLazyLoad`. Each range is asked for once per filter text; treat the event as idempotent. A range that failed to load is asked for again after `resetLazy()`, or when the owner sets new placeholders with a different array length."
       }
     ]
   },
@@ -5157,6 +5419,23 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarRowEditActionsTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starRowEditActions]",
+    "entry": "@star-ng/ui/table",
+    "description": "Replaces the Save and Cancel buttons of a row in edit (`editMode=\"row\"`): `<ng-template starRowEditActions let-save=\"save\" let-cancel=\"cancel\" let-valid=\"valid\">…</ng-template>`. PrimeNG `pSaveEditableRow` / `pCancelEditableRow` buttons. The content goes in the actions cell of the row. Enter in an editor still saves and Escape still cancels.",
+    "inputs": [
+      {
+        "name": "starRowEditActionsOf",
+        "type": "readonly T[] | null",
+        "default": "null",
+        "required": false,
+        "description": "Optional: pass the table rows to type `let-row` in strict templates."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
   "StarRowExpansionTemplate": {
     "kind": "directive",
     "selector": "ng-template[starRowExpansion]",
@@ -5234,7 +5513,29 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "selector": "star-select",
     "entry": "@star-ng/ui/select",
     "description": "Single-choice dropdown (PrimeNG `p-select`): typed options, `optionLabel` / `optionValue` / `optionDisabled`, filter, clear button, loading state, typeahead and full keyboard support (WAI-ARIA select-only combobox). The panel is a native popover, so it also works inside modal `star-dialog`s.",
-    "inputs": [],
+    "inputs": [
+      {
+        "name": "editable",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "A combobox with a text field (PrimeNG `editable`): the typed text filters the options, and an exact label chooses its option on Enter or blur. Other text becomes the value with `allowCustomValue`, else the text goes back to the label of the value."
+      },
+      {
+        "name": "allowCustomValue",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "With `editable`: typed text that is no option label becomes the value (as a string) on Enter or blur, and `customValue` fires. Ignite UI combo `allowCustomValues` for one value."
+      },
+      {
+        "name": "selectOnFocus",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Moving the active option with the keys also chooses it, and the panel stays open (default `false`). PrimeNG `selectOnFocus`. Only on `star-select`: the multi-select toggles options and the autocomplete would rewrite the typed text."
+      }
+    ],
     "models": [
       {
         "name": "value",
@@ -5244,7 +5545,22 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       }
     ],
-    "outputs": []
+    "outputs": [
+      {
+        "name": "customValue",
+        "type": "string",
+        "default": null,
+        "required": false,
+        "description": "With `editable` and `allowCustomValue`: the typed text that became the value."
+      },
+      {
+        "name": "selectionChanging",
+        "type": "StarSelectionChangingEvent<TValue | null>",
+        "default": null,
+        "required": false,
+        "description": "Fires before the value changes by a user action. Call `cancel()` on the event to keep the old value. Ignite UI combo `selectionChanging`."
+      }
+    ]
   },
   "StarSelectButton": {
     "kind": "component",
@@ -6059,6 +6375,20 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "'local'",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "editMode",
+        "type": "'cell' | 'row'",
+        "default": "'cell'",
+        "required": false,
+        "description": "`'cell'`: each editable cell has its own edit button. `'row'`: an actions column has an Edit button per row (F2 in a row does the same); all editable cells of the row show editors, with Save and Cancel. Enter in an editor saves the row, Escape cancels. PrimeNG `editMode`, Ignite `rowEditable`."
+      },
+      {
+        "name": "batchEdit",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Batch edit: saved edits, new rows and deleted rows collect in a pending change set instead of single events. Changed cells are marked, deleted rows are struck through. `commitEdits()` emits `batchSave`, `discardEdits()` drops the set, `undo()` / `redo()` (Ctrl+Z, Ctrl+Y, Ctrl+Shift+Z in the table) step through it. With `lazy`, set `dataKey`: the change set keys rows by `dataKey`, and a new page has new row objects. Ignite `batchEditing`."
       }
     ],
     "models": [
@@ -6145,6 +6475,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "[]",
         "required": false,
         "description": "Headings of the closed groups. Two-way."
+      },
+      {
+        "name": "editingRowKeys",
+        "type": "readonly unknown[]",
+        "default": "[]",
+        "required": false,
+        "description": "Keys (`dataKey`) of the rows in edit with `editMode=\"row\"`. Two-way. PrimeNG `editingRowKeys`."
       }
     ],
     "outputs": [
@@ -6167,7 +6504,63 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "StarCellEditEvent<T>",
         "default": null,
         "required": false,
-        "description": "The user changed an editable cell (see `StarColumn.editable`)."
+        "description": "The user changed an editable cell (see `StarColumn.editable`). Not emitted with `batchEdit`. PrimeNG `onEditComplete`, Ignite `cellEditDone`."
+      },
+      {
+        "name": "editInit",
+        "type": "StarEditCellEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "A cell editor opened (cell mode). PrimeNG `onEditInit`, Ignite `cellEditEnter`."
+      },
+      {
+        "name": "editCancel",
+        "type": "StarEditCellEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "A cell editor closed without a save (Escape, or a choice list closed without a choice). PrimeNG `onEditCancel`."
+      },
+      {
+        "name": "rowEditInit",
+        "type": "StarRowEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "A row entered edit (row mode). PrimeNG `initRowEdit`, Ignite `rowEditEnter`."
+      },
+      {
+        "name": "rowEditSave",
+        "type": "StarRowEditSaveEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "The user saved a row in edit with valid values (row mode, not `batchEdit`). `changes` holds the changed fields only. PrimeNG `saveRowEdit`, Ignite `rowEditDone`."
+      },
+      {
+        "name": "rowEditCancel",
+        "type": "StarRowEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "The user canceled the edit of a row. PrimeNG `cancelRowEdit`, Ignite `rowEditExit`."
+      },
+      {
+        "name": "rowAdd",
+        "type": "StarRowEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "A new row to store (not `batchEdit`): from `addRow()` in cell mode at once, in row mode when the user saves the new row (with the edited values). Ignite `rowAdded`."
+      },
+      {
+        "name": "rowDelete",
+        "type": "StarRowEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "A row to delete, from `deleteRow()` (not `batchEdit`). Ignite `rowDeleted`."
+      },
+      {
+        "name": "batchSave",
+        "type": "StarBatchChanges<T>",
+        "default": null,
+        "required": false,
+        "description": "`commitEdits()` with `batchEdit`: all pending changes. Ignite `transactions.commit`."
       },
       {
         "name": "lazyLoad",
@@ -7614,13 +8007,17 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "app-bar/basic": "<star-app-bar title=\"Orders\" [landmark]=\"false\">\n  <star-button\n    starAppBarStart\n    variant=\"ghost\"\n    iconOnly\n    leadingIcon=\"ph-bold ph-list\"\n    ariaLabel=\"Menu\"\n  />\n  <star-button\n    starAppBarEnd\n    variant=\"ghost\"\n    iconOnly\n    leadingIcon=\"ph-bold ph-magnifying-glass\"\n    ariaLabel=\"Search orders\"\n  />\n  <star-button\n    starAppBarEnd\n    variant=\"ghost\"\n    iconOnly\n    leadingIcon=\"ph-bold ph-bell\"\n    ariaLabel=\"Notifications\"\n  />\n  <star-avatar starAppBarEnd name=\"Order Desk\" size=\"sm\" />\n</star-app-bar>",
   "app-bar/sticky": "<div class=\"docs-app-bar-frame\">\n  <star-app-bar position=\"sticky\" elevated dense [landmark]=\"false\">\n    <star-button\n      starAppBarStart\n      variant=\"ghost\"\n      iconOnly\n      leadingIcon=\"ph-bold ph-arrow-left\"\n      ariaLabel=\"Back to projects\"\n    />\n    Project Apollo\n    <star-button starAppBarEnd variant=\"ghost\" size=\"sm\">Share</star-button>\n  </star-app-bar>\n  @for (week of weeks; track week) {\n    <p>Week {{ week }}: 12 tasks planned, 9 done, 3 moved to the next week.</p>\n  }\n</div>",
   "autocomplete/async": "<div class=\"docs-stack\">\n  <star-autocomplete\n    [suggestions]=\"results()\"\n    [loading]=\"searching()\"\n    [minQueryLength]=\"2\"\n    [delay]=\"150\"\n    (completeMethod)=\"search($event)\"\n    optionLabel=\"name\"\n    optionValue=\"id\"\n    [(value)]=\"found\"\n    placeholder=\"Type 2 letters of a name\"\n    ariaLabel=\"Colleague\"\n    showClear\n  />\n  <p class=\"docs-output\" role=\"status\">Colleague: {{ found() ?? 'none' }}</p>\n</div>",
+  "autocomplete/custom-values": "<div class=\"docs-stack\">\n  <star-multi-autocomplete\n    [options]=\"keywords\"\n    [(value)]=\"customKeywords\"\n    allowCustomValues\n    placeholder=\"Add a keyword\"\n    ariaLabel=\"Keywords with new ones\"\n    (customValueAdd)=\"lastKeyword.set($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Keywords: {{ customKeywords().join(', ') || 'none' }}. New:\n    {{ lastKeyword() ?? 'none' }}\n  </p>\n</div>",
   "autocomplete/dropdown": "<star-autocomplete\n  [options]=\"cities\"\n  [(value)]=\"dropdownCity\"\n  placeholder=\"Search a city\"\n  ariaLabel=\"City with dropdown\"\n  dropdown\n  autoHighlight\n  showClear\n/>",
+  "autocomplete/force-selection": "<div class=\"docs-stack\">\n  <star-autocomplete\n    [options]=\"cities\"\n    [(value)]=\"forcedCity\"\n    forceSelection\n    showClear\n    placeholder=\"Type a city, then leave the field\"\n    ariaLabel=\"City, listed only\"\n    (optionSelect)=\"cityEvent.set('Selected ' + $event)\"\n    (optionUnselect)=\"cityEvent.set('Removed ' + $event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    City: {{ forcedCity() ?? 'none' }}. {{ cityEvent() }}\n  </p>\n</div>",
   "autocomplete/form": "<div class=\"docs-stack\">\n  <star-field label=\"Assignee\" for=\"autocomplete-form-assignee\" [state]=\"task.assignee()\">\n    <star-autocomplete\n      inputId=\"autocomplete-form-assignee\"\n      [formField]=\"task.assignee\"\n      [options]=\"people\"\n      optionLabel=\"name\"\n      optionValue=\"id\"\n      placeholder=\"Search a person\"\n      showClear\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ task().valid() }}</p>\n</div>",
   "autocomplete/large": "<div class=\"docs-stack\">\n  <star-autocomplete\n    [options]=\"tickets\"\n    [(value)]=\"ticket\"\n    placeholder=\"Search 10,000 tickets\"\n    ariaLabel=\"Ticket\"\n    virtualScroll\n    dropdown\n  />\n  <p class=\"docs-output\" role=\"status\">Ticket: {{ ticket() ?? 'none' }}</p>\n</div>",
+  "autocomplete/lazy": "<div class=\"docs-stack\">\n  <star-autocomplete\n    #lazyControl\n    [options]=\"lazyList.options()\"\n    optionLabel=\"name\"\n    optionValue=\"id\"\n    [(value)]=\"lazyOrder\"\n    lazy\n    virtualScroll\n    dropdown\n    placeholder=\"Type an order number\"\n    ariaLabel=\"Order, loaded on demand\"\n    (lazyLoad)=\"lazyList.load($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">Order: {{ lazyOrder() ?? 'none' }}</p>\n  @if (lazyList.failed()) {\n    <button\n      type=\"button\"\n      class=\"star-btn star-btn--sm star-btn--ghost\"\n      (click)=\"lazyControl.resetLazy()\"\n    >\n      Retry\n    </button>\n  }\n</div>",
   "autocomplete/local": "<div class=\"docs-stack\">\n  <star-autocomplete\n    [options]=\"cities\"\n    [(value)]=\"city\"\n    placeholder=\"Search a city\"\n    ariaLabel=\"City\"\n  />\n  <p class=\"docs-output\" role=\"status\">City: {{ city() ?? 'none' }}</p>\n</div>",
   "autocomplete/multiple": "<div class=\"docs-stack\">\n  <star-multi-autocomplete\n    [options]=\"keywords\"\n    [(value)]=\"chosen\"\n    [selectionLimit]=\"4\"\n    placeholder=\"Add a keyword\"\n    ariaLabel=\"Keywords\"\n    dropdown\n    autoHighlight\n    showClear\n  />\n  <p class=\"docs-output\" role=\"status\">Keywords: {{ chosen().join(', ') || 'none' }}</p>\n</div>",
   "autocomplete/objects": "<star-autocomplete\n  [options]=\"people\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  optionGroup=\"team\"\n  [(value)]=\"person\"\n  placeholder=\"Search a person\"\n  ariaLabel=\"Person\"\n>\n  <ng-template starOption [starOptionOf]=\"people\" let-item>\n    <span>\n      {{ item.name }}\n      <small>{{ item.team }}</small>\n    </span>\n  </ng-template>\n</star-autocomplete>",
   "autocomplete/slots": "<div class=\"docs-stack\">\n  <star-autocomplete\n    [options]=\"officeCities\"\n    [(value)]=\"officeCity\"\n    [loading]=\"officesLoading()\"\n    optionLabel=\"name\"\n    optionValue=\"code\"\n    optionGroup=\"country\"\n    placeholder=\"Search a city\"\n    ariaLabel=\"Office city\"\n  >\n    <ng-template starHeader>\n      <p class=\"docs-output\">Cities with an office</p>\n    </ng-template>\n    <ng-template starGroup let-country let-count=\"count\">\n      {{ country }} ({{ count }})\n    </ng-template>\n    <ng-template starEmpty let-text>No city matches {{ text }}.</ng-template>\n    <ng-template starLoading>\n      <p class=\"docs-output\">Loading the office list...</p>\n    </ng-template>\n    <ng-template starFooter>\n      <p class=\"docs-output\">{{ officeCities.length }} cities</p>\n      <button\n        type=\"button\"\n        class=\"star-btn star-btn--sm star-btn--ghost\"\n        (click)=\"reloadOffices()\"\n      >\n        Reload\n      </button>\n    </ng-template>\n  </star-autocomplete>\n  <p class=\"docs-output\" role=\"status\">City: {{ officeCity() ?? 'none' }}</p>\n</div>",
+  "autocomplete/tokens": "<div class=\"docs-stack\">\n  <star-multi-autocomplete\n    [options]=\"keywords\"\n    [(value)]=\"tokens\"\n    [separator]=\"tokenSeparator\"\n    addOnTab\n    addOnBlur\n    allowCustomValues\n    [unique]=\"false\"\n    placeholder=\"Type keywords, separated by commas\"\n    ariaLabel=\"Keywords as tokens\"\n  />\n  <p class=\"docs-output\" role=\"status\">Keywords: {{ tokens().join(', ') || 'none' }}</p>\n</div>",
   "avatar-group/max": "<star-avatar-group [max]=\"3\" ariaLabel=\"Project team\">\n  @for (member of team; track member) {\n    <star-avatar [name]=\"member\" />\n  }\n</star-avatar-group>",
   "avatar-group/sizes": "<div class=\"docs-stack\">\n  <star-avatar-group size=\"sm\" ariaLabel=\"Reviewers\">\n    <star-avatar name=\"Jane Doe\" size=\"sm\" />\n    <star-avatar name=\"Sam Lee\" size=\"sm\" />\n    <star-avatar name=\"Ava Stone\" size=\"sm\" />\n  </star-avatar-group>\n  <star-avatar-group [max]=\"2\" size=\"lg\" shape=\"square\" ariaLabel=\"Workspaces\">\n    <star-avatar name=\"North Office\" size=\"lg\" shape=\"square\" />\n    <star-avatar name=\"South Office\" size=\"lg\" shape=\"square\" />\n    <star-avatar name=\"East Office\" size=\"lg\" shape=\"square\" />\n    <star-avatar name=\"West Office\" size=\"lg\" shape=\"square\" />\n  </star-avatar-group>\n</div>",
   "avatar/basic": "<star-avatar name=\"Jane Doe\" />\n<star-avatar name=\"Sam Lee\" shape=\"square\" />\n<star-avatar />\n<star-avatar name=\"Ava Stone\" icon=\"ph-bold ph-buildings\" />",
@@ -7779,9 +8176,13 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "list/basic": "<star-list ariaLabel=\"Warehouses\" divider>\n  <star-list-subheader>Portugal</star-list-subheader>\n  <star-list-item>\n    <i starListItemStart class=\"ph ph-warehouse\" aria-hidden=\"true\"></i>\n    Lisbon\n    <span starListItemSubtitle>Main warehouse</span>\n    <span starListItemEnd>1,240 orders</span>\n  </star-list-item>\n  <star-list-item>\n    <i starListItemStart class=\"ph ph-warehouse\" aria-hidden=\"true\"></i>\n    Porto\n    <span starListItemSubtitle>Returns</span>\n    <span starListItemEnd>310 orders</span>\n  </star-list-item>\n  <star-list-subheader>Spain</star-list-subheader>\n  <star-list-item>\n    <i starListItemStart class=\"ph ph-warehouse\" aria-hidden=\"true\"></i>\n    Valencia\n    <span starListItemSubtitle>Cross-dock</span>\n    <star-tag starListItemEnd severity=\"success\" value=\"Open\" />\n  </star-list-item>\n</star-list>",
   "list/empty": "<star-list ariaLabel=\"Recent orders\">\n  <ng-template starEmpty>No recent orders.</ng-template>\n</star-list>",
   "list/navigation": "<star-list mode=\"navigation\" ariaLabel=\"Documentation\">\n  <star-list-item routerLink=\"/controls/list\">\n    <i starListItemStart class=\"ph ph-list-bullets\" aria-hidden=\"true\"></i>\n    List\n    <span starListItemSubtitle>This page</span>\n  </star-list-item>\n  <star-list-item routerLink=\"/controls/listbox\">\n    <i starListItemStart class=\"ph ph-check-square\" aria-hidden=\"true\"></i>\n    Listbox\n    <span starListItemSubtitle>For selection</span>\n  </star-list-item>\n  <star-list-item routerLink=\"/controls/virtual-scroller\">\n    <i starListItemStart class=\"ph ph-rows\" aria-hidden=\"true\"></i>\n    Virtual scroller\n    <span starListItemSubtitle>For thousands of items</span>\n  </star-list-item>\n</star-list>",
+  "listbox/checkbox": "<div class=\"docs-stack\">\n  <star-listbox\n    [options]=\"queues\"\n    optionLabel=\"name\"\n    optionValue=\"id\"\n    optionDisabled=\"closed\"\n    [(value)]=\"checkedQueues\"\n    checkbox\n    filter\n    scrollHeight=\"12rem\"\n    ariaLabel=\"Queues with check boxes\"\n    (optionDblClick)=\"lastOpened.set($event.option.name)\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Queues: {{ checkedText() }}. Double-clicked: {{ lastOpened() ?? 'none' }}\n  </p>\n</div>",
   "listbox/disabled": "<star-listbox\n  [options]=\"queues\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  [value]=\"'intake'\"\n  disabled\n  scrollHeight=\"8rem\"\n  ariaLabel=\"Disabled queue\"\n/>",
+  "listbox/dragdrop": "<div class=\"docs-row\">\n  <star-listbox\n    #availableList\n    [options]=\"availableOrders()\"\n    [(value)]=\"availablePick\"\n    dragdrop\n    dropListData=\"available\"\n    [connectedTo]=\"[plannedList]\"\n    scrollHeight=\"14rem\"\n    ariaLabel=\"Available orders\"\n    (dropped)=\"moveOrder($event)\"\n  />\n  <star-listbox\n    #plannedList\n    [options]=\"plannedOrders()\"\n    [(value)]=\"plannedPick\"\n    dragdrop\n    dropListData=\"planned\"\n    [connectedTo]=\"[availableList]\"\n    scrollHeight=\"14rem\"\n    ariaLabel=\"Planned orders\"\n    (dropped)=\"moveOrder($event)\"\n  />\n</div>",
+  "listbox/filter-match": "<star-listbox\n  [options]=\"cities\"\n  optionLabel=\"name\"\n  optionValue=\"code\"\n  [filterBy]=\"['code', 'name']\"\n  filterMatchMode=\"startsWith\"\n  filterLocale=\"de\"\n  [(value)]=\"matchedCity\"\n  filter\n  scrollHeight=\"12rem\"\n  ariaLabel=\"City by code or name\"\n/>",
   "listbox/form": "<div class=\"docs-stack\">\n  <star-field label=\"Notify queues\" [state]=\"alert.queues()\">\n    <star-listbox\n      [formField]=\"alert.queues\"\n      [options]=\"queues\"\n      optionLabel=\"name\"\n      optionValue=\"id\"\n      multiple\n      scrollHeight=\"10rem\"\n      ariaLabel=\"Notify queues\"\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ alert().valid() }}</p>\n</div>",
   "listbox/groups": "<star-listbox\n  [options]=\"queues\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  optionGroup=\"site\"\n  optionDisabled=\"closed\"\n  [(value)]=\"grouped\"\n  scrollHeight=\"14rem\"\n  ariaLabel=\"Queue by site\"\n/>",
+  "listbox/lazy": "<div class=\"docs-stack\">\n  <star-listbox\n    #lazyControl\n    [options]=\"lazyList.options()\"\n    optionLabel=\"name\"\n    optionValue=\"id\"\n    [(value)]=\"lazyOrder\"\n    lazy\n    virtualScroll\n    filter\n    scrollHeight=\"14rem\"\n    ariaLabel=\"Order, loaded on demand\"\n    (lazyLoad)=\"lazyList.load($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">Order: {{ lazyOrder() ?? 'none' }}</p>\n  @if (lazyList.failed()) {\n    <button\n      type=\"button\"\n      class=\"star-btn star-btn--sm star-btn--ghost\"\n      (click)=\"lazyControl.resetLazy()\"\n    >\n      Retry\n    </button>\n  }\n</div>",
   "listbox/multiple": "<div class=\"docs-stack\">\n  <star-listbox\n    [options]=\"queues\"\n    optionLabel=\"name\"\n    optionValue=\"id\"\n    [(value)]=\"many\"\n    multiple\n    filter\n    scrollHeight=\"12rem\"\n    ariaLabel=\"Queues\"\n  />\n  <p class=\"docs-output\" role=\"status\">Queues: {{ manyText() }}</p>\n</div>",
   "listbox/single": "<div class=\"docs-stack\">\n  <star-listbox\n    [options]=\"queues\"\n    optionLabel=\"name\"\n    optionValue=\"id\"\n    [(value)]=\"queue\"\n    scrollHeight=\"12rem\"\n    ariaLabel=\"Queue\"\n  />\n  <p class=\"docs-output\" role=\"status\">Queue: {{ queue() ?? 'none' }}</p>\n</div>",
   "listbox/slots": "<star-listbox\n  [options]=\"cities\"\n  optionLabel=\"name\"\n  optionValue=\"code\"\n  optionGroup=\"country\"\n  [(value)]=\"city\"\n  scrollHeight=\"12rem\"\n  filter\n  ariaLabel=\"City\"\n>\n  <ng-template starHeader>\n    <p class=\"docs-output\">Cities with an office</p>\n  </ng-template>\n  <ng-template starGroup let-country let-count=\"count\">\n    {{ country }} ({{ count }})\n  </ng-template>\n  <ng-template starEmpty let-text>No city matches {{ text }}.</ng-template>\n  <ng-template starFooter>\n    <p class=\"docs-output\">{{ cities.length }} cities</p>\n  </ng-template>\n</star-listbox>",
@@ -7804,10 +8205,13 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "meter-group/sum": "<div class=\"docs-stack\">\n  <star-meter-group [items]=\"regions\" ariaLabel=\"Orders by region\" />\n</div>",
   "multi-select/basic": "<div class=\"docs-stack\">\n  <star-multi-select\n    [options]=\"departments\"\n    optionLabel=\"name\"\n    optionValue=\"id\"\n    [(value)]=\"chosen\"\n    placeholder=\"Select departments\"\n    ariaLabel=\"Departments\"\n  />\n  <p class=\"docs-output\" role=\"status\">Chosen: {{ chosen().join(', ') || 'none' }}</p>\n</div>",
   "multi-select/chips": "<star-multi-select\n  [options]=\"departments\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  [(value)]=\"chips\"\n  display=\"chip\"\n  placeholder=\"Select departments\"\n  ariaLabel=\"Departments as chips\"\n  filter\n  showClear\n/>",
+  "multi-select/custom-values": "<div class=\"docs-stack\">\n  <star-multi-select\n    [options]=\"labels()\"\n    [(value)]=\"pickedLabels\"\n    filter\n    allowCustomValues\n    display=\"chip\"\n    placeholder=\"Labels\"\n    ariaLabel=\"Order labels\"\n    (customValueAdd)=\"addLabel($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">Labels: {{ pickedLabels().join(', ') || 'none' }}</p>\n</div>",
   "multi-select/form": "<div class=\"docs-stack\">\n  <star-field label=\"Teams\" for=\"multi-form-teams\" [state]=\"team.departments()\">\n    <star-multi-select\n      inputId=\"multi-form-teams\"\n      [formField]=\"team.departments\"\n      [options]=\"departments\"\n      optionLabel=\"name\"\n      optionValue=\"id\"\n      display=\"chip\"\n      placeholder=\"Select at least two\"\n      ariaLabel=\"Teams\"\n      showClear\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ team().valid() }}</p>\n</div>",
   "multi-select/groups": "<star-multi-select\n  [options]=\"departments\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  optionGroup=\"site\"\n  optionDisabled=\"closed\"\n  [(value)]=\"grouped\"\n  placeholder=\"Departments by site\"\n  ariaLabel=\"Departments by site\"\n/>",
   "multi-select/large": "<div class=\"docs-stack\">\n  <star-multi-select\n    [options]=\"parcels\"\n    optionLabel=\"name\"\n    optionValue=\"id\"\n    [(value)]=\"selectedParcels\"\n    placeholder=\"10,000 parcels\"\n    ariaLabel=\"Parcels\"\n    virtualScroll\n  />\n  <p class=\"docs-output\" role=\"status\">Parcels: {{ selectedParcels().length }}</p>\n</div>",
+  "multi-select/lazy": "<div class=\"docs-stack\">\n  <star-multi-select\n    #lazyControl\n    [options]=\"lazyList.options()\"\n    optionLabel=\"name\"\n    optionValue=\"id\"\n    [(value)]=\"lazyPicked\"\n    lazy\n    virtualScroll\n    filter\n    placeholder=\"Select orders\"\n    ariaLabel=\"Orders, loaded on demand\"\n    (lazyLoad)=\"lazyList.load($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">Selected: {{ lazyPicked().length }}</p>\n  @if (lazyList.failed()) {\n    <button\n      type=\"button\"\n      class=\"star-btn star-btn--sm star-btn--ghost\"\n      (click)=\"lazyControl.resetLazy()\"\n    >\n      Retry\n    </button>\n  }\n</div>",
   "multi-select/limit": "<star-multi-select\n  [options]=\"departments\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  [selectionLimit]=\"2\"\n  placeholder=\"Pick up to 2\"\n  ariaLabel=\"Limited departments\"\n/>",
+  "multi-select/selection-changing": "<div class=\"docs-stack\">\n  <star-multi-select\n    [options]=\"cities\"\n    optionLabel=\"name\"\n    optionValue=\"code\"\n    [(value)]=\"keptCities\"\n    ariaLabel=\"Cities, at least one\"\n    (selectionChanging)=\"keepOne($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">Cities: {{ keptCities().join(', ') }}</p>\n</div>",
   "multi-select/slots": "<star-multi-select\n  [options]=\"cities\"\n  optionLabel=\"name\"\n  optionValue=\"code\"\n  [(value)]=\"visited\"\n  display=\"chip\"\n  placeholder=\"Select cities\"\n  ariaLabel=\"Cities\"\n  filter\n>\n  <ng-template starHeader>\n    <p class=\"docs-output\">Cities with an office</p>\n  </ng-template>\n  <ng-template starEmpty let-text>No city matches {{ text }}.</ng-template>\n  <ng-template\n    starChip\n    [starChipOf]=\"cities\"\n    let-item\n    let-remove=\"remove\"\n    let-interactive=\"interactive\"\n  >\n    <span class=\"star-chip star-chip--sm\">\n      {{ item.code }}\n      @if (interactive) {\n        <button\n          type=\"button\"\n          class=\"star-chip__remove\"\n          tabindex=\"-1\"\n          [attr.aria-label]=\"'Remove ' + item.name\"\n          (click)=\"remove()\"\n        >\n          x\n        </button>\n      }\n    </span>\n  </ng-template>\n  <ng-template starFooter>\n    <p class=\"docs-output\">{{ cities.length }} cities</p>\n    <button\n      type=\"button\"\n      class=\"star-btn star-btn--sm star-btn--ghost\"\n      (click)=\"visited.set([])\"\n    >\n      Clear the choice\n    </button>\n  </ng-template>\n</star-multi-select>",
   "multi-select/template": "<star-multi-select\n  [options]=\"departments\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  [(value)]=\"templated\"\n  placeholder=\"Select departments\"\n  ariaLabel=\"Departments with template\"\n>\n  <ng-template starOption [starOptionOf]=\"departments\" let-item let-selected=\"selected\">\n    <span>\n      {{ item.name }}\n      <small>{{ item.site }}</small>\n    </span>\n  </ng-template>\n</star-multi-select>",
   "order-list/basic": "<div class=\"docs-stack\">\n  <star-order-list [(value)]=\"steps\" ariaLabel=\"Release steps\" />\n  <p class=\"docs-output\" role=\"status\">Order: {{ steps().join(' > ') }}</p>\n</div>",
@@ -7853,10 +8257,16 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "select-button/toggle": "<star-toggle-button\n  [(checked)]=\"pinned\"\n  onLabel=\"Pinned\"\n  offLabel=\"Pin\"\n  onIcon=\"ph-fill ph-push-pin\"\n  offIcon=\"ph-bold ph-push-pin\"\n/>\n<star-toggle-button [checked]=\"true\" disabled onLabel=\"Locked\" offLabel=\"Lock\" />",
   "select/basic": "<div class=\"docs-stack\">\n  <star-select\n    [options]=\"countries\"\n    optionLabel=\"name\"\n    optionValue=\"code\"\n    [(value)]=\"country\"\n    placeholder=\"Select a country\"\n    ariaLabel=\"Country\"\n  />\n  <p class=\"docs-output\" role=\"status\">Country: {{ country() ?? 'none' }}</p>\n</div>",
   "select/disabled-options": "<star-select\n  [options]=\"countries\"\n  optionLabel=\"name\"\n  optionValue=\"code\"\n  optionDisabled=\"closed\"\n  [(value)]=\"open\"\n  placeholder=\"Offices (one is closed)\"\n  ariaLabel=\"Office\"\n/>",
+  "select/editable": "<div class=\"docs-stack\">\n  <star-select\n    [options]=\"cities\"\n    optionLabel=\"name\"\n    optionValue=\"code\"\n    [(value)]=\"editedCity\"\n    editable\n    allowCustomValue\n    showClear\n    placeholder=\"Type or choose a city\"\n    ariaLabel=\"City, editable\"\n    (customValue)=\"lastCustom.set($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Value: {{ editedCity() ?? 'none' }}. Last custom text: {{ lastCustom() ?? 'none' }}\n  </p>\n</div>",
   "select/filter": "<div class=\"docs-stack\">\n  <star-select\n    [options]=\"countries\"\n    optionLabel=\"name\"\n    optionValue=\"code\"\n    [(value)]=\"filtered\"\n    placeholder=\"Search a country\"\n    ariaLabel=\"Country with filter\"\n    filter\n    showClear\n  />\n  <p class=\"docs-output\" role=\"status\">Filtered: {{ filtered() ?? 'none' }}</p>\n</div>",
+  "select/filter-match": "<div class=\"docs-stack\">\n  <star-select\n    [options]=\"cities\"\n    optionLabel=\"name\"\n    optionValue=\"code\"\n    [filterBy]=\"['code', 'name']\"\n    filterMatchMode=\"startsWith\"\n    filterLocale=\"de\"\n    [resetFilterOnHide]=\"false\"\n    [(value)]=\"matchedCity\"\n    placeholder=\"Type a code or a name\"\n    ariaLabel=\"City by code or name\"\n    filter\n  />\n  <p class=\"docs-output\" role=\"status\">City: {{ matchedCity() ?? 'none' }}</p>\n</div>",
   "select/form": "<div class=\"docs-stack\">\n  <star-field label=\"Office country\" for=\"select-form-country\" [state]=\"office.country()\">\n    <star-select\n      inputId=\"select-form-country\"\n      [formField]=\"office.country\"\n      [options]=\"countries\"\n      optionLabel=\"name\"\n      optionValue=\"code\"\n      placeholder=\"Select a country\"\n      ariaLabel=\"Office country\"\n      showClear\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ office().valid() }}</p>\n</div>",
   "select/groups": "<star-select\n  [options]=\"countries\"\n  optionLabel=\"name\"\n  optionValue=\"code\"\n  optionGroup=\"region\"\n  [(value)]=\"grouped\"\n  placeholder=\"Grouped by region\"\n  ariaLabel=\"Country by region\"\n/>",
+  "select/keyboard-options": "<div class=\"docs-stack\">\n  <star-select\n    [options]=\"cities\"\n    optionLabel=\"name\"\n    optionValue=\"code\"\n    [(value)]=\"keyedCity\"\n    selectOnFocus\n    [autoOptionFocus]=\"false\"\n    [focusOnHover]=\"false\"\n    placeholder=\"Arrow keys choose\"\n    ariaLabel=\"City, keys choose\"\n  />\n  <p class=\"docs-output\" role=\"status\">City: {{ keyedCity() ?? 'none' }}</p>\n</div>",
   "select/large": "<div class=\"docs-stack\">\n  <star-select\n    [options]=\"shipments\"\n    optionLabel=\"name\"\n    optionValue=\"id\"\n    optionGroup=\"region\"\n    [(value)]=\"shipment\"\n    placeholder=\"10,000 shipments\"\n    ariaLabel=\"Shipment\"\n    virtualScroll\n    filter\n  />\n  <p class=\"docs-output\" role=\"status\">Shipment: {{ shipment() ?? 'none' }}</p>\n</div>",
+  "select/lazy": "<div class=\"docs-stack\">\n  <star-select\n    #lazyControl\n    [options]=\"lazyList.options()\"\n    optionLabel=\"name\"\n    optionValue=\"id\"\n    [(value)]=\"lazyOrder\"\n    lazy\n    virtualScroll\n    filter\n    placeholder=\"Select an order\"\n    ariaLabel=\"Order, loaded on demand\"\n    (lazyLoad)=\"lazyList.load($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">Order: {{ lazyOrder() ?? 'none' }}</p>\n  @if (lazyList.failed()) {\n    <button\n      type=\"button\"\n      class=\"star-btn star-btn--sm star-btn--ghost\"\n      (click)=\"lazyControl.resetLazy()\"\n    >\n      Retry\n    </button>\n  }\n</div>",
+  "select/panel-options": "<div class=\"docs-stack\">\n  <star-select\n    [options]=\"cities\"\n    optionLabel=\"name\"\n    optionValue=\"code\"\n    [(value)]=\"panelCity\"\n    panelClass=\"orders-panel\"\n    [panelStyle]=\"{ 'min-width': '22rem' }\"\n    appendTo=\"body\"\n    placeholder=\"Wide panel in the body\"\n    ariaLabel=\"City, panel in the body\"\n  />\n</div>",
+  "select/selection-changing": "<div class=\"docs-stack\">\n  <star-select\n    [options]=\"cities\"\n    optionLabel=\"name\"\n    optionValue=\"code\"\n    [(value)]=\"guardedCity\"\n    placeholder=\"Select a city (not Paris)\"\n    ariaLabel=\"City, Paris refused\"\n    (selectionChanging)=\"guardCity($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    City: {{ guardedCity() ?? 'none' }}. {{ guardMessage() }}\n  </p>\n</div>",
   "select/slots": "<star-select\n  [options]=\"cities\"\n  optionLabel=\"name\"\n  optionValue=\"code\"\n  optionGroup=\"country\"\n  [(value)]=\"city\"\n  placeholder=\"Select a city\"\n  ariaLabel=\"City\"\n  filter\n  showClear\n>\n  <ng-template starHeader>\n    <p class=\"docs-output\">Cities with an office</p>\n  </ng-template>\n  <ng-template starGroup let-country let-count=\"count\">\n    {{ country }} ({{ count }})\n  </ng-template>\n  <ng-template starEmpty let-text>No city matches {{ text }}.</ng-template>\n  <ng-template starSelected [starSelectedOf]=\"cities\" let-item>\n    {{ item.code }} · {{ item.name }}\n  </ng-template>\n  <ng-template starFooter>\n    <p class=\"docs-output\">{{ cities.length }} cities</p>\n  </ng-template>\n</star-select>",
   "select/states": "<div class=\"docs-stack\">\n  <star-select [options]=\"regions\" size=\"sm\" placeholder=\"Small\" ariaLabel=\"Small select\" />\n  <star-select [options]=\"regions\" disabled placeholder=\"Disabled\" ariaLabel=\"Disabled\" />\n  <star-select [options]=\"regions\" [value]=\"'EMEA'\" readonly ariaLabel=\"Read-only\" />\n  <star-select [options]=\"[]\" loading placeholder=\"Loading options\" ariaLabel=\"Loading\" />\n</div>",
   "select/template": "<star-select\n  [options]=\"countries\"\n  optionLabel=\"name\"\n  optionValue=\"code\"\n  [(value)]=\"templated\"\n  placeholder=\"Select a country\"\n  ariaLabel=\"Country with template\"\n>\n  <ng-template starOption [starOptionOf]=\"countries\" let-item>\n    <span>\n      {{ item.name }}\n      <small>{{ item.region }}</small>\n    </span>\n  </ng-template>\n</star-select>",
@@ -7884,8 +8294,11 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "table-columns/panel": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with column panel\"\n      columnToggle\n      reorderableColumns\n      [(columnOrder)]=\"order\"\n      [(hiddenColumns)]=\"hidden\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">\n    Order: {{ order().join(', ') || 'default' }}. Hidden:\n    {{ hidden().join(', ') || 'none' }}.\n  </p>\n</div>",
   "table-columns/resize": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with resizable columns\"\n      resizableColumns\n      [(columnWidths)]=\"widths\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Widths: {{ widthText() }}</p>\n</div>",
   "table-columns/state": "<div class=\"docs-stack\">\n  <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"saved.clearState()\">\n    Clear saved view\n  </star-button>\n  <docs-fill>\n    <star-table\n      #saved\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with saved view\"\n      columnToggle\n      resizableColumns\n      stateKey=\"docs-table-saved-view\"\n      stateStorage=\"session\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n</div>",
+  "table-edit/add-delete": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button\n      size=\"sm\"\n      leadingIcon=\"ph-bold ph-plus\"\n      (pressed)=\"addTable.addRow(newOrder(), 'top')\"\n    >\n      Add order\n    </star-button>\n  </div>\n  <docs-fill>\n    <star-table\n      #addTable\n      [value]=\"list()\"\n      [columns]=\"addColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders to add and delete\"\n      editMode=\"row\"\n      (rowAdd)=\"addOrder($event)\"\n      (rowDelete)=\"deleteOrder($event)\"\n      (rowEditSave)=\"updateOrder($event)\"\n    >\n      <ng-template starCell=\"remove\" let-row [starCellOf]=\"list()\">\n        <button\n          type=\"button\"\n          class=\"star-table__toggle\"\n          [attr.aria-label]=\"'Delete ' + row.id\"\n          (click)=\"addTable.deleteRow(row)\"\n        >\n          <i class=\"ph-bold ph-trash\" aria-hidden=\"true\"></i>\n        </button>\n      </ng-template>\n    </star-table>\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">{{ addMessage() }}</p>\n</div>",
+  "table-edit/batch": "<div class=\"docs-stack\">\n  <div class=\"docs-row\" role=\"toolbar\" aria-label=\"Batch changes\">\n    <star-button\n      size=\"sm\"\n      variant=\"secondary\"\n      leadingIcon=\"ph-bold ph-arrow-counter-clockwise\"\n      [disabled]=\"!batchTable.canUndo()\"\n      (pressed)=\"batchTable.undo()\"\n    >\n      Undo\n    </star-button>\n    <star-button\n      size=\"sm\"\n      variant=\"secondary\"\n      leadingIcon=\"ph-bold ph-arrow-clockwise\"\n      [disabled]=\"!batchTable.canRedo()\"\n      (pressed)=\"batchTable.redo()\"\n    >\n      Redo\n    </star-button>\n    <star-button\n      size=\"sm\"\n      variant=\"secondary\"\n      [disabled]=\"!pendingCount(batchTable.pendingChanges())\"\n      (pressed)=\"batchTable.discardEdits()\"\n    >\n      Discard\n    </star-button>\n    <star-button\n      size=\"sm\"\n      [disabled]=\"!pendingCount(batchTable.pendingChanges())\"\n      (pressed)=\"batchTable.commitEdits()\"\n    >\n      {{ saveLabel(pendingCount(batchTable.pendingChanges())) }}\n    </star-button>\n  </div>\n  <docs-fill>\n    <star-table\n      #batchTable\n      [value]=\"batchRows()\"\n      [columns]=\"batchColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with batch edit\"\n      batchEdit\n      (batchSave)=\"saveBatch($event)\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">{{ batchMessage() }}</p>\n</div>",
   "table-edit/cells": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"rows()\"\n      [columns]=\"editColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Editable orders\"\n      (cellEdit)=\"applyEdit($event)\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">{{ message() }}</p>\n</div>",
   "table-edit/reorder": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"queue()\"\n      [columns]=\"queueColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Order queue\"\n      reorderableRows\n      (rowReorder)=\"move($event)\"\n    />\n  </docs-fill>\n</div>",
+  "table-edit/rows": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"crew()\"\n      [columns]=\"rowColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with row edit\"\n      editMode=\"row\"\n      (rowEditSave)=\"saveRow($event)\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">{{ rowMessage() }}</p>\n</div>",
   "table-export/basic": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button\n      size=\"sm\"\n      variant=\"secondary\"\n      leadingIcon=\"ph-bold ph-download-simple\"\n      (pressed)=\"exportTable.exportCsv({ fileName: 'orders' })\"\n    >\n      Export CSV\n    </star-button>\n    <star-button\n      size=\"sm\"\n      variant=\"secondary\"\n      leadingIcon=\"ph-bold ph-microsoft-excel-logo\"\n      (pressed)=\"exportTable.exportExcel({ fileName: 'orders' })\"\n    >\n      Export Excel\n    </star-button>\n    <star-button\n      size=\"sm\"\n      variant=\"secondary\"\n      leadingIcon=\"ph-bold ph-printer\"\n      (pressed)=\"exportTable.print()\"\n    >\n      Print\n    </star-button>\n    <star-button\n      size=\"sm\"\n      variant=\"secondary\"\n      [disabled]=\"!selected().length\"\n      (pressed)=\"\n        exportTable.exportCsv({ fileName: 'selected-orders', selectionOnly: true })\n      \"\n    >\n      Export selected rows\n    </star-button>\n  </div>\n  <docs-fill>\n    <star-table\n      #exportTable\n      ariaLabel=\"Orders\"\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      selectionMode=\"multiple\"\n      [(selection)]=\"selected\"\n      paginator\n      [rows]=\"5\"\n    >\n      <ng-template starCell=\"status\" [starCellOf]=\"orders\" let-row>\n        <star-tag [severity]=\"severityOf(row.status)\" [value]=\"row.status\" rounded />\n      </ng-template>\n      <ng-template starCell=\"customer\" [starCellOf]=\"orders\" let-row let-value=\"value\">\n        <strong>{{ value }}</strong>\n        <br />\n        <small>{{ row.email }}</small>\n      </ng-template>\n    </star-table>\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">{{ selected().length }} selected</p>\n</div>",
   "table-export/print-format": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button\n      size=\"sm\"\n      variant=\"secondary\"\n      leadingIcon=\"ph-bold ph-printer\"\n      (pressed)=\"partsTable.print()\"\n    >\n      Print parts\n    </star-button>\n  </div>\n  <docs-fill>\n    <star-table\n      #partsTable\n      ariaLabel=\"Parts\"\n      [value]=\"parts\"\n      [columns]=\"partColumns\"\n      dataKey=\"code\"\n    />\n  </docs-fill>\n</div>",
   "table-export/print-long": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button\n      size=\"sm\"\n      variant=\"secondary\"\n      leadingIcon=\"ph-bold ph-printer\"\n      (pressed)=\"longTable.print()\"\n    >\n      Print invoices\n    </star-button>\n  </div>\n  <docs-fill>\n    <star-table\n      #longTable\n      ariaLabel=\"Invoices\"\n      [value]=\"invoices\"\n      [columns]=\"invoiceColumns\"\n      dataKey=\"id\"\n      selectionMode=\"multiple\"\n      [hiddenColumns]=\"['region']\"\n      paginator\n      [rows]=\"10\"\n    >\n      <ng-template starCell=\"open\" [starCellOf]=\"invoices\" let-row>\n        <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"opened.set(row.id)\">\n          Open\n        </star-button>\n      </ng-template>\n    </star-table>\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Opened: {{ opened() || 'none' }}</p>\n</div>",
