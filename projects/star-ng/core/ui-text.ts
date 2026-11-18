@@ -17,6 +17,7 @@ export interface StarUiText {
   readonly loading: string;
   readonly actions: string;
   readonly moreActions: string;
+  readonly bottomSheet: string;
   readonly ofTotal: (index: number, total: number) => string;
   readonly expandItem: (label: string) => string;
   readonly collapseItem: (label: string) => string;
@@ -217,6 +218,7 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   loading: 'Loading',
   actions: 'Actions',
   moreActions: 'More actions',
+  bottomSheet: 'Bottom sheet',
   ofTotal: (index, total) => `${index} of ${total}`,
   expandItem: (label) => `Expand ${label}`,
   collapseItem: (label) => `Collapse ${label}`,

@@ -1,0 +1,154 @@
+// Bottom sheet: native dialog pinned to the bottom edge, and the action sheet list.
+@use '../shared' as *;
+
+html:has(dialog.star-bottom-sheet--modal[open]) {
+  overflow: hidden;
+}
+.star-bottom-sheet {
+  --star-bottom-sheet-max-width: 40rem;
+  position: fixed;
+  inset-block: auto 0;
+  inset-inline: 0;
+  width: min(100%, var(--star-bottom-sheet-max-width));
+  max-width: 100vw;
+  max-height: calc(100dvh - 2rem);
+  margin: 0 auto;
+  padding: 0;
+  border: 0;
+  border-radius: var(--star-radius-2xl) var(--star-radius-2xl) 0 0;
+  background: var(--star-surface);
+  color: var(--star-text);
+  box-shadow: var(--star-shadow-modal);
+  translate: 0 100%;
+  transition:
+    translate var(--star-duration-slow) $ease,
+    overlay var(--star-duration-slow) allow-discrete,
+    display var(--star-duration-slow) allow-discrete;
+
+  &[open] {
+    translate: 0 0;
+
+    @starting-style {
+      translate: 0 100%;
+    }
+  }
+  &:focus-visible {
+    outline: 2px solid var(--star-accent);
+    outline-offset: -2px;
+  }
+  &::backdrop {
+    background: var(--star-scrim-modal);
+    opacity: 0;
+    transition:
+      opacity var(--star-duration-slow) $ease,
+      overlay var(--star-duration-slow) allow-discrete,
+      display var(--star-duration-slow) allow-discrete;
+  }
+  &[open]::backdrop {
+    opacity: 1;
+
+    @starting-style {
+      opacity: 0;
+    }
+  }
+}
+// A non-modal sheet is not in the top layer: it stacks above the page, below the CDK overlay
+// container (z-index 1000), so a menu opened from the sheet stays on top. A border separates it.
+.star-bottom-sheet:not(.star-bottom-sheet--modal) {
+  z-index: 999;
+  border: 1px solid var(--star-border);
+  border-bottom: 0;
+}
+// Fills the dialog, so only a click on the ::backdrop has the <dialog> itself as its target.
+.star-bottom-sheet__surface {
+  display: flex;
+  flex-direction: column;
+  max-height: inherit;
+}
+// Decorative grip: a hint that the sheet belongs to the bottom edge.
+.star-bottom-sheet__handle {
+  flex: none;
+  width: 2.5rem;
+  height: 0.25rem;
+  margin: 0.625rem auto 0.25rem;
+  border-radius: var(--star-radius-pill);
+  background: var(--star-border-strong);
+}
+.star-bottom-sheet__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0.5rem 1rem calc(1rem + env(safe-area-inset-bottom, 0px));
+  font: var(--star-type-body-lg);
+}
+
+.star-action-sheet {
+  display: flex;
+  flex-direction: column;
+}
+.star-action-sheet__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.star-action-sheet__item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  min-height: 3rem;
+  padding: 0.5rem 0.75rem;
+  border: 0;
+  border-radius: var(--star-radius-md);
+  background: transparent;
+  color: var(--star-text);
+  font: var(--star-type-body-lg);
+  font-weight: 600;
+  text-align: start;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: var(--star-surface-muted);
+  }
+  &:focus-visible {
+    outline: none;
+    box-shadow: inset 0 0 0 2px var(--star-accent);
+  }
+  &:disabled {
+    color: var(--star-text-soft);
+    cursor: not-allowed;
+  }
+}
+.star-action-sheet__icon {
+  font-size: 1.25rem;
+  color: var(--star-text-muted);
+
+  .star-action-sheet__item--danger &,
+  .star-action-sheet__item:disabled & {
+    color: inherit;
+  }
+}
+.star-action-sheet__item--danger:not(:disabled) {
+  color: var(--star-danger);
+
+  &:hover {
+    background: var(--star-danger-soft);
+  }
+}
+.star-action-sheet__cancel {
+  justify-content: center;
+  margin-top: 0.5rem;
+  border-top: 1px solid var(--star-border);
+  border-radius: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .star-bottom-sheet,
+  .star-bottom-sheet::backdrop {
+    animation: none;
+    transition: none;
+  }
+}
