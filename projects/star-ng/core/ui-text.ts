@@ -31,6 +31,9 @@ export interface StarUiText {
   readonly removeItem: (label: string) => string;
   /** Label of the "+N" entry for items that are not shown (avatar group). */
   readonly moreCount: (count: number) => string;
+  // Clipboard (`starCopy`)
+  readonly copied: string;
+  readonly copyFailed: string;
   // Tags field
   readonly tagsHint: string;
   readonly tagAdded: (label: string) => string;
@@ -284,6 +287,8 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   collapseItem: (label) => `Collapse ${label}`,
   removeItem: (label) => `Remove ${label}`,
   moreCount: (count) => `${count} more`,
+  copied: 'Copied',
+  copyFailed: 'Copy failed',
   tagsHint: 'Press Enter or comma to add. Backspace removes the last item.',
   tagAdded: (label) => `${label} added`,
   tagRemoved: (label) => `${label} removed`,

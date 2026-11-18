@@ -28,6 +28,8 @@ export const STAR_UI_TEXT_ES: StarUiText = {
   collapseItem: (label) => `Contraer ${label}`,
   removeItem: (label) => `Quitar ${label}`,
   moreCount: (count) => `${count} más`,
+  copied: 'Copiado',
+  copyFailed: 'No se pudo copiar',
   tagsHint: 'Intro o coma para añadir. Retroceso quita el último elemento.',
   tagAdded: (label) => `Se añadió ${label}`,
   tagRemoved: (label) => `Se quitó ${label}`,

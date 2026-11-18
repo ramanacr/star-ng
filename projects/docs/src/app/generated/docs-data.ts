@@ -2469,6 +2469,38 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarCopy": {
+    "kind": "directive",
+    "selector": "[starCopy]",
+    "entry": "@star-ng/ui/utility",
+    "description": "Copies text to the clipboard when the host is clicked (CDK `cdkCopyToClipboard`; PrimeNG has no directive). After the copy it announces the `copied` UI text (\"Copied\"), or `copyFailed`, through `StarAnnouncer`, and emits `copied` with `true` or `false`. Put it on a button:",
+    "inputs": [
+      {
+        "name": "starCopy",
+        "type": "string",
+        "default": null,
+        "required": true,
+        "description": "The text to copy."
+      },
+      {
+        "name": "copyAnnounce",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Announces the result to screen readers (default `true`). Set `false` when the page shows it in its own live region."
+      }
+    ],
+    "models": [],
+    "outputs": [
+      {
+        "name": "copied",
+        "type": "boolean",
+        "default": null,
+        "required": false,
+        "description": "`true` after a successful copy, `false` when the copy failed."
+      }
+    ]
+  },
   "StarDataView": {
     "kind": "component",
     "selector": "star-data-view",

@@ -28,6 +28,8 @@ export const STAR_UI_TEXT_DE: StarUiText = {
   collapseItem: (label) => `${label} zuklappen`,
   removeItem: (label) => `${label} entfernen`,
   moreCount: (count) => `${count} weitere`,
+  copied: 'Kopiert',
+  copyFailed: 'Kopieren fehlgeschlagen',
   tagsHint:
     'Mit der Eingabetaste oder einem Komma hinzufügen. Die Rücktaste entfernt den letzten Eintrag.',
   tagAdded: (label) => `${label} hinzugefügt`,

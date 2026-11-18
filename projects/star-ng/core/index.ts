@@ -1,5 +1,6 @@
 export * from './announcer';
 export * from './breakpoints';
+export * from './clipboard';
 export * from './config';
 export * from './direction';
 export * from './filter-match';
