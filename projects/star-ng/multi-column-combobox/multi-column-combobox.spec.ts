@@ -165,6 +165,20 @@ describe('StarMultiColumnCombobox', () => {
     expect(host.value()).toBeNull();
   });
 
+  it('lets Enter submit the form on a closed field unless the text changed the value (m14)', async () => {
+    const { host, input, press, type } = await setup();
+    const untouched = await press('Enter');
+    expect(untouched.defaultPrevented).toBe(false);
+    await type('Jonas Berg');
+    await press('Escape');
+    expect(input.getAttribute('aria-expanded')).toBe('false');
+    const changed = await press('Enter');
+    expect(changed.defaultPrevented).toBe(true);
+    expect(host.value()).toBe(2);
+    const again = await press('Enter');
+    expect(again.defaultPrevented).toBe(false);
+  });
+
   it('chooses an option by click', async () => {
     const { host, press, fixture } = await setup();
     await press('ArrowDown');

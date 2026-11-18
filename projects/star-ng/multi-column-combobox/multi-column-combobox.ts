@@ -395,8 +395,8 @@ export class StarMultiColumnCombobox<TOption = unknown, TValue = TOption>
       return;
     }
     if (event.key === 'Enter' && (!this.open() || this.activeIndex() < 0)) {
-      event.preventDefault();
-      this.commitEdit();
+      // Enter that changes nothing goes on to the form (submit).
+      if (this.commitEdit()) event.preventDefault();
       this.closePanel();
       return;
     }
@@ -433,16 +433,17 @@ export class StarMultiColumnCombobox<TOption = unknown, TValue = TOption>
 
   /**
    * Applies the typed text: an exact label chooses its row, an empty text clears the value, other
-   * text goes back to the label of the value.
+   * text goes back to the label of the value. Returns `true` when the value changed.
    */
-  private commitEdit(): void {
-    if (!this.interactive()) return;
+  private commitEdit(): boolean {
+    if (!this.interactive()) return false;
     const text = this.editText().trim();
-    if (text === this.valueText()) return;
+    if (text === this.valueText()) return false;
+    const before = this.value();
     if (!text) {
       this.value.set(null);
       this.setEditText('');
-      return;
+      return before !== null;
     }
     const lower = text.toLocaleLowerCase();
     const exact = this.options().find(
@@ -453,6 +454,7 @@ export class StarMultiColumnCombobox<TOption = unknown, TValue = TOption>
     );
     if (exact !== undefined) this.choose(exact);
     else this.setEditText(this.valueText());
+    return this.value() !== before;
   }
 
   protected isSelected(option: TOption): boolean {
