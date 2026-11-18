@@ -187,6 +187,13 @@ export class DocsCompactSelect {
         <code>locale</code> of <code>provideStarNg</code>, else the browser locale. Import them one
         by one or all with <code>STAR_PIPES</code> from <code>&#64;star-ng/ui/utility</code>.
       </p>
+      <p>
+        A pure pipe runs again only when its input or an argument changes. After
+        <code>StarConfigService.update(&#123; locale &#125;)</code> a text that is already shown
+        keeps the old locale until its value changes. To switch the language at run time, pass the
+        locale as an argument from a signal:
+        <code ngNonBindable>{{ size | starFileSize: locale() }}</code>.
+      </p>
       <docs-example
         heading="File size, relative time, highlight and initials"
         source="configuration/pipes"
