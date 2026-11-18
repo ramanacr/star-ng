@@ -126,9 +126,15 @@ export const RULES = [
   },
   {
     name: 'build tools',
-    test: /^tools\/(build-pages|build-styles|check-names|check-package|gen-docs-data|pages-fallback|release-version|smoke-consumer|visual-update)\.mjs$/,
+    test: /^tools\/(agent-data|build-pages|build-styles|check-names|check-package|gen-docs-data|pages-fallback|release-version|smoke-consumer|visual-update)\.mjs$/,
     needs: BUILD,
     why: 'a changed generator output shows as a change in projects/docs (a full run); the rest do not touch the docs build',
+  },
+  {
+    name: 'mcp server',
+    test: /^projects\/mcp\//,
+    needs: BUILD,
+    why: 'the MCP server is tested in build-test (pnpm test:mcp); no page uses it',
   },
   {
     name: 'pages tests',

@@ -168,3 +168,20 @@ publish.
 6. Error "OIDC" or "not authorized" in `npm publish`: the trusted publisher on npmjs.com does
    not match this run. The four values must be exactly `ramanacr`, `star-ng`, `release.yml`
    and `npm`. The npm version in the job must be 11.5.1 or later.
+
+## Releasing @star-ng/mcp (the MCP server)
+
+The MCP server in `projects/mcp` is a separate npm package with its own version. The release
+workflow does NOT publish it. The owner publishes it by hand from a clean checkout of `main`:
+
+1. Set the new version in `projects/mcp/package.json`.
+2. Make the data snapshot and run the tests: `pnpm test:mcp`. This writes
+   `projects/mcp/data/mcp/components.json` from the current library and docs source.
+3. Check the content of the package: `npm pack ./projects/mcp --dry-run`. The list must hold
+   `bin/`, `src/`, `data/mcp/components.json`, `README.md` and `package.json`, and nothing else.
+4. Publish: `npm publish ./projects/mcp --access public`.
+
+The snapshot is only the fallback. At start, the server fetches the current data from the docs
+site (`mcp/components.json`, written by `pnpm build:pages`). So a docs deployment updates what
+agents see, and a new version of `@star-ng/mcp` is needed only when the server code or the
+format of the data (`schemaVersion`) changes.
