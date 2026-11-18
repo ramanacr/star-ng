@@ -680,6 +680,77 @@ test.describe('table: editing', () => {
     await table.getByRole('button', { name: 'Move up' }).nth(2).click();
     await expect(column(table, 2)).toHaveText(['ORD-1002', 'ORD-1003', 'ORD-1001', 'ORD-1004']);
   });
+
+  test('edits a row from the keyboard, blocks an invalid save and cancels with Escape', async ({
+    page,
+  }) => {
+    await openPage(page, '/controls/table-edit', 'Table editing');
+    const live = example(page, 'Row edit with validation');
+    const table = live.getByRole('table', { name: 'Orders with row edit' });
+    const edit = table.getByRole('button', { name: 'Edit row' }).first();
+    await edit.focus();
+    await page.keyboard.press('Enter');
+    const customer = table.getByRole('textbox', { name: 'Edit Customer' });
+    await expect(customer).toBeFocused();
+    await customer.fill('');
+    await page.keyboard.press('Tab');
+    await expect(table.getByRole('combobox', { name: 'Edit Status' })).toBeFocused();
+    await page.keyboard.press('Enter');
+    // Save is blocked: the customer is required.
+    await expect(customer).toHaveAttribute('aria-invalid', 'true');
+    await expect(customer).toBeFocused();
+    await expect(table.getByText('Enter a value.')).toBeVisible();
+    await customer.fill('Park Cafe');
+    await page.keyboard.press('Enter');
+    await expect(customer).toHaveCount(0);
+    await expect(live.getByRole('status')).toHaveText(/customer changed/);
+    await expect(table.getByRole('button', { name: 'Edit row' }).first()).toBeFocused();
+    await expect(table.getByRole('cell', { name: 'Park Cafe' })).toBeVisible();
+
+    await page.keyboard.press('F2');
+    await table.getByRole('textbox', { name: 'Edit Customer' }).fill('Other');
+    await page.keyboard.press('Escape');
+    await expect(table.getByRole('textbox', { name: 'Edit Customer' })).toHaveCount(0);
+    await expect(table.getByRole('cell', { name: 'Park Cafe' })).toBeVisible();
+  });
+
+  test('collects batch changes, undoes them with Ctrl+Z and saves them', async ({ page }) => {
+    await openPage(page, '/controls/table-edit', 'Table editing');
+    const live = example(page, 'Batch edit with undo');
+    const table = live.getByRole('table', { name: 'Orders with batch edit' });
+    const edit = table.getByRole('button', { name: /^Edit Customer/ }).first();
+    await edit.click();
+    await table.getByRole('textbox', { name: 'Edit Customer' }).fill('Changed customer');
+    await page.keyboard.press('Enter');
+    await expect(edit).toHaveAccessibleName(/Changed customer.*changed$/);
+    await expect(live.getByRole('button', { name: 'Save 1 changes' })).toBeEnabled();
+    await page.keyboard.press('Control+z');
+    await expect(edit).not.toHaveAccessibleName(/changed$/);
+    await page.keyboard.press('Control+y');
+    await expect(edit).toHaveAccessibleName(/changed$/);
+    await live.getByRole('button', { name: 'Save 1 changes' }).click();
+    await expect(live.getByRole('status')).toHaveText('Saved: 1 rows changed.');
+    await expect(edit).not.toHaveAccessibleName(/changed$/);
+    await expect(edit).toHaveAccessibleName(/Changed customer/);
+  });
+
+  test('adds a row at the top and deletes a row', async ({ page }) => {
+    await openPage(page, '/controls/table-edit', 'Table editing');
+    const live = example(page, 'Add and delete rows');
+    const table = live.getByRole('table', { name: 'Orders to add and delete' });
+    await expect(bodyRows(table)).toHaveCount(3);
+    await live.getByRole('button', { name: 'Add order' }).click();
+    const customer = table.getByRole('textbox', { name: 'Edit Customer' });
+    await expect(customer).toBeFocused();
+    await customer.fill('Park Cafe');
+    await table.getByRole('spinbutton', { name: 'Edit Quantity' }).fill('3');
+    await page.keyboard.press('Enter');
+    await expect(live.getByRole('status')).toHaveText('ORD-900 added.');
+    await expect(bodyRows(table)).toHaveCount(4);
+    await table.getByRole('button', { name: 'Delete ORD-900' }).click();
+    await expect(live.getByRole('status')).toHaveText('ORD-900 deleted.');
+    await expect(bodyRows(table)).toHaveCount(3);
+  });
 });
 
 test.describe('table: columns', () => {
