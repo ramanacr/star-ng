@@ -216,6 +216,7 @@ export const STAR_UI_TEXT_ES: StarUiText = {
   chartPoints: (title) => `${title}: puntos de datos`,
   chartPointsHint: 'Las flechas mueven entre los puntos y las series. Intro selecciona un punto.',
   chartPointLabel: (series, label, value) => `${series}, ${label}: ${value}`,
+  chartLegend: 'Leyenda: mostrar u ocultar una serie',
   breadcrumb: 'Ruta de navegación',
   stepperLabel: 'Progreso',
   stepCompleted: '(completado)',

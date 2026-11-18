@@ -62,6 +62,7 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - Editor: paste. `pasteAsText` inserts only the plain text; otherwise pasted HTML is sanitized with the existing `DomSanitizer` (no scripts, style elements and attributes, or event handlers). A paste that would pass `maxLength` is cut to fit as text.
 - Editor: toolbar slot `ng-template[starEditorToolbar]` replaces the toolbar; its context has `exec(command, value?)`, `isActive(command)` and `disabled` (PrimeNG `#header` template of `p-editor`).
 - Chart: data points get keyboard focus (one tab stop; Arrow Right and Arrow Left along a series, Arrow Down and Arrow Up between series, Home and End) with an accessible name per point, the tooltip shows on hover and on focus, `ng-template[starChartTooltip]` replaces its content, and the output `pointSelect({ seriesIndex, index, value })` fires on a click or on Enter or Space (PrimeNG `onDataSelect`, Chart.js tooltip callbacks). `STAR_UI_TEXT.chartPoints`, `chartPointsHint` and `chartPointLabel` with German and Spanish texts.
+- Chart: the legend toggles series (buttons with `aria-pressed`; `hiddenSeries` model; colors and markers stay with their series; the table keeps every series) and `legendPosition` (`top`, `bottom`, `start`, `end`). `STAR_UI_TEXT.chartLegend` with German and Spanish texts (Chart.js legend `onClick` and `position`).
 
 ### Changed
 

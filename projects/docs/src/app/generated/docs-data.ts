@@ -1255,9 +1255,24 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "false",
         "required": false,
         "description": "Start the table view open."
+      },
+      {
+        "name": "legendPosition",
+        "type": "'top' | 'bottom' | 'start' | 'end'",
+        "default": "'top'",
+        "required": false,
+        "description": "Where the legend is: above, below, or at the start or the end of the plot."
       }
     ],
-    "models": [],
+    "models": [
+      {
+        "name": "hiddenSeries",
+        "type": "readonly number[]",
+        "default": "[]",
+        "required": false,
+        "description": "Positions in `series` of the series that are hidden. A click on a legend item adds or removes its series (Chart.js legend `onClick`, PrimeNG through the Chart.js options). The table keeps every series."
+      }
+    ],
     "outputs": [
       {
         "name": "pointSelect",
@@ -8199,6 +8214,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "chart/bar": "<star-chart\n  type=\"bar\"\n  title=\"Orders per month\"\n  [labels]=\"months\"\n  [series]=\"orders\"\n  categoryLabel=\"Month\"\n/>",
   "chart/doughnut": "<star-chart\n  type=\"doughnut\"\n  title=\"Traffic by channel\"\n  [labels]=\"channels\"\n  [series]=\"traffic\"\n/>",
   "chart/interaction": "<div class=\"docs-stack\">\n  <star-chart\n    type=\"line\"\n    title=\"Orders per month, interactive\"\n    [labels]=\"months\"\n    [series]=\"orders\"\n    (pointSelect)=\"picked.set($event)\"\n  >\n    <ng-template starChartTooltip let-points let-label=\"label\">\n      <span class=\"star-chart__tip-title\">{{ label }}</span>\n      @for (point of points; track point.seriesIndex) {\n        <span class=\"star-chart__tip-row\"\n          >{{ point.series }}: {{ point.value }} orders</span\n        >\n      }\n    </ng-template>\n  </star-chart>\n  <p class=\"docs-output\" role=\"status\">\n    Selected:\n    {{\n      picked()\n        ? orders[picked()!.seriesIndex].label +\n          ', ' +\n          months[picked()!.index] +\n          ': ' +\n          picked()!.value\n        : 'none'\n    }}\n  </p>\n</div>",
+  "chart/legend": "<div class=\"docs-stack\">\n  <star-chart\n    type=\"line\"\n    title=\"Orders by channel\"\n    [labels]=\"months\"\n    [series]=\"channelOrders\"\n    [(hiddenSeries)]=\"hiddenChannels\"\n    legendPosition=\"end\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Hidden series: {{ hiddenChannels().join(', ') || 'none' }}\n  </p>\n</div>",
   "chart/line": "<star-chart\n  type=\"line\"\n  title=\"Orders per month, line\"\n  [labels]=\"months\"\n  [series]=\"orders\"\n/>",
   "chart/long-labels": "<div class=\"docs-chart-narrow\">\n  <star-chart\n    type=\"stacked-bar\"\n    title=\"Orders by region\"\n    [labels]=\"longRegions\"\n    [series]=\"regionChannels\"\n  />\n</div>\n<div class=\"docs-chart-narrow\">\n  <star-chart\n    type=\"radar\"\n    title=\"Detailed ratings\"\n    [labels]=\"longCriteria\"\n    [series]=\"ratings\"\n  />\n</div>",
   "chart/pie": "<star-chart type=\"pie\" title=\"Revenue by region\" [labels]=\"regions\" [series]=\"revenue\" />",

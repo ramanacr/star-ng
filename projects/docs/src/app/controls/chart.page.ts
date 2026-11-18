@@ -21,7 +21,7 @@ import { DOCS, DocsRow } from '../shared/docs';
       <docs-example
         heading="Bar chart"
         source="chart/bar"
-        note="Series are grouped per category. A legend appears for two or more series. Hover a column to see its values."
+        note="Series are grouped per category. A legend appears for two or more series; a click on a name hides or shows the series. Hover a column to see its values."
       >
         <star-chart
           type="bar"
@@ -223,6 +223,27 @@ import { DOCS, DocsRow } from '../shared/docs';
       </docs-example>
 
       <docs-example
+        heading="Legend: hide series and placement"
+        source="chart/legend"
+        [script]="legendScript"
+        note="Each name in the legend is a toggle button (aria-pressed): a click hides or shows its series, and the hiddenSeries model holds the positions of the hidden series. Colors and markers stay with their series. The data table keeps every series. legendPosition places the legend at the top (default), the bottom, the start or the end."
+      >
+        <div class="docs-stack">
+          <star-chart
+            type="line"
+            title="Orders by channel"
+            [labels]="months"
+            [series]="channelOrders"
+            [(hiddenSeries)]="hiddenChannels"
+            legendPosition="end"
+          />
+          <p class="docs-output" role="status">
+            Hidden series: {{ hiddenChannels().join(', ') || 'none' }}
+          </p>
+        </div>
+      </docs-example>
+
+      <docs-example
         heading="Sizing"
         source="chart/sizing"
         note="The chart fills the width of its container and keeps its aspect ratio. Set the width on a wrapper."
@@ -321,6 +342,8 @@ import { DOCS, DocsRow } from '../shared/docs';
   `,
 })
 export class ChartPage {
+  protected readonly hiddenChannels = signal<readonly number[]>([2]);
+  protected readonly legendScript = `readonly hiddenChannels = signal<readonly number[]>([2]);`;
   protected readonly picked = signal<StarChartPointSelectEvent | null>(null);
   protected readonly interactionScript = `readonly picked = signal<StarChartPointSelectEvent | null>(null);`;
   protected readonly slots: readonly DocsRow[] = [

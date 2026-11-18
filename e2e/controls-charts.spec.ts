@@ -83,14 +83,22 @@ test.describe('chart', () => {
     await expect(pie.locator('.star-chart__tip')).toContainText('North: 48,000 (32.4%)');
   });
 
-  test('the figure has an accessible name and the marks are hidden from screen readers', async ({
+  test('the figure has an accessible name, the marks are hidden and the legend toggles series', async ({
     page,
   }) => {
     await openPage(page, PATH, 'Chart');
     const live = example(page, 'Bar chart');
     await expect(live.getByRole('figure', { name: 'Orders per month' })).toBeVisible();
     await expect(live.locator('.star-chart__plot')).toHaveAttribute('aria-hidden', 'true');
-    await expect(live.locator('.star-chart__legend')).toHaveAttribute('aria-hidden', 'true');
+    const legend = live.getByRole('list', { name: 'Legend: show or hide a series' });
+    const shipped = legend.getByRole('button', { name: 'Shipped' });
+    await expect(shipped).toHaveAttribute('aria-pressed', 'true');
+    await expect(live.locator('.star-chart__bar')).toHaveCount(12);
+    await shipped.click();
+    await expect(shipped).toHaveAttribute('aria-pressed', 'false');
+    await expect(live.locator('.star-chart__bar')).toHaveCount(6);
+    await shipped.press('Enter');
+    await expect(live.locator('.star-chart__bar')).toHaveCount(12);
   });
 
   test('the data table is available to screen readers and opens with the keyboard', async ({

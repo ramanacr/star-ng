@@ -115,3 +115,75 @@ describe('StarChart interaction', () => {
     expect(targets()[1].getAttribute('aria-label')).toBe('Received, 1: 20');
   });
 });
+
+@Component({
+  imports: [StarChart],
+  template: `
+    <star-chart
+      [type]="type()"
+      title="Orders"
+      [labels]="['Jan', 'Feb']"
+      [series]="series"
+      [(hiddenSeries)]="hidden"
+      [legendPosition]="position()"
+    />
+  `,
+})
+class LegendHost {
+  readonly type = signal<StarChartType>('bar');
+  readonly position = signal<'top' | 'bottom' | 'start' | 'end'>('top');
+  readonly hidden = signal<readonly number[]>([]);
+  readonly series: StarChartSeries[] = [
+    { label: 'Received', data: [10, 20] },
+    { label: 'Shipped', data: [8, 18] },
+    { label: 'Returned', data: [1, 2] },
+  ];
+}
+
+describe('StarChart legend', () => {
+  it('toggles a series with its legend button and keeps the colors in place', async () => {
+    const fixture = TestBed.createComponent(LegendHost);
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+    const legend = el.querySelector('.star-chart__legend')!;
+    expect(legend.getAttribute('aria-hidden')).toBeNull();
+    expect(legend.getAttribute('aria-label')).toBe('Legend: show or hide a series');
+    const buttons = [...legend.querySelectorAll<HTMLButtonElement>('button')];
+    expect(buttons.map((b) => [b.textContent?.trim(), b.getAttribute('aria-pressed')])).toEqual([
+      ['Received', 'true'],
+      ['Shipped', 'true'],
+      ['Returned', 'true'],
+    ]);
+    expect(el.querySelectorAll('.star-chart__bar').length).toBe(6);
+    buttons[1].click();
+    await fixture.whenStable();
+    expect(fixture.componentInstance.hidden()).toEqual([1]);
+    expect(buttons[1].getAttribute('aria-pressed')).toBe('false');
+    const bars = [...el.querySelectorAll<SVGPathElement>('.star-chart__bar')];
+    expect(bars.length).toBe(4);
+    // "Returned" keeps the third color.
+    expect(bars.map((b) => b.style.fill)).toContain('var(--star-chart-3)');
+    expect(bars.map((b) => b.style.fill)).not.toContain('var(--star-chart-2)');
+    // The table keeps every series; the focus targets follow the drawn ones.
+    expect(el.querySelectorAll('thead th').length).toBe(4);
+    expect(el.querySelectorAll('.star-chart__target').length).toBe(4);
+    expect(el.querySelectorAll('.star-chart__target')[2].getAttribute('aria-label')).toBe(
+      'Returned, Jan: 1',
+    );
+    buttons[1].click();
+    await fixture.whenStable();
+    expect(fixture.componentInstance.hidden()).toEqual([]);
+  });
+
+  it('places the legend and keeps a doughnut legend static', async () => {
+    const fixture = TestBed.createComponent(LegendHost);
+    fixture.componentInstance.position.set('end');
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.querySelector('star-chart')!.classList).toContain('star-chart--legend-end');
+    fixture.componentInstance.type.set('doughnut');
+    await fixture.whenStable();
+    expect(el.querySelector('.star-chart__legend')!.getAttribute('aria-hidden')).toBe('true');
+    expect(el.querySelector('.star-chart__legend button')).toBeNull();
+  });
+});
