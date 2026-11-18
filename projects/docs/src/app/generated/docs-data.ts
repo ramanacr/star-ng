@@ -1871,7 +1871,110 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-dialog",
     "entry": "@star-ng/ui/dialog",
-    "description": "Dialog (PrimeNG `p-dialog`) built on the native `<dialog>` element: top-layer rendering, focus trap, focus restore and Escape handling come from the browser. Entry / exit animate with `@starting-style`; page scroll locks with `:has(dialog[open])`.",
+    "description": "Dialog (PrimeNG `p-dialog`) built on the native `<dialog>` element: top-layer rendering, focus trap, focus restore and Escape handling come from the browser. Entry / exit animate with `@starting-style`; page scroll locks with `:has(dialog[open])` (`blockScroll`).",
+    "inputs": [
+      {
+        "name": "position",
+        "type": "StarDialogPosition",
+        "default": "'center'",
+        "required": false,
+        "description": "Place in the window (PrimeNG `position`): `center` (default), an edge or a corner, 1rem from the window edge. Logical: `start` and `end` change sides in right-to-left."
+      },
+      {
+        "name": "breakpoints",
+        "type": "Readonly<Record<string, string>> | null",
+        "default": "null",
+        "required": false,
+        "description": "Widths per window size (PrimeNG `breakpoints`): `{ '<max-width>': '<width>' }`, for example `{ '960px': '75vw', '640px': '100vw' }`. The smallest matching max-width wins over `width` and `size`."
+      },
+      {
+        "name": "draggable",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The header drags the dialog with the pointer (PrimeNG `draggable`). The move button in the header moves it with Alt + the arrow keys, 10 pixels per press."
+      },
+      {
+        "name": "keepInViewport",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Dragging and resizing keep the dialog inside the window (PrimeNG `keepInViewport`)."
+      },
+      {
+        "name": "rememberPosition",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Keeps the dragged position and the resized size when the dialog opens again."
+      },
+      {
+        "name": "resizable",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "A handle in the bottom end corner resizes the dialog with the pointer, or with Shift + the arrow keys, 10 pixels per press (PrimeNG `resizable`). The smallest size is 240 x 160 pixels."
+      },
+      {
+        "name": "maximizable",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "A header button fills the window with the dialog and restores it (PrimeNG `maximizable`). Escape still closes a maximized dialog when `closeOnEscape` is on."
+      },
+      {
+        "name": "headless",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Renders only your content in the dialog box: no header, no title and no close button (PrimeNG `headless` template). Your content must name the dialog (`ariaLabel`, or `ariaLabelledby` with the id of your heading) and give a way to close it; Escape still closes it when `closeOnEscape` is on."
+      }
+    ],
+    "models": [
+      {
+        "name": "maximized",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The dialog fills the window. Two-way bindable."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "dragEnd",
+        "type": "StarDialogPoint",
+        "default": null,
+        "required": false,
+        "description": "Position of the top left corner after a drag, in pixels from the window (PrimeNG `onDragEnd`)."
+      },
+      {
+        "name": "resizeEnd",
+        "type": "StarDialogDimensions",
+        "default": null,
+        "required": false,
+        "description": "Size of the dialog after a resize, in pixels (PrimeNG `onResizeEnd`)."
+      },
+      {
+        "name": "maximize",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "The maximize button filled the window (PrimeNG `onMaximize`)."
+      },
+      {
+        "name": "restore",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "The restore button gave the dialog its normal size again (PrimeNG `onMaximize` with false)."
+      }
+    ]
+  },
+  "StarDialogBase": {
+    "kind": "directive",
+    "selector": "",
+    "entry": "@star-ng/ui/dialog",
+    "description": "Shared behaviour of `star-dialog` and `star-drawer`: the `visible` model, the native `<dialog>` element (top layer, focus trap, focus return, Escape), the close rules and the `shown` / `hidden` outputs. The component template must have a `<dialog #dialog>` element.",
     "inputs": [
       {
         "name": "header",
@@ -1885,14 +1988,14 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "StarDialogSize",
         "default": "'md'",
         "required": false,
-        "description": ""
+        "description": "Width step of a dialog (no effect on a drawer)."
       },
       {
         "name": "width",
         "type": "string | null",
         "default": "null",
         "required": false,
-        "description": "Fixed CSS width; overrides `size`."
+        "description": "Fixed CSS width of a dialog; overrides `size` (no effect on a drawer)."
       },
       {
         "name": "modal",
@@ -1941,7 +2044,28 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "string | null",
         "default": "null",
         "required": false,
-        "description": ""
+        "description": "Accessible name when there is no visible header title."
+      },
+      {
+        "name": "ariaLabelledby",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Id of the element that names the dialog, for example your own heading in a headless dialog."
+      },
+      {
+        "name": "blockScroll",
+        "type": "boolean | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "Stops the page behind from scrolling while open, and gives the scroll back after the close (PrimeNG `blockScroll`). Default: on for a modal, off for a non-modal."
+      },
+      {
+        "name": "focusOnShow",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Moves the focus into the content on open (PrimeNG `focusOnShow`): the first focusable element, or the one marked with `autofocus` / `data-autofocus`. When false, the dialog box itself takes the focus, so the first press of Tab reaches the first control."
       }
     ],
     "models": [
@@ -2082,7 +2206,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "'left' | 'right' | 'start' | 'end' | 'top' | 'bottom'",
         "default": "'right'",
         "required": false,
-        "description": ""
+        "description": "Edge of the window (PrimeNG `position`). `start` and `end` follow the writing direction; `left` and `right` are physical. Default `'right'`."
       },
       {
         "name": "drawerSize",
@@ -2090,6 +2214,20 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "'28rem'",
         "required": false,
         "description": "Width (left / right / start / end) or height (top / bottom)."
+      },
+      {
+        "name": "fullScreen",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Covers the whole window (PrimeNG `fullScreen`). The drawer still slides in from its edge."
+      },
+      {
+        "name": "dismissible",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "A click on the backdrop closes the drawer (PrimeNG `dismissible`). Same effect as `dismissableMask`. The default is false, which differs from PrimeNG (default true): a drawer without `dismissible` or `dismissableMask` stays open on a backdrop click."
       }
     ],
     "models": [],
@@ -6961,10 +7099,39 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "5",
         "required": false,
         "description": "Newest messages beyond this count wait until older ones close."
+      },
+      {
+        "name": "preventDuplicates",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Ignores a message with the same severity, summary and detail as one that this outlet has ever shown, also after it closed (PrimeNG `preventDuplicates`). Not the same as the service flag `StarToastService.preventDuplicates`, which only ignores a copy while visible."
+      },
+      {
+        "name": "preventOpenDuplicates",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Ignores a message with the same severity, summary and detail as one that this outlet shows now (PrimeNG `preventOpenDuplicates`). The service does this for every outlet by default (`StarToastService.preventDuplicates`); this input keeps it for one outlet when that is off."
+      },
+      {
+        "name": "breakpoints",
+        "type": "Readonly<Record<string, Readonly<Record<string, string>>>> | null",
+        "default": "null",
+        "required": false,
+        "description": "Narrow windows (PrimeNG `breakpoints`): `{ '<max-width>': { ...styles } }`. When a key matches, the stack goes full width at the bottom of the window, and the style object of the smallest matching key applies on top, for example `{ '640px': {} }` or `{ '640px': { 'inset-block-end': '4rem' } }`."
       }
     ],
     "models": [],
-    "outputs": []
+    "outputs": [
+      {
+        "name": "closed",
+        "type": "StarToastCloseEvent",
+        "default": null,
+        "required": false,
+        "description": "A toast of this outlet closed: the message and the reason (PrimeNG `onClose`)."
+      }
+    ]
   },
   "StarToastMessageTemplate": {
     "kind": "directive",
@@ -7897,8 +8064,14 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "date-picker/views": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"reportMonth\"\n    view=\"month\"\n    locale=\"en-GB\"\n    ariaLabel=\"Report month\"\n  />\n  <star-date-picker\n    [(value)]=\"reportYear\"\n    view=\"year\"\n    locale=\"en-GB\"\n    ariaLabel=\"Report year\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Month: {{ iso(reportMonth()) }}, year: {{ iso(reportYear()) }}\n  </p>\n</div>",
   "dialog/basic": "<star-button (pressed)=\"basicOpen.set(true)\">Edit order</star-button>\n<star-dialog [(visible)]=\"basicOpen\" header=\"Edit order ORD-1042\">\n  <span starDialogHeader class=\"docs-output\">Last saved at 10:42</span>\n  <div class=\"docs-stack\">\n    <star-field label=\"Customer\">\n      <input starInput value=\"Orchard Supply\" />\n    </star-field>\n    <star-field label=\"Delivery note\" hint=\"The driver reads this note.\">\n      <textarea starInput rows=\"3\">Leave at the loading dock.</textarea>\n    </star-field>\n  </div>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button variant=\"ghost\" (pressed)=\"basicOpen.set(false)\">Cancel</star-button>\n    <star-button (pressed)=\"basicOpen.set(false)\">Save</star-button>\n  </div>\n</star-dialog>",
   "dialog/close-rules": "<div class=\"docs-row\">\n  <star-button variant=\"secondary\" (pressed)=\"maskOpen.set(true)\"\n    >Backdrop click</star-button\n  >\n  <star-button variant=\"secondary\" (pressed)=\"lockedOpen.set(true)\">Locked</star-button>\n  <star-button variant=\"secondary\" (pressed)=\"floatOpen.set(true)\">Non-modal</star-button>\n</div>\n<star-dialog [(visible)]=\"maskOpen\" header=\"Closes on a backdrop click\" dismissableMask>\n  <p>Click outside this window to close it.</p>\n</star-dialog>\n<star-dialog\n  [(visible)]=\"lockedOpen\"\n  header=\"Locked dialog\"\n  [closable]=\"false\"\n  [closeOnEscape]=\"false\"\n>\n  <p>This dialog has no close button and ignores Escape.</p>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button (pressed)=\"lockedOpen.set(false)\">Done</star-button>\n  </div>\n</star-dialog>\n<star-dialog [(visible)]=\"floatOpen\" header=\"Non-modal dialog\" [modal]=\"false\">\n  <p>The page behind this window stays usable.</p>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button (pressed)=\"floatOpen.set(false)\">Close</star-button>\n  </div>\n</star-dialog>",
+  "dialog/drag": "<div class=\"docs-stack\">\n  <p class=\"docs-output\" role=\"status\">Last position: {{ dragNote() }}</p>\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"dragOpen.set(true)\">\n      Open movable dialog\n    </star-button>\n  </div>\n</div>\n<star-dialog\n  [(visible)]=\"dragOpen\"\n  header=\"Movable dialog\"\n  draggable\n  (dragEnd)=\"dragNote.set($event.x + ', ' + $event.y)\"\n>\n  <p>Drag the header, or focus the move button and press Alt with an arrow key.</p>\n</star-dialog>",
   "dialog/focus": "<div class=\"docs-row\">\n  <star-button variant=\"secondary\" (pressed)=\"defaultFocusOpen.set(true)\">\n    First focusable\n  </star-button>\n  <star-button variant=\"secondary\" (pressed)=\"markedFocusOpen.set(true)\">\n    Marked field\n  </star-button>\n</div>\n<star-dialog [(visible)]=\"defaultFocusOpen\" header=\"Default focus\">\n  <p>The focus starts on the close button.</p>\n  <star-field label=\"Reference\"><input starInput value=\"ORD-1042\" /></star-field>\n</star-dialog>\n<star-dialog [(visible)]=\"markedFocusOpen\" header=\"Marked focus\">\n  <star-field label=\"Reference\">\n    <input starInput value=\"ORD-1042\" data-autofocus />\n  </star-field>\n</star-dialog>",
+  "dialog/headless": "<star-button variant=\"secondary\" (pressed)=\"headlessOpen.set(true)\">\n  Open headless dialog\n</star-button>\n<star-dialog [(visible)]=\"headlessOpen\" headless ariaLabelledby=\"docs-headless-title\">\n  <div class=\"docs-stack docs-headless\">\n    <h2 id=\"docs-headless-title\">Shipping label for ORD-1042</h2>\n    <p>Your content draws its own heading, padding and buttons.</p>\n    <div class=\"docs-row\">\n      <star-button (pressed)=\"headlessOpen.set(false)\">Done</star-button>\n    </div>\n  </div>\n</star-dialog>",
+  "dialog/maximize": "<div class=\"docs-stack\">\n  <p class=\"docs-output\" role=\"status\">Maximized: {{ maximizedState() ? 'yes' : 'no' }}</p>\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"maximizeOpen.set(true)\">\n      Open order lines\n    </star-button>\n  </div>\n</div>\n<star-dialog\n  [(visible)]=\"maximizeOpen\"\n  [(maximized)]=\"maximizedState\"\n  header=\"Order lines\"\n  size=\"lg\"\n  maximizable\n>\n  <p>ORD-1042 has 12 lines. Maximize the dialog to see more of them at once.</p>\n</star-dialog>",
   "dialog/popups": "<star-button variant=\"secondary\" (pressed)=\"popupsOpen.set(true)\">\n  Open order dialog\n</star-button>\n<star-dialog [(visible)]=\"popupsOpen\" header=\"Order ORD-1042\" size=\"md\">\n  <div class=\"docs-stack\">\n    <star-field label=\"Shipping city\" hint=\"Menus and cascade selects open above the modal\">\n      <star-cascade-select\n        [options]=\"places\"\n        optionLabel=\"name\"\n        optionValue=\"code\"\n        [(value)]=\"place\"\n        ariaLabel=\"Dialog city\"\n        showPath\n      />\n    </star-field>\n    <div class=\"docs-row\">\n      <star-button size=\"sm\" variant=\"secondary\" [starMenuTrigger]=\"actionsMenu\">\n        More actions\n      </star-button>\n      <star-menu\n        #actionsMenu\n        [items]=\"actionItems\"\n        (itemClick)=\"lastAction.set($event.label ?? '')\"\n      />\n      <span class=\"docs-output\" tabindex=\"0\" [starContextMenu]=\"actionsMenu\">\n        Last action: {{ lastAction() }}\n      </span>\n    </div>\n  </div>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button (pressed)=\"popupsOpen.set(false)\">Done</star-button>\n  </div>\n</star-dialog>",
+  "dialog/position": "<div class=\"docs-row\">\n  @for (item of positions; track item) {\n    <star-button variant=\"secondary\" (pressed)=\"openAt(item)\">{{ item }}</star-button>\n  }\n</div>\n<star-dialog\n  [(visible)]=\"positionOpen\"\n  [position]=\"position()\"\n  size=\"sm\"\n  [header]=\"'Position ' + position()\"\n>\n  <p>This dialog is at the {{ position() }} position.</p>\n</star-dialog>",
+  "dialog/resize": "<div class=\"docs-stack\">\n  <p class=\"docs-output\" role=\"status\">Last size: {{ resizeNote() }}</p>\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"resizeOpen.set(true)\">\n      Open resizable dialog\n    </star-button>\n  </div>\n</div>\n<star-dialog\n  [(visible)]=\"resizeOpen\"\n  header=\"Resizable dialog\"\n  resizable\n  draggable\n  (resizeEnd)=\"resizeNote.set($event.width + ' x ' + $event.height)\"\n>\n  <p>Drag the corner handle, or focus it and press Shift with an arrow key.</p>\n</star-dialog>",
+  "dialog/responsive": "<div class=\"docs-row\">\n  <star-button variant=\"secondary\" (pressed)=\"responsiveOpen.set(true)\">\n    Open responsive dialog\n  </star-button>\n  <star-button variant=\"secondary\" (pressed)=\"scrollOpen.set(true)\">\n    Non-modal, page scrolls\n  </star-button>\n</div>\n<star-dialog\n  [(visible)]=\"responsiveOpen\"\n  header=\"Responsive dialog\"\n  width=\"48rem\"\n  [breakpoints]=\"{ '960px': '75vw', '640px': '100vw' }\"\n  [focusOnShow]=\"false\"\n>\n  <p>48rem wide on a large window, 75vw up to 960px and the full width up to 640px.</p>\n  <star-field label=\"Reference\"><input starInput value=\"INV-2041\" /></star-field>\n</star-dialog>\n<star-dialog\n  [(visible)]=\"scrollOpen\"\n  header=\"Scroll stays on\"\n  [modal]=\"false\"\n  position=\"bottom-end\"\n  size=\"sm\"\n>\n  <p>A non-modal dialog does not block the page scroll. Set blockScroll to block it.</p>\n</star-dialog>",
   "dialog/service": "<div class=\"docs-stack\">\n  <p class=\"docs-output\" role=\"status\">Note: {{ note() }}</p>\n  <div class=\"docs-row\">\n    <star-button leadingIcon=\"ph-bold ph-note-pencil\" (pressed)=\"editNote()\">\n      Edit note\n    </star-button>\n  </div>\n</div>",
   "dialog/sizes": "<div class=\"docs-row\">\n  @for (item of sizes; track item) {\n    <star-button variant=\"secondary\" (pressed)=\"openSize(item)\">\n      Open {{ item }}\n    </star-button>\n  }\n</div>\n<star-dialog [(visible)]=\"sizeOpen\" [size]=\"size()\" [header]=\"'Size ' + size()\">\n  <p>The size input of this dialog is {{ size() }}.</p>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button (pressed)=\"sizeOpen.set(false)\">Close</star-button>\n  </div>\n</star-dialog>",
   "divider/basic": "<div class=\"docs-stack\">\n  <p>Sign in with your email.</p>\n  <star-divider>or</star-divider>\n  <p>Continue with a link.</p>\n  <star-divider align=\"start\">Start</star-divider>\n  <star-divider align=\"end\" type=\"dashed\">End, dashed</star-divider>\n  <star-divider type=\"dotted\" />\n</div>",
@@ -7906,6 +8079,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "dock/basic": "<div class=\"docs-stack\">\n  <star-dock [items]=\"apps\" ariaLabel=\"Apps\" (itemClick)=\"last.set($event.label ?? '')\" />\n  <p class=\"docs-output\" role=\"status\">Opened: {{ last() }}</p>\n</div>",
   "dock/left": "<star-dock [items]=\"apps\" position=\"left\" ariaLabel=\"Apps on the left\" />",
   "drawer/basic": "<star-button leadingIcon=\"ph-bold ph-sidebar-simple\" (pressed)=\"basicOpen.set(true)\">\n  Open details\n</star-button>\n<star-drawer [(visible)]=\"basicOpen\" header=\"Order ORD-1042\" dismissableMask>\n  <div class=\"docs-stack\">\n    <p class=\"docs-output\">Orchard Supply, 12 items, ships on Friday.</p>\n    <star-field label=\"Internal note\">\n      <textarea starInput autoResize rows=\"3\"></textarea>\n    </star-field>\n  </div>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button variant=\"ghost\" (pressed)=\"basicOpen.set(false)\">Close</star-button>\n  </div>\n</star-drawer>",
+  "drawer/modes": "<div class=\"docs-stack\">\n  <p class=\"docs-output\" role=\"status\">Last event: {{ modeEvent() }}</p>\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"floatOpen.set(true)\">Non-modal</star-button>\n    <star-button variant=\"secondary\" (pressed)=\"fullOpen.set(true)\"\n      >Full screen</star-button\n    >\n  </div>\n</div>\n<star-drawer\n  [(visible)]=\"floatOpen\"\n  header=\"Filters\"\n  position=\"end\"\n  drawerSize=\"20rem\"\n  [modal]=\"false\"\n  (shown)=\"modeEvent.set('non-modal shown')\"\n  (hidden)=\"modeEvent.set('non-modal hidden')\"\n>\n  <p>The page behind this drawer stays usable.</p>\n</star-drawer>\n<star-drawer\n  [(visible)]=\"fullOpen\"\n  header=\"Invoice INV-2041\"\n  position=\"bottom\"\n  fullScreen\n  dismissible\n  (shown)=\"modeEvent.set('full screen shown')\"\n  (hidden)=\"modeEvent.set('full screen hidden')\"\n>\n  <p>This drawer covers the window. Escape or the close button closes it.</p>\n</star-drawer>",
   "drawer/position": "<div class=\"docs-row\">\n  @for (item of positions; track item) {\n    <star-button variant=\"secondary\" (pressed)=\"openAt(item)\">{{ item }}</star-button>\n  }\n</div>\n<star-drawer\n  [(visible)]=\"positionOpen\"\n  [position]=\"position()\"\n  [drawerSize]=\"position() === 'top' || position() === 'bottom' ? '14rem' : '22rem'\"\n  [header]=\"'Drawer at the ' + position()\"\n>\n  <p>This drawer is pinned to the {{ position() }} edge.</p>\n</star-drawer>",
   "dropdown/basic": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button\n      variant=\"secondary\"\n      trailingIcon=\"ph-bold ph-caret-down\"\n      [starDropdownTrigger]=\"formats\"\n    >\n      Export as\n    </star-button>\n  </div>\n  <star-dropdown\n    #formats\n    ariaLabel=\"Export format\"\n    [(value)]=\"format\"\n    (selectionChange)=\"onSelect($event)\"\n  >\n    <star-dropdown-item header>Documents</star-dropdown-item>\n    <star-dropdown-item value=\"pdf\">PDF</star-dropdown-item>\n    <star-dropdown-item value=\"docx\" disabled>Word document</star-dropdown-item>\n    <star-dropdown-item divider />\n    <star-dropdown-item header>Data</star-dropdown-item>\n    <star-dropdown-item value=\"csv\">CSV</star-dropdown-item>\n    <star-dropdown-item value=\"xlsx\">Spreadsheet</star-dropdown-item>\n    <star-dropdown-item value=\"json\">JSON</star-dropdown-item>\n  </star-dropdown>\n  <p class=\"docs-output\" role=\"status\">Export format: {{ chosen() }}</p>\n</div>",
   "dropdown/keep-open": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" [starDropdownTrigger]=\"cities\">\n      Add a city\n    </star-button>\n  </div>\n  <star-dropdown\n    #cities\n    ariaLabel=\"Cities\"\n    [closeOnSelect]=\"false\"\n    (selectionChange)=\"added.set(added() + $event.label + ' ')\"\n  >\n    <star-dropdown-item value=\"berlin\">Berlin</star-dropdown-item>\n    <star-dropdown-item value=\"lisbon\">Lisbon</star-dropdown-item>\n    <star-dropdown-item value=\"oslo\">Oslo</star-dropdown-item>\n    <star-dropdown-item value=\"toronto\">Toronto</star-dropdown-item>\n  </star-dropdown>\n  <p class=\"docs-output\" role=\"status\">Added: {{ added() || 'none' }}</p>\n</div>",
@@ -8136,9 +8310,11 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "timeline/basic": "<star-timeline [events]=\"events\" ariaLabel=\"Order history\" />",
   "timeline/content": "<star-timeline [events]=\"events\" ariaLabel=\"Order history, custom\">\n  <ng-template starTimelineContent let-event let-i=\"index\">\n    <strong>{{ i + 1 }}. {{ event.title }}</strong>\n  </ng-template>\n</star-timeline>",
   "timeline/horizontal": "<star-timeline\n  [events]=\"events\"\n  layout=\"horizontal\"\n  ariaLabel=\"Order history, horizontal\"\n/>",
+  "toast/closed": "<div class=\"docs-stack\">\n  <p class=\"docs-output\" role=\"status\">Last close: {{ lastClose() }}</p>\n  <div class=\"docs-row\">\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"shortNote()\">\n      Show a 3 second note\n    </star-button>\n    <star-button size=\"sm\" variant=\"ghost\" (pressed)=\"toasts.clear('events')\">\n      Clear notes\n    </star-button>\n  </div>\n</div>\n<star-toast\n  position=\"top-end\"\n  key=\"events\"\n  [breakpoints]=\"{ '640px': {} }\"\n  (closed)=\"lastClose.set($event.message.summary + ': ' + $event.reason)\"\n/>",
   "toast/corners": "<star-button size=\"sm\" variant=\"secondary\" (pressed)=\"corner('start')\">\n  Message at the start\n</star-button>\n<star-button size=\"sm\" variant=\"secondary\" (pressed)=\"corner('end')\">\n  Message at the end\n</star-button>\n<star-toast position=\"bottom-start\" key=\"start\" />\n<star-toast position=\"bottom-end\" key=\"end\" />",
   "toast/duplicates": "<star-button size=\"sm\" variant=\"secondary\" (pressed)=\"twice()\">Save twice</star-button>",
   "toast/message": "<star-button size=\"sm\" variant=\"secondary\" (pressed)=\"archive()\">Archive order</star-button>\n<star-button size=\"sm\" variant=\"ghost\" (pressed)=\"undo()\">Undo archive</star-button>\n<p class=\"docs-output\" role=\"status\">{{ undoNote() }}</p>\n<star-toast position=\"bottom-center\" key=\"undo\">\n  <ng-template starToastMessage let-message let-close=\"close\">\n    <p class=\"star-toast__summary\">{{ message.summary }}</p>\n    <button\n      type=\"button\"\n      class=\"star-btn star-btn--ghost star-btn--sm\"\n      [attr.aria-label]=\"'Undo: ' + message.summary\"\n      (click)=\"undo(); close()\"\n    >\n      Undo\n    </button>\n  </ng-template>\n</star-toast>",
+  "toast/outlet-duplicates": "<star-button size=\"sm\" variant=\"secondary\" (pressed)=\"remind()\">Show reminder</star-button>\n<star-toast position=\"bottom-end\" key=\"reminder\" preventDuplicates />",
   "toast/severities": "<star-button size=\"sm\" variant=\"success\" (pressed)=\"notify('success')\">Success</star-button>\n<star-button size=\"sm\" variant=\"secondary\" (pressed)=\"notify('info')\">Info</star-button>\n<star-button size=\"sm\" variant=\"warning\" (pressed)=\"notify('warn')\">Warn</star-button>\n<star-button size=\"sm\" variant=\"danger\" (pressed)=\"notify('error')\">Error</star-button>",
   "toast/sticky": "<star-button size=\"sm\" variant=\"secondary\" (pressed)=\"sticky()\">Sticky message</star-button>\n<star-button size=\"sm\" variant=\"secondary\" (pressed)=\"quick()\"\n  >Two second message</star-button\n>\n<star-button size=\"sm\" variant=\"ghost\" (pressed)=\"toasts.clear()\">Clear all</star-button>",
   "toggle-switch/basic": "<star-toggle-switch [(checked)]=\"alerts\">Email alerts</star-toggle-switch>\n<p class=\"docs-output\" role=\"status\">Alerts: {{ alerts() ? 'on' : 'off' }}</p>",

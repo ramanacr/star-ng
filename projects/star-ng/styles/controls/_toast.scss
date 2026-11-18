@@ -67,6 +67,13 @@
   translate: -50% 0;
   flex-direction: column-reverse;
 }
+// Narrow window (breakpoints input): full width at the bottom, newest message at the bottom.
+.star-toast-stack--narrow {
+  inset: auto 0.75rem 0.75rem;
+  width: auto;
+  translate: none;
+  flex-direction: column-reverse;
+}
 .star-toast {
   --star-tone: var(--star-accent);
   display: flex;
