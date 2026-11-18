@@ -803,6 +803,35 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'tree with a loading row',
+    path: 'controls/tree',
+    open: async (page) => {
+      const live = example(page, 'Lazy children');
+      await live.locator('[data-key="atlas"]').click();
+      await expect(live.locator('.star-tree__loading')).toBeVisible();
+    },
+  },
+  {
+    name: 'tree with the node context menu open',
+    path: 'controls/tree',
+    open: async (page) => {
+      const live = example(page, 'Context menu and events');
+      await live.locator('[data-key="web"]').click({ button: 'right' });
+      await expect(page.getByRole('menuitem', { name: 'Archive' })).toBeVisible();
+    },
+  },
+  {
+    name: 'tree after a keyboard move',
+    path: 'controls/tree',
+    open: async (page) => {
+      // The keyboard move and its live announcement (a pointer drag cannot stay in progress).
+      const live = example(page, 'Drag and drop');
+      await live.locator('[data-key="mobile"]').focus();
+      await page.keyboard.press('Control+Shift+ArrowUp');
+      await expect(live.locator('[aria-live]')).toHaveText('Mobile moved before Web platform');
+    },
+  },
+  {
     name: 'tree table with a row expanded',
     path: 'controls/tree-table',
     open: async (page) => {
