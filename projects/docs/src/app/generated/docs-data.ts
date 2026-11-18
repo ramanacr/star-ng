@@ -6081,6 +6081,109 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarSignaturePad": {
+    "kind": "component",
+    "selector": "star-signature-pad",
+    "entry": "@star-ng/ui/signature-pad",
+    "description": "Signature pad (Kendo UI `SignaturePad`; PrimeNG, Ignite UI and Syncfusion Angular have none in their Angular suites, Syncfusion has `ejs-signature`): a canvas that records strokes drawn with a mouse, a pen (with its pressure) or a finger, smoothed with quadratic curves.",
+    "inputs": [
+      {
+        "name": "valueFormat",
+        "type": "StarSignatureFormat",
+        "default": "'png'",
+        "required": false,
+        "description": "Format of the value. `svg` is built from the stroke points and scales without loss."
+      },
+      {
+        "name": "strokeColor",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Color of the strokes. Defaults to the `--star-signature-stroke` token (the strong text color)."
+      },
+      {
+        "name": "strokeWidth",
+        "type": "number",
+        "default": "2",
+        "required": false,
+        "description": "Width of a stroke in CSS pixels. A pen with pressure draws from half to one and a half times it."
+      },
+      {
+        "name": "backgroundColor",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Fill of the drawing area, also in the value. `null` (default): transparent, the page surface shows through and a PNG keeps transparent pixels."
+      },
+      {
+        "name": "allowTyped",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows a Draw / Type switch: the user may type the name instead of drawing (keyboard access)."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Accessible name of the group. Defaults to the `signaturePad` text or the `star-field` label."
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "readonly",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "required",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "invalid",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "touched",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [
+      {
+        "name": "value",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "The signature as a data URL (PNG or SVG), `''` while the pad is empty."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "touch",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "Emits when the user finished a stroke or left the typed name field."
+      }
+    ]
+  },
   "StarSkeleton": {
     "kind": "component",
     "selector": "star-skeleton",
@@ -8755,6 +8858,10 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "select/states": "<div class=\"docs-stack\">\n  <star-select [options]=\"regions\" size=\"sm\" placeholder=\"Small\" ariaLabel=\"Small select\" />\n  <star-select [options]=\"regions\" disabled placeholder=\"Disabled\" ariaLabel=\"Disabled\" />\n  <star-select [options]=\"regions\" [value]=\"'EMEA'\" readonly ariaLabel=\"Read-only\" />\n  <star-select [options]=\"[]\" loading placeholder=\"Loading options\" ariaLabel=\"Loading\" />\n</div>",
   "select/template": "<star-select\n  [options]=\"countries\"\n  optionLabel=\"name\"\n  optionValue=\"code\"\n  [(value)]=\"templated\"\n  placeholder=\"Select a country\"\n  ariaLabel=\"Country with template\"\n>\n  <ng-template starOption [starOptionOf]=\"countries\" let-item>\n    <span>\n      {{ item.name }}\n      <small>{{ item.region }}</small>\n    </span>\n  </ng-template>\n</star-select>",
   "select/virtual": "<star-select\n  [options]=\"orders\"\n  [(value)]=\"order\"\n  placeholder=\"5,000 orders\"\n  ariaLabel=\"Order\"\n  virtualScroll\n  filter\n/>",
+  "signature-pad/basic": "<div class=\"docs-stack\">\n  <star-signature-pad [(value)]=\"signature\" ariaLabel=\"Customer signature\" />\n  @if (signature()) {\n    <img class=\"preview\" [src]=\"signature()\" alt=\"Preview of the signature\" />\n  }\n  <p class=\"docs-output\" role=\"status\">Value: {{ summary() }}</p>\n</div>",
+  "signature-pad/disabled": "<star-signature-pad disabled ariaLabel=\"Signature (locked)\" />",
+  "signature-pad/form": "<div class=\"docs-stack\">\n  <star-field label=\"Signature\" [state]=\"f.signature()\">\n    <star-signature-pad\n      [formField]=\"f.signature\"\n      allowTyped\n      strokeColor=\"#000000\"\n      backgroundColor=\"#ffffff\"\n    />\n  </star-field>\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"model.set({ signature: '' })\">\n      Reset\n    </star-button>\n  </div>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ f.signature().valid() ? 'yes' : 'no' }}</p>\n</div>",
+  "signature-pad/typed": "<star-signature-pad\n  [(value)]=\"typedSignature\"\n  allowTyped\n  valueFormat=\"svg\"\n  [strokeWidth]=\"2.5\"\n  ariaLabel=\"Approver signature\"\n/>\n<p class=\"docs-output\" role=\"status\">\n  Format: {{ typedSignature() ? typedSignature().slice(0, 26) + '…' : '(empty)' }}\n</p>",
   "skeleton/basic": "<div class=\"docs-row\">\n  <star-skeleton shape=\"circle\" size=\"3rem\" />\n  <div class=\"docs-stack\">\n    <star-skeleton width=\"60%\" height=\"1rem\" />\n    <star-skeleton width=\"90%\" height=\"0.75rem\" />\n    <star-skeleton width=\"40%\" height=\"0.75rem\" animation=\"none\" />\n  </div>\n</div>",
   "skeleton/loading": "<div class=\"docs-stack\">\n  @if (loading()) {\n    <star-skeleton height=\"1.25rem\" width=\"50%\" />\n    <star-skeleton height=\"0.75rem\" />\n  } @else {\n    <strong>Orchard Supply</strong>\n    <span>12 items, ships on Friday.</span>\n  }\n  <div class=\"docs-row\">\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"loading.set(!loading())\">\n      {{ loading() ? 'Show content' : 'Show skeleton' }}\n    </star-button>\n  </div>\n</div>",
   "slider/basic": "<div class=\"docs-stack\">\n  <star-slider [(value)]=\"volume\" showValue ariaLabel=\"Volume\" />\n  <p class=\"docs-output\" role=\"status\">Volume: {{ volume() }}</p>\n</div>",

@@ -188,6 +188,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         keywords: 'segmented toggle choice',
         load: () => import('./controls/select-button.page').then((m) => m.SelectButtonPage),
       },
+      {
+        label: 'Signature pad',
+        path: 'controls/signature-pad',
+        keywords: 'signature sign draw canvas pen ink handwriting',
+        load: () => import('./controls/signature-pad.page').then((m) => m.SignaturePadPage),
+      },
     ],
   },
   {

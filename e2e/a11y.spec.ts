@@ -565,6 +565,18 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'signature pad in typed mode',
+    path: 'controls/signature-pad',
+    open: async (page) => {
+      const area = example(page, 'Type the name instead (keyboard)');
+      await area.getByRole('button', { name: 'Type', exact: true }).click();
+      const field = area.getByRole('textbox', { name: 'Type your name' });
+      await expect(field).toBeFocused();
+      await field.fill('Ana Silva');
+      await expect(area.getByRole('img', { name: 'Signature drawing area, signed' })).toBeVisible();
+    },
+  },
+  {
     name: 'app sidebar collapsed with a group open',
     path: 'controls/app-sidebar',
     open: async (page) => {

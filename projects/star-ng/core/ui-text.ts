@@ -259,6 +259,25 @@ export interface StarUiText {
     max: string,
   ) => string;
   readonly meterValue: (value: string, total: number) => string;
+  // Signature pad
+  /** Default name of the `star-signature-pad` group. */
+  readonly signaturePad: string;
+  /** Name of the drawing area of `star-signature-pad` while it is empty. */
+  readonly signatureArea: string;
+  /** Name of the drawing area while it holds a signature. */
+  readonly signatureAreaSigned: string;
+  readonly signatureHint: string;
+  /** Second hint sentence when the pad also takes a typed name (`allowTyped`). */
+  readonly signatureTypedHint: string;
+  readonly clearSignature: string;
+  readonly undo: string;
+  /** Mode button: draw the signature. */
+  readonly drawSignature: string;
+  /** Mode button: type the name instead of drawing. */
+  readonly typeSignature: string;
+  readonly typeYourName: string;
+  readonly signatureCleared: string;
+  readonly strokeUndone: string;
 }
 
 export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
@@ -492,6 +511,18 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   chartDescription: (kind, series, items, min, max) =>
     `${kind} with ${series} series and ${items} ${items === 1 ? 'item' : 'items'}, values from ${min} to ${max}. The same data is in the table.`,
   meterValue: (value, total) => `${value} of ${total}`,
+  signaturePad: 'Signature',
+  signatureArea: 'Signature drawing area, empty',
+  signatureAreaSigned: 'Signature drawing area, signed',
+  signatureHint: 'Draw with a mouse, a pen or a finger.',
+  signatureTypedHint: 'Or choose Type to type your name.',
+  clearSignature: 'Clear signature',
+  undo: 'Undo',
+  drawSignature: 'Draw',
+  typeSignature: 'Type',
+  typeYourName: 'Type your name',
+  signatureCleared: 'Signature cleared',
+  strokeUndone: 'Last stroke removed',
 };
 
 /** Parameter names of the function entries, in call order (used for `{{ name }}` in translations). */

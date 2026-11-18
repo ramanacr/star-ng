@@ -49,6 +49,7 @@ export * from '@star-ng/ui/radio';
 export * from '@star-ng/ui/rating';
 export * from '@star-ng/ui/select';
 export * from '@star-ng/ui/select-button';
+export * from '@star-ng/ui/signature-pad';
 export * from '@star-ng/ui/skeleton';
 export * from '@star-ng/ui/slider';
 export * from '@star-ng/ui/spinner';
