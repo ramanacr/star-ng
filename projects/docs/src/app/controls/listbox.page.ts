@@ -400,7 +400,7 @@ moveOrder(event: StarListboxDropEvent<string>): void {
   protected readonly lazyScript = `// A fake order service (no network) and the list state, in lazy-orders.ts:
 // fetchOrderPage({ first, last, filter }) waits 400 ms and returns { first, rows, total, filter }.
 export function lazyOrders() {
-  const request = signal<StarLazyLoadEvent | undefined>(undefined);
+  const request = signal<StarListLazyLoadEvent | undefined>(undefined);
   const page = resource({
     params: request,
     loader: ({ params, abortSignal }) => fetchOrderPage(params, abortSignal),
@@ -416,7 +416,7 @@ export function lazyOrders() {
       return rows;
     },
   });
-  return { options: options.asReadonly(), load: (event: StarLazyLoadEvent) => request.set(event) };
+  return { options: options.asReadonly(), load: (event: StarListLazyLoadEvent) => request.set(event) };
 }
 
 readonly lazyList = lazyOrders();`;

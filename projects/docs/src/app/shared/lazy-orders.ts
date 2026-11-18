@@ -1,5 +1,5 @@
 import { linkedSignal, resource, signal } from '@angular/core';
-import { StarLazyLoadEvent, starFilterMatch } from '@star-ng/ui/core';
+import { StarListLazyLoadEvent, starFilterMatch } from '@star-ng/ui/core';
 
 /** An order of the lazy examples. */
 export interface LazyOrder {
@@ -22,7 +22,7 @@ const ORDERS: readonly LazyOrder[] = Array.from({ length: 10_000 }, (_, i) => ({
 
 /** A fake order service: no network, a short delay, server-side filter and paging. */
 export async function fetchOrderPage(
-  request: StarLazyLoadEvent,
+  request: StarListLazyLoadEvent,
   abortSignal?: AbortSignal,
 ): Promise<LazyOrderPage> {
   await new Promise<void>((resolve, reject) => {
@@ -47,7 +47,7 @@ export async function fetchOrderPage(
  * with `undefined` where a page is not loaded yet.
  */
 export function lazyOrders() {
-  const request = signal<StarLazyLoadEvent | undefined>(undefined);
+  const request = signal<StarListLazyLoadEvent | undefined>(undefined);
   const page = resource({
     params: request,
     loader: ({ params, abortSignal }) => fetchOrderPage(params, abortSignal),
@@ -67,6 +67,6 @@ export function lazyOrders() {
   });
   return {
     options: options.asReadonly(),
-    load: (event: StarLazyLoadEvent) => request.set(event),
+    load: (event: StarListLazyLoadEvent) => request.set(event),
   };
 }

@@ -40,12 +40,12 @@ import {
   StarFilterMatchMode,
   starFilterTexts,
   StarGroupContext,
-  StarLazyLoadEvent,
   StarLazyRequests,
   starListAriaPosition,
   starListHeight,
   starListKeyboardTarget,
   starListLayout,
+  StarListLazyLoadEvent,
   starListLazyRange,
   StarListNavigationKey,
   starListPageSize,
@@ -439,7 +439,7 @@ export class StarListbox<TOption = unknown, TValue = TOption> implements FormVal
   readonly touched = input(false, { transform: booleanAttribute });
   readonly touch = output<void>();
   /** With `lazy`: the options from `first` to `last` are needed for the filter text `filter`. PrimeNG `onLazyLoad`. */
-  readonly lazyLoad = output<StarLazyLoadEvent>();
+  readonly lazyLoad = output<StarListLazyLoadEvent>();
   /** With `dragdrop`: an option was dropped on this list, or moved with Alt + Arrow keys. PrimeNG `onDrop`. */
   readonly dropped = output<StarListboxDropEvent<TOption>>();
   /** An option was double-clicked. PrimeNG `onDblClick`. */

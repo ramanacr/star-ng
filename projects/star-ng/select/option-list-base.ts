@@ -33,10 +33,10 @@ import {
   starFilterTexts,
   StarGroupContext,
   StarIconSlotName,
-  StarLazyLoadEvent,
   StarLazyRequests,
   starListKeyboardTarget,
   starListLayout,
+  StarListLazyLoadEvent,
   starListLazyRange,
   starListPageSize,
   starListRevealOffset,
@@ -235,7 +235,7 @@ export abstract class StarOptionListBase<TOption, TValue> {
   readonly closed = output<void>();
   readonly filterChange = output<string>();
   /** With `lazy`: the options from `first` to `last` are needed for the filter text `filter`. PrimeNG `onLazyLoad`. */
-  readonly lazyLoad = output<StarLazyLoadEvent>();
+  readonly lazyLoad = output<StarListLazyLoadEvent>();
 
   protected readonly optionTemplate = contentChild(StarOptionTemplate);
   /** All slot directives written inside this control. The picks below filter them by host. */

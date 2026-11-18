@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { StarAutoComplete } from '@star-ng/ui/autocomplete';
-import { StarLazyLoadEvent } from '@star-ng/ui/core';
+import { StarListLazyLoadEvent } from '@star-ng/ui/core';
 import { StarListbox } from '@star-ng/ui/listbox';
 import { StarMultiSelect } from './multi-select';
 import { StarSelect } from './select';
@@ -16,7 +16,7 @@ const TOTAL = 200;
 /** Fills the array with orders from `first` to `last`. */
 function load(
   rows: readonly (Order | undefined)[],
-  event: StarLazyLoadEvent,
+  event: StarListLazyLoadEvent,
 ): (Order | undefined)[] {
   const next = [...rows];
   for (let i = event.first; i <= event.last && i < TOTAL; i++) {
@@ -77,8 +77,8 @@ class Host {
   readonly orders = signal<readonly number[]>([]);
   readonly found = signal<number | null>(null);
   readonly listed = signal<number | readonly number[] | null>(null);
-  readonly events: StarLazyLoadEvent[] = [];
-  readonly listEvents: StarLazyLoadEvent[] = [];
+  readonly events: StarListLazyLoadEvent[] = [];
+  readonly listEvents: StarListLazyLoadEvent[] = [];
 }
 
 function key(target: Element, name: string): void {

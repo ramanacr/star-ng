@@ -3305,7 +3305,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       },
       {
         "name": "lazyLoad",
-        "type": "StarLazyLoadEvent",
+        "type": "StarListLazyLoadEvent",
         "default": null,
         "required": false,
         "description": "With `lazy`: the options from `first` to `last` are needed for the filter text `filter`. PrimeNG `onLazyLoad`."
@@ -4038,7 +4038,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       },
       {
         "name": "lazyLoad",
-        "type": "StarLazyLoadEvent",
+        "type": "StarListLazyLoadEvent",
         "default": null,
         "required": false,
         "description": "With `lazy`: the options from `first` to `last` are needed for the filter text `filter`. PrimeNG `onLazyLoad`."

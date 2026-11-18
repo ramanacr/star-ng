@@ -168,7 +168,7 @@ export function starListRowRendered(row: number, range: { start: number; end: nu
  * them into the `options` array at the same indexes. Until then the array holds `undefined` there:
  * the control shows a loading row for each one.
  */
-export interface StarLazyLoadEvent {
+export interface StarListLazyLoadEvent {
   readonly first: number;
   readonly last: number;
   readonly filter: string;
@@ -212,7 +212,7 @@ export class StarLazyRequests {
     range: { first: number; last: number; missing: boolean } | null,
     filter: string,
     pageSize: number,
-  ): StarLazyLoadEvent | null {
+  ): StarListLazyLoadEvent | null {
     const changed = filter !== this.lastFilter;
     if (!changed && !range?.missing) return null;
     // A new filter starts at the top of the list.
