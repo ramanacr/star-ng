@@ -3171,10 +3171,13 @@ export class StarTable<T> {
     if (this.metaKeySelection()) this.activeRow.set({ key: this.trackKey(row) });
   }
 
+  /** True while a cancelled change puts a check box back: its `checkedChange` is not a toggle. */
+  private restoring = false;
+
   protected toggleRow(row: T, box?: StarCheckbox): void {
-    if (this.select.toggle(row, null) || !box) return;
+    if (this.restoring || this.select.toggle(row, null) || !box) return;
     // A cancelled change: the box shows the selection again (its model and its element).
-    box.checked.set(this.isSelected(row));
+    this.restore(() => box.checked.set(this.isSelected(row)));
     const input = this.body()?.nativeElement.querySelector<HTMLInputElement>(
       `tr[data-select-key="${CSS.escape(this.rowKeyText(row))}"] td.star-table__select input`,
     );
@@ -3186,24 +3189,37 @@ export class StarTable<T> {
     // A cancelled change: the radios show the selection again.
     radio.checked = false;
     const body = this.body()?.nativeElement;
-    body?.querySelectorAll<HTMLInputElement>('input.star-table__radio').forEach((input) => {
-      input.checked = this.selection().some(
-        (selected) => this.rowKeyText(selected) === input.dataset['selectKey'],
+    for (const item of this.pageRows()) {
+      const input = body?.querySelector<HTMLInputElement>(
+        `input.star-table__radio[data-select-key="${CSS.escape(this.rowKeyText(item))}"]`,
       );
-    });
+      if (input) input.checked = this.isSelected(item);
+    }
   }
 
   protected togglePage(checked: boolean, box?: StarCheckbox): void {
-    if (this.select.toggleAll(checked, null) || !box) return;
+    if (this.restoring || this.select.toggleAll(checked, null) || !box) return;
     const state = this.headerState();
-    box.checked.set(state === true);
-    box.indeterminate.set(state === 'mixed');
+    this.restore(() => {
+      box.checked.set(state === true);
+      box.indeterminate.set(state === 'mixed');
+    });
     const input = this.host.nativeElement.querySelector<HTMLInputElement>(
       'thead th.star-table__select input',
     );
     if (input) {
       input.checked = state === true;
       input.indeterminate = state === 'mixed';
+    }
+  }
+
+  /** Runs `change` (it sets a check box model, which emits `checkedChange`) as a restore. */
+  private restore(change: () => void): void {
+    this.restoring = true;
+    try {
+      change();
+    } finally {
+      this.restoring = false;
     }
   }
 

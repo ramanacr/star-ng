@@ -265,6 +265,8 @@ describe('StarTable selection', () => {
     expect(header().indeterminate).toBe(true);
     expect(header().checked).toBe(false);
     expect(host.toggles).toEqual([]);
+    // Putting the box back does not count as a second toggle.
+    expect(host.changing).toHaveLength(3);
   });
 
   it('a cancelled radio change keeps the old radio checked', async () => {

@@ -1,5 +1,6 @@
 import { CdkTrapFocus } from '@angular/cdk/a11y';
 import {
+  afterRenderEffect,
   booleanAttribute,
   ChangeDetectionStrategy,
   Component,
@@ -8,6 +9,7 @@ import {
   input,
   output,
   signal,
+  untracked,
   viewChild,
 } from '@angular/core';
 import { StarButton } from '@star-ng/ui/button';
@@ -150,7 +152,7 @@ const MODE_TEXT: Readonly<Record<string, keyof StarUiText>> = {
                 [attr.aria-label]="text.filterBy(header())"
                 [value]="textOf(rule)"
                 (input)="setValue(i, $any($event.target).value)"
-                (keydown.enter)="apply()"
+                (keydown.enter)="apply($event)"
               />
             }
             @if (draft().length > 1) {
@@ -227,6 +229,16 @@ export class StarTableFilterMenu {
     this.matchModes().length ? this.matchModes() : STAR_TABLE_MATCH_MODES[this.type()],
   );
   private readonly firstMode = computed(() => this.defaultMode() ?? this.modes()[0]);
+
+  constructor() {
+    // A rule added or removed changes the height: place the menu again, so it stays in view.
+    afterRenderEffect(() => {
+      const rules = this.draft().length;
+      untracked(() => {
+        if (rules && this.panel().visible()) this.panel().align();
+      });
+    });
+  }
 
   protected toggle(event: Event): void {
     if (!this.panel().visible()) this.load();
@@ -333,7 +345,9 @@ export class StarTableFilterMenu {
   }
 
   /** Applies the rules and closes the menu (focus goes back to the button). */
-  protected apply(): void {
+  protected apply(event?: Event): void {
+    // Enter: the focus moves to the filter button now, and the key must not press that button.
+    event?.preventDefault();
     this.emit();
     this.panel().hide();
   }

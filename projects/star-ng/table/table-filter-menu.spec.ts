@@ -189,6 +189,19 @@ describe('StarTable filter menu', () => {
     expect(names()).toHaveLength(4);
   });
 
+  it('Enter in a value field applies and does not reach the filter button', async () => {
+    const { open, host, input, stable, button } = await setup();
+    const dialog = await open('customer');
+    const field = dialog.querySelector<HTMLInputElement>('input[aria-label="Filter by Customer"]')!;
+    input(field, 'oslo');
+    const enter = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true });
+    field.dispatchEvent(enter);
+    await stable();
+    expect(enter.defaultPrevented).toBe(true);
+    expect(host.filters()['customer']).toBeTruthy();
+    expect(document.activeElement).toBe(button('customer'));
+  });
+
   it('without the Apply button every change filters at once', async () => {
     const { open, host, input, stable, names } = await setup((h) => h.showApply.set(false));
     const dialog = await open('customer');

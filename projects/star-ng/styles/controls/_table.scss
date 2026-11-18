@@ -619,6 +619,12 @@ star-select.star-table__editor {
   flex-direction: column;
   gap: 0.75rem;
   min-inline-size: 15rem;
+  // A menu with several rules scrolls inside, so Apply stays reachable on a short screen.
+  max-block-size: calc(100dvh - 8rem);
+  overflow-y: auto;
+  // Room for the focus outlines of the fields at the edges of the scroll area.
+  margin: -0.25rem;
+  padding: 0.25rem;
   font: var(--star-type-body);
 }
 .star-table-filter__rule {
