@@ -1,18 +1,29 @@
-// Release version check for the release workflow (.github/workflows/release.yml).
-// Usage: node tools/release-version.mjs [tag]
-//   tag  The git tag of the release run, for example v0.1.0. Leave it out in a dry run: the
-//        version of projects/star-ng/package.json is used.
-// It fails when the version is not valid semver, or when the tag is not `v` plus that version.
-// It prints `version` and `dist_tag`, and appends them to $GITHUB_OUTPUT when that is set.
+// Release version check for the release workflows (.github/workflows/release.yml and
+// .github/workflows/release-mcp.yml).
+// Usage: node tools/release-version.mjs [--package ui|mcp] [tag]
+//   --package  Which npm package: `ui` (default, @star-ng/ui, tags `v<version>`) or `mcp`
+//              (@star-ng/mcp, tags `mcp-v<version>`).
+//   tag        The git tag of the release run, for example v0.1.0 or mcp-v0.2.0. Leave it out in
+//              a dry run: the version of the package.json is used.
+// It fails when the version is not valid semver, or when the tag is not the prefix plus that
+// version. It prints `version` and `dist_tag`, and appends them to $GITHUB_OUTPUT when that is set.
 // Dist-tag policy: a version with a prerelease part (0.2.0-rc.1, 0.2.0-beta.2) is published
 // with the dist-tag `next`, never `latest`. Every other version is published as `latest`.
 import { appendFileSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { parseArgs } from 'node:util';
+
+const PACKAGES = {
+  ui: { manifest: 'projects/star-ng/package.json', prefix: 'v' },
+  mcp: { manifest: 'projects/mcp/package.json', prefix: 'mcp-v' },
+};
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const manifest = join(root, 'projects/star-ng/package.json');
-const tag = process.argv[2] ?? '';
+const { values, positionals } = parseArgs({
+  allowPositionals: true,
+  options: { package: { type: 'string', default: 'ui' } },
+});
 
 // The official semver.org expression.
 const SEMVER =
@@ -23,14 +34,19 @@ const fail = (message) => {
   process.exit(1);
 };
 
-const version = JSON.parse(readFileSync(manifest, 'utf8')).version;
+const target = PACKAGES[values.package];
+if (!target)
+  fail(`Unknown package "${values.package}". Use one of: ${Object.keys(PACKAGES).join(', ')}.`);
+const tag = positionals[0] ?? '';
+
+const version = JSON.parse(readFileSync(join(root, target.manifest), 'utf8')).version;
 const match = typeof version === 'string' ? SEMVER.exec(version) : null;
-if (!match) fail(`The version "${version}" in projects/star-ng/package.json is not valid semver.`);
-if (tag && tag !== `v${version}`) {
+if (!match) fail(`The version "${version}" in ${target.manifest} is not valid semver.`);
+if (tag && tag !== `${target.prefix}${version}`) {
   fail(
-    `The tag is "${tag}", but projects/star-ng/package.json has version "${version}" ` +
-      `(expected the tag "v${version}"). Delete the tag, fix the version in a pull request, ` +
-      `merge it, and tag the merge commit.`,
+    `The tag is "${tag}", but ${target.manifest} has version "${version}" ` +
+      `(expected the tag "${target.prefix}${version}"). Delete the tag, fix the version in a pull ` +
+      `request, merge it, and tag the merge commit.`,
   );
 }
 
