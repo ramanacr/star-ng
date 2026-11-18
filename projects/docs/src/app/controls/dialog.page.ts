@@ -1,6 +1,11 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { StarButton } from '@star-ng/ui/button';
-import { StarDialog, StarDialogService, StarDialogSize } from '@star-ng/ui/dialog';
+import {
+  StarDialog,
+  StarDialogPosition,
+  StarDialogService,
+  StarDialogSize,
+} from '@star-ng/ui/dialog';
 import { StarField, StarInput } from '@star-ng/ui/field';
 import { StarContextMenu, StarMenu, StarMenuItem, StarMenuTrigger } from '@star-ng/ui/menu';
 import { StarCascadeSelect } from '@star-ng/ui/select';
@@ -14,6 +19,17 @@ interface Place {
 }
 
 const SIZES: readonly StarDialogSize[] = ['sm', 'md', 'lg', 'xl', 'full'];
+const POSITIONS: readonly StarDialogPosition[] = [
+  'center',
+  'top',
+  'bottom',
+  'start',
+  'end',
+  'top-start',
+  'top-end',
+  'bottom-start',
+  'bottom-end',
+];
 
 @Component({
   selector: 'docs-dialog-page',
@@ -141,6 +157,156 @@ const SIZES: readonly StarDialogSize[] = ['sm', 'md', 'lg', 'xl', 'full'];
       </docs-example>
 
       <docs-example
+        heading="Drag"
+        source="dialog/drag"
+        [script]="dragScript"
+        note="draggable moves the dialog by its header (PrimeNG draggable). The move button in the header has the name Move dialog: focus it and press Alt with an arrow key to move the dialog by 10 pixels. keepInViewport (default true) keeps the dialog inside the window. dragEnd gives the position of the top left corner. The dialog opens at its normal place again, unless rememberPosition is set."
+      >
+        <div class="docs-stack">
+          <p class="docs-output" role="status">Last position: {{ dragNote() }}</p>
+          <div class="docs-row">
+            <star-button variant="secondary" (pressed)="dragOpen.set(true)">
+              Open movable dialog
+            </star-button>
+          </div>
+        </div>
+        <star-dialog
+          [(visible)]="dragOpen"
+          header="Movable dialog"
+          draggable
+          (dragEnd)="dragNote.set($event.x + ', ' + $event.y)"
+        >
+          <p>Drag the header, or focus the move button and press Alt with an arrow key.</p>
+        </star-dialog>
+      </docs-example>
+
+      <docs-example
+        heading="Resize"
+        source="dialog/resize"
+        [script]="resizeScript"
+        note="resizable adds a handle in the bottom end corner (PrimeNG resizable). Drag it with the pointer, or focus it (name Resize dialog) and press Shift with an arrow key to change the size by 10 pixels. The top start corner stays in place, and the smallest size is 240 by 160 pixels. resizeEnd gives the new width and height."
+      >
+        <div class="docs-stack">
+          <p class="docs-output" role="status">Last size: {{ resizeNote() }}</p>
+          <div class="docs-row">
+            <star-button variant="secondary" (pressed)="resizeOpen.set(true)">
+              Open resizable dialog
+            </star-button>
+          </div>
+        </div>
+        <star-dialog
+          [(visible)]="resizeOpen"
+          header="Resizable dialog"
+          resizable
+          draggable
+          (resizeEnd)="resizeNote.set($event.width + ' x ' + $event.height)"
+        >
+          <p>Drag the corner handle, or focus it and press Shift with an arrow key.</p>
+        </star-dialog>
+      </docs-example>
+
+      <docs-example
+        heading="Maximize"
+        source="dialog/maximize"
+        [script]="maximizeScript"
+        note="maximizable adds a Maximize button to the header (PrimeNG maximizable). The dialog then fills the window, and the button becomes Restore. Bind maximized with a two-way binding to set or read the state. maximize and restore report the change. Escape closes a maximized dialog too, unless closeOnEscape is false."
+      >
+        <div class="docs-stack">
+          <p class="docs-output" role="status">Maximized: {{ maximizedState() ? 'yes' : 'no' }}</p>
+          <div class="docs-row">
+            <star-button variant="secondary" (pressed)="maximizeOpen.set(true)">
+              Open order lines
+            </star-button>
+          </div>
+        </div>
+        <star-dialog
+          [(visible)]="maximizeOpen"
+          [(maximized)]="maximizedState"
+          header="Order lines"
+          size="lg"
+          maximizable
+        >
+          <p>ORD-1042 has 12 lines. Maximize the dialog to see more of them at once.</p>
+        </star-dialog>
+      </docs-example>
+
+      <docs-example
+        heading="Position"
+        source="dialog/position"
+        [script]="positionScript"
+        note="position places the dialog in the window (PrimeNG position): center (default), top, bottom, start, end, top-start, top-end, bottom-start or bottom-end, 1rem from the edge. start and end follow the writing direction: end is the right edge in a left-to-right page and the left edge in a right-to-left page."
+      >
+        <div class="docs-row">
+          @for (item of positions; track item) {
+            <star-button variant="secondary" (pressed)="openAt(item)">{{ item }}</star-button>
+          }
+        </div>
+        <star-dialog
+          [(visible)]="positionOpen"
+          [position]="position()"
+          size="sm"
+          [header]="'Position ' + position()"
+        >
+          <p>This dialog is at the {{ position() }} position.</p>
+        </star-dialog>
+      </docs-example>
+
+      <docs-example
+        heading="Breakpoints, scroll and focus"
+        source="dialog/responsive"
+        [script]="responsiveScript"
+        note="breakpoints sets the width per window size (PrimeNG breakpoints): the keys are max-widths, and the smallest key that matches wins over width and size. blockScroll stops the page from scrolling while the dialog is open and gives the scroll back after the close; it is on by default for a modal dialog and off for a non-modal one. focusOnShow=false keeps the focus off the controls: the dialog box takes it, so the first Tab reaches the first control."
+      >
+        <div class="docs-row">
+          <star-button variant="secondary" (pressed)="responsiveOpen.set(true)">
+            Open responsive dialog
+          </star-button>
+          <star-button variant="secondary" (pressed)="scrollOpen.set(true)">
+            Non-modal, page scrolls
+          </star-button>
+        </div>
+        <star-dialog
+          [(visible)]="responsiveOpen"
+          header="Responsive dialog"
+          width="48rem"
+          [breakpoints]="{ '960px': '75vw', '640px': '100vw' }"
+          [focusOnShow]="false"
+        >
+          <p>48rem wide on a large window, 75vw up to 960px and the full width up to 640px.</p>
+          <star-field label="Reference"><input starInput value="INV-2041" /></star-field>
+        </star-dialog>
+        <star-dialog
+          [(visible)]="scrollOpen"
+          header="Scroll stays on"
+          [modal]="false"
+          position="bottom-end"
+          size="sm"
+        >
+          <p>A non-modal dialog does not block the page scroll. Set blockScroll to block it.</p>
+        </star-dialog>
+      </docs-example>
+
+      <docs-example
+        heading="Headless"
+        source="dialog/headless"
+        [script]="headlessScript"
+        note="headless renders only your content in the dialog box: no header, no title and no close button (PrimeNG headless template). The starDialogFooter slot still works. Your content takes over two duties: name the dialog with ariaLabelledby (the id of your heading) or ariaLabel, and give a button that closes it. Escape still closes the dialog when closeOnEscape is on."
+      >
+        <star-button variant="secondary" (pressed)="headlessOpen.set(true)">
+          Open headless dialog
+        </star-button>
+        <star-dialog [(visible)]="headlessOpen" headless ariaLabelledby="docs-headless-title">
+          <div class="docs-stack docs-headless">
+            <h2 id="docs-headless-title">Shipping label for ORD-1042</h2>
+            <p>Your content draws its own heading, padding and buttons.</p>
+            <div class="docs-row">
+              <star-button (pressed)="headlessOpen.set(false)">Done</star-button>
+            </div>
+          </div>
+        </star-dialog>
+      </docs-example>
+
+      <docs-example
         heading="Dialog from code"
         source="dialog/service"
         [script]="serviceScript"
@@ -197,7 +363,12 @@ const SIZES: readonly StarDialogSize[] = ['sm', 'md', 'lg', 'xl', 'full'];
         </star-dialog>
       </docs-example>
 
-      <docs-api [of]="['StarDialog']" [slots]="slots" [cssVars]="cssVars" [keyboard]="keyboard" />
+      <docs-api
+        [of]="['StarDialog', 'StarDialogBase']"
+        [slots]="slots"
+        [cssVars]="cssVars"
+        [keyboard]="keyboard"
+      />
 
       <h2>Dialog service</h2>
       <div class="docs-table-wrap">
@@ -234,8 +405,10 @@ const SIZES: readonly StarDialogSize[] = ['sm', 'md', 'lg', 'xl', 'full'];
         popup into the dialog. A select inside a dialog also opens its panel in the top layer.
       </p>
       <p>
-        Page scroll locks while a modal dialog is open (the CSS rule
-        <code>html:has(dialog.star-dialog--modal[open])</code>). The dialog enters and leaves with
+        Page scroll locks while a dialog with <code>blockScroll</code> is open (on by default for a
+        modal dialog), with the CSS rule
+        <code>html:has(dialog.star-dialog--block-scroll[open])</code>. The page scroll comes back
+        when the dialog closes. The dialog enters and leaves with
         <code>&#64;starting-style</code> transitions, and a user who prefers reduced motion gets
         none.
       </p>
@@ -255,6 +428,18 @@ export class DialogPage {
   protected readonly defaultFocusOpen = signal(false);
   protected readonly markedFocusOpen = signal(false);
   protected readonly popupsOpen = signal(false);
+  protected readonly dragOpen = signal(false);
+  protected readonly dragNote = signal('not moved');
+  protected readonly resizeOpen = signal(false);
+  protected readonly resizeNote = signal('not resized');
+  protected readonly maximizeOpen = signal(false);
+  protected readonly maximizedState = signal(false);
+  protected readonly positions = POSITIONS;
+  protected readonly positionOpen = signal(false);
+  protected readonly position = signal<StarDialogPosition>('center');
+  protected readonly responsiveOpen = signal(false);
+  protected readonly scrollOpen = signal(false);
+  protected readonly headlessOpen = signal(false);
   protected readonly note = signal('Call the customer before delivery.');
   protected readonly place = signal<string | null>(null);
   protected readonly lastAction = signal('none');
@@ -290,6 +475,11 @@ export class DialogPage {
     },
   ];
 
+  protected openAt(position: StarDialogPosition): void {
+    this.position.set(position);
+    this.positionOpen.set(true);
+  }
+
   protected openSize(size: StarDialogSize): void {
     this.size.set(size);
     this.sizeOpen.set(true);
@@ -319,6 +509,25 @@ readonly lockedOpen = signal(false);
 readonly floatOpen = signal(false);`;
   protected readonly focusScript = `readonly defaultFocusOpen = signal(false);
 readonly markedFocusOpen = signal(false);`;
+  protected readonly dragScript = `readonly dragOpen = signal(false);
+readonly dragNote = signal('not moved');`;
+  protected readonly resizeScript = `readonly resizeOpen = signal(false);
+readonly resizeNote = signal('not resized');`;
+  protected readonly maximizeScript = `readonly maximizeOpen = signal(false);
+readonly maximizedState = signal(false);`;
+  protected readonly positionScript = `readonly positions: readonly StarDialogPosition[] = [
+  'center', 'top', 'bottom', 'start', 'end', 'top-start', 'top-end', 'bottom-start', 'bottom-end',
+];
+readonly positionOpen = signal(false);
+readonly position = signal<StarDialogPosition>('center');
+
+openAt(position: StarDialogPosition): void {
+  this.position.set(position);
+  this.positionOpen.set(true);
+}`;
+  protected readonly responsiveScript = `readonly responsiveOpen = signal(false);
+readonly scrollOpen = signal(false);`;
+  protected readonly headlessScript = `readonly headlessOpen = signal(false);`;
   protected readonly serviceScript = `private readonly dialogs = inject(StarDialogService);
 readonly note = signal('Call the customer before delivery.');
 
@@ -369,7 +578,7 @@ readonly actionItems: readonly StarMenuItem[] = [
     {
       name: 'open(component, config?, injector?)',
       description:
-        'Opens the component in a modal dialog and returns a StarDialogRef. config has header, size, width, data, closable, closeOnEscape, dismissableMask, role and ariaLabel.',
+        'Opens the component in a modal dialog and returns a StarDialogRef. config has header, size, width, data, closable, closeOnEscape, dismissableMask, role, ariaLabel, position, draggable, resizable, maximizable, keepInViewport, breakpoints, blockScroll and focusOnShow.',
     },
     { name: 'closeAll()', description: 'Closes every dialog that the service opened.' },
     {
@@ -412,6 +621,15 @@ readonly actionItems: readonly StarMenuItem[] = [
     {
       name: 'Tab / Shift+Tab',
       description: 'Moves the focus inside a modal dialog. The focus does not leave the dialog.',
+    },
+    {
+      name: 'Alt + arrow keys',
+      description:
+        'In the header of a draggable dialog (the move button): moves the dialog by 10 pixels.',
+    },
+    {
+      name: 'Shift + arrow keys',
+      description: 'On the resize handle of a resizable dialog: changes the size by 10 pixels.',
     },
   ];
 }
