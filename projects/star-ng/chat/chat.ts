@@ -195,7 +195,9 @@ function plainText(text: string): string {
               }
               <div class="star-chat__bubble">
                 <span class="star-sr-only">{{
-                  text.messageFrom(message.author.name, row.time)
+                  row.time
+                    ? text.messageFrom(message.author.name, row.time)
+                    : message.author.name + ':'
                 }}</span>
                 @if (messageTemplate(); as template) {
                   <ng-container
@@ -210,7 +212,7 @@ function plainText(text: string): string {
               </div>
               @if (row.last || message.status) {
                 <div class="star-chat__meta">
-                  @if (row.last) {
+                  @if (row.last && row.time) {
                     <time aria-hidden="true" [attr.datetime]="row.iso">{{ row.time }}</time>
                   }
                   @if (message.status) {
@@ -341,15 +343,17 @@ export class StarChat {
     let lastMessage = null as Extract<ChatRow, { kind: 'message' }> | null;
     for (const message of this.messages()) {
       const date = toDate(message.timestamp);
-      const key = dayKey(date);
-      if (previous?.day !== key) {
+      const valid = !Number.isNaN(date.getTime());
+      // A message without a valid time stays in the day of the message before it.
+      const key = valid ? dayKey(date) : (previous?.day ?? '');
+      if (valid && previous?.day !== key) {
         rows.push({ kind: 'day', key: `day-${key}`, label: day.format(date) });
       }
       const first =
         !previous ||
         previous.author !== message.author.id ||
         previous.day !== key ||
-        date.getTime() - previous.at > window;
+        (valid && date.getTime() - previous.at > window);
       if (first && lastMessage) lastMessage.last = true;
       lastMessage = {
         kind: 'message',
@@ -358,11 +362,15 @@ export class StarChat {
         own: user !== null && message.author.id === user,
         first,
         last: false,
-        time: time.format(date),
-        iso: Number.isNaN(date.getTime()) ? '' : date.toISOString(),
+        time: valid ? time.format(date) : '',
+        iso: valid ? date.toISOString() : '',
       };
       rows.push(lastMessage);
-      previous = { author: message.author.id, day: key, at: date.getTime() };
+      previous = {
+        author: message.author.id,
+        day: key,
+        at: valid ? date.getTime() : (previous?.at ?? 0),
+      };
     }
     if (lastMessage) lastMessage.last = true;
     return rows;

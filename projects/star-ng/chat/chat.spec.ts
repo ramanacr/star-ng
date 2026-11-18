@@ -238,6 +238,17 @@ describe('StarChat', () => {
     expect(live()).toBe('New message from Helper: Thinking done');
   });
 
+  it('skips the time of an invalid timestamp instead of throwing (m5)', async () => {
+    const { host, fixture, messages } = await setupChat();
+    host.messages.set([
+      { id: 'a', author: ANA, text: 'Fine', timestamp: at(18, 9) },
+      { id: 'b', author: ANA, text: 'Broken', timestamp: 'not a date' },
+    ]);
+    await fixture.whenStable();
+    expect(messages().length).toBe(2);
+    expect(messages()[1].querySelector('time')).toBeNull();
+  });
+
   it('asks for older messages at the top and keeps the scroll position', async () => {
     const { host, fixture, root } = await setupChat();
     const scroll = root.querySelector<HTMLElement>('.star-chat__scroll')!;
