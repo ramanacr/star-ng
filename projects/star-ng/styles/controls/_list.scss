@@ -72,7 +72,8 @@ button.star-list__main {
   background: var(--star-primary-soft);
   color: var(--star-primary-text);
 
-  > [starListItemStart] {
+  > [starListItemStart],
+  .star-list__text > [starListItemSubtitle] {
     color: inherit;
   }
 }
