@@ -264,4 +264,6 @@ export const STAR_UI_TEXT_ES: StarUiText = {
     `${wins} ${forCount(wins, 'ganancia', 'ganancias')}, ${losses} ${forCount(losses, 'pérdida', 'pérdidas')}`,
   sparklineNoData: 'Sin datos',
   barcodeInvalid: (type) => `El valor no se puede codificar como ${type}.`,
+  qrCodeLabel: (value) => `Código QR: ${value}`,
+  qrCodeTooLong: 'El valor es demasiado largo para un código QR.',
 };

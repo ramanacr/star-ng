@@ -290,6 +290,11 @@ export interface StarUiText {
   // Barcode
   /** Error of a barcode whose value cannot be encoded; `type` is the symbology, for example "EAN-13". */
   readonly barcodeInvalid: (type: string) => string;
+  // QR code
+  /** Default label of a QR code; `value` is the encoded text, shortened when it is long. */
+  readonly qrCodeLabel: (value: string) => string;
+  /** Error of a QR code whose value does not fit in version 40. */
+  readonly qrCodeTooLong: string;
 }
 
 export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
@@ -541,6 +546,8 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
     `${wins} ${wins === 1 ? 'win' : 'wins'}, ${losses} ${losses === 1 ? 'loss' : 'losses'}`,
   sparklineNoData: 'No data',
   barcodeInvalid: (type) => `The value cannot be encoded as ${type}.`,
+  qrCodeLabel: (value) => `QR code: ${value}`,
+  qrCodeTooLong: 'The value is too long for a QR code.',
 };
 
 /** Parameter names of the function entries, in call order (used for `{{ name }}` in translations). */
@@ -596,6 +603,7 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   sparklineSummary: ['first', 'last', 'min', 'max', 'trend'],
   sparklineWinLoss: ['wins', 'losses'],
   barcodeInvalid: ['type'],
+  qrCodeLabel: ['value'],
 };
 
 export const STAR_UI_TEXT = new InjectionToken<StarUiText>('STAR_UI_TEXT', {

@@ -5936,6 +5936,65 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarQrCode": {
+    "kind": "component",
+    "selector": "star-qr-code",
+    "entry": "@star-ng/ui/qr-code",
+    "description": "QR code: a QR Code model 2 symbol drawn as SVG, encoded from ISO/IEC 18004 without a library. Kendo UI `kendo-qrcode`, Ignite UI `igx-qr-code-barcode` and Syncfusion `ejs-qrcodegenerator` are the equivalents.",
+    "inputs": [
+      {
+        "name": "value",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "The text to encode, for example a link."
+      },
+      {
+        "name": "errorCorrection",
+        "type": "StarQrErrorCorrection",
+        "default": "'M'",
+        "required": false,
+        "description": "Error correction level: L (7 %), M (15 %, default), Q (25 %) or H (30 %)."
+      },
+      {
+        "name": "size",
+        "type": "number",
+        "default": "160",
+        "required": false,
+        "description": "Width and height in pixels."
+      },
+      {
+        "name": "foreground",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Colour of the dark modules, for example `var(--star-text-strong)`. Default `--star-code-dark`."
+      },
+      {
+        "name": "background",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Colour of the light modules and the quiet zone. Default `--star-code-light`."
+      },
+      {
+        "name": "image",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Address of an image in the centre, for example a logo. It hides modules, so the level is H. Keep the colours dark on light and test the code with the readers of your users."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Label for assistive technology. Default: \"QR code: \" and the value."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
   "StarRadialGauge": {
     "kind": "component",
     "selector": "star-radial-gauge",
@@ -9495,6 +9554,10 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "progress-bar/basic": "<div class=\"docs-stack\">\n  <star-progress-bar [value]=\"value()\" showValue ariaLabel=\"Upload\" />\n  <div class=\"docs-row\">\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"step(-20)\">Less</star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"step(20)\">More</star-button>\n  </div>\n</div>",
   "progress-bar/indeterminate": "<div class=\"docs-stack\">\n  <star-progress-bar indeterminate ariaLabel=\"Loading\" />\n</div>",
   "progress-bar/severities": "<div class=\"docs-stack\">\n  <star-progress-bar [value]=\"60\" ariaLabel=\"Primary\" />\n  <star-progress-bar [value]=\"80\" severity=\"success\" ariaLabel=\"Success\" />\n  <star-progress-bar [value]=\"45\" severity=\"warn\" ariaLabel=\"Warning\" />\n  <star-progress-bar [value]=\"25\" severity=\"danger\" ariaLabel=\"Danger\" />\n  <star-progress-bar [value]=\"70\" severity=\"info\" size=\"sm\" ariaLabel=\"Info, thin\" />\n</div>",
+  "qr-code/colours": "<star-qr-code\n  value=\"INVOICE 2026-0042\"\n  foreground=\"var(--star-primary)\"\n  [size]=\"120\"\n  ariaLabel=\"Invoice 2026-0042\"\n/>",
+  "qr-code/image": "<star-qr-code value=\"https://example.com/projects\" image=\"favicon.svg\" [size]=\"200\" />",
+  "qr-code/levels": "<div class=\"docs-stack\">\n  <star-select-button\n    [options]=\"['L', 'M', 'Q', 'H']\"\n    [(value)]=\"level\"\n    ariaLabel=\"Error correction level\"\n  />\n  <input\n    starInput\n    aria-label=\"QR code value\"\n    [value]=\"value()\"\n    (input)=\"value.set($any($event.target).value)\"\n  />\n  <star-qr-code [value]=\"value()\" [errorCorrection]=\"levelOf(level())\" [size]=\"200\" />\n</div>",
+  "qr-code/link": "<star-qr-code value=\"https://example.com/orders/1042\" />",
   "radio/basic": "<star-radio-group [(value)]=\"plan\" ariaLabel=\"Plan\">\n  <star-radio value=\"starter\">Starter</star-radio>\n  <star-radio value=\"team\">Team</star-radio>\n  <star-radio value=\"business\">Business</star-radio>\n</star-radio-group>\n<p class=\"docs-output\" role=\"status\">Plan: {{ plan() }}</p>",
   "radio/disabled": "<star-radio-group [(value)]=\"delivery\" ariaLabel=\"Delivery\">\n  <star-radio value=\"standard\">Standard</star-radio>\n  <star-radio value=\"express\">Express</star-radio>\n  <star-radio value=\"pickup\" disabled>Pick-up (not available)</star-radio>\n</star-radio-group>",
   "radio/horizontal": "<star-radio-group [(value)]=\"size\" orientation=\"horizontal\" ariaLabel=\"Size\">\n  <star-radio value=\"s\">Small</star-radio>\n  <star-radio value=\"m\">Medium</star-radio>\n  <star-radio value=\"l\">Large</star-radio>\n</star-radio-group>",

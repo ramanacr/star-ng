@@ -1,0 +1,38 @@
+// QR code: dark modules on a light field in both themes (`--star-code-dark` and
+// `--star-code-light`), and CanvasText on Canvas under forced colours, so a scanner can read it.
+.star-qr-code {
+  display: inline-block;
+  line-height: 0;
+  vertical-align: middle;
+}
+.star-qr-code__svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+.star-qr-code__background,
+.star-qr-code__image-backdrop {
+  fill: var(--star-code-light);
+}
+.star-qr-code__modules {
+  fill: var(--star-code-dark);
+}
+.star-qr-code__error {
+  display: inline-block;
+  padding: 0.5rem 0.75rem;
+  border: 1px dashed var(--star-danger);
+  border-radius: var(--star-radius-sm);
+  color: var(--star-danger);
+  font: var(--star-type-body);
+  line-height: normal;
+}
+
+@media (forced-colors: active) {
+  .star-qr-code__background,
+  .star-qr-code__image-backdrop {
+    fill: Canvas;
+  }
+  .star-qr-code__modules {
+    fill: CanvasText;
+  }
+}

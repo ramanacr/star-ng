@@ -1155,6 +1155,17 @@ const STATES: readonly State[] = [
     },
   },
 
+  {
+    name: 'QR code with a value that is too long',
+    path: 'controls/qr-code',
+    open: async (page) => {
+      const live = example(page, 'Error correction');
+      await live.getByRole('radio', { name: 'H' }).click();
+      await live.getByRole('textbox', { name: 'QR code value' }).fill('x'.repeat(1300));
+      await expect(live.locator('.star-qr-code__error')).toBeVisible();
+    },
+  },
+
   // Steps and media.
   {
     name: 'stepper on the second step',
