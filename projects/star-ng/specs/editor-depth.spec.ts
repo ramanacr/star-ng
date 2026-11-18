@@ -269,6 +269,8 @@ describe('StarEditor link popover', () => {
     expect(starEditorSafeUrl('JAVASCRIPT:alert(1)')).toBeNull();
     expect(starEditorSafeUrl('data:text/html,x')).toBeNull();
     expect(starEditorSafeUrl('//evil.example.com')).toBeNull();
+    expect(starEditorSafeUrl('/\\evil.example.com')).toBeNull();
+    expect(starEditorSafeUrl('https://example.com\\a')).toBeNull();
     expect(starEditorSafeUrl('https://example.com/a b')).toBeNull();
     expect(starEditorSafeUrl('')).toBeNull();
   });

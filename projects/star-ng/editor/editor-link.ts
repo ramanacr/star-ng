@@ -28,7 +28,8 @@ export interface StarEditorLinkValue {
  */
 export function starEditorSafeUrl(raw: string): string | null {
   const url = raw.trim();
-  if (!url || /[\s<>"]/.test(url)) return null;
+  // A backslash anywhere: browsers read "/\\host" as "//host", another site.
+  if (!url || /[\s<>"\\]/.test(url)) return null;
   if (/^(https?:\/\/|mailto:|tel:)/i.test(url)) return url;
   if (/^[/#](?!\/)/.test(url)) return url;
   // No scheme: only a host name like "example.com/orders" becomes an https address.
