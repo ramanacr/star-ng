@@ -490,3 +490,15 @@ describe('StarEditor links that open a new tab', () => {
     expect(host.html()).not.toContain('_top');
   });
 });
+
+describe('StarEditor fix round 1', () => {
+  it('keeps the focus on the text style select after a change', async () => {
+    const { el, area } = await setup();
+    select(area.querySelector('p')!, 0, 3);
+    const style = el.querySelector<HTMLSelectElement>('select')!;
+    style.focus();
+    style.value = 'h2';
+    style.dispatchEvent(new Event('change'));
+    expect(document.activeElement).toBe(style);
+  });
+});

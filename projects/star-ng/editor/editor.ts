@@ -453,6 +453,11 @@ export class StarEditor implements FormValueControl<string> {
       }
       return;
     }
+    // The text style select keeps the focus, so a keyboard user can try the next style.
+    const returnTo =
+      command === 'formatBlock' && area.ownerDocument.activeElement instanceof HTMLSelectElement
+        ? area.ownerDocument.activeElement
+        : null;
     // Focusing the area can move the caret: keep the selection that the command is for.
     const saved = starEditorRange(area)?.cloneRange() ?? null;
     area.focus();
@@ -486,6 +491,7 @@ export class StarEditor implements FormValueControl<string> {
         run(command);
     }
     this.onInput();
+    returnTo?.focus();
   }
 
   // ---- Link popover ----
