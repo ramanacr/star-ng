@@ -212,7 +212,7 @@ export class StarDialog extends StarDialogBase {
   /** Size set by a resize; `null` keeps the CSS size. */
   protected readonly sized = signal<StarDialogDimensions | null>(null);
 
-  private readonly viewportWidth = starViewportWidth();
+  private readonly viewportWidth = starViewportWidth(() => this.breakpoints() !== null);
   /** Not maximized: the drag and resize geometry applies. */
   protected readonly free = computed(() => !this.maximized());
   protected readonly canDrag = computed(() => this.draggable() && this.free());

@@ -604,3 +604,13 @@ describe('StarDialog viewport without the scrollbar', () => {
     expect(dialog.style.top).toBe('300px');
   });
 });
+
+describe('StarDialog resize listener', () => {
+  it('adds no window resize listener without breakpoints', async () => {
+    const add = vi.spyOn(window, 'addEventListener');
+    const fixture = TestBed.createComponent(DragHost);
+    await fixture.whenStable();
+    expect(add.mock.calls.filter(([type]) => type === 'resize')).toEqual([]);
+    add.mockRestore();
+  });
+});

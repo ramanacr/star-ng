@@ -1,3 +1,4 @@
+import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { starBreakpointValue, starViewportWidth } from '@star-ng/ui/core';
 
@@ -29,5 +30,31 @@ describe('starViewportWidth', () => {
     expect(width()).toBe(500);
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: before });
     window.dispatchEvent(new Event('resize'));
+  });
+});
+
+describe('starViewportWidth(when)', () => {
+  it('listens to resize only while the condition is true', () => {
+    const add = vi.spyOn(window, 'addEventListener');
+    const remove = vi.spyOn(window, 'removeEventListener');
+    const resizes = (spy: typeof add) =>
+      spy.mock.calls.filter(([type]) => type === 'resize').length;
+    const on = signal(false);
+    const width = TestBed.runInInjectionContext(() => starViewportWidth(on));
+    TestBed.tick();
+    expect(resizes(add)).toBe(0);
+    expect(width()).toBeNull();
+
+    on.set(true);
+    TestBed.tick();
+    expect(resizes(add)).toBe(1);
+    expect(width()).toBe(window.innerWidth);
+
+    on.set(false);
+    TestBed.tick();
+    expect(resizes(remove)).toBe(1);
+    expect(width()).toBeNull();
+    add.mockRestore();
+    remove.mockRestore();
   });
 });

@@ -1,18 +1,35 @@
 import { isPlatformBrowser } from '@angular/common';
-import { DestroyRef, DOCUMENT, inject, PLATFORM_ID, Signal, signal } from '@angular/core';
+import { DestroyRef, DOCUMENT, effect, inject, PLATFORM_ID, Signal, signal } from '@angular/core';
 
 /**
  * Width of the browser window in CSS pixels, updated on resize. `null` on the server, so a
  * prerendered page uses the default layout. Call it in an injection context.
+ *
+ * With `when`, the resize listener exists only while `when()` is true (for example while a
+ * `breakpoints` input is set), and the width is `null` otherwise. Without it, the listener starts
+ * at once.
  */
-export function starViewportWidth(): Signal<number | null> {
+export function starViewportWidth(when?: () => boolean): Signal<number | null> {
   const width = signal<number | null>(null);
   const view = inject(DOCUMENT).defaultView;
   if (!view || !isPlatformBrowser(inject(PLATFORM_ID))) return width.asReadonly();
   const update = () => width.set(view.innerWidth);
-  update();
-  view.addEventListener('resize', update, { passive: true });
-  inject(DestroyRef).onDestroy(() => view.removeEventListener('resize', update));
+  let listening = false;
+  const start = () => {
+    if (listening) return;
+    listening = true;
+    update();
+    view.addEventListener('resize', update, { passive: true });
+  };
+  const stop = () => {
+    if (!listening) return;
+    listening = false;
+    view.removeEventListener('resize', update);
+    width.set(null);
+  };
+  if (when) effect(() => (when() ? start() : stop()));
+  else start();
+  inject(DestroyRef).onDestroy(stop);
   return width.asReadonly();
 }
 

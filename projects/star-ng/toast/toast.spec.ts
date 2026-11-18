@@ -124,3 +124,19 @@ describe('star-toast duplicates, breakpoints and closed', () => {
     expect(el.querySelector('.other')!.classList).not.toContain('star-toast-stack--narrow');
   });
 });
+
+@Component({
+  imports: [StarToast],
+  template: `<star-toast key="plain-outlet" />`,
+})
+class PlainHost {}
+
+describe('star-toast resize listener', () => {
+  it('adds no window resize listener without breakpoints', async () => {
+    const add = vi.spyOn(window, 'addEventListener');
+    const fixture = TestBed.createComponent(PlainHost);
+    await fixture.whenStable();
+    expect(add.mock.calls.filter(([type]) => type === 'resize')).toEqual([]);
+    add.mockRestore();
+  });
+});

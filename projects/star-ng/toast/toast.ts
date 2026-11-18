@@ -307,7 +307,7 @@ export class StarToast {
   /** A toast of this outlet closed: the message and the reason (PrimeNG `onClose`). */
   readonly closed = output<StarToastCloseEvent>();
 
-  private readonly viewportWidth = starViewportWidth();
+  private readonly viewportWidth = starViewportWidth(() => this.breakpoints() !== null);
   /** Style object of the matching breakpoint; `undefined` on a wide window. */
   protected readonly narrowStyle = computed(() =>
     starBreakpointValue(this.breakpoints(), this.viewportWidth()),
