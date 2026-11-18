@@ -199,7 +199,8 @@ export function isoWeek(date: Date): number {
                             [attr.aria-disabled]="cell.disabled || null"
                             (click)="cell.disabled || choose(cell.date)"
                             (mouseenter)="hover.set(cell.date)"
-                            (focus)="moveTo(cell.date)"
+                            (mousedown)="onDayMousedown($event, cell)"
+                            (focus)="onDayFocus(cell)"
                           >
                             @if (dateSlot(); as custom) {
                               <ng-container
@@ -611,6 +612,19 @@ export class StarCalendar {
     }
     this.setView('month');
     this.focusActive();
+  }
+
+  /**
+   * A locked day of another month (`selectOtherMonths` off) does not take the focus from a
+   * mousedown: the focus would move the shown month, and the click chooses nothing.
+   */
+  protected onDayMousedown(event: MouseEvent, cell: DayCell): void {
+    if (cell.outside && cell.disabled) event.preventDefault();
+  }
+
+  protected onDayFocus(cell: DayCell): void {
+    if (cell.outside && cell.disabled) return;
+    this.moveTo(cell.date);
   }
 
   /** Moves the focused day and tells when the shown month or year changes. */

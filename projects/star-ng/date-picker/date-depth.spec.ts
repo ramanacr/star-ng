@@ -1022,3 +1022,36 @@ describe('date picker: Today and Clear events after the change', () => {
     expect(host.pastToday).toBe(false);
   });
 });
+
+@Component({
+  imports: [StarCalendar],
+  template: `<star-calendar
+    locale="en-GB"
+    [firstDayOfWeek]="1"
+    [selected]="day"
+    [selectOtherMonths]="false"
+    (monthChange)="moves = moves + 1"
+  />`,
+})
+class LockedOtherMonthsHost {
+  readonly day = new Date(2026, 10, 18);
+  moves = 0;
+}
+
+describe('calendar: locked days of other months', () => {
+  it('does not move the view on a mousedown or focus of a locked day', async () => {
+    const fixture = TestBed.createComponent(LockedOtherMonthsHost);
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+    const outside = el.querySelector<HTMLButtonElement>('[data-date="2026-10-26"]')!;
+    const mousedown = new MouseEvent('mousedown', { bubbles: true, cancelable: true });
+    outside.dispatchEvent(mousedown);
+    // The browser does not move the focus to the locked day.
+    expect(mousedown.defaultPrevented).toBe(true);
+    outside.focus();
+    await fixture.whenStable();
+    expect(fixture.componentInstance.moves).toBe(0);
+    expect(el.querySelector('[data-date="2026-11-18"]')?.getAttribute('tabindex')).toBe('0');
+    expect(el.querySelector('[data-date="2026-10-26"]')).not.toBeNull();
+  });
+});
