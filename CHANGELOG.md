@@ -33,6 +33,8 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - Table: batch edit (`batchEdit`, `pendingChanges`, `commitEdits` / `batchSave`, `discardEdits`, `undo` / `redo` with Ctrl+Z, Ctrl+Y, Ctrl+Shift+Z), with changed-cell and deleted-row marks.
 - Table: `addRow()` / `deleteRow()` with `rowAdd` / `rowDelete`.
 - UI text for table editing in English, German and Spanish.
+- Date and time pickers: seconds and steps. `showSeconds`, `stepHour` and `stepSecond` (next to `stepMinute`) on `star-time-picker` and on `star-date-picker` / `star-date-range-picker` with `showTime`; the time panel gets a second column, and the text and the value include the seconds (PrimeNG `showSeconds`, `stepHour`, `stepSecond`).
+- UI text `second` (English, German, Spanish).
 
 ### Changed
 

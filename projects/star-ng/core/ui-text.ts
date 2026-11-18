@@ -132,6 +132,7 @@ export interface StarUiText {
   readonly chooseTime: string;
   readonly hour: string;
   readonly minute: string;
+  readonly second: string;
   readonly dayPeriod: string;
   // Inputs
   readonly increase: string;
@@ -354,6 +355,7 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   chooseTime: 'Choose time',
   hour: 'Hour',
   minute: 'Minute',
+  second: 'Second',
   dayPeriod: 'AM or PM',
 
   increase: 'Increase',

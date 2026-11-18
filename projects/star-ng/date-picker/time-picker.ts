@@ -27,13 +27,14 @@ const PANEL_POSITIONS: ConnectedPosition[] = [
 ];
 
 /**
- * Time picker: a time of day without a date (PrimeNG `p-datepicker timeOnly`). The value is
- * 24-hour `HH:mm` text, or `null`.
+ * Time picker: a time of day without a date (PrimeNG `p-datepicker timeOnly`, Ignite UI
+ * `igx-time-picker`). The value is 24-hour `HH:mm` text (`HH:mm:ss` with `showSeconds`), or `null`.
  *
  * The field is the native time input in the StarNG field style, so typing, the arrow keys on a
  * part and the picker on a phone work as the browser gives them. The clock button opens a StarNG
  * panel (not the popup of the browser) with an hour, a minute and, in the 12-hour clock, an
- * am / pm column. Times outside `min` … `max` are disabled, and the minutes follow `stepMinute`.
+ * am / pm column, and a second column with `showSeconds`. Times outside `min` … `max` are disabled,
+ * and the columns follow `stepHour`, `stepMinute` and `stepSecond`.
  *
  * `<star-time-picker [formField]="form.callAt" min="08:00" max="18:00" [stepMinute]="15" />`
  */
@@ -109,7 +110,10 @@ const PANEL_POSITIONS: ConnectedPosition[] = [
           [(value)]="value"
           [min]="min()"
           [max]="max()"
+          [stepHour]="stepHour()"
           [stepMinute]="stepMinute()"
+          [stepSecond]="stepSecond()"
+          [showSeconds]="showSeconds()"
           [hourFormat]="hourFormat()"
         />
         <div class="star-time__bar">
@@ -134,13 +138,22 @@ export class StarTimePicker implements FormValueControl<string | null> {
   /** The parent `star-field` when it labels the input (with `for`); its hint or error describes it. */
   private readonly field = injectStarFieldLink(() => this.inputId());
 
-  /** `HH:mm` in the 24-hour clock, or `null`. */
+  /** `HH:mm` (or `HH:mm:ss` with `showSeconds`) in the 24-hour clock, or `null`. */
   readonly value = model<string | null>(null);
-  /** Earliest and latest time, `HH:mm`. */
+  /**
+   * Earliest and latest time, `HH:mm` or `HH:mm:ss` (PrimeNG `minDate` / `maxDate` with
+   * `timeOnly`, Ignite UI `minValue` / `maxValue`).
+   */
   readonly min = input<string | undefined>(undefined);
   readonly max = input<string | undefined>(undefined);
+  /** Hour step of the panel's hour column (PrimeNG `stepHour`). */
+  readonly stepHour = input(1);
   /** Minute step of the field's arrow keys and of the panel's minute column. */
   readonly stepMinute = input(1);
+  /** Second step of the panel's second column and, with `showSeconds`, of the field's arrow keys. */
+  readonly stepSecond = input(1);
+  /** Adds seconds: the field and the panel show them, and the value is `HH:mm:ss`. */
+  readonly showSeconds = input(false, { transform: booleanAttribute });
   /**
    * Clock of the panel: `'24'` (an hour column 00–23) or `'12'` (1–12 and an am / pm column).
    * Default: the clock of the browser locale, which is the clock the field shows. The value is
@@ -168,7 +181,10 @@ export class StarTimePicker implements FormValueControl<string | null> {
     () => (this.invalid() && this.touched()) || !!this.field?.errorText(),
   );
   protected readonly fieldDescribedBy = computed(() => starJoinIds(this.field?.describedBy()));
-  protected readonly step = computed(() => this.minuteStep() * 60);
+  /** Step of the native field, in seconds. */
+  protected readonly step = computed(() =>
+    this.showSeconds() ? Math.max(1, Math.floor(this.stepSecond())) : this.minuteStep() * 60,
+  );
 
   private readonly input = viewChild.required<ElementRef<HTMLInputElement>>('input');
   private readonly control = viewChild.required<ElementRef<HTMLElement>>('control');
@@ -179,9 +195,11 @@ export class StarTimePicker implements FormValueControl<string | null> {
   private readonly timeColumns = viewChild(StarTimeColumns);
 
   protected onChange(text: string): void {
-    // The native input gives `HH:mm` (or `HH:mm:ss`); empty text clears the value.
-    const match = /^(\d{2}):(\d{2})/.exec(text);
-    this.value.set(match ? `${match[1]}:${match[2]}` : null);
+    // The native input gives `HH:mm` or `HH:mm:ss`; empty text clears the value.
+    const match = /^(\d{2}):(\d{2})(?::(\d{2}))?/.exec(text);
+    if (!match) this.value.set(null);
+    else if (this.showSeconds()) this.value.set(`${match[1]}:${match[2]}:${match[3] ?? '00'}`);
+    else this.value.set(`${match[1]}:${match[2]}`);
   }
 
   focus(options?: FocusOptions): void {

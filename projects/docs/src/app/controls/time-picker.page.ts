@@ -11,7 +11,7 @@ import { DOCS, DocsRow } from '../shared/docs';
   template: `
     <docs-page
       heading="Time picker"
-      lead="A time of day without a date. You type in the native time input, so the browser gives the keyboard model of the field and the 12 or 24-hour display of the locale. The clock button opens a StarNG panel with an hour, a minute and an am / pm column. The value is 24-hour text (HH:mm), or null. This is the PrimeNG p-datepicker with the timeOnly option."
+      lead="A time of day without a date. You type in the native time input, so the browser gives the keyboard model of the field and the 12 or 24-hour display of the locale. The clock button opens a StarNG panel with an hour, a minute, an optional second and an am / pm column. The value is 24-hour text (HH:mm, or HH:mm:ss with showSeconds), or null. This is the PrimeNG p-datepicker with the timeOnly option."
       importFrom="import { StarTimePicker } from '@star-ng/ui/date-picker';"
     >
       <docs-example
@@ -54,6 +54,27 @@ import { DOCS, DocsRow } from '../shared/docs';
         <div class="docs-stack">
           <star-time-picker [(value)]="cutOff" hourFormat="12" ariaLabel="Cut-off time" />
           <p class="docs-output" role="status">Cut-off: {{ cutOff() ?? 'none' }}</p>
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="Seconds and steps"
+        source="time-picker/seconds"
+        [script]="secondsScript"
+        note="showSeconds adds a second column, and the value is HH:mm:ss. stepHour, stepMinute and stepSecond set the values of the columns (every 2 hours, 15 minutes and 10 seconds here). min and max can have seconds too. The seconds also work with the 12-hour clock."
+      >
+        <div class="docs-stack">
+          <star-time-picker
+            [(value)]="exportAt"
+            showSeconds
+            min="06:00:00"
+            max="20:00:00"
+            [stepHour]="2"
+            [stepMinute]="15"
+            [stepSecond]="10"
+            ariaLabel="Export time"
+          />
+          <p class="docs-output" role="status">Export: {{ exportAt() ?? 'none' }}</p>
         </div>
       </docs-example>
 
@@ -109,6 +130,7 @@ export class TimePickerPage {
   protected readonly meeting = signal<string | null>('09:30');
   protected readonly opening = signal<string | null>('08:30');
   protected readonly cutOff = signal<string | null>('17:15');
+  protected readonly exportAt = signal<string | null>('08:30:20');
 
   protected readonly slotModel = signal<{ pickup: string | null }>({ pickup: null });
   protected readonly slot = form(this.slotModel, (path) => {
@@ -118,6 +140,7 @@ export class TimePickerPage {
   protected readonly basicScript = `readonly meeting = signal<string | null>('09:30');`;
   protected readonly limitsScript = `readonly opening = signal<string | null>('08:30');`;
   protected readonly hourFormatScript = `readonly cutOff = signal<string | null>('17:15');`;
+  protected readonly secondsScript = `readonly exportAt = signal<string | null>('08:30:20');`;
   protected readonly formScript = `readonly slotModel = signal<{ pickup: string | null }>({ pickup: null });
 readonly slot = form(this.slotModel, (path) => {
   required(path.pickup, { message: 'Choose a pick-up time.' });

@@ -28,6 +28,13 @@ import {
 } from '@star-ng/ui/core';
 import { injectStarFieldLink, starJoinIds } from '@star-ng/ui/field';
 import { StarCalendar, StarCalendarView } from './calendar';
+import {
+  starAtTime as atTime,
+  starSplitDateTime,
+  starTimeFormat,
+  starTimeOf,
+  starWithTime as withTime,
+} from './date-format';
 import type { StarDateContext } from './date-slots';
 import {
   compareDays,
@@ -40,18 +47,6 @@ import {
   startOfDay,
 } from './date-utils';
 import { StarTimeColumns } from './time-columns';
-
-/** Time part of the input text: 24-hour clock, so typed text parses the same in every locale. */
-const TIME_FORMAT: Intl.DateTimeFormatOptions = {
-  hour: '2-digit',
-  minute: '2-digit',
-  hourCycle: 'h23',
-};
-
-/** The calendar day of `date` at the given local time. */
-function atTime(date: Date, hours: number, minutes: number): Date {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate(), hours, minutes);
-}
 
 const PANEL_POSITIONS: ConnectedPosition[] = [
   { originX: 'start', originY: 'bottom', overlayX: 'start', overlayY: 'top', offsetY: 6 },
@@ -103,6 +98,15 @@ export abstract class StarDateInputBase<TValue> {
    * are accepted when the user types.
    */
   readonly hourFormat = input<'24' | '12'>('24');
+  /**
+   * Adds seconds to the time with `showTime`: the text is `hh:mm:ss` and the popup has a second
+   * column (PrimeNG `showSeconds`).
+   */
+  readonly showSeconds = input(false, { transform: booleanAttribute });
+  /** Hour step of the time columns with `showTime` (PrimeNG `stepHour`). */
+  readonly stepHour = input(1);
+  /** Second step of the time columns with `showSeconds` (PrimeNG `stepSecond`). */
+  readonly stepSecond = input(1);
   readonly showButtonBar = input(false, { transform: booleanAttribute });
   readonly showClear = input(false, { transform: booleanAttribute });
   /** Disables typing; the date can only be picked. */
@@ -270,25 +274,18 @@ export abstract class StarDateInputBase<TValue> {
   }
 
   /**
-   * "<date> hh:mm" or "<date>, hh:mm". A date without a time takes the fallback time.
-   * `undefined`: the text is not a valid date and time.
+   * "<date> hh:mm[:ss]" or "<date>, hh:mm[:ss] am". A date without a time takes the fallback
+   * time. `undefined`: the text is not a valid date and time.
    */
-  protected parseDateTime(text: string, hours: number, minutes: number): Date | undefined {
-    const match =
-      /^(.*?)[,\s]+(\d{1,2})[:.](\d{2})\s*([ap])\.?\s?m?\.?$|^(.*?)[,\s]+(\d{1,2})[:.](\d{2})$/i.exec(
-        text.trim(),
-      );
-    const date = this.parseOne(match ? (match[1] ?? match[5]) : text);
+  protected parseDateTime(text: string, fallback: Date): Date | undefined {
+    const time = starSplitDateTime(text);
+    if (time === undefined) return undefined;
+    const date = this.parseOne(time ? time.date : text);
     if (!date) return undefined;
-    if (!match) return atTime(date, hours, minutes);
-    let h = Number(match[2] ?? match[6]);
-    const m = Number(match[3] ?? match[7]);
-    const meridiem = match[4]?.toLowerCase();
-    if (meridiem) {
-      if (h < 1 || h > 12) return undefined;
-      h = (h % 12) + (meridiem === 'p' ? 12 : 0);
-    }
-    return h > 23 || m > 59 ? undefined : atTime(date, h, m);
+    if (!time)
+      return atTime(date, fallback.getHours(), fallback.getMinutes(), fallback.getSeconds());
+    // Without the second column the seconds are 0.
+    return atTime(date, time.hours, time.minutes, this.showSeconds() ? time.seconds : 0);
   }
 
   /** `date` moved into `minDate` … `maxDate`, compared to the minute. */
@@ -305,44 +302,50 @@ export abstract class StarDateInputBase<TValue> {
     const min = this.minDate();
     const max = this.maxDate();
     return {
-      min: date && min && sameDay(date, min) ? timeOf(min) : undefined,
-      max: date && max && sameDay(date, max) ? timeOf(max) : undefined,
+      min: date && min && sameDay(date, min) ? this.timeOf(min) : undefined,
+      max: date && max && sameDay(date, max) ? this.timeOf(max) : undefined,
     };
   }
 
   protected timeHint(): string {
-    return this.hourFormat() === '12' ? ' hh:mm am' : ' hh:mm';
+    const seconds = this.showSeconds() ? ':ss' : '';
+    return this.hourFormat() === '12' ? ` hh:mm${seconds} am` : ` hh:mm${seconds}`;
   }
 
   protected formatDateTime(date: Date | null): string {
     return formatDate(date, this.locale(), {
       ...this.dateFormat(),
-      ...TIME_FORMAT,
-      hourCycle: this.hourFormat() === '12' ? 'h12' : 'h23',
+      ...starTimeFormat(this.hourFormat(), this.showSeconds()),
     });
+  }
+
+  /** `hh:mm` of a date, or `hh:mm:ss` with `showSeconds`. */
+  protected timeOf(date: Date | null | undefined): string {
+    return starTimeOf(date, this.showSeconds());
+  }
+
+  /** `date` at the time of day now, rounded down to the hour, minute and second steps. */
+  protected atCurrentTime(date: Date, stepMinute: number): Date {
+    const now = new Date();
+    const down = (value: number, step: number) => value - (value % Math.max(1, Math.floor(step)));
+    return atTime(
+      date,
+      down(now.getHours(), this.stepHour()),
+      down(now.getMinutes(), stepMinute),
+      this.showSeconds() ? down(now.getSeconds(), this.stepSecond()) : 0,
+    );
   }
 }
 
 /** One set of time columns in the popup. */
 export interface StarTimeField {
   readonly label: string;
-  /** `hh:mm`, or `''` when the date is not chosen yet. */
+  /** `hh:mm` (`hh:mm:ss` with `showSeconds`), or `''` when the date is not chosen yet. */
   readonly value: string;
   readonly set: (time: string) => void;
-  /** Earliest and latest time on the chosen day, `hh:mm` (from `minDate` / `maxDate`). */
+  /** Earliest and latest time on the chosen day, `hh:mm` or `hh:mm:ss` (from `minDate` / `maxDate`). */
   readonly min?: string;
   readonly max?: string;
-}
-
-function timeOf(date: Date | null | undefined): string {
-  const pad = (part: number) => String(part).padStart(2, '0');
-  return date ? `${pad(date.getHours())}:${pad(date.getMinutes())}` : '';
-}
-
-/** `date` at the `hh:mm` time, or `null` when either is missing. */
-function withTime(date: Date | null | undefined, time: string): Date | null {
-  const match = /^(\d{2}):(\d{2})/.exec(time);
-  return date && match ? atTime(date, Number(match[1]), Number(match[2])) : null;
 }
 
 const TEMPLATE = `
@@ -440,7 +443,10 @@ const TEMPLATE = `
                 [value]="field.value || null"
                 [min]="field.min"
                 [max]="field.max"
+                [stepHour]="stepHour()"
                 [stepMinute]="timeStep() / 60"
+                [stepSecond]="stepSecond()"
+                [showSeconds]="showSeconds()"
                 [hourFormat]="hourFormat()"
                 [disabled]="!field.value"
                 (valueChange)="$event && field.set($event)"
@@ -478,8 +484,9 @@ const HOST = {
  * Date picker (PrimeNG `p-datepicker`): typed entry (`dd/mm/yyyy` or the locale's order, or ISO),
  * calendar popup with month / year views, min / max, disabled dates and weekdays, Today / Clear.
  *
- * `showTime` adds a time of day: the value keeps hours and minutes, the text is
- * `dd/mm/yyyy, hh:mm` in the 24-hour clock, and the popup has hour and minute columns (a
+ * `showTime` adds a time of day: the value keeps hours and minutes (and seconds with
+ * `showSeconds`), the text is `dd/mm/yyyy, hh:mm` in the 24-hour clock, and the popup has hour
+ * and minute columns (a
  * StarNG panel, not the popup of the browser) and stays open until the user chooses Done. With
  * `showTime`, `minDate` / `maxDate` also limit the time: the columns disable the times outside
  * the limits, and a value outside the limits moves to the nearest limit.
@@ -536,8 +543,7 @@ export class StarDatePicker
   protected parseText(text: string): Date | null | undefined {
     if (this.view() !== 'day') return this.parsePeriod(text.trim());
     if (!this.timeEnabled()) return this.parseOne(text);
-    const current = this.value();
-    const date = this.parseDateTime(text, current?.getHours() ?? 0, current?.getMinutes() ?? 0);
+    const date = this.parseDateTime(text, this.value() ?? new Date(2000, 0, 1));
     return date && this.clampTime(date).getTime() === date.getTime() ? date : undefined;
   }
 
@@ -578,7 +584,7 @@ export class StarDatePicker
     if (this.view() === 'year') return this.onDateSelect(new Date(today.getFullYear(), 0, 1));
     if (!this.allowed(today)) return;
     if (!this.timeEnabled()) return this.onDateSelect(today);
-    this.setValue(this.atCurrentTime(today));
+    this.setValue(this.atCurrentTime(today, this.stepMinute()));
   }
 
   protected onDateSelect(date: Date): void {
@@ -590,7 +596,9 @@ export class StarDatePicker
     // Keep the time already chosen; a first pick starts at the current time.
     const current = this.value();
     this.setValue(
-      current ? atTime(date, current.getHours(), current.getMinutes()) : this.atCurrentTime(date),
+      current
+        ? atTime(date, current.getHours(), current.getMinutes(), current.getSeconds())
+        : this.atCurrentTime(date, this.stepMinute()),
     );
   }
 
@@ -598,7 +606,7 @@ export class StarDatePicker
     return [
       {
         label: this.text.time,
-        value: timeOf(this.value()),
+        value: this.timeOf(this.value()),
         ...this.timeLimits(this.value()),
         set: (time) => {
           const next = withTime(this.value(), time);
@@ -606,13 +614,6 @@ export class StarDatePicker
         },
       },
     ];
-  }
-
-  /** `date` at the current time of day, rounded down to the minute step. */
-  private atCurrentTime(date: Date): Date {
-    const now = new Date();
-    const step = Math.max(1, this.stepMinute());
-    return atTime(date, now.getHours(), now.getMinutes() - (now.getMinutes() % step));
   }
 
   private setValue(date: Date): void {
@@ -641,7 +642,8 @@ export class StarDateRangePicker
 {
   readonly value = model<StarDateRange | null>(null);
   /**
-   * Adds a time of day to both ends. A new start is at 00:00 and a new end at 23:59; the popup
+   * Adds a time of day to both ends. A new start is at 00:00 and a new end at 23:59 (23:59:59
+   * with `showSeconds`); the popup
    * has start and end time columns and stays open until the user chooses Done.
    */
   readonly showTime = input(false, { transform: booleanAttribute });
@@ -678,16 +680,16 @@ export class StarDateRangePicker
     return [
       {
         label: this.text.startTime,
-        value: timeOf(range?.start),
+        value: this.timeOf(range?.start),
         set: update('start'),
         min: start.min,
-        max: sameDate ? timeOf(range?.end) : start.max,
+        max: sameDate ? this.timeOf(range?.end) : start.max,
       },
       {
         label: this.text.endTime,
-        value: timeOf(range?.end),
+        value: this.timeOf(range?.end),
         set: update('end'),
-        min: sameDate ? timeOf(range?.start) : end.min,
+        min: sameDate ? this.timeOf(range?.start) : end.min,
         max: end.max,
       },
     ];
@@ -709,8 +711,8 @@ export class StarDateRangePicker
     const parts = text.split(/\s+[–—-]\s*|\s+to\s+/i).filter((part) => part.trim());
     if (parts.length !== 2) return undefined;
     if (this.showTime()) {
-      const from = this.parseDateTime(parts[0], 0, 0);
-      const to = this.parseDateTime(parts[1], 23, 59);
+      const from = this.parseDateTime(parts[0], new Date(2000, 0, 1));
+      const to = this.parseDateTime(parts[1], this.endOfDay(new Date(2000, 0, 1)));
       if (!from || !to) return undefined;
       return from.getTime() <= to.getTime() ? { start: from, end: to } : { start: to, end: from };
     }
@@ -724,12 +726,17 @@ export class StarDateRangePicker
     return null;
   }
 
+  /** The last time of the day: 23:59, or 23:59:59 with `showSeconds`. */
+  private endOfDay(date: Date): Date {
+    return atTime(date, 23, 59, this.showSeconds() ? 59 : 0);
+  }
+
   protected pickToday(today: Date): void {
     if (!this.allowed(today)) return;
     if (this.showTime()) {
       this.value.set({
         start: this.clampTime(atTime(today, 0, 0)),
-        end: this.clampTime(atTime(today, 23, 59)),
+        end: this.clampTime(this.endOfDay(today)),
       });
       return;
     }
@@ -751,7 +758,7 @@ export class StarDateRangePicker
     const next = this.showTime()
       ? {
           start: this.clampTime(atTime(first, 0, 0)),
-          end: this.clampTime(atTime(last, 23, 59)),
+          end: this.clampTime(this.endOfDay(last)),
         }
       : { start: first, end: last };
     this.value.set(next);

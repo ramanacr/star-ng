@@ -130,6 +130,7 @@ export const STAR_UI_TEXT_DE: StarUiText = {
   chooseTime: 'Uhrzeit auswählen',
   hour: 'Stunde',
   minute: 'Minute',
+  second: 'Sekunde',
   dayPeriod: 'Vormittag oder Nachmittag',
 
   increase: 'Erhöhen',

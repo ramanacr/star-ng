@@ -1633,6 +1633,27 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Clock of the typed time with `showTime`: `'24'` (14:30) or `'12'` (2:30 PM). Both forms are accepted when the user types."
       },
       {
+        "name": "showSeconds",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Adds seconds to the time with `showTime`: the text is `hh:mm:ss` and the popup has a second column (PrimeNG `showSeconds`)."
+      },
+      {
+        "name": "stepHour",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Hour step of the time columns with `showTime` (PrimeNG `stepHour`)."
+      },
+      {
+        "name": "stepSecond",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Second step of the time columns with `showSeconds` (PrimeNG `stepSecond`)."
+      },
+      {
         "name": "showButtonBar",
         "type": "boolean",
         "default": "false",
@@ -1800,7 +1821,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "boolean",
         "default": "false",
         "required": false,
-        "description": "Adds a time of day to both ends. A new start is at 00:00 and a new end at 23:59; the popup has start and end time columns and stays open until the user chooses Done."
+        "description": "Adds a time of day to both ends. A new start is at 00:00 and a new end at 23:59 (23:59:59 with `showSeconds`); the popup has start and end time columns and stays open until the user chooses Done."
       },
       {
         "name": "stepMinute",
@@ -6416,14 +6437,14 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-time-columns",
     "entry": "@star-ng/ui/date-picker",
-    "description": "The hour, minute and (in the 12-hour clock) am / pm columns of a time panel. `star-time-picker` shows them in its panel, and the date pickers show them under the calendar with `showTime`. The value is 24-hour `HH:mm` text, or `null`. Times outside `min` … `max` are disabled, and the minutes follow `stepMinute`. Each column is a listbox: Arrow up / down, Home and End move in a column, Arrow left / right move to the column that is on that side.",
+    "description": "The hour, minute, second (with `showSeconds`) and (in the 12-hour clock) am / pm columns of a time panel. `star-time-picker` shows them in its panel, and the date pickers show them under the calendar with `showTime`. The value is 24-hour `HH:mm` text (`HH:mm:ss` with `showSeconds`), or `null`. Times outside `min` … `max` are disabled, and the columns follow `stepHour`, `stepMinute` and `stepSecond`. Each column is a listbox: Arrow up / down, Home and End move in a column, Arrow left / right move to the column that is on that side.",
     "inputs": [
       {
         "name": "min",
         "type": "string | undefined",
         "default": "undefined",
         "required": false,
-        "description": "Earliest and latest time, `HH:mm`."
+        "description": "Earliest and latest time, `HH:mm` or `HH:mm:ss`."
       },
       {
         "name": "max",
@@ -6433,11 +6454,32 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
+        "name": "stepHour",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Hours of the hour column: 0, then every `stepHour` hours."
+      },
+      {
         "name": "stepMinute",
         "type": "number",
         "default": "1",
         "required": false,
         "description": "Minutes of the minute column: 0, then every `stepMinute` minutes."
+      },
+      {
+        "name": "stepSecond",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Seconds of the second column: 0, then every `stepSecond` seconds."
+      },
+      {
+        "name": "showSeconds",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Adds a second column; the value is `HH:mm:ss`."
       },
       {
         "name": "hourFormat",
@@ -6460,7 +6502,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "string | null",
         "default": "null",
         "required": false,
-        "description": "`HH:mm` in the 24-hour clock, or `null`."
+        "description": "`HH:mm` (or `HH:mm:ss` with `showSeconds`) in the 24-hour clock, or `null`."
       }
     ],
     "outputs": []
@@ -6523,14 +6565,14 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-time-picker",
     "entry": "@star-ng/ui/date-picker",
-    "description": "Time picker: a time of day without a date (PrimeNG `p-datepicker timeOnly`). The value is 24-hour `HH:mm` text, or `null`.",
+    "description": "Time picker: a time of day without a date (PrimeNG `p-datepicker timeOnly`, Ignite UI `igx-time-picker`). The value is 24-hour `HH:mm` text (`HH:mm:ss` with `showSeconds`), or `null`.",
     "inputs": [
       {
         "name": "min",
         "type": "string | undefined",
         "default": "undefined",
         "required": false,
-        "description": "Earliest and latest time, `HH:mm`."
+        "description": "Earliest and latest time, `HH:mm` or `HH:mm:ss` (PrimeNG `minDate` / `maxDate` with `timeOnly`, Ignite UI `minValue` / `maxValue`)."
       },
       {
         "name": "max",
@@ -6540,11 +6582,32 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
+        "name": "stepHour",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Hour step of the panel's hour column (PrimeNG `stepHour`)."
+      },
+      {
         "name": "stepMinute",
         "type": "number",
         "default": "1",
         "required": false,
         "description": "Minute step of the field's arrow keys and of the panel's minute column."
+      },
+      {
+        "name": "stepSecond",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Second step of the panel's second column and, with `showSeconds`, of the field's arrow keys."
+      },
+      {
+        "name": "showSeconds",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Adds seconds: the field and the panel show them, and the value is `HH:mm:ss`."
       },
       {
         "name": "hourFormat",
@@ -6623,7 +6686,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "string | null",
         "default": "null",
         "required": false,
-        "description": "`HH:mm` in the 24-hour clock, or `null`."
+        "description": "`HH:mm` (or `HH:mm:ss` with `showSeconds`) in the 24-hour clock, or `null`."
       }
     ],
     "outputs": [
@@ -7580,18 +7643,19 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "data-view/paging": "<div class=\"docs-stack\">\n  <star-data-view [items]=\"products\" paginator [rows]=\"4\" [(first)]=\"first\">\n    <ng-template starDataViewItem [starDataViewItemOf]=\"products\" let-p>\n      <strong>{{ p.name }}</strong>\n      <div>{{ p.category }} · {{ '$' + p.price }}</div>\n    </ng-template>\n  </star-data-view>\n  <p class=\"docs-output\" role=\"status\">First item on the page: {{ first() + 1 }}</p>\n</div>",
   "data-view/slots": "<div class=\"docs-stack\">\n  <star-data-view [items]=\"products.slice(0, 3)\">\n    <ng-template starHeader>\n      <p class=\"docs-output\">Today's picks</p>\n    </ng-template>\n    <ng-template starDataViewItem [starDataViewItemOf]=\"products\" let-p>\n      <strong>{{ p.name }}</strong>\n      <div>{{ '$' + p.price }}</div>\n    </ng-template>\n    <ng-template starFooter>\n      <p class=\"docs-output\">Prices include tax.</p>\n    </ng-template>\n  </star-data-view>\n  <star-data-view [items]=\"[]\">\n    <ng-template starDataViewItem let-item>{{ item }}</ng-template>\n    <ng-template starEmpty let-text>\n      <span style=\"color: var(--star-text-muted)\">Nothing to show yet.</span>\n    </ng-template>\n  </star-data-view>\n</div>",
   "data-view/sorting": "<star-data-view [items]=\"sorted()\">\n  <div starDataViewHeader>\n    <star-button size=\"sm\" variant=\"secondary\" (click)=\"sortBy.set('name')\">\n      Sort by name\n    </star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (click)=\"sortBy.set('price')\">\n      Sort by price\n    </star-button>\n  </div>\n  <ng-template starDataViewItem [starDataViewItemOf]=\"sorted()\" let-p>\n    <strong>{{ p.name }}</strong>\n    <div>{{ '$' + p.price }}</div>\n  </ng-template>\n</star-data-view>",
-  "date-picker/basic": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"delivery\"\n    locale=\"en-GB\"\n    [firstDayOfWeek]=\"1\"\n    ariaLabel=\"Delivery date\"\n    showButtonBar\n  />\n  <p class=\"docs-output\" role=\"status\">Delivery: {{ iso(delivery()) }}</p>\n</div>",
-  "date-picker/form": "<div class=\"docs-stack\">\n  <star-field label=\"Delivery date\" for=\"date-form-delivery\" [state]=\"order.deliveryDate()\">\n    <star-date-picker\n      inputId=\"date-form-delivery\"\n      [formField]=\"order.deliveryDate\"\n      locale=\"en-GB\"\n      [minDate]=\"minDate\"\n      ariaLabel=\"Required delivery date\"\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ order().valid() }}</p>\n</div>",
-  "date-picker/format": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"invoiceDate\"\n    locale=\"en-GB\"\n    [dateFormat]=\"longFormat\"\n    ariaLabel=\"Invoice date\"\n    placeholder=\"dd/mm/yyyy\"\n  />\n  <star-date-picker\n    [value]=\"invoiceDate()\"\n    locale=\"en-GB\"\n    readonlyInput\n    ariaLabel=\"Invoice date, pick only\"\n  />\n  <p class=\"docs-output\" role=\"status\">Invoice: {{ iso(invoiceDate()) }}</p>\n</div>",
-  "date-picker/limits": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"slot\"\n    [minDate]=\"minDate\"\n    [maxDate]=\"maxDate\"\n    [disabledDays]=\"weekend\"\n    [disabledDates]=\"closedDays\"\n    [dateDisabled]=\"isMonthStart\"\n    locale=\"en-GB\"\n    ariaLabel=\"Pick-up date\"\n  />\n  <p class=\"docs-output\" role=\"status\">Pick-up: {{ iso(slot()) }}</p>\n</div>",
-  "date-picker/locale": "<div class=\"docs-stack\">\n  <star-date-picker\n    [value]=\"germanDate\"\n    locale=\"de-DE\"\n    [firstDayOfWeek]=\"1\"\n    showWeek\n    ariaLabel=\"Lieferdatum\"\n  />\n  <star-date-picker\n    [value]=\"americanDate\"\n    locale=\"en-US\"\n    [firstDayOfWeek]=\"0\"\n    [numberOfMonths]=\"2\"\n    ariaLabel=\"Delivery date (US)\"\n  />\n</div>",
-  "date-picker/multiple": "<div class=\"docs-stack\">\n  <star-multi-date-picker\n    [(value)]=\"visits\"\n    [maxDates]=\"4\"\n    locale=\"en-GB\"\n    ariaLabel=\"Visit days\"\n    showClear\n  />\n  <p class=\"docs-output\" role=\"status\">Days: {{ visits().length }}</p>\n</div>",
-  "date-picker/range": "<div class=\"docs-stack\">\n  <star-date-range-picker [(value)]=\"booking\" locale=\"en-GB\" ariaLabel=\"Booking range\" />\n  <p class=\"docs-output\" role=\"status\">\n    Booking: {{ iso(booking()?.start) }} to {{ iso(booking()?.end) }}\n  </p>\n</div>",
-  "date-picker/slots": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"payDate\"\n    locale=\"en-GB\"\n    [firstDayOfWeek]=\"1\"\n    showButtonBar\n    ariaLabel=\"Payment date\"\n  >\n    <ng-template starHeader>\n      <p class=\"docs-output docs-due-note\">Invoices due in November 2026</p>\n    </ng-template>\n    <ng-template starDate let-date>\n      <span class=\"docs-due\" [class.docs-due--marked]=\"isDue(date)\">{{\n        date.getDate()\n      }}</span>\n    </ng-template>\n    <ng-template starFooter>\n      <p class=\"docs-output docs-due-note\">\n        A dot marks a due date: 5, 12 and 26 November.\n      </p>\n    </ng-template>\n  </star-date-picker>\n  <p class=\"docs-output\" role=\"status\">Payment date: {{ iso(payDate()) }}</p>\n</div>",
-  "date-picker/states": "<div class=\"docs-stack\">\n  <star-date-picker size=\"sm\" locale=\"en-GB\" ariaLabel=\"Small date picker\" />\n  <star-date-picker disabled locale=\"en-GB\" ariaLabel=\"Disabled date picker\" />\n  <star-date-picker\n    [value]=\"delivery()\"\n    readonly\n    locale=\"en-GB\"\n    ariaLabel=\"Read-only date picker\"\n  />\n</div>",
-  "date-picker/time": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"meeting\"\n    locale=\"en-GB\"\n    showTime\n    [stepMinute]=\"15\"\n    ariaLabel=\"Meeting start\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Meeting: {{ iso(meeting()) }} {{ clock(meeting()) }}\n  </p>\n</div>",
-  "date-picker/time-range": "<div class=\"docs-stack\">\n  <star-date-range-picker\n    [(value)]=\"shift\"\n    locale=\"en-GB\"\n    showTime\n    [stepMinute]=\"15\"\n    ariaLabel=\"Shift\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Shift: {{ iso(shift()?.start) }} {{ clock(shift()?.start) }} to {{ iso(shift()?.end) }}\n    {{ clock(shift()?.end) }}\n  </p>\n</div>",
-  "date-picker/views": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"reportMonth\"\n    view=\"month\"\n    locale=\"en-GB\"\n    ariaLabel=\"Report month\"\n  />\n  <star-date-picker\n    [(value)]=\"reportYear\"\n    view=\"year\"\n    locale=\"en-GB\"\n    ariaLabel=\"Report year\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Month: {{ iso(reportMonth()) }}, year: {{ iso(reportYear()) }}\n  </p>\n</div>",
+  "date-picker/basic": "<div class=\"docs-stack\">\r\n  <star-date-picker\r\n    [(value)]=\"delivery\"\r\n    locale=\"en-GB\"\r\n    [firstDayOfWeek]=\"1\"\r\n    ariaLabel=\"Delivery date\"\r\n    showButtonBar\r\n  />\r\n  <p class=\"docs-output\" role=\"status\">Delivery: {{ iso(delivery()) }}</p>\r\n</div>",
+  "date-picker/form": "<div class=\"docs-stack\">\r\n  <star-field label=\"Delivery date\" for=\"date-form-delivery\" [state]=\"order.deliveryDate()\">\r\n    <star-date-picker\r\n      inputId=\"date-form-delivery\"\r\n      [formField]=\"order.deliveryDate\"\r\n      locale=\"en-GB\"\r\n      [minDate]=\"minDate\"\r\n      ariaLabel=\"Required delivery date\"\r\n    />\r\n  </star-field>\r\n  <p class=\"docs-output\" role=\"status\">Valid: {{ order().valid() }}</p>\r\n</div>",
+  "date-picker/format": "<div class=\"docs-stack\">\r\n  <star-date-picker\r\n    [(value)]=\"invoiceDate\"\r\n    locale=\"en-GB\"\r\n    [dateFormat]=\"longFormat\"\r\n    ariaLabel=\"Invoice date\"\r\n    placeholder=\"dd/mm/yyyy\"\r\n  />\r\n  <star-date-picker\r\n    [value]=\"invoiceDate()\"\r\n    locale=\"en-GB\"\r\n    readonlyInput\r\n    ariaLabel=\"Invoice date, pick only\"\r\n  />\r\n  <p class=\"docs-output\" role=\"status\">Invoice: {{ iso(invoiceDate()) }}</p>\r\n</div>",
+  "date-picker/limits": "<div class=\"docs-stack\">\r\n  <star-date-picker\r\n    [(value)]=\"slot\"\r\n    [minDate]=\"minDate\"\r\n    [maxDate]=\"maxDate\"\r\n    [disabledDays]=\"weekend\"\r\n    [disabledDates]=\"closedDays\"\r\n    [dateDisabled]=\"isMonthStart\"\r\n    locale=\"en-GB\"\r\n    ariaLabel=\"Pick-up date\"\r\n  />\r\n  <p class=\"docs-output\" role=\"status\">Pick-up: {{ iso(slot()) }}</p>\r\n</div>",
+  "date-picker/locale": "<div class=\"docs-stack\">\r\n  <star-date-picker\r\n    [value]=\"germanDate\"\r\n    locale=\"de-DE\"\r\n    [firstDayOfWeek]=\"1\"\r\n    showWeek\r\n    ariaLabel=\"Lieferdatum\"\r\n  />\r\n  <star-date-picker\r\n    [value]=\"americanDate\"\r\n    locale=\"en-US\"\r\n    [firstDayOfWeek]=\"0\"\r\n    [numberOfMonths]=\"2\"\r\n    ariaLabel=\"Delivery date (US)\"\r\n  />\r\n</div>",
+  "date-picker/multiple": "<div class=\"docs-stack\">\r\n  <star-multi-date-picker\r\n    [(value)]=\"visits\"\r\n    [maxDates]=\"4\"\r\n    locale=\"en-GB\"\r\n    ariaLabel=\"Visit days\"\r\n    showClear\r\n  />\r\n  <p class=\"docs-output\" role=\"status\">Days: {{ visits().length }}</p>\r\n</div>",
+  "date-picker/range": "<div class=\"docs-stack\">\r\n  <star-date-range-picker [(value)]=\"booking\" locale=\"en-GB\" ariaLabel=\"Booking range\" />\r\n  <p class=\"docs-output\" role=\"status\">\r\n    Booking: {{ iso(booking()?.start) }} to {{ iso(booking()?.end) }}\r\n  </p>\r\n</div>",
+  "date-picker/seconds": "<div class=\"docs-stack\">\r\n  <star-date-picker\r\n    [(value)]=\"invoiceSent\"\r\n    locale=\"en-GB\"\r\n    showTime\r\n    showSeconds\r\n    [stepHour]=\"1\"\r\n    [stepMinute]=\"5\"\r\n    [stepSecond]=\"15\"\r\n    ariaLabel=\"Invoice sent at\"\r\n  />\r\n  <p class=\"docs-output\" role=\"status\">\r\n    Sent: {{ iso(invoiceSent()) }} {{ clock(invoiceSent(), true) }}\r\n  </p>\r\n</div>",
+  "date-picker/slots": "<div class=\"docs-stack\">\r\n  <star-date-picker\r\n    [(value)]=\"payDate\"\r\n    locale=\"en-GB\"\r\n    [firstDayOfWeek]=\"1\"\r\n    showButtonBar\r\n    ariaLabel=\"Payment date\"\r\n  >\r\n    <ng-template starHeader>\r\n      <p class=\"docs-output docs-due-note\">Invoices due in November 2026</p>\r\n    </ng-template>\r\n    <ng-template starDate let-date>\r\n      <span class=\"docs-due\" [class.docs-due--marked]=\"isDue(date)\">{{\r\n        date.getDate()\r\n      }}</span>\r\n    </ng-template>\r\n    <ng-template starFooter>\r\n      <p class=\"docs-output docs-due-note\">\r\n        A dot marks a due date: 5, 12 and 26 November.\r\n      </p>\r\n    </ng-template>\r\n  </star-date-picker>\r\n  <p class=\"docs-output\" role=\"status\">Payment date: {{ iso(payDate()) }}</p>\r\n</div>",
+  "date-picker/states": "<div class=\"docs-stack\">\r\n  <star-date-picker size=\"sm\" locale=\"en-GB\" ariaLabel=\"Small date picker\" />\r\n  <star-date-picker disabled locale=\"en-GB\" ariaLabel=\"Disabled date picker\" />\r\n  <star-date-picker\r\n    [value]=\"delivery()\"\r\n    readonly\r\n    locale=\"en-GB\"\r\n    ariaLabel=\"Read-only date picker\"\r\n  />\r\n</div>",
+  "date-picker/time": "<div class=\"docs-stack\">\r\n  <star-date-picker\r\n    [(value)]=\"meeting\"\r\n    locale=\"en-GB\"\r\n    showTime\r\n    [stepMinute]=\"15\"\r\n    ariaLabel=\"Meeting start\"\r\n  />\r\n  <p class=\"docs-output\" role=\"status\">\r\n    Meeting: {{ iso(meeting()) }} {{ clock(meeting()) }}\r\n  </p>\r\n</div>",
+  "date-picker/time-range": "<div class=\"docs-stack\">\r\n  <star-date-range-picker\r\n    [(value)]=\"shift\"\r\n    locale=\"en-GB\"\r\n    showTime\r\n    [stepMinute]=\"15\"\r\n    ariaLabel=\"Shift\"\r\n  />\r\n  <p class=\"docs-output\" role=\"status\">\r\n    Shift: {{ iso(shift()?.start) }} {{ clock(shift()?.start) }} to {{ iso(shift()?.end) }}\r\n    {{ clock(shift()?.end) }}\r\n  </p>\r\n</div>",
+  "date-picker/views": "<div class=\"docs-stack\">\r\n  <star-date-picker\r\n    [(value)]=\"reportMonth\"\r\n    view=\"month\"\r\n    locale=\"en-GB\"\r\n    ariaLabel=\"Report month\"\r\n  />\r\n  <star-date-picker\r\n    [(value)]=\"reportYear\"\r\n    view=\"year\"\r\n    locale=\"en-GB\"\r\n    ariaLabel=\"Report year\"\r\n  />\r\n  <p class=\"docs-output\" role=\"status\">\r\n    Month: {{ iso(reportMonth()) }}, year: {{ iso(reportYear()) }}\r\n  </p>\r\n</div>",
   "dialog/basic": "<star-button (pressed)=\"basicOpen.set(true)\">Edit order</star-button>\n<star-dialog [(visible)]=\"basicOpen\" header=\"Edit order ORD-1042\">\n  <span starDialogHeader class=\"docs-output\">Last saved at 10:42</span>\n  <div class=\"docs-stack\">\n    <star-field label=\"Customer\">\n      <input starInput value=\"Orchard Supply\" />\n    </star-field>\n    <star-field label=\"Delivery note\" hint=\"The driver reads this note.\">\n      <textarea starInput rows=\"3\">Leave at the loading dock.</textarea>\n    </star-field>\n  </div>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button variant=\"ghost\" (pressed)=\"basicOpen.set(false)\">Cancel</star-button>\n    <star-button (pressed)=\"basicOpen.set(false)\">Save</star-button>\n  </div>\n</star-dialog>",
   "dialog/close-rules": "<div class=\"docs-row\">\n  <star-button variant=\"secondary\" (pressed)=\"maskOpen.set(true)\"\n    >Backdrop click</star-button\n  >\n  <star-button variant=\"secondary\" (pressed)=\"lockedOpen.set(true)\">Locked</star-button>\n  <star-button variant=\"secondary\" (pressed)=\"floatOpen.set(true)\">Non-modal</star-button>\n</div>\n<star-dialog [(visible)]=\"maskOpen\" header=\"Closes on a backdrop click\" dismissableMask>\n  <p>Click outside this window to close it.</p>\n</star-dialog>\n<star-dialog\n  [(visible)]=\"lockedOpen\"\n  header=\"Locked dialog\"\n  [closable]=\"false\"\n  [closeOnEscape]=\"false\"\n>\n  <p>This dialog has no close button and ignores Escape.</p>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button (pressed)=\"lockedOpen.set(false)\">Done</star-button>\n  </div>\n</star-dialog>\n<star-dialog [(visible)]=\"floatOpen\" header=\"Non-modal dialog\" [modal]=\"false\">\n  <p>The page behind this window stays usable.</p>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button (pressed)=\"floatOpen.set(false)\">Close</star-button>\n  </div>\n</star-dialog>",
   "dialog/focus": "<div class=\"docs-row\">\n  <star-button variant=\"secondary\" (pressed)=\"defaultFocusOpen.set(true)\">\n    First focusable\n  </star-button>\n  <star-button variant=\"secondary\" (pressed)=\"markedFocusOpen.set(true)\">\n    Marked field\n  </star-button>\n</div>\n<star-dialog [(visible)]=\"defaultFocusOpen\" header=\"Default focus\">\n  <p>The focus starts on the close button.</p>\n  <star-field label=\"Reference\"><input starInput value=\"ORD-1042\" /></star-field>\n</star-dialog>\n<star-dialog [(visible)]=\"markedFocusOpen\" header=\"Marked focus\">\n  <star-field label=\"Reference\">\n    <input starInput value=\"ORD-1042\" data-autofocus />\n  </star-field>\n</star-dialog>",
@@ -7811,11 +7875,12 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "tag/severities": "<star-tag value=\"New\" />\n<star-tag severity=\"secondary\" value=\"Draft\" />\n<star-tag severity=\"success\" value=\"Paid\" />\n<star-tag severity=\"info\" value=\"In review\" />\n<star-tag severity=\"warn\" value=\"Due soon\" />\n<star-tag severity=\"danger\" value=\"Overdue\" />",
   "terminal/basic": "<div class=\"docs-stack docs-terminal\">\n  <star-terminal\n    #terminal\n    ariaLabel=\"Diagnostics\"\n    prompt=\"app $\"\n    welcome=\"Type help for the commands.\"\n    [handler]=\"runCommand\"\n    (commandRun)=\"last.set($event)\"\n  />\n  <div class=\"docs-row\">\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"terminal.clear()\">\n      Clear\n    </star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"terminal.run('status')\">\n      Run \"status\"\n    </star-button>\n  </div>\n  <p class=\"docs-output\" role=\"status\">Last command: {{ last() || 'none' }}</p>\n</div>",
   "theme-switch/basic": "<div class=\"docs-row docs-theme-area\">\n  <star-theme-switch />\n  <p class=\"docs-output\" role=\"status\">\n    Choice: {{ theme.mode() }}. Theme in use: {{ theme.theme() }}.\n  </p>\n</div>",
-  "time-picker/basic": "<div class=\"docs-stack\">\n  <star-time-picker [(value)]=\"meeting\" ariaLabel=\"Meeting time\" />\n  <p class=\"docs-output\" role=\"status\">Meeting: {{ meeting() ?? 'none' }}</p>\n</div>",
-  "time-picker/form": "<div class=\"docs-stack\">\n  <star-field label=\"Pick-up time\" for=\"time-form-pickup\" [state]=\"slot.pickup()\">\n    <star-time-picker\n      inputId=\"time-form-pickup\"\n      [formField]=\"slot.pickup\"\n      ariaLabel=\"Pick-up time\"\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ slot().valid() }}</p>\n</div>",
-  "time-picker/hour-format": "<div class=\"docs-stack\">\n  <star-time-picker [(value)]=\"cutOff\" hourFormat=\"12\" ariaLabel=\"Cut-off time\" />\n  <p class=\"docs-output\" role=\"status\">Cut-off: {{ cutOff() ?? 'none' }}</p>\n</div>",
-  "time-picker/limits": "<div class=\"docs-stack\">\n  <star-time-picker\n    [(value)]=\"opening\"\n    min=\"08:00\"\n    max=\"18:00\"\n    [stepMinute]=\"15\"\n    hourFormat=\"24\"\n    ariaLabel=\"Opening time\"\n  />\n  <p class=\"docs-output\" role=\"status\">Opening: {{ opening() ?? 'none' }}</p>\n</div>",
-  "time-picker/states": "<div class=\"docs-stack\">\n  <star-time-picker size=\"sm\" ariaLabel=\"Small time picker\" />\n  <star-time-picker disabled [value]=\"'09:30'\" ariaLabel=\"Disabled time picker\" />\n  <star-time-picker readonly [value]=\"'09:30'\" ariaLabel=\"Read-only time picker\" />\n</div>",
+  "time-picker/basic": "<div class=\"docs-stack\">\r\n  <star-time-picker [(value)]=\"meeting\" ariaLabel=\"Meeting time\" />\r\n  <p class=\"docs-output\" role=\"status\">Meeting: {{ meeting() ?? 'none' }}</p>\r\n</div>",
+  "time-picker/form": "<div class=\"docs-stack\">\r\n  <star-field label=\"Pick-up time\" for=\"time-form-pickup\" [state]=\"slot.pickup()\">\r\n    <star-time-picker\r\n      inputId=\"time-form-pickup\"\r\n      [formField]=\"slot.pickup\"\r\n      ariaLabel=\"Pick-up time\"\r\n    />\r\n  </star-field>\r\n  <p class=\"docs-output\" role=\"status\">Valid: {{ slot().valid() }}</p>\r\n</div>",
+  "time-picker/hour-format": "<div class=\"docs-stack\">\r\n  <star-time-picker [(value)]=\"cutOff\" hourFormat=\"12\" ariaLabel=\"Cut-off time\" />\r\n  <p class=\"docs-output\" role=\"status\">Cut-off: {{ cutOff() ?? 'none' }}</p>\r\n</div>",
+  "time-picker/limits": "<div class=\"docs-stack\">\r\n  <star-time-picker\r\n    [(value)]=\"opening\"\r\n    min=\"08:00\"\r\n    max=\"18:00\"\r\n    [stepMinute]=\"15\"\r\n    hourFormat=\"24\"\r\n    ariaLabel=\"Opening time\"\r\n  />\r\n  <p class=\"docs-output\" role=\"status\">Opening: {{ opening() ?? 'none' }}</p>\r\n</div>",
+  "time-picker/seconds": "<div class=\"docs-stack\">\r\n  <star-time-picker\r\n    [(value)]=\"exportAt\"\r\n    showSeconds\r\n    min=\"06:00:00\"\r\n    max=\"20:00:00\"\r\n    [stepHour]=\"2\"\r\n    [stepMinute]=\"15\"\r\n    [stepSecond]=\"10\"\r\n    ariaLabel=\"Export time\"\r\n  />\r\n  <p class=\"docs-output\" role=\"status\">Export: {{ exportAt() ?? 'none' }}</p>\r\n</div>",
+  "time-picker/states": "<div class=\"docs-stack\">\r\n  <star-time-picker size=\"sm\" ariaLabel=\"Small time picker\" />\r\n  <star-time-picker disabled [value]=\"'09:30'\" ariaLabel=\"Disabled time picker\" />\r\n  <star-time-picker readonly [value]=\"'09:30'\" ariaLabel=\"Read-only time picker\" />\r\n</div>",
   "timeline/alternate": "<star-timeline [events]=\"events\" align=\"alternate\" ariaLabel=\"Order history, alternating\" />",
   "timeline/basic": "<star-timeline [events]=\"events\" ariaLabel=\"Order history\" />",
   "timeline/content": "<star-timeline [events]=\"events\" ariaLabel=\"Order history, custom\">\n  <ng-template starTimelineContent let-event let-i=\"index\">\n    <strong>{{ i + 1 }}. {{ event.title }}</strong>\n  </ng-template>\n</star-timeline>",

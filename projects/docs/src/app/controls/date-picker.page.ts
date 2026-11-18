@@ -195,6 +195,29 @@ import { DOCS, DocsRow } from '../shared/docs';
       </docs-example>
 
       <docs-example
+        heading="Seconds and steps"
+        source="date-picker/seconds"
+        [script]="secondsScript"
+        note="showSeconds adds a second column, and the text shows hh:mm:ss. stepHour, stepMinute and stepSecond set the values of the hour, minute and second columns (PrimeNG stepHour, stepMinute and stepSecond). Typed text with seconds is read in both clocks, for example 17/11/2026 14:30:15 or 17/11/2026 2:30:15 pm."
+      >
+        <div class="docs-stack">
+          <star-date-picker
+            [(value)]="invoiceSent"
+            locale="en-GB"
+            showTime
+            showSeconds
+            [stepHour]="1"
+            [stepMinute]="5"
+            [stepSecond]="15"
+            ariaLabel="Invoice sent at"
+          />
+          <p class="docs-output" role="status">
+            Sent: {{ iso(invoiceSent()) }} {{ clock(invoiceSent(), true) }}
+          </p>
+        </div>
+      </docs-example>
+
+      <docs-example
         heading="Month and year views"
         source="date-picker/views"
         note="view='month' or view='year' chooses a month or a year. The value is the first day of it, and the text is mm/yyyy or yyyy. In the day view, a click on the month name or the year in the popup header opens the month or the year view for a fast jump."
@@ -373,10 +396,12 @@ import { DOCS, DocsRow } from '../shared/docs';
 export class DatePickerPage {
   protected readonly iso = (date: Date | null | undefined): string =>
     date ? isoDay(date) : 'none';
-  protected readonly clock = (date: Date | null | undefined): string =>
-    date
-      ? `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
-      : '';
+  protected readonly clock = (date: Date | null | undefined, seconds = false): string => {
+    if (!date) return '';
+    const pad = (part: number) => String(part).padStart(2, '0');
+    const time = `${pad(date.getHours())}:${pad(date.getMinutes())}`;
+    return seconds ? `${time}:${pad(date.getSeconds())}` : time;
+  };
 
   protected readonly delivery = signal<Date | null>(new Date(2026, 10, 17));
   protected readonly booking = signal<StarDateRange | null>({
@@ -410,6 +435,7 @@ export class DatePickerPage {
     start: new Date(2026, 10, 16, 8, 0),
     end: new Date(2026, 10, 20, 17, 30),
   });
+  protected readonly invoiceSent = signal<Date | null>(new Date(2026, 10, 17, 14, 30, 15));
   protected readonly reportMonth = signal<Date | null>(new Date(2026, 10, 1));
   protected readonly reportYear = signal<Date | null>(new Date(2026, 0, 1));
 
@@ -447,6 +473,7 @@ readonly longFormat: Intl.DateTimeFormatOptions = {
   start: new Date(2026, 10, 16, 8, 0),
   end: new Date(2026, 10, 20, 17, 30),
 });`;
+  protected readonly secondsScript = `readonly invoiceSent = signal<Date | null>(new Date(2026, 10, 17, 14, 30, 15));`;
   protected readonly formScript = `readonly orderModel = signal<{ deliveryDate: Date | null }>({ deliveryDate: null });
 readonly order = form(this.orderModel, (path) => {
   required(path.deliveryDate, { message: 'Choose a delivery date.' });
