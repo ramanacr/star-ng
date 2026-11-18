@@ -48,6 +48,41 @@ import { DOCS, DocsRow } from '../shared/docs';
       </docs-example>
 
       <docs-example
+        heading="Duplicates per outlet"
+        source="toast/outlet-duplicates"
+        [script]="outletDuplicatesScript"
+        note="preventDuplicates on star-toast (PrimeNG preventDuplicates) ignores a message with the same severity, summary and detail as one that this outlet showed before, also after it closed. preventOpenDuplicates (PrimeNG preventOpenDuplicates) ignores only a copy of a message that is visible now; the service does that for every outlet by default, so this input matters when StarToastService.preventDuplicates is false."
+      >
+        <star-button size="sm" variant="secondary" (pressed)="remind()">Show reminder</star-button>
+        <star-toast position="bottom-end" key="reminder" preventDuplicates />
+      </docs-example>
+
+      <docs-example
+        heading="Close events and narrow windows"
+        source="toast/closed"
+        [script]="closedScript"
+        note="closed reports each toast of the outlet that closes, with the reason: timeout (the timer ran out), close (the close button, close() of the template, or remove(id)) or clear (clear()). StarToastService.closed reports the same for every outlet. breakpoints (PrimeNG breakpoints) takes max-widths with a style object: below the width, the stack goes full width at the bottom of the window, and the style object applies on top."
+      >
+        <div class="docs-stack">
+          <p class="docs-output" role="status">Last close: {{ lastClose() }}</p>
+          <div class="docs-row">
+            <star-button size="sm" variant="secondary" (pressed)="shortNote()">
+              Show a 3 second note
+            </star-button>
+            <star-button size="sm" variant="ghost" (pressed)="toasts.clear('events')">
+              Clear notes
+            </star-button>
+          </div>
+        </div>
+        <star-toast
+          position="top-end"
+          key="events"
+          [breakpoints]="{ '640px': {} }"
+          (closed)="lastClose.set($event.message.summary + ': ' + $event.reason)"
+        />
+      </docs-example>
+
+      <docs-example
         heading="Corners that follow the direction"
         source="toast/corners"
         [script]="cornersScript"
@@ -175,6 +210,22 @@ export class ToastPage {
   }
 
   protected readonly undoNote = signal('Nothing archived yet.');
+  protected readonly lastClose = signal('none');
+  private noteCount = 0;
+
+  protected remind(): void {
+    this.toasts.show({
+      severity: 'info',
+      summary: 'Check the open invoices',
+      life: 3000,
+      key: 'reminder',
+    });
+  }
+
+  protected shortNote(): void {
+    this.noteCount++;
+    this.toasts.show({ summary: `Note ${this.noteCount}`, life: 3000, key: 'events' });
+  }
 
   protected archive(): void {
     this.undoNote.set('ORD-1051 archived.');
@@ -228,6 +279,22 @@ notify(severity: 'success' | 'info' | 'warn' | 'error'): void {
 quick(): void {
   this.toasts.show({ severity: 'info', summary: 'Quick note', life: 2000 });
 }`;
+  protected readonly outletDuplicatesScript = `remind(): void {
+  // The second click shows nothing: the outlet showed this reminder before.
+  this.toasts.show({
+    severity: 'info',
+    summary: 'Check the open invoices',
+    life: 3000,
+    key: 'reminder',
+  });
+}`;
+  protected readonly closedScript = `readonly lastClose = signal('none');
+private noteCount = 0;
+
+shortNote(): void {
+  this.noteCount++;
+  this.toasts.show({ summary: 'Note ' + this.noteCount, life: 3000, key: 'events' });
+}`;
   protected readonly duplicatesScript = `twice(): void {
   this.toasts.success('Saved');
   this.toasts.success('Saved'); // ignored: the first message is still visible
@@ -237,14 +304,22 @@ quick(): void {
     {
       name: 'show(options)',
       description:
-        'Shows a message and returns its id. options has summary, detail, severity, life, sticky and key.',
+        'Shows a message and returns its id. options has summary, detail, severity, life, sticky and key. An ignored duplicate returns the id of the visible copy, or 0.',
     },
     {
       name: 'success(summary, detail?), info(...), warn(...), error(...)',
       description: 'Short forms of show. error closes after 8 seconds, the others after 5.',
     },
-    { name: 'remove(id)', description: 'Removes one message.' },
-    { name: 'clear(key?)', description: 'Removes all messages, or only the messages of one key.' },
+    { name: 'remove(id)', description: 'Removes one message (close reason close).' },
+    {
+      name: 'clear(key?)',
+      description: 'Removes all messages, or only the messages of one key (close reason clear).',
+    },
+    {
+      name: 'closed',
+      description:
+        'Observable of every toast that closes: { message, reason } with the reason timeout, close or clear.',
+    },
     {
       name: 'pause(id), resume(id)',
       description: 'Stops and starts the close timer of a message.',

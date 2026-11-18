@@ -6706,10 +6706,39 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "5",
         "required": false,
         "description": "Newest messages beyond this count wait until older ones close."
+      },
+      {
+        "name": "preventDuplicates",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Ignores a message with the same severity, summary and detail as one that this outlet showed before, also after it closed (PrimeNG `preventDuplicates`)."
+      },
+      {
+        "name": "preventOpenDuplicates",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Ignores a message with the same severity, summary and detail as one that this outlet shows now (PrimeNG `preventOpenDuplicates`). The service does this for every outlet by default (`StarToastService.preventDuplicates`); this input keeps it for one outlet when that is off."
+      },
+      {
+        "name": "breakpoints",
+        "type": "Readonly<Record<string, Readonly<Record<string, string>>>> | null",
+        "default": "null",
+        "required": false,
+        "description": "Narrow windows (PrimeNG `breakpoints`): `{ '<max-width>': { ...styles } }`. When a key matches, the stack goes full width at the bottom of the window, and the style object of the smallest matching key applies on top, for example `{ '640px': {} }` or `{ '640px': { 'inset-block-end': '4rem' } }`."
       }
     ],
     "models": [],
-    "outputs": []
+    "outputs": [
+      {
+        "name": "closed",
+        "type": "StarToastCloseEvent",
+        "default": null,
+        "required": false,
+        "description": "A toast of this outlet closed: the message and the reason (PrimeNG `onClose`)."
+      }
+    ]
   },
   "StarToastMessageTemplate": {
     "kind": "directive",
@@ -7449,7 +7478,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "dock/basic": "<div class=\"docs-stack\">\n  <star-dock [items]=\"apps\" ariaLabel=\"Apps\" (itemClick)=\"last.set($event.label ?? '')\" />\n  <p class=\"docs-output\" role=\"status\">Opened: {{ last() }}</p>\n</div>",
   "dock/left": "<star-dock [items]=\"apps\" position=\"left\" ariaLabel=\"Apps on the left\" />",
   "drawer/basic": "<star-button leadingIcon=\"ph-bold ph-sidebar-simple\" (pressed)=\"basicOpen.set(true)\">\n  Open details\n</star-button>\n<star-drawer [(visible)]=\"basicOpen\" header=\"Order ORD-1042\" dismissableMask>\n  <div class=\"docs-stack\">\n    <p class=\"docs-output\">Orchard Supply, 12 items, ships on Friday.</p>\n    <star-field label=\"Internal note\">\n      <textarea starInput autoResize rows=\"3\"></textarea>\n    </star-field>\n  </div>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button variant=\"ghost\" (pressed)=\"basicOpen.set(false)\">Close</star-button>\n  </div>\n</star-drawer>",
-  "drawer/modes": "<div class=\"docs-stack\">\n  <p class=\"docs-output\" role=\"status\">Last event: {{ modeEvent() }}</p>\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"floatOpen.set(true)\">Non-modal</star-button>\n    <star-button variant=\"secondary\" (pressed)=\"fullOpen.set(true)\">Full screen</star-button>\n  </div>\n</div>\n<star-drawer\n  [(visible)]=\"floatOpen\"\n  header=\"Filters\"\n  position=\"start\"\n  drawerSize=\"20rem\"\n  [modal]=\"false\"\n  (shown)=\"modeEvent.set('non-modal shown')\"\n  (hidden)=\"modeEvent.set('non-modal hidden')\"\n>\n  <p>The page behind this drawer stays usable.</p>\n</star-drawer>\n<star-drawer\n  [(visible)]=\"fullOpen\"\n  header=\"Invoice INV-2041\"\n  position=\"bottom\"\n  fullScreen\n  dismissible\n  (shown)=\"modeEvent.set('full screen shown')\"\n  (hidden)=\"modeEvent.set('full screen hidden')\"\n>\n  <p>This drawer covers the window. Escape or the close button closes it.</p>\n</star-drawer>",
+  "drawer/modes": "<div class=\"docs-stack\">\n  <p class=\"docs-output\" role=\"status\">Last event: {{ modeEvent() }}</p>\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"floatOpen.set(true)\">Non-modal</star-button>\n    <star-button variant=\"secondary\" (pressed)=\"fullOpen.set(true)\"\n      >Full screen</star-button\n    >\n  </div>\n</div>\n<star-drawer\n  [(visible)]=\"floatOpen\"\n  header=\"Filters\"\n  position=\"start\"\n  drawerSize=\"20rem\"\n  [modal]=\"false\"\n  (shown)=\"modeEvent.set('non-modal shown')\"\n  (hidden)=\"modeEvent.set('non-modal hidden')\"\n>\n  <p>The page behind this drawer stays usable.</p>\n</star-drawer>\n<star-drawer\n  [(visible)]=\"fullOpen\"\n  header=\"Invoice INV-2041\"\n  position=\"bottom\"\n  fullScreen\n  dismissible\n  (shown)=\"modeEvent.set('full screen shown')\"\n  (hidden)=\"modeEvent.set('full screen hidden')\"\n>\n  <p>This drawer covers the window. Escape or the close button closes it.</p>\n</star-drawer>",
   "drawer/position": "<div class=\"docs-row\">\n  @for (item of positions; track item) {\n    <star-button variant=\"secondary\" (pressed)=\"openAt(item)\">{{ item }}</star-button>\n  }\n</div>\n<star-drawer\n  [(visible)]=\"positionOpen\"\n  [position]=\"position()\"\n  [drawerSize]=\"position() === 'top' || position() === 'bottom' ? '14rem' : '22rem'\"\n  [header]=\"'Drawer at the ' + position()\"\n>\n  <p>This drawer is pinned to the {{ position() }} edge.</p>\n</star-drawer>",
   "dropdown/basic": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button\n      variant=\"secondary\"\n      trailingIcon=\"ph-bold ph-caret-down\"\n      [starDropdownTrigger]=\"formats\"\n    >\n      Export as\n    </star-button>\n  </div>\n  <star-dropdown\n    #formats\n    ariaLabel=\"Export format\"\n    [(value)]=\"format\"\n    (selectionChange)=\"onSelect($event)\"\n  >\n    <star-dropdown-item header>Documents</star-dropdown-item>\n    <star-dropdown-item value=\"pdf\">PDF</star-dropdown-item>\n    <star-dropdown-item value=\"docx\" disabled>Word document</star-dropdown-item>\n    <star-dropdown-item divider />\n    <star-dropdown-item header>Data</star-dropdown-item>\n    <star-dropdown-item value=\"csv\">CSV</star-dropdown-item>\n    <star-dropdown-item value=\"xlsx\">Spreadsheet</star-dropdown-item>\n    <star-dropdown-item value=\"json\">JSON</star-dropdown-item>\n  </star-dropdown>\n  <p class=\"docs-output\" role=\"status\">Export format: {{ chosen() }}</p>\n</div>",
   "dropdown/keep-open": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" [starDropdownTrigger]=\"cities\">\n      Add a city\n    </star-button>\n  </div>\n  <star-dropdown\n    #cities\n    ariaLabel=\"Cities\"\n    [closeOnSelect]=\"false\"\n    (selectionChange)=\"added.set(added() + $event.label + ' ')\"\n  >\n    <star-dropdown-item value=\"berlin\">Berlin</star-dropdown-item>\n    <star-dropdown-item value=\"lisbon\">Lisbon</star-dropdown-item>\n    <star-dropdown-item value=\"oslo\">Oslo</star-dropdown-item>\n    <star-dropdown-item value=\"toronto\">Toronto</star-dropdown-item>\n  </star-dropdown>\n  <p class=\"docs-output\" role=\"status\">Added: {{ added() || 'none' }}</p>\n</div>",
@@ -7664,9 +7693,11 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "timeline/basic": "<star-timeline [events]=\"events\" ariaLabel=\"Order history\" />",
   "timeline/content": "<star-timeline [events]=\"events\" ariaLabel=\"Order history, custom\">\n  <ng-template starTimelineContent let-event let-i=\"index\">\n    <strong>{{ i + 1 }}. {{ event.title }}</strong>\n  </ng-template>\n</star-timeline>",
   "timeline/horizontal": "<star-timeline\n  [events]=\"events\"\n  layout=\"horizontal\"\n  ariaLabel=\"Order history, horizontal\"\n/>",
+  "toast/closed": "<div class=\"docs-stack\">\n  <p class=\"docs-output\" role=\"status\">Last close: {{ lastClose() }}</p>\n  <div class=\"docs-row\">\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"shortNote()\">\n      Show a 3 second note\n    </star-button>\n    <star-button size=\"sm\" variant=\"ghost\" (pressed)=\"toasts.clear('events')\">\n      Clear notes\n    </star-button>\n  </div>\n</div>\n<star-toast\n  position=\"top-end\"\n  key=\"events\"\n  [breakpoints]=\"{ '640px': {} }\"\n  (closed)=\"lastClose.set($event.message.summary + ': ' + $event.reason)\"\n/>",
   "toast/corners": "<star-button size=\"sm\" variant=\"secondary\" (pressed)=\"corner('start')\">\n  Message at the start\n</star-button>\n<star-button size=\"sm\" variant=\"secondary\" (pressed)=\"corner('end')\">\n  Message at the end\n</star-button>\n<star-toast position=\"bottom-start\" key=\"start\" />\n<star-toast position=\"bottom-end\" key=\"end\" />",
   "toast/duplicates": "<star-button size=\"sm\" variant=\"secondary\" (pressed)=\"twice()\">Save twice</star-button>",
   "toast/message": "<star-button size=\"sm\" variant=\"secondary\" (pressed)=\"archive()\">Archive order</star-button>\n<star-button size=\"sm\" variant=\"ghost\" (pressed)=\"undo()\">Undo archive</star-button>\n<p class=\"docs-output\" role=\"status\">{{ undoNote() }}</p>\n<star-toast position=\"bottom-center\" key=\"undo\">\n  <ng-template starToastMessage let-message let-close=\"close\">\n    <p class=\"star-toast__summary\">{{ message.summary }}</p>\n    <button\n      type=\"button\"\n      class=\"star-btn star-btn--ghost star-btn--sm\"\n      [attr.aria-label]=\"'Undo: ' + message.summary\"\n      (click)=\"undo(); close()\"\n    >\n      Undo\n    </button>\n  </ng-template>\n</star-toast>",
+  "toast/outlet-duplicates": "<star-button size=\"sm\" variant=\"secondary\" (pressed)=\"remind()\">Show reminder</star-button>\n<star-toast position=\"bottom-end\" key=\"reminder\" preventDuplicates />",
   "toast/severities": "<star-button size=\"sm\" variant=\"success\" (pressed)=\"notify('success')\">Success</star-button>\n<star-button size=\"sm\" variant=\"secondary\" (pressed)=\"notify('info')\">Info</star-button>\n<star-button size=\"sm\" variant=\"warning\" (pressed)=\"notify('warn')\">Warn</star-button>\n<star-button size=\"sm\" variant=\"danger\" (pressed)=\"notify('error')\">Error</star-button>",
   "toast/sticky": "<star-button size=\"sm\" variant=\"secondary\" (pressed)=\"sticky()\">Sticky message</star-button>\n<star-button size=\"sm\" variant=\"secondary\" (pressed)=\"quick()\"\n  >Two second message</star-button\n>\n<star-button size=\"sm\" variant=\"ghost\" (pressed)=\"toasts.clear()\">Clear all</star-button>",
   "toggle-switch/basic": "<star-toggle-switch [(checked)]=\"alerts\">Email alerts</star-toggle-switch>\n<p class=\"docs-output\" role=\"status\">Alerts: {{ alerts() ? 'on' : 'off' }}</p>",
