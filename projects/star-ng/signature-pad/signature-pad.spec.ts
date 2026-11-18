@@ -438,12 +438,45 @@ describe('StarSignaturePad themes', () => {
   });
 });
 
-describe('StarSignaturePad resize (I3)', () => {
-  afterEach(() => vi.unstubAllGlobals());
+/** A stored SVG value, as a form would hold it. */
+const STORED =
+  'data:image/svg+xml;charset=utf-8,' +
+  encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"></svg>');
 
-  it('scales the strokes to the new size and keeps them inside the value', async () => {
-    fakeCanvas();
-    let size = { width: 400, height: 100 };
+@Component({
+  imports: [StarSignaturePad],
+  template: `<star-signature-pad
+    [value]="value()"
+    (valueChange)="changed($event)"
+    [readonly]="readonly()"
+    valueFormat="svg"
+    [exportColor]="ink()"
+  />`,
+})
+class StoredHost {
+  readonly value = signal(STORED);
+  readonly readonly = signal(false);
+  readonly ink = signal('#000000');
+  readonly changes: string[] = [];
+  changed(value: string): void {
+    this.changes.push(value);
+    this.value.set(value);
+  }
+}
+
+describe('StarSignaturePad resize and rewrites (I3, round 2)', () => {
+  let size = { width: 400, height: 100 };
+  let resize = () => undefined as void;
+  let frames: FrameRequestCallback[] = [];
+  const flushFrames = () => {
+    const due = frames;
+    frames = [];
+    due.forEach((callback) => callback(0));
+  };
+
+  beforeEach(() => {
+    size = { width: 400, height: 100 };
+    frames = [];
     vi.spyOn(Element.prototype, 'getBoundingClientRect').mockImplementation(
       () =>
         ({
@@ -458,7 +491,6 @@ describe('StarSignaturePad resize (I3)', () => {
           toJSON: () => ({}),
         }) as DOMRect,
     );
-    let resize = () => undefined as void;
     vi.stubGlobal(
       'ResizeObserver',
       class {
@@ -469,6 +501,16 @@ describe('StarSignaturePad resize (I3)', () => {
         readonly disconnect = vi.fn();
       },
     );
+    vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
+      frames.push(callback);
+      return frames.length;
+    });
+    vi.stubGlobal('cancelAnimationFrame', () => undefined);
+  });
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('scales the strokes to the new size and keeps them inside the value', async () => {
+    fakeCanvas();
     const fixture = TestBed.createComponent(ThemeHost);
     await fixture.whenStable();
     const canvas = (fixture.nativeElement as HTMLElement).querySelector('canvas')!;
@@ -480,8 +522,9 @@ describe('StarSignaturePad resize (I3)', () => {
     expect(svgOf()).toContain('width="400"');
     size = { width: 200, height: 100 };
     resize();
+    flushFrames();
     await fixture.whenStable();
-    // The value follows the resize at once, with the old stroke scaled into the new width.
+    // After the frame, the value has the old stroke scaled into the new width.
     expect(svgOf()).toContain('width="200"');
     expect(svgOf()).toContain('d="M150 50L195 50"');
     pointer(canvas, 'pointerdown', 10, 10);
@@ -493,6 +536,72 @@ describe('StarSignaturePad resize (I3)', () => {
     expect(svg).toContain('d="M10 10L20 20"');
     const xs = [...svg.matchAll(/[ML](\d+(?:\.\d+)?) /g)].map((m) => Number(m[1]));
     expect(Math.max(...xs)).toBeLessThanOrEqual(200);
+  });
+
+  it('commits strokes once after the frame, however many resizes came before it', async () => {
+    fakeCanvas();
+    const fixture = TestBed.createComponent(StoredHost);
+    const host = fixture.componentInstance;
+    host.value.set('');
+    await fixture.whenStable();
+    const canvas = (fixture.nativeElement as HTMLElement).querySelector('canvas')!;
+    pointer(canvas, 'pointerdown', 300, 50);
+    pointer(canvas, 'pointermove', 390, 50);
+    pointer(canvas, 'pointerup', 390, 50);
+    await fixture.whenStable();
+    expect(host.changes.length).toBe(1);
+    size = { width: 300, height: 100 };
+    resize();
+    size = { width: 200, height: 100 };
+    resize();
+    await fixture.whenStable();
+    expect(host.changes.length).toBe(1);
+    flushFrames();
+    await fixture.whenStable();
+    expect(host.changes.length).toBe(2);
+    expect(decodeURIComponent(host.value())).toContain('width="200"');
+  });
+
+  it('keeps the stored value of a read-only pad on a resize (round 2)', async () => {
+    fakeCanvas();
+    const fixture = TestBed.createComponent(StoredHost);
+    const host = fixture.componentInstance;
+    host.readonly.set(true);
+    await fixture.whenStable();
+    size = { width: 200, height: 100 };
+    resize();
+    flushFrames();
+    await fixture.whenStable();
+    expect(host.changes).toEqual([]);
+    expect(host.value()).toBe(STORED);
+  });
+
+  it('keeps the stored value of an image-only pad when an export input changes (round 2)', async () => {
+    fakeCanvas();
+    const fixture = TestBed.createComponent(StoredHost);
+    const host = fixture.componentInstance;
+    await fixture.whenStable();
+    host.ink.set('#0000ff');
+    await fixture.whenStable();
+    size = { width: 200, height: 100 };
+    resize();
+    flushFrames();
+    await fixture.whenStable();
+    expect(host.changes).toEqual([]);
+    expect(host.value()).toBe(STORED);
+  });
+
+  it('warns about a non-data value without printing the address (round 2)', async () => {
+    fakeCanvas();
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const fixture = TestBed.createComponent(StoredHost);
+    fixture.componentInstance.value.set('https://example.test/private/token123.png');
+    await fixture.whenStable();
+    expect(warn).toHaveBeenCalledTimes(1);
+    const message = String(warn.mock.calls[0][0]);
+    expect(message).toContain('https:');
+    expect(message).not.toContain('example.test');
+    expect(message).not.toContain('token123');
   });
 });
 

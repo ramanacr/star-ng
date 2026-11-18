@@ -256,7 +256,10 @@ export class StarSignaturePad implements FormValueControl<string> {
   /** Canvas drawing and measuring run in the browser only (the server DOM has no 2D context). */
   private readonly browser = isPlatformBrowser(inject(PLATFORM_ID));
 
-  /** The signature as a data URL (PNG or SVG), `''` while the pad is empty. */
+  /**
+   * The signature as a data URL (PNG or SVG), `''` while the pad is empty. Only `data:image/`
+   * values are drawn; another value stays in the form but the pad shows it as empty.
+   */
   readonly value = model('');
   /** Format of the value. `svg` is built from the stroke points and scales without loss. */
   readonly valueFormat = input<StarSignatureFormat>('png');
@@ -341,8 +344,10 @@ export class StarSignaturePad implements FormValueControl<string> {
         // PNG export throws. Any other value shows an empty pad.
         const image = value && /^data:image\//i.test(value.trim()) ? value : null;
         if (value && !image && isDevMode()) {
+          // Only the scheme: the address itself may hold private data.
+          const scheme = /^([a-z][a-z\d+.-]*):/i.exec(value.trim())?.[1];
           console.warn(
-            `star-signature-pad: the value must be a data:image/ URL; "${value.slice(0, 40)}" is shown as an empty pad.`,
+            `star-signature-pad: the value must be a data:image/ URL; a ${scheme ? `${scheme.toLowerCase()}: value` : 'non-data URL value'} is shown as an empty pad.`,
           );
         }
         this.image.set(image);
@@ -365,7 +370,7 @@ export class StarSignaturePad implements FormValueControl<string> {
       this.exportBackground();
       this.strokeWidth();
       untracked(() => {
-        if (started && !this.isEmpty()) this.commit();
+        if (started && this.canRewrite()) this.commit();
         started = true;
       });
     });
@@ -377,7 +382,11 @@ export class StarSignaturePad implements FormValueControl<string> {
       if (typeof ResizeObserver === 'undefined') return;
       const observer = new ResizeObserver(() => this.measure());
       observer.observe(canvas);
-      this.injector.get(DestroyRef).onDestroy(() => observer.disconnect());
+      this.injector.get(DestroyRef).onDestroy(() => {
+        observer.disconnect();
+        if (this.frame !== null)
+          canvas.ownerDocument.defaultView?.cancelAnimationFrame?.(this.frame);
+      });
     });
   }
 
@@ -492,6 +501,28 @@ export class StarSignaturePad implements FormValueControl<string> {
   }
 
   /** Writes the value from the current content. */
+  /**
+   * True when the pad may write its value again without a user action (resize, export input
+   * change): only an interactive pad with its own strokes or typed text. A stored value alone
+   * (an image) stays as it is, so a read-only pad never rewrites the bound value.
+   */
+  private canRewrite(): boolean {
+    return this.interactive() && (this.strokeList().length > 0 || !!this.typed().trim());
+  }
+
+  private frame: number | null = null;
+
+  /** Commits once on the next animation frame (browser only): resizes come in bursts. */
+  private commitNextFrame(): void {
+    const view = this.host.nativeElement.ownerDocument.defaultView;
+    if (!this.browser || !view) return;
+    if (this.frame !== null) view.cancelAnimationFrame?.(this.frame);
+    this.frame = view.requestAnimationFrame(() => {
+      this.frame = null;
+      if (this.canRewrite()) this.commit();
+    });
+  }
+
   private commit(): void {
     let value = '';
     if (!this.isEmpty()) {
@@ -571,7 +602,7 @@ export class StarSignaturePad implements FormValueControl<string> {
     canvas.width = Math.round(rect.width * ratio);
     canvas.height = Math.round(rect.height * ratio);
     this.redraw();
-    if (scaled && !this.isEmpty()) this.commit();
+    if (scaled && this.canRewrite()) this.commitNextFrame();
   }
 
   private loadImage(value: string): void {
