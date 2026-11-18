@@ -14,12 +14,15 @@
 // at https://ramanacr.github.io/star-ng/llms.txt and so on. `pnpm mcp:data` writes
 // mcp/components.json into projects/mcp/data, the snapshot that the npm package bundles.
 // The default site URL is the `homepage` of the library package.
-import { mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
-import ts from 'typescript';
+import { readBaseClasses, withInheritedMembers } from './api-inheritance.mjs';
 import { readApi, readExamples } from './gen-docs-data.mjs';
+
+// Kept here for callers that import them from this module.
+export { readBaseClasses, withInheritedMembers };
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -115,62 +118,6 @@ function pagesOf(api, examples, pagePaths) {
     page[name] = sibling ? page[sibling] : null;
   }
   return page;
-}
-
-/** `{ Class: BaseClass }` for every library class that extends another class. */
-export function readBaseClasses(dir = join(root, 'projects/star-ng')) {
-  const bases = {};
-  const visit = (path) => {
-    for (const name of readdirSync(path)) {
-      const child = join(path, name);
-      if (statSync(child).isDirectory()) {
-        if (name !== 'node_modules') visit(child);
-        continue;
-      }
-      if (!name.endsWith('.ts') || name.endsWith('.spec.ts')) continue;
-      const source = ts.createSourceFile(
-        child,
-        readFileSync(child, 'utf8'),
-        ts.ScriptTarget.Latest,
-      );
-      source.forEachChild((node) => {
-        if (!ts.isClassDeclaration(node) || !node.name) return;
-        const clause = node.heritageClauses?.find(
-          (item) => item.token === ts.SyntaxKind.ExtendsKeyword,
-        );
-        const base = clause?.types[0]?.expression;
-        if (base && ts.isIdentifier(base)) bases[node.name.text] = base.text;
-      });
-    }
-  };
-  visit(dir);
-  return bases;
-}
-
-/**
- * The extractor reads only the members that a class declares. A control such as `StarSelect`
- * gets most inputs from its base class (`StarOptionListBase`). Adds the inherited inputs, models
- * and outputs; a member that the class declares again wins.
- */
-export function withInheritedMembers(api, bases) {
-  const resolved = {};
-  const membersOf = (name, kind, seen = new Set()) => {
-    if (!api[name] || seen.has(name)) return [];
-    seen.add(name);
-    const own = api[name][kind];
-    const inherited = bases[name] ? membersOf(bases[name], kind, seen) : [];
-    const names = new Set(own.map((member) => member.name));
-    return [...inherited.filter((member) => !names.has(member.name)), ...own];
-  };
-  for (const [name, entry] of Object.entries(api)) {
-    resolved[name] = {
-      ...entry,
-      inputs: membersOf(name, 'inputs'),
-      models: membersOf(name, 'models'),
-      outputs: membersOf(name, 'outputs'),
-    };
-  }
-  return resolved;
 }
 
 /** Builds the agent data in memory. `site` is the absolute docs URL and ends with `/`. */

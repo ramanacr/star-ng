@@ -305,7 +305,7 @@ import { DOCS, DocsRow } from '../shared/docs';
       </p>
 
       <docs-api
-        [of]="['StarDatePicker', 'StarDateRangePicker', 'StarMultiDatePicker', 'StarDateInputBase']"
+        [of]="['StarDatePicker', 'StarDateRangePicker', 'StarMultiDatePicker']"
         [slots]="slots"
         [cssVars]="cssVars"
         [keyboard]="keyboard"

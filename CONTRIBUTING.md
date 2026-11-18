@@ -84,7 +84,7 @@ Examples in the docs, tests and comments use neutral, fictional data: orders, in
 
 ## The docs data generator
 
-`tools/gen-docs-data.mjs` reads the library source with the TypeScript compiler API. It writes, for every component and directive, the selector and the inputs, models and outputs (name, type, default, description). It also copies the markup of each `<docs-example>` element. The output is `projects/docs/src/app/generated/docs-data.ts`. The file is committed. Write the descriptions as JSDoc comments on the inputs.
+`tools/gen-docs-data.mjs` reads the library source with the TypeScript compiler API. It writes, for every component and directive, the selector and the inputs, models and outputs (name, type, default, description). A class that extends a base class (for example `StarSelect` and `StarOptionListBase`) also gets the members of the base class, marked "inherited from" in the API table; the shared helper is `tools/api-inheritance.mjs`, which `tools/agent-data.mjs` uses too. It also copies the markup of each `<docs-example>` element. The output is `projects/docs/src/app/generated/docs-data.ts`. The file is committed. Write the descriptions as JSDoc comments on the inputs.
 
 ## Test layers
 

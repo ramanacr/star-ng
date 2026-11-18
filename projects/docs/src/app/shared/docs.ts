@@ -161,6 +161,11 @@ export class DocsExample {
                       @if (member.required) {
                         <span class="docs-table__required">required</span>
                       }
+                      @if (member.inheritedFrom) {
+                        <span class="docs-table__inherited"
+                          >inherited from <code>{{ member.inheritedFrom }}</code></span
+                        >
+                      }
                     </th>
                     <td>
                       <code>{{ member.type }}</code>
