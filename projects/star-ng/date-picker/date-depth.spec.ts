@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { StarCalendar } from './calendar';
 import { starIsoText, starParseIso, starSplitDateTime, starTimeFormat } from './date-format';
 import { StarDatePicker, StarDateRangePicker, StarMultiDatePicker } from './date-picker';
-import { StarDateTemplate } from './date-slots';
+import { StarDateContext, StarDateTemplate } from './date-slots';
 import { parseDate, StarDateRange, StarSpecialDate } from './date-utils';
 import { StarTimePicker } from './time-picker';
 
@@ -1103,5 +1103,18 @@ describe('time columns: limits to the second, computed', () => {
     expect(fixture.componentInstance.at()).toBe('10:21:15');
     expect(disabled('second', 15)).toBe(false);
     expect(disabled('second', 16)).toBe(true);
+  });
+});
+
+describe('date slot context', () => {
+  it('takes a context without special', () => {
+    const context: StarDateContext = {
+      $implicit: new Date(2026, 10, 22),
+      today: false,
+      selected: false,
+      disabled: false,
+      outside: false,
+    };
+    expect(context.special ?? null).toBeNull();
   });
 });
