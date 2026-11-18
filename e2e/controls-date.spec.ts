@@ -1,5 +1,17 @@
 import { expect, Locator, Page, test } from '@playwright/test';
-import { collectErrors, example, openPage } from './support';
+import { collectErrors, example, openPage as openDocsPage } from './support';
+
+/**
+ * Opens a docs page and waits until the date controls are hydrated. The page is prerendered, so
+ * it is visible before the application runs, and a key or a click before hydration is lost. A
+ * hydrated component loses its `ngh` attribute.
+ */
+async function openPage(page: Page, path: string, heading: string | RegExp): Promise<void> {
+  await openDocsPage(page, path, heading);
+  await expect(
+    page.locator('star-date-picker[ngh], star-calendar[ngh], star-time-picker[ngh]'),
+  ).toHaveCount(0, { timeout: 15_000 });
+}
 
 // Every example uses fixed dates (November 2026) and an explicit locale, so the tests do not
 // depend on today's date, on the browser locale or on the time zone. The one test of the
@@ -475,7 +487,9 @@ test.describe('date helpers', () => {
   test('the helpers section lists the exported functions', async ({ page }) => {
     await openPage(page, '/controls/date-picker', 'Date picker');
     const table = page.getByRole('table', { name: 'Exports of date-utils' });
-    await expect(table.getByRole('rowheader', { name: 'parseDate(text, locale)' })).toBeVisible();
+    await expect(
+      table.getByRole('rowheader', { name: 'parseDate(text, locale, format?)' }),
+    ).toBeVisible();
     await expect(table.getByRole('rowheader', { name: 'isoDay(date)' })).toBeVisible();
   });
 });
@@ -752,6 +766,133 @@ test.describe('time picker panel', () => {
     await live.getByRole('button', { name: 'Choose time' }).click();
     await expect(cell(page, 'Hour', '11')).toHaveAttribute('aria-selected', 'true');
     await expect(cell(page, 'Minute', '15')).toHaveAttribute('aria-selected', 'true');
+  });
+});
+
+test.describe('date and time depth', () => {
+  test('the time picker has a second column and the steps', async ({ page }) => {
+    await openPage(page, '/controls/time-picker', 'Time picker');
+    const live = example(page, 'Seconds and steps');
+    await live.getByRole('button', { name: 'Choose time' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Choose time' });
+    const column = (name: string) => dialog.getByRole('listbox', { name }).getByRole('option');
+    await expect(column('Second')).toHaveText(['00', '10', '20', '30', '40', '50']);
+    await expect(column('Minute')).toHaveText(['00', '15', '30', '45']);
+    await column('Second').filter({ hasText: '40' }).click();
+    await expect(live.getByRole('status')).toHaveText('Export: 08:30:40');
+  });
+
+  test('the date picker shows and reads seconds', async ({ page }) => {
+    await openPage(page, '/controls/date-picker', 'Date picker');
+    const live = example(page, 'Seconds and steps');
+    const input = live.getByRole('textbox', { name: 'Invoice sent at' });
+    await expect(input).toHaveValue('17/11/2026, 14:30:15');
+    await input.fill('18/11/2026 09:05:45');
+    await input.press('Enter');
+    await expect(live.getByRole('status')).toHaveText('Sent: 2026-11-18 09:05:45');
+  });
+
+  test('display and input formats, and kept invalid text', async ({ page }) => {
+    await openPage(page, '/controls/date-picker', 'Date picker');
+    const live = example(page, 'Display and input formats');
+    const input = live.getByRole('textbox', { name: 'Invoice due date' });
+    await expect(input).toHaveValue('15 December 2026');
+    await input.focus();
+    await expect(input).toHaveValue('15/12/2026');
+    await input.fill('3 January 2027');
+    await input.press('Tab');
+    await expect(input).toHaveValue('3 January 2027');
+    await expect(live.getByRole('status')).toHaveText('Due: 2027-01-03');
+    await input.fill('31/02/2027');
+    await input.press('Tab');
+    await expect(input).toHaveValue('31/02/2027');
+    await expect(input).toHaveAttribute('aria-invalid', 'true');
+    await expect(live.getByRole('status')).toHaveText('Due: none');
+  });
+
+  test('ISO text values round-trip', async ({ page }) => {
+    await openPage(page, '/controls/date-picker', 'Date picker');
+    const live = example(page, 'ISO text values');
+    const input = live.getByRole('textbox', { name: 'Invoice issued on' });
+    await input.fill('20/11/2026');
+    await input.press('Enter');
+    await expect(live.getByRole('status')).toContainText('Issued: 2026-11-20.');
+  });
+
+  test('special dates have a dot and name the kind and the label', async ({ page }) => {
+    await openPage(page, '/controls/calendar', 'Calendar');
+    const live = example(page, 'Special dates');
+    const holiday = day(live, '2026-12-04');
+    await expect(holiday).toHaveAttribute('aria-label', /, Holiday: Company day$/);
+    await expect(holiday).toHaveClass(/star-calendar__day--special/);
+    const dot = await holiday.evaluate((element) => getComputedStyle(element, '::after').content);
+    expect(dot).not.toBe('none');
+    await expect(day(live, '2026-12-05')).not.toHaveClass(/star-calendar__day--special/);
+  });
+
+  test('days of other months can be hidden or disabled', async ({ page }) => {
+    await openPage(page, '/controls/calendar', 'Calendar');
+    const live = example(page, 'Days of other months');
+    // November 2026 starts on a Sunday: Monday 26 October is the first cell.
+    await expect(day(live, '2026-10-26')).toHaveCount(1);
+    await expect(day(live, '2026-10-26')).toHaveAttribute('aria-disabled', 'true');
+    await expect(
+      live.locator('star-calendar').nth(1).locator('[data-date="2026-10-26"]'),
+    ).toHaveCount(0);
+  });
+
+  test('the calendar reports the shown month and view', async ({ page }) => {
+    await openPage(page, '/controls/calendar', 'Calendar');
+    const live = example(page, 'Navigation events');
+    await live.getByRole('button', { name: 'Next month' }).click();
+    await expect(live.getByRole('status')).toHaveText('Shown month: 12/2026. View: day');
+    await live.getByRole('button', { name: /^Choose month/ }).click();
+    await expect(live.getByRole('status')).toHaveText('Shown month: 12/2026. View: month');
+  });
+
+  test('touchUI opens a modal sheet; Escape closes it and gives the focus back', async ({
+    page,
+  }) => {
+    await openPage(page, '/controls/date-picker', 'Date picker');
+    const live = example(page, 'Touch mode');
+    await live.getByRole('button', { name: 'Choose date' }).first().click();
+    const sheet = page.locator('dialog.star-date__sheet');
+    await expect(sheet).toBeVisible();
+    await expect(sheet).toHaveAttribute('aria-label', 'Choose date');
+    // The page does not scroll under the sheet.
+    await expect(page.locator('html')).toHaveCSS('overflow', 'hidden');
+    await expect(sheet.locator('[data-date="2026-11-24"]')).toBeFocused();
+    await page.keyboard.press('ArrowRight');
+    await expect(sheet.locator('[data-date="2026-11-25"]')).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(sheet).toHaveCount(0);
+    await expect(page.locator('html')).not.toHaveCSS('overflow', 'hidden');
+    await expect(live.getByRole('textbox', { name: 'Delivery date, touch' })).toBeFocused();
+
+    await live.getByRole('button', { name: 'Choose date' }).first().click();
+    await expect(sheet).toBeVisible();
+    await page.keyboard.press('Enter');
+    await expect(sheet).toHaveCount(0);
+    await expect(live.getByRole('status')).toHaveText('Delivery: 2026-11-24');
+  });
+
+  test('minTime and maxTime limit the time columns', async ({ page }) => {
+    await openPage(page, '/controls/date-picker', 'Date picker');
+    const live = example(page, 'Opening hours');
+    await live.getByRole('button', { name: 'Choose date' }).click();
+    const hours = page.getByRole('group', { name: 'Time' }).getByRole('listbox', { name: 'Hour' });
+    await expect(hours.getByRole('option', { name: '07', exact: true })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
+    await expect(hours.getByRole('option', { name: '19', exact: true })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    );
+    await expect(hours.getByRole('option', { name: '08', exact: true })).not.toHaveAttribute(
+      'aria-disabled',
+      /.*/,
+    );
   });
 });
 

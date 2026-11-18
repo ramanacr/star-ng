@@ -1,5 +1,6 @@
 import { Directive } from '@angular/core';
 import { StarSlot } from '@star-ng/ui/core';
+import type { StarSpecialDate } from './date-utils';
 
 /** Context of the date slot. */
 export interface StarDateContext {
@@ -16,6 +17,11 @@ export interface StarDateContext {
   readonly disabled: boolean;
   /** The day is in the month before or after the shown month. */
   readonly outside: boolean;
+  /**
+   * The entry of `specialDates` for the day, or `null`. Optional, so a context object written
+   * for the earlier fields (for example in a test) still fits.
+   */
+  readonly special?: StarSpecialDate | null;
 }
 
 /**
