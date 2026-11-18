@@ -476,3 +476,22 @@ describe('StarChart second axis title', () => {
     expect(ticks.every((y) => y >= 16 && y <= 244)).toBe(true);
   });
 });
+
+describe('StarChart keys of horizontal bars', () => {
+  it('moves along a series with Arrow Down and between series with Arrow Right', async () => {
+    const fixture = TestBed.createComponent(AxisHost);
+    fixture.componentInstance.horizontal.set(true);
+    fixture.componentInstance.series.set([
+      { label: 'Revenue', data: [1, 2, 3] },
+      { label: 'Costs', data: [4, 5, 6] },
+    ]);
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+    const first = el.querySelector<HTMLElement>('.star-chart__target')!;
+    first.focus();
+    key(first, { key: 'ArrowDown' });
+    expect(document.activeElement?.getAttribute('aria-label')).toBe('Revenue, South: 2');
+    key(document.activeElement!, { key: 'ArrowRight' });
+    expect(document.activeElement?.getAttribute('aria-label')).toBe('Costs, South: 5');
+  });
+});

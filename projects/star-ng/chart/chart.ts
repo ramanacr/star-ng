@@ -566,12 +566,7 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                     </text>
                   }
                   @if (secondaryTitle()) {
-                    <text
-                      class="star-chart__axis-title"
-                      [attr.x]="W - 4"
-                      y="10"
-                      text-anchor="end"
-                    >
+                    <text class="star-chart__axis-title" [attr.x]="W - 4" y="10" text-anchor="end">
                       {{ secondaryTitle() }}
                     </text>
                   }
@@ -736,7 +731,7 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                   [style.top.%]="point.top"
                   (focus)="onPointFocus(r, c, point)"
                   (blur)="hover.set(null)"
-              (click)="selectPoint(point)"
+                  (click)="selectPoint(point)"
                   (keydown)="onPointKeydown($event)"
                 ></span>
               }
@@ -1818,7 +1813,16 @@ export class StarChart {
       this.hover.set(null);
       return;
     }
-    const next = starChartMoveCursor(rows, cursor, event.key);
+    // Horizontal bars: the categories run down, so Arrow Down and Up move along a series and
+    // Arrow Right and Left move between the series.
+    const swap: Readonly<Record<string, string>> = {
+      ArrowDown: 'ArrowRight',
+      ArrowUp: 'ArrowLeft',
+      ArrowRight: 'ArrowDown',
+      ArrowLeft: 'ArrowUp',
+    };
+    const key = this.isHorizontal() ? (swap[event.key] ?? event.key) : event.key;
+    const next = starChartMoveCursor(rows, cursor, key);
     if (!next) return;
     event.preventDefault();
     this.cursorState.set(next);
