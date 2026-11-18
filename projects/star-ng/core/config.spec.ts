@@ -1,5 +1,10 @@
 import { DOCUMENT } from '@angular/common';
-import { ApplicationRef, Injector } from '@angular/core';
+import {
+  ApplicationRef,
+  createEnvironmentInjector,
+  EnvironmentInjector,
+  Injector,
+} from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import {
   injectStarConfig,
@@ -66,6 +71,20 @@ describe('provideStarNg', () => {
     // `overlay` merges: the z-index base stays.
     expect(service.config().overlay).toEqual({ zIndexBase: 2000, appendTo: 'body' });
     expect(root.style.getPropertyValue('--star-z-index-base')).toBe('2000');
+  });
+
+  it('warns in dev mode when provideStarNg is below the root injector', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    TestBed.configureTestingModule({ providers: [provideStarNg({ size: 'small' })] });
+    TestBed.inject(StarConfigService);
+    expect(warn).not.toHaveBeenCalled();
+    const child = createEnvironmentInjector(
+      [provideStarNg({ size: 'large' })],
+      TestBed.inject(EnvironmentInjector),
+    );
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('below the root injector'));
+    child.destroy();
+    warn.mockRestore();
   });
 
   it('injectStarConfig reads the current config once', () => {

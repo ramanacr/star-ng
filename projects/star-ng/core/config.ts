@@ -5,6 +5,7 @@ import {
   inject,
   Injectable,
   InjectionToken,
+  isDevMode,
   makeEnvironmentProviders,
   provideEnvironmentInitializer,
   Provider,
@@ -37,20 +38,29 @@ export interface StarOverlayConfig {
 }
 
 /**
- * Global configuration of StarNG (PrimeNG `providePrimeNG`, Material `MAT_*_DEFAULT_OPTIONS`).
- * Every entry is optional. Precedence, highest first:
+ * Global configuration of StarNG (PrimeNG `providePrimeNG`; Material has no global object, only
+ * per-control tokens such as `MAT_FORM_FIELD_DEFAULT_OPTIONS`). Every entry is optional.
+ * Precedence, highest first:
  *
  * 1. An input that the template sets on a control.
  * 2. The per-control default token, for example `provideStarSelectDefaults(...)`.
  * 3. `provideStarNg(...)` (this object, or a later `StarConfigService.update`).
  * 4. The built-in default of the control.
+ *
+ * The control defaults come from the root injector only: provide `provideStarNg` once, in the
+ * providers of the application. A `provideStarNg` in a lazy route or a component does not change
+ * the controls (in dev mode it logs a warning); use a per-control token there.
  */
 export interface StarConfig {
-  /** Default look of `starInput` and `star-input-number`. PrimeNG `inputVariant`. */
+  /** Default look of `starInput` and `star-input-number`. PrimeNG `inputVariant`; Material `appearance` of `MAT_FORM_FIELD_DEFAULT_OPTIONS`. */
   readonly inputVariant?: StarInputVariant;
-  /** Default size of the form controls (input, input number, select family, date pickers, table). */
+  /**
+   * Default size of `starInput`, the select family, cascade select, date and time pickers and the
+   * table. A control maps `small` / `medium` / `large` to `sm` / `md` / `lg`; a size that it does
+   * not have keeps its own default. PrimeNG: none (per-control `size`).
+   */
   readonly size?: StarConfigSize;
-  /** Defaults of the overlay controls. PrimeNG `zIndex` and `appendTo`. */
+  /** Defaults of the overlay controls. PrimeNG `zIndex` and `overlayOptions.appendTo`. */
   readonly overlay?: StarOverlayConfig;
   /**
    * Default text match mode of the select family, the listbox and the table global filter
@@ -63,12 +73,15 @@ export interface StarConfig {
    * `always` applies the reduced-motion rules of the system setting for everyone
    * (`data-star-motion="reduced"` on `<html>`): the same transitions stop, the motion durations are
    * 0, and the ripple, the carousel autoplay and smooth scrolling stop (`starPrefersReducedMotion`).
-   * Spinners keep turning. PrimeNG `ripple: false` is the nearest option.
+   * Spinners keep turning. PrimeNG: none (its `ripple: false` only turns the ripple off).
    */
   readonly reducedMotion?: 'system' | 'always';
   /**
-   * Default BCP 47 locale of the controls that format with `Intl` (date pickers, input number,
-   * chart, list filters) and of the StarNG pipes. Unset: the browser locale.
+   * Default BCP 47 locale of the controls that format with `Intl` (date pickers, calendar, input
+   * number, chart, file upload, the filters of the select family, listbox, tree and table) and of
+   * the StarNG pipes. Unset: the browser locale. PrimeNG `translation` is the nearest option;
+   * Material `MAT_DATE_LOCALE`.
+
    */
   readonly locale?: string;
   /** Overrides of the built-in control texts. Same as `provideStarUiText(...)`. */
@@ -79,7 +92,10 @@ export interface StarConfig {
   readonly themeStorageKey?: string;
 }
 
-/** The configuration given to `provideStarNg`. Read it through `StarConfigService`, which follows `update()`. */
+/**
+ * The configuration given to `provideStarNg` at the root. Read it through `StarConfigService`,
+ * which follows `update()`.
+ */
 export const STAR_CONFIG = new InjectionToken<StarConfig>('STAR_CONFIG', {
   providedIn: 'root',
   factory: () => ({}),
@@ -210,7 +226,14 @@ export function provideStarNg(config: StarConfig = {}): EnvironmentProviders {
   const providers: (Provider | EnvironmentProviders)[] = [
     { provide: STAR_CONFIG, useValue: config },
     provideEnvironmentInitializer(() => {
-      inject(StarConfigService);
+      const service = inject(StarConfigService);
+      // The service lives in the root injector: a config in a child injector is not used.
+      if (isDevMode() && inject(STAR_CONFIG) !== untracked(service.config)) {
+        console.warn(
+          'StarNG: provideStarNg() is provided below the root injector. The controls read the ' +
+            'root configuration only; use a per-control default token here.',
+        );
+      }
     }),
   ];
   if (config.uiText) providers.push(provideStarUiText(config.uiText));
