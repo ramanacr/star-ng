@@ -7,6 +7,9 @@ import type { StarUiText } from '@star-ng/ui/core';
  * select (paragraph, heading 1 to 3); `blockquote` and `code` (inline) wrap and unwrap; `link`
  * opens the link popover; `justifyLeft`, `justifyCenter` and `justifyRight` align the block to the
  * start, the center and the end of the line (logical: the start is on the right in right-to-left).
+ * Alignment is stored as the classes `star-text-center` and `star-text-end`, so the HTML needs the
+ * StarNG CSS where it is shown. `undo` and `redo` are the browser history: they do not include
+ * `code`, the alignment, and the fallbacks of link and paste, which change the DOM directly.
  */
 export type StarEditorCommand =
   | 'bold'

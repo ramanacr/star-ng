@@ -462,6 +462,11 @@ export class StarEditor implements FormValueControl<string> {
    * `exec('formatBlock', 'h2')`. `exec('link')` opens the link popover; `exec('link', url)` links
    * the selection to a safe `url` at once. Nothing happens while the editor is disabled or
    * read-only.
+   *
+   * Alignment is stored as the classes `star-text-center` and `star-text-end` (the sanitizer
+   * removes `style`): where the HTML is shown later, the StarNG CSS must be loaded. Inline code,
+   * alignment, and the fallbacks of link, paste and drop change the DOM directly, so the browser
+   * undo (`undo`, Ctrl+Z) does not include them.
    */
   exec(command: StarEditorCommand, value?: string): void {
     if (this.locked()) return;
