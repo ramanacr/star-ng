@@ -20,7 +20,7 @@ export interface StarSelectDefaults {
   readonly appendTo?: 'self' | 'body';
   readonly size?: 'sm' | 'md';
   readonly filterMatchMode?: StarFilterMatchMode;
-  readonly filterLocale?: string | null;
+  readonly filterLocale?: string;
   readonly scrollHeight?: string;
   readonly showClear?: boolean;
 }
