@@ -10,6 +10,7 @@ import {
   output,
   signal,
 } from '@angular/core';
+import { starBreakpointValue, starViewportWidth } from '@star-ng/ui/core';
 import { StarDialogBase } from './dialog-base';
 import {
   arrowDelta,
@@ -40,7 +41,7 @@ export type StarDialogPosition =
 /**
  * Dialog (PrimeNG `p-dialog`) built on the native `<dialog>` element: top-layer rendering,
  * focus trap, focus restore and Escape handling come from the browser. Entry / exit animate
- * with `@starting-style`; page scroll locks with `:has(dialog[open])`.
+ * with `@starting-style`; page scroll locks with `:has(dialog[open])` (`blockScroll`).
  *
  * ```html
  * <star-dialog [(visible)]="editOpen" header="Edit order" size="lg">
@@ -65,6 +66,8 @@ export type StarDialogPosition =
       class="star-dialog"
       [class]="'star-dialog--' + size() + ' star-dialog--at-' + position()"
       [class.star-dialog--modal]="modal()"
+      [class.star-dialog--block-scroll]="scrollBlocked()"
+      [attr.tabindex]="focusOnShow() ? null : -1"
       [class.star-dialog--placed]="free() && placed() !== null"
       [class.star-dialog--resized]="free() && sized() !== null"
       [class.star-dialog--maximized]="maximized()"
@@ -156,6 +159,12 @@ export class StarDialog extends StarDialogBase {
    */
   readonly position = input<StarDialogPosition>('center');
   /**
+   * Widths per window size (PrimeNG `breakpoints`): `{ '<max-width>': '<width>' }`, for example
+   * `{ '960px': '75vw', '640px': '100vw' }`. The smallest matching max-width wins over `width`
+   * and `size`.
+   */
+  readonly breakpoints = input<Readonly<Record<string, string>> | null>(null);
+  /**
    * The header drags the dialog with the pointer (PrimeNG `draggable`). The move button in the
    * header moves it with Alt + the arrow keys, 10 pixels per press.
    */
@@ -193,13 +202,15 @@ export class StarDialog extends StarDialogBase {
   /** Size set by a resize; `null` keeps the CSS size. */
   protected readonly sized = signal<StarDialogDimensions | null>(null);
 
+  private readonly viewportWidth = starViewportWidth();
   /** Not maximized: the drag and resize geometry applies. */
   protected readonly free = computed(() => !this.maximized());
   protected readonly canDrag = computed(() => this.draggable() && this.free());
   protected readonly cssWidth = computed(() => {
     if (!this.free()) return null;
     const sized = this.sized();
-    return sized ? `${sized.width}px` : this.width();
+    if (sized) return `${sized.width}px`;
+    return starBreakpointValue(this.breakpoints(), this.viewportWidth()) ?? this.width();
   });
 
   /** Fills the window with the dialog, or restores its normal size. */

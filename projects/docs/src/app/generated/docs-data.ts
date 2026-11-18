@@ -1842,7 +1842,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-dialog",
     "entry": "@star-ng/ui/dialog",
-    "description": "Dialog (PrimeNG `p-dialog`) built on the native `<dialog>` element: top-layer rendering, focus trap, focus restore and Escape handling come from the browser. Entry / exit animate with `@starting-style`; page scroll locks with `:has(dialog[open])`.",
+    "description": "Dialog (PrimeNG `p-dialog`) built on the native `<dialog>` element: top-layer rendering, focus trap, focus restore and Escape handling come from the browser. Entry / exit animate with `@starting-style`; page scroll locks with `:has(dialog[open])` (`blockScroll`).",
     "inputs": [
       {
         "name": "position",
@@ -1850,6 +1850,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "'center'",
         "required": false,
         "description": "Place in the window (PrimeNG `position`): `center` (default), an edge or a corner, 1rem from the window edge. Logical: `start` and `end` change sides in right-to-left."
+      },
+      {
+        "name": "breakpoints",
+        "type": "Readonly<Record<string, string>> | null",
+        "default": "null",
+        "required": false,
+        "description": "Widths per window size (PrimeNG `breakpoints`): `{ '<max-width>': '<width>' }`, for example `{ '960px': '75vw', '640px': '100vw' }`. The smallest matching max-width wins over `width` and `size`."
       },
       {
         "name": "draggable",
@@ -2002,6 +2009,20 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "null",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "blockScroll",
+        "type": "boolean | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "Stops the page behind from scrolling while open, and gives the scroll back after the close (PrimeNG `blockScroll`). Default: on for a modal, off for a non-modal."
+      },
+      {
+        "name": "focusOnShow",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Moves the focus into the content on open (PrimeNG `focusOnShow`): the first focusable element, or the one marked with `autofocus` / `data-autofocus`. When false, the dialog box itself takes the focus, so the first press of Tab reaches the first control."
       }
     ],
     "models": [
@@ -7391,6 +7412,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "dialog/popups": "<star-button variant=\"secondary\" (pressed)=\"popupsOpen.set(true)\">\n  Open order dialog\n</star-button>\n<star-dialog [(visible)]=\"popupsOpen\" header=\"Order ORD-1042\" size=\"md\">\n  <div class=\"docs-stack\">\n    <star-field label=\"Shipping city\" hint=\"Menus and cascade selects open above the modal\">\n      <star-cascade-select\n        [options]=\"places\"\n        optionLabel=\"name\"\n        optionValue=\"code\"\n        [(value)]=\"place\"\n        ariaLabel=\"Dialog city\"\n        showPath\n      />\n    </star-field>\n    <div class=\"docs-row\">\n      <star-button size=\"sm\" variant=\"secondary\" [starMenuTrigger]=\"actionsMenu\">\n        More actions\n      </star-button>\n      <star-menu\n        #actionsMenu\n        [items]=\"actionItems\"\n        (itemClick)=\"lastAction.set($event.label ?? '')\"\n      />\n      <span class=\"docs-output\" tabindex=\"0\" [starContextMenu]=\"actionsMenu\">\n        Last action: {{ lastAction() }}\n      </span>\n    </div>\n  </div>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button (pressed)=\"popupsOpen.set(false)\">Done</star-button>\n  </div>\n</star-dialog>",
   "dialog/position": "<div class=\"docs-row\">\n  @for (item of positions; track item) {\n    <star-button variant=\"secondary\" (pressed)=\"openAt(item)\">{{ item }}</star-button>\n  }\n</div>\n<star-dialog\n  [(visible)]=\"positionOpen\"\n  [position]=\"position()\"\n  size=\"sm\"\n  [header]=\"'Position ' + position()\"\n>\n  <p>This dialog is at the {{ position() }} position.</p>\n</star-dialog>",
   "dialog/resize": "<div class=\"docs-stack\">\n  <p class=\"docs-output\" role=\"status\">Last size: {{ resizeNote() }}</p>\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"resizeOpen.set(true)\">\n      Open resizable dialog\n    </star-button>\n  </div>\n</div>\n<star-dialog\n  [(visible)]=\"resizeOpen\"\n  header=\"Resizable dialog\"\n  resizable\n  draggable\n  (resizeEnd)=\"resizeNote.set($event.width + ' x ' + $event.height)\"\n>\n  <p>Drag the corner handle, or focus it and press Shift with an arrow key.</p>\n</star-dialog>",
+  "dialog/responsive": "<div class=\"docs-row\">\n  <star-button variant=\"secondary\" (pressed)=\"responsiveOpen.set(true)\">\n    Open responsive dialog\n  </star-button>\n  <star-button variant=\"secondary\" (pressed)=\"scrollOpen.set(true)\">\n    Non-modal, page scrolls\n  </star-button>\n</div>\n<star-dialog\n  [(visible)]=\"responsiveOpen\"\n  header=\"Responsive dialog\"\n  width=\"48rem\"\n  [breakpoints]=\"{ '960px': '75vw', '640px': '100vw' }\"\n  [focusOnShow]=\"false\"\n>\n  <p>48rem wide on a large window, 75vw up to 960px and the full width up to 640px.</p>\n  <star-field label=\"Reference\"><input starInput value=\"INV-2041\" /></star-field>\n</star-dialog>\n<star-dialog\n  [(visible)]=\"scrollOpen\"\n  header=\"Scroll stays on\"\n  [modal]=\"false\"\n  position=\"bottom-end\"\n  size=\"sm\"\n>\n  <p>A non-modal dialog does not block the page scroll. Set blockScroll to block it.</p>\n</star-dialog>",
   "dialog/service": "<div class=\"docs-stack\">\n  <p class=\"docs-output\" role=\"status\">Note: {{ note() }}</p>\n  <div class=\"docs-row\">\n    <star-button leadingIcon=\"ph-bold ph-note-pencil\" (pressed)=\"editNote()\">\n      Edit note\n    </star-button>\n  </div>\n</div>",
   "dialog/sizes": "<div class=\"docs-row\">\n  @for (item of sizes; track item) {\n    <star-button variant=\"secondary\" (pressed)=\"openSize(item)\">\n      Open {{ item }}\n    </star-button>\n  }\n</div>\n<star-dialog [(visible)]=\"sizeOpen\" [size]=\"size()\" [header]=\"'Size ' + size()\">\n  <p>The size input of this dialog is {{ size() }}.</p>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button (pressed)=\"sizeOpen.set(false)\">Close</star-button>\n  </div>\n</star-dialog>",
   "divider/basic": "<div class=\"docs-stack\">\n  <p>Sign in with your email.</p>\n  <star-divider>or</star-divider>\n  <p>Continue with a link.</p>\n  <star-divider align=\"start\">Start</star-divider>\n  <star-divider align=\"end\" type=\"dashed\">End, dashed</star-divider>\n  <star-divider type=\"dotted\" />\n</div>",

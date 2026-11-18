@@ -2,6 +2,7 @@ import { _IdGenerator } from '@angular/cdk/a11y';
 import {
   afterRenderEffect,
   booleanAttribute,
+  computed,
   Directive,
   ElementRef,
   inject,
@@ -16,6 +17,11 @@ const FOCUSABLE =
   'button:not([disabled]), [href], input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])';
 
 export type StarDialogSize = 'sm' | 'md' | 'lg' | 'xl' | 'full';
+
+/** `undefined` stays `undefined` (use the default); anything else is a boolean attribute. */
+function optionalBoolean(value: unknown): boolean | undefined {
+  return value === undefined || value === null ? undefined : booleanAttribute(value);
+}
 
 /**
  * Shared behaviour of `star-dialog` and `star-drawer`: the `visible` model, the native
@@ -41,6 +47,19 @@ export abstract class StarDialogBase {
   readonly showHeader = input(true, { transform: booleanAttribute });
   readonly role = input<'dialog' | 'alertdialog'>('dialog');
   readonly ariaLabel = input<string | null>(null);
+  /**
+   * Stops the page behind from scrolling while open, and gives the scroll back after the close
+   * (PrimeNG `blockScroll`). Default: on for a modal, off for a non-modal.
+   */
+  readonly blockScroll = input<boolean | undefined, unknown>(undefined, {
+    transform: optionalBoolean,
+  });
+  /**
+   * Moves the focus into the content on open (PrimeNG `focusOnShow`): the first focusable element,
+   * or the one marked with `autofocus` / `data-autofocus`. When false, the dialog box itself takes
+   * the focus, so the first press of Tab reaches the first control.
+   */
+  readonly focusOnShow = input(true, { transform: booleanAttribute });
 
   readonly shown = output<void>();
   readonly hidden = output<void>();
@@ -48,6 +67,9 @@ export abstract class StarDialogBase {
   protected readonly headerId = inject(_IdGenerator).getId('star-dialog-title-');
   protected readonly dialog = viewChild.required<ElementRef<HTMLDialogElement>>('dialog');
   private isOpen = false;
+
+  /** Page scroll is blocked while this dialog is open. */
+  protected readonly scrollBlocked = computed(() => this.blockScroll() ?? this.modal());
 
   constructor() {
     afterRenderEffect({
@@ -58,7 +80,8 @@ export abstract class StarDialogBase {
           if (this.modal()) element.showModal?.();
           else element.show?.();
           this.isOpen = true;
-          this.focusInitial(element);
+          if (this.focusOnShow()) this.focusInitial(element);
+          else element.focus({ preventScroll: true });
           this.shown.emit();
         } else if (!visible && element.open) {
           element.close();

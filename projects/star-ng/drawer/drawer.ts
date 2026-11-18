@@ -21,6 +21,8 @@ import { StarDialogBase } from '@star-ng/ui/dialog';
       class="star-drawer"
       [class]="'star-drawer star-drawer--' + position()"
       [class.star-dialog--modal]="modal()"
+      [class.star-dialog--block-scroll]="scrollBlocked()"
+      [attr.tabindex]="focusOnShow() ? null : -1"
       [style.--star-drawer-size]="drawerSize()"
       [attr.aria-labelledby]="header() ? headerId : null"
       [attr.aria-label]="header() ? null : ariaLabel()"

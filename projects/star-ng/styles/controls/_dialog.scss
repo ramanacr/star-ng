@@ -1,7 +1,8 @@
 // Dialog: native <dialog> surface, header, body, footer, and the confirm content.
 @use '../shared' as *;
 
-html:has(dialog.star-dialog--modal[open]) {
+// Block scroll: on by default for a modal dialog or drawer (blockScroll input).
+html:has(dialog.star-dialog--block-scroll[open]) {
   overflow: hidden;
 }
 .star-dialog {

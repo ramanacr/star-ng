@@ -252,6 +252,41 @@ const POSITIONS: readonly StarDialogPosition[] = [
       </docs-example>
 
       <docs-example
+        heading="Breakpoints, scroll and focus"
+        source="dialog/responsive"
+        [script]="responsiveScript"
+        note="breakpoints sets the width per window size (PrimeNG breakpoints): the keys are max-widths, and the smallest key that matches wins over width and size. blockScroll stops the page from scrolling while the dialog is open and gives the scroll back after the close; it is on by default for a modal dialog and off for a non-modal one. focusOnShow=false keeps the focus off the controls: the dialog box takes it, so the first Tab reaches the first control."
+      >
+        <div class="docs-row">
+          <star-button variant="secondary" (pressed)="responsiveOpen.set(true)">
+            Open responsive dialog
+          </star-button>
+          <star-button variant="secondary" (pressed)="scrollOpen.set(true)">
+            Non-modal, page scrolls
+          </star-button>
+        </div>
+        <star-dialog
+          [(visible)]="responsiveOpen"
+          header="Responsive dialog"
+          width="48rem"
+          [breakpoints]="{ '960px': '75vw', '640px': '100vw' }"
+          [focusOnShow]="false"
+        >
+          <p>48rem wide on a large window, 75vw up to 960px and the full width up to 640px.</p>
+          <star-field label="Reference"><input starInput value="INV-2041" /></star-field>
+        </star-dialog>
+        <star-dialog
+          [(visible)]="scrollOpen"
+          header="Scroll stays on"
+          [modal]="false"
+          position="bottom-end"
+          size="sm"
+        >
+          <p>A non-modal dialog does not block the page scroll. Set blockScroll to block it.</p>
+        </star-dialog>
+      </docs-example>
+
+      <docs-example
         heading="Dialog from code"
         source="dialog/service"
         [script]="serviceScript"
@@ -350,8 +385,10 @@ const POSITIONS: readonly StarDialogPosition[] = [
         popup into the dialog. A select inside a dialog also opens its panel in the top layer.
       </p>
       <p>
-        Page scroll locks while a modal dialog is open (the CSS rule
-        <code>html:has(dialog.star-dialog--modal[open])</code>). The dialog enters and leaves with
+        Page scroll locks while a dialog with <code>blockScroll</code> is open (on by default for a
+        modal dialog), with the CSS rule
+        <code>html:has(dialog.star-dialog--block-scroll[open])</code>. The page scroll comes back
+        when the dialog closes. The dialog enters and leaves with
         <code>&#64;starting-style</code> transitions, and a user who prefers reduced motion gets
         none.
       </p>
@@ -380,6 +417,8 @@ export class DialogPage {
   protected readonly positions = POSITIONS;
   protected readonly positionOpen = signal(false);
   protected readonly position = signal<StarDialogPosition>('center');
+  protected readonly responsiveOpen = signal(false);
+  protected readonly scrollOpen = signal(false);
   protected readonly note = signal('Call the customer before delivery.');
   protected readonly place = signal<string | null>(null);
   protected readonly lastAction = signal('none');
@@ -465,6 +504,8 @@ openAt(position: StarDialogPosition): void {
   this.position.set(position);
   this.positionOpen.set(true);
 }`;
+  protected readonly responsiveScript = `readonly responsiveOpen = signal(false);
+readonly scrollOpen = signal(false);`;
   protected readonly serviceScript = `private readonly dialogs = inject(StarDialogService);
 readonly note = signal('Call the customer before delivery.');
 

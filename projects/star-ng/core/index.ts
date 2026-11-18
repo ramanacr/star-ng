@@ -1,3 +1,4 @@
+export * from './breakpoints';
 export * from './direction';
 export * from './list-windowing';
 export * from './options';

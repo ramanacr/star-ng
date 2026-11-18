@@ -364,3 +364,97 @@ describe('StarDialog position', () => {
     expect(dialog.classList).toContain('star-dialog');
   });
 });
+
+@Component({
+  imports: [StarDialog],
+  template: `
+    <star-dialog
+      [(visible)]="open"
+      header="Scroll and focus"
+      width="40rem"
+      [modal]="modal()"
+      [blockScroll]="block()"
+      [focusOnShow]="focus()"
+      [breakpoints]="breakpoints"
+    >
+      <button type="button" data-autofocus>First</button>
+    </star-dialog>
+  `,
+})
+class OptionsHost {
+  readonly open = signal(false);
+  readonly modal = signal(true);
+  readonly block = signal<boolean | undefined>(undefined);
+  readonly focus = signal(true);
+  readonly breakpoints = { '960px': '75vw', '640px': '100vw' };
+}
+
+describe('StarDialog blockScroll, focusOnShow and breakpoints', () => {
+  const resize = (width: number) => {
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: width });
+    window.dispatchEvent(new Event('resize'));
+  };
+  const initialWidth = window.innerWidth;
+  afterEach(() => resize(initialWidth));
+
+  it('blocks page scroll by default for a modal only, and blockScroll overrides it', async () => {
+    const fixture = TestBed.createComponent(OptionsHost);
+    fixture.componentInstance.open.set(true);
+    await fixture.whenStable();
+    const dialog = (fixture.nativeElement as HTMLElement).querySelector('dialog')!;
+    expect(dialog.classList).toContain('star-dialog--block-scroll');
+
+    fixture.componentInstance.modal.set(false);
+    await fixture.whenStable();
+    expect(dialog.classList).not.toContain('star-dialog--block-scroll');
+
+    fixture.componentInstance.block.set(true);
+    await fixture.whenStable();
+    expect(dialog.classList).toContain('star-dialog--block-scroll');
+
+    fixture.componentInstance.modal.set(true);
+    fixture.componentInstance.block.set(false);
+    await fixture.whenStable();
+    expect(dialog.classList).not.toContain('star-dialog--block-scroll');
+  });
+
+  it('focuses the marked element by default, and the dialog box without focusOnShow', async () => {
+    const fixture = TestBed.createComponent(OptionsHost);
+    fixture.componentInstance.open.set(true);
+    await fixture.whenStable();
+    const dialog = (fixture.nativeElement as HTMLElement).querySelector('dialog')!;
+    document.body.appendChild(fixture.nativeElement);
+    expect(dialog.hasAttribute('tabindex')).toBe(false);
+
+    fixture.componentInstance.open.set(false);
+    fixture.componentInstance.focus.set(false);
+    await fixture.whenStable();
+    fixture.componentInstance.open.set(true);
+    await fixture.whenStable();
+    expect(dialog.getAttribute('tabindex')).toBe('-1');
+    expect(document.activeElement).toBe(dialog);
+
+    fixture.componentInstance.open.set(false);
+    fixture.componentInstance.focus.set(true);
+    await fixture.whenStable();
+    fixture.componentInstance.open.set(true);
+    await fixture.whenStable();
+    expect(document.activeElement?.textContent).toBe('First');
+    fixture.nativeElement.remove();
+  });
+
+  it('takes the width of the matching breakpoint over the width input', async () => {
+    resize(1200);
+    const fixture = TestBed.createComponent(OptionsHost);
+    fixture.componentInstance.open.set(true);
+    await fixture.whenStable();
+    const dialog = (fixture.nativeElement as HTMLElement).querySelector('dialog')!;
+    expect(dialog.style.width).toBe('40rem');
+    resize(800);
+    await fixture.whenStable();
+    expect(dialog.style.width).toBe('75vw');
+    resize(400);
+    await fixture.whenStable();
+    expect(dialog.style.width).toBe('100vw');
+  });
+});
