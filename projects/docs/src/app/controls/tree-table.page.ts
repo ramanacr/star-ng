@@ -193,21 +193,19 @@ type Row = Record<string, unknown>;
         heading="Columns: freeze, resize and reorder"
         source="tree-table/column-features"
         [script]="columnFeaturesScript"
-        note="A frozen column stays in view when the table scrolls sideways; frozen columns come first and the first column holds the tree toggle. resizableColumns adds a handle to each header: drag it, or focus it and use Arrow left and Arrow right. reorderableColumns lets the user drag a header or use its move buttons. columnWidths and columnOrder are two-way, so the owner can store them."
+        note="A frozen column stays in view when the table scrolls sideways (this demo is narrow, so it scrolls); frozen columns come first and the first column holds the tree toggle. resizableColumns adds a handle to each header: drag it, or focus it and use Arrow left and Arrow right. reorderableColumns lets the user drag a header or use its move buttons. columnWidths and columnOrder are two-way, so the owner can store them."
       >
-        <div class="docs-stack">
-          <div style="max-width: 32rem">
-            <star-tree-table
-              [nodes]="twoProjects"
-              [columns]="frozenColumns"
-              [expanded]="['website']"
-              resizableColumns
-              reorderableColumns
-              [(columnWidths)]="widths"
-              [(columnOrder)]="order"
-              ariaLabel="Projects with frozen name"
-            />
-          </div>
+        <div class="docs-stack docs-stack--narrow">
+          <star-tree-table
+            [nodes]="twoProjects"
+            [columns]="frozenColumns"
+            [expanded]="['website']"
+            resizableColumns
+            reorderableColumns
+            [(columnWidths)]="widths"
+            [(columnOrder)]="order"
+            ariaLabel="Projects with frozen name"
+          />
           <p class="docs-output" role="status">Order: {{ order().join(', ') || 'default' }}</p>
         </div>
       </docs-example>
