@@ -98,6 +98,19 @@ describe('StarActionStrip', () => {
     expect(document.activeElement).toBe(buttons()[2]);
   });
 
+  it('renders no button for a separator', async () => {
+    const { fixture, buttons } = await setup();
+    fixture.componentInstance.actions.splice(1, 0, { separator: true });
+    fixture.componentInstance.max.set(10);
+    await fixture.whenStable();
+    expect(buttons().map((button) => button.getAttribute('aria-label'))).toEqual([
+      'Edit',
+      'Copy',
+      'Archive',
+      'Delete',
+    ]);
+  });
+
   it('runs the command and emits actionClick on a click', async () => {
     const { fixture, buttons } = await setup();
     buttons()[0].click();

@@ -22,15 +22,8 @@ import { StarField } from './field';
   host: { class: 'star-ifta' },
   template: `
     <div class="star-ifta__box">
-      <!-- A click on the label only moves the focus to the control (see onLabelClick). Keyboard
-           users reach the control itself with Tab, so the label needs no key handler. -->
-      <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
-      <label
-        class="star-ifta__label"
-        [id]="labelId"
-        [attr.for]="labelFor()"
-        (click)="onLabelClick($event)"
-      >
+      <!-- The label lets the pointer through (CSS), so a click reaches the control below it. -->
+      <label class="star-ifta__label" [id]="labelId" [attr.for]="labelFor()">
         {{ label() }}
         @if (isRequired()) {
           <span class="star-field__required" aria-hidden="true">*</span>

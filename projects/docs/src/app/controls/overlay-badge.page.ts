@@ -18,7 +18,7 @@ import { DOCS, DocsRow } from '../shared/docs';
         heading="Count on an icon button"
         source="overlay-badge/count"
         [script]="countScript"
-        note="A screen reader reads the button name and then the hidden text, for example '3 new orders'."
+        note="The hidden text becomes the aria-describedby description of the first focusable element in the content: a screen reader reads 'Orders, button, 3 new orders'. Without a focusable element the text is read after the content."
       >
         <div class="docs-row">
           <star-overlay-badge [value]="orders()" severity="danger" ariaLabel="new orders">

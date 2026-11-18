@@ -15,7 +15,8 @@ import { StarMenu, StarMenuItem, StarMenuTrigger } from '@star-ng/ui/menu';
 /**
  * Action strip (Ignite UI `igx-action-strip`): a small toolbar of icon actions on top of its
  * container, for example a list row or a card. It shows while the pointer is over the container
- * or the focus is in it, so keyboard users reach it with Tab. On a device without hover it always
+ * (or over its table row, `tr` / `role="row"`, or an ancestor with the class
+ * `star-action-strip-host`) or the focus is in it, so keyboard users reach it with Tab. On a device without hover it always
  * shows.
  *
  * WAI-ARIA toolbar: one tab stop; the arrow keys, Home and End move the focus between the
@@ -83,7 +84,9 @@ export class StarActionStrip {
 
   /**
    * The actions. Each one needs a `label` (the name of the icon button) and an `icon`. `command`,
-   * `disabled` and `danger` work as in `star-menu`.
+   * `disabled` and `danger` work as in `star-menu`. On an inline button, `items` (submenus),
+   * `separator`, `routerLink`, `url` and `shortcut` are ignored; they work for the actions in the
+   * "More actions" menu.
    */
   readonly actions = input<readonly StarMenuItem[]>([]);
   /** Number of actions shown as buttons. The rest go into the "More actions" menu. `null` shows all. */
@@ -99,7 +102,9 @@ export class StarActionStrip {
   protected readonly menuOpen = signal(false);
   protected readonly inlineActions = computed(() => {
     const max = this.max();
-    return max === null ? this.actions() : this.actions().slice(0, Math.max(0, max));
+    const shown = max === null ? this.actions() : this.actions().slice(0, Math.max(0, max));
+    // A separator has no button.
+    return shown.filter((action) => !action.separator);
   });
   protected readonly overflowActions = computed(() => {
     const max = this.max();

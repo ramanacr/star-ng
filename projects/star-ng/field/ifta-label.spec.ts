@@ -60,16 +60,13 @@ describe('StarIftaLabel', () => {
     }
   });
 
-  it('names a select with aria-labelledby and focuses it on a label click', async () => {
-    const { fixture, part } = await setup();
+  it('names a select with aria-labelledby', async () => {
+    const { part } = await setup();
     const { field, label } = part('i-select');
     const combobox = field.querySelector<HTMLElement>('[role=combobox]')!;
     expect(label.hasAttribute('for')).toBe(false);
     expect(combobox.getAttribute('aria-labelledby')).toBe(label.id);
     expect(label.querySelector('.star-field__required')).not.toBeNull();
-    label.click();
-    await fixture.whenStable();
-    expect(field.contains(document.activeElement)).toBe(true);
   });
 
   it('describes the control with the hint, then with the error', async () => {

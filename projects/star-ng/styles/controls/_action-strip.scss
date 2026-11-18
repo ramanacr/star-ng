@@ -1,6 +1,6 @@
 // Action strip (StarActionStrip): a toolbar on top of its container, at the inline end. It shows
-// while the pointer is over the container, while the focus is in it, while its menu is open,
-// and always on a device without hover.
+// while the pointer is over the container (or its table row), while the focus is in it, while
+// its menu is open, and always on a device without hover.
 
 // The container needs a position for the strip. `:where` keeps the specificity at zero, so a
 // position of the container itself wins.
@@ -27,6 +27,9 @@
 }
 :hover > .star-action-strip,
 :focus-within > .star-action-strip,
+// In a table the strip sits in a cell: the whole row reveals it. Any other ancestor can do the
+// same with the class `star-action-strip-host`.
+:is(tr, [role='row'], .star-action-strip-host):is(:hover, :focus-within) .star-action-strip,
 .star-action-strip--open,
 .star-action-strip--persistent {
   opacity: 1;

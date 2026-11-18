@@ -429,6 +429,15 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'action strip in a table row',
+    path: 'controls/action-strip',
+    open: async (page) => {
+      const row = example(page, 'In a table row').getByRole('row').nth(1);
+      await row.getByRole('cell').first().hover();
+      await expect(row.getByRole('toolbar')).toHaveCSS('opacity', '1');
+    },
+  },
+  {
     name: 'action strip with its menu',
     path: 'controls/action-strip',
     open: async (page) => {

@@ -55,7 +55,7 @@ import { DOCS, DocsRow } from '../shared/docs';
 
       <docs-example
         heading="Keep the list open"
-        source="dropdown/multiple"
+        source="dropdown/keep-open"
         [script]="keepScript"
         note="With closeOnSelect set to false, the list stays open after a choice. Escape or Tab closes it."
       >
@@ -136,7 +136,10 @@ onSelect(selection: StarDropdownSelection): void {
       name: 'Enter / Space / Arrow down',
       description: 'On the trigger: opens the list on the chosen option, else on the first one.',
     },
-    { name: 'Arrow up', description: 'On the trigger: opens the list on the last option.' },
+    {
+      name: 'Arrow up',
+      description: 'On the trigger: opens the list on the chosen option, else on the last one.',
+    },
     {
       name: 'Arrow down / Arrow up',
       description: 'Moves to the next or the previous option. Disabled options are skipped.',

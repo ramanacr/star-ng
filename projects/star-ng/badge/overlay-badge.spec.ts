@@ -13,7 +13,7 @@ import { StarOverlayBadge } from '@star-ng/ui/badge';
       size="sm"
       [ariaLabel]="label()"
     >
-      <button type="button" id="inbox">Inbox</button>
+      <button type="button" id="inbox" aria-describedby="inbox-hint">Inbox</button>
     </star-overlay-badge>
   `,
 })
@@ -53,6 +53,44 @@ describe('StarOverlayBadge', () => {
     fixture.componentInstance.label.set(null);
     await fixture.whenStable();
     expect(host.querySelector('.star-sr-only')).toBeNull();
+  });
+
+  it('links the hidden text to the focusable content with aria-describedby', async () => {
+    const { fixture, host } = await setup();
+    const button = host.querySelector<HTMLButtonElement>('#inbox')!;
+    const hidden = host.querySelector<HTMLElement>('.star-sr-only')!;
+    expect(hidden.id).toBeTruthy();
+    // The ids already on the element are kept.
+    expect(button.getAttribute('aria-describedby')).toBe(`inbox-hint ${hidden.id}`);
+    // The copy leaves the reading order: it is the description of the button now.
+    expect(hidden.getAttribute('aria-hidden')).toBe('true');
+
+    fixture.componentInstance.value.set(7);
+    await fixture.whenStable();
+    expect(hidden.textContent?.trim()).toBe('7 unread messages');
+    expect(button.getAttribute('aria-describedby')).toBe(`inbox-hint ${hidden.id}`);
+
+    fixture.componentInstance.label.set(null);
+    await fixture.whenStable();
+    expect(button.getAttribute('aria-describedby')).toBe('inbox-hint');
+  });
+
+  it('keeps the text in the reading order when the content has no focusable element', async () => {
+    @Component({
+      imports: [StarOverlayBadge],
+      template: `<star-overlay-badge [value]="2" ariaLabel="new comments"
+        ><span class="avatar">SL</span></star-overlay-badge
+      >`,
+    })
+    class StaticHost {}
+    const fixture = TestBed.createComponent(StaticHost);
+    await fixture.whenStable();
+    const hidden = (fixture.nativeElement as HTMLElement).querySelector<HTMLElement>(
+      '.star-sr-only',
+    )!;
+    expect(hidden.textContent?.trim()).toBe('2 new comments');
+    expect(hidden.hasAttribute('aria-hidden')).toBe(false);
+    expect(document.querySelector(`[aria-describedby~="${hidden.id}"]`)).toBeNull();
   });
 
   it('changes the corner with position', async () => {

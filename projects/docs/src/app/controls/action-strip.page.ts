@@ -16,6 +16,20 @@ import { DOCS, DocsRow } from '../shared/docs';
       padding: 0;
       list-style: none;
     }
+    .invoices {
+      width: min(100%, 32rem);
+      border-collapse: collapse;
+    }
+    .invoices th,
+    .invoices td {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--star-border);
+      text-align: start;
+    }
+    .invoices .actions-cell {
+      width: 1%;
+      padding: 0;
+    }
     .orders li {
       padding: 0.875rem 1rem;
       border: 1px solid var(--star-border);
@@ -71,6 +85,34 @@ import { DOCS, DocsRow } from '../shared/docs';
         </ul>
       </docs-example>
 
+      <docs-example
+        heading="In a table row"
+        source="action-strip/table"
+        [script]="tableScript"
+        note="Put the strip in a cell. The whole row (tr or role row) reveals it, not only its cell. Another ancestor can do the same with the class star-action-strip-host."
+      >
+        <table class="invoices">
+          <thead>
+            <tr>
+              <th scope="col">Invoice</th>
+              <th scope="col">City</th>
+              <th scope="col"><span class="star-sr-only">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (invoice of invoices; track invoice.id) {
+              <tr>
+                <td>{{ invoice.id }}</td>
+                <td>{{ invoice.city }}</td>
+                <td class="actions-cell">
+                  <star-action-strip [actions]="actions" [ariaLabel]="invoice.id + ' actions'" />
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </docs-example>
+
       <docs-api
         [of]="['StarActionStrip']"
         [slots]="slots"
@@ -83,6 +125,11 @@ import { DOCS, DocsRow } from '../shared/docs';
 export class ActionStripPage {
   protected readonly last = signal('none');
   protected readonly orders: readonly string[] = ['Order 1001', 'Order 1002', 'Order 1003'];
+
+  protected readonly invoices = [
+    { id: 'Invoice 3001', city: 'Lisbon' },
+    { id: 'Invoice 3002', city: 'Oslo' },
+  ];
 
   protected readonly actions: readonly StarMenuItem[] = [
     { label: 'Edit', icon: 'ph-bold ph-pencil-simple' },
@@ -105,6 +152,10 @@ readonly actions: readonly StarMenuItem[] = [
   { label: 'Edit', icon: 'ph-bold ph-pencil-simple' },
   { label: 'Copy', icon: 'ph-bold ph-copy' },
   { label: 'Delete', icon: 'ph-bold ph-trash', danger: true },
+];`;
+  protected readonly tableScript = `readonly invoices = [
+  { id: 'Invoice 3001', city: 'Lisbon' },
+  { id: 'Invoice 3002', city: 'Oslo' },
 ];`;
   protected readonly menuScript = `readonly moreActions: readonly StarMenuItem[] = [
   { label: 'Edit', icon: 'ph-bold ph-pencil-simple' },

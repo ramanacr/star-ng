@@ -8,7 +8,7 @@ import {
   OverlayRef,
 } from '@angular/cdk/overlay';
 import { TemplatePortal } from '@angular/cdk/portal';
-import { isPlatformBrowser } from '@angular/common';
+import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import {
   afterNextRender,
   booleanAttribute,
@@ -197,6 +197,7 @@ export class StarDropdown {
   private readonly injector = inject(Injector);
   private readonly viewContainer = inject(ViewContainerRef);
   private readonly directionality = inject(Directionality);
+  private readonly document = inject(DOCUMENT);
   readonly listId = inject(_IdGenerator).getId('star-dropdown-');
 
   /** The chosen value. The item with this value is shown as selected. */
@@ -295,7 +296,7 @@ export class StarDropdown {
   /** Closes; returns the focus to the trigger when the focus was in the list. */
   hide(restoreFocus = true): void {
     if (!this.visible() || !this.overlayRef) return;
-    const hadFocus = this.overlayRef.overlayElement.contains(document.activeElement);
+    const hadFocus = this.overlayRef.overlayElement.contains(this.document.activeElement);
     this.overlayRef.detach();
     this.unsubscribe();
     this.keyManager?.setActiveItem(-1);
@@ -395,9 +396,9 @@ export class StarDropdown {
 
 /**
  * Opens a `star-dropdown` from any element: a button, a `star-button` or a link. A click toggles
- * the list; Arrow down opens it on the first option and Arrow up on the last. The element that
- * takes the focus (the inner button of a `star-button`) gets `aria-haspopup="listbox"`,
- * `aria-expanded` and, while open, `aria-controls`.
+ * the list; Arrow down opens it on the chosen option, else on the first one, and Arrow up on the
+ * chosen option, else on the last one. The element that takes the focus (the inner button of a
+ * `star-button`) gets `aria-haspopup="listbox"`, `aria-expanded` and, while open, `aria-controls`.
  */
 @Directive({
   selector: '[starDropdownTrigger]',
