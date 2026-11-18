@@ -14,6 +14,7 @@ import type { FormValueControl } from '@angular/forms/signals';
 import { STAR_SLOT_HOST, starSlot } from '@star-ng/ui/core';
 import { StarOptionListBase } from './option-list-base';
 import { StarChipContext } from './select-slots';
+import { starSelectionChanging, StarSelectionChangingEvent } from './selection-changing';
 
 /**
  * Multiple-choice dropdown (PrimeNG `p-multiselect`): checkbox list, "select all", filter,
@@ -349,6 +350,11 @@ export class StarMultiSelect<TOption = unknown, TValue = TOption>
   readonly allowCustomValues = input(false, { transform: booleanAttribute });
   /** With `allowCustomValues`: the text that became a new value. Ignite UI combo `addition`. */
   readonly customValueAdd = output<string>();
+  /**
+   * Fires before the value changes by a user action. Call `cancel()` on the event to keep the old
+   * value. Ignite UI combo `selectionChanging`.
+   */
+  readonly selectionChanging = output<StarSelectionChangingEvent<readonly TValue[]>>();
 
   protected readonly closeOnChoose = false;
 
@@ -411,14 +417,14 @@ export class StarMultiSelect<TOption = unknown, TValue = TOption>
   protected override addCustom(text: string): void {
     const limit = this.selectionLimit();
     if (!this.interactive() || (limit > 0 && this.value().length >= limit)) return;
-    this.value.update((values) => [...values, text as unknown as TValue]);
+    if (!this.changeWith((values) => [...values, text as unknown as TValue])) return;
     this.customValueAdd.emit(text);
     // The filter starts again, so the next text can be typed.
     this.clearFilterText();
   }
 
   removeValue(value: TValue): void {
-    this.value.update((values) => values.filter((v) => !this.equals(v, value)));
+    this.changeWith((values) => values.filter((v) => !this.equals(v, value)));
   }
 
   private readonly selectableVisible = computed(() =>
@@ -456,7 +462,22 @@ export class StarMultiSelect<TOption = unknown, TValue = TOption>
     }
     const limit = this.selectionLimit();
     if (limit > 0 && this.value().length >= limit) return;
-    this.value.update((values) => [...values, this.valueOf(option)]);
+    this.changeWith((values) => [...values, this.valueOf(option)]);
+  }
+
+  /**
+   * Sets the value to `update(value)` after `selectionChanging`, and returns `false` when a
+   * handler cancelled.
+   */
+  private changeWith(update: (values: readonly TValue[]) => readonly TValue[]): boolean {
+    const previous = this.value();
+    const next = update(previous);
+    if (next.length === previous.length && next.every((v, i) => Object.is(v, previous[i]))) {
+      return true;
+    }
+    if (!starSelectionChanging(this.selectionChanging, previous, next)) return false;
+    this.value.set(next);
+    return true;
   }
 
   protected initialActiveIndex(): number {
@@ -465,7 +486,7 @@ export class StarMultiSelect<TOption = unknown, TValue = TOption>
 
   remove(option: TOption): void {
     const optionValue = this.valueOf(option);
-    this.value.update((values) => values.filter((value) => !this.equals(value, optionValue)));
+    this.changeWith((values) => values.filter((value) => !this.equals(value, optionValue)));
   }
 
   protected toggleAll(): void {
@@ -473,7 +494,7 @@ export class StarMultiSelect<TOption = unknown, TValue = TOption>
     if (this.allState() === true) {
       const visibleValues = options.map((option) => this.valueOf(option));
       const visibleSet = this.compareWith() === Object.is ? new Set<TValue>(visibleValues) : null;
-      this.value.update((values) =>
+      this.changeWith((values) =>
         values.filter((value) =>
           visibleSet
             ? !visibleSet.has(value)
@@ -485,11 +506,11 @@ export class StarMultiSelect<TOption = unknown, TValue = TOption>
     const additions = options
       .filter((option) => !this.isSelected(option))
       .map((option) => this.valueOf(option));
-    this.value.update((values) => [...values, ...additions]);
+    this.changeWith((values) => [...values, ...additions]);
   }
 
   clear(): void {
-    this.value.set([]);
+    if (!this.changeWith(() => [])) return;
     this.focus();
   }
 }

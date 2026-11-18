@@ -56,7 +56,12 @@ import {
   StarWindowRow,
 } from '@star-ng/ui/core';
 import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/ui/field';
-import { starLazyOptions, StarOptionTemplate } from '@star-ng/ui/select';
+import {
+  starLazyOptions,
+  StarOptionTemplate,
+  starSelectionChanging,
+  StarSelectionChangingEvent,
+} from '@star-ng/ui/select';
 
 /**
  * Inline list choice (PrimeNG `p-listbox`): single or `multiple` (checkboxes), filter,
@@ -314,6 +319,12 @@ export class StarListbox<TOption = unknown, TValue = TOption> implements FormVal
   readonly touch = output<void>();
   /** With `lazy`: the options from `first` to `last` are needed for the filter text `filter`. PrimeNG `onLazyLoad`. */
   readonly lazyLoad = output<StarLazyLoadEvent>();
+  /**
+   * Fires before the value changes by a user action. Call `cancel()` on the event to keep the old
+   * value. Ignite UI `selectionChanging`.
+   */
+  readonly selectionChanging =
+    output<StarSelectionChangingEvent<TValue | readonly TValue[] | null>>();
 
   protected readonly optionTemplate = contentChild(StarOptionTemplate);
   /** All slot directives written inside this control. The picks below filter them by host. */
@@ -532,14 +543,26 @@ export class StarListbox<TOption = unknown, TValue = TOption> implements FormVal
     const optionValue = this.valueOf(option);
     if (this.multiple()) {
       const current = Array.isArray(this.value()) ? (this.value() as readonly TValue[]) : [];
-      this.value.set(
+      this.change(
         this.isSelected(option)
           ? current.filter((v) => !Object.is(v, optionValue))
           : [...current, optionValue],
       );
     } else {
-      this.value.set(optionValue);
+      this.change(optionValue);
     }
+  }
+
+  /**
+   * Sets the value after `selectionChanging`, and returns `false` when a handler cancelled. The same
+   * single value again fires no event.
+   */
+  private change(next: TValue | readonly TValue[] | null): boolean {
+    const previous = this.value();
+    if (Object.is(previous, next)) return true;
+    if (!starSelectionChanging(this.selectionChanging, previous, next)) return false;
+    this.value.set(next);
+    return true;
   }
 
   protected onFilterInput(text: string): void {
@@ -610,7 +633,7 @@ export class StarListbox<TOption = unknown, TValue = TOption> implements FormVal
       this.reveal(this.active());
       if (!this.multiple() && !fromInput) {
         const option = options[this.active()];
-        if (!this.isDisabled(option)) this.value.set(this.valueOf(option));
+        if (!this.isDisabled(option)) this.change(this.valueOf(option));
       }
     };
     switch (event.key) {

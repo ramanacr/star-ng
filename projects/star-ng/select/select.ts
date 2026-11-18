@@ -15,6 +15,7 @@ import type { FormValueControl } from '@angular/forms/signals';
 import { STAR_SLOT_HOST, starSlot } from '@star-ng/ui/core';
 import { StarOptionListBase } from './option-list-base';
 import { StarSelectedContext } from './select-slots';
+import { starSelectionChanging, StarSelectionChangingEvent } from './selection-changing';
 
 /**
  * Single-choice dropdown (PrimeNG `p-select`): typed options, `optionLabel` / `optionValue` /
@@ -302,6 +303,11 @@ export class StarSelect<TOption = unknown, TValue = TOption>
   readonly allowCustomValue = input(false, { transform: booleanAttribute });
   /** With `editable` and `allowCustomValue`: the typed text that became the value. */
   readonly customValue = output<string>();
+  /**
+   * Fires before the value changes by a user action. Call `cancel()` on the event to keep the old
+   * value. Ignite UI combo `selectionChanging`.
+   */
+  readonly selectionChanging = output<StarSelectionChangingEvent<TValue | null>>();
 
   protected readonly closeOnChoose = true;
 
@@ -390,8 +396,7 @@ export class StarSelect<TOption = unknown, TValue = TOption>
     const text = this.editText().trim();
     if (text === this.valueText()) return;
     if (!text) {
-      this.value.set(null);
-      this.setEditText('');
+      this.setEditText(this.change(null) ? '' : this.valueText());
       return;
     }
     const lower = text.toLocaleLowerCase();
@@ -403,8 +408,7 @@ export class StarSelect<TOption = unknown, TValue = TOption>
     );
     if (exact !== undefined) {
       this.choose(exact);
-    } else if (this.allowCustomValue()) {
-      this.value.set(text as unknown as TValue);
+    } else if (this.allowCustomValue() && this.change(text as unknown as TValue)) {
       this.customValue.emit(text);
       this.setEditText(text);
     } else {
@@ -418,8 +422,22 @@ export class StarSelect<TOption = unknown, TValue = TOption>
   }
 
   protected choose(option: TOption): void {
-    this.value.set(this.valueOf(option));
-    if (this.editable()) this.setEditText(this.labelOf(option));
+    const changed = this.change(this.valueOf(option));
+    if (this.editable()) this.setEditText(changed ? this.labelOf(option) : this.valueText());
+  }
+
+  /**
+   * Sets the value after `selectionChanging`, and returns `false` when a handler cancelled. The
+   * same value again fires no event.
+   */
+  private change(next: TValue | null): boolean {
+    const previous = this.value();
+    const same =
+      previous === next || (previous !== null && next !== null && this.equals(previous, next));
+    if (same) return true;
+    if (!starSelectionChanging(this.selectionChanging, previous, next)) return false;
+    this.value.set(next);
+    return true;
   }
 
   protected initialActiveIndex(): number {
@@ -428,7 +446,7 @@ export class StarSelect<TOption = unknown, TValue = TOption>
   }
 
   clear(): void {
-    this.value.set(null);
+    if (!this.change(null)) return;
     if (this.editable()) this.setEditText('');
     this.focus();
   }

@@ -2,7 +2,12 @@ import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { form, FormField, minLength } from '@angular/forms/signals';
 import { STAR_SLOTS } from '@star-ng/ui/core';
 import { StarField } from '@star-ng/ui/field';
-import { StarChipTemplate, StarMultiSelect, StarOptionTemplate } from '@star-ng/ui/select';
+import {
+  StarChipTemplate,
+  StarMultiSelect,
+  StarOptionTemplate,
+  StarSelectionChangingEvent,
+} from '@star-ng/ui/select';
 import { DOCS, DocsRow } from '../shared/docs';
 import { lazyOrders } from '../shared/lazy-orders';
 
@@ -258,6 +263,24 @@ interface Parcel {
       </docs-example>
 
       <docs-example
+        heading="Cancelable selection"
+        source="multi-select/selection-changing"
+        note="selectionChanging fires before each change of the array. Here the handler cancels a change that would leave no city."
+      >
+        <div class="docs-stack">
+          <star-multi-select
+            [options]="cities"
+            optionLabel="name"
+            optionValue="code"
+            [(value)]="keptCities"
+            ariaLabel="Cities, at least one"
+            (selectionChanging)="keepOne($event)"
+          />
+          <p class="docs-output" role="status">Cities: {{ keptCities().join(', ') }}</p>
+        </div>
+      </docs-example>
+
+      <docs-example
         heading="Lazy loading"
         source="multi-select/lazy"
         [script]="lazyScript"
@@ -290,6 +313,11 @@ interface Parcel {
   `,
 })
 export class MultiSelectPage {
+  protected readonly keptCities = signal<readonly string[]>(['BER']);
+
+  protected keepOne(event: StarSelectionChangingEvent<readonly string[]>): void {
+    if (!event.next.length) event.cancel();
+  }
   protected readonly labels = signal<readonly string[]>(['Urgent', 'Review', 'On hold']);
   protected readonly pickedLabels = signal<readonly string[]>([]);
 

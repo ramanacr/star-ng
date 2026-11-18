@@ -2,7 +2,12 @@ import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { form, FormField, required } from '@angular/forms/signals';
 import { STAR_SLOTS } from '@star-ng/ui/core';
 import { StarField } from '@star-ng/ui/field';
-import { StarOptionTemplate, StarSelect, StarSelectedTemplate } from '@star-ng/ui/select';
+import {
+  StarOptionTemplate,
+  StarSelect,
+  StarSelectedTemplate,
+  StarSelectionChangingEvent,
+} from '@star-ng/ui/select';
 import { DOCS, DocsRow } from '../shared/docs';
 import { lazyOrders } from '../shared/lazy-orders';
 
@@ -298,6 +303,27 @@ interface Shipment {
       </docs-example>
 
       <docs-example
+        heading="Cancelable selection"
+        source="select/selection-changing"
+        note="selectionChanging fires before the value changes, with previous and next. Call cancel() on the event to keep the old value. Here the handler refuses Paris."
+      >
+        <div class="docs-stack">
+          <star-select
+            [options]="cities"
+            optionLabel="name"
+            optionValue="code"
+            [(value)]="guardedCity"
+            placeholder="Select a city (not Paris)"
+            ariaLabel="City, Paris refused"
+            (selectionChanging)="guardCity($event)"
+          />
+          <p class="docs-output" role="status">
+            City: {{ guardedCity() ?? 'none' }}. {{ guardMessage() }}
+          </p>
+        </div>
+      </docs-example>
+
+      <docs-example
         heading="Lazy loading"
         source="select/lazy"
         [script]="lazyScript"
@@ -337,6 +363,17 @@ interface Shipment {
   `,
 })
 export class SelectPage {
+  protected readonly guardedCity = signal<string | null>(null);
+  protected readonly guardMessage = signal('');
+
+  protected guardCity(event: StarSelectionChangingEvent<string | null>): void {
+    if (event.next === 'PAR') {
+      event.cancel();
+      this.guardMessage.set('Paris was refused.');
+    } else {
+      this.guardMessage.set('');
+    }
+  }
   protected readonly editedCity = signal<string | null>(null);
   protected readonly lastCustom = signal<string | null>(null);
   protected readonly lazyList = lazyOrders();

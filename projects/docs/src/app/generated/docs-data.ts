@@ -138,6 +138,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": ""
+      },
+      {
+        "name": "selectionChanging",
+        "type": "StarSelectionChangingEvent<TValue | null>",
+        "default": null,
+        "required": false,
+        "description": "Fires before the value changes by a user action. Call `cancel()` on the event to keep the old value. Ignite UI combo `selectionChanging`."
       }
     ]
   },
@@ -3252,6 +3259,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": "With `lazy`: the options from `first` to `last` are needed for the filter text `filter`. PrimeNG `onLazyLoad`."
+      },
+      {
+        "name": "selectionChanging",
+        "type": "StarSelectionChangingEvent<TValue | readonly TValue[] | null>",
+        "default": null,
+        "required": false,
+        "description": "Fires before the value changes by a user action. Call `cancel()` on the event to keep the old value. Ignite UI `selectionChanging`."
       }
     ]
   },
@@ -3521,6 +3535,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": "With `allowCustomValues`: the text that became a new value. Ignite UI combo `addition`."
+      },
+      {
+        "name": "selectionChanging",
+        "type": "StarSelectionChangingEvent<readonly TValue[]>",
+        "default": null,
+        "required": false,
+        "description": "Fires before the value changes by a user action. Call `cancel()` on the event to keep the old value. Ignite UI combo `selectionChanging`."
       }
     ]
   },
@@ -3607,6 +3628,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": "With `allowCustomValues`: the text that became a new value. Ignite UI combo `addition`."
+      },
+      {
+        "name": "selectionChanging",
+        "type": "StarSelectionChangingEvent<readonly TValue[]>",
+        "default": null,
+        "required": false,
+        "description": "Fires before the value changes by a user action. Call `cancel()` on the event to keep the old value. Ignite UI combo `selectionChanging`."
       }
     ]
   },
@@ -4784,6 +4812,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": "With `editable` and `allowCustomValue`: the typed text that became the value."
+      },
+      {
+        "name": "selectionChanging",
+        "type": "StarSelectionChangingEvent<TValue | null>",
+        "default": null,
+        "required": false,
+        "description": "Fires before the value changes by a user action. Call `cancel()` on the event to keep the old value. Ignite UI combo `selectionChanging`."
       }
     ]
   },
@@ -6821,6 +6856,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "multi-select/large": "<div class=\"docs-stack\">\n  <star-multi-select\n    [options]=\"parcels\"\n    optionLabel=\"name\"\n    optionValue=\"id\"\n    [(value)]=\"selectedParcels\"\n    placeholder=\"10,000 parcels\"\n    ariaLabel=\"Parcels\"\n    virtualScroll\n  />\n  <p class=\"docs-output\" role=\"status\">Parcels: {{ selectedParcels().length }}</p>\n</div>",
   "multi-select/lazy": "<div class=\"docs-stack\">\n  <star-multi-select\n    [options]=\"lazyList.options()\"\n    optionLabel=\"name\"\n    optionValue=\"id\"\n    [(value)]=\"lazyPicked\"\n    lazy\n    virtualScroll\n    filter\n    placeholder=\"Select orders\"\n    ariaLabel=\"Orders, loaded on demand\"\n    (lazyLoad)=\"lazyList.load($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">Selected: {{ lazyPicked().length }}</p>\n</div>",
   "multi-select/limit": "<star-multi-select\n  [options]=\"departments\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  [selectionLimit]=\"2\"\n  placeholder=\"Pick up to 2\"\n  ariaLabel=\"Limited departments\"\n/>",
+  "multi-select/selection-changing": "<div class=\"docs-stack\">\n  <star-multi-select\n    [options]=\"cities\"\n    optionLabel=\"name\"\n    optionValue=\"code\"\n    [(value)]=\"keptCities\"\n    ariaLabel=\"Cities, at least one\"\n    (selectionChanging)=\"keepOne($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">Cities: {{ keptCities().join(', ') }}</p>\n</div>",
   "multi-select/slots": "<star-multi-select\n  [options]=\"cities\"\n  optionLabel=\"name\"\n  optionValue=\"code\"\n  [(value)]=\"visited\"\n  display=\"chip\"\n  placeholder=\"Select cities\"\n  ariaLabel=\"Cities\"\n  filter\n>\n  <ng-template starHeader>\n    <p class=\"docs-output\">Cities with an office</p>\n  </ng-template>\n  <ng-template starEmpty let-text>No city matches {{ text }}.</ng-template>\n  <ng-template\n    starChip\n    [starChipOf]=\"cities\"\n    let-item\n    let-remove=\"remove\"\n    let-interactive=\"interactive\"\n  >\n    <span class=\"star-chip star-chip--sm\">\n      {{ item.code }}\n      @if (interactive) {\n        <button\n          type=\"button\"\n          class=\"star-chip__remove\"\n          tabindex=\"-1\"\n          [attr.aria-label]=\"'Remove ' + item.name\"\n          (click)=\"remove()\"\n        >\n          x\n        </button>\n      }\n    </span>\n  </ng-template>\n  <ng-template starFooter>\n    <p class=\"docs-output\">{{ cities.length }} cities</p>\n    <button\n      type=\"button\"\n      class=\"star-btn star-btn--sm star-btn--ghost\"\n      (click)=\"visited.set([])\"\n    >\n      Clear the choice\n    </button>\n  </ng-template>\n</star-multi-select>",
   "multi-select/template": "<star-multi-select\n  [options]=\"departments\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  [(value)]=\"templated\"\n  placeholder=\"Select departments\"\n  ariaLabel=\"Departments with template\"\n>\n  <ng-template starOption [starOptionOf]=\"departments\" let-item let-selected=\"selected\">\n    <span>\n      {{ item.name }}\n      <small>{{ item.site }}</small>\n    </span>\n  </ng-template>\n</star-multi-select>",
   "order-list/basic": "<div class=\"docs-stack\">\n  <star-order-list [(value)]=\"steps\" ariaLabel=\"Release steps\" />\n  <p class=\"docs-output\" role=\"status\">Order: {{ steps().join(' > ') }}</p>\n</div>",
@@ -6871,6 +6907,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "select/groups": "<star-select\n  [options]=\"countries\"\n  optionLabel=\"name\"\n  optionValue=\"code\"\n  optionGroup=\"region\"\n  [(value)]=\"grouped\"\n  placeholder=\"Grouped by region\"\n  ariaLabel=\"Country by region\"\n/>",
   "select/large": "<div class=\"docs-stack\">\n  <star-select\n    [options]=\"shipments\"\n    optionLabel=\"name\"\n    optionValue=\"id\"\n    optionGroup=\"region\"\n    [(value)]=\"shipment\"\n    placeholder=\"10,000 shipments\"\n    ariaLabel=\"Shipment\"\n    virtualScroll\n    filter\n  />\n  <p class=\"docs-output\" role=\"status\">Shipment: {{ shipment() ?? 'none' }}</p>\n</div>",
   "select/lazy": "<div class=\"docs-stack\">\n  <star-select\n    [options]=\"lazyList.options()\"\n    optionLabel=\"name\"\n    optionValue=\"id\"\n    [(value)]=\"lazyOrder\"\n    lazy\n    virtualScroll\n    filter\n    placeholder=\"Select an order\"\n    ariaLabel=\"Order, loaded on demand\"\n    (lazyLoad)=\"lazyList.load($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">Order: {{ lazyOrder() ?? 'none' }}</p>\n</div>",
+  "select/selection-changing": "<div class=\"docs-stack\">\n  <star-select\n    [options]=\"cities\"\n    optionLabel=\"name\"\n    optionValue=\"code\"\n    [(value)]=\"guardedCity\"\n    placeholder=\"Select a city (not Paris)\"\n    ariaLabel=\"City, Paris refused\"\n    (selectionChanging)=\"guardCity($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    City: {{ guardedCity() ?? 'none' }}. {{ guardMessage() }}\n  </p>\n</div>",
   "select/slots": "<star-select\n  [options]=\"cities\"\n  optionLabel=\"name\"\n  optionValue=\"code\"\n  optionGroup=\"country\"\n  [(value)]=\"city\"\n  placeholder=\"Select a city\"\n  ariaLabel=\"City\"\n  filter\n  showClear\n>\n  <ng-template starHeader>\n    <p class=\"docs-output\">Cities with an office</p>\n  </ng-template>\n  <ng-template starGroup let-country let-count=\"count\">\n    {{ country }} ({{ count }})\n  </ng-template>\n  <ng-template starEmpty let-text>No city matches {{ text }}.</ng-template>\n  <ng-template starSelected [starSelectedOf]=\"cities\" let-item>\n    {{ item.code }} · {{ item.name }}\n  </ng-template>\n  <ng-template starFooter>\n    <p class=\"docs-output\">{{ cities.length }} cities</p>\n  </ng-template>\n</star-select>",
   "select/states": "<div class=\"docs-stack\">\n  <star-select [options]=\"regions\" size=\"sm\" placeholder=\"Small\" ariaLabel=\"Small select\" />\n  <star-select [options]=\"regions\" disabled placeholder=\"Disabled\" ariaLabel=\"Disabled\" />\n  <star-select [options]=\"regions\" [value]=\"'EMEA'\" readonly ariaLabel=\"Read-only\" />\n  <star-select [options]=\"[]\" loading placeholder=\"Loading options\" ariaLabel=\"Loading\" />\n</div>",
   "select/template": "<star-select\n  [options]=\"countries\"\n  optionLabel=\"name\"\n  optionValue=\"code\"\n  [(value)]=\"templated\"\n  placeholder=\"Select a country\"\n  ariaLabel=\"Country with template\"\n>\n  <ng-template starOption [starOptionOf]=\"countries\" let-item>\n    <span>\n      {{ item.name }}\n      <small>{{ item.region }}</small>\n    </span>\n  </ng-template>\n</star-select>",

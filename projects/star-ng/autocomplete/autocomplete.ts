@@ -21,7 +21,11 @@ import {
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
 import { STAR_SLOT_HOST, type StarEmptyContext } from '@star-ng/ui/core';
-import { StarOptionListBase } from '@star-ng/ui/select';
+import {
+  StarOptionListBase,
+  starSelectionChanging,
+  StarSelectionChangingEvent,
+} from '@star-ng/ui/select';
 
 export interface StarAutoCompleteSearch {
   readonly query: string;
@@ -465,6 +469,11 @@ export class StarAutoComplete<TOption = unknown, TValue = TOption>
 {
   readonly value = model<TValue | null>(null);
   readonly selected = output<TOption>();
+  /**
+   * Fires before the value changes by a user action. Call `cancel()` on the event to keep the old
+   * value. Ignite UI combo `selectionChanging`.
+   */
+  readonly selectionChanging = output<StarSelectionChangingEvent<TValue | null>>();
 
   protected readonly isMultiple = false;
   protected readonly hasValue = computed(() => this.value() !== null || !!this.query());
@@ -481,15 +490,29 @@ export class StarAutoComplete<TOption = unknown, TValue = TOption>
 
   protected choose(option: TOption): void {
     this.remember(option);
-    this.value.set(this.valueOf(option));
+    if (!this.change(this.valueOf(option))) {
+      this.setText(this.queryFromValue());
+      return;
+    }
     this.setText(this.labelOf(option));
     this.selected.emit(option);
+  }
+
+  /** Sets the value after `selectionChanging`; `false` when a handler cancelled. */
+  private change(next: TValue | null): boolean {
+    const previous = this.value();
+    const same =
+      previous === next || (previous !== null && next !== null && this.equals(previous, next));
+    if (same) return true;
+    if (!starSelectionChanging(this.selectionChanging, previous, next)) return false;
+    this.value.set(next);
+    return true;
   }
 
   protected onBlurCommit(): void {
     const text = this.query().trim();
     if (!text) {
-      if (this.value() !== null) this.value.set(null);
+      if (!this.change(null)) this.setText(this.queryFromValue());
       return;
     }
     if (text === this.queryFromValue()) return;
@@ -508,7 +531,7 @@ export class StarAutoComplete<TOption = unknown, TValue = TOption>
   }
 
   clear(): void {
-    this.value.set(null);
+    if (!this.change(null)) return;
     this.setText('');
     this.focus();
   }
@@ -541,6 +564,11 @@ export class StarMultiAutoComplete<TOption = unknown, TValue = TOption>
   readonly allowCustomValues = input(false, { transform: booleanAttribute });
   /** With `allowCustomValues`: the text that became a new value. Ignite UI combo `addition`. */
   readonly customValueAdd = output<string>();
+  /**
+   * Fires before the value changes by a user action. Call `cancel()` on the event to keep the old
+   * value. Ignite UI combo `selectionChanging`.
+   */
+  readonly selectionChanging = output<StarSelectionChangingEvent<readonly TValue[]>>();
 
   protected readonly isMultiple = true;
   protected readonly hasValue = computed(() => this.value().length > 0);
@@ -562,7 +590,7 @@ export class StarMultiAutoComplete<TOption = unknown, TValue = TOption>
     const limit = this.selectionLimit();
     if (this.isSelected(option) || (limit > 0 && this.value().length >= limit)) return;
     this.remember(option);
-    this.value.update((values) => [...values, this.valueOf(option)]);
+    if (!this.changeWith((values) => [...values, this.valueOf(option)])) return;
     this.setText('');
   }
 
@@ -584,27 +612,36 @@ export class StarMultiAutoComplete<TOption = unknown, TValue = TOption>
   protected override addCustom(text: string): void {
     const limit = this.selectionLimit();
     if (!this.interactive() || (limit > 0 && this.value().length >= limit)) return;
-    this.value.update((values) => [...values, text as unknown as TValue]);
+    if (!this.changeWith((values) => [...values, text as unknown as TValue])) return;
     this.customValueAdd.emit(text);
     this.setText('');
   }
 
   protected override onKeydown(event: KeyboardEvent): void {
     if (event.key === 'Backspace' && !this.query() && this.value().length && this.interactive()) {
-      this.value.update((values) => values.slice(0, -1));
+      this.changeWith((values) => values.slice(0, -1));
       return;
     }
     super.onKeydown(event);
   }
 
   protected removeValue(value: TValue): void {
-    this.value.update((values) => values.filter((v) => !this.equals(v, value)));
+    this.changeWith((values) => values.filter((v) => !this.equals(v, value)));
     this.focus();
   }
 
   clear(): void {
-    this.value.set([]);
+    if (this.value().length && !this.changeWith(() => [])) return;
     this.setText('');
     this.focus();
+  }
+
+  /** Sets the value to `update(value)` after `selectionChanging`; `false` when a handler cancelled. */
+  private changeWith(update: (values: readonly TValue[]) => readonly TValue[]): boolean {
+    const previous = this.value();
+    const next = update(previous);
+    if (!starSelectionChanging(this.selectionChanging, previous, next)) return false;
+    this.value.set(next);
+    return true;
   }
 }
