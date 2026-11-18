@@ -703,7 +703,11 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
               }
             }
           </div>
-          <!-- Keyboard and screen reader access to the data points: one focus target per point. -->
+          <!--
+            Keyboard and screen reader access to the data points: one focus target per point.
+            The pointer goes through to the marks; (click) serves assistive technology that
+            activates a target.
+          -->
           <div
             class="star-chart__points"
             role="group"
@@ -722,8 +726,7 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                   [style.top.%]="point.top"
                   (focus)="onPointFocus(r, c, point)"
                   (blur)="hover.set(null)"
-                  (mouseenter)="hover.set(point.hover)"
-                  (click)="selectPoint(point)"
+              (click)="selectPoint(point)"
                   (keydown)="onPointKeydown($event)"
                 ></span>
               }
