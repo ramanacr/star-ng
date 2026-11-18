@@ -272,12 +272,16 @@ describe('StarChat', () => {
     ]);
     await fixture.whenStable();
     expect(live()).toBe('2 new messages');
+    const region = fixture.nativeElement.querySelector('.star-chat__live') as HTMLElement;
+    const before = region.textContent;
+    // Another conversation with one message from someone else: history, no announcement.
     host.messages.set([
-      { id: 'x1', author: BOT, text: 'Other chat', timestamp: at(18, 13) },
-      { id: 'x2', author: ANA, text: 'Hi', timestamp: at(18, 14) },
+      { id: 'x1', author: ME, text: 'Mine', timestamp: at(18, 13), status: 'sent' },
+      { id: 'x2', author: BOT, text: 'Other chat', timestamp: at(18, 14) },
     ]);
     await fixture.whenStable();
-    expect(live()).toBe('2 new messages');
+    expect(region.textContent).toBe(before);
+    expect(live()).not.toContain('Other chat');
   });
 
   it('asks for older messages at the top and keeps the scroll position', async () => {
