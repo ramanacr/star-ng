@@ -499,6 +499,71 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'command palette open with a filter',
+    path: 'controls/command-palette',
+    open: async (page) => {
+      await example(page, 'Commands in groups')
+        .getByRole('button', { name: 'Open command palette' })
+        .click();
+      const field = page.getByRole('combobox', { name: 'Command palette' });
+      await expect(field).toBeFocused();
+      await field.fill('go');
+      await expect(page.getByRole('option', { name: 'Go to dashboard' })).toBeVisible();
+    },
+  },
+  {
+    name: 'command palette with no match',
+    path: 'controls/command-palette',
+    open: async (page) => {
+      await example(page, 'Option and empty templates')
+        .getByRole('button', { name: 'Find a person' })
+        .click();
+      await page.getByRole('combobox', { name: 'Find a person' }).fill('zzz');
+      await expect(page.getByText('No person matches')).toBeVisible();
+    },
+  },
+  {
+    name: 'app sidebar collapsed with a group open',
+    path: 'controls/app-sidebar',
+    open: async (page) => {
+      const nav = page.getByRole('navigation', { name: 'Workspace' });
+      await nav.getByRole('button', { name: 'Reports' }).click();
+      await page.getByRole('button', { name: 'Collapse sidebar' }).click();
+      await expect(nav.getByRole('button', { name: 'Monthly' })).toBeVisible();
+    },
+  },
+  {
+    name: 'app sidebar in its drawer',
+    path: 'controls/app-sidebar',
+    open: async (page) => {
+      await example(page, 'Overlay mode').getByRole('button', { name: 'Menu' }).click();
+      await expect(page.getByRole('dialog', { name: 'Shop' })).toBeVisible();
+    },
+  },
+  {
+    name: 'two windows, one minimized',
+    path: 'controls/window',
+    open: async (page) => {
+      const area = example(page, 'Windows in the page');
+      await area.getByRole('button', { name: 'Open notes' }).click();
+      await area.getByRole('button', { name: 'Open order summary' }).click();
+      const notes = page.getByRole('dialog', { name: 'Notes' });
+      await expect(notes).toBeVisible();
+      await notes.getByRole('button', { name: 'Minimize' }).click();
+      await expect(page.getByRole('dialog', { name: 'Order summary' })).toBeVisible();
+    },
+  },
+  {
+    name: 'window opened from code',
+    path: 'controls/window',
+    open: async (page) => {
+      await example(page, 'Open from code')
+        .getByRole('button', { name: 'Open order window' })
+        .click();
+      await expect(page.getByRole('dialog', { name: 'Order 1001' })).toBeVisible();
+    },
+  },
+  {
     name: 'confirm dialog',
     path: 'controls/confirm',
     open: async (page) => {
