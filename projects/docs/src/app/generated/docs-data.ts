@@ -7548,6 +7548,161 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Lazy mode: the range of items that is rendered now (with the buffer), so their data is needed."
       }
     ]
+  },
+  "StarWindow": {
+    "kind": "component",
+    "selector": "star-window",
+    "entry": "@star-ng/ui/window",
+    "description": "Floating window (Kendo UI `Window`; the PrimeNG `p-dialog` with `modal=false`, `draggable` and `resizable`): a non-modal window that the user can move, resize, minimize and maximize. Several windows stack; the one that gets the focus or a pointer press comes to the front.",
+    "inputs": [
+      {
+        "name": "header",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "Title in the title bar; it names the window."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Accessible name when there is no `header`."
+      },
+      {
+        "name": "draggable",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "The title bar drags the window; Alt and the arrow keys move it."
+      },
+      {
+        "name": "resizable",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "A corner handle, and Shift and the arrow keys, resize the window."
+      },
+      {
+        "name": "keepInViewport",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Keeps the whole window in the viewport while it moves and resizes."
+      },
+      {
+        "name": "closeOnEscape",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Escape closes the window. Off by default: a non-modal window stays until the user closes it."
+      },
+      {
+        "name": "minimizable",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "maximizable",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "closable",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "minWidth",
+        "type": "number",
+        "default": "240",
+        "required": false,
+        "description": "Smallest width in pixels."
+      },
+      {
+        "name": "minHeight",
+        "type": "number",
+        "default": "160",
+        "required": false,
+        "description": "Smallest height in pixels."
+      }
+    ],
+    "models": [
+      {
+        "name": "visible",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Open state."
+      },
+      {
+        "name": "position",
+        "type": "StarWindowPosition | null",
+        "default": "null",
+        "required": false,
+        "description": "Place in the viewport, in pixels. `null` centers the window when it opens."
+      },
+      {
+        "name": "size",
+        "type": "StarWindowSize | null",
+        "default": "null",
+        "required": false,
+        "description": "Size in pixels. `null` uses the CSS size (`--star-window-width`, content height)."
+      },
+      {
+        "name": "state",
+        "type": "StarWindowState",
+        "default": "'normal'",
+        "required": false,
+        "description": "`normal`, `minimized` (title bar only) or `maximized` (fills the viewport). Emits `stateChange`."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "closed",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "Emits after the window closed (close button, Escape with `closeOnEscape`, or `visible`)."
+      }
+    ]
+  },
+  "StarWindowContainer": {
+    "kind": "component",
+    "selector": "star-window-container",
+    "entry": "@star-ng/ui/window",
+    "description": "@internal Host of a window opened from code: a `star-window` whose body is the component.",
+    "inputs": [
+      {
+        "name": "component",
+        "type": "Type<unknown>",
+        "default": null,
+        "required": true,
+        "description": ""
+      },
+      {
+        "name": "config",
+        "type": "StarWindowConfig",
+        "default": null,
+        "required": true,
+        "description": ""
+      },
+      {
+        "name": "contentInjector",
+        "type": "Injector",
+        "default": null,
+        "required": true,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
   }
 };
 
@@ -7919,5 +8074,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "tree/virtual": "<div class=\"docs-stack\">\n  <star-tree\n    [nodes]=\"large.nodes\"\n    [(expanded)]=\"largeOpen\"\n    selectionMode=\"checkbox\"\n    [(value)]=\"largeChecked\"\n    virtualScroll\n    [virtualItemSize]=\"34\"\n    filter\n    scrollHeight=\"20rem\"\n    ariaLabel=\"Orders by site\"\n  />\n\n  <p class=\"docs-output\" role=\"status\">\n    {{ large.count }} nodes, {{ largeChecked().length }} orders checked\n  </p>\n</div>",
   "virtual-scroller/basic": "<div class=\"docs-stack\">\n  <star-virtual-scroller\n    #orderList\n    [items]=\"orders\"\n    [itemSize]=\"44\"\n    scrollHeight=\"18rem\"\n    ariaLabel=\"Orders\"\n  >\n    <ng-template starVirtualItem [starVirtualItemOf]=\"orders\" let-order>\n      <span class=\"docs-scroller-row\">\n        <strong>{{ order.number }}</strong>\n        <span>{{ order.city }}</span>\n        <span>{{ order.total }} EUR</span>\n      </span>\n    </ng-template>\n  </star-virtual-scroller>\n  <div class=\"docs-row\">\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"orderList.scrollToIndex(0)\">\n      First order\n    </star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"orderList.scrollToIndex(4999)\">\n      Order 5,000\n    </star-button>\n    <star-button\n      size=\"sm\"\n      variant=\"secondary\"\n      (pressed)=\"orderList.scrollToIndex(orders.length - 1)\"\n    >\n      Last order\n    </star-button>\n  </div>\n  @let inView = orderList.visibleRange();\n  @if (inView.last > 0) {\n    <p class=\"docs-output\">In view: orders {{ inView.first + 1 }} to {{ inView.last }}.</p>\n  }\n</div>",
   "virtual-scroller/horizontal": "<star-virtual-scroller\n  [items]=\"cities\"\n  [itemSize]=\"120\"\n  orientation=\"horizontal\"\n  scrollHeight=\"4rem\"\n  ariaLabel=\"Cities\"\n/>",
-  "virtual-scroller/lazy": "<star-virtual-scroller\n  [items]=\"lazyOrders()\"\n  [itemSize]=\"44\"\n  scrollHeight=\"18rem\"\n  lazy\n  [loading]=\"page.isLoading()\"\n  ariaLabel=\"Orders, loaded on demand\"\n  (lazyLoad)=\"range.set($event)\"\n>\n  <ng-template starVirtualItem [starVirtualItemOf]=\"lazyOrders()\" let-order>\n    @if (order) {\n      <span class=\"docs-scroller-row\">\n        <strong>{{ order.number }}</strong>\n        <span>{{ order.city }}</span>\n        <span>{{ order.total }} EUR</span>\n      </span>\n    } @else {\n      <star-skeleton width=\"70%\" height=\"0.875rem\" />\n    }\n  </ng-template>\n</star-virtual-scroller>"
+  "virtual-scroller/lazy": "<star-virtual-scroller\n  [items]=\"lazyOrders()\"\n  [itemSize]=\"44\"\n  scrollHeight=\"18rem\"\n  lazy\n  [loading]=\"page.isLoading()\"\n  ariaLabel=\"Orders, loaded on demand\"\n  (lazyLoad)=\"range.set($event)\"\n>\n  <ng-template starVirtualItem [starVirtualItemOf]=\"lazyOrders()\" let-order>\n    @if (order) {\n      <span class=\"docs-scroller-row\">\n        <strong>{{ order.number }}</strong>\n        <span>{{ order.city }}</span>\n        <span>{{ order.total }} EUR</span>\n      </span>\n    } @else {\n      <star-skeleton width=\"70%\" height=\"0.875rem\" />\n    }\n  </ng-template>\n</star-virtual-scroller>",
+  "window/basic": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"notesOpen.set(true)\"\n      >Open notes</star-button\n    >\n    <star-button variant=\"secondary\" (pressed)=\"summaryOpen.set(true)\">\n      Open order summary\n    </star-button>\n  </div>\n  <star-window\n    header=\"Notes\"\n    [(visible)]=\"notesOpen\"\n    [(position)]=\"notesAt\"\n    [(size)]=\"notesSize\"\n    [(state)]=\"notesState\"\n  >\n    <p>Call the warehouse in Lisbon before noon.</p>\n    <p>Check the open orders of the week.</p>\n  </star-window>\n  <star-window header=\"Order summary\" [(visible)]=\"summaryOpen\" closeOnEscape>\n    <dl class=\"docs-stack\">\n      <div>\n        <dt>Order</dt>\n        <dd>1001</dd>\n      </div>\n      <div>\n        <dt>Items</dt>\n        <dd>3</dd>\n      </div>\n      <div>\n        <dt>Ships from</dt>\n        <dd>Oslo</dd>\n      </div>\n    </dl>\n  </star-window>\n  <p class=\"docs-output\" role=\"status\">\n    Notes: {{ notesState() }}, at {{ notesAt()?.x ?? '–' }}, {{ notesAt()?.y ?? '–' }}\n    @if (notesSize(); as size) {\n      , {{ size.width }} × {{ size.height }}\n    }\n  </p>\n</div>",
+  "window/service": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"openOrder()\">Open order window</star-button>\n  </div>\n  <p class=\"docs-output\" role=\"status\">Result: {{ result() }}</p>\n</div>"
 };

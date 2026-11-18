@@ -93,6 +93,12 @@ export interface StarUiText {
   readonly recentCommands: string;
   /** Default name of the `<nav>` landmark of `star-app-sidebar`. */
   readonly mainNavigation: string;
+  // Window
+  readonly minimize: string;
+  readonly maximize: string;
+  readonly restore: string;
+  /** Keyboard hint of the title bar of `star-window`. */
+  readonly windowHint: string;
   // Order list, pick list
   readonly moveSelectedItem: string;
   readonly orderListHint: string;
@@ -303,6 +309,10 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   commandPlaceholder: 'Type a command or search',
   recentCommands: 'Recent',
   mainNavigation: 'Main navigation',
+  minimize: 'Minimize',
+  maximize: 'Maximize',
+  restore: 'Restore',
+  windowHint: 'Alt and the arrow keys move the window. Shift and the arrow keys resize it.',
 
   moveSelectedItem: 'Move selected item',
   orderListHint: 'Use Alt and the arrow keys to move the selected item.',

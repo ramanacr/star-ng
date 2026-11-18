@@ -65,3 +65,4 @@ export * from '@star-ng/ui/tooltip';
 export * from '@star-ng/ui/tree';
 export * from '@star-ng/ui/utility';
 export * from '@star-ng/ui/virtual-scroller';
+export * from '@star-ng/ui/window';

@@ -86,6 +86,11 @@ export const STAR_UI_TEXT_DE: StarUiText = {
   commandPlaceholder: 'Befehl eingeben oder suchen',
   recentCommands: 'Zuletzt verwendet',
   mainNavigation: 'Hauptnavigation',
+  minimize: 'Minimieren',
+  maximize: 'Maximieren',
+  restore: 'Wiederherstellen',
+  windowHint:
+    'Alt und die Pfeiltasten verschieben das Fenster. Umschalt und die Pfeiltasten ändern seine Größe.',
 
   moveSelectedItem: 'Ausgewähltes Element verschieben',
   orderListHint: 'Mit Alt und den Pfeiltasten verschieben Sie das ausgewählte Element.',

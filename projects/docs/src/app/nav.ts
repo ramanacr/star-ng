@@ -430,6 +430,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         load: () => import('./controls/drawer.page').then((m) => m.DrawerPage),
       },
       {
+        label: 'Window',
+        path: 'controls/window',
+        keywords: 'floating window non-modal drag move resize minimize maximize restore stack',
+        load: () => import('./controls/window.page').then((m) => m.WindowPage),
+      },
+      {
         label: 'Bottom sheet',
         path: 'controls/bottom-sheet',
         keywords: 'action sheet mobile bottom panel slide up choices service',
