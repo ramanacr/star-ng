@@ -1,0 +1,125 @@
+// Tile layout (StarTileLayout, StarTile): a CSS grid of tiles. The host is a size container, so
+// the breakpoint column counts come from container queries.
+@use '../shared' as *;
+
+.star-tile-layout {
+  container: star-tile-layout / inline-size;
+  display: block;
+  // A size container does not grow with its content: it takes the width it is given.
+  inline-size: 100%;
+}
+.star-tile-layout__grid {
+  --star-tile-columns-now: var(--star-tile-columns, 3);
+  display: grid;
+  grid-template-columns: repeat(var(--star-tile-columns-now), minmax(0, 1fr));
+  grid-auto-rows: var(--star-tile-row-height, 10rem);
+  gap: var(--star-tile-gap, 1rem);
+}
+// The narrowest matching query comes last and wins. A missing count takes the next wider one.
+@container star-tile-layout (width < 64rem) {
+  .star-tile-layout__grid {
+    --star-tile-columns-now: var(--star-tile-columns-lg, var(--star-tile-columns, 3));
+  }
+}
+@container star-tile-layout (width < 48rem) {
+  .star-tile-layout__grid {
+    --star-tile-columns-now: var(
+      --star-tile-columns-md,
+      var(--star-tile-columns-lg, var(--star-tile-columns, 3))
+    );
+  }
+}
+@container star-tile-layout (width < 36rem) {
+  .star-tile-layout__grid {
+    --star-tile-columns-now: var(
+      --star-tile-columns-sm,
+      var(--star-tile-columns-md, var(--star-tile-columns-lg, var(--star-tile-columns, 3)))
+    );
+  }
+}
+.star-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  // The component clamps the span to the columns in force (`min()` is not allowed in `span`).
+  grid-column: span var(--star-tile-col-span-now, 1);
+  grid-row: span var(--star-tile-row-span, 1);
+  border: 1px solid var(--star-border);
+  border-radius: var(--star-radius-lg);
+  background: var(--star-surface);
+  color: var(--star-text);
+  box-shadow: var(--star-shadow-xs);
+
+  &:focus-visible {
+    outline: 2px solid var(--star-accent);
+    outline-offset: 2px;
+  }
+}
+.star-tile-layout--reorderable .star-tile:not(.cdk-drag-disabled) {
+  cursor: grab;
+}
+.star-tile__header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem 0;
+  font: var(--star-type-title-sm);
+  color: var(--star-text-strong);
+
+  &:empty {
+    display: none;
+  }
+}
+.star-tile__body {
+  flex: 1;
+  min-height: 0;
+  // Clips: a tile has a fixed size. Put a focusable scroll area inside for long content.
+  overflow: hidden;
+  padding: 0.75rem 1rem;
+}
+.star-tile__resize {
+  position: absolute;
+  inset-block-end: 0;
+  inset-inline-end: 0;
+  width: 1rem;
+  height: 1rem;
+  cursor: nwse-resize;
+  touch-action: none;
+  // Two short diagonal lines in the corner.
+  background: linear-gradient(
+    135deg,
+    transparent 45%,
+    var(--star-border-strong) 45% 55%,
+    transparent 55% 70%,
+    var(--star-border-strong) 70% 80%,
+    transparent 80%
+  );
+
+  &:dir(rtl) {
+    cursor: nesw-resize;
+    scale: -1 1;
+  }
+}
+.star-tile--resizing {
+  outline: 2px dashed var(--star-accent);
+  outline-offset: 2px;
+}
+// CDK drag and drop: the preview follows the pointer, the placeholder keeps the place.
+.star-tile.cdk-drag-preview {
+  box-shadow: var(--star-shadow-lg);
+}
+.star-tile.cdk-drag-placeholder {
+  opacity: 0.4;
+}
+.star-tile-layout.cdk-drop-list-dragging .star-tile:not(.cdk-drag-placeholder),
+.star-tile.cdk-drag-animating {
+  transition: transform var(--star-duration-base) $ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .star-tile-layout.cdk-drop-list-dragging .star-tile:not(.cdk-drag-placeholder),
+  .star-tile.cdk-drag-animating {
+    transition: none;
+  }
+}

@@ -2,7 +2,8 @@
 // the scroll math of windowed rendering. They hold no DOM or signal state, so they are unit
 // tested without layout. The entry point exports the row helpers that the tree table reuses
 // (`flattenVisible`, `rowIndexOf`, `parentsOf`, `stillFocusable`, `navigationTarget`,
-// `scrollOffsetToReveal`); the check and subtree helpers stay internal.
+// `scrollOffsetToReveal`) and the check, lock and filter helpers that both share (`checkStates`,
+// `toggleChecked`, `isLocked`, `filterTree`). The other helpers stay internal.
 
 /** The part of a tree node that the helpers read. `StarTreeNode` fits it. */
 export interface BranchLike<N> {
@@ -128,38 +129,175 @@ export function navigationTarget<N extends BranchLike<N>>(
   }
 }
 
-/** Check state of one node: true, false or 'mixed' from the leaves below it. */
+/** The part of a node that the check and the filter helpers read. `StarTreeNode` fits it. */
+export interface LockableNode<N> extends BranchLike<N> {
+  /** A disabled node keeps its check state when a parent or a child changes. */
+  readonly disabled?: boolean;
+  /** `false`: the node keeps its check state when a parent or a child changes. */
+  readonly selectable?: boolean;
+}
+
+/** The user cannot check or uncheck the node, and propagation does not change it. */
+export function isLocked(node: {
+  readonly disabled?: boolean;
+  readonly selectable?: boolean;
+}): boolean {
+  return !!node.disabled || node.selectable === false;
+}
+
+/** Check state of a node in checkbox mode. */
 export type CheckState = boolean | 'mixed';
 
 /**
- * Check state of every node of a tree in one pass (checkbox mode). A node with children is
- * `true` when all leaves below it are selected, `'mixed'` when some are. `isLeaf` tells, by key,
- * what counts as a leaf (the filter copies a node and may cut its children).
+ * Check state of every node: `true` when its key is selected, or (with `propagateUp`) when all
+ * its selectable children are checked; `'mixed'` when it is not, a descendant is selected and
+ * `propagateUp` is on; else `false`. Locked children (disabled, `selectable: false`) do not
+ * count for the parent. Shared by `star-tree` and `star-tree-table`.
  */
-export function checkStates<N extends BranchLike<N>>(
+export function checkStates<N extends LockableNode<N>>(
   nodes: readonly N[],
   selected: ReadonlySet<string>,
-  isLeaf: (key: string) => boolean,
+  propagateUp: boolean,
 ): Map<string, CheckState> {
   const states = new Map<string, CheckState>();
-  const walk = (node: N): { leaves: number; checked: number } => {
-    if (!node.children?.length) {
-      states.set(node.key, selected.has(node.key));
-      const leaf = isLeaf(node.key);
-      return { leaves: leaf ? 1 : 0, checked: leaf && selected.has(node.key) ? 1 : 0 };
-    }
-    let leaves = 0;
+  // Returns whether the node or a node below it is selected.
+  const walk = (node: N): boolean => {
+    let below = false;
+    let open = 0;
     let checked = 0;
-    for (const child of node.children) {
-      const part = walk(child);
-      leaves += part.leaves;
-      checked += part.checked;
+    for (const child of node.children ?? []) {
+      below = walk(child) || below;
+      if (isLocked(child)) continue;
+      open++;
+      if (states.get(child.key) === true) checked++;
     }
-    states.set(node.key, checked === 0 ? false : checked === leaves ? true : 'mixed');
-    return { leaves, checked };
+    const own = selected.has(node.key) || (propagateUp && open > 0 && checked === open);
+    states.set(node.key, own ? true : propagateUp && below ? 'mixed' : false);
+    return own || below;
   };
   nodes.forEach(walk);
   return states;
+}
+
+/**
+ * The selection keys after the user checks (`on`) or unchecks a node in checkbox mode.
+ * `down`: the descendants follow the node. `up`: each ancestor is checked when all its
+ * selectable children are checked, and unchecked otherwise. A locked node (disabled or
+ * `selectable: false`) below or above the node keeps its state, and so does its subtree. The
+ * order of the keys that stay is kept. Shared by `star-tree` and `star-tree-table`.
+ */
+export function toggleChecked<N extends LockableNode<N>>(
+  nodes: readonly N[],
+  key: string,
+  on: boolean,
+  selection: readonly string[],
+  propagate: { readonly up: boolean; readonly down: boolean },
+): string[] {
+  const index = new Map<string, N>();
+  const parents = new Map<string, string | null>();
+  const walk = (list: readonly N[], parent: string | null) =>
+    list.forEach((node) => {
+      index.set(node.key, node);
+      parents.set(node.key, parent);
+      walk(node.children ?? [], node.key);
+    });
+  walk(nodes, null);
+  const node = index.get(key);
+  if (!node) return [...selection];
+  const keys = new Set(selection);
+  const apply = (target: N) => {
+    if (on) keys.add(target.key);
+    else keys.delete(target.key);
+    if (!propagate.down) return;
+    for (const child of target.children ?? []) if (!isLocked(child)) apply(child);
+  };
+  apply(node);
+  if (propagate.up) {
+    for (let parent = parents.get(key) ?? null; parent !== null;) {
+      const current = index.get(parent);
+      if (current && !isLocked(current)) {
+        const children = (current.children ?? []).filter((child) => !isLocked(child));
+        if (children.length && children.every((child) => keys.has(child.key))) keys.add(parent);
+        else keys.delete(parent);
+      }
+      parent = parents.get(parent) ?? null;
+    }
+  }
+  const kept = selection.filter((k) => keys.has(k));
+  const known = new Set(kept);
+  return [...kept, ...[...keys].filter((k) => !known.has(k))];
+}
+
+/**
+ * The filter modes (PrimeNG `filterMode`). `'lenient'`: a matching node shows with its ancestors
+ * and all its descendants. `'strict'`: only the matching paths show; a descendant of a match that
+ * does not match itself (and has no matching descendant) is hidden.
+ */
+export type TreeFilterMode = 'lenient' | 'strict';
+
+export interface TreeFilterResult<N> {
+  readonly nodes: readonly N[];
+  /** Keys of the nodes that show because a descendant matches: they show open. */
+  readonly ancestors: ReadonlySet<string>;
+  /** Keys of the nodes that match. */
+  readonly matches: ReadonlySet<string>;
+}
+
+/**
+ * Keeps the nodes that match (and their ancestors), in the given filter mode. Shared by
+ * `star-tree` and `star-tree-table`.
+ */
+export function filterTree<N extends BranchLike<N>>(
+  nodes: readonly N[],
+  match: (node: N) => boolean,
+  mode: TreeFilterMode,
+): TreeFilterResult<N> {
+  const ancestors = new Set<string>();
+  const matches = new Set<string>();
+  const walk = (list: readonly N[]): N[] =>
+    list.flatMap((node) => {
+      const own = match(node);
+      if (own) matches.add(node.key);
+      if (own && mode === 'lenient') return [node];
+      const children = walk(node.children ?? []);
+      if (children.length) ancestors.add(node.key);
+      if (!own && !children.length) return [];
+      // A strict match keeps only its matching children; a node without children stays as it is.
+      return [node.children ? { ...node, children } : node];
+    });
+  return { nodes: walk(nodes), ancestors, matches };
+}
+
+/** Text of a node field for the filter: `label`, another node property, or a `data` field. */
+export function nodeFieldText(node: object, field: string): unknown {
+  const own = (node as Record<string, unknown>)[field];
+  if (own !== undefined) return own;
+  const data = (node as { data?: unknown }).data;
+  return data !== null && typeof data === 'object'
+    ? (data as Record<string, unknown>)[field]
+    : undefined;
+}
+
+/** Keys of all ancestors of a node, from the top level down (empty for a root or a missing key). */
+export function ancestorKeys(parents: ReadonlyMap<string, string | null>, key: string): string[] {
+  const keys: string[] = [];
+  for (let parent = parents.get(key) ?? null; parent !== null; parent = parents.get(parent) ?? null)
+    keys.unshift(parent);
+  return keys;
+}
+
+/** Keys of all nodes that have children (for `expandAll`). */
+export function branchKeys<N extends BranchLike<N>>(nodes: readonly N[]): string[] {
+  const keys: string[] = [];
+  const walk = (list: readonly N[]) =>
+    list.forEach((node) => {
+      if (node.children?.length) {
+        keys.push(node.key);
+        walk(node.children);
+      }
+    });
+  walk(nodes);
+  return keys;
 }
 
 /**

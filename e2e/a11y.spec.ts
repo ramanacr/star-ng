@@ -356,6 +356,45 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'date picker popup with special dates',
+    path: 'controls/date-picker',
+    open: async (page) => {
+      await example(page, 'Special dates').getByRole('button', { name: 'Choose date' }).click();
+      await expect(page.locator('.star-calendar__day--special').first()).toBeVisible();
+    },
+  },
+  {
+    name: 'date picker touch sheet',
+    path: 'controls/date-picker',
+    open: async (page) => {
+      await example(page, 'Touch mode')
+        .getByRole('button', { name: 'Choose date' })
+        .first()
+        .click();
+      await expect(page.locator('dialog.star-date__sheet')).toBeVisible();
+    },
+  },
+  {
+    name: 'date picker with kept invalid text',
+    path: 'controls/date-picker',
+    open: async (page) => {
+      const input = example(page, 'Display and input formats').getByRole('textbox', {
+        name: 'Invoice due date',
+      });
+      await input.fill('31/02/2026');
+      await input.press('Tab');
+      await expect(input).toHaveAttribute('aria-invalid', 'true');
+    },
+  },
+  {
+    name: 'time picker panel with seconds',
+    path: 'controls/time-picker',
+    open: async (page) => {
+      await example(page, 'Seconds and steps').getByRole('button', { name: 'Choose time' }).click();
+      await expect(page.getByRole('listbox', { name: 'Second' })).toBeVisible();
+    },
+  },
+  {
     name: 'month view of the date picker',
     path: 'controls/date-picker',
     open: async (page) => {
@@ -536,6 +575,73 @@ const STATES: readonly State[] = [
     open: async (page) => {
       await example(page, 'Dialog from code').getByRole('button', { name: 'Edit note' }).click();
       await expect(page.getByRole('dialog')).toBeVisible();
+    },
+  },
+  {
+    name: 'command palette open with a filter',
+    path: 'controls/command-palette',
+    open: async (page) => {
+      await example(page, 'Commands in groups')
+        .getByRole('button', { name: 'Open command palette' })
+        .click();
+      const field = page.getByRole('combobox', { name: 'Command palette' });
+      await expect(field).toBeFocused();
+      await field.fill('go');
+      await expect(page.getByRole('option', { name: 'Go to dashboard' })).toBeVisible();
+    },
+  },
+  {
+    name: 'command palette with no match',
+    path: 'controls/command-palette',
+    open: async (page) => {
+      await example(page, 'Option and empty templates')
+        .getByRole('button', { name: 'Find a person' })
+        .click();
+      await page.getByRole('combobox', { name: 'Find a person' }).fill('zzz');
+      await expect(
+        page.locator('.star-command-palette__message').filter({ visible: true }),
+      ).toHaveText('No person matches “zzz”.');
+    },
+  },
+  {
+    name: 'app sidebar collapsed with a group open',
+    path: 'controls/app-sidebar',
+    open: async (page) => {
+      const nav = page.getByRole('navigation', { name: 'Workspace' });
+      await nav.getByRole('button', { name: 'Reports' }).click();
+      await page.getByRole('button', { name: 'Collapse sidebar' }).click();
+      await expect(nav.getByRole('button', { name: 'Monthly' })).toBeVisible();
+    },
+  },
+  {
+    name: 'app sidebar in its drawer',
+    path: 'controls/app-sidebar',
+    open: async (page) => {
+      await example(page, 'Overlay mode').getByRole('button', { name: 'Menu' }).click();
+      await expect(page.getByRole('dialog', { name: 'Shop' })).toBeVisible();
+    },
+  },
+  {
+    name: 'two windows, one minimized',
+    path: 'controls/window',
+    open: async (page) => {
+      const area = example(page, 'Windows in the page');
+      await area.getByRole('button', { name: 'Open notes' }).click();
+      const notes = page.getByRole('dialog', { name: 'Notes' });
+      await expect(notes).toBeVisible();
+      await notes.getByRole('button', { name: 'Minimize' }).click();
+      await area.getByRole('button', { name: 'Open order summary' }).click();
+      await expect(page.getByRole('dialog', { name: 'Order summary' })).toBeVisible();
+    },
+  },
+  {
+    name: 'window opened from code',
+    path: 'controls/window',
+    open: async (page) => {
+      await example(page, 'Open from code')
+        .getByRole('button', { name: 'Open order window' })
+        .click();
+      await expect(page.getByRole('dialog', { name: 'Order 1001' })).toBeVisible();
     },
   },
   {
@@ -886,6 +992,28 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'table with a filter menu open (two rules)',
+    path: 'controls/table-sort-filter',
+    open: async (page) => {
+      await example(page, 'Filter menu').getByRole('button', { name: 'Filter Total' }).click();
+      const dialog = page.getByRole('dialog', { name: 'Filter Total' });
+      await expect(dialog).toBeVisible();
+      await dialog.getByRole('button', { name: 'Add rule' }).click();
+      await expect(dialog.getByRole('group')).toHaveCount(2);
+    },
+  },
+  {
+    name: 'table with the header check box mixed and an unselectable row',
+    path: 'controls/table-selection',
+    open: async (page) => {
+      const live = example(page, 'Check box selection');
+      await live.locator('tbody').getByRole('checkbox', { disabled: false }).first().check();
+      await expect(
+        live.locator('thead').getByRole('checkbox', { name: 'Select all rows' }),
+      ).toHaveJSProperty('indeterminate', true);
+    },
+  },
+  {
     name: 'table with a filter select open (Region)',
     path: 'controls/table-sort-filter',
     open: async (page) => {
@@ -912,6 +1040,35 @@ const STATES: readonly State[] = [
         await expect(open).toHaveCount(opened + 1);
       }
       await expect(closed).toHaveCount(0);
+    },
+  },
+  {
+    name: 'tree with a loading row',
+    path: 'controls/tree',
+    open: async (page) => {
+      const live = example(page, 'Lazy children');
+      await live.locator('[data-key="atlas"]').click();
+      await expect(live.locator('.star-tree__loading')).toBeVisible();
+    },
+  },
+  {
+    name: 'tree with the node context menu open',
+    path: 'controls/tree',
+    open: async (page) => {
+      const live = example(page, 'Context menu and events');
+      await live.locator('[data-key="web"]').click({ button: 'right' });
+      await expect(page.getByRole('menuitem', { name: 'Archive' })).toBeVisible();
+    },
+  },
+  {
+    name: 'tree after a keyboard move',
+    path: 'controls/tree',
+    open: async (page) => {
+      // The keyboard move and its live announcement (a pointer drag cannot stay in progress).
+      const live = example(page, 'Drag and drop');
+      await live.locator('[data-key="mobile"]').focus();
+      await page.keyboard.press('Control+Shift+ArrowUp');
+      await expect(live.locator('[aria-live]')).toHaveText('Mobile moved before Web platform');
     },
   },
   {

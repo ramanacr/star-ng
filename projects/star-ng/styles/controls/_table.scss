@@ -81,6 +81,15 @@ star-select.star-table__filter {
 .star-table__row--clickable {
   cursor: pointer;
 }
+// `metaKeySelection`: the rows take the focus (one tab stop, arrow keys between rows).
+.star-table__row[tabindex] {
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid var(--star-accent);
+    outline-offset: -2px;
+  }
+}
 .star-table__row--selected,
 .star-table__row--selected:hover {
   background: var(--star-primary-soft);
@@ -571,4 +580,96 @@ star-select.star-table__editor {
 .star-table__row--deleted > td {
   color: var(--star-text-muted);
   text-decoration: line-through;
+}
+
+// Filter menu (`filterDisplay="menu"`): a button in the header cell and a dialog in a popover.
+.star-table-filter-menu {
+  display: inline-flex;
+  vertical-align: middle;
+  margin-inline-start: 0.25rem;
+}
+.star-table__filter-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  // WCAG 2.2 target size: 24 px at least.
+  min-block-size: 1.5rem;
+  min-inline-size: 1.5rem;
+  padding: 0;
+  border: 0;
+  border-radius: var(--star-radius-sm);
+  background: none;
+  color: var(--star-text-muted);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--star-surface-muted);
+    color: var(--star-text-strong);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--star-accent);
+    outline-offset: 2px;
+  }
+}
+.star-table__filter-button--active {
+  color: var(--star-primary);
+}
+.star-table-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-inline-size: 15rem;
+  // A menu with several rules scrolls inside, so Apply stays reachable on a short screen.
+  max-block-size: calc(100dvh - 8rem);
+  overflow-y: auto;
+  // Room for the focus outlines of the fields at the edges of the scroll area.
+  margin: -0.25rem;
+  padding: 0.25rem;
+  font: var(--star-type-body);
+}
+.star-table-filter__rule {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0 0 0.75rem;
+  border: 0;
+  border-block-end: 1px solid var(--star-border);
+
+  > select,
+  > input {
+    flex: 1 1 100%;
+  }
+}
+.star-table-filter__range {
+  display: flex;
+  flex: 1 1 100%;
+  gap: 0.25rem;
+
+  input {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+}
+.star-table-filter__choices {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  max-block-size: 12rem;
+  overflow-y: auto;
+}
+.star-table-filter__choice {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+.star-table-filter__add {
+  align-self: flex-start;
+}
+.star-table-filter__buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
 }

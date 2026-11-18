@@ -65,12 +65,43 @@ export interface StarUiText {
   readonly noData: string;
   readonly selectRow: string;
   readonly selectAllRows: string;
+  /** Name of a row check box or radio, with the row text: "Select row Order 1042". */
+  readonly selectRowOf: (label: string) => string;
+  /** Header check box with `selectionPageOnly`. */
+  readonly selectPageRows: string;
   readonly filterBy: (column: string) => string;
   readonly filterAll: string;
   readonly filterMin: (column: string) => string;
   readonly filterMax: (column: string) => string;
   readonly filterMinShort: string;
   readonly filterMaxShort: string;
+  /** Filter menu of a table column (`filterDisplay="menu"`). */
+  readonly filterMenu: (column: string) => string;
+  readonly filterMenuActive: (column: string) => string;
+  readonly filterOperator: string;
+  readonly matchAll: string;
+  readonly matchAny: string;
+  readonly matchMode: string;
+  readonly filterRule: (index: number) => string;
+  readonly addRule: string;
+  readonly removeRule: (index: number) => string;
+  readonly applyFilter: string;
+  readonly matchContains: string;
+  readonly matchStartsWith: string;
+  readonly matchEndsWith: string;
+  readonly matchEquals: string;
+  readonly matchNotContains: string;
+  readonly matchNotEquals: string;
+  readonly matchLt: string;
+  readonly matchLte: string;
+  readonly matchGt: string;
+  readonly matchGte: string;
+  readonly matchBetween: string;
+  readonly matchDateIs: string;
+  readonly matchDateIsNot: string;
+  readonly matchDateBefore: string;
+  readonly matchDateAfter: string;
+  readonly matchIn: string;
   readonly expandRow: string;
   readonly collapseRow: string;
   readonly rowDetails: string;
@@ -106,6 +137,24 @@ export interface StarUiText {
   readonly layout: string;
   readonly layoutList: string;
   readonly layoutGrid: string;
+  // Tile layout
+  /** Hint of a reorderable tile. */
+  readonly tileMoveHint: string;
+  /** Hint of a resizable tile. */
+  readonly tileResizeHint: string;
+  /** Announcement after a tile resize. */
+  readonly tileSize: (label: string, columns: number, rows: number) => string;
+  // Command palette
+  readonly commandPalette: string;
+  readonly commandPlaceholder: string;
+  /** Heading of the recent commands. */
+  readonly recentCommands: string;
+  /** Default name of the `<nav>` landmark of `star-app-sidebar`. */
+  readonly mainNavigation: string;
+  // Window
+  readonly minimize: string;
+  /** Keyboard hint of the title bar of `star-window`. */
+  readonly windowHint: string;
   // Order list, pick list
   readonly moveSelectedItem: string;
   readonly orderListHint: string;
@@ -114,6 +163,12 @@ export interface StarUiText {
   readonly moveDown: string;
   readonly moveBottom: string;
   readonly itemPosition: (label: string, position: number, total: number) => string;
+  // Tree: move a node (drag and drop, Ctrl+Shift+arrow keys)
+  readonly treeMoveHint: string;
+  readonly treeMovedBefore: (label: string, target: string) => string;
+  readonly treeMovedAfter: (label: string, target: string) => string;
+  readonly treeMovedInside: (label: string, target: string) => string;
+  readonly treeMoveNotAllowed: (label: string) => string;
   readonly transfer: string;
   readonly moveSelectedToTarget: string;
   readonly moveAllToTarget: string;
@@ -139,7 +194,13 @@ export interface StarUiText {
   readonly chooseTime: string;
   readonly hour: string;
   readonly minute: string;
+  readonly second: string;
   readonly dayPeriod: string;
+  /** Kinds of a special date in the calendar (`specialDates`). */
+  readonly holiday: string;
+  readonly event: string;
+  /** A special date without a kind. */
+  readonly specialDate: string;
   // Inputs
   readonly increase: string;
   readonly decrease: string;
@@ -317,12 +378,40 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   noData: 'No records found',
   selectRow: 'Select row',
   selectAllRows: 'Select all rows',
+  selectRowOf: (label) => `Select row ${label}`,
+  selectPageRows: 'Select all rows on this page',
   filterBy: (column) => `Filter by ${column}`,
   filterAll: 'All',
   filterMin: (column) => `${column} from`,
   filterMax: (column) => `${column} to`,
   filterMinShort: 'Min',
   filterMaxShort: 'Max',
+  filterMenu: (column) => `Filter ${column}`,
+  filterMenuActive: (column) => `Filter ${column}, active`,
+  filterOperator: 'Combine rules',
+  matchAll: 'Match all',
+  matchAny: 'Match any',
+  matchMode: 'Match mode',
+  filterRule: (index) => `Rule ${index}`,
+  addRule: 'Add rule',
+  removeRule: (index) => `Remove rule ${index}`,
+  applyFilter: 'Apply',
+  matchContains: 'Contains',
+  matchStartsWith: 'Starts with',
+  matchEndsWith: 'Ends with',
+  matchEquals: 'Equals',
+  matchNotContains: 'Does not contain',
+  matchNotEquals: 'Not equals',
+  matchLt: 'Less than',
+  matchLte: 'Less than or equal to',
+  matchGt: 'Greater than',
+  matchGte: 'Greater than or equal to',
+  matchBetween: 'Between',
+  matchDateIs: 'Date is',
+  matchDateIsNot: 'Date is not',
+  matchDateBefore: 'Date is before',
+  matchDateAfter: 'Date is after',
+  matchIn: 'Is one of',
   expandRow: 'Expand row',
   collapseRow: 'Collapse row',
   rowDetails: 'Details',
@@ -358,6 +447,16 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   layout: 'Layout',
   layoutList: 'List',
   layoutGrid: 'Grid',
+  tileMoveHint: 'Press Control and an arrow key to move the tile.',
+  tileResizeHint: 'Press Control, Shift and an arrow key to resize the tile.',
+  tileSize: (label, columns, rows) =>
+    `${label}: ${columns} ${columns === 1 ? 'column' : 'columns'}, ${rows} ${rows === 1 ? 'row' : 'rows'}`,
+  commandPalette: 'Command palette',
+  commandPlaceholder: 'Type a command or search',
+  recentCommands: 'Recent',
+  mainNavigation: 'Main navigation',
+  minimize: 'Minimize',
+  windowHint: 'Alt and the arrow keys move the window. Shift and the arrow keys resize it.',
 
   moveSelectedItem: 'Move selected item',
   orderListHint: 'Use Alt and the arrow keys to move the selected item.',
@@ -366,6 +465,11 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   moveDown: 'Move down',
   moveBottom: 'Move to bottom',
   itemPosition: (label, position, total) => `${label}, position ${position} of ${total}`,
+  treeMoveHint: 'Use Control, Shift and the arrow keys to move the node.',
+  treeMovedBefore: (label, target) => `${label} moved before ${target}`,
+  treeMovedAfter: (label, target) => `${label} moved after ${target}`,
+  treeMovedInside: (label, target) => `${label} moved into ${target}`,
+  treeMoveNotAllowed: (label) => `${label} cannot move there`,
   transfer: 'Transfer',
   moveSelectedToTarget: 'Move selected to target',
   moveAllToTarget: 'Move all to target',
@@ -391,7 +495,11 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   chooseTime: 'Choose time',
   hour: 'Hour',
   minute: 'Minute',
+  second: 'Second',
   dayPeriod: 'AM or PM',
+  holiday: 'Holiday',
+  event: 'Event',
+  specialDate: 'Special date',
 
   increase: 'Increase',
   decrease: 'Decrease',
@@ -535,8 +643,13 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   page: ['page'],
   pageReport: ['first', 'last', 'total'],
   filterBy: ['column'],
+  selectRowOf: ['label'],
   filterMin: ['column'],
   filterMax: ['column'],
+  filterMenu: ['column'],
+  filterMenuActive: ['column'],
+  filterRule: ['index'],
+  removeRule: ['index'],
   editCell: ['column'],
   valueMin: ['min'],
   valueMax: ['max'],
@@ -544,6 +657,11 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   moveColumnEarlier: ['column'],
   moveColumnLater: ['column'],
   itemPosition: ['label', 'position', 'total'],
+  treeMovedBefore: ['label', 'target'],
+  treeMovedAfter: ['label', 'target'],
+  treeMovedInside: ['label', 'target'],
+  treeMoveNotAllowed: ['label'],
+  tileSize: ['label', 'columns', 'rows'],
   passwordRuleLength: ['min'],
   otpCharacter: ['position', 'total'],
   sliderMinimum: ['label'],
