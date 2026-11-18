@@ -145,6 +145,73 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ]
   },
+  "StarAiPrompt": {
+    "kind": "component",
+    "selector": "star-ai-prompt",
+    "entry": "@star-ng/ui/chat",
+    "description": "AI prompt panel (Kendo UI `AIPrompt`; PrimeNG, Ignite UI and Syncfusion Angular have none as an Angular control): a prompt field with suggestion chips and a Generate button, and the list of responses with Copy, Retry and, while one streams, Stop.",
+    "inputs": [
+      {
+        "name": "outputs",
+        "type": "readonly StarAiPromptOutput[]",
+        "default": "[]",
+        "required": false,
+        "description": "The responses, in the order shown (put the newest first or last, as you like)."
+      },
+      {
+        "name": "suggestions",
+        "type": "readonly string[]",
+        "default": "[]",
+        "required": false,
+        "description": "Prompt ideas shown as chips. A chip fills the prompt field."
+      },
+      {
+        "name": "placeholder",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Placeholder of the prompt field. Defaults to the `aiPromptPlaceholder` text."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Accessible name of the prompt field. Defaults to the `aiPrompt` text."
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": [
+      {
+        "name": "promptRequest",
+        "type": "{ prompt: string }",
+        "default": null,
+        "required": false,
+        "description": "Emits the prompt when the user asks for a response."
+      },
+      {
+        "name": "retry",
+        "type": "StarAiPromptOutput",
+        "default": null,
+        "required": false,
+        "description": "Emits a response the user wants again."
+      },
+      {
+        "name": "stop",
+        "type": "StarAiPromptOutput",
+        "default": null,
+        "required": false,
+        "description": "Emits the streaming response the user wants to stop."
+      }
+    ]
+  },
   "StarAnimateOnScroll": {
     "kind": "directive",
     "selector": "[starAnimateOnScroll]",
@@ -1427,6 +1494,110 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Start the table view open."
       }
     ],
+    "models": [],
+    "outputs": []
+  },
+  "StarChat": {
+    "kind": "component",
+    "selector": "star-chat",
+    "entry": "@star-ng/ui/chat",
+    "description": "Chat (Kendo UI `Chat`; PrimeNG, Ignite UI and Syncfusion Angular have no chat control): a message list with a composer. Messages of the current `user` align to the end (to the left in a right-to-left page), consecutive messages of one author form a group, and a separator starts each day. The text supports a Markdown subset; raw HTML stays text and links open safely.",
+    "inputs": [
+      {
+        "name": "messages",
+        "type": "readonly StarChatMessage[]",
+        "default": "[]",
+        "required": false,
+        "description": "The messages, oldest first."
+      },
+      {
+        "name": "user",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Author id of the current user: those messages align to the end."
+      },
+      {
+        "name": "typing",
+        "type": "readonly StarChatAuthor[]",
+        "default": "[]",
+        "required": false,
+        "description": "Authors who are typing now."
+      },
+      {
+        "name": "loading",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows a loading row at the top (older messages are loading)."
+      },
+      {
+        "name": "hasMore",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "`false` when there are no older messages: scrolling to the top emits nothing."
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Disables the composer."
+      },
+      {
+        "name": "placeholder",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Placeholder of the composer. Defaults to the `message` text."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Accessible name of the message area. Defaults to the `chatMessages` text."
+      },
+      {
+        "name": "locale",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Locale of the times and day separators. Default: the browser's."
+      },
+      {
+        "name": "groupWindow",
+        "type": "number",
+        "default": "5 * 60 * 1000",
+        "required": false,
+        "description": "Longest pause in milliseconds between two messages of one author in one group."
+      }
+    ],
+    "models": [],
+    "outputs": [
+      {
+        "name": "send",
+        "type": "{ text: string }",
+        "default": null,
+        "required": false,
+        "description": "Emits the text of the composer when the user sends it."
+      },
+      {
+        "name": "loadMore",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "Emits when the user scrolled to the top: load older messages."
+      }
+    ]
+  },
+  "StarChatMessageTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starChatMessage]",
+    "entry": "@star-ng/ui/chat",
+    "description": "Content of each message bubble of `star-chat`: `<ng-template starChatMessage let-message>`.",
+    "inputs": [],
     "models": [],
     "outputs": []
   },
@@ -4270,6 +4441,23 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "entry": "@star-ng/ui/core",
     "description": "Content shown while data loads. PrimeNG `#loader` template.",
     "inputs": [],
+    "models": [],
+    "outputs": []
+  },
+  "StarMarkdownLite": {
+    "kind": "component",
+    "selector": "star-markdown-lite",
+    "entry": "@star-ng/ui/chat",
+    "description": "Renders text in the Markdown subset of `starParseMarkdownLite` (paragraphs, line breaks, bold, italic, inline code, fenced code blocks and links). Everything is bound as text: raw HTML in the source shows as text. Links open in a new tab with `rel=\"noopener noreferrer\"`; only `http:`, `https:` and `mailto:` addresses become links. `star-chat` and `star-ai-prompt` use it.",
+    "inputs": [
+      {
+        "name": "text",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "The source text."
+      }
+    ],
     "models": [],
     "outputs": []
   },
@@ -8792,6 +8980,8 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "chart/stacked-bar": "<star-chart\n  type=\"stacked-bar\"\n  title=\"Orders per month by channel\"\n  [labels]=\"months\"\n  [series]=\"channelOrders\"\n  categoryLabel=\"Month\"\n/>",
   "chart/stacked-bar-percent": "<star-chart\n  type=\"stacked-bar\"\n  title=\"Share of orders by channel\"\n  [labels]=\"months\"\n  [series]=\"channelOrders\"\n  categoryLabel=\"Month\"\n  percent\n/>",
   "chart/table": "<star-chart\n  type=\"bar\"\n  title=\"Revenue by region, table\"\n  [labels]=\"regions\"\n  [series]=\"revenue\"\n  categoryLabel=\"Region\"\n  table\n/>",
+  "chat/ai-prompt": "<star-ai-prompt\n  [outputs]=\"outputs()\"\n  [suggestions]=\"suggestions\"\n  (promptRequest)=\"ask($event.prompt)\"\n  (retry)=\"ask($event.prompt)\"\n  (stop)=\"stopStream($event.id)\"\n/>",
+  "chat/basic": "<star-chat\n  [messages]=\"messages()\"\n  user=\"me\"\n  [typing]=\"typing()\"\n  [loading]=\"loadingOlder()\"\n  [hasMore]=\"hasMore()\"\n  locale=\"en-US\"\n  ariaLabel=\"Support conversation\"\n  (send)=\"post($event.text)\"\n  (loadMore)=\"loadOlder()\"\n/>",
   "checkbox/basic": "<star-checkbox [(checked)]=\"subscribed\">Send me product news</star-checkbox>\n<p class=\"docs-output\" role=\"status\">Subscribed: {{ subscribed() }}</p>",
   "checkbox/form": "<star-checkbox [formField]=\"terms.accept\">I accept the terms</star-checkbox>\n<p class=\"docs-output\" role=\"status\">Valid: {{ terms().valid() }}</p>",
   "checkbox/indeterminate": "<star-checkbox [(checked)]=\"all\" [(indeterminate)]=\"some\">All regions</star-checkbox>",

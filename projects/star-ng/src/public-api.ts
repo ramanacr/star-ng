@@ -17,6 +17,7 @@ export * from '@star-ng/ui/breadcrumb';
 export * from '@star-ng/ui/button';
 export * from '@star-ng/ui/card';
 export * from '@star-ng/ui/chart';
+export * from '@star-ng/ui/chat';
 export * from '@star-ng/ui/checkbox';
 export * from '@star-ng/ui/command-palette';
 export * from '@star-ng/ui/core';

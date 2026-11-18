@@ -331,6 +331,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         keywords: 'command menu cmdk search actions hotkey ctrl k spotlight quick open',
         load: () => import('./controls/command-palette.page').then((m) => m.CommandPalettePage),
       },
+      {
+        label: 'Chat and AI prompt',
+        path: 'controls/chat',
+        keywords: 'chat messages conversation composer ai prompt assistant streaming markdown',
+        load: () => import('./controls/chat.page').then((m) => m.ChatPage),
+      },
     ],
   },
   {

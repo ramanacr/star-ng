@@ -598,6 +598,27 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'chat with messages and a typing indicator',
+    path: 'controls/chat',
+    open: async (page) => {
+      const area = example(page, 'Support chat');
+      const composer = area.getByRole('textbox', { name: 'Message' });
+      await composer.fill('Where is my parcel?');
+      await composer.press('Enter');
+      await expect(area.getByText('Order helper is typing')).toBeVisible();
+    },
+  },
+  {
+    name: 'AI prompt with a response',
+    path: 'controls/chat',
+    open: async (page) => {
+      const area = example(page, 'AI prompt');
+      await area.getByRole('button', { name: 'Summarize the order notes' }).click();
+      await area.getByRole('button', { name: 'Generate' }).click();
+      await expect(area.getByRole('button', { name: 'Retry' })).toBeVisible();
+    },
+  },
+  {
     name: 'app sidebar collapsed with a group open',
     path: 'controls/app-sidebar',
     open: async (page) => {
