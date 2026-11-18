@@ -5,6 +5,8 @@
 .star-tile-layout {
   container: star-tile-layout / inline-size;
   display: block;
+  // A size container does not grow with its content: it takes the width it is given.
+  inline-size: 100%;
 }
 .star-tile-layout__grid {
   --star-tile-columns-now: var(--star-tile-columns, 3);
@@ -41,7 +43,8 @@
   flex-direction: column;
   min-width: 0;
   overflow: hidden;
-  grid-column: span min(var(--star-tile-col-span, 1), var(--star-tile-columns-now));
+  // The component clamps the span to the columns in force (`min()` is not allowed in `span`).
+  grid-column: span var(--star-tile-col-span-now, 1);
   grid-row: span var(--star-tile-row-span, 1);
   border: 1px solid var(--star-border);
   border-radius: var(--star-radius-lg);
@@ -72,7 +75,8 @@
 .star-tile__body {
   flex: 1;
   min-height: 0;
-  overflow: auto;
+  // Clips: a tile has a fixed size. Put a focusable scroll area inside for long content.
+  overflow: hidden;
   padding: 0.75rem 1rem;
 }
 .star-tile__resize {

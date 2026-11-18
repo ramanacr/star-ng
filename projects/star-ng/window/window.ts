@@ -35,7 +35,7 @@ export interface StarWindowSize {
 /** Pixels per key press of Alt or Shift and an arrow key. */
 const KEY_STEP = 16;
 /** Pixels between windows that open at the same time without a position. */
-const CASCADE = 24;
+const CASCADE = 32;
 
 /**
  * Stacking order of the windows of the application. `StarWindow` uses it; the service also opens
@@ -446,7 +446,8 @@ export class StarWindow {
     this.position.set(
       this.clampPosition({
         x: Math.round((viewport.width - rect.width) / 2) + shift,
-        y: Math.round((viewport.height - rect.height) / 3) + shift,
+        // The same top for every height, so the title bars of a cascade do not cover each other.
+        y: Math.round(viewport.height * 0.12) + shift,
       }),
     );
   }

@@ -519,7 +519,9 @@ const STATES: readonly State[] = [
         .getByRole('button', { name: 'Find a person' })
         .click();
       await page.getByRole('combobox', { name: 'Find a person' }).fill('zzz');
-      await expect(page.getByText('No person matches')).toBeVisible();
+      await expect(
+        page.locator('.star-command-palette__message').filter({ visible: true }),
+      ).toHaveText('No person matches “zzz”.');
     },
   },
   {
@@ -546,10 +548,10 @@ const STATES: readonly State[] = [
     open: async (page) => {
       const area = example(page, 'Windows in the page');
       await area.getByRole('button', { name: 'Open notes' }).click();
-      await area.getByRole('button', { name: 'Open order summary' }).click();
       const notes = page.getByRole('dialog', { name: 'Notes' });
       await expect(notes).toBeVisible();
       await notes.getByRole('button', { name: 'Minimize' }).click();
+      await area.getByRole('button', { name: 'Open order summary' }).click();
       await expect(page.getByRole('dialog', { name: 'Order summary' })).toBeVisible();
     },
   },

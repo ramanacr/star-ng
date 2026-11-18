@@ -30,13 +30,13 @@ import { DOCS, DocsRow } from '../shared/docs';
       border: 1px solid var(--star-border);
       border-radius: var(--star-radius-lg);
     }
-    .shell main {
+    .shell .content {
       flex: 1;
       min-width: 0;
       padding: 1rem 1.25rem;
       background: var(--star-surface-muted);
     }
-    .shell main p {
+    .shell .content p {
       margin: 0.5rem 0 0;
     }
   `,
@@ -112,10 +112,10 @@ import { DOCS, DocsRow } from '../shared/docs';
               </star-button>
             </star-app-sidebar-footer>
           </star-app-sidebar>
-          <main>
+          <div class="content">
             <strong>{{ current() }}</strong>
             <p>Content of the page.</p>
-          </main>
+          </div>
         </div>
       </docs-example>
 

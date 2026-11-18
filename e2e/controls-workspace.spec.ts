@@ -10,12 +10,16 @@ function columnCount(layout: Locator): Promise<number> {
 
 /** Drags with the mouse in small steps, as the CDK needs. */
 async function drag(page: Page, from: Locator, to: Locator): Promise<void> {
+  await from.scrollIntoViewIfNeeded();
   const start = (await from.boundingBox())!;
-  const end = (await to.boundingBox())!;
-  await page.mouse.move(start.x + start.width / 2, start.y + start.height / 2);
+  const x = start.x + start.width / 2;
+  const y = start.y + start.height / 2;
+  await page.mouse.move(x, y);
   await page.mouse.down();
-  await page.mouse.move(start.x + start.width / 2 + 8, start.y + start.height / 2, { steps: 4 });
-  await page.mouse.move(end.x + 12, end.y + end.height / 2, { steps: 12 });
+  // Past the start threshold first, then over the target.
+  for (let step = 1; step <= 10; step++) await page.mouse.move(x - step * 4, y - step * 3);
+  const end = (await to.boundingBox())!;
+  await page.mouse.move(end.x + 12, end.y + end.height / 2, { steps: 15 });
   await page.mouse.up();
 }
 
@@ -139,9 +143,10 @@ test.describe('app sidebar', () => {
     await page.keyboard.press('ArrowRight');
     await expect(nav.getByRole('button', { name: 'Monthly' })).toBeFocused();
     await page.keyboard.press('Enter');
+    // A button item is the current one with aria-current="true" ("page" is for links).
     await expect(nav.getByRole('button', { name: 'Monthly' })).toHaveAttribute(
       'aria-current',
-      'page',
+      'true',
     );
     await page.keyboard.press('ArrowLeft');
     await expect(reports).toBeFocused();
@@ -186,17 +191,23 @@ test.describe('window', () => {
     const before = (await notes.boundingBox())!;
     await page.keyboard.press('Alt+ArrowRight');
     await page.keyboard.press('Shift+ArrowDown');
-    await expect.poll(async () => (await notes.boundingBox())!.x).toBeCloseTo(before.x + 16, 0);
-    await expect
-      .poll(async () => (await notes.boundingBox())!.height)
-      .toBeCloseTo(before.height + 16, 0);
+    // The models are whole pixels: allow two pixels of rounding.
+    const near = async (
+      read: (box: { x: number; y: number; height: number }) => number,
+      to: number,
+    ) =>
+      expect
+        .poll(async () => Math.abs(read((await notes.boundingBox())!) - to))
+        .toBeLessThanOrEqual(2);
+    await near((box) => box.x, before.x + 16);
+    await near((box) => box.height, before.height + 16);
 
     const start = (await titlebar.boundingBox())!;
     await page.mouse.move(start.x + 40, start.y + start.height / 2);
     await page.mouse.down();
     await page.mouse.move(start.x + 80, start.y + start.height / 2 + 30, { steps: 5 });
     await page.mouse.up();
-    await expect.poll(async () => (await notes.boundingBox())!.y).toBeCloseTo(before.y + 30, 0);
+    await near((box) => box.y, before.y + 30);
 
     // A non-modal window: the page stays usable and Escape does not close it.
     await page.keyboard.press('Escape');
@@ -214,7 +225,7 @@ test.describe('window', () => {
     const z = (dialog: Locator) =>
       dialog.evaluate((element) => Number(getComputedStyle(element).zIndex));
     expect(await z(summary)).toBeGreaterThan(await z(notes));
-    await notes.locator('.star-window__title').click();
+    await notes.locator('.star-window__titlebar').click({ position: { x: 12, y: 8 } });
     expect(await z(notes)).toBeGreaterThan(await z(summary));
 
     await notes.getByRole('button', { name: 'Maximize' }).click();

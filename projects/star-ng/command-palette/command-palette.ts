@@ -209,7 +209,7 @@ function matchesHotkey(event: KeyboardEvent, hotkey: Hotkey): boolean {
           autocomplete="off"
           spellcheck="false"
           aria-autocomplete="list"
-          aria-expanded="true"
+          [attr.aria-expanded]="count() > 0"
           [attr.aria-controls]="listId"
           [attr.aria-activedescendant]="activeId()"
           [attr.aria-label]="ariaLabel() ?? text.commandPalette"
@@ -221,7 +221,7 @@ function matchesHotkey(event: KeyboardEvent, hotkey: Hotkey): boolean {
       </div>
       <div
         class="star-command-palette__list"
-        role="listbox"
+        [attr.role]="count() ? 'listbox' : null"
         [id]="listId"
         [attr.aria-label]="ariaLabel() ?? text.commandPalette"
         [attr.aria-busy]="loading() || null"

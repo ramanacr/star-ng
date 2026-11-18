@@ -169,10 +169,13 @@ export class StarAppSidebar {
     const stop =
       (this.focused && links.includes(this.focused) ? this.focused : null) ??
       links.find((link) => link.getAttribute('aria-current') === 'page') ??
+      links.find((link) => link.hasAttribute('aria-current')) ??
       links[0];
     for (const link of this.host.querySelectorAll<HTMLElement>(LINK)) {
       const index = link === stop ? 0 : -1;
-      if (link.tabIndex !== index) link.tabIndex = index;
+      // The attribute, not only the property: links are focusable without it.
+      if (link.getAttribute('tabindex') !== String(index))
+        link.setAttribute('tabindex', String(index));
     }
   }
 
@@ -348,7 +351,7 @@ export class StarAppSidebarSection {
         type="button"
         class="star-app-sidebar__link"
         [class.star-app-sidebar__link--active]="active()"
-        [attr.aria-current]="active() ? 'page' : null"
+        [attr.aria-current]="active() ? 'true' : null"
         [starTooltip]="tooltip()"
         starTooltipPosition="end"
         (click)="activate()"
@@ -384,7 +387,10 @@ export class StarAppSidebarItem {
   readonly exact = input(false, { transform: booleanAttribute });
   /** Plain link address, when there is no `routerLink`. */
   readonly href = input<string | null>(null);
-  /** Marks an `href` or button item as the current page (`aria-current="page"`). */
+  /**
+   * Marks the item as the current one: `aria-current="page"` on an `href` link, `aria-current="true"`
+   * on a button item.
+   */
   readonly active = input(false, { transform: booleanAttribute });
   /** Badge text after the label, for example a count. */
   readonly badge = input<string | number | null>(null);

@@ -180,6 +180,9 @@ describe('StarCommandPalette', () => {
     expect(labels()).toEqual(['Open café menu']);
     await type('zzz');
     expect(labels()).toEqual([]);
+    // No options: no empty listbox, and the combobox is collapsed.
+    expect(root.querySelector('.star-command-palette__list')?.hasAttribute('role')).toBe(false);
+    expect(root.querySelector('[role=combobox]')?.getAttribute('aria-expanded')).toBe('false');
     expect(root.querySelector('.star-command-palette__message')?.textContent?.trim()).toBe(
       'No results found',
     );
@@ -277,7 +280,9 @@ describe('StarCommandPalette', () => {
     expect(root.querySelector('.star-command-palette__message')?.textContent?.trim()).toBe(
       'Fetching',
     );
-    expect(root.querySelector('[role=listbox]')?.getAttribute('aria-busy')).toBe('true');
+    expect(root.querySelector('.star-command-palette__list')?.getAttribute('aria-busy')).toBe(
+      'true',
+    );
   });
 
   it('reads its texts from STAR_UI_TEXT', async () => {

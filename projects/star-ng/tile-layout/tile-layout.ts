@@ -142,16 +142,40 @@ export class StarTileLayout {
       this.onDrop(event),
     );
     inject(DestroyRef).onDestroy(() => subscription.unsubscribe());
+    // The container queries decide the column count; the tiles need it to clamp their spans.
+    afterNextRender(() => {
+      const view = this.host.ownerDocument.defaultView;
+      const measure = () => this.measured.set(this.readColumns());
+      measure();
+      if (!view || typeof view.ResizeObserver !== 'function') return;
+      const observer = new view.ResizeObserver(measure);
+      observer.observe(this.host);
+      this.destroyRef.onDestroy(() => observer.disconnect());
+    });
   }
+
+  private readonly destroyRef = inject(DestroyRef);
+  /** Column count read in the browser; `null` before the first measure (and on the server). */
+  private readonly measured = signal<number | null>(null);
+  /** @internal Columns in force: the measured breakpoint count, else `columns`. */
+  readonly columnsNow = computed(() => this.measured() ?? this.columns());
 
   /** Number of columns in force now: the breakpoint column count in the browser. */
   currentColumns(): number {
+    return this.readColumns() ?? this.columnsNow();
+  }
+
+  /** Reads the column count that the container queries resolved, or `null` when unknown. */
+  private readColumns(): number | null {
     const grid = this.host.querySelector<HTMLElement>('.star-tile-layout__grid');
     const view = this.host.ownerDocument.defaultView;
-    const template = grid && view ? view.getComputedStyle(grid).gridTemplateColumns : '';
-    const count = template && template !== 'none' ? template.trim().split(/\s+/).length : 0;
-    // jsdom and a layout that is not rendered give no track list.
-    return count > 0 && !/repeat\(/.test(template) ? count : this.columns();
+    if (!grid || !view) return null;
+    const value = parseInt(
+      view.getComputedStyle(grid).getPropertyValue('--star-tile-columns-now'),
+      10,
+    );
+    // jsdom does not resolve the custom property.
+    return Number.isFinite(value) && value > 0 ? value : null;
   }
 
   /** Moves the tile `key` by `delta` places in the order, as the keyboard does. */
@@ -231,6 +255,7 @@ export class StarTileLayout {
     '[attr.aria-describedby]': 'layout.interactive() ? layout.hintId : null',
     '[attr.tabindex]': 'layout.interactive() ? 0 : null',
     '[style.--star-tile-col-span]': 'colSpan()',
+    '[style.--star-tile-col-span-now]': 'spanNow()',
     '[style.--star-tile-row-span]': 'rowSpan()',
     '[class.star-tile--resizing]': 'resizing()',
     '(keydown)': 'onKeydown($event)',
@@ -267,6 +292,8 @@ export class StarTile {
   /** @internal */
   readonly headerId = inject(_IdGenerator).getId('star-tile-header-');
   protected readonly resizing = signal(false);
+  /** The column span, never wider than the columns in force. */
+  protected readonly spanNow = computed(() => Math.min(this.colSpan(), this.layout.columnsNow()));
 
   constructor() {
     effect(() => (this.drag.disabled = !this.layout.reorderable()));

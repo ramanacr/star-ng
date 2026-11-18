@@ -6,6 +6,7 @@
   --star-window-width: 28rem;
   position: fixed;
   inset: auto;
+  box-sizing: border-box;
   z-index: calc(var(--star-window-z, 1000) + var(--star-window-order, 0));
   display: none;
   flex-direction: column;
