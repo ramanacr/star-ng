@@ -15,6 +15,8 @@ interface N {
   readonly label: string;
   readonly data?: Record<string, unknown>;
   readonly children?: readonly N[];
+  readonly disabled?: boolean;
+  readonly selectable?: boolean;
 }
 
 const n = (key: string, data: Record<string, unknown>, children?: N[]): N => ({
@@ -159,6 +161,46 @@ describe('tree table data', () => {
         'b1a',
       ]);
       expect(toggleChecked(TREE, 'nope', true, ['a1'], both)).toEqual(['a1']);
+    });
+
+    // A project with a disabled task and a task that cannot be selected.
+    const LOCKED: readonly N[] = [
+      {
+        key: 'p',
+        label: 'P',
+        children: [
+          { key: 'p1', label: 'P1' },
+          { key: 'p2', label: 'P2', disabled: true },
+          {
+            key: 'p3',
+            label: 'P3',
+            selectable: false,
+            children: [{ key: 'p3a', label: 'P3a' }],
+          },
+        ],
+      },
+    ];
+
+    it('down: locked descendants and their subtrees keep their state', () => {
+      expect(toggleChecked(LOCKED, 'p', true, [], both).sort()).toEqual(['p', 'p1']);
+      expect(toggleChecked(LOCKED, 'p', false, ['p', 'p1', 'p2', 'p3a'], both).sort()).toEqual([
+        'p2',
+        'p3a',
+      ]);
+    });
+
+    it('up: the parent follows its selectable children only', () => {
+      expect(toggleChecked(LOCKED, 'p1', true, [], both).sort()).toEqual(['p', 'p1']);
+      expect(toggleChecked(LOCKED, 'p1', false, ['p', 'p1', 'p2'], both)).toEqual(['p2']);
+    });
+
+    it('up: a parent is checked when all its selectable children are, without its own key', () => {
+      const states = checkStates(LOCKED, new Set(['p1']), true);
+      expect(states.get('p')).toBe(true);
+      expect(states.get('p2')).toBe(false);
+      expect(checkStates(TREE, new Set(['b2', 'b1a']), true).get('beta')).toBe(true);
+      expect(checkStates(TREE, new Set(['b2', 'b1a']), true).get('b1')).toBe(true);
+      expect(checkStates(TREE, new Set(['b2', 'b1a']), false).get('beta')).toBe(false);
     });
 
     it('derives true, false and mixed states', () => {

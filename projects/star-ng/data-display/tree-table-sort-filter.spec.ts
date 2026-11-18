@@ -241,6 +241,30 @@ describe('tree table paging', () => {
     expect(gamma.getAttribute('aria-setsize')).toBe('3');
   });
 
+  it('goes back to the first page when a filter changes from outside', async () => {
+    const { host, stable } = await setup();
+    host.paged.set(true);
+    host.first.set(2);
+    await stable();
+    host.query.set('a');
+    await stable();
+    expect(host.first()).toBe(0);
+    host.first.set(2);
+    await stable();
+    host.filters.set({ owner: 'l' });
+    await stable();
+    expect(host.first()).toBe(0);
+  });
+
+  it('keeps a first page set from outside while no filter changes', async () => {
+    const { host, keys, stable } = await setup();
+    host.paged.set(true);
+    host.first.set(2);
+    await stable();
+    expect(host.first()).toBe(2);
+    expect(keys()).toEqual(['gamma']);
+  });
+
   it('goes back to the first page when the sort or a filter changes', async () => {
     const { host, header, stable } = await setup();
     host.paged.set(true);

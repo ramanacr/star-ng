@@ -6483,6 +6483,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Lazy children: a node with `leaf: false` shows an expander although it has no children yet. Opening it emits `nodeExpand`; the owner loads the children and sets `loading` meanwhile."
       },
       {
+        "name": "cellNavigation",
+        "type": "boolean | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "WAI-ARIA treegrid cell navigation: the cells take the focus, Arrow right on an open branch or a leaf moves into the row, Arrow left and Arrow right move between cells, and Arrow left on the first cell goes back to the row. `undefined` (the default) is automatic: on when a column is `editable`, off otherwise. `true` or `false` sets it."
+      },
+      {
         "name": "resizableColumns",
         "type": "boolean",
         "default": "false",

@@ -11,6 +11,15 @@ export interface DataNode<N> {
   readonly label: string;
   readonly data?: Readonly<Record<string, unknown>>;
   readonly children?: readonly N[];
+  /** A disabled node keeps its check state when a parent or a child changes. */
+  readonly disabled?: boolean;
+  /** `false`: the node keeps its check state when a parent or a child changes. */
+  readonly selectable?: boolean;
+}
+
+/** The user cannot check or uncheck the node, and propagation does not change it. */
+export function isLocked(node: DataNode<unknown>): boolean {
+  return !!node.disabled || node.selectable === false;
 }
 
 /** One sort column (the shape of `StarSortState` from `@star-ng/ui/table`). */
@@ -114,8 +123,10 @@ export function pageRoots<N>(nodes: readonly N[], first: number, rows: number): 
 export type CheckState = boolean | 'mixed';
 
 /**
- * Check state of every node: `true` when its key is selected; `'mixed'` when it is not, a
- * descendant is selected and `propagateUp` is on; else `false`.
+ * Check state of every node: `true` when its key is selected, or (with `propagateUp`) when all
+ * its selectable children are checked; `'mixed'` when it is not, a descendant is selected and
+ * `propagateUp` is on; else `false`. Locked children (disabled, `selectable: false`) do not
+ * count for the parent.
  */
 export function checkStates<N extends DataNode<N>>(
   nodes: readonly N[],
@@ -126,8 +137,15 @@ export function checkStates<N extends DataNode<N>>(
   // Returns whether the node or a node below it is selected.
   const walk = (node: N): boolean => {
     let below = false;
-    for (const child of node.children ?? []) below = walk(child) || below;
-    const own = selected.has(node.key);
+    let open = 0;
+    let checked = 0;
+    for (const child of node.children ?? []) {
+      below = walk(child) || below;
+      if (isLocked(child)) continue;
+      open++;
+      if (states.get(child.key) === true) checked++;
+    }
+    const own = selected.has(node.key) || (propagateUp && open > 0 && checked === open);
     states.set(node.key, own ? true : propagateUp && below ? 'mixed' : false);
     return own || below;
   };
@@ -137,8 +155,10 @@ export function checkStates<N extends DataNode<N>>(
 
 /**
  * The selection keys after the user checks (`on`) or unchecks a node in checkbox mode.
- * `down`: the descendants follow the node. `up`: each ancestor is checked when all its children
- * are checked, and unchecked otherwise. The order of the keys that stay is kept.
+ * `down`: the descendants follow the node. `up`: each ancestor is checked when all its
+ * selectable children are checked, and unchecked otherwise. A locked node (disabled or
+ * `selectable: false`) below or above the node keeps its state, and so does its subtree. The
+ * order of the keys that stay is kept.
  */
 export function toggleChecked<N extends DataNode<N>>(
   nodes: readonly N[],
@@ -162,14 +182,18 @@ export function toggleChecked<N extends DataNode<N>>(
   const apply = (target: N) => {
     if (on) keys.add(target.key);
     else keys.delete(target.key);
-    if (propagate.down) target.children?.forEach(apply);
+    if (!propagate.down) return;
+    for (const child of target.children ?? []) if (!isLocked(child)) apply(child);
   };
   apply(node);
   if (propagate.up) {
     for (let parent = parents.get(key) ?? null; parent !== null;) {
-      const children = index.get(parent)?.children ?? [];
-      if (children.length && children.every((child) => keys.has(child.key))) keys.add(parent);
-      else keys.delete(parent);
+      const current = index.get(parent);
+      if (current && !isLocked(current)) {
+        const children = (current.children ?? []).filter((child) => !isLocked(child));
+        if (children.length && children.every((child) => keys.has(child.key))) keys.add(parent);
+        else keys.delete(parent);
+      }
       parent = parents.get(parent) ?? null;
     }
   }

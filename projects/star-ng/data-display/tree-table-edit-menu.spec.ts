@@ -34,6 +34,7 @@ const MENU: StarMenuItem[] = [{ label: 'Open' }, { label: 'Archive' }];
     <star-tree-table
       [nodes]="nodes"
       [columns]="columns()"
+      [cellNavigation]="cells()"
       [(expanded)]="open"
       [contextMenu]="menu()"
       (cellEdit)="edits.push($event)"
@@ -47,6 +48,7 @@ class Host {
   readonly columns = signal<readonly StarTreeTableColumn[]>(COLUMNS);
   readonly open = signal<readonly string[]>(['o1']);
   readonly menu = signal<readonly StarMenuItem[]>([]);
+  readonly cells = signal<boolean | undefined>(undefined);
   readonly edits: StarTreeTableCellEditEvent[] = [];
   readonly chosen: StarTreeTableContextMenuEvent[] = [];
 }
@@ -95,7 +97,55 @@ describe('tree table cell navigation', () => {
     expect(document.activeElement).toBe(row('o1'));
   });
 
-  it('without editable columns the cells take no focus and Right keeps the row', async () => {
+  it('cellNavigation false turns the cell focus off, also with editable columns', async () => {
+    const { host, fixture, row, cell, press } = await setup();
+    host.cells.set(false);
+    await fixture.whenStable();
+    expect(cell('o1', 0).hasAttribute('tabindex')).toBe(false);
+    row('o2').focus();
+    await press('ArrowRight');
+    expect(document.activeElement).toBe(row('o2'));
+  });
+
+  it('cellNavigation true turns the cell focus on without editable columns', async () => {
+    const { host, fixture, row, cell, press } = await setup();
+    host.columns.set([
+      { field: 'name', header: 'Order' },
+      { field: 'qty', header: 'Quantity' },
+    ]);
+    host.cells.set(true);
+    await fixture.whenStable();
+    row('o2').focus();
+    await press('ArrowRight');
+    expect(document.activeElement).toBe(cell('o2', 0));
+    await press('ArrowRight');
+    expect(document.activeElement).toBe(cell('o2', 1));
+    // No editable column: F2 opens nothing.
+    await press('F2');
+    expect(document.querySelector('.star-tree-table__editor')).toBeNull();
+  });
+
+  it('right-to-left: Arrow left moves into the row and to the next cell, Arrow right back', async () => {
+    const { row, cell, press, fixture } = await setup();
+    const host = fixture.nativeElement as HTMLElement;
+    host.setAttribute('dir', 'rtl');
+    row('o2').focus();
+    await press('ArrowLeft'); // a leaf: into the row
+    expect(document.activeElement).toBe(cell('o2', 0));
+    await press('ArrowLeft');
+    expect(document.activeElement).toBe(cell('o2', 1));
+    await press('ArrowRight');
+    expect(document.activeElement).toBe(cell('o2', 0));
+    await press('ArrowRight'); // first cell: back to the row
+    expect(document.activeElement).toBe(row('o2'));
+    // Row mode: Arrow right closes an open branch, then goes to the parent.
+    row('o1').focus();
+    await press('ArrowRight');
+    expect(row('o1').getAttribute('aria-expanded')).toBe('false');
+    host.removeAttribute('dir');
+  });
+
+  it('automatic (not set): without editable columns the cells take no focus', async () => {
     const { host, fixture, row, cell, press } = await setup();
     host.columns.set([{ field: 'name', header: 'Order' }]);
     await fixture.whenStable();

@@ -214,7 +214,7 @@ type Row = Record<string, unknown>;
         heading="Cell edit"
         source="tree-table/edit"
         [script]="editScript"
-        note="A column with editable can change in place. When a column is editable the cells take the focus: Arrow right moves from a row into its cells, Arrow left and Arrow right move between cells, and Arrow left on the first cell goes back to the row. Enter or F2 opens the editor, Enter commits and Escape cancels. The table never changes nodes: it emits cellEdit, and the owner stores the value. editor number emits a number."
+        note="A column with editable can change in place. When a column is editable the cells take the focus (cellNavigation, automatic here; set it to true or false to choose): Arrow right moves from a row into its cells, Arrow left and Arrow right move between cells, and Arrow left on the first cell goes back to the row. Enter or F2 opens the editor, Enter commits and Escape cancels. The table never changes nodes: it emits cellEdit, and the owner stores the value. editor number emits a number."
       >
         <div class="docs-stack">
           <star-tree-table
@@ -583,7 +583,12 @@ onRowAction(event: StarTreeTableContextMenuEvent): void {
     {
       name: 'Arrow right',
       description:
-        'Opens a closed branch. On an open branch or a leaf it moves into the row (first cell) when a column is editable; otherwise it does nothing. In a cell: the next cell.',
+        'Opens a closed branch. On an open branch or a leaf it moves into the row (first cell) with cell navigation; otherwise it does nothing. In a cell: the next cell.',
+    },
+    {
+      name: 'Cell navigation (cellNavigation)',
+      description:
+        'The cells take the focus and the arrow keys move between them. Not set (the default): on when a column is editable, off otherwise. cellNavigation true or false sets it for the table.',
     },
     {
       name: 'Arrow left',

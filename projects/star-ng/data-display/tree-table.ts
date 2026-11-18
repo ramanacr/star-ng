@@ -170,9 +170,9 @@ const LOADING_KEY = '\u0000loading';
  * `contextMenuSelect`). The table never changes `nodes`.
  *
  * Keys (WAI-ARIA treegrid): Up / Down, Home / End move between rows. Right opens a closed branch;
- * on an open branch or a leaf it moves into the row when the table has editable columns. Left
- * closes an open branch or moves to the parent. In a cell, Left / Right move between cells, Left
- * on the first cell goes back to the row, Enter or F2 edits. Space selects. Shift+F10 or the
+ * on an open branch or a leaf it moves into the row with `cellNavigation` (automatic when a
+ * column is editable). Left closes an open branch or moves to the parent. In a cell, Left /
+ * Right move between cells, Left on the first cell goes back to the row, Enter or F2 edits. Space selects. Shift+F10 or the
  * context menu key opens the context menu. Left and Right swap in right-to-left.
  *
  * Large tables: `virtualScroll` with `scrollHeight` and `virtualItemSize` renders only the rows in
@@ -593,6 +593,17 @@ export class StarTreeTable {
    */
   readonly lazy = input(false, { transform: booleanAttribute });
 
+  // ---- keyboard ----
+  /**
+   * WAI-ARIA treegrid cell navigation: the cells take the focus, Arrow right on an open branch
+   * or a leaf moves into the row, Arrow left and Arrow right move between cells, and Arrow left
+   * on the first cell goes back to the row. `undefined` (the default) is automatic: on when a
+   * column is `editable`, off otherwise. `true` or `false` sets it.
+   */
+  readonly cellNavigation = input<boolean | undefined, boolean | string | undefined>(undefined, {
+    transform: (value) => (value === undefined ? undefined : booleanAttribute(value)),
+  });
+
   // ---- columns ----
   /** The user can change a column width: drag the header edge, or use the arrow keys on it. */
   readonly resizableColumns = input(false, { transform: booleanAttribute });
@@ -660,8 +671,10 @@ export class StarTreeTable {
   );
   /** Header rows: the column headings, and the filter row when there is one. */
   protected readonly headerRows = computed(() => (this.hasColumnFilters() ? 2 : 1));
-  /** A column is editable: the cells take the focus (the keys move into the row). */
-  private readonly cellMode = computed(() => this.columns().some((column) => !!column.editable));
+  /** The cells take the focus (the keys move into the row): `cellNavigation`, or automatic. */
+  private readonly cellMode = computed(
+    () => this.cellNavigation() ?? this.columns().some((column) => !!column.editable),
+  );
 
   // ---- filter, sort, page ----
   private readonly columnQueries = computed(() => {
@@ -845,6 +858,16 @@ export class StarTreeTable {
   private menuNode: TreeTableNode | null = null;
 
   constructor() {
+    // A filter that changes (also from outside, through the models) shows the first page.
+    let lastFilter: { global: string; columns: Readonly<Record<string, string>> } | null = null;
+    effect(() => {
+      const next = { global: this.globalFilter(), columns: this.filters() };
+      const previous = lastFilter;
+      lastFilter = next;
+      if (previous && (previous.global !== next.global || previous.columns !== next.columns)) {
+        untracked(() => this.first.set(0));
+      }
+    });
     // The rows or the window change (a scroll, a branch closes, new nodes) and the focused row
     // may leave the DOM. This effect runs before the template updates, while the row is still there.
     effect(() => {
