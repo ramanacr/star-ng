@@ -548,6 +548,10 @@ export interface StarTimeField {
  * text is `mm/yyyy` or `yyyy`.
  *
  * `<star-date-picker [formField]="form.receivedOn" [maxDate]="today" showButtonBar />`
+ *
+ * The type parameter `T` is the type of the value: `Date` (default) or `string`. Pair it with
+ * `dataType`: `T` = `string` needs `dataType="string"`, or the picker writes `Date`s into a
+ * string model. Angular infers `T` from `[(value)]` or `[formField]`.
  */
 @Component({
   selector: 'star-date-picker',
@@ -661,6 +665,10 @@ export class StarDatePicker<T extends Date | string = Date>
  * Date range picker (PrimeNG `p-datepicker selectionMode="range"`). Value: `{ start, end }`.
  * First click sets the start, second click the end (swapped if earlier); hovering previews.
  * Type `01/11/2026 – 15/11/2026` (any separator between the two dates).
+ *
+ * The type parameter `T` is the type of the value: `Date` (default) or `string`, for both ends. Pair it with
+ * `dataType`: `T` = `string` needs `dataType="string"`, or the picker writes `Date`s into a
+ * string model. Angular infers `T` from `[(value)]` or `[formField]`.
  */
 @Component({
   selector: 'star-date-range-picker',
@@ -822,6 +830,10 @@ export class StarDateRangePicker<T extends Date | string = Date>
  * Multiple-date picker (PrimeNG `p-datepicker selectionMode="multiple"`). Value: a list of
  * days in date order. A click adds a day or removes it; the popup stays open. Type the dates
  * with a comma or a semicolon between them.
+ *
+ * The type parameter `T` is the type of the value: `Date` (default) or `string`, for each day. Pair it with
+ * `dataType`: `T` = `string` needs `dataType="string"`, or the picker writes `Date`s into a
+ * string model. Angular infers `T` from `[(value)]` or `[formField]`.
  */
 @Component({
   selector: 'star-multi-date-picker',
