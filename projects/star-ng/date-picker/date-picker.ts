@@ -58,6 +58,12 @@ const PANEL_POSITIONS: ConnectedPosition[] = [
   { originX: 'start', originY: 'top', overlayX: 'start', overlayY: 'bottom', offsetY: -6 },
   { originX: 'end', originY: 'bottom', overlayX: 'end', overlayY: 'top', offsetY: 6 },
 ];
+/**
+ * Space between the popup and the window edge. When the popup fits neither below nor above the
+ * field (a tall popup, for example with `showTime`, next to a field in the middle of a small
+ * window), the overlay pushes it into the window, this far from the edge.
+ */
+const PANEL_VIEWPORT_MARGIN = 8;
 
 /**
  * Shared input + popup behaviour of the date controls: typed entry with locale-aware parsing,
@@ -117,6 +123,7 @@ export abstract class StarDateInputBase<TValue> {
   readonly closed = output<void>();
 
   protected readonly positions = PANEL_POSITIONS;
+  protected readonly viewportMargin = PANEL_VIEWPORT_MARGIN;
   protected readonly panelId = this.ids.getId('star-date-panel-');
   protected readonly open = signal(false);
   /** Invalid after touch, or while the parent `star-field` shows an error. */
@@ -388,12 +395,16 @@ const TEMPLATE = `
     [cdkConnectedOverlayOrigin]="origin"
     [cdkConnectedOverlayOpen]="open()"
     [cdkConnectedOverlayPositions]="positions"
+    [cdkConnectedOverlayPush]="true"
+    [cdkConnectedOverlayViewportMargin]="viewportMargin"
     (attach)="onAttached()"
     (detach)="closePanel(false)"
     (overlayOutsideClick)="onOutsideClick($event)"
   >
     <div
       class="star-panel star-date__panel"
+      [class.star-date__panel--time]="timeEnabled()"
+      [class.star-date__panel--months]="numberOfMonths() > 1"
       role="dialog"
       [id]="panelId"
       [attr.aria-label]="text.chooseDate"
@@ -436,6 +447,8 @@ const TEMPLATE = `
               />
             </div>
           }
+        </div>
+        <div class="star-date__done">
           <button type="button" class="star-btn star-btn--primary star-btn--sm" (click)="closePanel()">{{ text.done }}</button>
         </div>
       }
