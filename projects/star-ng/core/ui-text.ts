@@ -209,6 +209,8 @@ export interface StarUiText {
   readonly editorLinkRemove: string;
   readonly editorLinkCancel: string;
   readonly editorLinkInvalid: string;
+  readonly editorCharacterCount: (count: number, max: number) => string;
+  readonly editorCharactersLeft: (count: number) => string;
   // Navigation and layout
   readonly breadcrumb: string;
   readonly stepperLabel: string;
@@ -458,6 +460,8 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   editorLinkCancel: 'Cancel',
   editorLinkInvalid:
     'Enter a web address (https://…), an e-mail address (mailto:…) or a phone number (tel:…).',
+  editorCharacterCount: (count, max) => `${count} of ${max} characters`,
+  editorCharactersLeft: (count) => (count === 1 ? '1 character left' : `${count} characters left`),
   breadcrumb: 'Breadcrumb',
   stepperLabel: 'Progress',
   stepCompleted: '(completed)',
@@ -547,6 +551,8 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   fileLimitReached: ['limit'],
   tabClose: ['label'],
   editorHeadingLevel: ['level'],
+  editorCharacterCount: ['count', 'max'],
+  editorCharactersLeft: ['count'],
   editorFormatting: ['label'],
   showImage: ['alt'],
   previewImage: ['alt'],

@@ -3,6 +3,14 @@
  * editor calls them from event handlers.
  */
 
+/** The zero-width space that holds the caret in an empty `code` element. */
+const ZWSP = String.fromCharCode(0x200b);
+
+/** Number of text characters in the area (line breaks and caret holders do not count). */
+export function starEditorPlainLength(area: HTMLElement): number {
+  return (area.textContent ?? '').split(ZWSP).join('').length;
+}
+
 /** Block elements that the toolbar formats or aligns. */
 const BLOCKS = new Set(['P', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'LI', 'BLOCKQUOTE', 'DIV', 'PRE']);
 
@@ -132,4 +140,37 @@ export function starEditorToggleCode(area: HTMLElement, range: Range): void {
   }
   range.selectNodeContents(element);
   starEditorRestore(range);
+}
+const BREAK_BEFORE = new Set([...BLOCKS, 'UL', 'OL', 'TR', 'BR']);
+
+/**
+ * Plain text of the area: block elements and line breaks become new lines. `innerText` does the
+ * same in a browser, but needs layout, so the editor walks the nodes itself.
+ */
+export function starEditorText(root: Node): string {
+  let text = '';
+  const walk = (node: Node) => {
+    if (node.nodeType === 3) {
+      text += (node.nodeValue ?? '').replace(/\u200b/g, '');
+      return;
+    }
+    if (!(node instanceof Element)) return;
+    if (BREAK_BEFORE.has(node.tagName) && text && !text.endsWith('\n')) text += '\n';
+    if (node.tagName === 'BR') return;
+    for (const child of node.childNodes) walk(child);
+    if (BLOCKS.has(node.tagName) && text && !text.endsWith('\n')) text += '\n';
+  };
+  walk(root);
+  return text.replace(/\n+$/, '');
+}
+
+/** HTML for plain text: one paragraph per line, with the text escaped. */
+export function starEditorTextToHtml(text: string): string {
+  if (!text) return '';
+  const escape = (line: string) =>
+    line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return text
+    .split(/\r?\n/)
+    .map((line) => `<p>${line ? escape(line) : '<br>'}</p>`)
+    .join('');
 }

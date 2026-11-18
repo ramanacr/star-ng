@@ -9,6 +9,7 @@ import {
   inject,
   input,
   model,
+  numberAttribute,
   output,
   SecurityContext,
   signal,
@@ -23,8 +24,11 @@ import {
   starEditorAlignmentAt,
   starEditorClosest,
   starEditorPath,
+  starEditorPlainLength,
   starEditorRange,
   starEditorRestore,
+  starEditorText,
+  starEditorTextToHtml,
   starEditorToggleCode,
   starEditorUnwrap,
 } from './editor-dom';
@@ -92,6 +96,7 @@ const FORMAT_TAGS: Readonly<Record<string, StarEditorCommand>> = {
     class: 'star-editor',
     '[class.star-editor--disabled]': 'disabled()',
     '[class.star-editor--invalid]': 'invalid() && touched()',
+    '[class.star-editor--over]': 'over()',
   },
   template: `
     <div
@@ -168,25 +173,52 @@ const FORMAT_TAGS: Readonly<Record<string, StarEditorCommand>> = {
       [attr.contenteditable]="locked() ? 'false' : 'true'"
       [attr.aria-label]="ariaLabel()"
       [attr.aria-labelledby]="labelledBy()"
-      [attr.aria-describedby]="fieldDescribedBy()"
+      [attr.aria-describedby]="describedBy()"
       [attr.aria-readonly]="readonly() || null"
       [attr.aria-disabled]="disabled() || null"
       [attr.data-placeholder]="placeholder()"
       [style.min-height]="minHeight()"
+      (beforeinput)="onBeforeInput($event)"
       (input)="onInput()"
       (keyup)="refreshState()"
       (mouseup)="refreshState()"
       (blur)="touch.emit()"
     ></div>
+    @if (maxLength() !== undefined) {
+      <div class="star-editor__footer">
+        <span class="star-editor__counter" [id]="counterId">
+          {{ text.editorCharacterCount(length(), maxLength()!) }}
+        </span>
+      </div>
+      <span class="star-sr-only" aria-live="polite">{{ limitMessage() }}</span>
+    }
   `,
 })
 export class StarEditor implements FormValueControl<string> {
   protected readonly text = inject(STAR_UI_TEXT);
   private readonly sanitizer = inject(DomSanitizer);
   protected readonly areaId = inject(_IdGenerator).getId('star-editor-area-');
+  protected readonly counterId = inject(_IdGenerator).getId('star-editor-counter-');
 
-  /** The content as HTML. Edits by the user are stored sanitized. */
+  /**
+   * The content: HTML (sanitized when the user edits it), or plain text with `format="text"`.
+   */
   readonly value = model('');
+  /**
+   * `'html'` (default): the value is HTML. `'text'`: the value is plain text, one line per
+   * paragraph; the toolbar still formats the text on the screen, but the value has no markup.
+   * PrimeNG `onTextChange` gives the text next to the HTML.
+   */
+  readonly format = input<'html' | 'text'>('html');
+  /**
+   * Most characters of text (line breaks do not count). Typing stops at the limit, a counter
+   * shows under the area and describes it, and a live message gives the rest near the end.
+   * PrimeNG has no equivalent.
+   */
+  readonly maxLength = input<number | undefined, unknown>(undefined, {
+    transform: (value: unknown) =>
+      value === null || value === undefined || value === '' ? undefined : numberAttribute(value),
+  });
   /** Text shown while the editor is empty. */
   readonly placeholder = input('');
   /** CSS `min-height` of the editing area. */
@@ -215,7 +247,22 @@ export class StarEditor implements FormValueControl<string> {
   /** The parent `star-field` when it labels the area (a `div` textbox is not labelable). */
   private readonly field = injectStarFieldLink(null, () => this.focus());
   protected readonly labelledBy = computed(() => starFieldLabelledBy(this.field, this.ariaLabel()));
-  protected readonly fieldDescribedBy = computed(() => starJoinIds(this.field?.describedBy()));
+  protected readonly describedBy = computed(() =>
+    starJoinIds(this.field?.describedBy(), this.maxLength() !== undefined ? this.counterId : null),
+  );
+  /** Characters of text now (see `maxLength`). */
+  protected readonly length = signal(0);
+  protected readonly over = computed(() => {
+    const max = this.maxLength();
+    return max !== undefined && this.length() > max;
+  });
+  /** Live message near the limit: the characters left, else nothing. */
+  protected readonly limitMessage = computed(() => {
+    const max = this.maxLength();
+    if (max === undefined) return '';
+    const left = Math.max(0, max - this.length());
+    return left <= Math.max(1, Math.ceil(max * 0.1)) ? this.text.editorCharactersLeft(left) : '';
+  });
 
   /** Formats on at the caret. */
   private readonly active = signal<ReadonlySet<StarEditorCommand>>(new Set());
@@ -239,10 +286,13 @@ export class StarEditor implements FormValueControl<string> {
     // Write the model into the editable area only when it changed from outside.
     afterRenderEffect({
       write: () => {
-        const html = this.value();
-        if (html === this.lastWritten) return;
-        this.area().nativeElement.innerHTML = this.sanitize(html);
-        this.lastWritten = html;
+        const value = this.value();
+        const text = this.format() === 'text';
+        if (value === this.lastWritten) return;
+        const area = this.area().nativeElement;
+        area.innerHTML = this.sanitize(text ? starEditorTextToHtml(value) : value);
+        this.lastWritten = value;
+        this.length.set(starEditorPlainLength(area));
       },
     });
   }
@@ -274,12 +324,26 @@ export class StarEditor implements FormValueControl<string> {
 
   protected onInput(): void {
     const element = this.area().nativeElement;
-    const html = element.textContent?.replace(/\u200b/g, '').trim()
-      ? this.sanitize(element.innerHTML)
-      : '';
-    this.lastWritten = html;
-    this.value.set(html);
+    const length = starEditorPlainLength(element);
+    let value = '';
+    if (length && element.textContent?.trim()) {
+      value = this.format() === 'text' ? starEditorText(element) : this.sanitize(element.innerHTML);
+    }
+    this.lastWritten = value;
+    this.value.set(value);
+    this.length.set(length);
     this.refreshState();
+  }
+
+  /** Stops text input that would pass `maxLength`. Line breaks and deletions pass. */
+  protected onBeforeInput(event: InputEvent): void {
+    const max = this.maxLength();
+    if (max === undefined || !event.inputType.startsWith('insert')) return;
+    if (event.inputType === 'insertParagraph' || event.inputType === 'insertLineBreak') return;
+    const added = event.data?.length ?? event.dataTransfer?.getData('text/plain').length ?? 0;
+    const range = starEditorRange(this.area().nativeElement);
+    const replaced = range ? range.toString().length : 0;
+    if (this.length() - replaced + added > max) event.preventDefault();
   }
 
   /**

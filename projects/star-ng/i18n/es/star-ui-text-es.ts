@@ -210,6 +210,9 @@ export const STAR_UI_TEXT_ES: StarUiText = {
   editorLinkCancel: 'Cancelar',
   editorLinkInvalid:
     'Introduzca una dirección web (https://…), un correo (mailto:…) o un teléfono (tel:…).',
+  editorCharacterCount: (count, max) => `${count} de ${max} caracteres`,
+  editorCharactersLeft: (count) =>
+    count === 1 ? 'Queda 1 carácter' : `Quedan ${count} caracteres`,
   breadcrumb: 'Ruta de navegación',
   stepperLabel: 'Progreso',
   stepCompleted: '(completado)',

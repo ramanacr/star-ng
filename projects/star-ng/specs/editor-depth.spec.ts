@@ -269,3 +269,89 @@ describe('StarEditor link popover', () => {
     expect(starEditorSafeUrl('')).toBeNull();
   });
 });
+
+@Component({
+  imports: [StarEditor],
+  template: `
+    <star-editor
+      [(value)]="value"
+      [format]="format()"
+      [maxLength]="maxLength()"
+      [readonly]="readonly()"
+      ariaLabel="Comment"
+    />
+  `,
+})
+class FormatHost {
+  readonly value = signal('First line\nSecond <line>');
+  readonly format = signal<'html' | 'text'>('text');
+  readonly maxLength = signal<number | null>(30);
+  readonly readonly = signal(false);
+}
+
+describe('StarEditor format and maxLength', () => {
+  async function setupFormat(change?: (host: FormatHost) => void) {
+    const fixture = TestBed.createComponent(FormatHost);
+    change?.(fixture.componentInstance);
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+    return {
+      fixture,
+      el,
+      area: el.querySelector<HTMLElement>('.star-editor__area')!,
+      host: fixture.componentInstance,
+    };
+  }
+
+  it('shows plain text as paragraphs and stores plain text', async () => {
+    const { area, host, fixture } = await setupFormat();
+    expect(area.innerHTML).toBe('<p>First line</p><p>Second &lt;line&gt;</p>');
+    area.innerHTML = '<p>One <b>bold</b></p><ul><li>Two</li></ul>';
+    area.dispatchEvent(new Event('input'));
+    await fixture.whenStable();
+    expect(host.value()).toBe('One bold\nTwo');
+  });
+
+  it('counts the text, describes the area with the counter and announces the rest near the end', async () => {
+    const { el, area, fixture } = await setupFormat();
+    const counter = document.getElementById(
+      area.getAttribute('aria-describedby')!.split(' ').at(-1)!,
+    );
+    expect(counter?.textContent?.trim()).toBe('23 of 30 characters');
+    area.innerHTML = '<p>' + 'x'.repeat(28) + '</p>';
+    area.dispatchEvent(new Event('input'));
+    await fixture.whenStable();
+    expect(counter?.textContent?.trim()).toBe('28 of 30 characters');
+    expect(el.querySelector('[aria-live=polite]')?.textContent?.trim()).toBe('2 characters left');
+  });
+
+  it('blocks text input past maxLength', async () => {
+    const { area, fixture } = await setupFormat((host) => host.value.set('x'.repeat(30)));
+    await fixture.whenStable();
+    const event = new InputEvent('beforeinput', {
+      inputType: 'insertText',
+      data: 'y',
+      cancelable: true,
+      bubbles: true,
+    });
+    area.dispatchEvent(event);
+    expect(event.defaultPrevented).toBe(true);
+    const lineBreak = new InputEvent('beforeinput', {
+      inputType: 'insertParagraph',
+      cancelable: true,
+      bubbles: true,
+    });
+    area.dispatchEvent(lineBreak);
+    expect(lineBreak.defaultPrevented).toBe(false);
+  });
+
+  it('has no counter without maxLength, and keeps HTML by default', async () => {
+    const { el, area } = await setupFormat((host) => {
+      host.maxLength.set(null);
+      host.format.set('html');
+      host.value.set('<p>A <b>b</b></p>');
+    });
+    expect(el.querySelector('.star-editor__counter')).toBeNull();
+    expect(area.innerHTML).toBe('<p>A <b>b</b></p>');
+  });
+});

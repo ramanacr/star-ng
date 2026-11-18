@@ -179,3 +179,19 @@
   display: flex;
   gap: 0.5rem;
 }
+// Character counter (maxLength).
+.star-editor__footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0.25rem 0.75rem 0.375rem;
+  border-top: 1px solid var(--star-border);
+  font: var(--star-type-body-sm);
+  color: var(--star-text-muted);
+}
+.star-editor--over {
+  border-color: var(--star-danger);
+
+  .star-editor__counter {
+    color: var(--star-danger);
+  }
+}

@@ -2363,6 +2363,20 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "description": "Rich text field (PrimeNG `p-editor`, without Quill): a `contenteditable` area with a formatting toolbar. Value is HTML, sanitized with Angular's `DomSanitizer` both when it is shown and when it is stored.",
     "inputs": [
       {
+        "name": "format",
+        "type": "'html' | 'text'",
+        "default": "'html'",
+        "required": false,
+        "description": "`'html'` (default): the value is HTML. `'text'`: the value is plain text, one line per paragraph; the toolbar still formats the text on the screen, but the value has no markup. PrimeNG `onTextChange` gives the text next to the HTML."
+      },
+      {
+        "name": "maxLength",
+        "type": "number | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "Most characters of text (line breaks do not count). Typing stops at the limit, a counter shows under the area and describes it, and a live message gives the rest near the end. PrimeNG has no equivalent."
+      },
+      {
         "name": "placeholder",
         "type": "string",
         "default": "''",
@@ -2425,7 +2439,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "string",
         "default": "''",
         "required": false,
-        "description": "The content as HTML. Edits by the user are stored sanitized."
+        "description": "The content: HTML (sanitized when the user edits it), or plain text with `format=\"text\"`."
       }
     ],
     "outputs": [
@@ -2483,7 +2497,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
-        "name": "cancel",
+        "name": "dismissed",
         "type": "void",
         "default": null,
         "required": false,
@@ -8221,6 +8235,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "editor/sanitize": "<div class=\"docs-stack\">\n  <star-editor [(value)]=\"unsafe\" ariaLabel=\"Sanitized content\" />\n  <pre class=\"docs-output\" aria-label=\"Value after sanitizing\">{{ unsafe() }}</pre>\n</div>",
   "editor/size": "<div class=\"docs-stack\">\n  <star-editor\n    [(value)]=\"comment\"\n    ariaLabel=\"Order comment\"\n    placeholder=\"Add a comment\"\n    minHeight=\"4rem\"\n  />\n</div>",
   "editor/states": "<div class=\"docs-stack\">\n  <star-editor [value]=\"saved()\" ariaLabel=\"Saved note\" readonly />\n  <star-editor [value]=\"saved()\" ariaLabel=\"Locked note\" disabled />\n</div>",
+  "editor/text-limit": "<div class=\"docs-stack\">\n  <star-editor\n    [(value)]=\"summary\"\n    format=\"text\"\n    [maxLength]=\"120\"\n    ariaLabel=\"Delivery summary\"\n  />\n  <pre class=\"docs-output\" role=\"group\" aria-label=\"Value of the text editor\">{{\n    summary()\n  }}</pre>\n</div>",
   "field/basic": "<div class=\"docs-stack\">\n  <star-field label=\"Full name\" hint=\"As shown on your account.\">\n    <input starInput placeholder=\"Avery Stone\" />\n  </star-field>\n</div>",
   "field/sizes": "<div class=\"docs-stack\">\n  <input starInput size=\"sm\" aria-label=\"Small\" placeholder=\"Small\" />\n  <input starInput aria-label=\"Medium\" placeholder=\"Medium\" />\n  <input starInput size=\"lg\" aria-label=\"Large\" placeholder=\"Large\" />\n</div>",
   "field/states": "<div class=\"docs-stack\">\n  <star-field label=\"Promo code\" error=\"This code has expired.\">\n    <input starInput value=\"SPRING\" />\n  </star-field>\n  <star-field label=\"Account number\">\n    <input starInput value=\"100-204\" disabled />\n  </star-field>\n</div>",

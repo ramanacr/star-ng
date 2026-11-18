@@ -54,6 +54,25 @@ import { DOCS, DocsRow } from '../shared/docs';
       </docs-example>
 
       <docs-example
+        heading="Plain text and a length limit"
+        source="editor/text-limit"
+        [script]="limitScript"
+        note="With format text, the value is plain text: one line per paragraph, no markup. maxLength counts the characters of text (line breaks do not count). Typing stops at the limit. The counter under the area describes it, and a live message gives the characters left near the end. A signal form field with a maxLength rule sets it too."
+      >
+        <div class="docs-stack">
+          <star-editor
+            [(value)]="summary"
+            format="text"
+            [maxLength]="120"
+            ariaLabel="Delivery summary"
+          />
+          <pre class="docs-output" role="group" aria-label="Value of the text editor">{{
+            summary()
+          }}</pre>
+        </div>
+      </docs-example>
+
+      <docs-example
         heading="Placeholder and height"
         source="editor/size"
         [script]="sizeScript"
@@ -73,7 +92,7 @@ import { DOCS, DocsRow } from '../shared/docs';
         heading="Disabled and read-only"
         source="editor/states"
         [script]="statesScript"
-        note="disabled and readonly make the area not editable and turn off the toolbar buttons. A disabled area also leaves the tab order. A read-only area keeps its focus, so a user can select and copy the text."
+        note="disabled and readonly make the area not editable and turn off every toolbar control (buttons and the text style select). A disabled area also leaves the tab order. A read-only area keeps its focus, so a user can select and copy the text."
       >
         <div class="docs-stack">
           <star-editor [value]="saved()" ariaLabel="Saved note" readonly />
@@ -171,6 +190,8 @@ export class EditorPage {
   protected readonly fullScript = `readonly report = signal('<h2>Week 12</h2><p>All <b>orders</b> shipped.</p>');
 readonly fullToolbar = STAR_EDITOR_FULL_TOOLBAR;`;
   protected readonly ownScript = `readonly shortToolbar: readonly StarEditorToolbarItem[] = ['bold', 'italic', '|', 'link'];`;
+  protected readonly summary = signal('Two boxes for Orchard Supply.\nDeliver before noon.');
+  protected readonly limitScript = `readonly summary = signal('Two boxes for Orchard Supply.\\nDeliver before noon.');`;
   protected readonly basicScript = `readonly note = signal('');`;
   protected readonly sizeScript = `readonly comment = signal('');`;
   protected readonly statesScript = `readonly saved = signal('<p>Leave the parcel at the <b>loading dock</b>.</p>');`;
