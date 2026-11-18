@@ -43,6 +43,7 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - UI text `holiday`, `event` and `specialDate` (English, German, Spanish).
 - Calendar and date pickers: `monthChange` (`{ month, year }`, month 1â€“12), `yearChange` (`{ year }`) and `viewChange` (`'day' | 'month' | 'year'`) on navigation; the date pickers also emit `todayClick` (today's date) and `clearClick` (PrimeNG `onMonthChange`, `onYearChange`, `onTodayClick`, `onClearClick`).
 - Date pickers: `touchUI` opens the popup as a centered modal sheet in a native `<dialog>` with larger days, and `breakpoint` (for example `'640px'`) does so only on a window that is not wider; the keyboard model stays (PrimeNG `touchUI`, `breakpoint`).
+- Date pickers with `showTime`: `minTime` / `maxTime` limit the time of every day (`HH:mm` or `HH:mm:ss`), together with `minDate` / `maxDate`. `star-time-picker` keeps its `min` / `max` for the same purpose; its 12-hour clock works with seconds.
 
 ### Changed
 

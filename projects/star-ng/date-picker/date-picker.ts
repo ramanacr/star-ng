@@ -56,7 +56,7 @@ import {
   StarSpecialDate,
   startOfDay,
 } from './date-utils';
-import { StarTimeColumns } from './time-columns';
+import { StarTimeColumns, starTimeToSeconds } from './time-columns';
 
 const PANEL_POSITIONS: ConnectedPosition[] = [
   { originX: 'start', originY: 'bottom', overlayX: 'start', overlayY: 'top', offsetY: 6 },
@@ -161,6 +161,14 @@ export abstract class StarDateInputBase<TValue> {
    * column (PrimeNG `showSeconds`).
    */
   readonly showSeconds = input(false, { transform: booleanAttribute });
+  /**
+   * Earliest and latest time of every day with `showTime`, `HH:mm` or `HH:mm:ss`, for example
+   * opening hours (Ignite UI `minValue` / `maxValue` of the time part). They add to `minDate` /
+   * `maxDate`: the columns disable the other times, typed text outside them is not taken, and a
+   * picked day moves its time into them.
+   */
+  readonly minTime = input<string | null>(null);
+  readonly maxTime = input<string | null>(null);
   /** Hour step of the time columns with `showTime` (PrimeNG `stepHour`). */
   readonly stepHour = input(1);
   /** Second step of the time columns with `showSeconds` (PrimeNG `stepSecond`). */
@@ -443,22 +451,43 @@ export abstract class StarDateInputBase<TValue> {
     return atTime(date, time.hours, time.minutes, this.showSeconds() ? time.seconds : 0);
   }
 
-  /** `date` moved into `minDate` … `maxDate`, compared to the minute. */
+  /** `date` moved into `minTime` … `maxTime` of its day, then into `minDate` … `maxDate`. */
   protected clampTime(date: Date): Date {
     const min = this.minDate();
     const max = this.maxDate();
-    if (min && date.getTime() < min.getTime()) return new Date(min);
-    if (max && date.getTime() > max.getTime()) return new Date(max);
-    return date;
+    const time = date.getHours() * 3600 + date.getMinutes() * 60 + date.getSeconds();
+    const low = starTimeToSeconds(this.minTime());
+    const high = starTimeToSeconds(this.maxTime());
+    const at = (seconds: number) =>
+      atTime(date, Math.floor(seconds / 3600), Math.floor(seconds / 60) % 60, seconds % 60);
+    let next = date;
+    if (low !== null && time < low) next = at(low);
+    else if (high !== null && time > high) next = at(high);
+    if (min && next.getTime() < min.getTime()) return new Date(min);
+    if (max && next.getTime() > max.getTime()) return new Date(max);
+    return next;
   }
 
-  /** Earliest and latest time of the day of `date`: `minDate` / `maxDate` when it is that day. */
+  /**
+   * Earliest and latest time of the day of `date`: `minTime` / `maxTime`, and `minDate` /
+   * `maxDate` when it is that day (the later minimum and the earlier maximum).
+   */
   protected timeLimits(date: Date | null | undefined): { min?: string; max?: string } {
     const min = this.minDate();
     const max = this.maxDate();
+    const later = (a: string | undefined, b: string | undefined) =>
+      (starTimeToSeconds(a) ?? -1) >= (starTimeToSeconds(b) ?? -1) ? a : b;
+    const earlier = (a: string | undefined, b: string | undefined) =>
+      (starTimeToSeconds(a) ?? Infinity) <= (starTimeToSeconds(b) ?? Infinity) ? a : b;
     return {
-      min: date && min && sameDay(date, min) ? this.timeOf(min) : undefined,
-      max: date && max && sameDay(date, max) ? this.timeOf(max) : undefined,
+      min: later(
+        this.minTime() ?? undefined,
+        date && min && sameDay(date, min) ? this.timeOf(min) : undefined,
+      ),
+      max: earlier(
+        this.maxTime() ?? undefined,
+        date && max && sameDay(date, max) ? this.timeOf(max) : undefined,
+      ),
     };
   }
 

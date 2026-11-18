@@ -723,3 +723,69 @@ describe('date picker: touch mode', () => {
     expect(panel.getAttribute('role')).toBe('dialog');
   });
 });
+
+@Component({
+  imports: [StarDatePicker],
+  template: `
+    <star-date-picker
+      locale="en-GB"
+      ariaLabel="Opening hours"
+      showTime
+      minTime="08:00"
+      maxTime="18:30"
+      [(value)]="visit"
+    />
+  `,
+})
+class TimeLimitsHost {
+  readonly visit = signal<Date | null>(new Date(2026, 10, 18, 9, 0));
+}
+
+describe('date picker: minTime and maxTime', () => {
+  afterEach(() => document.querySelectorAll('.star-date__panel').forEach((item) => item.remove()));
+
+  it('limits the time of every day, in the columns and in typed text', async () => {
+    const fixture = TestBed.createComponent(TimeLimitsHost);
+    await fixture.whenStable();
+    const host = fixture.componentInstance;
+    const input = (fixture.nativeElement as HTMLElement).querySelector('input')!;
+    const type = async (text: string) => {
+      input.value = text;
+      input.dispatchEvent(new Event('input'));
+      input.dispatchEvent(new Event('blur'));
+      await fixture.whenStable();
+    };
+    await type('20/11/2026 07:30');
+    expect(host.visit()).toEqual(new Date(2026, 10, 18, 9, 0));
+    await type('20/11/2026 18:30');
+    expect(host.visit()).toEqual(new Date(2026, 10, 20, 18, 30));
+
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', altKey: true }));
+    await settle(fixture);
+    const group = timeGroup('Time');
+    const disabled = (part: string, value: number) =>
+      cellOf(group, part, value).getAttribute('aria-disabled') === 'true';
+    expect(disabled('hour', 7)).toBe(true);
+    expect(disabled('hour', 8)).toBe(false);
+    expect(disabled('hour', 19)).toBe(true);
+    // At 18 h the minutes after 30 are disabled.
+    expect(disabled('minute', 30)).toBe(false);
+    expect(disabled('minute', 31)).toBe(true);
+    cellOf(group, 'hour', 19).click();
+    await fixture.whenStable();
+    expect(host.visit()).toEqual(new Date(2026, 10, 20, 18, 30));
+  });
+
+  it('moves the time of a new value into the limits', async () => {
+    const fixture = TestBed.createComponent(TimeLimitsHost);
+    fixture.componentInstance.visit.set(new Date(2026, 10, 18, 22, 0));
+    await fixture.whenStable();
+    // A value from outside is shown as it is; a new pick keeps its time inside the limits.
+    const input = (fixture.nativeElement as HTMLElement).querySelector('input')!;
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', altKey: true }));
+    await settle(fixture);
+    document.querySelector<HTMLButtonElement>('[data-date="2026-11-19"]')!.click();
+    await fixture.whenStable();
+    expect(fixture.componentInstance.visit()).toEqual(new Date(2026, 10, 19, 18, 30));
+  });
+});

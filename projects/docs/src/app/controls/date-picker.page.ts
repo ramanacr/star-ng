@@ -155,6 +155,26 @@ import { DOCS, DocsRow } from '../shared/docs';
       </docs-example>
 
       <docs-example
+        heading="Opening hours"
+        source="date-picker/time-limits"
+        [script]="timeLimitsScript"
+        note="minTime and maxTime limit the time of every day with showTime, as HH:mm or HH:mm:ss text: here a visit from 08:00 to 18:30. The columns disable the other times, typed text outside them is not taken, and a new day keeps its time inside them. They add to minDate and maxDate."
+      >
+        <div class="docs-stack">
+          <star-date-picker
+            [(value)]="visit"
+            locale="en-GB"
+            showTime
+            minTime="08:00"
+            maxTime="18:30"
+            [stepMinute]="15"
+            ariaLabel="Site visit"
+          />
+          <p class="docs-output" role="status">Visit: {{ iso(visit()) }} {{ clock(visit()) }}</p>
+        </div>
+      </docs-example>
+
+      <docs-example
         heading="Display and input formats"
         source="date-picker/display-input-format"
         [script]="displayFormatScript"
@@ -537,6 +557,7 @@ export class DatePickerPage {
     year: 'numeric',
   };
 
+  protected readonly visit = signal<Date | null>(new Date(2026, 10, 18, 10, 0));
   protected readonly dueDate = signal<Date | null>(new Date(2026, 11, 15));
   protected readonly displayLong: Intl.DateTimeFormatOptions = { dateStyle: 'long' };
   protected readonly inputNumeric: Intl.DateTimeFormatOptions = {
@@ -601,6 +622,7 @@ readonly longFormat: Intl.DateTimeFormatOptions = {
   start: new Date(2026, 10, 16, 8, 0),
   end: new Date(2026, 10, 20, 17, 30),
 });`;
+  protected readonly timeLimitsScript = `readonly visit = signal<Date | null>(new Date(2026, 10, 18, 10, 0));`;
   protected readonly displayFormatScript = `readonly dueDate = signal<Date | null>(new Date(2026, 11, 15));
 readonly displayLong: Intl.DateTimeFormatOptions = { dateStyle: 'long' };
 readonly inputNumeric: Intl.DateTimeFormatOptions = { day: '2-digit', month: '2-digit', year: 'numeric' };`;
