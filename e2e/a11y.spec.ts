@@ -499,6 +499,32 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'maximized dialog with move and resize controls',
+    path: 'controls/dialog',
+    open: async (page) => {
+      await example(page, 'Maximize').getByRole('button', { name: 'Open order lines' }).click();
+      const dialog = page.getByRole('dialog', { name: 'Order lines' });
+      await dialog.getByRole('button', { name: 'Maximize' }).click();
+      await expect(dialog.getByRole('button', { name: 'Restore' })).toBeVisible();
+    },
+  },
+  {
+    name: 'resizable dialog',
+    path: 'controls/dialog',
+    open: async (page) => {
+      await example(page, 'Resize').getByRole('button', { name: 'Open resizable dialog' }).click();
+      await expect(page.getByRole('button', { name: 'Resize dialog' })).toBeVisible();
+    },
+  },
+  {
+    name: 'headless dialog',
+    path: 'controls/dialog',
+    open: async (page) => {
+      await example(page, 'Headless').getByRole('button', { name: 'Open headless dialog' }).click();
+      await expect(page.getByRole('dialog', { name: 'Shipping label for ORD-1042' })).toBeVisible();
+    },
+  },
+  {
     name: 'confirm dialog',
     path: 'controls/confirm',
     open: async (page) => {
@@ -540,6 +566,22 @@ const STATES: readonly State[] = [
     open: async (page) => {
       await example(page, 'Details drawer').getByRole('button', { name: 'Open details' }).click();
       await expect(page.getByRole('dialog')).toBeVisible();
+    },
+  },
+  {
+    name: 'non-modal drawer',
+    path: 'controls/drawer',
+    open: async (page) => {
+      await example(page, 'Modes').getByRole('button', { name: 'Non-modal' }).click();
+      await expect(page.getByRole('dialog', { name: 'Filters' })).toBeVisible();
+    },
+  },
+  {
+    name: 'full screen drawer',
+    path: 'controls/drawer',
+    open: async (page) => {
+      await example(page, 'Modes').getByRole('button', { name: 'Full screen' }).click();
+      await expect(page.getByRole('dialog', { name: 'Invoice INV-2041' })).toBeVisible();
     },
   },
   {

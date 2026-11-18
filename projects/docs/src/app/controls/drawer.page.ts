@@ -77,7 +77,7 @@ type DrawerPosition = 'left' | 'right' | 'start' | 'end' | 'top' | 'bottom';
         <star-drawer
           [(visible)]="floatOpen"
           header="Filters"
-          position="start"
+          position="end"
           drawerSize="20rem"
           [modal]="false"
           (shown)="modeEvent.set('non-modal shown')"
