@@ -23,6 +23,8 @@ const NODES: StarTreeNode[] = [
   },
   { key: 'fin', label: 'Finance', droppable: false },
   { key: 'hr', label: 'People' },
+  { key: 'lab', label: 'Lab', leaf: false },
+  { key: 'it', label: 'IT' },
 ];
 
 describe('tree drop rules', () => {
@@ -333,5 +335,13 @@ describe('StarTree drag and drop', () => {
     row('ops').focus();
     await press(row('ops'), 'ArrowUp', { ctrlKey: true, shiftKey: true });
     expect(host.drops).toEqual([]);
+  });
+
+  it('a move inside a closed lazy node opens it with nodeExpand', async () => {
+    const { host, row, press } = await setup();
+    row('it').focus();
+    await press(row('it'), 'ArrowRight', { ctrlKey: true, shiftKey: true });
+    expect(host.drops.at(-1)).toMatchObject({ dropNode: { key: 'lab' }, position: 'inside' });
+    expect(host.expands).toEqual(['lab']);
   });
 });

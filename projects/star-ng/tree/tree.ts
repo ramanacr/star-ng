@@ -842,8 +842,9 @@ export class StarTree implements FormValueControl<readonly string[]> {
       return;
     }
     const { dropNode, position } = move.event;
-    // The node goes into the previous sibling: open it so the node stays in view.
-    if (position === 'inside') this.toggle(dropNode, true);
+    // The node goes into the previous sibling: open it so the node stays in view. A user toggle,
+    // so a lazy node gets its nodeExpand and can load its children.
+    if (position === 'inside') this.userToggle(dropNode, true);
     this.nodeDrop.emit(move.event);
     const say =
       position === 'before'
