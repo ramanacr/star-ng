@@ -150,6 +150,11 @@ html:has(dialog.star-dialog--block-scroll[open]) {
   margin-block: auto 1rem;
   margin-inline: auto 1rem;
 }
+// A non-modal dialog is not in the top layer (native show()): it stacks above the page and its
+// sticky headers, below the CDK overlay container (z-index 1000).
+.star-dialog:not(.star-dialog--modal) {
+  z-index: 999;
+}
 // Moved by a drag or resized: left / top come from inline styles.
 .star-dialog--placed {
   position: fixed;

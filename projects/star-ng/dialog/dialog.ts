@@ -299,11 +299,12 @@ export class StarDialog extends StarDialogBase {
     const rect = this.dialog().nativeElement.getBoundingClientRect();
     const placed = this.placed();
     const sized = this.sized();
+    // Whole pixels: the reported position and size stay readable.
     return {
-      left: placed?.x ?? rect.left,
-      top: placed?.y ?? rect.top,
-      width: sized?.width ?? rect.width,
-      height: sized?.height ?? rect.height,
+      left: placed?.x ?? Math.round(rect.left),
+      top: placed?.y ?? Math.round(rect.top),
+      width: sized?.width ?? Math.round(rect.width),
+      height: sized?.height ?? Math.round(rect.height),
     };
   }
 

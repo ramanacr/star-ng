@@ -105,6 +105,11 @@
   inset-block: auto 0;
   border-radius: var(--star-radius-2xl) var(--star-radius-2xl) 0 0;
 }
+// A non-modal drawer is not in the top layer (native show()): it stacks above the page and its
+// sticky headers, below the CDK overlay container (z-index 1000), like a non-modal bottom sheet.
+.star-drawer:not(.star-dialog--modal) {
+  z-index: 999;
+}
 // Full screen: covers the window, slides in from the edge of its position.
 .star-drawer--full {
   inset: 0;
