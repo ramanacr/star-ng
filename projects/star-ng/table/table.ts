@@ -66,6 +66,12 @@ import {
   StarExportCell,
   stylePrintDocument,
 } from './table-export';
+import {
+  StarHeaderCheckboxToggleEvent,
+  StarRowSelectEvent,
+  StarTableSelection,
+  StarTableSelectionChangingEvent,
+} from './table-selection';
 import type { StarHeaderCellContext, StarRowEditActionsContext } from './table-slots';
 import {
   anchorOf,
@@ -474,11 +480,12 @@ export class StarRowExpansionTemplate<T = unknown> {
             @if (selectionMode() === 'multiple') {
               <th class="star-table__select" scope="col">
                 <star-checkbox
-                  [checked]="pageState() === true"
-                  [indeterminate]="pageState() === 'mixed'"
-                  [ariaLabel]="text.selectAllRows"
-                  [disabled]="!pageRows().length"
-                  (checkedChange)="togglePage($event)"
+                  #allBox
+                  [checked]="headerState() === true"
+                  [indeterminate]="headerState() === 'mixed'"
+                  [ariaLabel]="selectionPageOnly() ? text.selectPageRows : text.selectAllRows"
+                  [disabled]="!headerEnabled()"
+                  (checkedChange)="togglePage($event, allBox)"
                 />
               </th>
             } @else if (selectionMode() === 'single') {
@@ -693,8 +700,11 @@ export class StarRowExpansionTemplate<T = unknown> {
                   [class.star-table__row--editing]="isRowInEdit(row)"
                   [class.star-table__row--deleted]="isDeleted(row)"
                   [attr.aria-selected]="selectionMode() ? isSelected(row) : null"
+                  [attr.tabindex]="rowTabIndex(row)"
+                  [attr.data-select-key]="selectionMode() ? rowKeyText(row) : null"
                   (click)="onRowClick(row, $event)"
-                  (keydown)="onRowKey(row, $event)"
+                  (focusin)="onRowFocus(row)"
+                  (keydown)="onRowKey(row, $event); onSelectionKey(row, $event)"
                 >
                   @if (reorderableRows()) {
                     <td class="star-table__reorder">
@@ -735,9 +745,11 @@ export class StarRowExpansionTemplate<T = unknown> {
                   @if (selectionMode() === 'multiple') {
                     <td class="star-table__select">
                       <star-checkbox
+                        #rowBox
                         [checked]="isSelected(row)"
-                        [ariaLabel]="text.selectRow"
-                        (checkedChange)="toggleRow(row)"
+                        [disabled]="!canSelect(row)"
+                        [ariaLabel]="selectRowLabel(row)"
+                        (checkedChange)="toggleRow(row, rowBox)"
                         (click)="$event.stopPropagation()"
                       />
                     </td>
@@ -748,8 +760,10 @@ export class StarRowExpansionTemplate<T = unknown> {
                         class="star-table__radio"
                         [name]="radioName"
                         [checked]="isSelected(row)"
-                        [attr.aria-label]="text.selectRow"
-                        (change)="selectOnly(row)"
+                        [disabled]="!canSelect(row)"
+                        [attr.data-select-key]="rowKeyText(row)"
+                        [attr.aria-label]="selectRowLabel(row)"
+                        (change)="selectOnly(row, $any($event.target))"
                         (click)="$event.stopPropagation()"
                       />
                     </td>
@@ -1085,8 +1099,49 @@ export class StarTable<T> {
   /** Total rows on the server (lazy mode). */
   readonly totalRecords = input(0);
 
+  /**
+   * Row selection. It adds the selection column: a check box per row and a tri-state header check
+   * box (`'multiple'`, PrimeNG `p-tableCheckbox` / `p-tableHeaderCheckbox`), or a radio per row
+   * (`'single'`, PrimeNG `p-tableRadioButton`).
+   */
   readonly selectionMode = input<'single' | 'multiple' | null>(null);
+  /** Selected rows. Two-way. Rows match by `dataKey`, so new row objects stay selected. */
   readonly selection = model<readonly T[]>([]);
+  /**
+   * Keys (`dataKey`) of the selected rows (PrimeNG `selectionKeys`). Two-way. Bind an array to
+   * make the keys the source of the selection: it survives a lazy reload or an edit that gives
+   * new row objects, and `selection` then holds the current row objects. `null` (default): the
+   * keys come from `selection`.
+   */
+  readonly selectionKeys = model<readonly unknown[] | null>(null);
+  /**
+   * State of the header check box when the owner decides what "all" means (PrimeNG `selectAll`),
+   * for lazy data. Two-way. `null` (default): the table selects the rows itself. With a boolean,
+   * the header check box shows it and a toggle only sets it and emits `headerCheckboxToggle`.
+   */
+  readonly selectAll = model<boolean | null>(null);
+  /**
+   * Meta-key selection (PrimeNG `metaKeySelection`): a click selects only that row, Ctrl / Cmd +
+   * click toggles it, Shift + click selects a range. Rows become focusable (one tab stop): Arrow
+   * Up / Down move, Space toggles, Shift + Space and Shift + Arrow extend the range. Default off:
+   * only single mode selects on a click.
+   */
+  readonly metaKeySelection = input(false, { transform: booleanAttribute });
+  /**
+   * The header check box selects the rows of the current page only (PrimeNG `selectionPageOnly`).
+   * Default: all rows of the current filter result.
+   */
+  readonly selectionPageOnly = input(false, { transform: booleanAttribute });
+  /**
+   * Rows that can be selected (PrimeNG `rowSelectable`). Other rows get a disabled check box and
+   * are skipped by the header check box, ranges and clicks.
+   */
+  readonly rowSelectable = input<((row: T) => boolean) | null>(null);
+  /**
+   * Text that names a row in its check box ("Select row Order 1042"). Default: the text of the
+   * first visible column.
+   */
+  readonly rowLabel = input<((row: T) => string) | null>(null);
 
   /**
    * Keys (`dataKey`) of the expanded rows. Two-way. Rows expand only when the table has an
@@ -1184,6 +1239,17 @@ export class StarTable<T> {
   /** `commitEdits()` with `batchEdit`: all pending changes. Ignite `transactions.commit`. */
   readonly batchSave = output<StarBatchChanges<T>>();
   readonly lazyLoad = output<StarLazyLoadEvent>();
+  /**
+   * Fires before the selection changes, with the rows now and after. Call `cancel()` to keep the
+   * old selection (Ignite UI grid `rowSelectionChanging`).
+   */
+  readonly selectionChanging = output<StarTableSelectionChangingEvent<T>>();
+  /** A row joined the selection (PrimeNG `onRowSelect`). */
+  readonly rowSelect = output<StarRowSelectEvent<T>>();
+  /** A row left the selection (PrimeNG `onRowUnselect`). */
+  readonly rowUnselect = output<StarRowSelectEvent<T>>();
+  /** The header check box was toggled (PrimeNG `onHeaderCheckboxToggle`). */
+  readonly headerCheckboxToggle = output<StarHeaderCheckboxToggleEvent>();
 
   /** The cell in edit mode: `<row key>|<field>` text, or `null`. */
   private readonly editing = signal<string | null>(null);
@@ -1799,14 +1865,6 @@ export class StarTable<T> {
       (this.reorderableRows() ? 1 : 0) +
       (this.rowEditMode() ? 1 : 0),
   );
-
-  /** Selection state of the rows on the current page, for the header checkbox. */
-  protected readonly pageState = computed<boolean | 'mixed'>(() => {
-    const rows = this.pageRows();
-    const count = rows.filter((row) => this.isSelected(row)).length;
-    if (!rows.length || count === 0) return false;
-    return count === rows.length ? true : 'mixed';
-  });
 
   constructor() {
     let editingBefore = new Set<unknown>();
@@ -3003,43 +3061,120 @@ export class StarTable<T> {
     return index < 0 ? null : index + 1;
   }
 
-  /** Keys of the selected rows: a look-up per row stays fast with 50,000 selected rows. */
-  private readonly selectedKeys = computed(
-    () => new Set(this.selection().map((row) => this.trackKey(row))),
-  );
+  /** Selection logic (`table-selection.ts`). */
+  private readonly select = new StarTableSelection<T>({
+    mode: this.selectionMode,
+    selection: this.selection,
+    selectionKeys: this.selectionKeys,
+    selectAll: this.selectAll,
+    metaKeySelection: this.metaKeySelection,
+    pageOnly: this.selectionPageOnly,
+    rowSelectable: this.rowSelectable,
+    keyOf: (row) => this.trackKey(row),
+    allRows: computed(() => (this.lazy() ? this.pageRows() : this.withAdded())),
+    pageRows: this.pageRows,
+    orderedRows: computed(() => (this.lazy() ? this.pageRows() : this.withAdded())),
+    knownRows: this.value,
+    changing: this.selectionChanging,
+    rowSelect: this.rowSelect,
+    rowUnselect: this.rowUnselect,
+    headerToggle: this.headerCheckboxToggle,
+  });
+  protected readonly headerState = this.select.headerState;
+  protected readonly headerEnabled = this.select.headerEnabled;
+  /** Key of the row that is the tab stop with `metaKeySelection` (default: the first row). */
+  private readonly activeRow = signal<{ readonly key: unknown } | null>(null);
 
   protected isSelected(row: T): boolean {
-    return this.selectedKeys().has(this.trackKey(row));
+    return this.select.isSelected(row);
   }
 
-  protected toggleRow(row: T): void {
-    const key = this.trackKey(row);
-    this.selection.update((selection) =>
-      this.isSelected(row)
-        ? selection.filter((selected) => !Object.is(this.trackKey(selected), key))
-        : [...selection, row],
+  protected canSelect(row: T): boolean {
+    return this.select.selectable(row);
+  }
+
+  /** Name of the check box or radio of a row: "Select row Order 1042". */
+  protected selectRowLabel(row: T): string {
+    const custom = this.rowLabel();
+    const first = this.visibleColumns()[0];
+    const label = custom ? custom(row) : first ? this.cellText(row, first) : '';
+    return label ? this.text.selectRowOf(label) : this.text.selectRow;
+  }
+
+  /** `tabindex` of a row: rows are one tab stop with `metaKeySelection`, else not focusable. */
+  protected rowTabIndex(row: T): number | null {
+    const stop = this.tabStop();
+    if (!stop) return null;
+    return Object.is(stop.key, this.trackKey(row)) ? 0 : -1;
+  }
+
+  /** The row that is the tab stop: the last focused row on the page, else the first row. */
+  private readonly tabStop = computed<{ readonly key: unknown } | null>(() => {
+    if (!this.metaKeySelection() || !this.selectionMode()) return null;
+    const rows = this.pageRows();
+    const active = this.activeRow();
+    if (active && rows.some((row) => Object.is(this.trackKey(row), active.key))) return active;
+    return { key: rows.length ? this.trackKey(rows[0]) : undefined };
+  });
+
+  protected onRowFocus(row: T): void {
+    if (this.metaKeySelection()) this.activeRow.set({ key: this.trackKey(row) });
+  }
+
+  protected toggleRow(row: T, box?: StarCheckbox): void {
+    if (this.select.toggle(row, null) || !box) return;
+    // A cancelled change: the box shows the selection again (its model and its element).
+    box.checked.set(this.isSelected(row));
+    const input = this.body()?.nativeElement.querySelector<HTMLInputElement>(
+      `tr[data-select-key="${CSS.escape(this.rowKeyText(row))}"] td.star-table__select input`,
     );
+    if (input) input.checked = this.isSelected(row);
   }
 
-  protected selectOnly(row: T): void {
-    this.selection.set([row]);
-  }
-
-  protected togglePage(checked: boolean): void {
-    const page = this.pageRows();
-    const keys = new Set(page.map((row) => this.trackKey(row)));
-    this.selection.update((selection) => {
-      const others = selection.filter((row) => !keys.has(this.trackKey(row)));
-      return checked ? [...others, ...page] : others;
+  protected selectOnly(row: T, radio?: HTMLInputElement): void {
+    if (this.select.selectOnly(row, null) || !radio) return;
+    // A cancelled change: the radios show the selection again.
+    radio.checked = false;
+    const body = this.body()?.nativeElement;
+    body?.querySelectorAll<HTMLInputElement>('input.star-table__radio').forEach((input) => {
+      input.checked = this.selection().some(
+        (selected) => this.rowKeyText(selected) === input.dataset['selectKey'],
+      );
     });
+  }
+
+  protected togglePage(checked: boolean, box?: StarCheckbox): void {
+    if (this.select.toggleAll(checked, null) || !box) return;
+    const state = this.headerState();
+    box.checked.set(state === true);
+    box.indeterminate.set(state === 'mixed');
+    const input = this.host.nativeElement.querySelector<HTMLInputElement>(
+      'thead th.star-table__select input',
+    );
+    if (input) {
+      input.checked = state === true;
+      input.indeterminate = state === 'mixed';
+    }
   }
 
   protected onRowClick(row: T, event: MouseEvent): void {
     // A click on a control, or in the list of a choice editor, is not a click on the row.
     const control = 'button, a, input, select, textarea, .star-table__editor';
     if ((event.target as HTMLElement).closest(control)) return;
-    if (this.selectionMode() === 'single') this.selectOnly(row);
+    this.select.click(row, event);
     this.rowClick.emit(row);
+  }
+
+  /** Space, Shift + Space and the Arrow keys on a row or on its selection control. */
+  protected onSelectionKey(row: T, event: KeyboardEvent): void {
+    this.select.keydown(row, event, (tr) => {
+      const key = tr.dataset['selectKey'];
+      const next = this.pageRows().find((item) => this.rowKeyText(item) === key);
+      if (next !== undefined && this.metaKeySelection()) {
+        this.activeRow.set({ key: this.trackKey(next) });
+      }
+      return next;
+    });
   }
 
   protected emitLazy(): void {

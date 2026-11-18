@@ -23,6 +23,7 @@ const ROWS: Row[] = Array.from({ length: 23 }, (_, i) => ({
       dataKey="id"
       selectionMode="multiple"
       [(selection)]="selection"
+      selectionPageOnly
       [globalFilter]="filter()"
       paginator
       [rows]="5"
@@ -83,7 +84,7 @@ describe('StarTable', () => {
     expect(el.querySelector('.star-table__empty')?.textContent).toContain('No records found');
   });
 
-  it('selects rows and the header checkbox selects the page', async () => {
+  it('selects rows and the header checkbox selects the page (selectionPageOnly)', async () => {
     const { fixture, el } = await setup();
     const rowBoxes = () => [...el.querySelectorAll<HTMLInputElement>('tbody input[type=checkbox]')];
     rowBoxes()[0].click();

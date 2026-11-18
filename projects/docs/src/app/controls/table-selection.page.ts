@@ -1,6 +1,11 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { StarButton } from '@star-ng/ui/button';
-import { StarCellTemplate, StarColumn, StarTable } from '@star-ng/ui/table';
+import {
+  StarCellTemplate,
+  StarColumn,
+  StarTable,
+  StarTableSelectionChangingEvent,
+} from '@star-ng/ui/table';
 import { StarTag } from '@star-ng/ui/tag';
 import { DOCS, DocsRow } from '../shared/docs';
 import { DocsFill, Order, orderColumns, ORDERS, STATUS_SEVERITY } from './table-demo';
@@ -19,7 +24,7 @@ import { DocsFill, Order, orderColumns, ORDERS, STATUS_SEVERITY } from './table-
         heading="Multiple selection"
         source="table-selection/multiple"
         [script]="multipleScript"
-        note="selectionMode multiple adds a checkbox to each row. The header checkbox selects the rows of the current page: it is checked when all are selected and mixed when some are. selection is a two-way model."
+        note="selectionMode multiple adds a checkbox to each row. With selectionPageOnly the header checkbox selects the rows of the current page: it is checked when all are selected and mixed when some are. selection is a two-way model."
       >
         <div class="docs-stack">
           <div class="docs-row">
@@ -38,11 +43,65 @@ import { DocsFill, Order, orderColumns, ORDERS, STATUS_SEVERITY } from './table-
               ariaLabel="Orders with checkboxes"
               selectionMode="multiple"
               [(selection)]="selected"
+              selectionPageOnly
               paginator
               [rows]="5"
             />
           </docs-fill>
           <p class="docs-output" role="status">{{ selected().length }} selected</p>
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="Check box selection"
+        source="table-selection/checkbox"
+        [script]="checkboxScript"
+        note="Without selectionPageOnly the header checkbox selects every row of the filter result, on all pages. rowSelectable disables the checkbox of cancelled orders; the header checkbox and ranges skip them. selectionKeys holds the dataKey of each selected row, so the selection survives new row objects. selectionChanging fires before each change: this example cancels a selection of more than 20 orders. Shift + Space on a checkbox selects the rows from the last toggled row."
+      >
+        <div class="docs-stack">
+          <docs-fill>
+            <star-table
+              [value]="orders"
+              [columns]="columns"
+              dataKey="id"
+              ariaLabel="Orders with selectable rows"
+              selectionMode="multiple"
+              [(selectionKeys)]="keys"
+              [rowSelectable]="notCancelled"
+              (selectionChanging)="limit($event)"
+              paginator
+              [rows]="5"
+            />
+          </docs-fill>
+          <p class="docs-output" role="status">
+            {{ keys()?.length ?? 0 }} selected{{ refused() ? ', more than 20 refused' : '' }}
+          </p>
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="Meta-key selection"
+        source="table-selection/meta"
+        [script]="metaScript"
+        note="metaKeySelection makes a click select only that row. Ctrl or Cmd + click adds or removes a row, and Shift + click selects a range. The rows are one tab stop: Arrow up and Arrow down move between them, Space toggles the focused row, and Shift + Space or Shift + an arrow key extends the range."
+      >
+        <div class="docs-stack">
+          <docs-fill>
+            <star-table
+              [value]="orders.slice(0, 8)"
+              [columns]="columns"
+              dataKey="id"
+              ariaLabel="Orders with meta-key selection"
+              selectionMode="multiple"
+              metaKeySelection
+              [(selection)]="metaSelected"
+              (rowSelect)="lastEvent.set('Selected ' + $event.row.id)"
+              (rowUnselect)="lastEvent.set('Cleared ' + $event.row.id)"
+            />
+          </docs-fill>
+          <p class="docs-output" role="status">
+            {{ metaSelected().length }} selected. {{ lastEvent() }}
+          </p>
         </div>
       </docs-example>
 
@@ -149,6 +208,17 @@ export class TableSelectionPage {
     this.selected.set(ORDERS.filter((order) => order.status === 'Open'));
   }
   protected readonly chosen = signal<readonly Order[]>([]);
+
+  protected readonly keys = signal<readonly unknown[] | null>([]);
+  protected readonly refused = signal(false);
+  protected readonly notCancelled = (order: Order) => order.status !== 'Cancelled';
+  protected limit(event: StarTableSelectionChangingEvent<Order>): void {
+    this.refused.set(event.next.length > 20);
+    if (event.next.length > 20) event.cancel();
+  }
+
+  protected readonly metaSelected = signal<readonly Order[]>([]);
+  protected readonly lastEvent = signal('');
   protected readonly opened = signal<string | null>(null);
 
   protected readonly actionOrders = signal<readonly Order[]>(ORDERS.slice(0, 5));
@@ -170,6 +240,16 @@ export class TableSelectionPage {
 selectOpen(): void {
   this.selected.set(ORDERS.filter((order) => order.status === 'Open'));
 }`;
+  protected readonly checkboxScript = `readonly keys = signal<readonly unknown[] | null>([]);
+readonly refused = signal(false);
+readonly notCancelled = (order: Order) => order.status !== 'Cancelled';
+
+limit(event: StarTableSelectionChangingEvent<Order>): void {
+  this.refused.set(event.next.length > 20);
+  if (event.next.length > 20) event.cancel();
+}`;
+  protected readonly metaScript = `readonly metaSelected = signal<readonly Order[]>([]);
+readonly lastEvent = signal('');`;
   protected readonly singleScript = `readonly chosen = signal<readonly Order[]>([]);`;
   protected readonly clickScript = `readonly opened = signal<string | null>(null);`;
   protected readonly actionsScript = `// Import StarCellTemplate, StarTag and StarButton in the component imports.
@@ -196,7 +276,21 @@ cancel(order: Order): void {
     {
       name: 'Space',
       description:
-        'On a row checkbox or radio button: selects or clears the row. On the header checkbox: selects or clears the page.',
+        'On a row checkbox or radio button: selects or clears the row. On the header checkbox: selects or clears the filter result (the page with selectionPageOnly). On a focused row (metaKeySelection): toggles the row.',
+    },
+    {
+      name: 'Shift + Space',
+      description:
+        'On a row checkbox, or on a focused row with metaKeySelection: selects the rows from the last toggled row to this row.',
+    },
+    {
+      name: 'Shift + Arrow up / Shift + Arrow down',
+      description:
+        'On a row checkbox, or on a focused row with metaKeySelection: moves to the previous or next row and extends the range.',
+    },
+    {
+      name: 'Arrow up / Arrow down (metaKeySelection)',
+      description: 'On a focused row: moves the focus to the previous or next row.',
     },
     {
       name: 'Arrow up / Arrow down',

@@ -60,6 +60,10 @@ export interface StarUiText {
   readonly noData: string;
   readonly selectRow: string;
   readonly selectAllRows: string;
+  /** Name of a row check box or radio, with the row text: "Select row Order 1042". */
+  readonly selectRowOf: (label: string) => string;
+  /** Header check box with `selectionPageOnly`. */
+  readonly selectPageRows: string;
   readonly filterBy: (column: string) => string;
   readonly filterAll: string;
   readonly filterMin: (column: string) => string;
@@ -283,6 +287,8 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   noData: 'No records found',
   selectRow: 'Select row',
   selectAllRows: 'Select all rows',
+  selectRowOf: (label) => `Select row ${label}`,
+  selectPageRows: 'Select all rows on this page',
   filterBy: (column) => `Filter by ${column}`,
   filterAll: 'All',
   filterMin: (column) => `${column} from`,
@@ -475,6 +481,7 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   page: ['page'],
   pageReport: ['first', 'last', 'total'],
   filterBy: ['column'],
+  selectRowOf: ['label'],
   filterMin: ['column'],
   filterMax: ['column'],
   editCell: ['column'],

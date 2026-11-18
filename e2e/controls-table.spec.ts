@@ -510,6 +510,69 @@ test.describe('table: selection', () => {
     await expect(radios.nth(1)).toBeChecked();
   });
 
+  test('meta-key selection: click, Ctrl + click, Shift + click and the keyboard', async ({
+    page,
+  }) => {
+    await openPage(page, '/controls/table-selection', 'Table selection');
+    const live = example(page, 'Meta-key selection');
+    const table = live.getByRole('table', { name: 'Orders with meta-key selection' });
+    const status = live.getByRole('status');
+    const cell = (index: number) => bodyRows(table).nth(index).locator('td').nth(2);
+    await cell(1).click();
+    await expect(status).toContainText('1 selected. Selected ORD-1002');
+    await cell(3).click({ modifiers: ['ControlOrMeta'] });
+    await expect(status).toContainText('2 selected');
+    await cell(5).click({ modifiers: ['Shift'] });
+    await expect(status).toContainText('3 selected');
+    await expect(bodyRows(table).nth(4)).toHaveAttribute('aria-selected', 'true');
+    await cell(0).click();
+    await expect(status).toContainText('1 selected');
+
+    // The rows are one tab stop; the arrow keys move, Space and Shift + arrow select.
+    await expect(bodyRows(table).nth(0)).toBeFocused();
+    await expect(bodyRows(table).nth(1)).toHaveAttribute('tabindex', '-1');
+    await page.keyboard.press('ArrowDown');
+    await expect(bodyRows(table).nth(1)).toBeFocused();
+    await page.keyboard.press('Space');
+    await expect(status).toContainText('2 selected');
+    await page.keyboard.press('Shift+ArrowDown');
+    await page.keyboard.press('Shift+ArrowDown');
+    await expect(bodyRows(table).nth(3)).toBeFocused();
+    await expect(status).toContainText('4 selected');
+    await expect(
+      bodyRows(table).nth(3).getByRole('checkbox', { name: 'Select row ORD-1004' }),
+    ).toBeChecked();
+  });
+
+  test('check box selection: select-all of the filter result, unselectable rows, cancel', async ({
+    page,
+  }) => {
+    await openPage(page, '/controls/table-selection', 'Table selection');
+    const live = example(page, 'Check box selection');
+    const table = live.getByRole('table', { name: 'Orders with selectable rows' });
+    const status = live.getByRole('status');
+    const header = table.locator('thead').getByRole('checkbox', { name: 'Select all rows' });
+    // Cancelled orders cannot be selected.
+    const cancelled = bodyRows(table).filter({ hasText: 'Cancelled' }).first();
+    await expect(cancelled.getByRole('checkbox')).toBeDisabled();
+
+    const boxes = table.locator('tbody').getByRole('checkbox', { disabled: false });
+    await boxes.nth(0).check();
+    await expect(status).toHaveText('1 selected');
+    await expect(header).toHaveJSProperty('indeterminate', true);
+    // Shift + Space on a later box selects the range from the last toggled row.
+    await boxes.nth(2).focus();
+    await page.keyboard.press('Shift+Space');
+    await expect(status).toHaveText('3 selected');
+    await expect(boxes.nth(1)).toBeChecked();
+
+    // All selectable orders are more than 20: the example cancels the change.
+    await header.click();
+    await expect(status).toHaveText('3 selected, more than 20 refused');
+    await expect(header).not.toBeChecked();
+    await expect(header).toHaveJSProperty('indeterminate', true);
+  });
+
   test('emits the row of a click and ignores a click on a control', async ({ page }) => {
     await openPage(page, '/controls/table-selection', 'Table selection');
     const live = example(page, 'Row click');

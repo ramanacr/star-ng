@@ -6311,7 +6311,35 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "'single' | 'multiple' | null",
         "default": "null",
         "required": false,
-        "description": ""
+        "description": "Row selection. It adds the selection column: a check box per row and a tri-state header check box (`'multiple'`, PrimeNG `p-tableCheckbox` / `p-tableHeaderCheckbox`), or a radio per row (`'single'`, PrimeNG `p-tableRadioButton`)."
+      },
+      {
+        "name": "metaKeySelection",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Meta-key selection (PrimeNG `metaKeySelection`): a click selects only that row, Ctrl / Cmd + click toggles it, Shift + click selects a range. Rows become focusable (one tab stop): Arrow Up / Down move, Space toggles, Shift + Space and Shift + Arrow extend the range. Default off: only single mode selects on a click."
+      },
+      {
+        "name": "selectionPageOnly",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The header check box selects the rows of the current page only (PrimeNG `selectionPageOnly`). Default: all rows of the current filter result."
+      },
+      {
+        "name": "rowSelectable",
+        "type": "((row: T) => boolean) | null",
+        "default": "null",
+        "required": false,
+        "description": "Rows that can be selected (PrimeNG `rowSelectable`). Other rows get a disabled check box and are skipped by the header check box, ranges and clicks."
+      },
+      {
+        "name": "rowLabel",
+        "type": "((row: T) => string) | null",
+        "default": "null",
+        "required": false,
+        "description": "Text that names a row in its check box (\"Select row Order 1042\"). Default: the text of the first visible column."
       },
       {
         "name": "rowExpandMode",
@@ -6432,7 +6460,21 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "readonly T[]",
         "default": "[]",
         "required": false,
-        "description": ""
+        "description": "Selected rows. Two-way. Rows match by `dataKey`, so new row objects stay selected."
+      },
+      {
+        "name": "selectionKeys",
+        "type": "readonly unknown[] | null",
+        "default": "null",
+        "required": false,
+        "description": "Keys (`dataKey`) of the selected rows (PrimeNG `selectionKeys`). Two-way. Bind an array to make the keys the source of the selection: it survives a lazy reload or an edit that gives new row objects, and `selection` then holds the current row objects. `null` (default): the keys come from `selection`."
+      },
+      {
+        "name": "selectAll",
+        "type": "boolean | null",
+        "default": "null",
+        "required": false,
+        "description": "State of the header check box when the owner decides what \"all\" means (PrimeNG `selectAll`), for lazy data. Two-way. `null` (default): the table selects the rows itself. With a boolean, the header check box shows it and a toggle only sets it and emits `headerCheckboxToggle`."
       },
       {
         "name": "expandedKeys",
@@ -6568,6 +6610,34 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": ""
+      },
+      {
+        "name": "selectionChanging",
+        "type": "StarTableSelectionChangingEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "Fires before the selection changes, with the rows now and after. Call `cancel()` to keep the old selection (Ignite UI grid `rowSelectionChanging`)."
+      },
+      {
+        "name": "rowSelect",
+        "type": "StarRowSelectEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "A row joined the selection (PrimeNG `onRowSelect`)."
+      },
+      {
+        "name": "rowUnselect",
+        "type": "StarRowSelectEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "A row left the selection (PrimeNG `onRowUnselect`)."
+      },
+      {
+        "name": "headerCheckboxToggle",
+        "type": "StarHeaderCheckboxToggleEvent",
+        "default": null,
+        "required": false,
+        "description": "The header check box was toggled (PrimeNG `onHeaderCheckboxToggle`)."
       }
     ]
   },
@@ -8105,8 +8175,10 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "table-paging/client": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Paged orders\"\n      paginator\n      [(first)]=\"first\"\n      [(rows)]=\"rows\"\n      [rowsPerPageOptions]=\"[5, 10, 20]\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">first = {{ first() }}, rows = {{ rows() }}</p>\n</div>",
   "table-paging/lazy": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"lazyRows()\"\n      [columns]=\"lazyColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders from the server\"\n      lazy\n      paginator\n      [rows]=\"5\"\n      [rowsPerPageOptions]=\"[5, 10]\"\n      [totalRecords]=\"lazyTotal()\"\n      [loading]=\"lazyLoading()\"\n      (lazyLoad)=\"load($event)\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Last request: {{ request() }}</p>\n</div>",
   "table-selection/actions": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"actionOrders()\"\n      [columns]=\"actionColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with actions\"\n      selectionMode=\"single\"\n      [(selection)]=\"actionSelection\"\n    >\n      <ng-template starCell=\"status\" [starCellOf]=\"actionOrders()\" let-row>\n        <star-tag [severity]=\"severityOf(row.status)\" [value]=\"row.status\" rounded />\n      </ng-template>\n      <ng-template starCell=\"actions\" [starCellOf]=\"actionOrders()\" let-row>\n        <star-button\n          size=\"sm\"\n          variant=\"secondary\"\n          [disabled]=\"row.status === 'Cancelled'\"\n          (pressed)=\"cancel(row)\"\n        >\n          Cancel {{ row.id }}\n        </star-button>\n      </ng-template>\n    </star-table>\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">\n    Selected: {{ actionSelection()[0]?.id ?? 'none' }}\n  </p>\n</div>",
+  "table-selection/checkbox": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with selectable rows\"\n      selectionMode=\"multiple\"\n      [(selectionKeys)]=\"keys\"\n      [rowSelectable]=\"notCancelled\"\n      (selectionChanging)=\"limit($event)\"\n      paginator\n      [rows]=\"5\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">\n    {{ keys()?.length ?? 0 }} selected{{ refused() ? ', more than 20 refused' : '' }}\n  </p>\n</div>",
   "table-selection/click": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders.slice(0, 5)\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with row click\"\n      (rowClick)=\"opened.set($event.id)\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Opened: {{ opened() ?? 'none' }}</p>\n</div>",
-  "table-selection/multiple": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"selectOpen()\">\n      Select open orders\n    </star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"selected.set([])\">\n      Clear selection\n    </star-button>\n  </div>\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with checkboxes\"\n      selectionMode=\"multiple\"\n      [(selection)]=\"selected\"\n      paginator\n      [rows]=\"5\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">{{ selected().length }} selected</p>\n</div>",
+  "table-selection/meta": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders.slice(0, 8)\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with meta-key selection\"\n      selectionMode=\"multiple\"\n      metaKeySelection\n      [(selection)]=\"metaSelected\"\n      (rowSelect)=\"lastEvent.set('Selected ' + $event.row.id)\"\n      (rowUnselect)=\"lastEvent.set('Cleared ' + $event.row.id)\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">\n    {{ metaSelected().length }} selected. {{ lastEvent() }}\n  </p>\n</div>",
+  "table-selection/multiple": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"selectOpen()\">\n      Select open orders\n    </star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"selected.set([])\">\n      Clear selection\n    </star-button>\n  </div>\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with checkboxes\"\n      selectionMode=\"multiple\"\n      [(selection)]=\"selected\"\n      selectionPageOnly\n      paginator\n      [rows]=\"5\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">{{ selected().length }} selected</p>\n</div>",
   "table-selection/single": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with one choice\"\n      selectionMode=\"single\"\n      [(selection)]=\"chosen\"\n      paginator\n      [rows]=\"5\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Chosen: {{ chosen()[0]?.id ?? 'none' }}</p>\n</div>",
   "table-sort-filter/columns": "<div class=\"docs-stack\">\n  <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"filtered.clearFilters()\">\n    Clear filters\n  </star-button>\n  <docs-fill>\n    <star-table\n      #filtered\n      [value]=\"orders\"\n      [columns]=\"filterColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with column filters\"\n      [(filters)]=\"filters\"\n      paginator\n      [rows]=\"4\"\n    >\n      <ng-template starCell=\"status\" [starCellOf]=\"orders\" let-row>\n        <star-tag [severity]=\"severityOf(row.status)\" [value]=\"row.status\" rounded />\n      </ng-template>\n    </star-table>\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Filters: {{ filterText() }}</p>\n</div>",
   "table-sort-filter/combined": "<div class=\"docs-stack\">\n  <input\n    starInput\n    type=\"search\"\n    aria-label=\"Search combined orders\"\n    placeholder=\"Search combined orders\"\n    [value]=\"combinedQuery()\"\n    (input)=\"combinedQuery.set($any($event.target).value)\"\n  />\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"filterColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with search, filters and sort\"\n      [globalFilter]=\"combinedQuery()\"\n      size=\"sm\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n</div>",

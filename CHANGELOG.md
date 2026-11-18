@@ -42,9 +42,12 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - Table: batch edit (`batchEdit`, `pendingChanges`, `commitEdits` / `batchSave`, `discardEdits`, `undo` / `redo` with Ctrl+Z, Ctrl+Y, Ctrl+Shift+Z), with changed-cell and deleted-row marks.
 - Table: `addRow()` / `deleteRow()` with `rowAdd` / `rowDelete`.
 - UI text for table editing in English, German and Spanish.
+- Table: selection depth: `metaKeySelection` (click, Ctrl / Cmd + click, Shift + click; rows as one tab stop with Arrow keys, Space, Shift + Space and Shift + Arrow), `selectionPageOnly`, `rowSelectable`, two-way `selectionKeys` and `selectAll`, `rowLabel`, outputs `rowSelect`, `rowUnselect`, `headerCheckboxToggle` and the cancelable `selectionChanging`. Row check boxes and radios are named with the row ("Select row ORD-1001").
+- `STAR_UI_TEXT.selectRowOf` and `selectPageRows` with German and Spanish texts.
 
 ### Changed
 
+- Table: the header check box now selects every selectable row of the filter result (all pages), like PrimeNG. Set `selectionPageOnly` to keep the old page-only behaviour.
 - Tree table: the component moved to its own file `data-display/tree-table.ts`; the import path `@star-ng/ui/data-display` does not change.
 
 ## [0.3.1] - 2026-11-18

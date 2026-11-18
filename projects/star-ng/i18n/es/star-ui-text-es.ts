@@ -59,6 +59,8 @@ export const STAR_UI_TEXT_ES: StarUiText = {
   noData: 'No se encontraron registros',
   selectRow: 'Seleccionar fila',
   selectAllRows: 'Seleccionar todas las filas',
+  selectRowOf: (label) => `Seleccionar fila ${label}`,
+  selectPageRows: 'Seleccionar todas las filas de esta página',
   filterBy: (column) => `Filtrar por ${column}`,
   filterAll: 'Todos',
   filterMin: (column) => `${column} desde`,

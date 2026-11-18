@@ -81,6 +81,15 @@ star-select.star-table__filter {
 .star-table__row--clickable {
   cursor: pointer;
 }
+// `metaKeySelection`: the rows take the focus (one tab stop, arrow keys between rows).
+.star-table__row[tabindex] {
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid var(--star-accent);
+    outline-offset: -2px;
+  }
+}
 .star-table__row--selected,
 .star-table__row--selected:hover {
   background: var(--star-primary-soft);

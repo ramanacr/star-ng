@@ -57,6 +57,8 @@ export const STAR_UI_TEXT_DE: StarUiText = {
   noData: 'Keine Datensätze gefunden',
   selectRow: 'Zeile auswählen',
   selectAllRows: 'Alle Zeilen auswählen',
+  selectRowOf: (label) => `Zeile ${label} auswählen`,
+  selectPageRows: 'Alle Zeilen dieser Seite auswählen',
   filterBy: (column) => `Nach ${column} filtern`,
   filterAll: 'Alle',
   filterMin: (column) => `${column} von`,
