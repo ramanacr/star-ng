@@ -115,6 +115,8 @@ describe('tree table cell edit', () => {
     expect(input.type).toBe('number');
     expect(input.getAttribute('aria-label')).toBe('Edit Quantity');
     expect(document.activeElement).toBe(input);
+    // The cell in edit is no focus target of its own: the editor is.
+    expect(cell('o1', 1).hasAttribute('tabindex')).toBe(false);
     input.value = '7';
     await press('Enter');
     expect(el.querySelector('.star-tree-table__editor')).toBeNull();

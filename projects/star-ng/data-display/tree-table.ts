@@ -826,7 +826,7 @@ export class StarTreeTable {
     return index !== undefined && index >= start && index < end;
   });
   /** Row (and cell) to focus as soon as its element exists (it may need scrolling in first). */
-  private pendingFocus: { key: string; cell: number | null } | null = null;
+  private pendingFocus: { key: string; cell: number | null; retried?: boolean } | null = null;
   /** The focus waits on the scroll area because the focused row left the DOM. */
   protected parked = false;
 
@@ -1283,6 +1283,9 @@ export class StarTreeTable {
 
   protected cellTabIndex(key: string, cell: number): number | null {
     if (!this.cellMode()) return null;
+    // The cell in edit is not a focus target itself: its editor is (and the editor covers it).
+    const editing = this.editing();
+    if (editing?.key === key && this.visibleColumns()[cell]?.field === editing.field) return null;
     return this.focusKey() === key && this.focusCell() === cell ? 0 : -1;
   }
 
@@ -1398,8 +1401,10 @@ export class StarTreeTable {
     }
     const target = this.focusTarget(pending.key, pending.cell);
     if (!target) return; // not rendered yet: the next render calls this again
-    this.pendingFocus = null;
     target.focus({ preventScroll: this.windowed() });
+    // A cell gets its tabindex back only in the next render (after an edit): try once more then.
+    if (this.doc.activeElement === target || pending.retried) this.pendingFocus = null;
+    else this.pendingFocus = { ...pending, retried: true };
   }
 
   /**
