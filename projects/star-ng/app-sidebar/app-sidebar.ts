@@ -18,6 +18,7 @@ import {
   numberAttribute,
   output,
   signal,
+  untracked,
 } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { STAR_UI_TEXT, starInlineKey } from '@star-ng/ui/core';
@@ -141,6 +142,11 @@ export class StarAppSidebar {
       update();
       query.addEventListener?.('change', update);
       onCleanup(() => query.removeEventListener?.('change', update));
+    });
+    // Leaving drawer mode (wider viewport, or mode "static") closes the drawer state, so the
+    // drawer does not open by itself when the viewport becomes narrow again.
+    effect(() => {
+      if (!this.inDrawer() && untracked(this.visible)) this.visible.set(false);
     });
     afterEveryRender(() => this.syncTabStops());
   }

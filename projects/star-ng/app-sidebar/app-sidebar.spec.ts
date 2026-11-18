@@ -249,6 +249,29 @@ describe('StarAppSidebar', () => {
     expect(fixture.componentInstance.open()).toBe(false);
   });
 
+  it('closes the drawer state when it leaves drawer mode', async () => {
+    let listener: (() => void) | null = null;
+    const query = {
+      matches: true,
+      addEventListener: (_type: string, callback: () => void) => (listener = callback),
+      removeEventListener: () => undefined,
+    };
+    window.matchMedia = (() => query) as unknown as typeof window.matchMedia;
+    const { fixture, root } = await setup();
+    fixture.componentInstance.mode.set('overlay');
+    await fixture.whenStable();
+    fixture.componentInstance.open.set(true);
+    await fixture.whenStable();
+    expect(root.querySelector('star-drawer')).not.toBeNull();
+    // The viewport grows past the breakpoint: back in the layout, and the drawer state is closed,
+    // so it does not pop open when the viewport shrinks again.
+    query.matches = false;
+    listener!();
+    await fixture.whenStable();
+    expect(root.querySelector('star-drawer')).toBeNull();
+    expect(fixture.componentInstance.open()).toBe(false);
+  });
+
   it('reads its texts from STAR_UI_TEXT', async () => {
     TestBed.configureTestingModule({
       providers: [provideStarUiText({ mainNavigation: 'Hauptnavigation' })],
