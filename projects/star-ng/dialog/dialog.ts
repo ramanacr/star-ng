@@ -6,6 +6,7 @@ import {
   DOCUMENT,
   inject,
   input,
+  model,
   output,
   signal,
 } from '@angular/core';
@@ -49,12 +50,13 @@ import { resizeFrame } from './dialog-resize';
       class="star-dialog"
       [class]="'star-dialog--' + size()"
       [class.star-dialog--modal]="modal()"
-      [class.star-dialog--placed]="placed() !== null"
-      [class.star-dialog--resized]="sized() !== null"
+      [class.star-dialog--placed]="free() && placed() !== null"
+      [class.star-dialog--resized]="free() && sized() !== null"
+      [class.star-dialog--maximized]="maximized()"
       [style.width]="cssWidth()"
-      [style.height.px]="sized()?.height"
-      [style.left.px]="placed()?.x"
-      [style.top.px]="placed()?.y"
+      [style.height.px]="free() ? sized()?.height : null"
+      [style.left.px]="free() ? placed()?.x : null"
+      [style.top.px]="free() ? placed()?.y : null"
       [attr.aria-labelledby]="header() ? headerId : null"
       [attr.aria-label]="header() ? null : ariaLabel()"
       [attr.role]="role()"
@@ -88,6 +90,19 @@ import { resizeFrame } from './dialog-resize';
                   <i class="ph-bold ph-arrows-out-cardinal" aria-hidden="true"></i>
                 </button>
               }
+              @if (maximizable()) {
+                <button
+                  type="button"
+                  class="star-btn star-btn--ghost star-btn--icon star-dialog__maximize"
+                  [attr.aria-label]="maximized() ? text.restore : text.maximize"
+                  (click)="toggleMaximize()"
+                >
+                  <i
+                    [class]="maximized() ? 'ph-bold ph-corners-in' : 'ph-bold ph-corners-out'"
+                    aria-hidden="true"
+                  ></i>
+                </button>
+              }
               @if (closable()) {
                 <button
                   type="button"
@@ -104,7 +119,7 @@ import { resizeFrame } from './dialog-resize';
         <div class="star-dialog__body"><ng-content /></div>
         <ng-content select="[starDialogFooter]" />
       </div>
-      @if (resizable()) {
+      @if (resizable() && free()) {
         <button
           type="button"
           class="star-dialog__resize"
@@ -136,21 +151,44 @@ export class StarDialog extends StarDialogBase {
    */
   readonly resizable = input(false, { transform: booleanAttribute });
 
+  /**
+   * A header button fills the window with the dialog and restores it (PrimeNG `maximizable`).
+   * Escape still closes a maximized dialog when `closeOnEscape` is on.
+   */
+  readonly maximizable = input(false, { transform: booleanAttribute });
+  /** The dialog fills the window. Two-way bindable. */
+  readonly maximized = model(false);
+
   /** Position of the top left corner after a drag, in pixels from the window (PrimeNG `onDragEnd`). */
   readonly dragEnd = output<StarDialogPoint>();
   /** Size of the dialog after a resize, in pixels (PrimeNG `onResizeEnd`). */
   readonly resizeEnd = output<StarDialogDimensions>();
+  /** The maximize button filled the window (PrimeNG `onMaximize`). */
+  readonly maximize = output<void>();
+  /** The restore button gave the dialog its normal size again (PrimeNG `onMaximize` with false). */
+  readonly restore = output<void>();
 
   /** Position set by a drag or a resize; `null` keeps the CSS position. */
   protected readonly placed = signal<StarDialogPoint | null>(null);
   /** Size set by a resize; `null` keeps the CSS size. */
   protected readonly sized = signal<StarDialogDimensions | null>(null);
 
-  protected readonly canDrag = computed(() => this.draggable());
+  /** Not maximized: the drag and resize geometry applies. */
+  protected readonly free = computed(() => !this.maximized());
+  protected readonly canDrag = computed(() => this.draggable() && this.free());
   protected readonly cssWidth = computed(() => {
+    if (!this.free()) return null;
     const sized = this.sized();
     return sized ? `${sized.width}px` : this.width();
   });
+
+  /** Fills the window with the dialog, or restores its normal size. */
+  toggleMaximize(): void {
+    const next = !this.maximized();
+    this.maximized.set(next);
+    if (next) this.maximize.emit();
+    else this.restore.emit();
+  }
 
   protected onDragStart(event: PointerEvent): void {
     if (!this.canDrag() || event.button !== 0) return;

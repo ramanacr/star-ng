@@ -269,3 +269,66 @@ describe('StarDialog resizable', () => {
     expect(dialog.style.height).toBe('');
   });
 });
+
+@Component({
+  imports: [StarDialog],
+  template: `
+    <star-dialog
+      [(visible)]="open"
+      [(maximized)]="max"
+      header="Order lines"
+      maximizable
+      draggable
+      resizable
+      width="30rem"
+      (maximize)="events.push('maximize')"
+      (restore)="events.push('restore')"
+    >
+      <p>Body</p>
+    </star-dialog>
+  `,
+})
+class MaximizeHost {
+  readonly open = signal(true);
+  readonly max = signal(false);
+  readonly events: string[] = [];
+}
+
+describe('StarDialog maximizable', () => {
+  it('toggles the full window with the header button and reports both changes', async () => {
+    const fixture = TestBed.createComponent(MaximizeHost);
+    await fixture.whenStable();
+    const dialog = (fixture.nativeElement as HTMLElement).querySelector('dialog')!;
+    const button = dialog.querySelector<HTMLButtonElement>('.star-dialog__maximize')!;
+    expect(button.getAttribute('aria-label')).toBe('Maximize');
+    expect(dialog.style.width).toBe('30rem');
+
+    button.click();
+    await fixture.whenStable();
+    expect(fixture.componentInstance.max()).toBe(true);
+    expect(dialog.classList).toContain('star-dialog--maximized');
+    expect(button.getAttribute('aria-label')).toBe('Restore');
+    // The fixed width, the move button and the resize handle do not apply while maximized.
+    expect(dialog.style.width).toBe('');
+    expect(dialog.querySelector('.star-dialog__move')).toBeNull();
+    expect(dialog.querySelector('.star-dialog__resize')).toBeNull();
+
+    button.click();
+    await fixture.whenStable();
+    expect(fixture.componentInstance.max()).toBe(false);
+    expect(dialog.classList).not.toContain('star-dialog--maximized');
+    expect(dialog.style.width).toBe('30rem');
+    expect(fixture.componentInstance.events).toEqual(['maximize', 'restore']);
+  });
+
+  it('follows the maximized model, and Escape still closes a maximized dialog', async () => {
+    const fixture = TestBed.createComponent(MaximizeHost);
+    fixture.componentInstance.max.set(true);
+    await fixture.whenStable();
+    const dialog = (fixture.nativeElement as HTMLElement).querySelector('dialog')!;
+    expect(dialog.classList).toContain('star-dialog--maximized');
+    dialog.dispatchEvent(new Event('cancel', { cancelable: true }));
+    await fixture.whenStable();
+    expect(fixture.componentInstance.open()).toBe(false);
+  });
+});

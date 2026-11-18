@@ -190,6 +190,31 @@ const SIZES: readonly StarDialogSize[] = ['sm', 'md', 'lg', 'xl', 'full'];
       </docs-example>
 
       <docs-example
+        heading="Maximize"
+        source="dialog/maximize"
+        [script]="maximizeScript"
+        note="maximizable adds a Maximize button to the header (PrimeNG maximizable). The dialog then fills the window, and the button becomes Restore. Bind maximized with a two-way binding to set or read the state. maximize and restore report the change. Escape closes a maximized dialog too, unless closeOnEscape is false."
+      >
+        <div class="docs-stack">
+          <p class="docs-output" role="status">Maximized: {{ maximizedState() ? 'yes' : 'no' }}</p>
+          <div class="docs-row">
+            <star-button variant="secondary" (pressed)="maximizeOpen.set(true)">
+              Open order lines
+            </star-button>
+          </div>
+        </div>
+        <star-dialog
+          [(visible)]="maximizeOpen"
+          [(maximized)]="maximizedState"
+          header="Order lines"
+          size="lg"
+          maximizable
+        >
+          <p>ORD-1042 has 12 lines. Maximize the dialog to see more of them at once.</p>
+        </star-dialog>
+      </docs-example>
+
+      <docs-example
         heading="Dialog from code"
         source="dialog/service"
         [script]="serviceScript"
@@ -313,6 +338,8 @@ export class DialogPage {
   protected readonly dragNote = signal('not moved');
   protected readonly resizeOpen = signal(false);
   protected readonly resizeNote = signal('not resized');
+  protected readonly maximizeOpen = signal(false);
+  protected readonly maximizedState = signal(false);
   protected readonly note = signal('Call the customer before delivery.');
   protected readonly place = signal<string | null>(null);
   protected readonly lastAction = signal('none');
@@ -381,6 +408,8 @@ readonly markedFocusOpen = signal(false);`;
 readonly dragNote = signal('not moved');`;
   protected readonly resizeScript = `readonly resizeOpen = signal(false);
 readonly resizeNote = signal('not resized');`;
+  protected readonly maximizeScript = `readonly maximizeOpen = signal(false);
+readonly maximizedState = signal(false);`;
   protected readonly serviceScript = `private readonly dialogs = inject(StarDialogService);
 readonly note = signal('Call the customer before delivery.');
 

@@ -1871,9 +1871,24 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "false",
         "required": false,
         "description": "A handle in the bottom end corner resizes the dialog with the pointer, or with Shift + the arrow keys, 10 pixels per press (PrimeNG `resizable`). The smallest size is 240 x 160 pixels."
+      },
+      {
+        "name": "maximizable",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "A header button fills the window with the dialog and restores it (PrimeNG `maximizable`). Escape still closes a maximized dialog when `closeOnEscape` is on."
       }
     ],
-    "models": [],
+    "models": [
+      {
+        "name": "maximized",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The dialog fills the window. Two-way bindable."
+      }
+    ],
     "outputs": [
       {
         "name": "dragEnd",
@@ -1888,6 +1903,20 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": "Size of the dialog after a resize, in pixels (PrimeNG `onResizeEnd`)."
+      },
+      {
+        "name": "maximize",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "The maximize button filled the window (PrimeNG `onMaximize`)."
+      },
+      {
+        "name": "restore",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "The restore button gave the dialog its normal size again (PrimeNG `onMaximize` with false)."
       }
     ]
   },
@@ -7351,6 +7380,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "dialog/close-rules": "<div class=\"docs-row\">\n  <star-button variant=\"secondary\" (pressed)=\"maskOpen.set(true)\"\n    >Backdrop click</star-button\n  >\n  <star-button variant=\"secondary\" (pressed)=\"lockedOpen.set(true)\">Locked</star-button>\n  <star-button variant=\"secondary\" (pressed)=\"floatOpen.set(true)\">Non-modal</star-button>\n</div>\n<star-dialog [(visible)]=\"maskOpen\" header=\"Closes on a backdrop click\" dismissableMask>\n  <p>Click outside this window to close it.</p>\n</star-dialog>\n<star-dialog\n  [(visible)]=\"lockedOpen\"\n  header=\"Locked dialog\"\n  [closable]=\"false\"\n  [closeOnEscape]=\"false\"\n>\n  <p>This dialog has no close button and ignores Escape.</p>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button (pressed)=\"lockedOpen.set(false)\">Done</star-button>\n  </div>\n</star-dialog>\n<star-dialog [(visible)]=\"floatOpen\" header=\"Non-modal dialog\" [modal]=\"false\">\n  <p>The page behind this window stays usable.</p>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button (pressed)=\"floatOpen.set(false)\">Close</star-button>\n  </div>\n</star-dialog>",
   "dialog/drag": "<div class=\"docs-stack\">\n  <p class=\"docs-output\" role=\"status\">Last position: {{ dragNote() }}</p>\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"dragOpen.set(true)\">\n      Open movable dialog\n    </star-button>\n  </div>\n</div>\n<star-dialog\n  [(visible)]=\"dragOpen\"\n  header=\"Movable dialog\"\n  draggable\n  (dragEnd)=\"dragNote.set($event.x + ', ' + $event.y)\"\n>\n  <p>Drag the header, or focus the move button and press Alt with an arrow key.</p>\n</star-dialog>",
   "dialog/focus": "<div class=\"docs-row\">\n  <star-button variant=\"secondary\" (pressed)=\"defaultFocusOpen.set(true)\">\n    First focusable\n  </star-button>\n  <star-button variant=\"secondary\" (pressed)=\"markedFocusOpen.set(true)\">\n    Marked field\n  </star-button>\n</div>\n<star-dialog [(visible)]=\"defaultFocusOpen\" header=\"Default focus\">\n  <p>The focus starts on the close button.</p>\n  <star-field label=\"Reference\"><input starInput value=\"ORD-1042\" /></star-field>\n</star-dialog>\n<star-dialog [(visible)]=\"markedFocusOpen\" header=\"Marked focus\">\n  <star-field label=\"Reference\">\n    <input starInput value=\"ORD-1042\" data-autofocus />\n  </star-field>\n</star-dialog>",
+  "dialog/maximize": "<div class=\"docs-stack\">\n  <p class=\"docs-output\" role=\"status\">Maximized: {{ maximizedState() ? 'yes' : 'no' }}</p>\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"maximizeOpen.set(true)\">\n      Open order lines\n    </star-button>\n  </div>\n</div>\n<star-dialog\n  [(visible)]=\"maximizeOpen\"\n  [(maximized)]=\"maximizedState\"\n  header=\"Order lines\"\n  size=\"lg\"\n  maximizable\n>\n  <p>ORD-1042 has 12 lines. Maximize the dialog to see more of them at once.</p>\n</star-dialog>",
   "dialog/popups": "<star-button variant=\"secondary\" (pressed)=\"popupsOpen.set(true)\">\n  Open order dialog\n</star-button>\n<star-dialog [(visible)]=\"popupsOpen\" header=\"Order ORD-1042\" size=\"md\">\n  <div class=\"docs-stack\">\n    <star-field label=\"Shipping city\" hint=\"Menus and cascade selects open above the modal\">\n      <star-cascade-select\n        [options]=\"places\"\n        optionLabel=\"name\"\n        optionValue=\"code\"\n        [(value)]=\"place\"\n        ariaLabel=\"Dialog city\"\n        showPath\n      />\n    </star-field>\n    <div class=\"docs-row\">\n      <star-button size=\"sm\" variant=\"secondary\" [starMenuTrigger]=\"actionsMenu\">\n        More actions\n      </star-button>\n      <star-menu\n        #actionsMenu\n        [items]=\"actionItems\"\n        (itemClick)=\"lastAction.set($event.label ?? '')\"\n      />\n      <span class=\"docs-output\" tabindex=\"0\" [starContextMenu]=\"actionsMenu\">\n        Last action: {{ lastAction() }}\n      </span>\n    </div>\n  </div>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button (pressed)=\"popupsOpen.set(false)\">Done</star-button>\n  </div>\n</star-dialog>",
   "dialog/resize": "<div class=\"docs-stack\">\n  <p class=\"docs-output\" role=\"status\">Last size: {{ resizeNote() }}</p>\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"resizeOpen.set(true)\">\n      Open resizable dialog\n    </star-button>\n  </div>\n</div>\n<star-dialog\n  [(visible)]=\"resizeOpen\"\n  header=\"Resizable dialog\"\n  resizable\n  draggable\n  (resizeEnd)=\"resizeNote.set($event.width + ' x ' + $event.height)\"\n>\n  <p>Drag the corner handle, or focus it and press Shift with an arrow key.</p>\n</star-dialog>",
   "dialog/service": "<div class=\"docs-stack\">\n  <p class=\"docs-output\" role=\"status\">Note: {{ note() }}</p>\n  <div class=\"docs-row\">\n    <star-button leadingIcon=\"ph-bold ph-note-pencil\" (pressed)=\"editNote()\">\n      Edit note\n    </star-button>\n  </div>\n</div>",
