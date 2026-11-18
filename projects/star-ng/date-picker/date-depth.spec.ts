@@ -629,3 +629,97 @@ describe('calendar and date picker: events', () => {
     expect(host.log.filter((entry) => entry === 'clear').length).toBe(2);
   });
 });
+
+@Component({
+  imports: [StarDatePicker],
+  template: `
+    <star-date-picker locale="en-GB" ariaLabel="Touch" touchUI [(value)]="picked" />
+    <star-date-picker locale="en-GB" ariaLabel="Wide" breakpoint="1px" [(value)]="picked" />
+  `,
+})
+class TouchHost {
+  readonly picked = signal<Date | null>(new Date(2026, 10, 18));
+}
+
+describe('date picker: touch mode', () => {
+  afterEach(() => document.querySelectorAll('.star-date__panel').forEach((item) => item.remove()));
+
+  async function setup() {
+    const fixture = TestBed.createComponent(TouchHost);
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+    const field = (label: string) =>
+      el.querySelector<HTMLInputElement>(`input[aria-label="${label}"]`)!;
+    const open = async (label: string) => {
+      field(label)
+        .closest('.star-date__control')!
+        .querySelector<HTMLButtonElement>('.star-date__toggle')!
+        .click();
+      await settle(fixture);
+    };
+    return { fixture, el, host: fixture.componentInstance, field, open };
+  }
+
+  it('opens the panel in a modal dialog with touchUI, and keeps the keyboard model', async () => {
+    const { fixture, el, host, field, open } = await setup();
+    await open('Touch');
+    const dialog = el.querySelector<HTMLDialogElement>('dialog.star-date__sheet')!;
+    expect(dialog).not.toBeNull();
+    expect(dialog.open).toBe(true);
+    expect(dialog.getAttribute('aria-label')).toBe('Choose date');
+    const panel = dialog.querySelector<HTMLElement>('.star-date__panel')!;
+    expect(panel.classList).toContain('star-date__panel--sheet');
+    // The dialog is the dialog: the panel inside has no second dialog role.
+    expect(panel.getAttribute('role')).toBeNull();
+    const toggle = field('Touch')
+      .closest('.star-date__control')!
+      .querySelector('.star-date__toggle')!;
+    expect(toggle.getAttribute('aria-expanded')).toBe('true');
+    expect(toggle.getAttribute('aria-controls')).toBe(panel.id);
+    // No popover overlay in touch mode.
+    expect(document.querySelector('.cdk-overlay-pane .star-date__panel')).toBeNull();
+    expect(document.activeElement).toBe(dialog.querySelector('[data-date="2026-11-18"]'));
+
+    // Arrow keys move in the grid; Enter chooses and closes.
+    const day = dialog.querySelector<HTMLElement>('[data-date="2026-11-18"]')!;
+    day.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+    await settle(fixture);
+    expect(document.activeElement).toBe(dialog.querySelector('[data-date="2026-11-19"]'));
+    (document.activeElement as HTMLElement).dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }),
+    );
+    await fixture.whenStable();
+    expect(host.picked()).toEqual(new Date(2026, 10, 19));
+    expect(el.querySelector('dialog.star-date__sheet')).toBeNull();
+    expect(document.activeElement).toBe(field('Touch'));
+  });
+
+  it('closes the sheet with Escape and with a click on the backdrop', async () => {
+    const { fixture, el, field, open } = await setup();
+    await open('Touch');
+    let dialog = el.querySelector<HTMLDialogElement>('dialog.star-date__sheet')!;
+    const cancel = new Event('cancel', { cancelable: true });
+    dialog.dispatchEvent(cancel);
+    await fixture.whenStable();
+    expect(cancel.defaultPrevented).toBe(true);
+    expect(el.querySelector('dialog.star-date__sheet')).toBeNull();
+    expect(document.activeElement).toBe(field('Touch'));
+
+    await open('Touch');
+    dialog = el.querySelector<HTMLDialogElement>('dialog.star-date__sheet')!;
+    dialog.querySelector<HTMLElement>('.star-calendar__title')!.click();
+    await fixture.whenStable();
+    expect(el.querySelector('dialog.star-date__sheet')).not.toBeNull();
+    dialog.click();
+    await fixture.whenStable();
+    expect(el.querySelector('dialog.star-date__sheet')).toBeNull();
+  });
+
+  it('uses the popover above the breakpoint', async () => {
+    const { el, open } = await setup();
+    await open('Wide');
+    expect(el.querySelector('dialog.star-date__sheet')).toBeNull();
+    const panel = document.querySelector<HTMLElement>('.star-date__panel')!;
+    expect(panel.getAttribute('role')).toBe('dialog');
+  });
+});

@@ -88,6 +88,30 @@
   overflow: auto;
   overscroll-behavior: contain;
 }
+// touchUI / breakpoint: the popup as a modal sheet in the middle of the window. The panel fills
+// the dialog, so only a click on the backdrop has the dialog itself as its target.
+.star-date__sheet {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  max-width: calc(100vw - 2rem);
+  max-height: calc(100dvh - 2rem);
+  overflow: visible;
+
+  &::backdrop {
+    background: var(--star-scrim-modal);
+  }
+  .star-date__panel {
+    max-width: calc(100vw - 2rem);
+    max-height: calc(100dvh - 2rem);
+  }
+}
+// Larger touch targets in the sheet.
+.star-date__panel--sheet .star-calendar__day {
+  width: 2.75rem;
+  height: 2.75rem;
+}
 // Time part of the date pickers (showTime). Narrow window: under the calendar, with short
 // columns. Wide window: see the row layout below.
 .star-date__time {

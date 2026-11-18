@@ -42,6 +42,7 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - Calendar and date pickers: `specialDates` (`StarSpecialDate`: `date`, `label`, `kind`) marks days with a token-styled dot and adds the kind and label to the accessible name of the day; the `starDate` context gets `special` (Ignite UI `specialDates`).
 - UI text `holiday`, `event` and `specialDate` (English, German, Spanish).
 - Calendar and date pickers: `monthChange` (`{ month, year }`, month 1â€“12), `yearChange` (`{ year }`) and `viewChange` (`'day' | 'month' | 'year'`) on navigation; the date pickers also emit `todayClick` (today's date) and `clearClick` (PrimeNG `onMonthChange`, `onYearChange`, `onTodayClick`, `onClearClick`).
+- Date pickers: `touchUI` opens the popup as a centered modal sheet in a native `<dialog>` with larger days, and `breakpoint` (for example `'640px'`) does so only on a window that is not wider; the keyboard model stays (PrimeNG `touchUI`, `breakpoint`).
 
 ### Changed
 

@@ -302,6 +302,29 @@ import { DOCS, DocsRow } from '../shared/docs';
       </docs-example>
 
       <docs-example
+        heading="Touch mode"
+        source="date-picker/touch"
+        [script]="touchScript"
+        note="touchUI opens the popup as a modal sheet in the middle of the window, in a native dialog with a backdrop and larger days. breakpoint='640px' does the same only when the window is 640px wide or less, and keeps the popover on a wider window. The keyboard model does not change; Escape and a click on the backdrop close the sheet."
+      >
+        <div class="docs-stack">
+          <star-date-picker
+            [(value)]="touchDate"
+            locale="en-GB"
+            touchUI
+            ariaLabel="Delivery date, touch"
+          />
+          <star-date-picker
+            [(value)]="touchDate"
+            locale="en-GB"
+            breakpoint="640px"
+            ariaLabel="Delivery date, small window"
+          />
+          <p class="docs-output" role="status">Delivery: {{ iso(touchDate()) }}</p>
+        </div>
+      </docs-example>
+
+      <docs-example
         heading="Month and year views"
         source="date-picker/views"
         note="view='month' or view='year' chooses a month or a year. The value is the first day of it, and the text is mm/yyyy or yyyy. In the day view, a click on the month name or the year in the popup header opens the month or the year view for a fast jump."
@@ -532,6 +555,7 @@ export class DatePickerPage {
     start: new Date(2026, 10, 16, 8, 0),
     end: new Date(2026, 10, 20, 17, 30),
   });
+  protected readonly touchDate = signal<Date | null>(new Date(2026, 10, 24));
   protected readonly eventsDate = signal<Date | null>(new Date(2026, 10, 17));
   protected readonly lastEvent = signal('none');
   protected readonly paymentDate = signal<Date | null>(new Date(2026, 11, 2));
@@ -585,6 +609,7 @@ readonly billingPeriod = signal<StarDateRange<string> | null>({
   start: '2026-11-01',
   end: '2026-11-30',
 });`;
+  protected readonly touchScript = `readonly touchDate = signal<Date | null>(new Date(2026, 10, 24));`;
   protected readonly eventsScript = `readonly eventsDate = signal<Date | null>(new Date(2026, 10, 17));
 readonly lastEvent = signal('none');`;
   protected readonly specialScript = `readonly paymentDate = signal<Date | null>(new Date(2026, 11, 2));
@@ -658,6 +683,15 @@ readonly iso = (date: Date | null) => (date ? isoDay(date) : 'none');
       description: 'Today marker, chosen day, and chosen hour and minute.',
     },
     { name: '--star-primary-soft', description: 'Fill between the two ends of a range.' },
+    { name: '--star-scrim-modal', description: 'Backdrop of the sheet (touchUI, breakpoint).' },
+    {
+      name: '--star-calendar-special',
+      description: 'Dot of a special date. Default: --star-accent.',
+    },
+    {
+      name: '--star-calendar-holiday',
+      description: 'Dot of a holiday (special date). Default: --star-warning.',
+    },
   ];
   protected readonly keyboard: readonly DocsRow[] = [
     { name: 'Arrow down / Alt + Arrow down', description: 'In the field: opens the popup.' },

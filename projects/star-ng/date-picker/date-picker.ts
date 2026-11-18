@@ -1,7 +1,8 @@
 import { _IdGenerator } from '@angular/cdk/a11y';
 import { CdkConnectedOverlay, CdkOverlayOrigin, ConnectedPosition } from '@angular/cdk/overlay';
-import { NgTemplateOutlet } from '@angular/common';
+import { DOCUMENT, NgTemplateOutlet } from '@angular/common';
 import {
+  afterNextRender,
   booleanAttribute,
   ChangeDetectionStrategy,
   Component,
@@ -11,6 +12,7 @@ import {
   ElementRef,
   forwardRef,
   inject,
+  Injector,
   input,
   linkedSignal,
   model,
@@ -125,6 +127,17 @@ export abstract class StarDateInputBase<TValue> {
    * value may be ISO text or a `Date` in both modes.
    */
   readonly dataType = input<'date' | 'string'>('date');
+  /**
+   * Opens the popup as a modal sheet in the middle of the window, in a native `<dialog>` with a
+   * backdrop, and with larger days for touch (PrimeNG `touchUI`). The keyboard model does not
+   * change; Escape and a click on the backdrop close it.
+   */
+  readonly touchUI = input(false, { transform: booleanAttribute });
+  /**
+   * Window width at or below which the popup opens as a sheet (as `touchUI`), for example
+   * `'640px'` (PrimeNG `breakpoint`). The width is checked when the popup opens.
+   */
+  readonly breakpoint = input<string | null>(null);
   /** Months shown side by side in the popup. */
   readonly numberOfMonths = input(1);
   /** Shows the ISO 8601 week number at the start of each week. */
@@ -185,6 +198,11 @@ export abstract class StarDateInputBase<TValue> {
   protected readonly viewportMargin = PANEL_VIEWPORT_MARGIN;
   protected readonly panelId = this.ids.getId('star-date-panel-');
   protected readonly open = signal(false);
+  /** The open popup is a modal sheet (`touchUI` or `breakpoint`). */
+  protected readonly sheet = signal(false);
+  private readonly sheetDialog = viewChild<ElementRef<HTMLDialogElement>>('sheetDialog');
+  private readonly injector = inject(Injector);
+  private readonly document = inject(DOCUMENT);
   /**
    * Invalid after touch, while the parent `star-field` shows an error, or while the field keeps
    * text that is not a date (`keepInvalid`).
@@ -267,8 +285,41 @@ export abstract class StarDateInputBase<TValue> {
 
   openPanel(): void {
     if (!this.interactive() || this.open()) return;
+    this.sheet.set(this.useSheet());
     this.open.set(true);
     this.opened.emit();
+    if (this.sheet()) afterNextRender(() => this.showSheet(), { injector: this.injector });
+  }
+
+  /** `touchUI`, or a window that is not wider than `breakpoint`. */
+  private useSheet(): boolean {
+    const breakpoint = this.breakpoint();
+    const view = this.document.defaultView;
+    if (this.touchUI()) return true;
+    if (!breakpoint || typeof view?.matchMedia !== 'function') return false;
+    return view.matchMedia(`(max-width: ${breakpoint})`).matches;
+  }
+
+  private showSheet(): void {
+    const dialog = this.sheetDialog()?.nativeElement;
+    if (!dialog) return;
+    if (!dialog.open) {
+      if (typeof dialog.showModal === 'function') dialog.showModal();
+      else dialog.setAttribute('open', '');
+    }
+    this.calendar()?.focusActive();
+  }
+
+  protected onSheetCancel(event: Event): void {
+    event.preventDefault();
+    this.closePanel();
+  }
+
+  /** A click on the backdrop closes the sheet: the panel fills the dialog. */
+  protected onSheetClick(event: MouseEvent): void {
+    if (event.target !== event.currentTarget) return;
+    this.closePanel();
+    this.touch.emit();
   }
 
   closePanel(focusInput = true): void {
@@ -501,7 +552,7 @@ const TEMPLATE = `
     cdkConnectedOverlay
     cdkConnectedOverlayUsePopover="inline"
     [cdkConnectedOverlayOrigin]="origin"
-    [cdkConnectedOverlayOpen]="open()"
+    [cdkConnectedOverlayOpen]="open() && !sheet()"
     [cdkConnectedOverlayPositions]="positions"
     [cdkConnectedOverlayPush]="true"
     [cdkConnectedOverlayViewportMargin]="viewportMargin"
@@ -509,13 +560,33 @@ const TEMPLATE = `
     (detach)="closePanel(false)"
     (overlayOutsideClick)="onOutsideClick($event)"
   >
+    <ng-container *ngTemplateOutlet="panel" />
+  </ng-template>
+
+  <!-- touchUI / breakpoint: the same panel in a modal native dialog. Escape fires cancel; a click
+       on the backdrop has the dialog itself as its target. -->
+  @if (open() && sheet()) {
+    <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
+    <dialog
+      #sheetDialog
+      class="star-date__sheet"
+      [attr.aria-label]="text.chooseDate"
+      (cancel)="onSheetCancel($event)"
+      (click)="onSheetClick($event)"
+    >
+      <ng-container *ngTemplateOutlet="panel" />
+    </dialog>
+  }
+
+  <ng-template #panel>
     <div
       class="star-panel star-date__panel"
       [class.star-date__panel--time]="timeEnabled()"
       [class.star-date__panel--months]="numberOfMonths() > 1"
-      role="dialog"
+      [class.star-date__panel--sheet]="sheet()"
+      [attr.role]="sheet() ? null : 'dialog'"
       [id]="panelId"
-      [attr.aria-label]="text.chooseDate"
+      [attr.aria-label]="sheet() ? null : text.chooseDate"
       (keydown)="onPanelKeydown($event)"
     >
       @if (headerSlot(); as header) {
