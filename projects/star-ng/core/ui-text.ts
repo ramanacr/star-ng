@@ -163,7 +163,13 @@ export interface StarUiText {
   readonly chooseTime: string;
   readonly hour: string;
   readonly minute: string;
+  readonly second: string;
   readonly dayPeriod: string;
+  /** Kinds of a special date in the calendar (`specialDates`). */
+  readonly holiday: string;
+  readonly event: string;
+  /** A special date without a kind. */
+  readonly specialDate: string;
   // Inputs
   readonly increase: string;
   readonly decrease: string;
@@ -405,7 +411,11 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   chooseTime: 'Choose time',
   hour: 'Hour',
   minute: 'Minute',
+  second: 'Second',
   dayPeriod: 'AM or PM',
+  holiday: 'Holiday',
+  event: 'Event',
+  specialDate: 'Special date',
 
   increase: 'Increase',
   decrease: 'Decrease',

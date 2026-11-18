@@ -19,6 +19,7 @@ import {
 } from '@angular/core';
 import { STAR_SLOT_HOST, STAR_UI_TEXT, starInlineKey, StarSlot, starSlot } from '@star-ng/ui/core';
 import { injectStarFieldLink, starJoinIds } from '@star-ng/ui/field';
+import { starParseIso } from './date-format';
 import type { StarDateContext } from './date-slots';
 import {
   addDays,
@@ -30,20 +31,33 @@ import {
   sameDay,
   sameMonth,
   StarDateRange,
+  StarSpecialDate,
   startOfDay,
 } from './date-utils';
 
 export type StarCalendarView = 'day' | 'month' | 'year';
+
+/** The shown month after a navigation: `month` 1–12 (PrimeNG `onMonthChange`). */
+export interface StarCalendarMonthChange {
+  readonly month: number;
+  readonly year: number;
+}
+
+/** The shown year after a navigation (PrimeNG `onYearChange`). */
+export interface StarCalendarYearChange {
+  readonly year: number;
+}
 
 interface DayCell {
   readonly date: Date;
   readonly key: string;
   readonly label: string;
   readonly outside: boolean;
-  /** Not rendered: a day of another month when two or more months show. */
+  /** Not rendered: a day of another month with `showOtherMonths` off or two or more months. */
   readonly blank: boolean;
   readonly today: boolean;
   readonly disabled: boolean;
+  readonly special: StarSpecialDate | null;
 }
 
 /** ISO 8601 week number of a date (week 1 has the first Thursday of the year). */
@@ -91,7 +105,7 @@ export function isoWeek(date: Date): number {
             type="button"
             class="star-calendar__title-btn"
             [attr.aria-label]="text.chooseMonth + ', ' + monthLabel()"
-            (click)="view.set('month')"
+            (click)="setView('month')"
           >
             {{ monthName() }}
           </button>
@@ -101,7 +115,7 @@ export function isoWeek(date: Date): number {
             type="button"
             class="star-calendar__title-btn"
             [attr.aria-label]="text.chooseYear + ', ' + focused().getFullYear()"
-            (click)="view.set('year')"
+            (click)="setView('year')"
           >
             {{ focused().getFullYear() }}
           </button>
@@ -175,13 +189,18 @@ export function isoWeek(date: Date): number {
                             [class.star-calendar__day--outside]="cell.outside"
                             [class.star-calendar__day--today]="cell.today"
                             [class.star-calendar__day--selected]="isSelected(cell.date)"
+                            [class.star-calendar__day--special]="!!cell.special"
+                            [attr.data-special]="
+                              cell.special ? cell.special.kind || 'special' : null
+                            "
                             [attr.tabindex]="sameDay(cell.date, focused()) ? 0 : -1"
                             [attr.aria-label]="cell.label"
                             [attr.aria-current]="cell.today ? 'date' : null"
                             [attr.aria-disabled]="cell.disabled || null"
-                            (click)="choose(cell.date)"
+                            (click)="cell.disabled || choose(cell.date)"
                             (mouseenter)="hover.set(cell.date)"
-                            (focus)="focused.set(cell.date)"
+                            (mousedown)="onDayMousedown($event, cell)"
+                            (focus)="onDayFocus(cell)"
                           >
                             @if (dateSlot(); as custom) {
                               <ng-container
@@ -193,6 +212,7 @@ export function isoWeek(date: Date): number {
                                     selected: isSelected(cell.date),
                                     disabled: cell.disabled,
                                     outside: cell.outside,
+                                    special: cell.special,
                                   }
                                 "
                               />
@@ -290,6 +310,16 @@ export class StarCalendar {
   readonly numberOfMonths = input(1);
   /** Shows the ISO 8601 week number at the start of each week. */
   readonly showWeek = input(false, { transform: booleanAttribute });
+  /**
+   * Shows the days of the month before and after in the first and last week (PrimeNG
+   * `showOtherMonths`). Off: those cells are empty. With two or more months they are always empty.
+   */
+  readonly showOtherMonths = input(true, { transform: booleanAttribute });
+  /**
+   * The shown days of the month before and after can be chosen (PrimeNG `selectOtherMonths`).
+   * Off: they are shown but disabled (`aria-disabled`).
+   */
+  readonly selectOtherMonths = input(true, { transform: booleanAttribute });
   readonly range = input<StarDateRange | null>(null);
   readonly minDate = input<Date | null>(null);
   readonly maxDate = input<Date | null>(null);
@@ -301,10 +331,26 @@ export class StarCalendar {
   /** 0 = Sunday. Default: the locale's first day of the week. */
   readonly firstDayOfWeek = input<number | null>(null);
   readonly locale = input<string | undefined>(undefined);
+  /**
+   * Marked days, for example holidays or due dates (Ignite UI `specialDates`). The day gets a
+   * dot, and its accessible name gets the kind and the label: "12 March 2026, Holiday: Company
+   * day". The `starDate` context has the entry as `special`.
+   */
+  readonly specialDates = input<readonly StarSpecialDate[]>([]);
   /** Set by the date pickers. In your own markup, use the `starDate` slot. */
   readonly dateTemplate = input<TemplateRef<StarDateContext> | null>(null);
 
   readonly dateSelect = output<Date>();
+  /**
+   * The user moved to another month (arrows, keys, the month view, or a day of another month).
+   * With two or more months, the first shown month. PrimeNG `onMonthChange`, Ignite UI
+   * `viewDateChanged`.
+   */
+  readonly monthChange = output<StarCalendarMonthChange>();
+  /** The user moved to another year (PrimeNG `onYearChange`). */
+  readonly yearChange = output<StarCalendarYearChange>();
+  /** The user switched between the day, month and year views (Ignite UI `activeViewChanged`). */
+  readonly viewChange = output<StarCalendarView>();
 
   private readonly slots = contentChildren(StarSlot, { descendants: true });
   protected readonly headerSlot = starSlot<object>(this.slots, this, 'header');
@@ -349,6 +395,16 @@ export class StarCalendar {
     });
   });
 
+  /** Entries of `specialDates` by `yyyy-mm-dd`; the first entry of a day wins. */
+  private readonly specialByDay = computed(() => {
+    const days = new Map<string, StarSpecialDate>();
+    for (const special of this.specialDates()) {
+      const date = starParseIso(special.date);
+      if (date && !days.has(isoDay(date))) days.set(isoDay(date), special);
+    }
+    return days;
+  });
+
   protected readonly monthCount = computed(() => Math.max(1, Math.floor(this.numberOfMonths())));
 
   /**
@@ -373,6 +429,9 @@ export class StarCalendar {
     const fullLabel = new Intl.DateTimeFormat(this.locale(), { dateStyle: 'full' });
     const monthLabel = new Intl.DateTimeFormat(this.locale(), { month: 'long', year: 'numeric' });
     const many = this.monthCount() > 1;
+    const hideOther = many || !this.showOtherMonths();
+    const lockOther = !this.selectOtherMonths();
+    const specials = this.specialByDay();
     return Array.from({ length: this.monthCount() }, (_, index) => {
       const month = addMonths(this.viewStart(), index);
       return {
@@ -383,14 +442,17 @@ export class StarCalendar {
             number: isoWeek(week.find((day) => day.getDay() === 4) ?? week[0]),
             days: week.map((date): DayCell => {
               const outside = !sameMonth(date, month);
+              const key = isoDay(date);
+              const special = specials.get(key) ?? null;
               return {
                 date,
-                key: isoDay(date),
-                label: fullLabel.format(date),
+                key,
+                label: this.dayLabel(fullLabel.format(date), special),
+                special,
                 outside,
-                blank: many && outside,
+                blank: hideOther && outside,
                 today: sameDay(date, this.today),
-                disabled: this.isDisabled(date),
+                disabled: this.isDisabled(date) || (lockOther && outside),
               };
             }),
           }))
@@ -410,6 +472,18 @@ export class StarCalendar {
     const start = year - (((year % 12) + 12) % 12);
     return Array.from({ length: 12 }, (_, i) => start + i);
   });
+
+  /** Accessible name of a day: the full date, then the kind and label of a special date. */
+  private dayLabel(full: string, special: StarSpecialDate | null): string {
+    if (!special) return full;
+    const kind =
+      special.kind === 'holiday'
+        ? this.text.holiday
+        : special.kind === 'event'
+          ? this.text.event
+          : special.kind || this.text.specialDate;
+    return special.label ? `${full}, ${kind}: ${special.label}` : `${full}, ${kind}`;
+  }
 
   isDisabled(date: Date): boolean {
     const min = this.minDate();
@@ -451,7 +525,7 @@ export class StarCalendar {
 
   protected choose(date: Date): void {
     if (this.isDisabled(date)) return;
-    this.focused.set(date);
+    this.moveTo(date);
     this.dateSelect.emit(date);
   }
 
@@ -472,9 +546,9 @@ export class StarCalendar {
 
   protected page(step: 1 | -1): void {
     const current = this.focused();
-    if (this.view() === 'day') this.focused.set(addMonths(current, step));
-    else if (this.view() === 'month') this.focused.set(addMonths(current, step * 12));
-    else this.focused.set(addMonths(current, step * 144));
+    if (this.view() === 'day') this.moveTo(addMonths(current, step));
+    else if (this.view() === 'month') this.moveTo(addMonths(current, step * 12));
+    else this.moveTo(addMonths(current, step * 144));
   }
 
   protected onDayKeydown(event: KeyboardEvent): void {
@@ -500,7 +574,7 @@ export class StarCalendar {
     const move = moves[key];
     if (!move) return;
     event.preventDefault();
-    this.focused.set(move());
+    this.moveTo(move());
     this.focusActive();
   }
 
@@ -514,30 +588,61 @@ export class StarCalendar {
     const step = steps[starInlineKey(event)];
     if (step === undefined) return;
     event.preventDefault();
-    this.focused.set(addMonths(this.focused(), kind === 'month' ? step : step * 12));
+    this.moveTo(addMonths(this.focused(), kind === 'month' ? step : step * 12));
     this.focusActive();
   }
 
   protected pickMonth(month: number): void {
     const current = this.focused();
-    this.focused.set(addMonths(current, month - current.getMonth()));
+    this.moveTo(addMonths(current, month - current.getMonth()));
     if (this.granularity() === 'month') {
       this.dateSelect.emit(new Date(current.getFullYear(), month, 1));
       return;
     }
-    this.view.set('day');
+    this.setView('day');
     this.focusActive();
   }
 
   protected pickYear(year: number): void {
     const current = this.focused();
-    this.focused.set(addMonths(current, (year - current.getFullYear()) * 12));
+    this.moveTo(addMonths(current, (year - current.getFullYear()) * 12));
     if (this.granularity() === 'year') {
       this.dateSelect.emit(new Date(year, 0, 1));
       return;
     }
-    this.view.set('month');
+    this.setView('month');
     this.focusActive();
+  }
+
+  /**
+   * A locked day of another month (`selectOtherMonths` off) does not take the focus from a
+   * mousedown: the focus would move the shown month, and the click chooses nothing.
+   */
+  protected onDayMousedown(event: MouseEvent, cell: DayCell): void {
+    if (cell.outside && cell.disabled) event.preventDefault();
+  }
+
+  protected onDayFocus(cell: DayCell): void {
+    if (cell.outside && cell.disabled) return;
+    this.moveTo(cell.date);
+  }
+
+  /** Moves the focused day and tells when the shown month or year changes. */
+  protected moveTo(date: Date): void {
+    const before = this.viewStart();
+    this.focused.set(date);
+    const after = this.viewStart();
+    if (sameMonth(before, after)) return;
+    this.monthChange.emit({ month: after.getMonth() + 1, year: after.getFullYear() });
+    if (before.getFullYear() !== after.getFullYear()) {
+      this.yearChange.emit({ year: after.getFullYear() });
+    }
+  }
+
+  protected setView(view: StarCalendarView): void {
+    if (this.view() === view) return;
+    this.view.set(view);
+    this.viewChange.emit(view);
   }
 
   protected monthDisabled(month: number): boolean {

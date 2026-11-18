@@ -88,6 +88,30 @@
   overflow: auto;
   overscroll-behavior: contain;
 }
+// touchUI / breakpoint: the popup as a modal sheet in the middle of the window. The panel fills
+// the dialog, so only a click on the backdrop has the dialog itself as its target.
+.star-date__sheet {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  max-width: calc(100vw - 2rem);
+  max-height: calc(100dvh - 2rem);
+  overflow: visible;
+
+  &::backdrop {
+    background: var(--star-scrim-modal);
+  }
+  .star-date__panel {
+    max-width: calc(100vw - 2rem);
+    max-height: calc(100dvh - 2rem);
+  }
+}
+// Larger touch targets in the sheet.
+.star-date__panel--sheet .star-calendar__day {
+  width: 2.75rem;
+  height: 2.75rem;
+}
 // Time part of the date pickers (showTime). Narrow window: under the calendar, with short
 // columns. Wide window: see the row layout below.
 .star-date__time {
@@ -314,6 +338,29 @@
     text-decoration: line-through;
     cursor: not-allowed;
     opacity: 0.6;
+  }
+}
+// A special date (specialDates) has a dot below the number. The accessible name of the day
+// names the kind and the label, so the dot is not the only sign.
+.star-calendar__day--special {
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0.2rem;
+    left: 50%;
+    width: 0.3rem;
+    height: 0.3rem;
+    border-radius: 50%;
+    background: var(--star-calendar-special, var(--star-accent));
+    transform: translateX(-50%);
+  }
+  &[data-special='holiday']::after {
+    background: var(--star-calendar-holiday, var(--star-warning));
+  }
+  &.star-calendar__day--selected::after {
+    background: var(--star-on-tone);
   }
 }
 // Days of other months stay readable: the muted text color reaches 4.5:1 in both themes.

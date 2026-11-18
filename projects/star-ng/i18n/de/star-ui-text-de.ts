@@ -152,7 +152,11 @@ export const STAR_UI_TEXT_DE: StarUiText = {
   chooseTime: 'Uhrzeit auswählen',
   hour: 'Stunde',
   minute: 'Minute',
+  second: 'Sekunde',
   dayPeriod: 'Vormittag oder Nachmittag',
+  holiday: 'Feiertag',
+  event: 'Termin',
+  specialDate: 'Besonderer Tag',
 
   increase: 'Erhöhen',
   decrease: 'Verringern',

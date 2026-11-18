@@ -356,6 +356,45 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'date picker popup with special dates',
+    path: 'controls/date-picker',
+    open: async (page) => {
+      await example(page, 'Special dates').getByRole('button', { name: 'Choose date' }).click();
+      await expect(page.locator('.star-calendar__day--special').first()).toBeVisible();
+    },
+  },
+  {
+    name: 'date picker touch sheet',
+    path: 'controls/date-picker',
+    open: async (page) => {
+      await example(page, 'Touch mode')
+        .getByRole('button', { name: 'Choose date' })
+        .first()
+        .click();
+      await expect(page.locator('dialog.star-date__sheet')).toBeVisible();
+    },
+  },
+  {
+    name: 'date picker with kept invalid text',
+    path: 'controls/date-picker',
+    open: async (page) => {
+      const input = example(page, 'Display and input formats').getByRole('textbox', {
+        name: 'Invoice due date',
+      });
+      await input.fill('31/02/2026');
+      await input.press('Tab');
+      await expect(input).toHaveAttribute('aria-invalid', 'true');
+    },
+  },
+  {
+    name: 'time picker panel with seconds',
+    path: 'controls/time-picker',
+    open: async (page) => {
+      await example(page, 'Seconds and steps').getByRole('button', { name: 'Choose time' }).click();
+      await expect(page.getByRole('listbox', { name: 'Second' })).toBeVisible();
+    },
+  },
+  {
     name: 'month view of the date picker',
     path: 'controls/date-picker',
     open: async (page) => {
