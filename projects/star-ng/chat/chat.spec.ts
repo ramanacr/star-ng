@@ -263,6 +263,23 @@ describe('StarChat', () => {
     warn.mockRestore();
   });
 
+  it('announces several messages that complete together once, and not a replaced conversation (m7)', async () => {
+    const { host, fixture, live } = await setupChat();
+    host.messages.update((list) => [
+      ...list,
+      { id: 'n1', author: BOT, text: 'One', timestamp: at(18, 12) },
+      { id: 'n2', author: ANA, text: 'Two', timestamp: at(18, 12, 1) },
+    ]);
+    await fixture.whenStable();
+    expect(live()).toBe('2 new messages');
+    host.messages.set([
+      { id: 'x1', author: BOT, text: 'Other chat', timestamp: at(18, 13) },
+      { id: 'x2', author: ANA, text: 'Hi', timestamp: at(18, 14) },
+    ]);
+    await fixture.whenStable();
+    expect(live()).toBe('2 new messages');
+  });
+
   it('asks for older messages at the top and keeps the scroll position', async () => {
     const { host, fixture, root } = await setupChat();
     const scroll = root.querySelector<HTMLElement>('.star-chat__scroll')!;

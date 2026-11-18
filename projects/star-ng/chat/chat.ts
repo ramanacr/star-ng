@@ -402,14 +402,23 @@ export class StarChat {
       const user = this.user();
       untracked(() => {
         const oldFirst = this.ready ? list.findIndex((m) => m.id === this.firstSeen) : -1;
+        // A list that shares no message with the one before is another conversation: history.
+        const replaced = this.ready && this.seen.size > 0 && !list.some((m) => this.seen.has(m.id));
+        const fresh: StarChatMessage[] = [];
         list.forEach((message, index) => {
           const complete = message.status === undefined || message.status === 'sent';
           if (this.seen.has(message.id) || !complete) return;
           this.seen.add(message.id);
           // Messages at the first render and older messages put before them are history.
-          if (!this.ready || index < oldFirst || message.author.id === user) return;
-          this.announce(this.text.newMessage(message.author.name, plainText(message.text)));
+          if (!this.ready || replaced || index < oldFirst || message.author.id === user) return;
+          fresh.push(message);
         });
+        // Messages that complete in one change make one announcement.
+        if (fresh.length === 1) {
+          this.announce(this.text.newMessage(fresh[0].author.name, plainText(fresh[0].text)));
+        } else if (fresh.length > 1) {
+          this.announce(this.text.newMessages(fresh.length));
+        }
         this.firstSeen = list[0]?.id ?? null;
         this.ready = true;
       });

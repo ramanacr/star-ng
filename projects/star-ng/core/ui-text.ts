@@ -328,6 +328,8 @@ export interface StarUiText {
   readonly copied: string;
   readonly retry: string;
   readonly stop: string;
+  /** Live announcement when several messages from others arrive at once. */
+  readonly newMessages: (count: number) => string;
 }
 
 export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
@@ -606,6 +608,7 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   copied: 'Copied',
   retry: 'Retry',
   stop: 'Stop',
+  newMessages: (count) => `${count} new messages`,
 };
 
 /** Parameter names of the function entries, in call order (used for `{{ name }}` in translations). */
@@ -662,6 +665,7 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   newMessage: ['name', 'text'],
   isTyping: ['name'],
   areTyping: ['names'],
+  newMessages: ['count'],
 };
 
 export const STAR_UI_TEXT = new InjectionToken<StarUiText>('STAR_UI_TEXT', {

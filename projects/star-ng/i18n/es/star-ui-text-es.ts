@@ -291,4 +291,5 @@ export const STAR_UI_TEXT_ES: StarUiText = {
   copied: 'Copiado',
   retry: 'Reintentar',
   stop: 'Detener',
+  newMessages: (count) => `${count} mensajes nuevos`,
 };
