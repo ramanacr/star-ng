@@ -1,5 +1,17 @@
 import { expect, Locator, Page, test } from '@playwright/test';
-import { collectErrors, example, openPage } from './support';
+import { collectErrors, example, openPage as openDocsPage } from './support';
+
+/**
+ * Opens a docs page and waits until the date controls are hydrated. The page is prerendered, so
+ * it is visible before the application runs, and a key or a click before hydration is lost. A
+ * hydrated component loses its `ngh` attribute.
+ */
+async function openPage(page: Page, path: string, heading: string | RegExp): Promise<void> {
+  await openDocsPage(page, path, heading);
+  await expect(
+    page.locator('star-date-picker[ngh], star-calendar[ngh], star-time-picker[ngh]'),
+  ).toHaveCount(0, { timeout: 15_000 });
+}
 
 // Every example uses fixed dates (November 2026) and an explicit locale, so the tests do not
 // depend on today's date, on the browser locale or on the time zone. The one test of the

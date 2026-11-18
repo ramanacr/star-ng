@@ -5,6 +5,7 @@ import {
   afterNextRender,
   booleanAttribute,
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   computed,
   contentChildren,
@@ -211,6 +212,7 @@ export abstract class StarDateInputBase<TValue> {
   private readonly sheetDialog = viewChild<ElementRef<HTMLDialogElement>>('sheetDialog');
   private readonly injector = inject(Injector);
   private readonly document = inject(DOCUMENT);
+  private readonly changeDetector = inject(ChangeDetectorRef);
   /**
    * Invalid after touch, while the parent `star-field` shows an error, or while the field keeps
    * text that is not a date (`keepInvalid`).
@@ -385,9 +387,9 @@ export abstract class StarDateInputBase<TValue> {
   }
 
   /**
-   * Switches the text to `inputFormat` at once, before the user types: a later render would
-   * replace text that is typed right after the focus. A field that the focus selected all of
-   * (Tab) stays selected.
+   * Switches the text to `inputFormat` at once, before the user types: a render after the focus
+   * would replace text that is typed right after it. So the render runs here. A field that was
+   * all selected (Tab, or a select before the focus) stays all selected.
    */
   protected onInputFocus(): void {
     if (this.editing()) return;
@@ -396,11 +398,10 @@ export abstract class StarDateInputBase<TValue> {
       input.value.length > 0 &&
       input.selectionStart === 0 &&
       input.selectionEnd === input.value.length;
+    const before = input.value;
     this.editing.set(true);
-    const text = this.typed();
-    if (input.value === text) return;
-    input.value = text;
-    if (all) input.select();
+    this.changeDetector.detectChanges();
+    if (input.value !== before && all) input.select();
   }
 
   protected onInputBlur(): void {
