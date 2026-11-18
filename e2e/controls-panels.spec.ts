@@ -281,6 +281,121 @@ test.describe('tabs', () => {
     await expect(weekly).toHaveAttribute('aria-selected', 'true');
     await expect(live.getByText('Weekly totals, loaded on first use.')).toBeVisible();
   });
+
+  test('scrollable: scroll buttons show at a hidden end and the selected tab scrolls into view', async ({
+    page,
+  }) => {
+    await openPage(page, '/controls/tabs', 'Tabs');
+    const live = example(page, 'Scrollable tabs');
+    const list = live.getByRole('tablist', { name: 'Monthly reports' });
+    const start = live.locator('.star-tabs__scroll--start');
+    const end = live.locator('.star-tabs__scroll--end');
+    await expect(start).toBeHidden();
+    await expect(end).toBeVisible();
+    await expect(end).toHaveAttribute('aria-hidden', 'true');
+    await expect(end).toHaveAttribute('tabindex', '-1');
+
+    await end.click();
+    await expect(start).toBeVisible();
+    await expect.poll(() => list.evaluate((element) => element.scrollLeft)).toBeGreaterThan(0);
+
+    // The keyboard reaches the last tab, and the list scrolls to show it.
+    await live.getByRole('tab', { name: 'January' }).click();
+    await page.keyboard.press('End');
+    const december = live.getByRole('tab', { name: 'December' });
+    await expect(december).toBeFocused();
+    await expect(december).toHaveAttribute('aria-selected', 'true');
+    await expect(december).toBeInViewport();
+    await expect(end).toBeHidden();
+    const inside = await december.evaluate((tab) => {
+      const outer = tab.closest('[role=tablist]')!.getBoundingClientRect();
+      const inner = tab.getBoundingClientRect();
+      return inner.left >= outer.left - 1 && inner.right <= outer.right + 1;
+    });
+    expect(inside).toBe(true);
+  });
+
+  test('closable: Delete closes the focused tab, the close button closes by pointer', async ({
+    page,
+  }) => {
+    await openPage(page, '/controls/tabs', 'Tabs');
+    const live = example(page, 'Closable tabs');
+    const status = live.getByRole('status');
+    const orders = live.getByRole('tab', { name: 'orders.csv' });
+    await expect(orders).toHaveAttribute('aria-keyshortcuts', 'Delete');
+    await expect(orders).toHaveAccessibleDescription('Press Delete to close the tab.');
+
+    await orders.focus();
+    await page.keyboard.press('Delete');
+    await expect(status).toHaveText('Open: summary.txt, invoices.csv, cities.csv');
+    const invoices = live.getByRole('tab', { name: 'invoices.csv' });
+    await expect(invoices).toBeFocused();
+    await expect(invoices).toHaveAttribute('aria-selected', 'true');
+
+    await live.locator('.star-tabs__close[aria-label="Close cities.csv"]').click();
+    await expect(status).toHaveText('Open: summary.txt, invoices.csv');
+    // summary.txt is not closable.
+    await live.getByRole('tab', { name: 'summary.txt' }).focus();
+    await page.keyboard.press('Delete');
+    await expect(status).toHaveText('Open: summary.txt, invoices.csv');
+  });
+
+  test('vertical: the tabs form a column and Arrow Down moves to the next one', async ({
+    page,
+  }) => {
+    await openPage(page, '/controls/tabs', 'Tabs');
+    const live = example(page, 'Vertical tabs');
+    const list = live.getByRole('tablist', { name: 'Account settings' });
+    await expect(list).toHaveAttribute('aria-orientation', 'vertical');
+    const profile = live.getByRole('tab', { name: 'Profile' });
+    const billing = live.getByRole('tab', { name: 'Billing' });
+    const a = await profile.boundingBox();
+    const b = await billing.boundingBox();
+    expect(b!.y).toBeGreaterThan(a!.y);
+    expect(Math.abs(b!.x - a!.x)).toBeLessThan(2);
+
+    await profile.focus();
+    await page.keyboard.press('ArrowDown');
+    await expect(billing).toBeFocused();
+    await expect(billing).toHaveAttribute('aria-selected', 'true');
+    await expect(live.getByRole('tabpanel', { name: 'Billing' })).toBeVisible();
+  });
+
+  test('reorderable: Control+Shift+Arrow moves a tab and a live message reads the place', async ({
+    page,
+  }) => {
+    await openPage(page, '/controls/tabs', 'Tabs');
+    const live = example(page, 'Reorderable tabs');
+    const status = live.getByRole('status');
+    const backlog = live.getByRole('tab', { name: 'Backlog' });
+    await backlog.focus();
+    await page.keyboard.press('Control+Shift+ArrowRight');
+    await expect(status).toHaveText('Order: In progress, Backlog, Review, Done');
+    await expect(backlog).toBeFocused();
+    await expect(live.locator('.star-tabs__live')).toHaveText('Backlog, position 2 of 4');
+
+    // Drag Done to the start.
+    const done = live.getByRole('tab', { name: 'Done' });
+    const target = live.getByRole('tab', { name: 'In progress' });
+    const from = (await done.boundingBox())!;
+    const to = (await target.boundingBox())!;
+    await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(from.x + from.width / 2 - 10, from.y + from.height / 2, { steps: 4 });
+    await page.mouse.move(to.x + 4, to.y + to.height / 2, { steps: 12 });
+    await page.mouse.up();
+    await expect(status).toHaveText('Order: Done, In progress, Backlog, Review');
+  });
+
+  test('header slot: the custom label is the name of the tab', async ({ page }) => {
+    await openPage(page, '/controls/tabs', 'Tabs');
+    const live = example(page, 'Custom tab labels');
+    await expect(live.getByRole('tab', { name: 'Packed 9' })).toHaveAttribute(
+      'aria-selected',
+      'false',
+    );
+    await expect(live.getByRole('tab', { name: 'New 4' })).toHaveAttribute('aria-selected', 'true');
+  });
 });
 
 test.describe('paginator', () => {

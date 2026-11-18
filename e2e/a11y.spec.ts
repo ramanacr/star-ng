@@ -1185,6 +1185,28 @@ const STATES: readonly State[] = [
       await expect(live.getByRole('row').nth(2)).toBeVisible();
     },
   },
+  // Tabs, editor and chart depth.
+  {
+    name: 'closable scrollable tabs scrolled to the end',
+    path: 'controls/tabs',
+    open: async (page) => {
+      const live = example(page, 'Scrollable tabs');
+      await live.getByRole('tab', { name: 'January' }).click();
+      await page.keyboard.press('End');
+      await expect(live.locator('.star-tabs__scroll--start')).toBeVisible();
+      const closable = example(page, 'Closable tabs');
+      await expect(closable.locator('.star-tabs__close').first()).toBeVisible();
+    },
+  },
+  {
+    name: 'vertical tabs with the second tab selected',
+    path: 'controls/tabs',
+    open: async (page) => {
+      const live = example(page, 'Vertical tabs');
+      await live.getByRole('tab', { name: 'Billing' }).click();
+      await expect(live.getByRole('tabpanel', { name: 'Billing' })).toBeVisible();
+    },
+  },
 ];
 
 for (const theme of THEMES) {
