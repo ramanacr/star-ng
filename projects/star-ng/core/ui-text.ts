@@ -20,6 +20,11 @@ export interface StarUiText {
   readonly actions: string;
   readonly moreActions: string;
   readonly bottomSheet: string;
+  // Dialog
+  readonly maximize: string;
+  readonly restore: string;
+  readonly moveDialog: string;
+  readonly resizeDialog: string;
   readonly ofTotal: (index: number, total: number) => string;
   readonly expandItem: (label: string) => string;
   readonly collapseItem: (label: string) => string;
@@ -117,8 +122,6 @@ export interface StarUiText {
   readonly mainNavigation: string;
   // Window
   readonly minimize: string;
-  readonly maximize: string;
-  readonly restore: string;
   /** Keyboard hint of the title bar of `star-window`. */
   readonly windowHint: string;
   // Order list, pick list
@@ -266,6 +269,10 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   actions: 'Actions',
   moreActions: 'More actions',
   bottomSheet: 'Bottom sheet',
+  maximize: 'Maximize',
+  restore: 'Restore',
+  moveDialog: 'Move dialog',
+  resizeDialog: 'Resize dialog',
   ofTotal: (index, total) => `${index} of ${total}`,
   expandItem: (label) => `Expand ${label}`,
   collapseItem: (label) => `Collapse ${label}`,
@@ -353,8 +360,6 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   recentCommands: 'Recent',
   mainNavigation: 'Main navigation',
   minimize: 'Minimize',
-  maximize: 'Maximize',
-  restore: 'Restore',
   windowHint: 'Alt and the arrow keys move the window. Shift and the arrow keys resize it.',
 
   moveSelectedItem: 'Move selected item',

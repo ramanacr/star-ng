@@ -19,6 +19,10 @@ export const STAR_UI_TEXT_ES: StarUiText = {
   actions: 'Acciones',
   moreActions: 'Más acciones',
   bottomSheet: 'Panel inferior',
+  maximize: 'Maximizar',
+  restore: 'Restaurar',
+  moveDialog: 'Mover el diálogo',
+  resizeDialog: 'Cambiar el tamaño del diálogo',
   ofTotal: (index, total) => `${index} de ${total}`,
   expandItem: (label) => `Expandir ${label}`,
   collapseItem: (label) => `Contraer ${label}`,
@@ -109,8 +113,6 @@ export const STAR_UI_TEXT_ES: StarUiText = {
   recentCommands: 'Recientes',
   mainNavigation: 'Navegación principal',
   minimize: 'Minimizar',
-  maximize: 'Maximizar',
-  restore: 'Restaurar',
   windowHint:
     'Alt y las teclas de flecha mueven la ventana. Mayús y las teclas de flecha cambian su tamaño.',
 

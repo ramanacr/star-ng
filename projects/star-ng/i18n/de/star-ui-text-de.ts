@@ -19,6 +19,10 @@ export const STAR_UI_TEXT_DE: StarUiText = {
   actions: 'Aktionen',
   moreActions: 'Weitere Aktionen',
   bottomSheet: 'Unteres Panel',
+  maximize: 'Maximieren',
+  restore: 'Wiederherstellen',
+  moveDialog: 'Dialog verschieben',
+  resizeDialog: 'Dialoggröße ändern',
   ofTotal: (index, total) => `${index} von ${total}`,
   expandItem: (label) => `${label} aufklappen`,
   collapseItem: (label) => `${label} zuklappen`,
@@ -108,8 +112,6 @@ export const STAR_UI_TEXT_DE: StarUiText = {
   recentCommands: 'Zuletzt verwendet',
   mainNavigation: 'Hauptnavigation',
   minimize: 'Minimieren',
-  maximize: 'Maximieren',
-  restore: 'Wiederherstellen',
   windowHint:
     'Alt und die Pfeiltasten verschieben das Fenster. Umschalt und die Pfeiltasten ändern seine Größe.',
 
