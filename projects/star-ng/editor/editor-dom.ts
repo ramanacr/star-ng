@@ -11,6 +11,29 @@ export function starEditorPlainLength(area: Node): number {
   return (area.textContent ?? '').split(ZWSP).join('').length;
 }
 
+/**
+ * Links in sanitized HTML that cannot reach back to this page (reverse tabnabbing): a link with
+ * a `target` opens a new tab with `rel="noopener noreferrer"`; `_self`, `_parent` and `_top`
+ * lose the target. The HTML is parsed in an inert template (no image loads, no scripts).
+ */
+export function starEditorSafeLinks(html: string, doc: Document): string {
+  if (!/\btarget\s*=/i.test(html)) return html;
+  const template = doc.createElement('template');
+  template.innerHTML = html;
+  for (const anchor of template.content.querySelectorAll('a[target]')) {
+    const target = anchor.getAttribute('target')?.trim().toLowerCase() ?? '';
+    if (!target || target === '_self' || target === '_parent' || target === '_top') {
+      anchor.removeAttribute('target');
+      if (anchor.getAttribute('rel')?.toLowerCase().includes('opener'))
+        anchor.removeAttribute('rel');
+    } else {
+      anchor.setAttribute('target', '_blank');
+      anchor.setAttribute('rel', 'noopener noreferrer');
+    }
+  }
+  return template.innerHTML;
+}
+
 /** Block elements that the toolbar formats or aligns. */
 const BLOCKS = new Set(['P', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'LI', 'BLOCKQUOTE', 'DIV', 'PRE']);
 

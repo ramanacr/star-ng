@@ -29,6 +29,7 @@ import {
   starEditorPlainLength,
   starEditorRange,
   starEditorRestore,
+  starEditorSafeLinks,
   starEditorText,
   starEditorTextToHtml,
   starEditorToggleCode,
@@ -333,8 +334,10 @@ export class StarEditor implements FormValueControl<string> {
     });
   }
 
+  /** Angular's HTML sanitizer, then links that cannot reach back to this page. */
   private sanitize(html: string): string {
-    return this.sanitizer.sanitize(SecurityContext.HTML, html) ?? '';
+    const clean = this.sanitizer.sanitize(SecurityContext.HTML, html) ?? '';
+    return starEditorSafeLinks(clean, this.area().nativeElement.ownerDocument);
   }
 
   protected label(cmd: StarEditorCommand): string {

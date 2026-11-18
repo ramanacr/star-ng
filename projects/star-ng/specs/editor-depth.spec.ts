@@ -461,3 +461,32 @@ describe('StarEditor toolbar slot', () => {
     expect(button.disabled).toBe(true);
   });
 });
+
+describe('StarEditor links that open a new tab', () => {
+  it('gives every link with a target rel="noopener noreferrer", from the model, a paste and an edit', async () => {
+    const fixture = TestBed.createComponent(PasteHost);
+    fixture.componentInstance.html.set(
+      '<p>See <a href="https://example.com/a" target="_blank" rel="opener">orders</a> and <a href="https://example.com/b" target="_top">cities</a></p>',
+    );
+    await fixture.whenStable();
+    const area = (fixture.nativeElement as HTMLElement).querySelector<HTMLElement>(
+      '.star-editor__area',
+    )!;
+    const [first, second] = [...area.querySelectorAll('a')];
+    expect(first.getAttribute('target')).toBe('_blank');
+    expect(first.getAttribute('rel')).toBe('noopener noreferrer');
+    expect(second.hasAttribute('target')).toBe(false);
+
+    select(area.querySelector('p')!.firstChild!, 4, 4);
+    paste(area, {
+      'text/html': '<a href="https://example.com/c" target="win" rel="opener">invoices</a>',
+      'text/plain': 'invoices',
+    });
+    const host = fixture.componentInstance;
+    expect(host.html()).toContain(
+      '<a href="https://example.com/c" target="_blank" rel="noopener noreferrer">invoices</a>',
+    );
+    expect(host.html()).not.toContain('rel="opener"');
+    expect(host.html()).not.toContain('_top');
+  });
+});
