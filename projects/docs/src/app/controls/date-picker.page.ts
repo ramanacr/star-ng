@@ -10,6 +10,7 @@ import {
   StarDateRangePicker,
   StarDateTemplate,
   StarMultiDatePicker,
+  StarSpecialDate,
 } from '@star-ng/ui/date-picker';
 import { StarField } from '@star-ng/ui/field';
 import { DOCS, DocsRow } from '../shared/docs';
@@ -263,6 +264,23 @@ import { DOCS, DocsRow } from '../shared/docs';
       </docs-example>
 
       <docs-example
+        heading="Special dates"
+        source="date-picker/special-dates"
+        [script]="specialScript"
+        note="specialDates marks days in the calendar with a dot, for example holidays and invoice due dates. The accessible name of the day gets the kind and the label, for example 'Holiday: Company day'. See the calendar page for the details."
+      >
+        <div class="docs-stack">
+          <star-date-picker
+            [(value)]="paymentDate"
+            locale="en-GB"
+            [specialDates]="companyDays"
+            ariaLabel="Payment date"
+          />
+          <p class="docs-output" role="status">Payment: {{ iso(paymentDate()) }}</p>
+        </div>
+      </docs-example>
+
+      <docs-example
         heading="Month and year views"
         source="date-picker/views"
         note="view='month' or view='year' chooses a month or a year. The value is the first day of it, and the text is mm/yyyy or yyyy. In the day view, a click on the month name or the year in the popup header opens the month or the year view for a fast jump."
@@ -493,6 +511,11 @@ export class DatePickerPage {
     start: new Date(2026, 10, 16, 8, 0),
     end: new Date(2026, 10, 20, 17, 30),
   });
+  protected readonly paymentDate = signal<Date | null>(new Date(2026, 11, 2));
+  protected readonly companyDays: readonly StarSpecialDate[] = [
+    { date: '2026-12-04', label: 'Company day', kind: 'holiday' },
+    { date: '2026-12-15', label: 'Invoice due', kind: 'event' },
+  ];
   protected readonly invoiceSent = signal<Date | null>(new Date(2026, 10, 17, 14, 30, 15));
   protected readonly reportMonth = signal<Date | null>(new Date(2026, 10, 1));
   protected readonly reportYear = signal<Date | null>(new Date(2026, 0, 1));
@@ -539,6 +562,11 @@ readonly billingPeriod = signal<StarDateRange<string> | null>({
   start: '2026-11-01',
   end: '2026-11-30',
 });`;
+  protected readonly specialScript = `readonly paymentDate = signal<Date | null>(new Date(2026, 11, 2));
+readonly companyDays: readonly StarSpecialDate[] = [
+  { date: '2026-12-04', label: 'Company day', kind: 'holiday' },
+  { date: '2026-12-15', label: 'Invoice due', kind: 'event' },
+];`;
   protected readonly secondsScript = `readonly invoiceSent = signal<Date | null>(new Date(2026, 10, 17, 14, 30, 15));`;
   protected readonly formScript = `readonly orderModel = signal<{ deliveryDate: Date | null }>({ deliveryDate: null });
 readonly order = form(this.orderModel, (path) => {
@@ -580,7 +608,7 @@ readonly iso = (date: Date | null) => (date ? isoDay(date) : 'none');
     {
       name: 'ng-template[starDate]',
       description:
-        'Content child. Replaces the content of a day button. The button keeps its accessible name (the full date), aria-current, aria-disabled and the keys. The context has $implicit (the date), today, selected, disabled and outside. Do not add focusable elements: the calendar owns the keys. With two or more months the template applies to every month.',
+        'Content child. Replaces the content of a day button. The button keeps its accessible name (the full date), aria-current, aria-disabled and the keys. The context has $implicit (the date), today, selected, disabled, outside and special (the entry of specialDates, or null). Do not add focusable elements: the calendar owns the keys. With two or more months the template applies to every month.',
     },
     {
       name: 'ng-template[starHeader]',

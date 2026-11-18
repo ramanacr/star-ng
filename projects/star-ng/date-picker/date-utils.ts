@@ -9,6 +9,22 @@ export interface StarDateRange<T extends Date | string = Date> {
   readonly end: T | null;
 }
 
+/**
+ * A marked day of the calendar (`specialDates`, Ignite UI `specialDates`). `date` is a `Date` or
+ * ISO `yyyy-mm-dd` text. The kind and the label are part of the accessible name of the day, for
+ * example "12 March 2026, Holiday: Company day".
+ */
+export interface StarSpecialDate {
+  readonly date: Date | string;
+  /** Text after the kind, for example the name of the holiday. */
+  readonly label?: string;
+  /**
+   * `'holiday'` and `'event'` have a UI text (`STAR_UI_TEXT.holiday`, `.event`) and a style;
+   * other text is used as it is. Without a kind the name says "Special date".
+   */
+  readonly kind?: 'holiday' | 'event' | (string & {});
+}
+
 /** Same calendar day at local midnight. */
 export function startOfDay(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());

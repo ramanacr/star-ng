@@ -46,6 +46,7 @@ import {
   parseDate,
   sameDay,
   StarDateRange,
+  StarSpecialDate,
   startOfDay,
 } from './date-utils';
 import { StarTimeColumns } from './time-columns';
@@ -127,6 +128,11 @@ export abstract class StarDateInputBase<TValue> {
   readonly showOtherMonths = input(true, { transform: booleanAttribute });
   /** The shown days of the month before and after can be chosen (PrimeNG `selectOtherMonths`). */
   readonly selectOtherMonths = input(true, { transform: booleanAttribute });
+  /**
+   * Marked days in the calendar, for example holidays (Ignite UI `specialDates`). The kind and
+   * the label are part of the accessible name of the day.
+   */
+  readonly specialDates = input<readonly StarSpecialDate[]>([]);
   /**
    * Clock of the typed time with `showTime`: `'24'` (14:30) or `'12'` (2:30 PM). Both forms
    * are accepted when the user types.
@@ -503,6 +509,7 @@ const TEMPLATE = `
         [showWeek]="showWeek()"
         [showOtherMonths]="showOtherMonths()"
         [selectOtherMonths]="selectOtherMonths()"
+        [specialDates]="specialDates()"
         [minDate]="minDate()"
         [maxDate]="maxDate()"
         [disabledDates]="disabledDates()"

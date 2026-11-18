@@ -134,6 +134,9 @@ export const STAR_UI_TEXT_ES: StarUiText = {
   minute: 'Minuto',
   second: 'Segundo',
   dayPeriod: 'a. m. o p. m.',
+  holiday: 'Festivo',
+  event: 'Evento',
+  specialDate: 'Fecha especial',
 
   increase: 'Aumentar',
   decrease: 'Disminuir',

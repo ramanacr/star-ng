@@ -39,6 +39,8 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - Date pickers: `keepInvalid` keeps typed text that is not a date, marks the field invalid and empties the value (PrimeNG `keepInvalid`).
 - Date pickers: `dataType: 'date' | 'string'`; with `'string'` the value is local ISO text (`yyyy-mm-dd`, `yyyy-mm-ddTHH:mm[:ss]` with `showTime`). The pickers and `StarDateRange` take a type parameter that defaults to `Date` (PrimeNG `dataType`).
 - Calendar and date pickers: `showOtherMonths` (default `true`) shows or empties the days of the month before and after; `selectOtherMonths` (default `true`) makes them choosable or disabled (PrimeNG `showOtherMonths`, `selectOtherMonths`).
+- Calendar and date pickers: `specialDates` (`StarSpecialDate`: `date`, `label`, `kind`) marks days with a token-styled dot and adds the kind and label to the accessible name of the day; the `starDate` context gets `special` (Ignite UI `specialDates`).
+- UI text `holiday`, `event` and `specialDate` (English, German, Spanish).
 
 ### Changed
 

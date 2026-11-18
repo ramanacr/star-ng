@@ -19,6 +19,7 @@ import {
 } from '@angular/core';
 import { STAR_SLOT_HOST, STAR_UI_TEXT, starInlineKey, StarSlot, starSlot } from '@star-ng/ui/core';
 import { injectStarFieldLink, starJoinIds } from '@star-ng/ui/field';
+import { starParseIso } from './date-format';
 import type { StarDateContext } from './date-slots';
 import {
   addDays,
@@ -30,6 +31,7 @@ import {
   sameDay,
   sameMonth,
   StarDateRange,
+  StarSpecialDate,
   startOfDay,
 } from './date-utils';
 
@@ -44,6 +46,7 @@ interface DayCell {
   readonly blank: boolean;
   readonly today: boolean;
   readonly disabled: boolean;
+  readonly special: StarSpecialDate | null;
 }
 
 /** ISO 8601 week number of a date (week 1 has the first Thursday of the year). */
@@ -175,6 +178,10 @@ export function isoWeek(date: Date): number {
                             [class.star-calendar__day--outside]="cell.outside"
                             [class.star-calendar__day--today]="cell.today"
                             [class.star-calendar__day--selected]="isSelected(cell.date)"
+                            [class.star-calendar__day--special]="!!cell.special"
+                            [attr.data-special]="
+                              cell.special ? cell.special.kind || 'special' : null
+                            "
                             [attr.tabindex]="sameDay(cell.date, focused()) ? 0 : -1"
                             [attr.aria-label]="cell.label"
                             [attr.aria-current]="cell.today ? 'date' : null"
@@ -193,6 +200,7 @@ export function isoWeek(date: Date): number {
                                     selected: isSelected(cell.date),
                                     disabled: cell.disabled,
                                     outside: cell.outside,
+                                    special: cell.special,
                                   }
                                 "
                               />
@@ -311,6 +319,12 @@ export class StarCalendar {
   /** 0 = Sunday. Default: the locale's first day of the week. */
   readonly firstDayOfWeek = input<number | null>(null);
   readonly locale = input<string | undefined>(undefined);
+  /**
+   * Marked days, for example holidays or due dates (Ignite UI `specialDates`). The day gets a
+   * dot, and its accessible name gets the kind and the label: "12 March 2026, Holiday: Company
+   * day". The `starDate` context has the entry as `special`.
+   */
+  readonly specialDates = input<readonly StarSpecialDate[]>([]);
   /** Set by the date pickers. In your own markup, use the `starDate` slot. */
   readonly dateTemplate = input<TemplateRef<StarDateContext> | null>(null);
 
@@ -359,6 +373,16 @@ export class StarCalendar {
     });
   });
 
+  /** Entries of `specialDates` by `yyyy-mm-dd`; the first entry of a day wins. */
+  private readonly specialByDay = computed(() => {
+    const days = new Map<string, StarSpecialDate>();
+    for (const special of this.specialDates()) {
+      const date = starParseIso(special.date);
+      if (date && !days.has(isoDay(date))) days.set(isoDay(date), special);
+    }
+    return days;
+  });
+
   protected readonly monthCount = computed(() => Math.max(1, Math.floor(this.numberOfMonths())));
 
   /**
@@ -385,6 +409,7 @@ export class StarCalendar {
     const many = this.monthCount() > 1;
     const hideOther = many || !this.showOtherMonths();
     const lockOther = !this.selectOtherMonths();
+    const specials = this.specialByDay();
     return Array.from({ length: this.monthCount() }, (_, index) => {
       const month = addMonths(this.viewStart(), index);
       return {
@@ -395,10 +420,13 @@ export class StarCalendar {
             number: isoWeek(week.find((day) => day.getDay() === 4) ?? week[0]),
             days: week.map((date): DayCell => {
               const outside = !sameMonth(date, month);
+              const key = isoDay(date);
+              const special = specials.get(key) ?? null;
               return {
                 date,
-                key: isoDay(date),
-                label: fullLabel.format(date),
+                key,
+                label: this.dayLabel(fullLabel.format(date), special),
+                special,
                 outside,
                 blank: hideOther && outside,
                 today: sameDay(date, this.today),
@@ -422,6 +450,18 @@ export class StarCalendar {
     const start = year - (((year % 12) + 12) % 12);
     return Array.from({ length: 12 }, (_, i) => start + i);
   });
+
+  /** Accessible name of a day: the full date, then the kind and label of a special date. */
+  private dayLabel(full: string, special: StarSpecialDate | null): string {
+    if (!special) return full;
+    const kind =
+      special.kind === 'holiday'
+        ? this.text.holiday
+        : special.kind === 'event'
+          ? this.text.event
+          : special.kind || this.text.specialDate;
+    return special.label ? `${full}, ${kind}: ${special.label}` : `${full}, ${kind}`;
+  }
 
   isDisabled(date: Date): boolean {
     const min = this.minDate();

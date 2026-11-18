@@ -3,7 +3,8 @@ import { TestBed } from '@angular/core/testing';
 import { StarCalendar } from './calendar';
 import { starIsoText, starParseIso, starSplitDateTime, starTimeFormat } from './date-format';
 import { StarDatePicker, StarDateRangePicker, StarMultiDatePicker } from './date-picker';
-import { parseDate, StarDateRange } from './date-utils';
+import { StarDateTemplate } from './date-slots';
+import { parseDate, StarDateRange, StarSpecialDate } from './date-utils';
 import { StarTimePicker } from './time-picker';
 
 /** The time columns of one time in the open popup (`Time`, `Start time` or `End time`). */
@@ -464,5 +465,70 @@ describe('calendar: days of other months', () => {
     const panel = document.querySelector('.star-date__panel')!;
     expect(panel.querySelector('[data-date="2026-10-26"]')).toBeNull();
     expect(panel.querySelector('[data-date="2026-11-30"]')).not.toBeNull();
+  });
+});
+
+@Component({
+  imports: [StarCalendar, StarDatePicker, StarDateTemplate],
+  template: `
+    <star-calendar locale="en-GB" [selected]="day" [specialDates]="specials">
+      <ng-template starDate let-date let-special="special">
+        <span class="kind">{{ special?.kind ?? '' }}</span>{{ date.getDate() }}
+      </ng-template>
+    </star-calendar>
+    <star-date-picker
+      locale="en-GB"
+      ariaLabel="Special"
+      [specialDates]="specials"
+      [(value)]="picked"
+    />
+  `,
+})
+class SpecialHost {
+  readonly day = new Date(2026, 2, 1);
+  readonly picked = signal<Date | null>(new Date(2026, 2, 1));
+  readonly specials: readonly StarSpecialDate[] = [
+    { date: new Date(2026, 2, 12), label: 'Company day', kind: 'holiday' },
+    { date: '2026-03-20', label: 'Invoice run', kind: 'event' },
+    { date: '2026-03-24', kind: 'audit' },
+    { date: '2026-03-27' },
+  ];
+}
+
+describe('calendar: special dates', () => {
+  /** The full date of a day in March 2026, as the calendar names it (the text follows ICU). */
+  const full = (day: number) =>
+    new Intl.DateTimeFormat('en-GB', { dateStyle: 'full' }).format(new Date(2026, 2, day));
+  afterEach(() => document.querySelectorAll('.star-date__panel').forEach((item) => item.remove()));
+
+  it('marks special dates and names the kind and the label in the accessible name', async () => {
+    const fixture = TestBed.createComponent(SpecialHost);
+    await fixture.whenStable();
+    const calendar = (fixture.nativeElement as HTMLElement).querySelector('star-calendar')!;
+    const day = (iso: string) => calendar.querySelector<HTMLElement>(`[data-date="${iso}"]`)!;
+    expect(day('2026-03-12').getAttribute('aria-label')).toBe(`${full(12)}, Holiday: Company day`);
+    expect(day('2026-03-12').classList).toContain('star-calendar__day--special');
+    expect(day('2026-03-12').dataset['special']).toBe('holiday');
+    expect(day('2026-03-20').getAttribute('aria-label')).toBe(`${full(20)}, Event: Invoice run`);
+    expect(day('2026-03-24').getAttribute('aria-label')).toBe(`${full(24)}, audit`);
+    expect(day('2026-03-27').getAttribute('aria-label')).toBe(`${full(27)}, Special date`);
+    expect(day('2026-03-27').dataset['special']).toBe('special');
+    expect(day('2026-03-13').getAttribute('aria-label')).toBe(full(13));
+    expect(day('2026-03-13').classList).not.toContain('star-calendar__day--special');
+    // The starDate context has the entry as special.
+    expect(day('2026-03-12').querySelector('.kind')?.textContent).toBe('holiday');
+    expect(day('2026-03-13').querySelector('.kind')?.textContent).toBe('');
+  });
+
+  it('passes the special dates from the date picker to its calendar', async () => {
+    const fixture = TestBed.createComponent(SpecialHost);
+    await fixture.whenStable();
+    const input = (fixture.nativeElement as HTMLElement).querySelector<HTMLInputElement>(
+      'input[aria-label="Special"]',
+    )!;
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', altKey: true }));
+    await fixture.whenStable();
+    const day = document.querySelector('.star-date__panel [data-date="2026-03-20"]')!;
+    expect(day.getAttribute('aria-label')).toBe(`${full(20)}, Event: Invoice run`);
   });
 });
