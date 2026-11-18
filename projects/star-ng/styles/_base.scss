@@ -72,3 +72,23 @@ i[class*=' ph-'] {
 .star-icon-mirror:dir(rtl) {
   scale: -1 1;
 }
+
+// Global configuration (`provideStarNg`). `overlay.zIndexBase` sets `--star-z-index-base` on
+// `<html>`; the CDK overlay container (default 1000) follows it. `reducedMotion: 'always'` sets
+// `data-star-motion="reduced"`: no StarNG transition or animation runs, as with the system setting.
+:root .cdk-overlay-container {
+  z-index: var(--star-z-index-base, 1000);
+}
+:root[data-star-motion='reduced'] {
+  --star-duration-fast: 0s;
+  --star-duration-base: 0s;
+  --star-duration-slow: 0s;
+
+  [class*='star-'],
+  [class*='star-']::before,
+  [class*='star-']::after,
+  [class*='star-']::backdrop {
+    animation: none !important;
+    transition: none !important;
+  }
+}

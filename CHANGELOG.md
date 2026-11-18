@@ -6,6 +6,7 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 
 ### Added
 
+- Global configuration: `provideStarNg(config)` and `STAR_CONFIG` in `@star-ng/ui/core` (input variant, size, overlay `appendTo` and `zIndexBase`, `filterMatchMode`, `reducedMotion`, `locale`, UI texts, direction, theme storage key) and the signal-based `StarConfigService` (`config()`, `update()`). Precedence: input, then per-control default token, then `provideStarNg`, then the built-in default (PrimeNG `providePrimeNG`).
 - Overlay badge (`star-overlay-badge`, `@star-ng/ui/badge`): a badge on a corner of any content, with screen-reader text (PrimeNG `p-overlaybadge`).
 - Avatar group (`star-avatar-group`, `@star-ng/ui/avatar`): overlapping avatars with a `max` and a "+N" entry (PrimeNG `p-avatargroup`).
 - Button group (`star-button-group`, `@star-ng/ui/button`): joins adjacent buttons and split buttons into one bar (PrimeNG `p-buttongroup`).

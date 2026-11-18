@@ -1,4 +1,5 @@
 export * from './breakpoints';
+export * from './config';
 export * from './direction';
 export * from './filter-match';
 export * from './list-windowing';

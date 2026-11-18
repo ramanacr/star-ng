@@ -55,7 +55,7 @@ html:has(dialog.star-bottom-sheet--modal[open]) {
 // A non-modal sheet is not in the top layer: it stacks above the page, below the CDK overlay
 // container (z-index 1000), so a menu opened from the sheet stays on top. A border separates it.
 .star-bottom-sheet:not(.star-bottom-sheet--modal) {
-  z-index: 999;
+  z-index: calc(var(--star-z-index-base, 1000) - 1);
   border: 1px solid var(--star-border);
   border-bottom: 0;
 }
