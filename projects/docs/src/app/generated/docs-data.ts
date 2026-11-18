@@ -5419,6 +5419,23 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarRowEditActionsTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starRowEditActions]",
+    "entry": "@star-ng/ui/table",
+    "description": "Replaces the Save and Cancel buttons of a row in edit (`editMode=\"row\"`): `<ng-template starRowEditActions let-save=\"save\" let-cancel=\"cancel\" let-valid=\"valid\">…</ng-template>`. PrimeNG `pSaveEditableRow` / `pCancelEditableRow` buttons. The content goes in the actions cell of the row. Enter in an editor still saves and Escape still cancels.",
+    "inputs": [
+      {
+        "name": "starRowEditActionsOf",
+        "type": "readonly T[] | null",
+        "default": "null",
+        "required": false,
+        "description": "Optional: pass the table rows to type `let-row` in strict templates."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
   "StarRowExpansionTemplate": {
     "kind": "directive",
     "selector": "ng-template[starRowExpansion]",
@@ -6358,6 +6375,20 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "'local'",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "editMode",
+        "type": "'cell' | 'row'",
+        "default": "'cell'",
+        "required": false,
+        "description": "`'cell'`: each editable cell has its own edit button. `'row'`: an actions column has an Edit button per row (F2 in a row does the same); all editable cells of the row show editors, with Save and Cancel. Enter in an editor saves the row, Escape cancels. PrimeNG `editMode`, Ignite `rowEditable`."
+      },
+      {
+        "name": "batchEdit",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Batch edit: saved edits, new rows and deleted rows collect in a pending change set instead of single events. Changed cells are marked, deleted rows are struck through. `commitEdits()` emits `batchSave`, `discardEdits()` drops the set, `undo()` / `redo()` (Ctrl+Z, Ctrl+Y, Ctrl+Shift+Z in the table) step through it. With `lazy`, set `dataKey`: the change set keys rows by `dataKey`, and a new page has new row objects. Ignite `batchEditing`."
       }
     ],
     "models": [
@@ -6444,6 +6475,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "[]",
         "required": false,
         "description": "Headings of the closed groups. Two-way."
+      },
+      {
+        "name": "editingRowKeys",
+        "type": "readonly unknown[]",
+        "default": "[]",
+        "required": false,
+        "description": "Keys (`dataKey`) of the rows in edit with `editMode=\"row\"`. Two-way. PrimeNG `editingRowKeys`."
       }
     ],
     "outputs": [
@@ -6466,7 +6504,63 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "StarCellEditEvent<T>",
         "default": null,
         "required": false,
-        "description": "The user changed an editable cell (see `StarColumn.editable`)."
+        "description": "The user changed an editable cell (see `StarColumn.editable`). Not emitted with `batchEdit`. PrimeNG `onEditComplete`, Ignite `cellEditDone`."
+      },
+      {
+        "name": "editInit",
+        "type": "StarEditCellEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "A cell editor opened (cell mode). PrimeNG `onEditInit`, Ignite `cellEditEnter`."
+      },
+      {
+        "name": "editCancel",
+        "type": "StarEditCellEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "A cell editor closed without a save (Escape, or a choice list closed without a choice). PrimeNG `onEditCancel`."
+      },
+      {
+        "name": "rowEditInit",
+        "type": "StarRowEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "A row entered edit (row mode). PrimeNG `initRowEdit`, Ignite `rowEditEnter`."
+      },
+      {
+        "name": "rowEditSave",
+        "type": "StarRowEditSaveEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "The user saved a row in edit with valid values (row mode, not `batchEdit`). `changes` holds the changed fields only. PrimeNG `saveRowEdit`, Ignite `rowEditDone`."
+      },
+      {
+        "name": "rowEditCancel",
+        "type": "StarRowEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "The user canceled the edit of a row. PrimeNG `cancelRowEdit`, Ignite `rowEditExit`."
+      },
+      {
+        "name": "rowAdd",
+        "type": "StarRowEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "A new row to store (not `batchEdit`): from `addRow()` in cell mode at once, in row mode when the user saves the new row (with the edited values). Ignite `rowAdded`."
+      },
+      {
+        "name": "rowDelete",
+        "type": "StarRowEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "A row to delete, from `deleteRow()` (not `batchEdit`). Ignite `rowDeleted`."
+      },
+      {
+        "name": "batchSave",
+        "type": "StarBatchChanges<T>",
+        "default": null,
+        "required": false,
+        "description": "`commitEdits()` with `batchEdit`: all pending changes. Ignite `transactions.commit`."
       },
       {
         "name": "lazyLoad",
@@ -7990,8 +8084,11 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "table-columns/panel": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with column panel\"\n      columnToggle\n      reorderableColumns\n      [(columnOrder)]=\"order\"\n      [(hiddenColumns)]=\"hidden\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">\n    Order: {{ order().join(', ') || 'default' }}. Hidden:\n    {{ hidden().join(', ') || 'none' }}.\n  </p>\n</div>",
   "table-columns/resize": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with resizable columns\"\n      resizableColumns\n      [(columnWidths)]=\"widths\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Widths: {{ widthText() }}</p>\n</div>",
   "table-columns/state": "<div class=\"docs-stack\">\n  <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"saved.clearState()\">\n    Clear saved view\n  </star-button>\n  <docs-fill>\n    <star-table\n      #saved\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with saved view\"\n      columnToggle\n      resizableColumns\n      stateKey=\"docs-table-saved-view\"\n      stateStorage=\"session\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n</div>",
+  "table-edit/add-delete": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button\n      size=\"sm\"\n      leadingIcon=\"ph-bold ph-plus\"\n      (pressed)=\"addTable.addRow(newOrder(), 'top')\"\n    >\n      Add order\n    </star-button>\n  </div>\n  <docs-fill>\n    <star-table\n      #addTable\n      [value]=\"list()\"\n      [columns]=\"addColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders to add and delete\"\n      editMode=\"row\"\n      (rowAdd)=\"addOrder($event)\"\n      (rowDelete)=\"deleteOrder($event)\"\n      (rowEditSave)=\"updateOrder($event)\"\n    >\n      <ng-template starCell=\"remove\" let-row [starCellOf]=\"list()\">\n        <button\n          type=\"button\"\n          class=\"star-table__toggle\"\n          [attr.aria-label]=\"'Delete ' + row.id\"\n          (click)=\"addTable.deleteRow(row)\"\n        >\n          <i class=\"ph-bold ph-trash\" aria-hidden=\"true\"></i>\n        </button>\n      </ng-template>\n    </star-table>\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">{{ addMessage() }}</p>\n</div>",
+  "table-edit/batch": "<div class=\"docs-stack\">\n  <div class=\"docs-row\" role=\"toolbar\" aria-label=\"Batch changes\">\n    <star-button\n      size=\"sm\"\n      variant=\"secondary\"\n      leadingIcon=\"ph-bold ph-arrow-counter-clockwise\"\n      [disabled]=\"!batchTable.canUndo()\"\n      (pressed)=\"batchTable.undo()\"\n    >\n      Undo\n    </star-button>\n    <star-button\n      size=\"sm\"\n      variant=\"secondary\"\n      leadingIcon=\"ph-bold ph-arrow-clockwise\"\n      [disabled]=\"!batchTable.canRedo()\"\n      (pressed)=\"batchTable.redo()\"\n    >\n      Redo\n    </star-button>\n    <star-button\n      size=\"sm\"\n      variant=\"secondary\"\n      [disabled]=\"!pendingCount(batchTable.pendingChanges())\"\n      (pressed)=\"batchTable.discardEdits()\"\n    >\n      Discard\n    </star-button>\n    <star-button\n      size=\"sm\"\n      [disabled]=\"!pendingCount(batchTable.pendingChanges())\"\n      (pressed)=\"batchTable.commitEdits()\"\n    >\n      {{ saveLabel(pendingCount(batchTable.pendingChanges())) }}\n    </star-button>\n  </div>\n  <docs-fill>\n    <star-table\n      #batchTable\n      [value]=\"batchRows()\"\n      [columns]=\"batchColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with batch edit\"\n      batchEdit\n      (batchSave)=\"saveBatch($event)\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">{{ batchMessage() }}</p>\n</div>",
   "table-edit/cells": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"rows()\"\n      [columns]=\"editColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Editable orders\"\n      (cellEdit)=\"applyEdit($event)\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">{{ message() }}</p>\n</div>",
   "table-edit/reorder": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"queue()\"\n      [columns]=\"queueColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Order queue\"\n      reorderableRows\n      (rowReorder)=\"move($event)\"\n    />\n  </docs-fill>\n</div>",
+  "table-edit/rows": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"crew()\"\n      [columns]=\"rowColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with row edit\"\n      editMode=\"row\"\n      (rowEditSave)=\"saveRow($event)\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">{{ rowMessage() }}</p>\n</div>",
   "table-export/basic": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button\n      size=\"sm\"\n      variant=\"secondary\"\n      leadingIcon=\"ph-bold ph-download-simple\"\n      (pressed)=\"exportTable.exportCsv({ fileName: 'orders' })\"\n    >\n      Export CSV\n    </star-button>\n    <star-button\n      size=\"sm\"\n      variant=\"secondary\"\n      leadingIcon=\"ph-bold ph-microsoft-excel-logo\"\n      (pressed)=\"exportTable.exportExcel({ fileName: 'orders' })\"\n    >\n      Export Excel\n    </star-button>\n    <star-button\n      size=\"sm\"\n      variant=\"secondary\"\n      leadingIcon=\"ph-bold ph-printer\"\n      (pressed)=\"exportTable.print()\"\n    >\n      Print\n    </star-button>\n    <star-button\n      size=\"sm\"\n      variant=\"secondary\"\n      [disabled]=\"!selected().length\"\n      (pressed)=\"\n        exportTable.exportCsv({ fileName: 'selected-orders', selectionOnly: true })\n      \"\n    >\n      Export selected rows\n    </star-button>\n  </div>\n  <docs-fill>\n    <star-table\n      #exportTable\n      ariaLabel=\"Orders\"\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      selectionMode=\"multiple\"\n      [(selection)]=\"selected\"\n      paginator\n      [rows]=\"5\"\n    >\n      <ng-template starCell=\"status\" [starCellOf]=\"orders\" let-row>\n        <star-tag [severity]=\"severityOf(row.status)\" [value]=\"row.status\" rounded />\n      </ng-template>\n      <ng-template starCell=\"customer\" [starCellOf]=\"orders\" let-row let-value=\"value\">\n        <strong>{{ value }}</strong>\n        <br />\n        <small>{{ row.email }}</small>\n      </ng-template>\n    </star-table>\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">{{ selected().length }} selected</p>\n</div>",
   "table-export/print-format": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button\n      size=\"sm\"\n      variant=\"secondary\"\n      leadingIcon=\"ph-bold ph-printer\"\n      (pressed)=\"partsTable.print()\"\n    >\n      Print parts\n    </star-button>\n  </div>\n  <docs-fill>\n    <star-table\n      #partsTable\n      ariaLabel=\"Parts\"\n      [value]=\"parts\"\n      [columns]=\"partColumns\"\n      dataKey=\"code\"\n    />\n  </docs-fill>\n</div>",
   "table-export/print-long": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button\n      size=\"sm\"\n      variant=\"secondary\"\n      leadingIcon=\"ph-bold ph-printer\"\n      (pressed)=\"longTable.print()\"\n    >\n      Print invoices\n    </star-button>\n  </div>\n  <docs-fill>\n    <star-table\n      #longTable\n      ariaLabel=\"Invoices\"\n      [value]=\"invoices\"\n      [columns]=\"invoiceColumns\"\n      dataKey=\"id\"\n      selectionMode=\"multiple\"\n      [hiddenColumns]=\"['region']\"\n      paginator\n      [rows]=\"10\"\n    >\n      <ng-template starCell=\"open\" [starCellOf]=\"invoices\" let-row>\n        <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"opened.set(row.id)\">\n          Open\n        </star-button>\n      </ng-template>\n    </star-table>\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Opened: {{ opened() || 'none' }}</p>\n</div>",
