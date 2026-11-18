@@ -62,6 +62,7 @@ import {
 } from '@star-ng/ui/core';
 import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/ui/field';
 import {
+  STAR_SELECT_DEFAULTS,
   starLazyOptions,
   StarOptionTemplate,
   starSelectionChanging,
@@ -370,7 +371,7 @@ export class StarListbox<TOption = unknown, TValue = TOption> implements FormVal
   TValue | readonly TValue[] | null
 > {
   protected readonly text = inject(STAR_UI_TEXT);
-  private readonly defaults = injectStarControlDefaults([]);
+  private readonly defaults = injectStarControlDefaults([], inject(STAR_SELECT_DEFAULTS));
   protected readonly listId = inject(_IdGenerator).getId('star-listbox-');
   protected readonly hintId = inject(_IdGenerator).getId('star-listbox-hint-');
   /** Id of the list element: pass the listbox in `connectedTo` of another listbox to connect them. */
@@ -419,9 +420,11 @@ export class StarListbox<TOption = unknown, TValue = TOption> implements FormVal
     this.defaults.filterMatchMode ?? 'contains',
   );
   /** Locale of the filter compare (`Intl.Collator`, sensitivity `base`). Default: `locale` of `provideStarNg`. PrimeNG `filterLocale`. */
-  readonly filterLocale = input<string | null>(this.defaults.locale ?? null);
+  readonly filterLocale = input<string | null>(
+    this.defaults.filterLocale ?? this.defaults.locale ?? null,
+  );
   /** Height of the list. With `virtualScroll` it is the height of the list, or less for a short list. */
-  readonly scrollHeight = input('16rem');
+  readonly scrollHeight = input(this.defaults.scrollHeight ?? '16rem');
   /**
    * Renders only the rows in and near the view (CDK virtual scroll), for lists of thousands of
    * options. Every row, group headings included, has the height `virtualItemSize` and the text

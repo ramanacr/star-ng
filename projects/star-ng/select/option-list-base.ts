@@ -50,6 +50,7 @@ import {
   StarWindowRow,
 } from '@star-ng/ui/core';
 import { StarField, starFieldLabelledBy, starJoinIds } from '@star-ng/ui/field';
+import { STAR_SELECT_DEFAULTS } from './select-defaults';
 
 /** Context of the custom option template: `<ng-template starOption let-option let-selected="selected">`. */
 export interface StarOptionContext<T> {
@@ -128,8 +129,11 @@ export abstract class StarOptionListBase<TOption, TValue> {
   private readonly injector = inject(Injector);
   private readonly parentField = inject(StarField, { optional: true });
   private readonly destroyRef = inject(DestroyRef);
-  /** Defaults from `provideStarNg`. */
-  protected readonly defaults = injectStarControlDefaults(['sm', 'md']);
+  /** Defaults from `provideStarSelectDefaults`, then `provideStarNg`. */
+  protected readonly defaults = injectStarControlDefaults(
+    ['sm', 'md'],
+    inject(STAR_SELECT_DEFAULTS),
+  );
   /**
    * The parent `star-field` when this control owns its label (see `linkField`), else `null`. Its
    * label, hint and error name and describe the control.
@@ -201,16 +205,18 @@ export abstract class StarOptionListBase<TOption, TValue> {
    * sensitivity `base`, so case and accents do not count. Default: case and accents do not count,
    * without locale rules; `locale` of `provideStarNg` when it is set. PrimeNG `filterLocale`.
    */
-  readonly filterLocale = input<string | null>(this.defaults.locale ?? null);
+  readonly filterLocale = input<string | null>(
+    this.defaults.filterLocale ?? this.defaults.locale ?? null,
+  );
   /**
    * Clears the filter text when the panel closes (default `true`). Set `false` to keep the text,
    * and the filtered list, for the next opening. PrimeNG `resetFilterOnHide` (there default `false`).
    */
   readonly resetFilterOnHide = input(true, { transform: booleanAttribute });
-  readonly showClear = input(false, { transform: booleanAttribute });
+  readonly showClear = input(this.defaults.showClear ?? false, { transform: booleanAttribute });
   readonly loading = input(false, { transform: booleanAttribute });
   readonly emptyMessage = input<string | null>(null);
-  readonly scrollHeight = input('16rem');
+  readonly scrollHeight = input(this.defaults.scrollHeight ?? '16rem');
   /** Extra CSS classes of the panel (the `.star-panel` element). PrimeNG `panelStyleClass`. */
   readonly panelClass = input<string | readonly string[] | null>(null);
   /** Inline styles of the panel, for example `{ 'min-width': '20rem' }`. PrimeNG `panelStyle`. */

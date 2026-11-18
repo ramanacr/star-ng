@@ -29,6 +29,7 @@ import {
 } from '@star-ng/ui/core';
 import { injectStarFieldLink, starJoinIds } from '@star-ng/ui/field';
 import { StarCalendar, StarCalendarView } from './calendar';
+import { STAR_DATE_PICKER_DEFAULTS } from './date-picker-defaults';
 import type { StarDateContext } from './date-slots';
 import {
   compareDays,
@@ -76,8 +77,11 @@ export abstract class StarDateInputBase<TValue> {
   private readonly directionSync = inject(StarDirectionService);
   protected readonly text = inject(STAR_UI_TEXT);
   private readonly ids = inject(_IdGenerator);
-  /** Defaults from `provideStarNg`. */
-  protected readonly defaults = injectStarControlDefaults(['sm', 'md']);
+  /** Defaults from `provideStarDatePickerDefaults`, then `provideStarNg`. */
+  protected readonly defaults = injectStarControlDefaults(
+    ['sm', 'md'],
+    inject(STAR_DATE_PICKER_DEFAULTS),
+  );
   /**
    * The parent `star-field` when it labels this picker: the label points at the input with `for`,
    * the hint or error describes it.
@@ -92,7 +96,7 @@ export abstract class StarDateInputBase<TValue> {
   readonly disabledDates = input<readonly Date[]>([]);
   readonly disabledDays = input<readonly number[]>([]);
   readonly dateDisabled = input<((date: Date) => boolean) | null>(null);
-  readonly firstDayOfWeek = input<number | null>(null);
+  readonly firstDayOfWeek = input<number | null>(this.defaults.firstDayOfWeek ?? null);
   /** BCP 47 locale for names and formats. Default: `locale` of `provideStarNg`, else the browser locale. */
   readonly locale = input<string | undefined>(this.defaults.locale ?? undefined);
   /** `Intl.DateTimeFormat` options for the input text (default numeric day / month / year). */
@@ -100,13 +104,15 @@ export abstract class StarDateInputBase<TValue> {
   /** Months shown side by side in the popup. */
   readonly numberOfMonths = input(1);
   /** Shows the ISO 8601 week number at the start of each week. */
-  readonly showWeek = input(false, { transform: booleanAttribute });
+  readonly showWeek = input(this.defaults.showWeek ?? false, { transform: booleanAttribute });
   /**
    * Clock of the typed time with `showTime`: `'24'` (14:30) or `'12'` (2:30 PM). Both forms
    * are accepted when the user types.
    */
-  readonly hourFormat = input<'24' | '12'>('24');
-  readonly showButtonBar = input(false, { transform: booleanAttribute });
+  readonly hourFormat = input<'24' | '12'>(this.defaults.hourFormat ?? '24');
+  readonly showButtonBar = input(this.defaults.showButtonBar ?? false, {
+    transform: booleanAttribute,
+  });
   readonly showClear = input(false, { transform: booleanAttribute });
   /** Disables typing; the date can only be picked. */
   readonly readonlyInput = input(false, { transform: booleanAttribute });

@@ -25,6 +25,7 @@ import {
   starViewportWidth,
 } from '@star-ng/ui/core';
 import { Observable, Subject } from 'rxjs';
+import { STAR_TOAST_DEFAULTS, StarToastPosition } from './toast-defaults';
 import { StarToastOutletPolicy, toastSignature } from './toast-duplicates';
 import type { StarToastMessageContext } from './toast-slots';
 
@@ -71,6 +72,7 @@ interface Timer {
  */
 @Service()
 export class StarToastService {
+  private readonly defaults = inject(STAR_TOAST_DEFAULTS);
   private readonly items = signal<readonly StarToastMessage[]>([]);
   private readonly timers = new Map<number, Timer>();
   private readonly outlets = new Set<StarToastOutletPolicy>();
@@ -120,7 +122,7 @@ export class StarToastService {
       severity,
       summary: options.summary,
       detail: options.detail,
-      life: options.life ?? 5000,
+      life: options.life ?? this.defaults.life ?? 5000,
       sticky: options.sticky ?? false,
       key: options.key,
     };
@@ -265,26 +267,16 @@ export class StarToast {
   protected readonly toasts = inject(StarToastService);
   protected readonly text = inject(STAR_UI_TEXT);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly defaults = inject(STAR_TOAST_DEFAULTS);
 
   /**
    * Corner of the screen. `-left` and `-right` are physical; `-start` and `-end` follow the
    * writing direction (the start corner is on the right in right-to-left).
    */
-  readonly position = input<
-    | 'top-right'
-    | 'top-left'
-    | 'top-start'
-    | 'top-end'
-    | 'top-center'
-    | 'bottom-right'
-    | 'bottom-left'
-    | 'bottom-start'
-    | 'bottom-end'
-    | 'bottom-center'
-  >('top-right');
+  readonly position = input<StarToastPosition>(this.defaults.position ?? 'top-right');
   readonly key = input<string | undefined>(undefined);
   /** Newest messages beyond this count wait until older ones close. */
-  readonly stackLimit = input(5);
+  readonly stackLimit = input(this.defaults.stackLimit ?? 5);
   /**
    * Ignores a message with the same severity, summary and detail as one that this outlet has
    * ever shown, also after it closed (PrimeNG `preventDuplicates`). Not the same as the service

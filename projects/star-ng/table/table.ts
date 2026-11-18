@@ -47,6 +47,7 @@ import { StarPaginator } from '@star-ng/ui/paginator';
 import { StarPopover } from '@star-ng/ui/popover';
 import { StarMultiSelect, StarSelect } from '@star-ng/ui/select';
 import { StarSkeleton } from '@star-ng/ui/skeleton';
+import { STAR_TABLE_DEFAULTS } from './table-defaults';
 import {
   sameEditValue,
   StarBatchChanges,
@@ -1027,8 +1028,11 @@ export class StarRowExpansionTemplate<T = unknown> {
 })
 export class StarTable<T> {
   protected readonly text = inject(STAR_UI_TEXT);
-  /** Defaults from `provideStarNg`. */
-  protected readonly defaults = injectStarControlDefaults(['sm', 'md']);
+  /** Defaults from `provideStarTableDefaults`, then `provideStarNg`. */
+  protected readonly defaults = injectStarControlDefaults(
+    ['sm', 'md'],
+    inject(STAR_TABLE_DEFAULTS),
+  );
   private readonly document = inject(DOCUMENT);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly injector = inject(Injector);
@@ -1040,10 +1044,12 @@ export class StarTable<T> {
   readonly dataKey = input<StarOptionKey<T> | null>(null);
   readonly loading = input(false, { transform: booleanAttribute });
   readonly emptyMessage = input<string | null>(null);
-  readonly striped = input(false, { transform: booleanAttribute });
+  readonly striped = input(this.defaults.striped ?? false, { transform: booleanAttribute });
   /** Row density. Default: `size` of `provideStarNg` (`small` or `medium`), else `md`. */
   readonly size = input<'sm' | 'md'>(this.defaults.size ?? 'md');
-  readonly stickyHeader = input(false, { transform: booleanAttribute });
+  readonly stickyHeader = input(this.defaults.stickyHeader ?? false, {
+    transform: booleanAttribute,
+  });
   readonly scrollHeight = input<string | null>(null);
   /**
    * Layout when the table is narrower than 40rem (a phone). `'scroll'`: the table scrolls
@@ -1075,7 +1081,9 @@ export class StarTable<T> {
   readonly paginator = input(false, { transform: booleanAttribute });
   readonly first = model(0);
   readonly rows = model(10);
-  readonly rowsPerPageOptions = input<readonly number[]>([10, 25, 50]);
+  readonly rowsPerPageOptions = input<readonly number[]>(
+    this.defaults.rowsPerPageOptions ?? [10, 25, 50],
+  );
 
   readonly sortField = model<string | null>(null);
   readonly sortOrder = model<StarSortOrder>(1);

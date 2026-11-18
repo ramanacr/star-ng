@@ -7456,7 +7456,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "inputs": [
       {
         "name": "position",
-        "type": "| 'top-right' | 'top-left' | 'top-start' | 'top-end' | 'top-center' | 'bottom-right' | 'bottom-left' | 'bottom-start' | 'bottom-end' | 'bottom-center'",
+        "type": "StarToastPosition",
         "default": "'top-right'",
         "required": false,
         "description": "Corner of the screen. `-left` and `-right` are physical; `-start` and `-end` follow the writing direction (the start corner is on the right in right-to-left)."
