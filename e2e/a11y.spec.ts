@@ -727,7 +727,10 @@ const STATES: readonly State[] = [
       await live.getByRole('button', { name: 'Add order' }).click();
       await expect(live.locator('.star-table__row--editing')).toHaveCount(1);
       const batch = example(page, 'Batch edit with undo');
-      await batch.getByRole('button', { name: /^Edit Customer/ }).first().click();
+      await batch
+        .getByRole('button', { name: /^Edit Customer/ })
+        .first()
+        .click();
       const editor = batch.getByRole('textbox', { name: 'Edit Customer' });
       await editor.fill('Changed customer');
       await editor.press('Enter');
