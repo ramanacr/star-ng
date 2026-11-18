@@ -9,16 +9,19 @@ import {
 import { DOCUMENT, NgTemplateOutlet } from '@angular/common';
 import {
   afterEveryRender,
+  afterNextRender,
   afterRenderEffect,
   booleanAttribute,
   ChangeDetectionStrategy,
   Component,
   computed,
   contentChildren,
+  DestroyRef,
   effect,
   ElementRef,
   forwardRef,
   inject,
+  Injector,
   input,
   linkedSignal,
   model,
@@ -31,26 +34,43 @@ import {
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
 import {
-  matchesFilter,
   STAR_SLOT_HOST,
   STAR_UI_TEXT,
   StarDirectionService,
   StarEmptyContext,
+  starFilterMatch,
   starInlineKey,
+  starIsRtl,
   StarSlot,
   starSlot,
   starSlotMap,
 } from '@star-ng/ui/core';
 import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/ui/field';
+import { StarContextMenu, StarMenu, StarMenuItem } from '@star-ng/ui/menu';
 import {
+  StarTreeDragScope,
+  StarTreeDropPosition,
+  StarTreeDropValidator,
+  StarTreeNodeDropEvent,
+  TreeDndController,
+  TreeMoveDirection,
+} from './tree-dnd';
+import {
+  ancestorKeys,
+  branchKeys,
   checkStates,
+  filterTree,
   flattenVisible,
+  isLocked,
   navigationTarget,
+  nodeFieldText,
   parentsOf,
   rowIndexOf,
   scrollOffsetToReveal,
   stillFocusable,
   subtreeKeys,
+  toggleChecked,
+  TreeFilterMode,
   TreeRow,
 } from './tree-model';
 import type { StarNodeContext, StarToggleIconContext } from './tree-slots';
@@ -62,40 +82,88 @@ export interface StarTreeNode<T = unknown> {
   readonly icon?: string;
   readonly data?: T;
   readonly children?: readonly StarTreeNode<T>[];
+  /** `false`: the user cannot select the node, and checkbox propagation keeps its state. */
   readonly selectable?: boolean;
+  /** The user cannot select the node, and checkbox propagation keeps its state. */
   readonly disabled?: boolean;
+  /**
+   * Lazy children (PrimeNG `leaf`): `false` marks a node whose children are not loaded yet. It
+   * shows the toggle, and opening it emits `nodeExpand` so that the owner loads the children.
+   */
+  readonly leaf?: boolean;
+  /** The children of this node are loading: the node shows a loading row or icon. */
+  readonly loading?: boolean;
+  /** `false`: the node cannot be dragged, also when the tree has `draggableNodes`. */
+  readonly draggable?: boolean;
+  /** `false`: no node can be dropped inside this node (before and after it still work). */
+  readonly droppable?: boolean;
 }
+
+/** Payload of `nodeExpand`, `nodeCollapse`, `nodeDoubleClick` and `nodeContextMenu`. */
+export interface StarTreeNodeEvent<T = unknown> {
+  readonly node: StarTreeNode<T>;
+  /** The browser event, when the user caused it. */
+  readonly originalEvent?: Event;
+}
+
+/** Payload of `contextMenuSelect`: the node of the menu and the item the user chose. */
+export interface StarTreeContextMenuEvent<T = unknown> {
+  readonly node: StarTreeNode<T>;
+  readonly item: StarMenuItem;
+}
+
+/** How a node shows that its children load: a row under it, or a spinner in its toggle. */
+export type StarTreeLoadingMode = 'icon' | 'row';
 
 type VisibleNode = TreeRow<StarTreeNode>;
 
-/** Keeps nodes that match the query or have a matching descendant. */
-function filterNodes(nodes: readonly StarTreeNode[], query: string): StarTreeNode[] {
-  if (!query) return [...nodes];
-  return nodes.flatMap((node) => {
-    const children = filterNodes(node.children ?? [], query);
-    return matchesFilter(node.label, query) || children.length ? [{ ...node, children }] : [];
-  });
-}
+const NO_KEYS: ReadonlySet<string> = new Set();
+
+/** Keyboard move keys (Ctrl+Shift and an arrow) and their direction; the inline arrows mirror in RTL. */
+const MOVE_KEYS: Readonly<Record<string, TreeMoveDirection>> = {
+  ArrowUp: 'up',
+  ArrowDown: 'down',
+  ArrowRight: 'in',
+  ArrowLeft: 'out',
+};
 
 /**
- * Tree (PrimeNG `p-tree`): expand / collapse, single, multiple or checkbox selection (checkbox
- * mode selects whole branches and shows mixed parents), filter, and the WAI-ARIA tree keyboard
- * model (Up / Down, Right opens or enters, Left closes or goes to the parent, Home / End,
- * Enter / Space select, `*` expands siblings).
+ * Tree (PrimeNG `p-tree`, Ignite `igx-tree`): expand / collapse, single, multiple or checkbox
+ * selection (checkbox mode propagates up and down and shows mixed parents), filter in lenient or
+ * strict mode, lazy children, a row context menu, drag and drop with a keyboard alternative, and
+ * the WAI-ARIA tree keyboard model (Up / Down, Right opens or enters, Left closes or goes to the
+ * parent, Home / End, Enter / Space select, `*` expands siblings).
  *
  * Large trees: `virtualScroll` with `scrollHeight` and `virtualItemSize` renders only the rows in
  * and near the viewport (CDK virtual scrolling). Every row has a fixed height then. Keys, selection
  * and `aria-setsize` / `aria-posinset` work over all open rows, also the ones that are not in the DOM.
+ *
+ * The tree never changes `nodes`: lazy children, drops and context menu actions are outputs, and
+ * the owner updates the data.
  *
  * Value: the selected node keys.
  * `<star-tree [nodes]="departments" selectionMode="checkbox" [(value)]="keys" filter ariaLabel="Departments" />`
  */
 @Component({
   selector: 'star-tree',
-  imports: [CdkVirtualScrollViewport, CdkFixedSizeVirtualScroll, CdkVirtualForOf, NgTemplateOutlet],
+  imports: [
+    CdkVirtualScrollViewport,
+    CdkFixedSizeVirtualScroll,
+    CdkVirtualForOf,
+    NgTemplateOutlet,
+    StarContextMenu,
+    StarMenu,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarTree) }],
-  host: { class: 'star-tree' },
+  host: {
+    class: 'star-tree',
+    '(dragstart)': 'dnd.dragStart($event)',
+    '(dragover)': 'dnd.dragOver($event)',
+    '(dragleave)': 'dnd.dragLeave($event)',
+    '(drop)': 'dnd.drop($event)',
+    '(dragend)': 'dnd.dragEnd()',
+  },
   template: `
     @if (headerSlot(); as header) {
       <ng-container *ngTemplateOutlet="header" />
@@ -123,27 +191,37 @@ function filterNodes(nodes: readonly StarTreeNode[], query: string): StarTreeNod
         [attr.aria-level]="item.level"
         [attr.aria-setsize]="item.setSize"
         [attr.aria-posinset]="item.position"
-        [attr.aria-expanded]="item.node.children?.length ? isExpanded(item.node) : null"
+        [attr.aria-expanded]="isBranch(item.node) ? isExpanded(item.node) : null"
         [attr.aria-selected]="
           selectionMode() && selectionMode() !== 'checkbox' ? isSelected(item.node) : null
         "
         [attr.aria-checked]="selectionMode() === 'checkbox' ? checkState(item.node) : null"
         [attr.aria-disabled]="item.node.disabled || null"
+        [attr.aria-busy]="item.node.loading || null"
+        [attr.draggable]="dnd.canDrag(item.node) ? 'true' : null"
         [attr.tabindex]="focusKey() === item.node.key ? 0 : -1"
         [class.star-tree__item--selected]="isSelected(item.node)"
+        [class.star-tree__item--dragging]="dnd.dragKey() === item.node.key"
+        [class.star-tree__item--drop-before]="dropAt(item.node.key) === 'before'"
+        [class.star-tree__item--drop-after]="dropAt(item.node.key) === 'after'"
+        [class.star-tree__item--drop-inside]="dropAt(item.node.key) === 'inside'"
         [style.--star-tree-level]="item.level - 1"
         [style.height.px]="showViewport() ? virtualItemSize() : null"
         (click)="onClick(item.node, $event)"
+        (dblclick)="nodeDoubleClick.emit({ node: item.node, originalEvent: $event })"
+        (contextmenu)="onContextMenu(item.node, $event)"
         (keydown)="onKeydown($event, item)"
         (focus)="onRowFocus(item.node.key)"
       >
-        @if (item.node.children?.length) {
+        @if (isBranch(item.node)) {
           <span
             class="star-tree__toggle"
             aria-hidden="true"
-            (click)="$event.stopPropagation(); toggle(item.node)"
+            (click)="$event.stopPropagation(); onToggleClick(item.node, $event)"
           >
-            @if (toggleIcon(); as icon) {
+            @if (item.node.loading && loadingIcon()) {
+              <i class="ph-bold ph-spinner-gap star-spin"></i>
+            } @else if (toggleIcon(); as icon) {
               <ng-container
                 *ngTemplateOutlet="icon; context: { $implicit: isExpanded(item.node) }"
               />
@@ -178,54 +256,88 @@ function filterNodes(nodes: readonly StarTreeNode[], query: string): StarTreeNod
           }
         </span>
       </li>
+      @if (item.node.loading && !loadingIcon() && isExpanded(item.node)) {
+        <li class="star-tree__loading" role="presentation" [style.--star-tree-level]="item.level">
+          <span class="star-tree__toggle star-tree__toggle--leaf" aria-hidden="true"></span>
+          <i class="ph-bold ph-spinner-gap star-spin" aria-hidden="true"></i>
+          {{ text.loading }}
+        </li>
+      }
     </ng-template>
-    @if (showViewport()) {
-      <cdk-virtual-scroll-viewport
-        #viewport
-        class="star-tree__viewport"
-        role="tree"
-        [itemSize]="virtualItemSize()"
-        [attr.aria-label]="ariaLabel()"
-        [attr.aria-labelledby]="labelledBy()"
-        [attr.aria-multiselectable]="multiselectable()"
-        [attr.tabindex]="activeRendered() ? -1 : 0"
-        [style.height]="viewportHeight()"
-        (focus)="onViewportFocus()"
-        (blur)="parked = false"
-        (keydown)="onViewportKeydown($event)"
-      >
-        <ng-template
-          cdkVirtualFor
-          let-item
-          [cdkVirtualForOf]="visible()"
-          [cdkVirtualForTrackBy]="trackRow"
+    <ng-template #body>
+      @if (showViewport()) {
+        <cdk-virtual-scroll-viewport
+          #viewport
+          class="star-tree__viewport"
+          role="tree"
+          [itemSize]="virtualItemSize()"
+          [attr.aria-label]="ariaLabel()"
+          [attr.aria-labelledby]="labelledBy()"
+          [attr.aria-describedby]="moveHintId()"
+          [attr.aria-multiselectable]="multiselectable()"
+          [attr.tabindex]="activeRendered() ? -1 : 0"
+          [style.height]="viewportHeight()"
+          (focus)="onViewportFocus()"
+          (blur)="parked = false"
+          (keydown)="onViewportKeydown($event)"
         >
-          <ng-container [ngTemplateOutlet]="row" [ngTemplateOutletContext]="{ $implicit: item }" />
-        </ng-template>
-      </cdk-virtual-scroll-viewport>
+          <ng-template
+            cdkVirtualFor
+            let-item
+            [cdkVirtualForOf]="visible()"
+            [cdkVirtualForTrackBy]="trackRow"
+          >
+            <ng-container
+              [ngTemplateOutlet]="row"
+              [ngTemplateOutletContext]="{ $implicit: item }"
+            />
+          </ng-template>
+        </cdk-virtual-scroll-viewport>
+      } @else {
+        <ul
+          #tree
+          class="star-tree__list"
+          role="tree"
+          [attr.aria-label]="ariaLabel()"
+          [attr.aria-labelledby]="labelledBy()"
+          [attr.aria-describedby]="moveHintId()"
+          [attr.aria-multiselectable]="multiselectable()"
+          [style.max-height]="scrollHeight()"
+        >
+          @for (item of visible(); track item.node.key) {
+            <ng-container
+              [ngTemplateOutlet]="row"
+              [ngTemplateOutletContext]="{ $implicit: item }"
+            />
+          } @empty {
+            <li class="star-listbox__empty" role="presentation">
+              @if (emptySlot(); as custom) {
+                <ng-container *ngTemplateOutlet="custom; context: emptyContext()" />
+              } @else {
+                <ng-container>{{ text.emptyFilterMessage }}</ng-container>
+              }
+            </li>
+          }
+        </ul>
+      }
+    </ng-template>
+    @if (contextMenu().length) {
+      <div class="star-tree__body" [starContextMenu]="rowMenu" (menuClosed)="onMenuClosed()">
+        <ng-container *ngTemplateOutlet="body" />
+      </div>
     } @else {
-      <ul
-        #tree
-        class="star-tree__list"
-        role="tree"
-        [attr.aria-label]="ariaLabel()"
-        [attr.aria-labelledby]="labelledBy()"
-        [attr.aria-multiselectable]="multiselectable()"
-        [style.max-height]="scrollHeight()"
-      >
-        @for (item of visible(); track item.node.key) {
-          <ng-container [ngTemplateOutlet]="row" [ngTemplateOutletContext]="{ $implicit: item }" />
-        } @empty {
-          <li class="star-listbox__empty" role="presentation">
-            @if (emptySlot(); as custom) {
-              <ng-container *ngTemplateOutlet="custom; context: emptyContext()" />
-            } @else {
-              <ng-container>{{ text.emptyFilterMessage }}</ng-container>
-            }
-          </li>
-        }
-      </ul>
+      <ng-container *ngTemplateOutlet="body" />
     }
+    <star-menu
+      #rowMenu
+      [items]="contextMenu()"
+      [ariaLabel]="text.actions"
+      (itemClick)="onMenuItem($event)"
+    />
+    @if (moveHintId(); as hintId) {
+      <p class="star-sr-only" [id]="hintId">{{ text.treeMoveHint }}</p>
+    }
+    <p class="star-sr-only" aria-live="polite">{{ announcement() }}</p>
     @if (footerSlot(); as footer) {
       <ng-container *ngTemplateOutlet="footer" />
     }
@@ -235,12 +347,30 @@ export class StarTree implements FormValueControl<readonly string[]> {
   protected readonly text = inject(STAR_UI_TEXT);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly doc = inject(DOCUMENT);
+  private readonly injector = inject(Injector);
+  private readonly hintId = inject(_IdGenerator).getId('star-tree-hint-');
   readonly value = model<readonly string[]>([]);
   readonly nodes = input<readonly StarTreeNode[]>([]);
   readonly selectionMode = input<'single' | 'multiple' | 'checkbox' | null>(null);
   /** Expanded node keys. */
   readonly expanded = model<readonly string[]>([]);
   readonly filter = input(false, { transform: booleanAttribute });
+  /**
+   * How the filter keeps nodes (PrimeNG `filterMode`). `'strict'` (the default): only the
+   * matching paths show, and a match shows only its matching descendants. `'lenient'`: a match
+   * shows with all its descendants. Both show the ancestors of a match open.
+   */
+  readonly filterMode = input<TreeFilterMode>('strict');
+  /**
+   * The node fields that the filter searches (PrimeNG `filterBy`): `label` (the default), another
+   * node property, or a field of `data`. One field or a list.
+   */
+  readonly filterBy = input<string | readonly string[]>('label');
+  /**
+   * Locale of the filter compare (PrimeNG `filterLocale`), for example `de`. Case and accents never
+   * count; with a locale, the compare follows the letters of that language.
+   */
+  readonly filterLocale = input<string | null>(null);
   /** Maximum height of the tree (a CSS length, for example `16rem`). The tree scrolls inside it. */
   readonly scrollHeight = input<string | null>(null);
   /**
@@ -249,10 +379,50 @@ export class StarTree implements FormValueControl<readonly string[]> {
    * `virtualItemSize`. Without `scrollHeight` the tree renders all rows as usual.
    */
   readonly virtualScroll = input(false, { transform: booleanAttribute });
-  /** Row height in pixels in windowed rendering. Keep it equal to the real height of a row. */
+  /** Row height in pixels in windowed rendering. Keep it equal to the real row height. */
   readonly virtualItemSize = input(34, { transform: numberAttribute });
   readonly ariaLabel = input<string | null>(null);
   readonly disabled = input(false, { transform: booleanAttribute });
+  /**
+   * Checkbox mode (PrimeNG `propagateSelectionUp`): a parent is checked when all its selectable
+   * children are checked, and mixed when some are. Locked nodes (`disabled`, `selectable: false`)
+   * do not count and keep their state.
+   */
+  readonly propagateSelectionUp = input(true, { transform: booleanAttribute });
+  /**
+   * Checkbox mode (PrimeNG `propagateSelectionDown`): checking a node checks its descendants,
+   * except locked nodes and their subtrees. With both propagations on, `value` holds the leaf keys
+   * (and locked keys); parents are derived.
+   */
+  readonly propagateSelectionDown = input(true, { transform: booleanAttribute });
+  /**
+   * Lazy children: `'row'` (the default) shows a loading row under an open node whose `loading`
+   * is true; `'icon'` shows a spinner in its toggle. With `virtualScroll` the icon always shows,
+   * because every row has the same height.
+   */
+  readonly loadingMode = input<StarTreeLoadingMode>('row');
+  /**
+   * Items of the node context menu (PrimeNG `contextMenu`): right click, Shift+F10 or the context
+   * menu key on a node. Empty: no menu, and the browser menu shows.
+   */
+  readonly contextMenu = input<readonly StarMenuItem[]>([]);
+  /**
+   * The user can drag nodes (PrimeNG `draggableNodes`, Ignite drag and drop). With
+   * `droppableNodes`, Ctrl+Shift and the arrow keys move the focused node too (not while a
+   * filter query is active). A node with `draggable: false` or `disabled` stays.
+   *
+   * The pointer drag uses the native HTML drag events. Touch drag is not supported; the keyboard
+   * moves are the alternative.
+   */
+  readonly draggableNodes = input(false, { transform: booleanAttribute });
+  /** The tree accepts drops (PrimeNG `droppableNodes`). */
+  readonly droppableNodes = input(false, { transform: booleanAttribute });
+  /** Scope of the nodes dragged from this tree (PrimeNG `draggableScope`), for cross-tree drops. */
+  readonly draggableScope = input<StarTreeDragScope>(null);
+  /** Scopes this tree accepts from other trees (PrimeNG `droppableScope`). */
+  readonly droppableScope = input<StarTreeDragScope>(null);
+  /** Extra rule for drops (PrimeNG `validateDrop`); return false to refuse a drop. */
+  readonly validateDrop = input<StarTreeDropValidator | null>(null);
   /**
    * Set by `star-tree-select`. In your own markup, use the `starNode` slot.
    *
@@ -272,7 +442,22 @@ export class StarTree implements FormValueControl<readonly string[]> {
    */
   readonly toggleIconTemplate = input<TemplateRef<StarToggleIconContext> | null>(null);
   readonly touch = output<void>();
+  /** The user selected or checked a node (PrimeNG `onNodeSelect`). */
   readonly nodeSelect = output<StarTreeNode>();
+  /** The user unselected or unchecked a node (PrimeNG `onNodeUnselect`). */
+  readonly nodeUnselect = output<StarTreeNode>();
+  /** The user opened a node (PrimeNG `onNodeExpand`). For a lazy node, load its children here. */
+  readonly nodeExpand = output<StarTreeNodeEvent>();
+  /** The user closed a node (PrimeNG `onNodeCollapse`). */
+  readonly nodeCollapse = output<StarTreeNodeEvent>();
+  /** Double click on a node (PrimeNG `onNodeDoubleClick`). */
+  readonly nodeDoubleClick = output<StarTreeNodeEvent>();
+  /** Right click, Shift+F10 or the context menu key on a node (PrimeNG `onNodeContextMenuSelect`). */
+  readonly nodeContextMenu = output<StarTreeNodeEvent>();
+  /** The user chose an item of the node context menu. */
+  readonly contextMenuSelect = output<StarTreeContextMenuEvent>();
+  /** A node was dropped, by pointer or keyboard (PrimeNG `onNodeDrop`). Move it in `nodes`. */
+  readonly nodeDrop = output<StarTreeNodeDropEvent>();
 
   protected readonly query = signal('');
   private readonly slots = contentChildren(StarSlot, { descendants: true });
@@ -295,7 +480,26 @@ export class StarTree implements FormValueControl<readonly string[]> {
    */
   private readonly field = injectStarFieldLink(null, () => this.focus());
   protected readonly labelledBy = computed(() => starFieldLabelledBy(this.field, this.ariaLabel()));
-  private readonly filtered = computed(() => filterNodes(this.nodes(), this.query()));
+
+  private readonly filterFields = computed(() => {
+    const by = this.filterBy();
+    return typeof by === 'string' ? [by] : by;
+  });
+  /** The nodes that the filter keeps, and the ancestors of the matches (they show open). */
+  private readonly filtered = computed(() => {
+    const query = this.query();
+    if (!query.trim()) return { nodes: this.nodes(), ancestors: NO_KEYS };
+    const fields = this.filterFields();
+    const locale = this.filterLocale();
+    return filterTree(
+      this.nodes(),
+      (node) =>
+        fields.some((field) =>
+          starFilterMatch(nodeFieldText(node, field), query, 'contains', locale),
+        ),
+      this.filterMode(),
+    );
+  });
 
   private readonly index = computed(() => {
     const map = new Map<string, StarTreeNode>();
@@ -310,17 +514,23 @@ export class StarTree implements FormValueControl<readonly string[]> {
   private readonly parents = computed(() => parentsOf(this.nodes()));
   private readonly openKeys = computed(() => new Set(this.expanded()));
   private readonly selectedKeys = computed(() => new Set(this.value()));
+  /** The open keys of the rows: the expanded keys, and while filtering the ancestors of matches. */
+  private readonly shownOpen = computed(() => {
+    const ancestors = this.filtered().ancestors;
+    if (!ancestors.size) return this.openKeys();
+    return new Set([...this.openKeys(), ...ancestors]);
+  });
 
-  /** Flattened visible rows; a filter shows every matching branch open. */
+  /** Flattened visible rows; a filter shows every branch with a match open. */
   protected readonly visible = computed<VisibleNode[]>(() =>
-    flattenVisible(this.filtered(), this.openKeys(), !!this.query()),
+    flattenVisible(this.filtered().nodes, this.shownOpen()),
   );
   private readonly rowIndex = computed(() => rowIndexOf(this.visible()));
 
-  /** Check state of each node of the (filtered) tree; empty outside checkbox mode. */
+  /** Check state of each node (from the full data); empty outside checkbox mode. */
   private readonly checkMap = computed(() =>
     this.selectionMode() === 'checkbox'
-      ? checkStates(this.filtered(), this.selectedKeys(), (key) => this.isLeaf(key))
+      ? checkStates(this.nodes(), this.selectedKeys(), this.propagateSelectionUp())
       : new Map<string, boolean | 'mixed'>(),
   );
 
@@ -362,7 +572,46 @@ export class StarTree implements FormValueControl<readonly string[]> {
 
   protected readonly trackRow = (_: number, row: VisibleNode) => row.node.key;
 
+  // ---- lazy children ----
+  /** The loading state shows in the toggle (`loadingMode` icon, or windowed rendering). */
+  protected readonly loadingIcon = computed(
+    () => this.loadingMode() === 'icon' || this.showViewport(),
+  );
+
+  // ---- drag and drop ----
+  protected readonly dnd = new TreeDndController({
+    owner: this,
+    element: this.host.nativeElement,
+    draggable: () => this.draggableNodes() && !this.disabled(),
+    droppable: () => this.droppableNodes() && !this.disabled(),
+    dragScope: () => this.draggableScope(),
+    dropScope: () => this.droppableScope(),
+    validate: () => this.validateDrop(),
+    node: (key) => this.index().get(key),
+    parents: () => this.parents(),
+    drop: (event) => this.nodeDrop.emit(event),
+  });
+  /**
+   * The keyboard moves are on: the tree is draggable and droppable, and no filter query is
+   * active. A filter hides siblings, so "the previous sibling" on screen and in the data can
+   * differ; the moves wait until the query is empty.
+   */
+  private readonly keyboardMoves = computed(
+    () =>
+      this.draggableNodes() && this.droppableNodes() && !this.disabled() && !this.query().trim(),
+  );
+  /** Id of the hidden hint that names the move keys (only while the keyboard moves are on). */
+  protected readonly moveHintId = computed(() => (this.keyboardMoves() ? this.hintId : null));
+  /** Text of the polite live region (keyboard moves). */
+  protected readonly announcement = signal('');
+
+  // ---- context menu ----
+  private menuNode: StarTreeNode | null = null;
+  /** The focus return after the menu closes; cancelled when the tree is destroyed. */
+  private menuFocusTimer: ReturnType<typeof setTimeout> | undefined;
+
   constructor() {
+    inject(DestroyRef).onDestroy(() => clearTimeout(this.menuFocusTimer));
     effect((onCleanup) => {
       const viewport = this.viewport();
       if (!viewport) {
@@ -406,64 +655,221 @@ export class StarTree implements FormValueControl<readonly string[]> {
     };
   }
 
+  /** The node has children, or lazy children that are not loaded yet (`leaf: false`). */
+  protected isBranch(node: StarTreeNode): boolean {
+    return !!node.children?.length || node.leaf === false;
+  }
+
   isExpanded(node: StarTreeNode): boolean {
-    return !!this.query() || this.openKeys().has(node.key);
+    return this.shownOpen().has(node.key);
   }
 
   toggle(node: StarTreeNode, open = !this.isExpanded(node)): void {
     this.expanded.update((keys) => {
-      if (!open) return keys.filter((k) => k !== node.key);
+      if (!open) return keys.includes(node.key) ? keys.filter((k) => k !== node.key) : keys;
       return keys.includes(node.key) ? keys : [...keys, node.key];
     });
+  }
+
+  /** A user toggle: changes the expanded keys and emits `nodeExpand` or `nodeCollapse`. */
+  private userToggle(node: StarTreeNode, open: boolean, originalEvent?: Event): void {
+    const was = this.openKeys().has(node.key);
+    this.toggle(node, open);
+    if (was === open) return;
+    (open ? this.nodeExpand : this.nodeCollapse).emit({ node, originalEvent });
+  }
+
+  protected onToggleClick(node: StarTreeNode, event: MouseEvent): void {
+    this.userToggle(node, !this.isExpanded(node), event);
+  }
+
+  // ---- API ----
+
+  /** Opens every branch that has children (PrimeNG `expandAll`). Lazy nodes stay closed. */
+  expandAll(): void {
+    const all = branchKeys(this.nodes());
+    this.expanded.update((keys) => {
+      const open = new Set(keys);
+      const added = all.filter((key) => !open.has(key));
+      return added.length ? [...keys, ...added] : keys;
+    });
+  }
+
+  /** Closes every branch (PrimeNG `collapseAll`). */
+  collapseAll(): void {
+    if (this.expanded().length) this.expanded.set([]);
+  }
+
+  /** Opens all ancestors of a node, so that its row shows (Ignite `expandToNode`). */
+  expandPath(key: string): void {
+    const path = ancestorKeys(this.parents(), key);
+    if (!path.length) return;
+    this.expanded.update((keys) => {
+      const open = new Set(keys);
+      const added = path.filter((k) => !open.has(k));
+      return added.length ? [...keys, ...added] : keys;
+    });
+  }
+
+  /**
+   * Opens the ancestors of a node and scrolls its row into view (PrimeNG `scrollToVirtualIndex`,
+   * by key). The focus does not move; the row becomes the Tab stop of the tree.
+   */
+  scrollToNode(key: string): void {
+    if (!this.index().has(key)) return;
+    this.expandPath(key);
+    afterNextRender(
+      () => {
+        if (!this.rowIndex().has(key)) return;
+        this.focusKey.set(key);
+        if (this.showViewport()) {
+          this.revealRow(key);
+        } else {
+          this.rowElement(key)?.scrollIntoView?.({ block: 'nearest' });
+        }
+      },
+      { injector: this.injector },
+    );
   }
 
   protected isSelected(node: StarTreeNode): boolean {
     return this.selectedKeys().has(node.key);
   }
 
-  /** Checkbox mode: true, false or 'mixed' from the leaves below. */
+  /** Checkbox mode: true, false or 'mixed'. */
   protected checkState(node: StarTreeNode): boolean | 'mixed' {
-    const known = this.checkMap().get(node.key);
-    if (known !== undefined) return known;
-    if (!node.children?.length) return this.isSelected(node);
-    return (
-      checkStates([node], this.selectedKeys(), (key) => this.isLeaf(key)).get(node.key) ?? false
-    );
+    return this.checkMap().get(node.key) ?? this.isSelected(node);
+  }
+
+  /** The drop position shown on a row, if any. */
+  protected dropAt(key: string): StarTreeDropPosition | null {
+    const indicator = this.dnd.indicator();
+    return indicator?.key === key ? indicator.position : null;
   }
 
   select(node: StarTreeNode): void {
     const mode = this.selectionMode();
-    if (!mode || this.disabled() || node.disabled || node.selectable === false) return;
+    if (!mode || this.disabled() || isLocked(node)) return;
+    let on = true;
     if (mode === 'single') {
       this.value.set([node.key]);
     } else if (mode === 'multiple') {
-      this.value.update((keys) =>
-        keys.includes(node.key) ? keys.filter((k) => k !== node.key) : [...keys, node.key],
-      );
+      on = !this.value().includes(node.key);
+      this.value.update((keys) => (on ? [...keys, node.key] : keys.filter((k) => k !== node.key)));
     } else {
-      // Checkbox: the whole branch follows the clicked node; parents are derived.
-      const branch = subtreeKeys(node);
-      const inBranch = new Set(branch);
-      const on = this.checkState(node) !== true;
-      this.value.update((keys) => {
-        const rest = keys.filter((k) => !inBranch.has(k));
-        return on ? [...rest, ...branch.filter((key) => this.isLeaf(key))] : rest;
-      });
+      const before = this.checkState(node);
+      on = before !== true;
+      const up = this.propagateSelectionUp();
+      const down = this.propagateSelectionDown();
+      let next = toggleChecked(this.nodes(), node.key, on, this.value(), { up, down });
+      if (up && down) {
+        // Both propagations: the value holds leaves (and locked keys); parents are derived. A
+        // node whose children are all locked counts as a leaf: nothing below it can carry it.
+        const touched = new Set([...subtreeKeys(node), ...ancestorKeys(this.parents(), node.key)]);
+        next = next.filter(
+          (key) => !touched.has(key) || this.isValueLeaf(key) || this.isLockedKey(key),
+        );
+      }
+      this.value.set(next);
+      // Only a real change of the node's check state is an event.
+      if (this.checkState(node) === before) return;
     }
-    this.nodeSelect.emit(node);
+    (on ? this.nodeSelect : this.nodeUnselect).emit(node);
+  }
+
+  /** A node without children, or whose children are all locked (checkbox value form). */
+  private isValueLeaf(key: string): boolean {
+    const children = this.index().get(key)?.children ?? [];
+    return children.every((child) => isLocked(child));
+  }
+
+  private isLockedKey(key: string): boolean {
+    const node = this.index().get(key);
+    return !!node && isLocked(node);
   }
 
   protected onClick(node: StarTreeNode, event: MouseEvent): void {
     this.focusKey.set(node.key);
     (event.currentTarget as HTMLElement).focus();
     if (this.selectionMode()) this.select(node);
-    else if (node.children?.length) this.toggle(node);
+    else if (this.isBranch(node)) this.userToggle(node, !this.isExpanded(node), event);
   }
 
   protected onRowFocus(key: string): void {
     this.focusKey.set(key);
     this.pendingFocus = null;
     this.parked = false;
+  }
+
+  // ---- context menu ----
+
+  protected onContextMenu(node: StarTreeNode, event: MouseEvent): void {
+    this.focusKey.set(node.key);
+    this.nodeContextMenu.emit({ node, originalEvent: event });
+    if (this.contextMenu().length) this.menuNode = node;
+  }
+
+  protected onMenuItem(item: StarMenuItem): void {
+    const node = this.menuNode;
+    if (node) this.contextMenuSelect.emit({ node, item });
+  }
+
+  /** The menu closed: the focus goes back to the row when it has nowhere else to be. */
+  protected onMenuClosed(): void {
+    clearTimeout(this.menuFocusTimer);
+    this.menuFocusTimer = setTimeout(() => {
+      const active = this.doc.activeElement;
+      if (!active || active === this.doc.body) this.focusRow(this.focusKey());
+    });
+  }
+
+  /** Shift+F10 or the context menu key: opens the menu at the row, as a right click does. */
+  private openMenuFromKey(key: string): void {
+    const row = this.rowElement(key);
+    if (!row) return;
+    const rect = row.getBoundingClientRect();
+    row.dispatchEvent(
+      new MouseEvent('contextmenu', {
+        bubbles: true,
+        cancelable: true,
+        button: 0,
+        clientX: starIsRtl(row) ? rect.right - 16 : rect.left + 16,
+        clientY: rect.bottom,
+      }),
+    );
+  }
+
+  // ---- keyboard moves ----
+
+  /** Ctrl+Shift and an arrow: emits `nodeDrop` for the move and announces it. */
+  private moveByKey(node: StarTreeNode, direction: TreeMoveDirection): void {
+    const move = this.dnd.keyboardMove(this.nodes(), node, direction);
+    if (!move) return;
+    if (!move.allowed) {
+      this.announce(this.text.treeMoveNotAllowed(node.label));
+      return;
+    }
+    const { dropNode, position } = move.event;
+    // The node goes into the previous sibling: open it so the node stays in view. A user toggle,
+    // so a lazy node gets its nodeExpand and can load its children.
+    if (position === 'inside') this.userToggle(dropNode, true);
+    this.nodeDrop.emit(move.event);
+    const say =
+      position === 'before'
+        ? this.text.treeMovedBefore
+        : position === 'after'
+          ? this.text.treeMovedAfter
+          : this.text.treeMovedInside;
+    this.announce(say(node.label, dropNode.label));
+    // The row keeps the focus after the owner moves it (it renders again at the new place).
+    this.focusKey.set(node.key);
+    this.pendingFocus = node.key;
+  }
+
+  private announce(message: string): void {
+    // A repeated message must still be read: clear first, then set.
+    this.announcement.set('');
+    queueMicrotask(() => this.announcement.set(message));
   }
 
   /**
@@ -506,7 +912,7 @@ export class StarTree implements FormValueControl<readonly string[]> {
     const row = this.rowElement(key);
     if (!row) return; // not rendered yet: the next render calls this again
     this.pendingFocus = null;
-    row.focus({ preventScroll: this.windowed() });
+    if (this.doc.activeElement !== row) row.focus({ preventScroll: this.windowed() });
   }
 
   /**
@@ -557,11 +963,28 @@ export class StarTree implements FormValueControl<readonly string[]> {
         ? row
         : (rows[this.rowIndex().get(this.pendingFocus) ?? -1] ?? row);
     const index = this.rowIndex().get(item.node.key) ?? -1;
-    const hasChildren = !!item.node.children?.length;
+    const hasChildren = this.isBranch(item.node);
     const expanded = hasChildren && this.isExpanded(item.node);
     // Arrow right opens a branch and Arrow left closes it (WAI-ARIA tree pattern). In
     // right-to-left the arrows swap: the branch opens toward the left.
     const key = starInlineKey(event);
+    // While the moves are off, Ctrl+Shift and an arrow fall through to the navigation below.
+    if (
+      (event.ctrlKey || event.metaKey) &&
+      event.shiftKey &&
+      MOVE_KEYS[key] &&
+      this.keyboardMoves()
+    ) {
+      event.preventDefault();
+      this.moveByKey(item.node, MOVE_KEYS[key]);
+      return;
+    }
+    if ((event.shiftKey && event.key === 'F10') || event.key === 'ContextMenu') {
+      if (!this.contextMenu().length) return;
+      event.preventDefault();
+      this.openMenuFromKey(item.node.key);
+      return;
+    }
     const target = () => navigationTarget(rows, index, key, { hasChildren, expanded });
     const handled = () => event.preventDefault();
     switch (key) {
@@ -573,30 +996,30 @@ export class StarTree implements FormValueControl<readonly string[]> {
         return this.focusRow(target());
       case 'ArrowRight':
         handled();
-        if (hasChildren && !expanded) this.toggle(item.node, true);
-        else this.focusRow(target());
+        if (hasChildren && !expanded) this.userToggle(item.node, true, event);
+        // An open lazy node without children yet has no child to enter.
+        else if (item.node.children?.length || !hasChildren) this.focusRow(target());
         return;
       case 'ArrowLeft':
         handled();
-        if (expanded) this.toggle(item.node, false);
+        if (expanded) this.userToggle(item.node, false, event);
         else this.focusRow(target());
         return;
       case 'Enter':
       case ' ':
         handled();
         if (this.selectionMode()) this.select(item.node);
-        else if (hasChildren) this.toggle(item.node);
+        else if (hasChildren) this.userToggle(item.node, !expanded, event);
         return;
       case '*': {
         handled();
         const siblings = rows
-          .filter((r) => r.parentKey === item.parentKey && r.node.children?.length)
-          .map((r) => r.node.key);
-        this.expanded.update((keys) => {
-          const open = new Set(keys);
-          const added = siblings.filter((key) => !open.has(key));
-          return added.length ? [...keys, ...added] : keys;
-        });
+          .filter((r) => r.parentKey === item.parentKey && this.isBranch(r.node))
+          .map((r) => r.node);
+        const open = this.openKeys();
+        for (const sibling of siblings) {
+          if (!open.has(sibling.key)) this.userToggle(sibling, true, event);
+        }
         return;
       }
     }
@@ -625,6 +1048,9 @@ const POSITIONS: ConnectedPosition[] = [
 /**
  * Tree select (PrimeNG `p-treeselect`): a select field whose panel is an `star-tree`.
  * Value: selected node keys (one key in `single` mode).
+ *
+ * The panel tree gets the filter (`filterMode`, `filterBy`, `filterLocale`), lazy children
+ * (`leaf: false`, `nodeExpand`, `loadingMode`), checkbox propagation and the slots of the select.
  *
  * `<star-tree-select [nodes]="departments" selectionMode="checkbox" [(value)]="keys" placeholder="Department" />`
  */
@@ -657,7 +1083,14 @@ const POSITIONS: ConnectedPosition[] = [
         (keydown.arrowdown)="$event.preventDefault(); open.set(true)"
         (blur)="!open() && touch.emit()"
       >
-        @if (summary()) {
+        @if (chips(); as list) {
+          <span class="star-select__chips">
+            @for (label of list; track $index) {
+              <!-- A space between the chips keeps the visible text equal to the name. -->
+              {{ $first ? '' : ' ' }}<span class="star-chip star-chip--sm">{{ label }}</span>
+            }
+          </span>
+        } @else if (summary()) {
           <span class="star-select__value">{{ summary() }}</span>
         } @else {
           <span class="star-select__placeholder">{{
@@ -700,6 +1133,12 @@ const POSITIONS: ConnectedPosition[] = [
           [(value)]="value"
           [(expanded)]="expanded"
           [filter]="filter()"
+          [filterMode]="filterMode()"
+          [filterBy]="filterBy()"
+          [filterLocale]="filterLocale()"
+          [propagateSelectionUp]="propagateSelectionUp()"
+          [propagateSelectionDown]="propagateSelectionDown()"
+          [loadingMode]="loadingMode()"
           scrollHeight="18rem"
           [virtualScroll]="virtualScroll()"
           [virtualItemSize]="virtualItemSize()"
@@ -707,7 +1146,10 @@ const POSITIONS: ConnectedPosition[] = [
           [nodeTemplate]="nodeSlot()"
           [emptyTemplate]="emptySlot()"
           [toggleIconTemplate]="toggleIcon()"
-          (nodeSelect)="selectionMode() === 'single' && close(true)"
+          (nodeSelect)="onNodeSelect($event)"
+          (nodeUnselect)="nodeUnselect.emit($event)"
+          (nodeExpand)="nodeExpand.emit($event)"
+          (nodeCollapse)="nodeCollapse.emit($event)"
         />
         @if (footerSlot(); as footer) {
           <ng-container *ngTemplateOutlet="footer" />
@@ -737,6 +1179,24 @@ export class StarTreeSelect implements FormValueControl<readonly string[]> {
   readonly selectionMode = input<'single' | 'multiple' | 'checkbox'>('single');
   readonly expanded = model<readonly string[]>([]);
   readonly filter = input(false, { transform: booleanAttribute });
+  /** Filter mode of the panel tree (PrimeNG `filterMode`, see `star-tree`). */
+  readonly filterMode = input<TreeFilterMode>('strict');
+  /** Node fields that the filter searches (PrimeNG `filterBy`, see `star-tree`). */
+  readonly filterBy = input<string | readonly string[]>('label');
+  /** Locale of the filter compare (PrimeNG `filterLocale`). */
+  readonly filterLocale = input<string | null>(null);
+  /** Checkbox mode: parents follow their children (PrimeNG `propagateSelectionUp`). */
+  readonly propagateSelectionUp = input(true, { transform: booleanAttribute });
+  /** Checkbox mode: children follow their parent (PrimeNG `propagateSelectionDown`). */
+  readonly propagateSelectionDown = input(true, { transform: booleanAttribute });
+  /** How a lazy node shows that its children load (see `star-tree`). */
+  readonly loadingMode = input<StarTreeLoadingMode>('row');
+  /**
+   * How the trigger shows a multiple or checkbox value (PrimeNG `display`): `'comma'` (the
+   * default) joins the labels, `'chip'` shows a chip per label. Past `maxSelectedLabels` both
+   * show the count.
+   */
+  readonly display = input<'comma' | 'chip'>('comma');
   /** Windowed rendering of the panel tree (see `star-tree`). The panel is 18rem high. */
   readonly virtualScroll = input(false, { transform: booleanAttribute });
   /** Row height in pixels in windowed rendering. */
@@ -749,6 +1209,14 @@ export class StarTreeSelect implements FormValueControl<readonly string[]> {
   readonly invalid = input(false, { transform: booleanAttribute });
   readonly touched = input(false, { transform: booleanAttribute });
   readonly touch = output<void>();
+  /** The user selected a node in the panel (PrimeNG `onNodeSelect`). */
+  readonly nodeSelect = output<StarTreeNode>();
+  /** The user unselected a node in the panel (PrimeNG `onNodeUnselect`). */
+  readonly nodeUnselect = output<StarTreeNode>();
+  /** The user opened a node in the panel. For a lazy node, load its children here. */
+  readonly nodeExpand = output<StarTreeNodeEvent>();
+  /** The user closed a node in the panel. */
+  readonly nodeCollapse = output<StarTreeNodeEvent>();
 
   private readonly slots = contentChildren(StarSlot, { descendants: true });
   protected readonly headerSlot = starSlot<object>(this.slots, this, 'header');
@@ -787,7 +1255,9 @@ export class StarTreeSelect implements FormValueControl<readonly string[]> {
   protected readonly triggerName = computed(() => {
     const label = this.ariaLabel();
     if (!label) return null;
-    return `${label}: ${this.summary() || (this.placeholder() ?? this.text.selectPlaceholder)}`;
+    // Chips show the labels without commas: the name follows the visible text (WCAG 2.5.3).
+    const shown = this.chips()?.join(' ') ?? this.summary();
+    return `${label}: ${shown || (this.placeholder() ?? this.text.selectPlaceholder)}`;
   });
 
   /** Invalid after touch, or while the parent `star-field` shows an error. */
@@ -803,6 +1273,19 @@ export class StarTreeSelect implements FormValueControl<readonly string[]> {
     return label ? `${label} ${this.inputId}` : null;
   });
   protected readonly fieldDescribedBy = computed(() => starJoinIds(this.field?.describedBy()));
+
+  /** Chip labels of the trigger (`display` chip, multiple or checkbox), or null. */
+  protected readonly chips = computed(() => {
+    const keys = this.value();
+    if (this.display() !== 'chip' || this.selectionMode() === 'single') return null;
+    if (!keys.length || keys.length > this.maxSelectedLabels()) return null;
+    return keys.map((key) => this.labels().get(key) ?? key);
+  });
+
+  protected onNodeSelect(node: StarTreeNode): void {
+    this.nodeSelect.emit(node);
+    if (this.selectionMode() === 'single') this.close(true);
+  }
 
   protected close(focus = false): void {
     if (!this.open()) return;
