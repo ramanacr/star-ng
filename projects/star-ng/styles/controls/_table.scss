@@ -37,7 +37,8 @@
 .star-table--sticky thead {
   position: sticky;
   top: 0;
-  z-index: 1;
+  // Above the pinned body cells (z-index 1), which come later in the document.
+  z-index: 2;
 }
 .star-table__filters td {
   padding-block: 0.5rem;
@@ -360,23 +361,101 @@ star-select.star-table__filter {
     outline-offset: -2px;
   }
 }
-.star-table__cell--frozen {
+// Pinned columns (`pinned`, `frozen`): sticky at the inline start or end. With start pins the
+// reorder, expander and selection columns stick too; with end pins the row actions column.
+.star-table__cell--frozen,
+.star-table__cell--pinned-end,
+.star-table--pin-lead :is(.star-table__reorder, .star-table__expander, .star-table__select),
+.star-table--pin-trail .star-table__row-actions {
   position: sticky;
   z-index: 1;
   background: var(--star-surface);
 }
-th.star-table__cell--frozen,
-.star-table__filters .star-table__cell--frozen {
+.star-table--pin-lead {
+  .star-table__reorder {
+    inset-inline-start: 0;
+  }
+  .star-table__expander {
+    inset-inline-start: var(--star-table-lead-expander, 0);
+  }
+  .star-table__select {
+    inset-inline-start: var(--star-table-lead-select, 0);
+  }
+}
+.star-table--pin-trail .star-table__row-actions {
+  inset-inline-end: 0;
+}
+.star-table {
+  th,
+  .star-table__filters td,
+  tfoot td {
+    &:is(.star-table__cell--frozen, .star-table__cell--pinned-end) {
+      background: var(--star-surface-muted);
+    }
+  }
+}
+.star-table--pin-lead
+  :is(th, .star-table__filters td, tfoot td):is(
+    .star-table__reorder,
+    .star-table__expander,
+    .star-table__select
+  ),
+.star-table--pin-trail :is(th, .star-table__filters td, tfoot td).star-table__row-actions {
   background: var(--star-surface-muted);
 }
-.star-table--striped .star-table__row--alt .star-table__cell--frozen {
-  background: color-mix(in srgb, var(--star-surface-muted) 60%, var(--star-surface));
+.star-table--striped .star-table__row--alt {
+  .star-table__cell--frozen,
+  .star-table__cell--pinned-end {
+    background: color-mix(in srgb, var(--star-surface-muted) 60%, var(--star-surface));
+  }
 }
-.star-table__row:hover .star-table__cell--frozen {
-  background: var(--star-surface-muted);
+.star-table__row:hover {
+  .star-table__cell--frozen,
+  .star-table__cell--pinned-end {
+    background: var(--star-surface-muted);
+  }
 }
-.star-table__row--selected .star-table__cell--frozen {
-  background: var(--star-primary-soft);
+.star-table__row--selected {
+  .star-table__cell--frozen,
+  .star-table__cell--pinned-end {
+    background: var(--star-primary-soft);
+  }
+}
+// The separator shadow on the inner edge of the pinned area. It mirrors in right-to-left.
+.star-table__cell--frozen.star-table__cell--pin-edge {
+  box-shadow:
+    inset -1px 0 0 var(--star-border-strong),
+    6px 0 6px -6px var(--star-border-strong);
+
+  &:dir(rtl) {
+    box-shadow:
+      inset 1px 0 0 var(--star-border-strong),
+      -6px 0 6px -6px var(--star-border-strong);
+  }
+}
+.star-table__cell--pinned-end.star-table__cell--pin-edge {
+  box-shadow:
+    inset 1px 0 0 var(--star-border-strong),
+    -6px 0 6px -6px var(--star-border-strong);
+
+  &:dir(rtl) {
+    box-shadow:
+      inset -1px 0 0 var(--star-border-strong),
+      6px 0 6px -6px var(--star-border-strong);
+  }
+}
+.star-table__columns-pin {
+  display: inline-flex;
+  margin-inline-start: auto;
+
+  .star-table__toggle[aria-pressed='true'] {
+    background: var(--star-primary-soft);
+    color: var(--star-primary);
+  }
+  .star-table__toggle[aria-disabled='true'] {
+    opacity: 0.35;
+    cursor: default;
+  }
 }
 .star-table__edit {
   display: inline-flex;

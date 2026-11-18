@@ -464,8 +464,13 @@ readonly slotLoading = signal(false);`;
     {
       name: 'frozen',
       type: 'boolean',
+      description: "Same as pinned: 'start'.",
+    },
+    {
+      name: 'pinned',
+      type: "'start' | 'end' | null",
       description:
-        'Keeps the column in view when the table scrolls sideways. Frozen columns come first.',
+        'Keeps the column in view when the table scrolls sideways, at the start or the end edge. pinnedColumns overrides it at run time.',
     },
     {
       name: 'hideable',
@@ -503,6 +508,11 @@ readonly slotLoading = signal(false);`;
       name: 'moveColumn(field, targetField)',
       type: 'void',
       description: 'Moves a column to the place of another column.',
+    },
+    {
+      name: 'pinColumn(field, side)',
+      type: 'void',
+      description: "Pins a column to 'start' or 'end', or unpins it (null). Emits columnPin.",
     },
     {
       name: 'toggleExpansion(row)',

@@ -1045,6 +1045,39 @@ test.describe('table: columns', () => {
     expect((await email.boundingBox())!.x).toBeLessThan(left + 600);
   });
 
+  test('pins columns to both edges from the Columns panel', async ({ page }) => {
+    await page.setViewportSize({ width: 700, height: 900 });
+    await openPage(page, '/controls/table-columns', 'Table columns');
+    const live = example(page, 'Pin to start and end');
+    const table = live.getByRole('table', { name: 'Orders with pinned columns' });
+    await table.scrollIntoViewIfNeeded();
+    const scroll = live.locator('.star-table__scroll');
+    // The end pin touches the end edge of the scroll area before and after a sideways scroll.
+    const edge = () =>
+      scroll.evaluate((viewport) => {
+        const cell = viewport.querySelector('th[data-field="total"]')!.getBoundingClientRect();
+        const area = viewport.getBoundingClientRect();
+        return Math.abs(cell.right - (area.left + viewport.clientLeft + viewport.clientWidth)) < 2;
+      });
+    await expect.poll(edge).toBe(true);
+    await scroll.evaluate((viewport) => (viewport.scrollLeft = 200));
+    await expect.poll(edge).toBe(true);
+
+    // Pin Email to the start from the panel: it moves next to Order and sticks.
+    await live.getByRole('button', { name: 'Columns' }).click();
+    await page.getByRole('button', { name: 'Pin Email to start' }).click();
+    await expect(page.getByRole('button', { name: 'Pin Email to start' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    await expect(page.getByRole('button', { name: 'Pin Email to start' })).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(live.getByRole('status')).toContainText('email start');
+    const headers = table.locator('thead th[data-field]');
+    await expect(headers.nth(1)).toHaveAttribute('data-field', 'email');
+    await expect(headers.nth(1)).toHaveClass(/star-table__cell--frozen/);
+  });
+
   test('saves the view in the session and restores it after a reload', async ({ page }) => {
     await openPage(page, '/controls/table-columns', 'Table columns');
     const live = example(page, 'Saved view');

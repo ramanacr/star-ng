@@ -912,6 +912,16 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'table with columns pinned at both edges and the pin buttons',
+    path: 'controls/table-columns',
+    open: async (page) => {
+      const live = example(page, 'Pin to start and end');
+      await live.getByRole('button', { name: 'Columns' }).click();
+      await page.getByRole('button', { name: 'Pin Email to start' }).click();
+      await expect(live.locator('.star-table__cell--pinned-end').first()).toBeVisible();
+    },
+  },
+  {
     name: 'table with a filter select open',
     path: 'controls/table-sort-filter',
     open: async (page) => {

@@ -6979,6 +6979,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "The user can change a column width: drag the header edge, or use the arrow keys on it."
       },
       {
+        "name": "pinnableColumns",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Pin buttons in the Columns panel: \"Pin to start\", \"Pin to end\" and \"Unpin\" for each column. Pinned columns move to their side; with `reorderableColumns` they move within their side."
+      },
+      {
         "name": "multiSort",
         "type": "boolean",
         "default": "false",
@@ -7004,7 +7011,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "string | null",
         "default": "null",
         "required": false,
-        "description": "Remembers sort, filters, column order, hidden columns, column widths, page size and closed groups in the browser under this key, and restores them on the next visit."
+        "description": "Remembers sort, filters, column order, hidden columns, column widths, pins, page size and closed groups in the browser under this key, and restores them on the next visit."
       },
       {
         "name": "stateStorage",
@@ -7114,6 +7121,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Column widths in pixels by `field`, set by the user. Two-way."
       },
       {
+        "name": "pinnedColumns",
+        "type": "StarColumnPins",
+        "default": "{}",
+        "required": false,
+        "description": "Runtime pins by column `field` (`'start'`, `'end'`, or `null` to unpin a column that the column definition pins). Wins over `pinned` / `frozen`. Two-way. Ignite UI `pinned`, AG Grid `applyColumnState({ pinned })`."
+      },
+      {
         "name": "sortMeta",
         "type": "readonly StarSortState[]",
         "default": "[]",
@@ -7136,6 +7150,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ],
     "outputs": [
+      {
+        "name": "columnPin",
+        "type": "StarColumnPinEvent",
+        "default": null,
+        "required": false,
+        "description": "The user (or `pinColumn()`) pinned or unpinned a column. AG Grid `columnPinned`."
+      },
       {
         "name": "rowClick",
         "type": "T",
@@ -7330,6 +7351,23 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "The new filter value; `null` removes the filter."
       }
     ]
+  },
+  "StarTablePinCell": {
+    "kind": "directive",
+    "selector": "[starTablePin]",
+    "entry": "@star-ng/ui/table",
+    "description": "Makes a cell of a pinned column sticky: the side class, the offset and the separator shadow. Internal part of `star-table`.",
+    "inputs": [
+      {
+        "name": "starTablePin",
+        "type": "StarPinPlacement | null | undefined",
+        "default": "null",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
   },
   "StarTabs": {
     "kind": "component",
@@ -9406,6 +9444,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "stepper/linear": "<div class=\"docs-stack\">\n  <star-stepper #wizard [(value)]=\"wizardStep\" linear ariaLabel=\"Account setup\">\n    <star-step value=\"name\" label=\"Name\" [completed]=\"name().trim().length > 0\">\n      <star-field label=\"Your name\">\n        <input starInput [value]=\"name()\" (input)=\"name.set($any($event.target).value)\" />\n      </star-field>\n    </star-step>\n    <star-step value=\"confirm\" label=\"Confirm\">\n      Welcome, {{ name() }}. Your account is ready.\n    </star-step>\n  </star-stepper>\n  <div class=\"docs-row\">\n    <star-button\n      variant=\"secondary\"\n      [disabled]=\"wizard.isFirst()\"\n      (pressed)=\"wizard.previous()\"\n    >\n      Back\n    </star-button>\n    <star-button [disabled]=\"wizard.isLast() || !name().trim()\" (pressed)=\"wizard.next()\">\n      Next\n    </star-button>\n  </div>\n</div>",
   "table-columns/frozen": "<docs-fill>\n  <star-table\n    [value]=\"orders.slice(0, 6)\"\n    [columns]=\"wideColumns\"\n    dataKey=\"id\"\n    ariaLabel=\"Wide orders\"\n  />\n</docs-fill>",
   "table-columns/panel": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with column panel\"\n      columnToggle\n      reorderableColumns\n      [(columnOrder)]=\"order\"\n      [(hiddenColumns)]=\"hidden\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">\n    Order: {{ order().join(', ') || 'default' }}. Hidden:\n    {{ hidden().join(', ') || 'none' }}.\n  </p>\n</div>",
+  "table-columns/pinned": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders.slice(0, 6)\"\n      [columns]=\"pinnedColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with pinned columns\"\n      selectionMode=\"multiple\"\n      pinnableColumns\n      reorderableColumns\n      [(pinnedColumns)]=\"pins\"\n      (columnPin)=\"lastPin.set($event.field + ' ' + ($event.side ?? 'unpinned'))\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">\n    Pins: {{ pinText() }}. Last change: {{ lastPin() || 'none' }}.\n  </p>\n</div>",
   "table-columns/resize": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with resizable columns\"\n      resizableColumns\n      [(columnWidths)]=\"widths\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Widths: {{ widthText() }}</p>\n</div>",
   "table-columns/state": "<div class=\"docs-stack\">\n  <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"saved.clearState()\">\n    Clear saved view\n  </star-button>\n  <docs-fill>\n    <star-table\n      #saved\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with saved view\"\n      columnToggle\n      resizableColumns\n      stateKey=\"docs-table-saved-view\"\n      stateStorage=\"session\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n</div>",
   "table-edit/add-delete": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button\n      size=\"sm\"\n      leadingIcon=\"ph-bold ph-plus\"\n      (pressed)=\"addTable.addRow(newOrder(), 'top')\"\n    >\n      Add order\n    </star-button>\n  </div>\n  <docs-fill>\n    <star-table\n      #addTable\n      [value]=\"list()\"\n      [columns]=\"addColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders to add and delete\"\n      editMode=\"row\"\n      (rowAdd)=\"addOrder($event)\"\n      (rowDelete)=\"deleteOrder($event)\"\n      (rowEditSave)=\"updateOrder($event)\"\n    >\n      <ng-template starCell=\"remove\" let-row [starCellOf]=\"list()\">\n        <button\n          type=\"button\"\n          class=\"star-table__toggle\"\n          [attr.aria-label]=\"'Delete ' + row.id\"\n          (click)=\"addTable.deleteRow(row)\"\n        >\n          <i class=\"ph-bold ph-trash\" aria-hidden=\"true\"></i>\n        </button>\n      </ng-template>\n    </star-table>\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">{{ addMessage() }}</p>\n</div>",

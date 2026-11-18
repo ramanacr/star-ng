@@ -80,6 +80,21 @@ import {
 } from './table-filter';
 import { StarTableFilterMenu } from './table-filter-menu';
 import {
+  measureHeaderCells,
+  NO_WIDTHS,
+  orderColumns,
+  PIN_ACTIONS,
+  pinPlacements,
+  pinSideOf,
+  sameHeaderWidths,
+  StarColumnPinEvent,
+  StarColumnPins,
+  StarHeaderWidths,
+  StarPinPlacement,
+  StarPinSide,
+  StarTablePinCell,
+} from './table-pinning';
+import {
   StarHeaderCheckboxToggleEvent,
   StarRowSelectEvent,
   StarTableSelection,
@@ -151,11 +166,15 @@ export interface StarColumn<T> extends StarColumnRules<T> {
    * display text is not what the user sees. A number stays a number in Excel.
    */
   readonly exportValue?: (row: T) => string | number | null | undefined;
-  /**
-   * Keeps the column in view when the table scrolls sideways. Frozen columns come first.
-   * The table measures the frozen columns to position the next one, so `width` is optional.
-   */
+  /** Alias of `pinned: 'start'` (PrimeNG `frozen`). */
   readonly frozen?: boolean;
+  /**
+   * Keeps the column in view when the table scrolls sideways, at the inline start (first columns)
+   * or the inline end (last columns). The table measures the pinned columns to place the next one,
+   * so `width` is optional. The user can change it (`pinnableColumns`, `pinnedColumns`). PrimeNG
+   * `alignFrozen`, Ignite UI `pinned`, AG Grid `pinned: 'left' | 'right'`.
+   */
+  readonly pinned?: StarPinSide | null;
   /** `false`: the user cannot hide the column in the Columns panel. */
   readonly hideable?: boolean;
   /**
@@ -303,6 +322,7 @@ interface StarTableState {
   columnOrder?: readonly string[];
   hiddenColumns?: readonly string[];
   columnWidths?: Readonly<Record<string, number>>;
+  pinnedColumns?: StarColumnPins;
   rows?: number;
   collapsedGroups?: readonly string[];
 }
@@ -388,6 +408,7 @@ export class StarRowExpansionTemplate<T = unknown> {
     StarPopover,
     StarSkeleton,
     StarTableFilterMenu,
+    StarTablePinCell,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
@@ -399,6 +420,12 @@ export class StarRowExpansionTemplate<T = unknown> {
     '[class.star-table--variable]': 'variableHeights()',
     '[class.star-table--stack]': "responsiveLayout() === 'stack'",
     '[style.--star-table-row-height.px]': 'virtualScroll() ? virtualRowHeight() : null',
+    // Pinned columns: the selection, expander and reorder columns stick at the start too, and
+    // the row actions column at the end.
+    '[class.star-table--pin-lead]': 'pinnedSides().start',
+    '[class.star-table--pin-trail]': 'pinnedSides().end',
+    '[style.--star-table-lead-expander.px]': 'headerWidths().lead["expander"]',
+    '[style.--star-table-lead-select.px]': 'headerWidths().lead["select"]',
     // Virtual scroll: the focused row stays rendered, and Tab reaches rows out of the window.
     '(focusin)': 'onBodyFocusIn($event)',
     '(focusout)': 'onBodyFocusOut($event)',
@@ -406,7 +433,7 @@ export class StarRowExpansionTemplate<T = unknown> {
   },
   template: `
     <ng-content select="[starTableCaption]" />
-    @if (columnToggle()) {
+    @if (columnToggle() || pinnableColumns()) {
       <div class="star-table__tools">
         <star-button
           size="sm"
@@ -418,26 +445,43 @@ export class StarRowExpansionTemplate<T = unknown> {
         </star-button>
         <star-popover #columnsPanel [ariaLabel]="text.columns">
           <ul class="star-table__columns">
-            @for (
-              column of orderedColumns();
-              track column.field;
-              let first = $first;
-              let last = $last
-            ) {
+            @for (column of orderedColumns(); track column.field) {
               <li>
-                <star-checkbox
-                  [checked]="!isHidden(column)"
-                  [disabled]="!canHide(column)"
-                  (checkedChange)="setColumnVisible(column, $event)"
-                >
-                  {{ column.header }}
-                </star-checkbox>
+                @if (columnToggle()) {
+                  <star-checkbox
+                    [checked]="!isHidden(column)"
+                    [disabled]="!canHide(column)"
+                    (checkedChange)="setColumnVisible(column, $event)"
+                  >
+                    {{ column.header }}
+                  </star-checkbox>
+                } @else {
+                  <span>{{ column.header }}</span>
+                }
+                @if (pinnableColumns()) {
+                  @let side = sideOf(column);
+                  <span class="star-table__columns-pin">
+                    @for (action of pinActions; track action.side) {
+                      <button
+                        type="button"
+                        class="star-table__toggle"
+                        [attr.data-pin]="moveKey(column, action.key)"
+                        [attr.aria-label]="text[action.label](column.header)"
+                        [attr.aria-pressed]="action.side ? side === action.side : null"
+                        [attr.aria-disabled]="!action.side && !side ? 'true' : null"
+                        (click)="pinFromPanel(column, action.side)"
+                      >
+                        <i [class]="action.icon" aria-hidden="true"></i>
+                      </button>
+                    }
+                  </span>
+                }
                 @if (reorderableColumns()) {
                   <span class="star-table__columns-move">
                     <button
                       type="button"
                       class="star-table__toggle"
-                      [disabled]="first"
+                      [disabled]="!canMoveBy(column, -1)"
                       [attr.data-move]="moveKey(column, -1)"
                       [attr.aria-label]="text.moveColumnEarlier(column.header)"
                       (click)="moveColumnBy(column, -1)"
@@ -447,7 +491,7 @@ export class StarRowExpansionTemplate<T = unknown> {
                     <button
                       type="button"
                       class="star-table__toggle"
-                      [disabled]="last"
+                      [disabled]="!canMoveBy(column, 1)"
                       [attr.data-move]="moveKey(column, 1)"
                       [attr.aria-label]="text.moveColumnLater(column.header)"
                       (click)="moveColumnBy(column, 1)"
@@ -479,17 +523,17 @@ export class StarRowExpansionTemplate<T = unknown> {
         <thead>
           <tr [attr.aria-rowindex]="virtualScroll() ? 1 : null">
             @if (reorderableRows()) {
-              <th class="star-table__reorder" scope="col">
+              <th class="star-table__reorder" scope="col" data-lead="reorder">
                 <span class="star-sr-only">{{ text.reorderRows }}</span>
               </th>
             }
             @if (expandable()) {
-              <th class="star-table__expander" scope="col">
+              <th class="star-table__expander" scope="col" data-lead="expander">
                 <span class="star-sr-only">{{ text.rowDetails }}</span>
               </th>
             }
             @if (selectionMode() === 'multiple') {
-              <th class="star-table__select" scope="col">
+              <th class="star-table__select" scope="col" data-lead="select">
                 <star-checkbox
                   #allBox
                   [checked]="headerState() === true"
@@ -503,7 +547,7 @@ export class StarRowExpansionTemplate<T = unknown> {
                 />
               </th>
             } @else if (selectionMode() === 'single') {
-              <th class="star-table__select" scope="col">
+              <th class="star-table__select" scope="col" data-lead="select">
                 <span class="star-sr-only">{{ text.selectRow }}</span>
               </th>
             }
@@ -513,10 +557,9 @@ export class StarRowExpansionTemplate<T = unknown> {
                 [style.width]="widthOf(column)"
                 [style.min-width]="resizedWidth(column)"
                 [style.max-width]="resizedWidth(column)"
-                [style.inset-inline-start]="frozenOffset(column)"
+                [starTablePin]="pinOf(column)"
                 [attr.data-field]="column.field"
                 [class]="'star-table__th star-table__cell--' + (column.align ?? 'start')"
-                [class.star-table__cell--frozen]="column.frozen"
                 [class.star-table__th--drop]="dropField() === column.field"
                 [attr.aria-sort]="ariaSort(column)"
                 [attr.draggable]="reorderableColumns() ? 'true' : null"
@@ -593,8 +636,7 @@ export class StarRowExpansionTemplate<T = unknown> {
               }
               @for (column of visibleColumns(); track column.field) {
                 <td
-                  [class.star-table__cell--frozen]="column.frozen"
-                  [style.inset-inline-start]="frozenOffset(column)"
+                  [starTablePin]="pinOf(column)"
                   [attr.data-label]="column.filter ? column.header : null"
                 >
                   @if (column.filter === 'select') {
@@ -802,9 +844,8 @@ export class StarRowExpansionTemplate<T = unknown> {
                   @for (column of visibleColumns(); track column.field; let firstCell = $first) {
                     <td
                       [class]="'star-table__cell--' + (column.align ?? 'start')"
-                      [class.star-table__cell--frozen]="column.frozen"
+                      [starTablePin]="pinOf(column)"
                       [class.star-table__cell--changed]="isChanged(row, column)"
-                      [style.inset-inline-start]="frozenOffset(column)"
                       [attr.data-label]="column.header"
                     >
                       @if (firstCell && isDeleted(row)) {
@@ -1024,6 +1065,7 @@ export class StarRowExpansionTemplate<T = unknown> {
               @for (column of visibleColumns(); track column.field) {
                 <td
                   [class]="'star-table__cell--' + (column.align ?? 'start')"
+                  [starTablePin]="pinOf(column)"
                   [attr.data-label]="footerText(column) ? column.header : null"
                 >
                   {{ footerText(column) }}
@@ -1241,6 +1283,19 @@ export class StarTable<T> {
   readonly hiddenColumns = model<readonly string[]>([]);
   /** Column widths in pixels by `field`, set by the user. Two-way. */
   readonly columnWidths = model<Readonly<Record<string, number>>>({});
+  /**
+   * Pin buttons in the Columns panel: "Pin to start", "Pin to end" and "Unpin" for each column.
+   * Pinned columns move to their side; with `reorderableColumns` they move within their side.
+   */
+  readonly pinnableColumns = input(false, { transform: booleanAttribute });
+  /**
+   * Runtime pins by column `field` (`'start'`, `'end'`, or `null` to unpin a column that the
+   * column definition pins). Wins over `pinned` / `frozen`. Two-way. Ignite UI `pinned`,
+   * AG Grid `applyColumnState({ pinned })`.
+   */
+  readonly pinnedColumns = model<StarColumnPins>({});
+  /** The user (or `pinColumn()`) pinned or unpinned a column. AG Grid `columnPinned`. */
+  readonly columnPin = output<StarColumnPinEvent>();
 
   /**
    * Sort by more than one column: Shift + click (or Shift + Enter) on a header adds it as the
@@ -1263,7 +1318,7 @@ export class StarTable<T> {
    */
   readonly reorderableRows = input(false, { transform: booleanAttribute });
   /**
-   * Remembers sort, filters, column order, hidden columns, column widths, page size and
+   * Remembers sort, filters, column order, hidden columns, column widths, pins, page size and
    * closed groups in the browser under this key, and restores them on the next visit.
    */
   readonly stateKey = input<string | null>(null);
@@ -1378,17 +1433,10 @@ export class StarTable<T> {
   protected readonly radioName = `star-table-${Math.random().toString(36).slice(2)}`;
   protected readonly clickable = computed(() => this.selectionMode() === 'single');
 
-  /** All columns in display order: frozen columns first, then `columnOrder`. */
+  /** All columns in display order: start pins, then `columnOrder`, then end pins. */
   protected readonly orderedColumns = computed(() => {
-    const order = this.columnOrder();
-    const rank = (column: StarColumn<T>, index: number) => {
-      const position = order.indexOf(column.field);
-      return (column.frozen ? 0 : 1e6) + (position < 0 ? order.length + index : position);
-    };
-    return this.columns()
-      .map((column, index) => ({ column, rank: rank(column, index) }))
-      .sort((a, b) => a.rank - b.rank)
-      .map(({ column }) => column);
+    const pins = this.pinnedColumns();
+    return orderColumns(this.columns(), this.columnOrder(), (column) => pinSideOf(column, pins));
   });
 
   protected readonly visibleColumns = computed(() => {
@@ -1999,7 +2047,7 @@ export class StarTable<T> {
         firstFilter = false;
       });
     });
-    afterRenderEffect({ read: () => this.measureFrozen() });
+    afterRenderEffect({ read: () => this.measureHeader() });
     // Rows of different heights: measure the rendered rows after each render of the body.
     afterRenderEffect(() => {
       this.bodyEntries();
@@ -2053,6 +2101,7 @@ export class StarTable<T> {
         columnOrder: this.columnOrder(),
         hiddenColumns: this.hiddenColumns(),
         columnWidths: this.columnWidths(),
+        pinnedColumns: this.pinnedColumns(),
         rows: this.rows(),
         collapsedGroups: this.collapsedGroups(),
       };
@@ -2091,6 +2140,9 @@ export class StarTable<T> {
     if (Array.isArray(state.hiddenColumns)) this.hiddenColumns.set(state.hiddenColumns);
     if (state.columnWidths && typeof state.columnWidths === 'object') {
       this.columnWidths.set(state.columnWidths);
+    }
+    if (state.pinnedColumns && typeof state.pinnedColumns === 'object') {
+      this.pinnedColumns.set(state.pinnedColumns);
     }
     if (typeof state.rows === 'number' && state.rows > 0) this.rows.set(state.rows);
     if (Array.isArray(state.collapsedGroups)) this.collapsedGroups.set(state.collapsedGroups);
@@ -2190,42 +2242,65 @@ export class StarTable<T> {
     );
   }
 
-  /** Moves a column to the place of another column. */
+  /**
+   * Moves a column to the place of another column. A pinned column moves within its side only:
+   * a move to a column of another side does nothing.
+   */
   moveColumn(field: string, targetField: string): void {
+    if (!this.canMoveTo(field, targetField)) return;
     const fields = this.orderedColumns().map((column) => column.field);
     const from = fields.indexOf(field);
     const to = fields.indexOf(targetField);
-    if (from < 0 || to < 0 || from === to) return;
     fields.splice(to, 0, ...fields.splice(from, 1));
     this.columnOrder.set(fields);
   }
 
+  /** A column can take the place of another column: both exist, and they have the same pin side. */
+  private canMoveTo(field: string, targetField: string): boolean {
+    const columns = this.orderedColumns();
+    const from = columns.find((column) => column.field === field);
+    const to = columns.find((column) => column.field === targetField);
+    return !!from && !!to && from !== to && this.sideOf(from) === this.sideOf(to);
+  }
+
+  /** The neighbour column in the panel list, when the column can take its place. */
+  protected canMoveBy(column: StarColumn<T>, delta: 1 | -1): boolean {
+    const columns = this.orderedColumns();
+    const target = columns[columns.indexOf(column) + delta];
+    return !!target && this.canMoveTo(column.field, target.field);
+  }
+
   protected moveColumnBy(column: StarColumn<T>, delta: 1 | -1): void {
-    const fields = this.orderedColumns().map((item) => item.field);
-    const target = fields[fields.indexOf(column.field) + delta];
-    if (!target) return;
-    this.moveColumn(column.field, target);
+    const columns = this.orderedColumns();
+    const target = columns[columns.indexOf(column) + delta];
+    if (!target || !this.canMoveBy(column, delta)) return;
+    this.moveColumn(column.field, target.field);
     // The list in the Columns panel moves the button in the DOM, which drops the focus (and a
     // button at the end of the list becomes disabled). Keep the focus in the panel: on the same
     // button, or on the one for the other direction when that one is now disabled.
-    this.focusMoveButton(column, delta);
+    this.focusPanel([this.moveKey(column, delta), this.moveKey(column, delta === 1 ? -1 : 1)]);
   }
 
-  /** Identifies a move button of the Columns panel, for `focusMoveButton`. */
-  protected moveKey(column: StarColumn<T>, delta: 1 | -1): string {
-    return `${this.radioName}|${column.field}|${delta}`;
+  /** Identifies a move or pin button of the Columns panel, for `focusPanel`. */
+  protected moveKey(column: StarColumn<T>, action: 1 | -1 | string): string {
+    return `${this.radioName}|${column.field}|${action}`;
   }
 
-  private focusMoveButton(column: StarColumn<T>, delta: 1 | -1): void {
+  /** Focuses the first enabled panel button of `keys` after the next render. */
+  private focusPanel(keys: readonly string[]): void {
     afterNextRender(
       () => {
         // The panel is in the overlay container, not inside the table element.
-        const button = (step: 1 | -1) =>
-          this.document.querySelector<HTMLButtonElement>(
-            `[data-move="${CSS.escape(this.moveKey(column, step))}"]`,
+        for (const key of keys) {
+          const escaped = CSS.escape(key);
+          const button = this.document.querySelector<HTMLButtonElement>(
+            `[data-move="${escaped}"], [data-pin="${escaped}"]`,
           );
-        const same = button(delta);
-        (same && !same.disabled ? same : button(delta === 1 ? -1 : 1))?.focus();
+          if (button && !button.disabled) {
+            button.focus();
+            return;
+          }
+        }
       },
       { injector: this.injector },
     );
@@ -2243,7 +2318,7 @@ export class StarTable<T> {
 
   protected onDragOver(column: StarColumn<T>, event: DragEvent): void {
     const field = this.dragField();
-    if (!field || field === column.field) return;
+    if (!field || !this.canMoveTo(field, column.field)) return;
     event.preventDefault();
     this.dropField.set(column.field);
   }
@@ -2270,29 +2345,26 @@ export class StarTable<T> {
     return width ? `${width}px` : null;
   }
 
-  /** Rendered width in pixels of each frozen header cell, by column `field`. */
-  private readonly frozenWidths = signal<Readonly<Record<string, number>>>({});
-  /** Rendered width in pixels of each header cell, by column `field` (resizable tables only). */
-  private readonly headerWidths = signal<Readonly<Record<string, number>>>({});
+  /** Rendered widths of the header cells (pinned or resizable tables only). */
+  protected readonly headerWidths = signal<StarHeaderWidths>(NO_WIDTHS);
   /** The scroll area has content outside its box, so it must take the focus to scroll by key. */
   protected readonly scrollable = signal(false);
   protected readonly minColumnWidth = MIN_COLUMN_WIDTH;
 
   /** `aria-valuenow` of a resize handle: the width of the column in pixels. */
   protected resizeNow(column: StarColumn<T>): number | null {
-    const width = this.columnWidths()[column.field] ?? this.headerWidths()[column.field];
+    const width = this.columnWidths()[column.field] ?? this.headerWidths().columns[column.field];
     return width === undefined ? null : Math.round(width);
   }
 
   protected resizeMax(column: StarColumn<T>): number {
     return Math.max(MAX_COLUMN_WIDTH_HINT, this.resizeNow(column) ?? 0);
   }
-  /** Counts up when the table element changes size, so the frozen columns are measured again. */
+  /** Counts up when the table element changes size, so the pinned columns are measured again. */
   private readonly resized = signal(0);
 
-  /** Measures the frozen header cells after a render that can change their width. */
-  private measureFrozen(): void {
-    const frozen = this.visibleColumns().filter((column) => column.frozen);
+  /** Measures the header cells after a render that can change their width. */
+  private measureHeader(): void {
     // Read what can change a width, so the effect runs again when it does.
     this.columnWidths();
     this.value();
@@ -2305,51 +2377,60 @@ export class StarTable<T> {
           scroller.scrollHeight > scroller.clientHeight + 1,
       );
     }
-    const resizable = this.resizableColumns();
-    if (!frozen.length && !resizable) return;
-    const widths: Record<string, number> = {};
-    const all: Record<string, number> = {};
-    for (const cell of this.host.nativeElement.querySelectorAll<HTMLElement>(
-      'thead th[data-field]',
-    )) {
-      const field = cell.dataset['field'];
-      if (!field) continue;
-      const width = cell.getBoundingClientRect().width;
-      all[field] = width;
-      if (frozen.some((column) => column.field === field)) widths[field] = width;
-    }
-    const sameWidths = (
-      next: Readonly<Record<string, number>>,
-      current: Readonly<Record<string, number>>,
-    ) =>
-      Object.keys(next).length === Object.keys(current).length &&
-      Object.entries(next).every(
-        ([field, width]) => Math.abs((current[field] ?? -1) - width) < 0.5,
-      );
-    if (!sameWidths(widths, untracked(this.frozenWidths))) this.frozenWidths.set(widths);
-    if (resizable && !sameWidths(all, untracked(this.headerWidths))) this.headerWidths.set(all);
+    const sides = this.pinnedSides();
+    if (!sides.start && !sides.end && !this.resizableColumns()) return;
+    const next = measureHeaderCells(this.host.nativeElement);
+    if (!sameHeaderWidths(next, untracked(this.headerWidths))) this.headerWidths.set(next);
   }
 
+  /** Pin side of a column. */
+  protected sideOf(column: StarColumn<T>): StarPinSide | null {
+    return pinSideOf(column, this.pinnedColumns());
+  }
+
+  /** The visible columns have start pins, end pins. */
+  protected readonly pinnedSides = computed(() => {
+    const columns = this.visibleColumns();
+    return {
+      start: columns.some((column) => this.sideOf(column) === 'start'),
+      end: columns.some((column) => this.sideOf(column) === 'end'),
+    };
+  });
+
+  /** Sticky placement of each pinned visible column, by field. */
+  private readonly pinPlacements = computed(() => {
+    const widths = this.headerWidths();
+    return pinPlacements(
+      this.visibleColumns(),
+      (column) => this.sideOf(column),
+      widths.columns,
+      (column) => this.widthOf(column),
+      widths,
+    );
+  });
+
+  protected pinOf(column: StarColumn<T>): StarPinPlacement | null {
+    return this.pinPlacements().get(column.field) ?? null;
+  }
+
+  protected readonly pinActions = PIN_ACTIONS;
+
   /**
-   * Offset of a frozen column: the widths of the frozen columns before it. Uses the measured
-   * widths; before the first measure (and where layout is not available) the declared widths.
+   * Pins a column to the inline start or end, or unpins it (`null`), and emits `columnPin`.
+   * Ignite UI `pinColumn` / `unpinColumn`, AG Grid `setColumnsPinned`.
    */
-  protected frozenOffset(column: StarColumn<T>): string | null {
-    if (!column.frozen) return null;
-    const measured = this.frozenWidths();
-    const before: string[] = [];
-    let pixels = 0;
-    let allMeasured = true;
-    for (const item of this.visibleColumns()) {
-      if (item === column) break;
-      if (!item.frozen) continue;
-      before.push(this.widthOf(item) ?? '0px');
-      const width = measured[item.field];
-      if (width) pixels += width;
-      else allMeasured = false;
-    }
-    if (!before.length) return '0px';
-    return allMeasured ? `${Math.round(pixels * 100) / 100}px` : `calc(${before.join(' + ')})`;
+  pinColumn(field: string, side: StarPinSide | null): void {
+    const column = this.columns().find((item) => item.field === field);
+    if (!column || this.sideOf(column) === side) return;
+    this.pinnedColumns.update((pins) => ({ ...pins, [field]: side }));
+    this.columnPin.emit({ field, side });
+  }
+
+  /** A pin button of the Columns panel. The list moves the item: keep the focus on the button. */
+  protected pinFromPanel(column: StarColumn<T>, side: StarPinSide | null): void {
+    if (side === null && !this.sideOf(column)) return;
+    this.pinColumn(column.field, side);
+    this.focusPanel([this.moveKey(column, side ?? 'unpin')]);
   }
 
   private setWidth(column: StarColumn<T>, width: number): void {

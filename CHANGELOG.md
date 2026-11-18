@@ -56,6 +56,8 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - `StarFilterService` (`@star-ng/ui/core`): `register(name, fn, label)` adds a custom match mode for the table filters (PrimeNG `FilterService.register`).
 - Table: filter menu (`filterDisplay="menu"`, PrimeNG `p-columnFilter` menu): a filter button in each header cell ("Filter Status, active", `aria-haspopup="dialog"`, `aria-expanded`) opens a labelled dialog with a focus trap, the match mode, the value field(s) of the filter type, "Match all" / "Match any", "Add rule" (`filterMaxRules`), Clear and Apply (`showApplyButton`; without it every change applies at once).
 - `STAR_UI_TEXT` entries for the filter menu and the match mode names, with German and Spanish texts.
+- Table: column pinning at both edges (PrimeNG `alignFrozen`, Ignite UI column pinning, AG Grid `pinned: 'left' | 'right'`). Column `pinned: 'start' | 'end'` (`frozen: true` stays as an alias of `'start'`), two-way `pinnedColumns` (field to side, `null` unpins), `pinnableColumns` (Pin to start, Pin to end and Unpin buttons in the Columns panel), `pinColumn(field, side)` and the `columnPin` output. End pins stick to the inline end; a shadow marks the inner edge of each pinned area and mirrors in right-to-left. With start pins the selection, expander and reorder columns stick too; with end pins the row actions column. Pinned columns move within their side only. `stateKey` saves the pins.
+- UI texts `pinColumnStart`, `pinColumnEnd` and `unpinColumn` (English, German, Spanish).
 - Date and time pickers: seconds and steps. `showSeconds`, `stepHour` and `stepSecond` (next to `stepMinute`) on `star-time-picker` and on `star-date-picker` / `star-date-range-picker` with `showTime`; the time panel gets a second column, and the text and the value include the seconds (PrimeNG `showSeconds`, `stepHour`, `stepSecond`).
 - UI text `second` (English, German, Spanish).
 - Date pickers: `displayFormat` (text without the focus) and `inputFormat` (text while editing, read in the order of that format, with the locale's month names) next to the shared `dateFormat` (Ignite UI `displayFormat` / `inputFormat`); `parseDate` takes an optional format.
@@ -83,6 +85,7 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 
 ### Changed
 
+- Table: the sticky header (`stickyHeader`) has `z-index: 2`, so pinned body cells scroll under it.
 - Table: the selection check boxes and radios now name their row ("Select row ORD-1001", from the first visible column or `rowLabel`), and the header check box of a paginated table with `selectionPageOnly` is named "Select all rows on this page". Tests that match the old name "Select row" exactly must change.
 - Table: `StarFilterValue` also includes `StarFilterConstraint`. Code that narrows a filter value with `typeof value === 'object'` or `Array.isArray` must also handle the rule object (it has `operator` and `rules`).
 - Tree table: the component moved to its own file `data-display/tree-table.ts`; the import path `@star-ng/ui/data-display` does not change.
