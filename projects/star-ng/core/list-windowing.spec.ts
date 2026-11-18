@@ -201,19 +201,34 @@ describe('lazy loading helpers', () => {
     expect(starListLazyRange(layout, { start: 4, end: 9 }, (o) => o === undefined)).toBeNull();
   });
 
-  it('asks once per range, and again for a new filter from index 0', () => {
+  it('asks only for rows not asked for before, and again for a new filter from index 0', () => {
     const requests = new StarLazyRequests();
     expect(requests.next(null, '', 20)).toEqual({ first: 0, last: 19, filter: '' });
     expect(requests.next(null, '', 20)).toBeNull();
-    expect(requests.next({ first: 10, last: 19, missing: true }, '', 20)).toEqual({
-      first: 10,
-      last: 19,
+    // Rows 0-19 were asked for: a window that is still loading asks for nothing again.
+    expect(requests.next({ first: 10, last: 19, missing: true }, '', 20)).toBeNull();
+    // Smooth scrolling: each step asks only for the new rows.
+    expect(requests.next({ first: 11, last: 20, missing: true }, '', 20)).toEqual({
+      first: 20,
+      last: 20,
       filter: '',
     });
-    expect(requests.next({ first: 10, last: 19, missing: true }, '', 20)).toBeNull();
+    expect(requests.next({ first: 12, last: 21, missing: true }, '', 20)).toEqual({
+      first: 21,
+      last: 21,
+      filter: '',
+    });
+    expect(requests.next({ first: 15, last: 21, missing: true }, '', 20)).toBeNull();
+    expect(requests.next({ first: 30, last: 39, missing: false }, '', 20)).toBeNull();
     expect(requests.next({ first: 10, last: 19, missing: false }, 'ber', 20)).toEqual({
       first: 0,
       last: 9,
+      filter: 'ber',
+    });
+    // The new filter forgot the old ranges.
+    expect(requests.next({ first: 15, last: 24, missing: true }, 'ber', 20)).toEqual({
+      first: 15,
+      last: 24,
       filter: 'ber',
     });
   });

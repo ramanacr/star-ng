@@ -3769,7 +3769,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "StarListLazyLoadEvent",
         "default": null,
         "required": false,
-        "description": "With `lazy`: the options from `first` to `last` are needed for the filter text `filter`. PrimeNG `onLazyLoad`."
+        "description": "With `lazy`: the options from `first` to `last` are needed for the filter text `filter`. PrimeNG `onLazyLoad`. Each range is asked for once per filter text; treat the event as idempotent."
       },
       {
         "name": "dropped",
@@ -4354,13 +4354,6 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Moving the pointer over an option makes it the active option (default `true`). PrimeNG `focusOnHover`."
       },
       {
-        "name": "selectOnFocus",
-        "type": "boolean",
-        "default": "false",
-        "required": false,
-        "description": "Single choice (select, autocomplete): moving the active option with the keys also chooses it, and the panel stays open (default `false`). PrimeNG `selectOnFocus`."
-      },
-      {
         "name": "autoOptionFocus",
         "type": "boolean",
         "default": "true",
@@ -4463,7 +4456,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "'self' | 'body'",
         "default": "'self'",
         "required": false,
-        "description": "Where the panel is in the DOM (PrimeNG `appendTo`). `self` (default): next to the control. `body`: in the overlay container at the end of the body, for parents that clip their content. Both are native popovers in the top layer, so the panel also shows above a modal dialog."
+        "description": "Where the panel is in the DOM (PrimeNG `appendTo`). `self` (default): next to the control. `body`: in the overlay container at the end of the body, for parents that clip their content. Both are native popovers in the top layer, so the panel also shows above a modal dialog. The control reads it when the overlay is created (the first opening): a later change has no effect."
       },
       {
         "name": "size",
@@ -4571,7 +4564,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "StarListLazyLoadEvent",
         "default": null,
         "required": false,
-        "description": "With `lazy`: the options from `first` to `last` are needed for the filter text `filter`. PrimeNG `onLazyLoad`."
+        "description": "With `lazy`: the options from `first` to `last` are needed for the filter text `filter`. PrimeNG `onLazyLoad`. Each range is asked for once per filter text; treat the event as idempotent."
       }
     ]
   },
@@ -5517,6 +5510,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "false",
         "required": false,
         "description": "With `editable`: typed text that is no option label becomes the value (as a string) on Enter or blur, and `customValue` fires. Ignite UI combo `allowCustomValues` for one value."
+      },
+      {
+        "name": "selectOnFocus",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Moving the active option with the keys also chooses it, and the panel stays open (default `false`). PrimeNG `selectOnFocus`. Only on `star-select`: the multi-select toggles options and the autocomplete would rewrite the typed text."
       }
     ],
     "models": [

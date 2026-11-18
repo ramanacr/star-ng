@@ -171,11 +171,6 @@ export abstract class StarOptionListBase<TOption, TValue> {
   /** Moving the pointer over an option makes it the active option (default `true`). PrimeNG `focusOnHover`. */
   readonly focusOnHover = input(true, { transform: booleanAttribute });
   /**
-   * Single choice (select, autocomplete): moving the active option with the keys also chooses it,
-   * and the panel stays open (default `false`). PrimeNG `selectOnFocus`.
-   */
-  readonly selectOnFocus = input(false, { transform: booleanAttribute });
-  /**
    * When the panel opens without a chosen option, the first enabled option is active (default
    * `true`). Off: no option is active until a key moves. The autocomplete uses `autoHighlight`.
    * PrimeNG `autoOptionFocus`.
@@ -214,7 +209,8 @@ export abstract class StarOptionListBase<TOption, TValue> {
   /**
    * Where the panel is in the DOM (PrimeNG `appendTo`). `self` (default): next to the control.
    * `body`: in the overlay container at the end of the body, for parents that clip their content.
-   * Both are native popovers in the top layer, so the panel also shows above a modal dialog.
+   * Both are native popovers in the top layer, so the panel also shows above a modal dialog. The
+   * control reads it when the overlay is created (the first opening): a later change has no effect.
    */
   readonly appendTo = input<'self' | 'body'>('self');
   readonly size = input<'sm' | 'md'>('md');
@@ -234,7 +230,10 @@ export abstract class StarOptionListBase<TOption, TValue> {
   readonly opened = output<void>();
   readonly closed = output<void>();
   readonly filterChange = output<string>();
-  /** With `lazy`: the options from `first` to `last` are needed for the filter text `filter`. PrimeNG `onLazyLoad`. */
+  /**
+   * With `lazy`: the options from `first` to `last` are needed for the filter text `filter`. PrimeNG
+   * `onLazyLoad`. Each range is asked for once per filter text; treat the event as idempotent.
+   */
   readonly lazyLoad = output<StarListLazyLoadEvent>();
 
   protected readonly optionTemplate = contentChild(StarOptionTemplate);
@@ -533,16 +532,20 @@ export abstract class StarOptionListBase<TOption, TValue> {
   protected abstract readonly closeOnChoose: boolean;
 
   labelOf(option: TOption): string {
+    // An option that a `lazy` list has not loaded yet is `undefined`: accessor functions must not see it.
+    if (option === undefined) return '';
     return optionText(option, this.optionLabel() ?? null);
   }
 
   protected groupOf(option: TOption): string {
+    if (option === undefined) return '';
     const key = this.optionGroup();
     const group = key ? readOption(option, key) : null;
     return group === null || group === undefined ? '' : String(group);
   }
 
   protected valueOf(option: TOption): TValue {
+    if (option === undefined) return undefined as TValue;
     return readOption(option, this.optionValue()) as TValue;
   }
 
@@ -771,9 +774,17 @@ export abstract class StarOptionListBase<TOption, TValue> {
     }
   }
 
-  /** With `selectOnFocus`: chooses the active option after a key moved it (single choice only). */
+  /**
+   * True when a key move also chooses the active option. Only `star-select` has it (its
+   * `selectOnFocus` input): in an autocomplete, choosing rewrites the typed text and filters again.
+   */
+  protected selectsOnFocus(): boolean {
+    return false;
+  }
+
+  /** Chooses the active option after a key moved it, when `selectsOnFocus()` says so. */
   private selectActiveOnFocus(): void {
-    if (!this.selectOnFocus() || !this.closeOnChoose || !this.open()) return;
+    if (!this.selectsOnFocus() || !this.open()) return;
     const option = this.visibleOptions()[this.activeIndex()];
     if (option !== undefined && !this.isDisabled(option)) this.choose(option);
   }

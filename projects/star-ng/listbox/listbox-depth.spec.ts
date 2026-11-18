@@ -76,6 +76,8 @@ describe('listbox checkbox, drag and drop, double click', () => {
     expect(list.getAttribute('aria-multiselectable')).toBe('true');
     const options = [...el.querySelectorAll<HTMLElement>('.checks [role=option]')];
     expect(options.map((o) => o.getAttribute('aria-checked'))).toEqual(['false', 'false', 'false']);
+    // aria-checked replaces aria-selected in checkbox mode.
+    expect(options.every((o) => !o.hasAttribute('aria-selected'))).toBe(true);
     const all = el.querySelector<HTMLButtonElement>('.checks [role=checkbox]')!;
     expect(all.getAttribute('aria-label')).toBe('Select all');
     expect(all.getAttribute('aria-checked')).toBe('false');
@@ -143,5 +145,22 @@ describe('starListboxDropIndex', () => {
     expect(starListboxDropIndex(options, ['b', 'd'], 0, false)).toBe(1);
     expect(starListboxDropIndex(options, ['b', 'd'], 2, false)).toBe(4);
     expect(starListboxDropIndex([], [], 0, false)).toBe(0);
+  });
+});
+
+@Component({
+  imports: [StarListbox],
+  template: `<star-listbox [options]="['A', 'B']" dragdrop virtualScroll ariaLabel="Both" />`,
+})
+class BothHost {}
+
+describe('listbox dragdrop with virtualScroll', () => {
+  it('warns in dev mode that drag and drop is ignored', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const fixture = TestBed.createComponent(BothHost);
+    await fixture.whenStable();
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('dragdrop does not work'));
+    expect((fixture.nativeElement as HTMLElement).querySelector('.cdk-drop-list')).toBeNull();
+    warn.mockRestore();
   });
 });

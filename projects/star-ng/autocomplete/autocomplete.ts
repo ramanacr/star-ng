@@ -358,7 +358,7 @@ const TEMPLATE = `
         [attr.aria-label]="ariaLabel()"
         [attr.aria-labelledby]="labelledBy()"
         [attr.aria-busy]="lazyBusy() || null"
-          (scroll)="onListScroll($event)"
+        (scroll)="onListScroll($event)"
       >
         @if (loadingRow(); as loader) {
           <li class="star-listbox__empty" role="presentation">
@@ -387,7 +387,7 @@ const TEMPLATE = `
             role="option"
             [id]="optionId(i)"
             [class.star-listbox__option--active]="activeIndex() === i"
-                [class.star-listbox__option--loading]="option === undefined"
+            [class.star-listbox__option--loading]="option === undefined"
             [attr.aria-selected]="activeIndex() === i"
             [attr.aria-disabled]="isDisabled(option) || null"
             [attr.aria-describedby]="describedBy(row)"
@@ -502,7 +502,7 @@ export class StarAutoComplete<TOption = unknown, TValue = TOption>
 
   protected isSelected(option: TOption): boolean {
     const value = this.value();
-    return value !== null && this.equals(this.valueOf(option), value);
+    return option !== undefined && value !== null && this.equals(this.valueOf(option), value);
   }
 
   protected choose(option: TOption): void {
@@ -530,7 +530,9 @@ export class StarAutoComplete<TOption = unknown, TValue = TOption>
   protected onBlurCommit(): void {
     const text = this.query().trim();
     if (!text) {
+      const previous = this.value();
       if (!this.change(null)) this.setText(this.queryFromValue());
+      else if (previous !== null) this.optionUnselect.emit(previous);
       return;
     }
     if (text === this.queryFromValue()) return;
@@ -540,8 +542,19 @@ export class StarAutoComplete<TOption = unknown, TValue = TOption>
         this.labelOf(option).toLocaleLowerCase() === text.toLocaleLowerCase(),
     );
     if (exact !== undefined) this.choose(exact);
-    else if (this.forceSelection() && this.change(null)) this.setText('');
+    else if (this.forceSelection()) this.clearOnBlur();
     else this.setText(this.queryFromValue());
+  }
+
+  /** `forceSelection`: clears the text and the value, as an empty field does. */
+  private clearOnBlur(): void {
+    const previous = this.value();
+    if (!this.change(null)) {
+      this.setText(this.queryFromValue());
+      return;
+    }
+    this.setText('');
+    if (previous !== null) this.optionUnselect.emit(previous);
   }
 
   /** Single mode shows no chips; kept so both components share one template. */
@@ -620,6 +633,7 @@ export class StarMultiAutoComplete<TOption = unknown, TValue = TOption>
   }
 
   protected isSelected(option: TOption): boolean {
+    if (option === undefined) return false;
     const optionValue = this.valueOf(option);
     return this.value().some((value) => this.equals(value, optionValue));
   }

@@ -199,4 +199,42 @@ describe('autocomplete extras', () => {
     expect(host.codes()).toEqual([]);
     expect(host.unselects).toEqual(['BER', 'BER']);
   });
+
+  it('arrow keys move the active option and never choose it', async () => {
+    const { fixture, host, input } = await setup();
+    const single = input('.single');
+    single.focus();
+    single.value = 'r';
+    single.dispatchEvent(new Event('input'));
+    await fixture.whenStable();
+    key(single, 'ArrowDown');
+    key(single, 'ArrowDown');
+    await fixture.whenStable();
+    expect(host.city()).toBeNull();
+    expect(single.value).toBe('r');
+    key(single, 'Escape');
+
+    const multi = input('.multi');
+    multi.value = 'r';
+    multi.dispatchEvent(new Event('input'));
+    await fixture.whenStable();
+    key(multi, 'ArrowDown');
+    key(multi, 'ArrowDown');
+    await fixture.whenStable();
+    expect(host.codes()).toEqual([]);
+  });
+
+  it('an empty field on blur clears the value and emits optionUnselect', async () => {
+    const { fixture, host, input } = await setup();
+    host.city.set('PAR');
+    await fixture.whenStable();
+    const field = input('.single');
+    field.value = '';
+    field.dispatchEvent(new Event('input'));
+    await fixture.whenStable();
+    field.dispatchEvent(new FocusEvent('blur'));
+    await fixture.whenStable();
+    expect(host.city()).toBeNull();
+    expect(host.unselects).toEqual(['PAR']);
+  });
 });

@@ -198,31 +198,41 @@ export function starListLazyRange<T>(
 }
 
 /**
- * Decides when a lazy list asks for options: when the rendered rows have an option that is not
- * loaded, or when the filter text has changed (also for the first request). A range is asked for
- * once; the same range with the same filter does not fire again. A new filter asks for the rows in
- * view from index 0. Without rendered options (an empty array) it asks for the first `pageSize`
- * options.
+ * Decides when a lazy list asks for options. It remembers the index ranges it asked for, per filter
+ * text: it asks only for rows in view that are not loaded and were not asked for before, so smooth
+ * scrolling does not repeat a request. A new filter text forgets the ranges and asks for the rows
+ * in view from index 0 (also for the first request). Without rendered options (an empty array) it
+ * asks for the first `pageSize` options.
+ *
+ * A consumer should treat `lazyLoad` as idempotent: loading a range twice must do no harm, and a
+ * range that fails to load is not asked for again until the filter changes.
  */
 export class StarLazyRequests {
-  private lastKey = '';
-  private lastFilter: string | null = null;
+  private filter: string | null = null;
+  private requested: (readonly [number, number])[] = [];
 
   next(
     range: { first: number; last: number; missing: boolean } | null,
     filter: string,
     pageSize: number,
   ): StarListLazyLoadEvent | null {
-    const changed = filter !== this.lastFilter;
-    if (!changed && !range?.missing) return null;
-    // A new filter starts at the top of the list.
-    const size = range ? range.last - range.first + 1 : Math.max(1, pageSize);
-    const first = changed || !range ? 0 : range.first;
-    const last = first + size - 1;
-    const key = `${first}:${last}:${filter}`;
-    if (key === this.lastKey) return null;
-    this.lastKey = key;
-    this.lastFilter = filter;
+    if (filter !== this.filter) {
+      // A new filter starts at the top of the list.
+      const size = range ? range.last - range.first + 1 : Math.max(1, pageSize);
+      this.filter = filter;
+      this.requested = [[0, size - 1]];
+      return { first: 0, last: size - 1, filter };
+    }
+    if (!range?.missing) return null;
+    let first = -1;
+    let last = -1;
+    for (let i = range.first; i <= range.last; i++) {
+      if (this.requested.some(([a, b]) => i >= a && i <= b)) continue;
+      if (first < 0) first = i;
+      last = i;
+    }
+    if (first < 0) return null;
+    this.requested.push([first, last]);
     return { first, last, filter };
   }
 }

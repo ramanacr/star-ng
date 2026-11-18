@@ -450,6 +450,7 @@ export class StarMultiSelect<TOption = unknown, TValue = TOption>
   );
 
   protected isSelected(option: TOption): boolean {
+    if (option === undefined) return false;
     const optionValue = this.valueOf(option);
     const chosen = this.chosenSet();
     return chosen

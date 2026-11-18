@@ -55,3 +55,10 @@ describe('starFilterTexts', () => {
     ]);
   });
 });
+
+describe('starFilterMatch folding before the locale compare', () => {
+  it('folds the Turkish dotted capital I to a dotless i, so it does not match "is"', () => {
+    expect(starFilterMatch('İstanbul', 'is', 'startsWith', 'tr')).toBe(false);
+    expect(starFilterMatch('Ärzte', 'arz', 'startsWith', 'de')).toBe(true);
+  });
+});

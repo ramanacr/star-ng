@@ -399,24 +399,48 @@ moveOrder(event: StarListboxDropEvent<string>): void {
   protected readonly lazyOrder = signal<number | readonly number[] | null>(null);
   protected readonly lazyScript = `// A fake order service (no network) and the list state, in lazy-orders.ts:
 // fetchOrderPage({ first, last, filter }) waits 400 ms and returns { first, rows, total, filter }.
+// lazyLoad asks for each range once, so the requests of one filter collect in a list and
+// resource() loads the ranges that are not in the cache yet (an aborted load loses nothing).
 export function lazyOrders() {
-  const request = signal<StarListLazyLoadEvent | undefined>(undefined);
-  const page = resource({
-    params: request,
-    loader: ({ params, abortSignal }) => fetchOrderPage(params, abortSignal),
-  });
-  // The full-length array, with undefined where a page is not loaded yet.
-  const options = linkedSignal<LazyOrderPage | undefined, readonly (LazyOrder | undefined)[]>({
-    source: () => (page.hasValue() ? page.value() : undefined),
-    computation: (next, previous) => {
-      if (!next) return previous?.value ?? [];
-      const keep = previous?.source?.filter === next.filter && previous.value.length === next.total;
-      const rows = keep ? [...previous.value] : Array.from<LazyOrder | undefined>({ length: next.total });
-      next.rows.forEach((row, i) => (rows[next.first + i] = row));
-      return rows;
+  const requests = signal<readonly StarListLazyLoadEvent[]>([]);
+  const cache = new Map<number, LazyOrder>();
+  let cacheFilter: string | null = null;
+  let total = 0;
+  const loaded = (r: StarListLazyLoadEvent) => {
+    if (!total) return false;
+    for (let i = r.first; i <= Math.min(r.last, total - 1); i++) if (!cache.has(i)) return false;
+    return true;
+  };
+  const state = resource({
+    params: () => (requests().length ? requests() : undefined),
+    loader: async ({ params, abortSignal }) => {
+      const filter = params[0].filter;
+      if (filter !== cacheFilter) {
+        cache.clear();
+        cacheFilter = filter;
+        total = 0;
+      }
+      const pages = await Promise.all(
+        params.filter((r) => !loaded(r)).map((r) => fetchOrderPage(r, abortSignal)),
+      );
+      for (const page of pages) {
+        total = page.total;
+        page.rows.forEach((row, i) => cache.set(page.first + i, row));
+      }
+      return { filter, total, rows: new Map(cache) };
     },
   });
-  return { options: options.asReadonly(), load: (event: StarListLazyLoadEvent) => request.set(event) };
+  // The full-length array, with undefined where an order is not loaded yet.
+  const options = linkedSignal<LazyOrderState | undefined, readonly (LazyOrder | undefined)[]>({
+    source: () => (state.hasValue() ? state.value() : undefined),
+    computation: (next, previous) =>
+      next ? Array.from({ length: next.total }, (_, i) => next.rows.get(i)) : (previous?.value ?? []),
+  });
+  const load = (event: StarListLazyLoadEvent) =>
+    requests.update((list) =>
+      list.length && list[0].filter === event.filter ? [...list, event] : [event],
+    );
+  return { options: options.asReadonly(), load };
 }
 
 readonly lazyList = lazyOrders();`;

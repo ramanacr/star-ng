@@ -306,6 +306,12 @@ export class StarSelect<TOption = unknown, TValue = TOption>
   /** With `editable` and `allowCustomValue`: the typed text that became the value. */
   readonly customValue = output<string>();
   /**
+   * Moving the active option with the keys also chooses it, and the panel stays open (default
+   * `false`). PrimeNG `selectOnFocus`. Only on `star-select`: the multi-select toggles options and
+   * the autocomplete would rewrite the typed text.
+   */
+  readonly selectOnFocus = input(false, { transform: booleanAttribute });
+  /**
    * Fires before the value changes by a user action. Call `cancel()` on the event to keep the old
    * value. Ignite UI combo `selectionChanging`.
    */
@@ -330,7 +336,9 @@ export class StarSelect<TOption = unknown, TValue = TOption>
   protected readonly selectedOption = computed(() => {
     const value = this.value();
     if (value === null) return undefined;
-    return this.options().find((option) => this.equals(this.valueOf(option), value));
+    return this.options().find(
+      (option) => option !== undefined && this.equals(this.valueOf(option), value),
+    );
   });
 
   /** True when there is a value to clear: an option, or a custom text of the editable select. */
@@ -348,6 +356,10 @@ export class StarSelect<TOption = unknown, TValue = TOption>
 
   /** Text of the editable field. Goes back to the text of the value when the value changes. */
   protected readonly editText = linkedSignal(() => this.valueText());
+
+  protected override selectsOnFocus(): boolean {
+    return this.selectOnFocus();
+  }
 
   protected override filterOn(): boolean {
     return this.filter() || this.editable();
@@ -420,7 +432,7 @@ export class StarSelect<TOption = unknown, TValue = TOption>
 
   protected isSelected(option: TOption): boolean {
     const value = this.value();
-    return value !== null && this.equals(this.valueOf(option), value);
+    return option !== undefined && value !== null && this.equals(this.valueOf(option), value);
   }
 
   protected choose(option: TOption): void {

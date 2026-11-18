@@ -44,14 +44,19 @@ function same(a: string, b: string, locale: string | undefined): boolean {
 
 /**
  * True when `value` matches the filter text `query`. The compare ignores case and accents
- * ("Malaga" finds "Málaga"). With `locale`, the case rules of that locale apply, and
- * `Intl.Collator` with sensitivity `base` compares the text. An empty query (after trimming) matches
- * every value, also with `notContains`.
+ * ("Malaga" finds "Málaga"). An empty query (after trimming) matches every value,
+ * also with `notContains`.
+ *
+ * Two steps: first both texts are folded (Unicode NFD, accents removed, lower case with the case
+ * rules of `locale`). Then, with `locale`, `Intl.Collator` with sensitivity `base` compares the
+ * folded text (same-length parts for `contains`, `startsWith` and `endsWith`). Because folding runs
+ * first, a letter that the locale treats in its own way can fold to a different letter: in Turkish,
+ * "İ" folds to a dotless "ı", so `starFilterMatch('İstanbul', 'is', 'startsWith', 'tr')` is false.
  *
  * ```ts
  * starFilterMatch('Zürich', 'zur');                       // true
  * starFilterMatch('Berlin', 'lin', 'endsWith');           // true
- * starFilterMatch('İstanbul', 'is', 'startsWith', 'tr');  // true
+ * starFilterMatch('Ärzte', 'arz', 'startsWith', 'de');    // true
  * ```
  */
 export function starFilterMatch(

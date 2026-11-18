@@ -21,6 +21,7 @@ import {
   inject,
   Injector,
   input,
+  isDevMode,
   model,
   output,
   signal,
@@ -185,7 +186,7 @@ const DROP_LISTS = new Map<string, { options(): readonly unknown[] }>();
               [class.star-listbox__option--active]="active() === i"
               [class.star-listbox__option--loading]="option === undefined"
               [class.star-listbox__option--selected]="isSelected(option)"
-              [attr.aria-selected]="isSelected(option)"
+              [attr.aria-selected]="checkbox() ? null : isSelected(option)"
               [attr.aria-checked]="checkbox() ? isSelected(option) : null"
               [attr.aria-disabled]="isDisabled(option) || null"
               [attr.aria-describedby]="describedBy(row)"
@@ -258,7 +259,7 @@ const DROP_LISTS = new Map<string, { options(): readonly unknown[] }>();
             [class.star-listbox__option--active]="active() === i"
             [class.star-listbox__option--loading]="option === undefined"
             [class.star-listbox__option--selected]="isSelected(option)"
-            [attr.aria-selected]="isSelected(option)"
+            [attr.aria-selected]="checkbox() ? null : isSelected(option)"
             [attr.aria-checked]="checkbox() ? isSelected(option) : null"
             [attr.aria-disabled]="isDisabled(option) || null"
             (click)="active.set(i); choose(option)"
@@ -311,7 +312,7 @@ const DROP_LISTS = new Map<string, { options(): readonly unknown[] }>();
             [class.star-listbox__option--active]="active() === i"
             [class.star-listbox__option--loading]="option === undefined"
             [class.star-listbox__option--selected]="isSelected(option)"
-            [attr.aria-selected]="isSelected(option)"
+            [attr.aria-selected]="checkbox() ? null : isSelected(option)"
             [attr.aria-checked]="checkbox() ? isSelected(option) : null"
             [attr.aria-disabled]="isDisabled(option) || null"
             [attr.aria-describedby]="groupId(i)"
@@ -438,7 +439,10 @@ export class StarListbox<TOption = unknown, TValue = TOption> implements FormVal
   readonly invalid = input(false, { transform: booleanAttribute });
   readonly touched = input(false, { transform: booleanAttribute });
   readonly touch = output<void>();
-  /** With `lazy`: the options from `first` to `last` are needed for the filter text `filter`. PrimeNG `onLazyLoad`. */
+  /**
+   * With `lazy`: the options from `first` to `last` are needed for the filter text `filter`. PrimeNG
+   * `onLazyLoad`. Each range is asked for once per filter text; treat the event as idempotent.
+   */
   readonly lazyLoad = output<StarListLazyLoadEvent>();
   /** With `dragdrop`: an option was dropped on this list, or moved with Alt + Arrow keys. PrimeNG `onDrop`. */
   readonly dropped = output<StarListboxDropEvent<TOption>>();
@@ -599,6 +603,8 @@ export class StarListbox<TOption = unknown, TValue = TOption> implements FormVal
   }
 
   protected groupOf(option: TOption): string {
+    // An option that a `lazy` list has not loaded yet is `undefined`: accessor functions must not see it.
+    if (option === undefined) return '';
     const key = this.optionGroup();
     const group = key ? readOption(option, key) : null;
     return group === null || group === undefined ? '' : String(group);
@@ -677,6 +683,13 @@ export class StarListbox<TOption = unknown, TValue = TOption> implements FormVal
 
   constructor() {
     DROP_LISTS.set(this.listId, this);
+    effect(() => {
+      if (isDevMode() && this.dragdrop() && this.virtualScroll()) {
+        console.warn(
+          'star-listbox: dragdrop does not work with virtualScroll; drag and drop is ignored.',
+        );
+      }
+    });
     inject(DestroyRef).onDestroy(() => DROP_LISTS.delete(this.listId));
     // `lazy`: ask for the options of the rendered rows that are not loaded, and for a new filter.
     effect(() => {
@@ -723,6 +736,7 @@ export class StarListbox<TOption = unknown, TValue = TOption> implements FormVal
   }
 
   protected labelOf(option: TOption): string {
+    if (option === undefined) return '';
     return optionText(option, this.optionLabel());
   }
   /** Disabled options, and options that are not loaded yet (`lazy`), cannot be chosen. */
@@ -732,9 +746,11 @@ export class StarListbox<TOption = unknown, TValue = TOption> implements FormVal
     return key ? !!readOption(option, key) : false;
   }
   private valueOf(option: TOption): TValue {
+    if (option === undefined) return undefined as TValue;
     return readOption(option, this.optionValue()) as TValue;
   }
   protected isSelected(option: TOption): boolean {
+    if (option === undefined) return false;
     const value = this.value();
     const optionValue = this.valueOf(option);
     return Array.isArray(value)
