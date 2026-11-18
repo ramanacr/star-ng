@@ -6576,7 +6576,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-tile",
     "entry": "@star-ng/ui/tile-layout",
-    "description": "One tile of `star-tile-layout` (Material `mat-grid-tile`, Kendo UI `TileLayoutItem`). It is a `role=\"group\"` named by `label`, or by its header when there is no `label`.",
+    "description": "One tile of `star-tile-layout` (Material `mat-grid-tile`, Kendo UI `TileLayoutItem`). It is a `role=\"group\"` named by `label`, else by its header, else by its `key`.",
     "inputs": [
       {
         "name": "key",
