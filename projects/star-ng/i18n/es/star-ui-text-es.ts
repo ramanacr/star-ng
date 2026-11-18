@@ -263,4 +263,5 @@ export const STAR_UI_TEXT_ES: StarUiText = {
   sparklineWinLoss: (wins, losses) =>
     `${wins} ${forCount(wins, 'ganancia', 'ganancias')}, ${losses} ${forCount(losses, 'pérdida', 'pérdidas')}`,
   sparklineNoData: 'Sin datos',
+  barcodeInvalid: (type) => `El valor no se puede codificar como ${type}.`,
 };

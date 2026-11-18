@@ -1142,6 +1142,19 @@ const STATES: readonly State[] = [
     },
   },
 
+  {
+    name: 'barcode with a value that cannot be encoded',
+    path: 'controls/barcode',
+    open: async (page) => {
+      const live = example(page, 'Error state');
+      await expect(live.locator('.star-barcode__error')).toBeVisible();
+      await live.getByRole('textbox', { name: 'Barcode value' }).fill('5901234123457');
+      await expect(live.locator('star-barcode svg')).toBeVisible();
+      await live.getByRole('textbox', { name: 'Barcode value' }).fill('59012341234X');
+      await expect(live.locator('.star-barcode__error')).toBeVisible();
+    },
+  },
+
   // Steps and media.
   {
     name: 'stepper on the second step',

@@ -11,6 +11,7 @@ export * from '@star-ng/ui/autocomplete';
 export * from '@star-ng/ui/avatar';
 export * from '@star-ng/ui/badge';
 export * from '@star-ng/ui/banner';
+export * from '@star-ng/ui/barcode';
 export * from '@star-ng/ui/bottom-nav';
 export * from '@star-ng/ui/bottom-sheet';
 export * from '@star-ng/ui/breadcrumb';

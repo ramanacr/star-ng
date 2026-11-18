@@ -36,6 +36,7 @@ const TEXT_PARAMS: Record<string, readonly string[]> = {
   meterValue: ['value'],
   chartDescription: ['kind', 'min', 'max'],
   sparklineSummary: ['first', 'last', 'min', 'max', 'trend'],
+  barcodeInvalid: ['type'],
 };
 const TEXT_NAMES = new Set(['label', 'column', 'name', 'alt']);
 

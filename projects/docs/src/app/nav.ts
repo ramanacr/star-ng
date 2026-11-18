@@ -661,6 +661,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         keywords: 'linear radial arc gauge meter dial needle scale ranges ticks kpi',
         load: () => import('./controls/gauge.page').then((m) => m.GaugePage),
       },
+      {
+        label: 'Barcode',
+        path: 'controls/barcode',
+        keywords: 'code 128 ean 13 upc code 39 product label scanner print svg',
+        load: () => import('./controls/barcode.page').then((m) => m.BarcodePage),
+      },
     ],
   },
   {

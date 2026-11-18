@@ -1,0 +1,44 @@
+// Barcode: dark modules on a light field in both themes (`--star-code-dark` and
+// `--star-code-light`), and black on white under forced colours, so a scanner can read them.
+.star-barcode {
+  display: inline-block;
+  line-height: 0;
+  vertical-align: middle;
+}
+.star-barcode__svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+.star-barcode__background {
+  fill: var(--star-code-light);
+}
+.star-barcode__bar {
+  fill: var(--star-code-dark);
+}
+.star-barcode__text {
+  fill: var(--star-code-dark);
+  font: var(--star-type-body-sm);
+  font-family: var(--star-font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.1em;
+}
+.star-barcode__error {
+  display: inline-block;
+  padding: 0.5rem 0.75rem;
+  border: 1px dashed var(--star-danger);
+  border-radius: var(--star-radius-sm);
+  color: var(--star-danger);
+  font: var(--star-type-body);
+  line-height: normal;
+}
+
+@media (forced-colors: active) {
+  .star-barcode__background {
+    fill: Canvas;
+  }
+  .star-barcode__bar,
+  .star-barcode__text {
+    fill: CanvasText;
+  }
+}

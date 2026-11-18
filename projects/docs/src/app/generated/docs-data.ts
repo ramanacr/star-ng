@@ -666,6 +666,66 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ]
   },
+  "StarBarcode": {
+    "kind": "component",
+    "selector": "star-barcode",
+    "entry": "@star-ng/ui/barcode",
+    "description": "Barcode: a linear barcode drawn as SVG rectangles. Kendo UI `kendo-barcode` and Syncfusion `ejs-barcodegenerator` are the equivalents.",
+    "inputs": [
+      {
+        "name": "value",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "The value to encode."
+      },
+      {
+        "name": "type",
+        "type": "StarBarcodeType",
+        "default": "'code128'",
+        "required": false,
+        "description": "The symbology: `code128` (default), `ean13`, `upca` or `code39`."
+      },
+      {
+        "name": "showText",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Shows the human-readable text under the bars."
+      },
+      {
+        "name": "barHeight",
+        "type": "number",
+        "default": "64",
+        "required": false,
+        "description": "Height of the bars in pixels."
+      },
+      {
+        "name": "moduleWidth",
+        "type": "number",
+        "default": "2",
+        "required": false,
+        "description": "Width of the narrowest bar (one module) in pixels."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Label for assistive technology. Default: the human-readable value."
+      }
+    ],
+    "models": [],
+    "outputs": [
+      {
+        "name": "invalid",
+        "type": "boolean",
+        "default": null,
+        "required": false,
+        "description": "Emits `true` when the value cannot be encoded, and `false` when it can be again."
+      }
+    ]
+  },
   "StarBlockUi": {
     "kind": "component",
     "selector": "star-block-ui",
@@ -9196,6 +9256,10 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "badge/sizes": "<star-badge [value]=\"7\" size=\"sm\" />\n<star-badge [value]=\"7\" />\n<star-badge [value]=\"7\" size=\"lg\" />\n<star-badge severity=\"success\" ariaLabel=\"online\" />",
   "banner/basic": "<div class=\"docs-stack\">\n  <star-banner severity=\"warn\" dismissible [(open)]=\"open\">\n    Invoice export is slow today. Large exports can take up to ten minutes.\n    <star-button starBannerActions variant=\"ghost\" size=\"sm\">Status page</star-button>\n  </star-banner>\n  @if (!open()) {\n    <div class=\"docs-row\">\n      <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"open.set(true)\">\n        Show the banner again\n      </star-button>\n    </div>\n  }\n</div>",
   "banner/severity": "<div class=\"docs-stack\">\n  <star-banner>Projects can now have more than one owner.</star-banner>\n  <star-banner severity=\"success\">All orders of March are invoiced.</star-banner>\n  <star-banner severity=\"warn\" icon=\"ph-fill ph-cloud-warning\">\n    Some cities report slow deliveries.\n  </star-banner>\n  <star-banner severity=\"danger\">The order service is not available.</star-banner>\n  <star-banner icon=\"\">A banner without an icon.</star-banner>\n</div>",
+  "barcode/code128": "<star-barcode value=\"ORDER-2026-00418\" />",
+  "barcode/error": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-select\n      [options]=\"types\"\n      optionLabel=\"label\"\n      optionValue=\"value\"\n      [(value)]=\"type\"\n      ariaLabel=\"Barcode type\"\n      [style.width.rem]=\"10\"\n    />\n    <input\n      starInput\n      aria-label=\"Barcode value\"\n      [value]=\"value()\"\n      (input)=\"value.set($any($event.target).value)\"\n    />\n  </div>\n  <star-barcode\n    [value]=\"value()\"\n    [type]=\"type() ?? 'code128'\"\n    (invalid)=\"invalid.set($event)\"\n  />\n  <p>Valid: {{ invalid() ? 'no' : 'yes' }}</p>\n</div>",
+  "barcode/product": "<div class=\"docs-row\">\n  <star-barcode value=\"5901234123457\" type=\"ean13\" />\n  <star-barcode value=\"036000291452\" type=\"upca\" />\n  <star-barcode value=\"PART-42\" type=\"code39\" [moduleWidth]=\"1\" />\n</div>",
+  "barcode/size": "<star-barcode value=\"4006381333931\" type=\"ean13\" [moduleWidth]=\"3\" [barHeight]=\"90\" />\n<star-barcode value=\"INV-1042\" [showText]=\"false\" [barHeight]=\"40\" />",
   "block-ui/basic": "<div class=\"docs-stack\">\n  <star-block-ui [blocked]=\"blocked()\" message=\"Saving…\">\n    <div class=\"docs-stack\">\n      <star-field label=\"Note\">\n        <input starInput value=\"Waiting for approval\" />\n      </star-field>\n      <star-field label=\"Reference\">\n        <input starInput value=\"PO-1042\" />\n      </star-field>\n    </div>\n  </star-block-ui>\n  <star-button variant=\"secondary\" (pressed)=\"blockFor(1500)\">\n    Save (blocks for 1.5 s)\n  </star-button>\n  <star-button variant=\"secondary\" (pressed)=\"blocked.set(!blocked())\">\n    {{ blocked() ? 'Unblock' : 'Block' }}\n  </star-button>\n</div>",
   "bottom-nav/router": "<star-bottom-nav ariaLabel=\"Docs pages\">\n  <star-bottom-nav-item\n    routerLink=\"/controls/list\"\n    label=\"List\"\n    icon=\"ph ph-list-bullets\"\n  />\n  <star-bottom-nav-item\n    routerLink=\"/controls/bottom-nav\"\n    label=\"Bottom nav\"\n    icon=\"ph ph-dots-three-outline\"\n  />\n  <star-bottom-nav-item\n    routerLink=\"/controls/app-bar\"\n    label=\"App bar\"\n    icon=\"ph ph-browser\"\n  />\n</star-bottom-nav>",
   "bottom-nav/value": "<div class=\"docs-bottom-nav-frame\">\n  <p class=\"docs-bottom-nav-view\" role=\"status\">{{ views[section() ?? 'orders'] }}</p>\n  <star-bottom-nav [(value)]=\"section\" ariaLabel=\"Sections\">\n    <star-bottom-nav-item value=\"orders\" label=\"Orders\" icon=\"ph ph-package\" badge=\"3\" />\n    <star-bottom-nav-item value=\"cities\" label=\"Cities\" icon=\"ph ph-map-pin\" />\n    <star-bottom-nav-item value=\"projects\" label=\"Projects\" icon=\"ph ph-folder\" />\n    <star-bottom-nav-item value=\"settings\" label=\"Settings\" icon=\"ph ph-gear\" />\n  </star-bottom-nav>\n</div>",
