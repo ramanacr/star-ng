@@ -7550,7 +7550,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "'start' | 'center' | 'end' | 'stretch'",
         "default": "'start'",
         "required": false,
-        "description": "Position of the tabs along the list: at the start, centered, at the end, or filling it."
+        "description": "Position of the tabs along the list: at the start, centered, at the end, or filling it (`stretch`). Material `mat-align-tabs` / `alignTabs` (start, center, end) and `mat-stretch-tabs`; PrimeNG has no equivalent."
       },
       {
         "name": "reorderable",

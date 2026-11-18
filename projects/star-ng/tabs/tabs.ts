@@ -342,7 +342,11 @@ export class StarTabs {
    * move between them. PrimeNG has no equivalent, Material `mat-tab-nav` has none either.
    */
   readonly orientation = input<'horizontal' | 'vertical'>('horizontal');
-  /** Position of the tabs along the list: at the start, centered, at the end, or filling it. */
+  /**
+   * Position of the tabs along the list: at the start, centered, at the end, or filling it
+   * (`stretch`). Material `mat-align-tabs` / `alignTabs` (start, center, end) and
+   * `mat-stretch-tabs`; PrimeNG has no equivalent.
+   */
   readonly alignment = input<'start' | 'center' | 'end' | 'stretch'>('start');
   /**
    * Tabs can be dragged to a new place (CDK drag-drop), or moved with Control+Shift and an arrow
