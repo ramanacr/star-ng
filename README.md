@@ -129,6 +129,17 @@ The target is WCAG 2.2 level AA. CI runs an automated axe scan on every docs pag
 
 Not tested: screen-reader output, zoom and reflow, forced-colors mode. An automated scan finds only some problems. Your application must also name every control and set the page language. See the [accessibility guide](https://ramanacr.github.io/star-ng/guides/accessibility).
 
+## Use with AI coding agents
+
+StarNG gives coding agents (Claude Code, Cursor, Copilot, Codex and others) its setup, API and example markup in two ways:
+
+1. Plain text on the docs site: [llms.txt](https://ramanacr.github.io/star-ng/llms.txt) is a short index, and [llms-full.txt](https://ramanacr.github.io/star-ng/llms-full.txt) has the API of every control and all example markup.
+2. The MCP server [`@star-ng/mcp`](https://github.com/ramanacr/star-ng/tree/main/projects/mcp). It runs on your computer and has tools to search controls, read their API and examples, and check the StarNG markup that the agent writes. For Claude Code:
+
+   ```bash
+   claude mcp add star-ng -- npx -y @star-ng/mcp
+   ```
+
 ## Versioning and stability
 
 The package follows semantic versioning. In `0.x` versions, the API can change between minor versions. Read the [changelog](CHANGELOG.md) before you update. The dist-tag `latest` is for releases. The dist-tag `next` is for prereleases.
