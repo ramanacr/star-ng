@@ -105,10 +105,9 @@ export function starTextParts(
   let offset = 0;
   for (const char of Array.from(source)) {
     const piece = starFoldText(char, locale);
-    for (let i = 0; i < piece.length; i++) {
-      startOf.push(offset);
-      endOf.push(offset + char.length);
-    }
+    // One entry per UTF-16 unit of the folded piece (`indexOf` works in units).
+    startOf.push(...Array<number>(piece.length).fill(offset));
+    endOf.push(...Array<number>(piece.length).fill(offset + char.length));
     folded += piece;
     offset += char.length;
   }
