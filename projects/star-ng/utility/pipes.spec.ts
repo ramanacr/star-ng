@@ -1,4 +1,4 @@
-import { Component, PLATFORM_ID, signal } from '@angular/core';
+import { Component, NgZone, PLATFORM_ID, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import {
   provideStarClock,
@@ -79,6 +79,13 @@ describe('StarClock', () => {
     expect(clock.now()).toBe(NOW);
     vi.advanceTimersByTime(10_000);
     expect(clock.now()).toBe(NOW + 10_000);
+  });
+
+  it('runs its timer outside the Angular zone', () => {
+    const zone = TestBed.inject(NgZone);
+    const outside = vi.spyOn(zone, 'runOutsideAngular');
+    TestBed.inject(StarClock);
+    expect(outside).toHaveBeenCalled();
   });
 
   it('does not tick on the server', () => {

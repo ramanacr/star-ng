@@ -4,6 +4,7 @@ import {
   inject,
   Injectable,
   InjectionToken,
+  NgZone,
   PLATFORM_ID,
   Provider,
   signal,
@@ -39,7 +40,11 @@ export class StarClock {
   constructor() {
     if (!isPlatformBrowser(inject(PLATFORM_ID))) return;
     const tick = Math.max(1000, inject(STAR_CLOCK_TICK));
-    const timer = setInterval(() => this.current.set(Date.now()), tick);
+    // Outside the zone: a zone-based application does not run change detection on every tick;
+    // the signal update schedules the views that read `now()`.
+    const timer = inject(NgZone).runOutsideAngular(() =>
+      setInterval(() => this.current.set(Date.now()), tick),
+    );
     inject(DestroyRef).onDestroy(() => clearInterval(timer));
   }
 }
