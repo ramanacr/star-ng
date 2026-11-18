@@ -60,3 +60,15 @@ test('the docs API has the inherited inputs of the select family, date pickers a
   // An own member has no `inheritedFrom`.
   assert.equal(input('StarSelect', 'editable')?.inheritedFrom, undefined);
 });
+
+test('a `??` input default shows the built-in fallback, not the configured expression', () => {
+  const api = readDocsApi();
+  const input = (name, input) => api[name].inputs.find((m) => m.name === input);
+  assert.equal(input('StarSelect', 'filterMatchMode')?.default, "'contains'");
+  assert.equal(input('StarSelect', 'showClear')?.default, 'false');
+  assert.equal(input('StarSelect', 'showClear')?.type, 'boolean');
+  assert.equal(input('StarInput', 'size')?.default, "'md'");
+  assert.equal(input('StarTable', 'rowsPerPageOptions')?.default, '[10, 25, 50]');
+  assert.equal(input('StarTable', 'filterLocale')?.default, 'null');
+  assert.equal(input('StarDatePicker', 'locale')?.default, 'undefined');
+});
