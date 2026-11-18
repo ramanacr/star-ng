@@ -82,3 +82,53 @@
   height: 0.5rem;
   padding: 0;
 }
+
+// Overlay badge: a badge on a corner of its content. The shift is half the badge, outward;
+// `start` and `end` follow the text direction, so the horizontal shift turns around in
+// right-to-left.
+.star-overlay-badge {
+  --star-overlay-badge-x: 50%;
+  --star-overlay-badge-y: -50%;
+  position: relative;
+  display: inline-flex;
+  vertical-align: middle;
+
+  &:dir(rtl) {
+    --star-overlay-badge-x: -50%;
+  }
+}
+.star-overlay-badge__badge {
+  position: absolute;
+  z-index: 1;
+  box-shadow: 0 0 0 2px var(--star-surface);
+  pointer-events: none;
+  translate: var(--star-overlay-badge-x) var(--star-overlay-badge-y);
+}
+.star-overlay-badge--top-end .star-overlay-badge__badge,
+.star-overlay-badge--top-start .star-overlay-badge__badge {
+  inset-block-start: 0;
+}
+.star-overlay-badge--bottom-end .star-overlay-badge__badge,
+.star-overlay-badge--bottom-start .star-overlay-badge__badge {
+  inset-block-end: 0;
+}
+.star-overlay-badge--top-end .star-overlay-badge__badge,
+.star-overlay-badge--bottom-end .star-overlay-badge__badge {
+  inset-inline-end: 0;
+}
+.star-overlay-badge--top-start .star-overlay-badge__badge,
+.star-overlay-badge--bottom-start .star-overlay-badge__badge {
+  inset-inline-start: 0;
+}
+.star-overlay-badge--top-start,
+.star-overlay-badge--bottom-start {
+  --star-overlay-badge-x: -50%;
+
+  &:dir(rtl) {
+    --star-overlay-badge-x: 50%;
+  }
+}
+.star-overlay-badge--bottom-end,
+.star-overlay-badge--bottom-start {
+  --star-overlay-badge-y: 50%;
+}

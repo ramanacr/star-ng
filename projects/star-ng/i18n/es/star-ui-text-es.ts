@@ -23,6 +23,7 @@ export const STAR_UI_TEXT_ES: StarUiText = {
   expandItem: (label) => `Expandir ${label}`,
   collapseItem: (label) => `Contraer ${label}`,
   removeItem: (label) => `Quitar ${label}`,
+  moreCount: (count) => `${count} más`,
   tagsHint: 'Intro o coma para añadir. Retroceso quita el último elemento.',
   tagAdded: (label) => `Se añadió ${label}`,
   tagRemoved: (label) => `Se quitó ${label}`,

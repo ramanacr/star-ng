@@ -1,0 +1,55 @@
+// Action strip (StarActionStrip): a toolbar on top of its container, at the inline end. It shows
+// while the pointer is over the container (or its table row), while the focus is in it, while
+// its menu is open, and always on a device without hover.
+
+// The container needs a position for the strip. `:where` keeps the specificity at zero, so a
+// position of the container itself wins.
+:where(:has(> .star-action-strip)) {
+  position: relative;
+}
+.star-action-strip {
+  position: absolute;
+  z-index: 1;
+  inset-block-start: 50%;
+  inset-inline-end: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.125rem;
+  padding: 0.25rem;
+  border: 1px solid var(--star-border);
+  border-radius: var(--star-radius-md);
+  background: var(--star-surface);
+  box-shadow: var(--star-shadow-md);
+  translate: 0 -50%;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--star-duration-fast) ease-in-out;
+}
+:hover > .star-action-strip,
+:focus-within > .star-action-strip,
+// In a table the strip sits in a cell: the whole row reveals it. Any other ancestor can do the
+// same with the class `star-action-strip-host`.
+:is(tr, [role='row'], .star-action-strip-host):is(:hover, :focus-within) .star-action-strip,
+.star-action-strip--open,
+.star-action-strip--persistent {
+  opacity: 1;
+  pointer-events: auto;
+}
+@media (hover: none) {
+  .star-action-strip {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+.star-action-strip__button--danger {
+  color: var(--star-danger);
+
+  &:hover {
+    background: var(--star-danger-soft);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .star-action-strip {
+    transition: none;
+  }
+}

@@ -24,6 +24,8 @@ export interface StarUiText {
   readonly expandItem: (label: string) => string;
   readonly collapseItem: (label: string) => string;
   readonly removeItem: (label: string) => string;
+  /** Label of the "+N" entry for items that are not shown (avatar group). */
+  readonly moreCount: (count: number) => string;
   // Tags field
   readonly tagsHint: string;
   readonly tagAdded: (label: string) => string;
@@ -226,6 +228,7 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   expandItem: (label) => `Expand ${label}`,
   collapseItem: (label) => `Collapse ${label}`,
   removeItem: (label) => `Remove ${label}`,
+  moreCount: (count) => `${count} more`,
   tagsHint: 'Press Enter or comma to add. Backspace removes the last item.',
   tagAdded: (label) => `${label} added`,
   tagRemoved: (label) => `${label} removed`,
@@ -417,6 +420,7 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   expandItem: ['label'],
   collapseItem: ['label'],
   removeItem: ['label'],
+  moreCount: ['count'],
   tagAdded: ['label'],
   tagRemoved: ['label'],
   tagInvalid: ['label'],
