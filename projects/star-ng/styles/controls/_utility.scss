@@ -652,3 +652,10 @@
     transition: none;
   }
 }
+
+// `starHighlight` pipe: the matching part of a text.
+mark.star-highlight {
+  background: var(--star-warning-soft);
+  color: inherit;
+  border-radius: var(--star-radius-xs);
+}
