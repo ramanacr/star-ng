@@ -302,3 +302,13 @@
     }
   }
 }
+
+// A narrow chart: the view box shrinks, so the axis text grows back by --star-chart-zoom (at most 2)
+// and stays about 12px on the screen. The category labels thin out to make room.
+// The value ticks grow less: they must fit in the room at the start of the plot.
+.star-chart__svg--zoom .star-chart__axis {
+  font-size: calc(12px * min(var(--star-chart-zoom, 1), 1.35));
+}
+.star-chart__svg--zoom .star-chart__axis--category {
+  font-size: calc(12px * var(--star-chart-zoom, 1));
+}

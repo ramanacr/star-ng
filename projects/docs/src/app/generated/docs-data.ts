@@ -8259,7 +8259,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "chart/polar-area": "<star-chart\n  type=\"polar-area\"\n  title=\"Visits by weekday\"\n  [labels]=\"weekdays\"\n  [series]=\"weekdayVisits\"\n  categoryLabel=\"Weekday\"\n/>",
   "chart/radar": "<star-chart\n  type=\"radar\"\n  title=\"Product ratings by criterion\"\n  [labels]=\"criteria\"\n  [series]=\"ratings\"\n  categoryLabel=\"Criterion\"\n/>",
   "chart/scatter": "<star-chart\n  type=\"scatter\"\n  title=\"Price against weight\"\n  [series]=\"products\"\n  categoryLabel=\"Weight (kg)\"\n  valueLabel=\"Price\"\n/>",
-  "chart/sizing": "<div class=\"docs-chart-narrow\">\n  <star-chart type=\"bar\" title=\"Orders, narrow\" [labels]=\"months\" [series]=\"single\" />\n</div>",
+  "chart/sizing": "<div class=\"docs-chart-narrow\">\n  <star-chart type=\"bar\" title=\"Orders, narrow\" [labels]=\"months\" [series]=\"single\" />\n</div>\n<div class=\"docs-chart-narrow\">\n  <star-chart\n    type=\"line\"\n    title=\"Visits per month, narrow\"\n    [labels]=\"yearMonths\"\n    [series]=\"yearVisits\"\n  />\n</div>",
   "chart/stacked-bar": "<star-chart\n  type=\"stacked-bar\"\n  title=\"Orders per month by channel\"\n  [labels]=\"months\"\n  [series]=\"channelOrders\"\n  categoryLabel=\"Month\"\n/>",
   "chart/stacked-bar-percent": "<star-chart\n  type=\"stacked-bar\"\n  title=\"Share of orders by channel\"\n  [labels]=\"months\"\n  [series]=\"channelOrders\"\n  categoryLabel=\"Month\"\n  percent\n/>",
   "chart/table": "<star-chart\n  type=\"bar\"\n  title=\"Revenue by region, table\"\n  [labels]=\"regions\"\n  [series]=\"revenue\"\n  categoryLabel=\"Region\"\n  table\n/>",

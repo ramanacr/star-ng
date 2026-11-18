@@ -65,6 +65,7 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - Chart: the legend toggles series (buttons with `aria-pressed`; `hiddenSeries` model; colors and markers stay with their series; the table keeps every series) and `legendPosition` (`top`, `bottom`, `start`, `end`). `STAR_UI_TEXT.chartLegend` with German and Spanish texts (Chart.js legend `onClick` and `position`).
 - Chart: `valueFormat` (`Intl.NumberFormat` options for the axis, the tooltip, the table and the point names), `min`, `max` and `stepSize` for the value axis, `horizontal` bar and stacked bar charts, and combo charts: a series can set `type` (`bar` or `line`) and `axis` (`primary` or `secondary`, a second value axis at the end of the plot). (Chart.js `indexAxis`, `yAxisID`, scale `min`, `max`, `ticks.stepSize`).
 - Chart: `exportSvg()` (a stand-alone SVG document of the plot with resolved token colors and the title) and `exportPng(scale)` (a PNG `Blob` through a canvas); both browser only: `''` and `null` on the server (Chart.js `toBase64Image`).
+- Chart: responsive labels. The SVG keeps its view box; in a narrow container (width from a `ResizeObserver`, browser only) the axis text grows back to stay readable and the category labels thin out.
 
 ### Changed
 

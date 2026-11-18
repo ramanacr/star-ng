@@ -320,10 +320,18 @@ import { DOCS, DocsRow } from '../shared/docs';
       <docs-example
         heading="Sizing"
         source="chart/sizing"
-        note="The chart fills the width of its container and keeps its aspect ratio. Set the width on a wrapper."
+        note="The chart fills the width of its container and keeps its aspect ratio (the view box does not change). Set the width on a wrapper. In a narrow container the axis text grows back to stay readable, and the category labels thin out: here every second month has a label. The focus targets, the tooltip and the table keep every month."
       >
         <div class="docs-chart-narrow">
           <star-chart type="bar" title="Orders, narrow" [labels]="months" [series]="single" />
+        </div>
+        <div class="docs-chart-narrow">
+          <star-chart
+            type="line"
+            title="Visits per month, narrow"
+            [labels]="yearMonths"
+            [series]="yearVisits"
+          />
         </div>
       </docs-example>
 
@@ -471,6 +479,23 @@ export class ChartPage {
     },
   ];
   protected readonly months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+  protected readonly yearMonths = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+  ];
+  protected readonly yearVisits: StarChartSeries[] = [
+    { label: 'Visits', data: [820, 940, 910, 880, 1020, 960, 870, 900, 1100, 1180, 1250, 1320] },
+  ];
   protected readonly orders: StarChartSeries[] = [
     { label: 'Received', data: [120, 150, 170, 140, 190, 210] },
     { label: 'Shipped', data: [110, 140, 160, 135, 180, 200] },

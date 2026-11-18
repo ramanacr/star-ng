@@ -1,11 +1,13 @@
 import { _IdGenerator } from '@angular/cdk/a11y';
 import { isPlatformBrowser, NgTemplateOutlet } from '@angular/common';
 import {
+  afterNextRender,
   booleanAttribute,
   ChangeDetectionStrategy,
   Component,
   computed,
   contentChild,
+  DestroyRef,
   ElementRef,
   inject,
   input,
@@ -539,7 +541,12 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                 }
               }
               @default {
-                <svg [attr.viewBox]="'0 0 ' + W + ' ' + H" class="star-chart__svg">
+                <svg
+                  [attr.viewBox]="'0 0 ' + W + ' ' + H"
+                  class="star-chart__svg"
+                  [class.star-chart__svg--zoom]="textZoom() > 1"
+                  [style.--star-chart-zoom]="textZoom()"
+                >
                   @for (tick of valueTicks(); track tick.value) {
                     <line
                       class="star-chart__grid"
@@ -579,7 +586,7 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                   @for (label of axisLabels(); track $index) {
                     @if (label.show) {
                       <text
-                        class="star-chart__axis"
+                        class="star-chart__axis star-chart__axis--category"
                         [attr.x]="label.x"
                         [attr.y]="label.y"
                         [attr.text-anchor]="label.anchor"
@@ -1174,15 +1181,41 @@ export class StarChart {
       ? { x1: at, x2: at, y1: pad.top, y2: H - pad.bottom }
       : { x1: pad.left, x2: W - pad.right, y1: at, y2: at };
   });
+  /**
+   * Width of the plot on the screen, in pixels (browser only, from a ResizeObserver). 0 until it
+   * is measured.
+   */
+  protected readonly plotWidth = signal(0);
+  /**
+   * The view box shrinks with a narrow container, and its text with it. Axis text grows back by
+   * this factor (at most 2) so it stays readable, and the category labels thin out to make room.
+   */
+  protected readonly textZoom = computed(() => {
+    const width = this.plotWidth();
+    return width > 0 ? Math.min(2, Math.max(1, W / width)) : 1;
+  });
+  /** Show every `step`-th category label: 1, unless the zoomed labels need more room. */
+  protected readonly labelStep = computed(() => {
+    const zoom = this.textZoom();
+    if (zoom <= 1) return 1;
+    const band = this.band();
+    if (this.isHorizontal()) return Math.max(1, Math.ceil((16 * zoom) / band));
+    const longest = Math.max(0, ...this.labels().map((label) => label.length));
+    const wanted = Math.min(longest, 6) * 6.5 * zoom;
+    return Math.max(1, Math.ceil(wanted / band));
+  });
   /** Category labels cut to their room, with the full text as a title. */
   protected readonly axisLabels = computed(() => {
     const pad = this.pad();
     const horizontal = this.isHorizontal();
-    const max = Math.max(3, Math.floor((horizontal ? pad.left - 12 : this.band()) / 6.5));
+    const step = this.labelStep();
+    const zoom = this.textZoom();
+    const room = horizontal ? pad.left - 12 : this.band() * step;
+    const max = Math.max(3, Math.floor(room / (6.5 * zoom)));
     return this.labels().map((label, i) => ({
       text: truncateLabel(label, max),
       full: label,
-      show: true,
+      show: i % step === 0,
       x: horizontal ? pad.left - 8 : this.x(i),
       y: horizontal ? this.x(i) + 4 : H - 12,
       anchor: horizontal ? 'end' : 'middle',
@@ -1498,6 +1531,23 @@ export class StarChart {
       ),
     };
   });
+
+  // ---------- Responsive labels ----------
+
+  constructor() {
+    const destroyRef = inject(DestroyRef);
+    afterNextRender(() => {
+      // Browser only: afterNextRender does not run on the server.
+      if (typeof ResizeObserver === 'undefined') return;
+      const observer = new ResizeObserver((entries) => {
+        const width = entries[0]?.contentRect.width ?? 0;
+        if (width !== this.plotWidth()) this.plotWidth.set(width);
+      });
+      const plot = this.host.nativeElement.querySelector('.star-chart__plot');
+      if (plot) observer.observe(plot);
+      destroyRef.onDestroy(() => observer.disconnect());
+    });
+  }
 
   // ---------- Export ----------
 

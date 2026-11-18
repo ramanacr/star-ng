@@ -347,3 +347,74 @@ describe('StarChart export', () => {
     expect(await chartOf(fixture).exportPng()).toBeNull();
   });
 });
+
+const MONTHS = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+];
+
+@Component({
+  imports: [StarChart],
+  template: `<star-chart type="line" title="Visits" [labels]="months" [series]="series" />`,
+})
+class ResponsiveHost {
+  readonly months = MONTHS;
+  readonly series: StarChartSeries[] = [{ label: 'Visits', data: MONTHS.map((_, i) => i * 10) }];
+}
+
+describe('StarChart responsive labels', () => {
+  it('keeps the view box, grows the axis text back and thins the labels when narrow', async () => {
+    let report: ((entries: { contentRect: { width: number } }[]) => void) | null = null;
+    const original = globalThis.ResizeObserver;
+    globalThis.ResizeObserver = class {
+      constructor(callback: typeof report) {
+        report = callback;
+      }
+      observe(): void {
+        // The test reports sizes itself.
+      }
+      disconnect(): void {
+        report = null;
+      }
+    } as unknown as typeof ResizeObserver;
+    try {
+      const fixture = TestBed.createComponent(ResponsiveHost);
+      await fixture.whenStable();
+      const el = fixture.nativeElement as HTMLElement;
+      const svg = el.querySelector<SVGSVGElement>('.star-chart__svg')!;
+      const labels = () =>
+        [...svg.querySelectorAll('text')]
+          .map((t) => t.textContent?.trim() ?? '')
+          .filter((t) => /^[A-Z]/.test(t));
+      expect(labels().length).toBe(12);
+      expect(svg.classList).not.toContain('star-chart__svg--zoom');
+
+      report!([{ contentRect: { width: 320 } }]);
+      await fixture.whenStable();
+      expect(svg.getAttribute('viewBox')).toBe('0 0 640 280');
+      expect(svg.classList).toContain('star-chart__svg--zoom');
+      expect(svg.style.getPropertyValue('--star-chart-zoom')).toBe('2');
+      expect(labels().length).toBe(6);
+      expect(labels()[0]).toBe('January');
+      // The data stays complete: every month keeps its focus target and table row.
+      expect(el.querySelectorAll('.star-chart__target').length).toBe(12);
+      expect(el.querySelectorAll('tbody tr').length).toBe(12);
+
+      report!([{ contentRect: { width: 640 } }]);
+      await fixture.whenStable();
+      expect(labels().length).toBe(12);
+    } finally {
+      globalThis.ResizeObserver = original;
+    }
+  });
+});
