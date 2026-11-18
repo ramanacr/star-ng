@@ -5,9 +5,12 @@
  */
 export * from '@star-ng/ui/accordion';
 export * from '@star-ng/ui/action-strip';
+export * from '@star-ng/ui/app-bar';
 export * from '@star-ng/ui/autocomplete';
 export * from '@star-ng/ui/avatar';
 export * from '@star-ng/ui/badge';
+export * from '@star-ng/ui/banner';
+export * from '@star-ng/ui/bottom-nav';
 export * from '@star-ng/ui/bottom-sheet';
 export * from '@star-ng/ui/breadcrumb';
 export * from '@star-ng/ui/button';
@@ -30,6 +33,7 @@ export * from '@star-ng/ui/input-otp';
 export * from '@star-ng/ui/input-tags';
 export * from '@star-ng/ui/knob';
 export * from '@star-ng/ui/layout';
+export * from '@star-ng/ui/list';
 export * from '@star-ng/ui/listbox';
 export * from '@star-ng/ui/media';
 export * from '@star-ng/ui/menu';
@@ -57,3 +61,4 @@ export * from '@star-ng/ui/toggle-switch';
 export * from '@star-ng/ui/tooltip';
 export * from '@star-ng/ui/tree';
 export * from '@star-ng/ui/utility';
+export * from '@star-ng/ui/virtual-scroller';

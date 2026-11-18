@@ -162,6 +162,51 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarAppBar": {
+    "kind": "component",
+    "selector": "star-app-bar",
+    "entry": "@star-ng/ui/app-bar",
+    "description": "App bar (Ignite `igx-navbar`, Material `mat-toolbar` used as the top bar): the top bar of an application or a view, with a start area (menu button, logo), a title and an end area (actions).",
+    "inputs": [
+      {
+        "name": "title",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "Title text. The default content goes after it, so a custom title can replace it."
+      },
+      {
+        "name": "position",
+        "type": "StarAppBarPosition",
+        "default": "'static'",
+        "required": false,
+        "description": "`static` scrolls with the page; `sticky` stays at the top of its scroll container (below the safe area of the device); `fixed` stays at the top of the window, over the page."
+      },
+      {
+        "name": "elevated",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "A shadow under the bar."
+      },
+      {
+        "name": "dense",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "A lower bar."
+      },
+      {
+        "name": "landmark",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "`true`: the bar is the `banner` landmark. `false`: no landmark role (nested or second bar)."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
   "StarAutoComplete": {
     "kind": "component",
     "selector": "star-autocomplete",
@@ -375,6 +420,53 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarBanner": {
+    "kind": "component",
+    "selector": "star-banner",
+    "entry": "@star-ng/ui/banner",
+    "description": "Banner (Ignite `igx-banner`, the Material banner pattern): a persistent notice for the whole page, under the app bar. It stays until the user dismisses it or the application closes it. It is not a toast: use `star-toast` for short messages that go away on their own.",
+    "inputs": [
+      {
+        "name": "severity",
+        "type": "StarBannerSeverity",
+        "default": "'info'",
+        "required": false,
+        "description": "Color and default icon."
+      },
+      {
+        "name": "icon",
+        "type": "string | null | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "Phosphor icon class, for example `ph-fill ph-cloud-warning`. Default: the icon of the severity. `''` or `null` shows no icon."
+      },
+      {
+        "name": "dismissible",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows a dismiss button."
+      }
+    ],
+    "models": [
+      {
+        "name": "open",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Whether the banner is shown. The dismiss button sets it to `false`."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "dismissed",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "Emits when the user dismisses the banner with its button."
+      }
+    ]
+  },
   "StarBlockUi": {
     "kind": "component",
     "selector": "star-block-ui",
@@ -394,6 +486,104 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "''",
         "required": false,
         "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
+  "StarBottomNav": {
+    "kind": "component",
+    "selector": "star-bottom-nav",
+    "entry": "@star-ng/ui/bottom-nav",
+    "description": "Bottom navigation (Ignite `igx-bottom-nav`, Kendo BottomNavigation): the tab bar at the bottom of a mobile layout, with three to five destinations.",
+    "inputs": [
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Accessible name of the navigation landmark."
+      },
+      {
+        "name": "fixed",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Fixed to the bottom of the window, above the safe area of the device."
+      }
+    ],
+    "models": [
+      {
+        "name": "value",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Value of the active button item."
+      }
+    ],
+    "outputs": []
+  },
+  "StarBottomNavItem": {
+    "kind": "component",
+    "selector": "star-bottom-nav-item",
+    "entry": "@star-ng/ui/bottom-nav",
+    "description": "One destination of `star-bottom-nav` (Ignite `igx-bottom-nav-item`). With `routerLink` or `href` it is a link; without, a button that sets the `value` of the bar.",
+    "inputs": [
+      {
+        "name": "value",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Key of the item. A button item sets the `value` of the bar to it."
+      },
+      {
+        "name": "label",
+        "type": "string",
+        "default": null,
+        "required": true,
+        "description": "Visible label, also the accessible name."
+      },
+      {
+        "name": "icon",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Phosphor icon class, for example `ph ph-house`."
+      },
+      {
+        "name": "badge",
+        "type": "string | number | null",
+        "default": "null",
+        "required": false,
+        "description": "Short text on the icon, for example a count. A screen reader reads it after the label."
+      },
+      {
+        "name": "routerLink",
+        "type": "string | readonly unknown[] | null",
+        "default": "null",
+        "required": false,
+        "description": "Router link. The item is active (`aria-current=\"page\"`) while its route is active."
+      },
+      {
+        "name": "exact",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "With `routerLink`: active only on an exact URL match."
+      },
+      {
+        "name": "href",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Link address. The item is active while `value` equals the `value` of the bar."
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "A disabled item is a disabled button, and the arrow keys skip it."
       }
     ],
     "models": [],
@@ -3329,6 +3519,44 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ]
   },
+  "StarList": {
+    "kind": "component",
+    "selector": "star-list",
+    "entry": "@star-ng/ui/list",
+    "description": "List (Material `mat-list` / `mat-nav-list` / `mat-action-list`, Ignite `igx-list`): a list of items with an optional avatar or icon, a title, a subtitle and meta text or actions.",
+    "inputs": [
+      {
+        "name": "mode",
+        "type": "StarListMode",
+        "default": "'plain'",
+        "required": false,
+        "description": "How the items behave: plain text, links or buttons."
+      },
+      {
+        "name": "dense",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Smaller item height and padding."
+      },
+      {
+        "name": "divider",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "A line between the items."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Accessible name of the list."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
   "StarListbox": {
     "kind": "component",
     "selector": "star-listbox",
@@ -3452,6 +3680,75 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       }
     ]
+  },
+  "StarListItem": {
+    "kind": "component",
+    "selector": "star-list-item",
+    "entry": "@star-ng/ui/list",
+    "description": "One item of `star-list` (Material `mat-list-item`, Ignite `igx-list-item`). The host is the `listitem`. Areas: `[starListItemStart]` (avatar or icon), the default content (title), `[starListItemSubtitle]` and `[starListItemEnd]` (meta text or actions).",
+    "inputs": [
+      {
+        "name": "href",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Link address. The item becomes a link."
+      },
+      {
+        "name": "routerLink",
+        "type": "string | readonly unknown[] | null",
+        "default": "null",
+        "required": false,
+        "description": "Router link. The item becomes a link with `aria-current=\"page\"` while its route is active."
+      },
+      {
+        "name": "target",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Target of the link, for example `_blank`."
+      },
+      {
+        "name": "exact",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "With `routerLink`: the item is active only on an exact URL match."
+      },
+      {
+        "name": "active",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Marks the current item (`aria-current`) for `href` and button items. Router links set it themselves."
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "A disabled item is not a link or button, and the arrow keys skip it."
+      }
+    ],
+    "models": [],
+    "outputs": [
+      {
+        "name": "activated",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "Emits when the link or button of the item is activated (click, Enter, Space on a button)."
+      }
+    ]
+  },
+  "StarListSubheader": {
+    "kind": "component",
+    "selector": "star-list-subheader",
+    "entry": "@star-ng/ui/list",
+    "description": "Optional heading line between the items of `star-list`. Material `mat-subheader`.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
   },
   "StarLoadingTemplate": {
     "kind": "directive",
@@ -6792,6 +7089,104 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ],
     "outputs": []
+  },
+  "StarVirtualItemTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starVirtualItem]",
+    "entry": "@star-ng/ui/virtual-scroller",
+    "description": "Renders one item of `star-virtual-scroller`: `<ng-template starVirtualItem let-order let-i=\"index\">…</ng-template>`. PrimeNG `#item` template.",
+    "inputs": [
+      {
+        "name": "starVirtualItemOf",
+        "type": "readonly T[] | null",
+        "default": "null",
+        "required": false,
+        "description": "Optional: pass the items array to type `let-item` in strict templates."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
+  "StarVirtualScroller": {
+    "kind": "component",
+    "selector": "star-virtual-scroller",
+    "entry": "@star-ng/ui/virtual-scroller",
+    "description": "Virtual scroller (PrimeNG `p-scroller`, Angular CDK `cdk-virtual-scroll-viewport`): renders only the items in and near the view, so a list of thousands of items stays fast. Every item has the same size (`itemSize`, in pixels). Vertical or horizontal. With `lazy`, the scroller emits `lazyLoad` with the range it renders, and the application loads the data for that range.",
+    "inputs": [
+      {
+        "name": "items",
+        "type": "readonly T[]",
+        "default": "[]",
+        "required": false,
+        "description": "The items. In lazy mode, an array with one entry per item, where items not loaded yet are placeholders."
+      },
+      {
+        "name": "itemSize",
+        "type": "number",
+        "default": "40",
+        "required": false,
+        "description": "Size of one item in pixels: the height (vertical) or the width (horizontal). Every item has this size."
+      },
+      {
+        "name": "orientation",
+        "type": "'vertical' | 'horizontal'",
+        "default": "'vertical'",
+        "required": false,
+        "description": "Scroll direction."
+      },
+      {
+        "name": "scrollHeight",
+        "type": "string",
+        "default": "'20rem'",
+        "required": false,
+        "description": "CSS height of the viewport. A horizontal scroller needs it too: the viewport does not grow with its items."
+      },
+      {
+        "name": "scrollWidth",
+        "type": "string",
+        "default": "'100%'",
+        "required": false,
+        "description": "CSS width of the viewport."
+      },
+      {
+        "name": "lazy",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Emits `lazyLoad` when the rendered range changes."
+      },
+      {
+        "name": "loading",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows the loading slot (or a spinner) over the items, and sets `aria-busy`."
+      },
+      {
+        "name": "trackBy",
+        "type": "TrackByFunction<T> | null",
+        "default": "null",
+        "required": false,
+        "description": "Identity of an item, so the scroller keeps its DOM when the array changes. Default: the item itself."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Accessible name of the list."
+      }
+    ],
+    "models": [],
+    "outputs": [
+      {
+        "name": "lazyLoad",
+        "type": "StarVirtualRange",
+        "default": null,
+        "required": false,
+        "description": "Lazy mode: the range of items that is rendered now (with the buffer), so their data is needed."
+      }
+    ]
   }
 };
 
@@ -6802,6 +7197,8 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "action-strip/rows": "<div class=\"docs-stack\">\n  <ul class=\"orders\">\n    @for (order of orders; track order) {\n      <li>\n        {{ order }}\n        <star-action-strip\n          [actions]=\"actions\"\n          [ariaLabel]=\"order + ' actions'\"\n          (actionClick)=\"last.set(($event.label ?? '') + ' ' + order)\"\n        />\n      </li>\n    }\n  </ul>\n  <p class=\"docs-output\" role=\"status\">Last action: {{ last() }}</p>\n</div>",
   "action-strip/table": "<table class=\"invoices\">\n  <thead>\n    <tr>\n      <th scope=\"col\">Invoice</th>\n      <th scope=\"col\">City</th>\n      <th scope=\"col\"><span class=\"star-sr-only\">Actions</span></th>\n    </tr>\n  </thead>\n  <tbody>\n    @for (invoice of invoices; track invoice.id) {\n      <tr>\n        <td>{{ invoice.id }}</td>\n        <td>{{ invoice.city }}</td>\n        <td class=\"actions-cell\">\n          <star-action-strip [actions]=\"actions\" [ariaLabel]=\"invoice.id + ' actions'\" />\n        </td>\n      </tr>\n    }\n  </tbody>\n</table>",
   "animate-on-scroll/basic": "<div class=\"docs-reveal-box\" tabindex=\"0\" aria-label=\"Scrollable list of blocks\">\n  @for (block of blocks; track block) {\n    <div class=\"docs-reveal-box__item\" starAnimateOnScroll>Block {{ block }}</div>\n  }\n</div>",
+  "app-bar/basic": "<star-app-bar title=\"Orders\" [landmark]=\"false\">\n  <star-button\n    starAppBarStart\n    variant=\"ghost\"\n    iconOnly\n    leadingIcon=\"ph-bold ph-list\"\n    ariaLabel=\"Menu\"\n  />\n  <star-button\n    starAppBarEnd\n    variant=\"ghost\"\n    iconOnly\n    leadingIcon=\"ph-bold ph-magnifying-glass\"\n    ariaLabel=\"Search orders\"\n  />\n  <star-button\n    starAppBarEnd\n    variant=\"ghost\"\n    iconOnly\n    leadingIcon=\"ph-bold ph-bell\"\n    ariaLabel=\"Notifications\"\n  />\n  <star-avatar starAppBarEnd name=\"Order Desk\" size=\"sm\" />\n</star-app-bar>",
+  "app-bar/sticky": "<div class=\"docs-app-bar-frame\">\n  <star-app-bar position=\"sticky\" elevated dense [landmark]=\"false\">\n    <star-button\n      starAppBarStart\n      variant=\"ghost\"\n      iconOnly\n      leadingIcon=\"ph-bold ph-arrow-left\"\n      ariaLabel=\"Back to projects\"\n    />\n    Project Apollo\n    <star-button starAppBarEnd variant=\"ghost\" size=\"sm\">Share</star-button>\n  </star-app-bar>\n  @for (week of weeks; track week) {\n    <p>Week {{ week }}: 12 tasks planned, 9 done, 3 moved to the next week.</p>\n  }\n</div>",
   "autocomplete/async": "<div class=\"docs-stack\">\n  <star-autocomplete\n    [suggestions]=\"results()\"\n    [loading]=\"searching()\"\n    [minQueryLength]=\"2\"\n    [delay]=\"150\"\n    (completeMethod)=\"search($event)\"\n    optionLabel=\"name\"\n    optionValue=\"id\"\n    [(value)]=\"found\"\n    placeholder=\"Type 2 letters of a name\"\n    ariaLabel=\"Colleague\"\n    showClear\n  />\n  <p class=\"docs-output\" role=\"status\">Colleague: {{ found() ?? 'none' }}</p>\n</div>",
   "autocomplete/dropdown": "<star-autocomplete\n  [options]=\"cities\"\n  [(value)]=\"dropdownCity\"\n  placeholder=\"Search a city\"\n  ariaLabel=\"City with dropdown\"\n  dropdown\n  autoHighlight\n  showClear\n/>",
   "autocomplete/form": "<div class=\"docs-stack\">\n  <star-field label=\"Assignee\" for=\"autocomplete-form-assignee\" [state]=\"task.assignee()\">\n    <star-autocomplete\n      inputId=\"autocomplete-form-assignee\"\n      [formField]=\"task.assignee\"\n      [options]=\"people\"\n      optionLabel=\"name\"\n      optionValue=\"id\"\n      placeholder=\"Search a person\"\n      showClear\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ task().valid() }}</p>\n</div>",
@@ -6818,7 +7215,11 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "badge/counts": "<star-badge [value]=\"4\" ariaLabel=\"unread messages\" />\n<star-badge [value]=\"128\" [max]=\"99\" severity=\"danger\" ariaLabel=\"open alerts\" />\n<star-badge value=\"New\" severity=\"success\" />",
   "badge/severities": "<star-badge [value]=\"1\" />\n<star-badge [value]=\"2\" severity=\"secondary\" />\n<star-badge [value]=\"3\" severity=\"success\" />\n<star-badge [value]=\"4\" severity=\"info\" />\n<star-badge [value]=\"5\" severity=\"warn\" />\n<star-badge [value]=\"6\" severity=\"danger\" />",
   "badge/sizes": "<star-badge [value]=\"7\" size=\"sm\" />\n<star-badge [value]=\"7\" />\n<star-badge [value]=\"7\" size=\"lg\" />\n<star-badge severity=\"success\" ariaLabel=\"online\" />",
+  "banner/basic": "<div class=\"docs-stack\">\n  <star-banner severity=\"warn\" dismissible [(open)]=\"open\">\n    Invoice export is slow today. Large exports can take up to ten minutes.\n    <star-button starBannerActions variant=\"ghost\" size=\"sm\">Status page</star-button>\n  </star-banner>\n  @if (!open()) {\n    <div class=\"docs-row\">\n      <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"open.set(true)\">\n        Show the banner again\n      </star-button>\n    </div>\n  }\n</div>",
+  "banner/severity": "<div class=\"docs-stack\">\n  <star-banner>Projects can now have more than one owner.</star-banner>\n  <star-banner severity=\"success\">All orders of March are invoiced.</star-banner>\n  <star-banner severity=\"warn\" icon=\"ph-fill ph-cloud-warning\">\n    Some cities report slow deliveries.\n  </star-banner>\n  <star-banner severity=\"danger\">The order service is not available.</star-banner>\n  <star-banner icon=\"\">A banner without an icon.</star-banner>\n</div>",
   "block-ui/basic": "<div class=\"docs-stack\">\n  <star-block-ui [blocked]=\"blocked()\" message=\"Saving…\">\n    <div class=\"docs-stack\">\n      <star-field label=\"Note\">\n        <input starInput value=\"Waiting for approval\" />\n      </star-field>\n      <star-field label=\"Reference\">\n        <input starInput value=\"PO-1042\" />\n      </star-field>\n    </div>\n  </star-block-ui>\n  <star-button variant=\"secondary\" (pressed)=\"blockFor(1500)\">\n    Save (blocks for 1.5 s)\n  </star-button>\n  <star-button variant=\"secondary\" (pressed)=\"blocked.set(!blocked())\">\n    {{ blocked() ? 'Unblock' : 'Block' }}\n  </star-button>\n</div>",
+  "bottom-nav/router": "<star-bottom-nav ariaLabel=\"Docs pages\">\n  <star-bottom-nav-item\n    routerLink=\"/controls/list\"\n    label=\"List\"\n    icon=\"ph ph-list-bullets\"\n  />\n  <star-bottom-nav-item\n    routerLink=\"/controls/bottom-nav\"\n    label=\"Bottom nav\"\n    icon=\"ph ph-dots-three-outline\"\n  />\n  <star-bottom-nav-item\n    routerLink=\"/controls/app-bar\"\n    label=\"App bar\"\n    icon=\"ph ph-browser\"\n  />\n</star-bottom-nav>",
+  "bottom-nav/value": "<div class=\"docs-bottom-nav-frame\">\n  <p class=\"docs-bottom-nav-view\" role=\"status\">{{ views[section() ?? 'orders'] }}</p>\n  <star-bottom-nav [(value)]=\"section\" ariaLabel=\"Sections\">\n    <star-bottom-nav-item value=\"orders\" label=\"Orders\" icon=\"ph ph-package\" badge=\"3\" />\n    <star-bottom-nav-item value=\"cities\" label=\"Cities\" icon=\"ph ph-map-pin\" />\n    <star-bottom-nav-item value=\"projects\" label=\"Projects\" icon=\"ph ph-folder\" />\n    <star-bottom-nav-item value=\"settings\" label=\"Settings\" icon=\"ph ph-gear\" />\n  </star-bottom-nav>\n</div>",
   "bottom-sheet/actions": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button\n      variant=\"secondary\"\n      leadingIcon=\"ph-bold ph-dots-three\"\n      (pressed)=\"orderActions()\"\n    >\n      Order actions\n    </star-button>\n  </div>\n  <p class=\"docs-output\" role=\"status\">Action: {{ action() }}</p>\n</div>",
   "bottom-sheet/component": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button leadingIcon=\"ph-bold ph-export\" (pressed)=\"exportInvoice()\">\n      Export invoice\n    </star-button>\n  </div>\n  <p class=\"docs-output\" role=\"status\">Export format: {{ format() }}</p>\n</div>",
   "bottom-sheet/template": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"showProjects(projects)\">\n      Pick a project\n    </star-button>\n  </div>\n  <p class=\"docs-output\" role=\"status\">Project: {{ project() }}</p>\n</div>\n<ng-template #projects let-data let-ref=\"ref\">\n  <div class=\"docs-stack\">\n    <h2 class=\"star-dialog__title\">Projects</h2>\n    @for (name of data; track name) {\n      <star-button variant=\"ghost\" (pressed)=\"ref.dismiss(name)\">{{ name }}</star-button>\n    }\n  </div>\n</ng-template>",
@@ -6960,6 +7361,10 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "knob/basic": "<star-knob [(value)]=\"progress\" valueTemplate=\"{value}%\" ariaLabel=\"Progress\" />\n<p class=\"docs-output\" role=\"status\">Value: {{ progress() }}</p>",
   "knob/range": "<star-knob\n  [(value)]=\"temperature\"\n  [min]=\"10\"\n  [max]=\"30\"\n  [step]=\"0.5\"\n  [size]=\"160\"\n  valueTemplate=\"{value}°\"\n  ariaLabel=\"Temperature\"\n/>",
   "knob/states": "<star-knob [value]=\"72\" readonly [size]=\"90\" ariaLabel=\"Disk use\" />\n<star-knob [value]=\"35\" disabled [size]=\"90\" ariaLabel=\"Locked value\" />",
+  "list/action": "<div class=\"docs-stack\">\n  <star-list mode=\"action\" dense ariaLabel=\"Projects\">\n    @for (project of projects; track project.id) {\n      <star-list-item\n        [active]=\"opened() === project.id\"\n        (activated)=\"opened.set(project.id)\"\n      >\n        {{ project.name }}\n        <span starListItemEnd>{{ project.tasks }} tasks</span>\n      </star-list-item>\n    }\n    <star-list-item disabled>\n      Archive\n      <span starListItemEnd>Read only</span>\n    </star-list-item>\n  </star-list>\n  <p class=\"docs-output\" role=\"status\">Opened: {{ opened() ?? 'none' }}</p>\n</div>",
+  "list/basic": "<star-list ariaLabel=\"Warehouses\" divider>\n  <star-list-subheader>Portugal</star-list-subheader>\n  <star-list-item>\n    <i starListItemStart class=\"ph ph-warehouse\" aria-hidden=\"true\"></i>\n    Lisbon\n    <span starListItemSubtitle>Main warehouse</span>\n    <span starListItemEnd>1,240 orders</span>\n  </star-list-item>\n  <star-list-item>\n    <i starListItemStart class=\"ph ph-warehouse\" aria-hidden=\"true\"></i>\n    Porto\n    <span starListItemSubtitle>Returns</span>\n    <span starListItemEnd>310 orders</span>\n  </star-list-item>\n  <star-list-subheader>Spain</star-list-subheader>\n  <star-list-item>\n    <i starListItemStart class=\"ph ph-warehouse\" aria-hidden=\"true\"></i>\n    Valencia\n    <span starListItemSubtitle>Cross-dock</span>\n    <star-tag starListItemEnd severity=\"success\" value=\"Open\" />\n  </star-list-item>\n</star-list>",
+  "list/empty": "<star-list ariaLabel=\"Recent orders\">\n  <ng-template starEmpty>No recent orders.</ng-template>\n</star-list>",
+  "list/navigation": "<star-list mode=\"navigation\" ariaLabel=\"Documentation\">\n  <star-list-item routerLink=\"/controls/list\">\n    <i starListItemStart class=\"ph ph-list-bullets\" aria-hidden=\"true\"></i>\n    List\n    <span starListItemSubtitle>This page</span>\n  </star-list-item>\n  <star-list-item routerLink=\"/controls/listbox\">\n    <i starListItemStart class=\"ph ph-check-square\" aria-hidden=\"true\"></i>\n    Listbox\n    <span starListItemSubtitle>For selection</span>\n  </star-list-item>\n  <star-list-item routerLink=\"/controls/virtual-scroller\">\n    <i starListItemStart class=\"ph ph-rows\" aria-hidden=\"true\"></i>\n    Virtual scroller\n    <span starListItemSubtitle>For thousands of items</span>\n  </star-list-item>\n</star-list>",
   "listbox/disabled": "<star-listbox\n  [options]=\"queues\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  [value]=\"'intake'\"\n  disabled\n  scrollHeight=\"8rem\"\n  ariaLabel=\"Disabled queue\"\n/>",
   "listbox/form": "<div class=\"docs-stack\">\n  <star-field label=\"Notify queues\" [state]=\"alert.queues()\">\n    <star-listbox\n      [formField]=\"alert.queues\"\n      [options]=\"queues\"\n      optionLabel=\"name\"\n      optionValue=\"id\"\n      multiple\n      scrollHeight=\"10rem\"\n      ariaLabel=\"Notify queues\"\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ alert().valid() }}</p>\n</div>",
   "listbox/groups": "<star-listbox\n  [options]=\"queues\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  optionGroup=\"site\"\n  optionDisabled=\"closed\"\n  [(value)]=\"grouped\"\n  scrollHeight=\"14rem\"\n  ariaLabel=\"Queue by site\"\n/>",
@@ -7143,5 +7548,8 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "tree/multiple": "<star-tree\n  [nodes]=\"folders\"\n  selectionMode=\"multiple\"\n  [(value)]=\"picked\"\n  [(expanded)]=\"multipleOpen\"\n  scrollHeight=\"16rem\"\n  ariaLabel=\"Folders to back up\"\n/>",
   "tree/single": "<div class=\"docs-stack\">\n  <star-tree\n    [nodes]=\"folders\"\n    selectionMode=\"single\"\n    [(value)]=\"selected\"\n    [(expanded)]=\"singleOpen\"\n    scrollHeight=\"16rem\"\n    ariaLabel=\"Folder\"\n    (nodeSelect)=\"lastNode.set($event.label)\"\n  />\n\n  <p class=\"docs-output\" role=\"status\">Selected: {{ selected().join(', ') || 'none' }}</p>\n\n  <p class=\"docs-output\" role=\"status\">Last node: {{ lastNode() }}</p>\n</div>",
   "tree/slots": "<star-tree\n  [nodes]=\"projects\"\n  [(expanded)]=\"projectsOpen\"\n  filter\n  scrollHeight=\"16rem\"\n  ariaLabel=\"Projects\"\n>\n  <ng-template starHeader>\n    <p class=\"docs-output\">Active projects</p>\n  </ng-template>\n  <ng-template starNode [starNodeOf]=\"projects\" let-node let-level=\"level\">\n    {{ node.label }}\n    @if (node.data) {\n      <small>(owner {{ node.data.owner }}, level {{ level }})</small>\n    }\n  </ng-template>\n  <ng-template starIcon=\"toggle\"\n    ><i class=\"ph-bold ph-arrow-right\" aria-hidden=\"true\"></i\n  ></ng-template>\n  <ng-template starEmpty let-text>No project matches {{ text }}.</ng-template>\n  <ng-template starFooter>\n    <p class=\"docs-output\">3 projects</p>\n  </ng-template>\n</star-tree>",
-  "tree/virtual": "<div class=\"docs-stack\">\n  <star-tree\n    [nodes]=\"large.nodes\"\n    [(expanded)]=\"largeOpen\"\n    selectionMode=\"checkbox\"\n    [(value)]=\"largeChecked\"\n    virtualScroll\n    [virtualItemSize]=\"34\"\n    filter\n    scrollHeight=\"20rem\"\n    ariaLabel=\"Orders by site\"\n  />\n\n  <p class=\"docs-output\" role=\"status\">\n    {{ large.count }} nodes, {{ largeChecked().length }} orders checked\n  </p>\n</div>"
+  "tree/virtual": "<div class=\"docs-stack\">\n  <star-tree\n    [nodes]=\"large.nodes\"\n    [(expanded)]=\"largeOpen\"\n    selectionMode=\"checkbox\"\n    [(value)]=\"largeChecked\"\n    virtualScroll\n    [virtualItemSize]=\"34\"\n    filter\n    scrollHeight=\"20rem\"\n    ariaLabel=\"Orders by site\"\n  />\n\n  <p class=\"docs-output\" role=\"status\">\n    {{ large.count }} nodes, {{ largeChecked().length }} orders checked\n  </p>\n</div>",
+  "virtual-scroller/basic": "<div class=\"docs-stack\">\n  <star-virtual-scroller\n    #orderList\n    [items]=\"orders\"\n    [itemSize]=\"44\"\n    scrollHeight=\"18rem\"\n    ariaLabel=\"Orders\"\n  >\n    <ng-template starVirtualItem [starVirtualItemOf]=\"orders\" let-order>\n      <span class=\"docs-scroller-row\">\n        <strong>{{ order.number }}</strong>\n        <span>{{ order.city }}</span>\n        <span>{{ order.total }} EUR</span>\n      </span>\n    </ng-template>\n  </star-virtual-scroller>\n  <div class=\"docs-row\">\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"orderList.scrollToIndex(0)\">\n      First order\n    </star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"orderList.scrollToIndex(4999)\">\n      Order 5,000\n    </star-button>\n    <star-button\n      size=\"sm\"\n      variant=\"secondary\"\n      (pressed)=\"orderList.scrollToIndex(orders.length - 1)\"\n    >\n      Last order\n    </star-button>\n  </div>\n  @let inView = orderList.visibleRange();\n  @if (inView.last > 0) {\n    <p class=\"docs-output\">In view: orders {{ inView.first + 1 }} to {{ inView.last }}.</p>\n  }\n</div>",
+  "virtual-scroller/horizontal": "<star-virtual-scroller\n  [items]=\"cities\"\n  [itemSize]=\"120\"\n  orientation=\"horizontal\"\n  scrollHeight=\"4rem\"\n  ariaLabel=\"Cities\"\n/>",
+  "virtual-scroller/lazy": "<star-virtual-scroller\n  [items]=\"lazyOrders()\"\n  [itemSize]=\"44\"\n  scrollHeight=\"18rem\"\n  lazy\n  [loading]=\"page.isLoading()\"\n  ariaLabel=\"Orders, loaded on demand\"\n  (lazyLoad)=\"range.set($event)\"\n>\n  <ng-template starVirtualItem [starVirtualItemOf]=\"lazyOrders()\" let-order>\n    @if (order) {\n      <span class=\"docs-scroller-row\">\n        <strong>{{ order.number }}</strong>\n        <span>{{ order.city }}</span>\n        <span>{{ order.total }} EUR</span>\n      </span>\n    } @else {\n      <star-skeleton width=\"70%\" height=\"0.875rem\" />\n    }\n  </ng-template>\n</star-virtual-scroller>"
 };

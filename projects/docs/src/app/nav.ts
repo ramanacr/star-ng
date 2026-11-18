@@ -365,10 +365,22 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
     label: 'Navigation',
     items: [
       {
+        label: 'App bar',
+        path: 'controls/app-bar',
+        keywords: 'navbar toolbar header top bar title actions sticky banner landmark',
+        load: () => import('./controls/app-bar.page').then((m) => m.AppBarPage),
+      },
+      {
         label: 'Breadcrumb',
         path: 'controls/breadcrumb',
         keywords: 'path trail home location',
         load: () => import('./controls/breadcrumb.page').then((m) => m.BreadcrumbPage),
+      },
+      {
+        label: 'Bottom navigation',
+        path: 'controls/bottom-nav',
+        keywords: 'bottom nav tab bar mobile navigation bar destinations badge',
+        load: () => import('./controls/bottom-nav.page').then((m) => m.BottomNavPage),
       },
       {
         label: 'Paginator',
@@ -477,6 +489,18 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         load: () => import('./controls/skeleton.page').then((m) => m.SkeletonPage),
       },
       {
+        label: 'List',
+        path: 'controls/list',
+        keywords: 'list item nav list action list subheader avatar divider dense',
+        load: () => import('./controls/list.page').then((m) => m.ListPage),
+      },
+      {
+        label: 'Virtual scroller',
+        path: 'controls/virtual-scroller',
+        keywords: 'virtual scroll windowing large list lazy load infinite performance',
+        load: () => import('./controls/virtual-scroller.page').then((m) => m.VirtualScrollerPage),
+      },
+      {
         label: 'Tree table',
         path: 'controls/tree-table',
         keywords: 'treetable hierarchy rows expand treegrid columns',
@@ -577,6 +601,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         path: 'controls/message',
         keywords: 'inline alert severity closable banner',
         load: () => import('./controls/message.page').then((m) => m.MessagePage),
+      },
+      {
+        label: 'Banner',
+        path: 'controls/banner',
+        keywords: 'notice page alert persistent dismiss announcement',
+        load: () => import('./controls/banner.page').then((m) => m.BannerPage),
       },
       {
         label: 'Progress bar',

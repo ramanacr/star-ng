@@ -13,6 +13,8 @@ import { InjectionToken, Provider } from '@angular/core';
 export interface StarUiText {
   // General
   readonly close: string;
+  /** Hides a notice, for example the dismiss button of `star-banner`. */
+  readonly dismiss: string;
   readonly clear: string;
   readonly loading: string;
   readonly actions: string;
@@ -216,6 +218,7 @@ export interface StarUiText {
 
 export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   close: 'Close',
+  dismiss: 'Dismiss',
   clear: 'Clear',
   loading: 'Loading',
   actions: 'Actions',
