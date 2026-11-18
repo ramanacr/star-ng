@@ -954,8 +954,13 @@ export class StarTree implements FormValueControl<readonly string[]> {
     // Arrow right opens a branch and Arrow left closes it (WAI-ARIA tree pattern). In
     // right-to-left the arrows swap: the branch opens toward the left.
     const key = starInlineKey(event);
-    if ((event.ctrlKey || event.metaKey) && event.shiftKey && MOVE_KEYS[key]) {
-      if (!this.keyboardMoves()) return;
+    // While the moves are off, Ctrl+Shift and an arrow fall through to the navigation below.
+    if (
+      (event.ctrlKey || event.metaKey) &&
+      event.shiftKey &&
+      MOVE_KEYS[key] &&
+      this.keyboardMoves()
+    ) {
       event.preventDefault();
       this.moveByKey(item.node, MOVE_KEYS[key]);
       return;

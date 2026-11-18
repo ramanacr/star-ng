@@ -308,4 +308,14 @@ describe('StarTree drag and drop', () => {
     other.getBoundingClientRect = () => ({ top: 0, height: 40, bottom: 40 }) as DOMRect;
     expect(dragEvent('dragover', other).defaultPrevented).toBe(false);
   });
+
+  it('Ctrl+Shift and an arrow navigate as usual while the moves are off', async () => {
+    const { fixture, host, row, press } = await setup();
+    host.drag.set(false);
+    await fixture.whenStable();
+    row('ops').focus();
+    await press(row('ops'), 'ArrowUp', { ctrlKey: true, shiftKey: true });
+    expect(host.drops).toEqual([]);
+    expect(document.activeElement).toBe(row('web'));
+  });
 });
