@@ -841,3 +841,56 @@ describe('date picker: dateStyle with showTime', () => {
     expect(fixture.componentInstance.sent()).toEqual(new Date(2026, 10, 23, 9, 15, 45));
   });
 });
+
+@Component({
+  imports: [StarDatePicker, StarDateRangePicker],
+  template: `
+    <star-date-picker
+      locale="en-GB"
+      ariaLabel="Hours"
+      showTime
+      minTime="08:00"
+      maxTime="18:00"
+      [(value)]="visit"
+    />
+    <star-date-range-picker
+      locale="en-GB"
+      ariaLabel="Hours range"
+      showTime
+      minTime="08:00"
+      maxTime="18:00"
+      [minDate]="minDate"
+      [(value)]="shift"
+    />
+  `,
+})
+class TypedLimitsHost {
+  readonly minDate = new Date(2026, 10, 2, 10, 0);
+  readonly visit = signal<Date | null>(null);
+  readonly shift = signal<StarDateRange | null>(null);
+}
+
+describe('date pickers: typed text and the time limits', () => {
+  async function setup() {
+    const fixture = TestBed.createComponent(TypedLimitsHost);
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+    const type = async (label: string, text: string) => {
+      const input = el.querySelector<HTMLInputElement>(`input[aria-label="${label}"]`)!;
+      input.value = text;
+      input.dispatchEvent(new Event('input'));
+      input.dispatchEvent(new Event('blur'));
+      await fixture.whenStable();
+    };
+    return { host: fixture.componentInstance, type };
+  }
+
+  it('moves the fallback time of a typed date without a time into minTime / maxTime', async () => {
+    const { host, type } = await setup();
+    await type('Hours', '20/11/2026');
+    expect(host.visit()).toEqual(new Date(2026, 10, 20, 8, 0));
+    // A time that the user typed outside the limits is still not taken.
+    await type('Hours', '21/11/2026 07:00');
+    expect(host.visit()).toEqual(new Date(2026, 10, 20, 8, 0));
+  });
+});

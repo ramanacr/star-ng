@@ -454,17 +454,22 @@ export abstract class StarDateInputBase<TValue> {
 
   /**
    * "<date> hh:mm[:ss]" or "<date>, hh:mm[:ss] am". A date without a time takes the fallback
-   * time. `undefined`: the text is not a valid date and time.
+   * time, moved into the limits (`clampTime`). A typed time outside the limits is not taken.
+   * `undefined`: the text is not a valid date and time.
    */
   protected parseDateTime(text: string, fallback: Date): Date | undefined {
     const time = starSplitDateTime(text);
     if (time === undefined) return undefined;
     const date = this.parseOne(time ? time.date : text);
     if (!date) return undefined;
-    if (!time)
-      return atTime(date, fallback.getHours(), fallback.getMinutes(), fallback.getSeconds());
+    if (!time) {
+      return this.clampTime(
+        atTime(date, fallback.getHours(), fallback.getMinutes(), fallback.getSeconds()),
+      );
+    }
     // Without the second column the seconds are 0.
-    return atTime(date, time.hours, time.minutes, this.showSeconds() ? time.seconds : 0);
+    const typed = atTime(date, time.hours, time.minutes, this.showSeconds() ? time.seconds : 0);
+    return this.clampTime(typed).getTime() === typed.getTime() ? typed : undefined;
   }
 
   /** `date` moved into `minTime` … `maxTime` of its day, then into `minDate` … `maxDate`. */
@@ -781,8 +786,7 @@ export class StarDatePicker<T extends Date | string = Date>
   private parseDay(text: string): Date | null | undefined {
     if (this.view() !== 'day') return this.parsePeriod(text.trim());
     if (!this.timeEnabled()) return this.parseOne(text);
-    const date = this.parseDateTime(text, this.date() ?? new Date(2000, 0, 1));
-    return date && this.clampTime(date).getTime() === date.getTime() ? date : undefined;
+    return this.parseDateTime(text, this.date() ?? new Date(2000, 0, 1));
   }
 
   /** `mm/yyyy`, `yyyy-mm` or `yyyy`: the first day of that month or year. */
