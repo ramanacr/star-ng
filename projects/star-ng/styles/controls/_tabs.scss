@@ -4,8 +4,14 @@
 .star-tabs {
   display: block;
 }
+.star-tabs__nav {
+  display: flex;
+  align-items: stretch;
+}
 .star-tabs__list {
   display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
   gap: 0.25rem;
   overflow-x: auto;
   border-bottom: 1px solid var(--star-border);
@@ -57,6 +63,7 @@
   }
 }
 .star-tabs--pill .star-tabs__list {
+  flex: 0 1 auto;
   gap: 0.375rem;
   padding: 0.25rem;
   border: 0;
@@ -90,4 +97,41 @@
     outline-offset: 4px;
     border-radius: var(--star-radius-sm);
   }
+}
+
+// Scrollable: one line of tabs, no scroll bar, scroll buttons at both ends when they overflow.
+.star-tabs--scrollable .star-tabs__list {
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+.star-tabs__scroll {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 2rem;
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid var(--star-border);
+  background: var(--star-surface);
+  color: var(--star-text-muted);
+  cursor: pointer;
+
+  &:hover {
+    color: var(--star-text-strong);
+  }
+  &[hidden] {
+    display: none;
+  }
+}
+.star-tabs--pill .star-tabs__scroll {
+  border: 0;
+  border-radius: var(--star-radius-md);
+  background: transparent;
+}
+// The caret points to the start or the end of the line, so it turns over in right-to-left.
+.star-tabs__scroll i:dir(rtl) {
+  scale: -1 1;
 }

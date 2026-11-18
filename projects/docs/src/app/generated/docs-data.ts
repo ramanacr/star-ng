@@ -6713,7 +6713,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-tabs",
     "entry": "@star-ng/ui/tabs",
-    "description": "Tabs (PrimeNG `p-tabs`): `[(value)]`, disabled tabs, icons, badges, lazy panels and the WAI-ARIA tabs keyboard model (Arrow keys, Home, End; automatic or manual activation).",
+    "description": "Tabs (PrimeNG `p-tabs`, Material `mat-tab-group`): `[(value)]`, disabled tabs, icons, badges, lazy panels and the WAI-ARIA tabs keyboard model (Arrow keys, Home, End; automatic or manual activation). `scrollable` adds scroll buttons when the tabs do not fit (PrimeNG `scrollable`, Material pagination).",
     "inputs": [
       {
         "name": "variant",
@@ -6735,6 +6735,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "null",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "scrollable",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Keeps the tabs on one line and shows previous and next scroll buttons when they do not fit. The selected tab scrolls into view. PrimeNG `scrollable`, Material `disablePagination` off."
       }
     ],
     "models": [
@@ -8297,6 +8304,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "table/templates": "<docs-fill>\n  <star-table\n    [value]=\"orders\"\n    [columns]=\"columns\"\n    dataKey=\"id\"\n    ariaLabel=\"Orders with status tags\"\n    paginator\n    [rows]=\"5\"\n  >\n    <ng-template starCell=\"status\" [starCellOf]=\"orders\" let-row>\n      <star-tag [severity]=\"severityOf(row.status)\" [value]=\"row.status\" rounded />\n    </ng-template>\n    <ng-template starCell=\"customer\" [starCellOf]=\"orders\" let-row let-value=\"value\">\n      <strong>{{ value }}</strong>\n      <br />\n      <small>{{ row.email }}</small>\n    </ng-template>\n  </star-table>\n</docs-fill>",
   "tabs/basic": "<div class=\"docs-stack\">\n  <star-tabs [(value)]=\"tab\" ariaLabel=\"Order sections\">\n    <star-tab value=\"details\" label=\"Details\" icon=\"ph-bold ph-file-text\">\n      Order ORD-1042 for Orchard Supply.\n    </star-tab>\n    <star-tab value=\"items\" label=\"Items\" [badge]=\"12\">Twelve items in two boxes.</star-tab>\n    <star-tab value=\"billing\" label=\"Billing\" disabled>Billing is not available.</star-tab>\n    <star-tab value=\"history\" label=\"History\">Created on Monday.</star-tab>\n  </star-tabs>\n  <p class=\"docs-output\" role=\"status\">Selected: {{ tab() ?? 'details' }}</p>\n</div>",
   "tabs/pill": "<div class=\"docs-stack\">\n  <star-tabs variant=\"pill\" [selectOnFocus]=\"false\" ariaLabel=\"Report views\">\n    <star-tab value=\"daily\" label=\"Daily\">Daily totals.</star-tab>\n    <star-tab value=\"weekly\" label=\"Weekly\">\n      <ng-template starTabContent>Weekly totals, loaded on first use.</ng-template>\n    </star-tab>\n    <star-tab value=\"monthly\" label=\"Monthly\">Monthly totals.</star-tab>\n  </star-tabs>\n</div>",
+  "tabs/scrollable": "<div class=\"docs-stack\">\n  <star-tabs scrollable ariaLabel=\"Monthly reports\">\n    @for (month of months; track month) {\n      <star-tab [value]=\"month\" [label]=\"month\">Report for {{ month }}.</star-tab>\n    }\n  </star-tabs>\n</div>",
   "tag/icon": "<star-tag severity=\"success\" icon=\"ph-bold ph-check\" rounded>Shipped</star-tag>\n<star-tag severity=\"warn\" icon=\"ph-bold ph-clock\" rounded>Waiting</star-tag>",
   "tag/severities": "<star-tag value=\"New\" />\n<star-tag severity=\"secondary\" value=\"Draft\" />\n<star-tag severity=\"success\" value=\"Paid\" />\n<star-tag severity=\"info\" value=\"In review\" />\n<star-tag severity=\"warn\" value=\"Due soon\" />\n<star-tag severity=\"danger\" value=\"Overdue\" />",
   "terminal/basic": "<div class=\"docs-stack docs-terminal\">\n  <star-terminal\n    #terminal\n    ariaLabel=\"Diagnostics\"\n    prompt=\"app $\"\n    welcome=\"Type help for the commands.\"\n    [handler]=\"runCommand\"\n    (commandRun)=\"last.set($event)\"\n  />\n  <div class=\"docs-row\">\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"terminal.clear()\">\n      Clear\n    </star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"terminal.run('status')\">\n      Run \"status\"\n    </star-button>\n  </div>\n  <p class=\"docs-output\" role=\"status\">Last command: {{ last() || 'none' }}</p>\n</div>",

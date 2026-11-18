@@ -47,6 +47,20 @@ import { DOCS, DocsRow } from '../shared/docs';
         </div>
       </docs-example>
 
+      <docs-example
+        heading="Scrollable tabs"
+        source="tabs/scrollable"
+        note="With scrollable, the tabs stay on one line. Scroll buttons show at an end that hides tabs. They are for the pointer only: the arrow keys reach every tab, and the selected tab scrolls into view."
+      >
+        <div class="docs-stack">
+          <star-tabs scrollable ariaLabel="Monthly reports">
+            @for (month of months; track month) {
+              <star-tab [value]="month" [label]="month">Report for {{ month }}.</star-tab>
+            }
+          </star-tabs>
+        </div>
+      </docs-example>
+
       <h2>Right-to-left</h2>
       <p>
         With <code>dir="rtl"</code> the first tab is on the right. Arrow left moves to the next tab
@@ -67,6 +81,20 @@ export class TabsPage {
   protected readonly tab = signal<string | null>(null);
 
   protected readonly basicScript = `readonly tab = signal<string | null>(null);`;
+  protected readonly months = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+  ];
 
   protected readonly slots: readonly DocsRow[] = [
     {
@@ -93,6 +121,11 @@ export class TabsPage {
         'Moves to the next or previous enabled tab. It wraps around. The tab is selected too, unless selectOnFocus is false.',
     },
     { name: 'Home / End', description: 'Moves to the first or last enabled tab.' },
+    {
+      name: 'Scroll buttons',
+      description:
+        'With scrollable: pointer only, not in the tab order and hidden from screen readers. The arrow keys reach every tab.',
+    },
     { name: 'Enter / Space', description: 'Selects the focused tab (manual activation).' },
     {
       name: 'Tab',
