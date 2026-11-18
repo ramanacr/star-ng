@@ -1,3 +1,10 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="projects/docs/public/brand/starng-logo-dark.svg" />
+    <img src="projects/docs/public/brand/starng-logo.svg" alt="StarNG" height="64" />
+  </picture>
+</p>
+
 # StarNG
 
 [![npm version](https://img.shields.io/npm/v/@star-ng/ui)](https://www.npmjs.com/package/@star-ng/ui)

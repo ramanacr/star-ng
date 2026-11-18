@@ -44,7 +44,17 @@ export const DIRECTION_KEY = 'star-direction';
         <i class="ph-bold ph-list" aria-hidden="true"></i>
       </button>
       <a class="docs-header__brand" routerLink="/">
-        <span class="docs-header__mark" aria-hidden="true"><i class="ph-fill ph-star"></i></span>
+        <svg class="docs-header__mark" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+          <g class="docs-header__mark-brackets">
+            <path d="M14 20L4 32L14 44" />
+            <path d="M43 46L49 18" />
+            <path d="M53 20L61 32L53 44" />
+          </g>
+          <path
+            class="docs-header__mark-star"
+            d="M28 19C28.9 28 31 30.1 40 31C31 31.9 28.9 34 28 43C27.1 34 25 31.9 16 31C25 30.1 27.1 28 28 19Z"
+          />
+        </svg>
         <span>StarNG</span>
       </a>
       <span class="docs-header__spacer"></span>
