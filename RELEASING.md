@@ -88,10 +88,39 @@ trusted publisher only to a package that already exists.
    `publish to npm` runs next and only publishes the tarball. The job
    `verify published package` runs last. It waits until the registry shows the new version
    (up to 15 minutes), installs it in an empty project and runs `npm audit signatures`.
+   The job `create GitHub release` runs after `publish to npm` succeeded. It does not wait for
+   `verify published package`.
 5. Check the result:
    - Open <https://www.npmjs.com/package/@star-ng/ui>. The page shows the version and the
      "Provenance" badge.
    - `npm view @star-ng/ui dist-tags` shows the expected tag.
+   - The GitHub release appears under Releases (`gh release view v0.1.0`).
+
+## GitHub release
+
+The job `create GitHub release` makes the release automatically. You do nothing.
+
+- Title: the tag (for example `v0.3.0`).
+- Notes: the section `## [<version>]` of `CHANGELOG.md`, without the heading. The script
+  `tools/release-notes.mjs <version>` extracts it. The job fails if the section is missing or
+  empty. Write the changelog section in the release pull request, before you tag.
+- The job uses `--verify-tag`: it never creates a tag.
+- It runs only when `publish to npm` succeeded. If `NPM_PUBLISH` is not `true`, the publish is
+  skipped and no release is made.
+- It is safe to re-run. If the release exists, the job skips it and does not change it. Edit
+  the notes of an existing release by hand (`gh release edit`).
+- "Latest" badge: a stable version gets `--latest` only if it is the highest stable version tag.
+  A prerelease (`0.2.0-rc.1`) is marked as a prerelease and is never latest. A stable version
+  that is lower than the highest tag is not latest.
+
+Manual fallback, if the job failed or was skipped (for example before `NPM_PUBLISH` was set).
+Run it in a shell with `<(...)` support (bash), from the repository root at the tag:
+
+```bash
+gh release create vX.Y.Z --title vX.Y.Z --notes-file <(node tools/release-notes.mjs X.Y.Z) --verify-tag
+```
+
+Add `--latest=false` for an older version, or `--prerelease` for a prerelease.
 
 ## Dist-tags and versions
 
