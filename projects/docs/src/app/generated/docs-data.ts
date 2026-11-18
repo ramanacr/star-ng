@@ -1935,14 +1935,14 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "Date",
         "default": null,
         "required": false,
-        "description": "The user chose Today in the button bar; the value is today (PrimeNG `onTodayClick`)."
+        "description": "The user chose Today in the button bar, after the value changed; the event is today (PrimeNG `onTodayClick`). Not emitted when today cannot be chosen."
       },
       {
         "name": "clearClick",
         "type": "void",
         "default": null,
         "required": false,
-        "description": "The user chose Clear in the button bar or the clear button (PrimeNG `onClearClick`)."
+        "description": "The user chose Clear in the button bar or the clear button, after the value was cleared (PrimeNG `onClearClick`)."
       }
     ]
   },

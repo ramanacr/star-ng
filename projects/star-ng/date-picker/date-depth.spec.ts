@@ -962,3 +962,63 @@ describe('ISO text from a server', () => {
     expect(input.value.startsWith('05/11/2026')).toBe(true);
   });
 });
+
+@Component({
+  imports: [StarDatePicker],
+  template: `
+    <star-date-picker
+      locale="en-GB"
+      ariaLabel="Order"
+      showButtonBar
+      [(value)]="picked"
+      (todayClick)="atToday = picked()"
+      (clearClick)="atClear = picked()"
+    />
+    <star-date-picker
+      locale="en-GB"
+      ariaLabel="Past only"
+      showButtonBar
+      [maxDate]="past"
+      (todayClick)="pastToday = true"
+    />
+  `,
+})
+class EventOrderHost {
+  readonly past = new Date(2000, 0, 1);
+  readonly picked = signal<Date | null>(new Date(2026, 10, 2));
+  atToday: Date | null | undefined = undefined;
+  atClear: Date | null | undefined = undefined;
+  pastToday = false;
+}
+
+describe('date picker: Today and Clear events after the change', () => {
+  afterEach(() => document.querySelectorAll('.star-date__panel').forEach((item) => item.remove()));
+
+  async function open(
+    fixture: { nativeElement: HTMLElement; whenStable: () => Promise<unknown> },
+    label: string,
+  ) {
+    fixture.nativeElement
+      .querySelector<HTMLInputElement>(`input[aria-label="${label}"]`)!
+      .dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', altKey: true }));
+    await fixture.whenStable();
+    return document.querySelectorAll<HTMLButtonElement>('.star-date__bar button');
+  }
+
+  it('emits todayClick and clearClick after the value changed, and no todayClick when today is not allowed', async () => {
+    const fixture = TestBed.createComponent(EventOrderHost);
+    await fixture.whenStable();
+    const host = fixture.componentInstance;
+    (await open(fixture, 'Order'))[0].click();
+    await fixture.whenStable();
+    const today = new Date();
+    expect(host.atToday).toEqual(new Date(today.getFullYear(), today.getMonth(), today.getDate()));
+    (await open(fixture, 'Order'))[1].click();
+    await fixture.whenStable();
+    expect(host.atClear).toBeNull();
+
+    (await open(fixture, 'Past only'))[0].click();
+    await fixture.whenStable();
+    expect(host.pastToday).toBe(false);
+  });
+});

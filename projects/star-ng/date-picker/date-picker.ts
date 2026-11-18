@@ -200,9 +200,15 @@ export abstract class StarDateInputBase<TValue> {
   readonly yearChange = output<StarCalendarYearChange>();
   /** The user switched the calendar between the day, month and year views. */
   readonly viewChange = output<StarCalendarView>();
-  /** The user chose Today in the button bar; the value is today (PrimeNG `onTodayClick`). */
+  /**
+   * The user chose Today in the button bar, after the value changed; the event is today
+   * (PrimeNG `onTodayClick`). Not emitted when today cannot be chosen.
+   */
   readonly todayClick = output<Date>();
-  /** The user chose Clear in the button bar or the clear button (PrimeNG `onClearClick`). */
+  /**
+   * The user chose Clear in the button bar or the clear button, after the value was cleared
+   * (PrimeNG `onClearClick`).
+   */
   readonly clearClick = output<void>();
 
   protected readonly positions = PANEL_POSITIONS;
@@ -431,13 +437,15 @@ export abstract class StarDateInputBase<TValue> {
 
   protected today(): void {
     const today = startOfDay(new Date());
-    this.todayClick.emit(today);
+    // The month and year views choose the month or year of today, which is always shown.
+    if (this.granularity() === 'day' && !this.allowed(today)) return;
     this.pickToday(today);
+    this.todayClick.emit(today);
   }
 
   protected onClearClick(): void {
-    this.clearClick.emit();
     this.clear();
+    this.clearClick.emit();
   }
 
   clear(): void {
