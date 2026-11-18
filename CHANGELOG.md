@@ -54,6 +54,7 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - Tabs: `scrollable` keeps the tabs on one line with previous and next scroll buttons (pointer only, shown when the tabs overflow) and scrolls the selected tab into view (PrimeNG `scrollable`, Material pagination).
 - Tabs: `closable` on `star-tab` shows a close button, and the Delete key closes the focused tab. The output `tabClose({ value, index, cancel() })` lets the owner remove the tab or keep it; the selection and the focus move to the neighbour tab. `STAR_UI_TEXT.tabClose` and `tabCloseHint` with German and Spanish texts (PrimeNG `closable`, `onClose`).
 - Tabs: `lazy` (default `true`: `starTabContent` renders on the first activation; `false` renders every template at once) and `cache` (default `true`: rendered panels stay alive, hidden; `false` destroys the content of a tab that is not active) (PrimeNG `lazy`, `cache`, Material `preserveContent`).
+- Tabs: `orientation` (`horizontal` or `vertical`, with `aria-orientation`; Arrow Up and Arrow Down move in a vertical list, Arrow Left and Arrow Right stay mirrored in right-to-left) and `alignment` (`start`, `center`, `end`, `stretch`).
 
 ### Changed
 

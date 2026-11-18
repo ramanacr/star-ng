@@ -63,6 +63,40 @@ import { DOCS, DocsRow } from '../shared/docs';
       </docs-example>
 
       <docs-example
+        heading="Vertical tabs"
+        source="tabs/vertical"
+        note="With orientation vertical, the tabs form a column at the start of the panels, and Arrow Up and Arrow Down move between them. The tab list has aria-orientation."
+      >
+        <star-tabs orientation="vertical" ariaLabel="Account settings">
+          <star-tab value="profile" label="Profile" icon="ph-bold ph-user"
+            >Profile settings.</star-tab
+          >
+          <star-tab value="billing" label="Billing" icon="ph-bold ph-receipt">
+            Billing settings.
+          </star-tab>
+          <star-tab value="alerts" label="Alerts" icon="ph-bold ph-bell">Alert settings.</star-tab>
+        </star-tabs>
+      </docs-example>
+
+      <docs-example
+        heading="Alignment"
+        source="tabs/alignment"
+        note="alignment places the tabs at the start (default), the center or the end of the list, or stretches them to fill it."
+      >
+        <div class="docs-stack">
+          <star-tabs alignment="stretch" ariaLabel="Invoice status">
+            <star-tab value="open" label="Open">Open invoices.</star-tab>
+            <star-tab value="paid" label="Paid">Paid invoices.</star-tab>
+            <star-tab value="overdue" label="Overdue">Overdue invoices.</star-tab>
+          </star-tabs>
+          <star-tabs alignment="center" variant="pill" ariaLabel="Period">
+            <star-tab value="week" label="Week">This week.</star-tab>
+            <star-tab value="month" label="Month">This month.</star-tab>
+          </star-tabs>
+        </div>
+      </docs-example>
+
+      <docs-example
         heading="Lazy panels without cache"
         source="tabs/cache"
         note="Content inside ng-template starTabContent renders on the first activation of its tab (lazy, the default). By default it then stays, hidden, and keeps its state. With cache off, the content of a tab that is not active is destroyed: type in a note, switch the tab and come back. With lazy off, every template renders at once."
@@ -175,6 +209,10 @@ closeFile(event: StarTabCloseEvent): void {
       name: 'Arrow Right / Arrow Left',
       description:
         'Moves to the next or previous enabled tab. It wraps around. The tab is selected too, unless selectOnFocus is false.',
+    },
+    {
+      name: 'Arrow Down / Arrow Up',
+      description: 'The same, with orientation vertical (instead of Arrow Right and Arrow Left).',
     },
     { name: 'Home / End', description: 'Moves to the first or last enabled tab.' },
     {

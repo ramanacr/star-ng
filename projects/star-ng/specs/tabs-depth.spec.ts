@@ -230,3 +230,77 @@ describe('StarTabs lazy and cache', () => {
     expect(panels.map((panel) => panel.hidden)).toEqual([false, true, true]);
   });
 });
+
+@Component({
+  imports: [StarTabs, StarTab],
+  template: `
+    <star-tabs
+      [(value)]="tab"
+      [orientation]="orientation()"
+      [alignment]="alignment()"
+      [attr.dir]="dir()"
+      ariaLabel="Settings"
+    >
+      <star-tab value="a" label="A">A</star-tab>
+      <star-tab value="b" label="B">B</star-tab>
+      <star-tab value="c" label="C">C</star-tab>
+    </star-tabs>
+  `,
+})
+class OrientationHost {
+  readonly tab = signal<string | null>(null);
+  readonly orientation = signal<'horizontal' | 'vertical'>('vertical');
+  readonly alignment = signal<'start' | 'center' | 'end' | 'stretch'>('start');
+  readonly dir = signal<'ltr' | 'rtl'>('ltr');
+}
+
+describe('StarTabs orientation and alignment', () => {
+  it('uses Up and Down in a vertical tab list', async () => {
+    const fixture = TestBed.createComponent(OrientationHost);
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+    const list = el.querySelector('[role=tablist]')!;
+    expect(list.getAttribute('aria-orientation')).toBe('vertical');
+    expect(el.querySelector('star-tabs')!.classList).toContain('star-tabs--vertical');
+    const tabs = [...el.querySelectorAll<HTMLElement>('[role=tab]')];
+    key(tabs[0], { key: 'ArrowDown' });
+    await fixture.whenStable();
+    expect(fixture.componentInstance.tab()).toBe('b');
+    expect(document.activeElement).toBe(tabs[1]);
+    key(tabs[1], { key: 'ArrowUp' });
+    await fixture.whenStable();
+    expect(fixture.componentInstance.tab()).toBe('a');
+    // Left and Right do nothing in a vertical list.
+    key(tabs[0], { key: 'ArrowRight' });
+    await fixture.whenStable();
+    expect(fixture.componentInstance.tab()).toBe('a');
+  });
+
+  it('mirrors Left and Right in a horizontal right-to-left list, and ignores Up and Down', async () => {
+    const fixture = TestBed.createComponent(OrientationHost);
+    fixture.componentInstance.orientation.set('horizontal');
+    fixture.componentInstance.dir.set('rtl');
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.querySelector('[role=tablist]')!.getAttribute('aria-orientation')).toBe('horizontal');
+    const tabs = [...el.querySelectorAll<HTMLElement>('[role=tab]')];
+    key(tabs[0], { key: 'ArrowLeft' });
+    await fixture.whenStable();
+    expect(fixture.componentInstance.tab()).toBe('b');
+    key(tabs[1], { key: 'ArrowDown' });
+    await fixture.whenStable();
+    expect(fixture.componentInstance.tab()).toBe('b');
+  });
+
+  it('sets the alignment class', async () => {
+    const fixture = TestBed.createComponent(OrientationHost);
+    fixture.componentInstance.alignment.set('stretch');
+    await fixture.whenStable();
+    const host = (fixture.nativeElement as HTMLElement).querySelector('star-tabs')!;
+    expect(host.classList).toContain('star-tabs--align-stretch');
+    fixture.componentInstance.alignment.set('center');
+    await fixture.whenStable();
+    expect(host.classList).toContain('star-tabs--align-center');
+    expect(host.classList).not.toContain('star-tabs--align-stretch');
+  });
+});

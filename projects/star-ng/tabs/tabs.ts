@@ -136,6 +136,10 @@ export class StarTab {
     class: 'star-tabs',
     '[class.star-tabs--pill]': "variant() === 'pill'",
     '[class.star-tabs--scrollable]': 'scrollable()',
+    '[class.star-tabs--vertical]': 'vertical()',
+    '[class.star-tabs--align-center]': "alignment() === 'center'",
+    '[class.star-tabs--align-end]': "alignment() === 'end'",
+    '[class.star-tabs--align-stretch]': "alignment() === 'stretch'",
   },
   template: `
     <div class="star-tabs__nav">
@@ -149,13 +153,19 @@ export class StarTab {
           [hidden]="!overflow().start"
           (click)="scrollPage(-1)"
         >
-          <i class="ph-bold ph-caret-left" aria-hidden="true"></i>
+          <i
+            class="ph-bold"
+            [class.ph-caret-left]="!vertical()"
+            [class.ph-caret-up]="vertical()"
+            aria-hidden="true"
+          ></i>
         </button>
       }
       <div
         #list
         class="star-tabs__list"
         role="tablist"
+        [attr.aria-orientation]="orientation()"
         [attr.aria-label]="ariaLabel()"
         (scroll)="measure()"
       >
@@ -221,7 +231,12 @@ export class StarTab {
           [hidden]="!overflow().end"
           (click)="scrollPage(1)"
         >
-          <i class="ph-bold ph-caret-right" aria-hidden="true"></i>
+          <i
+            class="ph-bold"
+            [class.ph-caret-right]="!vertical()"
+            [class.ph-caret-down]="vertical()"
+            aria-hidden="true"
+          ></i>
         </button>
       }
     </div>
@@ -248,6 +263,13 @@ export class StarTabs {
    * default). `false` renders every template at once. Content placed directly in `star-tab`
    * always renders at once. PrimeNG `lazy`.
    */
+  /**
+   * `'vertical'` puts the tabs in a column at the start of the panels; Arrow Up and Arrow Down
+   * move between them. PrimeNG has no equivalent, Material `mat-tab-nav` has none either.
+   */
+  readonly orientation = input<'horizontal' | 'vertical'>('horizontal');
+  /** Position of the tabs along the list: at the start, centered, at the end, or filling it. */
+  readonly alignment = input<'start' | 'center' | 'end' | 'stretch'>('start');
   readonly lazy = input(true, { transform: booleanAttribute });
   /**
    * Keeps rendered `starTabContent` alive (hidden) when its tab is not active, so it keeps its
@@ -267,6 +289,7 @@ export class StarTabs {
   protected readonly tabs = contentChildren(StarTab);
   private readonly buttons = viewChildren<ElementRef<HTMLButtonElement>>('tabButton');
   private readonly list = viewChild.required<ElementRef<HTMLElement>>('list');
+  protected readonly vertical = computed(() => this.orientation() === 'vertical');
   /** Hidden content at either end of the tab list (`scrollable`). */
   protected readonly overflow = signal(STAR_TABS_NO_OVERFLOW);
 
@@ -291,6 +314,7 @@ export class StarTabs {
       const scrollable = this.scrollable();
       const list = this.list().nativeElement;
       this.tabs();
+      this.vertical();
       if (!scrollable) {
         observer?.disconnect();
         observer = null;
@@ -310,7 +334,7 @@ export class StarTabs {
       if (!this.scrollable()) return;
       const index = this.tabs().findIndex((tab) => tab.value() === selected);
       const button = this.buttons()[index]?.nativeElement;
-      if (button) starTabsReveal(this.list().nativeElement, button, false);
+      if (button) starTabsReveal(this.list().nativeElement, button, this.vertical());
       this.measure();
     });
   }
@@ -318,7 +342,7 @@ export class StarTabs {
   /** Reads which ends of the list hide tabs. */
   protected measure(): void {
     if (!this.scrollable()) return;
-    const next = starTabsOverflow(this.list().nativeElement, false);
+    const next = starTabsOverflow(this.list().nativeElement, untracked(this.vertical));
     const now = untracked(this.overflow);
     if (next.start !== now.start || next.end !== now.end) this.overflow.set(next);
   }
@@ -326,7 +350,7 @@ export class StarTabs {
   /** Scroll button: one page toward the start (-1) or the end (1) of the list. */
   protected scrollPage(step: 1 | -1): void {
     const list = this.list().nativeElement;
-    starTabsScrollPage(list, step, false, starIsRtl(list));
+    starTabsScrollPage(list, step, this.vertical(), starIsRtl(list));
     this.measure();
   }
 
@@ -388,12 +412,16 @@ export class StarTabs {
     const enabled = this.tabs().filter((tab) => !tab.disabled());
     const index = enabled.indexOf(current);
     let next: StarTab | undefined;
-    // Arrow right means "next tab in reading order": the left arrow in right-to-left.
+    // Arrow right means "next tab in reading order": the left arrow in right-to-left. A vertical
+    // list uses Arrow down and Arrow up instead.
+    const [forward, back] = this.vertical()
+      ? ['ArrowDown', 'ArrowUp']
+      : ['ArrowRight', 'ArrowLeft'];
     switch (starInlineKey(event)) {
-      case 'ArrowRight':
+      case forward:
         next = enabled[(index + 1) % enabled.length];
         break;
-      case 'ArrowLeft':
+      case back:
         next = enabled[(index - 1 + enabled.length) % enabled.length];
         break;
       case 'Home':

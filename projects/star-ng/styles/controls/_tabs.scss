@@ -168,3 +168,80 @@
     cursor: not-allowed;
   }
 }
+// Alignment of the tabs along the list.
+.star-tabs--align-center .star-tabs__list {
+  justify-content: center;
+}
+.star-tabs--align-end .star-tabs__list {
+  justify-content: flex-end;
+}
+.star-tabs--align-stretch .star-tabs__item,
+.star-tabs--align-stretch .star-tabs__list > .star-tabs__item > .star-tabs__tab {
+  flex: 1 1 0;
+  justify-content: center;
+}
+// Vertical: the tabs form a column at the start of the panels.
+.star-tabs--vertical {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.25rem;
+
+  > .star-tabs__nav {
+    flex: none;
+    flex-direction: column;
+    max-height: inherit;
+  }
+  .star-tabs__list {
+    flex-direction: column;
+    overflow: hidden auto;
+    border-bottom: 0;
+    border-inline-end: 1px solid var(--star-border);
+  }
+  .star-tabs__item {
+    display: flex;
+  }
+  .star-tabs__tab {
+    flex: 1 1 auto;
+    justify-content: flex-start;
+
+    &::after {
+      inset-block: 0.375rem;
+      inset-inline-start: auto;
+      inset-inline-end: -1px;
+      width: 2px;
+      height: auto;
+      scale: 1 0;
+    }
+  }
+  .star-tabs__tab--active::after {
+    scale: 1 1;
+  }
+  > .star-tabs__panel {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding-top: 0;
+  }
+  .star-tabs__scroll {
+    width: auto;
+    height: 1.75rem;
+    border-bottom: 0;
+    border-inline-end: 1px solid var(--star-border);
+  }
+}
+.star-tabs--vertical.star-tabs--pill .star-tabs__list {
+  border: 0;
+}
+.star-tabs--vertical.star-tabs--align-center .star-tabs__list {
+  justify-content: center;
+}
+// The pill list is as wide as its tabs: the alignment moves the whole list.
+.star-tabs--pill.star-tabs--align-center > .star-tabs__nav {
+  justify-content: center;
+}
+.star-tabs--pill.star-tabs--align-end > .star-tabs__nav {
+  justify-content: flex-end;
+}
+.star-tabs--pill.star-tabs--align-stretch .star-tabs__list {
+  flex: 1 1 auto;
+  width: auto;
+}
