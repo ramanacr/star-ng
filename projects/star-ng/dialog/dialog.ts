@@ -1,22 +1,24 @@
-import { _IdGenerator } from '@angular/cdk/a11y';
 import {
-  afterRenderEffect,
   booleanAttribute,
   ChangeDetectionStrategy,
   Component,
-  ElementRef,
+  computed,
+  DOCUMENT,
   inject,
   input,
-  model,
   output,
-  viewChild,
+  signal,
 } from '@angular/core';
-import { STAR_UI_TEXT } from '@star-ng/ui/core';
-
-const FOCUSABLE =
-  'button:not([disabled]), [href], input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])';
-
-export type StarDialogSize = 'sm' | 'md' | 'lg' | 'xl' | 'full';
+import { StarDialogBase } from './dialog-base';
+import {
+  arrowDelta,
+  clampToViewport,
+  STAR_DIALOG_KEY_STEP,
+  StarDialogDimensions,
+  StarDialogFrame,
+  StarDialogPoint,
+  trackPointer,
+} from './dialog-drag';
 
 /**
  * Dialog (PrimeNG `p-dialog`) built on the native `<dialog>` element: top-layer rendering,
@@ -46,7 +48,10 @@ export type StarDialogSize = 'sm' | 'md' | 'lg' | 'xl' | 'full';
       class="star-dialog"
       [class]="'star-dialog--' + size()"
       [class.star-dialog--modal]="modal()"
+      [class.star-dialog--placed]="placed() !== null"
       [style.width]="width()"
+      [style.left.px]="placed()?.x"
+      [style.top.px]="placed()?.y"
       [attr.aria-labelledby]="header() ? headerId : null"
       [attr.aria-label]="header() ? null : ariaLabel()"
       [attr.role]="role()"
@@ -56,23 +61,41 @@ export type StarDialogSize = 'sm' | 'md' | 'lg' | 'xl' | 'full';
     >
       <div class="star-dialog__surface">
         @if (showHeader()) {
-          <header class="star-dialog__header">
+          <!-- Pointer drag on the whole header; the keyboard moves the dialog from the move button. -->
+          <header
+            class="star-dialog__header"
+            [class.star-dialog__header--draggable]="canDrag()"
+            (pointerdown)="onDragStart($event)"
+          >
             <div class="star-dialog__heading">
               @if (header()) {
                 <h2 class="star-dialog__title" [id]="headerId">{{ header() }}</h2>
               }
               <ng-content select="[starDialogHeader]" />
             </div>
-            @if (closable()) {
-              <button
-                type="button"
-                class="star-btn star-btn--ghost star-btn--icon star-dialog__close"
-                [attr.aria-label]="text.close"
-                (click)="close()"
-              >
-                <i class="ph-bold ph-x" aria-hidden="true"></i>
-              </button>
-            }
+            <div class="star-dialog__controls">
+              @if (canDrag()) {
+                <button
+                  type="button"
+                  class="star-btn star-btn--ghost star-btn--icon star-dialog__move"
+                  [attr.aria-label]="text.moveDialog"
+                  aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight"
+                  (keydown)="onDragKey($event)"
+                >
+                  <i class="ph-bold ph-arrows-out-cardinal" aria-hidden="true"></i>
+                </button>
+              }
+              @if (closable()) {
+                <button
+                  type="button"
+                  class="star-btn star-btn--ghost star-btn--icon star-dialog__close"
+                  [attr.aria-label]="text.close"
+                  (click)="close()"
+                >
+                  <i class="ph-bold ph-x" aria-hidden="true"></i>
+                </button>
+              }
+            </div>
           </header>
         }
         <div class="star-dialog__body"><ng-content /></div>
@@ -81,92 +104,90 @@ export type StarDialogSize = 'sm' | 'md' | 'lg' | 'xl' | 'full';
     </dialog>
   `,
 })
-export class StarDialog {
-  protected readonly text = inject(STAR_UI_TEXT);
-
-  readonly visible = model(false);
-  readonly header = input('');
-  readonly size = input<StarDialogSize>('md');
-  /** Fixed CSS width; overrides `size`. */
-  readonly width = input<string | null>(null);
-  /** Modal blocks the page behind (backdrop). Non-modal dialogs float above it. */
-  readonly modal = input(true, { transform: booleanAttribute });
-  readonly closable = input(true, { transform: booleanAttribute });
-  readonly closeOnEscape = input(true, { transform: booleanAttribute });
-  /** Clicking the backdrop closes the dialog. */
-  readonly dismissableMask = input(false, { transform: booleanAttribute });
-  readonly showHeader = input(true, { transform: booleanAttribute });
-  readonly role = input<'dialog' | 'alertdialog'>('dialog');
-  readonly ariaLabel = input<string | null>(null);
-
-  readonly shown = output<void>();
-  readonly hidden = output<void>();
-
-  protected readonly headerId = inject(_IdGenerator).getId('star-dialog-title-');
-  private readonly dialog = viewChild.required<ElementRef<HTMLDialogElement>>('dialog');
-  private isOpen = false;
-
-  constructor() {
-    afterRenderEffect({
-      write: () => {
-        const element = this.dialog().nativeElement;
-        const visible = this.visible();
-        if (visible && !element.open) {
-          if (this.modal()) element.showModal?.();
-          else element.show?.();
-          this.isOpen = true;
-          this.focusInitial(element);
-          this.shown.emit();
-        } else if (!visible && element.open) {
-          element.close();
-          // Do not wait for the native 'close' event: some hosts (background or embedded
-          // browsers) deliver it late or not at all.
-          this.markHidden();
-        }
-      },
-    });
-  }
-
-  close(): void {
-    this.visible.set(false);
-  }
+export class StarDialog extends StarDialogBase {
+  private readonly document = inject(DOCUMENT);
 
   /**
-   * Native `autofocus` only works on focusable elements. `data-autofocus` also works on a
-   * wrapper component such as `<star-button data-autofocus>`: its first focusable child gets focus.
+   * The header drags the dialog with the pointer (PrimeNG `draggable`). The move button in the
+   * header moves it with Alt + the arrow keys, 10 pixels per press.
    */
-  private focusInitial(element: HTMLDialogElement): void {
-    const marked = element.querySelector<HTMLElement>('[data-autofocus]');
-    if (!marked) return;
-    const target = marked.matches(FOCUSABLE)
-      ? marked
-      : marked.querySelector<HTMLElement>(FOCUSABLE);
-    target?.focus();
-  }
+  readonly draggable = input(false, { transform: booleanAttribute });
+  /** Dragging and resizing keep the dialog inside the window (PrimeNG `keepInViewport`). */
+  readonly keepInViewport = input(true, { transform: booleanAttribute });
+  /** Keeps the dragged position and the resized size when the dialog opens again. */
+  readonly rememberPosition = input(false, { transform: booleanAttribute });
 
-  protected onCancel(event: Event): void {
-    // We own the state: never let the browser close without updating `visible`.
+  /** Position of the top left corner after a drag, in pixels from the window (PrimeNG `onDragEnd`). */
+  readonly dragEnd = output<StarDialogPoint>();
+
+  /** Position set by a drag or a resize; `null` keeps the CSS position. */
+  protected readonly placed = signal<StarDialogPoint | null>(null);
+  /** Size set by a resize; `null` keeps the CSS size. */
+  protected readonly sized = signal<StarDialogDimensions | null>(null);
+
+  protected readonly canDrag = computed(() => this.draggable());
+
+  protected onDragStart(event: PointerEvent): void {
+    if (!this.canDrag() || event.button !== 0) return;
+    const target = event.target as Element;
+    // Buttons and fields in the header keep their own pointer behaviour; the move button drags.
+    if (target.closest('button:not(.star-dialog__move), a, input, select, textarea')) return;
     event.preventDefault();
-    if (this.closeOnEscape() && this.closable()) this.close();
+    const start = this.frame();
+    trackPointer(
+      event,
+      (dx, dy) => this.moveTo(start, start.left + dx, start.top + dy),
+      () => this.emitDragEnd(),
+    );
   }
 
-  /** Browser-initiated close (for example a form with method="dialog"). */
-  protected onNativeClose(): void {
-    if (this.visible()) this.visible.set(false);
-    this.markHidden();
+  protected onDragKey(event: KeyboardEvent): void {
+    if (!this.canDrag() || !event.altKey) return;
+    const step = arrowDelta(event.key);
+    if (!step) return;
+    event.preventDefault();
+    const start = this.frame();
+    this.moveTo(
+      start,
+      start.left + step.x * STAR_DIALOG_KEY_STEP,
+      start.top + step.y * STAR_DIALOG_KEY_STEP,
+    );
+    this.emitDragEnd();
   }
 
-  /** Emits `hidden` once per open. */
-  private markHidden(): void {
-    if (!this.isOpen) return;
-    this.isOpen = false;
-    this.hidden.emit();
+  protected override afterClose(): void {
+    if (this.rememberPosition()) return;
+    this.placed.set(null);
+    this.sized.set(null);
   }
 
-  protected onDialogClick(event: MouseEvent): void {
-    // A click whose target is the <dialog> itself landed on the ::backdrop.
-    if (event.target === this.dialog().nativeElement && this.dismissableMask() && this.modal()) {
-      this.close();
-    }
+  /** The current box: the set position and size, or the measured ones. */
+  protected frame(): StarDialogFrame {
+    const rect = this.dialog().nativeElement.getBoundingClientRect();
+    const placed = this.placed();
+    const sized = this.sized();
+    return {
+      left: placed?.x ?? rect.left,
+      top: placed?.y ?? rect.top,
+      width: sized?.width ?? rect.width,
+      height: sized?.height ?? rect.height,
+    };
+  }
+
+  /** Window size when `keepInViewport` is on, otherwise `null`. */
+  protected viewport(): StarDialogDimensions | null {
+    const view = this.document.defaultView;
+    if (!this.keepInViewport() || !view) return null;
+    return { width: view.innerWidth, height: view.innerHeight };
+  }
+
+  private moveTo(frame: StarDialogFrame, x: number, y: number): void {
+    const viewport = this.viewport();
+    this.placed.set(viewport ? clampToViewport({ x, y }, frame, viewport) : { x, y });
+  }
+
+  private emitDragEnd(): void {
+    const placed = this.placed();
+    if (placed) this.dragEnd.emit(placed);
   }
 }

@@ -68,7 +68,7 @@ type DrawerPosition = 'left' | 'right' | 'start' | 'end' | 'top' | 'bottom';
       </p>
 
       <docs-api
-        [of]="['StarDrawer', 'StarDialog']"
+        [of]="['StarDrawer', 'StarDialogBase']"
         [slots]="slots"
         [cssVars]="cssVars"
         [keyboard]="keyboard"
@@ -76,10 +76,12 @@ type DrawerPosition = 'left' | 'right' | 'start' | 'end' | 'top' | 'bottom';
 
       <h2>Technical notes</h2>
       <p>
-        StarDrawer extends StarDialog, so it has the inputs and outputs of the dialog: visible,
-        header, modal, closable, closeOnEscape, dismissableMask, showHeader, role, ariaLabel, shown
-        and hidden. The API tables list StarDrawer and its base class StarDialog. The drawer slides
-        in with a transition, and a user who prefers reduced motion gets none.
+        StarDrawer and StarDialog extend StarDialogBase, so the drawer has the shared inputs and
+        outputs of the dialog: visible, header, modal, closable, closeOnEscape, dismissableMask,
+        showHeader, role, ariaLabel, shown and hidden. The API tables list StarDrawer and the base
+        class StarDialogBase. The inputs size and width of the base class have no effect on a
+        drawer: use drawerSize. The drawer slides in with a transition, and a user who prefers
+        reduced motion gets none.
       </p>
     </docs-page>
   `,

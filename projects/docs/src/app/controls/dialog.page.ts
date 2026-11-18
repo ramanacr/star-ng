@@ -141,6 +141,30 @@ const SIZES: readonly StarDialogSize[] = ['sm', 'md', 'lg', 'xl', 'full'];
       </docs-example>
 
       <docs-example
+        heading="Drag"
+        source="dialog/drag"
+        [script]="dragScript"
+        note="draggable moves the dialog by its header (PrimeNG draggable). The move button in the header has the name Move dialog: focus it and press Alt with an arrow key to move the dialog by 10 pixels. keepInViewport (default true) keeps the dialog inside the window. dragEnd gives the position of the top left corner. The dialog opens at its normal place again, unless rememberPosition is set."
+      >
+        <div class="docs-stack">
+          <p class="docs-output" role="status">Last position: {{ dragNote() }}</p>
+          <div class="docs-row">
+            <star-button variant="secondary" (pressed)="dragOpen.set(true)">
+              Open movable dialog
+            </star-button>
+          </div>
+        </div>
+        <star-dialog
+          [(visible)]="dragOpen"
+          header="Movable dialog"
+          draggable
+          (dragEnd)="dragNote.set($event.x + ', ' + $event.y)"
+        >
+          <p>Drag the header, or focus the move button and press Alt with an arrow key.</p>
+        </star-dialog>
+      </docs-example>
+
+      <docs-example
         heading="Dialog from code"
         source="dialog/service"
         [script]="serviceScript"
@@ -197,7 +221,12 @@ const SIZES: readonly StarDialogSize[] = ['sm', 'md', 'lg', 'xl', 'full'];
         </star-dialog>
       </docs-example>
 
-      <docs-api [of]="['StarDialog']" [slots]="slots" [cssVars]="cssVars" [keyboard]="keyboard" />
+      <docs-api
+        [of]="['StarDialog', 'StarDialogBase']"
+        [slots]="slots"
+        [cssVars]="cssVars"
+        [keyboard]="keyboard"
+      />
 
       <h2>Dialog service</h2>
       <div class="docs-table-wrap">
@@ -255,6 +284,8 @@ export class DialogPage {
   protected readonly defaultFocusOpen = signal(false);
   protected readonly markedFocusOpen = signal(false);
   protected readonly popupsOpen = signal(false);
+  protected readonly dragOpen = signal(false);
+  protected readonly dragNote = signal('not moved');
   protected readonly note = signal('Call the customer before delivery.');
   protected readonly place = signal<string | null>(null);
   protected readonly lastAction = signal('none');
@@ -319,6 +350,8 @@ readonly lockedOpen = signal(false);
 readonly floatOpen = signal(false);`;
   protected readonly focusScript = `readonly defaultFocusOpen = signal(false);
 readonly markedFocusOpen = signal(false);`;
+  protected readonly dragScript = `readonly dragOpen = signal(false);
+readonly dragNote = signal('not moved');`;
   protected readonly serviceScript = `private readonly dialogs = inject(StarDialogService);
 readonly note = signal('Call the customer before delivery.');
 
@@ -412,6 +445,11 @@ readonly actionItems: readonly StarMenuItem[] = [
     {
       name: 'Tab / Shift+Tab',
       description: 'Moves the focus inside a modal dialog. The focus does not leave the dialog.',
+    },
+    {
+      name: 'Alt + arrow keys',
+      description:
+        'In the header of a draggable dialog (the move button): moves the dialog by 10 pixels.',
     },
   ];
 }

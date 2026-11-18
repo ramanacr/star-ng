@@ -1845,6 +1845,45 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "description": "Dialog (PrimeNG `p-dialog`) built on the native `<dialog>` element: top-layer rendering, focus trap, focus restore and Escape handling come from the browser. Entry / exit animate with `@starting-style`; page scroll locks with `:has(dialog[open])`.",
     "inputs": [
       {
+        "name": "draggable",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The header drags the dialog with the pointer (PrimeNG `draggable`). The move button in the header moves it with Alt + the arrow keys, 10 pixels per press."
+      },
+      {
+        "name": "keepInViewport",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Dragging and resizing keep the dialog inside the window (PrimeNG `keepInViewport`)."
+      },
+      {
+        "name": "rememberPosition",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Keeps the dragged position and the resized size when the dialog opens again."
+      }
+    ],
+    "models": [],
+    "outputs": [
+      {
+        "name": "dragEnd",
+        "type": "StarDialogPoint",
+        "default": null,
+        "required": false,
+        "description": "Position of the top left corner after a drag, in pixels from the window (PrimeNG `onDragEnd`)."
+      }
+    ]
+  },
+  "StarDialogBase": {
+    "kind": "directive",
+    "selector": "",
+    "entry": "@star-ng/ui/dialog",
+    "description": "Shared behaviour of `star-dialog` and `star-drawer`: the `visible` model, the native `<dialog>` element (top layer, focus trap, focus return, Escape), the close rules and the `shown` / `hidden` outputs. The component template must have a `<dialog #dialog>` element.",
+    "inputs": [
+      {
         "name": "header",
         "type": "string",
         "default": "''",
@@ -1856,14 +1895,14 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "StarDialogSize",
         "default": "'md'",
         "required": false,
-        "description": ""
+        "description": "Width step of a dialog (no effect on a drawer)."
       },
       {
         "name": "width",
         "type": "string | null",
         "default": "null",
         "required": false,
-        "description": "Fixed CSS width; overrides `size`."
+        "description": "Fixed CSS width of a dialog; overrides `size` (no effect on a drawer)."
       },
       {
         "name": "modal",
@@ -7296,6 +7335,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "date-picker/views": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"reportMonth\"\n    view=\"month\"\n    locale=\"en-GB\"\n    ariaLabel=\"Report month\"\n  />\n  <star-date-picker\n    [(value)]=\"reportYear\"\n    view=\"year\"\n    locale=\"en-GB\"\n    ariaLabel=\"Report year\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Month: {{ iso(reportMonth()) }}, year: {{ iso(reportYear()) }}\n  </p>\n</div>",
   "dialog/basic": "<star-button (pressed)=\"basicOpen.set(true)\">Edit order</star-button>\n<star-dialog [(visible)]=\"basicOpen\" header=\"Edit order ORD-1042\">\n  <span starDialogHeader class=\"docs-output\">Last saved at 10:42</span>\n  <div class=\"docs-stack\">\n    <star-field label=\"Customer\">\n      <input starInput value=\"Orchard Supply\" />\n    </star-field>\n    <star-field label=\"Delivery note\" hint=\"The driver reads this note.\">\n      <textarea starInput rows=\"3\">Leave at the loading dock.</textarea>\n    </star-field>\n  </div>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button variant=\"ghost\" (pressed)=\"basicOpen.set(false)\">Cancel</star-button>\n    <star-button (pressed)=\"basicOpen.set(false)\">Save</star-button>\n  </div>\n</star-dialog>",
   "dialog/close-rules": "<div class=\"docs-row\">\n  <star-button variant=\"secondary\" (pressed)=\"maskOpen.set(true)\"\n    >Backdrop click</star-button\n  >\n  <star-button variant=\"secondary\" (pressed)=\"lockedOpen.set(true)\">Locked</star-button>\n  <star-button variant=\"secondary\" (pressed)=\"floatOpen.set(true)\">Non-modal</star-button>\n</div>\n<star-dialog [(visible)]=\"maskOpen\" header=\"Closes on a backdrop click\" dismissableMask>\n  <p>Click outside this window to close it.</p>\n</star-dialog>\n<star-dialog\n  [(visible)]=\"lockedOpen\"\n  header=\"Locked dialog\"\n  [closable]=\"false\"\n  [closeOnEscape]=\"false\"\n>\n  <p>This dialog has no close button and ignores Escape.</p>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button (pressed)=\"lockedOpen.set(false)\">Done</star-button>\n  </div>\n</star-dialog>\n<star-dialog [(visible)]=\"floatOpen\" header=\"Non-modal dialog\" [modal]=\"false\">\n  <p>The page behind this window stays usable.</p>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button (pressed)=\"floatOpen.set(false)\">Close</star-button>\n  </div>\n</star-dialog>",
+  "dialog/drag": "<div class=\"docs-stack\">\n  <p class=\"docs-output\" role=\"status\">Last position: {{ dragNote() }}</p>\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"dragOpen.set(true)\">\n      Open movable dialog\n    </star-button>\n  </div>\n</div>\n<star-dialog\n  [(visible)]=\"dragOpen\"\n  header=\"Movable dialog\"\n  draggable\n  (dragEnd)=\"dragNote.set($event.x + ', ' + $event.y)\"\n>\n  <p>Drag the header, or focus the move button and press Alt with an arrow key.</p>\n</star-dialog>",
   "dialog/focus": "<div class=\"docs-row\">\n  <star-button variant=\"secondary\" (pressed)=\"defaultFocusOpen.set(true)\">\n    First focusable\n  </star-button>\n  <star-button variant=\"secondary\" (pressed)=\"markedFocusOpen.set(true)\">\n    Marked field\n  </star-button>\n</div>\n<star-dialog [(visible)]=\"defaultFocusOpen\" header=\"Default focus\">\n  <p>The focus starts on the close button.</p>\n  <star-field label=\"Reference\"><input starInput value=\"ORD-1042\" /></star-field>\n</star-dialog>\n<star-dialog [(visible)]=\"markedFocusOpen\" header=\"Marked focus\">\n  <star-field label=\"Reference\">\n    <input starInput value=\"ORD-1042\" data-autofocus />\n  </star-field>\n</star-dialog>",
   "dialog/popups": "<star-button variant=\"secondary\" (pressed)=\"popupsOpen.set(true)\">\n  Open order dialog\n</star-button>\n<star-dialog [(visible)]=\"popupsOpen\" header=\"Order ORD-1042\" size=\"md\">\n  <div class=\"docs-stack\">\n    <star-field label=\"Shipping city\" hint=\"Menus and cascade selects open above the modal\">\n      <star-cascade-select\n        [options]=\"places\"\n        optionLabel=\"name\"\n        optionValue=\"code\"\n        [(value)]=\"place\"\n        ariaLabel=\"Dialog city\"\n        showPath\n      />\n    </star-field>\n    <div class=\"docs-row\">\n      <star-button size=\"sm\" variant=\"secondary\" [starMenuTrigger]=\"actionsMenu\">\n        More actions\n      </star-button>\n      <star-menu\n        #actionsMenu\n        [items]=\"actionItems\"\n        (itemClick)=\"lastAction.set($event.label ?? '')\"\n      />\n      <span class=\"docs-output\" tabindex=\"0\" [starContextMenu]=\"actionsMenu\">\n        Last action: {{ lastAction() }}\n      </span>\n    </div>\n  </div>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button (pressed)=\"popupsOpen.set(false)\">Done</star-button>\n  </div>\n</star-dialog>",
   "dialog/service": "<div class=\"docs-stack\">\n  <p class=\"docs-output\" role=\"status\">Note: {{ note() }}</p>\n  <div class=\"docs-row\">\n    <star-button leadingIcon=\"ph-bold ph-note-pencil\" (pressed)=\"editNote()\">\n      Edit note\n    </star-button>\n  </div>\n</div>",

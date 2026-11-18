@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { StarDialog } from '@star-ng/ui/dialog';
+import { StarDialogBase } from '@star-ng/ui/dialog';
 
 /**
  * Drawer (PrimeNG `p-drawer`): side sheet on the native `<dialog>` element. Same API as
@@ -55,7 +55,7 @@ import { StarDialog } from '@star-ng/ui/dialog';
     </dialog>
   `,
 })
-export class StarDrawer extends StarDialog {
+export class StarDrawer extends StarDialogBase {
   readonly position = input<'left' | 'right' | 'start' | 'end' | 'top' | 'bottom'>('right');
   /** Width (left / right / start / end) or height (top / bottom). */
   readonly drawerSize = input('28rem');

@@ -82,6 +82,30 @@ html:has(dialog.star-dialog--modal[open]) {
   margin-block: -0.375rem 0;
   margin-inline: 0 -0.5rem;
 }
+// Move, maximize and close buttons of the header.
+.star-dialog__controls {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 0.25rem;
+  margin-block: -0.375rem 0;
+  margin-inline: 0 -0.5rem;
+
+  .star-dialog__close {
+    margin: 0;
+  }
+}
+.star-dialog__header--draggable {
+  cursor: move;
+  touch-action: none;
+  user-select: none;
+}
+// Moved by a drag or resized: left / top come from inline styles.
+.star-dialog--placed {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+}
 .star-dialog__body {
   flex: 1;
   overflow-y: auto;

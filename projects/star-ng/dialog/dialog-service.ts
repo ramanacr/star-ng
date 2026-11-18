@@ -14,7 +14,8 @@ import {
   signal,
   Type,
 } from '@angular/core';
-import { StarDialog, StarDialogSize } from './dialog';
+import { StarDialog } from './dialog';
+import { StarDialogSize } from './dialog-base';
 
 /** Data passed to the component opened by `StarDialogService.open()`. */
 export const STAR_DIALOG_DATA = new InjectionToken<unknown>('STAR_DIALOG_DATA');
