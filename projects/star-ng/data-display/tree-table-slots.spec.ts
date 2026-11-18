@@ -2,7 +2,7 @@ import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { StarEmptyTemplate, StarFooterTemplate, StarHeaderTemplate } from '@star-ng/ui/core';
 import { StarNodeTemplate, StarTree, StarTreeNode } from '@star-ng/ui/tree';
-import { StarTreeTable, StarTreeTableColumn } from './data-display';
+import { StarTreeTable, StarTreeTableColumn } from './tree-table';
 
 type Row = Record<string, unknown>;
 
