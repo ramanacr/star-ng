@@ -36,6 +36,9 @@ pnpm-debug.log*
 /playwright/.cache
 testem.log
 
+# Generated data of the MCP server (pnpm mcp:data)
+/projects/mcp/data
+
 # Miscellaneous
 .sass-cache/
 

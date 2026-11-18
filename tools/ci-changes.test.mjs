@@ -42,6 +42,8 @@ const CASES = [
   { name: 'unit test of the docs', paths: ['projects/docs/src/app/app.spec.ts'], expect: 'B' },
   { name: 'tool that is not in the docs build', paths: ['tools/check-package.mjs'], expect: 'B' },
   { name: 'docs data generator', paths: ['tools/gen-docs-data.mjs'], expect: 'B' },
+  { name: 'release notes tool', paths: ['tools/release-notes.mjs'], expect: 'B' },
+  { name: 'release notes tool test', paths: ['tools/release-notes.test.mjs'], expect: 'B' },
   { name: 'ESLint config', paths: ['eslint.config.js'], expect: 'B' },
   { name: 'Pages test', paths: ['e2e/pages/pages.spec.ts'], expect: 'B' },
   { name: 'Pages config', paths: ['playwright.pages.config.ts'], expect: 'B' },

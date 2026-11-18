@@ -10,10 +10,16 @@
 // 3. Copies the client-rendered shell `index.csr.html` to `404.html` (see `pages-fallback.mjs`):
 //    the answer for an address that is no page.
 //
+// 4. Writes the files for coding agents (see `agent-data.mjs`): `llms.txt`, `llms-full.txt` and
+//    `mcp/components.json`, the data that the MCP server `@star-ng/mcp` fetches. Their links are
+//    absolute, so they need the site URL: PAGES_SITE_URL (the Pages workflow passes the
+//    `base_url` of `actions/configure-pages`), else the `homepage` of the library package.
+//
 // The base href must start and end with `/`. Output: `dist/docs/browser`.
 import { spawnSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
+import { writeAgentData } from './agent-data.mjs';
 import { checkPrerender } from './check-prerender.mjs';
 import { writeFallback } from './pages-fallback.mjs';
 
@@ -34,6 +40,13 @@ if (build.status !== 0) process.exit(build.status ?? 1);
 const output = new URL('../dist/docs/browser/', import.meta.url);
 const pages = checkPrerender(fileURLToPath(output));
 writeFallback(fileURLToPath(output));
+const site = process.env.PAGES_SITE_URL
+  ? `${process.env.PAGES_SITE_URL.replace(/\/+$/, '')}/`
+  : undefined;
+const agentData = writeAgentData(fileURLToPath(output), site ? { site } : {});
+console.log(
+  `build-pages: wrote llms.txt, llms-full.txt and mcp/components.json for ${agentData.site}`,
+);
 console.log(
   `build-pages: built for ${base}, ${pages} pages prerendered, wrote 404.html in ${fileURLToPath(output)}`,
 );

@@ -155,6 +155,10 @@ jobs:
       - name: CI tool tests
         run: pnpm test:tools
 
+      # Makes the agent data (tools/agent-data.mjs) and tests the MCP server in projects/mcp.
+      - name: MCP server tests
+        run: pnpm test:mcp
+
       - name: Unit tests with coverage
         run: pnpm test:ci
 

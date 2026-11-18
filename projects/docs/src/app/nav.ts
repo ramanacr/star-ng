@@ -388,6 +388,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         load: () => import('./controls/drawer.page').then((m) => m.DrawerPage),
       },
       {
+        label: 'Bottom sheet',
+        path: 'controls/bottom-sheet',
+        keywords: 'action sheet mobile bottom panel slide up choices service',
+        load: () => import('./controls/bottom-sheet.page').then((m) => m.BottomSheetPage),
+      },
+      {
         label: 'Popover',
         path: 'controls/popover',
         keywords: 'overlay panel anchored floating details',

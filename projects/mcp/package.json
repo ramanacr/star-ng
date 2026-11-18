@@ -1,0 +1,42 @@
+{
+  "name": "@star-ng/mcp",
+  "version": "0.1.0",
+  "description": "MCP server for StarNG (@star-ng/ui): gives coding agents the setup, API, examples and a markup check of the StarNG Angular controls.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "star-ng-mcp": "bin/star-ng-mcp.mjs"
+  },
+  "files": [
+    "bin",
+    "src",
+    "data/mcp/components.json",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=20.10.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ramanacr/star-ng.git",
+    "directory": "projects/mcp"
+  },
+  "homepage": "https://ramanacr.github.io/star-ng/",
+  "bugs": {
+    "url": "https://github.com/ramanacr/star-ng/issues"
+  },
+  "author": "ramanacr",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "angular",
+    "components",
+    "ui",
+    "star-ng",
+    "ai",
+    "agent"
+  ]
+}

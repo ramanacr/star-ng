@@ -775,3 +775,132 @@ test.describe('forms guide with a date picker', () => {
     await expect(live.getByRole('status')).not.toContainText('delivery');
   });
 });
+
+// Issue #77: with showTime the popup was about 545px high and went past the bottom of a
+// 1366 x 768 window, so Done could not be reached. The time columns are now next to the
+// calendar in a wide window, and the overlay keeps the popup in the window.
+test.describe('popups with time columns fit a small window', () => {
+  const WIDTH = 1366;
+  const HEIGHT = 768;
+  test.use({ viewport: { width: WIDTH, height: HEIGHT } });
+
+  /** Scrolls the page so the field is in the middle of the window or at its bottom edge. */
+  async function placeField(field: Locator, where: 'middle' | 'bottom'): Promise<void> {
+    await field.evaluate(
+      (element, block) => element.scrollIntoView({ block }),
+      where === 'middle' ? ('center' as const) : ('end' as const),
+    );
+    const box = (await field.boundingBox())!;
+    if (where === 'middle') expect(Math.abs(box.y + box.height / 2 - HEIGHT / 2)).toBeLessThan(40);
+    else expect(box.y + box.height).toBeGreaterThan(HEIGHT - 40);
+  }
+
+  /**
+   * The popup and its Done button are inside the window, the popup does not scroll inside (all
+   * of it shows), and the chosen option of each time column is in view.
+   */
+  async function expectInWindow(popup: Locator): Promise<void> {
+    const done = popup.getByRole('button', { name: 'Done' });
+    await expect(done).toBeVisible();
+    for (const box of [(await popup.boundingBox())!, (await done.boundingBox())!]) {
+      expect(box.y).toBeGreaterThanOrEqual(0);
+      expect(box.x).toBeGreaterThanOrEqual(0);
+      expect(box.y + box.height).toBeLessThanOrEqual(HEIGHT);
+      expect(box.x + box.width).toBeLessThanOrEqual(WIDTH);
+    }
+    const overflow = await popup.evaluate((element) => element.scrollHeight - element.clientHeight);
+    expect(overflow).toBeLessThanOrEqual(1);
+    for (const column of await popup.getByRole('listbox').all()) {
+      const selected = column.locator('[aria-selected="true"]');
+      if ((await selected.count()) === 0) continue;
+      const outer = (await column.boundingBox())!;
+      const inner = (await selected.boundingBox())!;
+      expect(inner.y).toBeGreaterThanOrEqual(outer.y - 1);
+      expect(inner.y + inner.height).toBeLessThanOrEqual(outer.y + outer.height + 1);
+    }
+  }
+
+  /** The time part is at the inline end of the calendar (on the right in ltr), in the same row. */
+  async function expectTimeBesideCalendar(popup: Locator): Promise<void> {
+    const calendar = (await popup.locator('star-calendar').boundingBox())!;
+    const time = (await popup.locator('.star-date__time').boundingBox())!;
+    expect(time.x).toBeGreaterThanOrEqual(calendar.x + calendar.width - 1);
+    expect(Math.abs(time.y - calendar.y)).toBeLessThan(2);
+    // The calendar sets the height of the row: the time part is not higher.
+    expect(time.height).toBeLessThanOrEqual(calendar.height + 1);
+  }
+
+  for (const where of ['middle', 'bottom'] as const) {
+    test(`date picker with showTime, field at the ${where}`, async ({ page }) => {
+      await openPage(page, '/controls/date-picker', 'Date picker');
+      const live = example(page, 'Date and time');
+      await placeField(live.getByRole('textbox', { name: 'Meeting start' }), where);
+      await live.getByRole('button', { name: 'Choose date' }).click();
+      await expect(panel(page)).toBeVisible();
+      await expectTimeBesideCalendar(panel(page));
+      await expectInWindow(panel(page));
+      // The keyboard order follows the layout: the calendar, the time columns, then Done.
+      await expect(panel(page).locator('.star-calendar__day[tabindex="0"]')).toBeFocused();
+      await panel(page).getByRole('listbox', { name: 'Minute' }).locator('[tabindex="0"]').focus();
+      await page.keyboard.press('Tab');
+      await expect(panel(page).getByRole('button', { name: 'Done' })).toBeFocused();
+      await page.keyboard.press('Enter');
+      await expect(panel(page)).toBeHidden();
+    });
+
+    test(`date range picker with showTime, field at the ${where}`, async ({ page }) => {
+      await openPage(page, '/controls/date-picker', 'Date picker');
+      const live = example(page, 'Date range and time');
+      await placeField(live.getByRole('textbox', { name: 'Shift' }), where);
+      await live.getByRole('button', { name: 'Choose date' }).click();
+      await expect(panel(page)).toBeVisible();
+      await expectTimeBesideCalendar(panel(page));
+      // The start time is above the end time, in one column.
+      const start = (await panel(page).getByRole('group', { name: 'Start time' }).boundingBox())!;
+      const end = (await panel(page).getByRole('group', { name: 'End time' }).boundingBox())!;
+      expect(end.y).toBeGreaterThanOrEqual(start.y + start.height - 1);
+      expect(Math.abs(end.x - start.x)).toBeLessThan(2);
+      await expectInWindow(panel(page));
+    });
+
+    test(`time picker, field at the ${where}`, async ({ page }) => {
+      await openPage(page, '/controls/time-picker', 'Time picker');
+      const live = example(page, 'Limits and step');
+      await placeField(live.getByLabel('Opening time'), where);
+      await live.getByRole('button', { name: 'Choose time' }).click();
+      const popup = page.getByRole('dialog', { name: 'Choose time' });
+      await expect(popup).toBeVisible();
+      await expectInWindow(popup);
+    });
+  }
+
+  test('on a phone the time columns are under the calendar, and the popup fits', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    await openPage(page, '/controls/date-picker', 'Date picker');
+    const live = example(page, 'Date and time');
+    await live.evaluate((element) => element.scrollIntoView({ block: 'start' }));
+    await live.getByRole('button', { name: 'Choose date' }).click();
+    const calendar = (await panel(page).locator('star-calendar').boundingBox())!;
+    const time = (await panel(page).locator('.star-date__time').boundingBox())!;
+    expect(time.y).toBeGreaterThanOrEqual(calendar.y + calendar.height - 1);
+    const box = (await panel(page).boundingBox())!;
+    expect(box.x).toBeGreaterThanOrEqual(0);
+    expect(box.x + box.width).toBeLessThanOrEqual(375);
+    expect(box.y + box.height).toBeLessThanOrEqual(812);
+  });
+
+  test('in right-to-left the time columns are on the left of the calendar', async ({ page }) => {
+    await page.addInitScript(() => localStorage.setItem('star-direction', 'rtl'));
+    await openPage(page, '/controls/date-picker', 'Date picker');
+    await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+    const live = example(page, 'Date and time');
+    await placeField(live.getByRole('textbox', { name: 'Meeting start' }), 'middle');
+    await live.getByRole('button', { name: 'Choose date' }).click();
+    const calendar = (await panel(page).locator('star-calendar').boundingBox())!;
+    const time = (await panel(page).locator('.star-date__time').boundingBox())!;
+    expect(time.x + time.width).toBeLessThanOrEqual(calendar.x + 1);
+    await expectInWindow(panel(page));
+  });
+});
