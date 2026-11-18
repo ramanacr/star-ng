@@ -232,4 +232,58 @@ describe('lazy loading helpers', () => {
       filter: 'ber',
     });
   });
+
+  it('merges touching and overlapping ranges', () => {
+    const requests = new StarLazyRequests();
+    requests.next(null, '', 10); // 0-9
+    requests.next({ first: 10, last: 19, missing: true }, '', 10); // 10-19 touches 0-9
+    requests.next({ first: 40, last: 49, missing: true }, '', 10);
+    requests.next({ first: 15, last: 30, missing: true }, '', 10); // 20-30
+    expect(requests.rangeCount).toBe(2);
+    expect(requests.next({ first: 0, last: 30, missing: true }, '', 10)).toBeNull();
+    expect(requests.next({ first: 25, last: 45, missing: true }, '', 10)).toEqual({
+      first: 31,
+      last: 39,
+      filter: '',
+    });
+    expect(requests.rangeCount).toBe(1);
+  });
+
+  it('reset() asks again for the rows in view (a failed first window or a failed page)', () => {
+    const requests = new StarLazyRequests();
+    expect(requests.next(null, '', 20)).toEqual({ first: 0, last: 19, filter: '' });
+    // The first window failed: options stay empty, nothing is asked again ...
+    expect(requests.next(null, '', 20)).toBeNull();
+    requests.reset();
+    // ... until reset.
+    expect(requests.next(null, '', 20)).toEqual({ first: 0, last: 19, filter: '' });
+    // A later page failed and stays missing.
+    expect(requests.next({ first: 30, last: 39, missing: true }, '', 20)).toEqual({
+      first: 30,
+      last: 39,
+      filter: '',
+    });
+    expect(requests.next({ first: 30, last: 39, missing: true }, '', 20)).toBeNull();
+    requests.reset();
+    expect(requests.next({ first: 30, last: 39, missing: true }, '', 20)).toEqual({
+      first: 30,
+      last: 39,
+      filter: '',
+    });
+  });
+
+  it('asks again when the array length changes for the same filter', () => {
+    const requests = new StarLazyRequests();
+    expect(requests.next({ first: 0, last: 9, missing: true }, '', 10, 100)).toEqual({
+      first: 0,
+      last: 9,
+      filter: '',
+    });
+    expect(requests.next({ first: 0, last: 9, missing: true }, '', 10, 100)).toBeNull();
+    expect(requests.next({ first: 0, last: 9, missing: true }, '', 10, 120)).toEqual({
+      first: 0,
+      last: 9,
+      filter: '',
+    });
+  });
 });

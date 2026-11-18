@@ -1,4 +1,4 @@
-import { linkedSignal, resource, signal } from '@angular/core';
+import { computed, linkedSignal, resource, signal } from '@angular/core';
 import { StarListLazyLoadEvent, starFilterMatch } from '@star-ng/ui/core';
 
 /** An order of the lazy examples. */
@@ -54,7 +54,8 @@ export interface LazyOrderState {
  * of one filter text collect in a list, and an Angular `resource()` loads the ranges of that list
  * that are not in the cache yet. A new request restarts the resource (the old load is aborted), and
  * the new load fetches what is still missing. The options array has the full length, with
- * `undefined` where an order is not loaded yet.
+ * `undefined` where an order is not loaded yet. When a load fails, `failed` is true: the page shows
+ * a Retry button that calls `resetLazy()` of the control, which asks again for the rows in view.
  */
 export function lazyOrders() {
   const requests = signal<readonly StarListLazyLoadEvent[]>([]);
@@ -95,6 +96,8 @@ export function lazyOrders() {
   });
   return {
     options: options.asReadonly(),
+    /** True when the last load failed: call `resetLazy()` of the control to ask again. */
+    failed: computed(() => state.status() === 'error'),
     load: (event: StarListLazyLoadEvent) =>
       requests.update((list) =>
         list.length && list[0].filter === event.filter ? [...list, event] : [event],

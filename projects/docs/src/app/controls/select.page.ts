@@ -368,10 +368,11 @@ interface Shipment {
         heading="Lazy loading"
         source="select/lazy"
         [script]="lazyScript"
-        note="lazy with virtualScroll loads the options page by page. The options array has the full length and holds undefined for the options that are not loaded: they show as loading rows, and the keyboard skips them. lazyLoad gives first, last and the filter text; here an Angular resource() loads the page from a fake service. The filter does not filter in the browser: the service gets the text."
+        note="lazy with virtualScroll loads the options page by page. The options array has the full length and holds undefined for the options that are not loaded: they show as loading rows, and the keyboard skips them. lazyLoad gives first, last and the filter text; here an Angular resource() loads the page from a fake service. The filter does not filter in the browser: the service gets the text. Each range is asked for once; after a failed load, resetLazy() asks again for the rows in view (the Retry button)."
       >
         <div class="docs-stack">
           <star-select
+            #lazyControl
             [options]="lazyList.options()"
             optionLabel="name"
             optionValue="id"
@@ -384,6 +385,15 @@ interface Shipment {
             (lazyLoad)="lazyList.load($event)"
           />
           <p class="docs-output" role="status">Order: {{ lazyOrder() ?? 'none' }}</p>
+          @if (lazyList.failed()) {
+            <button
+              type="button"
+              class="star-btn star-btn--sm star-btn--ghost"
+              (click)="lazyControl.resetLazy()"
+            >
+              Retry
+            </button>
+          }
         </div>
       </docs-example>
 
@@ -464,7 +474,8 @@ export function lazyOrders() {
     requests.update((list) =>
       list.length && list[0].filter === event.filter ? [...list, event] : [event],
     );
-  return { options: options.asReadonly(), load };
+  // On an error, the page shows a Retry button: (click)="lazyControl.resetLazy()".
+  return { options: options.asReadonly(), failed: computed(() => state.status() === 'error'), load };
 }
 
 readonly lazyList = lazyOrders();`;

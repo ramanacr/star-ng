@@ -315,6 +315,7 @@ const REGIONS = ['Central', 'East', 'North', 'South', 'West'];
       >
         <div class="docs-stack">
           <star-listbox
+            #lazyControl
             [options]="lazyList.options()"
             optionLabel="name"
             optionValue="id"
@@ -327,6 +328,15 @@ const REGIONS = ['Central', 'East', 'North', 'South', 'West'];
             (lazyLoad)="lazyList.load($event)"
           />
           <p class="docs-output" role="status">Order: {{ lazyOrder() ?? 'none' }}</p>
+          @if (lazyList.failed()) {
+            <button
+              type="button"
+              class="star-btn star-btn--sm star-btn--ghost"
+              (click)="lazyControl.resetLazy()"
+            >
+              Retry
+            </button>
+          }
         </div>
       </docs-example>
 
@@ -440,7 +450,8 @@ export function lazyOrders() {
     requests.update((list) =>
       list.length && list[0].filter === event.filter ? [...list, event] : [event],
     );
-  return { options: options.asReadonly(), load };
+  // On an error, the page shows a Retry button: (click)="lazyControl.resetLazy()".
+  return { options: options.asReadonly(), failed: computed(() => state.status() === 'error'), load };
 }
 
 readonly lazyList = lazyOrders();`;

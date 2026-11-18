@@ -232,7 +232,9 @@ export abstract class StarOptionListBase<TOption, TValue> {
   readonly filterChange = output<string>();
   /**
    * With `lazy`: the options from `first` to `last` are needed for the filter text `filter`. PrimeNG
-   * `onLazyLoad`. Each range is asked for once per filter text; treat the event as idempotent.
+   * `onLazyLoad`. Each range is asked for once per filter text; treat the event as idempotent. A
+   * range that failed to load is asked for again after `resetLazy()`, or when the owner sets new
+   * placeholders with a different array length.
    */
   readonly lazyLoad = output<StarListLazyLoadEvent>();
 
@@ -393,16 +395,30 @@ export abstract class StarOptionListBase<TOption, TValue> {
 
   private readonly lazyRequests = new StarLazyRequests();
 
+  /** Changes on `resetLazy()`, so the lazy request effect runs again. */
+  private readonly lazyEpoch = signal(0);
+
+  /**
+   * With `lazy`: forgets the ranges that `lazyLoad` asked for and asks again for the rows in view.
+   * Call it to retry after a load failed. PrimeNG has no equivalent (it asks on every scroll).
+   */
+  resetLazy(): void {
+    this.lazyRequests.reset();
+    this.lazyEpoch.update((epoch) => epoch + 1);
+  }
+
   /** Emits `lazyLoad` when the rows in view need options that are not loaded (see `lazy`). */
   private requestLazyRows(): void {
+    this.lazyEpoch();
     if (!this.lazy() || !this.open()) return;
     const window = this.virtualWindow();
+    const length = this.options().length;
     const range = starListLazyRange(this.layout(), window, (option) => option === undefined);
     const filter = this.lazyFilterText();
     const size = Math.max(1, this.virtualItemSize());
     const page = Math.ceil((this.listHeight() || VIRTUAL_FALLBACK_HEIGHT) / size) + VIRTUAL_BUFFER;
     untracked(() => {
-      const event = this.lazyRequests.next(range, filter, page);
+      const event = this.lazyRequests.next(range, filter, page, length);
       if (event) this.lazyLoad.emit(event);
     });
   }

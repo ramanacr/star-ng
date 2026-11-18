@@ -441,7 +441,9 @@ export class StarListbox<TOption = unknown, TValue = TOption> implements FormVal
   readonly touch = output<void>();
   /**
    * With `lazy`: the options from `first` to `last` are needed for the filter text `filter`. PrimeNG
-   * `onLazyLoad`. Each range is asked for once per filter text; treat the event as idempotent.
+   * `onLazyLoad`. Each range is asked for once per filter text; treat the event as idempotent. A
+   * range that failed to load is asked for again after `resetLazy()`, or when the owner sets new
+   * placeholders with a different array length.
    */
   readonly lazyLoad = output<StarListLazyLoadEvent>();
   /** With `dragdrop`: an option was dropped on this list, or moved with Alt + Arrow keys. PrimeNG `onDrop`. */
@@ -681,6 +683,18 @@ export class StarListbox<TOption = unknown, TValue = TOption> implements FormVal
 
   private readonly lazyRequests = new StarLazyRequests();
 
+  /** Changes on `resetLazy()`, so the lazy request effect runs again. */
+  private readonly lazyEpoch = signal(0);
+
+  /**
+   * With `lazy`: forgets the ranges that `lazyLoad` asked for and asks again for the rows in view.
+   * Call it to retry after a load failed. PrimeNG has no equivalent (it asks on every scroll).
+   */
+  resetLazy(): void {
+    this.lazyRequests.reset();
+    this.lazyEpoch.update((epoch) => epoch + 1);
+  }
+
   constructor() {
     DROP_LISTS.set(this.listId, this);
     effect(() => {
@@ -693,7 +707,9 @@ export class StarListbox<TOption = unknown, TValue = TOption> implements FormVal
     inject(DestroyRef).onDestroy(() => DROP_LISTS.delete(this.listId));
     // `lazy`: ask for the options of the rendered rows that are not loaded, and for a new filter.
     effect(() => {
+      this.lazyEpoch();
       if (!this.lazy()) return;
+      const length = this.options().length;
       const layout = this.layout();
       const range = this.virtualScroll()
         ? this.renderedRange()
@@ -702,7 +718,7 @@ export class StarListbox<TOption = unknown, TValue = TOption> implements FormVal
       const query = this.query();
       const page = Math.ceil(256 / this.itemSize()) + 4;
       untracked(() => {
-        const event = this.lazyRequests.next(lazyRange, query, page);
+        const event = this.lazyRequests.next(lazyRange, query, page, length);
         if (event) this.lazyLoad.emit(event);
       });
     });

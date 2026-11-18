@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { StarAutoComplete } from '@star-ng/ui/autocomplete';
 import { StarListLazyLoadEvent } from '@star-ng/ui/core';
@@ -72,6 +72,8 @@ function load(
   `,
 })
 class Host {
+  readonly select = viewChild.required(StarSelect);
+  readonly listbox = viewChild.required(StarListbox);
   readonly rows = signal<readonly (Order | undefined)[]>(Array.from({ length: TOTAL }));
   readonly order = signal<number | null>(null);
   readonly orders = signal<readonly number[]>([]);
@@ -189,5 +191,48 @@ describe('lazy loading', () => {
     await fixture.whenStable();
     expect(list.getAttribute('aria-activedescendant')).toMatch(/-2$/);
     expect(host.listed()).toBe(2);
+  });
+
+  it('select: a failed first window is asked again after resetLazy()', async () => {
+    const { fixture, host, triggers } = await setup();
+    host.rows.set([]);
+    await fixture.whenStable();
+    triggers[0].click();
+    await fixture.whenStable();
+    expect(host.events.length).toBe(1);
+    // The load failed: the options stay empty and nothing is asked again.
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(host.events.length).toBe(1);
+    host.select().resetLazy();
+    await fixture.whenStable();
+    expect(host.events.length).toBe(2);
+    expect(host.events[1]).toEqual(expect.objectContaining({ first: 0 }));
+  });
+
+  it('select: a failed page is asked again after resetLazy(), and after new placeholders', async () => {
+    const { fixture, host, triggers } = await setup();
+    triggers[0].click();
+    await fixture.whenStable();
+    expect(host.events.length).toBe(1);
+    const window = host.events[0];
+    host.select().resetLazy();
+    await fixture.whenStable();
+    expect(host.events.length).toBe(2);
+    expect(host.events[1]).toEqual(window);
+    // The owner sets fresh placeholders with another length: the window is asked again.
+    host.rows.set(Array.from({ length: TOTAL + 10 }));
+    await fixture.whenStable();
+    expect(host.events.length).toBe(3);
+    expect(host.events[2]).toEqual(expect.objectContaining({ first: 0 }));
+  });
+
+  it('listbox: resetLazy() asks again for the rows in view', async () => {
+    const { fixture, host } = await setup();
+    expect(host.listEvents.length).toBe(1);
+    host.listbox().resetLazy();
+    await fixture.whenStable();
+    expect(host.listEvents.length).toBe(2);
+    expect(host.listEvents[1]).toEqual(host.listEvents[0]);
   });
 });
