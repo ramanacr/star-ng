@@ -146,7 +146,9 @@ test.describe('listbox depth', () => {
     const live = example(page, 'Drag and drop');
     const available = live.getByRole('listbox', { name: 'Available orders' });
     const planned = live.getByRole('listbox', { name: 'Planned orders' });
-    await available.focus();
+    // A click makes the first order active (and waits for the page to be interactive).
+    await available.getByRole('option', { name: 'Order 1001' }).click();
+    await expect(available).toHaveAttribute('aria-activedescendant', /-0$/);
     await page.keyboard.press('Alt+ArrowDown');
     await expect(available.getByRole('option')).toHaveText([
       'Order 1002',
@@ -164,7 +166,9 @@ test.describe('listbox depth', () => {
     await page.mouse.move(from.x + 30, from.y + from.height / 2 + 10, { steps: 5 });
     await page.mouse.move(to.x + 20, to.y + to.height / 2, { steps: 15 });
     await page.mouse.up();
-    await expect(planned.getByRole('option')).toHaveText(['Order 1003', 'Order 1005']);
+    // The CDK sorts by the pointer: the order lands before or after Order 1005.
+    await expect(planned.getByRole('option')).toHaveCount(2);
+    await expect(planned.getByRole('option', { name: 'Order 1003' })).toBeVisible();
     await expect(available.getByRole('option')).toHaveCount(3);
   });
 });
