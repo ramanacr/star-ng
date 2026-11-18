@@ -86,6 +86,7 @@ export const STAR_UI_TEXT_ES: StarUiText = {
   commandPalette: 'Paleta de comandos',
   commandPlaceholder: 'Escribir un comando o buscar',
   recentCommands: 'Recientes',
+  mainNavigation: 'Navegación principal',
 
   moveSelectedItem: 'Mover el elemento seleccionado',
   orderListHint: 'Alt y las teclas de flecha mueven el elemento seleccionado.',

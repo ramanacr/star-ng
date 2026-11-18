@@ -207,6 +207,176 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarAppSidebar": {
+    "kind": "component",
+    "selector": "star-app-sidebar",
+    "entry": "@star-ng/ui/app-sidebar",
+    "description": "Application sidebar (PrimeNG 22 `p-sidebar` with its compound parts): the main navigation of an application. It is a `<nav>` landmark named by `ariaLabel` (default \"Main navigation\").",
+    "inputs": [
+      {
+        "name": "mode",
+        "type": "StarAppSidebarMode",
+        "default": "'static'",
+        "required": false,
+        "description": "`static`: always in the layout. `overlay`: in a drawer below `breakpoint`."
+      },
+      {
+        "name": "breakpoint",
+        "type": "number",
+        "default": "768",
+        "required": false,
+        "description": "Width in pixels below which an `overlay` sidebar moves into a drawer."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Name of the `<nav>` landmark. Defaults to the `mainNavigation` text."
+      },
+      {
+        "name": "drawerSize",
+        "type": "string",
+        "default": "'18rem'",
+        "required": false,
+        "description": "Width of the drawer, a CSS length."
+      }
+    ],
+    "models": [
+      {
+        "name": "collapsed",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Icons only; the labels become tooltips. No effect in the drawer."
+      },
+      {
+        "name": "visible",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Open state of the drawer (`overlay` mode below the breakpoint)."
+      }
+    ],
+    "outputs": []
+  },
+  "StarAppSidebarFooter": {
+    "kind": "component",
+    "selector": "star-app-sidebar-footer",
+    "entry": "@star-ng/ui/app-sidebar",
+    "description": "Bottom area of `star-app-sidebar`, for example the user or a collapse button.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
+  "StarAppSidebarHeader": {
+    "kind": "component",
+    "selector": "star-app-sidebar-header",
+    "entry": "@star-ng/ui/app-sidebar",
+    "description": "Top area of `star-app-sidebar`, for example the product name or logo.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
+  "StarAppSidebarItem": {
+    "kind": "component",
+    "selector": "star-app-sidebar-item",
+    "entry": "@star-ng/ui/app-sidebar",
+    "description": "One destination of `star-app-sidebar`. With `routerLink` it is a router link with `aria-current=\"page\"` while its route is active (`routerLinkActive`); with `href` a plain link (set `active` yourself); without either, a button that emits `activated`. With nested `star-app-sidebar-item` children it is a button that opens and closes them (`expanded`).",
+    "inputs": [
+      {
+        "name": "label",
+        "type": "string",
+        "default": null,
+        "required": true,
+        "description": "Text of the item. In the collapsed sidebar it is the tooltip and stays the accessible name."
+      },
+      {
+        "name": "icon",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Icon classes, for example `ph ph-house`. Without one, the collapsed sidebar shows the first letter."
+      },
+      {
+        "name": "routerLink",
+        "type": "string | readonly unknown[] | null",
+        "default": "null",
+        "required": false,
+        "description": "Router link. `aria-current=\"page\"` follows the active route."
+      },
+      {
+        "name": "exact",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "With `routerLink`: the item is active only on an exact URL match."
+      },
+      {
+        "name": "href",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Plain link address, when there is no `routerLink`."
+      },
+      {
+        "name": "active",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Marks an `href` or button item as the current page (`aria-current=\"page\"`)."
+      },
+      {
+        "name": "badge",
+        "type": "string | number | null",
+        "default": "null",
+        "required": false,
+        "description": "Badge text after the label, for example a count."
+      },
+      {
+        "name": "badgeLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Screen-reader text of the badge, for example \"4 new\". Replaces the badge text when set."
+      }
+    ],
+    "models": [
+      {
+        "name": "expanded",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Open state of the nested items."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "activated",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "Emits when the user activates a link or button item (not a group)."
+      }
+    ]
+  },
+  "StarAppSidebarSection": {
+    "kind": "component",
+    "selector": "star-app-sidebar-section",
+    "entry": "@star-ng/ui/app-sidebar",
+    "description": "A titled group of items in `star-app-sidebar`. The heading names the group for screen readers. In the collapsed sidebar the heading is hidden visually and a line separates the sections.",
+    "inputs": [
+      {
+        "name": "heading",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "Heading of the section."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
   "StarAutoComplete": {
     "kind": "component",
     "selector": "star-autocomplete",
@@ -7390,6 +7560,8 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "animate-on-scroll/basic": "<div class=\"docs-reveal-box\" tabindex=\"0\" aria-label=\"Scrollable list of blocks\">\n  @for (block of blocks; track block) {\n    <div class=\"docs-reveal-box__item\" starAnimateOnScroll>Block {{ block }}</div>\n  }\n</div>",
   "app-bar/basic": "<star-app-bar title=\"Orders\" [landmark]=\"false\">\n  <star-button\n    starAppBarStart\n    variant=\"ghost\"\n    iconOnly\n    leadingIcon=\"ph-bold ph-list\"\n    ariaLabel=\"Menu\"\n  />\n  <star-button\n    starAppBarEnd\n    variant=\"ghost\"\n    iconOnly\n    leadingIcon=\"ph-bold ph-magnifying-glass\"\n    ariaLabel=\"Search orders\"\n  />\n  <star-button\n    starAppBarEnd\n    variant=\"ghost\"\n    iconOnly\n    leadingIcon=\"ph-bold ph-bell\"\n    ariaLabel=\"Notifications\"\n  />\n  <star-avatar starAppBarEnd name=\"Order Desk\" size=\"sm\" />\n</star-app-bar>",
   "app-bar/sticky": "<div class=\"docs-app-bar-frame\">\n  <star-app-bar position=\"sticky\" elevated dense [landmark]=\"false\">\n    <star-button\n      starAppBarStart\n      variant=\"ghost\"\n      iconOnly\n      leadingIcon=\"ph-bold ph-arrow-left\"\n      ariaLabel=\"Back to projects\"\n    />\n    Project Apollo\n    <star-button starAppBarEnd variant=\"ghost\" size=\"sm\">Share</star-button>\n  </star-app-bar>\n  @for (week of weeks; track week) {\n    <p>Week {{ week }}: 12 tasks planned, 9 done, 3 moved to the next week.</p>\n  }\n</div>",
+  "app-sidebar/basic": "<div class=\"shell\">\n  <star-app-sidebar [(collapsed)]=\"collapsed\" ariaLabel=\"Workspace\">\n    <star-app-sidebar-header>\n      <i class=\"ph-bold ph-star\" aria-hidden=\"true\"></i>\n      @if (!collapsed()) {\n        <span>Workspace</span>\n      }\n    </star-app-sidebar-header>\n    <star-app-sidebar-section heading=\"Overview\">\n      <star-app-sidebar-item\n        label=\"Dashboard\"\n        icon=\"ph ph-house\"\n        [active]=\"current() === 'Dashboard'\"\n        (activated)=\"current.set('Dashboard')\"\n      />\n      <star-app-sidebar-item\n        label=\"Orders\"\n        icon=\"ph ph-package\"\n        badge=\"4\"\n        badgeLabel=\"4 new\"\n        [active]=\"current() === 'Orders'\"\n        (activated)=\"current.set('Orders')\"\n      />\n      <star-app-sidebar-item label=\"Reports\" icon=\"ph ph-chart-bar\">\n        <star-app-sidebar-item\n          label=\"Monthly\"\n          icon=\"ph ph-calendar\"\n          [active]=\"current() === 'Monthly'\"\n          (activated)=\"current.set('Monthly')\"\n        />\n        <star-app-sidebar-item\n          label=\"Yearly\"\n          icon=\"ph ph-calendar-blank\"\n          [active]=\"current() === 'Yearly'\"\n          (activated)=\"current.set('Yearly')\"\n        />\n      </star-app-sidebar-item>\n    </star-app-sidebar-section>\n    <star-app-sidebar-section heading=\"Docs\">\n      <star-app-sidebar-item\n        label=\"This page\"\n        icon=\"ph ph-book-open\"\n        routerLink=\"/controls/app-sidebar\"\n      />\n    </star-app-sidebar-section>\n    <star-app-sidebar-footer>\n      <star-button\n        variant=\"ghost\"\n        size=\"sm\"\n        [iconOnly]=\"true\"\n        [ariaLabel]=\"collapsed() ? 'Expand sidebar' : 'Collapse sidebar'\"\n        (pressed)=\"collapsed.set(!collapsed())\"\n      >\n        <i\n          [class]=\"collapsed() ? 'ph ph-sidebar-simple' : 'ph ph-caret-double-left'\"\n          aria-hidden=\"true\"\n        ></i>\n      </star-button>\n    </star-app-sidebar-footer>\n  </star-app-sidebar>\n  <main>\n    <strong>{{ current() }}</strong>\n    <p>Content of the page.</p>\n  </main>\n</div>",
+  "app-sidebar/overlay": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"menuOpen.set(true)\">\n      <i class=\"ph ph-list\" aria-hidden=\"true\"></i>\n      Menu\n    </star-button>\n  </div>\n  <star-app-sidebar\n    mode=\"overlay\"\n    [breakpoint]=\"100000\"\n    [(visible)]=\"menuOpen\"\n    ariaLabel=\"Shop\"\n  >\n    <star-app-sidebar-header>Shop</star-app-sidebar-header>\n    <star-app-sidebar-section heading=\"Catalog\">\n      <star-app-sidebar-item\n        label=\"Products\"\n        icon=\"ph ph-cube\"\n        [active]=\"shopPage() === 'Products'\"\n        (activated)=\"shopPage.set('Products')\"\n      />\n      <star-app-sidebar-item\n        label=\"Customers\"\n        icon=\"ph ph-users\"\n        [active]=\"shopPage() === 'Customers'\"\n        (activated)=\"shopPage.set('Customers')\"\n      />\n    </star-app-sidebar-section>\n  </star-app-sidebar>\n  <p class=\"docs-output\" role=\"status\">Page: {{ shopPage() }}</p>\n</div>",
   "autocomplete/async": "<div class=\"docs-stack\">\n  <star-autocomplete\n    [suggestions]=\"results()\"\n    [loading]=\"searching()\"\n    [minQueryLength]=\"2\"\n    [delay]=\"150\"\n    (completeMethod)=\"search($event)\"\n    optionLabel=\"name\"\n    optionValue=\"id\"\n    [(value)]=\"found\"\n    placeholder=\"Type 2 letters of a name\"\n    ariaLabel=\"Colleague\"\n    showClear\n  />\n  <p class=\"docs-output\" role=\"status\">Colleague: {{ found() ?? 'none' }}</p>\n</div>",
   "autocomplete/dropdown": "<star-autocomplete\n  [options]=\"cities\"\n  [(value)]=\"dropdownCity\"\n  placeholder=\"Search a city\"\n  ariaLabel=\"City with dropdown\"\n  dropdown\n  autoHighlight\n  showClear\n/>",
   "autocomplete/form": "<div class=\"docs-stack\">\n  <star-field label=\"Assignee\" for=\"autocomplete-form-assignee\" [state]=\"task.assignee()\">\n    <star-autocomplete\n      inputId=\"autocomplete-form-assignee\"\n      [formField]=\"task.assignee\"\n      [options]=\"people\"\n      optionLabel=\"name\"\n      optionValue=\"id\"\n      placeholder=\"Search a person\"\n      showClear\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ task().valid() }}</p>\n</div>",

@@ -91,6 +91,8 @@ export interface StarUiText {
   readonly commandPlaceholder: string;
   /** Heading of the recent commands. */
   readonly recentCommands: string;
+  /** Default name of the `<nav>` landmark of `star-app-sidebar`. */
+  readonly mainNavigation: string;
   // Order list, pick list
   readonly moveSelectedItem: string;
   readonly orderListHint: string;
@@ -300,6 +302,7 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   commandPalette: 'Command palette',
   commandPlaceholder: 'Type a command or search',
   recentCommands: 'Recent',
+  mainNavigation: 'Main navigation',
 
   moveSelectedItem: 'Move selected item',
   orderListHint: 'Use Alt and the arrow keys to move the selected item.',

@@ -383,6 +383,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         load: () => import('./controls/app-bar.page').then((m) => m.AppBarPage),
       },
       {
+        label: 'App sidebar',
+        path: 'controls/app-sidebar',
+        keywords: 'side navigation nav menu collapse icons drawer sections router link landmark',
+        load: () => import('./controls/app-sidebar.page').then((m) => m.AppSidebarPage),
+      },
+      {
         label: 'Breadcrumb',
         path: 'controls/breadcrumb',
         keywords: 'path trail home location',

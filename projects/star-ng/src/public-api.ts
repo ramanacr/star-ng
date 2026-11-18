@@ -6,6 +6,7 @@
 export * from '@star-ng/ui/accordion';
 export * from '@star-ng/ui/action-strip';
 export * from '@star-ng/ui/app-bar';
+export * from '@star-ng/ui/app-sidebar';
 export * from '@star-ng/ui/autocomplete';
 export * from '@star-ng/ui/avatar';
 export * from '@star-ng/ui/badge';

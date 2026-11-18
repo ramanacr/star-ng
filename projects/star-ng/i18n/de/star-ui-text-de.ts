@@ -85,6 +85,7 @@ export const STAR_UI_TEXT_DE: StarUiText = {
   commandPalette: 'Befehlspalette',
   commandPlaceholder: 'Befehl eingeben oder suchen',
   recentCommands: 'Zuletzt verwendet',
+  mainNavigation: 'Hauptnavigation',
 
   moveSelectedItem: 'Ausgewähltes Element verschieben',
   orderListHint: 'Mit Alt und den Pfeiltasten verschieben Sie das ausgewählte Element.',
