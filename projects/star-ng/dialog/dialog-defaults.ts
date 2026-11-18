@@ -3,7 +3,7 @@ import type { StarDialogSize } from './dialog-base';
 
 /**
  * App-wide defaults of `star-dialog` and `star-drawer` (both extend `StarDialogBase`). Material
- * `MAT_DIALOG_DEFAULT_OPTIONS`. Only the inputs that apps commonly set once:
+ * `MAT_DIALOG_DEFAULT_OPTIONS`; PrimeNG: none. Only the inputs that apps commonly set once:
  *
  * - `size`: width step of a dialog (no effect on a drawer).
  * - `closable`: shows the close button.

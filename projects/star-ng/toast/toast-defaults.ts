@@ -14,7 +14,7 @@ export type StarToastPosition =
   | 'bottom-center';
 
 /**
- * App-wide defaults of toasts (Material `MAT_SNACK_BAR_DEFAULT_OPTIONS`). Only the options that
+ * App-wide defaults of toasts (Material `MAT_SNACK_BAR_DEFAULT_OPTIONS`; PrimeNG: none). Only the options that
  * apps commonly set once:
  *
  * - `position`: corner of the `star-toast` outlet.

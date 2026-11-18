@@ -4,7 +4,7 @@ import type { StarFilterMatchMode } from '@star-ng/ui/core';
 /**
  * App-wide defaults of the select family: `star-select`, `star-multi-select`, the autocompletes,
  * `star-cascade-select` (size, `showClear`) and `star-listbox` (filter, `scrollHeight`). Material
- * `MAT_SELECT_CONFIG`; PrimeNG has no per-control token. Only the inputs that apps commonly set
+ * `MAT_SELECT_CONFIG`; PrimeNG: none. Only the inputs that apps commonly set
  * once:
  *
  * - `appendTo`: `self` or `body` (PrimeNG `appendTo`).

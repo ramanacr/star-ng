@@ -2,7 +2,7 @@ import { StarFilterMatchMode, starFoldText } from './filter-match';
 
 /**
  * Text helpers of the StarNG pipes (`@star-ng/ui/utility`). They are pure functions without
- * browser globals, so they run on the server too.
+ * browser globals, so they run on the server too. PrimeNG: none; Material: none.
  */
 
 const BYTE_UNITS = ['byte', 'kilobyte', 'megabyte', 'gigabyte', 'terabyte', 'petabyte'] as const;

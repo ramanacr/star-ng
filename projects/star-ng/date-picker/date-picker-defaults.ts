@@ -2,7 +2,7 @@ import { InjectionToken, Provider } from '@angular/core';
 
 /**
  * App-wide defaults of `star-date-picker`, `star-date-range-picker` and `star-multi-date-picker`
- * (Material `MAT_DATE_LOCALE` and the datepicker options). Only the inputs that apps commonly set
+ * (Material `MAT_DATE_LOCALE` and the datepicker options; PrimeNG: none). Only the inputs that apps commonly set
  * once:
  *
  * - `locale`: BCP 47 locale of names and formats (wins over `locale` of `provideStarNg`).

@@ -2,8 +2,8 @@ import { InjectionToken, Provider } from '@angular/core';
 import type { StarFilterMatchMode } from '@star-ng/ui/core';
 
 /**
- * App-wide defaults of `star-table` (the Material pattern of `MAT_*_DEFAULT_OPTIONS`). Only the
- * inputs that apps commonly set once:
+ * App-wide defaults of `star-table`, in the pattern of Material `MAT_*_DEFAULT_OPTIONS` (Material
+ * has no table token; PrimeNG: none). Only the inputs that apps commonly set once:
  *
  * - `size`: row density, `sm` or `md`.
  * - `striped`: alternate row background.

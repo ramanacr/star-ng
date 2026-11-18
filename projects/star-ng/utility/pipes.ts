@@ -24,8 +24,8 @@ function configLocale(): () => string | undefined {
 
 /**
  * A byte count as text: `{{ 1258291 | starFileSize }}` gives "1.2 MB". Steps of 1024, units of
- * `Intl.NumberFormat`. Arguments: locale, maximum fraction digits (default 1). PrimeNG formats
- * sizes inside `p-fileupload` only.
+ * `Intl.NumberFormat`. Arguments: locale, maximum fraction digits (default 1). PrimeNG: none (it
+ * formats sizes inside `p-fileupload` only); Material: none.
  */
 @Pipe({ name: 'starFileSize' })
 export class StarFileSizePipe implements PipeTransform {
@@ -44,6 +44,7 @@ export class StarFileSizePipe implements PipeTransform {
  * `{{ order.created | starRelativeTime: clock.now() }}`
  *
  * Arguments: `now` (required), locale, `Intl.RelativeTimeFormatOptions` (default `numeric: 'auto'`).
+ * PrimeNG: none; Material: none.
  */
 @Pipe({ name: 'starRelativeTime' })
 export class StarRelativeTimePipe implements PipeTransform {
@@ -66,7 +67,7 @@ export class StarRelativeTimePipe implements PipeTransform {
  *
  * `<span [innerHTML]="city.name | starHighlight: query()"></span>`
  *
- * Arguments: query, match mode (default `contains`), locale.
+ * Arguments: query, match mode (default `contains`), locale. PrimeNG: none; Material: none.
  */
 @Pipe({ name: 'starHighlight' })
 export class StarHighlightPipe implements PipeTransform {
@@ -90,7 +91,8 @@ export class StarHighlightPipe implements PipeTransform {
 
 /**
  * Initials of a name, upper case: `{{ 'Ada Lovelace' | starInitials }}` gives "AL". The argument
- * is the maximum count (default 2). The same rule as `star-avatar`.
+ * is the maximum count (default 2). The same rule as `star-avatar`. PrimeNG: none (`p-avatar` takes
+ * a `label`); Material: none.
  */
 @Pipe({ name: 'starInitials' })
 export class StarInitialsPipe implements PipeTransform {

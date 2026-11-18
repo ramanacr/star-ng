@@ -29,7 +29,8 @@ export function provideStarClock(tick: number): Provider {
  * {{ order.created | starRelativeTime: clock.now() }}
  * ```
  *
- * On the server the clock does not tick: `now()` stays the time of the render.
+ * On the server the clock does not tick: `now()` stays the time of the render. PrimeNG: none;
+ * Material: none.
  */
 @Injectable({ providedIn: 'root' })
 export class StarClock {
