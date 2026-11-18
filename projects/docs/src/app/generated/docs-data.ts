@@ -7326,7 +7326,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "boolean",
         "default": "false",
         "required": false,
-        "description": "The user can drag nodes (PrimeNG `draggableNodes`, Ignite drag and drop). With `droppableNodes`, Ctrl+Shift and the arrow keys move the focused node too. A node with `draggable: false` or `disabled` stays."
+        "description": "The user can drag nodes (PrimeNG `draggableNodes`, Ignite drag and drop). With `droppableNodes`, Ctrl+Shift and the arrow keys move the focused node too (not while a filter query is active). A node with `draggable: false` or `disabled` stays."
       },
       {
         "name": "droppableNodes",

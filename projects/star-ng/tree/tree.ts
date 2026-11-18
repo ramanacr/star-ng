@@ -410,6 +410,9 @@ export class StarTree implements FormValueControl<readonly string[]> {
    * The user can drag nodes (PrimeNG `draggableNodes`, Ignite drag and drop). With
    * `droppableNodes`, Ctrl+Shift and the arrow keys move the focused node too (not while a
    * filter query is active). A node with `draggable: false` or `disabled` stays.
+   *
+   * The pointer drag uses the native HTML drag events. Touch drag is not supported; the keyboard
+   * moves are the alternative.
    */
   readonly draggableNodes = input(false, { transform: booleanAttribute });
   /** The tree accepts drops (PrimeNG `droppableNodes`). */
