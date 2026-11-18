@@ -161,3 +161,138 @@ export function starListHeight(scrollHeight: string, rowCount: number, itemSize:
 export function starListRowRendered(row: number, range: { start: number; end: number }): boolean {
   return row >= range.start && row < range.end;
 }
+
+/**
+ * Event of `lazyLoad` on the list controls (PrimeNG `onLazyLoad`): the control needs the options
+ * from index `first` to `last` (both included), for the filter text `filter`. Load them and put
+ * them into the `options` array at the same indexes. Until then the array holds `undefined` there:
+ * the control shows a loading row for each one.
+ */
+export interface StarListLazyLoadEvent {
+  readonly first: number;
+  readonly last: number;
+  readonly filter: string;
+}
+
+/**
+ * Options of the rows in the rendered range `[start, end)`: the first and the last option index,
+ * and whether one of them is not loaded yet (`isMissing`). `null` when the range has no option.
+ */
+export function starListLazyRange<T>(
+  layout: StarWindowLayout<T>,
+  range: { start: number; end: number },
+  isMissing: (option: T) => boolean,
+): { first: number; last: number; missing: boolean } | null {
+  let first = -1;
+  let last = -1;
+  let missing = false;
+  const end = Math.min(range.end, layout.rows.length);
+  for (let i = Math.max(0, range.start); i < end; i++) {
+    const row = layout.rows[i];
+    if (row.kind !== 'option') continue;
+    if (first < 0) first = row.index;
+    last = row.index;
+    if (isMissing(row.option)) missing = true;
+  }
+  return first < 0 ? null : { first, last, missing };
+}
+
+/**
+ * Decides when a lazy list asks for options. It remembers the index ranges it asked for, per filter
+ * text, as sorted and merged intervals: it asks only for rows in view that are not loaded and were
+ * not asked for before, so smooth scrolling does not repeat a request. A new filter text forgets the
+ * ranges and asks for the rows in view from index 0 (also for the first request). Without rendered
+ * options (an empty array) it asks for the first `pageSize` options.
+ *
+ * A range that failed to load is asked for again after `reset()` (the rows in view), or when the
+ * length of the options array changes for the same filter (the owner set new placeholders).
+ */
+export class StarLazyRequests {
+  private filter: string | null = null;
+  private length = -1;
+  /** True after `reset()`: the next request is for the rows in view, not from index 0. */
+  private retry = false;
+  /** Requested ranges, sorted by start, merged when they touch or overlap. */
+  private requested: [number, number][] = [];
+
+  /** Forgets the filter and every requested range, so the next call asks for the rows in view. */
+  reset(): void {
+    this.filter = null;
+    this.length = -1;
+    this.requested = [];
+    this.retry = true;
+  }
+
+  /** Number of stored intervals (merged). */
+  get rangeCount(): number {
+    return this.requested.length;
+  }
+
+  next(
+    range: { first: number; last: number; missing: boolean } | null,
+    filter: string,
+    pageSize: number,
+    length = -1,
+  ): StarListLazyLoadEvent | null {
+    if (filter === this.filter && length !== this.length && this.length >= 0) {
+      // Same filter, new array length: the owner replaced the options; ask again.
+      this.requested = [];
+    }
+    this.length = length;
+    if (filter !== this.filter) {
+      const retry = this.retry;
+      this.filter = filter;
+      this.retry = false;
+      this.requested = [];
+      if (!retry) {
+        // A new filter starts at the top of the list.
+        const size = range ? range.last - range.first + 1 : Math.max(1, pageSize);
+        this.add(0, size - 1);
+        return { first: 0, last: size - 1, filter };
+      }
+    }
+    if (!range) {
+      if (this.requested.length) return null;
+      const last = Math.max(1, pageSize) - 1;
+      this.add(0, last);
+      return { first: 0, last, filter };
+    }
+    if (!range.missing) return null;
+    let first = -1;
+    let last = -1;
+    for (let i = range.first; i <= range.last; i++) {
+      if (this.covered(i)) continue;
+      if (first < 0) first = i;
+      last = i;
+    }
+    if (first < 0) return null;
+    this.add(first, last);
+    return { first, last, filter };
+  }
+
+  /** Binary search in the merged intervals. */
+  private covered(index: number): boolean {
+    let lo = 0;
+    let hi = this.requested.length - 1;
+    while (lo <= hi) {
+      const mid = (lo + hi) >> 1;
+      const [a, b] = this.requested[mid];
+      if (index < a) hi = mid - 1;
+      else if (index > b) lo = mid + 1;
+      else return true;
+    }
+    return false;
+  }
+
+  /** Adds `[first, last]` and merges intervals that overlap or touch. */
+  private add(first: number, last: number): void {
+    const all = [...this.requested, [first, last] as [number, number]].sort((x, y) => x[0] - y[0]);
+    const merged: [number, number][] = [];
+    for (const [a, b] of all) {
+      const top = merged[merged.length - 1];
+      if (top && a <= top[1] + 1) top[1] = Math.max(top[1], b);
+      else merged.push([a, b]);
+    }
+    this.requested = merged;
+  }
+}

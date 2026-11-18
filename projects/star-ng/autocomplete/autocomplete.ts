@@ -20,8 +20,12 @@ import {
   viewChild,
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
-import { matchesFilter, STAR_SLOT_HOST, type StarEmptyContext } from '@star-ng/ui/core';
-import { StarOptionListBase } from '@star-ng/ui/select';
+import { STAR_SLOT_HOST, type StarEmptyContext } from '@star-ng/ui/core';
+import {
+  StarOptionListBase,
+  starSelectionChanging,
+  StarSelectionChangingEvent,
+} from '@star-ng/ui/select';
 
 export interface StarAutoCompleteSearch {
   readonly query: string;
@@ -56,6 +60,10 @@ export abstract class StarAutoCompleteBase<TOption, TValue> extends StarOptionLi
 
   /** Fires (debounced) when the user types; load `suggestions` in reply (PrimeNG `completeMethod`). */
   readonly completeMethod = output<StarAutoCompleteSearch>();
+  /** An option was chosen (also from typed text). PrimeNG `onSelect`. */
+  readonly optionSelect = output<TOption>();
+  /** A value was removed by the user: a chip, Backspace, or the clear of a single value. PrimeNG `onUnselect`. */
+  readonly optionUnselect = output<TValue>();
 
   protected readonly closeOnChoose = true;
   protected abstract readonly isMultiple: boolean;
@@ -67,6 +75,10 @@ export abstract class StarAutoCompleteBase<TOption, TValue> extends StarOptionLi
   private searchTimer: ReturnType<typeof setTimeout> | undefined;
 
   protected abstract queryFromValue(): string;
+  /** True when chosen options leave the result list (multiple mode with `unique`). */
+  protected hidesChosen(): boolean {
+    return this.isMultiple;
+  }
   /** Typed text. Resets to the selected label when the value changes. */
   protected readonly query = linkedSignal(() => this.queryFromValue());
 
@@ -75,11 +87,11 @@ export abstract class StarAutoCompleteBase<TOption, TValue> extends StarOptionLi
     const query = this.query();
     const candidates =
       remote ??
-      (this.showAll() || !query
+      (this.showAll() || !query || this.lazy()
         ? this.options()
-        : this.options().filter((option) => matchesFilter(this.labelOf(option), query)));
+        : this.options().filter((option) => this.matchesQuery(option, query)));
     return this.groupedOrder(
-      this.isMultiple ? candidates.filter((option) => !this.isSelected(option)) : candidates,
+      this.hidesChosen() ? candidates.filter((option) => !this.isSelected(option)) : candidates,
     );
   });
 
@@ -91,7 +103,10 @@ export abstract class StarAutoCompleteBase<TOption, TValue> extends StarOptionLi
     () =>
       this.open() &&
       this.queryLongEnough() &&
-      (this.visibleOptions().length > 0 || this.loading() || this.showEmptyMessage()),
+      (this.visibleOptions().length > 0 ||
+        this.customRow() !== null ||
+        this.loading() ||
+        this.showEmptyMessage()),
   );
 
   protected readonly liveText = computed(() => {
@@ -107,13 +122,25 @@ export abstract class StarAutoCompleteBase<TOption, TValue> extends StarOptionLi
     this.linkField();
     inject(DestroyRef).onDestroy(() => clearTimeout(this.searchTimer));
     // New results: show them from the top and highlight the first one (autoHighlight) or nothing.
+    // With `lazy`, loaded pages replace placeholders: the list stays where it is until the text
+    // changes.
+    let lastQuery: string | null = null;
     effect(() => {
       this.visibleOptions();
+      const query = this.lazy() ? this.query() : null;
       untracked(() => {
+        const sameQuery = query !== null && query === lastQuery;
+        lastQuery = query;
+        if (this.lazy() && sameQuery) return;
         this.resetScroll();
         this.activeIndex.set(this.autoHighlight() ? this.firstEnabledFrom(0, 1) : -1);
       });
     });
+  }
+
+  /** With `lazy`, the request has the typed text. */
+  protected override lazyFilterText(): string {
+    return this.query();
   }
 
   protected initialActiveIndex(): number {
@@ -133,6 +160,8 @@ export abstract class StarAutoCompleteBase<TOption, TValue> extends StarOptionLi
   protected labelForValue(value: TValue): string {
     const option = this.optionForValue(value);
     if (option !== undefined) return this.labelOf(option);
+    // A typed text that became a value (`allowCustomValues`) is its own label.
+    if (typeof value === 'string') return value;
     return this.optionValue() === null ? this.labelOf(value as unknown as TOption) : String(value);
   }
 
@@ -238,7 +267,7 @@ const TEMPLATE = `
                 class="star-chip__remove"
                 tabindex="-1"
                 [attr.aria-label]="text.removeItem(chip.label)"
-                (click)="removeValue(chip.value)"
+                (click)="removeChip($index)"
               >
                 <i class="ph-bold ph-x" aria-hidden="true"></i>
               </button>
@@ -297,7 +326,7 @@ const TEMPLATE = `
 
   <ng-template
     cdkConnectedOverlay
-    cdkConnectedOverlayUsePopover="inline"
+    [cdkConnectedOverlayUsePopover]="popoverLocation()"
     cdkConnectedOverlayMatchWidth
     [cdkConnectedOverlayOrigin]="origin"
     [cdkConnectedOverlayOpen]="panelVisible()"
@@ -309,6 +338,8 @@ const TEMPLATE = `
     <!-- The panel handles keys and focus that bubble up from its header and footer. -->
     <div
       class="star-panel"
+      [class]="panelClasses()"
+      [style]="panelStyle()"
       (mousedown)="onPanelMousedown($event)"
       (keydown)="onPanelKeydown($event)"
       (focusin)="onPanelFocusin($event)"
@@ -326,6 +357,7 @@ const TEMPLATE = `
         [style.max-height]="scrollHeight()"
         [attr.aria-label]="ariaLabel()"
         [attr.aria-labelledby]="labelledBy()"
+        [attr.aria-busy]="lazyBusy() || null"
         (scroll)="onListScroll($event)"
       >
         @if (loadingRow(); as loader) {
@@ -355,16 +387,20 @@ const TEMPLATE = `
             role="option"
             [id]="optionId(i)"
             [class.star-listbox__option--active]="activeIndex() === i"
+            [class.star-listbox__option--loading]="option === undefined"
             [attr.aria-selected]="activeIndex() === i"
             [attr.aria-disabled]="isDisabled(option) || null"
             [attr.aria-describedby]="describedBy(row)"
             [attr.aria-setsize]="virtualScroll() ? visibleOptions().length : null"
             [attr.aria-posinset]="virtualScroll() ? i + 1 : null"
             (click)="onOptionClick(option, i)"
-            (mousemove)="isDisabled(option) || activeIndex.set(i)"
+            (mousemove)="onOptionHover(i)"
           >
             <span class="star-listbox__label">
-              @if (optionTemplate(); as custom) {
+              @if (option === undefined) {
+                <span class="star-skeleton star-listbox__skeleton" aria-hidden="true"></span>
+                <span class="star-sr-only">{{ text.loading }}</span>
+              } @else if (optionTemplate(); as custom) {
                 <ng-container *ngTemplateOutlet="custom.template; context: optionContext(option, i)" />
               } @else {
                 @let parts = highlight(labelOf(option));
@@ -374,7 +410,7 @@ const TEMPLATE = `
           </li>
           }
         } @empty {
-          @if (!loadingRow()) {
+          @if (!loadingRow() && customRow() === null) {
             <li class="star-listbox__empty" role="presentation">
               @if (emptySlot(); as custom) {
                 <ng-container *ngTemplateOutlet="custom; context: emptyContext()" />
@@ -386,6 +422,22 @@ const TEMPLATE = `
         }
         @if (virtualWindow().after) {
           <li class="star-listbox__spacer" role="presentation" [style.height.px]="virtualWindow().after"></li>
+        }
+        @if (customRow(); as custom) {
+          <!-- Keyboard is handled on the combobox via aria-activedescendant (WAI-ARIA combobox pattern). -->
+          <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
+          <li
+            class="star-listbox__option star-listbox__option--add"
+            role="option"
+            [id]="addRowId"
+            [class.star-listbox__option--active]="isAddRow(activeIndex())"
+            [attr.aria-selected]="isAddRow(activeIndex())"
+            (click)="addCustom(custom)"
+            (mousemove)="onOptionHover(visibleOptions().length)"
+          >
+            <i class="ph-bold ph-plus" aria-hidden="true"></i>
+            <span class="star-listbox__label">{{ text.addCustomValue(custom) }}</span>
+          </li>
         }
       </ul>
       @if (footerSlot(); as footer) {
@@ -405,8 +457,9 @@ const HOST = {
 
 /**
  * Autocomplete (PrimeNG `p-autocomplete`). Local mode filters `options`; server mode listens
- * to `(completeMethod)` and shows `[suggestions]`. Only listed options can be chosen
- * (force selection): unmatched text reverts on blur, an exact label match is taken.
+ * to `(completeMethod)` and shows `[suggestions]`. Only listed options can be chosen: on blur an
+ * exact label match is taken, and other text reverts to the label of the value (or clears it with
+ * `forceSelection`).
  *
  * ```html
  * <star-autocomplete [suggestions]="results()" (completeMethod)="find($event.query)" [loading]="busy()"
@@ -426,7 +479,18 @@ export class StarAutoComplete<TOption = unknown, TValue = TOption>
   implements FormValueControl<TValue | null>
 {
   readonly value = model<TValue | null>(null);
+  /** An option was chosen. Same as `optionSelect` (kept for compatibility). */
   readonly selected = output<TOption>();
+  /**
+   * On blur, text that is no option label clears the text and the value (PrimeNG
+   * `forceSelection`). Default `false`: the text goes back to the label of the value.
+   */
+  readonly forceSelection = input(false, { transform: booleanAttribute });
+  /**
+   * Fires before the value changes by a user action. Call `cancel()` on the event to keep the old
+   * value. Ignite UI combo `selectionChanging`.
+   */
+  readonly selectionChanging = output<StarSelectionChangingEvent<TValue | null>>();
 
   protected readonly isMultiple = false;
   protected readonly hasValue = computed(() => this.value() !== null || !!this.query());
@@ -438,20 +502,37 @@ export class StarAutoComplete<TOption = unknown, TValue = TOption>
 
   protected isSelected(option: TOption): boolean {
     const value = this.value();
-    return value !== null && this.equals(this.valueOf(option), value);
+    return option !== undefined && value !== null && this.equals(this.valueOf(option), value);
   }
 
   protected choose(option: TOption): void {
     this.remember(option);
-    this.value.set(this.valueOf(option));
+    if (!this.change(this.valueOf(option))) {
+      this.setText(this.queryFromValue());
+      return;
+    }
     this.setText(this.labelOf(option));
     this.selected.emit(option);
+    this.optionSelect.emit(option);
+  }
+
+  /** Sets the value after `selectionChanging`; `false` when a handler cancelled. */
+  private change(next: TValue | null): boolean {
+    const previous = this.value();
+    const same =
+      previous === next || (previous !== null && next !== null && this.equals(previous, next));
+    if (same) return true;
+    if (!starSelectionChanging(this.selectionChanging, previous, next)) return false;
+    this.value.set(next);
+    return true;
   }
 
   protected onBlurCommit(): void {
     const text = this.query().trim();
     if (!text) {
-      if (this.value() !== null) this.value.set(null);
+      const previous = this.value();
+      if (!this.change(null)) this.setText(this.queryFromValue());
+      else if (previous !== null) this.optionUnselect.emit(previous);
       return;
     }
     if (text === this.queryFromValue()) return;
@@ -461,16 +542,30 @@ export class StarAutoComplete<TOption = unknown, TValue = TOption>
         this.labelOf(option).toLocaleLowerCase() === text.toLocaleLowerCase(),
     );
     if (exact !== undefined) this.choose(exact);
+    else if (this.forceSelection()) this.clearOnBlur();
     else this.setText(this.queryFromValue());
   }
 
+  /** `forceSelection`: clears the text and the value, as an empty field does. */
+  private clearOnBlur(): void {
+    const previous = this.value();
+    if (!this.change(null)) {
+      this.setText(this.queryFromValue());
+      return;
+    }
+    this.setText('');
+    if (previous !== null) this.optionUnselect.emit(previous);
+  }
+
   /** Single mode shows no chips; kept so both components share one template. */
-  protected removeValue(_value: TValue): void {
+  protected removeChip(_index: number): void {
     this.clear();
   }
 
   clear(): void {
-    this.value.set(null);
+    const previous = this.value();
+    if (!this.change(null)) return;
+    if (previous !== null) this.optionUnselect.emit(previous);
     this.setText('');
     this.focus();
   }
@@ -496,6 +591,35 @@ export class StarMultiAutoComplete<TOption = unknown, TValue = TOption>
   readonly value = model<readonly TValue[]>([]);
   /** Maximum number of chips (0 = no limit). */
   readonly selectionLimit = input(0);
+  /**
+   * A row "Add “text”" at the end of the list adds the typed text as a new value (a string) when no
+   * option has that label. `customValueAdd` fires. Ignite UI combo `allowCustomValues`.
+   */
+  readonly allowCustomValues = input(false, { transform: booleanAttribute });
+  /** With `allowCustomValues`: the text that became a new value. Ignite UI combo `addition`. */
+  readonly customValueAdd = output<string>();
+  /**
+   * Fires before the value changes by a user action. Call `cancel()` on the event to keep the old
+   * value. Ignite UI combo `selectionChanging`.
+   */
+  readonly selectionChanging = output<StarSelectionChangingEvent<readonly TValue[]>>();
+  /**
+   * A value appears once (default `true`): chosen options leave the list. Off: an option can be
+   * chosen again. PrimeNG `unique`.
+   */
+  readonly unique = input(true, { transform: booleanAttribute });
+  /**
+   * Typed text becomes a chip when the field loses focus (PrimeNG `addOnBlur`). The text must be an
+   * option label, or any text with `allowCustomValues`.
+   */
+  readonly addOnBlur = input(false, { transform: booleanAttribute });
+  /** Typed text becomes a chip on Tab; focus then stays in the field (PrimeNG `addOnTab`). */
+  readonly addOnTab = input(false, { transform: booleanAttribute });
+  /**
+   * Text or pattern that ends a chip while typing, for example `','` or `/[,;]/` (PrimeNG
+   * `separator`). Typed or pasted text is split there; each part becomes a chip as with `addOnBlur`.
+   */
+  readonly separator = input<string | RegExp | null>(null);
 
   protected readonly isMultiple = true;
   protected readonly hasValue = computed(() => this.value().length > 0);
@@ -509,38 +633,128 @@ export class StarMultiAutoComplete<TOption = unknown, TValue = TOption>
   }
 
   protected isSelected(option: TOption): boolean {
+    if (option === undefined) return false;
     const optionValue = this.valueOf(option);
     return this.value().some((value) => this.equals(value, optionValue));
   }
 
+  protected override hidesChosen(): boolean {
+    return this.unique();
+  }
+
   protected choose(option: TOption): void {
     const limit = this.selectionLimit();
-    if (this.isSelected(option) || (limit > 0 && this.value().length >= limit)) return;
+    if ((this.unique() && this.isSelected(option)) || (limit > 0 && this.value().length >= limit)) {
+      return;
+    }
     this.remember(option);
-    this.value.update((values) => [...values, this.valueOf(option)]);
+    if (!this.changeWith((values) => [...values, this.valueOf(option)])) return;
     this.setText('');
+    this.optionSelect.emit(option);
   }
 
   protected onBlurCommit(): void {
+    if (this.addOnBlur()) this.addToken(this.query());
+    this.setText('');
+  }
+
+  /**
+   * Makes a chip from typed text: the option with that label (case does not count), or the text
+   * itself with `allowCustomValues`. Returns `true` when a chip was added.
+   */
+  private addToken(raw: string): boolean {
+    const text = raw.trim();
+    if (!text || !this.interactive()) return false;
+    const lower = text.toLocaleLowerCase();
+    const option = [...(this.suggestions() ?? []), ...this.options()].find(
+      (o) =>
+        o !== undefined && !this.isDisabled(o) && this.labelOf(o).toLocaleLowerCase() === lower,
+    );
+    const before = this.value().length;
+    if (option !== undefined) this.choose(option);
+    else if (this.allowCustomValues() && !this.customTaken(text)) this.addCustom(text);
+    return this.value().length > before;
+  }
+
+  /** With `separator`: each finished part of the text becomes a chip; the rest stays typed. */
+  protected override onQuery(text: string): void {
+    const separator = this.separator();
+    const parts = separator === null || separator === '' ? [text] : text.split(separator);
+    if (parts.length > 1) {
+      const rest = parts.pop() ?? '';
+      for (const part of parts) this.addToken(part);
+      this.setText(rest);
+      text = rest;
+    }
+    super.onQuery(text);
+  }
+
+  protected override customRowText(): string | null {
+    const text = this.query().trim();
+    return this.allowCustomValues() && text && !this.customTaken(text) ? text : null;
+  }
+
+  /** True when an option has the text as label, or (with `unique`) a chip has it. */
+  private customTaken(text: string): boolean {
+    const lower = text.toLocaleLowerCase();
+    return (
+      [...(this.suggestions() ?? []), ...this.options()].some(
+        (option) => option !== undefined && this.labelOf(option).toLocaleLowerCase() === lower,
+      ) ||
+      (this.unique() &&
+        this.value().some((value) => this.labelForValue(value).toLocaleLowerCase() === lower))
+    );
+  }
+
+  protected override addCustom(text: string): void {
+    const limit = this.selectionLimit();
+    if (!this.interactive() || (limit > 0 && this.value().length >= limit)) return;
+    if (!this.changeWith((values) => [...values, text as unknown as TValue])) return;
+    this.customValueAdd.emit(text);
     this.setText('');
   }
 
   protected override onKeydown(event: KeyboardEvent): void {
     if (event.key === 'Backspace' && !this.query() && this.value().length && this.interactive()) {
-      this.value.update((values) => values.slice(0, -1));
+      this.removeChip(this.value().length - 1, false);
+      return;
+    }
+    if (
+      event.key === 'Tab' &&
+      !event.shiftKey &&
+      this.addOnTab() &&
+      this.activeIndex() < 0 &&
+      this.addToken(this.query())
+    ) {
+      // The chip is added and focus stays in the field for the next one.
+      event.preventDefault();
+      this.closePanel(false);
       return;
     }
     super.onKeydown(event);
   }
 
-  protected removeValue(value: TValue): void {
-    this.value.update((values) => values.filter((v) => !this.equals(v, value)));
-    this.focus();
+  /** Removes the chip at `index` (a value can be there twice when `unique` is off). */
+  protected removeChip(index: number, focus = true): void {
+    const value = this.value()[index];
+    if (value === undefined) return;
+    if (!this.changeWith((values) => values.filter((_, i) => i !== index))) return;
+    this.optionUnselect.emit(value);
+    if (focus) this.focus();
   }
 
   clear(): void {
-    this.value.set([]);
+    if (this.value().length && !this.changeWith(() => [])) return;
     this.setText('');
     this.focus();
+  }
+
+  /** Sets the value to `update(value)` after `selectionChanging`; `false` when a handler cancelled. */
+  private changeWith(update: (values: readonly TValue[]) => readonly TValue[]): boolean {
+    const previous = this.value();
+    const next = update(previous);
+    if (!starSelectionChanging(this.selectionChanging, previous, next)) return false;
+    this.value.set(next);
+    return true;
   }
 }

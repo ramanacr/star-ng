@@ -265,6 +265,46 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'select panel with lazy loading rows',
+    path: 'controls/select',
+    open: async (page) => {
+      await example(page, 'Lazy loading')
+        .getByRole('combobox', { name: 'Order, loaded on demand' })
+        .click();
+      const list = page.getByRole('listbox', { name: 'Order, loaded on demand' });
+      await expect(list.getByRole('option').first()).toBeVisible();
+    },
+  },
+  {
+    name: 'editable select panel',
+    path: 'controls/select',
+    open: async (page) => {
+      await example(page, 'Editable').getByRole('combobox', { name: 'City, editable' }).fill('r');
+      await expect(page.getByRole('listbox', { name: 'City, editable' })).toBeVisible();
+    },
+  },
+  {
+    name: 'multi-select panel with an Add row',
+    path: 'controls/multi-select',
+    open: async (page) => {
+      await example(page, 'Custom values').getByRole('combobox', { name: 'Order labels' }).click();
+      await page.locator('.star-panel__filter').getByRole('searchbox').fill('Archive');
+      await expect(page.getByRole('option', { name: 'Add “Archive”' })).toBeVisible();
+    },
+  },
+  {
+    name: 'autocomplete with an Add row',
+    path: 'controls/autocomplete',
+    open: async (page) => {
+      const input = example(page, 'Custom values').getByRole('combobox', {
+        name: 'Keywords with new ones',
+      });
+      await input.click();
+      await input.pressSequentially('ui');
+      await expect(page.getByRole('option', { name: 'Add “ui”' })).toBeVisible();
+    },
+  },
+  {
     name: 'date picker popup',
     path: 'controls/date-picker',
     open: async (page) => {
@@ -816,6 +856,36 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'table with a row in edit and a validation message',
+    path: 'controls/table-edit',
+    open: async (page) => {
+      const live = example(page, 'Row edit with validation');
+      await live.getByRole('button', { name: 'Edit row' }).first().click();
+      const customer = live.getByRole('textbox', { name: 'Edit Customer' });
+      await customer.fill('');
+      await expect(customer).toHaveAttribute('aria-invalid', 'true');
+      await expect(live.locator('.star-table__error')).toBeVisible();
+    },
+  },
+  {
+    name: 'table with a new row in edit and a changed batch cell',
+    path: 'controls/table-edit',
+    open: async (page) => {
+      const live = example(page, 'Add and delete rows');
+      await live.getByRole('button', { name: 'Add order' }).click();
+      await expect(live.locator('.star-table__row--editing')).toHaveCount(1);
+      const batch = example(page, 'Batch edit with undo');
+      await batch
+        .getByRole('button', { name: /^Edit Customer/ })
+        .first()
+        .click();
+      const editor = batch.getByRole('textbox', { name: 'Edit Customer' });
+      await editor.fill('Changed customer');
+      await editor.press('Enter');
+      await expect(batch.locator('.star-table__cell--changed')).toHaveCount(1);
+    },
+  },
+  {
     name: 'table with a filter select open (Region)',
     path: 'controls/table-sort-filter',
     open: async (page) => {
@@ -851,6 +921,55 @@ const STATES: readonly State[] = [
       const live = example(page, 'Expand and collapse');
       await live.getByRole('button', { name: 'Expand Operations' }).click();
       await expect(live.getByRole('button', { name: 'Collapse Operations' })).toBeVisible();
+    },
+  },
+  {
+    name: 'tree table with checked rows and a mixed parent',
+    path: 'controls/tree-table',
+    open: async (page) => {
+      const live = example(page, 'Checkbox selection');
+      await live.getByRole('checkbox', { name: 'Texts' }).click();
+      await expect(live.getByRole('checkbox', { name: 'Content' })).toHaveAttribute(
+        'aria-checked',
+        'mixed',
+      );
+    },
+  },
+  {
+    name: 'tree table with a loading row',
+    path: 'controls/tree-table',
+    open: async (page) => {
+      const live = example(page, 'Lazy children');
+      await live.getByRole('button', { name: 'Expand Invoices' }).click();
+      await expect(live.locator('.star-tree-table__loading')).toBeVisible();
+    },
+  },
+  {
+    name: 'tree table with a cell in edit',
+    path: 'controls/tree-table',
+    open: async (page) => {
+      const live = example(page, 'Cell edit');
+      await live.locator('tbody tr[data-key="website"]').focus();
+      await page.keyboard.press('Enter');
+      await expect(live.getByRole('textbox', { name: 'Edit Owner' })).toBeFocused();
+    },
+  },
+  {
+    name: 'tree table with the row context menu open',
+    path: 'controls/tree-table',
+    open: async (page) => {
+      const live = example(page, 'Context menu');
+      await live.locator('tbody tr[data-key="shop"]').click({ button: 'right' });
+      await expect(page.getByRole('menuitem', { name: 'Archive' })).toBeVisible();
+    },
+  },
+  {
+    name: 'tree table filtered with no result',
+    path: 'controls/tree-table',
+    open: async (page) => {
+      const live = example(page, 'Sort, filter and page');
+      await live.getByRole('searchbox', { name: 'Search' }).fill('zzz');
+      await expect(live.locator('.star-table__empty')).toBeVisible();
     },
   },
   {

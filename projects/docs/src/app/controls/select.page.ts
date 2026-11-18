@@ -2,8 +2,14 @@ import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { form, FormField, required } from '@angular/forms/signals';
 import { STAR_SLOTS } from '@star-ng/ui/core';
 import { StarField } from '@star-ng/ui/field';
-import { StarOptionTemplate, StarSelect, StarSelectedTemplate } from '@star-ng/ui/select';
+import {
+  StarOptionTemplate,
+  StarSelect,
+  StarSelectedTemplate,
+  StarSelectionChangingEvent,
+} from '@star-ng/ui/select';
 import { DOCS, DocsRow } from '../shared/docs';
+import { lazyOrders } from '../shared/lazy-orders';
 
 interface Country {
   readonly code: string;
@@ -78,6 +84,29 @@ interface Shipment {
             showClear
           />
           <p class="docs-output" role="status">Filtered: {{ filtered() ?? 'none' }}</p>
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="Filter fields and match mode"
+        source="select/filter-match"
+        note="filterBy names the fields that the filter searches (here the code and the name). filterMatchMode sets how the text must match: contains (default), startsWith, endsWith, equals or notContains. filterLocale compares with the rules of a language (Intl.Collator, sensitivity base): case and accents do not count. With resetFilterOnHide off, the filter text stays for the next opening."
+      >
+        <div class="docs-stack">
+          <star-select
+            [options]="cities"
+            optionLabel="name"
+            optionValue="code"
+            [filterBy]="['code', 'name']"
+            filterMatchMode="startsWith"
+            filterLocale="de"
+            [resetFilterOnHide]="false"
+            [(value)]="matchedCity"
+            placeholder="Type a code or a name"
+            ariaLabel="City by code or name"
+            filter
+          />
+          <p class="docs-output" role="status">City: {{ matchedCity() ?? 'none' }}</p>
         </div>
       </docs-example>
 
@@ -249,6 +278,125 @@ interface Shipment {
         page. See the Right-to-left guide.
       </p>
 
+      <docs-example
+        heading="Editable"
+        source="select/editable"
+        note="editable makes the trigger a text field (a combobox with list autocomplete). The typed text filters the options; Enter or leaving the field chooses the option with that exact label. With allowCustomValue other text becomes the value and customValue fires; without it, the text goes back to the label of the value."
+      >
+        <div class="docs-stack">
+          <star-select
+            [options]="cities"
+            optionLabel="name"
+            optionValue="code"
+            [(value)]="editedCity"
+            editable
+            allowCustomValue
+            showClear
+            placeholder="Type or choose a city"
+            ariaLabel="City, editable"
+            (customValue)="lastCustom.set($event)"
+          />
+          <p class="docs-output" role="status">
+            Value: {{ editedCity() ?? 'none' }}. Last custom text: {{ lastCustom() ?? 'none' }}
+          </p>
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="Cancelable selection"
+        source="select/selection-changing"
+        note="selectionChanging fires before the value changes, with previous and next. Call cancel() on the event to keep the old value. Here the handler refuses Paris."
+      >
+        <div class="docs-stack">
+          <star-select
+            [options]="cities"
+            optionLabel="name"
+            optionValue="code"
+            [(value)]="guardedCity"
+            placeholder="Select a city (not Paris)"
+            ariaLabel="City, Paris refused"
+            (selectionChanging)="guardCity($event)"
+          />
+          <p class="docs-output" role="status">
+            City: {{ guardedCity() ?? 'none' }}. {{ guardMessage() }}
+          </p>
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="Keyboard options"
+        source="select/keyboard-options"
+        note="selectOnFocus chooses the option that the arrow keys move to, and the panel stays open. autoOptionFocus off opens the panel with no active option. focusOnHover off keeps the active option where the keys put it when the pointer moves. The defaults keep the usual behaviour: hover moves the active option, keys do not choose, and the first option is active."
+      >
+        <div class="docs-stack">
+          <star-select
+            [options]="cities"
+            optionLabel="name"
+            optionValue="code"
+            [(value)]="keyedCity"
+            selectOnFocus
+            [autoOptionFocus]="false"
+            [focusOnHover]="false"
+            placeholder="Arrow keys choose"
+            ariaLabel="City, keys choose"
+          />
+          <p class="docs-output" role="status">City: {{ keyedCity() ?? 'none' }}</p>
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="Panel options"
+        source="select/panel-options"
+        note='panelClass and panelStyle style the panel. appendTo="body" puts the panel in the overlay container at the end of the body, for a parent that clips its content; the default self keeps it next to the control. Both stay native popovers, so the panel shows above a modal dialog too.'
+      >
+        <div class="docs-stack">
+          <star-select
+            [options]="cities"
+            optionLabel="name"
+            optionValue="code"
+            [(value)]="panelCity"
+            panelClass="orders-panel"
+            [panelStyle]="{ 'min-width': '22rem' }"
+            appendTo="body"
+            placeholder="Wide panel in the body"
+            ariaLabel="City, panel in the body"
+          />
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="Lazy loading"
+        source="select/lazy"
+        [script]="lazyScript"
+        note="lazy with virtualScroll loads the options page by page. The options array has the full length and holds undefined for the options that are not loaded: they show as loading rows, and the keyboard skips them. lazyLoad gives first, last and the filter text; here an Angular resource() loads the page from a fake service. The filter does not filter in the browser: the service gets the text. Each range is asked for once; after a failed load, resetLazy() asks again for the rows in view (the Retry button)."
+      >
+        <div class="docs-stack">
+          <star-select
+            #lazyControl
+            [options]="lazyList.options()"
+            optionLabel="name"
+            optionValue="id"
+            [(value)]="lazyOrder"
+            lazy
+            virtualScroll
+            filter
+            placeholder="Select an order"
+            ariaLabel="Order, loaded on demand"
+            (lazyLoad)="lazyList.load($event)"
+          />
+          <p class="docs-output" role="status">Order: {{ lazyOrder() ?? 'none' }}</p>
+          @if (lazyList.failed()) {
+            <button
+              type="button"
+              class="star-btn star-btn--sm star-btn--ghost"
+              (click)="lazyControl.resetLazy()"
+            >
+              Retry
+            </button>
+          }
+        </div>
+      </docs-example>
+
       <docs-api
         [of]="['StarSelect', 'StarOptionListBase', 'StarOptionTemplate', 'StarSelectedTemplate']"
         [slots]="slots"
@@ -266,6 +414,71 @@ interface Shipment {
   `,
 })
 export class SelectPage {
+  protected readonly panelCity = signal<string | null>(null);
+  protected readonly keyedCity = signal<string | null>(null);
+  protected readonly guardedCity = signal<string | null>(null);
+  protected readonly guardMessage = signal('');
+
+  protected guardCity(event: StarSelectionChangingEvent<string | null>): void {
+    if (event.next === 'PAR') {
+      event.cancel();
+      this.guardMessage.set('Paris was refused.');
+    } else {
+      this.guardMessage.set('');
+    }
+  }
+  protected readonly editedCity = signal<string | null>(null);
+  protected readonly lastCustom = signal<string | null>(null);
+  protected readonly lazyList = lazyOrders();
+  protected readonly lazyOrder = signal<number | null>(null);
+  protected readonly lazyScript = `// A fake order service (no network) and the list state, in lazy-orders.ts:
+// fetchOrderPage({ first, last, filter }) waits 400 ms and returns { first, rows, total, filter }.
+// lazyLoad asks for each range once, so the requests of one filter collect in a list and
+// resource() loads the ranges that are not in the cache yet (an aborted load loses nothing).
+export function lazyOrders() {
+  const requests = signal<readonly StarListLazyLoadEvent[]>([]);
+  const cache = new Map<number, LazyOrder>();
+  let cacheFilter: string | null = null;
+  let total = 0;
+  const loaded = (r: StarListLazyLoadEvent) => {
+    if (!total) return false;
+    for (let i = r.first; i <= Math.min(r.last, total - 1); i++) if (!cache.has(i)) return false;
+    return true;
+  };
+  const state = resource({
+    params: () => (requests().length ? requests() : undefined),
+    loader: async ({ params, abortSignal }) => {
+      const filter = params[0].filter;
+      if (filter !== cacheFilter) {
+        cache.clear();
+        cacheFilter = filter;
+        total = 0;
+      }
+      const pages = await Promise.all(
+        params.filter((r) => !loaded(r)).map((r) => fetchOrderPage(r, abortSignal)),
+      );
+      for (const page of pages) {
+        total = page.total;
+        page.rows.forEach((row, i) => cache.set(page.first + i, row));
+      }
+      return { filter, total, rows: new Map(cache) };
+    },
+  });
+  // The full-length array, with undefined where an order is not loaded yet.
+  const options = linkedSignal<LazyOrderState | undefined, readonly (LazyOrder | undefined)[]>({
+    source: () => (state.hasValue() ? state.value() : undefined),
+    computation: (next, previous) =>
+      next ? Array.from({ length: next.total }, (_, i) => next.rows.get(i)) : (previous?.value ?? []),
+  });
+  const load = (event: StarListLazyLoadEvent) =>
+    requests.update((list) =>
+      list.length && list[0].filter === event.filter ? [...list, event] : [event],
+    );
+  // On an error, the page shows a Retry button: (click)="lazyControl.resetLazy()".
+  return { options: options.asReadonly(), failed: computed(() => state.status() === 'error'), load };
+}
+
+readonly lazyList = lazyOrders();`;
   protected readonly countries: readonly Country[] = [
     { code: 'DE', name: 'Germany', region: 'Europe' },
     { code: 'FR', name: 'France', region: 'Europe' },
@@ -303,6 +516,7 @@ export class SelectPage {
   protected readonly templated = signal<string | null>(null);
   protected readonly order = signal<string | null>(null);
   protected readonly city = signal<string | null>(null);
+  protected readonly matchedCity = signal<string | null>(null);
   protected readonly shipment = signal<number | null>(null);
 
   protected readonly officeModel = signal<{ country: string | null }>({ country: null });
@@ -403,6 +617,10 @@ readonly office = form(this.officeModel, (path) => {
         'With virtualScroll: moves the active option by the lines in view, over all options. Disabled options are skipped.',
     },
     { name: 'Enter / Space', description: 'Chooses the active option and closes the panel.' },
+    {
+      name: 'Arrow keys with selectOnFocus',
+      description: 'Choose the option they move to. The panel stays open.',
+    },
     { name: 'Alt + Arrow up', description: 'Chooses the active option and closes the panel.' },
     {
       name: 'Letter keys',
