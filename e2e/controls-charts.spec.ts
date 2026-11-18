@@ -165,7 +165,9 @@ test.describe('chart', () => {
     await expect(points.getByRole('img', { name: 'Shipped, Feb: 140' })).toBeFocused();
     await page.keyboard.press('Enter');
     await expect(live.getByRole('status')).toHaveText('Selected: Shipped, Feb: 140');
-    await points.getByRole('img', { name: 'Received, Jun: 210' }).click();
+    // A click on the plot selects the nearest point.
+    const june = (await points.getByRole('img', { name: 'Received, Jun: 210' }).boundingBox())!;
+    await page.mouse.click(june.x + june.width / 2, june.y + june.height / 2);
     await expect(live.getByRole('status')).toHaveText('Selected: Received, Jun: 210');
   });
 

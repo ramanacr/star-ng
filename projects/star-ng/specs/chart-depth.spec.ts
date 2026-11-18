@@ -96,6 +96,16 @@ describe('StarChart interaction', () => {
     ]);
   });
 
+  it('selects the point nearest to a click on the plot', async () => {
+    const { el, host, fixture } = await setup();
+    const hit = el.querySelectorAll('.star-chart__hit')[1];
+    hit.dispatchEvent(new MouseEvent('mouseenter'));
+    await fixture.whenStable();
+    hit.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    expect(host.selected.length).toBe(1);
+    expect(host.selected[0].index).toBe(1);
+  });
+
   it('renders the tooltip template with the points at the hover index', async () => {
     const { el, targets, fixture } = await setup((h) => h.custom.set(true));
     targets()[1].focus();

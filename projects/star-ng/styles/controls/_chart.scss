@@ -222,14 +222,15 @@
   inset: 0;
   pointer-events: none;
 }
+// The targets are for the keyboard and assistive technology: the pointer goes through to the marks,
+// and a click on the plot selects the nearest point.
 .star-chart__target {
   position: absolute;
   width: 1rem;
   height: 1rem;
   border-radius: 50%;
   translate: -50% -50%;
-  pointer-events: auto;
-  cursor: pointer;
+  pointer-events: none;
   outline: none;
 
   &:focus-visible {

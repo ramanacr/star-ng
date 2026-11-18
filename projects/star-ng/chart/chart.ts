@@ -147,6 +147,7 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-chart',
+    '(click)': 'onPlotClick($event)',
     '[class.star-chart--legend-bottom]': "legendPosition() === 'bottom'",
     '[class.star-chart--legend-start]': "legendPosition() === 'start'",
     '[class.star-chart--legend-end]': "legendPosition() === 'end'",
@@ -1729,6 +1730,28 @@ export class StarChart {
   protected onPointFocus(row: number, col: number, point: StarChartPointTarget): void {
     this.cursorState.set({ row, col });
     this.hover.set(point.hover);
+  }
+
+  /**
+   * A click on the plot selects the point nearest to the pointer among the points at the hover
+   * position (the focus targets let the pointer through to the marks).
+   */
+  protected onPlotClick(event: MouseEvent): void {
+    const target = event.target as Element | null;
+    const frame = target?.closest('.star-chart__plot')?.parentElement;
+    const hover = this.hover();
+    if (!frame || hover === null) return;
+    const box = frame.getBoundingClientRect();
+    const left = box.width ? ((event.clientX - box.left) / box.width) * 100 : 0;
+    const top = box.height ? ((event.clientY - box.top) / box.height) * 100 : 0;
+    let best: StarChartPointTarget | null = null;
+    let distance = Infinity;
+    for (const point of this.pointRows().flat()) {
+      if (point.hover !== hover) continue;
+      const d = (point.left - left) ** 2 + (point.top - top) ** 2;
+      if (d < distance) [best, distance] = [point, d];
+    }
+    if (best) this.selectPoint(best);
   }
 
   protected selectPoint(point: StarChartPointTarget): void {
