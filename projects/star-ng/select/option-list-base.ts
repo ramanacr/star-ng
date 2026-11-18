@@ -20,12 +20,15 @@ import {
   viewChild,
 } from '@angular/core';
 import {
-  matchesFilter,
   optionText,
   readOption,
   STAR_UI_TEXT,
   StarDirectionService,
   StarEmptyContext,
+  StarFilterBy,
+  starFilterMatchAny,
+  StarFilterMatchMode,
+  starFilterTexts,
   StarGroupContext,
   StarIconSlotName,
   starListKeyboardTarget,
@@ -143,6 +146,24 @@ export abstract class StarOptionListBase<TOption, TValue> {
   readonly placeholder = input<string | null>(null);
   readonly filter = input(false, { transform: booleanAttribute });
   readonly filterPlaceholder = input<string | null>(null);
+  /**
+   * Option fields that the filter searches: one key or a list of keys (property names or
+   * functions). Default: the label. PrimeNG `filterBy`.
+   */
+  readonly filterBy = input<StarFilterBy<TOption>>(null);
+  /** How the filter text must match: `contains` (default), `startsWith`, `endsWith`, `equals` or `notContains`. PrimeNG `filterMatchMode`. */
+  readonly filterMatchMode = input<StarFilterMatchMode>('contains');
+  /**
+   * Locale of the filter compare, for example `de` or `tr`. The compare uses `Intl.Collator` with
+   * sensitivity `base`, so case and accents do not count. Default: case and accents do not count,
+   * without locale rules. PrimeNG `filterLocale`.
+   */
+  readonly filterLocale = input<string | null>(null);
+  /**
+   * Clears the filter text when the panel closes (default `true`). Set `false` to keep the text,
+   * and the filtered list, for the next opening. PrimeNG `resetFilterOnHide` (there default `false`).
+   */
+  readonly resetFilterOnHide = input(true, { transform: booleanAttribute });
   readonly showClear = input(false, { transform: booleanAttribute });
   readonly loading = input(false, { transform: booleanAttribute });
   readonly emptyMessage = input<string | null>(null);
@@ -220,11 +241,19 @@ export abstract class StarOptionListBase<TOption, TValue> {
     const query = this.filterValue();
     const all = this.options();
     const options =
-      !this.filter() || !query
-        ? all
-        : all.filter((option) => matchesFilter(this.labelOf(option), query));
+      !this.filter() || !query ? all : all.filter((option) => this.matchesQuery(option, query));
     return this.groupedOrder(options);
   });
+
+  /** True when the option matches the filter text (`filterBy`, `filterMatchMode`, `filterLocale`). */
+  protected matchesQuery(option: TOption, query: string): boolean {
+    return starFilterMatchAny(
+      starFilterTexts(option, this.filterBy(), (o) => this.labelOf(o)),
+      query,
+      this.filterMatchMode(),
+      this.filterLocale(),
+    );
+  }
 
   /** With `optionGroup`: keeps each group together, in the order the groups first appear. */
   protected groupedOrder(options: readonly TOption[]): readonly TOption[] {
@@ -423,7 +452,7 @@ export abstract class StarOptionListBase<TOption, TValue> {
     this.activeIndex.set(-1);
     this.panelFocused.set(false);
     this.listScrollTop.set(0);
-    if (this.filterValue()) {
+    if (this.filterValue() && this.resetFilterOnHide()) {
       this.filterValue.set('');
       this.filterChange.emit('');
     }

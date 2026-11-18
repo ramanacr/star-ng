@@ -26,12 +26,15 @@ import {
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
 import {
-  matchesFilter,
   optionText,
   readOption,
   STAR_SLOT_HOST,
   STAR_UI_TEXT,
   StarEmptyContext,
+  StarFilterBy,
+  starFilterMatchAny,
+  StarFilterMatchMode,
+  starFilterTexts,
   StarGroupContext,
   starListAriaPosition,
   starListHeight,
@@ -260,6 +263,12 @@ export class StarListbox<TOption = unknown, TValue = TOption> implements FormVal
   readonly optionGroup = input<StarOptionKey<TOption> | null>(null);
   readonly multiple = input(false, { transform: booleanAttribute });
   readonly filter = input(false, { transform: booleanAttribute });
+  /** Option fields that the filter searches (one key or a list). Default: the label. PrimeNG `filterBy`. */
+  readonly filterBy = input<StarFilterBy<TOption>>(null);
+  /** How the filter text must match (default `contains`). PrimeNG `filterMatchMode`. */
+  readonly filterMatchMode = input<StarFilterMatchMode>('contains');
+  /** Locale of the filter compare (`Intl.Collator`, sensitivity `base`). PrimeNG `filterLocale`. */
+  readonly filterLocale = input<string | null>(null);
   /** Height of the list. With `virtualScroll` it is the height of the list, or less for a short list. */
   readonly scrollHeight = input('16rem');
   /**
@@ -297,9 +306,17 @@ export class StarListbox<TOption = unknown, TValue = TOption> implements FormVal
   private typeaheadAt = 0;
 
   protected readonly visible = computed(() => {
-    const options = this.options().filter((option) =>
-      matchesFilter(this.labelOf(option), this.query()),
-    );
+    const query = this.query();
+    const options = query
+      ? this.options().filter((option) =>
+          starFilterMatchAny(
+            starFilterTexts(option, this.filterBy(), (o) => this.labelOf(o)),
+            query,
+            this.filterMatchMode(),
+            this.filterLocale(),
+          ),
+        )
+      : this.options();
     if (!this.optionGroup()) return options;
     // Keep each group together, in the order in which the groups first appear.
     const order = new Map<string, number>();

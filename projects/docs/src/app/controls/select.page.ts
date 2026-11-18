@@ -82,6 +82,29 @@ interface Shipment {
       </docs-example>
 
       <docs-example
+        heading="Filter fields and match mode"
+        source="select/filter-match"
+        note="filterBy names the fields that the filter searches (here the code and the name). filterMatchMode sets how the text must match: contains (default), startsWith, endsWith, equals or notContains. filterLocale compares with the rules of a language (Intl.Collator, sensitivity base): case and accents do not count. With resetFilterOnHide off, the filter text stays for the next opening."
+      >
+        <div class="docs-stack">
+          <star-select
+            [options]="cities"
+            optionLabel="name"
+            optionValue="code"
+            [filterBy]="['code', 'name']"
+            filterMatchMode="startsWith"
+            filterLocale="de"
+            [resetFilterOnHide]="false"
+            [(value)]="matchedCity"
+            placeholder="Type a code or a name"
+            ariaLabel="City by code or name"
+            filter
+          />
+          <p class="docs-output" role="status">City: {{ matchedCity() ?? 'none' }}</p>
+        </div>
+      </docs-example>
+
+      <docs-example
         heading="Groups"
         source="select/groups"
         note="optionGroup is the property (or function) with the group heading. Options of one group show together, in the order in which the headings first appear."
@@ -303,6 +326,7 @@ export class SelectPage {
   protected readonly templated = signal<string | null>(null);
   protected readonly order = signal<string | null>(null);
   protected readonly city = signal<string | null>(null);
+  protected readonly matchedCity = signal<string | null>(null);
   protected readonly shipment = signal<number | null>(null);
 
   protected readonly officeModel = signal<{ country: string | null }>({ country: null });

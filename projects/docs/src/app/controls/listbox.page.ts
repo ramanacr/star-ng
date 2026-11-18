@@ -78,6 +78,25 @@ const REGIONS = ['Central', 'East', 'North', 'South', 'West'];
       </docs-example>
 
       <docs-example
+        heading="Filter fields and match mode"
+        source="listbox/filter-match"
+        note="filterBy names the fields that the filter searches. filterMatchMode sets how the text must match, and filterLocale compares with the rules of a language (case and accents do not count). Here the filter finds a city by the start of its code or name."
+      >
+        <star-listbox
+          [options]="cities"
+          optionLabel="name"
+          optionValue="code"
+          [filterBy]="['code', 'name']"
+          filterMatchMode="startsWith"
+          filterLocale="de"
+          [(value)]="matchedCity"
+          filter
+          scrollHeight="12rem"
+          ariaLabel="City by code or name"
+        />
+      </docs-example>
+
+      <docs-example
         heading="Groups and disabled options"
         source="listbox/groups"
         note="optionGroup shows headings. optionDisabled marks options that cannot be chosen; the keyboard does not choose them."
@@ -255,6 +274,7 @@ export class ListboxPage {
     { code: 'PUN', name: 'Pune', country: 'India' },
   ];
   protected readonly city = signal<string | readonly string[] | null>(null);
+  protected readonly matchedCity = signal<string | readonly string[] | null>(null);
 
   protected readonly queue = signal<string | readonly string[] | null>(null);
   protected readonly many = signal<string | readonly string[] | null>(['billing']);

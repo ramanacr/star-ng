@@ -20,7 +20,7 @@ import {
   viewChild,
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
-import { matchesFilter, STAR_SLOT_HOST, type StarEmptyContext } from '@star-ng/ui/core';
+import { STAR_SLOT_HOST, type StarEmptyContext } from '@star-ng/ui/core';
 import { StarOptionListBase } from '@star-ng/ui/select';
 
 export interface StarAutoCompleteSearch {
@@ -77,7 +77,7 @@ export abstract class StarAutoCompleteBase<TOption, TValue> extends StarOptionLi
       remote ??
       (this.showAll() || !query
         ? this.options()
-        : this.options().filter((option) => matchesFilter(this.labelOf(option), query)));
+        : this.options().filter((option) => this.matchesQuery(option, query)));
     return this.groupedOrder(
       this.isMultiple ? candidates.filter((option) => !this.isSelected(option)) : candidates,
     );
