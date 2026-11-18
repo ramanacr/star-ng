@@ -101,23 +101,36 @@ export function starIsoText(date: Date, time = false, seconds = false): string {
 }
 
 /**
- * The local date of ISO text (`yyyy-mm-dd`, `yyyy-mm-ddTHH:mm` or `yyyy-mm-ddTHH:mm:ss`), a
- * `Date` as it is, or `null` for text that is not such a date.
+ * The date of ISO text, a `Date` as it is, or `null` for text that is not such a date.
+ *
+ * Accepted text: `yyyy-mm-dd`, `yyyy-mm-ddTHH:mm`, `yyyy-mm-ddTHH:mm:ss`, with optional
+ * fractional seconds (`.5`, `.123`) and an optional zone (`Z`, `+01:00`, `-05:30`); a space may
+ * stand for the `T`. Text without a zone is a local date and time. Text with a zone (for example
+ * the output of `Date.prototype.toISOString`) is that instant, shown in local time.
  */
 export function starParseIso(value: Date | string | null | undefined): Date | null {
   if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value;
-  const match = /^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2})(?::(\d{2}))?)?$/.exec(value ?? '');
+  const match =
+    /^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{1,9}))?)?)?(Z|[+-]\d{2}:\d{2})?$/i.exec(
+      value ?? '',
+    );
   if (!match) return null;
   const [year, month, day, hours, minutes, seconds] = match
-    .slice(1)
+    .slice(1, 7)
     .map((part) => Number(part ?? 0));
-  const date = new Date(year, month - 1, day, hours, minutes, seconds);
-  return date.getFullYear() === year &&
-    date.getMonth() === month - 1 &&
-    date.getDate() === day &&
-    hours < 24 &&
-    minutes < 60 &&
-    seconds < 60
-    ? date
-    : null;
+  const fraction = match[7] ?? '';
+  const zone = match[8];
+  // A zone needs a time, and the parts must be a real date and time.
+  if (zone && match[4] === undefined) return null;
+  if (month < 1 || month > 12 || hours > 23 || minutes > 59 || seconds > 59) return null;
+  const local = new Date(year, month - 1, day);
+  if (local.getFullYear() !== year || local.getMonth() !== month - 1 || local.getDate() !== day) {
+    return null;
+  }
+  if (zone) {
+    const instant = new Date(value as string);
+    return Number.isNaN(instant.getTime()) ? null : instant;
+  }
+  const milliseconds = Math.round(Number(`0.${fraction || '0'}`) * 1000);
+  return new Date(year, month - 1, day, hours, minutes, seconds, milliseconds);
 }

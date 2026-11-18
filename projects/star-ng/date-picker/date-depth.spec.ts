@@ -918,3 +918,47 @@ describe('date pickers: typed text and the time limits', () => {
     });
   });
 });
+
+describe('ISO text from a server', () => {
+  it('reads toISOString output, offsets and fractional seconds', () => {
+    const instant = new Date(Date.UTC(2026, 10, 22, 13, 30, 15, 123));
+    expect(starParseIso(instant.toISOString())).toEqual(instant);
+    expect(starParseIso('2026-11-22T14:30:15+01:00')).toEqual(
+      new Date(Date.UTC(2026, 10, 22, 13, 30, 15)),
+    );
+    expect(starParseIso('2026-11-22T14:30:15-05:30')).toEqual(
+      new Date(Date.UTC(2026, 10, 22, 20, 0, 15)),
+    );
+    // Without a zone: local time, with the fraction as milliseconds.
+    expect(starParseIso('2026-11-22T14:30:15.5')).toEqual(new Date(2026, 10, 22, 14, 30, 15, 500));
+    expect(starParseIso('2026-11-22T14:30:15.250')).toEqual(
+      new Date(2026, 10, 22, 14, 30, 15, 250),
+    );
+    expect(starParseIso('2026-11-22T25:30Z')).toBeNull();
+    expect(starParseIso('2026-02-30T10:00Z')).toBeNull();
+    expect(starParseIso('2026-11-22T14:30+1:00')).toBeNull();
+  });
+
+  it('keeps zoned entries in the multiple-date picker', async () => {
+    @Component({
+      imports: [StarMultiDatePicker],
+      template: `<star-multi-date-picker
+        locale="en-GB"
+        ariaLabel="Server days"
+        dataType="string"
+        [(value)]="days"
+      />`,
+    })
+    class ServerDaysHost {
+      readonly days = signal<readonly string[]>([
+        new Date(2026, 10, 5, 12).toISOString(),
+        '2026-11-12T12:00:00.000+00:00',
+      ]);
+    }
+    const fixture = TestBed.createComponent(ServerDaysHost);
+    await fixture.whenStable();
+    const input = (fixture.nativeElement as HTMLElement).querySelector('input')!;
+    expect(input.value.split(', ').length).toBe(2);
+    expect(input.value.startsWith('05/11/2026')).toBe(true);
+  });
+});
