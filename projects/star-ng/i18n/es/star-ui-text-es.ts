@@ -104,6 +104,17 @@ export const STAR_UI_TEXT_ES: StarUiText = {
   layout: 'Diseño',
   layoutList: 'Lista',
   layoutGrid: 'Cuadrícula',
+  tileMoveHint: 'Control y las teclas de flecha mueven el mosaico.',
+  tileResizeHint: 'Control, Mayús y las teclas de flecha cambian el tamaño del mosaico.',
+  tileSize: (label, columns, rows) =>
+    `${label}: ${columns} ${forCount(columns, 'columna', 'columnas')}, ${rows} ${forCount(rows, 'fila', 'filas')}`,
+  commandPalette: 'Paleta de comandos',
+  commandPlaceholder: 'Escribir un comando o buscar',
+  recentCommands: 'Recientes',
+  mainNavigation: 'Navegación principal',
+  minimize: 'Minimizar',
+  windowHint:
+    'Alt y las teclas de flecha mueven la ventana. Mayús y las teclas de flecha cambian su tamaño.',
 
   moveSelectedItem: 'Mover el elemento seleccionado',
   orderListHint: 'Alt y las teclas de flecha mueven el elemento seleccionado.',
