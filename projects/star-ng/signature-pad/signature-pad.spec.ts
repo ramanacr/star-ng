@@ -465,8 +465,8 @@ describe('StarSignaturePad resize (I3)', () => {
         constructor(callback: () => void) {
           resize = callback;
         }
-        observe(): void {}
-        disconnect(): void {}
+        readonly observe = vi.fn();
+        readonly disconnect = vi.fn();
       },
     );
     const fixture = TestBed.createComponent(ThemeHost);
