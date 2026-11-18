@@ -14,7 +14,7 @@ import {
   signal,
   Type,
 } from '@angular/core';
-import { StarDialog } from './dialog';
+import { StarDialog, StarDialogPosition } from './dialog';
 import { StarDialogSize } from './dialog-base';
 
 /** Data passed to the component opened by `StarDialogService.open()`. */
@@ -34,6 +34,22 @@ export interface StarDialogConfig<D = unknown> {
   readonly role?: 'dialog' | 'alertdialog';
   /** Accessible name when there is no header. */
   readonly ariaLabel?: string;
+  /** Place in the window. Default `'center'`. */
+  readonly position?: StarDialogPosition;
+  /** Drag by the header, and Alt + arrow keys on the move button. Default false. */
+  readonly draggable?: boolean;
+  /** Corner handle that resizes the dialog. Default false. */
+  readonly resizable?: boolean;
+  /** Header button that fills the window. Default false. */
+  readonly maximizable?: boolean;
+  /** Dragging and resizing stay inside the window. Default true. */
+  readonly keepInViewport?: boolean;
+  /** Widths per window size: `{ '<max-width>': '<width>' }`. */
+  readonly breakpoints?: Readonly<Record<string, string>>;
+  /** Blocks the page scroll while open. Default true (the service dialog is modal). */
+  readonly blockScroll?: boolean;
+  /** Moves the focus into the content on open. Default true. */
+  readonly focusOnShow?: boolean;
 }
 
 /**
@@ -80,6 +96,14 @@ export class StarDialogRef<R = unknown> {
       [dismissableMask]="c.dismissableMask ?? false"
       [role]="c.role ?? 'dialog'"
       [ariaLabel]="c.ariaLabel ?? null"
+      [position]="c.position ?? 'center'"
+      [draggable]="c.draggable ?? false"
+      [resizable]="c.resizable ?? false"
+      [maximizable]="c.maximizable ?? false"
+      [keepInViewport]="c.keepInViewport ?? true"
+      [breakpoints]="c.breakpoints ?? null"
+      [blockScroll]="c.blockScroll"
+      [focusOnShow]="c.focusOnShow ?? true"
       (hidden)="hidden()"
     >
       <ng-container *ngComponentOutlet="component(); injector: contentInjector()" />

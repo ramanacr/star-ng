@@ -578,7 +578,7 @@ readonly actionItems: readonly StarMenuItem[] = [
     {
       name: 'open(component, config?, injector?)',
       description:
-        'Opens the component in a modal dialog and returns a StarDialogRef. config has header, size, width, data, closable, closeOnEscape, dismissableMask, role and ariaLabel.',
+        'Opens the component in a modal dialog and returns a StarDialogRef. config has header, size, width, data, closable, closeOnEscape, dismissableMask, role, ariaLabel, position, draggable, resizable, maximizable, keepInViewport, breakpoints, blockScroll and focusOnShow.',
     },
     { name: 'closeAll()', description: 'Closes every dialog that the service opened.' },
     {
