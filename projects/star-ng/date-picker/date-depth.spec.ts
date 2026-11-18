@@ -1055,3 +1055,53 @@ describe('calendar: locked days of other months', () => {
     expect(el.querySelector('[data-date="2026-10-26"]')).not.toBeNull();
   });
 });
+
+@Component({
+  imports: [StarTimePicker],
+  template: `<star-time-picker
+    ariaLabel="Narrow"
+    showSeconds
+    hourFormat="24"
+    min="10:20:30"
+    max="10:21:15"
+    [stepSecond]="1"
+    [(value)]="at"
+  />`,
+})
+class NarrowSecondsHost {
+  readonly at = signal<string | null>(null);
+}
+
+describe('time columns: limits to the second, computed', () => {
+  afterEach(() => document.querySelectorAll('.star-time__panel').forEach((item) => item.remove()));
+
+  it('disables hours, minutes and seconds outside a window of seconds, and snaps into it', async () => {
+    const fixture = TestBed.createComponent(NarrowSecondsHost);
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+    el.querySelector<HTMLButtonElement>('.star-date__toggle')!.click();
+    await settle(fixture);
+    const panel = document.querySelector<HTMLElement>('.star-time__panel')!;
+    const disabled = (part: string, value: number) =>
+      cellOf(panel, part, value).getAttribute('aria-disabled') === 'true';
+    // No value: the columns show the first offered time, 10:20:30.
+    expect(disabled('hour', 9)).toBe(true);
+    expect(disabled('hour', 10)).toBe(false);
+    expect(disabled('hour', 11)).toBe(true);
+    expect(disabled('minute', 19)).toBe(true);
+    expect(disabled('minute', 20)).toBe(false);
+    expect(disabled('minute', 21)).toBe(false);
+    expect(disabled('minute', 22)).toBe(true);
+    expect(disabled('second', 29)).toBe(true);
+    expect(disabled('second', 30)).toBe(false);
+    cellOf(panel, 'second', 59).click();
+    await fixture.whenStable();
+    expect(fixture.componentInstance.at()).toBe('10:20:59');
+    // 10:21:59 is after the maximum: the nearest offered time is 10:21:15.
+    cellOf(panel, 'minute', 21).click();
+    await fixture.whenStable();
+    expect(fixture.componentInstance.at()).toBe('10:21:15');
+    expect(disabled('second', 15)).toBe(false);
+    expect(disabled('second', 16)).toBe(true);
+  });
+});

@@ -178,18 +178,28 @@ export class StarTimeColumns {
   private readonly base = computed(() => {
     const current = this.current();
     if (current !== null) return current;
-    return this.offeredTimes()[0] ?? 0;
+    const first = this.offeredMinutes()[0];
+    return first ? first.minute * 60 + first.first : 0;
   });
-  /** Every time that the columns offer: on the steps and inside `min` … `max`. */
-  private readonly offeredTimes = computed(() => {
-    const times: number[] = [];
+  /**
+   * Every minute of the day that has an offered time (on the steps, inside `min` … `max`), with
+   * its first and last offered second. At most 24 x 60 entries: the seconds are computed, not
+   * listed, so the second column does not cost 86,400 times.
+   */
+  private readonly offeredMinutes = computed(() => {
+    const step = this.secondStep();
+    const lastSecond = this.secondList()[this.secondList().length - 1];
+    const minutes: OfferedMinute[] = [];
     for (const hour of this.hourList())
-      for (const minute of this.minuteList())
-        for (const second of this.secondList()) {
-          const time = hour * 3600 + minute * 60 + second;
-          if (this.inLimits(time)) times.push(time);
-        }
-    return times;
+      for (const minute of this.minuteList()) {
+        const start = hour * 3600 + minute * 60;
+        const low = Math.max(this.lower() - start, 0);
+        const high = Math.min(this.upper() - start, lastSecond);
+        const first = Math.ceil(low / step) * step;
+        const last = Math.floor(high / step) * step;
+        if (first <= last) minutes.push({ minute: hour * 60 + minute, first, last });
+      }
+    return minutes;
   });
 
   /** Focused value of each column (roving tab stop). */
@@ -205,10 +215,10 @@ export class StarTimeColumns {
     const pm = baseHour >= 12 ? 1 : 0;
     const pad = (part: number) => String(part).padStart(2, '0');
     const twelve = this.twelveHours();
-    const offered = this.offeredTimes();
+    const offered = this.offeredMinutes();
     // Hours and minutes of the day (hour * 60 + minute) that have an offered time.
-    const offeredHours = new Set(offered.map((time) => Math.floor(time / 3600)));
-    const offeredMinutes = new Set(offered.map((time) => Math.floor(time / 60)));
+    const offeredHours = new Set(offered.map((entry) => Math.floor(entry.minute / 60)));
+    const offeredMinutes = new Set(offered.map((entry) => entry.minute));
 
     // In the 12-hour clock the hours on the step are those of the period that the columns show.
     const hourValues = twelve
@@ -385,12 +395,28 @@ export class StarTimeColumns {
 
   /** `time` when the columns offer it, else the offered time that is nearest to it. */
   private nearestAllowed(time: number): number {
-    const times = this.offeredTimes();
-    if (times.includes(time) || times.length === 0) return time;
-    return times.reduce((best, next) =>
-      Math.abs(next - time) < Math.abs(best - time) ? next : best,
-    );
+    const step = this.secondStep();
+    let best: number | null = null;
+    for (const entry of this.offeredMinutes()) {
+      // The offered second of this minute that is nearest to `time`.
+      const start = entry.minute * 60;
+      const second = Math.min(
+        entry.last,
+        Math.max(entry.first, Math.round((time - start) / step) * step),
+      );
+      const candidate = start + second;
+      if (candidate === time) return time;
+      if (best === null || Math.abs(candidate - time) < Math.abs(best - time)) best = candidate;
+    }
+    return best ?? time;
   }
+}
+
+/** A minute of the day (hour * 60 + minute) with its first and last offered second. */
+interface OfferedMinute {
+  readonly minute: number;
+  readonly first: number;
+  readonly last: number;
 }
 
 /** 0 … `end` - 1 in steps of `by`. */
