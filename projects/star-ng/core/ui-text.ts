@@ -79,6 +79,13 @@ export interface StarUiText {
   readonly layout: string;
   readonly layoutList: string;
   readonly layoutGrid: string;
+  // Tile layout
+  /** Hint of a reorderable tile. */
+  readonly tileMoveHint: string;
+  /** Hint of a resizable tile. */
+  readonly tileResizeHint: string;
+  /** Announcement after a tile resize. */
+  readonly tileSize: (label: string, columns: number, rows: number) => string;
   // Order list, pick list
   readonly moveSelectedItem: string;
   readonly orderListHint: string;
@@ -281,6 +288,10 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   layout: 'Layout',
   layoutList: 'List',
   layoutGrid: 'Grid',
+  tileMoveHint: 'Press Control and an arrow key to move the tile.',
+  tileResizeHint: 'Press Control, Shift and an arrow key to resize the tile.',
+  tileSize: (label, columns, rows) =>
+    `${label}: ${columns} ${columns === 1 ? 'column' : 'columns'}, ${rows} ${rows === 1 ? 'row' : 'rows'}`,
 
   moveSelectedItem: 'Move selected item',
   orderListHint: 'Use Alt and the arrow keys to move the selected item.',
@@ -438,6 +449,7 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   moveColumnEarlier: ['column'],
   moveColumnLater: ['column'],
   itemPosition: ['label', 'position', 'total'],
+  tileSize: ['label', 'columns', 'rows'],
   passwordRuleLength: ['min'],
   otpCharacter: ['position', 'total'],
   sliderMinimum: ['label'],

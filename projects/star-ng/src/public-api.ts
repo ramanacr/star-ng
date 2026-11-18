@@ -56,6 +56,7 @@ export * from '@star-ng/ui/tabs';
 export * from '@star-ng/ui/tag';
 export * from '@star-ng/ui/theme';
 export * from '@star-ng/ui/theme-switch';
+export * from '@star-ng/ui/tile-layout';
 export * from '@star-ng/ui/toast';
 export * from '@star-ng/ui/toggle-switch';
 export * from '@star-ng/ui/tooltip';

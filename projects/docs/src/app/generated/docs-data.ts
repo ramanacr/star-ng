@@ -6318,6 +6318,113 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarTile": {
+    "kind": "component",
+    "selector": "star-tile",
+    "entry": "@star-ng/ui/tile-layout",
+    "description": "One tile of `star-tile-layout` (Material `mat-grid-tile`, Kendo UI `TileLayoutItem`). It is a `role=\"group\"` named by `label`, or by its header when there is no `label`.",
+    "inputs": [
+      {
+        "name": "key",
+        "type": "string",
+        "default": null,
+        "required": true,
+        "description": "Unique key of the tile in its layout; the `order` model lists these keys."
+      },
+      {
+        "name": "label",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "Name of the group, read by screen readers and in the move announcements."
+      }
+    ],
+    "models": [
+      {
+        "name": "colSpan",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Number of columns the tile spans. The layout writes it after a resize."
+      },
+      {
+        "name": "rowSpan",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Number of rows the tile spans. The layout writes it after a resize."
+      }
+    ],
+    "outputs": []
+  },
+  "StarTileLayout": {
+    "kind": "component",
+    "selector": "star-tile-layout",
+    "entry": "@star-ng/ui/tile-layout",
+    "description": "Tile layout (Material `mat-grid-list`, Kendo UI `TileLayout`): a CSS grid of tiles with `columns`, `rowHeight` and `gap`. Each `star-tile` spans `colSpan` columns and `rowSpan` rows.",
+    "inputs": [
+      {
+        "name": "columns",
+        "type": "number",
+        "default": "3",
+        "required": false,
+        "description": "Number of columns (above the breakpoints)."
+      },
+      {
+        "name": "rowHeight",
+        "type": "string | number",
+        "default": "'10rem'",
+        "required": false,
+        "description": "Height of one row: a CSS length, or a number of pixels."
+      },
+      {
+        "name": "gap",
+        "type": "string",
+        "default": "'1rem'",
+        "required": false,
+        "description": "Space between the tiles, a CSS length."
+      },
+      {
+        "name": "breakpoints",
+        "type": "StarTileBreakpoints",
+        "default": "{}",
+        "required": false,
+        "description": "Columns in a narrow layout (container queries)."
+      },
+      {
+        "name": "reorderable",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The tiles move with drag and drop, and with Control and the arrow keys."
+      },
+      {
+        "name": "resizable",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The spans change with Control, Shift and the arrow keys, and with a corner handle."
+      }
+    ],
+    "models": [
+      {
+        "name": "order",
+        "type": "readonly string[]",
+        "default": "[]",
+        "required": false,
+        "description": "Keys of the tiles in their order. The layout writes it after a move. Render the tiles in this order; an empty array means the order of the content."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "tileResize",
+        "type": "StarTileResize",
+        "default": null,
+        "required": false,
+        "description": "Emits after the user changed the spans of a tile."
+      }
+    ]
+  },
   "StarTimeColumns": {
     "kind": "component",
     "selector": "star-time-columns",
@@ -7510,6 +7617,9 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "tag/severities": "<star-tag value=\"New\" />\n<star-tag severity=\"secondary\" value=\"Draft\" />\n<star-tag severity=\"success\" value=\"Paid\" />\n<star-tag severity=\"info\" value=\"In review\" />\n<star-tag severity=\"warn\" value=\"Due soon\" />\n<star-tag severity=\"danger\" value=\"Overdue\" />",
   "terminal/basic": "<div class=\"docs-stack docs-terminal\">\n  <star-terminal\n    #terminal\n    ariaLabel=\"Diagnostics\"\n    prompt=\"app $\"\n    welcome=\"Type help for the commands.\"\n    [handler]=\"runCommand\"\n    (commandRun)=\"last.set($event)\"\n  />\n  <div class=\"docs-row\">\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"terminal.clear()\">\n      Clear\n    </star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"terminal.run('status')\">\n      Run \"status\"\n    </star-button>\n  </div>\n  <p class=\"docs-output\" role=\"status\">Last command: {{ last() || 'none' }}</p>\n</div>",
   "theme-switch/basic": "<div class=\"docs-row docs-theme-area\">\n  <star-theme-switch />\n  <p class=\"docs-output\" role=\"status\">\n    Choice: {{ theme.mode() }}. Theme in use: {{ theme.theme() }}.\n  </p>\n</div>",
+  "tile-layout/basic": "<star-tile-layout [columns]=\"4\" rowHeight=\"7rem\" gap=\"0.75rem\">\n  @for (tile of basicTiles; track tile.key) {\n    <star-tile [key]=\"tile.key\" [colSpan]=\"tile.colSpan\" [rowSpan]=\"tile.rowSpan\">\n      <span starTileHeader>{{ tile.title }}</span>\n      <p class=\"caption\">{{ tile.text }}</p>\n    </star-tile>\n  }\n</star-tile-layout>",
+  "tile-layout/dashboard": "<div class=\"docs-stack\">\n  <star-tile-layout\n    [columns]=\"3\"\n    rowHeight=\"8rem\"\n    reorderable\n    resizable\n    [(order)]=\"order\"\n    (tileResize)=\"onResize($event)\"\n  >\n    @for (key of order(); track key) {\n      @let tile = dashboard[key];\n      <star-tile\n        [key]=\"key\"\n        [label]=\"tile.title\"\n        [(colSpan)]=\"tile.colSpan\"\n        [(rowSpan)]=\"tile.rowSpan\"\n      >\n        <span starTileHeader>{{ tile.title }}</span>\n        <p class=\"figure\">{{ tile.figure }}</p>\n        <p class=\"caption\">{{ tile.caption }}</p>\n      </star-tile>\n    }\n  </star-tile-layout>\n  <p class=\"docs-output\" role=\"status\">\n    Order: {{ order().join(', ') }}. {{ lastResize() }}\n  </p>\n</div>",
+  "tile-layout/responsive": "<star-tile-layout [columns]=\"4\" [breakpoints]=\"{ sm: 1, md: 2 }\" rowHeight=\"6rem\">\n  @for (city of cities; track city) {\n    <star-tile [key]=\"city\" [label]=\"city\">\n      <span starTileHeader>{{ city }}</span>\n    </star-tile>\n  }\n</star-tile-layout>",
   "time-picker/basic": "<div class=\"docs-stack\">\n  <star-time-picker [(value)]=\"meeting\" ariaLabel=\"Meeting time\" />\n  <p class=\"docs-output\" role=\"status\">Meeting: {{ meeting() ?? 'none' }}</p>\n</div>",
   "time-picker/form": "<div class=\"docs-stack\">\n  <star-field label=\"Pick-up time\" for=\"time-form-pickup\" [state]=\"slot.pickup()\">\n    <star-time-picker\n      inputId=\"time-form-pickup\"\n      [formField]=\"slot.pickup\"\n      ariaLabel=\"Pick-up time\"\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ slot().valid() }}</p>\n</div>",
   "time-picker/hour-format": "<div class=\"docs-stack\">\n  <star-time-picker [(value)]=\"cutOff\" hourFormat=\"12\" ariaLabel=\"Cut-off time\" />\n  <p class=\"docs-output\" role=\"status\">Cut-off: {{ cutOff() ?? 'none' }}</p>\n</div>",

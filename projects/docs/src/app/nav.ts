@@ -359,6 +359,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         keywords: 'row actions hover toolbar overlay card icon buttons',
         load: () => import('./controls/action-strip.page').then((m) => m.ActionStripPage),
       },
+      {
+        label: 'Tile layout',
+        path: 'controls/tile-layout',
+        keywords: 'grid list tiles dashboard reorder resize drag drop span columns responsive',
+        load: () => import('./controls/tile-layout.page').then((m) => m.TileLayoutPage),
+      },
     ],
   },
   {
