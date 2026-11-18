@@ -6314,6 +6314,27 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Locale of the text filters (PrimeNG `filterLocale`): with it, `Intl.Collator` compares the folded texts, so letters that the locale treats as equal match. Default: no locale."
       },
       {
+        "name": "filterDisplay",
+        "type": "'row' | 'menu'",
+        "default": "'row'",
+        "required": false,
+        "description": "Where the column filters show (PrimeNG `filterDisplay`): `'row'` (default), a second header row; `'menu'`, a filter button in each header cell that opens a filter menu with match modes, \"Match all\" / \"Match any\" rules, Clear and Apply."
+      },
+      {
+        "name": "filterMaxRules",
+        "type": "number",
+        "default": "2",
+        "required": false,
+        "description": "Most rules per column in the filter menu (PrimeNG `maxConstraints`)."
+      },
+      {
+        "name": "showApplyButton",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Apply button in the filter menu (PrimeNG `showApplyButton`). `false`: every change in the menu filters at once."
+      },
+      {
         "name": "lazy",
         "type": "boolean",
         "default": "false",
@@ -6666,6 +6687,80 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": "The header check box was toggled (PrimeNG `onHeaderCheckboxToggle`)."
+      }
+    ]
+  },
+  "StarTableFilterMenu": {
+    "kind": "component",
+    "selector": "star-table-filter-menu",
+    "entry": "@star-ng/ui/table",
+    "description": "Filter menu of a `star-table` column (PrimeNG `p-columnFilter` with `display=\"menu\"`). The table renders it in the header cell when `filterDisplay` is `'menu'`. A button with `aria-haspopup=\"dialog\"` opens a labelled dialog (focus trap, focus goes back to the button) with the match mode, the value field(s) of the filter type, \"Match all\" / \"Match any\", \"Add rule\", Clear and Apply.",
+    "inputs": [
+      {
+        "name": "header",
+        "type": "string",
+        "default": null,
+        "required": true,
+        "description": "Column header text, for the names of the button and the dialog."
+      },
+      {
+        "name": "type",
+        "type": "StarColumnFilterType",
+        "default": null,
+        "required": true,
+        "description": ""
+      },
+      {
+        "name": "value",
+        "type": "StarFilterValue | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "The current filter value of the column."
+      },
+      {
+        "name": "matchModes",
+        "type": "readonly StarTableMatchMode[]",
+        "default": "[]",
+        "required": false,
+        "description": "Match modes to offer (default: the modes of the type)."
+      },
+      {
+        "name": "defaultMode",
+        "type": "StarTableMatchMode | null",
+        "default": "null",
+        "required": false,
+        "description": "Mode of a new rule (default: the first of `modes`)."
+      },
+      {
+        "name": "choices",
+        "type": "readonly string[]",
+        "default": "[]",
+        "required": false,
+        "description": "Choices of a `'select'` or `'multiselect'` filter."
+      },
+      {
+        "name": "maxRules",
+        "type": "number",
+        "default": "2",
+        "required": false,
+        "description": "Most rules that \"Add rule\" allows (PrimeNG `maxConstraints`)."
+      },
+      {
+        "name": "showApply",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Apply button; without it every change applies at once (PrimeNG `showApplyButton`)."
+      }
+    ],
+    "models": [],
+    "outputs": [
+      {
+        "name": "filterChange",
+        "type": "StarFilterValue | null",
+        "default": null,
+        "required": false,
+        "description": "The new filter value; `null` removes the filter."
       }
     ]
   },
@@ -8210,7 +8305,9 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "table-selection/single": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with one choice\"\n      selectionMode=\"single\"\n      [(selection)]=\"chosen\"\n      paginator\n      [rows]=\"5\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Chosen: {{ chosen()[0]?.id ?? 'none' }}</p>\n</div>",
   "table-sort-filter/columns": "<div class=\"docs-stack\">\n  <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"filtered.clearFilters()\">\n    Clear filters\n  </star-button>\n  <docs-fill>\n    <star-table\n      #filtered\n      [value]=\"orders\"\n      [columns]=\"filterColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with column filters\"\n      [(filters)]=\"filters\"\n      paginator\n      [rows]=\"4\"\n    >\n      <ng-template starCell=\"status\" [starCellOf]=\"orders\" let-row>\n        <star-tag [severity]=\"severityOf(row.status)\" [value]=\"row.status\" rounded />\n      </ng-template>\n    </star-table>\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Filters: {{ filterText() }}</p>\n</div>",
   "table-sort-filter/combined": "<div class=\"docs-stack\">\n  <input\n    starInput\n    type=\"search\"\n    aria-label=\"Search combined orders\"\n    placeholder=\"Search combined orders\"\n    [value]=\"combinedQuery()\"\n    (input)=\"combinedQuery.set($any($event.target).value)\"\n  />\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"filterColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with search, filters and sort\"\n      [globalFilter]=\"combinedQuery()\"\n      size=\"sm\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n</div>",
+  "table-sort-filter/custom": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"customColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with a custom match mode\"\n      filterDisplay=\"menu\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n</div>",
   "table-sort-filter/global": "<div class=\"docs-stack\">\n  <input\n    starInput\n    type=\"search\"\n    aria-label=\"Search orders\"\n    placeholder=\"Search orders\"\n    [value]=\"query()\"\n    (input)=\"query.set($any($event.target).value)\"\n  />\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"sortColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Searchable orders\"\n      [globalFilter]=\"query()\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n</div>",
+  "table-sort-filter/menu": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"menuColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Invoices with filter menus\"\n      filterDisplay=\"menu\"\n      [(filters)]=\"menuFilters\"\n      (filter)=\"menuCount.set($event.filteredValue.length)\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">\n    {{ menuCount() ?? orders.length }} invoices match. Filters: {{ menuText() }}\n  </p>\n</div>",
   "table-sort-filter/multi": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"sortColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders sorted by several columns\"\n      multiSort\n      [(sortMeta)]=\"sortMeta\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Sorts: {{ sortText() }}</p>\n</div>",
   "table-sort-filter/sort": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"sortColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Sortable orders\"\n      [(sortField)]=\"sortField\"\n      [(sortOrder)]=\"sortOrder\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">\n    Sort: {{ sortField() ?? 'none' }} ({{ sortOrder() === 1 ? 'ascending' : 'descending' }})\n  </p>\n</div>",
   "table/basic": "<docs-fill>\n  <star-table\n    [value]=\"orders\"\n    [columns]=\"columns\"\n    dataKey=\"id\"\n    ariaLabel=\"Orders\"\n    paginator\n    [rows]=\"5\"\n  />\n</docs-fill>",

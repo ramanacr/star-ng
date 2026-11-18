@@ -46,6 +46,8 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - `STAR_UI_TEXT.selectRowOf` and `selectPageRows` with German and Spanish texts.
 - Table: filter rules. `StarFilterValue` also takes `StarFilterConstraint` (`operator` `and` / `or`, `rules` of `StarFilterRule` with `matchMode` and `value`); the old text, text list and range values work as before. Match modes: text `contains`, `startsWith`, `endsWith`, `equals`, `notContains`; number `equals`, `notEquals`, `lt`, `lte`, `gt`, `gte`, `between`; date `dateIs`, `dateIsNot`, `dateBefore`, `dateAfter`, `between`; lists `in`. Column `filterMatchModes` and `filterMatchMode`; table `filterLocale`, `globalFilterFields`, `globalFilterMatchMode` and the `filter` output (`filters`, `filteredValue`).
 - `StarFilterService` (`@star-ng/ui/core`): `register(name, fn, label)` adds a custom match mode for the table filters (PrimeNG `FilterService.register`).
+- Table: filter menu (`filterDisplay="menu"`, PrimeNG `p-columnFilter` menu): a filter button in each header cell ("Filter Status, active", `aria-haspopup="dialog"`, `aria-expanded`) opens a labelled dialog with a focus trap, the match mode, the value field(s) of the filter type, "Match all" / "Match any", "Add rule" (`filterMaxRules`), Clear and Apply (`showApplyButton`; without it every change applies at once).
+- `STAR_UI_TEXT` entries for the filter menu and the match mode names, with German and Spanish texts.
 
 ### Changed
 

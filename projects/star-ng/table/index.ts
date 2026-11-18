@@ -10,5 +10,6 @@ export {
   type StarRowEvent,
 } from './table-editing';
 export * from './table-export';
+export * from './table-filter-menu';
 export * from './table-selection';
 export * from './table-slots';

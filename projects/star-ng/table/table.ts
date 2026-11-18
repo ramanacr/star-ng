@@ -78,6 +78,7 @@ import {
   starMatchesFilter,
   StarTableMatchMode,
 } from './table-filter';
+import { StarTableFilterMenu } from './table-filter-menu';
 import {
   StarHeaderCheckboxToggleEvent,
   StarRowSelectEvent,
@@ -375,6 +376,7 @@ export class StarRowExpansionTemplate<T = unknown> {
     StarSelect,
     StarPopover,
     StarSkeleton,
+    StarTableFilterMenu,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
@@ -524,6 +526,23 @@ export class StarRowExpansionTemplate<T = unknown> {
                   </button>
                 } @else {
                   <ng-container *ngTemplateOutlet="headerLabel; context: { $implicit: column }" />
+                }
+                @if (column.filter && filterDisplay() === 'menu') {
+                  <star-table-filter-menu
+                    [header]="column.header"
+                    [type]="column.filter"
+                    [value]="filters()[column.field]"
+                    [matchModes]="column.filterMatchModes ?? []"
+                    [defaultMode]="column.filterMatchMode ?? null"
+                    [choices]="
+                      column.filter === 'select' || column.filter === 'multiselect'
+                        ? filterChoices(column)
+                        : []
+                    "
+                    [maxRules]="filterMaxRules()"
+                    [showApply]="showApplyButton()"
+                    (filterChange)="setFilter(column.field, $event ?? '')"
+                  />
                 }
                 @if (resizableColumns()) {
                   <span
@@ -1101,6 +1120,19 @@ export class StarTable<T> {
    * folded texts, so letters that the locale treats as equal match. Default: no locale.
    */
   readonly filterLocale = input<string | null>(null);
+  /**
+   * Where the column filters show (PrimeNG `filterDisplay`): `'row'` (default), a second header
+   * row; `'menu'`, a filter button in each header cell that opens a filter menu with match modes,
+   * "Match all" / "Match any" rules, Clear and Apply.
+   */
+  readonly filterDisplay = input<'row' | 'menu'>('row');
+  /** Most rules per column in the filter menu (PrimeNG `maxConstraints`). */
+  readonly filterMaxRules = input(2);
+  /**
+   * Apply button in the filter menu (PrimeNG `showApplyButton`). `false`: every change in the
+   * menu filters at once.
+   */
+  readonly showApplyButton = input(true, { transform: booleanAttribute });
   /** Column filter values by column `field` (columns with `filter` set). Two-way. */
   readonly filters = model<StarColumnFilters>({});
 
@@ -1328,8 +1360,9 @@ export class StarTable<T> {
   protected readonly dropField = signal<string | null>(null);
   private resizing = false;
 
-  protected readonly hasColumnFilters = computed(() =>
-    this.visibleColumns().some((column) => column.filter),
+  /** The second header row with the column filters (`filterDisplay="row"`). */
+  protected readonly hasColumnFilters = computed(
+    () => this.filterDisplay() === 'row' && this.visibleColumns().some((column) => column.filter),
   );
 
   /** Columns that have a filter value now, with that value. */
