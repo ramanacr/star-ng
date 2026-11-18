@@ -107,17 +107,17 @@ function applyBatch(rows: readonly Order[], changes: StarBatchChanges<Order>): O
             <star-button
               size="sm"
               variant="secondary"
-              [disabled]="!batchTable.canUndo()"
+              [disabled]="!pendingCount(batchTable.pendingChanges())"
               (pressed)="batchTable.discardEdits()"
             >
               Discard
             </star-button>
             <star-button
               size="sm"
-              [disabled]="!batchTable.canUndo()"
+              [disabled]="!pendingCount(batchTable.pendingChanges())"
               (pressed)="batchTable.commitEdits()"
             >
-              Save {{ pendingCount(batchTable.pendingChanges()) }} changes
+              {{ saveLabel(pendingCount(batchTable.pendingChanges())) }}
             </star-button>
           </div>
           <docs-fill>
@@ -319,6 +319,10 @@ export class TableEditPage {
     },
   ];
 
+  protected saveLabel(count: number): string {
+    return count === 1 ? 'Save 1 change' : `Save ${count} changes`;
+  }
+
   protected pendingCount(changes: StarBatchChanges<Order>): number {
     return changes.updated.length + changes.added.length + changes.deleted.length;
   }
@@ -326,7 +330,8 @@ export class TableEditPage {
   /** The table does not change its rows: apply the batch here. */
   protected saveBatch(changes: StarBatchChanges<Order>): void {
     this.batchRows.update((rows) => applyBatch(rows, changes));
-    this.batchMessage.set(`Saved: ${changes.updated.length} rows changed.`);
+    const count = changes.updated.length;
+    this.batchMessage.set(`Saved: ${count} ${count === 1 ? 'row' : 'rows'} changed.`);
   }
 
   protected readonly list = signal<readonly Order[]>(ORDERS.slice(20, 23));

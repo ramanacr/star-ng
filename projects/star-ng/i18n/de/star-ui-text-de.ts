@@ -78,6 +78,8 @@ export const STAR_UI_TEXT_DE: StarUiText = {
   valueMin: (min) => `Geben Sie ${min} oder mehr ein.`,
   valueMax: (max) => `Geben Sie ${max} oder weniger ein.`,
   valuePattern: 'Geben Sie den Wert im erwarteten Format ein.',
+  valueNumber: 'Geben Sie eine Zahl ein.',
+  changeAdded: 'Änderung hinzugefügt.',
   editSaved: 'Änderungen gespeichert.',
   editCanceled: 'Bearbeitung abgebrochen.',
   editInvalid: 'Korrigieren Sie die Fehler, dann speichern Sie.',

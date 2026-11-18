@@ -53,8 +53,10 @@ const COLUMNS: StarColumn<Order>[] = [
   template: `<star-table
     [value]="rows()"
     [columns]="columns"
-    dataKey="id"
+    [dataKey]="keyed() ? 'id' : null"
     [editMode]="mode()"
+    [hiddenColumns]="hidden()"
+    [reorderableRows]="reorder()"
     [batchEdit]="batch()"
     [(editingRowKeys)]="editingKeys"
     (cellEdit)="log.push(['cellEdit', $event])"
@@ -82,6 +84,9 @@ class EditingHost {
   readonly mode = signal<'cell' | 'row'>('cell');
   readonly batch = signal(false);
   readonly customActions = signal(false);
+  readonly keyed = signal(true);
+  readonly hidden = signal<readonly string[]>([]);
+  readonly reorder = signal(false);
   readonly editingKeys = signal<readonly unknown[]>([]);
   readonly log: [
     string,
@@ -101,12 +106,24 @@ const key = (target: Element, name: string, init: KeyboardEventInit = {}) =>
     new KeyboardEvent('keydown', { key: name, bubbles: true, cancelable: true, ...init }),
   );
 
-async function setup(options: { mode?: 'cell' | 'row'; batch?: boolean; custom?: boolean } = {}) {
+async function setup(
+  options: {
+    mode?: 'cell' | 'row';
+    batch?: boolean;
+    custom?: boolean;
+    keyed?: boolean;
+    reorder?: boolean;
+    rows?: Order[];
+  } = {},
+) {
   const fixture = TestBed.createComponent(EditingHost);
   const host = fixture.componentInstance;
   host.mode.set(options.mode ?? 'cell');
   host.batch.set(options.batch ?? false);
   host.customActions.set(options.custom ?? false);
+  host.keyed.set(options.keyed ?? true);
+  host.reorder.set(options.reorder ?? false);
+  if (options.rows) host.rows.set(options.rows);
   const announcer = TestBed.inject(LiveAnnouncer);
   const announce = vi.spyOn(announcer, 'announce').mockResolvedValue();
   await fixture.whenStable();
@@ -464,6 +481,7 @@ describe('StarTable batch edit', () => {
     expect(row(1).classList).toContain('star-table__row--deleted');
     key(table, 'z', { ctrlKey: true });
     await stable();
+    expect(row(1).classList).not.toContain('star-table__row--deleted');
     key(table, 'Z', { ctrlKey: true, shiftKey: true });
     await stable();
     expect(row(1).classList).toContain('star-table__row--deleted');
@@ -493,7 +511,7 @@ describe('StarTable batch edit', () => {
   });
 
   it('adds rows to the batch, in edit with row mode, and saves row edits as pending', async () => {
-    const { host, el, stable, names } = await setup({ batch: true, mode: 'row' });
+    const { host, el, stable, names, messages } = await setup({ batch: true, mode: 'row' });
     const added = host.table().addRow({ id: 'ORD-7' } as Partial<Order>);
     await stable();
     const rows = el.querySelectorAll<HTMLElement>('tbody tr.star-table__row');
@@ -509,11 +527,165 @@ describe('StarTable batch edit', () => {
     expect(host.table().pendingChanges().added).toEqual([
       { id: 'ORD-7', customer: 'Park Cafe', quantity: 2 },
     ]);
-    host.table().undo();
+    expect(messages()).toContain('Change added.');
+    expect(messages()).not.toContain('Changes saved.');
+    // Open the saved new row again, then undo its add: its edit ends with it.
+    host.table().initRowEdit(added);
     await stable();
-    expect(host.table().pendingChanges().added).toEqual([added]);
+    expect(host.editingKeys()).toEqual(['ORD-7']);
     host.table().undo();
     await stable();
     expect(el.querySelectorAll('tbody tr.star-table__row').length).toBe(3);
+    expect(host.editingKeys()).toEqual([]);
+    expect(host.table().canUndo()).toBe(false);
+  });
+
+  it('does not keep a new row that was canceled before its first save (row mode)', async () => {
+    const { host, el, stable } = await setup({ batch: true, mode: 'row' });
+    host.table().addRow({ id: 'ORD-8' } as Partial<Order>);
+    await stable();
+    key(el.querySelector('[data-row-editor="ORD-8"]')!, 'Escape');
+    await stable();
+    expect(host.table().pendingChanges().added).toEqual([]);
+    expect(host.table().canUndo()).toBe(false);
+    expect(el.querySelectorAll('tbody tr.star-table__row').length).toBe(3);
+  });
+
+  it('checks the rows before commitEdits and opens the first invalid cell', async () => {
+    const { host, el, stable, names, messages } = await setup({ batch: true });
+    host.table().addRow({ id: 'ORD-8' } as Partial<Order>);
+    await stable();
+    host.table().commitEdits();
+    await stable();
+    expect(names()).not.toContain('batchSave');
+    expect(messages()).toContain('Correct the errors, then save.');
+    const editor = el.querySelector<HTMLInputElement>('input.star-table__editor')!;
+    expect(editor.getAttribute('aria-label')).toBe('Edit Customer');
+    expect(editor.getAttribute('aria-invalid')).toBe('true');
+    expect(document.activeElement).toBe(editor);
+    editor.value = 'Park Cafe';
+    key(editor, 'Enter');
+    await stable();
+    host.table().commitEdits();
+    await stable();
+    expect(host.log.at(-1)).toEqual([
+      'batchSave',
+      { updated: [], added: [{ id: 'ORD-8', customer: 'Park Cafe' }], deleted: [] },
+    ]);
+  });
+
+  it('closes the cell editor of a row that is deleted', async () => {
+    const { host, cell, stable, el } = await setup({ batch: true });
+    cell(0, 1).querySelector<HTMLButtonElement>('.star-table__edit')!.click();
+    await stable();
+    expect(el.querySelector('.star-table__editor')).not.toBeNull();
+    host.table().deleteRow(ORDERS[0]);
+    await stable();
+    expect(el.querySelector('.star-table__editor')).toBeNull();
+  });
+
+  it('keeps Ctrl+Z for the batch on a checkbox', async () => {
+    const { host, cell, stable } = await setup({ batch: true });
+    host.table().deleteRow(ORDERS[0]);
+    await stable();
+    const box = document.createElement('input');
+    box.type = 'checkbox';
+    cell(1, 0).append(box);
+    key(box, 'z', { ctrlKey: true });
+    await stable();
+    expect(host.table().pendingChanges().deleted).toEqual([]);
+  });
+});
+
+describe('StarTable edit fixes', () => {
+  it('finds the controls of the right row without dataKey', async () => {
+    const { host, row, stable } = await setup({ mode: 'row', keyed: false });
+    host.table().initRowEdit(host.rows()[1]);
+    await stable();
+    expect(row(1).querySelectorAll('[data-row-editor]').length).toBe(3);
+    expect(row(0).querySelectorAll('[data-row-editor]').length).toBe(0);
+    expect(document.activeElement).toBe(row(1).querySelector('[data-row-editor]'));
+    key(row(1).querySelector('[data-row-editor]')!, 'Escape');
+    await stable();
+    expect(document.activeElement).toBe(row(1).querySelector('[data-row-edit]'));
+    const ids = [0, 1, 2].map((i) =>
+      row(i).querySelector('[data-row-edit]')!.getAttribute('data-row-edit'),
+    );
+    expect(new Set(ids).size).toBe(3);
+  });
+
+  it('keeps two new rows without a key apart', async () => {
+    const { host, el, stable } = await setup({ mode: 'row' });
+    const first = host.table().addRow();
+    const second = host.table().addRow();
+    await stable();
+    const editors = [...el.querySelectorAll<HTMLElement>('[data-row-editor]')];
+    const owners = new Set(editors.map((editor) => editor.getAttribute('data-row-editor')));
+    expect(owners.size).toBe(2);
+    host.table().cancelRowEdit(first);
+    await stable();
+    expect(el.querySelectorAll('[data-row-editor]').length).toBe(3);
+    host.table().cancelRowEdit(second);
+  });
+
+  it('opens one cell editor for one of two new rows without a key (batch, cell mode)', async () => {
+    const { host, el, stable } = await setup({ batch: true });
+    host.table().addRow();
+    host.table().addRow();
+    await stable();
+    el.querySelector<HTMLButtonElement>('tbody tr:nth-child(4) .star-table__edit')!.click();
+    await stable();
+    expect(el.querySelectorAll('.star-table__editor').length).toBe(1);
+  });
+
+  it('shows a message for text that is not a number and keeps the typed text', async () => {
+    const { host, row, stable, el } = await setup({ mode: 'row' });
+    host.table().initRowEdit(ORDERS[0]);
+    await stable();
+    const quantity = row(0).querySelectorAll<HTMLInputElement>('[data-row-editor]')[2];
+    const setter = vi.fn();
+    Object.defineProperty(quantity, 'validity', { value: { badInput: true } });
+    Object.defineProperty(quantity, 'value', { get: () => '', set: setter, configurable: true });
+    quantity.dispatchEvent(new Event('input'));
+    await stable();
+    expect(el.querySelector('.star-table__error')?.textContent?.trim()).toBe('Enter a number.');
+    expect(quantity.getAttribute('aria-invalid')).toBe('true');
+    // The table does not write the editor value back while the user types.
+    expect(setter).not.toHaveBeenCalled();
+  });
+
+  it('does not block Save on a hidden column', async () => {
+    const rows = [{ ...ORDERS[0], customer: '' }, ...ORDERS.slice(1)];
+    const { host, stable } = await setup({ mode: 'row', rows });
+    host.hidden.set(['customer']);
+    await stable();
+    host.table().initRowEdit(rows[0]);
+    await stable();
+    host.table().saveRowEdit(rows[0]);
+    expect(host.log.at(-1)?.[0]).toBe('rowEditSave');
+  });
+
+  it('clears the draft of a row that the owner takes out of edit', async () => {
+    const { host, row, stable } = await setup({ mode: 'row' });
+    host.table().initRowEdit(ORDERS[0]);
+    await stable();
+    const editor = row(0).querySelector<HTMLInputElement>('[data-row-editor]')!;
+    editor.value = 'Changed';
+    editor.dispatchEvent(new Event('input'));
+    host.editingKeys.set([]);
+    await stable();
+    host.editingKeys.set(['ORD-1']);
+    await stable();
+    host.table().saveRowEdit(ORDERS[0]);
+    expect(host.log.at(-1)).toEqual(['rowEditSave', { row: ORDERS[0], changes: {}, previous: {} }]);
+  });
+
+  it('cannot move a new row', async () => {
+    const { host, row, stable } = await setup({ mode: 'row', reorder: true });
+    host.table().addRow({ id: 'ORD-9' } as Partial<Order>);
+    await stable();
+    const moves = row(3).querySelectorAll<HTMLButtonElement>('.star-table__reorder button');
+    expect(moves.length).toBe(2);
+    expect([...moves].every((button) => button.disabled)).toBe(true);
   });
 });

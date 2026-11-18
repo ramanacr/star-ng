@@ -78,6 +78,8 @@ export interface StarUiText {
   readonly valueMin: (min: number) => string;
   readonly valueMax: (max: number) => string;
   readonly valuePattern: string;
+  readonly valueNumber: string;
+  readonly changeAdded: string;
   readonly editSaved: string;
   readonly editCanceled: string;
   readonly editInvalid: string;
@@ -296,6 +298,8 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   valueMin: (min) => `Enter ${min} or more.`,
   valueMax: (max) => `Enter ${max} or less.`,
   valuePattern: 'Enter the value in the expected format.',
+  valueNumber: 'Enter a number.',
+  changeAdded: 'Change added.',
   editSaved: 'Changes saved.',
   editCanceled: 'Edit canceled.',
   editInvalid: 'Correct the errors, then save.',

@@ -80,8 +80,13 @@ export function starCellError<T>(
   rules: StarColumnRules<T>,
   value: unknown,
   row: T,
-  text: Pick<StarUiText, 'valueRequired' | 'valueMin' | 'valueMax' | 'valuePattern'>,
+  text: Pick<
+    StarUiText,
+    'valueRequired' | 'valueMin' | 'valueMax' | 'valuePattern' | 'valueNumber'
+  >,
 ): string | null {
+  // An editor that holds text that is not a number (`validity.badInput`) gives `NaN`.
+  if (typeof value === 'number' && Number.isNaN(value)) return text.valueNumber;
   if (isEmpty(value)) {
     if (rules.required) return text.valueRequired;
   } else {
@@ -265,6 +270,18 @@ export class StarEditBatch<T> {
   /** Records cell changes of one row as one step. Returns `false` when nothing changed. */
   change(row: T, cells: readonly StarCellChange[]): boolean {
     const state = this.state();
+    const updates = this.updatesWith(state, row, cells);
+    if (!updates) return false;
+    this.commitState({ ...state, updates });
+    return true;
+  }
+
+  /** The updates of `state` with cell changes of one row, or `null` when nothing changed. */
+  private updatesWith(
+    state: ChangeSet<T>,
+    row: T,
+    cells: readonly StarCellChange[],
+  ): Map<unknown, RowUpdate<T>> | null {
     const key = this.keyOf(row);
     const current = state.updates.get(key);
     const changes: Record<string, unknown> = { ...current?.changes };
@@ -284,17 +301,18 @@ export class StarEditBatch<T> {
         previous[cell.field] = cell.original;
       }
     }
-    if (!changed) return false;
+    if (!changed) return null;
     const updates = new Map(state.updates);
     if (Object.keys(changes).length) updates.set(key, { row, changes, previous });
     else updates.delete(key);
-    this.commitState({ ...state, updates });
-    return true;
+    return updates;
   }
 
-  add(row: T, position: 'top' | 'bottom'): void {
+  /** Adds a new row with its first values (`cells`) as one step. */
+  add(row: T, position: 'top' | 'bottom', cells: readonly StarCellChange[] = []): void {
     const state = this.state();
-    this.commitState({ ...state, added: [...state.added, { row, position }] });
+    const updates = this.updatesWith(state, row, cells) ?? state.updates;
+    this.commitState({ ...state, updates, added: [...state.added, { row, position }] });
   }
 
   /** Marks an existing row as deleted, or drops a new row. */

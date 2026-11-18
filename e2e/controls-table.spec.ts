@@ -723,13 +723,13 @@ test.describe('table: editing', () => {
     await table.getByRole('textbox', { name: 'Edit Customer' }).fill('Changed customer');
     await page.keyboard.press('Enter');
     await expect(edit).toHaveAccessibleName(/Changed customer.*changed$/);
-    await expect(live.getByRole('button', { name: 'Save 1 changes' })).toBeEnabled();
+    await expect(live.getByRole('button', { name: 'Save 1 change' })).toBeEnabled();
     await page.keyboard.press('Control+z');
     await expect(edit).not.toHaveAccessibleName(/changed$/);
     await page.keyboard.press('Control+y');
     await expect(edit).toHaveAccessibleName(/changed$/);
-    await live.getByRole('button', { name: 'Save 1 changes' }).click();
-    await expect(live.getByRole('status')).toHaveText('Saved: 1 rows changed.');
+    await live.getByRole('button', { name: 'Save 1 change' }).click();
+    await expect(live.getByRole('status')).toHaveText('Saved: 1 row changed.');
     await expect(edit).not.toHaveAccessibleName(/changed$/);
     await expect(edit).toHaveAccessibleName(/Changed customer/);
   });
