@@ -20,6 +20,11 @@ export interface StarUiText {
   readonly actions: string;
   readonly moreActions: string;
   readonly bottomSheet: string;
+  // Dialog
+  readonly maximize: string;
+  readonly restore: string;
+  readonly moveDialog: string;
+  readonly resizeDialog: string;
   readonly ofTotal: (index: number, total: number) => string;
   readonly expandItem: (label: string) => string;
   readonly collapseItem: (label: string) => string;
@@ -132,6 +137,24 @@ export interface StarUiText {
   readonly layout: string;
   readonly layoutList: string;
   readonly layoutGrid: string;
+  // Tile layout
+  /** Hint of a reorderable tile. */
+  readonly tileMoveHint: string;
+  /** Hint of a resizable tile. */
+  readonly tileResizeHint: string;
+  /** Announcement after a tile resize. */
+  readonly tileSize: (label: string, columns: number, rows: number) => string;
+  // Command palette
+  readonly commandPalette: string;
+  readonly commandPlaceholder: string;
+  /** Heading of the recent commands. */
+  readonly recentCommands: string;
+  /** Default name of the `<nav>` landmark of `star-app-sidebar`. */
+  readonly mainNavigation: string;
+  // Window
+  readonly minimize: string;
+  /** Keyboard hint of the title bar of `star-window`. */
+  readonly windowHint: string;
   // Order list, pick list
   readonly moveSelectedItem: string;
   readonly orderListHint: string;
@@ -140,6 +163,12 @@ export interface StarUiText {
   readonly moveDown: string;
   readonly moveBottom: string;
   readonly itemPosition: (label: string, position: number, total: number) => string;
+  // Tree: move a node (drag and drop, Ctrl+Shift+arrow keys)
+  readonly treeMoveHint: string;
+  readonly treeMovedBefore: (label: string, target: string) => string;
+  readonly treeMovedAfter: (label: string, target: string) => string;
+  readonly treeMovedInside: (label: string, target: string) => string;
+  readonly treeMoveNotAllowed: (label: string) => string;
   readonly transfer: string;
   readonly moveSelectedToTarget: string;
   readonly moveAllToTarget: string;
@@ -277,6 +306,10 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   actions: 'Actions',
   moreActions: 'More actions',
   bottomSheet: 'Bottom sheet',
+  maximize: 'Maximize',
+  restore: 'Restore',
+  moveDialog: 'Move dialog',
+  resizeDialog: 'Resize dialog',
   ofTotal: (index, total) => `${index} of ${total}`,
   expandItem: (label) => `Expand ${label}`,
   collapseItem: (label) => `Collapse ${label}`,
@@ -383,6 +416,16 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   layout: 'Layout',
   layoutList: 'List',
   layoutGrid: 'Grid',
+  tileMoveHint: 'Press Control and an arrow key to move the tile.',
+  tileResizeHint: 'Press Control, Shift and an arrow key to resize the tile.',
+  tileSize: (label, columns, rows) =>
+    `${label}: ${columns} ${columns === 1 ? 'column' : 'columns'}, ${rows} ${rows === 1 ? 'row' : 'rows'}`,
+  commandPalette: 'Command palette',
+  commandPlaceholder: 'Type a command or search',
+  recentCommands: 'Recent',
+  mainNavigation: 'Main navigation',
+  minimize: 'Minimize',
+  windowHint: 'Alt and the arrow keys move the window. Shift and the arrow keys resize it.',
 
   moveSelectedItem: 'Move selected item',
   orderListHint: 'Use Alt and the arrow keys to move the selected item.',
@@ -391,6 +434,11 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   moveDown: 'Move down',
   moveBottom: 'Move to bottom',
   itemPosition: (label, position, total) => `${label}, position ${position} of ${total}`,
+  treeMoveHint: 'Use Control, Shift and the arrow keys to move the node.',
+  treeMovedBefore: (label, target) => `${label} moved before ${target}`,
+  treeMovedAfter: (label, target) => `${label} moved after ${target}`,
+  treeMovedInside: (label, target) => `${label} moved into ${target}`,
+  treeMoveNotAllowed: (label) => `${label} cannot move there`,
   transfer: 'Transfer',
   moveSelectedToTarget: 'Move selected to target',
   moveAllToTarget: 'Move all to target',
@@ -548,6 +596,11 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   moveColumnEarlier: ['column'],
   moveColumnLater: ['column'],
   itemPosition: ['label', 'position', 'total'],
+  treeMovedBefore: ['label', 'target'],
+  treeMovedAfter: ['label', 'target'],
+  treeMovedInside: ['label', 'target'],
+  treeMoveNotAllowed: ['label'],
+  tileSize: ['label', 'columns', 'rows'],
   passwordRuleLength: ['min'],
   otpCharacter: ['position', 'total'],
   sliderMinimum: ['label'],

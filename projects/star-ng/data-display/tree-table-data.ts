@@ -5,6 +5,10 @@
 // This file is internal and is not exported from the entry point.
 import { compareValues, matchesFilter } from '@star-ng/ui/core';
 
+// The check, lock and filter helpers live in the tree entry point and serve both controls.
+export { checkStates, filterTree, isLocked, toggleChecked } from '@star-ng/ui/tree';
+export type { CheckState, TreeFilterMode, TreeFilterResult } from '@star-ng/ui/tree';
+
 /** The part of a tree table node that the helpers read. `StarTreeTableNode` fits it. */
 export interface DataNode<N> {
   readonly key: string;
@@ -15,11 +19,6 @@ export interface DataNode<N> {
   readonly disabled?: boolean;
   /** `false`: the node keeps its check state when a parent or a child changes. */
   readonly selectable?: boolean;
-}
-
-/** The user cannot check or uncheck the node, and propagation does not change it. */
-export function isLocked(node: DataNode<unknown>): boolean {
-  return !!node.disabled || node.selectable === false;
 }
 
 /** One sort column (the shape of `StarSortState` from `@star-ng/ui/table`). */
@@ -59,43 +58,6 @@ export function cellText(node: DataNode<unknown>, field: string, first: boolean)
 }
 
 /**
- * The filter modes (PrimeNG `filterMode`). `'lenient'`: a matching node shows with its ancestors
- * and all its descendants. `'strict'`: only the matching paths show; a descendant of a match that
- * does not match itself (and has no matching descendant) is hidden.
- */
-export type TreeFilterMode = 'lenient' | 'strict';
-
-export interface TreeFilterResult<N> {
-  readonly nodes: readonly N[];
-  /** Keys of the nodes that show because a descendant matches: they show open. */
-  readonly ancestors: ReadonlySet<string>;
-  /** Keys of the nodes that match. */
-  readonly matches: ReadonlySet<string>;
-}
-
-/** Keeps the nodes that match (and their ancestors), in the given filter mode. */
-export function filterTree<N extends DataNode<N>>(
-  nodes: readonly N[],
-  match: (node: N) => boolean,
-  mode: TreeFilterMode,
-): TreeFilterResult<N> {
-  const ancestors = new Set<string>();
-  const matches = new Set<string>();
-  const walk = (list: readonly N[]): N[] =>
-    list.flatMap((node) => {
-      const own = match(node);
-      if (own) matches.add(node.key);
-      if (own && mode === 'lenient') return [node];
-      const children = walk(node.children ?? []);
-      if (children.length) ancestors.add(node.key);
-      if (!own && !children.length) return [];
-      // A strict match keeps only its matching children; a node without children stays as it is.
-      return [node.children ? { ...node, children } : node];
-    });
-  return { nodes: walk(nodes), ancestors, matches };
-}
-
-/**
  * A node matches when its text in some column contains the global query (empty: any node) and
  * its text in each filtered column contains that column query. Case- and accent-insensitive.
  */
@@ -117,89 +79,6 @@ export function pageRoots<N>(nodes: readonly N[], first: number, rows: number): 
   const start = Math.max(0, Math.min(first, Math.max(0, nodes.length - 1)));
   const page = start - (start % rows);
   return nodes.slice(page, page + rows);
-}
-
-/** Check state of a node in checkbox mode. */
-export type CheckState = boolean | 'mixed';
-
-/**
- * Check state of every node: `true` when its key is selected, or (with `propagateUp`) when all
- * its selectable children are checked; `'mixed'` when it is not, a descendant is selected and
- * `propagateUp` is on; else `false`. Locked children (disabled, `selectable: false`) do not
- * count for the parent.
- */
-export function checkStates<N extends DataNode<N>>(
-  nodes: readonly N[],
-  selected: ReadonlySet<string>,
-  propagateUp: boolean,
-): Map<string, CheckState> {
-  const states = new Map<string, CheckState>();
-  // Returns whether the node or a node below it is selected.
-  const walk = (node: N): boolean => {
-    let below = false;
-    let open = 0;
-    let checked = 0;
-    for (const child of node.children ?? []) {
-      below = walk(child) || below;
-      if (isLocked(child)) continue;
-      open++;
-      if (states.get(child.key) === true) checked++;
-    }
-    const own = selected.has(node.key) || (propagateUp && open > 0 && checked === open);
-    states.set(node.key, own ? true : propagateUp && below ? 'mixed' : false);
-    return own || below;
-  };
-  nodes.forEach(walk);
-  return states;
-}
-
-/**
- * The selection keys after the user checks (`on`) or unchecks a node in checkbox mode.
- * `down`: the descendants follow the node. `up`: each ancestor is checked when all its
- * selectable children are checked, and unchecked otherwise. A locked node (disabled or
- * `selectable: false`) below or above the node keeps its state, and so does its subtree. The
- * order of the keys that stay is kept.
- */
-export function toggleChecked<N extends DataNode<N>>(
-  nodes: readonly N[],
-  key: string,
-  on: boolean,
-  selection: readonly string[],
-  propagate: { readonly up: boolean; readonly down: boolean },
-): string[] {
-  const index = new Map<string, N>();
-  const parents = new Map<string, string | null>();
-  const walk = (list: readonly N[], parent: string | null) =>
-    list.forEach((node) => {
-      index.set(node.key, node);
-      parents.set(node.key, parent);
-      walk(node.children ?? [], node.key);
-    });
-  walk(nodes, null);
-  const node = index.get(key);
-  if (!node) return [...selection];
-  const keys = new Set(selection);
-  const apply = (target: N) => {
-    if (on) keys.add(target.key);
-    else keys.delete(target.key);
-    if (!propagate.down) return;
-    for (const child of target.children ?? []) if (!isLocked(child)) apply(child);
-  };
-  apply(node);
-  if (propagate.up) {
-    for (let parent = parents.get(key) ?? null; parent !== null;) {
-      const current = index.get(parent);
-      if (current && !isLocked(current)) {
-        const children = (current.children ?? []).filter((child) => !isLocked(child));
-        if (children.length && children.every((child) => keys.has(child.key))) keys.add(parent);
-        else keys.delete(parent);
-      }
-      parent = parents.get(parent) ?? null;
-    }
-  }
-  const kept = selection.filter((k) => keys.has(k));
-  const known = new Set(kept);
-  return [...kept, ...[...keys].filter((k) => !known.has(k))];
 }
 
 /** Columns in display order: frozen columns first, then the `order` fields, then the rest. */

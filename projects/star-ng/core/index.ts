@@ -1,3 +1,4 @@
+export * from './breakpoints';
 export * from './direction';
 export * from './filter-match';
 export * from './filter-service';

@@ -207,6 +207,176 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarAppSidebar": {
+    "kind": "component",
+    "selector": "star-app-sidebar",
+    "entry": "@star-ng/ui/app-sidebar",
+    "description": "Application sidebar (PrimeNG 22 `p-sidebar` with its compound parts): the main navigation of an application. It is a `<nav>` landmark named by `ariaLabel` (default \"Main navigation\").",
+    "inputs": [
+      {
+        "name": "mode",
+        "type": "StarAppSidebarMode",
+        "default": "'static'",
+        "required": false,
+        "description": "`static`: always in the layout. `overlay`: in a drawer below `breakpoint`."
+      },
+      {
+        "name": "breakpoint",
+        "type": "number",
+        "default": "768",
+        "required": false,
+        "description": "Width in pixels below which an `overlay` sidebar moves into a drawer."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Name of the `<nav>` landmark. Defaults to the `mainNavigation` text."
+      },
+      {
+        "name": "drawerSize",
+        "type": "string",
+        "default": "'18rem'",
+        "required": false,
+        "description": "Width of the drawer, a CSS length."
+      }
+    ],
+    "models": [
+      {
+        "name": "collapsed",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Icons only; the labels become tooltips. No effect in the drawer."
+      },
+      {
+        "name": "visible",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Open state of the drawer (`overlay` mode below the breakpoint)."
+      }
+    ],
+    "outputs": []
+  },
+  "StarAppSidebarFooter": {
+    "kind": "component",
+    "selector": "star-app-sidebar-footer",
+    "entry": "@star-ng/ui/app-sidebar",
+    "description": "Bottom area of `star-app-sidebar`, for example the user or a collapse button.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
+  "StarAppSidebarHeader": {
+    "kind": "component",
+    "selector": "star-app-sidebar-header",
+    "entry": "@star-ng/ui/app-sidebar",
+    "description": "Top area of `star-app-sidebar`, for example the product name or logo.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
+  "StarAppSidebarItem": {
+    "kind": "component",
+    "selector": "star-app-sidebar-item",
+    "entry": "@star-ng/ui/app-sidebar",
+    "description": "One destination of `star-app-sidebar`. With `routerLink` it is a router link with `aria-current=\"page\"` while its route is active (`routerLinkActive`); with `href` a plain link (set `active` yourself); without either, a button that emits `activated`. With nested `star-app-sidebar-item` children it is a button that opens and closes them (`expanded`).",
+    "inputs": [
+      {
+        "name": "label",
+        "type": "string",
+        "default": null,
+        "required": true,
+        "description": "Text of the item. In the collapsed sidebar it is the tooltip and stays the accessible name."
+      },
+      {
+        "name": "icon",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Icon classes, for example `ph ph-house`. Without one, the collapsed sidebar shows the first letter."
+      },
+      {
+        "name": "routerLink",
+        "type": "string | readonly unknown[] | null",
+        "default": "null",
+        "required": false,
+        "description": "Router link. `aria-current=\"page\"` follows the active route."
+      },
+      {
+        "name": "exact",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "With `routerLink`: the item is active only on an exact URL match."
+      },
+      {
+        "name": "href",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Plain link address, when there is no `routerLink`."
+      },
+      {
+        "name": "active",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Marks the item as the current one: `aria-current=\"page\"` on an `href` link, `aria-current=\"true\"` on a button item."
+      },
+      {
+        "name": "badge",
+        "type": "string | number | null",
+        "default": "null",
+        "required": false,
+        "description": "Badge text after the label, for example a count."
+      },
+      {
+        "name": "badgeLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Screen-reader text of the badge, for example \"4 new\". Replaces the badge text when set."
+      }
+    ],
+    "models": [
+      {
+        "name": "expanded",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Open state of the nested items."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "activated",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "Emits when the user activates a link or button item (not a group)."
+      }
+    ]
+  },
+  "StarAppSidebarSection": {
+    "kind": "component",
+    "selector": "star-app-sidebar-section",
+    "entry": "@star-ng/ui/app-sidebar",
+    "description": "A titled group of items in `star-app-sidebar`. The heading names the group for screen readers. In the collapsed sidebar the heading is hidden visually and a line separates the sections.",
+    "inputs": [
+      {
+        "name": "heading",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "Heading of the section."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
   "StarAutoComplete": {
     "kind": "component",
     "selector": "star-autocomplete",
@@ -1466,6 +1636,90 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ]
   },
+  "StarCommandPalette": {
+    "kind": "component",
+    "selector": "star-command-palette",
+    "entry": "@star-ng/ui/command-palette",
+    "description": "Command palette (PrimeNG `p-commandmenu`): a modal search over commands, opened with a global shortcut (`hotkey`, default Control+K or Command+K) or with `[(visible)]`.",
+    "inputs": [
+      {
+        "name": "commands",
+        "type": "readonly StarCommand[]",
+        "default": "[]",
+        "required": false,
+        "description": "The commands."
+      },
+      {
+        "name": "hotkey",
+        "type": "string | null",
+        "default": "'mod+k'",
+        "required": false,
+        "description": "Global shortcut that opens and closes the palette, for example `mod+k` (Control+K, or Command+K on a Mac), `ctrl+shift+p` or `/`. `null` or `''` turns it off."
+      },
+      {
+        "name": "placeholder",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Placeholder of the search field. Defaults to the `commandPlaceholder` text."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Accessible name of the palette. Defaults to the `commandPalette` text."
+      },
+      {
+        "name": "loading",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows the loading slot (or the \"Loading\" text) after the options, for async commands."
+      },
+      {
+        "name": "maxRecent",
+        "type": "number",
+        "default": "5",
+        "required": false,
+        "description": "Number of recent commands shown first with an empty filter. `0` hides them."
+      }
+    ],
+    "models": [
+      {
+        "name": "visible",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Open state."
+      },
+      {
+        "name": "query",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "The filter text. Two-way, for example to load commands for it."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "commandRun",
+        "type": "StarCommand",
+        "default": null,
+        "required": false,
+        "description": "Emits the command the user ran, after its `run` function."
+      }
+    ]
+  },
+  "StarCommandTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starCommand]",
+    "entry": "@star-ng/ui/command-palette",
+    "description": "Content of each option of `star-command-palette`: `<ng-template starCommand let-command>`. Do not put focusable elements in it: the focus stays in the search field.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
   "StarConfirmHost": {
     "kind": "component",
     "selector": "star-confirm-host",
@@ -1871,7 +2125,110 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-dialog",
     "entry": "@star-ng/ui/dialog",
-    "description": "Dialog (PrimeNG `p-dialog`) built on the native `<dialog>` element: top-layer rendering, focus trap, focus restore and Escape handling come from the browser. Entry / exit animate with `@starting-style`; page scroll locks with `:has(dialog[open])`.",
+    "description": "Dialog (PrimeNG `p-dialog`) built on the native `<dialog>` element: top-layer rendering, focus trap, focus restore and Escape handling come from the browser. Entry / exit animate with `@starting-style`; page scroll locks with `:has(dialog[open])` (`blockScroll`).",
+    "inputs": [
+      {
+        "name": "position",
+        "type": "StarDialogPosition",
+        "default": "'center'",
+        "required": false,
+        "description": "Place in the window (PrimeNG `position`): `center` (default), an edge or a corner, 1rem from the window edge. Logical: `start` and `end` change sides in right-to-left."
+      },
+      {
+        "name": "breakpoints",
+        "type": "Readonly<Record<string, string>> | null",
+        "default": "null",
+        "required": false,
+        "description": "Widths per window size (PrimeNG `breakpoints`): `{ '<max-width>': '<width>' }`, for example `{ '960px': '75vw', '640px': '100vw' }`. The smallest matching max-width wins over `width` and `size`."
+      },
+      {
+        "name": "draggable",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The header drags the dialog with the pointer (PrimeNG `draggable`). The move button in the header moves it with Alt + the arrow keys, 10 pixels per press."
+      },
+      {
+        "name": "keepInViewport",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Dragging and resizing keep the dialog inside the window (PrimeNG `keepInViewport`)."
+      },
+      {
+        "name": "rememberPosition",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Keeps the dragged position and the resized size when the dialog opens again."
+      },
+      {
+        "name": "resizable",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "A handle in the bottom end corner resizes the dialog with the pointer, or with Shift + the arrow keys, 10 pixels per press (PrimeNG `resizable`). The smallest size is 240 x 160 pixels."
+      },
+      {
+        "name": "maximizable",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "A header button fills the window with the dialog and restores it (PrimeNG `maximizable`). Escape still closes a maximized dialog when `closeOnEscape` is on."
+      },
+      {
+        "name": "headless",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Renders only your content in the dialog box: no header, no title and no close button (PrimeNG `headless` template). Your content must name the dialog (`ariaLabel`, or `ariaLabelledby` with the id of your heading) and give a way to close it; Escape still closes it when `closeOnEscape` is on."
+      }
+    ],
+    "models": [
+      {
+        "name": "maximized",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The dialog fills the window. Two-way bindable."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "dragEnd",
+        "type": "StarDialogPoint",
+        "default": null,
+        "required": false,
+        "description": "Position of the top left corner after a drag, in pixels from the window (PrimeNG `onDragEnd`)."
+      },
+      {
+        "name": "resizeEnd",
+        "type": "StarDialogDimensions",
+        "default": null,
+        "required": false,
+        "description": "Size of the dialog after a resize, in pixels (PrimeNG `onResizeEnd`)."
+      },
+      {
+        "name": "maximize",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "The maximize button filled the window (PrimeNG `onMaximize`)."
+      },
+      {
+        "name": "restore",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "The restore button gave the dialog its normal size again (PrimeNG `onMaximize` with false)."
+      }
+    ]
+  },
+  "StarDialogBase": {
+    "kind": "directive",
+    "selector": "",
+    "entry": "@star-ng/ui/dialog",
+    "description": "Shared behaviour of `star-dialog` and `star-drawer`: the `visible` model, the native `<dialog>` element (top layer, focus trap, focus return, Escape), the close rules and the `shown` / `hidden` outputs. The component template must have a `<dialog #dialog>` element.",
     "inputs": [
       {
         "name": "header",
@@ -1885,14 +2242,14 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "StarDialogSize",
         "default": "'md'",
         "required": false,
-        "description": ""
+        "description": "Width step of a dialog (no effect on a drawer)."
       },
       {
         "name": "width",
         "type": "string | null",
         "default": "null",
         "required": false,
-        "description": "Fixed CSS width; overrides `size`."
+        "description": "Fixed CSS width of a dialog; overrides `size` (no effect on a drawer)."
       },
       {
         "name": "modal",
@@ -1941,7 +2298,28 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "string | null",
         "default": "null",
         "required": false,
-        "description": ""
+        "description": "Accessible name when there is no visible header title."
+      },
+      {
+        "name": "ariaLabelledby",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Id of the element that names the dialog, for example your own heading in a headless dialog."
+      },
+      {
+        "name": "blockScroll",
+        "type": "boolean | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "Stops the page behind from scrolling while open, and gives the scroll back after the close (PrimeNG `blockScroll`). Default: on for a modal, off for a non-modal."
+      },
+      {
+        "name": "focusOnShow",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Moves the focus into the content on open (PrimeNG `focusOnShow`): the first focusable element, or the one marked with `autofocus` / `data-autofocus`. When false, the dialog box itself takes the focus, so the first press of Tab reaches the first control."
       }
     ],
     "models": [
@@ -2082,7 +2460,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "'left' | 'right' | 'start' | 'end' | 'top' | 'bottom'",
         "default": "'right'",
         "required": false,
-        "description": ""
+        "description": "Edge of the window (PrimeNG `position`). `start` and `end` follow the writing direction; `left` and `right` are physical. Default `'right'`."
       },
       {
         "name": "drawerSize",
@@ -2090,6 +2468,20 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "'28rem'",
         "required": false,
         "description": "Width (left / right / start / end) or height (top / bottom)."
+      },
+      {
+        "name": "fullScreen",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Covers the whole window (PrimeNG `fullScreen`). The drawer still slides in from its edge."
+      },
+      {
+        "name": "dismissible",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "A click on the backdrop closes the drawer (PrimeNG `dismissible`). Same effect as `dismissableMask`. The default is false, which differs from PrimeNG (default true): a drawer without `dismissible` or `dismissableMask` stays open on a backdrop click."
       }
     ],
     "models": [],
@@ -6904,6 +7296,113 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarTile": {
+    "kind": "component",
+    "selector": "star-tile",
+    "entry": "@star-ng/ui/tile-layout",
+    "description": "One tile of `star-tile-layout` (Material `mat-grid-tile`, Kendo UI `TileLayoutItem`). It is a `role=\"group\"` named by `label`, else by its header, else by its `key`.",
+    "inputs": [
+      {
+        "name": "key",
+        "type": "string",
+        "default": null,
+        "required": true,
+        "description": "Unique key of the tile in its layout; the `order` model lists these keys."
+      },
+      {
+        "name": "label",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "Name of the group, read by screen readers and in the move announcements."
+      }
+    ],
+    "models": [
+      {
+        "name": "colSpan",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Number of columns the tile spans. The layout writes it after a resize."
+      },
+      {
+        "name": "rowSpan",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Number of rows the tile spans. The layout writes it after a resize."
+      }
+    ],
+    "outputs": []
+  },
+  "StarTileLayout": {
+    "kind": "component",
+    "selector": "star-tile-layout",
+    "entry": "@star-ng/ui/tile-layout",
+    "description": "Tile layout (Material `mat-grid-list`, Kendo UI `TileLayout`): a CSS grid of tiles with `columns`, `rowHeight` and `gap`. Each `star-tile` spans `colSpan` columns and `rowSpan` rows.",
+    "inputs": [
+      {
+        "name": "columns",
+        "type": "number",
+        "default": "3",
+        "required": false,
+        "description": "Number of columns (above the breakpoints)."
+      },
+      {
+        "name": "rowHeight",
+        "type": "string | number",
+        "default": "'10rem'",
+        "required": false,
+        "description": "Height of one row: a CSS length, or a number of pixels."
+      },
+      {
+        "name": "gap",
+        "type": "string",
+        "default": "'1rem'",
+        "required": false,
+        "description": "Space between the tiles, a CSS length."
+      },
+      {
+        "name": "breakpoints",
+        "type": "StarTileBreakpoints",
+        "default": "{}",
+        "required": false,
+        "description": "Columns in a narrow layout (container queries)."
+      },
+      {
+        "name": "reorderable",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The tiles move with drag and drop, and with Control and the arrow keys."
+      },
+      {
+        "name": "resizable",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The spans change with Control, Shift and the arrow keys, and with a corner handle."
+      }
+    ],
+    "models": [
+      {
+        "name": "order",
+        "type": "readonly string[]",
+        "default": "[]",
+        "required": false,
+        "description": "Keys of the tiles in their order. The layout writes it after a move. Render the tiles in this order; an empty array means the order of the content."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "tileResize",
+        "type": "StarTileResize",
+        "default": null,
+        "required": false,
+        "description": "Emits after the user changed the spans of a tile."
+      }
+    ]
+  },
   "StarTimeColumns": {
     "kind": "component",
     "selector": "star-time-columns",
@@ -7154,10 +7653,39 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "5",
         "required": false,
         "description": "Newest messages beyond this count wait until older ones close."
+      },
+      {
+        "name": "preventDuplicates",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Ignores a message with the same severity, summary and detail as one that this outlet has ever shown, also after it closed (PrimeNG `preventDuplicates`). Not the same as the service flag `StarToastService.preventDuplicates`, which only ignores a copy while visible."
+      },
+      {
+        "name": "preventOpenDuplicates",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Ignores a message with the same severity, summary and detail as one that this outlet shows now (PrimeNG `preventOpenDuplicates`). The service does this for every outlet by default (`StarToastService.preventDuplicates`); this input keeps it for one outlet when that is off."
+      },
+      {
+        "name": "breakpoints",
+        "type": "Readonly<Record<string, Readonly<Record<string, string>>>> | null",
+        "default": "null",
+        "required": false,
+        "description": "Narrow windows (PrimeNG `breakpoints`): `{ '<max-width>': { ...styles } }`. When a key matches, the stack goes full width at the bottom of the window, and the style object of the smallest matching key applies on top, for example `{ '640px': {} }` or `{ '640px': { 'inset-block-end': '4rem' } }`."
       }
     ],
     "models": [],
-    "outputs": []
+    "outputs": [
+      {
+        "name": "closed",
+        "type": "StarToastCloseEvent",
+        "default": null,
+        "required": false,
+        "description": "A toast of this outlet closed: the message and the reason (PrimeNG `onClose`)."
+      }
+    ]
   },
   "StarToastMessageTemplate": {
     "kind": "directive",
@@ -7407,7 +7935,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-tree",
     "entry": "@star-ng/ui/tree",
-    "description": "Tree (PrimeNG `p-tree`): expand / collapse, single, multiple or checkbox selection (checkbox mode selects whole branches and shows mixed parents), filter, and the WAI-ARIA tree keyboard model (Up / Down, Right opens or enters, Left closes or goes to the parent, Home / End, Enter / Space select, `*` expands siblings).",
+    "description": "Tree (PrimeNG `p-tree`, Ignite `igx-tree`): expand / collapse, single, multiple or checkbox selection (checkbox mode propagates up and down and shows mixed parents), filter in lenient or strict mode, lazy children, a row context menu, drag and drop with a keyboard alternative, and the WAI-ARIA tree keyboard model (Up / Down, Right opens or enters, Left closes or goes to the parent, Home / End, Enter / Space select, `*` expands siblings).",
     "inputs": [
       {
         "name": "nodes",
@@ -7431,6 +7959,27 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
+        "name": "filterMode",
+        "type": "TreeFilterMode",
+        "default": "'strict'",
+        "required": false,
+        "description": "How the filter keeps nodes (PrimeNG `filterMode`). `'strict'` (the default): only the matching paths show, and a match shows only its matching descendants. `'lenient'`: a match shows with all its descendants. Both show the ancestors of a match open."
+      },
+      {
+        "name": "filterBy",
+        "type": "string | readonly string[]",
+        "default": "'label'",
+        "required": false,
+        "description": "The node fields that the filter searches (PrimeNG `filterBy`): `label` (the default), another node property, or a field of `data`. One field or a list."
+      },
+      {
+        "name": "filterLocale",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Locale of the filter compare (PrimeNG `filterLocale`), for example `de`. Case and accents never count; with a locale, the compare follows the letters of that language."
+      },
+      {
         "name": "scrollHeight",
         "type": "string | null",
         "default": "null",
@@ -7449,7 +7998,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "number",
         "default": "34",
         "required": false,
-        "description": "Row height in pixels in windowed rendering. Keep it equal to the real height of a row."
+        "description": "Row height in pixels in windowed rendering. Keep it equal to the real row height."
       },
       {
         "name": "ariaLabel",
@@ -7464,6 +8013,69 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "false",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "propagateSelectionUp",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Checkbox mode (PrimeNG `propagateSelectionUp`): a parent is checked when all its selectable children are checked, and mixed when some are. Locked nodes (`disabled`, `selectable: false`) do not count and keep their state."
+      },
+      {
+        "name": "propagateSelectionDown",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Checkbox mode (PrimeNG `propagateSelectionDown`): checking a node checks its descendants, except locked nodes and their subtrees. With both propagations on, `value` holds the leaf keys (and locked keys); parents are derived."
+      },
+      {
+        "name": "loadingMode",
+        "type": "StarTreeLoadingMode",
+        "default": "'row'",
+        "required": false,
+        "description": "Lazy children: `'row'` (the default) shows a loading row under an open node whose `loading` is true; `'icon'` shows a spinner in its toggle. With `virtualScroll` the icon always shows, because every row has the same height."
+      },
+      {
+        "name": "contextMenu",
+        "type": "readonly StarMenuItem[]",
+        "default": "[]",
+        "required": false,
+        "description": "Items of the node context menu (PrimeNG `contextMenu`): right click, Shift+F10 or the context menu key on a node. Empty: no menu, and the browser menu shows."
+      },
+      {
+        "name": "draggableNodes",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The user can drag nodes (PrimeNG `draggableNodes`, Ignite drag and drop). With `droppableNodes`, Ctrl+Shift and the arrow keys move the focused node too (not while a filter query is active). A node with `draggable: false` or `disabled` stays."
+      },
+      {
+        "name": "droppableNodes",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The tree accepts drops (PrimeNG `droppableNodes`)."
+      },
+      {
+        "name": "draggableScope",
+        "type": "StarTreeDragScope",
+        "default": "null",
+        "required": false,
+        "description": "Scope of the nodes dragged from this tree (PrimeNG `draggableScope`), for cross-tree drops."
+      },
+      {
+        "name": "droppableScope",
+        "type": "StarTreeDragScope",
+        "default": "null",
+        "required": false,
+        "description": "Scopes this tree accepts from other trees (PrimeNG `droppableScope`)."
+      },
+      {
+        "name": "validateDrop",
+        "type": "StarTreeDropValidator | null",
+        "default": "null",
+        "required": false,
+        "description": "Extra rule for drops (PrimeNG `validateDrop`); return false to refuse a drop."
       }
     ],
     "models": [
@@ -7495,7 +8107,56 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "StarTreeNode",
         "default": null,
         "required": false,
-        "description": ""
+        "description": "The user selected or checked a node (PrimeNG `onNodeSelect`)."
+      },
+      {
+        "name": "nodeUnselect",
+        "type": "StarTreeNode",
+        "default": null,
+        "required": false,
+        "description": "The user unselected or unchecked a node (PrimeNG `onNodeUnselect`)."
+      },
+      {
+        "name": "nodeExpand",
+        "type": "StarTreeNodeEvent",
+        "default": null,
+        "required": false,
+        "description": "The user opened a node (PrimeNG `onNodeExpand`). For a lazy node, load its children here."
+      },
+      {
+        "name": "nodeCollapse",
+        "type": "StarTreeNodeEvent",
+        "default": null,
+        "required": false,
+        "description": "The user closed a node (PrimeNG `onNodeCollapse`)."
+      },
+      {
+        "name": "nodeDoubleClick",
+        "type": "StarTreeNodeEvent",
+        "default": null,
+        "required": false,
+        "description": "Double click on a node (PrimeNG `onNodeDoubleClick`)."
+      },
+      {
+        "name": "nodeContextMenu",
+        "type": "StarTreeNodeEvent",
+        "default": null,
+        "required": false,
+        "description": "Right click, Shift+F10 or the context menu key on a node (PrimeNG `onNodeContextMenuSelect`)."
+      },
+      {
+        "name": "contextMenuSelect",
+        "type": "StarTreeContextMenuEvent",
+        "default": null,
+        "required": false,
+        "description": "The user chose an item of the node context menu."
+      },
+      {
+        "name": "nodeDrop",
+        "type": "StarTreeNodeDropEvent",
+        "default": null,
+        "required": false,
+        "description": "A node was dropped, by pointer or keyboard (PrimeNG `onNodeDrop`). Move it in `nodes`."
       }
     ]
   },
@@ -7525,6 +8186,55 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "false",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "filterMode",
+        "type": "TreeFilterMode",
+        "default": "'strict'",
+        "required": false,
+        "description": "Filter mode of the panel tree (PrimeNG `filterMode`, see `star-tree`)."
+      },
+      {
+        "name": "filterBy",
+        "type": "string | readonly string[]",
+        "default": "'label'",
+        "required": false,
+        "description": "Node fields that the filter searches (PrimeNG `filterBy`, see `star-tree`)."
+      },
+      {
+        "name": "filterLocale",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Locale of the filter compare (PrimeNG `filterLocale`)."
+      },
+      {
+        "name": "propagateSelectionUp",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Checkbox mode: parents follow their children (PrimeNG `propagateSelectionUp`)."
+      },
+      {
+        "name": "propagateSelectionDown",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Checkbox mode: children follow their parent (PrimeNG `propagateSelectionDown`)."
+      },
+      {
+        "name": "loadingMode",
+        "type": "StarTreeLoadingMode",
+        "default": "'row'",
+        "required": false,
+        "description": "How a lazy node shows that its children load (see `star-tree`)."
+      },
+      {
+        "name": "display",
+        "type": "'comma' | 'chip'",
+        "default": "'comma'",
+        "required": false,
+        "description": "How the trigger shows a multiple or checkbox value (PrimeNG `display`): `'comma'` (the default) joins the labels, `'chip'` shows a chip per label. Past `maxSelectedLabels` both show the count."
       },
       {
         "name": "virtualScroll",
@@ -7613,6 +8323,34 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": ""
+      },
+      {
+        "name": "nodeSelect",
+        "type": "StarTreeNode",
+        "default": null,
+        "required": false,
+        "description": "The user selected a node in the panel (PrimeNG `onNodeSelect`)."
+      },
+      {
+        "name": "nodeUnselect",
+        "type": "StarTreeNode",
+        "default": null,
+        "required": false,
+        "description": "The user unselected a node in the panel (PrimeNG `onNodeUnselect`)."
+      },
+      {
+        "name": "nodeExpand",
+        "type": "StarTreeNodeEvent",
+        "default": null,
+        "required": false,
+        "description": "The user opened a node in the panel. For a lazy node, load its children here."
+      },
+      {
+        "name": "nodeCollapse",
+        "type": "StarTreeNodeEvent",
+        "default": null,
+        "required": false,
+        "description": "The user closed a node in the panel."
       }
     ]
   },
@@ -7977,6 +8715,161 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Lazy mode: the range of items that is rendered now (with the buffer), so their data is needed."
       }
     ]
+  },
+  "StarWindow": {
+    "kind": "component",
+    "selector": "star-window",
+    "entry": "@star-ng/ui/window",
+    "description": "Floating window (Kendo UI `Window`; the PrimeNG `p-dialog` with `modal=false`, `draggable` and `resizable`): a non-modal window that the user can move, resize, minimize and maximize. Several windows stack; the one that gets the focus or a pointer press comes to the front.",
+    "inputs": [
+      {
+        "name": "header",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "Title in the title bar; it names the window."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Accessible name when there is no `header`."
+      },
+      {
+        "name": "draggable",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "The title bar drags the window; Alt and the arrow keys move it."
+      },
+      {
+        "name": "resizable",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "A corner handle, and Shift and the arrow keys, resize the window."
+      },
+      {
+        "name": "keepInViewport",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Keeps the whole window in the viewport while it moves and resizes."
+      },
+      {
+        "name": "closeOnEscape",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Escape closes the window. Off by default: a non-modal window stays until the user closes it."
+      },
+      {
+        "name": "minimizable",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "maximizable",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "closable",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "minWidth",
+        "type": "number",
+        "default": "240",
+        "required": false,
+        "description": "Smallest width in pixels."
+      },
+      {
+        "name": "minHeight",
+        "type": "number",
+        "default": "160",
+        "required": false,
+        "description": "Smallest height in pixels."
+      }
+    ],
+    "models": [
+      {
+        "name": "visible",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Open state."
+      },
+      {
+        "name": "position",
+        "type": "StarWindowPosition | null",
+        "default": "null",
+        "required": false,
+        "description": "Place in the viewport, in pixels. `null` centers the window when it opens."
+      },
+      {
+        "name": "size",
+        "type": "StarWindowSize | null",
+        "default": "null",
+        "required": false,
+        "description": "Size in pixels. `null` uses the CSS size (`--star-window-width`, content height)."
+      },
+      {
+        "name": "state",
+        "type": "StarWindowState",
+        "default": "'normal'",
+        "required": false,
+        "description": "`normal`, `minimized` (title bar only) or `maximized` (fills the viewport). Emits `stateChange`."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "closed",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "Emits after the window closed (close button, Escape with `closeOnEscape`, or `visible`)."
+      }
+    ]
+  },
+  "StarWindowContainer": {
+    "kind": "component",
+    "selector": "star-window-container",
+    "entry": "@star-ng/ui/window",
+    "description": "@internal Host of a window opened from code: a `star-window` whose body is the component.",
+    "inputs": [
+      {
+        "name": "component",
+        "type": "Type<unknown>",
+        "default": null,
+        "required": true,
+        "description": ""
+      },
+      {
+        "name": "config",
+        "type": "StarWindowConfig",
+        "default": null,
+        "required": true,
+        "description": ""
+      },
+      {
+        "name": "contentInjector",
+        "type": "Injector",
+        "default": null,
+        "required": true,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
   }
 };
 
@@ -7989,6 +8882,8 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "animate-on-scroll/basic": "<div class=\"docs-reveal-box\" tabindex=\"0\" aria-label=\"Scrollable list of blocks\">\n  @for (block of blocks; track block) {\n    <div class=\"docs-reveal-box__item\" starAnimateOnScroll>Block {{ block }}</div>\n  }\n</div>",
   "app-bar/basic": "<star-app-bar title=\"Orders\" [landmark]=\"false\">\n  <star-button\n    starAppBarStart\n    variant=\"ghost\"\n    iconOnly\n    leadingIcon=\"ph-bold ph-list\"\n    ariaLabel=\"Menu\"\n  />\n  <star-button\n    starAppBarEnd\n    variant=\"ghost\"\n    iconOnly\n    leadingIcon=\"ph-bold ph-magnifying-glass\"\n    ariaLabel=\"Search orders\"\n  />\n  <star-button\n    starAppBarEnd\n    variant=\"ghost\"\n    iconOnly\n    leadingIcon=\"ph-bold ph-bell\"\n    ariaLabel=\"Notifications\"\n  />\n  <star-avatar starAppBarEnd name=\"Order Desk\" size=\"sm\" />\n</star-app-bar>",
   "app-bar/sticky": "<div class=\"docs-app-bar-frame\">\n  <star-app-bar position=\"sticky\" elevated dense [landmark]=\"false\">\n    <star-button\n      starAppBarStart\n      variant=\"ghost\"\n      iconOnly\n      leadingIcon=\"ph-bold ph-arrow-left\"\n      ariaLabel=\"Back to projects\"\n    />\n    Project Apollo\n    <star-button starAppBarEnd variant=\"ghost\" size=\"sm\">Share</star-button>\n  </star-app-bar>\n  @for (week of weeks; track week) {\n    <p>Week {{ week }}: 12 tasks planned, 9 done, 3 moved to the next week.</p>\n  }\n</div>",
+  "app-sidebar/basic": "<div class=\"shell\">\n  <star-app-sidebar [(collapsed)]=\"collapsed\" ariaLabel=\"Workspace\">\n    <star-app-sidebar-header>\n      <i class=\"ph-bold ph-star\" aria-hidden=\"true\"></i>\n      @if (!collapsed()) {\n        <span>Workspace</span>\n      }\n    </star-app-sidebar-header>\n    <star-app-sidebar-section heading=\"Overview\">\n      <star-app-sidebar-item\n        label=\"Dashboard\"\n        icon=\"ph ph-house\"\n        [active]=\"current() === 'Dashboard'\"\n        (activated)=\"current.set('Dashboard')\"\n      />\n      <star-app-sidebar-item\n        label=\"Orders\"\n        icon=\"ph ph-package\"\n        badge=\"4\"\n        badgeLabel=\"4 new\"\n        [active]=\"current() === 'Orders'\"\n        (activated)=\"current.set('Orders')\"\n      />\n      <star-app-sidebar-item label=\"Reports\" icon=\"ph ph-chart-bar\">\n        <star-app-sidebar-item\n          label=\"Monthly\"\n          icon=\"ph ph-calendar\"\n          [active]=\"current() === 'Monthly'\"\n          (activated)=\"current.set('Monthly')\"\n        />\n        <star-app-sidebar-item\n          label=\"Yearly\"\n          icon=\"ph ph-calendar-blank\"\n          [active]=\"current() === 'Yearly'\"\n          (activated)=\"current.set('Yearly')\"\n        />\n      </star-app-sidebar-item>\n    </star-app-sidebar-section>\n    <star-app-sidebar-section heading=\"Docs\">\n      <star-app-sidebar-item\n        label=\"This page\"\n        icon=\"ph ph-book-open\"\n        routerLink=\"/controls/app-sidebar\"\n      />\n    </star-app-sidebar-section>\n    <star-app-sidebar-footer>\n      <star-button\n        variant=\"ghost\"\n        size=\"sm\"\n        [iconOnly]=\"true\"\n        [ariaLabel]=\"collapsed() ? 'Expand sidebar' : 'Collapse sidebar'\"\n        (pressed)=\"collapsed.set(!collapsed())\"\n      >\n        <i\n          [class]=\"collapsed() ? 'ph ph-sidebar-simple' : 'ph ph-caret-double-left'\"\n          aria-hidden=\"true\"\n        ></i>\n      </star-button>\n    </star-app-sidebar-footer>\n  </star-app-sidebar>\n  <div class=\"content\">\n    <strong>{{ current() }}</strong>\n    <p>Content of the page.</p>\n  </div>\n</div>",
+  "app-sidebar/overlay": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"menuOpen.set(true)\">\n      <i class=\"ph ph-list\" aria-hidden=\"true\"></i>\n      Menu\n    </star-button>\n  </div>\n  <star-app-sidebar\n    mode=\"overlay\"\n    [breakpoint]=\"100000\"\n    [(visible)]=\"menuOpen\"\n    ariaLabel=\"Shop\"\n  >\n    <star-app-sidebar-header>Shop</star-app-sidebar-header>\n    <star-app-sidebar-section heading=\"Catalog\">\n      <star-app-sidebar-item\n        label=\"Products\"\n        icon=\"ph ph-cube\"\n        [active]=\"shopPage() === 'Products'\"\n        (activated)=\"shopPage.set('Products')\"\n      />\n      <star-app-sidebar-item\n        label=\"Customers\"\n        icon=\"ph ph-users\"\n        [active]=\"shopPage() === 'Customers'\"\n        (activated)=\"shopPage.set('Customers')\"\n      />\n    </star-app-sidebar-section>\n  </star-app-sidebar>\n  <p class=\"docs-output\" role=\"status\">Page: {{ shopPage() }}</p>\n</div>",
   "autocomplete/async": "<div class=\"docs-stack\">\n  <star-autocomplete\n    [suggestions]=\"results()\"\n    [loading]=\"searching()\"\n    [minQueryLength]=\"2\"\n    [delay]=\"150\"\n    (completeMethod)=\"search($event)\"\n    optionLabel=\"name\"\n    optionValue=\"id\"\n    [(value)]=\"found\"\n    placeholder=\"Type 2 letters of a name\"\n    ariaLabel=\"Colleague\"\n    showClear\n  />\n  <p class=\"docs-output\" role=\"status\">Colleague: {{ found() ?? 'none' }}</p>\n</div>",
   "autocomplete/custom-values": "<div class=\"docs-stack\">\n  <star-multi-autocomplete\n    [options]=\"keywords\"\n    [(value)]=\"customKeywords\"\n    allowCustomValues\n    placeholder=\"Add a keyword\"\n    ariaLabel=\"Keywords with new ones\"\n    (customValueAdd)=\"lastKeyword.set($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Keywords: {{ customKeywords().join(', ') || 'none' }}. New:\n    {{ lastKeyword() ?? 'none' }}\n  </p>\n</div>",
   "autocomplete/dropdown": "<star-autocomplete\n  [options]=\"cities\"\n  [(value)]=\"dropdownCity\"\n  placeholder=\"Search a city\"\n  ariaLabel=\"City with dropdown\"\n  dropdown\n  autoHighlight\n  showClear\n/>",
@@ -8064,6 +8959,8 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "color-picker/basic": "<star-color-picker [(value)]=\"color\" ariaLabel=\"Label color\" />\n<p class=\"docs-output\" role=\"status\">Value: {{ color() }}</p>",
   "color-picker/disabled": "<star-color-picker value=\"#64748b\" disabled ariaLabel=\"Locked color\" />",
   "color-picker/swatches": "<star-color-picker\n  [(value)]=\"category\"\n  [swatches]=\"['#0f766e', '#b45309', '#7c3aed', '#be123c']\"\n  ariaLabel=\"Category color\"\n/>",
+  "command-palette/basic": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"open.set(true)\">\n      Open command palette\n    </star-button>\n  </div>\n  <star-command-palette\n    [commands]=\"commands\"\n    [(visible)]=\"open\"\n    (commandRun)=\"last.set($event.label)\"\n  />\n  <p class=\"docs-output\" role=\"status\">Last command: {{ last() }}</p>\n</div>",
+  "command-palette/templates": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"peopleOpen.set(true)\">\n      Find a person\n    </star-button>\n  </div>\n  <star-command-palette\n    [commands]=\"people\"\n    [(visible)]=\"peopleOpen\"\n    [hotkey]=\"null\"\n    [maxRecent]=\"0\"\n    placeholder=\"Search people\"\n    ariaLabel=\"Find a person\"\n    (commandRun)=\"person.set($event.label)\"\n  >\n    <ng-template starCommand let-command>\n      <i class=\"ph ph-user-circle\" aria-hidden=\"true\"></i>\n      <span class=\"option\">\n        <span>{{ command.label }}</span>\n        <small>{{ command.group }} · {{ command.keywords?.[0] }}</small>\n      </span>\n    </ng-template>\n    <ng-template starEmpty let-query>No person matches “{{ query }}”.</ng-template>\n  </star-command-palette>\n  <p class=\"docs-output\" role=\"status\">Chosen: {{ person() }}</p>\n</div>",
   "confirm/dialog": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button\n      variant=\"ghost-danger\"\n      leadingIcon=\"ph-bold ph-trash\"\n      (pressed)=\"deleteOrder()\"\n    >\n      Delete order\n    </star-button>\n  </div>\n  <p class=\"docs-output\" role=\"status\">Result: {{ result() }}</p>\n</div>",
   "confirm/options": "<div class=\"docs-row\">\n  <star-button variant=\"secondary\" (pressed)=\"publish()\">Publish price list</star-button>\n  <star-button variant=\"secondary\" (pressed)=\"acknowledge()\">Show notice</star-button>\n</div>",
   "confirm/popup": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button\n      variant=\"ghost\"\n      leadingIcon=\"ph-bold ph-archive\"\n      (pressed)=\"archive($event)\"\n    >\n      Archive\n    </star-button>\n  </div>\n  <p class=\"docs-output\" role=\"status\">Archive result: {{ popupResult() }}</p>\n</div>",
@@ -8090,8 +8987,14 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "date-picker/views": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"reportMonth\"\n    view=\"month\"\n    locale=\"en-GB\"\n    ariaLabel=\"Report month\"\n  />\n  <star-date-picker\n    [(value)]=\"reportYear\"\n    view=\"year\"\n    locale=\"en-GB\"\n    ariaLabel=\"Report year\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Month: {{ iso(reportMonth()) }}, year: {{ iso(reportYear()) }}\n  </p>\n</div>",
   "dialog/basic": "<star-button (pressed)=\"basicOpen.set(true)\">Edit order</star-button>\n<star-dialog [(visible)]=\"basicOpen\" header=\"Edit order ORD-1042\">\n  <span starDialogHeader class=\"docs-output\">Last saved at 10:42</span>\n  <div class=\"docs-stack\">\n    <star-field label=\"Customer\">\n      <input starInput value=\"Orchard Supply\" />\n    </star-field>\n    <star-field label=\"Delivery note\" hint=\"The driver reads this note.\">\n      <textarea starInput rows=\"3\">Leave at the loading dock.</textarea>\n    </star-field>\n  </div>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button variant=\"ghost\" (pressed)=\"basicOpen.set(false)\">Cancel</star-button>\n    <star-button (pressed)=\"basicOpen.set(false)\">Save</star-button>\n  </div>\n</star-dialog>",
   "dialog/close-rules": "<div class=\"docs-row\">\n  <star-button variant=\"secondary\" (pressed)=\"maskOpen.set(true)\"\n    >Backdrop click</star-button\n  >\n  <star-button variant=\"secondary\" (pressed)=\"lockedOpen.set(true)\">Locked</star-button>\n  <star-button variant=\"secondary\" (pressed)=\"floatOpen.set(true)\">Non-modal</star-button>\n</div>\n<star-dialog [(visible)]=\"maskOpen\" header=\"Closes on a backdrop click\" dismissableMask>\n  <p>Click outside this window to close it.</p>\n</star-dialog>\n<star-dialog\n  [(visible)]=\"lockedOpen\"\n  header=\"Locked dialog\"\n  [closable]=\"false\"\n  [closeOnEscape]=\"false\"\n>\n  <p>This dialog has no close button and ignores Escape.</p>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button (pressed)=\"lockedOpen.set(false)\">Done</star-button>\n  </div>\n</star-dialog>\n<star-dialog [(visible)]=\"floatOpen\" header=\"Non-modal dialog\" [modal]=\"false\">\n  <p>The page behind this window stays usable.</p>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button (pressed)=\"floatOpen.set(false)\">Close</star-button>\n  </div>\n</star-dialog>",
+  "dialog/drag": "<div class=\"docs-stack\">\n  <p class=\"docs-output\" role=\"status\">Last position: {{ dragNote() }}</p>\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"dragOpen.set(true)\">\n      Open movable dialog\n    </star-button>\n  </div>\n</div>\n<star-dialog\n  [(visible)]=\"dragOpen\"\n  header=\"Movable dialog\"\n  draggable\n  (dragEnd)=\"dragNote.set($event.x + ', ' + $event.y)\"\n>\n  <p>Drag the header, or focus the move button and press Alt with an arrow key.</p>\n</star-dialog>",
   "dialog/focus": "<div class=\"docs-row\">\n  <star-button variant=\"secondary\" (pressed)=\"defaultFocusOpen.set(true)\">\n    First focusable\n  </star-button>\n  <star-button variant=\"secondary\" (pressed)=\"markedFocusOpen.set(true)\">\n    Marked field\n  </star-button>\n</div>\n<star-dialog [(visible)]=\"defaultFocusOpen\" header=\"Default focus\">\n  <p>The focus starts on the close button.</p>\n  <star-field label=\"Reference\"><input starInput value=\"ORD-1042\" /></star-field>\n</star-dialog>\n<star-dialog [(visible)]=\"markedFocusOpen\" header=\"Marked focus\">\n  <star-field label=\"Reference\">\n    <input starInput value=\"ORD-1042\" data-autofocus />\n  </star-field>\n</star-dialog>",
+  "dialog/headless": "<star-button variant=\"secondary\" (pressed)=\"headlessOpen.set(true)\">\n  Open headless dialog\n</star-button>\n<star-dialog [(visible)]=\"headlessOpen\" headless ariaLabelledby=\"docs-headless-title\">\n  <div class=\"docs-stack docs-headless\">\n    <h2 id=\"docs-headless-title\">Shipping label for ORD-1042</h2>\n    <p>Your content draws its own heading, padding and buttons.</p>\n    <div class=\"docs-row\">\n      <star-button (pressed)=\"headlessOpen.set(false)\">Done</star-button>\n    </div>\n  </div>\n</star-dialog>",
+  "dialog/maximize": "<div class=\"docs-stack\">\n  <p class=\"docs-output\" role=\"status\">Maximized: {{ maximizedState() ? 'yes' : 'no' }}</p>\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"maximizeOpen.set(true)\">\n      Open order lines\n    </star-button>\n  </div>\n</div>\n<star-dialog\n  [(visible)]=\"maximizeOpen\"\n  [(maximized)]=\"maximizedState\"\n  header=\"Order lines\"\n  size=\"lg\"\n  maximizable\n>\n  <p>ORD-1042 has 12 lines. Maximize the dialog to see more of them at once.</p>\n</star-dialog>",
   "dialog/popups": "<star-button variant=\"secondary\" (pressed)=\"popupsOpen.set(true)\">\n  Open order dialog\n</star-button>\n<star-dialog [(visible)]=\"popupsOpen\" header=\"Order ORD-1042\" size=\"md\">\n  <div class=\"docs-stack\">\n    <star-field label=\"Shipping city\" hint=\"Menus and cascade selects open above the modal\">\n      <star-cascade-select\n        [options]=\"places\"\n        optionLabel=\"name\"\n        optionValue=\"code\"\n        [(value)]=\"place\"\n        ariaLabel=\"Dialog city\"\n        showPath\n      />\n    </star-field>\n    <div class=\"docs-row\">\n      <star-button size=\"sm\" variant=\"secondary\" [starMenuTrigger]=\"actionsMenu\">\n        More actions\n      </star-button>\n      <star-menu\n        #actionsMenu\n        [items]=\"actionItems\"\n        (itemClick)=\"lastAction.set($event.label ?? '')\"\n      />\n      <span class=\"docs-output\" tabindex=\"0\" [starContextMenu]=\"actionsMenu\">\n        Last action: {{ lastAction() }}\n      </span>\n    </div>\n  </div>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button (pressed)=\"popupsOpen.set(false)\">Done</star-button>\n  </div>\n</star-dialog>",
+  "dialog/position": "<div class=\"docs-row\">\n  @for (item of positions; track item) {\n    <star-button variant=\"secondary\" (pressed)=\"openAt(item)\">{{ item }}</star-button>\n  }\n</div>\n<star-dialog\n  [(visible)]=\"positionOpen\"\n  [position]=\"position()\"\n  size=\"sm\"\n  [header]=\"'Position ' + position()\"\n>\n  <p>This dialog is at the {{ position() }} position.</p>\n</star-dialog>",
+  "dialog/resize": "<div class=\"docs-stack\">\n  <p class=\"docs-output\" role=\"status\">Last size: {{ resizeNote() }}</p>\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"resizeOpen.set(true)\">\n      Open resizable dialog\n    </star-button>\n  </div>\n</div>\n<star-dialog\n  [(visible)]=\"resizeOpen\"\n  header=\"Resizable dialog\"\n  resizable\n  draggable\n  (resizeEnd)=\"resizeNote.set($event.width + ' x ' + $event.height)\"\n>\n  <p>Drag the corner handle, or focus it and press Shift with an arrow key.</p>\n</star-dialog>",
+  "dialog/responsive": "<div class=\"docs-row\">\n  <star-button variant=\"secondary\" (pressed)=\"responsiveOpen.set(true)\">\n    Open responsive dialog\n  </star-button>\n  <star-button variant=\"secondary\" (pressed)=\"scrollOpen.set(true)\">\n    Non-modal, page scrolls\n  </star-button>\n</div>\n<star-dialog\n  [(visible)]=\"responsiveOpen\"\n  header=\"Responsive dialog\"\n  width=\"48rem\"\n  [breakpoints]=\"{ '960px': '75vw', '640px': '100vw' }\"\n  [focusOnShow]=\"false\"\n>\n  <p>48rem wide on a large window, 75vw up to 960px and the full width up to 640px.</p>\n  <star-field label=\"Reference\"><input starInput value=\"INV-2041\" /></star-field>\n</star-dialog>\n<star-dialog\n  [(visible)]=\"scrollOpen\"\n  header=\"Scroll stays on\"\n  [modal]=\"false\"\n  position=\"bottom-end\"\n  size=\"sm\"\n>\n  <p>A non-modal dialog does not block the page scroll. Set blockScroll to block it.</p>\n</star-dialog>",
   "dialog/service": "<div class=\"docs-stack\">\n  <p class=\"docs-output\" role=\"status\">Note: {{ note() }}</p>\n  <div class=\"docs-row\">\n    <star-button leadingIcon=\"ph-bold ph-note-pencil\" (pressed)=\"editNote()\">\n      Edit note\n    </star-button>\n  </div>\n</div>",
   "dialog/sizes": "<div class=\"docs-row\">\n  @for (item of sizes; track item) {\n    <star-button variant=\"secondary\" (pressed)=\"openSize(item)\">\n      Open {{ item }}\n    </star-button>\n  }\n</div>\n<star-dialog [(visible)]=\"sizeOpen\" [size]=\"size()\" [header]=\"'Size ' + size()\">\n  <p>The size input of this dialog is {{ size() }}.</p>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button (pressed)=\"sizeOpen.set(false)\">Close</star-button>\n  </div>\n</star-dialog>",
   "divider/basic": "<div class=\"docs-stack\">\n  <p>Sign in with your email.</p>\n  <star-divider>or</star-divider>\n  <p>Continue with a link.</p>\n  <star-divider align=\"start\">Start</star-divider>\n  <star-divider align=\"end\" type=\"dashed\">End, dashed</star-divider>\n  <star-divider type=\"dotted\" />\n</div>",
@@ -8099,6 +9002,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "dock/basic": "<div class=\"docs-stack\">\n  <star-dock [items]=\"apps\" ariaLabel=\"Apps\" (itemClick)=\"last.set($event.label ?? '')\" />\n  <p class=\"docs-output\" role=\"status\">Opened: {{ last() }}</p>\n</div>",
   "dock/left": "<star-dock [items]=\"apps\" position=\"left\" ariaLabel=\"Apps on the left\" />",
   "drawer/basic": "<star-button leadingIcon=\"ph-bold ph-sidebar-simple\" (pressed)=\"basicOpen.set(true)\">\n  Open details\n</star-button>\n<star-drawer [(visible)]=\"basicOpen\" header=\"Order ORD-1042\" dismissableMask>\n  <div class=\"docs-stack\">\n    <p class=\"docs-output\">Orchard Supply, 12 items, ships on Friday.</p>\n    <star-field label=\"Internal note\">\n      <textarea starInput autoResize rows=\"3\"></textarea>\n    </star-field>\n  </div>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button variant=\"ghost\" (pressed)=\"basicOpen.set(false)\">Close</star-button>\n  </div>\n</star-drawer>",
+  "drawer/modes": "<div class=\"docs-stack\">\n  <p class=\"docs-output\" role=\"status\">Last event: {{ modeEvent() }}</p>\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"floatOpen.set(true)\">Non-modal</star-button>\n    <star-button variant=\"secondary\" (pressed)=\"fullOpen.set(true)\"\n      >Full screen</star-button\n    >\n  </div>\n</div>\n<star-drawer\n  [(visible)]=\"floatOpen\"\n  header=\"Filters\"\n  position=\"end\"\n  drawerSize=\"20rem\"\n  [modal]=\"false\"\n  (shown)=\"modeEvent.set('non-modal shown')\"\n  (hidden)=\"modeEvent.set('non-modal hidden')\"\n>\n  <p>The page behind this drawer stays usable.</p>\n</star-drawer>\n<star-drawer\n  [(visible)]=\"fullOpen\"\n  header=\"Invoice INV-2041\"\n  position=\"bottom\"\n  fullScreen\n  dismissible\n  (shown)=\"modeEvent.set('full screen shown')\"\n  (hidden)=\"modeEvent.set('full screen hidden')\"\n>\n  <p>This drawer covers the window. Escape or the close button closes it.</p>\n</star-drawer>",
   "drawer/position": "<div class=\"docs-row\">\n  @for (item of positions; track item) {\n    <star-button variant=\"secondary\" (pressed)=\"openAt(item)\">{{ item }}</star-button>\n  }\n</div>\n<star-drawer\n  [(visible)]=\"positionOpen\"\n  [position]=\"position()\"\n  [drawerSize]=\"position() === 'top' || position() === 'bottom' ? '14rem' : '22rem'\"\n  [header]=\"'Drawer at the ' + position()\"\n>\n  <p>This drawer is pinned to the {{ position() }} edge.</p>\n</star-drawer>",
   "dropdown/basic": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button\n      variant=\"secondary\"\n      trailingIcon=\"ph-bold ph-caret-down\"\n      [starDropdownTrigger]=\"formats\"\n    >\n      Export as\n    </star-button>\n  </div>\n  <star-dropdown\n    #formats\n    ariaLabel=\"Export format\"\n    [(value)]=\"format\"\n    (selectionChange)=\"onSelect($event)\"\n  >\n    <star-dropdown-item header>Documents</star-dropdown-item>\n    <star-dropdown-item value=\"pdf\">PDF</star-dropdown-item>\n    <star-dropdown-item value=\"docx\" disabled>Word document</star-dropdown-item>\n    <star-dropdown-item divider />\n    <star-dropdown-item header>Data</star-dropdown-item>\n    <star-dropdown-item value=\"csv\">CSV</star-dropdown-item>\n    <star-dropdown-item value=\"xlsx\">Spreadsheet</star-dropdown-item>\n    <star-dropdown-item value=\"json\">JSON</star-dropdown-item>\n  </star-dropdown>\n  <p class=\"docs-output\" role=\"status\">Export format: {{ chosen() }}</p>\n</div>",
   "dropdown/keep-open": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" [starDropdownTrigger]=\"cities\">\n      Add a city\n    </star-button>\n  </div>\n  <star-dropdown\n    #cities\n    ariaLabel=\"Cities\"\n    [closeOnSelect]=\"false\"\n    (selectionChange)=\"added.set(added() + $event.label + ' ')\"\n  >\n    <star-dropdown-item value=\"berlin\">Berlin</star-dropdown-item>\n    <star-dropdown-item value=\"lisbon\">Lisbon</star-dropdown-item>\n    <star-dropdown-item value=\"oslo\">Oslo</star-dropdown-item>\n    <star-dropdown-item value=\"toronto\">Toronto</star-dropdown-item>\n  </star-dropdown>\n  <p class=\"docs-output\" role=\"status\">Added: {{ added() || 'none' }}</p>\n</div>",
@@ -8324,6 +9228,9 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "tag/severities": "<star-tag value=\"New\" />\n<star-tag severity=\"secondary\" value=\"Draft\" />\n<star-tag severity=\"success\" value=\"Paid\" />\n<star-tag severity=\"info\" value=\"In review\" />\n<star-tag severity=\"warn\" value=\"Due soon\" />\n<star-tag severity=\"danger\" value=\"Overdue\" />",
   "terminal/basic": "<div class=\"docs-stack docs-terminal\">\n  <star-terminal\n    #terminal\n    ariaLabel=\"Diagnostics\"\n    prompt=\"app $\"\n    welcome=\"Type help for the commands.\"\n    [handler]=\"runCommand\"\n    (commandRun)=\"last.set($event)\"\n  />\n  <div class=\"docs-row\">\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"terminal.clear()\">\n      Clear\n    </star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"terminal.run('status')\">\n      Run \"status\"\n    </star-button>\n  </div>\n  <p class=\"docs-output\" role=\"status\">Last command: {{ last() || 'none' }}</p>\n</div>",
   "theme-switch/basic": "<div class=\"docs-row docs-theme-area\">\n  <star-theme-switch />\n  <p class=\"docs-output\" role=\"status\">\n    Choice: {{ theme.mode() }}. Theme in use: {{ theme.theme() }}.\n  </p>\n</div>",
+  "tile-layout/basic": "<star-tile-layout [columns]=\"4\" rowHeight=\"7rem\" gap=\"0.75rem\">\n  @for (tile of basicTiles; track tile.key) {\n    <star-tile [key]=\"tile.key\" [colSpan]=\"tile.colSpan\" [rowSpan]=\"tile.rowSpan\">\n      <span starTileHeader>{{ tile.title }}</span>\n      <p class=\"caption\">{{ tile.text }}</p>\n    </star-tile>\n  }\n</star-tile-layout>",
+  "tile-layout/dashboard": "<div class=\"docs-stack\">\n  <star-tile-layout\n    [columns]=\"3\"\n    rowHeight=\"8rem\"\n    reorderable\n    resizable\n    [(order)]=\"order\"\n    (tileResize)=\"onResize($event)\"\n  >\n    @for (key of order(); track key) {\n      @let tile = dashboard[key];\n      <star-tile\n        [key]=\"key\"\n        [label]=\"tile.title\"\n        [(colSpan)]=\"tile.colSpan\"\n        [(rowSpan)]=\"tile.rowSpan\"\n      >\n        <span starTileHeader>{{ tile.title }}</span>\n        <p class=\"figure\">{{ tile.figure }}</p>\n        <p class=\"caption\">{{ tile.caption }}</p>\n      </star-tile>\n    }\n  </star-tile-layout>\n  <p class=\"docs-output\" role=\"status\">\n    Order: {{ order().join(', ') }}. {{ lastResize() }}\n  </p>\n</div>",
+  "tile-layout/responsive": "<star-tile-layout [columns]=\"4\" [breakpoints]=\"{ sm: 1, md: 2 }\" rowHeight=\"6rem\">\n  @for (city of cities; track city) {\n    <star-tile [key]=\"city\" [label]=\"city\">\n      <span starTileHeader>{{ city }}</span>\n    </star-tile>\n  }\n</star-tile-layout>",
   "time-picker/basic": "<div class=\"docs-stack\">\n  <star-time-picker [(value)]=\"meeting\" ariaLabel=\"Meeting time\" />\n  <p class=\"docs-output\" role=\"status\">Meeting: {{ meeting() ?? 'none' }}</p>\n</div>",
   "time-picker/form": "<div class=\"docs-stack\">\n  <star-field label=\"Pick-up time\" for=\"time-form-pickup\" [state]=\"slot.pickup()\">\n    <star-time-picker\n      inputId=\"time-form-pickup\"\n      [formField]=\"slot.pickup\"\n      ariaLabel=\"Pick-up time\"\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ slot().valid() }}</p>\n</div>",
   "time-picker/hour-format": "<div class=\"docs-stack\">\n  <star-time-picker [(value)]=\"cutOff\" hourFormat=\"12\" ariaLabel=\"Cut-off time\" />\n  <p class=\"docs-output\" role=\"status\">Cut-off: {{ cutOff() ?? 'none' }}</p>\n</div>",
@@ -8333,9 +9240,11 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "timeline/basic": "<star-timeline [events]=\"events\" ariaLabel=\"Order history\" />",
   "timeline/content": "<star-timeline [events]=\"events\" ariaLabel=\"Order history, custom\">\n  <ng-template starTimelineContent let-event let-i=\"index\">\n    <strong>{{ i + 1 }}. {{ event.title }}</strong>\n  </ng-template>\n</star-timeline>",
   "timeline/horizontal": "<star-timeline\n  [events]=\"events\"\n  layout=\"horizontal\"\n  ariaLabel=\"Order history, horizontal\"\n/>",
+  "toast/closed": "<div class=\"docs-stack\">\n  <p class=\"docs-output\" role=\"status\">Last close: {{ lastClose() }}</p>\n  <div class=\"docs-row\">\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"shortNote()\">\n      Show a 3 second note\n    </star-button>\n    <star-button size=\"sm\" variant=\"ghost\" (pressed)=\"toasts.clear('events')\">\n      Clear notes\n    </star-button>\n  </div>\n</div>\n<star-toast\n  position=\"top-end\"\n  key=\"events\"\n  [breakpoints]=\"{ '640px': {} }\"\n  (closed)=\"lastClose.set($event.message.summary + ': ' + $event.reason)\"\n/>",
   "toast/corners": "<star-button size=\"sm\" variant=\"secondary\" (pressed)=\"corner('start')\">\n  Message at the start\n</star-button>\n<star-button size=\"sm\" variant=\"secondary\" (pressed)=\"corner('end')\">\n  Message at the end\n</star-button>\n<star-toast position=\"bottom-start\" key=\"start\" />\n<star-toast position=\"bottom-end\" key=\"end\" />",
   "toast/duplicates": "<star-button size=\"sm\" variant=\"secondary\" (pressed)=\"twice()\">Save twice</star-button>",
   "toast/message": "<star-button size=\"sm\" variant=\"secondary\" (pressed)=\"archive()\">Archive order</star-button>\n<star-button size=\"sm\" variant=\"ghost\" (pressed)=\"undo()\">Undo archive</star-button>\n<p class=\"docs-output\" role=\"status\">{{ undoNote() }}</p>\n<star-toast position=\"bottom-center\" key=\"undo\">\n  <ng-template starToastMessage let-message let-close=\"close\">\n    <p class=\"star-toast__summary\">{{ message.summary }}</p>\n    <button\n      type=\"button\"\n      class=\"star-btn star-btn--ghost star-btn--sm\"\n      [attr.aria-label]=\"'Undo: ' + message.summary\"\n      (click)=\"undo(); close()\"\n    >\n      Undo\n    </button>\n  </ng-template>\n</star-toast>",
+  "toast/outlet-duplicates": "<star-button size=\"sm\" variant=\"secondary\" (pressed)=\"remind()\">Show reminder</star-button>\n<star-toast position=\"bottom-end\" key=\"reminder\" preventDuplicates />",
   "toast/severities": "<star-button size=\"sm\" variant=\"success\" (pressed)=\"notify('success')\">Success</star-button>\n<star-button size=\"sm\" variant=\"secondary\" (pressed)=\"notify('info')\">Info</star-button>\n<star-button size=\"sm\" variant=\"warning\" (pressed)=\"notify('warn')\">Warn</star-button>\n<star-button size=\"sm\" variant=\"danger\" (pressed)=\"notify('error')\">Error</star-button>",
   "toast/sticky": "<star-button size=\"sm\" variant=\"secondary\" (pressed)=\"sticky()\">Sticky message</star-button>\n<star-button size=\"sm\" variant=\"secondary\" (pressed)=\"quick()\"\n  >Two second message</star-button\n>\n<star-button size=\"sm\" variant=\"ghost\" (pressed)=\"toasts.clear()\">Clear all</star-button>",
   "toggle-switch/basic": "<star-toggle-switch [(checked)]=\"alerts\">Email alerts</star-toggle-switch>\n<p class=\"docs-output\" role=\"status\">Alerts: {{ alerts() ? 'on' : 'off' }}</p>",
@@ -8347,7 +9256,9 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "tooltip/icon": "<button\n  type=\"button\"\n  class=\"star-btn star-btn--secondary star-btn--icon\"\n  aria-label=\"Export orders\"\n  starTooltip=\"Export orders to CSV\"\n>\n  <i class=\"ph-bold ph-export\" aria-hidden=\"true\"></i>\n</button>",
   "tooltip/positions": "<star-button variant=\"secondary\" starTooltip=\"Shown on hover and focus\">Top</star-button>\n<star-button\n  variant=\"secondary\"\n  starTooltip=\"Below the button\"\n  starTooltipPosition=\"bottom\"\n>\n  Bottom\n</star-button>\n<star-button variant=\"secondary\" starTooltip=\"On the left\" starTooltipPosition=\"left\">\n  Left\n</star-button>\n<star-button variant=\"secondary\" starTooltip=\"On the right\" starTooltipPosition=\"right\">\n  Right\n</star-button>\n<star-button variant=\"secondary\" starTooltip=\"At the start\" starTooltipPosition=\"start\">\n  Start\n</star-button>\n<star-button variant=\"secondary\" starTooltip=\"At the end\" starTooltipPosition=\"end\">\n  End\n</star-button>",
   "tree-select/checkbox": "<div class=\"docs-stack\">\n  <star-tree-select\n    [nodes]=\"departments\"\n    selectionMode=\"checkbox\"\n    [(value)]=\"teams\"\n    filter\n    placeholder=\"Select teams\"\n    ariaLabel=\"Teams\"\n  />\n  <p class=\"docs-output\" role=\"status\">Teams: {{ teams().join(', ') || 'none' }}</p>\n</div>",
+  "tree-select/chips": "<div class=\"docs-stack\">\n  <star-tree-select\n    [nodes]=\"orgUnits\"\n    selectionMode=\"checkbox\"\n    [(value)]=\"units\"\n    display=\"chip\"\n    filter\n    filterMode=\"lenient\"\n    [filterBy]=\"['label', 'lead']\"\n    showClear\n    placeholder=\"Select units\"\n    ariaLabel=\"Units\"\n  />\n  <p class=\"docs-output\" role=\"status\">Units: {{ units().join(', ') || 'none' }}</p>\n</div>",
   "tree-select/form": "<div class=\"docs-stack\">\n  <star-field label=\"Department\" [state]=\"hire.department()\">\n    <star-tree-select\n      [formField]=\"hire.department\"\n      [nodes]=\"departments\"\n      placeholder=\"Select a department\"\n      ariaLabel=\"Hire department\"\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ hire().valid() }}</p>\n</div>",
+  "tree-select/lazy": "<div class=\"docs-stack\">\n  <star-tree-select\n    [nodes]=\"projectNodes()\"\n    [(expanded)]=\"lazyOpen\"\n    [(value)]=\"team\"\n    placeholder=\"Select a team\"\n    ariaLabel=\"Team\"\n    (nodeExpand)=\"loadProject($event.node)\"\n  />\n  <p class=\"docs-output\" role=\"status\">Team: {{ team().join(', ') || 'none' }}</p>\n</div>",
   "tree-select/multiple": "<div class=\"docs-stack\">\n  <star-tree-select\n    [nodes]=\"departments\"\n    selectionMode=\"multiple\"\n    [(value)]=\"nodes\"\n    placeholder=\"Select nodes\"\n    ariaLabel=\"Nodes\"\n  />\n  <p class=\"docs-output\" role=\"status\">Nodes: {{ nodes().join(', ') || 'none' }}</p>\n  <star-tree-select\n    [nodes]=\"departments\"\n    disabled\n    placeholder=\"Disabled\"\n    ariaLabel=\"Disabled department\"\n  />\n</div>",
   "tree-select/single": "<div class=\"docs-stack\">\n  <star-tree-select\n    [nodes]=\"departments\"\n    [(value)]=\"department\"\n    placeholder=\"Select a department\"\n    ariaLabel=\"Department\"\n    showClear\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Department: {{ department().join(', ') || 'none' }}\n  </p>\n</div>",
   "tree-select/slots": "<star-tree-select\n  [nodes]=\"projects\"\n  [(expanded)]=\"projectsOpen\"\n  [(value)]=\"project\"\n  filter\n  placeholder=\"Select a project\"\n  ariaLabel=\"Project\"\n>\n  <ng-template starHeader>\n    <p class=\"docs-output\">Active projects</p>\n  </ng-template>\n  <ng-template starNode [starNodeOf]=\"projects\" let-node let-level=\"level\">\n    {{ node.label }}\n    @if (node.data) {\n      <small>(owner {{ node.data.owner }}, level {{ level }})</small>\n    }\n  </ng-template>\n  <ng-template starIcon=\"toggle\"\n    ><i class=\"ph-bold ph-arrow-right\" aria-hidden=\"true\"></i\n  ></ng-template>\n  <ng-template starEmpty let-text>No project matches {{ text }}.</ng-template>\n  <ng-template starFooter>\n    <p class=\"docs-output\">3 projects</p>\n  </ng-template>\n</star-tree-select>",
@@ -8364,12 +9275,20 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "tree-table/virtual": "<div class=\"docs-stack\">\n  <star-tree-table\n    [nodes]=\"large.nodes\"\n    [columns]=\"virtualColumns\"\n    [(expanded)]=\"largeOpen\"\n    virtualScroll\n    scrollHeight=\"20rem\"\n    ariaLabel=\"Stock by site\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    {{ large.count }} rows, {{ largeOpen().length }} branches open\n  </p>\n</div>",
   "tree/basic": "<star-tree [nodes]=\"folders\" [(expanded)]=\"open\" scrollHeight=\"16rem\" ariaLabel=\"Folders\" />",
   "tree/checkbox": "<div class=\"docs-stack\">\n  <star-tree\n    [nodes]=\"folders\"\n    selectionMode=\"checkbox\"\n    [(value)]=\"checked\"\n    [(expanded)]=\"checkboxOpen\"\n    filter\n    scrollHeight=\"16rem\"\n    ariaLabel=\"Folders to sync\"\n  />\n\n  <p class=\"docs-output\" role=\"status\">Leaves: {{ checked().join(', ') || 'none' }}</p>\n</div>",
+  "tree/context-menu": "<div class=\"docs-stack\">\n  <star-tree\n    [nodes]=\"departments\"\n    [expanded]=\"['eng']\"\n    [contextMenu]=\"nodeActions\"\n    scrollHeight=\"16rem\"\n    ariaLabel=\"Departments with actions\"\n    (contextMenuSelect)=\"lastAction.set($event.item.label + ' ' + $event.node.label)\"\n    (nodeDoubleClick)=\"lastAction.set('double click ' + $event.node.label)\"\n  />\n\n  <p class=\"docs-output\" role=\"status\">Last action: {{ lastAction() }}</p>\n</div>",
+  "tree/drag-drop": "<div class=\"docs-stack\">\n  <star-tree\n    [nodes]=\"movable()\"\n    [(expanded)]=\"movableOpen\"\n    draggableNodes\n    droppableNodes\n    [validateDrop]=\"noDropInPeople\"\n    scrollHeight=\"18rem\"\n    ariaLabel=\"Departments to arrange\"\n    (nodeDrop)=\"onDrop($event)\"\n  />\n\n  <p class=\"docs-output\" role=\"status\">Last move: {{ lastMove() }}</p>\n</div>",
+  "tree/filter-modes": "<star-tree\n  [nodes]=\"departments\"\n  [(expanded)]=\"filterOpen\"\n  filter\n  filterMode=\"lenient\"\n  [filterBy]=\"['label', 'lead']\"\n  scrollHeight=\"16rem\"\n  ariaLabel=\"Departments by lead\"\n/>",
   "tree/form": "<div class=\"docs-stack\">\n  <star-field label=\"Folders to share\" [state]=\"share.folders()\">\n    <star-tree\n      [formField]=\"share.folders\"\n      [nodes]=\"folders\"\n      selectionMode=\"checkbox\"\n      scrollHeight=\"12rem\"\n      ariaLabel=\"Folders to share\"\n    />\n  </star-field>\n\n  <p class=\"docs-output\" role=\"status\">Valid: {{ share().valid() }}</p>\n</div>",
+  "tree/lazy": "<star-tree\n  [nodes]=\"projectNodes()\"\n  [(expanded)]=\"lazyOpen\"\n  scrollHeight=\"16rem\"\n  ariaLabel=\"Projects and teams\"\n  (nodeExpand)=\"loadProject($event.node)\"\n/>",
+  "tree/methods": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"apiTree.expandAll()\">\n      Expand all\n    </star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"apiTree.collapseAll()\">\n      Collapse all\n    </star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"apiTree.scrollToNode('tax')\">\n      Show Tax\n    </star-button>\n  </div>\n  <star-tree\n    #apiTree\n    [nodes]=\"departments\"\n    [(expanded)]=\"apiOpen\"\n    scrollHeight=\"10rem\"\n    ariaLabel=\"Departments for the methods\"\n  />\n</div>",
   "tree/multiple": "<star-tree\n  [nodes]=\"folders\"\n  selectionMode=\"multiple\"\n  [(value)]=\"picked\"\n  [(expanded)]=\"multipleOpen\"\n  scrollHeight=\"16rem\"\n  ariaLabel=\"Folders to back up\"\n/>",
+  "tree/propagation": "<div class=\"docs-stack\">\n  <star-tree\n    [nodes]=\"departments\"\n    selectionMode=\"checkbox\"\n    [(value)]=\"lockedChecked\"\n    [expanded]=\"['fin']\"\n    scrollHeight=\"16rem\"\n    ariaLabel=\"Departments to audit\"\n    (nodeSelect)=\"lastChange.set('checked ' + $event.label)\"\n    (nodeUnselect)=\"lastChange.set('unchecked ' + $event.label)\"\n  />\n\n  <p class=\"docs-output\" role=\"status\">\n    Value: {{ lockedChecked().join(', ') || 'none' }}. Last change: {{ lastChange() }}\n  </p>\n</div>",
   "tree/single": "<div class=\"docs-stack\">\n  <star-tree\n    [nodes]=\"folders\"\n    selectionMode=\"single\"\n    [(value)]=\"selected\"\n    [(expanded)]=\"singleOpen\"\n    scrollHeight=\"16rem\"\n    ariaLabel=\"Folder\"\n    (nodeSelect)=\"lastNode.set($event.label)\"\n  />\n\n  <p class=\"docs-output\" role=\"status\">Selected: {{ selected().join(', ') || 'none' }}</p>\n\n  <p class=\"docs-output\" role=\"status\">Last node: {{ lastNode() }}</p>\n</div>",
   "tree/slots": "<star-tree\n  [nodes]=\"projects\"\n  [(expanded)]=\"projectsOpen\"\n  filter\n  scrollHeight=\"16rem\"\n  ariaLabel=\"Projects\"\n>\n  <ng-template starHeader>\n    <p class=\"docs-output\">Active projects</p>\n  </ng-template>\n  <ng-template starNode [starNodeOf]=\"projects\" let-node let-level=\"level\">\n    {{ node.label }}\n    @if (node.data) {\n      <small>(owner {{ node.data.owner }}, level {{ level }})</small>\n    }\n  </ng-template>\n  <ng-template starIcon=\"toggle\"\n    ><i class=\"ph-bold ph-arrow-right\" aria-hidden=\"true\"></i\n  ></ng-template>\n  <ng-template starEmpty let-text>No project matches {{ text }}.</ng-template>\n  <ng-template starFooter>\n    <p class=\"docs-output\">3 projects</p>\n  </ng-template>\n</star-tree>",
   "tree/virtual": "<div class=\"docs-stack\">\n  <star-tree\n    [nodes]=\"large.nodes\"\n    [(expanded)]=\"largeOpen\"\n    selectionMode=\"checkbox\"\n    [(value)]=\"largeChecked\"\n    virtualScroll\n    [virtualItemSize]=\"34\"\n    filter\n    scrollHeight=\"20rem\"\n    ariaLabel=\"Orders by site\"\n  />\n\n  <p class=\"docs-output\" role=\"status\">\n    {{ large.count }} nodes, {{ largeChecked().length }} orders checked\n  </p>\n</div>",
   "virtual-scroller/basic": "<div class=\"docs-stack\">\n  <star-virtual-scroller\n    #orderList\n    [items]=\"orders\"\n    [itemSize]=\"44\"\n    scrollHeight=\"18rem\"\n    ariaLabel=\"Orders\"\n  >\n    <ng-template starVirtualItem [starVirtualItemOf]=\"orders\" let-order>\n      <span class=\"docs-scroller-row\">\n        <strong>{{ order.number }}</strong>\n        <span>{{ order.city }}</span>\n        <span>{{ order.total }} EUR</span>\n      </span>\n    </ng-template>\n  </star-virtual-scroller>\n  <div class=\"docs-row\">\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"orderList.scrollToIndex(0)\">\n      First order\n    </star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"orderList.scrollToIndex(4999)\">\n      Order 5,000\n    </star-button>\n    <star-button\n      size=\"sm\"\n      variant=\"secondary\"\n      (pressed)=\"orderList.scrollToIndex(orders.length - 1)\"\n    >\n      Last order\n    </star-button>\n  </div>\n  @let inView = orderList.visibleRange();\n  @if (inView.last > 0) {\n    <p class=\"docs-output\">In view: orders {{ inView.first + 1 }} to {{ inView.last }}.</p>\n  }\n</div>",
   "virtual-scroller/horizontal": "<star-virtual-scroller\n  [items]=\"cities\"\n  [itemSize]=\"120\"\n  orientation=\"horizontal\"\n  scrollHeight=\"4rem\"\n  ariaLabel=\"Cities\"\n/>",
-  "virtual-scroller/lazy": "<star-virtual-scroller\n  [items]=\"lazyOrders()\"\n  [itemSize]=\"44\"\n  scrollHeight=\"18rem\"\n  lazy\n  [loading]=\"page.isLoading()\"\n  ariaLabel=\"Orders, loaded on demand\"\n  (lazyLoad)=\"range.set($event)\"\n>\n  <ng-template starVirtualItem [starVirtualItemOf]=\"lazyOrders()\" let-order>\n    @if (order) {\n      <span class=\"docs-scroller-row\">\n        <strong>{{ order.number }}</strong>\n        <span>{{ order.city }}</span>\n        <span>{{ order.total }} EUR</span>\n      </span>\n    } @else {\n      <star-skeleton width=\"70%\" height=\"0.875rem\" />\n    }\n  </ng-template>\n</star-virtual-scroller>"
+  "virtual-scroller/lazy": "<star-virtual-scroller\n  [items]=\"lazyOrders()\"\n  [itemSize]=\"44\"\n  scrollHeight=\"18rem\"\n  lazy\n  [loading]=\"page.isLoading()\"\n  ariaLabel=\"Orders, loaded on demand\"\n  (lazyLoad)=\"range.set($event)\"\n>\n  <ng-template starVirtualItem [starVirtualItemOf]=\"lazyOrders()\" let-order>\n    @if (order) {\n      <span class=\"docs-scroller-row\">\n        <strong>{{ order.number }}</strong>\n        <span>{{ order.city }}</span>\n        <span>{{ order.total }} EUR</span>\n      </span>\n    } @else {\n      <star-skeleton width=\"70%\" height=\"0.875rem\" />\n    }\n  </ng-template>\n</star-virtual-scroller>",
+  "window/basic": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"notesOpen.set(true)\"\n      >Open notes</star-button\n    >\n    <star-button variant=\"secondary\" (pressed)=\"summaryOpen.set(true)\">\n      Open order summary\n    </star-button>\n  </div>\n  <star-window\n    header=\"Notes\"\n    [(visible)]=\"notesOpen\"\n    [(position)]=\"notesAt\"\n    [(size)]=\"notesSize\"\n    [(state)]=\"notesState\"\n  >\n    <p>Call the warehouse in Lisbon before noon.</p>\n    <p>Check the open orders of the week.</p>\n    <star-select\n      [options]=\"priorities\"\n      [(value)]=\"priority\"\n      placeholder=\"Priority\"\n      ariaLabel=\"Priority\"\n    />\n  </star-window>\n  <star-window header=\"Order summary\" [(visible)]=\"summaryOpen\" closeOnEscape>\n    <dl class=\"docs-stack\">\n      <div>\n        <dt>Order</dt>\n        <dd>1001</dd>\n      </div>\n      <div>\n        <dt>Items</dt>\n        <dd>3</dd>\n      </div>\n      <div>\n        <dt>Ships from</dt>\n        <dd>Oslo</dd>\n      </div>\n    </dl>\n  </star-window>\n  <p class=\"docs-output\" role=\"status\">\n    Notes: {{ notesState() }}, at {{ notesAt()?.x ?? '–' }}, {{ notesAt()?.y ?? '–' }}\n    @if (notesSize(); as size) {\n      , {{ size.width }} × {{ size.height }}\n    }\n  </p>\n</div>",
+  "window/service": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"openOrder()\">Open order window</star-button>\n  </div>\n  <p class=\"docs-output\" role=\"status\">Result: {{ result() }}</p>\n</div>"
 };

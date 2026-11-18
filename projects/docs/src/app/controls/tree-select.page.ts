@@ -1,10 +1,18 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  effect,
+  resource,
+  signal,
+  untracked,
+} from '@angular/core';
 import { form, FormField, minLength } from '@angular/forms/signals';
 import { STAR_SLOTS } from '@star-ng/ui/core';
 import { StarField } from '@star-ng/ui/field';
 import { StarNodeTemplate, StarTreeNode, StarTreeSelect } from '@star-ng/ui/tree';
 import { DOCS, DocsRow } from '../shared/docs';
 import { buildLargeTree } from './large-tree';
+import { DEPARTMENTS, LAZY_PROJECTS, loadTeams } from './tree-depth';
 
 interface Project {
   readonly owner: string;
@@ -78,6 +86,46 @@ interface Project {
             placeholder="Disabled"
             ariaLabel="Disabled department"
           />
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="Chips, filter mode and propagation"
+        source="tree-select/chips"
+        note="display chip shows a chip per selected label in multiple and checkbox mode (comma, the default, joins them). The panel tree takes filterMode, filterBy and filterLocale, propagateSelectionUp and propagateSelectionDown, and the locked nodes keep their state. Here the filter is lenient and also searches the lead of a department."
+      >
+        <div class="docs-stack">
+          <star-tree-select
+            [nodes]="orgUnits"
+            selectionMode="checkbox"
+            [(value)]="units"
+            display="chip"
+            filter
+            filterMode="lenient"
+            [filterBy]="['label', 'lead']"
+            showClear
+            placeholder="Select units"
+            ariaLabel="Units"
+          />
+          <p class="docs-output" role="status">Units: {{ units().join(', ') || 'none' }}</p>
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="Lazy children"
+        source="tree-select/lazy"
+        note="Lazy nodes work in the panel too: a node with leaf false shows the toggle, nodeExpand asks the owner for the children, and loading shows a loading row until they arrive (resource() with fake data, no network)."
+      >
+        <div class="docs-stack">
+          <star-tree-select
+            [nodes]="projectNodes()"
+            [(expanded)]="lazyOpen"
+            [(value)]="team"
+            placeholder="Select a team"
+            ariaLabel="Team"
+            (nodeExpand)="loadProject($event.node)"
+          />
+          <p class="docs-output" role="status">Team: {{ team().join(', ') || 'none' }}</p>
         </div>
       </docs-example>
 
@@ -198,6 +246,46 @@ export class TreeSelectPage {
   protected readonly largeOpen = signal<readonly string[]>(this.large.branchKeys);
   protected readonly largeTeams = signal<readonly string[]>([]);
   protected readonly nodes = signal<readonly string[]>([]);
+
+  protected readonly orgUnits = DEPARTMENTS;
+  protected readonly units = signal<readonly string[]>(['web', 'mobile']);
+
+  // ---- lazy children ----
+  protected readonly projectNodes = signal<readonly StarTreeNode[]>(LAZY_PROJECTS);
+  protected readonly lazyOpen = signal<readonly string[]>([]);
+  protected readonly team = signal<readonly string[]>([]);
+  /** Projects whose teams are requested, in order; the first one loads now. */
+  private readonly projectQueue = signal<readonly string[]>([]);
+  private readonly projectTeams = resource({
+    params: () => this.projectQueue()[0],
+    loader: ({ params, abortSignal }) => loadTeams(params, abortSignal),
+  });
+
+  constructor() {
+    // A project's teams arrived: put them into a new copy of the nodes, then load the next one.
+    effect(() => {
+      if (this.projectTeams.status() !== 'resolved') return;
+      const key = this.projectQueue()[0];
+      const teams = this.projectTeams.value();
+      if (!key || !teams) return;
+      untracked(() => {
+        this.projectNodes.update((nodes) =>
+          nodes.map((node) =>
+            node.key === key ? { ...node, loading: false, children: teams } : node,
+          ),
+        );
+        this.projectQueue.update((queue) => queue.slice(1));
+      });
+    });
+  }
+
+  protected loadProject(node: StarTreeNode): void {
+    if (node.children || node.loading || node.leaf !== false) return;
+    this.projectNodes.update((nodes) =>
+      nodes.map((n) => (n.key === node.key ? { ...n, loading: true } : n)),
+    );
+    this.projectQueue.update((queue) => [...queue, node.key]);
+  }
 
   protected readonly projects: readonly StarTreeNode<Project>[] = [
     {

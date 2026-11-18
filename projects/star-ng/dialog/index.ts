@@ -1,3 +1,5 @@
 export * from './confirm';
 export * from './dialog';
+export * from './dialog-base';
+export type { StarDialogDimensions, StarDialogFrame, StarDialogPoint } from './dialog-drag';
 export * from './dialog-service';

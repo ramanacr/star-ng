@@ -227,6 +227,162 @@ test.describe('dialog', () => {
   });
 });
 
+/** Waits until the entry transition of a dialog has ended, so its box has the final size. */
+async function settled(dialog: Locator): Promise<void> {
+  await expect
+    .poll(() => dialog.evaluate((el) => el.getAnimations({ subtree: false }).length))
+    .toBe(0);
+}
+
+test.describe('dialog drag, resize, maximize and position', () => {
+  test('moves by the header with the pointer and with Alt and the arrow keys', async ({ page }) => {
+    await openPage(page, '/controls/dialog', 'Dialog');
+    await example(page, 'Drag').getByRole('button', { name: 'Open movable dialog' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Movable dialog' });
+    await expect(dialog).toBeVisible();
+    await settled(dialog);
+    const before = (await dialog.boundingBox())!;
+    const title = dialog.getByRole('heading', { name: 'Movable dialog' });
+    const start = (await title.boundingBox())!;
+    await page.mouse.move(start.x + 5, start.y + 5);
+    await page.mouse.down();
+    await page.mouse.move(start.x - 95, start.y - 35, { steps: 5 });
+    await page.mouse.up();
+    await expect
+      .poll(async () => Math.round((await dialog.boundingBox())!.x))
+      .toBe(Math.round(before.x - 100));
+    const moved = (await dialog.boundingBox())!;
+    expect(Math.round(moved.y)).toBe(Math.round(before.y - 40));
+
+    const move = dialog.getByRole('button', { name: 'Move dialog' });
+    await move.focus();
+    await page.keyboard.press('Alt+ArrowRight');
+    await page.keyboard.press('Alt+ArrowDown');
+    await expect
+      .poll(async () => Math.round((await dialog.boundingBox())!.x))
+      .toBe(Math.round(moved.x + 10));
+    expect(Math.round((await dialog.boundingBox())!.y)).toBe(Math.round(moved.y + 10));
+    await expect(example(page, 'Drag').getByRole('status')).toContainText(
+      `${Math.round(moved.x + 10)}, ${Math.round(moved.y + 10)}`,
+    );
+
+    // A drag far outside stays inside the window (keepInViewport).
+    const now = (await title.boundingBox())!;
+    await page.mouse.move(now.x + 5, now.y + 5);
+    await page.mouse.down();
+    await page.mouse.move(-500, -500, { steps: 5 });
+    await page.mouse.up();
+    await expect.poll(async () => Math.round((await dialog.boundingBox())!.x)).toBe(0);
+    expect(Math.round((await dialog.boundingBox())!.y)).toBe(0);
+
+    // The position resets on reopen.
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeHidden();
+    await example(page, 'Drag').getByRole('button', { name: 'Open movable dialog' }).click();
+    await expect
+      .poll(async () => Math.round((await dialog.boundingBox())!.x))
+      .toBe(Math.round(before.x));
+  });
+
+  test('resizes from the corner handle with the pointer and with Shift and the arrow keys', async ({
+    page,
+  }) => {
+    await openPage(page, '/controls/dialog', 'Dialog');
+    await example(page, 'Resize').getByRole('button', { name: 'Open resizable dialog' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Resizable dialog' });
+    await expect(dialog).toBeVisible();
+    await settled(dialog);
+    const before = (await dialog.boundingBox())!;
+    const handle = dialog.getByRole('button', { name: 'Resize dialog' });
+    const corner = (await handle.boundingBox())!;
+    await page.mouse.move(corner.x + 8, corner.y + 8);
+    await page.mouse.down();
+    await page.mouse.move(corner.x + 68, corner.y + 48, { steps: 5 });
+    await page.mouse.up();
+    await expect
+      .poll(async () => Math.round((await dialog.boundingBox())!.width))
+      .toBe(Math.round(before.width + 60));
+    const resized = (await dialog.boundingBox())!;
+    expect(Math.round(resized.height)).toBe(Math.round(before.height + 40));
+    expect(Math.round(resized.x)).toBe(Math.round(before.x));
+
+    await handle.focus();
+    await page.keyboard.press('Shift+ArrowLeft');
+    await expect
+      .poll(async () => Math.round((await dialog.boundingBox())!.width))
+      .toBe(Math.round(resized.width - 10));
+    await expect(example(page, 'Resize').getByRole('status')).toContainText(
+      `${Math.round(resized.width - 10)} x`,
+    );
+  });
+
+  test('maximizes to the window, restores, and Escape still closes', async ({ page }) => {
+    await openPage(page, '/controls/dialog', 'Dialog');
+    await example(page, 'Maximize').getByRole('button', { name: 'Open order lines' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Order lines' });
+    await dialog.getByRole('button', { name: 'Maximize' }).click();
+    const viewport = page.viewportSize()!;
+    await expect
+      .poll(async () => Math.round((await dialog.boundingBox())!.width))
+      .toBe(viewport.width);
+    expect(Math.round((await dialog.boundingBox())!.height)).toBe(viewport.height);
+    await expect(example(page, 'Maximize').getByRole('status')).toHaveText('Maximized: yes');
+
+    await dialog.getByRole('button', { name: 'Restore' }).click();
+    await expect
+      .poll(async () => Math.round((await dialog.boundingBox())!.width))
+      .toBeLessThan(viewport.width);
+    await dialog.getByRole('button', { name: 'Maximize' }).click();
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeHidden();
+  });
+
+  test('places the dialog at a logical corner that mirrors in right-to-left', async ({ page }) => {
+    await openPage(page, '/controls/dialog', 'Dialog');
+    const viewport = page.viewportSize()!;
+    const live = example(page, 'Position');
+    const dialog = page.getByRole('dialog', { name: 'Position bottom-end' });
+
+    await live.getByRole('button', { name: 'bottom-end', exact: true }).click();
+    await expect(dialog).toBeVisible();
+    await settled(dialog);
+    await expect
+      .poll(async () => {
+        const box = (await dialog.boundingBox())!;
+        return [
+          Math.round(viewport.width - box.x - box.width),
+          Math.round(viewport.height - box.y - box.height),
+        ];
+      })
+      .toEqual([16, 16]);
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeHidden();
+
+    await page.evaluate(() => document.documentElement.setAttribute('dir', 'rtl'));
+    await live.getByRole('button', { name: 'bottom-end', exact: true }).click();
+    await expect.poll(async () => Math.round((await dialog.boundingBox())!.x)).toBe(16);
+  });
+
+  test('blocks the page scroll while a modal is open and gives it back after', async ({ page }) => {
+    await openPage(page, '/controls/dialog', 'Dialog');
+    const overflow = () =>
+      page.evaluate(() => getComputedStyle(document.documentElement).overflowY);
+    const before = await overflow();
+    await example(page, 'Header and footer').getByRole('button', { name: 'Edit order' }).click();
+    await expect(page.getByRole('dialog', { name: 'Edit order ORD-1042' })).toBeVisible();
+    expect(await overflow()).toBe('hidden');
+    await page.keyboard.press('Escape');
+    await expect.poll(overflow).toBe(before);
+
+    // A non-modal dialog does not block it.
+    await example(page, 'Breakpoints, scroll and focus')
+      .getByRole('button', { name: 'Non-modal, page scrolls' })
+      .click();
+    await expect(page.getByRole('dialog', { name: 'Scroll stays on' })).toBeVisible();
+    expect(await overflow()).toBe(before);
+  });
+});
+
 test.describe('popups inside a modal dialog', () => {
   const openOrderDialog = async (page: Page) => {
     await openPage(page, '/controls/dialog', 'Dialog');
@@ -605,6 +761,40 @@ test.describe('drawer', () => {
   });
 });
 
+test.describe('drawer modes', () => {
+  test('a non-modal drawer leaves the page usable and reports shown and hidden', async ({
+    page,
+  }) => {
+    await openPage(page, '/controls/drawer', 'Drawer');
+    const live = example(page, 'Modes');
+    await live.getByRole('button', { name: 'Non-modal' }).click();
+    const drawer = page.getByRole('dialog', { name: 'Filters' });
+    await expect(drawer).toBeVisible();
+    expect(await drawer.evaluate((el) => el.matches(':modal'))).toBe(false);
+    await expect(live.getByRole('status')).toHaveText('Last event: non-modal shown');
+    // The page behind is still usable: the navigation search takes text.
+    const search = page.getByRole('searchbox', { name: 'Search pages' });
+    await search.fill('toast');
+    await expect(search).toHaveValue('toast');
+    await search.fill('');
+    await drawer.getByRole('button', { name: 'Close', exact: true }).click();
+    await expect(drawer).toBeHidden();
+    await expect(live.getByRole('status')).toHaveText('Last event: non-modal hidden');
+
+    await live.getByRole('button', { name: 'Full screen' }).click();
+    const full = page.getByRole('dialog', { name: 'Invoice INV-2041' });
+    await expect(full).toBeVisible();
+    const viewport = page.viewportSize()!;
+    await expect
+      .poll(async () => Math.round((await full.boundingBox())!.width))
+      .toBe(viewport.width);
+    expect(Math.round((await full.boundingBox())!.height)).toBe(viewport.height);
+    await page.keyboard.press('Escape');
+    await expect(full).toBeHidden();
+    await expect(live.getByRole('status')).toHaveText('Last event: full screen hidden');
+  });
+});
+
 test.describe('popover', () => {
   test('opens on the button, moves the focus in and returns it on Escape', async ({ page }) => {
     await openPage(page, '/controls/popover', 'Popover');
@@ -848,6 +1038,31 @@ test.describe('toast', () => {
     await openPage(page, '/controls/toast', 'Toast');
     await example(page, 'Duplicate messages').getByRole('button', { name: 'Save twice' }).click();
     await expect(stack(page).getByRole('status').filter({ hasText: 'Saved' })).toHaveCount(1);
+  });
+
+  test('an outlet with preventDuplicates shows a message once, and closed reports the reason', async ({
+    page,
+  }) => {
+    await openPage(page, '/controls/toast', 'Toast');
+    const remind = example(page, 'Duplicates per outlet').getByRole('button', {
+      name: 'Show reminder',
+    });
+    await remind.click();
+    const reminder = page.locator('.star-toast', { hasText: 'Check the open invoices' });
+    await expect(reminder).toHaveCount(1);
+    await reminder.getByRole('button', { name: 'Close' }).click();
+    await expect(reminder).toHaveCount(0);
+    await remind.click();
+    await expect(reminder).toHaveCount(0);
+
+    const live = example(page, 'Close events and narrow windows');
+    await live.getByRole('button', { name: 'Show a 3 second note' }).click();
+    const note = page.locator('.star-toast', { hasText: 'Note 1' });
+    await note.getByRole('button', { name: 'Close' }).click();
+    await expect(live.locator('.docs-output')).toHaveText('Last close: Note 1: close');
+    await live.getByRole('button', { name: 'Show a 3 second note' }).click();
+    await live.getByRole('button', { name: 'Clear notes' }).click();
+    await expect(live.locator('.docs-output')).toHaveText('Last close: Note 2: clear');
   });
 
   test('removes a message with Enter on its close button', async ({ page }) => {

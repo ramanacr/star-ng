@@ -53,6 +53,26 @@ describe('StarDialogService', () => {
     expect(document.querySelector('star-dialog-container')).toBeNull();
   });
 
+  it('passes the position, drag, resize and maximize options to the dialog', async () => {
+    const service = TestBed.inject(StarDialogService);
+    service.open(Content, {
+      header: 'Options',
+      data: { name: 'Ada' },
+      position: 'top-end',
+      draggable: true,
+      resizable: true,
+      maximizable: true,
+      blockScroll: false,
+    });
+    await settle();
+    const dialog = document.querySelector<HTMLDialogElement>('star-dialog-container dialog')!;
+    expect(dialog.classList).toContain('star-dialog--at-top-end');
+    expect(dialog.classList).not.toContain('star-dialog--block-scroll');
+    expect(dialog.querySelector('[aria-label="Move dialog"]')).not.toBeNull();
+    expect(dialog.querySelector('[aria-label="Resize dialog"]')).not.toBeNull();
+    expect(dialog.querySelector('[aria-label="Maximize"]')).not.toBeNull();
+  });
+
   it('resolves undefined when the user dismisses it, and closeAll() closes every dialog', async () => {
     const service = TestBed.inject(StarDialogService);
     const first = service.open(Content, { data: { name: 'A' } });
