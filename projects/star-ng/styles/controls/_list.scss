@@ -22,6 +22,9 @@
   }
   > [starListItemEnd] {
     flex: none;
+  }
+  // Meta text is muted. A tag or a badge in this area keeps its own colors and font.
+  > [starListItemEnd]:not(.star-tag, .star-badge) {
     color: var(--star-text-muted);
     font: var(--star-type-body);
   }
