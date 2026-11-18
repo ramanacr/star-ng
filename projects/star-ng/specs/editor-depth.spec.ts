@@ -502,3 +502,24 @@ describe('StarEditor fix round 1', () => {
     expect(document.activeElement).toBe(style);
   });
 });
+
+describe('StarEditor drop', () => {
+  it('handles a drop like a paste: sanitized HTML', async () => {
+    const fixture = TestBed.createComponent(PasteHost);
+    await fixture.whenStable();
+    const area = (fixture.nativeElement as HTMLElement).querySelector<HTMLElement>(
+      '.star-editor__area',
+    )!;
+    select(area.querySelector('p')!, 5, 5);
+    const event = new Event('drop', { bubbles: true, cancelable: true });
+    Object.defineProperty(event, 'dataTransfer', {
+      value: {
+        getData: (type: string) =>
+          type === 'text/html' ? '<i onclick="alert(1)">x</i>' : type === 'text/plain' ? 'x' : '',
+      },
+    });
+    area.dispatchEvent(event);
+    expect(event.defaultPrevented).toBe(true);
+    expect(fixture.componentInstance.html()).toBe('<p>Start<i>x</i></p>');
+  });
+});

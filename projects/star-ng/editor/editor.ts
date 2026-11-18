@@ -196,6 +196,7 @@ const FORMAT_TAGS: Readonly<Record<string, StarEditorCommand>> = {
       (beforeinput)="onBeforeInput($event)"
       (input)="onInput()"
       (paste)="onPaste($event)"
+      (drop)="onDrop($event)"
       (keyup)="refreshState()"
       (mouseup)="refreshState()"
       (blur)="touch.emit()"
@@ -382,6 +383,28 @@ export class StarEditor implements FormValueControl<string> {
     const data = event.clipboardData;
     if (this.locked() || !data) return;
     event.preventDefault();
+    this.insertData(data);
+  }
+
+  /**
+   * A drop is a paste at the drop point: the same sanitizing, `pasteAsText` and `maxLength`.
+   * Files are not taken.
+   */
+  protected onDrop(event: DragEvent): void {
+    const data = event.dataTransfer;
+    if (this.locked() || !data) return;
+    event.preventDefault();
+    const area = this.area().nativeElement;
+    const doc = area.ownerDocument as Document & {
+      caretRangeFromPoint?: (x: number, y: number) => Range | null;
+    };
+    const at = doc.caretRangeFromPoint?.(event.clientX, event.clientY);
+    if (at && area.contains(at.startContainer)) starEditorRestore(at);
+    this.insertData(data);
+  }
+
+  /** Inserts clipboard or drag data at the selection (see `onPaste`). */
+  private insertData(data: DataTransfer): void {
     const area = this.area().nativeElement;
     const range = starEditorRange(area);
     if (!range) return;
