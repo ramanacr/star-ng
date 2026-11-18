@@ -156,13 +156,37 @@
 .star-tree__item--dragging {
   opacity: 0.5;
 }
-.star-tree__item--drop-before {
-  box-shadow: inset 0 2px 0 var(--star-tree-drop-color, var(--star-primary));
+// The indicator is a pseudo-element, so the focus ring (a box shadow) of the focused row and the
+// indicator show together.
+.star-tree__item--drop-before,
+.star-tree__item--drop-after,
+.star-tree__item--drop-inside {
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    pointer-events: none;
+  }
 }
-.star-tree__item--drop-after {
-  box-shadow: inset 0 -2px 0 var(--star-tree-drop-color, var(--star-primary));
+.star-tree__item--drop-before::before,
+.star-tree__item--drop-after::before {
+  inset-inline: 0.25rem;
+  height: 2px;
+  background: var(--star-tree-drop-color, var(--star-primary));
+}
+.star-tree__item--drop-before::before {
+  top: 0;
+}
+.star-tree__item--drop-after::before {
+  bottom: 0;
 }
 .star-tree__item--drop-inside {
   background: var(--star-primary-soft);
-  box-shadow: inset 0 0 0 2px var(--star-tree-drop-color, var(--star-primary));
+
+  &::before {
+    inset: 0;
+    border: 2px dashed var(--star-tree-drop-color, var(--star-primary));
+    border-radius: inherit;
+  }
 }
