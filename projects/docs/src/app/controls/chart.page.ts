@@ -258,7 +258,7 @@ import { DOCS, DocsRow } from '../shared/docs';
         heading="Combo chart with a second axis"
         source="chart/combo"
         [script]="comboScript"
-        note="In a bar, line or area chart, a series can set type ('bar' or 'line') and axis ('primary' or 'secondary'). Here the order count is bars on the left axis and the return rate is a line on a second axis at the end of the plot."
+        note="In a bar, line or area chart, a series can set type ('bar' or 'line') and axis ('primary' or 'secondary'). Here the order count is bars on the left axis and the return rate is a line on a second axis at the end of the plot. The second axis is titled with the names of its series, and the legend marks them (right axis)."
       >
         <star-chart type="bar" title="Orders and return rate" [labels]="months" [series]="combo" />
       </docs-example>
@@ -612,6 +612,11 @@ export class ChartPage {
       description: 'Moves along the series. The plot keeps left to right in right-to-left pages.',
     },
     { name: 'Arrow Down / Arrow Up', description: 'Moves to the next or the previous series.' },
+    {
+      name: 'Horizontal bars',
+      description:
+        'The categories run down the side, so Arrow Down and Arrow Up move along a series, and Arrow Right and Arrow Left move between the series.',
+    },
     { name: 'Enter / Space', description: 'Selects the focused point (pointSelect).' },
   ];
 }
