@@ -6406,6 +6406,93 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarSparkline": {
+    "kind": "component",
+    "selector": "star-sparkline",
+    "entry": "@star-ng/ui/sparkline",
+    "description": "Sparkline: a tiny chart without axes that fits in a line of text or a table cell. Kendo UI `kendo-sparkline`, Ignite UI `igx-sparkline` and Syncfusion `ejs-sparkline` are the equivalents.",
+    "inputs": [
+      {
+        "name": "type",
+        "type": "StarSparklineType",
+        "default": "'line'",
+        "required": false,
+        "description": "`line` (default), `area`, `bar` or `win-loss`."
+      },
+      {
+        "name": "data",
+        "type": "readonly number[]",
+        "default": "[]",
+        "required": false,
+        "description": "The values, in order. A value that is not finite leaves a gap in a line."
+      },
+      {
+        "name": "min",
+        "type": "number | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "Lowest value of the plot. Default: the lowest value (zero for bars)."
+      },
+      {
+        "name": "max",
+        "type": "number | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "Highest value of the plot. Default: the highest value (zero for bars)."
+      },
+      {
+        "name": "highlight",
+        "type": "readonly StarSparklineHighlight[]",
+        "default": "[]",
+        "required": false,
+        "description": "Values that get a marker (line, area) or a strong colour (bar). Default: none."
+      },
+      {
+        "name": "referenceLine",
+        "type": "number | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "A value that gets a dashed horizontal line, for example a target."
+      },
+      {
+        "name": "color",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Colour slot of the chart palette, 1 to 8 (`--star-chart-1…8`)."
+      },
+      {
+        "name": "width",
+        "type": "string | number",
+        "default": "'6em'",
+        "required": false,
+        "description": "Width: a number of pixels or a CSS length. Default: `6em`."
+      },
+      {
+        "name": "height",
+        "type": "string | number",
+        "default": "'1em'",
+        "required": false,
+        "description": "Height: a number of pixels or a CSS length. Default: `1em`, the height of the text."
+      },
+      {
+        "name": "locale",
+        "type": "string | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "Locale of the numbers in the label (`Intl.NumberFormat`). Default: the runtime locale."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Label for assistive technology. Default: a summary of the data."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
   "StarSpeedDial": {
     "kind": "component",
     "selector": "star-speed-dial",
@@ -9198,6 +9285,10 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "slider/disabled": "<div class=\"docs-stack\">\n  <star-slider [value]=\"30\" disabled ariaLabel=\"Locked value\" />\n</div>",
   "slider/format": "<div class=\"docs-stack\">\n  <star-slider\n    [(value)]=\"discount\"\n    [min]=\"0\"\n    [max]=\"50\"\n    [step]=\"5\"\n    showValue\n    [format]=\"percent\"\n    ariaLabel=\"Discount\"\n  />\n</div>",
   "slider/range": "<div class=\"docs-stack\">\n  <star-range-slider\n    [(value)]=\"price\"\n    [bounds]=\"[0, 500]\"\n    [step]=\"10\"\n    showValue\n    ariaLabel=\"Price range\"\n  />\n  <p class=\"docs-output\" role=\"status\">From {{ price()[0] }} to {{ price()[1] }}</p>\n</div>",
+  "sparkline/line": "<p>\n  Weekly sales <star-sparkline [data]=\"sales\" [highlight]=\"['last']\" /> rose to 21.5\n  thousand.\n</p>",
+  "sparkline/markers": "<star-sparkline\n  [data]=\"load\"\n  [highlight]=\"['min', 'max', 'last']\"\n  [referenceLine]=\"70\"\n  [min]=\"0\"\n  [max]=\"100\"\n  [width]=\"200\"\n  [height]=\"40\"\n  ariaLabel=\"Server load, target 70 percent\"\n/>",
+  "sparkline/table": "<star-table\n  [value]=\"regions\"\n  [columns]=\"columns\"\n  dataKey=\"region\"\n  ariaLabel=\"Sales per region\"\n>\n  <ng-template starCell=\"trend\" [starCellOf]=\"regions\" let-row>\n    <star-sparkline [data]=\"row.trend\" [highlight]=\"['last']\" />\n  </ng-template>\n</star-table>",
+  "sparkline/types": "<div class=\"docs-stack\">\n  <span\n    >Line <star-sparkline [data]=\"sales\" [width]=\"120\" [height]=\"28\" ariaLabel=\"Line\"\n  /></span>\n  <span\n    >Area\n    <star-sparkline\n      type=\"area\"\n      [data]=\"sales\"\n      [color]=\"3\"\n      [width]=\"120\"\n      [height]=\"28\"\n      ariaLabel=\"Area\"\n  /></span>\n  <span\n    >Bar\n    <star-sparkline\n      type=\"bar\"\n      [data]=\"change\"\n      [color]=\"7\"\n      [width]=\"120\"\n      [height]=\"28\"\n      ariaLabel=\"Bar\"\n  /></span>\n  <span\n    >Win-loss <star-sparkline type=\"win-loss\" [data]=\"change\" [width]=\"120\" [height]=\"28\"\n  /></span>\n</div>",
   "speed-dial/basic": "<div class=\"docs-row docs-dial-area\">\n  <star-speed-dial\n    [items]=\"actions\"\n    direction=\"right\"\n    ariaLabel=\"Quick actions\"\n    (itemClick)=\"last.set($event.label ?? '')\"\n  />\n  <p class=\"docs-output\" role=\"status\">Last action: {{ last() }}</p>\n</div>",
   "speed-dial/choice": "<div class=\"docs-row docs-dial-area\">\n  <star-speed-dial\n    size=\"sm\"\n    direction=\"down\"\n    icon=\"ph-bold ph-sort-ascending\"\n    [items]=\"sortItems\"\n    [activeIndex]=\"sortIndex()\"\n    ariaLabel=\"Sort\"\n  />\n  <p class=\"docs-output\" role=\"status\">Sorted by: {{ sortItems[sortIndex()].label }}</p>\n</div>",
   "speed-dial/directions": "<div class=\"docs-row docs-dial-area docs-dial-area--wide\">\n  <star-speed-dial [items]=\"actions\" direction=\"up\" ariaLabel=\"Actions up\" />\n  <star-speed-dial [items]=\"actions\" direction=\"down\" ariaLabel=\"Actions down\" />\n  <star-speed-dial [items]=\"actions\" direction=\"left\" ariaLabel=\"Actions left\" />\n  <star-speed-dial [items]=\"actions\" direction=\"right\" ariaLabel=\"Actions right\" />\n</div>",

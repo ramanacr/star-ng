@@ -51,6 +51,7 @@ export * from '@star-ng/ui/select';
 export * from '@star-ng/ui/select-button';
 export * from '@star-ng/ui/skeleton';
 export * from '@star-ng/ui/slider';
+export * from '@star-ng/ui/sparkline';
 export * from '@star-ng/ui/spinner';
 export * from '@star-ng/ui/stepper';
 export * from '@star-ng/ui/table';

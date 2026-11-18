@@ -271,6 +271,22 @@ export interface StarUiText {
     max: string,
   ) => string;
   readonly meterValue: (value: string, total: number) => string;
+  // Sparkline
+  /** Label of a sparkline: the trend word and the formatted first, last, lowest and highest value. */
+  readonly sparklineSummary: (
+    first: string,
+    last: string,
+    min: string,
+    max: string,
+    trend: string,
+  ) => string;
+  readonly sparklineTrendUp: string;
+  readonly sparklineTrendDown: string;
+  readonly sparklineTrendFlat: string;
+  /** Label of a win-loss sparkline. */
+  readonly sparklineWinLoss: (wins: number, losses: number) => string;
+  /** Label of a sparkline without a value. */
+  readonly sparklineNoData: string;
 }
 
 export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
@@ -513,6 +529,14 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   chartDescription: (kind, series, items, min, max) =>
     `${kind} with ${series} series and ${items} ${items === 1 ? 'item' : 'items'}, values from ${min} to ${max}. The same data is in the table.`,
   meterValue: (value, total) => `${value} of ${total}`,
+  sparklineSummary: (first, last, min, max, trend) =>
+    `${trend}: first ${first}, last ${last}, lowest ${min}, highest ${max}`,
+  sparklineTrendUp: 'Trend up',
+  sparklineTrendDown: 'Trend down',
+  sparklineTrendFlat: 'No change',
+  sparklineWinLoss: (wins, losses) =>
+    `${wins} ${wins === 1 ? 'win' : 'wins'}, ${losses} ${losses === 1 ? 'loss' : 'losses'}`,
+  sparklineNoData: 'No data',
 };
 
 /** Parameter names of the function entries, in call order (used for `{{ name }}` in translations). */
@@ -565,6 +589,8 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   previewImage: ['alt'],
   meterValue: ['value', 'total'],
   chartDescription: ['kind', 'series', 'items', 'min', 'max'],
+  sparklineSummary: ['first', 'last', 'min', 'max', 'trend'],
+  sparklineWinLoss: ['wins', 'losses'],
 };
 
 export const STAR_UI_TEXT = new InjectionToken<StarUiText>('STAR_UI_TEXT', {

@@ -255,4 +255,12 @@ export const STAR_UI_TEXT_DE: StarUiText = {
   chartValue: 'Wert',
   chartShare: 'Anteil',
   meterValue: (value, total) => `${value} von ${total}`,
+  sparklineSummary: (first, last, min, max, trend) =>
+    `${trend}: erster Wert ${first}, letzter Wert ${last}, niedrigster ${min}, höchster ${max}`,
+  sparklineTrendUp: 'Steigend',
+  sparklineTrendDown: 'Fallend',
+  sparklineTrendFlat: 'Unverändert',
+  sparklineWinLoss: (wins, losses) =>
+    `${wins} ${forCount(wins, 'Gewinn', 'Gewinne')}, ${losses} ${forCount(losses, 'Verlust', 'Verluste')}`,
+  sparklineNoData: 'Keine Daten',
 };

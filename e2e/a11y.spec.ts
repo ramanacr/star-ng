@@ -1119,6 +1119,17 @@ const STATES: readonly State[] = [
     },
   },
 
+  // Charts, gauges and codes.
+  {
+    name: 'sparklines in right-to-left',
+    path: 'controls/sparkline',
+    open: async (page) => {
+      await page.evaluate(() => (document.documentElement.dir = 'rtl'));
+      const line = example(page, 'In a table').locator('star-sparkline').first();
+      await expect(line).toHaveAttribute('aria-label', /^Trend up/);
+    },
+  },
+
   // Steps and media.
   {
     name: 'stepper on the second step',

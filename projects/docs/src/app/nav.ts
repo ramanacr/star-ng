@@ -649,6 +649,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         keywords: 'bar line area doughnut pie graph svg data table series',
         load: () => import('./controls/chart.page').then((m) => m.ChartPage),
       },
+      {
+        label: 'Sparkline',
+        path: 'controls/sparkline',
+        keywords: 'tiny inline chart trend line area bar win loss table cell micro',
+        load: () => import('./controls/sparkline.page').then((m) => m.SparklinePage),
+      },
     ],
   },
   {
