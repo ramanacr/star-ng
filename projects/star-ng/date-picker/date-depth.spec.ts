@@ -793,3 +793,51 @@ describe('date picker: minTime and maxTime', () => {
     expect(fixture.componentInstance.visit()).toEqual(new Date(2026, 10, 19, 18, 30));
   });
 });
+
+@Component({
+  imports: [StarDatePicker, StarDateRangePicker],
+  template: `
+    <star-date-picker
+      locale="en-GB"
+      ariaLabel="Styled"
+      showTime
+      showSeconds
+      [displayFormat]="longStyle"
+      [(value)]="sent"
+    />
+    <star-date-range-picker
+      locale="en-GB"
+      ariaLabel="Styled range"
+      showTime
+      [displayFormat]="longStyle"
+      [(value)]="window"
+    />
+  `,
+})
+class DateStyleHost {
+  readonly longStyle: Intl.DateTimeFormatOptions = { dateStyle: 'long' };
+  readonly sent = signal<Date | null>(new Date(2026, 10, 22, 14, 30, 15));
+  readonly window = signal<StarDateRange | null>({
+    start: new Date(2026, 10, 2, 8, 0),
+    end: new Date(2026, 10, 3, 17, 30),
+  });
+}
+
+describe('date picker: dateStyle with showTime', () => {
+  it('formats the date style and the time apart, and both pickers render', async () => {
+    const fixture = TestBed.createComponent(DateStyleHost);
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+    const field = (label: string) =>
+      el.querySelector<HTMLInputElement>(`input[aria-label="${label}"]`)!;
+    expect(field('Styled').value).toBe('22 November 2026, 14:30:15');
+    expect(field('Styled range').value).toBe('2 November 2026, 08:00 – 3 November 2026, 17:30');
+    // The typed form of the same text is read back.
+    field('Styled').dispatchEvent(new Event('focus'));
+    field('Styled').value = '23 November 2026, 09:15:45';
+    field('Styled').dispatchEvent(new Event('input'));
+    field('Styled').dispatchEvent(new Event('blur'));
+    await fixture.whenStable();
+    expect(fixture.componentInstance.sent()).toEqual(new Date(2026, 10, 23, 9, 15, 45));
+  });
+});

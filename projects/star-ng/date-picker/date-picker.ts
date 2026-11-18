@@ -38,10 +38,10 @@ import {
 } from './calendar';
 import {
   starAtTime as atTime,
+  starFormatDateTime,
   starIsoText,
   starParseIso,
   starSplitDateTime,
-  starTimeFormat,
   starTimeOf,
   starWithTime as withTime,
 } from './date-format';
@@ -513,10 +513,13 @@ export abstract class StarDateInputBase<TValue> {
   }
 
   protected formatDateTime(date: Date | null): string {
-    return formatDate(date, this.locale(), {
-      ...this.textFormat(),
-      ...starTimeFormat(this.hourFormat(), this.showSeconds()),
-    });
+    return starFormatDateTime(
+      date,
+      this.locale(),
+      this.textFormat(),
+      this.hourFormat(),
+      this.showSeconds(),
+    );
   }
 
   /** `hh:mm` of a date, or `hh:mm:ss` with `showSeconds`. */

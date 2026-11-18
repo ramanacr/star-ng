@@ -16,6 +16,29 @@ export function starTimeFormat(
   };
 }
 
+/**
+ * Text of a date with its time. `Intl` does not take time fields together with `dateStyle` or
+ * `timeStyle` (it throws), so such options format the date alone, and the time is added after a
+ * comma, in the 12-hour or the 24-hour clock.
+ */
+export function starFormatDateTime(
+  date: Date | null,
+  locale: string | undefined,
+  options: Intl.DateTimeFormatOptions,
+  hourFormat: '12' | '24',
+  seconds: boolean,
+): string {
+  if (!date) return '';
+  const time = starTimeFormat(hourFormat, seconds);
+  if (!options.dateStyle && !options.timeStyle) {
+    return new Intl.DateTimeFormat(locale, { ...options, ...time }).format(date);
+  }
+  // The time is always the part of the time fields, so `timeStyle` is dropped.
+  const dateOptions: Intl.DateTimeFormatOptions = { ...options, timeStyle: undefined };
+  const day = new Intl.DateTimeFormat(locale, dateOptions).format(date);
+  return `${day}, ${new Intl.DateTimeFormat(locale, time).format(date)}`;
+}
+
 /** The calendar day of `date` at the given local time. */
 export function starAtTime(date: Date, hours: number, minutes: number, seconds = 0): Date {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate(), hours, minutes, seconds);
