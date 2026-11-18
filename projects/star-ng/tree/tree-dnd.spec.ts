@@ -80,8 +80,10 @@ describe('tree drop rules', () => {
         droppableNodes
         draggableScope="org"
         [validateDrop]="validate()"
+        filter
         ariaLabel="Departments"
         (nodeDrop)="drops.push($event)"
+        (nodeExpand)="expands.push($event.node.key)"
       />
     }
     <star-tree
@@ -99,6 +101,7 @@ class DndHost {
   readonly others: StarTreeNode[] = [{ key: 'old', label: 'Old teams' }];
   readonly drag = signal(true);
   readonly showFirst = signal(true);
+  readonly expands: string[] = [];
   readonly scope = signal<string | null>('org');
   readonly validate = signal<StarTreeDropValidator | null>(null);
   readonly drops: StarTreeNodeDropEvent[] = [];
@@ -317,5 +320,18 @@ describe('StarTree drag and drop', () => {
     await press(row('ops'), 'ArrowUp', { ctrlKey: true, shiftKey: true });
     expect(host.drops).toEqual([]);
     expect(document.activeElement).toBe(row('web'));
+  });
+
+  it('turns the keyboard moves off while a filter query is active', async () => {
+    const { fixture, host, el, row, press } = await setup();
+    const input = el.querySelector<HTMLInputElement>('star-tree.one input[type=search]')!;
+    input.value = 'o';
+    input.dispatchEvent(new Event('input'));
+    await fixture.whenStable();
+    const tree = el.querySelector('star-tree.one [role=tree]')!;
+    expect(tree.getAttribute('aria-describedby')).toBeNull();
+    row('ops').focus();
+    await press(row('ops'), 'ArrowUp', { ctrlKey: true, shiftKey: true });
+    expect(host.drops).toEqual([]);
   });
 });

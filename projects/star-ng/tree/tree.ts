@@ -407,8 +407,8 @@ export class StarTree implements FormValueControl<readonly string[]> {
   readonly contextMenu = input<readonly StarMenuItem[]>([]);
   /**
    * The user can drag nodes (PrimeNG `draggableNodes`, Ignite drag and drop). With
-   * `droppableNodes`, Ctrl+Shift and the arrow keys move the focused node too. A node with
-   * `draggable: false` or `disabled` stays.
+   * `droppableNodes`, Ctrl+Shift and the arrow keys move the focused node too (not while a
+   * filter query is active). A node with `draggable: false` or `disabled` stays.
    */
   readonly draggableNodes = input(false, { transform: booleanAttribute });
   /** The tree accepts drops (PrimeNG `droppableNodes`). */
@@ -587,9 +587,14 @@ export class StarTree implements FormValueControl<readonly string[]> {
     parents: () => this.parents(),
     drop: (event) => this.nodeDrop.emit(event),
   });
-  /** The keyboard moves are on: the tree is draggable and droppable. */
+  /**
+   * The keyboard moves are on: the tree is draggable and droppable, and no filter query is
+   * active. A filter hides siblings, so "the previous sibling" on screen and in the data can
+   * differ; the moves wait until the query is empty.
+   */
   private readonly keyboardMoves = computed(
-    () => this.draggableNodes() && this.droppableNodes() && !this.disabled(),
+    () =>
+      this.draggableNodes() && this.droppableNodes() && !this.disabled() && !this.query().trim(),
   );
   /** Id of the hidden hint that names the move keys (only while the keyboard moves are on). */
   protected readonly moveHintId = computed(() => (this.keyboardMoves() ? this.hintId : null));
