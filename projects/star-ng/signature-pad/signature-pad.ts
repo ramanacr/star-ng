@@ -500,7 +500,6 @@ export class StarSignaturePad implements FormValueControl<string> {
     }
   }
 
-  /** Writes the value from the current content. */
   /**
    * True when the pad may write its value again without a user action (resize, export input
    * change): only an interactive pad with its own strokes or typed text. A stored value alone
@@ -523,6 +522,7 @@ export class StarSignaturePad implements FormValueControl<string> {
     });
   }
 
+  /** Writes the value from the current content. */
   private commit(): void {
     let value = '';
     if (!this.isEmpty()) {
