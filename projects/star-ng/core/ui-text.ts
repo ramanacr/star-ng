@@ -193,6 +193,22 @@ export interface StarUiText {
   readonly tabClose: (label: string) => string;
   readonly tabCloseHint: string;
   readonly tabReorderHint: string;
+  readonly editorStrikethrough: string;
+  readonly editorCode: string;
+  readonly editorQuote: string;
+  readonly editorTextStyle: string;
+  readonly editorParagraph: string;
+  readonly editorHeadingLevel: (level: number) => string;
+  readonly editorAlignStart: string;
+  readonly editorAlignCenter: string;
+  readonly editorAlignEnd: string;
+  readonly editorUndo: string;
+  readonly editorRedo: string;
+  readonly editorLinkNewTab: string;
+  readonly editorLinkApply: string;
+  readonly editorLinkRemove: string;
+  readonly editorLinkCancel: string;
+  readonly editorLinkInvalid: string;
   // Navigation and layout
   readonly breadcrumb: string;
   readonly stepperLabel: string;
@@ -425,6 +441,23 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   tabClose: (label) => `Close ${label}`,
   tabCloseHint: 'Press Delete to close the tab.',
   tabReorderHint: 'Press Control+Shift and an arrow key to move the tab.',
+  editorStrikethrough: 'Strikethrough',
+  editorCode: 'Code',
+  editorQuote: 'Quote',
+  editorTextStyle: 'Text style',
+  editorParagraph: 'Paragraph',
+  editorHeadingLevel: (level) => `Heading ${level}`,
+  editorAlignStart: 'Align to the start',
+  editorAlignCenter: 'Center',
+  editorAlignEnd: 'Align to the end',
+  editorUndo: 'Undo',
+  editorRedo: 'Redo',
+  editorLinkNewTab: 'Open in a new tab',
+  editorLinkApply: 'Apply',
+  editorLinkRemove: 'Remove link',
+  editorLinkCancel: 'Cancel',
+  editorLinkInvalid:
+    'Enter a web address (https://…), an e-mail address (mailto:…) or a phone number (tel:…).',
   breadcrumb: 'Breadcrumb',
   stepperLabel: 'Progress',
   stepCompleted: '(completed)',
@@ -513,6 +546,7 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   fileTooLarge: ['name', 'max'],
   fileLimitReached: ['limit'],
   tabClose: ['label'],
+  editorHeadingLevel: ['level'],
   editorFormatting: ['label'],
   showImage: ['alt'],
   previewImage: ['alt'],

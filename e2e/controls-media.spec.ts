@@ -240,22 +240,46 @@ test.describe('editor', () => {
     await expect(area.locator('li')).toHaveCount(1);
   });
 
-  test('the link button accepts only an http or https address', async ({ page }) => {
+  test('the link form accepts only a safe address and sets rel for a new tab', async ({ page }) => {
     await openPage(page, '/controls/editor', 'Editor');
     const live = example(page, 'Toolbar and value');
     const area = live.getByRole('textbox', { name: 'Delivery note' });
+    const link = live.getByRole('button', { name: 'Link' });
 
     await area.click();
     await page.keyboard.type('Tracking');
     await page.keyboard.press('Control+A');
-    page.once('dialog', (dialog) => dialog.accept('javascript:alert(1)'));
-    await live.getByRole('button', { name: 'Link' }).click();
+    await link.click();
+    await expect(link).toHaveAttribute('aria-expanded', 'true');
+    const address = live.getByRole('textbox', { name: 'Link address (https://…)' });
+    await expect(address).toBeFocused();
+    await address.fill('javascript:alert(1)');
+    await page.keyboard.press('Enter');
+    await expect(address).toHaveAttribute('aria-invalid', 'true');
     await expect(area.locator('a')).toHaveCount(0);
 
-    page.once('dialog', (dialog) => dialog.accept('https://example.com/track'));
-    await live.getByRole('button', { name: 'Link' }).click();
+    await address.fill('https://example.com/track');
+    await live.getByRole('checkbox', { name: 'Open in a new tab' }).check();
+    await live.getByRole('button', { name: 'Apply' }).click();
+    await expect(address).toHaveCount(0);
     await expect(area.locator('a')).toHaveAttribute('href', 'https://example.com/track');
-    await expect(valueOf(live)).toContainText('<a href="https://example.com/track">Tracking</a>');
+    await expect(valueOf(live)).toContainText(
+      '<a href="https://example.com/track" target="_blank" rel="noopener noreferrer">Tracking</a>',
+    );
+
+    // The caret in the link: the form shows the address and can remove the link.
+    await area.locator('a').click();
+    await link.click();
+    await expect(address).toHaveValue('https://example.com/track');
+    await live.getByRole('button', { name: 'Remove link' }).click();
+    await expect(area.locator('a')).toHaveCount(0);
+    await expect(valueOf(live)).toContainText('Tracking');
+
+    // Escape closes the form and the focus goes back to the text.
+    await link.click();
+    await page.keyboard.press('Escape');
+    await expect(address).toHaveCount(0);
+    await expect(area).toBeFocused();
   });
 
   test('shows sanitized HTML and stores the sanitized HTML after an edit', async ({ page }) => {

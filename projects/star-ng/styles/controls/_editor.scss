@@ -72,3 +72,110 @@
     color: var(--star-accent);
   }
 }
+.star-editor__area {
+  h1 {
+    margin: 0.75rem 0 0.5rem;
+    font: var(--star-type-title-lg);
+  }
+  h2 {
+    margin: 0.75rem 0 0.5rem;
+    font: var(--star-type-title);
+  }
+  blockquote {
+    margin: 0.5rem 0;
+    padding-inline-start: 0.875rem;
+    border-inline-start: 3px solid var(--star-border-strong);
+    color: var(--star-text-muted);
+  }
+  code {
+    padding: 0.0625rem 0.25rem;
+    border-radius: var(--star-radius-sm);
+    background: var(--star-surface-muted);
+    font: var(--star-type-code);
+  }
+}
+// Logical alignment that the editor stores as a class (the sanitizer keeps classes, not styles).
+// Global, so the stored HTML keeps its alignment where the application shows it.
+.star-text-center {
+  text-align: center;
+}
+.star-text-end {
+  text-align: end;
+}
+.star-editor__toolbar {
+  gap: 0.25rem;
+  justify-content: flex-start;
+}
+.star-editor__separator {
+  align-self: stretch;
+  width: 1px;
+  margin: 0.25rem 0.125rem;
+  background: var(--star-border);
+}
+.star-editor__select {
+  height: 2rem;
+  padding: 0 0.5rem;
+  border: 1px solid var(--star-border);
+  border-radius: var(--star-radius-sm);
+  background: var(--star-surface);
+  color: var(--star-text);
+  font: var(--star-type-body);
+
+  &:focus-visible {
+    outline: 2px solid var(--star-accent);
+    outline-offset: 1px;
+  }
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+}
+.star-editor__btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+// The start and end alignment icons point to the start and the end of the line.
+.star-editor__btn i:is(.ph-text-align-left, .ph-text-align-right):dir(rtl) {
+  scale: -1 1;
+}
+// Link popover: under the toolbar, not modal.
+.star-editor__link {
+  display: block;
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--star-border);
+  background: var(--star-surface);
+}
+.star-editor__link-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+
+  .star-input {
+    flex: 1 1 14rem;
+    min-width: 0;
+  }
+}
+.star-editor__link-label {
+  flex-basis: 100%;
+  font: var(--star-type-label);
+  color: var(--star-text);
+}
+.star-editor__link-error {
+  flex-basis: 100%;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--star-danger);
+}
+.star-editor__link-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font: var(--star-type-body);
+  color: var(--star-text);
+}
+.star-editor__link-actions {
+  display: flex;
+  gap: 0.5rem;
+}

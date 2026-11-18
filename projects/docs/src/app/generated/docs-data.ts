@@ -2360,7 +2360,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-editor",
     "entry": "@star-ng/ui/editor",
-    "description": "Rich text field (PrimeNG `p-editor`, without Quill): a `contenteditable` area with a formatting toolbar (bold, italic, underline, heading, lists, link, clear). Value is HTML, sanitized with Angular's `DomSanitizer` both when it is shown and when it is stored.",
+    "description": "Rich text field (PrimeNG `p-editor`, without Quill): a `contenteditable` area with a formatting toolbar. Value is HTML, sanitized with Angular's `DomSanitizer` both when it is shown and when it is stored.",
     "inputs": [
       {
         "name": "placeholder",
@@ -2410,6 +2410,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "false",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "toolbar",
+        "type": "readonly StarEditorToolbarItem[]",
+        "default": "STAR_EDITOR_DEFAULT_TOOLBAR",
+        "required": false,
+        "description": "The toolbar: command names in order, with `'|'` between groups. Unknown names are left out. `STAR_EDITOR_FULL_TOOLBAR` has every command. PrimeNG toolbar formats (Quill `toolbar`)."
       }
     ],
     "models": [
@@ -2424,6 +2431,59 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "outputs": [
       {
         "name": "touch",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
+  "StarEditorLink": {
+    "kind": "component",
+    "selector": "star-editor-link",
+    "entry": "@star-ng/ui/editor",
+    "description": "The link popover of `star-editor` (internal): an address field, \"Open in a new tab\", and the buttons Apply, Remove (for an existing link) and Cancel. Escape cancels. It is not modal: it sits under the toolbar, and the editor gives the focus back to the text.",
+    "inputs": [
+      {
+        "name": "initialUrl",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "The address of the link at the caret, `''` for a new link."
+      },
+      {
+        "name": "initialNewTab",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "editing",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "True when the caret is in a link: the Remove button shows."
+      }
+    ],
+    "models": [],
+    "outputs": [
+      {
+        "name": "apply",
+        "type": "StarEditorLinkValue",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "remove",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "cancel",
         "type": "void",
         "default": null,
         "required": false,
@@ -8156,6 +8216,8 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "dropdown/basic": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button\n      variant=\"secondary\"\n      trailingIcon=\"ph-bold ph-caret-down\"\n      [starDropdownTrigger]=\"formats\"\n    >\n      Export as\n    </star-button>\n  </div>\n  <star-dropdown\n    #formats\n    ariaLabel=\"Export format\"\n    [(value)]=\"format\"\n    (selectionChange)=\"onSelect($event)\"\n  >\n    <star-dropdown-item header>Documents</star-dropdown-item>\n    <star-dropdown-item value=\"pdf\">PDF</star-dropdown-item>\n    <star-dropdown-item value=\"docx\" disabled>Word document</star-dropdown-item>\n    <star-dropdown-item divider />\n    <star-dropdown-item header>Data</star-dropdown-item>\n    <star-dropdown-item value=\"csv\">CSV</star-dropdown-item>\n    <star-dropdown-item value=\"xlsx\">Spreadsheet</star-dropdown-item>\n    <star-dropdown-item value=\"json\">JSON</star-dropdown-item>\n  </star-dropdown>\n  <p class=\"docs-output\" role=\"status\">Export format: {{ chosen() }}</p>\n</div>",
   "dropdown/keep-open": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" [starDropdownTrigger]=\"cities\">\n      Add a city\n    </star-button>\n  </div>\n  <star-dropdown\n    #cities\n    ariaLabel=\"Cities\"\n    [closeOnSelect]=\"false\"\n    (selectionChange)=\"added.set(added() + $event.label + ' ')\"\n  >\n    <star-dropdown-item value=\"berlin\">Berlin</star-dropdown-item>\n    <star-dropdown-item value=\"lisbon\">Lisbon</star-dropdown-item>\n    <star-dropdown-item value=\"oslo\">Oslo</star-dropdown-item>\n    <star-dropdown-item value=\"toronto\">Toronto</star-dropdown-item>\n  </star-dropdown>\n  <p class=\"docs-output\" role=\"status\">Added: {{ added() || 'none' }}</p>\n</div>",
   "editor/basic": "<div class=\"docs-stack\">\n  <star-editor\n    [(value)]=\"note\"\n    ariaLabel=\"Delivery note\"\n    placeholder=\"Write the delivery note\"\n  />\n  <pre class=\"docs-output\" role=\"group\" aria-label=\"Value of the editor\">{{ note() }}</pre>\n</div>",
+  "editor/full-toolbar": "<div class=\"docs-stack\">\n  <star-editor [(value)]=\"report\" [toolbar]=\"fullToolbar\" ariaLabel=\"Shipping report\" />\n  <pre class=\"docs-output\" role=\"group\" aria-label=\"Value of the full editor\">{{\n    report()\n  }}</pre>\n</div>",
+  "editor/own-toolbar": "<div class=\"docs-stack\">\n  <star-editor [toolbar]=\"shortToolbar\" ariaLabel=\"Short comment\" minHeight=\"4rem\" />\n</div>",
   "editor/sanitize": "<div class=\"docs-stack\">\n  <star-editor [(value)]=\"unsafe\" ariaLabel=\"Sanitized content\" />\n  <pre class=\"docs-output\" aria-label=\"Value after sanitizing\">{{ unsafe() }}</pre>\n</div>",
   "editor/size": "<div class=\"docs-stack\">\n  <star-editor\n    [(value)]=\"comment\"\n    ariaLabel=\"Order comment\"\n    placeholder=\"Add a comment\"\n    minHeight=\"4rem\"\n  />\n</div>",
   "editor/states": "<div class=\"docs-stack\">\n  <star-editor [value]=\"saved()\" ariaLabel=\"Saved note\" readonly />\n  <star-editor [value]=\"saved()\" ariaLabel=\"Locked note\" disabled />\n</div>",

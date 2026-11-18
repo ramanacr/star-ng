@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarEditor } from '@star-ng/ui/editor';
+import { STAR_EDITOR_FULL_TOOLBAR, StarEditor, StarEditorToolbarItem } from '@star-ng/ui/editor';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
@@ -25,6 +25,31 @@ import { DOCS, DocsRow } from '../shared/docs';
             placeholder="Write the delivery note"
           />
           <pre class="docs-output" role="group" aria-label="Value of the editor">{{ note() }}</pre>
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="Full toolbar"
+        source="editor/full-toolbar"
+        [script]="fullScript"
+        note="toolbar lists the commands in order; '|' starts a new group. STAR_EDITOR_FULL_TOOLBAR has every command: undo, redo, text style (paragraph, heading 1 to 3), bold, italic, underline, strikethrough, inline code, lists, quote, alignment to the start, the center and the end (logical: the start is on the right in right-to-left), link and clear formatting. Alignment is stored as the class star-text-center or star-text-end."
+      >
+        <div class="docs-stack">
+          <star-editor [(value)]="report" [toolbar]="fullToolbar" ariaLabel="Shipping report" />
+          <pre class="docs-output" role="group" aria-label="Value of the full editor">{{
+            report()
+          }}</pre>
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="Own toolbar list"
+        source="editor/own-toolbar"
+        [script]="ownScript"
+        note="Any list of command names works, for example a short toolbar for comments."
+      >
+        <div class="docs-stack">
+          <star-editor [toolbar]="shortToolbar" ariaLabel="Short comment" minHeight="4rem" />
         </div>
       </docs-example>
 
@@ -106,9 +131,14 @@ import { DOCS, DocsRow } from '../shared/docs';
         value that has only an image or a divider is therefore stored as an empty string.
       </p>
       <p>
-        The link button asks for an address with the <code>prompt</code> dialog of the browser and
-        accepts only addresses that start with <code>http://</code> or <code>https://</code>. Other
-        input is ignored.
+        The link button opens a small form under the toolbar: an address field, "Open in a new tab",
+        Apply, Remove link (for a link at the caret) and Cancel. Escape cancels. The form accepts
+        <code>https://</code>, <code>http://</code>, <code>mailto:</code> and
+        <code>tel:</code> addresses and addresses on the same site (<code>/path</code>,
+        <code>#part</code>). A host name such as <code>example.com/orders</code> gets
+        <code>https://</code>. Any other address (for example <code>javascript:</code>) shows an
+        error and makes no link. A link that opens in a new tab gets
+        <code>rel="noopener noreferrer"</code>.
       </p>
 
       <h2>Technical notes</h2>
@@ -128,6 +158,19 @@ export class EditorPage {
     '<p onclick="alert(1)" style="color: red">Order <b>ORD-1042</b> <script>alert(1)</script><a href="javascript:alert(1)">open</a></p>',
   );
 
+  protected readonly report = signal(
+    '<h2>Week 12</h2><p>All <b>orders</b> shipped. See <a href="https://example.com/orders">the list</a>.</p>',
+  );
+  protected readonly fullToolbar = STAR_EDITOR_FULL_TOOLBAR;
+  protected readonly shortToolbar: readonly StarEditorToolbarItem[] = [
+    'bold',
+    'italic',
+    '|',
+    'link',
+  ];
+  protected readonly fullScript = `readonly report = signal('<h2>Week 12</h2><p>All <b>orders</b> shipped.</p>');
+readonly fullToolbar = STAR_EDITOR_FULL_TOOLBAR;`;
+  protected readonly ownScript = `readonly shortToolbar: readonly StarEditorToolbarItem[] = ['bold', 'italic', '|', 'link'];`;
   protected readonly basicScript = `readonly note = signal('');`;
   protected readonly sizeScript = `readonly comment = signal('');`;
   protected readonly statesScript = `readonly saved = signal('<p>Leave the parcel at the <b>loading dock</b>.</p>');`;
@@ -152,7 +195,16 @@ export class EditorPage {
     },
     {
       name: 'ArrowLeft / ArrowRight / Home / End',
-      description: 'In the toolbar: moves between the buttons.',
+      description:
+        'In the toolbar: moves between the buttons and the text style select. Only one toolbar control is in the tab order.',
+    },
+    {
+      name: 'Arrow Up / Arrow Down',
+      description: 'On the text style select: chooses the style.',
+    },
+    {
+      name: 'Escape',
+      description: 'In the link form: closes it, and the focus goes back to the text.',
     },
     {
       name: 'Enter / Space',
