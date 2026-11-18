@@ -52,24 +52,33 @@ export function clampToViewport(
 
 /**
  * Follows one pointer from its `pointerdown` until release: `move` gets the distance from the
- * start point, `end` runs once on `pointerup` or `pointercancel`.
+ * start point, `end` runs once on `pointerup` or `pointercancel`. Events of other pointers are
+ * ignored. Returns a function that stops the tracking without calling `end` (for a close or a
+ * destroy in the middle of a drag).
  */
 export function trackPointer(
   start: PointerEvent,
   move: (dx: number, dy: number) => void,
   end: () => void,
-): void {
+): () => void {
   const view = (start.target as Node | null)?.ownerDocument?.defaultView;
-  if (!view) return;
-  const onMove = (event: PointerEvent) =>
-    move(event.clientX - start.clientX, event.clientY - start.clientY);
-  const onEnd = () => {
+  if (!view) return () => undefined;
+  const same = (event: PointerEvent) => event.pointerId === start.pointerId;
+  const onMove = (event: PointerEvent) => {
+    if (same(event)) move(event.clientX - start.clientX, event.clientY - start.clientY);
+  };
+  const stop = () => {
     view.removeEventListener('pointermove', onMove);
     view.removeEventListener('pointerup', onEnd);
     view.removeEventListener('pointercancel', onEnd);
+  };
+  const onEnd = (event: PointerEvent) => {
+    if (!same(event)) return;
+    stop();
     end();
   };
   view.addEventListener('pointermove', onMove);
   view.addEventListener('pointerup', onEnd);
   view.addEventListener('pointercancel', onEnd);
+  return stop;
 }

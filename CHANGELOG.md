@@ -38,6 +38,7 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 
 - A dialog or drawer with a `header` and `showHeader` false pointed `aria-labelledby` at a title that was not rendered; it now takes the header text as `aria-label`.
 - A non-modal dialog or drawer (native `show()`, not in the top layer) stacks above sticky page headers (`z-index: 999`, below the CDK overlay container), as a non-modal bottom sheet does.
+- Dialog: a close or a destroy in the middle of a pointer drag or resize stops the tracking; the dialog no longer reopens at the dragged position or emits `dragEnd` / `resizeEnd` after the close. Moves of another pointer are ignored.
 
 ## [0.3.1] - 2026-11-18
 

@@ -497,3 +497,67 @@ describe('StarDialog headless', () => {
     expect(hidden.hasAttribute('aria-labelledby')).toBe(false);
   });
 });
+
+describe('StarDialog pointer tracking ends with the dialog', () => {
+  it('a close in the middle of a drag stops the drag: no dragEnd, no position on reopen', async () => {
+    const { fixture, dialog } = await setup();
+    pointer('pointerdown', dialog.querySelector('header')!, 10, 10);
+    pointer('pointermove', window, 40, 30);
+    fixture.componentInstance.open.set(false);
+    await fixture.whenStable();
+    pointer('pointermove', window, 80, 80);
+    pointer('pointerup', window, 80, 80);
+    fixture.componentInstance.open.set(true);
+    await fixture.whenStable();
+    expect(fixture.componentInstance.drags).toEqual([]);
+    expect(dialog.style.left).toBe('');
+    expect(dialog.classList).not.toContain('star-dialog--placed');
+  });
+
+  it('a close in the middle of a resize stops the resize: no resizeEnd, no size on reopen', async () => {
+    const { fixture, dialog, handle } = await setupResize();
+    pointer('pointerdown', handle, 400, 250);
+    pointer('pointermove', window, 450, 290);
+    fixture.componentInstance.open.set(false);
+    await fixture.whenStable();
+    pointer('pointermove', window, 500, 300);
+    pointer('pointerup', window, 500, 300);
+    fixture.componentInstance.open.set(true);
+    await fixture.whenStable();
+    expect(fixture.componentInstance.sizes).toEqual([]);
+    expect(dialog.style.width).toBe('');
+    expect(dialog.style.height).toBe('');
+  });
+
+  it('a destroy in the middle of a drag removes the window listeners', async () => {
+    const { fixture, dialog } = await setup();
+    const removed = vi.spyOn(window, 'removeEventListener');
+    pointer('pointerdown', dialog.querySelector('header')!, 10, 10);
+    fixture.destroy();
+    const types = removed.mock.calls.map(([type]) => type);
+    expect(types).toEqual(expect.arrayContaining(['pointermove', 'pointerup', 'pointercancel']));
+    pointer('pointermove', window, 40, 30);
+    pointer('pointerup', window, 40, 30);
+    expect(fixture.componentInstance.drags).toEqual([]);
+    removed.mockRestore();
+  });
+
+  it('ignores the moves of another pointer', async () => {
+    const { fixture, dialog } = await setup();
+    const header = dialog.querySelector('header')!;
+    const event = (type: string, target: EventTarget, x: number, pointerId: number) => {
+      const e = new MouseEvent(type, { bubbles: true, cancelable: true, clientX: x, clientY: 0 });
+      Object.defineProperty(e, 'pointerId', { value: pointerId });
+      target.dispatchEvent(e);
+    };
+    event('pointerdown', header, 0, 1);
+    event('pointermove', window, 50, 2);
+    event('pointerup', window, 50, 2);
+    await fixture.whenStable();
+    expect(dialog.style.left).toBe('');
+    event('pointermove', window, 20, 1);
+    event('pointerup', window, 20, 1);
+    await fixture.whenStable();
+    expect(dialog.style.left).toBe('120px');
+  });
+});

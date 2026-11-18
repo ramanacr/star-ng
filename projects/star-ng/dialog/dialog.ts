@@ -3,6 +3,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  DestroyRef,
   DOCUMENT,
   inject,
   input,
@@ -222,6 +223,12 @@ export class StarDialog extends StarDialogBase {
     return starBreakpointValue(this.breakpoints(), this.viewportWidth()) ?? this.width();
   });
 
+  constructor() {
+    super();
+    // A destroy in the middle of a drag must not leave window listeners behind.
+    inject(DestroyRef).onDestroy(() => this.stopTracking());
+  }
+
   /** Fills the window with the dialog, or restores its normal size. */
   toggleMaximize(): void {
     const next = !this.maximized();
@@ -237,7 +244,7 @@ export class StarDialog extends StarDialogBase {
     if (target.closest('button:not(.star-dialog__move), a, input, select, textarea')) return;
     event.preventDefault();
     const start = this.frame();
-    trackPointer(
+    this.track(
       event,
       (dx, dy) => this.moveTo(start, start.left + dx, start.top + dy),
       () => this.emitDragEnd(),
@@ -263,7 +270,7 @@ export class StarDialog extends StarDialogBase {
     event.preventDefault();
     const start = this.frame();
     const rtl = this.isRtl();
-    trackPointer(
+    this.track(
       event,
       (dx, dy) => this.resizeTo(start, dx, dy, rtl),
       () => this.emitResizeEnd(),
@@ -289,10 +296,28 @@ export class StarDialog extends StarDialogBase {
   }
 
   protected override afterClose(): void {
+    this.stopTracking();
     if (this.rememberPosition()) return;
     this.placed.set(null);
     this.sized.set(null);
   }
+
+  /** Starts a pointer drag or resize; a running one stops first. */
+  private track(
+    event: PointerEvent,
+    move: (dx: number, dy: number) => void,
+    end: () => void,
+  ): void {
+    this.stopTracking();
+    const stop = trackPointer(event, move, () => {
+      this.stopTracking = () => undefined;
+      end();
+    });
+    this.stopTracking = stop;
+  }
+
+  /** Stops the running pointer drag or resize, if any. */
+  private stopTracking: () => void = () => undefined;
 
   /** The current box: the set position and size, or the measured ones. */
   protected frame(): StarDialogFrame {
