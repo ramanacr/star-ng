@@ -145,3 +145,46 @@ html:has(dialog.star-dialog--modal[open]) {
 .star-dialog__footer--inline {
   margin: 1.25rem -1.5rem -1.5rem;
 }
+
+// Resized: the inline width and height win over the size steps; the body scrolls.
+.star-dialog--resized {
+  max-width: 100vw;
+  max-height: 100dvh;
+
+  .star-dialog__surface {
+    height: 100%;
+    max-height: none;
+  }
+}
+// Corner handle of a resizable dialog: bottom right in LTR, bottom left in RTL.
+.star-dialog__resize {
+  position: absolute;
+  inset-block-end: 0;
+  inset-inline-end: 0;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  border: 0;
+  border-end-end-radius: var(--star-radius-2xl);
+  background: transparent;
+  cursor: nwse-resize;
+  touch-action: none;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset-block-end: 0.375rem;
+    inset-inline-end: 0.375rem;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-block-end: 2px solid var(--star-text-muted);
+    border-inline-end: 2px solid var(--star-text-muted);
+  }
+  &:dir(rtl) {
+    cursor: nesw-resize;
+  }
+  &:focus-visible {
+    outline: 2px solid var(--star-accent);
+    outline-offset: -2px;
+  }
+}

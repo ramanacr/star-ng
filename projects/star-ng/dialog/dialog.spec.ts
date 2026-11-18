@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { StarDialog, StarDialogPoint } from '@star-ng/ui/dialog';
+import { StarDialog, StarDialogDimensions, StarDialogPoint } from '@star-ng/ui/dialog';
 
 // jsdom has no HTMLDialogElement methods. Minimal stand-ins (real browsers implement these).
 const dialogProto = HTMLDialogElement.prototype as Partial<HTMLDialogElement>;
@@ -165,5 +165,107 @@ describe('StarDialog draggable', () => {
     key(dialog.querySelector('header')!, 'ArrowRight', { altKey: true });
     await fixture.whenStable();
     expect(dialog.style.left).toBe('');
+  });
+});
+
+@Component({
+  imports: [StarDialog],
+  template: `
+    <star-dialog
+      [(visible)]="open"
+      header="Resize order"
+      resizable
+      (resizeEnd)="sizes.push($event)"
+    >
+      <p>Body</p>
+    </star-dialog>
+  `,
+})
+class ResizeHost {
+  readonly open = signal(true);
+  readonly sizes: StarDialogDimensions[] = [];
+}
+
+async function setupResize(): Promise<{
+  fixture: ComponentFixture<ResizeHost>;
+  dialog: HTMLDialogElement;
+  handle: HTMLButtonElement;
+}> {
+  const fixture = TestBed.createComponent(ResizeHost);
+  await fixture.whenStable();
+  const dialog = (fixture.nativeElement as HTMLElement).querySelector('dialog')!;
+  dialog.getBoundingClientRect = () => DOMRect.fromRect({ x: BOX.left, y: BOX.top, ...BOX });
+  const handle = dialog.querySelector<HTMLButtonElement>('[aria-label="Resize dialog"]')!;
+  return { fixture, dialog, handle };
+}
+
+describe('StarDialog resizable', () => {
+  it('resizes with a pointer drag on the corner handle and keeps the top left corner', async () => {
+    const { fixture, dialog, handle } = await setupResize();
+    expect(handle.tagName).toBe('BUTTON');
+    pointer('pointerdown', handle, 400, 250);
+    pointer('pointermove', window, 450, 290);
+    pointer('pointerup', window, 450, 290);
+    await fixture.whenStable();
+    expect(dialog.style.width).toBe('350px');
+    expect(dialog.style.height).toBe('240px');
+    expect(dialog.style.left).toBe('100px');
+    expect(dialog.style.top).toBe('50px');
+    expect(dialog.classList).toContain('star-dialog--resized');
+    expect(fixture.componentInstance.sizes).toEqual([{ width: 350, height: 240 }]);
+  });
+
+  it('stops at the minimum size and at the window edge', async () => {
+    const { fixture, dialog, handle } = await setupResize();
+    pointer('pointerdown', handle, 400, 250);
+    pointer('pointermove', window, 0, 0);
+    pointer('pointerup', window, 0, 0);
+    await fixture.whenStable();
+    expect(dialog.style.width).toBe('240px');
+    expect(dialog.style.height).toBe('160px');
+
+    pointer('pointerdown', handle, 0, 0);
+    pointer('pointermove', window, 5000, 5000);
+    pointer('pointerup', window, 5000, 5000);
+    await fixture.whenStable();
+    expect(dialog.style.width).toBe(`${window.innerWidth - BOX.left}px`);
+    expect(dialog.style.height).toBe(`${window.innerHeight - BOX.top}px`);
+  });
+
+  it('resizes by 10 pixels with Shift and the arrow keys on the handle', async () => {
+    const { fixture, dialog, handle } = await setupResize();
+    expect(handle.getAttribute('aria-keyshortcuts')).toContain('Shift+ArrowRight');
+    key(handle, 'ArrowRight', { shiftKey: true });
+    key(handle, 'ArrowDown', { shiftKey: true });
+    key(handle, 'ArrowDown', { shiftKey: true });
+    await fixture.whenStable();
+    expect(dialog.style.width).toBe('310px');
+    expect(dialog.style.height).toBe('220px');
+    expect(fixture.componentInstance.sizes.at(-1)).toEqual({ width: 310, height: 220 });
+
+    key(handle, 'ArrowLeft');
+    await fixture.whenStable();
+    expect(dialog.style.width).toBe('310px');
+  });
+
+  it('grows towards the left in right-to-left and keeps the right edge', async () => {
+    const { fixture, dialog, handle } = await setupResize();
+    dialog.style.direction = 'rtl';
+    key(handle, 'ArrowLeft', { shiftKey: true });
+    await fixture.whenStable();
+    expect(dialog.style.width).toBe('310px');
+    expect(dialog.style.left).toBe('90px');
+  });
+
+  it('resets the size on reopen', async () => {
+    const { fixture, dialog, handle } = await setupResize();
+    key(handle, 'ArrowRight', { shiftKey: true });
+    await fixture.whenStable();
+    fixture.componentInstance.open.set(false);
+    await fixture.whenStable();
+    fixture.componentInstance.open.set(true);
+    await fixture.whenStable();
+    expect(dialog.style.width).toBe('');
+    expect(dialog.style.height).toBe('');
   });
 });

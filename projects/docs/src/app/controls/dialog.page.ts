@@ -165,6 +165,31 @@ const SIZES: readonly StarDialogSize[] = ['sm', 'md', 'lg', 'xl', 'full'];
       </docs-example>
 
       <docs-example
+        heading="Resize"
+        source="dialog/resize"
+        [script]="resizeScript"
+        note="resizable adds a handle in the bottom end corner (PrimeNG resizable). Drag it with the pointer, or focus it (name Resize dialog) and press Shift with an arrow key to change the size by 10 pixels. The top start corner stays in place, and the smallest size is 240 by 160 pixels. resizeEnd gives the new width and height."
+      >
+        <div class="docs-stack">
+          <p class="docs-output" role="status">Last size: {{ resizeNote() }}</p>
+          <div class="docs-row">
+            <star-button variant="secondary" (pressed)="resizeOpen.set(true)">
+              Open resizable dialog
+            </star-button>
+          </div>
+        </div>
+        <star-dialog
+          [(visible)]="resizeOpen"
+          header="Resizable dialog"
+          resizable
+          draggable
+          (resizeEnd)="resizeNote.set($event.width + ' x ' + $event.height)"
+        >
+          <p>Drag the corner handle, or focus it and press Shift with an arrow key.</p>
+        </star-dialog>
+      </docs-example>
+
+      <docs-example
         heading="Dialog from code"
         source="dialog/service"
         [script]="serviceScript"
@@ -286,6 +311,8 @@ export class DialogPage {
   protected readonly popupsOpen = signal(false);
   protected readonly dragOpen = signal(false);
   protected readonly dragNote = signal('not moved');
+  protected readonly resizeOpen = signal(false);
+  protected readonly resizeNote = signal('not resized');
   protected readonly note = signal('Call the customer before delivery.');
   protected readonly place = signal<string | null>(null);
   protected readonly lastAction = signal('none');
@@ -352,6 +379,8 @@ readonly floatOpen = signal(false);`;
 readonly markedFocusOpen = signal(false);`;
   protected readonly dragScript = `readonly dragOpen = signal(false);
 readonly dragNote = signal('not moved');`;
+  protected readonly resizeScript = `readonly resizeOpen = signal(false);
+readonly resizeNote = signal('not resized');`;
   protected readonly serviceScript = `private readonly dialogs = inject(StarDialogService);
 readonly note = signal('Call the customer before delivery.');
 
@@ -450,6 +479,10 @@ readonly actionItems: readonly StarMenuItem[] = [
       name: 'Alt + arrow keys',
       description:
         'In the header of a draggable dialog (the move button): moves the dialog by 10 pixels.',
+    },
+    {
+      name: 'Shift + arrow keys',
+      description: 'On the resize handle of a resizable dialog: changes the size by 10 pixels.',
     },
   ];
 }

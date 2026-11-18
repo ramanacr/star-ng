@@ -19,6 +19,7 @@ import {
   StarDialogPoint,
   trackPointer,
 } from './dialog-drag';
+import { resizeFrame } from './dialog-resize';
 
 /**
  * Dialog (PrimeNG `p-dialog`) built on the native `<dialog>` element: top-layer rendering,
@@ -49,7 +50,9 @@ import {
       [class]="'star-dialog--' + size()"
       [class.star-dialog--modal]="modal()"
       [class.star-dialog--placed]="placed() !== null"
-      [style.width]="width()"
+      [class.star-dialog--resized]="sized() !== null"
+      [style.width]="cssWidth()"
+      [style.height.px]="sized()?.height"
       [style.left.px]="placed()?.x"
       [style.top.px]="placed()?.y"
       [attr.aria-labelledby]="header() ? headerId : null"
@@ -101,6 +104,16 @@ import {
         <div class="star-dialog__body"><ng-content /></div>
         <ng-content select="[starDialogFooter]" />
       </div>
+      @if (resizable()) {
+        <button
+          type="button"
+          class="star-dialog__resize"
+          [attr.aria-label]="text.resizeDialog"
+          aria-keyshortcuts="Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight"
+          (pointerdown)="onResizeStart($event)"
+          (keydown)="onResizeKey($event)"
+        ></button>
+      }
     </dialog>
   `,
 })
@@ -117,8 +130,16 @@ export class StarDialog extends StarDialogBase {
   /** Keeps the dragged position and the resized size when the dialog opens again. */
   readonly rememberPosition = input(false, { transform: booleanAttribute });
 
+  /**
+   * A handle in the bottom end corner resizes the dialog with the pointer, or with Shift + the
+   * arrow keys, 10 pixels per press (PrimeNG `resizable`). The smallest size is 240 x 160 pixels.
+   */
+  readonly resizable = input(false, { transform: booleanAttribute });
+
   /** Position of the top left corner after a drag, in pixels from the window (PrimeNG `onDragEnd`). */
   readonly dragEnd = output<StarDialogPoint>();
+  /** Size of the dialog after a resize, in pixels (PrimeNG `onResizeEnd`). */
+  readonly resizeEnd = output<StarDialogDimensions>();
 
   /** Position set by a drag or a resize; `null` keeps the CSS position. */
   protected readonly placed = signal<StarDialogPoint | null>(null);
@@ -126,6 +147,10 @@ export class StarDialog extends StarDialogBase {
   protected readonly sized = signal<StarDialogDimensions | null>(null);
 
   protected readonly canDrag = computed(() => this.draggable());
+  protected readonly cssWidth = computed(() => {
+    const sized = this.sized();
+    return sized ? `${sized.width}px` : this.width();
+  });
 
   protected onDragStart(event: PointerEvent): void {
     if (!this.canDrag() || event.button !== 0) return;
@@ -153,6 +178,32 @@ export class StarDialog extends StarDialogBase {
       start.top + step.y * STAR_DIALOG_KEY_STEP,
     );
     this.emitDragEnd();
+  }
+
+  protected onResizeStart(event: PointerEvent): void {
+    if (event.button !== 0) return;
+    event.preventDefault();
+    const start = this.frame();
+    const rtl = this.isRtl();
+    trackPointer(
+      event,
+      (dx, dy) => this.resizeTo(start, dx, dy, rtl),
+      () => this.emitResizeEnd(),
+    );
+  }
+
+  protected onResizeKey(event: KeyboardEvent): void {
+    if (!event.shiftKey) return;
+    const step = arrowDelta(event.key);
+    if (!step) return;
+    event.preventDefault();
+    this.resizeTo(
+      this.frame(),
+      step.x * STAR_DIALOG_KEY_STEP,
+      step.y * STAR_DIALOG_KEY_STEP,
+      this.isRtl(),
+    );
+    this.emitResizeEnd();
   }
 
   protected override afterClose(): void {
@@ -184,6 +235,22 @@ export class StarDialog extends StarDialogBase {
   private moveTo(frame: StarDialogFrame, x: number, y: number): void {
     const viewport = this.viewport();
     this.placed.set(viewport ? clampToViewport({ x, y }, frame, viewport) : { x, y });
+  }
+
+  private resizeTo(start: StarDialogFrame, dx: number, dy: number, rtl: boolean): void {
+    const frame = resizeFrame(start, dx, dy, rtl, this.viewport());
+    this.placed.set({ x: frame.left, y: frame.top });
+    this.sized.set({ width: frame.width, height: frame.height });
+  }
+
+  private isRtl(): boolean {
+    const element = this.dialog().nativeElement;
+    return this.document.defaultView?.getComputedStyle(element).direction === 'rtl';
+  }
+
+  private emitResizeEnd(): void {
+    const sized = this.sized();
+    if (sized) this.resizeEnd.emit(sized);
   }
 
   private emitDragEnd(): void {
