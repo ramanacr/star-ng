@@ -410,6 +410,44 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'drop-down list',
+    path: 'controls/dropdown',
+    open: async (page) => {
+      await example(page, 'Choose from a list').getByRole('button', { name: 'Export as' }).click();
+      await expect(page.getByRole('listbox', { name: 'Export format' })).toBeFocused();
+    },
+  },
+  {
+    name: 'action strip shown by the focus',
+    path: 'controls/action-strip',
+    open: async (page) => {
+      const edit = example(page, 'Row actions')
+        .getByRole('toolbar', { name: 'Order 1001 actions' })
+        .getByRole('button', { name: 'Edit' });
+      await edit.focus();
+      await expect(edit).toBeVisible();
+    },
+  },
+  {
+    name: 'action strip in a table row',
+    path: 'controls/action-strip',
+    open: async (page) => {
+      const row = example(page, 'In a table row').getByRole('row').nth(1);
+      await row.getByRole('cell').first().hover();
+      await expect(row.getByRole('toolbar')).toHaveCSS('opacity', '1');
+    },
+  },
+  {
+    name: 'action strip with its menu',
+    path: 'controls/action-strip',
+    open: async (page) => {
+      await example(page, 'More actions in a menu')
+        .getByRole('button', { name: 'More actions' })
+        .click();
+      await expect(popup(page).getByRole('menu')).toBeVisible();
+    },
+  },
+  {
     name: 'theme switch of the docs header',
     path: 'controls/theme-switch',
     open: async (page) => {
@@ -801,6 +839,55 @@ const STATES: readonly State[] = [
       const live = example(page, 'Expand and collapse');
       await live.getByRole('button', { name: 'Expand Operations' }).click();
       await expect(live.getByRole('button', { name: 'Collapse Operations' })).toBeVisible();
+    },
+  },
+  {
+    name: 'tree table with checked rows and a mixed parent',
+    path: 'controls/tree-table',
+    open: async (page) => {
+      const live = example(page, 'Checkbox selection');
+      await live.getByRole('checkbox', { name: 'Texts' }).click();
+      await expect(live.getByRole('checkbox', { name: 'Content' })).toHaveAttribute(
+        'aria-checked',
+        'mixed',
+      );
+    },
+  },
+  {
+    name: 'tree table with a loading row',
+    path: 'controls/tree-table',
+    open: async (page) => {
+      const live = example(page, 'Lazy children');
+      await live.getByRole('button', { name: 'Expand Invoices' }).click();
+      await expect(live.locator('.star-tree-table__loading')).toBeVisible();
+    },
+  },
+  {
+    name: 'tree table with a cell in edit',
+    path: 'controls/tree-table',
+    open: async (page) => {
+      const live = example(page, 'Cell edit');
+      await live.locator('tbody tr[data-key="website"]').focus();
+      await page.keyboard.press('Enter');
+      await expect(live.getByRole('textbox', { name: 'Edit Owner' })).toBeFocused();
+    },
+  },
+  {
+    name: 'tree table with the row context menu open',
+    path: 'controls/tree-table',
+    open: async (page) => {
+      const live = example(page, 'Context menu');
+      await live.locator('tbody tr[data-key="shop"]').click({ button: 'right' });
+      await expect(page.getByRole('menuitem', { name: 'Archive' })).toBeVisible();
+    },
+  },
+  {
+    name: 'tree table filtered with no result',
+    path: 'controls/tree-table',
+    open: async (page) => {
+      const live = example(page, 'Sort, filter and page');
+      await live.getByRole('searchbox', { name: 'Search' }).fill('zzz');
+      await expect(live.locator('.star-table__empty')).toBeVisible();
     },
   },
   {

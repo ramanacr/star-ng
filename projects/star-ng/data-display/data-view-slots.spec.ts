@@ -1,7 +1,8 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { StarEmptyTemplate, StarFooterTemplate, StarHeaderTemplate } from '@star-ng/ui/core';
-import { StarDataView, StarDataViewItem, StarTreeTable } from './data-display';
+import { StarDataView, StarDataViewItem } from './data-display';
+import { StarTreeTable } from './tree-table';
 
 @Component({
   imports: [

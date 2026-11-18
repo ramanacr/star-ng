@@ -1,0 +1,111 @@
+// List (StarList, StarListItem, StarListSubheader).
+.star-list {
+  display: block;
+  padding-block: 0.25rem;
+  color: var(--star-text);
+  font: var(--star-type-body-lg);
+}
+.star-list__subheader {
+  display: block;
+  padding: 0.75rem 1rem 0.25rem;
+  font: var(--star-type-label);
+  color: var(--star-text-muted);
+}
+.star-list__item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-inline-end: 0.75rem;
+
+  .star-list--divider & + & {
+    border-block-start: 1px solid var(--star-border);
+  }
+  > [starListItemEnd] {
+    flex: none;
+  }
+  // Meta text is muted. A tag or a badge in this area keeps its own colors and font.
+  > [starListItemEnd]:not(.star-tag, .star-badge) {
+    color: var(--star-text-muted);
+    font: var(--star-type-body);
+  }
+}
+// The main part: a link, a button or plain content.
+.star-list__main {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 0.75rem;
+  min-inline-size: 0;
+  min-block-size: 3rem;
+  margin: 0;
+  padding-block: 0.5rem;
+  padding-inline: 1rem 0.25rem;
+  border: 0;
+  border-radius: var(--star-radius-md);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  text-decoration: none;
+
+  .star-list--dense & {
+    min-block-size: 2.25rem;
+    padding-block: 0.25rem;
+    gap: 0.5rem;
+  }
+  > [starListItemStart] {
+    flex: none;
+    color: var(--star-text-muted);
+  }
+}
+a.star-list__main,
+button.star-list__main {
+  cursor: pointer;
+  transition: background-color var(--star-duration-fast) ease-in-out;
+
+  &:hover {
+    background: var(--star-surface-muted);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--star-accent);
+    outline-offset: -2px;
+  }
+}
+.star-list__main--active {
+  background: var(--star-primary-soft);
+  color: var(--star-primary-text);
+
+  > [starListItemStart],
+  .star-list__text > [starListItemSubtitle] {
+    color: inherit;
+  }
+}
+.star-list__item--disabled .star-list__main {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.star-list__text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-inline-size: 0;
+}
+.star-list__title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.star-list__text > [starListItemSubtitle] {
+  color: var(--star-text-muted);
+  font: var(--star-type-body);
+}
+.star-list__empty {
+  padding: 1rem;
+  color: var(--star-text-muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .star-list__main {
+    transition: none;
+  }
+}

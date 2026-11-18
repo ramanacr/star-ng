@@ -1,0 +1,60 @@
+// Virtual scroller (StarVirtualScroller): a CDK viewport whose items all have one size.
+.star-scroller {
+  position: relative;
+  display: block;
+  font: var(--star-type-body-lg);
+  color: var(--star-text);
+}
+.star-scroller__viewport {
+  border: 1px solid var(--star-border);
+  border-radius: var(--star-radius-lg);
+  background: var(--star-surface);
+
+  &:focus-visible {
+    outline: none;
+    border-color: var(--star-accent);
+    box-shadow: var(--star-focus-ring);
+  }
+}
+.star-scroller__item {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  block-size: var(--star-scroller-item-size);
+  padding-inline: 0.875rem;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.star-scroller--horizontal {
+  .cdk-virtual-scroll-content-wrapper {
+    display: flex;
+    block-size: 100%;
+  }
+  .star-scroller__item {
+    flex: none;
+    justify-content: center;
+    block-size: 100%;
+    inline-size: var(--star-scroller-item-size);
+    padding-inline: 0.5rem;
+  }
+}
+.star-scroller__empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem 1rem;
+  border: 1px dashed var(--star-border);
+  border-radius: var(--star-radius-lg);
+  color: var(--star-text-muted);
+}
+// The loading layer covers the viewport; the items stay visible under it.
+.star-scroller__loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--star-radius-lg);
+  background: color-mix(in srgb, var(--star-surface) 60%, transparent);
+}
