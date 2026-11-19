@@ -113,14 +113,15 @@ describe('starExpandRrule', () => {
         '2026-03-11 09:00',
         '2026-03-12 09:00',
       ]);
+      // The start (DTSTART) is always the first occurrence and counts.
       expect(expand('FREQ=DAILY;BYMONTH=2;COUNT=2', at(2026, 1, 30))).toEqual([
+        '2026-01-30 00:00',
         '2026-02-01 00:00',
-        '2026-02-02 00:00',
       ]);
     });
 
     it('keeps only the days of BYMONTHDAY, counted from the end when negative', () => {
-      expect(expand('FREQ=DAILY;BYMONTHDAY=-1;COUNT=3', at(2026, 1, 15))).toEqual([
+      expect(expand('FREQ=DAILY;BYMONTHDAY=-1;COUNT=3', at(2026, 1, 31))).toEqual([
         '2026-01-31 00:00',
         '2026-02-28 00:00',
         '2026-03-31 00:00',
@@ -146,11 +147,34 @@ describe('starExpandRrule', () => {
       ]);
     });
 
-    it('does not add a start that the rule does not produce', () => {
-      // The start is a Wednesday; the rule only produces Mondays.
-      expect(expand('FREQ=WEEKLY;BYDAY=MO;COUNT=2', at(2026, 3, 4, 9))).toEqual([
+    it('always gives the start (DTSTART) first and counts it (RFC 5545)', () => {
+      // The start is a Wednesday; the rule produces Mondays.
+      expect(expand('FREQ=WEEKLY;BYDAY=MO;COUNT=3', at(2026, 3, 4, 9))).toEqual([
+        '2026-03-04 09:00',
         '2026-03-09 09:00',
         '2026-03-16 09:00',
+      ]);
+      // A start that the rule produces too is not repeated.
+      expect(expand('FREQ=WEEKLY;BYDAY=WE;COUNT=2', at(2026, 3, 4, 9))).toEqual([
+        '2026-03-04 09:00',
+        '2026-03-11 09:00',
+      ]);
+    });
+
+    it('leaves out a start that is an exception, but still counts it', () => {
+      const dates = starExpandRrule(
+        'FREQ=WEEKLY;BYDAY=MO;COUNT=3',
+        at(2026, 3, 4, 9),
+        { start: at(2026, 1, 1), end: at(2027, 1, 1) },
+        { exceptions: [at(2026, 3, 4)] },
+      );
+      expect(text(dates)).toEqual(['2026-03-09 09:00', '2026-03-16 09:00']);
+    });
+
+    it('gives the start only when it is in the range', () => {
+      const range = { start: at(2026, 3, 5), end: at(2026, 3, 12) };
+      expect(text(starExpandRrule('FREQ=WEEKLY;BYDAY=MO', at(2026, 3, 4, 9), range))).toEqual([
+        '2026-03-09 09:00',
       ]);
     });
 
@@ -183,12 +207,12 @@ describe('starExpandRrule', () => {
     });
 
     it('takes ordinal weekdays: the second Monday and the last Friday', () => {
-      expect(expand('FREQ=MONTHLY;BYDAY=2MO;COUNT=3', at(2026, 1, 1, 9))).toEqual([
+      expect(expand('FREQ=MONTHLY;BYDAY=2MO;COUNT=3', at(2026, 1, 12, 9))).toEqual([
         '2026-01-12 09:00',
         '2026-02-09 09:00',
         '2026-03-09 09:00',
       ]);
-      expect(expand('FREQ=MONTHLY;BYDAY=-1FR;COUNT=3', at(2026, 1, 1, 16))).toEqual([
+      expect(expand('FREQ=MONTHLY;BYDAY=-1FR;COUNT=3', at(2026, 1, 30, 16))).toEqual([
         '2026-01-30 16:00',
         '2026-02-27 16:00',
         '2026-03-27 16:00',
@@ -196,7 +220,7 @@ describe('starExpandRrule', () => {
     });
 
     it('takes every matching weekday of the month without an ordinal', () => {
-      expect(expand('FREQ=MONTHLY;BYDAY=MO;COUNT=5', at(2026, 3, 1))).toEqual([
+      expect(expand('FREQ=MONTHLY;BYDAY=MO;COUNT=5', at(2026, 3, 2))).toEqual([
         '2026-03-02 00:00',
         '2026-03-09 00:00',
         '2026-03-16 00:00',
@@ -212,14 +236,14 @@ describe('starExpandRrule', () => {
         '2026-02-01 09:00',
         '2026-02-28 09:00',
       ]);
-      expect(expand('FREQ=MONTHLY;BYMONTHDAY=30;COUNT=2', at(2026, 1, 1))).toEqual([
+      expect(expand('FREQ=MONTHLY;BYMONTHDAY=30;COUNT=2', at(2026, 1, 30))).toEqual([
         '2026-01-30 00:00',
         '2026-03-30 00:00',
       ]);
     });
 
     it('intersects BYDAY and BYMONTHDAY: Friday the 13th', () => {
-      expect(expand('FREQ=MONTHLY;BYDAY=FR;BYMONTHDAY=13;COUNT=3', at(2026, 1, 1))).toEqual([
+      expect(expand('FREQ=MONTHLY;BYDAY=FR;BYMONTHDAY=13;COUNT=3', at(2026, 2, 13))).toEqual([
         '2026-02-13 00:00',
         '2026-03-13 00:00',
         '2026-11-13 00:00',
@@ -232,7 +256,7 @@ describe('starExpandRrule', () => {
         '2026-04-15 00:00',
         '2026-07-15 00:00',
       ]);
-      expect(expand('FREQ=MONTHLY;BYMONTH=6,12;COUNT=3', at(2026, 1, 15))).toEqual([
+      expect(expand('FREQ=MONTHLY;BYMONTH=6,12;COUNT=3', at(2026, 6, 15))).toEqual([
         '2026-06-15 00:00',
         '2026-12-15 00:00',
         '2027-06-15 00:00',
@@ -262,7 +286,7 @@ describe('starExpandRrule', () => {
     });
 
     it('takes an ordinal weekday in BYMONTH: the last Monday of May', () => {
-      expect(expand('FREQ=YEARLY;BYMONTH=5;BYDAY=-1MO;COUNT=2', at(2026, 1, 1))).toEqual([
+      expect(expand('FREQ=YEARLY;BYMONTH=5;BYDAY=-1MO;COUNT=2', at(2026, 5, 25))).toEqual([
         '2026-05-25 00:00',
         '2027-05-31 00:00',
       ]);
@@ -270,14 +294,14 @@ describe('starExpandRrule', () => {
 
     it('takes an ordinal weekday of the year without BYMONTH', () => {
       // The 20th Monday of the year.
-      expect(expand('FREQ=YEARLY;BYDAY=20MO;COUNT=2', at(2026, 1, 1))).toEqual([
+      expect(expand('FREQ=YEARLY;BYDAY=20MO;COUNT=2', at(2026, 5, 18))).toEqual([
         '2026-05-18 00:00',
         '2027-05-17 00:00',
       ]);
     });
 
     it('takes BYMONTHDAY with BYMONTH', () => {
-      expect(expand('FREQ=YEARLY;BYMONTH=3;BYMONTHDAY=1,-1;COUNT=3', at(2026, 1, 1))).toEqual([
+      expect(expand('FREQ=YEARLY;BYMONTH=3;BYMONTHDAY=1,-1;COUNT=3', at(2026, 3, 1))).toEqual([
         '2026-03-01 00:00',
         '2026-03-31 00:00',
         '2027-03-01 00:00',

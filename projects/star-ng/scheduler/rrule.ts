@@ -9,8 +9,9 @@
  * All dates are local: each occurrence has the wall-clock time of the start, also across a
  * daylight saving change. There is no time-zone conversion.
  *
- * Like other RRULE engines, an occurrence exists only when the rule produces it: a start that
- * does not match the rule (for example a Wednesday start with `BYDAY=MO`) is not an occurrence.
+ * As RFC 5545 says, the start (DTSTART) is always the first occurrence and counts toward `COUNT`,
+ * also when the rule would not produce it (a Wednesday start with `BYDAY=MO;COUNT=3` gives that
+ * Wednesday and two Mondays). An exception on that day removes it, but it still counts.
  */
 
 /** Frequencies of a recurrence rule. */
@@ -364,7 +365,19 @@ export function starExpandRrule(
   const from = rangeStart - duration;
   const to = range.end.getTime();
   const result: Date[] = [];
-  let produced = 0;
+  const first = start.getTime();
+  const inRange = (time: number) =>
+    time < to && (duration > 0 ? time + duration > rangeStart : time >= rangeStart);
+  // DTSTART is always the first occurrence, and it counts toward COUNT.
+  let produced = 1;
+  if (
+    inRange(first) &&
+    !excluded.has(dayNumber(start.getFullYear(), start.getMonth(), start.getDate()))
+  ) {
+    result.push(new Date(first));
+    if (result.length >= limit) return result;
+  }
+  if (parsed.count !== null && produced >= parsed.count) return result;
   // Without COUNT, the periods before the range cannot matter: start shortly before it.
   let period = 0;
   if (parsed.count === null) {
@@ -384,11 +397,12 @@ export function starExpandRrule(
         start.getMilliseconds(),
       );
       const time = date.getTime();
-      if (time < start.getTime()) continue;
+      // Later occurrences only: the start was given above.
+      if (time <= first) continue;
       if (parsed.until && time > parsed.until.getTime()) return result;
       if (time >= to) return result;
       produced++;
-      if (duration > 0 ? time + duration > rangeStart : time >= rangeStart) {
+      if (inRange(time)) {
         if (!excluded.has(n)) {
           result.push(date);
           if (result.length >= limit) return result;
