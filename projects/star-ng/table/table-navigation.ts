@@ -130,3 +130,22 @@ export function uncoveredRow(
   for (let row = target - 1; row >= 0; row--) if (spanAt(row) !== 0) return row;
   return target;
 }
+
+/**
+ * How far to scroll so that an item at `start` (from the start of the view) with `size` shows in a
+ * view of `view` pixels: positive scrolls toward the end. `nearest` scrolls the least (0 when the
+ * item is in view; an item larger than the view aligns its start).
+ */
+export function revealDelta(
+  start: number,
+  size: number,
+  view: number,
+  align: StarScrollAlign = 'nearest',
+): number {
+  if (align === 'start') return start;
+  if (align === 'end') return start + size - view;
+  if (align === 'center') return start + size / 2 - view / 2;
+  if (start < 0 || size > view) return start;
+  if (start + size > view) return start + size - view;
+  return 0;
+}

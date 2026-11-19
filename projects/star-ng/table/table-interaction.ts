@@ -23,6 +23,7 @@ import {
   StarClipboard,
   starInlineKey,
   starIsRtl,
+  starPrefersReducedMotion,
   StarUiText,
   ɵstarIsContextMenuKey,
   ɵstarOpenContextMenu,
@@ -61,7 +62,9 @@ import {
 import {
   cellNavigationTarget,
   columnScrollOffset,
+  revealDelta,
   StarScrollAlign,
+  StarScrollOptions,
   StarTableCellRef,
   uncoveredRow,
 } from './table-navigation';
@@ -149,6 +152,9 @@ export abstract class StarTableInteraction<T> {
   abstract readonly sortOrder: WritableSignal<StarSortOrder>;
   abstract readonly sortMeta: WritableSignal<readonly StarSortState[]>;
   abstract readonly first: WritableSignal<number>;
+  abstract readonly rows: Signal<number>;
+  abstract readonly paginator: Signal<boolean>;
+  abstract readonly lazy: Signal<boolean>;
   abstract pinColumn(field: string, side: StarPinSide | null): void;
   abstract exportCsv(options?: StarCsvOptions<T>): void;
   protected abstract emitLazy(): void;
@@ -444,6 +450,139 @@ export abstract class StarTableInteraction<T> {
     this.moveFocus(rows[index], nextColumn, true);
     if (extend) this.selectCell(rows[index], nextColumn, 'extend');
     else this.cellAnchor = { rowKey: this.trackKey(rows[index]), field: nextColumn.field };
+  }
+
+  // ---------------------------------------------------------------- keyboard and scroll API
+
+  /**
+   * Moves the focus to a cell (cell navigation must be on): the row by its key (`dataKey` value,
+   * else the row object) and the column by its field. A row on another page of a client paginator
+   * opens that page; a row of `virtualScroll` and a column of `virtualColumns` scroll into the
+   * window first. Returns `false` when the cell is not in the table (filtered out, in a closed
+   * group, a hidden column). Ignite UI `navigateTo`, AG Grid `setFocusedCell`.
+   */
+  focusCell(rowKey: unknown, field: string): boolean {
+    const row = this.withAdded().find((item) => Object.is(this.trackKey(item), rowKey));
+    const column = this.visibleColumns().find((item) => item.field === field);
+    if (!this.cellMode() || row === undefined || !column || this.isRowCollapsed(row)) return false;
+    this.showPageOf(row);
+    this.moveFocus(row, column);
+    return true;
+  }
+
+  /**
+   * Focuses the cell of the row at `rowIndex` in the rows of all pages (sorted and filtered, as
+   * they show) and the column `field` (default: the column of the active cell, else the first
+   * column). Ignite UI `navigateTo(rowIndex, visibleColumnIndex)`.
+   */
+  navigateTo(rowIndex: number, field?: string): boolean {
+    const row = this.withAdded()[rowIndex];
+    const target = field ?? this.active()?.field ?? this.visibleColumns()[0]?.field;
+    return row !== undefined && target !== undefined && this.focusCell(this.trackKey(row), target);
+  }
+
+  /**
+   * Scrolls a row into view: by its key (`dataKey` value, else the row object), or by its index in
+   * the rows of all pages when no row has that key. A row on another page of a client paginator
+   * opens that page; with `virtualScroll` the row renders first. `align`: `'nearest'` (default,
+   * the least scroll), `'start'`, `'center'` or `'end'`; the sticky header does not cover it. The
+   * scroll is smooth unless the user asks for reduced motion. Ignite UI `navigateTo`, AG Grid
+   * `ensureIndexVisible` / `ensureNodeVisible`.
+   */
+  scrollToRow(rowKeyOrIndex: unknown, options: StarScrollOptions = {}): boolean {
+    const rows = this.withAdded();
+    let row = rows.find((item) => Object.is(this.trackKey(item), rowKeyOrIndex));
+    if (row === undefined && typeof rowKeyOrIndex === 'number') row = rows[rowKeyOrIndex];
+    if (row === undefined || this.isRowCollapsed(row)) return false;
+    const found = row;
+    const moved = this.showPageOf(found);
+    const align = options.align ?? 'nearest';
+    if (!moved && this.rowElement(found)) {
+      this.alignRow(found, align);
+    } else {
+      this.scrollRowIntoWindow(found);
+      afterNextRender(() => this.alignRow(found, align), { injector: this.interactionInjector });
+    }
+    return true;
+  }
+
+  /**
+   * Scrolls a column into view by its field, beside the pinned columns (a pinned column is always
+   * in view). With `virtualColumns` the column renders first. `align` as in `scrollToRow`. Ignite UI
+   * `navigateTo`, AG Grid `ensureColumnVisible`.
+   */
+  scrollToColumn(field: string, options: StarScrollOptions = {}): boolean {
+    const column = this.visibleColumns().find((item) => item.field === field);
+    const scroller = this.scroller()?.nativeElement;
+    if (!column || !scroller) return false;
+    if (this.sideOf(column)) return true;
+    const align = options.align ?? 'nearest';
+    if (this.virtualColumns() && !this.renderedColumns().includes(column)) {
+      this.scrollColumnIntoWindow(column, align === 'nearest' ? 'nearest' : align);
+      return true;
+    }
+    const header = scroller.querySelector<HTMLElement>(
+      `:scope > table > thead > tr > th[data-field="${CSS.escape(field)}"]`,
+    );
+    if (!header) return false;
+    const view = this.viewRect(scroller, header);
+    const rect = header.getBoundingClientRect();
+    const rtl = starIsRtl(scroller);
+    const start = rtl ? view.right - rect.right : rect.left - view.left;
+    const delta = revealDelta(start, rect.width, view.right - view.left, align);
+    if (delta) this.scrollTo(scroller, { left: scroller.scrollLeft + (rtl ? -delta : delta) });
+    return true;
+  }
+
+  /** Opens the page of a client paginator that holds a row. Returns true when the page changed. */
+  private showPageOf(row: T): boolean {
+    if (!this.paginator() || this.lazy()) return false;
+    const size = Math.max(1, this.rows());
+    const index = this.withAdded().indexOf(row);
+    const page = Math.floor(index / size) * size;
+    if (index < 0 || page === this.first()) return false;
+    this.first.set(page);
+    return true;
+  }
+
+  private rowElement(row: T): HTMLElement | null {
+    return (
+      this.body()?.nativeElement.querySelector<HTMLElement>(
+        `:scope > tr[data-row="${CSS.escape(this.rowKeyText(row))}"], :scope > tr[data-select-key="${CSS.escape(this.rowKeyText(row))}"]`,
+      ) ?? this.rowByIndex(row)
+    );
+  }
+
+  /** The `tr` of a row on the page by its position (tables without row attributes). */
+  private rowByIndex(row: T): HTMLElement | null {
+    const body = this.body()?.nativeElement;
+    if (!body || this.virtualScroll() || this.cellMode() || this.rowSelectionMode()) return null;
+    const index = this.pageRows().indexOf(row);
+    const rows = body.querySelectorAll<HTMLElement>(':scope > tr.star-table__row');
+    return index < 0 ? null : (rows[index] ?? null);
+  }
+
+  /** Scrolls a rendered row to its place in the view (below a sticky header). */
+  private alignRow(row: T, align: StarScrollAlign): void {
+    const scroller = this.scroller()?.nativeElement;
+    const element = this.rowElement(row);
+    if (!scroller || !element) return;
+    const first = element.querySelector<HTMLElement>(':scope > td, :scope > th') ?? element;
+    const view = this.viewRect(scroller, first);
+    const rect = element.getBoundingClientRect();
+    const delta = revealDelta(rect.top - view.top, rect.height, view.bottom - view.top, align);
+    if (delta) this.scrollTo(scroller, { top: scroller.scrollTop + delta });
+  }
+
+  /** Scrolls the scroll area, smoothly unless the user asks for reduced motion. */
+  private scrollTo(scroller: HTMLElement, position: { top?: number; left?: number }): void {
+    const behavior = starPrefersReducedMotion(this.interactionDocument) ? 'auto' : 'smooth';
+    if (typeof scroller.scrollTo === 'function') {
+      scroller.scrollTo({ ...position, behavior });
+    } else {
+      if (position.top !== undefined) scroller.scrollTop = position.top;
+      if (position.left !== undefined) scroller.scrollLeft = position.left;
+    }
   }
 
   // ---------------------------------------------------------------- context menu
