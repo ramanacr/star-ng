@@ -428,6 +428,20 @@ describe('StarDiagram', () => {
     removed.mockRestore();
   });
 
+  it('resizes several selected nodes with one undoable change', async () => {
+    const { host, node, stable } = await setup();
+    host.selection.set(['new', 'ship']);
+    await stable();
+    const before = host.nodeChanges.length;
+    key(node('ship'), 'ArrowRight', { altKey: true, shiftKey: true });
+    await stable();
+    expect(host.nodeChanges.length).toBe(before + 1);
+    expect(host.nodeChanges.at(-1)!.patches.length).toBe(2);
+    host.diagram().undo();
+    expect(host.nodes().find((n) => n.id === 'new')!.width).toBe(100);
+    expect(host.nodes().find((n) => n.id === 'ship')!.width).toBe(100);
+  });
+
   it('renders on the server platform with plain labels', async () => {
     TestBed.configureTestingModule({ providers: [{ provide: PLATFORM_ID, useValue: 'server' }] });
     const { root, host, stable } = await setup();

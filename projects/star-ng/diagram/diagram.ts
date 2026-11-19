@@ -834,28 +834,25 @@ export class StarDiagram {
     return this.commit({ nodes: patches, edges: [] }, reason);
   }
 
-  private resize(id: string, rect: StarDiagramRect): boolean {
-    const n = this.nodes().find((node) => node.id === id);
-    if (
-      !n ||
-      (n.x === rect.x && n.y === rect.y && n.width === rect.width && n.height === rect.height)
-    ) {
-      return false;
+  /** Resizes one or more nodes as one undoable change. */
+  private resize(rects: ReadonlyMap<string, StarDiagramRect>): boolean {
+    const patches: StarDiagramNodePatch[] = [];
+    for (const n of this.nodes()) {
+      const rect = rects.get(n.id);
+      if (
+        !rect ||
+        (n.x === rect.x && n.y === rect.y && n.width === rect.width && n.height === rect.height)
+      ) {
+        continue;
+      }
+      patches.push({
+        type: 'update',
+        id: n.id,
+        before: { x: n.x, y: n.y, width: n.width, height: n.height },
+        after: { ...rect },
+      });
     }
-    return this.commit(
-      {
-        nodes: [
-          {
-            type: 'update',
-            id,
-            before: { x: n.x, y: n.y, width: n.width, height: n.height },
-            after: { ...rect },
-          },
-        ],
-        edges: [],
-      },
-      'resize',
-    );
+    return this.commit({ nodes: patches, edges: [] }, 'resize');
   }
 
   /** Removes the selected nodes with their connections, or the selected connection. */
@@ -1072,7 +1069,7 @@ export class StarDiagram {
     this.drag.set(null);
     if (!last) return;
     if (last.kind === 'move' && (last.dx || last.dy)) this.moveBy(last.ids, last.dx, last.dy);
-    else if (last.kind === 'resize') this.resize(last.id, last.current);
+    else if (last.kind === 'resize') this.resize(new Map([[last.id, last.current]]));
     else if (last.kind === 'connect' && last.target)
       this.connect(last.from, last.port, last.target, last.current);
     else if (last.kind === 'marquee') {
@@ -1178,17 +1175,16 @@ export class StarDiagram {
     const ids = this.selection().length ? this.selection() : id ? [id] : [];
     if (event.altKey && !this.readonly() && ids.length) {
       if (event.shiftKey) {
-        const done = ids.map((nodeId) => {
-          const n = this.nodes().find((node) => node.id === nodeId)!;
-          const handle: StarDiagramHandle = dx ? 'e' : 's';
-          const rect = starResizeRect(n, handle, dx, dy, step);
-          return { n, rect, ok: this.resize(nodeId, rect) };
-        });
-        const first = done.find((entry) => entry.ok);
-        if (first) {
-          this.announce(
-            this.text.diagramNodeResized(first.n.label, first.rect.width, first.rect.height),
-          );
+        const handle: StarDiagramHandle = dx ? 'e' : 's';
+        const set = new Set(ids);
+        const resized = this.nodes().filter((node) => set.has(node.id));
+        const rects = new Map(
+          resized.map((node) => [node.id, starResizeRect(node, handle, dx, dy, step)] as const),
+        );
+        if (this.resize(rects)) {
+          const n = resized[0];
+          const rect = rects.get(n.id)!;
+          this.announce(this.text.diagramNodeResized(n.label, rect.width, rect.height));
         }
       } else if (this.moveBy(ids, dx, dy)) {
         const n = this.nodes().find((node) => node.id === ids[0])!;
