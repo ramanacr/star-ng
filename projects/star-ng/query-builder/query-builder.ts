@@ -32,6 +32,7 @@ import {
   starQueryEmptyValue,
   StarQueryField,
   StarQueryGroup,
+  starQueryIncompleteCount,
   starQueryModeLabel,
   starQueryModesOf,
   starQueryNewRule,
@@ -165,6 +166,12 @@ function groupAt(root: StarQueryGroup, path: string): StarQueryGroup | null {
       [ngTemplateOutlet]="groupTpl"
       [ngTemplateOutletContext]="{ $implicit: value(), path: '', depth: 1 }"
     />
+    @if (showMessage()) {
+      <p class="star-query__error" [id]="errorId">
+        <i class="ph-bold ph-warning-circle" aria-hidden="true"></i>
+        {{ text.queryIncomplete }}
+      </p>
+    }
     <p class="star-sr-only" [id]="hintId">{{ text.queryRuleHint }}</p>
     <p class="star-sr-only" aria-live="polite">{{ announcement() }}</p>
 
@@ -241,7 +248,7 @@ function groupAt(root: StarQueryGroup, path: string): StarQueryGroup | null {
                 [attr.tabindex]="disabled() ? null : 0"
                 [attr.data-path]="child(path, i)"
                 [attr.aria-label]="text.filterRule(i + 1)"
-                [attr.aria-describedby]="hintId"
+                [attr.aria-describedby]="ruleInvalid(item) ? hintId + ' ' + errorId : hintId"
                 [class.star-query__rule--invalid]="ruleInvalid(item)"
                 (keydown)="onRuleKeydown($event, path, i)"
               >
@@ -280,6 +287,8 @@ function groupAt(root: StarQueryGroup, path: string): StarQueryGroup | null {
                     @case ('number') {
                       <star-input-number
                         [disabled]="disabled()"
+                        [invalid]="ruleInvalid(item)"
+                        touched
                         [ariaLabel]="valueLabel(field)"
                         [value]="numberOf(item.value)"
                         (valueChange)="setValue(path, i, $event)"
@@ -290,6 +299,8 @@ function groupAt(root: StarQueryGroup, path: string): StarQueryGroup | null {
                         size="sm"
                         dataType="string"
                         [disabled]="disabled()"
+                        [invalid]="ruleInvalid(item)"
+                        touched
                         [ariaLabel]="valueLabel(field)"
                         [value]="textOf(item.value) || null"
                         (valueChange)="setValue(path, i, $any($event))"
@@ -302,6 +313,8 @@ function groupAt(root: StarQueryGroup, path: string): StarQueryGroup | null {
                         optionLabel="label"
                         optionValue="value"
                         [disabled]="disabled()"
+                        [invalid]="ruleInvalid(item)"
+                        touched
                         [ariaLabel]="valueLabel(field)"
                         [value]="textOf(item.value) || null"
                         (valueChange)="setValue(path, i, $any($event))"
@@ -314,6 +327,8 @@ function groupAt(root: StarQueryGroup, path: string): StarQueryGroup | null {
                         optionLabel="label"
                         optionValue="value"
                         [disabled]="disabled()"
+                        [invalid]="ruleInvalid(item)"
+                        touched
                         [ariaLabel]="valueLabel(field)"
                         [value]="listOf(item.value)"
                         (valueChange)="setValue(path, i, $any($event))"
@@ -323,6 +338,8 @@ function groupAt(root: StarQueryGroup, path: string): StarQueryGroup | null {
                       <star-toggle-switch
                         size="sm"
                         [disabled]="disabled()"
+                        [invalid]="ruleInvalid(item)"
+                        touched
                         [ariaLabel]="valueLabel(field)"
                         [checked]="item.value === true"
                         (checkedChange)="setValue(path, i, $event)"
@@ -337,6 +354,8 @@ function groupAt(root: StarQueryGroup, path: string): StarQueryGroup | null {
                           size="sm"
                           dataType="string"
                           [disabled]="disabled()"
+                          [invalid]="ruleInvalid(item)"
+                          touched
                           [ariaLabel]="text.filterMin(field!.label)"
                           [value]="boundText(item.value, 'min')"
                           (valueChange)="setBound(path, i, 'min', $any($event))"
@@ -345,6 +364,8 @@ function groupAt(root: StarQueryGroup, path: string): StarQueryGroup | null {
                           size="sm"
                           dataType="string"
                           [disabled]="disabled()"
+                          [invalid]="ruleInvalid(item)"
+                          touched
                           [ariaLabel]="text.filterMax(field!.label)"
                           [value]="boundText(item.value, 'max')"
                           (valueChange)="setBound(path, i, 'max', $any($event))"
@@ -352,12 +373,16 @@ function groupAt(root: StarQueryGroup, path: string): StarQueryGroup | null {
                       } @else {
                         <star-input-number
                           [disabled]="disabled()"
+                          [invalid]="ruleInvalid(item)"
+                          touched
                           [ariaLabel]="text.filterMin(field?.label ?? '')"
                           [value]="boundNumber(item.value, 'min')"
                           (valueChange)="setBound(path, i, 'min', $event)"
                         />
                         <star-input-number
                           [disabled]="disabled()"
+                          [invalid]="ruleInvalid(item)"
+                          touched
                           [ariaLabel]="text.filterMax(field?.label ?? '')"
                           [value]="boundNumber(item.value, 'max')"
                           (valueChange)="setBound(path, i, 'max', $event)"
@@ -449,6 +474,18 @@ export class StarQueryBuilder implements FormValueControl<StarQueryGroup> {
   private readonly left = signal(false);
   private readonly wasTouched = computed(() => this.touched() || this.left());
   protected readonly showInvalid = computed(() => this.invalid() && this.wasTouched());
+  /** @internal */
+  readonly errorId = inject(_IdGenerator).getId('star-query-error-');
+  /**
+   * The visible error text: shown while the form marks the builder invalid, or while a rule is
+   * incomplete after the focus left the builder. Incomplete rows point at it with
+   * `aria-describedby`, so the error is not shown by colour only.
+   */
+  protected readonly showMessage = computed(
+    () =>
+      this.showInvalid() ||
+      (this.wasTouched() && starQueryIncompleteCount(this.value(), this.fields()) > 0),
+  );
 
   protected isGroup = starIsQueryGroup;
   protected child = childPath;

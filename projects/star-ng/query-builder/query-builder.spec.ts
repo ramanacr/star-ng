@@ -269,6 +269,59 @@ describe('StarQueryBuilder', () => {
     outside.remove();
   });
 
+  it('incomplete non-text rules mark their editor invalid and show a linked error text', async () => {
+    const { fixture, host, rows, root, stable } = await setup();
+    host.query.set({
+      operator: 'and',
+      rules: [
+        { field: 'total', matchMode: 'gt', value: null },
+        { field: 'placed', matchMode: 'dateIs', value: null },
+        { field: 'status', matchMode: 'equals', value: null },
+        { field: 'status', matchMode: 'in', value: [] },
+        { field: 'total', matchMode: 'between', value: { min: 5 } },
+        { field: 'customer', matchMode: 'contains', value: 'ok' },
+      ],
+    });
+    await stable();
+    expect(root.querySelector('.star-query__error')).toBeNull();
+    const outside = document.createElement('button');
+    document.body.append(outside);
+    rows()[0].dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget: outside }));
+    await stable();
+    const row = (i: number) => fixture.debugElement.queryAll(By.css('.star-query__rule'))[i];
+    const invalidOf = (i: number, type: unknown) =>
+      row(i)
+        .queryAll(By.directive(type as never))
+        .map((editor) => (editor.componentInstance as { invalid(): boolean }).invalid());
+    expect(invalidOf(0, StarInputNumber)).toEqual([true]);
+    expect(invalidOf(1, StarDatePicker)).toEqual([true]);
+    expect(
+      row(2)
+        .query(By.css('.star-query__value'))
+        .query(By.directive(StarSelect))
+        .componentInstance.invalid(),
+    ).toBe(true);
+    expect(invalidOf(3, StarMultiSelect)).toEqual([true]);
+    expect(invalidOf(4, StarInputNumber)).toEqual([true, true]);
+    expect(rows()[0].querySelector('input')?.getAttribute('aria-invalid')).toBe('true');
+    // A complete rule is not marked.
+    expect(rows()[5].querySelector('input')?.getAttribute('aria-invalid')).toBeNull();
+
+    const error = root.querySelector<HTMLElement>('.star-query__error')!;
+    expect(error.textContent?.trim()).toBe('Complete or remove the rules without a value.');
+    expect(rows()[0].getAttribute('aria-describedby')?.split(' ')).toContain(error.id);
+    expect(rows()[5].getAttribute('aria-describedby')?.split(' ')).not.toContain(error.id);
+
+    // Completing the rules removes the error text.
+    host.query.set({
+      operator: 'and',
+      rules: [{ field: 'customer', matchMode: 'contains', value: 'ok' }],
+    });
+    await stable();
+    expect(root.querySelector('.star-query__error')).toBeNull();
+    outside.remove();
+  });
+
   it('custom match modes show the registered label', async () => {
     TestBed.inject(StarFilterService).register('nearby', () => true, 'Is nearby');
     const { fixture, host, stable } = await setup();
