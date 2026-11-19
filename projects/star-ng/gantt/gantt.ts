@@ -835,6 +835,10 @@ export class StarGantt {
     const up = (e: PointerEvent) => stop(e);
     // pointercancel, Escape and destroy drop the drag without a change.
     const cancel = () => stop(null);
+    // Escape is caught at the document in the capture phase while the drag lasts, so other
+    // Escape handlers do not see it. Edge case: when the pointerup is lost (the window lost the
+    // pointer), the listeners stay until the next pointerup, pointercancel, Escape or destroy;
+    // that Escape then only drops the drag.
     const escape = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return;
       e.preventDefault();
