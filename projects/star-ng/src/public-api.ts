@@ -62,6 +62,7 @@ export * from '@star-ng/ui/skeleton';
 export * from '@star-ng/ui/slider';
 export * from '@star-ng/ui/sparkline';
 export * from '@star-ng/ui/spinner';
+export * from '@star-ng/ui/spreadsheet';
 export * from '@star-ng/ui/stepper';
 export * from '@star-ng/ui/table';
 export * from '@star-ng/ui/tabs';
