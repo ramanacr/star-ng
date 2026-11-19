@@ -188,9 +188,11 @@ const TIME_VIEWS: ReadonlySet<StarSchedulerView> = new Set(['day', 'week', 'work
  *   an event `eventSelect`. Dragging an event (or the top or bottom edge) emits `eventChange` on
  *   drop, snapped to `slotMinutes`; call `cancel()` to reject it.
  * - Keyboard: the views are grids (`role="grid"`). The arrow keys move between slots or days,
- *   Enter selects the slot. Events are buttons; Alt and an arrow key move the focused event by one
- *   slot or day, Alt, Shift and an arrow key change its length. A live region reads the change.
- *   In right-to-left the left and right keys are mirrored.
+ *   Enter selects the slot. Events are buttons with one tab stop per view; the arrow keys move
+ *   between events in reading order (in the time grid that is row by row: all events of a time
+ *   slot, then the next slot), and past the first or last event to its slot. Alt and an arrow
+ *   key move the focused event by one slot or day, Alt, Shift and an arrow key change its length.
+ *   A live region reads the change. In right-to-left the left and right keys are mirrored.
  * - `editor`: a built-in dialog edits title, start, end, all day and resource, and emits
  *   `editorSave` or `eventDelete`.
  * - Times are the local time of the browser; there is no time-zone conversion.

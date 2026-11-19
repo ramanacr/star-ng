@@ -322,7 +322,8 @@ onDelete(deleted: StarSchedulerEventSelect) {
     { name: 'Tab', description: 'From the grid to the events: the events are one tab stop.' },
     {
       name: 'Arrow keys on an event',
-      description: 'Next or previous event of the view; past the first or last one, its slot.',
+      description:
+        'Next or previous event in reading order (in the time grid row by row: the events of one time slot, then the next slot); past the first or last one, its slot.',
     },
   ];
 }
