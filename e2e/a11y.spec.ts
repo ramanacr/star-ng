@@ -1222,6 +1222,53 @@ const STATES: readonly State[] = [
     },
   },
 
+  // Charts, gauges and codes.
+  {
+    name: 'sparklines in right-to-left',
+    path: 'controls/sparkline',
+    open: async (page) => {
+      await page.evaluate(() => (document.documentElement.dir = 'rtl'));
+      const line = example(page, 'In a table').locator('star-sparkline').first();
+      await expect(line).toHaveAttribute('aria-label', /^Trend up/);
+    },
+  },
+
+  {
+    name: 'interactive gauge after keyboard input',
+    path: 'controls/gauge',
+    open: async (page) => {
+      const live = example(page, 'Interactive with Signal Forms');
+      const gauge = live.getByRole('slider', { name: 'Volume' });
+      await gauge.focus();
+      await page.keyboard.press('End');
+      await expect(gauge).toHaveAttribute('aria-valuenow', '100');
+    },
+  },
+
+  {
+    name: 'barcode with a value that cannot be encoded',
+    path: 'controls/barcode',
+    open: async (page) => {
+      const live = example(page, 'Error state');
+      await expect(live.locator('.star-barcode__error')).toBeVisible();
+      await live.getByRole('textbox', { name: 'Barcode value' }).fill('5901234123457');
+      await expect(live.locator('star-barcode svg')).toBeVisible();
+      await live.getByRole('textbox', { name: 'Barcode value' }).fill('59012341234X');
+      await expect(live.locator('.star-barcode__error')).toBeVisible();
+    },
+  },
+
+  {
+    name: 'QR code with a value that is too long',
+    path: 'controls/qr-code',
+    open: async (page) => {
+      const live = example(page, 'Error correction');
+      await live.getByRole('radio', { name: 'H' }).click();
+      await live.getByRole('textbox', { name: 'QR code value' }).fill('x'.repeat(1300));
+      await expect(live.locator('.star-qr-code__error')).toBeVisible();
+    },
+  },
+
   // Steps and media.
   {
     name: 'stepper on the second step',

@@ -333,6 +333,30 @@ export interface StarUiText {
     max: string,
   ) => string;
   readonly meterValue: (value: string, total: number) => string;
+  // Sparkline
+  /** Label of a sparkline: the trend word and the formatted first, last, lowest and highest value. */
+  readonly sparklineSummary: (
+    first: string,
+    last: string,
+    min: string,
+    max: string,
+    trend: string,
+  ) => string;
+  readonly sparklineTrendUp: string;
+  readonly sparklineTrendDown: string;
+  readonly sparklineTrendFlat: string;
+  /** Label of a win-loss sparkline. */
+  readonly sparklineWinLoss: (wins: number, losses: number) => string;
+  /** Label of a sparkline without a value. */
+  readonly sparklineNoData: string;
+  // Barcode
+  /** Error of a barcode whose value cannot be encoded; `type` is the symbology, for example "EAN-13". */
+  readonly barcodeInvalid: (type: string) => string;
+  // QR code
+  /** Default label of a QR code; `value` is the encoded text, shortened when it is long. */
+  readonly qrCodeLabel: (value: string) => string;
+  /** Error of a QR code whose value does not fit in version 40. */
+  readonly qrCodeTooLong: string;
   // Signature pad
   /** Default name of the `star-signature-pad` group. */
   readonly signaturePad: string;
@@ -693,6 +717,17 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   chartDescription: (kind, series, items, min, max) =>
     `${kind} with ${series} series and ${items} ${items === 1 ? 'item' : 'items'}, values from ${min} to ${max}. The same data is in the table.`,
   meterValue: (value, total) => `${value} of ${total}`,
+  sparklineSummary: (first, last, min, max, trend) =>
+    `${trend}: first ${first}, last ${last}, lowest ${min}, highest ${max}`,
+  sparklineTrendUp: 'Trend up',
+  sparklineTrendDown: 'Trend down',
+  sparklineTrendFlat: 'No change',
+  sparklineWinLoss: (wins, losses) =>
+    `${wins} ${wins === 1 ? 'win' : 'wins'}, ${losses} ${losses === 1 ? 'loss' : 'losses'}`,
+  sparklineNoData: 'No data',
+  barcodeInvalid: (type) => `The value cannot be encoded as ${type}.`,
+  qrCodeLabel: (value) => `QR code: ${value}`,
+  qrCodeTooLong: 'The value is too long for a QR code.',
   signaturePad: 'Signature',
   signatureArea: 'Signature drawing area, empty',
   signatureAreaSigned: 'Signature drawing area, signed',
@@ -794,6 +829,10 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   previewImage: ['alt'],
   meterValue: ['value', 'total'],
   chartDescription: ['kind', 'series', 'items', 'min', 'max'],
+  sparklineSummary: ['first', 'last', 'min', 'max', 'trend'],
+  sparklineWinLoss: ['wins', 'losses'],
+  barcodeInvalid: ['type'],
+  qrCodeLabel: ['value'],
   messageFrom: ['name', 'time'],
   newMessage: ['name', 'text'],
   isTyping: ['name'],

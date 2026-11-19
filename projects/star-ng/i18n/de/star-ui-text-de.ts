@@ -313,6 +313,17 @@ export const STAR_UI_TEXT_DE: StarUiText = {
   chartValue: 'Wert',
   chartShare: 'Anteil',
   meterValue: (value, total) => `${value} von ${total}`,
+  sparklineSummary: (first, last, min, max, trend) =>
+    `${trend}: erster Wert ${first}, letzter Wert ${last}, niedrigster ${min}, höchster ${max}`,
+  sparklineTrendUp: 'Steigend',
+  sparklineTrendDown: 'Fallend',
+  sparklineTrendFlat: 'Unverändert',
+  sparklineWinLoss: (wins, losses) =>
+    `${wins} ${forCount(wins, 'Gewinn', 'Gewinne')}, ${losses} ${forCount(losses, 'Verlust', 'Verluste')}`,
+  sparklineNoData: 'Keine Daten',
+  barcodeInvalid: (type) => `Der Wert kann nicht als ${type} codiert werden.`,
+  qrCodeLabel: (value) => `QR-Code: ${value}`,
+  qrCodeTooLong: 'Der Wert ist für einen QR-Code zu lang.',
   signaturePad: 'Unterschrift',
   signatureArea: 'Unterschriftsfeld, leer',
   signatureAreaSigned: 'Unterschriftsfeld, unterschrieben',
