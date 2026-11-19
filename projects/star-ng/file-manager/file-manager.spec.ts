@@ -299,6 +299,14 @@ describe('StarFileManager', () => {
     );
     expect(labels.some((l) => l?.startsWith('Rename'))).toBe(true);
     expect(labels.some((l) => l?.startsWith('Paste'))).toBe(true);
+    // The menu opens after the selection: its entries show the state of the new selection.
+    const entry = (name: string) =>
+      [...document.querySelectorAll<HTMLElement>('[role="menuitem"]')].find((i) =>
+        i.textContent?.trim().startsWith(name),
+      )!;
+    expect(entry('Rename').getAttribute('aria-disabled')).not.toBe('true');
+    expect(entry('Download').getAttribute('aria-disabled')).not.toBe('true');
+    expect(entry('Paste').getAttribute('aria-disabled')).toBe('true');
   });
 
   it('shows large icons as a multi-select listbox with roving focus', async () => {

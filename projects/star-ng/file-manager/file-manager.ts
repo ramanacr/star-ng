@@ -798,7 +798,9 @@ export class StarFileManager {
     if ((event.shiftKey && key === 'F10') || key === 'ContextMenu') {
       event.preventDefault();
       if (item && !this.isSelected(item.id)) this.select(item.id, 'single');
-      this.openMenuAt(target.closest<HTMLElement>('[data-file-id], tr') ?? target);
+      // CDK reads the menu items when the menu opens: open it after the selection is rendered.
+      const anchor = target.closest<HTMLElement>('[data-file-id], tr') ?? target;
+      afterNextRender(() => this.openMenuAt(anchor), { injector: this.injector });
       return;
     }
     if (ctrl && key === 'a') {
@@ -1037,7 +1039,10 @@ export class StarFileManager {
         label: this.text.open,
         icon: 'ph-bold ph-arrow-square-out',
         disabled: !single,
-        command: () => single && this.openItem(single),
+        command: () => {
+          const now = this.selectedItems();
+          if (now.length === 1) this.openItem(now[0]);
+        },
       },
       {
         label: this.text.download,
@@ -1073,7 +1078,7 @@ export class StarFileManager {
         icon: 'ph-bold ph-pencil-simple',
         shortcut: 'F2',
         disabled: !single,
-        command: () => this.startRename(single),
+        command: () => this.startRename(null),
       },
       {
         label: this.text.delete,
