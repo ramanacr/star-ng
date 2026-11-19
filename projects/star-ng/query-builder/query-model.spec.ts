@@ -141,6 +141,25 @@ describe('query builder model', () => {
     expect(starIsQueryGroup(query.rules[0])).toBe(false);
   });
 
+  it('an incomplete rule (one bound of between, empty in) does not filter and is left out of the summary', () => {
+    const half = one('total', 'between', { min: 100 });
+    expect(ids(half)).toEqual([1, 2, 3, 4]);
+    expect(ids(one('placed', 'between', { max: '2026-03-01' }))).toEqual([1, 2, 3, 4]);
+    expect(ids(one('status', 'in', []))).toEqual([1, 2, 3, 4]);
+    expect(starQueryToText(half, fields, STAR_UI_TEXT_DEFAULTS)).toBe('No conditions');
+    const mixed: StarQueryGroup = {
+      operator: 'and',
+      rules: [
+        { field: 'total', matchMode: 'between', value: { min: 100, max: null } },
+        { field: 'customer', matchMode: 'contains', value: 'an' },
+      ],
+    };
+    expect(starQueryToText(mixed, fields, STAR_UI_TEXT_DEFAULTS)).toBe('Customer contains an');
+    expect(starQueryToText(mixed, fields, STAR_UI_TEXT_DEFAULTS)).not.toContain('null');
+    // A boolean rule is complete with false too.
+    expect(ids(one('paid', 'equals', false))).toEqual([1, 4]);
+  });
+
   it('custom match modes come from StarFilterService', () => {
     const service = new StarFilterService();
     service.register('even', (value) => Number(value) % 2 === 0, 'Is even');

@@ -173,20 +173,12 @@ export function starQueryIncompleteCount(
   );
 }
 
-/** A rule that filters something: a boolean, or a value that the table filter accepts. */
-function ruleActive(rule: StarQueryRule): boolean {
-  return (
-    typeof rule.value === 'boolean' ||
-    ɵstarRuleActive({ matchMode: rule.matchMode, value: rule.value })
-  );
-}
-
 /**
  * A row predicate for a query, with the match logic of the table filter
  * (`ɵstarMatchesRule`): text modes ignore case and accents, number modes compare numbers, date
  * modes compare calendar days, `in` tests a list of choices. A mode that is not built in comes
- * from `service` (`StarFilterService`). A rule without a value, an unknown field or an empty group
- * matches every row.
+ * from `service` (`StarFilterService`). An incomplete rule (no value, only one bound of `between`,
+ * no choice for `in`, an unknown field) and an empty group match every row.
  *
  * ```ts
  * readonly rows = computed(() => orders.filter(starQueryToPredicate(this.query(), fields)));
@@ -232,7 +224,7 @@ export function starQueryToPredicate<T>(
     for (const item of group.rules) {
       let match: boolean | null;
       if (starIsQueryGroup(item)) match = testGroup(row, item);
-      else if (!ruleActive(item) || !byKey.has(item.field)) match = null;
+      else if (!starQueryRuleComplete(item, byKey.get(item.field))) match = null;
       else match = testRule(row, item);
       if (match === null) continue;
       any = true;
@@ -257,14 +249,19 @@ function valueText(
   const choice = (item: string) =>
     starQueryOptions(field).find((option) => option.value === item)?.label ?? item;
   if (Array.isArray(value)) return list(value.map(choice));
-  if (ɵstarIsRangeFilter(value)) return text.queryRange(String(value.min), String(value.max));
+  if (ɵstarIsRangeFilter(value)) {
+    // Only complete rules reach the summary; a missing bound is never printed.
+    if (!ɵstarHasBound(value.min) || !ɵstarHasBound(value.max)) return '';
+    return text.queryRange(String(value.min), String(value.max));
+  }
   return field.type === 'select' ? choice(String(value)) : String(value);
 }
 
 /**
  * A readable summary of a query, for example
  * "Customer contains an and (Status is one of Open, Paid or Total between 10 and 20)".
- * Rules without a value and empty groups are left out; an empty query gives `uiText.queryEmpty`.
+ * Incomplete rules (see `starQueryRuleComplete`) and empty groups are left out; an empty query
+ * gives `uiText.queryEmpty`.
  * `service` gives the names of custom match modes.
  */
 export function starQueryToText(
@@ -285,7 +282,7 @@ export function starQueryToText(
         continue;
       }
       const field = byKey.get(item.field);
-      if (!field || !ruleActive(item)) continue;
+      if (!field || !starQueryRuleComplete(item, field)) continue;
       parts.push(
         uiText.queryRuleSummary(
           field.label,

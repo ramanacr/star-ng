@@ -41,7 +41,7 @@ const isoDay = (date: Date): string =>
         heading="Filter a table"
         source="query-builder/table"
         [script]="tableScript"
-        note="starQueryToPredicate(query, fields, filterService) gives a row test with the match logic of the table filter. Rules without a value are left out until they are complete. starQueryToText gives the summary."
+        note="starQueryToPredicate(query, fields, filterService) gives a row test with the match logic of the table filter. An incomplete rule (no value, only one bound of Between, no choice for Is one of) does not filter and is not in the summary until it is complete. starQueryToText gives the summary."
       >
         <div class="docs-stack">
           <star-query-builder [fields]="fields" [(value)]="query" />
