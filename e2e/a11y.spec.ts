@@ -604,6 +604,60 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'signature pad in typed mode',
+    path: 'controls/signature-pad',
+    open: async (page) => {
+      const area = example(page, 'Type the name instead (keyboard)');
+      await area.getByRole('button', { name: 'Type', exact: true }).click();
+      const field = area.getByRole('textbox', { name: 'Type your name' });
+      await expect(field).toBeFocused();
+      await field.fill('Ana Silva');
+      await expect(area.getByRole('img', { name: 'Signature drawing area, signed' })).toBeVisible();
+    },
+  },
+  {
+    name: 'multi-column combobox open with a filter',
+    path: 'controls/multi-column-combobox',
+    open: async (page) => {
+      const field = example(page, 'Products in columns').getByRole('combobox', { name: 'Product' });
+      await field.click();
+      await field.fill('lamp');
+      await expect(page.getByRole('option', { name: /Desk lamp/ })).toBeVisible();
+    },
+  },
+  {
+    name: 'mention suggestions open',
+    path: 'controls/mention',
+    open: async (page) => {
+      const field = example(page, 'Mention people').getByRole('textbox', { name: 'Comment' });
+      await field.click();
+      await field.pressSequentially('Hello @an');
+      await expect(page.getByRole('listbox', { name: 'Suggestions' })).toBeVisible();
+      await expect(page.getByRole('option', { name: 'Ana Silva' })).toBeVisible();
+    },
+  },
+  {
+    name: 'chat with messages and a typing indicator',
+    path: 'controls/chat',
+    open: async (page) => {
+      const area = example(page, 'Support chat');
+      const composer = area.getByRole('textbox', { name: 'Message' });
+      await composer.fill('Where is my parcel?');
+      await composer.press('Enter');
+      await expect(area.getByText('Order helper is typing')).toBeVisible();
+    },
+  },
+  {
+    name: 'AI prompt with a response',
+    path: 'controls/chat',
+    open: async (page) => {
+      const area = example(page, 'AI prompt');
+      await area.getByRole('button', { name: 'Summarize the order notes' }).click();
+      await area.getByRole('button', { name: 'Generate' }).click();
+      await expect(area.getByRole('button', { name: 'Retry' })).toBeVisible();
+    },
+  },
+  {
     name: 'app sidebar collapsed with a group open',
     path: 'controls/app-sidebar',
     open: async (page) => {
@@ -1365,6 +1419,57 @@ const STATES: readonly State[] = [
       await live.scrollIntoViewIfNeeded();
       await scrollToMiddle(live.locator('.star-table__scroll'));
       await expect(live.getByRole('row').nth(2)).toBeVisible();
+    },
+  },
+  // Tabs, editor and chart depth.
+  {
+    name: 'closable scrollable tabs scrolled to the end',
+    path: 'controls/tabs',
+    open: async (page) => {
+      const live = example(page, 'Scrollable tabs');
+      await live.getByRole('tab', { name: 'January' }).click();
+      await page.keyboard.press('End');
+      await expect(live.locator('.star-tabs__scroll--start')).toBeVisible();
+      const closable = example(page, 'Closable tabs');
+      await expect(closable.locator('.star-tabs__close').first()).toBeVisible();
+    },
+  },
+  {
+    name: 'editor link popover open',
+    path: 'controls/editor',
+    open: async (page) => {
+      const live = example(page, 'Full toolbar');
+      await live.getByRole('textbox', { name: 'Shipping report' }).locator('a').click();
+      await live.getByRole('button', { name: 'Link' }).click();
+      await expect(live.getByRole('button', { name: 'Remove link' })).toBeVisible();
+    },
+  },
+  {
+    name: 'chart tooltip shown on a focused data point',
+    path: 'controls/chart',
+    open: async (page) => {
+      const live = example(page, 'Keyboard, tooltip template and point selection');
+      await live.getByRole('img', { name: 'Received, Jan: 120' }).focus();
+      await expect(live.locator('.star-chart__tip')).toBeVisible();
+    },
+  },
+  {
+    name: 'tabs close button of the selected tab focused',
+    path: 'controls/tabs',
+    open: async (page) => {
+      const live = example(page, 'Closable tabs');
+      const close = live.getByRole('button', { name: 'Close orders.csv' });
+      await close.focus();
+      await expect(close).toBeVisible();
+    },
+  },
+  {
+    name: 'vertical tabs with the second tab selected',
+    path: 'controls/tabs',
+    open: async (page) => {
+      const live = example(page, 'Vertical tabs');
+      await live.getByRole('tab', { name: 'Billing' }).click();
+      await expect(live.getByRole('tabpanel', { name: 'Billing' })).toBeVisible();
     },
   },
 ];

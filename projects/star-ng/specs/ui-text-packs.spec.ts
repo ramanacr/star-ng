@@ -22,10 +22,12 @@ const SAME_AS_ENGLISH: Record<string, readonly Name[]> = {
     'minute',
     // A rule summary only joins its parts: "Total größer als 100" (the mode text is translated).
     'queryRuleSummary',
+    // A data point reads "series, category: value" in every language.
+    'chartPointLabel',
   ],
   // "Color", "Editor" and "Total" are the Spanish words too. "X" and "Y" are axis names in every
-  // language. "No" is the Spanish answer too.
-  // A rule summary only joins its parts (the mode text is translated).
+  // language. "No" is the Spanish answer too. A rule summary and a data point only join their
+  // parts (the mode text is translated).
   es: [
     'colorLabel',
     'editorLabel',
@@ -34,6 +36,7 @@ const SAME_AS_ENGLISH: Record<string, readonly Name[]> = {
     'chartY',
     'queryFalse',
     'queryRuleSummary',
+    'chartPointLabel',
   ],
 };
 

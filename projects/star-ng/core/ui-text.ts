@@ -251,6 +251,32 @@ export interface StarUiText {
   readonly editorClearFormatting: string;
   readonly editorLink: string;
   readonly editorLinkPrompt: string;
+  readonly tabClose: (label: string) => string;
+  readonly tabCloseHint: string;
+  readonly tabReorderHint: string;
+  readonly editorStrikethrough: string;
+  readonly editorCode: string;
+  readonly editorQuote: string;
+  readonly editorTextStyle: string;
+  readonly editorParagraph: string;
+  readonly editorHeadingLevel: (level: number) => string;
+  readonly editorAlignStart: string;
+  readonly editorAlignCenter: string;
+  readonly editorAlignEnd: string;
+  readonly editorUndo: string;
+  readonly editorRedo: string;
+  readonly editorLinkNewTab: string;
+  readonly editorLinkApply: string;
+  readonly editorLinkRemove: string;
+  readonly editorLinkCancel: string;
+  readonly editorLinkInvalid: string;
+  readonly editorCharacterCount: (count: number, max: number) => string;
+  readonly editorCharactersLeft: (count: number) => string;
+  readonly chartPoints: (title: string) => string;
+  readonly chartPointsHint: string;
+  readonly chartPointLabel: (series: string, label: string, value: string) => string;
+  readonly chartLegend: string;
+  readonly chartSecondaryAxis: (label: string) => string;
   // Navigation and layout
   readonly breadcrumb: string;
   readonly stepperLabel: string;
@@ -340,6 +366,68 @@ export interface StarUiText {
   readonly kanbanDropped: (card: string, column: string, position: number, total: number) => string;
   readonly kanbanCanceled: (card: string, column: string) => string;
   readonly kanbanLimitReached: (column: string) => string;
+  // Signature pad
+  /** Default name of the `star-signature-pad` group. */
+  readonly signaturePad: string;
+  /** Name of the drawing area of `star-signature-pad` while it is empty. */
+  readonly signatureArea: string;
+  /** Name of the drawing area while it holds a signature. */
+  readonly signatureAreaSigned: string;
+  readonly signatureHint: string;
+  /** Second hint sentence when the pad also takes a typed name (`allowTyped`). */
+  readonly signatureTypedHint: string;
+  readonly clearSignature: string;
+  readonly undo: string;
+  /** Mode button: draw the signature. */
+  readonly drawSignature: string;
+  /** Mode button: type the name instead of drawing. */
+  readonly typeSignature: string;
+  readonly typeYourName: string;
+  readonly signatureCleared: string;
+  readonly strokeUndone: string;
+  // Mention
+  /** Name of the suggestion list of `starMention`. */
+  readonly mentionSuggestions: string;
+  // Chat
+  /** Default name of the message area of `star-chat`. */
+  readonly chatMessages: string;
+  /** Shown while `star-chat` has no message. */
+  readonly chatEmpty: string;
+  /** Label and placeholder of the composer field. */
+  readonly message: string;
+  readonly send: string;
+  /** Screen-reader prefix of a message: author and time. */
+  readonly messageFrom: (name: string, time: string) => string;
+  /** Live announcement of a new message from someone else. */
+  readonly newMessage: (name: string, text: string) => string;
+  readonly messageSending: string;
+  readonly messageSent: string;
+  readonly messageNotSent: string;
+  /** Typing indicator for one person. */
+  readonly isTyping: (name: string) => string;
+  /** Typing indicator for several people. `names` is a list such as "Ana and Jonas". */
+  readonly areTyping: (names: string) => string;
+  // AI prompt
+  /** Label of the prompt field of `star-ai-prompt`. */
+  readonly aiPrompt: string;
+  readonly aiPromptPlaceholder: string;
+  /** Name of the group of prompt suggestion chips. */
+  readonly promptSuggestions: string;
+  readonly generate: string;
+  /** Name of the list of responses. */
+  readonly aiResponses: string;
+  readonly aiGenerating: string;
+  readonly aiResponseReady: string;
+  readonly aiResponseFailed: string;
+  readonly copy: string;
+  readonly copied: string;
+  readonly retry: string;
+  readonly stop: string;
+  /** Live announcement when several messages from others arrive at once. */
+  readonly newMessages: (count: number) => string;
+  /** Visible hint under the prompt field of `star-ai-prompt`. */
+  readonly aiPromptShortcutHint: string;
+  readonly copyFailed: string;
 }
 
 export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
@@ -565,6 +653,33 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   editorLink: 'Link',
   editorLinkPrompt: 'Link address (https://…)',
 
+  tabClose: (label) => `Close ${label}`,
+  tabCloseHint: 'Press Delete to close the tab.',
+  tabReorderHint: 'Press Control+Shift and an arrow key to move the tab.',
+  editorStrikethrough: 'Strikethrough',
+  editorCode: 'Code',
+  editorQuote: 'Quote',
+  editorTextStyle: 'Text style',
+  editorParagraph: 'Paragraph',
+  editorHeadingLevel: (level) => `Heading ${level}`,
+  editorAlignStart: 'Align to the start',
+  editorAlignCenter: 'Center',
+  editorAlignEnd: 'Align to the end',
+  editorUndo: 'Undo',
+  editorRedo: 'Redo',
+  editorLinkNewTab: 'Open in a new tab',
+  editorLinkApply: 'Apply',
+  editorLinkRemove: 'Remove link',
+  editorLinkCancel: 'Cancel',
+  editorLinkInvalid:
+    'Enter a web address (https://…), an e-mail address (mailto:…) or a phone number (tel:…).',
+  editorCharacterCount: (count, max) => `${count} of ${max} characters`,
+  editorCharactersLeft: (count) => (count === 1 ? '1 character left' : `${count} characters left`),
+  chartPoints: (title) => `${title}: data points`,
+  chartPointsHint: 'Arrow keys move between the points and the series. Enter selects a point.',
+  chartPointLabel: (series, label, value) => `${series}, ${label}: ${value}`,
+  chartLegend: 'Legend: show or hide a series',
+  chartSecondaryAxis: (label) => `${label} (right axis)`,
   breadcrumb: 'Breadcrumb',
   stepperLabel: 'Progress',
   stepCompleted: '(completed)',
@@ -640,6 +755,45 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
     `${card} dropped in ${column}, position ${position} of ${total}`,
   kanbanCanceled: (card, column) => `Move cancelled. ${card} is back in ${column}`,
   kanbanLimitReached: (column) => `${column} is at its limit`,
+  signaturePad: 'Signature',
+  signatureArea: 'Signature drawing area, empty',
+  signatureAreaSigned: 'Signature drawing area, signed',
+  signatureHint: 'Draw with a mouse, a pen or a finger.',
+  signatureTypedHint: 'Or choose Type to type your name.',
+  clearSignature: 'Clear signature',
+  undo: 'Undo',
+  drawSignature: 'Draw',
+  typeSignature: 'Type',
+  typeYourName: 'Type your name',
+  signatureCleared: 'Signature cleared',
+  strokeUndone: 'Last stroke removed',
+  mentionSuggestions: 'Suggestions',
+  chatMessages: 'Messages',
+  chatEmpty: 'No messages yet',
+  message: 'Message',
+  send: 'Send',
+  messageFrom: (name, time) => `${name} at ${time}:`,
+  newMessage: (name, text) => `New message from ${name}: ${text}`,
+  messageSending: 'Sending',
+  messageSent: 'Sent',
+  messageNotSent: 'Not sent',
+  isTyping: (name) => `${name} is typing`,
+  areTyping: (names) => `${names} are typing`,
+  aiPrompt: 'Prompt',
+  aiPromptPlaceholder: 'Ask or describe what you need',
+  promptSuggestions: 'Prompt suggestions',
+  generate: 'Generate',
+  aiResponses: 'Responses',
+  aiGenerating: 'Generating',
+  aiResponseReady: 'Response ready',
+  aiResponseFailed: 'The response failed.',
+  copy: 'Copy',
+  copied: 'Copied',
+  retry: 'Retry',
+  stop: 'Stop',
+  newMessages: (count) => `${count} new messages`,
+  aiPromptShortcutHint: 'Press Control+Enter to send.',
+  copyFailed: 'Copy failed',
 };
 
 /** Parameter names of the function entries, in call order (used for `{{ name }}` in translations). */
@@ -692,6 +846,13 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   fileTypeNotAllowed: ['name'],
   fileTooLarge: ['name', 'max'],
   fileLimitReached: ['limit'],
+  tabClose: ['label'],
+  editorHeadingLevel: ['level'],
+  editorCharacterCount: ['count', 'max'],
+  editorCharactersLeft: ['count'],
+  chartPoints: ['title'],
+  chartPointLabel: ['series', 'label', 'value'],
+  chartSecondaryAxis: ['label'],
   editorFormatting: ['label'],
   showImage: ['alt'],
   previewImage: ['alt'],
@@ -708,6 +869,11 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   kanbanDropped: ['card', 'column', 'position', 'total'],
   kanbanCanceled: ['card', 'column'],
   kanbanLimitReached: ['column'],
+  messageFrom: ['name', 'time'],
+  newMessage: ['name', 'text'],
+  isTyping: ['name'],
+  areTyping: ['names'],
+  newMessages: ['count'],
 };
 
 export const STAR_UI_TEXT = new InjectionToken<StarUiText>('STAR_UI_TEXT', {
