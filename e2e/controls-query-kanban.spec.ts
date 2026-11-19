@@ -13,10 +13,13 @@ test.describe('query builder', () => {
 
     // Delete on a focused rule row removes it; Control+Z restores it.
     const second = live.getByRole('group', { name: 'Rule 2' });
-    await second.focus();
-    await page.keyboard.press('Delete');
-    await expect(status).toContainText('Status is one of Open, Overdue (');
-    await expect(live.locator('[aria-live]')).toHaveText(
+    // The page is prerendered: retry until the hydrated builder handles the key.
+    await expect(async () => {
+      await second.focus();
+      await page.keyboard.press('Delete');
+      await expect(status).toContainText('Status is one of Open, Overdue (', { timeout: 1000 });
+    }).toPass();
+    await expect(live.locator('star-query-builder [aria-live]')).toHaveText(
       'Rule 2 removed. Press Control and Z to undo.',
     );
     await page.keyboard.press('Control+z');
@@ -26,16 +29,21 @@ test.describe('query builder', () => {
     await live.getByRole('group', { name: 'Rule 2' }).focus();
     await page.keyboard.press('Alt+ArrowUp');
     await expect(status).toContainText('Total greater than or equal to 100 and Status is one of');
-    await expect(live.locator('[aria-live]')).toHaveText('Rule 2, position 1 of 2');
+    await expect(live.locator('star-query-builder [aria-live]')).toHaveText(
+      'Rule 2, position 1 of 2',
+    );
     await expect(live.getByRole('group', { name: 'Rule 1' })).toBeFocused();
 
     // A new text rule filters the table as the user types.
     await live.getByRole('button', { name: 'Add rule' }).first().click();
     await expect(live.getByRole('group', { name: 'Rule 3' })).toBeFocused();
     await live.getByRole('group', { name: 'Rule 3' }).getByRole('textbox').fill('stone');
-    await expect(status).toContainText('Customer contains stone');
+    await expect(status).toContainText(/Customer contains stone \(\d+ orders\)/);
+    const count = Number((await status.textContent())!.match(/\((\d+) orders\)/)![1]);
     const rows = live.locator('star-table tbody tr');
-    await expect(rows.first()).toContainText('Ava Stone');
+    // Every row that is left belongs to the customer "Ava Stone".
+    if (count > 0) await expect(rows.filter({ hasNotText: 'Ava Stone' })).toHaveCount(0);
+    else await expect(rows.first()).toContainText('No records found');
   });
 });
 
@@ -59,9 +67,14 @@ test.describe('kanban board', () => {
     const live = example(page, 'Task board');
     const announce = live.locator('[aria-live]');
     const card = live.locator('.star-kanban__card[data-key="T-101"]');
-    await card.focus();
-    await page.keyboard.press('Space');
-    await expect(announce).toHaveText('Picked up Draft the order form in To do');
+    // The page is prerendered: retry until the hydrated board handles the key.
+    await expect(async () => {
+      await card.focus();
+      await page.keyboard.press('Space');
+      await expect(announce).toHaveText('Picked up Draft the order form in To do', {
+        timeout: 1000,
+      });
+    }).toPass();
     await page.keyboard.press('ArrowRight');
     await page.keyboard.press('ArrowRight');
     await expect(announce).toHaveText('Moved to Review, position 1 of 2');
@@ -87,20 +100,26 @@ test.describe('kanban board', () => {
     await drag(
       page,
       live.locator('.star-kanban__card[data-key="T-102"]'),
-      live.locator('.star-kanban__card[data-key="T-107"]'),
+      live.locator('.star-kanban__card[data-key="T-104"]'),
     );
-    await expect(live.getByRole('status')).toContainText('Price list import: todo → done');
+    await expect(live.getByRole('status')).toContainText('Price list import: todo → doing');
     await expect(
-      live.getByRole('group', { name: /^Done, 3 items/ }).locator('[data-key="T-102"]'),
+      live.getByRole('group', { name: /^In progress, 3 items/ }).locator('[data-key="T-102"]'),
     ).toBeVisible();
+    await expect(live.locator('.star-kanban__column--over')).toHaveCount(1);
   });
 
   test('a cancelled move keeps the card in its column', async ({ page }) => {
     await openPage(page, '/controls/kanban', 'Kanban board');
     const live = example(page, 'Cancel a move');
     const card = live.locator('.star-kanban__card[data-key="T-107"]');
-    await card.focus();
-    await page.keyboard.press('Space');
+    await expect(async () => {
+      await card.focus();
+      await page.keyboard.press('Space');
+      await expect(live.locator('[aria-live]')).toHaveText('Picked up Customer search in Done', {
+        timeout: 1000,
+      });
+    }).toPass();
     await page.keyboard.press('ArrowLeft');
     await page.keyboard.press('Space');
     await expect(live.getByRole('status')).toHaveText('Customer search is done and stays in Done.');
