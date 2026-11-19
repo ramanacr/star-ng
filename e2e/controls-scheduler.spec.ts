@@ -97,12 +97,14 @@ test.describe('scheduler', () => {
     const moved = area.getByRole('button', { name: /^Team meeting, 10:30 to 11:30/ });
     await expect(moved).toBeVisible();
 
-    // Shrink from the top edge by one slot: 11:00 to 11:30.
+    // Shrink from the top edge by one slot: 11:00 to 11:30. The longer Design review now takes the
+    // first column, so the event is measured again.
     box = (await moved.boundingBox())!;
+    const x2 = box.x + box.width / 2;
     y = box.y + 2;
-    await page.mouse.move(x, y);
+    await page.mouse.move(x2, y);
     await page.mouse.down();
-    await page.mouse.move(x, y + slot, { steps: 8 });
+    await page.mouse.move(x2, y + slot, { steps: 8 });
     await page.mouse.up();
     await expect(area.getByRole('button', { name: /^Team meeting, 11:00 to 11:30/ })).toBeVisible();
   });
