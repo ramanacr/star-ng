@@ -178,232 +178,239 @@ const SORT_FIELDS: readonly StarFileSortField[] = ['name', 'size', 'modified', '
     '(drop)': 'onDrop($event)',
   },
   template: `
-    <div
-      class="star-fm"
-      role="region"
-      (copy)="$event.stopPropagation()"
-      [attr.aria-label]="ariaLabel() ?? text.fileManager"
-      [style.--star-fm-height]="height()"
-    >
-      <div class="star-fm__bar">
-        <star-breadcrumb
-          class="star-fm__path"
-          [items]="trail()"
-          [ariaLabel]="(ariaLabel() ?? text.fileManager) + ': ' + text.breadcrumb"
-        />
-        <input
-          type="search"
-          class="star-input star-fm__search"
-          [attr.aria-label]="text.search"
-          [placeholder]="text.search"
-          [value]="query()"
-          (input)="query.set($any($event.target).value)"
-        />
-      </div>
-
-      <div class="star-fm__toolbar" role="toolbar" [attr.aria-label]="text.fileToolbar">
-        @for (action of toolbar(); track action.id) {
-          @if (action.id === 'sort') {
-            <button
-              type="button"
-              class="star-fm__tool"
-              data-tool="sort"
-              [attr.tabindex]="toolStop() === 'sort' ? 0 : -1"
-              [starMenuTrigger]="sortMenu"
-              (focus)="toolStop.set('sort')"
-            >
-              <i class="ph-bold ph-sort-ascending" aria-hidden="true"></i>
-              <span>{{ text.sortBy }}</span>
-            </button>
-          } @else {
-            <button
-              type="button"
-              class="star-fm__tool"
-              [attr.data-tool]="action.id"
-              [attr.tabindex]="toolStop() === action.id ? 0 : -1"
-              [attr.aria-disabled]="action.disabled || null"
-              [attr.aria-pressed]="action.pressed ?? null"
-              [attr.aria-label]="action.iconOnly ? action.label : null"
-              (click)="action.disabled || action.run()"
-              (focus)="toolStop.set(action.id)"
-            >
-              <i [class]="action.icon" aria-hidden="true"></i>
-              @if (!action.iconOnly) {
-                <span>{{ action.label }}</span>
-              }
-            </button>
-          }
-        }
-      </div>
-      <star-menu #sortMenu [items]="sortItems()" />
-
-      @if (uploadOpen()) {
-        <div class="star-fm__upload">
-          <star-file-upload multiple [(value)]="uploadFiles" (selected)="onUpload($event)" />
-        </div>
-      }
-
-      <div class="star-fm__body" [class.star-fm__body--details]="detailsPane()">
-        <div class="star-fm__tree">
-          <star-tree
-            [nodes]="tree()"
-            selectionMode="single"
-            [value]="[folder() ?? '']"
-            (valueChange)="onTreeValue($event)"
-            [(expanded)]="expanded"
-            (nodeExpand)="onTreeExpand($event.node.key)"
-            [ariaLabel]="text.fileFolders"
+    <!-- The native copy event bubbles: it stops here, so only the copy output reaches the owner. -->
+    <div class="star-fm-root" (copy)="$event.stopPropagation()">
+      <div
+        class="star-fm"
+        role="region"
+        [attr.aria-label]="ariaLabel() ?? text.fileManager"
+        [style.--star-fm-height]="height()"
+      >
+        <div class="star-fm__bar">
+          <star-breadcrumb
+            class="star-fm__path"
+            [items]="trail()"
+            [ariaLabel]="(ariaLabel() ?? text.fileManager) + ': ' + text.breadcrumb"
+          />
+          <input
+            type="search"
+            class="star-input star-fm__search"
+            [attr.aria-label]="text.search"
+            [placeholder]="text.search"
+            [value]="query()"
+            (input)="query.set($any($event.target).value)"
           />
         </div>
 
-        <div
-          class="star-fm__content"
-          [attr.aria-describedby]="id + '-hint'"
-          [starContextMenu]="contextMenu"
-        >
-          <p class="star-sr-only" [id]="id + '-hint'">{{ text.fileManagerHint }}</p>
-          @if (view() === 'details') {
-            <star-table
-              [value]="visible()"
-              [columns]="columns()"
-              dataKey="id"
-              size="sm"
-              selectionMode="multiple"
-              metaKeySelection
-              [selectionKeys]="selection()"
-              (selectionKeysChange)="onTableSelection($event)"
-              [(sortField)]="sortField"
-              [(sortOrder)]="sortOrder"
-              [rowLabel]="rowLabel"
-              [ariaLabel]="text.fileContent"
-              [emptyMessage]="emptyText()"
-            >
-              <ng-template starCell="name" [starCellOf]="visible()" let-row>
-                <span
-                  class="star-fm__name"
-                  draggable="true"
-                  [attr.data-file-name]="row.id"
-                  [class.star-fm__name--drop]="dropTarget() === row.id"
-                >
-                  <i [class]="iconOf(row)" aria-hidden="true"></i>
-                  @if (renaming() === row.id) {
-                    <input
-                      class="star-input star-fm__rename"
-                      [attr.aria-label]="text.rename"
-                      [value]="row.name"
-                      (keydown)="onRenameKey($event, row)"
-                      (blur)="commitRename(row, $any($event.target).value)"
-                    />
-                  } @else {
-                    <span>{{ row.name }}</span>
-                  }
-                </span>
-              </ng-template>
-            </star-table>
-          } @else {
-            @if (visible().length) {
-              <div
-                class="star-fm__icons"
-                role="listbox"
-                aria-multiselectable="true"
-                [attr.aria-label]="text.fileContent"
+        <div class="star-fm__toolbar" role="toolbar" [attr.aria-label]="text.fileToolbar">
+          @for (action of toolbar(); track action.id) {
+            @if (action.id === 'sort') {
+              <button
+                type="button"
+                class="star-fm__tool"
+                data-tool="sort"
+                [attr.tabindex]="toolStop() === 'sort' ? 0 : -1"
+                [starMenuTrigger]="sortMenu"
+                (focus)="toolStop.set('sort')"
               >
-                @for (item of visible(); track item.id) {
-                  <div
-                    class="star-fm__icon"
-                    role="option"
-                    draggable="true"
-                    [attr.data-file-id]="item.id"
-                    [attr.aria-selected]="isSelected(item.id)"
-                    [class.star-fm__icon--selected]="isSelected(item.id)"
-                    [class.star-fm__icon--cut]="isCut(item.id)"
-                    [class.star-fm__icon--drop]="dropTarget() === item.id"
-                    [attr.tabindex]="iconStop() === item.id ? 0 : -1"
-                    (focus)="focusId.set(item.id)"
-                  >
-                    <i class="star-fm__icon-glyph" [class]="iconOf(item)" aria-hidden="true"></i>
-                    @if (renaming() === item.id) {
-                      <input
-                        class="star-input star-fm__rename"
-                        [attr.aria-label]="text.rename"
-                        [value]="item.name"
-                        (click)="$event.stopPropagation()"
-                        (keydown)="onRenameKey($event, item)"
-                        (blur)="commitRename(item, $any($event.target).value)"
-                      />
-                    } @else {
-                      <span class="star-fm__icon-name">{{ item.name }}</span>
-                    }
-                  </div>
-                }
-              </div>
+                <i class="ph-bold ph-sort-ascending" aria-hidden="true"></i>
+                <span>{{ text.sortBy }}</span>
+              </button>
             } @else {
-              <p class="star-fm__empty">{{ emptyText() }}</p>
+              <button
+                type="button"
+                class="star-fm__tool"
+                [attr.data-tool]="action.id"
+                [attr.tabindex]="toolStop() === action.id ? 0 : -1"
+                [attr.aria-disabled]="action.disabled || null"
+                [attr.aria-pressed]="action.pressed ?? null"
+                [attr.aria-label]="action.iconOnly ? action.label : null"
+                (click)="action.disabled || action.run()"
+                (focus)="toolStop.set(action.id)"
+              >
+                <i [class]="action.icon" aria-hidden="true"></i>
+                @if (!action.iconOnly) {
+                  <span>{{ action.label }}</span>
+                }
+              </button>
             }
           }
         </div>
+        <star-menu #sortMenu [items]="sortItems()" />
 
-        @if (detailsPane()) {
-          <aside class="star-fm__details" [attr.aria-label]="text.fileDetailsPane">
-            @if (selectedItems(); as chosen) {
-              @if (chosen.length === 1) {
-                <h3 class="star-fm__details-title">
-                  <i [class]="iconOf(chosen[0])" aria-hidden="true"></i>
-                  {{ chosen[0].name }}
-                </h3>
-                <dl class="star-fm__facts">
-                  <dt>{{ text.fileType }}</dt>
-                  <dd>{{ typeOf(chosen[0]) }}</dd>
-                  @if (!chosen[0].isFolder) {
-                    <dt>{{ text.fileSize }}</dt>
-                    <dd>{{ chosen[0].size | starFileSize: locale() }}</dd>
+        @if (uploadOpen()) {
+          <div class="star-fm__upload">
+            <star-file-upload multiple [(value)]="uploadFiles" (selected)="onUpload($event)" />
+          </div>
+        }
+
+        <div class="star-fm__body" [class.star-fm__body--details]="detailsPane()">
+          <div class="star-fm__tree">
+            <star-tree
+              [nodes]="tree()"
+              selectionMode="single"
+              [value]="[folder() ?? '']"
+              (valueChange)="onTreeValue($event)"
+              [(expanded)]="expanded"
+              (nodeExpand)="onTreeExpand($event.node.key)"
+              [ariaLabel]="text.fileFolders"
+            />
+          </div>
+
+          <div
+            class="star-fm__content"
+            [attr.aria-describedby]="id + '-hint'"
+            [starContextMenu]="contextMenu"
+          >
+            <p class="star-sr-only" [id]="id + '-hint'">{{ text.fileManagerHint }}</p>
+            @if (view() === 'details') {
+              <star-table
+                [value]="visible()"
+                [columns]="columns()"
+                dataKey="id"
+                size="sm"
+                selectionMode="multiple"
+                metaKeySelection
+                [selectionKeys]="selection()"
+                (selectionKeysChange)="onTableSelection($event)"
+                [(sortField)]="sortField"
+                [(sortOrder)]="sortOrder"
+                [rowLabel]="rowLabel"
+                [ariaLabel]="text.fileContent"
+                [emptyMessage]="emptyText()"
+              >
+                <ng-template starCell="name" [starCellOf]="visible()" let-row>
+                  <span
+                    class="star-fm__name"
+                    draggable="true"
+                    [attr.data-file-name]="row.id"
+                    [class.star-fm__name--drop]="dropTarget() === row.id"
+                  >
+                    <i [class]="iconOf(row)" aria-hidden="true"></i>
+                    @if (renaming() === row.id) {
+                      <input
+                        class="star-input star-fm__rename"
+                        [attr.aria-label]="text.rename"
+                        [value]="row.name"
+                        (keydown)="onRenameKey($event, row)"
+                        (blur)="commitRename(row, $any($event.target).value)"
+                      />
+                    } @else {
+                      <span>{{ row.name }}</span>
+                    }
+                  </span>
+                </ng-template>
+              </star-table>
+            } @else {
+              @if (visible().length) {
+                <div
+                  class="star-fm__icons"
+                  role="listbox"
+                  aria-multiselectable="true"
+                  [attr.aria-label]="text.fileContent"
+                >
+                  @for (item of visible(); track item.id) {
+                    <div
+                      class="star-fm__icon"
+                      role="option"
+                      draggable="true"
+                      [attr.data-file-id]="item.id"
+                      [attr.aria-selected]="isSelected(item.id)"
+                      [class.star-fm__icon--selected]="isSelected(item.id)"
+                      [class.star-fm__icon--cut]="isCut(item.id)"
+                      [class.star-fm__icon--drop]="dropTarget() === item.id"
+                      [attr.tabindex]="iconStop() === item.id ? 0 : -1"
+                      (focus)="focusId.set(item.id)"
+                    >
+                      <i class="star-fm__icon-glyph" [class]="iconOf(item)" aria-hidden="true"></i>
+                      @if (renaming() === item.id) {
+                        <input
+                          class="star-input star-fm__rename"
+                          [attr.aria-label]="text.rename"
+                          [value]="item.name"
+                          (click)="$event.stopPropagation()"
+                          (keydown)="onRenameKey($event, item)"
+                          (blur)="commitRename(item, $any($event.target).value)"
+                        />
+                      } @else {
+                        <span class="star-fm__icon-name">{{ item.name }}</span>
+                      }
+                    </div>
                   }
-                  @if (chosen[0].modified !== undefined) {
-                    <dt>{{ text.fileModified }}</dt>
-                    <dd>{{ dateOf(chosen[0]) }}</dd>
-                  }
-                </dl>
-              } @else if (chosen.length > 1) {
-                <p>{{ text.selectedItems(chosen.length) }}</p>
+                </div>
               } @else {
-                <p class="star-fm__muted">{{ text.fileNoSelection }}</p>
+                <p class="star-fm__empty">{{ emptyText() }}</p>
               }
             }
-          </aside>
-        }
+          </div>
+
+          @if (detailsPane()) {
+            <aside class="star-fm__details" [attr.aria-label]="text.fileDetailsPane">
+              @if (selectedItems(); as chosen) {
+                @if (chosen.length === 1) {
+                  <h3 class="star-fm__details-title">
+                    <i [class]="iconOf(chosen[0])" aria-hidden="true"></i>
+                    {{ chosen[0].name }}
+                  </h3>
+                  <dl class="star-fm__facts">
+                    <dt>{{ text.fileType }}</dt>
+                    <dd>{{ typeOf(chosen[0]) }}</dd>
+                    @if (!chosen[0].isFolder) {
+                      <dt>{{ text.fileSize }}</dt>
+                      <dd>{{ chosen[0].size | starFileSize: locale() }}</dd>
+                    }
+                    @if (chosen[0].modified !== undefined) {
+                      <dt>{{ text.fileModified }}</dt>
+                      <dd>{{ dateOf(chosen[0]) }}</dd>
+                    }
+                  </dl>
+                } @else if (chosen.length > 1) {
+                  <p>{{ text.selectedItems(chosen.length) }}</p>
+                } @else {
+                  <p class="star-fm__muted">{{ text.fileNoSelection }}</p>
+                }
+              }
+            </aside>
+          }
+        </div>
       </div>
+
+      <star-menu #contextMenu [items]="menuItems()" />
+
+      <star-dialog
+        [(visible)]="confirmOpen"
+        [header]="text.delete"
+        size="sm"
+        [role]="'alertdialog'"
+      >
+        <p>{{ text.fileDeleteConfirm(pendingDelete().length) }}</p>
+        <div starDialogFooter>
+          <star-button variant="ghost" (pressed)="confirmOpen.set(false)">{{
+            text.cancel
+          }}</star-button>
+          <star-button variant="danger" (pressed)="acceptDelete()">{{ text.delete }}</star-button>
+        </div>
+      </star-dialog>
+
+      <star-dialog [(visible)]="folderOpen" [header]="text.newFolder" size="sm">
+        <label class="star-fm__field">
+          <span>{{ text.folderName }}</span>
+          <input
+            class="star-input"
+            data-autofocus
+            [value]="folderName()"
+            (input)="folderName.set($any($event.target).value)"
+            (keydown.enter)="submitFolder()"
+          />
+        </label>
+        <div starDialogFooter>
+          <star-button variant="ghost" (pressed)="folderOpen.set(false)">{{
+            text.cancel
+          }}</star-button>
+          <star-button (pressed)="submitFolder()">{{ text.create }}</star-button>
+        </div>
+      </star-dialog>
     </div>
-
-    <star-menu #contextMenu [items]="menuItems()" />
-
-    <star-dialog [(visible)]="confirmOpen" [header]="text.delete" size="sm" [role]="'alertdialog'">
-      <p>{{ text.fileDeleteConfirm(pendingDelete().length) }}</p>
-      <div starDialogFooter>
-        <star-button variant="ghost" (pressed)="confirmOpen.set(false)">{{
-          text.cancel
-        }}</star-button>
-        <star-button variant="danger" (pressed)="acceptDelete()">{{ text.delete }}</star-button>
-      </div>
-    </star-dialog>
-
-    <star-dialog [(visible)]="folderOpen" [header]="text.newFolder" size="sm">
-      <label class="star-fm__field">
-        <span>{{ text.folderName }}</span>
-        <input
-          class="star-input"
-          data-autofocus
-          [value]="folderName()"
-          (input)="folderName.set($any($event.target).value)"
-          (keydown.enter)="submitFolder()"
-        />
-      </label>
-      <div starDialogFooter>
-        <star-button variant="ghost" (pressed)="folderOpen.set(false)">{{
-          text.cancel
-        }}</star-button>
-        <star-button (pressed)="submitFolder()">{{ text.create }}</star-button>
-      </div>
-    </star-dialog>
   `,
 })
 export class StarFileManager {

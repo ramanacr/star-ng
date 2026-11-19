@@ -2,6 +2,9 @@
 // table or large icons) and an optional details pane.
 @use '../shared' as *;
 
+.star-fm-root {
+  display: contents;
+}
 .star-fm-host {
   display: block;
   // A size container does not grow with its content: it takes the width it is given.

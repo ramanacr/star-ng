@@ -381,6 +381,16 @@ describe('StarFileManager', () => {
     );
   });
 
+  it('keeps native copy events of its dialogs and fields away from the copy output', async () => {
+    const { root, host, tool, stable } = await setup();
+    tool('new-folder').click();
+    await stable();
+    const field = root.querySelectorAll('dialog')[1].querySelector('input')!;
+    field.dispatchEvent(new Event('copy', { bubbles: true }));
+    root.querySelector('input[type="search"]')!.dispatchEvent(new Event('copy', { bubbles: true }));
+    expect(host.events.filter((e) => e.name === 'copy')).toEqual([]);
+  });
+
   it('renders on the server platform', async () => {
     TestBed.configureTestingModule({ providers: [{ provide: PLATFORM_ID, useValue: 'server' }] });
     const { rows } = await setup();
