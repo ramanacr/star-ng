@@ -674,6 +674,30 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         keywords: 'bar line area doughnut pie graph svg data table series',
         load: () => import('./controls/chart.page').then((m) => m.ChartPage),
       },
+      {
+        label: 'Sparkline',
+        path: 'controls/sparkline',
+        keywords: 'tiny inline chart trend line area bar win loss table cell micro',
+        load: () => import('./controls/sparkline.page').then((m) => m.SparklinePage),
+      },
+      {
+        label: 'Gauge',
+        path: 'controls/gauge',
+        keywords: 'linear radial arc gauge meter dial needle scale ranges ticks kpi',
+        load: () => import('./controls/gauge.page').then((m) => m.GaugePage),
+      },
+      {
+        label: 'Barcode',
+        path: 'controls/barcode',
+        keywords: 'code 128 ean 13 upc code 39 product label scanner print svg',
+        load: () => import('./controls/barcode.page').then((m) => m.BarcodePage),
+      },
+      {
+        label: 'QR code',
+        path: 'controls/qr-code',
+        keywords: 'qr 2d matrix barcode link url scan error correction logo svg',
+        load: () => import('./controls/qr-code.page').then((m) => m.QrCodePage),
+      },
     ],
   },
   {

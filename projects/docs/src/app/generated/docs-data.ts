@@ -733,6 +733,66 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ]
   },
+  "StarBarcode": {
+    "kind": "component",
+    "selector": "star-barcode",
+    "entry": "@star-ng/ui/barcode",
+    "description": "Barcode: a linear barcode drawn as SVG rectangles. Kendo UI `kendo-barcode` and Syncfusion `ejs-barcodegenerator` are the equivalents.",
+    "inputs": [
+      {
+        "name": "value",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "The value to encode."
+      },
+      {
+        "name": "type",
+        "type": "StarBarcodeType",
+        "default": "'code128'",
+        "required": false,
+        "description": "The symbology: `code128` (default), `ean13`, `upca` or `code39`."
+      },
+      {
+        "name": "showText",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Shows the human-readable text under the bars."
+      },
+      {
+        "name": "barHeight",
+        "type": "number",
+        "default": "64",
+        "required": false,
+        "description": "Height of the bars in pixels."
+      },
+      {
+        "name": "moduleWidth",
+        "type": "number",
+        "default": "2",
+        "required": false,
+        "description": "Width of the narrowest bar (one module) in pixels. Rounded to whole pixels, at least 1."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Label for assistive technology. Default: the human-readable value."
+      }
+    ],
+    "models": [],
+    "outputs": [
+      {
+        "name": "invalid",
+        "type": "boolean",
+        "default": null,
+        "required": false,
+        "description": "Emits `true` when the value cannot be encoded, and `false` when it can be again."
+      }
+    ]
+  },
   "StarBlockUi": {
     "kind": "component",
     "selector": "star-block-ui",
@@ -3497,6 +3557,123 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "outputs": []
   },
+  "StarGaugeBase": {
+    "kind": "directive",
+    "selector": "",
+    "entry": "@star-ng/ui/gauge",
+    "description": "Shared inputs and behaviour of `star-linear-gauge` and `star-radial-gauge`: the value and the scale, ranges, ticks, labels, formatting, motion and the optional interactive (slider) mode with keyboard, pointer and Signal Forms support.",
+    "inputs": [
+      {
+        "name": "min",
+        "type": "number | undefined",
+        "default": "0",
+        "required": false,
+        "description": "Lowest value of the scale. Also bound from a Signal Forms `min()` rule."
+      },
+      {
+        "name": "max",
+        "type": "number | undefined",
+        "default": "100",
+        "required": false,
+        "description": "Highest value of the scale. Also bound from a Signal Forms `max()` rule."
+      },
+      {
+        "name": "ranges",
+        "type": "readonly StarGaugeRange[]",
+        "default": "[]",
+        "required": false,
+        "description": "Coloured bands of the scale."
+      },
+      {
+        "name": "ticks",
+        "type": "StarGaugeTicks",
+        "default": "{ major: 5, minor: 2 }",
+        "required": false,
+        "description": "Major intervals (`major`) or the value between major ticks (`step`), and `minor` parts per interval."
+      },
+      {
+        "name": "labels",
+        "type": "boolean | Intl.NumberFormatOptions",
+        "default": "true",
+        "required": false,
+        "description": "Labels of the major ticks: `true` (default), `false`, or `Intl.NumberFormat` options that format the labels and the value text, for example `{ style: 'unit', unit: 'percent' }`."
+      },
+      {
+        "name": "locale",
+        "type": "string | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "Locale of the numbers (`Intl.NumberFormat`). Default: the runtime locale."
+      },
+      {
+        "name": "animate",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Animates the pointer when the value changes. Off when the user prefers reduced motion."
+      },
+      {
+        "name": "interactive",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Lets the user set the value: the gauge becomes a slider (keyboard and pointer)."
+      },
+      {
+        "name": "step",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Step of the keyboard and the pointer in interactive mode. A value not above zero means 1."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Label for assistive technology."
+      },
+      {
+        "name": "ariaLabelledby",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Id of the element that labels the gauge."
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "readonly",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [
+      {
+        "name": "value",
+        "type": "number",
+        "default": "0",
+        "required": false,
+        "description": "The value. Two-way bindable; a Signal Forms field in interactive mode."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "touch",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "Emits when an interactive gauge loses the focus."
+      }
+    ]
+  },
   "StarGroupTemplate": {
     "kind": "directive",
     "selector": "ng-template[starGroup]",
@@ -4451,6 +4628,30 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       }
     ]
+  },
+  "StarLinearGauge": {
+    "kind": "component",
+    "selector": "star-linear-gauge",
+    "entry": "@star-ng/ui/gauge",
+    "description": "Linear gauge: a value on a straight scale with ranges, ticks and labels. Kendo UI `kendo-lineargauge`, Ignite UI `igx-linear-gauge` and Syncfusion `ejs-lineargauge` are the equivalents.",
+    "inputs": [
+      {
+        "name": "pointer",
+        "type": "StarGaugePointer",
+        "default": "'bar'",
+        "required": false,
+        "description": "`bar` (default), `needle` or `marker`."
+      },
+      {
+        "name": "orientation",
+        "type": "StarGaugeOrientation",
+        "default": "'horizontal'",
+        "required": false,
+        "description": "`horizontal` (default) or `vertical` (the scale runs from the bottom)."
+      }
+    ],
+    "models": [],
+    "outputs": []
   },
   "StarList": {
     "kind": "component",
@@ -6222,6 +6423,103 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarQrCode": {
+    "kind": "component",
+    "selector": "star-qr-code",
+    "entry": "@star-ng/ui/qr-code",
+    "description": "QR code: a QR Code model 2 symbol drawn as SVG, encoded from ISO/IEC 18004 without a library. Kendo UI `kendo-qrcode`, Ignite UI `igx-qr-code-barcode` and Syncfusion `ejs-qrcodegenerator` are the equivalents.",
+    "inputs": [
+      {
+        "name": "value",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "The text to encode, for example a link."
+      },
+      {
+        "name": "errorCorrection",
+        "type": "StarQrErrorCorrection",
+        "default": "'M'",
+        "required": false,
+        "description": "Error correction level: L (7 %), M (15 %, default), Q (25 %) or H (30 %)."
+      },
+      {
+        "name": "size",
+        "type": "number",
+        "default": "160",
+        "required": false,
+        "description": "Width and height in pixels."
+      },
+      {
+        "name": "foreground",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Colour of the dark modules. Default `--star-code-dark` (black in both themes). Keep it dark and fixed: a theme token such as `--star-text-strong` turns light in the dark theme, and many readers cannot read a light code."
+      },
+      {
+        "name": "background",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Colour of the light modules and the quiet zone. Default `--star-code-light`."
+      },
+      {
+        "name": "image",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Address of an image in the centre, for example a logo. It hides modules, so the level is H. Keep the colours dark on light and test the code with the readers of your users."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Label for assistive technology. Default: \"QR code: \" and the value."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
+  "StarRadialGauge": {
+    "kind": "component",
+    "selector": "star-radial-gauge",
+    "entry": "@star-ng/ui/gauge",
+    "description": "Radial (arc) gauge: a value on a circular scale with ranges, ticks and labels. Kendo UI `kendo-radialgauge` and `kendo-arcgauge`, Ignite UI `igx-radial-gauge` and Syncfusion `ejs-circulargauge` are the equivalents.",
+    "inputs": [
+      {
+        "name": "pointer",
+        "type": "StarGaugePointer",
+        "default": "'needle'",
+        "required": false,
+        "description": "`needle` (default), `bar` or `marker`."
+      },
+      {
+        "name": "startAngle",
+        "type": "number",
+        "default": "225",
+        "required": false,
+        "description": "Angle of the lowest value, in math degrees (0 points right, 90 up)."
+      },
+      {
+        "name": "endAngle",
+        "type": "unknown",
+        "default": "-45",
+        "required": false,
+        "description": "Angle of the highest value, in math degrees. Smaller than `startAngle`: the arc runs clockwise."
+      },
+      {
+        "name": "arcWidth",
+        "type": "number",
+        "default": "10",
+        "required": false,
+        "description": "Width of the arc, in units of the 200 × 200 view box."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
   "StarRadio": {
     "kind": "component",
     "selector": "star-radio",
@@ -7007,6 +7305,93 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "entry": "@star-ng/ui/core",
     "description": "Base of all slot directives. Controls query it with `contentChildren(StarSlot, { descendants: true })`.",
     "inputs": [],
+    "models": [],
+    "outputs": []
+  },
+  "StarSparkline": {
+    "kind": "component",
+    "selector": "star-sparkline",
+    "entry": "@star-ng/ui/sparkline",
+    "description": "Sparkline: a tiny chart without axes that fits in a line of text or a table cell. Kendo UI `kendo-sparkline`, Ignite UI `igx-sparkline` and Syncfusion `ejs-sparkline` are the equivalents.",
+    "inputs": [
+      {
+        "name": "type",
+        "type": "StarSparklineType",
+        "default": "'line'",
+        "required": false,
+        "description": "`line` (default), `area`, `bar` or `win-loss`."
+      },
+      {
+        "name": "data",
+        "type": "readonly number[]",
+        "default": "[]",
+        "required": false,
+        "description": "The values, in order. A value that is not finite leaves a gap in a line."
+      },
+      {
+        "name": "min",
+        "type": "number | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "Lowest value of the plot. Default: the lowest value (zero for bars)."
+      },
+      {
+        "name": "max",
+        "type": "number | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "Highest value of the plot. Default: the highest value (zero for bars)."
+      },
+      {
+        "name": "highlight",
+        "type": "readonly StarSparklineHighlight[]",
+        "default": "[]",
+        "required": false,
+        "description": "Values that get a marker (line, area) or a strong colour (bar). Default: none."
+      },
+      {
+        "name": "referenceLine",
+        "type": "number | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "A value that gets a dashed horizontal line, for example a target. The automatic range includes it."
+      },
+      {
+        "name": "color",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Colour slot of the chart palette, 1 to 8 (`--star-chart-1…8`)."
+      },
+      {
+        "name": "width",
+        "type": "string | number",
+        "default": "'6em'",
+        "required": false,
+        "description": "Width: a number of pixels or a CSS length. Default: `6em`."
+      },
+      {
+        "name": "height",
+        "type": "string | number",
+        "default": "'1em'",
+        "required": false,
+        "description": "Height: a number of pixels or a CSS length. Default: `1em`, the height of the text."
+      },
+      {
+        "name": "locale",
+        "type": "string | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "Locale of the numbers in the label (`Intl.NumberFormat`). Default: the runtime locale."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Label for assistive technology. Default: a summary of the data."
+      }
+    ],
     "models": [],
     "outputs": []
   },
@@ -9799,6 +10184,10 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "badge/sizes": "<star-badge [value]=\"7\" size=\"sm\" />\n<star-badge [value]=\"7\" />\n<star-badge [value]=\"7\" size=\"lg\" />\n<star-badge severity=\"success\" ariaLabel=\"online\" />",
   "banner/basic": "<div class=\"docs-stack\">\n  <star-banner severity=\"warn\" dismissible [(open)]=\"open\">\n    Invoice export is slow today. Large exports can take up to ten minutes.\n    <star-button starBannerActions variant=\"ghost\" size=\"sm\">Status page</star-button>\n  </star-banner>\n  @if (!open()) {\n    <div class=\"docs-row\">\n      <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"open.set(true)\">\n        Show the banner again\n      </star-button>\n    </div>\n  }\n</div>",
   "banner/severity": "<div class=\"docs-stack\">\n  <star-banner>Projects can now have more than one owner.</star-banner>\n  <star-banner severity=\"success\">All orders of March are invoiced.</star-banner>\n  <star-banner severity=\"warn\" icon=\"ph-fill ph-cloud-warning\">\n    Some cities report slow deliveries.\n  </star-banner>\n  <star-banner severity=\"danger\">The order service is not available.</star-banner>\n  <star-banner icon=\"\">A banner without an icon.</star-banner>\n</div>",
+  "barcode/code128": "<star-barcode value=\"ORDER-2026-00418\" />",
+  "barcode/error": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-select\n      [options]=\"types\"\n      optionLabel=\"label\"\n      optionValue=\"value\"\n      [(value)]=\"type\"\n      ariaLabel=\"Barcode type\"\n      [style.width.rem]=\"10\"\n    />\n    <input\n      starInput\n      aria-label=\"Barcode value\"\n      [value]=\"value()\"\n      (input)=\"value.set($any($event.target).value)\"\n    />\n  </div>\n  <star-barcode\n    [value]=\"value()\"\n    [type]=\"type() ?? 'code128'\"\n    (invalid)=\"invalid.set($event)\"\n  />\n  <p>Valid: {{ invalid() ? 'no' : 'yes' }}</p>\n</div>",
+  "barcode/product": "<div class=\"docs-row\">\n  <star-barcode value=\"5901234123457\" type=\"ean13\" />\n  <star-barcode value=\"036000291452\" type=\"upca\" />\n  <star-barcode value=\"PART-42\" type=\"code39\" [moduleWidth]=\"1\" />\n</div>",
+  "barcode/size": "<star-barcode value=\"4006381333931\" type=\"ean13\" [moduleWidth]=\"3\" [barHeight]=\"90\" />\n<star-barcode value=\"INV-1042\" [showText]=\"false\" [barHeight]=\"40\" />",
   "block-ui/basic": "<div class=\"docs-stack\">\n  <star-block-ui [blocked]=\"blocked()\" message=\"Saving…\">\n    <div class=\"docs-stack\">\n      <star-field label=\"Note\">\n        <input starInput value=\"Waiting for approval\" />\n      </star-field>\n      <star-field label=\"Reference\">\n        <input starInput value=\"PO-1042\" />\n      </star-field>\n    </div>\n  </star-block-ui>\n  <star-button variant=\"secondary\" (pressed)=\"blockFor(1500)\">\n    Save (blocks for 1.5 s)\n  </star-button>\n  <star-button variant=\"secondary\" (pressed)=\"blocked.set(!blocked())\">\n    {{ blocked() ? 'Unblock' : 'Block' }}\n  </star-button>\n</div>",
   "bottom-nav/router": "<star-bottom-nav ariaLabel=\"Docs pages\">\n  <star-bottom-nav-item\n    routerLink=\"/controls/list\"\n    label=\"List\"\n    icon=\"ph ph-list-bullets\"\n  />\n  <star-bottom-nav-item\n    routerLink=\"/controls/bottom-nav\"\n    label=\"Bottom nav\"\n    icon=\"ph ph-dots-three-outline\"\n  />\n  <star-bottom-nav-item\n    routerLink=\"/controls/app-bar\"\n    label=\"App bar\"\n    icon=\"ph ph-browser\"\n  />\n</star-bottom-nav>",
   "bottom-nav/value": "<div class=\"docs-bottom-nav-frame\">\n  <p class=\"docs-bottom-nav-view\" role=\"status\">{{ views[section() ?? 'orders'] }}</p>\n  <star-bottom-nav [(value)]=\"section\" ariaLabel=\"Sections\">\n    <star-bottom-nav-item value=\"orders\" label=\"Orders\" icon=\"ph ph-package\" badge=\"3\" />\n    <star-bottom-nav-item value=\"cities\" label=\"Cities\" icon=\"ph ph-map-pin\" />\n    <star-bottom-nav-item value=\"projects\" label=\"Projects\" icon=\"ph ph-folder\" />\n    <star-bottom-nav-item value=\"settings\" label=\"Settings\" icon=\"ph ph-gear\" />\n  </star-bottom-nav>\n</div>",
@@ -9947,6 +10336,10 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "forms/two-way": "<star-checkbox [(checked)]=\"remember\">Remember this device</star-checkbox>\n<p class=\"docs-output\" role=\"status\">{{ remember() }}</p>",
   "galleria/basic": "<star-galleria\n  style=\"width: 100%; max-width: 40rem\"\n  [images]=\"images\"\n  ariaLabel=\"Site photos\"\n/>",
   "galleria/model": "<star-galleria\n  style=\"width: 100%; max-width: 40rem\"\n  [images]=\"images\"\n  [(activeIndex)]=\"active\"\n  ariaLabel=\"Linked photos\"\n/>\n<p class=\"docs-output\" role=\"status\">Active index: {{ active() }}</p>",
+  "gauge/interactive": "<div class=\"docs-stack\">\n  <star-field label=\"Volume\">\n    <star-linear-gauge interactive [step]=\"5\" [formField]=\"model.volume\" />\n  </star-field>\n  <star-radial-gauge pointer=\"bar\" [value]=\"settings().volume\" ariaLabel=\"Volume level\" />\n  <p>Volume: {{ settings().volume }}</p>\n</div>",
+  "gauge/linear": "<div class=\"docs-stack\">\n  <star-linear-gauge\n    [value]=\"load()\"\n    [ranges]=\"zones\"\n    [ticks]=\"{ step: 25, minor: 5 }\"\n    ariaLabel=\"Server load\"\n  />\n  <star-linear-gauge\n    [value]=\"load()\"\n    pointer=\"marker\"\n    [ranges]=\"zones\"\n    ariaLabel=\"Server load, marker\"\n  />\n  <div class=\"docs-row\">\n    <star-linear-gauge\n      orientation=\"vertical\"\n      [value]=\"72\"\n      [max]=\"120\"\n      [ticks]=\"{ major: 6, minor: 2 }\"\n      ariaLabel=\"Response time\"\n    />\n    <star-linear-gauge\n      orientation=\"vertical\"\n      pointer=\"needle\"\n      [value]=\"18\"\n      [min]=\"-20\"\n      [max]=\"40\"\n      [ranges]=\"cold\"\n      ariaLabel=\"Room temperature\"\n    />\n  </div>\n</div>",
+  "gauge/pointers": "<div class=\"docs-row\">\n  <star-radial-gauge [value]=\"62\" pointer=\"bar\" [arcWidth]=\"16\" ariaLabel=\"Disk use\" />\n  <star-radial-gauge\n    [value]=\"38\"\n    pointer=\"marker\"\n    [startAngle]=\"180\"\n    [endAngle]=\"0\"\n    [ticks]=\"{ major: 4, minor: 5 }\"\n    ariaLabel=\"Memory use\"\n  />\n</div>",
+  "gauge/radial": "<div class=\"docs-stack\">\n  <star-radial-gauge\n    [value]=\"load()\"\n    [ranges]=\"zones\"\n    [labels]=\"{ style: 'unit', unit: 'percent' }\"\n    locale=\"en-US\"\n    ariaLabel=\"Server load\"\n  />\n  <div class=\"docs-row\">\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"change(-15)\">Less</star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"change(15)\">More</star-button>\n  </div>\n</div>",
   "getting-started/result": "<star-button leadingIcon=\"ph-bold ph-plus\">New order</star-button>",
   "i18n/spinner": "<star-spinner />\n<docs-german-text />",
   "i18n/switch": "<div class=\"docs-stack\">\n  <star-select-button\n    [options]=\"languages\"\n    optionLabel=\"label\"\n    optionValue=\"id\"\n    [(value)]=\"language.choice\"\n    [allowEmpty]=\"false\"\n    ariaLabel=\"Language\"\n  />\n  <star-paginator [totalRecords]=\"95\" />\n  <star-field label=\"City\">\n    <star-select [options]=\"cities\" [(value)]=\"city\" filter ariaLabel=\"City\" />\n  </star-field>\n  <star-field label=\"Attachments\">\n    <star-file-upload multiple [maxFileSize]=\"1000000\" [fileLimit]=\"3\" />\n  </star-field>\n  <star-field label=\"New password\">\n    <star-password value=\"abc\" feedback />\n  </star-field>\n</div>",
@@ -10050,6 +10443,10 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "progress-bar/basic": "<div class=\"docs-stack\">\n  <star-progress-bar [value]=\"value()\" showValue ariaLabel=\"Upload\" />\n  <div class=\"docs-row\">\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"step(-20)\">Less</star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"step(20)\">More</star-button>\n  </div>\n</div>",
   "progress-bar/indeterminate": "<div class=\"docs-stack\">\n  <star-progress-bar indeterminate ariaLabel=\"Loading\" />\n</div>",
   "progress-bar/severities": "<div class=\"docs-stack\">\n  <star-progress-bar [value]=\"60\" ariaLabel=\"Primary\" />\n  <star-progress-bar [value]=\"80\" severity=\"success\" ariaLabel=\"Success\" />\n  <star-progress-bar [value]=\"45\" severity=\"warn\" ariaLabel=\"Warning\" />\n  <star-progress-bar [value]=\"25\" severity=\"danger\" ariaLabel=\"Danger\" />\n  <star-progress-bar [value]=\"70\" severity=\"info\" size=\"sm\" ariaLabel=\"Info, thin\" />\n</div>",
+  "qr-code/colours": "<star-qr-code value=\"INVOICE 2026-0042\" [size]=\"120\" ariaLabel=\"Invoice 2026-0042\" />",
+  "qr-code/image": "<star-qr-code value=\"https://example.com/projects\" image=\"favicon.svg\" [size]=\"200\" />",
+  "qr-code/levels": "<div class=\"docs-stack\">\n  <star-select-button\n    [options]=\"['L', 'M', 'Q', 'H']\"\n    [(value)]=\"level\"\n    ariaLabel=\"Error correction level\"\n  />\n  <input\n    starInput\n    aria-label=\"QR code value\"\n    [value]=\"value()\"\n    (input)=\"value.set($any($event.target).value)\"\n  />\n  <star-qr-code [value]=\"value()\" [errorCorrection]=\"levelOf(level())\" [size]=\"200\" />\n</div>",
+  "qr-code/link": "<star-qr-code value=\"https://example.com/orders/1042\" />",
   "radio/basic": "<star-radio-group [(value)]=\"plan\" ariaLabel=\"Plan\">\n  <star-radio value=\"starter\">Starter</star-radio>\n  <star-radio value=\"team\">Team</star-radio>\n  <star-radio value=\"business\">Business</star-radio>\n</star-radio-group>\n<p class=\"docs-output\" role=\"status\">Plan: {{ plan() }}</p>",
   "radio/disabled": "<star-radio-group [(value)]=\"delivery\" ariaLabel=\"Delivery\">\n  <star-radio value=\"standard\">Standard</star-radio>\n  <star-radio value=\"express\">Express</star-radio>\n  <star-radio value=\"pickup\" disabled>Pick-up (not available)</star-radio>\n</star-radio-group>",
   "radio/horizontal": "<star-radio-group [(value)]=\"size\" orientation=\"horizontal\" ariaLabel=\"Size\">\n  <star-radio value=\"s\">Small</star-radio>\n  <star-radio value=\"m\">Medium</star-radio>\n  <star-radio value=\"l\">Large</star-radio>\n</star-radio-group>",
@@ -10091,6 +10488,10 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "slider/disabled": "<div class=\"docs-stack\">\n  <star-slider [value]=\"30\" disabled ariaLabel=\"Locked value\" />\n</div>",
   "slider/format": "<div class=\"docs-stack\">\n  <star-slider\n    [(value)]=\"discount\"\n    [min]=\"0\"\n    [max]=\"50\"\n    [step]=\"5\"\n    showValue\n    [format]=\"percent\"\n    ariaLabel=\"Discount\"\n  />\n</div>",
   "slider/range": "<div class=\"docs-stack\">\n  <star-range-slider\n    [(value)]=\"price\"\n    [bounds]=\"[0, 500]\"\n    [step]=\"10\"\n    showValue\n    ariaLabel=\"Price range\"\n  />\n  <p class=\"docs-output\" role=\"status\">From {{ price()[0] }} to {{ price()[1] }}</p>\n</div>",
+  "sparkline/line": "<p>\n  Weekly sales <star-sparkline [data]=\"sales\" [highlight]=\"['last']\" /> rose to 21.5\n  thousand.\n</p>",
+  "sparkline/markers": "<star-sparkline\n  [data]=\"load\"\n  [highlight]=\"['min', 'max', 'last']\"\n  [referenceLine]=\"70\"\n  [min]=\"0\"\n  [max]=\"100\"\n  [width]=\"200\"\n  [height]=\"40\"\n  ariaLabel=\"Server load, target 70 percent\"\n/>",
+  "sparkline/table": "<star-table\n  [value]=\"regions\"\n  [columns]=\"columns\"\n  dataKey=\"region\"\n  ariaLabel=\"Sales per region\"\n>\n  <ng-template starCell=\"trend\" [starCellOf]=\"regions\" let-row>\n    <star-sparkline [data]=\"row.trend\" [highlight]=\"['last']\" />\n  </ng-template>\n</star-table>",
+  "sparkline/types": "<div class=\"docs-stack\">\n  <span\n    >Line <star-sparkline [data]=\"sales\" [width]=\"120\" [height]=\"28\" ariaLabel=\"Line\"\n  /></span>\n  <span\n    >Area\n    <star-sparkline\n      type=\"area\"\n      [data]=\"sales\"\n      [color]=\"3\"\n      [width]=\"120\"\n      [height]=\"28\"\n      ariaLabel=\"Area\"\n  /></span>\n  <span\n    >Bar\n    <star-sparkline\n      type=\"bar\"\n      [data]=\"change\"\n      [color]=\"7\"\n      [width]=\"120\"\n      [height]=\"28\"\n      ariaLabel=\"Bar\"\n  /></span>\n  <span\n    >Win-loss <star-sparkline type=\"win-loss\" [data]=\"change\" [width]=\"120\" [height]=\"28\"\n  /></span>\n</div>",
   "speed-dial/basic": "<div class=\"docs-row docs-dial-area\">\n  <star-speed-dial\n    [items]=\"actions\"\n    direction=\"right\"\n    ariaLabel=\"Quick actions\"\n    (itemClick)=\"last.set($event.label ?? '')\"\n  />\n  <p class=\"docs-output\" role=\"status\">Last action: {{ last() }}</p>\n</div>",
   "speed-dial/choice": "<div class=\"docs-row docs-dial-area\">\n  <star-speed-dial\n    size=\"sm\"\n    direction=\"down\"\n    icon=\"ph-bold ph-sort-ascending\"\n    [items]=\"sortItems\"\n    [activeIndex]=\"sortIndex()\"\n    ariaLabel=\"Sort\"\n  />\n  <p class=\"docs-output\" role=\"status\">Sorted by: {{ sortItems[sortIndex()].label }}</p>\n</div>",
   "speed-dial/directions": "<div class=\"docs-row docs-dial-area docs-dial-area--wide\">\n  <star-speed-dial [items]=\"actions\" direction=\"up\" ariaLabel=\"Actions up\" />\n  <star-speed-dial [items]=\"actions\" direction=\"down\" ariaLabel=\"Actions down\" />\n  <star-speed-dial [items]=\"actions\" direction=\"left\" ariaLabel=\"Actions left\" />\n  <star-speed-dial [items]=\"actions\" direction=\"right\" ariaLabel=\"Actions right\" />\n</div>",
