@@ -1,5 +1,17 @@
 import { expect, Locator, Page, test } from '@playwright/test';
-import { example, openPage } from './support';
+import { example, openPage as openDocsPage } from './support';
+
+/**
+ * Opens a docs page and waits until the controls are hydrated. The page is prerendered, so it is
+ * visible before the application runs, and a key before hydration is lost. A hydrated component
+ * loses its `ngh` attribute.
+ */
+async function openPage(page: Page, path: string, heading: string | RegExp): Promise<void> {
+  await openDocsPage(page, path, heading);
+  await expect(page.locator('star-query-builder[ngh], star-kanban[ngh]')).toHaveCount(0, {
+    timeout: 15_000,
+  });
+}
 
 test.describe('query builder', () => {
   test('filters the table and edits rules with the keyboard', async ({ page }) => {
@@ -13,12 +25,9 @@ test.describe('query builder', () => {
 
     // Delete on a focused rule row removes it; Control+Z restores it.
     const second = live.getByRole('group', { name: 'Rule 2' });
-    // The page is prerendered: retry until the hydrated builder handles the key.
-    await expect(async () => {
-      await second.focus();
-      await page.keyboard.press('Delete');
-      await expect(status).toContainText('Status is one of Open, Overdue (', { timeout: 1000 });
-    }).toPass();
+    await second.focus();
+    await page.keyboard.press('Delete');
+    await expect(status).toContainText('Status is one of Open, Overdue (');
     await expect(live.locator('star-query-builder [aria-live]')).toHaveText(
       'Rule 2 removed. Press Control and Z to undo.',
     );
@@ -67,14 +76,9 @@ test.describe('kanban board', () => {
     const live = example(page, 'Task board');
     const announce = live.locator('[aria-live]');
     const card = live.locator('.star-kanban__card[data-key="T-101"]');
-    // The page is prerendered: retry until the hydrated board handles the key.
-    await expect(async () => {
-      await card.focus();
-      await page.keyboard.press('Space');
-      await expect(announce).toHaveText('Picked up Draft the order form in To do', {
-        timeout: 1000,
-      });
-    }).toPass();
+    await card.focus();
+    await page.keyboard.press('Space');
+    await expect(announce).toHaveText('Picked up Draft the order form in To do');
     await page.keyboard.press('ArrowRight');
     await page.keyboard.press('ArrowRight');
     await expect(announce).toHaveText('Moved to Review, position 1 of 2');
@@ -113,13 +117,9 @@ test.describe('kanban board', () => {
     await openPage(page, '/controls/kanban', 'Kanban board');
     const live = example(page, 'Cancel a move');
     const card = live.locator('.star-kanban__card[data-key="T-107"]');
-    await expect(async () => {
-      await card.focus();
-      await page.keyboard.press('Space');
-      await expect(live.locator('[aria-live]')).toHaveText('Picked up Customer search in Done', {
-        timeout: 1000,
-      });
-    }).toPass();
+    await card.focus();
+    await page.keyboard.press('Space');
+    await expect(live.locator('[aria-live]')).toHaveText('Picked up Customer search in Done');
     await page.keyboard.press('ArrowLeft');
     await page.keyboard.press('Space');
     await expect(live.getByRole('status')).toHaveText('Customer search is done and stays in Done.');
