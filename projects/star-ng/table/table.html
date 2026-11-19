@@ -358,7 +358,12 @@
         </tr>
       }
     </thead>
-    <tbody #body>
+    <tbody
+      #body
+      [starContextMenu]="rowMenu"
+      (menuOpened)="onMenuOpened()"
+      (menuClosed)="onMenuClosed()"
+    >
       @if (loading() && loadingSlot(); as loader) {
         <tr>
           <td class="star-table__loading" [attr.colspan]="colspan()">
@@ -507,7 +512,9 @@
               [attr.tabindex]="rowTabIndex(row)"
               [attr.data-select-key]="rowSelectionMode() ? rowKeyText(row) : null"
               [attr.data-row]="cellMode() ? rowKeyText(row) : null"
+              [class.star-table__row--menu]="isMenuRow(row)"
               (click)="onRowClick(row, $event)"
+              (contextmenu)="onRowContextMenu(row, $event)"
               (focusin)="onRowFocus(row)"
               (keydown)="onRowKey(row, $event); onSelectionKey(row, $event)"
             >
@@ -852,6 +859,12 @@
     }
   </table>
 </div>
+<star-menu
+  #rowMenu
+  [items]="menuItems()"
+  [ariaLabel]="text.actions"
+  (itemClick)="onMenuItem($event)"
+/>
 <ng-content select="[starTableSummary]" />
 <ng-template #summaryCell let-summary>
   @if (summary.label) {

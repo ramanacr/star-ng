@@ -128,6 +128,11 @@ export const STAR_UI_TEXT_ES: StarUiText = {
   editsDiscarded: 'Cambios descartados.',
   rowAdded: 'Fila añadida.',
   rowRemoved: 'Fila eliminada.',
+  copyWithHeaders: 'Copiar con encabezados',
+  sortAscending: 'Orden ascendente',
+  sortDescending: 'Orden descendente',
+  hideColumn: (column) => `Ocultar ${column}`,
+  exportCsv: 'Exportar CSV',
   skippedCells: (count) =>
     `${count} ${forCount(count, 'celda no pegada', 'celdas no pegadas')}: valor no válido`,
   copiedCells: (count) => `${count} ${forCount(count, 'celda copiada', 'celdas copiadas')}`,

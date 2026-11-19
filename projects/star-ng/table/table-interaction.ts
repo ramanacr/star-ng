@@ -1,3 +1,4 @@
+import { CdkContextMenuTrigger } from '@angular/cdk/menu';
 import { DOCUMENT } from '@angular/common';
 import {
   afterNextRender,
@@ -5,6 +6,7 @@ import {
   booleanAttribute,
   computed,
   Directive,
+  effect,
   ElementRef,
   inject,
   Injector,
@@ -14,6 +16,7 @@ import {
   OutputEmitterRef,
   Signal,
   signal,
+  viewChild,
   WritableSignal,
 } from '@angular/core';
 import {
@@ -21,9 +24,18 @@ import {
   starInlineKey,
   starIsRtl,
   StarUiText,
+  ɵstarIsContextMenuKey,
+  ɵstarOpenContextMenu,
   ɵstarOptionalBoolean,
 } from '@star-ng/ui/core';
-import type { StarCellEditEvent, StarColumn } from './table';
+import type { StarMenuItem } from '@star-ng/ui/menu';
+import type {
+  StarCellEditEvent,
+  StarColumn,
+  StarCsvOptions,
+  StarSortOrder,
+  StarSortState,
+} from './table';
 import {
   parseTsv,
   StarTableCopyOptions,
@@ -32,6 +44,12 @@ import {
   toTsv,
 } from './table-clipboard';
 import { COLUMN_FALLBACK_VIEWPORT } from './table-column-window';
+import {
+  defaultMenuItems,
+  StarTableContextMenuEvent,
+  StarTableMenuDefault,
+  StarTableMenuItems,
+} from './table-context-menu';
 import {
   parseEditorText,
   sameEditValue,
@@ -126,6 +144,16 @@ export abstract class StarTableInteraction<T> {
   protected abstract isSelected(row: T): boolean;
   protected abstract rawValue(row: T, column: StarColumn<T>): unknown;
   protected abstract announce(message: string): void;
+  abstract readonly multiSort: Signal<boolean>;
+  abstract readonly sortField: WritableSignal<string | null>;
+  abstract readonly sortOrder: WritableSignal<StarSortOrder>;
+  abstract readonly sortMeta: WritableSignal<readonly StarSortState[]>;
+  abstract readonly first: WritableSignal<number>;
+  abstract pinColumn(field: string, side: StarPinSide | null): void;
+  abstract exportCsv(options?: StarCsvOptions<T>): void;
+  protected abstract emitLazy(): void;
+  protected abstract canHide(column: StarColumn<T>): boolean;
+  protected abstract setColumnVisible(column: StarColumn<T>, visible: boolean): void;
 
   // ---------------------------------------------------------------- inputs
 
@@ -184,6 +212,32 @@ export abstract class StarTableInteraction<T> {
   /** Before Ctrl+V writes cells: the cells and the text. `cancel()` stops the paste. */
   readonly beforePaste = output<StarTablePasteEvent<T>>();
 
+  /**
+   * Context menu of the body (right click, Shift+F10 or the context menu key on a cell or a row):
+   * a list of `StarMenuItem`, or a function of the row and the column (`null` off a data cell)
+   * that returns the items. The built-in items of `contextMenuDefaults` come first. Without items
+   * the browser menu shows. After a choice the focus returns to the cell. PrimeNG `contextMenu`,
+   * AG Grid `getContextMenuItems`, Ignite UI `contextMenu` output.
+   */
+  readonly contextMenu = input<StarTableMenuItems<T> | null>(null);
+
+  /**
+   * Built-in context menu items, in this order: `'copy'` and `'copyWithHeaders'`
+   * (`copyToClipboard`), `'pinStart'`, `'pinEnd'`, `'unpin'` (`pinColumn`), `'sortAsc'`,
+   * `'sortDesc'` (sortable columns), `'hideColumn'` and `'export'` (`exportCsv`). Column items
+   * show on a data cell only. AG Grid default menu items.
+   */
+  readonly contextMenuDefaults = input<readonly StarTableMenuDefault[]>([]);
+
+  /** The row of the open (or last) context menu. Two-way. PrimeNG `contextMenuSelection`. */
+  readonly contextMenuSelection = model<T | null>(null);
+
+  /**
+   * The user chose a context menu item (also a built-in one, after its action): the row, the
+   * column (`null` off a data cell) and the item. PrimeNG `onContextMenuSelect`.
+   */
+  readonly contextMenuSelect = output<StarTableContextMenuEvent<T>>();
+
   /** The focused cell changed (keyboard, click or `focusCell`). Ignite UI `activeNodeChange`. */
   readonly activeCellChange = output<StarTableCellRef | null>();
 
@@ -228,6 +282,30 @@ export abstract class StarTableInteraction<T> {
 
   /** The fixed corner of a range: the cell of the last click, Space or plain move. */
   private cellAnchor: StarTableCellRef | null = null;
+
+  /** The CDK context menu trigger on the body. It stays disabled until a row prepares a menu. */
+  private readonly menuTrigger = viewChild('body', { read: CdkContextMenuTrigger });
+  /** Items of the menu that opens now. */
+  protected readonly menuItems = signal<readonly StarMenuItem[]>([]);
+  /** The context menu is open. */
+  private readonly menuOpen = signal(false);
+  /** The cell of the open menu, and the element that had the focus. */
+  private menuTarget: {
+    readonly row: T;
+    readonly column: StarColumn<T> | null;
+    readonly focus: Element | null;
+  } | null = null;
+  /** The table has context menu items. */
+  protected readonly hasContextMenu = computed(
+    () => !!this.contextMenu() || this.contextMenuDefaults().length > 0,
+  );
+
+  constructor() {
+    effect(() => {
+      const trigger = this.menuTrigger();
+      if (trigger) trigger.disabled = true;
+    });
+  }
 
   /** Rows that the keys move between: the page rows that are not in a closed group. */
   private readonly navRows = computed(() =>
@@ -327,7 +405,7 @@ export abstract class StarTableInteraction<T> {
   }
 
   protected onCellKeydown(event: KeyboardEvent): void {
-    if (event.defaultPrevented || this.onCopyKey(event)) return;
+    if (event.defaultPrevented || this.onCopyKey(event) || this.onMenuKey(event)) return;
     if (!this.cellMode() || event.altKey) return;
     const target = this.cellOf(event.target);
     if (!target || (event.target as Element).closest(OWN_KEYS)) return;
@@ -366,6 +444,113 @@ export abstract class StarTableInteraction<T> {
     this.moveFocus(rows[index], nextColumn, true);
     if (extend) this.selectCell(rows[index], nextColumn, 'extend');
     else this.cellAnchor = { rowKey: this.trackKey(rows[index]), field: nextColumn.field };
+  }
+
+  // ---------------------------------------------------------------- context menu
+
+  /** The row of the open context menu (`contextMenuSelection`). */
+  protected isMenuRow(row: T): boolean {
+    const selected = this.contextMenuSelection();
+    if (!this.menuOpen() || selected === null) return false;
+    return Object.is(this.trackKey(selected), this.trackKey(row));
+  }
+
+  /**
+   * A `contextmenu` event on a body row (it comes before the CDK trigger on the body): builds the
+   * items for the cell and lets the trigger open. Without items the browser menu shows.
+   */
+  protected onRowContextMenu(row: T, event: MouseEvent): void {
+    const trigger = this.menuTrigger();
+    if (!trigger) return;
+    trigger.disabled = true;
+    if (!this.hasContextMenu() || (event.target as Element).closest(OWN_KEYS)) return;
+    const column = this.cellOf(event.target)?.column ?? null;
+    const items = this.menuItemsFor(row, column);
+    if (!items.length) return;
+    if (trigger.isOpen()) trigger.close();
+    const active = this.interactionDocument.activeElement;
+    this.menuTarget = {
+      row,
+      column,
+      focus: this.body()?.nativeElement.contains(active) ? active : null,
+    };
+    this.contextMenuSelection.set(row);
+    this.menuItems.set(items);
+    trigger.menuData = { $implicit: items };
+    trigger.disabled = false;
+  }
+
+  /** The menu opened: the trigger is disabled again, so other body parts keep the browser menu. */
+  protected onMenuOpened(): void {
+    const trigger = this.menuTrigger();
+    if (trigger) trigger.disabled = true;
+    this.menuOpen.set(true);
+  }
+
+  protected onMenuItem(item: StarMenuItem): void {
+    const target = this.menuTarget;
+    if (target) this.contextMenuSelect.emit({ row: target.row, column: target.column, item });
+  }
+
+  /** The menu closed: the focus goes back to the cell when it has nowhere else to be. */
+  protected onMenuClosed(): void {
+    const target = this.menuTarget;
+    this.menuOpen.set(false);
+    setTimeout(() => {
+      const doc = this.interactionDocument;
+      const active = doc.activeElement;
+      if (!target || (active && active !== doc.body && active.isConnected)) return;
+      const back =
+        target.focus?.isConnected && target.focus instanceof HTMLElement
+          ? target.focus
+          : target.column && this.cellElement(target.row, target.column);
+      if (back) this.focusElement(back);
+    });
+  }
+
+  /** Shift+F10 or the context menu key in a body row: opens the menu at the cell (or the row). */
+  private onMenuKey(event: KeyboardEvent): boolean {
+    if (!ɵstarIsContextMenuKey(event) || !this.hasContextMenu()) return false;
+    const target = event.target as Element;
+    const body = this.body()?.nativeElement;
+    const tr = target.closest?.('tr');
+    if (!body || !tr || tr.parentElement !== body || target.closest(OWN_KEYS)) return false;
+    event.preventDefault();
+    ɵstarOpenContextMenu(target.closest<HTMLElement>('td[data-field]') ?? (tr as HTMLElement));
+    return true;
+  }
+
+  /** Built-in items first, then the `contextMenu` items (a separator between the two). */
+  private menuItemsFor(row: T, column: StarColumn<T> | null): StarMenuItem[] {
+    const builtIn = defaultMenuItems(this.contextMenuDefaults(), {
+      text: this.text,
+      column,
+      side: column ? this.sideOf(column) : null,
+      canHide: !!column && this.canHide(column),
+      copy: (headers) => {
+        // Without a selection the copy takes the cell of the menu.
+        if (column) this.setActive(row, column);
+        void this.copyToClipboard({ headers });
+      },
+      pin: (side) => column && this.pinColumn(column.field, side),
+      sort: (order) => column && this.sortColumn(column.field, order),
+      hide: () => column && this.setColumnVisible(column, false),
+      exportCsv: () => this.exportCsv(),
+    });
+    const source = this.contextMenu();
+    const own = typeof source === 'function' ? source(row, column) : (source ?? []);
+    return builtIn.length && own.length
+      ? [...builtIn, { separator: true }, ...own]
+      : [...builtIn, ...own];
+  }
+
+  /** Sorts by one column in one order (the context menu sort items). */
+  private sortColumn(field: string, order: StarSortOrder): void {
+    this.sortMeta.set(this.multiSort() ? [{ field, order }] : []);
+    this.sortField.set(field);
+    this.sortOrder.set(order);
+    this.first.set(0);
+    this.emitLazy();
   }
 
   // ---------------------------------------------------------------- clipboard

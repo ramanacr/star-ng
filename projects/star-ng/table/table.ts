@@ -45,6 +45,7 @@ import {
   starSlot,
   starSlotMap,
 } from '@star-ng/ui/core';
+import { StarContextMenu, StarMenu } from '@star-ng/ui/menu';
 import { StarPaginator } from '@star-ng/ui/paginator';
 import { StarPopover } from '@star-ng/ui/popover';
 import { StarMultiSelect, StarSelect } from '@star-ng/ui/select';
@@ -452,6 +453,8 @@ export class StarRowExpansionTemplate<T = unknown> {
     NgTemplateOutlet,
     StarButton,
     StarCheckbox,
+    StarContextMenu,
+    StarMenu,
     StarMultiSelect,
     StarPaginator,
     StarSelect,

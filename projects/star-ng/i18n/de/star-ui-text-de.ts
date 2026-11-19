@@ -126,6 +126,11 @@ export const STAR_UI_TEXT_DE: StarUiText = {
   editsDiscarded: 'Änderungen verworfen.',
   rowAdded: 'Zeile hinzugefügt.',
   rowRemoved: 'Zeile gelöscht.',
+  copyWithHeaders: 'Mit Überschriften kopieren',
+  sortAscending: 'Aufsteigend sortieren',
+  sortDescending: 'Absteigend sortieren',
+  hideColumn: (column) => `${column} ausblenden`,
+  exportCsv: 'Als CSV exportieren',
   skippedCells: (count) =>
     `${count} ${forCount(count, 'Zelle', 'Zellen')} nicht eingefügt: Wert ungültig`,
   copiedCells: (count) => `${count} ${forCount(count, 'Zelle', 'Zellen')} kopiert`,

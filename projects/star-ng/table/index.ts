@@ -9,6 +9,11 @@ export {
   type StarColumnGroup,
   type StarColumnGroupHeaderContext,
 } from './table-column-groups';
+export type {
+  StarTableContextMenuEvent,
+  StarTableMenuDefault,
+  StarTableMenuItems,
+} from './table-context-menu';
 export * from './table-defaults';
 export {
   starCellError,

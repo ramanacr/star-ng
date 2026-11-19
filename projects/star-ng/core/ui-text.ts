@@ -135,6 +135,16 @@ export interface StarUiText {
   readonly editsDiscarded: string;
   readonly rowAdded: string;
   readonly rowRemoved: string;
+  /** Table context menu: copy with the column headers. */
+  readonly copyWithHeaders: string;
+  /** Table context menu: sort the column ascending. */
+  readonly sortAscending: string;
+  /** Table context menu: sort the column descending. */
+  readonly sortDescending: string;
+  /** Table context menu: hide a column. */
+  readonly hideColumn: (column: string) => string;
+  /** Table context menu: download the rows as CSV. */
+  readonly exportCsv: string;
   /** Table: announced when Ctrl+V left out cells with a value that is not valid. */
   readonly skippedCells: (count: number) => string;
   /** Table: announced after Ctrl+C (or Copy) put cells on the clipboard. */
@@ -589,6 +599,11 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   editsDiscarded: 'Changes discarded.',
   rowAdded: 'Row added.',
   rowRemoved: 'Row deleted.',
+  copyWithHeaders: 'Copy with headers',
+  sortAscending: 'Sort ascending',
+  sortDescending: 'Sort descending',
+  hideColumn: (column) => `Hide ${column}`,
+  exportCsv: 'Export CSV',
   skippedCells: (count) =>
     count === 1
       ? '1 cell not pasted: value not valid'
@@ -903,6 +918,7 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   pinColumnStart: ['column'],
   pinColumnEnd: ['column'],
   unpinColumn: ['column'],
+  hideColumn: ['column'],
   skippedCells: ['count'],
   copiedCells: ['count'],
   pastedCells: ['count'],
