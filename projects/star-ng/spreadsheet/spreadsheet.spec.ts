@@ -152,6 +152,16 @@ describe('StarSpreadsheet', () => {
     expect(el.querySelector('.star-spreadsheet__editor')).toBeNull();
   });
 
+  it('keeps keys typed before the editor has the focus', async () => {
+    const { fixture, grid, host } = await setup();
+    grid.focus();
+    key(grid, '4');
+    key(grid, '2');
+    key(grid, 'Enter');
+    await fixture.whenStable();
+    expect(host.cells()['A1']).toEqual({ value: 42 });
+  });
+
   it('edits in place with F2, cancels with Escape, and Tab commits to the right', async () => {
     const { grid, press, host, el } = await setup();
     grid.focus();

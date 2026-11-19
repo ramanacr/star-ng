@@ -947,7 +947,17 @@ export class StarSpreadsheet {
   }
 
   protected onGridKeydown(event: KeyboardEvent): void {
-    if (event.target !== this.grid().nativeElement || this.editing()) return;
+    if (event.target !== this.grid().nativeElement) return;
+    const editing = this.editing();
+    if (editing) {
+      // Keys typed before the cell editor has the focus (fast typing) still go into the edit.
+      if (editing.source !== 'cell') return;
+      if (event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey) {
+        event.preventDefault();
+        this.editing.set({ ...editing, text: editing.text + event.key });
+      } else this.onEditorKeydown(event);
+      return;
+    }
     const ctrl = event.ctrlKey || event.metaKey;
     const shift = event.shiftKey;
     const anchor = this.anchor();
