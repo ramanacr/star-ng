@@ -20,6 +20,8 @@ const SAME_AS_ENGLISH: Record<string, readonly Name[]> = {
     'chartX',
     'chartY',
     'minute',
+    // "Zoom" is the usual German UI word.
+    'documentZoom',
     // A data point reads "series, category: value" in every language.
     'chartPointLabel',
   ],
@@ -35,8 +37,9 @@ const SAME_AS_ENGLISH: Record<string, readonly Name[]> = {
     'queryFalse',
     'queryRuleSummary',
     'chartPointLabel',
-    // "General" is the Spanish name of the number format too.
+    // "General" is the Spanish name of the number format too; "Zoom" is the Spanish UI word.
     'spreadsheetFormatGeneral',
+    'documentZoom',
   ],
 };
 

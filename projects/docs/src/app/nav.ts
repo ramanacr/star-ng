@@ -754,6 +754,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         load: () => import('./controls/editor.page').then((m) => m.EditorPage),
       },
       {
+        label: 'Document viewer',
+        path: 'controls/document-viewer',
+        keywords: 'pdf viewer pages zoom thumbnails search print download renderer pdf.js',
+        load: () => import('./controls/document-viewer.page').then((m) => m.DocumentViewerPage),
+      },
+      {
         label: 'Carousel',
         path: 'controls/carousel',
         keywords: 'slides scroll snap autoplay pages dots slider',

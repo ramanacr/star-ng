@@ -4541,6 +4541,177 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ]
   },
+  "StarDocumentError": {
+    "kind": "directive",
+    "selector": "ng-template[starDocumentError]",
+    "entry": "@star-ng/ui/document-viewer",
+    "description": "Content of the error state. Context: the error (`let-error`).",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
+  "StarDocumentPage": {
+    "kind": "component",
+    "selector": "star-document-page",
+    "entry": "@star-ng/ui/document-viewer",
+    "description": "One page canvas (internal). It sizes the canvas to the page at the scale times `devicePixelRatio`, asks the renderer to draw it, shows a skeleton until then, and frees the canvas memory when it leaves the DOM.",
+    "inputs": [
+      {
+        "name": "renderer",
+        "type": "StarDocumentRenderer",
+        "default": null,
+        "required": true,
+        "description": ""
+      },
+      {
+        "name": "index",
+        "type": "number",
+        "default": null,
+        "required": true,
+        "description": "Zero-based page index."
+      },
+      {
+        "name": "size",
+        "type": "StarDocumentPageSize",
+        "default": null,
+        "required": true,
+        "description": "Page size at scale 1, not rotated."
+      },
+      {
+        "name": "scale",
+        "type": "number",
+        "default": null,
+        "required": true,
+        "description": ""
+      },
+      {
+        "name": "rotation",
+        "type": "number",
+        "default": "0",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
+  "StarDocumentViewer": {
+    "kind": "component",
+    "selector": "star-document-viewer",
+    "entry": "@star-ng/ui/document-viewer",
+    "description": "Document viewer (PDF.js viewer, Syncfusion `ejs-pdfviewer`, Kendo UI `kendo-pdfviewer`, DevExtreme has none, Ignite UI has none): a shell that shows the pages of any document through a `StarDocumentRenderer` (`STAR_DOCUMENT_RENDERER` or the `renderer` input). StarNG ships no PDF engine; see `StarDocumentRenderer` for a PDF.js adapter of a few lines.",
+    "inputs": [
+      {
+        "name": "source",
+        "type": "unknown",
+        "default": "null",
+        "required": false,
+        "description": "What the renderer loads: a URL, bytes, a Blob, or any value your renderer understands."
+      },
+      {
+        "name": "title",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "Title of the document: the name of the page area (default: the UI text `documentDefaultTitle`)."
+      },
+      {
+        "name": "renderer",
+        "type": "StarDocumentRenderer | null",
+        "default": "null",
+        "required": false,
+        "description": "Renderer of this viewer; wins over `STAR_DOCUMENT_RENDERER`."
+      },
+      {
+        "name": "height",
+        "type": "string",
+        "default": "'32rem'",
+        "required": false,
+        "description": "CSS height of the page area."
+      },
+      {
+        "name": "showDownload",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Shows the download button, which emits `download`."
+      },
+      {
+        "name": "showPrint",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Shows the print button, which emits `print`."
+      }
+    ],
+    "models": [
+      {
+        "name": "page",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "The page in view, one-based."
+      },
+      {
+        "name": "zoom",
+        "type": "StarDocumentZoom",
+        "default": "'fit-width'",
+        "required": false,
+        "description": "`fit-width` (default), `fit-page`, or a scale factor (1 = 100 %)."
+      },
+      {
+        "name": "rotation",
+        "type": "StarDocumentRotation",
+        "default": "0",
+        "required": false,
+        "description": "Clockwise rotation of all pages."
+      },
+      {
+        "name": "mode",
+        "type": "'continuous' | 'single'",
+        "default": "'continuous'",
+        "required": false,
+        "description": "`continuous`: all pages one below the other (default). `single`: one page at a time."
+      },
+      {
+        "name": "thumbnails",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows the thumbnails sidebar."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "loaded",
+        "type": "StarDocumentInfo",
+        "default": null,
+        "required": false,
+        "description": "The document loaded: page count and sizes."
+      },
+      {
+        "name": "loadError",
+        "type": "unknown",
+        "default": null,
+        "required": false,
+        "description": "The renderer could not load the source."
+      },
+      {
+        "name": "download",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "The download button was pressed; the owner downloads the file."
+      },
+      {
+        "name": "print",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "The print button was pressed; the owner prints."
+      }
+    ]
+  },
   "StarDrawer": {
     "kind": "component",
     "selector": "star-drawer",
@@ -14464,6 +14635,9 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "divider/vertical": "<div class=\"docs-row\">\n  <span>Orders</span>\n  <star-divider layout=\"vertical\" />\n  <span>Invoices</span>\n  <star-divider layout=\"vertical\" type=\"dashed\" />\n  <span>Reports</span>\n</div>",
   "dock/basic": "<div class=\"docs-stack\">\n  <star-dock [items]=\"apps\" ariaLabel=\"Apps\" (itemClick)=\"last.set($event.label ?? '')\" />\n  <p class=\"docs-output\" role=\"status\">Opened: {{ last() }}</p>\n</div>",
   "dock/left": "<star-dock [items]=\"apps\" position=\"left\" ariaLabel=\"Apps on the left\" />",
+  "document-viewer/error": "<star-document-viewer source=\"missing.pdf\" title=\"Missing file\" height=\"12rem\">\n  <ng-template starDocumentError let-error>\n    {{ $any(error).message }} Check the link and try again.\n  </ng-template>\n</star-document-viewer>",
+  "document-viewer/images": "<star-document-viewer\n  [source]=\"images\"\n  [renderer]=\"imageRenderer\"\n  title=\"Warehouse scans\"\n  height=\"22rem\"\n  zoom=\"fit-page\"\n  mode=\"single\"\n  [showPrint]=\"false\"\n/>",
+  "document-viewer/report": "<div class=\"docs-stack\">\n  <star-document-viewer\n    [source]=\"12\"\n    title=\"Quarterly report\"\n    height=\"28rem\"\n    [(page)]=\"page\"\n    [(thumbnails)]=\"thumbnails\"\n    (download)=\"action.set('download pressed: save the file here.')\"\n    (print)=\"action.set('print pressed: print the file here.')\"\n  />\n  <p class=\"docs-output\" role=\"status\">Page {{ page() }}. {{ action() }}</p>\n</div>",
   "drawer/basic": "<star-button leadingIcon=\"ph-bold ph-sidebar-simple\" (pressed)=\"basicOpen.set(true)\">\n  Open details\n</star-button>\n<star-drawer [(visible)]=\"basicOpen\" header=\"Order ORD-1042\" dismissableMask>\n  <div class=\"docs-stack\">\n    <p class=\"docs-output\">Orchard Supply, 12 items, ships on Friday.</p>\n    <star-field label=\"Internal note\">\n      <textarea starInput autoResize rows=\"3\"></textarea>\n    </star-field>\n  </div>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button variant=\"ghost\" (pressed)=\"basicOpen.set(false)\">Close</star-button>\n  </div>\n</star-drawer>",
   "drawer/modes": "<div class=\"docs-stack\">\n  <p class=\"docs-output\" role=\"status\">Last event: {{ modeEvent() }}</p>\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"floatOpen.set(true)\">Non-modal</star-button>\n    <star-button variant=\"secondary\" (pressed)=\"fullOpen.set(true)\"\n      >Full screen</star-button\n    >\n  </div>\n</div>\n<star-drawer\n  [(visible)]=\"floatOpen\"\n  header=\"Filters\"\n  position=\"end\"\n  drawerSize=\"20rem\"\n  [modal]=\"false\"\n  (shown)=\"modeEvent.set('non-modal shown')\"\n  (hidden)=\"modeEvent.set('non-modal hidden')\"\n>\n  <p>The page behind this drawer stays usable.</p>\n</star-drawer>\n<star-drawer\n  [(visible)]=\"fullOpen\"\n  header=\"Invoice INV-2041\"\n  position=\"bottom\"\n  fullScreen\n  dismissible\n  (shown)=\"modeEvent.set('full screen shown')\"\n  (hidden)=\"modeEvent.set('full screen hidden')\"\n>\n  <p>This drawer covers the window. Escape or the close button closes it.</p>\n</star-drawer>",
   "drawer/position": "<div class=\"docs-row\">\n  @for (item of positions; track item) {\n    <star-button variant=\"secondary\" (pressed)=\"openAt(item)\">{{ item }}</star-button>\n  }\n</div>\n<star-drawer\n  [(visible)]=\"positionOpen\"\n  [position]=\"position()\"\n  [drawerSize]=\"position() === 'top' || position() === 'bottom' ? '14rem' : '22rem'\"\n  [header]=\"'Drawer at the ' + position()\"\n>\n  <p>This drawer is pinned to the {{ position() }} edge.</p>\n</star-drawer>",

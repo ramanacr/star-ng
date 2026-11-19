@@ -1,0 +1,206 @@
+import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import {
+  STAR_DOCUMENT_RENDERER,
+  StarDocumentError,
+  StarDocumentViewer,
+} from '@star-ng/ui/document-viewer';
+import { DOCS, DocsRow } from '../shared/docs';
+import { sampleSet } from '../shared/sample-images';
+import { ImagePagesRenderer, SampleReportRenderer } from '../shared/sample-renderers';
+
+@Component({
+  selector: 'docs-document-viewer-page',
+  imports: [DOCS, StarDocumentViewer, StarDocumentError],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  // Each viewer of this page that has no renderer input gets its own generated-report renderer.
+  providers: [{ provide: STAR_DOCUMENT_RENDERER, useFactory: () => new SampleReportRenderer() }],
+  template: `
+    <docs-page
+      heading="Document viewer"
+      lead="A viewer shell for paged documents: page navigation, zoom, rotation, thumbnails, search, full screen, and download and print outputs. A renderer reads the document and draws the pages; StarNG ships no PDF engine, so plug in PDF.js or your own. The PDF.js viewer, Syncfusion ejs-pdfviewer and Kendo UI PDFViewer are the equivalents; DevExtreme and Ignite UI have none."
+      importFrom="import { StarDocumentViewer, STAR_DOCUMENT_RENDERER } from '@star-ng/ui/document-viewer';"
+    >
+      <docs-example
+        heading="Generated report"
+        source="document-viewer/report"
+        [script]="reportScript"
+        note="The renderer comes from STAR_DOCUMENT_RENDERER. It gives text, so Control+F searches and screen readers read each page. Only the pages in view plus one have a canvas. Page Up and Page Down change the page; Control and the mouse wheel zoom."
+      >
+        <div class="docs-stack">
+          <star-document-viewer
+            [source]="12"
+            title="Quarterly report"
+            height="28rem"
+            [(page)]="page"
+            [(thumbnails)]="thumbnails"
+            (download)="action.set('download pressed: save the file here.')"
+            (print)="action.set('print pressed: print the file here.')"
+          />
+          <p class="docs-output" role="status">Page {{ page() }}. {{ action() }}</p>
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="Image pages"
+        source="document-viewer/images"
+        [script]="imagesScript"
+        note="The renderer input wins over the token. This renderer shows a list of image URLs as pages (scans or slides); it has no text, so there is no search and each page is an image."
+      >
+        <star-document-viewer
+          [source]="images"
+          [renderer]="imageRenderer"
+          title="Warehouse scans"
+          height="22rem"
+          zoom="fit-page"
+          mode="single"
+          [showPrint]="false"
+        />
+      </docs-example>
+
+      <docs-example
+        heading="Error state"
+        source="document-viewer/error"
+        [script]="errorScript"
+        note="When load() rejects, the page area shows an alert. ng-template[starDocumentError] replaces the default text; loadError reports the error."
+      >
+        <star-document-viewer source="missing.pdf" title="Missing file" height="12rem">
+          <ng-template starDocumentError let-error>
+            {{ $any(error).message }} Check the link and try again.
+          </ng-template>
+        </star-document-viewer>
+      </docs-example>
+
+      <h2>Plug in PDF.js</h2>
+      <p>
+        StarNG adds no PDF dependency. Install <code>pdfjs-dist</code> in your application, write a
+        renderer of a few lines, and provide it. Page indexes of the renderer are zero-based; the
+        viewer sizes the canvas and rotates it.
+      </p>
+      <docs-code [code]="pdfJsCode" label="PDF.js renderer" />
+
+      <docs-api
+        [of]="['StarDocumentViewer', 'StarDocumentError']"
+        [slots]="slots"
+        [cssVars]="cssVars"
+        [keyboard]="keyboard"
+      />
+    </docs-page>
+  `,
+})
+export class DocumentViewerPage {
+  protected readonly page = signal(1);
+  protected readonly thumbnails = signal(true);
+  protected readonly action = signal('');
+  protected readonly images = sampleSet('Scan', 5, 800, 1100).map((image) => image.src);
+  protected readonly imageRenderer = new ImagePagesRenderer();
+
+  protected readonly reportScript = `// The component (or a parent) provides the renderer; each viewer gets its own.
+providers: [{ provide: STAR_DOCUMENT_RENDERER, useFactory: () => new SampleReportRenderer() }]
+
+readonly page = signal(1);
+readonly thumbnails = signal(true);
+readonly action = signal('');`;
+  protected readonly imagesScript = `readonly images = ['/scans/1.png', '/scans/2.png' /* … */];
+readonly imageRenderer = new ImagePagesRenderer();
+
+export class ImagePagesRenderer implements StarDocumentRenderer {
+  private images: HTMLImageElement[] = [];
+  async load(source: unknown) {
+    this.images = await Promise.all((source as string[]).map(loadImage));
+    return {
+      pageCount: this.images.length,
+      pageSize: (i: number) => ({ width: this.images[i].naturalWidth, height: this.images[i].naturalHeight }),
+    };
+  }
+  async renderPage(index: number, canvas: HTMLCanvasElement) {
+    canvas.getContext('2d')!.drawImage(this.images[index], 0, 0, canvas.width, canvas.height);
+  }
+  dispose() {
+    this.images = [];
+  }
+}`;
+  protected readonly errorScript = `// The renderer rejects: load('missing.pdf') throws an Error.
+<star-document-viewer source="missing.pdf" (loadError)="log($event)">
+  <ng-template starDocumentError let-error>{{ error.message }} Check the link and try again.</ng-template>
+</star-document-viewer>`;
+  protected readonly pdfJsCode = `import { Component } from '@angular/core';
+import * as pdfjs from 'pdfjs-dist';
+import {
+  STAR_DOCUMENT_RENDERER,
+  StarDocumentPageSize,
+  StarDocumentRenderer,
+  StarDocumentViewer,
+} from '@star-ng/ui/document-viewer';
+
+pdfjs.GlobalWorkerOptions.workerSrc = '/assets/pdf.worker.min.mjs';
+
+export class PdfJsRenderer implements StarDocumentRenderer {
+  private doc: pdfjs.PDFDocumentProxy | null = null;
+  private sizes: StarDocumentPageSize[] = [];
+
+  async load(source: unknown) {
+    this.doc = await pdfjs.getDocument(source as string).promise;
+    this.sizes = [];
+    for (let i = 1; i <= this.doc.numPages; i++) {
+      const { width, height } = (await this.doc.getPage(i)).getViewport({ scale: 1 });
+      this.sizes.push({ width, height });
+    }
+    return { pageCount: this.doc.numPages, pageSize: (i: number) => this.sizes[i] };
+  }
+
+  async renderPage(index: number, canvas: HTMLCanvasElement, scale: number) {
+    const page = await this.doc!.getPage(index + 1);
+    const viewport = page.getViewport({ scale });
+    await page.render({ canvasContext: canvas.getContext('2d')!, viewport }).promise;
+  }
+
+  async textContent(index: number) {
+    const content = await (await this.doc!.getPage(index + 1)).getTextContent();
+    return content.items.map((item) => ('str' in item ? item.str : '')).join(' ');
+  }
+
+  dispose() {
+    void this.doc?.destroy();
+    this.doc = null;
+  }
+}
+
+@Component({
+  selector: 'app-invoice',
+  imports: [StarDocumentViewer],
+  providers: [{ provide: STAR_DOCUMENT_RENDERER, useFactory: () => new PdfJsRenderer() }],
+  template: '<star-document-viewer source="/files/invoice-1042.pdf" title="Invoice 1042" />',
+})
+export class InvoiceComponent {}`;
+
+  protected readonly slots: readonly DocsRow[] = [
+    {
+      name: 'ng-template[starDocumentError]',
+      description:
+        'Content of the error state. Context: $implicit and error (what load rejected with).',
+    },
+  ];
+  protected readonly cssVars: readonly DocsRow[] = [
+    {
+      name: '--star-surface-muted',
+      description: 'Background of the page area and the thumbnails.',
+    },
+    { name: '--star-surface', description: 'Background of a page before it is drawn.' },
+    { name: '--star-shadow-sm', description: 'Shadow of a page.' },
+    { name: '--star-accent', description: 'Focus rings and the outline of the current thumbnail.' },
+    { name: '--star-danger', description: 'Text of the error state.' },
+  ];
+  protected readonly keyboard: readonly DocsRow[] = [
+    { name: 'Page down, Page up', description: 'Next or previous page.' },
+    { name: 'Home, End (page area)', description: 'First or last page.' },
+    { name: 'Control + F', description: 'Opens the search (when the renderer gives text).' },
+    {
+      name: 'Enter, Shift + Enter (search)',
+      description: 'Search, then next or previous page with results.',
+    },
+    { name: 'Escape (search)', description: 'Closes the search.' },
+    { name: 'Control + plus, Control + minus', description: 'Zoom in or out.' },
+    { name: 'Control + 0', description: 'Zoom to 100 %.' },
+    { name: 'Arrow keys (toolbar)', description: 'Move between the toolbar controls.' },
+  ];
+}

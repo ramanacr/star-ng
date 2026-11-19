@@ -493,6 +493,31 @@ export interface StarUiText {
   readonly spreadsheetBackgroundWarning: string;
   readonly spreadsheetBackgroundDanger: string;
   readonly spreadsheetBackgroundMuted: string;
+  // Document viewer
+  readonly documentToolbar: string;
+  /** Name of the page area when the viewer has no `title`. */
+  readonly documentDefaultTitle: string;
+  /** Name of a page, and the announcement of a page change. */
+  readonly documentPageOf: (page: number, total: number) => string;
+  /** Name of the page number field. */
+  readonly documentPageInput: string;
+  /** Text after the page number field: "of 12". */
+  readonly documentPageCount: (total: number) => string;
+  readonly documentZoom: string;
+  readonly documentFitWidth: string;
+  readonly documentFitPage: string;
+  readonly documentRotate: string;
+  readonly documentThumbnails: string;
+  readonly documentSinglePage: string;
+  readonly documentFullScreen: string;
+  readonly documentDownload: string;
+  readonly documentPrint: string;
+  readonly documentSearch: string;
+  readonly documentPreviousResult: string;
+  readonly documentNextResult: string;
+  readonly documentNoResults: string;
+  readonly documentSearchResults: (count: number, pages: number) => string;
+  readonly documentLoadError: string;
 }
 
 export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
@@ -905,6 +930,27 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   spreadsheetBackgroundWarning: 'Amber',
   spreadsheetBackgroundDanger: 'Red',
   spreadsheetBackgroundMuted: 'Grey',
+  documentToolbar: 'Document tools',
+  documentDefaultTitle: 'Document',
+  documentPageOf: (page, total) => `Page ${page} of ${total}`,
+  documentPageInput: 'Page number',
+  documentPageCount: (total) => `of ${total}`,
+  documentZoom: 'Zoom',
+  documentFitWidth: 'Fit width',
+  documentFitPage: 'Fit page',
+  documentRotate: 'Rotate clockwise',
+  documentThumbnails: 'Page thumbnails',
+  documentSinglePage: 'Single page',
+  documentFullScreen: 'Full screen',
+  documentDownload: 'Download',
+  documentPrint: 'Print',
+  documentSearch: 'Search in document',
+  documentPreviousResult: 'Previous result',
+  documentNextResult: 'Next result',
+  documentNoResults: 'No results',
+  documentSearchResults: (count, pages) =>
+    `${count} ${count === 1 ? 'result' : 'results'} on ${pages} ${pages === 1 ? 'page' : 'pages'}`,
+  documentLoadError: 'The document could not be loaded.',
 };
 
 /** Parameter names of the function entries, in call order (used for `{{ name }}` in translations). */
@@ -997,6 +1043,9 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   spreadsheetCleared: ['range'],
   spreadsheetFilled: ['range'],
   spreadsheetPasted: ['range'],
+  documentPageOf: ['page', 'total'],
+  documentPageCount: ['total'],
+  documentSearchResults: ['count', 'pages'],
 };
 
 export const STAR_UI_TEXT = new InjectionToken<StarUiText>('STAR_UI_TEXT', {
