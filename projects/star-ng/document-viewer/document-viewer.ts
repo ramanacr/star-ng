@@ -735,9 +735,11 @@ export class StarDocumentViewer {
     const element = this.scroller()?.nativeElement;
     if (!element) return;
     const top = this.mode() === 'single' ? 0 : Math.max(0, this.offsets()[page - 1] - PADDING);
-    this.ownScroll = top;
     element.scrollTop = top;
-    this.scrollTop.set(top);
+    // The browser limits the position (the last pages may not reach the top): keep what it set.
+    const actual = element.scrollTop || top;
+    this.ownScroll = actual;
+    this.scrollTop.set(actual);
     const thumbs = this.thumbsElement()?.nativeElement;
     if (thumbs) {
       const thumbTop = (page - 1) * THUMB_SLOT;
@@ -763,7 +765,11 @@ export class StarDocumentViewer {
     this.ownScroll = null;
     if (this.mode() !== 'continuous' || !this.pageCount()) return;
     const probe = top + Math.min(element.clientHeight / 3, 200);
-    const page = starDocumentPageAt(this.offsets(), probe) + 1;
+    // At the end of the scroll range the last page counts, even when it does not reach the probe.
+    const atEnd =
+      element.scrollHeight > element.clientHeight &&
+      top + element.clientHeight >= element.scrollHeight - 1;
+    const page = atEnd ? this.pageCount() : starDocumentPageAt(this.offsets(), probe) + 1;
     if (page !== this.page()) this.page.set(page);
   }
 

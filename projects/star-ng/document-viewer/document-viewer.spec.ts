@@ -159,6 +159,16 @@ describe('StarDocumentViewer', () => {
     expect(host.viewer().renderedPages()).toContain(8);
   });
 
+  it('takes the last page at the end of the scroll range', async () => {
+    const { fixture, region, host } = await setup((h) => h.zoom.set(1));
+    Object.defineProperty(region, 'clientHeight', { value: 1000, configurable: true });
+    Object.defineProperty(region, 'scrollHeight', { value: 9760, configurable: true });
+    region.scrollTop = 8760;
+    region.dispatchEvent(new Event('scroll'));
+    await fixture.whenStable();
+    expect(host.page()).toBe(12);
+  });
+
   it('navigates with the buttons, the page field and the keyboard, and announces it', async () => {
     const { fixture, el, region, button, host } = await setup();
     button('Next page').click();
