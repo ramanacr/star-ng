@@ -364,6 +364,49 @@ export interface StarUiText {
   /** Visible hint under the prompt field of `star-ai-prompt`. */
   readonly aiPromptShortcutHint: string;
   readonly copyFailed: string;
+  // Scheduler
+  /** Default name of `star-scheduler`. */
+  readonly scheduler: string;
+  /** Name of the group of view buttons. */
+  readonly schedulerView: string;
+  readonly viewDay: string;
+  readonly viewWeek: string;
+  readonly viewWorkWeek: string;
+  readonly viewMonth: string;
+  readonly viewAgenda: string;
+  readonly viewTimeline: string;
+  /** Pages one day, week or month back (scheduler toolbar). */
+  readonly previousPeriod: string;
+  readonly nextPeriod: string;
+  readonly allDay: string;
+  /** Button of a month cell with events that are not shown. */
+  readonly moreEvents: (count: number) => string;
+  readonly noEvents: string;
+  /** A time span in an accessible name: "10:00 to 11:00". */
+  readonly timeRange: (start: string, end: string) => string;
+  /** Marks an occurrence of a recurring event. */
+  readonly repeats: string;
+  /** Keyboard hint of a movable event or task bar. */
+  readonly eventMoveHint: string;
+  /** Live announcement after a keyboard move: `when` is the new time span. */
+  readonly eventMoved: (label: string, when: string) => string;
+  /** Live announcement after a keyboard resize. */
+  readonly eventResized: (label: string, when: string) => string;
+  /** Live announcement when the owner canceled a change. */
+  readonly changeCanceled: string;
+  readonly currentTime: string;
+  /** Header of the event editor. */
+  readonly newEvent: string;
+  readonly editEvent: string;
+  readonly title: string;
+  readonly start: string;
+  readonly end: string;
+  readonly resource: string;
+  readonly save: string;
+  readonly cancel: string;
+  readonly deleteEvent: string;
+  /** Error of the editor when the end is not after the start. */
+  readonly endBeforeStart: string;
 }
 
 export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
@@ -673,6 +716,36 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   newMessages: (count) => `${count} new messages`,
   aiPromptShortcutHint: 'Press Control+Enter to send.',
   copyFailed: 'Copy failed',
+  scheduler: 'Scheduler',
+  schedulerView: 'View',
+  viewDay: 'Day',
+  viewWeek: 'Week',
+  viewWorkWeek: 'Work week',
+  viewMonth: 'Month',
+  viewAgenda: 'Agenda',
+  viewTimeline: 'Timeline',
+  previousPeriod: 'Previous',
+  nextPeriod: 'Next',
+  allDay: 'All day',
+  moreEvents: (count) => `+${count} more`,
+  noEvents: 'No events',
+  timeRange: (start, end) => `${start} to ${end}`,
+  repeats: 'Repeats',
+  eventMoveHint: 'Alt and the arrow keys move it, Alt, Shift and the arrow keys change its length.',
+  eventMoved: (label, when) => `${label} moved to ${when}`,
+  eventResized: (label, when) => `${label} now ${when}`,
+  changeCanceled: 'Change canceled',
+  currentTime: 'Current time',
+  newEvent: 'New event',
+  editEvent: 'Edit event',
+  title: 'Title',
+  start: 'Start',
+  end: 'End',
+  resource: 'Resource',
+  save: 'Save',
+  cancel: 'Cancel',
+  deleteEvent: 'Delete event',
+  endBeforeStart: 'The end must be after the start.',
 };
 
 /** Parameter names of the function entries, in call order (used for `{{ name }}` in translations). */
@@ -735,6 +808,10 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   isTyping: ['name'],
   areTyping: ['names'],
   newMessages: ['count'],
+  moreEvents: ['count'],
+  timeRange: ['start', 'end'],
+  eventMoved: ['label', 'when'],
+  eventResized: ['label', 'when'],
 };
 
 export const STAR_UI_TEXT = new InjectionToken<StarUiText>('STAR_UI_TEXT', {

@@ -50,6 +50,7 @@ export * from '@star-ng/ui/popover';
 export * from '@star-ng/ui/progress-bar';
 export * from '@star-ng/ui/radio';
 export * from '@star-ng/ui/rating';
+export * from '@star-ng/ui/scheduler';
 export * from '@star-ng/ui/select';
 export * from '@star-ng/ui/select-button';
 export * from '@star-ng/ui/signature-pad';

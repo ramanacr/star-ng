@@ -35,6 +35,9 @@ const TEXT_PARAMS: Record<string, readonly string[]> = {
   fileMaxSize: ['size'],
   meterValue: ['value'],
   chartDescription: ['kind', 'min', 'max'],
+  timeRange: ['start', 'end'],
+  eventMoved: ['when'],
+  eventResized: ['when'],
 };
 const TEXT_NAMES = new Set(['label', 'column', 'name', 'alt']);
 

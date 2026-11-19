@@ -676,6 +676,25 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'scheduler week view after a keyboard move',
+    path: 'controls/scheduler',
+    open: async (page) => {
+      const area = example(page, 'Team calendar');
+      const meeting = area.getByRole('button', { name: /^Team meeting, / });
+      await meeting.focus();
+      await page.keyboard.press('Alt+ArrowDown');
+      await expect(area.getByRole('button', { name: /^Team meeting, .*10:30/ })).toBeFocused();
+    },
+  },
+  {
+    name: 'scheduler month view with the list of a full day',
+    path: 'controls/scheduler',
+    open: async (page) => {
+      await example(page, 'Month view').getByRole('button', { name: '+4 more' }).click();
+      await expect(page.getByRole('dialog', { name: /18 March/ })).toBeVisible();
+    },
+  },
+  {
     name: 'two windows, one minimized',
     path: 'controls/window',
     open: async (page) => {

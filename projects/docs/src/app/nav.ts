@@ -278,6 +278,13 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         keywords: 'time hour minute clock timeonly',
         load: () => import('./controls/time-picker.page').then((m) => m.TimePickerPage),
       },
+      {
+        label: 'Scheduler',
+        path: 'controls/scheduler',
+        keywords:
+          'calendar events appointments booking week month agenda timeline rrule recurrence',
+        load: () => import('./controls/scheduler.page').then((m) => m.SchedulerPage),
+      },
     ],
   },
   {
