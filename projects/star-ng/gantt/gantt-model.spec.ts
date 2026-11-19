@@ -100,6 +100,15 @@ describe('scale maths', () => {
     expect([day(months.start), day(months.end)]).toEqual(['2-1', '5-1']);
   });
 
+  it('finds the range of very many rows (no argument spread)', () => {
+    const rows = Array.from({ length: 200_000 }, (_, i) => ({
+      start: at(3, 1 + (i % 28)),
+      end: at(3, 2 + (i % 28)),
+    }));
+    const range = starGanttRange(rows, 'day');
+    expect([day(range.start), day(range.end)]).toEqual(['2-28', '3-31']);
+  });
+
   it('builds the header ticks of each scale', () => {
     const range = { start: at(2, 23), end: at(3, 9) };
     const week = starGanttTicks(range, 'week', 'en-GB', 1);

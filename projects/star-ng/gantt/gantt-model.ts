@@ -100,11 +100,11 @@ export function starGanttRows(
   tasks: readonly StarGanttTask[],
   collapsed: ReadonlySet<string> = new Set(),
 ): StarGanttRow[] {
-  const ids = new Set(tasks.map((t) => key(t.id)));
+  const byId = new Map(tasks.map((t) => [key(t.id), t]));
   const children = new Map<string, StarGanttTask[]>();
   for (const task of tasks) {
     // A parent that is not in the list makes the task a top-level one.
-    const parent = ids.has(key(task.parentId)) ? key(task.parentId) : '';
+    const parent = byId.has(key(task.parentId)) ? key(task.parentId) : '';
     const list = children.get(parent);
     if (list) list.push(task);
     else children.set(parent, [task]);
@@ -122,8 +122,8 @@ export function starGanttRows(
     let result;
     if (kids.length) {
       const parts = kids.map(span);
-      const start = new Date(Math.min(...parts.map((p) => p.start.getTime())));
-      const end = new Date(Math.max(...parts.map((p) => p.end.getTime())));
+      const start = new Date(parts.reduce((min, p) => Math.min(min, p.start.getTime()), Infinity));
+      const end = new Date(parts.reduce((max, p) => Math.max(max, p.end.getTime()), -Infinity));
       const weight = parts.reduce((sum, p) => sum + p.weight, 0);
       const done = parts.reduce((sum, p) => sum + p.progress * p.weight, 0);
       result = {
@@ -166,7 +166,7 @@ export function starGanttRows(
         milestone: !summary && (!!task.milestone || +s.end === +s.start),
         posinset: i + 1,
         setsize: list.length,
-        parentId: parent ? (tasks.find((t) => key(t.id) === parent)?.id ?? null) : null,
+        parentId: parent ? (byId.get(parent)?.id ?? null) : null,
       });
       if (expanded) walk(id, level + 1, new Set([...seen, id]));
     });
@@ -204,8 +204,13 @@ export function starGanttRange(
   firstDayOfWeek = 1,
   fallback: Date = new Date(2000, 0, 1),
 ): { start: Date; end: Date } {
-  const min = rows.length ? new Date(Math.min(...rows.map((r) => r.start.getTime()))) : fallback;
-  const max = rows.length ? new Date(Math.max(...rows.map((r) => r.end.getTime()))) : fallback;
+  // A loop, not Math.min(...spread): the spread fails for very many rows.
+  const min = rows.length
+    ? new Date(rows.reduce((m, r) => Math.min(m, r.start.getTime()), Infinity))
+    : fallback;
+  const max = rows.length
+    ? new Date(rows.reduce((m, r) => Math.max(m, r.end.getTime()), -Infinity))
+    : fallback;
   const start = starGanttShift(starGanttUnitStart(min, scale, firstDayOfWeek), scale, -1);
   const lastUnit = starGanttUnitStart(max, scale, firstDayOfWeek);
   const end = starGanttShift(lastUnit, scale, 2);

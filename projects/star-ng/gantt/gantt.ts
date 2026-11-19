@@ -407,6 +407,14 @@ export class StarGantt {
     return starGanttRows(tasks, this.collapsedSet());
   });
   private readonly allRows = computed(() => starGanttRows(this.tasks()));
+  /** Names of all tasks by id, for the dependency summaries. */
+  private readonly taskNames = computed(
+    () => new Map(this.tasks().map((t) => [key(t.id), t.name])),
+  );
+  /** Index of each shown row by task id. */
+  private readonly rowIndex = computed(
+    () => new Map(this.rows().map((row) => [key(row.task.id), row.index])),
+  );
 
   /** @internal Rendered rows: `[start, end)`. */
   readonly window = computed(() =>
@@ -569,7 +577,7 @@ export class StarGantt {
     if (row.milestone) parts.push(this.text.milestone);
     else parts.push(this.text.percentComplete(row.progress));
     if (row.summary) parts.push(this.text.summaryTask);
-    const names = new Map(this.allRows().map((r) => [key(r.task.id), r.task.name]));
+    const names = this.taskNames();
     const dependencies = (row.task.dependencies ?? [])
       .filter((d) => names.has(key(d.from)))
       .map((d) => `${names.get(key(d.from))} (${this.typeName(d.type)})`);
@@ -602,7 +610,7 @@ export class StarGantt {
     const target = event.target as HTMLElement;
     if (!target.matches('[role="row"][data-task-id]')) return;
     const rows = this.rows();
-    const index = rows.findIndex((r) => key(r.task.id) === target.dataset['taskId']);
+    const index = this.rowIndex().get(target.dataset['taskId'] ?? '') ?? -1;
     const row = rows[index];
     if (!row) return;
     this.activeIndex.set(index);
@@ -640,8 +648,7 @@ export class StarGantt {
         break;
       case 'ArrowLeft':
         if (row.summary && row.expanded) this.toggle(row);
-        else if (row.parentId !== null)
-          next = rows.findIndex((r) => key(r.task.id) === key(row.parentId));
+        else if (row.parentId !== null) next = this.rowIndex().get(key(row.parentId)) ?? index;
         else return;
         break;
       case 'Enter':
@@ -774,7 +781,7 @@ export class StarGantt {
     event.preventDefault();
     this.activeIndex.set(bar.row.index);
     // The original row (without a preview) is the base of the change.
-    const row = this.rows().find((r) => key(r.task.id) === key(bar.row.task.id)) ?? bar.row;
+    const row = this.rows()[this.rowIndex().get(key(bar.row.task.id)) ?? -1] ?? bar.row;
     this.drag = { row, mode, x: event.clientX, barWidth: bar.width, moved: false };
     // Touch and pen: keep the pointer on the bar while it drags (the CSS sets touch-action: none).
     const target = event.target as Element;
