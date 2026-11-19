@@ -689,7 +689,7 @@ test.describe('table: editing', () => {
   }) => {
     await openPage(page, '/controls/table-edit', 'Table editing');
     const live = example(page, 'Inline cell edit');
-    const table = live.getByRole('table', { name: 'Editable orders' });
+    const table = live.getByRole('grid', { name: 'Editable orders' });
     // Quantity: not editable for the cancelled order (ORD-1003): four buttons of five rows.
     await expect(table.getByRole('button', { name: 'Edit Quantity' })).toHaveCount(4);
     await expect(table.getByRole('button', { name: 'Edit Product' })).toHaveCount(5);
@@ -732,7 +732,7 @@ test.describe('table: editing', () => {
   test('edits text and a choice, and saves when the field loses the focus', async ({ page }) => {
     await openPage(page, '/controls/table-edit', 'Table editing');
     const live = example(page, 'Inline cell edit');
-    const table = live.getByRole('table', { name: 'Editable orders' });
+    const table = live.getByRole('grid', { name: 'Editable orders' });
 
     await table.getByRole('button', { name: 'Edit Customer' }).first().click();
     const text = table.getByRole('textbox', { name: 'Edit Customer' });
@@ -767,7 +767,7 @@ test.describe('table: editing', () => {
   }) => {
     await openPage(page, '/controls/table-edit', 'Table editing');
     const live = example(page, 'Inline cell edit');
-    const table = live.getByRole('table');
+    const table = live.getByRole('grid');
     const status = live.getByRole('status');
     const edit = table.getByRole('button', { name: 'Edit Product' }).first();
     const value = edit.locator('.star-table__edit-value');
@@ -833,7 +833,7 @@ test.describe('table: editing', () => {
     // with its `ngh` hydration marker.
     await expect(page.locator('[ngh]')).toHaveCount(0);
     const live = example(page, 'Row edit with validation');
-    const table = live.getByRole('table', { name: 'Orders with row edit' });
+    const table = live.getByRole('grid', { name: 'Orders with row edit' });
     const edit = table.getByRole('button', { name: 'Edit row' }).first();
     await edit.focus();
     await page.keyboard.press('Enter');
@@ -852,19 +852,19 @@ test.describe('table: editing', () => {
     await expect(customer).toHaveCount(0);
     await expect(live.getByRole('status')).toHaveText(/customer changed/);
     await expect(table.getByRole('button', { name: 'Edit row' }).first()).toBeFocused();
-    await expect(table.getByRole('cell', { name: 'Park Cafe' })).toBeVisible();
+    await expect(table.getByRole('gridcell', { name: 'Park Cafe' })).toBeVisible();
 
     await page.keyboard.press('F2');
     await table.getByRole('textbox', { name: 'Edit Customer' }).fill('Other');
     await page.keyboard.press('Escape');
     await expect(table.getByRole('textbox', { name: 'Edit Customer' })).toHaveCount(0);
-    await expect(table.getByRole('cell', { name: 'Park Cafe' })).toBeVisible();
+    await expect(table.getByRole('gridcell', { name: 'Park Cafe' })).toBeVisible();
   });
 
   test('collects batch changes, undoes them with Ctrl+Z and saves them', async ({ page }) => {
     await openPage(page, '/controls/table-edit', 'Table editing');
     const live = example(page, 'Batch edit with undo');
-    const table = live.getByRole('table', { name: 'Orders with batch edit' });
+    const table = live.getByRole('grid', { name: 'Orders with batch edit' });
     const edit = table.getByRole('button', { name: /^Edit Customer/ }).first();
     await edit.click();
     await table.getByRole('textbox', { name: 'Edit Customer' }).fill('Changed customer');
@@ -884,7 +884,7 @@ test.describe('table: editing', () => {
   test('adds a row at the top and deletes a row', async ({ page }) => {
     await openPage(page, '/controls/table-edit', 'Table editing');
     const live = example(page, 'Add and delete rows');
-    const table = live.getByRole('table', { name: 'Orders to add and delete' });
+    const table = live.getByRole('grid', { name: 'Orders to add and delete' });
     await expect(bodyRows(table)).toHaveCount(3);
     await live.getByRole('button', { name: 'Add order' }).click();
     const customer = table.getByRole('textbox', { name: 'Edit Customer' });

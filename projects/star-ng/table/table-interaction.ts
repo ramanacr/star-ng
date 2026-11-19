@@ -173,15 +173,13 @@ export abstract class StarTableInteraction<T> {
   // ---------------------------------------------------------------- inputs
 
   /**
-   * Row selection. It adds the selection column: a check box per row and a tri-state header check
-   * box (`'multiple'`, PrimeNG `p-tableCheckbox` / `p-tableHeaderCheckbox`), or a radio per row
-   * (`'single'`, PrimeNG `p-tableRadioButton`).
-   *
-   * Cell selection (`cellSelection`, no selection column): `'cell'` selects one cell (a click or
-   * Space; Ctrl / Cmd + click clears it); `'range'` selects a rectangle: a click or Space starts
-   * it, Shift + click and Shift + Arrow (Home, End, PageUp, PageDown) stretch it from the anchor,
-   * Ctrl / Cmd + click adds or removes one cell. The cell modes turn on cell navigation. AG Grid
-   * `cellSelection`, Ignite UI `cellSelection`.
+   * Row selection adds the selection column: a check box per row and a tri-state header check box
+   * (`'multiple'`, PrimeNG `p-tableCheckbox` / `p-tableHeaderCheckbox`), or a radio per row
+   * (`'single'`, PrimeNG `p-tableRadioButton`). Cell selection (`cellSelection`, no selection
+   * column, cell navigation on): `'cell'` selects one cell (a click or Space; Ctrl / Cmd + click
+   * clears it); `'range'` selects a rectangle: a click or Space starts it, Shift + click and Shift
+   * + Arrow (Home, End, PageUp, PageDown) stretch it from the anchor, Ctrl / Cmd + click adds or
+   * removes one cell. AG Grid `cellSelection`, Ignite UI `cellSelection`.
    */
   readonly selectionMode = input<'single' | 'multiple' | 'cell' | 'range' | null>(null);
 
@@ -199,8 +197,8 @@ export abstract class StarTableInteraction<T> {
    * PageDown move by the rows in view. Enter or F2 edits an editable cell (in row edit mode, the
    * row); Escape in the editor goes back to the cell. The keys reach the pinned columns, scroll a
    * column of `virtualColumns` and a row of `virtualScroll` into view first, and skip the rows that
-   * a merged cell covers. `undefined` (default) is automatic: on when a column is `editable`, else
-   * the rows keep today's keys. Ignite UI grid keyboard navigation, AG Grid cell navigation.
+   * a merged cell covers. `undefined` (default) is automatic: on when a column is `editable` or
+   * `selectionMode` is `'cell'` or `'range'`, else the rows keep today's keys. Ignite UI grid keyboard navigation, AG Grid cell navigation.
    */
   readonly cellNavigation = input<boolean | undefined, boolean | string | undefined>(undefined, {
     transform: ɵstarOptionalBoolean,

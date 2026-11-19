@@ -1039,6 +1039,46 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'table grid with a focused cell',
+    path: 'controls/table-interaction',
+    open: async (page) => {
+      const grid = example(page, 'Cell navigation').getByRole('grid');
+      await grid.locator('tbody td[data-field="item"]').first().click();
+      await page.keyboard.press('ArrowDown');
+      await expect(grid.locator('tbody td[data-field="item"]').nth(1)).toBeFocused();
+    },
+  },
+  {
+    name: 'table grid with a range selected',
+    path: 'controls/table-interaction',
+    open: async (page) => {
+      const grid = example(page, 'Cell and range selection').getByRole('grid');
+      await grid.locator('tbody td[data-field="item"]').first().click();
+      await page.keyboard.press('Shift+ArrowDown');
+      await page.keyboard.press('Shift+ArrowRight');
+      await expect(grid.locator('td[aria-selected="true"]')).toHaveCount(4);
+    },
+  },
+  {
+    name: 'table with its context menu open',
+    path: 'controls/table-interaction',
+    open: async (page) => {
+      const grid = example(page, 'Context menu').getByRole('grid');
+      await grid.locator('tbody td[data-field="customer"]').first().click({ button: 'right' });
+      await expect(page.getByRole('menu')).toBeVisible();
+    },
+  },
+  {
+    name: 'table with search matches highlighted',
+    path: 'controls/table-interaction',
+    open: async (page) => {
+      const live = example(page, 'Search highlight');
+      await live.getByRole('searchbox', { name: 'Find in stock' }).fill('lisbon');
+      await live.getByRole('button', { name: 'Next' }).click();
+      await expect(live.locator('mark.star-table__mark--active')).toBeVisible();
+    },
+  },
+  {
     name: 'table with a filter select open',
     path: 'controls/table-sort-filter',
     open: async (page) => {

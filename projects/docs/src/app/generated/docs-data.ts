@@ -11786,6 +11786,54 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "description": "Data table (PrimeNG `p-table` essentials): typed columns, custom cell templates, sorting, global filter, column filters, CSV / Excel / print export, client or lazy (server) pagination, single / multiple row selection with checkboxes, row expansion, inline cell edit, column resize / reorder / hide / freeze, virtual scroll, row groups, multi-column sort, footer row, row reorder, saved state, loading skeleton, empty state, sticky header and row click.",
     "inputs": [
       {
+        "name": "selectionMode",
+        "type": "'single' | 'multiple' | 'cell' | 'range' | null",
+        "default": "null",
+        "required": false,
+        "description": "Row selection adds the selection column: a check box per row and a tri-state header check box (`'multiple'`, PrimeNG `p-tableCheckbox` / `p-tableHeaderCheckbox`), or a radio per row (`'single'`, PrimeNG `p-tableRadioButton`). Cell selection (`cellSelection`, no selection column, cell navigation on): `'cell'` selects one cell (a click or Space; Ctrl / Cmd + click clears it); `'range'` selects a rectangle: a click or Space starts it, Shift + click and Shift + Arrow (Home, End, PageUp, PageDown) stretch it from the anchor, Ctrl / Cmd + click adds or removes one cell. AG Grid `cellSelection`, Ignite UI `cellSelection`.",
+        "inheritedFrom": "StarTableInteraction"
+      },
+      {
+        "name": "cellNavigation",
+        "type": "boolean | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "Cell navigation (WAI-ARIA grid): the table becomes one tab stop and the cells take the focus. Arrow keys move one cell (Left and Right swap in right-to-left), Home / End go to the first / last cell of the row, Ctrl+Home / Ctrl+End to the first / last cell of the table, PageUp / PageDown move by the rows in view. Enter or F2 edits an editable cell (in row edit mode, the row); Escape in the editor goes back to the cell. The keys reach the pinned columns, scroll a column of `virtualColumns` and a row of `virtualScroll` into view first, and skip the rows that a merged cell covers. `undefined` (default) is automatic: on when a column is `editable` or `selectionMode` is `'cell'` or `'range'`, else the rows keep today's keys. Ignite UI grid keyboard navigation, AG Grid cell navigation.",
+        "inheritedFrom": "StarTableInteraction"
+      },
+      {
+        "name": "copyHeaders",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Ctrl+C (Cmd+C) and the Copy items of the context menu add a first line with the column headers. AG Grid `copyHeadersToClipboard`, Ignite UI `clipboardOptions.copyHeaders`.",
+        "inheritedFrom": "StarTableInteraction"
+      },
+      {
+        "name": "pasteEditable",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Ctrl+V (Cmd+V) on a cell pastes tab-separated text (from a spreadsheet or `copyToClipboard`) into the editable cells from that cell to the right and down. Each value goes through the editor parse and the column rules (`required`, `min`, `max`, `pattern`, `validators`; a `'select'` editor needs one of its `editOptions`): a value that is not valid is left out. Then the table emits `cellEdit` per changed cell (`editMode=\"row\"`: `rowEditSave` per row), or with `batchEdit` adds all cells to the pending changes as one undo step. Cells that are not editable, rows in edit and text past the last row or column are left out. `beforePaste` can cancel. AG Grid clipboard paste, Ignite UI paste handling.",
+        "inheritedFrom": "StarTableInteraction"
+      },
+      {
+        "name": "contextMenu",
+        "type": "StarTableMenuItems<T> | null",
+        "default": "null",
+        "required": false,
+        "description": "Context menu of the body (right click, Shift+F10 or the context menu key on a cell or a row): a list of `StarMenuItem`, or a function of the row and the column (`null` off a data cell) that returns the items. The built-in items of `contextMenuDefaults` come first. Without items the browser menu shows. After a choice the focus returns to the cell. PrimeNG `contextMenu`, AG Grid `getContextMenuItems`, Ignite UI `contextMenu` output.",
+        "inheritedFrom": "StarTableInteraction"
+      },
+      {
+        "name": "contextMenuDefaults",
+        "type": "readonly StarTableMenuDefault[]",
+        "default": "[]",
+        "required": false,
+        "description": "Built-in context menu items, in this order: `'copy'` and `'copyWithHeaders'` (`copyToClipboard`), `'pinStart'`, `'pinEnd'`, `'unpin'` (`pinColumn`), `'sortAsc'`, `'sortDesc'` (sortable columns), `'hideColumn'` and `'export'` (`exportCsv`). Column items show on a data cell only. AG Grid default menu items.",
+        "inheritedFrom": "StarTableInteraction"
+      },
+      {
         "name": "value",
         "type": "readonly T[]",
         "default": null,
@@ -11975,13 +12023,6 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Total rows on the server (lazy mode)."
       },
       {
-        "name": "selectionMode",
-        "type": "'single' | 'multiple' | null",
-        "default": "null",
-        "required": false,
-        "description": "Row selection. It adds the selection column: a check box per row and a tri-state header check box (`'multiple'`, PrimeNG `p-tableCheckbox` / `p-tableHeaderCheckbox`), or a radio per row (`'single'`, PrimeNG `p-tableRadioButton`)."
-      },
-      {
         "name": "metaKeySelection",
         "type": "boolean",
         "default": "false",
@@ -12131,6 +12172,30 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "models": [
       {
+        "name": "cellSelection",
+        "type": "readonly StarTableCellRef[]",
+        "default": "[]",
+        "required": false,
+        "description": "Selected cells with `selectionMode` `'cell'` or `'range'`: a list of `{ rowKey, field }` (the cells of a range, row by row in display order). Two-way. A key is the `dataKey` value, else the row object.",
+        "inheritedFrom": "StarTableInteraction"
+      },
+      {
+        "name": "contextMenuSelection",
+        "type": "T | null",
+        "default": "null",
+        "required": false,
+        "description": "The row of the open (or last) context menu. Two-way. PrimeNG `contextMenuSelection`.",
+        "inheritedFrom": "StarTableInteraction"
+      },
+      {
+        "name": "searchText",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "Search highlight, apart from `globalFilter` (rows stay): the matches of this text in the cells show in `<mark>` (case- and accent-insensitive, with `filterLocale`), and `searchMatches` counts them over the rows of all pages. `findNext()` / `findPrevious()` step through them (with wrap) and scroll the active match into view (page, virtual row and column); `clearSearch()` empties the text. A cell template shows marks only when it opts in with the `highlight(text)` function of its context. Two-way. Ignite UI `findNext` / `findPrev` / `clearSearch`.",
+        "inheritedFrom": "StarTableInteraction"
+      },
+      {
         "name": "first",
         "type": "number",
         "default": "0",
@@ -12244,6 +12309,30 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ],
     "outputs": [
+      {
+        "name": "beforePaste",
+        "type": "StarTablePasteEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "Before Ctrl+V writes cells: the cells and the text. `cancel()` stops the paste.",
+        "inheritedFrom": "StarTableInteraction"
+      },
+      {
+        "name": "contextMenuSelect",
+        "type": "StarTableContextMenuEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "The user chose a context menu item (also a built-in one, after its action): the row, the column (`null` off a data cell) and the item. PrimeNG `onContextMenuSelect`.",
+        "inheritedFrom": "StarTableInteraction"
+      },
+      {
+        "name": "activeCellChange",
+        "type": "StarTableCellRef | null",
+        "default": null,
+        "required": false,
+        "description": "The focused cell changed (keyboard, click or `focusCell`). Ignite UI `activeNodeChange`.",
+        "inheritedFrom": "StarTableInteraction"
+      },
       {
         "name": "columnPin",
         "type": "StarColumnPinEvent",
@@ -12443,6 +12532,102 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": "The new filter value; `null` removes the filter."
+      }
+    ]
+  },
+  "StarTableInteraction": {
+    "kind": "directive",
+    "selector": "",
+    "entry": "@star-ng/ui/table",
+    "description": "Cell interaction of `star-table` (Wave C4): cell navigation, the active cell and the keyboard and scroll API. `StarTable` extends it; the members marked `abstract` are the table parts that it reads. Not used on its own.",
+    "inputs": [
+      {
+        "name": "selectionMode",
+        "type": "'single' | 'multiple' | 'cell' | 'range' | null",
+        "default": "null",
+        "required": false,
+        "description": "Row selection adds the selection column: a check box per row and a tri-state header check box (`'multiple'`, PrimeNG `p-tableCheckbox` / `p-tableHeaderCheckbox`), or a radio per row (`'single'`, PrimeNG `p-tableRadioButton`). Cell selection (`cellSelection`, no selection column, cell navigation on): `'cell'` selects one cell (a click or Space; Ctrl / Cmd + click clears it); `'range'` selects a rectangle: a click or Space starts it, Shift + click and Shift + Arrow (Home, End, PageUp, PageDown) stretch it from the anchor, Ctrl / Cmd + click adds or removes one cell. AG Grid `cellSelection`, Ignite UI `cellSelection`."
+      },
+      {
+        "name": "cellNavigation",
+        "type": "boolean | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "Cell navigation (WAI-ARIA grid): the table becomes one tab stop and the cells take the focus. Arrow keys move one cell (Left and Right swap in right-to-left), Home / End go to the first / last cell of the row, Ctrl+Home / Ctrl+End to the first / last cell of the table, PageUp / PageDown move by the rows in view. Enter or F2 edits an editable cell (in row edit mode, the row); Escape in the editor goes back to the cell. The keys reach the pinned columns, scroll a column of `virtualColumns` and a row of `virtualScroll` into view first, and skip the rows that a merged cell covers. `undefined` (default) is automatic: on when a column is `editable` or `selectionMode` is `'cell'` or `'range'`, else the rows keep today's keys. Ignite UI grid keyboard navigation, AG Grid cell navigation."
+      },
+      {
+        "name": "copyHeaders",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Ctrl+C (Cmd+C) and the Copy items of the context menu add a first line with the column headers. AG Grid `copyHeadersToClipboard`, Ignite UI `clipboardOptions.copyHeaders`."
+      },
+      {
+        "name": "pasteEditable",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Ctrl+V (Cmd+V) on a cell pastes tab-separated text (from a spreadsheet or `copyToClipboard`) into the editable cells from that cell to the right and down. Each value goes through the editor parse and the column rules (`required`, `min`, `max`, `pattern`, `validators`; a `'select'` editor needs one of its `editOptions`): a value that is not valid is left out. Then the table emits `cellEdit` per changed cell (`editMode=\"row\"`: `rowEditSave` per row), or with `batchEdit` adds all cells to the pending changes as one undo step. Cells that are not editable, rows in edit and text past the last row or column are left out. `beforePaste` can cancel. AG Grid clipboard paste, Ignite UI paste handling."
+      },
+      {
+        "name": "contextMenu",
+        "type": "StarTableMenuItems<T> | null",
+        "default": "null",
+        "required": false,
+        "description": "Context menu of the body (right click, Shift+F10 or the context menu key on a cell or a row): a list of `StarMenuItem`, or a function of the row and the column (`null` off a data cell) that returns the items. The built-in items of `contextMenuDefaults` come first. Without items the browser menu shows. After a choice the focus returns to the cell. PrimeNG `contextMenu`, AG Grid `getContextMenuItems`, Ignite UI `contextMenu` output."
+      },
+      {
+        "name": "contextMenuDefaults",
+        "type": "readonly StarTableMenuDefault[]",
+        "default": "[]",
+        "required": false,
+        "description": "Built-in context menu items, in this order: `'copy'` and `'copyWithHeaders'` (`copyToClipboard`), `'pinStart'`, `'pinEnd'`, `'unpin'` (`pinColumn`), `'sortAsc'`, `'sortDesc'` (sortable columns), `'hideColumn'` and `'export'` (`exportCsv`). Column items show on a data cell only. AG Grid default menu items."
+      }
+    ],
+    "models": [
+      {
+        "name": "cellSelection",
+        "type": "readonly StarTableCellRef[]",
+        "default": "[]",
+        "required": false,
+        "description": "Selected cells with `selectionMode` `'cell'` or `'range'`: a list of `{ rowKey, field }` (the cells of a range, row by row in display order). Two-way. A key is the `dataKey` value, else the row object."
+      },
+      {
+        "name": "contextMenuSelection",
+        "type": "T | null",
+        "default": "null",
+        "required": false,
+        "description": "The row of the open (or last) context menu. Two-way. PrimeNG `contextMenuSelection`."
+      },
+      {
+        "name": "searchText",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "Search highlight, apart from `globalFilter` (rows stay): the matches of this text in the cells show in `<mark>` (case- and accent-insensitive, with `filterLocale`), and `searchMatches` counts them over the rows of all pages. `findNext()` / `findPrevious()` step through them (with wrap) and scroll the active match into view (page, virtual row and column); `clearSearch()` empties the text. A cell template shows marks only when it opts in with the `highlight(text)` function of its context. Two-way. Ignite UI `findNext` / `findPrev` / `clearSearch`."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "beforePaste",
+        "type": "StarTablePasteEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "Before Ctrl+V writes cells: the cells and the text. `cancel()` stops the paste."
+      },
+      {
+        "name": "contextMenuSelect",
+        "type": "StarTableContextMenuEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "The user chose a context menu item (also a built-in one, after its action): the row, the column (`null` off a data cell) and the item. PrimeNG `onContextMenuSelect`."
+      },
+      {
+        "name": "activeCellChange",
+        "type": "StarTableCellRef | null",
+        "default": null,
+        "required": false,
+        "description": "The focused cell changed (keyboard, click or `focusCell`). Ignite UI `activeNodeChange`."
       }
     ]
   },
@@ -14663,6 +14848,12 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "table-export/print-long": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button\n      size=\"sm\"\n      variant=\"secondary\"\n      leadingIcon=\"ph-bold ph-printer\"\n      (pressed)=\"longTable.print()\"\n    >\n      Print invoices\n    </star-button>\n  </div>\n  <docs-fill>\n    <star-table\n      #longTable\n      ariaLabel=\"Invoices\"\n      [value]=\"invoices\"\n      [columns]=\"invoiceColumns\"\n      dataKey=\"id\"\n      selectionMode=\"multiple\"\n      [hiddenColumns]=\"['region']\"\n      paginator\n      [rows]=\"10\"\n    >\n      <ng-template starCell=\"open\" [starCellOf]=\"invoices\" let-row>\n        <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"opened.set(row.id)\">\n          Open\n        </star-button>\n      </ng-template>\n    </star-table>\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Opened: {{ opened() || 'none' }}</p>\n</div>",
   "table-export/print-wide": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button\n      size=\"sm\"\n      variant=\"secondary\"\n      leadingIcon=\"ph-bold ph-printer\"\n      (pressed)=\"wideTable.print()\"\n    >\n      Print wide table\n    </star-button>\n  </div>\n  <docs-fill>\n    <star-table\n      #wideTable\n      ariaLabel=\"Wide orders\"\n      [value]=\"wideRows\"\n      [columns]=\"wideColumns\"\n      dataKey=\"Order\"\n    />\n  </docs-fill>\n</div>",
   "table-export/text": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"show(preview.toCsv())\">\n      Comma separated\n    </star-button>\n    <star-button\n      size=\"sm\"\n      variant=\"secondary\"\n      (pressed)=\"show(preview.toCsv({ separator: ';' }))\"\n    >\n      Semicolon separated\n    </star-button>\n    <star-button\n      size=\"sm\"\n      variant=\"secondary\"\n      (pressed)=\"show(preview.toCsv({ rows: [orders[40]] }))\"\n    >\n      Rows from the options\n    </star-button>\n  </div>\n  <docs-fill>\n    <star-table\n      #preview\n      ariaLabel=\"Order preview\"\n      [value]=\"orders.slice(0, 3)\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n    />\n  </docs-fill>\n  <pre class=\"docs-output\" aria-label=\"CSV text\" tabindex=\"0\">{{ text() }}</pre>\n</div>",
+  "table-interaction/api": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button\n      size=\"sm\"\n      variant=\"secondary\"\n      (pressed)=\"wide.focusCell('SKU-130', 'onHand')\"\n    >\n      Focus SKU-130 on hand\n    </star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"wide.navigateTo(0, 'sku')\">\n      Go to the first cell\n    </star-button>\n    <star-button\n      size=\"sm\"\n      variant=\"secondary\"\n      (pressed)=\"wide.scrollToRow(35, { align: 'center' })\"\n    >\n      Scroll to row 36\n    </star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"wide.scrollToColumn('reorderAt')\">\n      Scroll to Reorder at\n    </star-button>\n  </div>\n  <docs-fill>\n    <star-table\n      #wide\n      [value]=\"stockRows\"\n      [columns]=\"viewColumns\"\n      dataKey=\"sku\"\n      ariaLabel=\"Stock with the scroll API\"\n      cellNavigation\n      virtualScroll\n      [virtualRowHeight]=\"44\"\n      scrollHeight=\"18rem\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Active cell: {{ wideText() }}</p>\n</div>",
+  "table-interaction/clipboard": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"pasteStock()\"\n      [columns]=\"editColumns\"\n      dataKey=\"sku\"\n      ariaLabel=\"Stock with copy and paste\"\n      selectionMode=\"range\"\n      copyHeaders\n      pasteEditable\n      paginator\n      [rows]=\"8\"\n      (beforePaste)=\"pasted.set(pasteText($event))\"\n      (cellEdit)=\"pasteStock.set(apply(pasteStock(), $event))\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Last paste: {{ pasted() }}</p>\n</div>",
+  "table-interaction/menu": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"orderColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with a context menu\"\n      cellNavigation\n      [contextMenu]=\"orderMenu\"\n      [contextMenuDefaults]=\"menuDefaults\"\n      paginator\n      [rows]=\"5\"\n      (contextMenuSelect)=\"chosen.set(describe($event))\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Last choice: {{ chosen() }}</p>\n</div>",
+  "table-interaction/navigation": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"stock()\"\n      [columns]=\"editColumns\"\n      dataKey=\"sku\"\n      ariaLabel=\"Stock with cell navigation\"\n      [pinnedColumns]=\"{ sku: 'start' }\"\n      paginator\n      [rows]=\"8\"\n      (activeCellChange)=\"active.set($event)\"\n      (cellEdit)=\"stock.set(apply(stock(), $event))\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Active cell: {{ activeText() }}</p>\n</div>",
+  "table-interaction/range": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"stockRows\"\n      [columns]=\"viewColumns\"\n      dataKey=\"sku\"\n      ariaLabel=\"Stock with range selection\"\n      selectionMode=\"range\"\n      [pinnedColumns]=\"{ sku: 'start' }\"\n      [(cellSelection)]=\"cells\"\n      paginator\n      [rows]=\"8\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">\n    Selected: {{ cells().length }} {{ cells().length === 1 ? 'cell' : 'cells' }}\n  </p>\n</div>",
+  "table-interaction/search": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <input\n      starInput\n      type=\"search\"\n      aria-label=\"Find in stock\"\n      placeholder=\"Find in stock\"\n      [value]=\"search()\"\n      (input)=\"search.set($any($event.target).value)\"\n      (keydown.enter)=\"found.findNext()\"\n    />\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"found.findPrevious()\">\n      Previous\n    </star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"found.findNext()\">\n      Next\n    </star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"found.clearSearch()\">\n      Clear\n    </star-button>\n  </div>\n  <docs-fill>\n    <star-table\n      #found\n      [value]=\"stockRows\"\n      [columns]=\"viewColumns\"\n      dataKey=\"sku\"\n      ariaLabel=\"Stock with search\"\n      [(searchText)]=\"search\"\n      paginator\n      [rows]=\"8\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">\n    Matches: {{ found.searchMatches().count }}, active:\n    {{ found.searchMatches().active + 1 || 'none' }}\n  </p>\n</div>",
   "table-layout/column-groups": "<docs-fill>\n  <star-table\n    [value]=\"sales\"\n    [columns]=\"salesColumns\"\n    [columnGroups]=\"salesGroups\"\n    dataKey=\"id\"\n    ariaLabel=\"Sales by region and quarter\"\n    columnToggle\n    reorderableColumns\n  >\n    <ng-template starColumnGroupHeader=\"Q2\" let-group let-span=\"span\">\n      {{ group.header }}, {{ span }} months\n    </ng-template>\n  </star-table>\n</docs-fill>",
   "table-layout/expansion": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-toggle-switch [(checked)]=\"single\">One row open at a time</star-toggle-switch>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"detailed.expandAll()\">\n      Expand all\n    </star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"detailed.collapseAll()\">\n      Collapse all\n    </star-button>\n  </div>\n  <docs-fill>\n    <star-table\n      #detailed\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with detail\"\n      [rowExpandMode]=\"single() ? 'single' : 'multiple'\"\n      [(expandedKeys)]=\"expanded\"\n      paginator\n      [rows]=\"4\"\n    >\n      <ng-template starRowExpansion [starRowExpansionOf]=\"orders\" let-row>\n        <dl class=\"detail\">\n          <dt>Email</dt>\n          <dd>{{ row.email }}</dd>\n          <dt>Quantity</dt>\n          <dd>{{ row.quantity }} x {{ row.product }}</dd>\n        </dl>\n      </ng-template>\n    </star-table>\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Open: {{ expanded().join(', ') || 'none' }}</p>\n</div>",
   "table-layout/footer": "<docs-fill>\n  <star-table\n    [value]=\"orders.slice(0, 6)\"\n    [columns]=\"footerColumns\"\n    dataKey=\"id\"\n    ariaLabel=\"Orders with totals\"\n  />\n</docs-fill>",
