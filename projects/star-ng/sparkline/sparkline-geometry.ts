@@ -44,16 +44,21 @@ const fixed = (value: number) => value.toFixed(2);
 
 /**
  * The value range of the plot. `min` and `max` win when they are set; otherwise the range of
- * the finite values. Bars always include zero. Win-loss uses -1 to 1.
+ * the finite values, with the `reference` value (a reference line) inside. Bars always include
+ * zero. Win-loss uses -1 to 1.
  */
 export function sparklineExtent(
   data: readonly number[],
   type: StarSparklineType,
   min?: number,
   max?: number,
+  reference?: number,
 ): [number, number] {
   if (type === 'win-loss') return [-1, 1];
   const finite = data.filter(Number.isFinite);
+  if (finite.length && reference !== undefined && Number.isFinite(reference)) {
+    finite.push(reference);
+  }
   let low = finite.length ? Math.min(...finite) : 0;
   let high = finite.length ? Math.max(...finite) : 0;
   if (type === 'bar') {
@@ -104,10 +109,15 @@ function segments(points: readonly (SparklinePoint | null)[]): SparklinePoint[][
   return runs;
 }
 
-/** SVG path of the line: one `M` per run of values, so a missing value leaves a gap. */
+/** SVG path of the line: one `M` per run of values, so a missing value leaves a gap. A lone value is a dot. */
 export function sparklineLine(points: readonly (SparklinePoint | null)[]): string {
   return segments(points)
-    .map((run) => run.map((p, i) => `${i ? 'L' : 'M'} ${fixed(p.x)} ${fixed(p.y)}`).join(' '))
+    .map((run) =>
+      // A run of one point is a zero-length line: its round cap draws a dot.
+      run.length === 1
+        ? `M ${fixed(run[0].x)} ${fixed(run[0].y)} h 0`
+        : run.map((p, i) => `${i ? 'L' : 'M'} ${fixed(p.x)} ${fixed(p.y)}`).join(' '),
+    )
     .join(' ');
 }
 

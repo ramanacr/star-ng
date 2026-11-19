@@ -116,7 +116,7 @@ export class StarSparkline {
   readonly max = input<number | undefined>(undefined);
   /** Values that get a marker (line, area) or a strong colour (bar). Default: none. */
   readonly highlight = input<readonly StarSparklineHighlight[]>([]);
-  /** A value that gets a dashed horizontal line, for example a target. */
+  /** A value that gets a dashed horizontal line, for example a target. The automatic range includes it. */
   readonly referenceLine = input<number | undefined>(undefined);
   /** Colour slot of the chart palette, 1 to 8 (`--star-chart-1…8`). */
   readonly color = input(1);
@@ -151,7 +151,7 @@ export class StarSparkline {
   });
 
   private readonly extent = computed(() =>
-    sparklineExtent(this.data(), this.type(), this.min(), this.max()),
+    sparklineExtent(this.data(), this.type(), this.min(), this.max(), this.referenceLine()),
   );
   private readonly stats = computed(() => sparklineStats(this.data()));
 

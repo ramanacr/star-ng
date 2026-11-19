@@ -103,3 +103,21 @@ describe('sparkline geometry', () => {
     expect(sparklineStats([NaN])).toBeNull();
   });
 });
+
+describe('sparkline geometry, review fixes', () => {
+  it('draws a run of one point as a dot (a zero-length line)', () => {
+    const points = sparklinePoints([1, NaN, 3, 4], [0, 4], false);
+    const path = sparklineLine(points);
+    expect(path.startsWith(`M 0.00 ${sparklineY(1, [0, 4]).toFixed(2)} h 0 M`)).toBe(true);
+    expect(sparklineLine(sparklinePoints([5], [5, 5], false))).toBe('M 50.00 10.00 h 0');
+  });
+
+  it('includes the reference line in the automatic range', () => {
+    expect(sparklineExtent([3, 5], 'line', undefined, undefined, 10)).toEqual([3, 10]);
+    expect(sparklineExtent([3, 5], 'line', undefined, undefined, 1)).toEqual([1, 5]);
+    expect(sparklineExtent([3, 5], 'bar', undefined, undefined, -2)).toEqual([-2, 5]);
+    expect(sparklineExtent([3, 5], 'line', undefined, 4, 10)).toEqual([3, 4]);
+    expect(sparklineExtent([3, 5], 'line', undefined, undefined, NaN)).toEqual([3, 5]);
+    expect(sparklineExtent([], 'line', undefined, undefined, 10)).toEqual([0, 0]);
+  });
+});

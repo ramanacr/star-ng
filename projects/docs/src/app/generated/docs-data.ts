@@ -6750,7 +6750,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "number | undefined",
         "default": "undefined",
         "required": false,
-        "description": "A value that gets a dashed horizontal line, for example a target."
+        "description": "A value that gets a dashed horizontal line, for example a target. The automatic range includes it."
       },
       {
         "name": "color",
