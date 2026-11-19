@@ -142,8 +142,17 @@ export function anchorOf(
   return { index, inside: Math.max(0, top) - tree.offsetOf(index) };
 }
 
-/** One item of the virtual list: a group heading row, or a data row with its detail row. */
+/**
+ * One item of the virtual list: a group heading row, a data row with its detail row, or the
+ * summary row below a group.
+ */
 export type VirtualItem<T> =
+  | {
+      readonly kind: 'groupFooter';
+      readonly key: string;
+      readonly label: string;
+      readonly aria: number;
+    }
   | {
       readonly kind: 'group';
       readonly key: string;
@@ -168,6 +177,8 @@ export type VirtualItem<T> =
 export interface VirtualLayoutOptions<T> {
   /** Group heading of a row, or null without groups. */
   readonly groupOf: ((row: T) => string) | null;
+  /** A summary row after the last row of each open group. */
+  readonly groupFooters?: boolean;
   readonly isCollapsed: (label: string) => boolean;
   readonly isExpanded: (row: T) => boolean;
   readonly keyOf: (row: T) => unknown;
@@ -188,10 +199,15 @@ export function groupKey(label: string): string {
   return `\u0000group\u0000${label}`;
 }
 
+/** Key of a group summary item. */
+export function groupFooterKey(label: string): string {
+  return `\u0000groupfooter\u0000${label}`;
+}
+
 /**
  * Flattens the rows of the page into items: a heading before each group, then the rows of the
- * group unless it is closed (rows of a closed group take no space). `rows` must keep each group
- * together.
+ * group unless it is closed (rows of a closed group take no space), then the summary row of the
+ * group with `groupFooters`. `rows` must keep each group together.
  */
 export function buildVirtualLayout<T>(
   rows: readonly T[],
@@ -202,10 +218,16 @@ export function buildVirtualLayout<T>(
   let aria = 0;
   let label: string | null = null;
   let collapsed = false;
+  const footer = () => {
+    if (!options.groupFooters || label === null || collapsed) return;
+    items.push({ kind: 'groupFooter', key: groupFooterKey(label), label, aria });
+    aria++;
+  };
   rows.forEach((row, index) => {
     if (options.groupOf) {
       const group = options.groupOf(row);
       if (index === 0 || group !== label) {
+        footer();
         label = group;
         collapsed = options.isCollapsed(group);
         counts.push(0);
@@ -226,6 +248,7 @@ export function buildVirtualLayout<T>(
     items.push({ kind: 'row', key: options.keyOf(row), row, index, expanded, aria });
     aria += expanded ? 2 : 1;
   });
+  footer();
   let group = 0;
   const indexOfKey = new Map<unknown, number>();
   const heights = new Float64Array(items.length);

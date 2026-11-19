@@ -7024,6 +7024,27 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Group heading of a row (property name or function). Rows with the same heading show together under it, in the order in which the headings first appear after sorting. With `virtualScroll`, the rows of a closed group take no space."
       },
       {
+        "name": "groupSummary",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "With `groupBy`: a summary row below the rows of each group, with the column `summary` over all filtered rows of the group (in lazy mode, the loaded rows). On a page that ends inside a group the summary row shows at the end of the page. Ignite UI group summaries, PrimeNG `groupfooter`."
+      },
+      {
+        "name": "summaries",
+        "type": "Readonly<Record<string, unknown>> | null",
+        "default": "null",
+        "required": false,
+        "description": "Footer summary values by column `field` in lazy mode, where the table has one page only: the owner computes them on the server. The table formats them (`summaryFormat`, `locale`)."
+      },
+      {
+        "name": "locale",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Locale of the summary numbers and dates (default: the locale of the browser)."
+      },
+      {
         "name": "reorderableRows",
         "type": "boolean",
         "default": "false",
@@ -9486,6 +9507,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "table-layout/footer": "<docs-fill>\n  <star-table\n    [value]=\"orders.slice(0, 6)\"\n    [columns]=\"footerColumns\"\n    dataKey=\"id\"\n    ariaLabel=\"Orders with totals\"\n  />\n</docs-fill>",
   "table-layout/groups": "<div class=\"docs-stack\">\n  <star-toggle-switch [(checked)]=\"grouped\">Group by region</star-toggle-switch>\n  <docs-fill>\n    <star-table\n      [value]=\"orders.slice(0, 12)\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders in groups\"\n      [groupBy]=\"grouped() ? 'region' : null\"\n      [(collapsedGroups)]=\"closed\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Closed: {{ closed().join(', ') || 'none' }}</p>\n</div>",
   "table-layout/stack": "<div class=\"docs-stack docs-stack--narrow\">\n  <star-table\n    [value]=\"orders.slice(0, 3)\"\n    [columns]=\"columns\"\n    dataKey=\"id\"\n    ariaLabel=\"Orders stacked\"\n    responsiveLayout=\"stack\"\n  />\n</div>",
+  "table-layout/summaries": "<div class=\"docs-stack\">\n  <star-toggle-switch [(checked)]=\"summaryGroups\">Group by region</star-toggle-switch>\n  <docs-fill>\n    <star-table\n      [value]=\"sales\"\n      [columns]=\"summaryColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Sales with summaries\"\n      locale=\"en-US\"\n      [groupBy]=\"summaryGroups() ? 'region' : null\"\n      groupSummary\n    />\n  </docs-fill>\n</div>",
   "table-layout/virtual": "<docs-fill>\n  <star-table\n    [value]=\"log\"\n    [columns]=\"logColumns\"\n    dataKey=\"id\"\n    ariaLabel=\"Audit log\"\n    virtualScroll\n    [virtualRowHeight]=\"44\"\n    scrollHeight=\"20rem\"\n    stickyHeader\n    striped\n  />\n</docs-fill>",
   "table-layout/virtual-detail": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"tickets\"\n      [columns]=\"ticketColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Tickets with detail\"\n      selectionMode=\"multiple\"\n      [(selection)]=\"ticketSelection\"\n      [(expandedKeys)]=\"ticketsOpen\"\n      virtualScroll\n      [virtualRowHeight]=\"52\"\n      scrollHeight=\"24rem\"\n      stickyHeader\n    >\n      <ng-template starRowExpansion [starRowExpansionOf]=\"tickets\" let-row>\n        <ol class=\"history\">\n          @for (step of historyOf(row); track step) {\n            <li>{{ step }} by {{ row.owner }} in {{ row.city }}</li>\n          }\n        </ol>\n      </ng-template>\n    </star-table>\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">\n    Open: {{ ticketsOpen().length }}, selected: {{ ticketSelection().length }}\n  </p>\n</div>",
   "table-layout/virtual-groups": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"groupedTickets\"\n      [columns]=\"ticketColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Tickets by city\"\n      groupBy=\"city\"\n      [(collapsedGroups)]=\"closedCities\"\n      virtualScroll\n      [virtualRowHeight]=\"52\"\n      scrollHeight=\"24rem\"\n      stickyHeader\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Closed: {{ closedCities().join(', ') || 'none' }}</p>\n</div>",

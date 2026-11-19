@@ -1225,6 +1225,24 @@ test.describe('table: layout', () => {
     await expect(sales).toHaveAttribute('colspan', '5');
   });
 
+  test('shows a summary row and a summary below each group', async ({ page }) => {
+    await openPage(page, '/controls/table-layout', 'Table layout');
+    const live = example(page, 'Summaries');
+    const table = live.getByRole('table', { name: 'Sales with summaries' });
+    const footer = table.locator('tfoot td');
+    await expect(footer.nth(1)).toHaveText(/Count\s*8/);
+    await expect(footer.nth(2)).toContainText('Sum');
+    // The group summaries of the January column add up to the footer sum.
+    const groups = table.locator('tbody tr.star-table__group-footer');
+    await expect(groups).toHaveCount(3);
+    const januaries = await groups.locator('td:nth-child(3)').allTextContents();
+    const total = januaries.map(money).reduce((a, b) => a + b, 0);
+    expect(total).toBe(money(await footer.nth(2).textContent()));
+    await live.getByRole('switch', { name: 'Group by region' }).click();
+    await expect(groups).toHaveCount(0);
+    await expect(footer.nth(1)).toHaveText(/Count\s*8/);
+  });
+
   test('stacks the rows as label and value lines in a narrow table', async ({ page }) => {
     await openPage(page, '/controls/table-layout', 'Table layout');
     const live = example(page, 'Stacked layout');

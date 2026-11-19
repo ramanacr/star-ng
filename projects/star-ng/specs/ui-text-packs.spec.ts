@@ -9,7 +9,7 @@ type Name = keyof StarUiText;
  * Every entry is checked: a stale entry (a text that differs) fails the test.
  */
 const SAME_AS_ENGLISH: Record<string, readonly Name[]> = {
-  // "Layout", "Details", "Dock", "System", "Editor", "Link" and "Minute" are the usual German UI words.
+  // "Layout", "Details", "Dock", "System", "Editor", "Link", "Minute", "Minimum" and "Maximum" are the usual German UI words.
   de: [
     'layout',
     'rowDetails',
@@ -20,6 +20,8 @@ const SAME_AS_ENGLISH: Record<string, readonly Name[]> = {
     'chartX',
     'chartY',
     'minute',
+    'summaryMinimum',
+    'summaryMaximum',
   ],
   // "Color", "Editor" and "Total" are the Spanish words too. "X" and "Y" are axis names in every language.
   es: ['colorLabel', 'editorLabel', 'chartTotal', 'chartX', 'chartY'],

@@ -262,6 +262,17 @@ star-select.star-table__filter {
       padding: 0.75rem 1rem 1rem;
       border-bottom: 1px solid var(--star-border);
     }
+    // Summaries: the label of a built-in summary, and the summary row below a group.
+    .star-table__summary-label {
+      margin-inline-end: 0.375rem;
+      font: var(--star-type-label);
+      color: var(--star-text-muted);
+    }
+    .star-table__group-footer td {
+      background: color-mix(in srgb, var(--star-surface-muted) 60%, var(--star-surface));
+      font-weight: 600;
+      color: var(--star-text-strong);
+    }
     .star-table__empty {
       border-bottom: 0;
     }

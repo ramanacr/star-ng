@@ -112,9 +112,16 @@ import {
 } from './table-selection';
 import type { StarHeaderCellContext, StarRowEditActionsContext } from './table-slots';
 import {
+  StarColumnSummary,
+  StarSummaryCell,
+  summaryCell,
+  suppliedSummaryCell,
+} from './table-summaries';
+import {
   anchorOf,
   anchorShift,
   buildVirtualLayout,
+  groupFooterKey,
   groupKey,
   HeightChange,
   variableRange,
@@ -201,6 +208,16 @@ export interface StarColumn<T> extends StarColumnRules<T> {
    * an average. The table has a footer row when one column has a footer.
    */
   readonly footer?: string | ((rows: readonly T[]) => string);
+  /**
+   * Summary in the footer row (over all filtered rows) and, with `groupSummary`, in the summary
+   * row of each group: `'sum'`, `'avg'`, `'min'`, `'max'`, `'count'` (values that are not empty),
+   * or a function of the rows. A built-in summary shows its label ("Sum"). In the footer row,
+   * `footer` wins when a column has both; group summary rows always show the summary. In lazy mode
+   * the footer values come from the table `summaries`. Ignite UI `hasSummary`, AG Grid `aggFunc`.
+   */
+  readonly summary?: StarColumnSummary<T>;
+  /** `Intl.NumberFormat` options of a number summary, with the table `locale`. */
+  readonly summaryFormat?: Intl.NumberFormatOptions;
 }
 
 export interface StarCellEditEvent<T> {
@@ -240,7 +257,7 @@ const MEASURE_TOLERANCE = 0.1;
 const FOCUSABLE =
   'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])';
 
-/** One line of the table body: a spacer, a group heading, or a row with its detail row. */
+/** One line of the table body: a spacer, a group heading or summary, or a row with its detail. */
 type BodyEntry<T> =
   | { readonly kind: 'spacer'; readonly key: string; readonly height: number }
   | {
@@ -258,6 +275,13 @@ type BodyEntry<T> =
       readonly key: unknown;
       readonly row: T;
       readonly index: number;
+      readonly aria: number | null;
+      readonly item: number | null;
+    }
+  | {
+      readonly kind: 'groupFooter';
+      readonly key: string;
+      readonly label: string;
       readonly aria: number | null;
       readonly item: number | null;
     };
@@ -825,6 +849,40 @@ export class StarRowExpansionTemplate<T = unknown> {
                     </button>
                   </th>
                 </tr>
+              } @else if (entry.kind === 'groupFooter') {
+                @let summaries = groupSummaries().get(entry.label);
+                <tr
+                  class="star-table__group-footer"
+                  [attr.aria-rowindex]="entry.aria"
+                  [attr.data-vi]="entry.item"
+                  [hidden]="isGroupCollapsed(entry.label)"
+                >
+                  @if (reorderableRows()) {
+                    <td class="star-table__reorder"></td>
+                  }
+                  @if (expandable()) {
+                    <td class="star-table__expander"></td>
+                  }
+                  @if (selectionMode()) {
+                    <td class="star-table__select"></td>
+                  }
+                  @for (column of visibleColumns(); track column.field) {
+                    <td
+                      [class]="'star-table__cell--' + (column.align ?? 'start')"
+                      [starTablePin]="pinOf(column)"
+                      [attr.data-label]="column.header"
+                    >
+                      @if (summaries?.get(column.field); as summary) {
+                        <ng-container
+                          *ngTemplateOutlet="summaryCell; context: { $implicit: summary }"
+                        />
+                      }
+                    </td>
+                  }
+                  @if (rowEditMode()) {
+                    <td class="star-table__row-actions"></td>
+                  }
+                </tr>
               } @else {
                 @let row = entry.row;
                 @let i = entry.index;
@@ -1134,9 +1192,15 @@ export class StarRowExpansionTemplate<T = unknown> {
                 <td
                   [class]="'star-table__cell--' + (column.align ?? 'start')"
                   [starTablePin]="pinOf(column)"
-                  [attr.data-label]="footerText(column) ? column.header : null"
+                  [attr.data-label]="column.header"
                 >
-                  {{ footerText(column) }}
+                  @if (column.footer !== undefined) {
+                    {{ footerText(column) }}
+                  } @else if (footerSummaries().get(column.field); as summary) {
+                    <ng-container
+                      *ngTemplateOutlet="summaryCell; context: { $implicit: summary }"
+                    />
+                  }
                 </td>
               }
               @if (rowEditMode()) {
@@ -1148,6 +1212,12 @@ export class StarRowExpansionTemplate<T = unknown> {
       </table>
     </div>
     <ng-content select="[starTableSummary]" />
+    <ng-template #summaryCell let-summary>
+      @if (summary.label) {
+        <span class="star-table__summary-label">{{ summary.label }}</span>
+      }
+      {{ summary.text }}
+    </ng-template>
     <ng-template #headerLabel let-column>
       @if (headerCellSlots().get(column.field); as custom) {
         <ng-container *ngTemplateOutlet="custom; context: { $implicit: column }" />
@@ -1389,6 +1459,20 @@ export class StarTable<T> {
   readonly groupBy = input<StarOptionKey<T> | null>(null);
   /** Headings of the closed groups. Two-way. */
   readonly collapsedGroups = model<readonly string[]>([]);
+  /**
+   * With `groupBy`: a summary row below the rows of each group, with the column `summary` over
+   * all filtered rows of the group (in lazy mode, the loaded rows). On a page that ends inside a
+   * group the summary row shows at the end of the page. Ignite UI group summaries, PrimeNG
+   * `groupfooter`.
+   */
+  readonly groupSummary = input(false, { transform: booleanAttribute });
+  /**
+   * Footer summary values by column `field` in lazy mode, where the table has one page only: the
+   * owner computes them on the server. The table formats them (`summaryFormat`, `locale`).
+   */
+  readonly summaries = input<Readonly<Record<string, unknown>> | null>(null);
+  /** Locale of the summary numbers and dates (default: the locale of the browser). */
+  readonly locale = input<string | null>(null);
   /**
    * Adds "Move up" / "Move down" buttons to each row. The buttons work while the table shows
    * `value` in its own order (no sort, no filter, no groups).
@@ -1632,8 +1716,56 @@ export class StarTable<T> {
   });
 
   protected readonly hasFooter = computed(() =>
-    this.visibleColumns().some((column) => column.footer !== undefined),
+    this.visibleColumns().some((column) => column.footer !== undefined || column.summary),
   );
+
+  /** Summary rows below the groups (`groupBy` with `groupSummary`). */
+  private readonly groupFooters = computed(() => !!this.groupBy() && this.groupSummary());
+
+  /** Summary cell of a column over rows. */
+  private summaryOf(column: StarColumn<T>, rows: readonly T[]): StarSummaryCell | null {
+    return summaryCell(
+      column,
+      rows,
+      (row) => this.cellValue(row, column),
+      this.text,
+      this.locale(),
+    );
+  }
+
+  /** Footer summary cells by field (columns with `summary` and without `footer`). */
+  protected readonly footerSummaries = computed(() => {
+    const cells = new Map<string, StarSummaryCell | null>();
+    const lazy = this.lazy();
+    const supplied = this.summaries() ?? {};
+    const rows = lazy ? [] : this.sorted();
+    for (const column of this.visibleColumns()) {
+      if (!column.summary || column.footer !== undefined) continue;
+      cells.set(
+        column.field,
+        lazy
+          ? suppliedSummaryCell(column, supplied[column.field], this.text, this.locale())
+          : this.summaryOf(column, rows),
+      );
+    }
+    return cells;
+  });
+
+  /** Summary cells of each group by group label, then by field (`groupSummary`). */
+  protected readonly groupSummaries = computed(() => {
+    const groups = new Map<string, Map<string, StarSummaryCell | null>>();
+    if (!this.groupFooters()) return groups;
+    const byGroup = new Map<string, T[]>();
+    for (const row of this.lazy() ? this.pageRows() : this.sorted()) {
+      const label = this.groupOf(row);
+      byGroup.set(label, [...(byGroup.get(label) ?? []), row]);
+    }
+    const columns = this.visibleColumns().filter((column) => column.summary);
+    for (const [label, rows] of byGroup) {
+      groups.set(label, new Map(columns.map((c) => [c.field, this.summaryOf(c, rows)])));
+    }
+    return groups;
+  });
 
   /** Rows can move while the table shows `value` in its own order. */
   private readonly rowOrderIsOwn = computed(
@@ -1764,6 +1896,7 @@ export class StarTable<T> {
     if (!this.variableHeights() || this.loading()) return null;
     const rows = this.pageRows();
     const grouped = !!this.groupBy();
+    const footers = this.groupFooters();
     const collapsed = new Set(this.collapsedGroups());
     const expandable = this.expandable();
     const expanded = this.expandedSet();
@@ -1777,6 +1910,7 @@ export class StarTable<T> {
       }
       return buildVirtualLayout(rows, {
         groupOf: grouped ? (row) => this.groupOf(row) : null,
+        groupFooters: footers,
         isCollapsed: (label) => collapsed.has(label),
         isExpanded: (row) => expandable && expanded.has(this.trackKey(row)),
         keyOf: (row) => this.trackKey(row),
@@ -1787,7 +1921,7 @@ export class StarTable<T> {
 
   /** Measured height of an item, else the estimate (a row with its detail: two rows). */
   private estimateOf(item: VirtualItem<T>, estimate: number): number {
-    if (item.kind === 'group') return this.rowHeights.get(item.key) ?? estimate;
+    if (item.kind !== 'row') return this.rowHeights.get(item.key) ?? estimate;
     if (!item.expanded) return this.rowHeights.get(item.key) ?? estimate;
     return (
       this.expandedHeights.get(item.key) ?? (this.rowHeights.get(item.key) ?? estimate) + estimate
@@ -1842,6 +1976,7 @@ export class StarTable<T> {
   protected readonly bodyEntries = computed<readonly BodyEntry<T>[]>(() => {
     const rows = this.pageRows();
     if (!this.virtualScroll()) {
+      const footers = this.groupFooters();
       const entries: BodyEntry<T>[] = [];
       const starts = this.groupStarts();
       rows.forEach((row, index) => {
@@ -1856,6 +1991,12 @@ export class StarTable<T> {
           });
         }
         entries.push({ kind: 'row', key: this.trackKey(row), row, index, aria: null, item: null });
+        const label = footers ? this.groupOf(row) : null;
+        const next = rows[index + 1];
+        if (label !== null && (next === undefined || this.groupOf(next) !== label)) {
+          const key = groupFooterKey(label);
+          entries.push({ kind: 'groupFooter', key, label, aria: null, item: null });
+        }
       });
       return entries;
     }
@@ -1872,6 +2013,9 @@ export class StarTable<T> {
         (i) => {
           const item = layout.items[i];
           const aria = header + item.aria + 1;
+          if (item.kind === 'groupFooter') {
+            return { kind: 'groupFooter', key: item.key, label: item.label, aria, item: i };
+          }
           return item.kind === 'group'
             ? { kind: 'group', key: item.key, label: item.label, count: item.count, aria, item: i }
             : { kind: 'row', key: item.key, row: item.row, index: item.index, aria, item: i };

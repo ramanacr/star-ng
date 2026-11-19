@@ -930,6 +930,15 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'table with a summary row and group summary rows',
+    path: 'controls/table-layout',
+    open: async (page) => {
+      const live = example(page, 'Summaries');
+      await expect(live.locator('.star-table__group-footer').first()).toBeVisible();
+      await expect(live.locator('tfoot .star-table__summary-label').first()).toBeVisible();
+    },
+  },
+  {
     name: 'table with a filter select open',
     path: 'controls/table-sort-filter',
     open: async (page) => {

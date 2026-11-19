@@ -76,7 +76,7 @@ const LOG: readonly LogEntry[] = Array.from({ length: 5000 }, (_, i) => ({
   template: `
     <docs-page
       heading="Table layout"
-      lead="Show more than one line of data per row: row detail, row groups and a footer. Fit the table to a phone with the stacked layout, and render thousands of rows with virtual scroll."
+      lead="Show more than one line of data per row: row detail, row groups, column groups, summaries and a footer. Fit the table to a phone with the stacked layout, and render thousands of rows with virtual scroll."
       importFrom="import { StarTable, StarRowExpansionTemplate } from '@star-ng/ui/table';"
     >
       <docs-example
@@ -147,7 +147,7 @@ const LOG: readonly LogEntry[] = Array.from({ length: 5000 }, (_, i) => ({
         heading="Footer"
         source="table-layout/footer"
         [script]="footerScript"
-        note="footer on a column is fixed text, or a function that gets the filtered rows of all pages. The table has a footer row when at least one visible column has a footer."
+        note="footer on a column is fixed text, or a function that gets the filtered rows of all pages. The table has a footer row when at least one visible column has a footer or a summary (see Summaries)."
       >
         <docs-fill>
           <star-table
@@ -180,6 +180,28 @@ const LOG: readonly LogEntry[] = Array.from({ length: 5000 }, (_, i) => ({
             </ng-template>
           </star-table>
         </docs-fill>
+      </docs-example>
+
+      <docs-example
+        heading="Summaries"
+        source="table-layout/summaries"
+        [script]="summaryScript"
+        note="summary on a column adds a summary row in the footer over all filtered rows: sum, avg, min, max, count (values that are not empty) or a function of the rows. summaryFormat takes Intl.NumberFormat options, with the table locale. With groupBy, groupSummary adds a summary row below each group. A column footer wins over its summary in the footer row. In lazy mode, pass the footer values from the server with summaries (field to value)."
+      >
+        <div class="docs-stack">
+          <star-toggle-switch [(checked)]="summaryGroups">Group by region</star-toggle-switch>
+          <docs-fill>
+            <star-table
+              [value]="sales"
+              [columns]="summaryColumns"
+              dataKey="id"
+              ariaLabel="Sales with summaries"
+              locale="en-US"
+              [groupBy]="summaryGroups() ? 'region' : null"
+              groupSummary
+            />
+          </docs-fill>
+        </div>
       </docs-example>
 
       <docs-example
@@ -393,6 +415,48 @@ export class TableLayoutPage {
   protected readonly sales: readonly CitySales[] = CITY_SALES;
   protected readonly salesColumns: StarColumn<CitySales>[] = salesColumns();
   protected readonly salesGroups = SALES_GROUPS;
+  protected readonly summaryGroups = signal(true);
+  protected readonly summaryColumns: StarColumn<CitySales>[] = [
+    { field: 'region', header: 'Region' },
+    { field: 'city', header: 'City', summary: 'count' },
+    ...(['jan', 'feb', 'mar'] as const).map((month): StarColumn<CitySales> => ({
+      field: month,
+      header: month[0].toUpperCase() + month.slice(1),
+      align: 'end',
+      summary: 'sum',
+      summaryFormat: { style: 'currency', currency: 'USD', maximumFractionDigits: 0 },
+      format: (row) => formatMoney(row[month]),
+    })),
+    {
+      field: 'avg',
+      header: 'Monthly average',
+      align: 'end',
+      value: (row) => (row.jan + row.feb + row.mar) / 3,
+      format: (row) => formatMoney((row.jan + row.feb + row.mar) / 3),
+      summary: 'max',
+      summaryFormat: { style: 'currency', currency: 'USD' },
+    },
+  ];
+  protected readonly summaryScript = `readonly summaryGroups = signal(true);
+readonly summaryColumns: StarColumn<CitySales>[] = [
+  { field: 'region', header: 'Region' },
+  { field: 'city', header: 'City', summary: 'count' },
+  {
+    field: 'jan',
+    header: 'Jan',
+    align: 'end',
+    summary: 'sum',
+    summaryFormat: { style: 'currency', currency: 'USD', maximumFractionDigits: 0 },
+  },
+  // ... Feb and Mar
+  {
+    field: 'avg',
+    header: 'Monthly average',
+    value: (row) => (row.jan + row.feb + row.mar) / 3,
+    summary: 'max',
+    summaryFormat: { style: 'currency', currency: 'USD' },
+  },
+];`;
   protected readonly columnGroupScript = `readonly salesGroups: StarColumnGroup[] = [
   { header: 'Location', children: ['region', 'city'] },
   {
