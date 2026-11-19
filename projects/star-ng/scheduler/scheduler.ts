@@ -10,6 +10,7 @@ import {
   contentChildren,
   DestroyRef,
   Directive,
+  effect,
   ElementRef,
   forwardRef,
   inject,
@@ -173,6 +174,8 @@ const ALL_VIEWS: readonly StarSchedulerView[] = [
   'timeline-day',
 ];
 const ALL_DAY_ROW = -1;
+/** Views with the current-time line. */
+const TIME_VIEWS: ReadonlySet<StarSchedulerView> = new Set(['day', 'week', 'work-week']);
 
 /**
  * Scheduler (Kendo UI Scheduler, Syncfusion Schedule, DevExtreme Scheduler; PrimeNG had the
@@ -678,6 +681,8 @@ export class StarScheduler {
   /** @internal True while the pointer drags an event: the events let the pointer through. */
   readonly dragging = signal(false);
   private readonly now = signal<Date | null>(null);
+  /** True after the first render in the browser. */
+  private readonly rendered = signal(false);
   private drag: DragState | null = null;
   /** The "+N more" button of the open list. */
   private moreAnchor: HTMLElement | null = null;
@@ -878,12 +883,20 @@ export class StarScheduler {
   });
 
   constructor() {
+    // Today is known in the browser only. The minute timer runs only while a time view shows
+    // the current-time line.
     afterNextRender(() => {
+      this.now.set(new Date());
+      this.rendered.set(true);
+    });
+    effect((onCleanup) => {
       const view = this.host.ownerDocument.defaultView;
-      if (!view) return;
+      if (!this.rendered() || !view || !this.showCurrentTime() || !TIME_VIEWS.has(this.view())) {
+        return;
+      }
       this.now.set(new Date());
       const timer = view.setInterval(() => this.now.set(new Date()), 60_000);
-      this.destroyRef.onDestroy(() => view.clearInterval(timer));
+      onCleanup(() => view.clearInterval(timer));
     });
     this.destroyRef.onDestroy(() => this.endDrag?.());
     afterEveryRender(() => {

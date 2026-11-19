@@ -721,6 +721,29 @@ describe('StarScheduler', () => {
     });
   });
 
+  describe('current time', () => {
+    it('runs the minute timer only while a time view is shown', async () => {
+      const set = vi.spyOn(window, 'setInterval');
+      const clear = vi.spyOn(window, 'clearInterval');
+      const { host, stable } = await setup();
+      await stable();
+      const minute = () => set.mock.calls.filter((c) => c[1] === 60_000).length;
+      expect(minute()).toBe(1);
+      host.view.set('month');
+      await stable();
+      expect(clear).toHaveBeenCalled();
+      expect(minute()).toBe(1);
+      host.view.set('agenda');
+      await stable();
+      expect(minute()).toBe(1);
+      host.view.set('day');
+      await stable();
+      expect(minute()).toBe(2);
+      set.mockRestore();
+      clear.mockRestore();
+    });
+  });
+
   describe('server rendering', () => {
     it('renders on the server platform without the current-time line', async () => {
       TestBed.configureTestingModule({ providers: [{ provide: PLATFORM_ID, useValue: 'server' }] });
