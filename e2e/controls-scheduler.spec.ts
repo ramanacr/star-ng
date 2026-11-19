@@ -109,6 +109,36 @@ test.describe('scheduler', () => {
     await expect(area.getByRole('button', { name: /^Team meeting, 11:00 to 11:30/ })).toBeVisible();
   });
 
+  test('selects an event on a held click, and opens the edit editor', async ({ page }) => {
+    await openPage(page, '/controls/scheduler', 'Scheduler');
+    // Team calendar: a held click selects the event; no event is added.
+    const area = example(page, 'Team calendar');
+    await waitForHydration(page, area);
+    const meeting = area.getByRole('button', { name: /^Team meeting, 10:00 to 11:00/ });
+    await meeting.scrollIntoViewIfNeeded();
+    let box = (await meeting.boundingBox())!;
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.waitForTimeout(150);
+    await page.mouse.up();
+    await expect(area.getByRole('status')).toHaveText('Selected Team meeting');
+
+    // Timeline with the editor: a held click opens the edit editor, not the create editor.
+    const rooms = example(page, 'Rooms on a timeline, with the editor');
+    const booking = rooms.getByRole('button', { name: /^Team meeting, / });
+    await booking.scrollIntoViewIfNeeded();
+    box = (await booking.boundingBox())!;
+    await page.mouse.move(box.x + Math.min(box.width / 2, 20), box.y + box.height / 2);
+    await page.mouse.down();
+    await page.waitForTimeout(150);
+    await page.mouse.up();
+    const dialog = page.getByRole('dialog', { name: 'Edit event' });
+    await expect(dialog).toBeVisible();
+    await expect(page.getByRole('dialog', { name: 'New event' })).toHaveCount(0);
+    await dialog.getByRole('button', { name: 'Cancel' }).click();
+    await expect(dialog).toBeHidden();
+  });
+
   test('opens the list of a full month day', async ({ page }) => {
     await openPage(page, '/controls/scheduler', 'Scheduler');
     const list = page.getByRole('dialog', { name: /18 March/ });

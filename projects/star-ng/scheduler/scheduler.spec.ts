@@ -488,9 +488,12 @@ describe('StarScheduler', () => {
       under = cell(21, 1);
       pointer(over, 'pointerdown');
       await stable();
-      expect(scheduler.classList).toContain('star-scheduler--dragging');
+      // Not a drag yet: a click must still reach the event.
+      expect(scheduler.classList).not.toContain('star-scheduler--dragging');
       under = cell(22, 1);
       pointer(document, 'pointermove');
+      await stable();
+      expect(scheduler.classList).toContain('star-scheduler--dragging');
       pointer(document, 'pointerup');
       await stable();
       expect(host.changes[0]).toMatchObject({
@@ -558,6 +561,31 @@ describe('StarScheduler', () => {
       pointer(document, 'pointerup');
       expect(host.changes).toHaveLength(0);
       removed.mockRestore();
+    });
+
+    it('selects an editable event on a held click: no drag state before the pointer moves', async () => {
+      const { host, event, cell, scheduler, stable } = await setup((h) => h.editor.set(true));
+      over = event('Team meeting');
+      under = cell(20, 1);
+      pointer(over, 'pointerdown');
+      await stable();
+      // The pointer is held in place: the event keeps its pointer events.
+      expect(scheduler.classList).not.toContain('star-scheduler--dragging');
+      pointer(document, 'pointermove');
+      await stable();
+      expect(scheduler.classList).not.toContain('star-scheduler--dragging');
+      pointer(over, 'pointerup');
+      over.click();
+      await stable();
+      for (let i = 0; i < 3; i++) {
+        TestBed.tick();
+        await Promise.resolve();
+      }
+      expect(host.selected.map((s) => s.event.id)).toEqual(['meeting']);
+      expect(host.slots).toHaveLength(0);
+      const dialog = document.querySelector('dialog')!;
+      expect(dialog.textContent).toContain('Edit event');
+      expect(dialog.textContent).not.toContain('New event');
     });
 
     it('does nothing when the pointer stays in the same cell', async () => {

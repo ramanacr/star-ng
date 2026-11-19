@@ -1495,8 +1495,9 @@ export class StarScheduler {
       button.closest<HTMLElement>('[data-cell]')?.dataset['cell'] ??
       null;
     if (!origin) return;
+    // The drag state (pointer-events: none on the events) starts only when the pointer leaves the
+    // first slot: a held click must still land on the event, not on the slot below it.
     this.drag = { occurrence, mode, origin, moved: false };
-    this.dragging.set(true);
     const doc = this.host.ownerDocument;
     const move = (e: PointerEvent) => this.onPointerMove(e);
     const teardown = () => {
@@ -1557,7 +1558,10 @@ export class StarScheduler {
     if (!drag) return;
     const key = this.cellAt(event.clientX, event.clientY);
     if (!key) return;
-    if (key !== drag.origin) drag.moved = true;
+    if (key !== drag.origin && !drag.moved) {
+      drag.moved = true;
+      this.dragging.set(true);
+    }
     if (!drag.moved) return;
     this.preview.set(this.dragResult(drag, key));
   }
