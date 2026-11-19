@@ -92,17 +92,18 @@ export class StarBarcode {
   readonly showText = input(true, { transform: booleanAttribute });
   /** Height of the bars in pixels. */
   readonly barHeight = input(64);
-  /** Width of the narrowest bar (one module) in pixels. */
+  /** Width of the narrowest bar (one module) in pixels. Rounded to whole pixels, at least 1. */
   readonly moduleWidth = input(2);
   /** Label for assistive technology. Default: the human-readable value. */
   readonly ariaLabel = input<string | null>(null);
-  // The name `invalid` follows the other suites. The host is not a form control, so the native
-  // `invalid` event never fires on it.
+  // The wave G1 brief asks for an output named `invalid`. It shares the name of a native DOM
+  // event, but the host is not a form control, so the native `invalid` event never fires on it.
   /** Emits `true` when the value cannot be encoded, and `false` when it can be again. */
   readonly invalid = output<boolean>(); // eslint-disable-line @angular-eslint/no-output-native
 
   protected readonly encoding = computed(() => starEncodeBarcode(this.value(), this.type()));
-  private readonly module = computed(() => Math.max(1, this.moduleWidth()));
+  /** Whole pixels per module, so every bar edge falls on a pixel and the widths stay exact. */
+  private readonly module = computed(() => Math.max(1, Math.round(this.moduleWidth() || 1)));
 
   protected readonly rects = computed(() => {
     const code = this.encoding();

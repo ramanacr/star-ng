@@ -705,7 +705,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "number",
         "default": "2",
         "required": false,
-        "description": "Width of the narrowest bar (one module) in pixels."
+        "description": "Width of the narrowest bar (one module) in pixels. Rounded to whole pixels, at least 1."
       },
       {
         "name": "ariaLabel",

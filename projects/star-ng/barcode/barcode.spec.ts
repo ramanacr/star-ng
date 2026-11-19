@@ -9,7 +9,7 @@ import { StarBarcode, StarBarcodeType } from '@star-ng/ui/barcode';
     [type]="type()"
     [showText]="showText()"
     [barHeight]="40"
-    [moduleWidth]="2"
+    [moduleWidth]="moduleWidth()"
     (invalid)="events.push($event)"
   />`,
 })
@@ -17,6 +17,7 @@ class Host {
   readonly value = signal('PJJ123C');
   readonly type = signal<StarBarcodeType>('code128');
   readonly showText = signal(true);
+  readonly moduleWidth = signal(2);
   readonly events: boolean[] = [];
 }
 
@@ -86,6 +87,18 @@ describe('StarBarcode', () => {
     await fixture.whenStable();
     expect(host.classList).not.toContain('star-barcode--invalid');
     expect(state.events).toEqual([true, false]);
+  });
+
+  it('rounds the module width to whole pixels, at least 1', async () => {
+    const { fixture, host, state } = await setup();
+    const firstBar = () => host.querySelector('.star-barcode__bar')!;
+    state.moduleWidth.set(2.6);
+    await fixture.whenStable();
+    expect(firstBar().getAttribute('x')).toBe('30');
+    expect(firstBar().getAttribute('width')).toBe('6');
+    state.moduleWidth.set(0.3);
+    await fixture.whenStable();
+    expect(firstBar().getAttribute('width')).toBe('2');
   });
 
   it('renders on the server', async () => {
