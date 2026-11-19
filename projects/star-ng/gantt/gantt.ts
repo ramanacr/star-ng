@@ -776,6 +776,15 @@ export class StarGantt {
     // The original row (without a preview) is the base of the change.
     const row = this.rows().find((r) => key(r.task.id) === key(bar.row.task.id)) ?? bar.row;
     this.drag = { row, mode, x: event.clientX, barWidth: bar.width, moved: false };
+    // Touch and pen: keep the pointer on the bar while it drags (the CSS sets touch-action: none).
+    const target = event.target as Element;
+    if (typeof event.pointerId === 'number' && typeof target.setPointerCapture === 'function') {
+      try {
+        target.setPointerCapture(event.pointerId);
+      } catch {
+        // The pointer is already released: the document listeners still finish the drag.
+      }
+    }
     const doc = this.host.ownerDocument;
     const move = (e: PointerEvent) => this.onPointerMove(e);
     const stop = (e: PointerEvent | null) => {

@@ -331,6 +331,18 @@ describe('StarGantt', () => {
       expect(host.changes[0]).toMatchObject({ kind: 'progress', progress: 90 });
     });
 
+    it('captures the pointer on the dragged element', async () => {
+      const { bar } = await setup();
+      const track = bar('design').querySelector('.star-gantt__bar-track')!;
+      const capture = vi.fn();
+      Object.defineProperty(track, 'setPointerCapture', { value: capture, configurable: true });
+      const down = new MouseEvent('pointerdown', { bubbles: true, cancelable: true, button: 0 });
+      Object.defineProperty(down, 'pointerId', { value: 7 });
+      track.dispatchEvent(down);
+      expect(capture).toHaveBeenCalledWith(7);
+      pointer(document, 'pointerup', 0);
+    });
+
     it('drops the drag on Escape, without a change', async () => {
       const { host, bar, stable } = await setup();
       pointer(bar('design').querySelector('.star-gantt__bar-track')!, 'pointerdown', 100);

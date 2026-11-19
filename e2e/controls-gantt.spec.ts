@@ -39,6 +39,8 @@ test.describe('gantt', () => {
     const area = example(page, 'Product launch plan');
     const bar = area.locator('g[data-task-id="design"] .star-gantt__bar-track');
     await bar.scrollIntoViewIfNeeded();
+    // A touch drags the bar instead of scrolling.
+    expect(await bar.evaluate((element) => getComputedStyle(element).touchAction)).toBe('none');
     const box = (await bar.boundingBox())!;
     // 16 pixels a day in the week scale: two days later.
     await dragTo(page, bar, box.x + box.width / 2 + 32, box.y + 10);

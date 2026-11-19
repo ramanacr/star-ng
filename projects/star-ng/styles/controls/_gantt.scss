@@ -164,6 +164,13 @@
 .star-gantt__bar {
   cursor: grab;
 }
+// A touch on a bar or a handle drags it instead of scrolling the page.
+.star-gantt__bar-track,
+.star-gantt__handle,
+.star-gantt__progress-handle,
+.star-gantt__milestone {
+  touch-action: none;
+}
 .star-gantt__bar--readonly,
 .star-gantt__bar--summary {
   cursor: default;
