@@ -735,9 +735,27 @@ export class StarDiagram {
     record = true,
   ): boolean {
     if (!tx.nodes.length && !tx.edges.length) return false;
-    if (tx.edges.length && !emitChange(this.edgesChange, tx.edges, reason)) return false;
-    if (tx.nodes.length && !emitChange(this.nodesChange, tx.nodes, reason)) {
-      if (tx.edges.length) emitChange(this.edgesChange, starInvertPatches(tx.edges), 'revert');
+    // Edges need their nodes: nodes that come (back) go first, edges of nodes that go go first.
+    const nodesFirst = tx.nodes.some((patch) => patch.type === 'add');
+    const steps = [
+      { emitter: this.edgesChange, patches: tx.edges },
+      { emitter: this.nodesChange, patches: tx.nodes },
+    ] as const;
+    const [first, second] = nodesFirst ? [steps[1], steps[0]] : [steps[0], steps[1]];
+    const emit = (
+      step: (typeof steps)[number],
+      patches: readonly unknown[],
+      why: StarDiagramChangeReason,
+    ) => emitChange(step.emitter as OutputEmitterRef<StarDiagramChange<unknown>>, patches, why);
+    if (first.patches.length && !emit(first, first.patches, reason)) return false;
+    if (second.patches.length && !emit(second, second.patches, reason)) {
+      if (first.patches.length) {
+        emit(
+          first,
+          starInvertPatches(first.patches as readonly StarDiagramPatch<{ id: string }>[]),
+          'revert',
+        );
+      }
       return false;
     }
     if (record) {

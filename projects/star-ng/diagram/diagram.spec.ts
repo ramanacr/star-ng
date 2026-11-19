@@ -395,6 +395,21 @@ describe('StarDiagram', () => {
     expect(svg).toMatch(/<text[^>]*text-anchor="middle"[^>]*>\s*Yes/);
   });
 
+  it('emits the nodes before the edges when an undo adds them back', async () => {
+    const { host, node, stable } = await setup();
+    const order: string[] = [];
+    host.selection.set(['check']);
+    await stable();
+    key(node('check'), 'Delete');
+    await stable();
+    const sub1 = host.diagram().nodesChange.subscribe(() => order.push('nodes'));
+    const sub2 = host.diagram().edgesChange.subscribe(() => order.push('edges'));
+    host.diagram().undo();
+    expect(order).toEqual(['nodes', 'edges']);
+    sub1.unsubscribe();
+    sub2.unsubscribe();
+  });
+
   it('renders on the server platform with plain labels', async () => {
     TestBed.configureTestingModule({ providers: [{ provide: PLATFORM_ID, useValue: 'server' }] });
     const { root, host, stable } = await setup();
