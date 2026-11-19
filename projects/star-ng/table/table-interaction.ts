@@ -7,6 +7,7 @@ import {
   inject,
   Injector,
   input,
+  model,
   output,
   Signal,
   signal,
@@ -47,6 +48,8 @@ interface CellTarget<T> {
   host: {
     '(focusin)': 'onCellFocusIn($event)',
     '(keydown)': 'onCellKeydown($event)',
+    '(mousedown)': 'onCellMouseDown($event)',
+    '(click)': 'onCellClick($event)',
   },
 })
 export abstract class StarTableInteraction<T> {
@@ -93,8 +96,21 @@ export abstract class StarTableInteraction<T> {
    * Row selection. It adds the selection column: a check box per row and a tri-state header check
    * box (`'multiple'`, PrimeNG `p-tableCheckbox` / `p-tableHeaderCheckbox`), or a radio per row
    * (`'single'`, PrimeNG `p-tableRadioButton`).
+   *
+   * Cell selection (`cellSelection`, no selection column): `'cell'` selects one cell (a click or
+   * Space; Ctrl / Cmd + click clears it); `'range'` selects a rectangle: a click or Space starts
+   * it, Shift + click and Shift + Arrow (Home, End, PageUp, PageDown) stretch it from the anchor,
+   * Ctrl / Cmd + click adds or removes one cell. The cell modes turn on cell navigation. AG Grid
+   * `cellSelection`, Ignite UI `cellSelection`.
    */
-  readonly selectionMode = input<'single' | 'multiple' | null>(null);
+  readonly selectionMode = input<'single' | 'multiple' | 'cell' | 'range' | null>(null);
+
+  /**
+   * Selected cells with `selectionMode` `'cell'` or `'range'`: a list of `{ rowKey, field }` (the
+   * cells of a range, row by row in display order). Two-way. A key is the `dataKey` value, else
+   * the row object.
+   */
+  readonly cellSelection = model<readonly StarTableCellRef[]>([]);
 
   /**
    * Cell navigation (WAI-ARIA grid): the table becomes one tab stop and the cells take the focus.
@@ -128,10 +144,32 @@ export abstract class StarTableInteraction<T> {
     return mode === 'single' || mode === 'multiple' ? mode : null;
   });
 
+  /** Cell selection mode (`cell`, `range`), or `null`. */
+  protected readonly cellSelectionMode = computed(() => {
+    const mode = this.selectionMode();
+    return mode === 'cell' || mode === 'range' ? mode : null;
+  });
+
   /** The cells take the focus: `cellNavigation`, or automatic. */
   protected readonly cellMode = computed(
-    () => this.cellNavigation() ?? this.columns().some((column) => !!column.editable),
+    () =>
+      this.cellNavigation() ??
+      (!!this.cellSelectionMode() || this.columns().some((column) => !!column.editable)),
   );
+
+  /** Selected fields by row key. */
+  private readonly selectedCells = computed(() => {
+    const cells = new Map<unknown, Set<string>>();
+    for (const cell of this.cellSelection()) {
+      const fields = cells.get(cell.rowKey);
+      if (fields) fields.add(cell.field);
+      else cells.set(cell.rowKey, new Set([cell.field]));
+    }
+    return cells;
+  });
+
+  /** The fixed corner of a range: the cell of the last click, Space or plain move. */
+  private cellAnchor: StarTableCellRef | null = null;
 
   /** Rows that the keys move between: the page rows that are not in a closed group. */
   private readonly navRows = computed(() =>
@@ -197,7 +235,32 @@ export abstract class StarTableInteraction<T> {
     return this.isStop(row, column) ? 0 : -1;
   }
 
+  /** The cell is in `cellSelection`. */
+  protected isCellSelected(row: T, column: StarColumn<T>): boolean {
+    if (!this.cellSelectionMode()) return false;
+    return !!this.selectedCells().get(this.trackKey(row))?.has(column.field);
+  }
+
   // ---------------------------------------------------------------- events
+
+  /** Shift + click stretches a range: the browser must not select text. */
+  protected onCellMouseDown(event: MouseEvent): void {
+    if (event.shiftKey && this.cellSelectionMode() === 'range' && this.cellOf(event.target)) {
+      event.preventDefault();
+    }
+  }
+
+  protected onCellClick(event: MouseEvent): void {
+    if (!this.cellSelectionMode() || !this.cellMode() || event.button !== 0) return;
+    const target = this.cellOf(event.target);
+    if (!target || (event.target as Element).closest(OWN_KEYS)) return;
+    const how = event.shiftKey ? 'extend' : event.ctrlKey || event.metaKey ? 'toggle' : 'only';
+    this.selectCell(target.row, target.column, how);
+    if (event.shiftKey) {
+      const element = this.cellElement(target.row, target.column);
+      if (element) this.focusElement(element);
+    }
+  }
 
   protected onCellFocusIn(event: FocusEvent): void {
     if (!this.cellMode()) return;
@@ -218,7 +281,13 @@ export abstract class StarTableInteraction<T> {
       else this.startEdit(row, column);
       return;
     }
-    if (event.shiftKey) return;
+    if (event.key === ' ' && this.cellSelectionMode() && !event.ctrlKey && !event.metaKey) {
+      event.preventDefault();
+      this.selectCell(row, column, event.shiftKey ? 'extend' : 'only');
+      return;
+    }
+    const extend = event.shiftKey && this.cellSelectionMode() === 'range';
+    if (event.shiftKey && !extend) return;
     const rows = this.navRows();
     const columns = this.visibleColumns();
     const from = {
@@ -236,6 +305,54 @@ export abstract class StarTableInteraction<T> {
       this.rowSpan(this.pageIndex().get(this.trackKey(rows[r])) ?? r, nextColumn),
     );
     this.moveFocus(rows[index], nextColumn, true);
+    if (extend) this.selectCell(rows[index], nextColumn, 'extend');
+    else this.cellAnchor = { rowKey: this.trackKey(rows[index]), field: nextColumn.field };
+  }
+
+  // ---------------------------------------------------------------- cell selection
+
+  /**
+   * Selects a cell: `only` makes it the selection (and the anchor), `toggle` adds or removes it
+   * (`cell` mode: it is the only cell or none), `extend` selects the rectangle from the anchor.
+   */
+  private selectCell(row: T, column: StarColumn<T>, how: 'only' | 'toggle' | 'extend'): void {
+    const mode = this.cellSelectionMode();
+    if (!mode) return;
+    const cell = { rowKey: this.trackKey(row), field: column.field };
+    if (how === 'extend' && mode === 'range') {
+      this.cellSelection.set(this.rectangle(this.cellAnchor ?? cell, cell));
+      return;
+    }
+    this.cellAnchor = cell;
+    if (how !== 'toggle') {
+      this.cellSelection.set([cell]);
+    } else if (this.isCellSelected(row, column)) {
+      this.cellSelection.update((cells) =>
+        cells.filter((item) => !Object.is(item.rowKey, cell.rowKey) || item.field !== cell.field),
+      );
+    } else {
+      this.cellSelection.update((cells) => (mode === 'cell' ? [cell] : [...cells, cell]));
+    }
+  }
+
+  /** The cells of the rectangle between two cells, row by row in display order. */
+  private rectangle(from: StarTableCellRef, to: StarTableCellRef): StarTableCellRef[] {
+    const rows = this.navRows();
+    const columns = this.visibleColumns();
+    const rowOf = (cell: StarTableCellRef) =>
+      rows.findIndex((row) => Object.is(this.trackKey(row), cell.rowKey));
+    const colOf = (cell: StarTableCellRef) =>
+      columns.findIndex((column) => column.field === cell.field);
+    const end = { row: rowOf(to), col: colOf(to) };
+    let start = { row: rowOf(from), col: colOf(from) };
+    if (start.row < 0 || start.col < 0) start = end;
+    const cells: StarTableCellRef[] = [];
+    for (let r = Math.min(start.row, end.row); r <= Math.max(start.row, end.row); r++) {
+      for (let c = Math.min(start.col, end.col); c <= Math.max(start.col, end.col); c++) {
+        cells.push({ rowKey: this.trackKey(rows[r]), field: columns[c].field });
+      }
+    }
+    return cells;
   }
 
   // ---------------------------------------------------------------- focus

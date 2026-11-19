@@ -83,6 +83,7 @@
 >
   <table
     [attr.role]="cellMode() ? 'grid' : null"
+    [attr.aria-multiselectable]="cellMode() && selectionMode() === 'range' ? true : null"
     [attr.aria-colcount]="ariaColCount()"
     [attr.aria-label]="ariaLabel()"
     [attr.aria-busy]="loading() || null"
@@ -594,6 +595,10 @@
                     [attr.data-label]="column.header"
                     [attr.data-field]="cellMode() ? column.field : null"
                     [attr.tabindex]="cellTabIndex(row, column)"
+                    [class.star-table__cell--selected]="isCellSelected(row, column)"
+                    [attr.aria-selected]="
+                      cellMode() && cellSelectionMode() ? isCellSelected(row, column) : null
+                    "
                   >
                     @if (firstCell && isDeleted(row)) {
                       <span class="star-sr-only">{{ text.rowDeleted }}: </span>
