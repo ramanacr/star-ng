@@ -1,5 +1,32 @@
 import { addDays, addMonths, monthGrid, startOfDay } from '@star-ng/ui/date-picker';
-import { starExpandRrule } from './rrule';
+import { starExpandRrule, starParseRrule, StarRrule } from './rrule';
+
+declare const ngDevMode: boolean | undefined;
+
+/** Rule texts already reported, so the console gets one warning per rule. */
+const warnedRules = new Set<string>();
+
+/**
+ * The parsed rule of an event, or `null` when the event is shown as a single event: the text does
+ * not parse, or it has a part the engine does not apply (`BYSETPOS`, `BYHOUR` and others). In
+ * development mode the console says why, once per rule.
+ */
+function recurrenceOf(text: string): StarRrule | null {
+  const rule = starParseRrule(text);
+  const problem = !rule
+    ? 'it is not a valid or supported RRULE'
+    : rule.unsupported.length
+      ? `it uses ${rule.unsupported.join(', ')}, which star-scheduler does not apply`
+      : null;
+  if (!problem) return rule;
+  if ((typeof ngDevMode === 'undefined' || ngDevMode) && !warnedRules.has(text)) {
+    warnedRules.add(text);
+    console.warn(
+      `star-scheduler: the recurrence "${text}" is shown as a single event: ${problem}.`,
+    );
+  }
+  return null;
+}
 
 /** Views of `star-scheduler`. `timeline-day` shows the resources as rows. */
 export type StarSchedulerView = 'day' | 'week' | 'work-week' | 'month' | 'agenda' | 'timeline-day';
@@ -23,7 +50,11 @@ export interface StarSchedulerEvent {
   readonly resourceId?: StarSchedulerId | null;
   /** Entry of the chart palette, 1 to 8. Without it the event takes the colour of its resource. */
   readonly color?: StarSchedulerColor;
-  /** RRULE text (RFC 5545), for example `FREQ=WEEKLY;BYDAY=TU`. `start` is the first occurrence. */
+  /**
+   * RRULE text (RFC 5545), for example `FREQ=WEEKLY;BYDAY=TU`. `start` is the first occurrence.
+   * Text that does not parse, or uses `BYSETPOS`, `BYHOUR` or another unsupported part, shows the
+   * event once (with a console warning in development mode).
+   */
   readonly recurrence?: string | null;
   /** Days without an occurrence of the series. */
   readonly exceptions?: readonly Date[];
@@ -143,7 +174,8 @@ const visibleEnd = (start: Date, end: Date): number =>
 /**
  * The occurrences of the events in a range, sorted by start (then longer first). A recurring
  * event gives one occurrence per RRULE match that overlaps the range; its length is the length
- * of the event.
+ * of the event. A rule that does not parse, or that has an unsupported part, is not expanded:
+ * the event shows once, at its own dates.
  */
 export function starSchedulerOccurrences(
   events: readonly StarSchedulerEvent[],
@@ -155,9 +187,10 @@ export function starSchedulerOccurrences(
   for (const event of events) {
     const start = event.start;
     const end = event.allDay ? starAllDayEnd(event) : event.end;
-    if (event.recurrence) {
+    const rule = event.recurrence ? recurrenceOf(event.recurrence) : null;
+    if (rule) {
       const length = Math.max(0, end.getTime() - start.getTime());
-      const starts = starExpandRrule(event.recurrence, start, range, {
+      const starts = starExpandRrule(rule, start, range, {
         duration: length,
         exceptions: event.exceptions,
       });

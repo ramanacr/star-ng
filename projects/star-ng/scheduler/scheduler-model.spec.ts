@@ -134,6 +134,43 @@ describe('starSchedulerOccurrences', () => {
   });
 });
 
+describe('invalid and unsupported recurrence rules', () => {
+  const range = { start: at(2026, 3, 2), end: at(2026, 3, 9) };
+  const base = (recurrence: string): StarSchedulerEvent => ({
+    id: 9,
+    title: 'Review',
+    start: at(2026, 3, 3, 10),
+    end: at(2026, 3, 3, 11),
+    recurrence,
+  });
+  let warn: ReturnType<typeof vi.spyOn>;
+  beforeEach(() => {
+    warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+  });
+  afterEach(() => warn.mockRestore());
+
+  it('shows the single base event for a rule that does not parse', () => {
+    const occurrences = starSchedulerOccurrences([base('FREQ=HOURLY')], range);
+    expect(occurrences.map((o) => [o.key, o.recurring])).toEqual([['9', false]]);
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('FREQ=HOURLY'));
+  });
+
+  it('does not expand a rule with an unsupported part, and names the part', () => {
+    const occurrences = starSchedulerOccurrences(
+      [base('FREQ=MONTHLY;BYDAY=TU;BYSETPOS=-1')],
+      range,
+    );
+    expect(occurrences.map((o) => [o.key, o.recurring])).toEqual([['9', false]]);
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('BYSETPOS'));
+  });
+
+  it('warns once per rule', () => {
+    starSchedulerOccurrences([base('FREQ=DAILY;BYHOUR=9')], range);
+    starSchedulerOccurrences([base('FREQ=DAILY;BYHOUR=9')], range);
+    expect(warn).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe('starPackColumns (overlap layout)', () => {
   it('puts overlapping items side by side and keeps separate clusters apart', () => {
     const packed = starPackColumns([
