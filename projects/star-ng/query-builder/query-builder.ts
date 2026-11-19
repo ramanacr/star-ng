@@ -568,6 +568,15 @@ export class StarQueryBuilder implements FormValueControl<StarQueryGroup> {
   /** The value that the builder wrote last; another value means a change from outside. */
   private written: StarQueryGroup | null = null;
 
+  /** Whether the current value equals the last written value, compared by content. */
+  private writtenStill(): boolean {
+    const current = this.value();
+    return (
+      current === this.written ||
+      (this.written !== null && JSON.stringify(current) === JSON.stringify(this.written))
+    );
+  }
+
   /** Writes a new value. Any change but a removal ends the undo of the last removal. */
   private commit(next: StarQueryGroup): void {
     this.lastRemoved = null;
@@ -659,7 +668,8 @@ export class StarQueryBuilder implements FormValueControl<StarQueryGroup> {
     const removed = this.lastRemoved;
     this.lastRemoved = null;
     // A value from outside since the removal: the removed place may not exist any more.
-    if (!removed || this.value() !== this.written) return false;
+    // A copy that equals the last written value (Signal Forms) still counts as unchanged.
+    if (!removed || !this.writtenStill()) return false;
     const group = groupAt(this.value(), removed.group);
     if (!group) return false;
     const index = Math.min(removed.index, group.rules.length);

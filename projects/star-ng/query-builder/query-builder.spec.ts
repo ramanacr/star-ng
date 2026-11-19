@@ -421,6 +421,54 @@ describe('StarQueryBuilder forms', () => {
     expect(host.filter().valid()).toBe(true);
   });
 
+  it('undo works through a [formField] binding that returns a copy of the value', async () => {
+    const fixture = TestBed.createComponent(FormsHost);
+    await fixture.whenStable();
+    const host = fixture.componentInstance;
+    host.model.set({
+      operator: 'and',
+      rules: [
+        { field: 'customer', matchMode: 'contains', value: 'an' },
+        { field: 'total', matchMode: 'gt', value: 100 },
+      ],
+    });
+    await fixture.whenStable();
+    const builder = fixture.debugElement.queryAll(By.directive(StarQueryBuilder))[0]
+      .componentInstance as StarQueryBuilder;
+    builder.removeAt('', 0);
+    await fixture.whenStable();
+    expect(host.model().rules).toHaveLength(1);
+    // Signal Forms can hand back a copy: the value is equal, but not the object that the builder wrote.
+    host.model.set(JSON.parse(JSON.stringify(host.model())));
+    await fixture.whenStable();
+    expect(builder.undo()).toBe(true);
+    await fixture.whenStable();
+    expect(host.model().rules).toHaveLength(2);
+    expect(host.model().rules[0]).toMatchObject({ field: 'customer', value: 'an' });
+  });
+
+  it('starQueryComplete accepts a plain string message', async () => {
+    @Component({
+      imports: [StarQueryBuilder, FormField],
+      template: `<star-query-builder [fields]="fields" [formField]="filter" />`,
+    })
+    class StringMessageHost {
+      readonly fields = FIELDS;
+      readonly filter = form(
+        signal<StarQueryGroup>({
+          operator: 'and',
+          rules: [{ field: 'customer', matchMode: 'contains', value: '' }],
+        }),
+        (path) => starQueryComplete(path, FIELDS, { message: 'Plain text message.' }),
+      );
+    }
+    const fixture = TestBed.createComponent(StringMessageHost);
+    await fixture.whenStable();
+    const error = fixture.componentInstance.filter().errors()[0];
+    expect(error.kind).toBe('incompleteQuery');
+    expect(error.message).toBe('Plain text message.');
+  });
+
   it('Reactive Forms through SignalFormControl', async () => {
     const fixture = TestBed.createComponent(FormsHost);
     await fixture.whenStable();

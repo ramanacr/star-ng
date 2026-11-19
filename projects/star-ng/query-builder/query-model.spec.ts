@@ -161,19 +161,23 @@ describe('query builder model', () => {
     expect(ids(one('paid', 'equals', false))).toEqual([1, 4]);
   });
 
-  it('mode labels: German keeps the case, English and Spanish lower only the first letter', () => {
+  it('mode labels: German uses "field: mode value", English and Spanish lower only the first letter', () => {
     const query = one('total', 'gte', 5);
     expect(starQueryToText(query, fields, STAR_UI_TEXT_DEFAULTS)).toBe(
       'Total greater than or equal to 5',
     );
     expect(starQueryToText(query, fields, STAR_UI_TEXT_DE)).toBe(
-      `Total ${STAR_UI_TEXT_DE.matchGte} 5`,
+      `Total: ${STAR_UI_TEXT_DE.matchGte} 5`,
     );
     const es = STAR_UI_TEXT_ES.matchGte;
     expect(starQueryToText(query, fields, STAR_UI_TEXT_ES)).toBe(
       `Total ${es.charAt(0).toLocaleLowerCase('es')}${es.slice(1)} 5`,
     );
     expect(STAR_UI_TEXT_DEFAULTS.queryRuleSummary('Name', 'Is IBAN', 'x')).toBe('Name is IBAN x');
+    // No capitalised mode in the middle of a German sentence: the colon ends the field name.
+    expect(STAR_UI_TEXT_DE.queryRuleSummary('Name', 'Beginnt mit', 'x')).toBe(
+      'Name: Beginnt mit x',
+    );
   });
 
   it('a boolean field reads the texts "false" and "0" as false', () => {
@@ -277,7 +281,7 @@ describe('query builder model', () => {
       'No conditions',
     );
     expect(starQueryToText(one('customer', 'contains', 'an'), fields, STAR_UI_TEXT_DE)).toBe(
-      'Customer Enthält an',
+      'Customer: Enthält an',
     );
   });
 });

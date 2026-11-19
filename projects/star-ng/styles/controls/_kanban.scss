@@ -139,7 +139,7 @@
 .star-kanban__card.cdk-drag-animating {
   transition: transform var(--star-duration-base) $ease;
 }
-@media (prefers-reduced-motion: reduce) {
+@include star-reduced-motion {
   .star-kanban__list.cdk-drop-list-dragging .star-kanban__card:not(.cdk-drag-placeholder),
   .star-kanban__card.cdk-drag-animating {
     transition: none;
