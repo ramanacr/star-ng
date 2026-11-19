@@ -884,9 +884,24 @@
     <ng-container
       *ngTemplateOutlet="
         custom;
-        context: { $implicit: row, value: cellValue(row, column), index: i }
+        context: {
+          $implicit: row,
+          value: cellValue(row, column),
+          index: i,
+          highlight: highlighter(row, column),
+        }
       "
     />
+  } @else if (searchText()) {
+    @for (part of searchParts(row, column); track $index) {
+      @if (part.match) {
+        <mark class="star-table__mark" [class.star-table__mark--active]="part.active">{{
+          part.text
+        }}</mark>
+      } @else {
+        <span>{{ part.text }}</span>
+      }
+    }
   } @else {
     {{ cellText(row, column) }}
   }

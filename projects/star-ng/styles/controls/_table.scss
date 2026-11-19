@@ -102,6 +102,17 @@ star-select.star-table__filter {
   outline: 2px solid var(--star-accent);
   outline-offset: -2px;
 }
+// Search highlight (`searchText`): every match, and a ring on the active match.
+.star-table__mark {
+  border-radius: var(--star-radius-sm);
+  background: var(--star-warning-soft);
+  color: inherit;
+}
+.star-table__mark--active {
+  outline: 2px solid var(--star-warning);
+  outline-offset: 1px;
+  font-weight: 600;
+}
 // The row of the open context menu (`contextMenuSelection`).
 .star-table__row--menu {
   outline: 2px solid var(--star-border-strong);

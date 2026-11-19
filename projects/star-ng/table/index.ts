@@ -28,6 +28,7 @@ export {
 export * from './table-export';
 export * from './table-interaction';
 export type { StarScrollAlign, StarScrollOptions, StarTableCellRef } from './table-navigation';
+export type { StarTableSearchMatches, StarTableTextPart } from './table-search';
 export type { StarColumnSummary, StarSummaryKind } from './table-summaries';
 // Pinning helpers and the pin cell directive are internal parts of `star-table`.
 export type { StarColumnPinEvent, StarColumnPins, StarPinSide } from './table-pinning';

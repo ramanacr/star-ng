@@ -11,6 +11,7 @@ import {
   inject,
   Injector,
   input,
+  linkedSignal,
   model,
   output,
   OutputEmitterRef,
@@ -69,6 +70,13 @@ import {
   uncoveredRow,
 } from './table-navigation';
 import type { StarHeaderWidths, StarPinSide } from './table-pinning';
+import {
+  countMatches,
+  highlightParts,
+  StarSearchCell,
+  StarTableSearchMatches,
+  StarTableTextPart,
+} from './table-search';
 import type { VirtualLayout } from './virtual-heights';
 
 /** Rows of a PageUp / PageDown step when the view has no measured height yet. */
@@ -155,6 +163,7 @@ export abstract class StarTableInteraction<T> {
   abstract readonly rows: Signal<number>;
   abstract readonly paginator: Signal<boolean>;
   abstract readonly lazy: Signal<boolean>;
+  abstract readonly filterLocale: Signal<string | null>;
   abstract pinColumn(field: string, side: StarPinSide | null): void;
   abstract exportCsv(options?: StarCsvOptions<T>): void;
   protected abstract emitLazy(): void;
@@ -243,6 +252,17 @@ export abstract class StarTableInteraction<T> {
    * column (`null` off a data cell) and the item. PrimeNG `onContextMenuSelect`.
    */
   readonly contextMenuSelect = output<StarTableContextMenuEvent<T>>();
+
+  /**
+   * Search highlight, apart from `globalFilter` (rows stay): the matches of this text in the cells
+   * show in `<mark>` (case- and accent-insensitive, with `filterLocale`), and `searchMatches`
+   * counts them over the rows of all pages. `findNext()` / `findPrevious()` step through them
+   * (with wrap) and scroll the active match into view (page, virtual row and column);
+   * `clearSearch()` empties the text. A cell template shows marks only when it opts in with the
+   * `highlight(text)` function of its context. Two-way. Ignite UI `findNext` / `findPrev` /
+   * `clearSearch`.
+   */
+  readonly searchText = model('');
 
   /** The focused cell changed (keyboard, click or `focusCell`). Ignite UI `activeNodeChange`. */
   readonly activeCellChange = output<StarTableCellRef | null>();
@@ -450,6 +470,115 @@ export abstract class StarTableInteraction<T> {
     this.moveFocus(rows[index], nextColumn, true);
     if (extend) this.selectCell(rows[index], nextColumn, 'extend');
     else this.cellAnchor = { rowKey: this.trackKey(rows[index]), field: nextColumn.field };
+  }
+
+  // ---------------------------------------------------------------- search
+
+  /** Index of the active match: none (-1) after each new search text. */
+  private readonly searchIndex = linkedSignal({ source: this.searchText, computation: () => -1 });
+
+  /** The cells with matches, in display order (rows of all pages, visible columns). */
+  private readonly searchCells = computed(() => {
+    const query = this.searchText();
+    const cells: StarSearchCell[] = [];
+    const byCell = new Map<string, StarSearchCell>();
+    let count = 0;
+    if (!query.trim()) return { cells, byCell, count };
+    const locale = this.filterLocale();
+    const columns = this.visibleColumns();
+    for (const row of this.withAdded()) {
+      if (this.isRowCollapsed(row)) continue;
+      for (const column of columns) {
+        const found = countMatches(this.cellText(row, column), query, locale);
+        if (!found) continue;
+        const cell = {
+          rowKey: this.trackKey(row),
+          field: column.field,
+          start: count,
+          count: found,
+        };
+        cells.push(cell);
+        byCell.set(`${this.rowKeyText(row)}\u0000${column.field}`, cell);
+        count += found;
+      }
+    }
+    return { cells, byCell, count };
+  });
+
+  /**
+   * The matches of `searchText`: `count`, and `active`, the index of the active match (-1: none
+   * yet). Signal. Ignite UI `findNext` result.
+   */
+  readonly searchMatches: Signal<StarTableSearchMatches> = computed(() => {
+    const count = this.searchCells().count;
+    const active = this.searchIndex();
+    return { count, active: active < count ? active : -1 };
+  });
+
+  /** Makes the next match active (after the last: the first), scrolls to it, returns the count. */
+  findNext(): number {
+    return this.stepSearch(1);
+  }
+
+  /** Makes the previous match active (before the first: the last), scrolls to it, returns the count. */
+  findPrevious(): number {
+    return this.stepSearch(-1);
+  }
+
+  /** Empties `searchText`: no marks. Ignite UI `clearSearch`. */
+  clearSearch(): void {
+    this.searchText.set('');
+  }
+
+  private stepSearch(step: 1 | -1): number {
+    const { count, cells } = this.searchCells();
+    if (!count) {
+      this.searchIndex.set(-1);
+      return 0;
+    }
+    const current = this.searchMatches().active;
+    const next = current < 0 ? (step > 0 ? 0 : count - 1) : (current + step + count) % count;
+    this.searchIndex.set(next);
+    const cell = cells.find((item) => next >= item.start && next < item.start + item.count);
+    if (cell) {
+      this.scrollToRow(cell.rowKey);
+      this.scrollToColumn(cell.field);
+    }
+    this.announce(this.text.ofTotal(next + 1, count));
+    return count;
+  }
+
+  /** The parts of the display text of a cell, with the search marks. */
+  protected searchParts(row: T, column: StarColumn<T>): readonly StarTableTextPart[] {
+    return this.markedParts(this.cellText(row, column), row, column);
+  }
+
+  private markedParts(text: string, row: T, column: StarColumn<T>): StarTableTextPart[] {
+    const cell = this.searchCells().byCell.get(`${this.rowKeyText(row)}\u0000${column.field}`);
+    const active = this.searchMatches().active;
+    const local = cell && active >= cell.start && active < cell.start + cell.count;
+    return highlightParts(
+      text,
+      this.searchText(),
+      this.filterLocale(),
+      local ? active - cell.start : -1,
+    );
+  }
+
+  /** `highlight` functions of the cell template contexts, one per cell (a stable reference). */
+  private readonly highlighters = new Map<string, (text: unknown) => StarTableTextPart[]>();
+
+  /** The `highlight(text)` function of a cell template context. */
+  protected highlighter(row: T, column: StarColumn<T>): (text: unknown) => StarTableTextPart[] {
+    const key = `${this.rowKeyText(row)}\u0000${column.field}`;
+    let highlight = this.highlighters.get(key);
+    if (!highlight) {
+      if (this.highlighters.size > 5000) this.highlighters.clear();
+      highlight = (text) =>
+        this.markedParts(text === null || text === undefined ? '' : String(text), row, column);
+      this.highlighters.set(key, highlight);
+    }
+    return highlight;
   }
 
   // ---------------------------------------------------------------- keyboard and scroll API

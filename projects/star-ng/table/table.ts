@@ -118,6 +118,7 @@ import {
   StarTablePinCell,
 } from './table-pinning';
 import { rowSpans } from './table-row-span';
+import type { StarTableTextPart } from './table-search';
 import {
   StarHeaderCheckboxToggleEvent,
   StarRowSelectEvent,
@@ -382,6 +383,8 @@ export interface StarCellContext<T> {
   readonly $implicit: T;
   readonly value: unknown;
   readonly index: number;
+  /** The parts of a text with the `searchText` marks, for a template that shows them. */
+  readonly highlight: (text: unknown) => readonly StarTableTextPart[];
 }
 
 /** Custom cell: `<ng-template starCell="status" let-row let-value="value">…</ng-template>`. */
