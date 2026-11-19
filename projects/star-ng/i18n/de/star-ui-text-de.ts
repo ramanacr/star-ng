@@ -361,4 +361,13 @@ export const STAR_UI_TEXT_DE: StarUiText = {
   stop: 'Stoppen',
   newMessages: (count) => `${count} neue Nachrichten`,
   aiPromptShortcutHint: 'Mit Strg+Eingabe senden.',
+  ribbon: 'Menüband',
+  ribbonFile: 'Datei',
+  ribbonCollapse: 'Menüband reduzieren',
+  ribbonExpand: 'Menüband erweitern',
+  ribbonKeyTipsHint: 'Drücken Sie Alt oder F10, um die Zugriffstasten anzuzeigen.',
+  ribbonKeyTipsShown:
+    'Zugriffstasten angezeigt. Drücken Sie einen Buchstaben oder Escape, um zurückzugehen.',
+  ribbonGroupOptions: (label) => `Optionen für ${label}`,
+  ribbonSplitMenu: (label) => `Weitere Optionen für ${label}`,
 };

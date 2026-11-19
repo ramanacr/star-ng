@@ -1521,6 +1521,31 @@ const STATES: readonly State[] = [
       await expect(live.getByRole('tabpanel', { name: 'Billing' })).toBeVisible();
     },
   },
+  // Ribbon.
+  {
+    name: 'ribbon with KeyTips shown',
+    path: 'controls/ribbon',
+    open: async (page) => {
+      await expect(page.locator('star-ribbon[ngh]')).toHaveCount(0, { timeout: 15_000 });
+      const live = example(page, 'Document editor');
+      await live.getByRole('tab', { name: 'Home' }).focus();
+      await page.keyboard.press('F10');
+      await page.keyboard.press('h');
+      await expect(live.locator('.star-ribbon__keytip').first()).toBeVisible();
+    },
+  },
+  {
+    name: 'ribbon with a collapsed group open',
+    path: 'controls/ribbon',
+    open: async (page) => {
+      await expect(page.locator('star-ribbon[ngh]')).toHaveCount(0, { timeout: 15_000 });
+      const live = example(page, 'Narrow ribbon');
+      const overflow = live.locator('.star-ribbon-group--collapsed .star-ribbon-group__overflow');
+      await overflow.first().click();
+      await expect(overflow.first()).toHaveAttribute('aria-expanded', 'true');
+      await expect(live.locator('.star-ribbon-group--open [role="toolbar"]')).toBeVisible();
+    },
+  },
 ];
 
 for (const theme of THEMES) {

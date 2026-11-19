@@ -417,6 +417,20 @@ export interface StarUiText {
   readonly newMessages: (count: number) => string;
   /** Visible hint under the prompt field of `star-ai-prompt`. */
   readonly aiPromptShortcutHint: string;
+  // Ribbon
+  /** Name of the tab list of `star-ribbon`. */
+  readonly ribbon: string;
+  /** Default label of the backstage (file) button of `star-ribbon`. */
+  readonly ribbonFile: string;
+  readonly ribbonCollapse: string;
+  readonly ribbonExpand: string;
+  /** Screen-reader hint of the ribbon tab list. */
+  readonly ribbonKeyTipsHint: string;
+  readonly ribbonKeyTipsShown: string;
+  /** Name of the dialog launcher button of a ribbon group. */
+  readonly ribbonGroupOptions: (label: string) => string;
+  /** Name of the menu part of a ribbon split button. */
+  readonly ribbonSplitMenu: (label: string) => string;
 }
 
 export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
@@ -765,6 +779,14 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   stop: 'Stop',
   newMessages: (count) => `${count} new messages`,
   aiPromptShortcutHint: 'Press Control+Enter to send.',
+  ribbon: 'Ribbon',
+  ribbonFile: 'File',
+  ribbonCollapse: 'Collapse the ribbon',
+  ribbonExpand: 'Expand the ribbon',
+  ribbonKeyTipsHint: 'Press Alt or F10 to show the key tips.',
+  ribbonKeyTipsShown: 'Key tips shown. Press a letter, or Escape to go back.',
+  ribbonGroupOptions: (label) => `${label} options`,
+  ribbonSplitMenu: (label) => `More ${label} options`,
 };
 
 /** Parameter names of the function entries, in call order (used for `{{ name }}` in translations). */
@@ -838,6 +860,8 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   isTyping: ['name'],
   areTyping: ['names'],
   newMessages: ['count'],
+  ribbonGroupOptions: ['label'],
+  ribbonSplitMenu: ['label'],
 };
 
 export const STAR_UI_TEXT = new InjectionToken<StarUiText>('STAR_UI_TEXT', {

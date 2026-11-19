@@ -362,4 +362,12 @@ export const STAR_UI_TEXT_ES: StarUiText = {
   stop: 'Detener',
   newMessages: (count) => `${count} mensajes nuevos`,
   aiPromptShortcutHint: 'Pulse Control+Intro para enviar.',
+  ribbon: 'Cinta de opciones',
+  ribbonFile: 'Archivo',
+  ribbonCollapse: 'Contraer la cinta de opciones',
+  ribbonExpand: 'Expandir la cinta de opciones',
+  ribbonKeyTipsHint: 'Pulse Alt o F10 para mostrar las teclas de acceso.',
+  ribbonKeyTipsShown: 'Teclas de acceso visibles. Pulse una letra, o Escape para volver.',
+  ribbonGroupOptions: (label) => `Opciones de ${label}`,
+  ribbonSplitMenu: (label) => `Más opciones de ${label}`,
 };

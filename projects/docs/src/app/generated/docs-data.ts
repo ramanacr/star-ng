@@ -10258,6 +10258,184 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ]
   },
+  "StarRibbon": {
+    "kind": "component",
+    "selector": "star-ribbon",
+    "entry": "@star-ng/ui/ribbon",
+    "description": "Ribbon (Kendo `Ribbon`, Syncfusion `ejs-ribbon`; DevExtreme has no ribbon): tabs of command groups, as in office applications.",
+    "inputs": [
+      {
+        "name": "collapseGroups",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Groups get small and collapse when the ribbon is narrow. Default on."
+      },
+      {
+        "name": "globalKeyTips",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Alt and F10 show the KeyTips from anywhere on the page, not only while the focus is in the ribbon. Use it for the one main ribbon of an application."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Name of the tab list. Default: the `ribbon` text."
+      }
+    ],
+    "models": [
+      {
+        "name": "selectedTab",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Key of the selected tab. Default: the first tab."
+      },
+      {
+        "name": "collapsed",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Minimised ribbon: only the tab headers show (Kendo `collapsed`)."
+      },
+      {
+        "name": "backstageOpen",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The backstage view is open."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "command",
+        "type": "StarRibbonCommand",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
+  "StarRibbonBackstage": {
+    "kind": "component",
+    "selector": "star-ribbon-backstage",
+    "entry": "@star-ng/ui/ribbon",
+    "description": "Backstage (file) view of the ribbon (Syncfusion `RibbonBackstage`, the Kendo file menu): a button before the tabs opens it in place of the tab panel. Its content is projected.",
+    "inputs": [
+      {
+        "name": "label",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Label of the button. Default: the `ribbonFile` text (\"File\")."
+      },
+      {
+        "name": "keyTip",
+        "type": "string | null",
+        "default": "'F'",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
+  "StarRibbonGroup": {
+    "kind": "component",
+    "selector": "star-ribbon-group",
+    "entry": "@star-ng/ui/ribbon",
+    "description": "A group of a ribbon tab (Kendo `RibbonGroup`, Syncfusion `e-ribbon-group`): a label, its items and an optional dialog launcher. Write it inside `star-ribbon-tab`.",
+    "inputs": [
+      {
+        "name": "label",
+        "type": "string",
+        "default": null,
+        "required": true,
+        "description": ""
+      },
+      {
+        "name": "items",
+        "type": "readonly StarRibbonItem[]",
+        "default": "[]",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "dialogLauncher",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Command id of the dialog launcher button. Without it the group has no launcher."
+      },
+      {
+        "name": "icon",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Icon of the overflow button when the group is collapsed."
+      },
+      {
+        "name": "keyTip",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "KeyTip of the overflow button when the group is collapsed."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
+  "StarRibbonItemTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starRibbonItem]",
+    "entry": "@star-ng/ui/ribbon",
+    "description": "Custom item of a ribbon group: `<ng-template starRibbonItem=\"fontSize\" let-item>…</ng-template>` renders in place of the item with `id: 'fontSize'` and `type: 'custom'`. Its controls keep their own tab stops; the arrow keys of the group toolbar skip them.",
+    "inputs": [
+      {
+        "name": "starRibbonItem",
+        "type": "string",
+        "default": null,
+        "required": true,
+        "description": "Id of the custom item."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
+  "StarRibbonTab": {
+    "kind": "component",
+    "selector": "star-ribbon-tab",
+    "entry": "@star-ng/ui/ribbon",
+    "description": "A tab of the ribbon (Kendo `RibbonTab`, Syncfusion `e-ribbon-tab`). Holds `star-ribbon-group`s.",
+    "inputs": [
+      {
+        "name": "key",
+        "type": "string",
+        "default": null,
+        "required": true,
+        "description": "Unique key; the value of `selectedTab`."
+      },
+      {
+        "name": "label",
+        "type": "string",
+        "default": null,
+        "required": true,
+        "description": ""
+      },
+      {
+        "name": "keyTip",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "KeyTip letters. Without it the ribbon assigns one from the label."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
   "StarRipple": {
     "kind": "directive",
     "selector": "[starRipple]",
@@ -14278,6 +14456,9 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "rating/basic": "<star-rating [(value)]=\"score\" ariaLabel=\"Service rating\" />\n<p class=\"docs-output\" role=\"status\">Rating: {{ score() ?? 'none' }}</p>",
   "rating/count": "<star-rating [(value)]=\"detail\" [count]=\"10\" ariaLabel=\"Detailed rating\" />",
   "rating/states": "<star-rating [value]=\"4\" readonly ariaLabel=\"Average rating\" />\n<star-rating [value]=\"2\" disabled ariaLabel=\"Closed rating\" />",
+  "ribbon/collapsed": "<star-ribbon [(collapsed)]=\"collapsed\" (command)=\"run($event)\">\n  <star-ribbon-tab key=\"home\" label=\"Home\">\n    <star-ribbon-group label=\"Clipboard\" [items]=\"clipboard\" />\n  </star-ribbon-tab>\n  <star-ribbon-tab key=\"review\" label=\"Review\">\n    <star-ribbon-group label=\"Comments\" [items]=\"comments\" />\n  </star-ribbon-tab>\n</star-ribbon>",
+  "ribbon/editor": "<div class=\"docs-stack\">\n  <star-ribbon [(selectedTab)]=\"tab\" (command)=\"run($event)\">\n    <star-ribbon-backstage>\n      <p class=\"backstage\">Recent documents: Order summary, Project plan, Invoice notes.</p>\n    </star-ribbon-backstage>\n    <star-ribbon-tab key=\"home\" label=\"Home\" keyTip=\"H\">\n      <star-ribbon-group\n        label=\"Clipboard\"\n        icon=\"ph-bold ph-clipboard\"\n        [items]=\"clipboard\"\n        dialogLauncher=\"clipboard-options\"\n      />\n      <star-ribbon-group\n        label=\"Font\"\n        icon=\"ph-bold ph-text-aa\"\n        [items]=\"font()\"\n        dialogLauncher=\"font-options\"\n      >\n        <ng-template starRibbonItem=\"font-size\" let-item>\n          <select class=\"size\" [attr.aria-label]=\"item.label\" (change)=\"size($event)\">\n            <option>11</option>\n            <option>12</option>\n            <option>14</option>\n          </select>\n        </ng-template>\n      </star-ribbon-group>\n      <star-ribbon-group\n        label=\"Paragraph\"\n        icon=\"ph-bold ph-paragraph\"\n        [items]=\"paragraph()\"\n      />\n    </star-ribbon-tab>\n    <star-ribbon-tab key=\"insert\" label=\"Insert\">\n      <star-ribbon-group label=\"Tables\" icon=\"ph-bold ph-table\" [items]=\"tables\" />\n      <star-ribbon-group label=\"Media\" icon=\"ph-bold ph-image\" [items]=\"media\" />\n    </star-ribbon-tab>\n    <star-ribbon-tab key=\"review\" label=\"Review\">\n      <star-ribbon-group label=\"Comments\" icon=\"ph-bold ph-chat-text\" [items]=\"comments\" />\n    </star-ribbon-tab>\n  </star-ribbon>\n  <p class=\"docs-output\" role=\"status\">Last command: {{ last() }}</p>\n</div>",
+  "ribbon/narrow": "<div class=\"narrow\">\n  <star-ribbon (command)=\"run($event)\">\n    <star-ribbon-tab key=\"home\" label=\"Home\">\n      <star-ribbon-group\n        label=\"Clipboard\"\n        icon=\"ph-bold ph-clipboard\"\n        [items]=\"clipboard\"\n      />\n      <star-ribbon-group label=\"Font\" icon=\"ph-bold ph-text-aa\" [items]=\"font()\" />\n      <star-ribbon-group\n        label=\"Paragraph\"\n        icon=\"ph-bold ph-paragraph\"\n        [items]=\"paragraph()\"\n      />\n    </star-ribbon-tab>\n  </star-ribbon>\n</div>",
   "ripple/basic": "<button type=\"button\" class=\"star-btn star-btn--secondary star-btn--md\" starRipple>\n  Save\n</button>\n<button type=\"button\" class=\"star-btn star-btn--primary star-btn--md\" starRipple>\n  Submit order\n</button>",
   "rtl/island": "<div class=\"docs-stack\" dir=\"rtl\">\n  <star-breadcrumb [items]=\"trail\" ariaLabel=\"Island trail\" />\n  <star-tabs [(value)]=\"tab\" ariaLabel=\"Island tabs\">\n    <star-tab value=\"one\" label=\"One\">First panel</star-tab>\n    <star-tab value=\"two\" label=\"Two\">Second panel</star-tab>\n    <star-tab value=\"three\" label=\"Three\">Third panel</star-tab>\n  </star-tabs>\n  <star-select-button\n    [options]=\"['Day', 'Week', 'Month']\"\n    [(value)]=\"period\"\n    ariaLabel=\"Island period\"\n  />\n  <star-paginator [totalRecords]=\"60\" [rows]=\"10\" />\n</div>",
   "scroll-panel/basic": "<star-scroll-panel class=\"docs-panel\" height=\"8rem\" ariaLabel=\"Order notes\">\n  <p class=\"docs-output\">\n    The order was placed on 2 November. The customer asked for delivery to the second\n    address. The warehouse packed the order on 3 November. The carrier picked it up on 4\n    November. The customer asked for a delivery window in the afternoon. The carrier\n    confirmed the window. The order stays open until the customer confirms receipt. All data\n    in this text is fictional.\n  </p>\n</star-scroll-panel>",

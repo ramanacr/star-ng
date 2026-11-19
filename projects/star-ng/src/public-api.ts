@@ -53,6 +53,7 @@ export * from '@star-ng/ui/progress-bar';
 export * from '@star-ng/ui/qr-code';
 export * from '@star-ng/ui/radio';
 export * from '@star-ng/ui/rating';
+export * from '@star-ng/ui/ribbon';
 export * from '@star-ng/ui/select';
 export * from '@star-ng/ui/select-button';
 export * from '@star-ng/ui/signature-pad';

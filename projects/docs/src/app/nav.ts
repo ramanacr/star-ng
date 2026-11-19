@@ -339,6 +339,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         load: () => import('./controls/command-palette.page').then((m) => m.CommandPalettePage),
       },
       {
+        label: 'Ribbon',
+        path: 'controls/ribbon',
+        keywords: 'ribbon toolbar tabs groups office keytips commands document editor',
+        load: () => import('./controls/ribbon.page').then((m) => m.RibbonPage),
+      },
+      {
         label: 'Chat and AI prompt',
         path: 'controls/chat',
         keywords: 'chat messages conversation composer ai prompt assistant streaming markdown',
