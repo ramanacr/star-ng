@@ -29,6 +29,13 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         load: () => import('./guides/getting-started.guide').then((m) => m.GettingStartedGuide),
       },
       {
+        label: 'Configuration',
+        path: 'guides/configuration',
+        keywords:
+          'provideStarNg config defaults tokens StarConfigService announcer clipboard copy pipes key filter',
+        load: () => import('./guides/configuration.guide').then((m) => m.ConfigurationGuide),
+      },
+      {
         label: 'Theming and tokens',
         path: 'guides/theming',
         keywords: 'css variables colors palette override brand',
@@ -465,6 +472,19 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         path: 'controls/bottom-sheet',
         keywords: 'action sheet mobile bottom panel slide up choices service',
         load: () => import('./controls/bottom-sheet.page').then((m) => m.BottomSheetPage),
+      },
+      {
+        label: 'Action sheet',
+        path: 'controls/action-sheet',
+        keywords: 'bottom sheet actions mobile choices cancel openActions',
+        load: () => import('./controls/action-sheet.page').then((m) => m.ActionSheetPage),
+      },
+      {
+        label: 'Bottom sheet container',
+        path: 'controls/bottom-sheet-container',
+        keywords: 'bottom sheet dialog host non-modal backdrop max height panel class',
+        load: () =>
+          import('./controls/bottom-sheet-container.page').then((m) => m.BottomSheetContainerPage),
       },
       {
         label: 'Popover',

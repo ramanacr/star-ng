@@ -17,6 +17,7 @@ import {
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
 import {
+  injectStarControlDefaults,
   optionText,
   readOption,
   STAR_SLOT_HOST,
@@ -28,6 +29,7 @@ import {
 } from '@star-ng/ui/core';
 import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/ui/field';
 import { STAR_MENU_POSITIONS, StarMenu, StarMenuInDialog, StarMenuItem } from '@star-ng/ui/menu';
+import { STAR_SELECT_DEFAULTS } from './select-defaults';
 import type { StarCascadeOptionContext } from './select-slots';
 
 interface Leaf<TOption, TValue> {
@@ -128,6 +130,7 @@ export class StarCascadeSelect<
   /** Keeps the CDK direction (overlays and menus) in step with `<html dir>`. */
   private readonly directionSync = inject(StarDirectionService);
   protected readonly text = inject(STAR_UI_TEXT);
+  private readonly defaults = injectStarControlDefaults(['sm', 'md'], inject(STAR_SELECT_DEFAULTS));
   protected readonly positions = STAR_MENU_POSITIONS;
   private readonly button = viewChild.required<ElementRef<HTMLButtonElement>>('button');
 
@@ -145,8 +148,9 @@ export class StarCascadeSelect<
   readonly placeholder = input<string | null>(null);
   /** Show the whole path ("Germany / Bavaria / Munich") instead of the leaf label. */
   readonly showPath = input(false, { transform: booleanAttribute });
-  readonly showClear = input(false, { transform: booleanAttribute });
-  readonly size = input<'sm' | 'md'>('md');
+  readonly showClear = input(this.defaults.showClear ?? false, { transform: booleanAttribute });
+  /** Size. Default: `size` of `provideStarNg` (`small` or `medium`), else `md`. */
+  readonly size = input<'sm' | 'md'>(this.defaults.size ?? 'md');
   readonly ariaLabel = input<string | null>(null);
   readonly inputId = input(inject(_IdGenerator).getId('star-cascade-'));
   /**

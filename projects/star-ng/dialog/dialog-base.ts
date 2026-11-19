@@ -12,6 +12,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { STAR_UI_TEXT } from '@star-ng/ui/core';
+import { STAR_DIALOG_DEFAULTS } from './dialog-defaults';
 
 const FOCUSABLE =
   'button:not([disabled]), [href], input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])';
@@ -31,19 +32,25 @@ function optionalBoolean(value: unknown): boolean | undefined {
 @Directive()
 export abstract class StarDialogBase {
   protected readonly text = inject(STAR_UI_TEXT);
+  /** Defaults from `provideStarDialogDefaults`. */
+  protected readonly defaults = inject(STAR_DIALOG_DEFAULTS);
 
   readonly visible = model(false);
   readonly header = input('');
   /** Width step of a dialog (no effect on a drawer). */
-  readonly size = input<StarDialogSize>('md');
+  readonly size = input<StarDialogSize>(this.defaults.size ?? 'md');
   /** Fixed CSS width of a dialog; overrides `size` (no effect on a drawer). */
   readonly width = input<string | null>(null);
   /** Modal blocks the page behind (backdrop). Non-modal dialogs float above it. */
   readonly modal = input(true, { transform: booleanAttribute });
-  readonly closable = input(true, { transform: booleanAttribute });
-  readonly closeOnEscape = input(true, { transform: booleanAttribute });
+  readonly closable = input(this.defaults.closable ?? true, { transform: booleanAttribute });
+  readonly closeOnEscape = input(this.defaults.closeOnEscape ?? true, {
+    transform: booleanAttribute,
+  });
   /** Clicking the backdrop closes the dialog. */
-  readonly dismissableMask = input(false, { transform: booleanAttribute });
+  readonly dismissableMask = input(this.defaults.dismissableMask ?? false, {
+    transform: booleanAttribute,
+  });
   readonly showHeader = input(true, { transform: booleanAttribute });
   readonly role = input<'dialog' | 'alertdialog'>('dialog');
   /** Accessible name when there is no visible header title. */

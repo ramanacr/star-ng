@@ -258,7 +258,7 @@
 .star-tabs__list.cdk-drop-list-dragging .star-tabs__item:not(.cdk-drag-placeholder) {
   transition: transform var(--star-duration-base) ease;
 }
-@media (prefers-reduced-motion: reduce) {
+@include star-reduced-motion {
   .star-tabs__list.cdk-drop-list-dragging .star-tabs__item:not(.cdk-drag-placeholder) {
     transition: none;
   }

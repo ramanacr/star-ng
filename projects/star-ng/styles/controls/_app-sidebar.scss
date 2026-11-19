@@ -201,7 +201,7 @@
     scale: 0.8;
   }
 }
-@media (prefers-reduced-motion: reduce) {
+@include star-reduced-motion {
   .star-app-sidebar,
   .star-app-sidebar__chevron {
     transition: none;

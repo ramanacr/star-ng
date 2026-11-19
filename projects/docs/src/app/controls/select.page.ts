@@ -398,7 +398,7 @@ interface Shipment {
       </docs-example>
 
       <docs-api
-        [of]="['StarSelect', 'StarOptionListBase', 'StarOptionTemplate', 'StarSelectedTemplate']"
+        [of]="['StarSelect', 'StarOptionTemplate', 'StarSelectedTemplate']"
         [slots]="slots"
         [cssVars]="cssVars"
         [keyboard]="keyboard"

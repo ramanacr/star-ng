@@ -1,4 +1,5 @@
 // Inline listbox box: border, focus ring and invalid and disabled states.
+@use '../shared' as *;
 .star-listbox-box {
   display: block;
   overflow: hidden;
@@ -56,7 +57,7 @@
   color: var(--star-text-strong);
   list-style: none;
 }
-@media (prefers-reduced-motion: reduce) {
+@include star-reduced-motion {
   .star-listbox--dragdrop.cdk-drop-list-dragging .star-listbox__option {
     transition: none;
   }

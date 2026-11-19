@@ -95,7 +95,7 @@
   opacity: 0.5;
 }
 
-@media (prefers-reduced-motion: reduce) {
+@include star-reduced-motion {
   .star-gauge--animate {
     .star-gauge__bar,
     .star-gauge__needle,

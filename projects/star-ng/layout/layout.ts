@@ -11,7 +11,7 @@ import {
   output,
   TemplateRef,
 } from '@angular/core';
-import { STAR_UI_TEXT, starInlineKey } from '@star-ng/ui/core';
+import { injectStarControlDefaults, STAR_UI_TEXT, starInlineKey } from '@star-ng/ui/core';
 
 /**
  * Divider (PrimeNG `p-divider`): horizontal or vertical rule with an optional label.
@@ -165,10 +165,12 @@ export class StarTimelineContent {
   `,
 })
 export class StarTimeline {
+  private readonly defaults = injectStarControlDefaults([]);
   readonly events = input<readonly StarTimelineEvent[]>([]);
   readonly layout = input<'vertical' | 'horizontal'>('vertical');
   readonly align = input<'left' | 'alternate'>('left');
-  readonly locale = input<string | undefined>(undefined);
+  /** Locale of the event dates. Default: `locale` of `provideStarNg`, else the browser locale. */
+  readonly locale = input<string | undefined>(this.defaults.locale ?? undefined);
   readonly ariaLabel = input<string | null>(null);
   protected readonly content = contentChild(StarTimelineContent);
 

@@ -14,6 +14,7 @@ import {
   Signal,
   signal,
 } from '@angular/core';
+import { injectStarControlDefaults, StarInputVariant } from '@star-ng/ui/core';
 
 /** The part of a Signal Forms `FieldState` that the field wrapper reads. */
 export interface StarFieldStateLike {
@@ -229,6 +230,7 @@ export function starJoinIds(...ids: readonly (string | null | undefined)[]): str
     class: 'star-input',
     '[class.star-input--sm]': "size() === 'sm'",
     '[class.star-input--lg]': "size() === 'lg'",
+    '[class.star-input--filled]': "variant() === 'filled'",
     '[class.star-input--auto-resize]': 'autoResize()',
     '[attr.id]': 'resolvedId()',
     '[attr.aria-describedby]': 'field?.describedBy() ?? null',
@@ -239,8 +241,12 @@ export function starJoinIds(...ids: readonly (string | null | undefined)[]): str
 export class StarInput {
   protected readonly field = inject(StarField, { optional: true });
   private readonly host = inject<ElementRef<HTMLInputElement | HTMLTextAreaElement>>(ElementRef);
+  private readonly defaults = injectStarControlDefaults(['sm', 'md', 'lg']);
 
-  readonly size = input<'sm' | 'md' | 'lg'>('md');
+  /** Size. Default: `size` of `provideStarNg`, else `md`. */
+  readonly size = input<'sm' | 'md' | 'lg'>(this.defaults.size ?? 'md');
+  /** Look: border on every side, or a filled surface. Default: `inputVariant` of `provideStarNg`, else `outlined`. PrimeNG `variant`. */
+  readonly variant = input<StarInputVariant>(this.defaults.inputVariant ?? 'outlined');
   readonly invalid = input(false, { transform: booleanAttribute });
   /**
    * Signal Forms binds this with `[formField]`, so a field shows as invalid only after the user
