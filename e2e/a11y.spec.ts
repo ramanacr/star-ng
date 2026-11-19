@@ -680,10 +680,14 @@ const STATES: readonly State[] = [
     path: 'controls/scheduler',
     open: async (page) => {
       const area = example(page, 'Team calendar');
-      const meeting = area.getByRole('button', { name: /^Team meeting, / });
-      await meeting.focus();
-      await page.keyboard.press('Alt+ArrowDown');
-      await expect(area.getByRole('button', { name: /^Team meeting, .*10:30/ })).toBeFocused();
+      const meeting = area.getByRole('button', { name: /^Team meeting, 10:00/ });
+      const moved = area.getByRole('button', { name: /^Team meeting, 10:30/ });
+      // Retry until the prerendered page is hydrated and the keys are handled.
+      await expect(async () => {
+        await meeting.focus();
+        await page.keyboard.press('Alt+ArrowDown');
+        await expect(moved).toBeFocused({ timeout: 1000 });
+      }).toPass();
     },
   },
   {
