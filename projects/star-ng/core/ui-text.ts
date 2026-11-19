@@ -251,6 +251,32 @@ export interface StarUiText {
   readonly editorClearFormatting: string;
   readonly editorLink: string;
   readonly editorLinkPrompt: string;
+  readonly tabClose: (label: string) => string;
+  readonly tabCloseHint: string;
+  readonly tabReorderHint: string;
+  readonly editorStrikethrough: string;
+  readonly editorCode: string;
+  readonly editorQuote: string;
+  readonly editorTextStyle: string;
+  readonly editorParagraph: string;
+  readonly editorHeadingLevel: (level: number) => string;
+  readonly editorAlignStart: string;
+  readonly editorAlignCenter: string;
+  readonly editorAlignEnd: string;
+  readonly editorUndo: string;
+  readonly editorRedo: string;
+  readonly editorLinkNewTab: string;
+  readonly editorLinkApply: string;
+  readonly editorLinkRemove: string;
+  readonly editorLinkCancel: string;
+  readonly editorLinkInvalid: string;
+  readonly editorCharacterCount: (count: number, max: number) => string;
+  readonly editorCharactersLeft: (count: number) => string;
+  readonly chartPoints: (title: string) => string;
+  readonly chartPointsHint: string;
+  readonly chartPointLabel: (series: string, label: string, value: string) => string;
+  readonly chartLegend: string;
+  readonly chartSecondaryAxis: (label: string) => string;
   // Navigation and layout
   readonly breadcrumb: string;
   readonly stepperLabel: string;
@@ -613,6 +639,33 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   editorLink: 'Link',
   editorLinkPrompt: 'Link address (https://…)',
 
+  tabClose: (label) => `Close ${label}`,
+  tabCloseHint: 'Press Delete to close the tab.',
+  tabReorderHint: 'Press Control+Shift and an arrow key to move the tab.',
+  editorStrikethrough: 'Strikethrough',
+  editorCode: 'Code',
+  editorQuote: 'Quote',
+  editorTextStyle: 'Text style',
+  editorParagraph: 'Paragraph',
+  editorHeadingLevel: (level) => `Heading ${level}`,
+  editorAlignStart: 'Align to the start',
+  editorAlignCenter: 'Center',
+  editorAlignEnd: 'Align to the end',
+  editorUndo: 'Undo',
+  editorRedo: 'Redo',
+  editorLinkNewTab: 'Open in a new tab',
+  editorLinkApply: 'Apply',
+  editorLinkRemove: 'Remove link',
+  editorLinkCancel: 'Cancel',
+  editorLinkInvalid:
+    'Enter a web address (https://…), an e-mail address (mailto:…) or a phone number (tel:…).',
+  editorCharacterCount: (count, max) => `${count} of ${max} characters`,
+  editorCharactersLeft: (count) => (count === 1 ? '1 character left' : `${count} characters left`),
+  chartPoints: (title) => `${title}: data points`,
+  chartPointsHint: 'Arrow keys move between the points and the series. Enter selects a point.',
+  chartPointLabel: (series, label, value) => `${series}, ${label}: ${value}`,
+  chartLegend: 'Legend: show or hide a series',
+  chartSecondaryAxis: (label) => `${label} (right axis)`,
   breadcrumb: 'Breadcrumb',
   stepperLabel: 'Progress',
   stepCompleted: '(completed)',
@@ -760,6 +813,13 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   fileTypeNotAllowed: ['name'],
   fileTooLarge: ['name', 'max'],
   fileLimitReached: ['limit'],
+  tabClose: ['label'],
+  editorHeadingLevel: ['level'],
+  editorCharacterCount: ['count', 'max'],
+  editorCharactersLeft: ['count'],
+  chartPoints: ['title'],
+  chartPointLabel: ['series', 'label', 'value'],
+  chartSecondaryAxis: ['label'],
   editorFormatting: ['label'],
   showImage: ['alt'],
   previewImage: ['alt'],

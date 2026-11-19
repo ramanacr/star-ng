@@ -1,10 +1,15 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarEditor } from '@star-ng/ui/editor';
+import {
+  STAR_EDITOR_FULL_TOOLBAR,
+  StarEditor,
+  StarEditorToolbarItem,
+  StarEditorToolbarTemplate,
+} from '@star-ng/ui/editor';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
   selector: 'docs-editor-page',
-  imports: [DOCS, StarEditor],
+  imports: [DOCS, StarEditor, StarEditorToolbarTemplate],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <docs-page
@@ -29,6 +34,105 @@ import { DOCS, DocsRow } from '../shared/docs';
       </docs-example>
 
       <docs-example
+        heading="Full toolbar"
+        source="editor/full-toolbar"
+        [script]="fullScript"
+        note="toolbar lists the commands in order; '|' starts a new group. STAR_EDITOR_FULL_TOOLBAR has every command: undo, redo, text style (paragraph, heading 1 to 3), bold, italic, underline, strikethrough, inline code, lists, quote, alignment to the start, the center and the end (logical: the start is on the right in right-to-left), link and clear formatting. Alignment is stored as the class star-text-center or star-text-end."
+      >
+        <div class="docs-stack">
+          <star-editor [(value)]="report" [toolbar]="fullToolbar" ariaLabel="Shipping report" />
+          <pre class="docs-output" role="group" aria-label="Value of the full editor">{{
+            report()
+          }}</pre>
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="Own toolbar list"
+        source="editor/own-toolbar"
+        [script]="ownScript"
+        note="Any list of command names works, for example a short toolbar for comments."
+      >
+        <div class="docs-stack">
+          <star-editor [toolbar]="shortToolbar" ariaLabel="Short comment" minHeight="4rem" />
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="Plain text and a length limit"
+        source="editor/text-limit"
+        [script]="limitScript"
+        note="With format text, the value is plain text: one line per paragraph, no markup. maxLength counts the characters of text (line breaks do not count). Typing stops at the limit. The counter under the area describes it, and a live message gives the characters left near the end. A signal form field with a maxLength rule sets it too."
+      >
+        <div class="docs-stack">
+          <star-editor
+            [(value)]="summary"
+            format="text"
+            [maxLength]="120"
+            ariaLabel="Delivery summary"
+          />
+          <pre class="docs-output" role="group" aria-label="Value of the text editor">{{
+            summary()
+          }}</pre>
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="Paste as plain text"
+        source="editor/paste"
+        note="By default, pasted HTML is sanitized before it goes in: no script, no style element or attribute, no event handler. With pasteAsText, a paste inserts only the plain text. Copy formatted text from another page and paste it in both editors."
+      >
+        <div class="docs-stack">
+          <star-editor ariaLabel="Pasted with formats" minHeight="4rem" />
+          <star-editor pasteAsText ariaLabel="Pasted as plain text" minHeight="4rem" />
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="Own toolbar template"
+        source="editor/toolbar-slot"
+        note="ng-template starEditorToolbar replaces the toolbar. Its context has exec(command, value?), isActive(command) and disabled. Give the container role toolbar and a name, and stop mousedown on the buttons so the text keeps its selection."
+      >
+        <div class="docs-stack">
+          <star-editor ariaLabel="Release note" minHeight="4rem">
+            <ng-template
+              starEditorToolbar
+              let-exec="exec"
+              let-isActive="isActive"
+              let-disabled="disabled"
+            >
+              <div
+                class="star-toolbar star-editor__toolbar"
+                role="toolbar"
+                aria-label="Release note tools"
+              >
+                <button
+                  type="button"
+                  class="star-btn star-btn--ghost star-btn--sm"
+                  [attr.aria-pressed]="isActive('bold')"
+                  [disabled]="disabled"
+                  (mousedown)="$event.preventDefault()"
+                  (click)="exec('bold')"
+                >
+                  Bold
+                </button>
+                <button
+                  type="button"
+                  class="star-btn star-btn--ghost star-btn--sm"
+                  [attr.aria-pressed]="isActive('code')"
+                  [disabled]="disabled"
+                  (mousedown)="$event.preventDefault()"
+                  (click)="exec('code')"
+                >
+                  Code
+                </button>
+              </div>
+            </ng-template>
+          </star-editor>
+        </div>
+      </docs-example>
+
+      <docs-example
         heading="Placeholder and height"
         source="editor/size"
         [script]="sizeScript"
@@ -48,7 +152,7 @@ import { DOCS, DocsRow } from '../shared/docs';
         heading="Disabled and read-only"
         source="editor/states"
         [script]="statesScript"
-        note="disabled and readonly make the area not editable and turn off the toolbar buttons. A disabled area also leaves the tab order. A read-only area keeps its focus, so a user can select and copy the text."
+        note="disabled and readonly make the area not editable and turn off every toolbar control (buttons and the text style select). A disabled area also leaves the tab order. A read-only area keeps its focus, so a user can select and copy the text."
       >
         <div class="docs-stack">
           <star-editor [value]="saved()" ariaLabel="Saved note" readonly />
@@ -68,7 +172,12 @@ import { DOCS, DocsRow } from '../shared/docs';
         </div>
       </docs-example>
 
-      <docs-api [of]="['StarEditor']" [cssVars]="cssVars" [keyboard]="keyboard" />
+      <docs-api
+        [of]="['StarEditor', 'StarEditorToolbarTemplate']"
+        [slots]="slots"
+        [cssVars]="cssVars"
+        [keyboard]="keyboard"
+      />
 
       <h2>What the editor does with HTML</h2>
       <p>
@@ -106,9 +215,14 @@ import { DOCS, DocsRow } from '../shared/docs';
         value that has only an image or a divider is therefore stored as an empty string.
       </p>
       <p>
-        The link button asks for an address with the <code>prompt</code> dialog of the browser and
-        accepts only addresses that start with <code>http://</code> or <code>https://</code>. Other
-        input is ignored.
+        The link button opens a small form under the toolbar: an address field, "Open in a new tab",
+        Apply, Remove link (for a link at the caret) and Cancel. Escape cancels. The form accepts
+        <code>https://</code>, <code>http://</code>, <code>mailto:</code> and
+        <code>tel:</code> addresses and addresses on the same site (<code>/path</code>,
+        <code>#part</code>). A host name such as <code>example.com/orders</code> gets
+        <code>https://</code>. Any other address (for example <code>javascript:</code>) shows an
+        error and makes no link. A link that opens in a new tab gets
+        <code>rel="noopener noreferrer"</code>.
       </p>
 
       <h2>Technical notes</h2>
@@ -128,6 +242,21 @@ export class EditorPage {
     '<p onclick="alert(1)" style="color: red">Order <b>ORD-1042</b> <script>alert(1)</script><a href="javascript:alert(1)">open</a></p>',
   );
 
+  protected readonly report = signal(
+    '<h2>Week 12</h2><p>All <b>orders</b> shipped. See <a href="https://example.com/orders">the list</a>.</p>',
+  );
+  protected readonly fullToolbar = STAR_EDITOR_FULL_TOOLBAR;
+  protected readonly shortToolbar: readonly StarEditorToolbarItem[] = [
+    'bold',
+    'italic',
+    '|',
+    'link',
+  ];
+  protected readonly fullScript = `readonly report = signal('<h2>Week 12</h2><p>All <b>orders</b> shipped.</p>');
+readonly fullToolbar = STAR_EDITOR_FULL_TOOLBAR;`;
+  protected readonly ownScript = `readonly shortToolbar: readonly StarEditorToolbarItem[] = ['bold', 'italic', '|', 'link'];`;
+  protected readonly summary = signal('Two boxes for Orchard Supply.\nDeliver before noon.');
+  protected readonly limitScript = `readonly summary = signal('Two boxes for Orchard Supply.\\nDeliver before noon.');`;
   protected readonly basicScript = `readonly note = signal('');`;
   protected readonly sizeScript = `readonly comment = signal('');`;
   protected readonly statesScript = `readonly saved = signal('<p>Leave the parcel at the <b>loading dock</b>.</p>');`;
@@ -135,6 +264,13 @@ export class EditorPage {
   '<p onclick="alert(1)" style="color: red">Order <b>ORD-1042</b> <script>alert(1)</script><a href="javascript:alert(1)">open</a></p>',
 );`;
 
+  protected readonly slots: readonly DocsRow[] = [
+    {
+      name: 'ng-template starEditorToolbar',
+      description:
+        'Replaces the toolbar. Context: exec(command, value?), isActive(command), disabled; $implicit is exec.',
+    },
+  ];
   protected readonly cssVars: readonly DocsRow[] = [
     { name: '--star-border', description: 'Border of the editor and line under the toolbar.' },
     { name: '--star-surface-muted', description: 'Background of the toolbar.' },
@@ -152,7 +288,16 @@ export class EditorPage {
     },
     {
       name: 'ArrowLeft / ArrowRight / Home / End',
-      description: 'In the toolbar: moves between the buttons.',
+      description:
+        'In the toolbar: moves between the buttons and the text style select. Only one toolbar control is in the tab order.',
+    },
+    {
+      name: 'Arrow Up / Arrow Down',
+      description: 'On the text style select: chooses the style.',
+    },
+    {
+      name: 'Escape',
+      description: 'In the link form: closes it, and the focus goes back to the text.',
     },
     {
       name: 'Enter / Space',

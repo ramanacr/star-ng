@@ -212,3 +212,104 @@
     transition: none;
   }
 }
+
+// Focus targets of the data points: a layer over the plot, one small target per point.
+.star-chart__frame {
+  position: relative;
+}
+.star-chart__points {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+// The targets are for the keyboard and assistive technology: the pointer goes through to the marks,
+// and a click on the plot selects the nearest point.
+.star-chart__target {
+  position: absolute;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  translate: -50% -50%;
+  pointer-events: none;
+  outline: none;
+
+  &:focus-visible {
+    outline: 2px solid var(--star-accent);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px var(--star-surface);
+  }
+}
+
+// Legend that toggles series, and the position of the legend.
+.star-chart__body {
+  display: flex;
+  flex-direction: column;
+}
+.star-chart--legend-bottom .star-chart__legend {
+  order: 1;
+  margin: 0.5rem 0 0;
+}
+.star-chart--legend-start,
+.star-chart--legend-end {
+  .star-chart__body {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  .star-chart__legend {
+    flex: none;
+    flex-direction: column;
+    max-width: 12rem;
+    margin: 0;
+  }
+  .star-chart__frame {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+}
+.star-chart--legend-end .star-chart__legend {
+  order: 1;
+}
+.star-chart__legend--toggle {
+  gap: 0.25rem 0.5rem;
+}
+.star-chart__legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.5rem;
+  border: 0;
+  border-radius: var(--star-radius-sm);
+  background: transparent;
+  color: var(--star-text);
+  font: inherit;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--star-surface-muted);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--star-accent);
+    outline-offset: 1px;
+  }
+  // A hidden series: struck through and faded, so the state does not rely on color alone.
+  &[aria-pressed='false'] {
+    color: var(--star-text-muted);
+    text-decoration: line-through;
+
+    .star-chart__swatch,
+    .star-chart__swatch-shape {
+      opacity: 0.35;
+    }
+  }
+}
+
+// A narrow chart: the view box shrinks, so the axis text grows back by --star-chart-zoom (at most 2)
+// and stays about 12px on the screen. The category labels thin out to make room.
+// The value ticks grow less: they must fit in the room at the start of the plot.
+.star-chart__svg--zoom .star-chart__axis {
+  font-size: calc(12px * min(var(--star-chart-zoom, 1), 1.35));
+}
+.star-chart__svg--zoom .star-chart__axis--category {
+  font-size: calc(12px * var(--star-chart-zoom, 1));
+}
