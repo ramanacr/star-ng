@@ -148,6 +148,7 @@
                 aria-hidden="true"
                 [attr.rowspan]="headRowSpan()"
                 [style.width.px]="columnWindow().before"
+                [style.min-width.px]="columnWindow().before"
               ></td>
             }
             @if (cell.kind === 'group') {
@@ -246,6 +247,7 @@
                 aria-hidden="true"
                 [attr.rowspan]="headRowSpan()"
                 [style.width.px]="columnWindow().after"
+                [style.min-width.px]="columnWindow().after"
               ></td>
             }
           }
@@ -281,6 +283,7 @@
                 class="star-table__col-spacer"
                 aria-hidden="true"
                 [style.width.px]="columnWindow().before"
+                [style.min-width.px]="columnWindow().before"
               ></td>
             }
             <td
@@ -343,6 +346,7 @@
                 class="star-table__col-spacer"
                 aria-hidden="true"
                 [style.width.px]="columnWindow().after"
+                [style.min-width.px]="columnWindow().after"
               ></td>
             }
           }
@@ -377,6 +381,7 @@
                   class="star-table__col-spacer"
                   aria-hidden="true"
                   [style.width.px]="columnWindow().before"
+                  [style.min-width.px]="columnWindow().before"
                 ></td>
               }
               <td><star-skeleton height="0.875rem" [width]="row % 2 ? '70%' : '90%'" /></td>
@@ -385,6 +390,7 @@
                   class="star-table__col-spacer"
                   aria-hidden="true"
                   [style.width.px]="columnWindow().after"
+                  [style.min-width.px]="columnWindow().after"
                 ></td>
               }
             }
@@ -451,6 +457,7 @@
                     class="star-table__col-spacer"
                     aria-hidden="true"
                     [style.width.px]="columnWindow().before"
+                    [style.min-width.px]="columnWindow().before"
                   ></td>
                 }
                 <td
@@ -469,6 +476,7 @@
                     class="star-table__col-spacer"
                     aria-hidden="true"
                     [style.width.px]="columnWindow().after"
+                    [style.min-width.px]="columnWindow().after"
                   ></td>
                 }
               }
@@ -565,6 +573,7 @@
                     class="star-table__col-spacer"
                     aria-hidden="true"
                     [style.width.px]="columnWindow().before"
+                    [style.min-width.px]="columnWindow().before"
                   ></td>
                 }
                 @let span = rowSpan(i, column);
@@ -703,6 +712,7 @@
                     class="star-table__col-spacer"
                     aria-hidden="true"
                     [style.width.px]="columnWindow().after"
+                    [style.min-width.px]="columnWindow().after"
                   ></td>
                 }
               }
@@ -797,6 +807,7 @@
                 class="star-table__col-spacer"
                 aria-hidden="true"
                 [style.width.px]="columnWindow().before"
+                [style.min-width.px]="columnWindow().before"
               ></td>
             }
             <td
@@ -816,6 +827,7 @@
                 class="star-table__col-spacer"
                 aria-hidden="true"
                 [style.width.px]="columnWindow().after"
+                [style.min-width.px]="columnWindow().after"
               ></td>
             }
           }

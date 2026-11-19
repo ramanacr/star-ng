@@ -465,6 +465,7 @@ export class StarRowExpansionTemplate<T = unknown> {
     '[class.star-table--sticky]': 'stickyHeader()',
     '[class.star-table--virtual]': 'virtualScroll()',
     '[class.star-table--variable]': 'variableHeights()',
+    '[class.star-table--virtual-columns]': 'virtualColumns()',
     '[class.star-table--stack]': "responsiveLayout() === 'stack'",
     '[style.--star-table-row-height.px]': 'virtualScroll() ? virtualRowHeight() : null',
     // Pinned columns: the selection, expander and reorder columns stick at the start too, and

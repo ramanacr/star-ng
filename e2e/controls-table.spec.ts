@@ -1249,7 +1249,7 @@ test.describe('table: layout', () => {
       name: 'Sales with merged regions',
     });
     await expect(table.locator('tbody tr.star-table__group')).toHaveCount(0);
-    const europe = table.getByRole('cell', { name: 'Europe' });
+    const europe = table.getByRole('cell', { name: 'Europe', exact: true });
     await expect(europe).toHaveAttribute('rowspan', '3');
     // The merged cell is as tall as its three rows.
     const rows = bodyRows(table);

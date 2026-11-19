@@ -310,6 +310,19 @@ star-select.star-table__filter {
 .star-table--variable .star-table__scroll {
   overflow-anchor: none;
 }
+// `virtualColumns`: each column has the fixed width that the window computes with, padding
+// included, and the text stays on one line.
+.star-table--virtual-columns {
+  th,
+  td {
+    box-sizing: border-box;
+  }
+  td {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
 // A spacer cell of `virtualColumns`: the width of the columns that are not rendered.
 .star-table__col-spacer {
   padding: 0 !important;
