@@ -310,6 +310,7 @@ const BACKGROUNDS: readonly StarCellBackground[] = [
           (keydown)="onGridKeydown($event)"
           (pointerdown)="onGridPointerDown($event)"
           (pointerover)="onGridPointerOver($event)"
+          (pointermove)="onGridPointerMove($event)"
           (dblclick)="onGridDblClick($event)"
           (copy)="onCopy($event, false)"
           (cut)="onCopy($event, true)"
@@ -551,6 +552,8 @@ export class StarSpreadsheet {
   private resizing: { kind: 'col' | 'row'; index: number; start: number; size: number } | null =
     null;
   private copied: Copied | null = null;
+  /** Removes the document listeners of a running drag (also on destroy). */
+  private stopDrag: (() => void) | null = null;
   /** Set while a commit or cancel moves the focus, so the blur does not commit again. */
   private settling = false;
 
@@ -679,6 +682,7 @@ export class StarSpreadsheet {
   });
 
   constructor() {
+    inject(DestroyRef).onDestroy(() => this.stopDrag?.());
     afterNextRender(() => {
       const element = this.viewport().nativeElement;
       const measure = (): void => {
@@ -1113,6 +1117,7 @@ export class StarSpreadsheet {
       event.preventDefault();
       grid.focus({ preventScroll: true });
       this.drag = 'fill';
+      this.capture(event);
       this.listenPointerUp();
       return;
     }
@@ -1134,13 +1139,19 @@ export class StarSpreadsheet {
       const cell = this.cellFrom(target);
       if (!cell) handled = false;
       else {
+        // A touch on a selected cell drags (those cells have touch-action: none); a touch on
+        // another cell selects it and leaves the finger free to scroll the sheet.
+        const drags = event.pointerType !== 'touch' || this.inSelection(cell.row, cell.col);
         if (event.shiftKey) this.focusCell.set(cell);
         else {
           this.anchor.set(cell);
           this.focusCell.set(cell);
         }
-        this.drag = 'select';
-        this.listenPointerUp();
+        if (drags) {
+          this.drag = 'select';
+          this.capture(event);
+          this.listenPointerUp();
+        }
       }
     }
     if (!handled) return;
@@ -1150,9 +1161,30 @@ export class StarSpreadsheet {
     this.announceActive();
   }
 
-  protected onGridPointerOver(event: PointerEvent): void {
+  /** Keeps the pointer events on the grid during a drag, also outside the window. */
+  private capture(event: PointerEvent): void {
+    try {
+      this.grid().nativeElement.setPointerCapture?.(event.pointerId);
+    } catch {
+      // No active pointer with that id (synthetic events): pointerover still tracks the drag.
+    }
+  }
+
+  /** With pointer capture the grid gets every move: find the cell under the pointer. */
+  protected onGridPointerMove(event: PointerEvent): void {
     if (!this.drag) return;
-    const cell = this.cellFrom(event.target);
+    const grid = this.grid().nativeElement;
+    if (!grid.hasPointerCapture?.(event.pointerId)) return;
+    this.dragOver(this.document.elementFromPoint?.(event.clientX, event.clientY) ?? null);
+  }
+
+  protected onGridPointerOver(event: PointerEvent): void {
+    this.dragOver(event.target as Element | null);
+  }
+
+  private dragOver(target: Element | null): void {
+    if (!this.drag) return;
+    const cell = this.cellFrom(target);
     if (!cell) return;
     if (this.drag === 'select') {
       this.focusCell.set(cell);
@@ -1174,9 +1206,17 @@ export class StarSpreadsheet {
   }
 
   private listenPointerUp(): void {
-    const up = (): void => {
+    this.stopDrag?.();
+    const remove = (): void => {
       this.document.removeEventListener('pointerup', up);
       this.document.removeEventListener('pointercancel', up);
+      this.stopDrag = null;
+    };
+    const up = (event: Event): void => {
+      remove();
+      const id = (event as PointerEvent).pointerId;
+      const grid = this.grid().nativeElement;
+      if (id !== undefined && grid.hasPointerCapture?.(id)) grid.releasePointerCapture(id);
       const mode = this.drag;
       this.drag = null;
       if (mode === 'fill') {
@@ -1187,6 +1227,10 @@ export class StarSpreadsheet {
     };
     this.document.addEventListener('pointerup', up);
     this.document.addEventListener('pointercancel', up);
+    this.stopDrag = () => {
+      remove();
+      this.drag = null;
+    };
   }
 
   protected onGridDblClick(event: MouseEvent): void {

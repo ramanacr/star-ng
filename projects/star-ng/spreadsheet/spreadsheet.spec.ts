@@ -310,6 +310,47 @@ describe('StarSpreadsheet', () => {
     expect(host.selection?.address).toBe('C1:C20');
   });
 
+  it('captures the pointer for a drag and follows it with elementFromPoint', async () => {
+    const { fixture, grid, host, cell } = await setup();
+    let captured = false;
+    grid.setPointerCapture = vi.fn(() => (captured = true));
+    grid.hasPointerCapture = vi.fn(() => captured);
+    grid.releasePointerCapture = vi.fn(() => (captured = false));
+    const target = cell('C4');
+    const fromPoint = vi.fn(() => target);
+    Object.defineProperty(document, 'elementFromPoint', { value: fromPoint, configurable: true });
+    cell('A1').dispatchEvent(pointer('pointerdown', { bubbles: true, button: 0 }));
+    expect(grid.setPointerCapture).toHaveBeenCalled();
+    grid.dispatchEvent(pointer('pointermove', { bubbles: true, clientX: 300, clientY: 120 }));
+    document.dispatchEvent(pointer('pointerup'));
+    await fixture.whenStable();
+    expect(fromPoint).toHaveBeenCalledWith(300, 120);
+    expect(host.selection?.address).toBe('A1:C4');
+    expect(captured).toBe(false);
+    delete (document as { elementFromPoint?: unknown }).elementFromPoint;
+  });
+
+  it('does not start a drag on a touch outside the selection, so the sheet can scroll', async () => {
+    const { fixture, host, cell } = await setup();
+    const down = pointer('pointerdown', { bubbles: true, button: 0 });
+    Object.defineProperty(down, 'pointerType', { value: 'touch' });
+    cell('B2').dispatchEvent(down);
+    cell('C3').dispatchEvent(pointer('pointerover', { bubbles: true }));
+    await fixture.whenStable();
+    expect(host.selection?.address).toBe('B2');
+  });
+
+  it('removes the drag listeners when destroyed during a drag', async () => {
+    const { fixture, cell } = await setup();
+    const remove = vi.spyOn(document, 'removeEventListener');
+    cell('A1').dispatchEvent(pointer('pointerdown', { bubbles: true, button: 0 }));
+    fixture.destroy();
+    expect(remove.mock.calls.map((c) => c[0])).toEqual(
+      expect.arrayContaining(['pointerup', 'pointercancel']),
+    );
+    remove.mockRestore();
+  });
+
   it('formats with Control+B and the number format select', async () => {
     const { fixture, grid, press, host, el, cell } = await setup();
     grid.focus();

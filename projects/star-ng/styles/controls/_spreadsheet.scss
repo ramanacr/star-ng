@@ -204,6 +204,10 @@
 .star-spreadsheet__cell--bg-muted {
   background: var(--star-surface-muted);
 }
+// A touch on a selected cell drags the selection; other cells keep panning the sheet.
+.star-spreadsheet__cell--selected {
+  touch-action: none;
+}
 // Selected cells get a tint over their own background; the active cell stays clear.
 .star-spreadsheet__cell--selected:not(.star-spreadsheet__cell--active)::after {
   content: '';
