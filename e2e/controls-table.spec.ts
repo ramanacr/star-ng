@@ -1235,6 +1235,12 @@ test.describe('table: layout', () => {
     // The group summaries of the January column add up to the footer sum.
     const groups = table.locator('tbody tr.star-table__group-footer');
     await expect(groups).toHaveCount(3);
+    // The summary styles apply at every width, not only in the stacked phone layout.
+    await expect(groups.first().locator('td').nth(2)).toHaveCSS('font-weight', '600');
+    await expect(footer.nth(2).locator('.star-table__summary-label')).toHaveCSS(
+      'margin-inline-end',
+      '6px',
+    );
     const januaries = await groups.locator('td:nth-child(3)').allTextContents();
     const total = januaries.map(money).reduce((a, b) => a + b, 0);
     expect(total).toBe(money(await footer.nth(2).textContent()));
@@ -1251,6 +1257,7 @@ test.describe('table: layout', () => {
     await expect(table.locator('tbody tr.star-table__group')).toHaveCount(0);
     const europe = table.getByRole('cell', { name: 'Europe', exact: true });
     await expect(europe).toHaveAttribute('rowspan', '3');
+    await expect(europe).toHaveCSS('vertical-align', 'top');
     // The merged cell is as tall as its three rows.
     const rows = bodyRows(table);
     const first = (await rows.nth(0).boundingBox())!;
