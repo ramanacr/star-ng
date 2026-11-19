@@ -18,12 +18,15 @@ test.describe('scheduler', () => {
     const meeting = area.getByRole('button', {
       name: /^Team meeting, 10:00 to 11:00, Tuesday 3 March/,
     });
-    await meeting.focus();
-    await page.keyboard.press('Alt+ArrowDown');
     const moved = area.getByRole('button', {
       name: /^Team meeting, 10:30 to 11:30, Tuesday 3 March/,
     });
-    await expect(moved).toBeFocused();
+    // Retry until the prerendered page is hydrated and the keys are handled.
+    await expect(async () => {
+      await meeting.focus();
+      await page.keyboard.press('Alt+ArrowDown');
+      await expect(moved).toBeFocused({ timeout: 1000 });
+    }).toPass();
     await expect(area.locator('.star-scheduler [aria-live="polite"]').last()).toHaveText(
       /Team meeting moved to Tuesday 3 March, 10:30 to 11:30, Room A/,
     );
