@@ -453,4 +453,15 @@ export const STAR_UI_TEXT_DE: StarUiText = {
   imageAnnotationDeleted: (label) => `${label} gelöscht.`,
   imageAnnotateHint:
     'Zeichnen Sie mit einem Zeiger auf das Bild, oder wählen Sie eine Form und dann Zum Bild hinzufügen. Entf löscht die gewählte Anmerkung.',
+  map: 'Karte',
+  mapHint:
+    'Pfeiltasten wechseln zwischen den Elementen, Eingabe wählt aus. Umschalt und Pfeiltasten verschieben, Plus und Minus zoomen.',
+  mapResetView: 'Ansicht zurücksetzen',
+  mapFeature: 'Element',
+  mapLayer: 'Ebene',
+  mapLegend: 'Legende',
+  mapNoData: 'Keine Daten',
+  mapRange: (min, max) => `${min} bis ${max}`,
+  mapFeatureValue: (label, value) => `${label}: ${value}`,
+  mapZoomLevel: (zoom) => `Zoomstufe ${zoom}`,
 };

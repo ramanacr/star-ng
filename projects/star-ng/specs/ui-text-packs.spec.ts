@@ -20,8 +20,9 @@ const SAME_AS_ENGLISH: Record<string, readonly Name[]> = {
     'chartX',
     'chartY',
     'minute',
-    // A data point reads "series, category: value" in every language.
+    // A data point reads "series, category: value" in every language, a map feature "label: value".
     'chartPointLabel',
+    'mapFeatureValue',
   ],
   // "Color", "Editor" and "Total" are the Spanish words too. "X" and "Y" are axis names in every
   // language. "No" is the Spanish answer too. A rule summary and a data point only join their
@@ -35,6 +36,7 @@ const SAME_AS_ENGLISH: Record<string, readonly Name[]> = {
     'queryFalse',
     'queryRuleSummary',
     'chartPointLabel',
+    'mapFeatureValue',
   ],
 };
 
@@ -64,6 +66,8 @@ const TEXT_PARAMS: Record<string, readonly string[]> = {
   imageEditList: ['edits'],
   imageApplied: ['tool'],
   imageAnnotationItem: ['kind'],
+  mapRange: ['min', 'max'],
+  mapFeatureValue: ['value'],
 };
 const TEXT_NAMES = new Set(['label', 'column', 'name', 'alt']);
 

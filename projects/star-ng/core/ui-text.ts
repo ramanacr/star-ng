@@ -522,6 +522,23 @@ export interface StarUiText {
   readonly imageDeleteAnnotation: string;
   readonly imageAnnotationDeleted: (label: string) => string;
   readonly imageAnnotateHint: string;
+  // Map
+  /** Default name of `star-map`, and the button that shows the map again after the table. */
+  readonly map: string;
+  /** Keyboard hint of `star-map` (the description of the map). */
+  readonly mapHint: string;
+  readonly mapResetView: string;
+  /** Column header of the features in the data table of `star-map`. */
+  readonly mapFeature: string;
+  readonly mapLayer: string;
+  readonly mapLegend: string;
+  readonly mapNoData: string;
+  /** A class of the legend: its smallest and largest value, formatted. */
+  readonly mapRange: (min: string, max: string) => string;
+  /** Name of a feature with a value, and the default tooltip. */
+  readonly mapFeatureValue: (label: string, value: string) => string;
+  /** Announcement after a zoom with the keyboard or a button. */
+  readonly mapZoomLevel: (zoom: number) => string;
 }
 
 export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
@@ -963,6 +980,17 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   imageAnnotationDeleted: (label) => `${label} deleted.`,
   imageAnnotateHint:
     'Draw on the image with a pointer, or choose a shape and press Add to the image. Delete removes the chosen annotation.',
+  map: 'Map',
+  mapHint:
+    'Arrow keys move between the features, Enter selects. Shift and arrow keys pan, plus and minus zoom.',
+  mapResetView: 'Reset view',
+  mapFeature: 'Feature',
+  mapLayer: 'Layer',
+  mapLegend: 'Legend',
+  mapNoData: 'No data',
+  mapRange: (min, max) => `${min} to ${max}`,
+  mapFeatureValue: (label, value) => `${label}: ${value}`,
+  mapZoomLevel: (zoom) => `Zoom level ${zoom}`,
 };
 
 /** Parameter names of the function entries, in call order (used for `{{ name }}` in translations). */
@@ -1058,6 +1086,9 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   imageColor: ['index'],
   imageAnnotationItem: ['kind', 'index'],
   imageAnnotationDeleted: ['label'],
+  mapRange: ['min', 'max'],
+  mapFeatureValue: ['label', 'value'],
+  mapZoomLevel: ['zoom'],
 };
 
 export const STAR_UI_TEXT = new InjectionToken<StarUiText>('STAR_UI_TEXT', {

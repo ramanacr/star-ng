@@ -42,6 +42,7 @@ export * from '@star-ng/ui/knob';
 export * from '@star-ng/ui/layout';
 export * from '@star-ng/ui/list';
 export * from '@star-ng/ui/listbox';
+export * from '@star-ng/ui/map';
 export * from '@star-ng/ui/media';
 export * from '@star-ng/ui/mention';
 export * from '@star-ng/ui/menu';

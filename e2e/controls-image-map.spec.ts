@@ -88,3 +88,90 @@ test.describe('image editor', () => {
     await expect(list.getByRole('option', { name: 'Ellipse 1' })).toBeVisible();
   });
 });
+
+test.describe('map', () => {
+  test('moves through the regions with the keys, selects and zooms', async ({ page }) => {
+    await openPage(page, '/controls/map', 'Map');
+    const live = example(page, 'Choropleth with a legend');
+    const status = live.getByRole('status');
+    await expect(status).toContainText('Selected: eastvale.');
+
+    // Tab enters the map at the first feature in reading order.
+    await live.getByRole('button', { name: 'Table' }).focus();
+    await page.keyboard.press('Tab');
+    const viewport = live.locator('.star-map__viewport');
+    await expect(viewport).toHaveAttribute('role', 'application');
+    const first = await page.evaluate(() => document.activeElement?.getAttribute('aria-label'));
+    expect(first).toMatch(/^(Northmoor|Eastvale)/);
+
+    const focused = () =>
+      page.evaluate(() => document.activeElement?.getAttribute('aria-label') ?? '');
+    await page.keyboard.press('End');
+    expect(await focused()).not.toBe(first);
+    await page.keyboard.press('Home');
+    expect(await focused()).toBe(first);
+    await page.keyboard.press('ArrowRight');
+    const second = await focused();
+    expect(second).not.toBe(first);
+    // Enter toggles the selection of the focused region (single selection).
+    const wasPressed = await page.locator(':focus').getAttribute('aria-pressed');
+    await page.keyboard.press('Enter');
+    await expect(status).toContainText(`Last click: ${second.split(':')[0]}.`);
+    await expect(page.locator(':focus')).toHaveAttribute(
+      'aria-pressed',
+      wasPressed === 'true' ? 'false' : 'true',
+    );
+
+    // Plus zooms in (the models follow), Reset view fits the data again.
+    await page.keyboard.press('+');
+    await expect(status).toContainText(/Zoom: \d/);
+    await live.getByRole('button', { name: 'Reset view' }).click();
+    await expect(status).toContainText('Zoom: fit.');
+
+    // Focus leaves the map: it is a group again.
+    await live.getByRole('button', { name: 'Table' }).focus();
+    await expect(viewport).toHaveAttribute('role', 'group');
+  });
+
+  test('pans with a drag and shows the data table', async ({ page }) => {
+    await openPage(page, '/controls/map', 'Map');
+    const live = example(page, 'Choropleth with a legend');
+    const viewport = live.locator('.star-map__viewport');
+    const box = (await viewport.boundingBox())!;
+    const before = await live.locator('svg g[transform]').first().getAttribute('transform');
+    await page.mouse.move(box.x + 40, box.y + 40);
+    await page.mouse.down();
+    await page.mouse.move(box.x + 140, box.y + 60, { steps: 5 });
+    await page.mouse.up();
+    await expect(live.locator('svg g[transform]').first()).not.toHaveAttribute(
+      'transform',
+      before!,
+    );
+    await expect(live.getByRole('status')).toContainText(/Zoom: \d/);
+
+    await live.getByRole('button', { name: 'Table' }).click();
+    const table = live.getByRole('table');
+    await expect(table).toBeVisible();
+    await expect(table.getByRole('row', { name: /Southfen/ })).toContainText('No data');
+    await expect(table.getByRole('row', { name: /Eastvale/ })).toContainText('77');
+  });
+
+  test('does not request tiles until the owner switches them on', async ({ page }) => {
+    const requests: string[] = [];
+    page.on('request', (request) => {
+      if (request.url().includes('tile.openstreetmap.org')) requests.push(request.url());
+    });
+    // Answer any tile request locally: the test never uses the network.
+    await page.route('https://tile.openstreetmap.org/**', (route) =>
+      route.fulfill({ status: 204, body: '' }),
+    );
+    await openPage(page, '/controls/map', 'Map');
+    const live = example(page, 'Tile layer (off by default)');
+    await expect(live.getByRole('button', { name: 'Paris' })).toBeVisible();
+    expect(requests).toEqual([]);
+    await live.getByRole('checkbox').check();
+    await expect(live.getByText('© OpenStreetMap contributors')).toBeVisible();
+    await expect.poll(() => requests.length).toBeGreaterThan(0);
+    expect(requests.every((url) => /\/\d+\/\d+\/\d+\.png$/.test(url))).toBe(true);
+  });
+});

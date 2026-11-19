@@ -730,6 +730,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         keywords: 'qr 2d matrix barcode link url scan error correction logo svg',
         load: () => import('./controls/qr-code.page').then((m) => m.QrCodePage),
       },
+      {
+        label: 'Map',
+        path: 'controls/map',
+        keywords: 'geo geojson vector map choropleth regions markers bubbles tiles pan zoom legend',
+        load: () => import('./controls/map.page').then((m) => m.MapPage),
+      },
     ],
   },
   {

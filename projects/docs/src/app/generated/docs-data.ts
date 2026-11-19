@@ -7138,6 +7138,134 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarMap": {
+    "kind": "component",
+    "selector": "star-map",
+    "entry": "@star-ng/ui/map",
+    "description": "Map (DevExtreme `dxVectorMap`, Kendo UI Map, Ignite UI `igx-geographic-map`, Syncfusion `ejs-maps`): an SVG map of layers. A `shape` layer draws GeoJSON polygons (with holes and multi-polygons), lines and points, coloured by value classes with a legend (choropleth); a `marker` layer places markers (slot `ng-template[starMapMarker]`); a `bubble` layer sizes circles by value; an optional `tile` layer shows web map tiles from an address the owner gives (with the required attribution). Web Mercator or equirectangular projection (`starProject`).",
+    "inputs": [
+      {
+        "name": "layers",
+        "type": "readonly StarMapLayer[]",
+        "default": "[]",
+        "required": false,
+        "description": "The layers, drawn in order (a tile layer is always below)."
+      },
+      {
+        "name": "projection",
+        "type": "StarMapProjection",
+        "default": "'mercator'",
+        "required": false,
+        "description": "`mercator` (Web Mercator, default; needed for tiles) or `equirectangular`."
+      },
+      {
+        "name": "minZoom",
+        "type": "number",
+        "default": "0",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "maxZoom",
+        "type": "number",
+        "default": "18",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "selection",
+        "type": "'none' | 'single' | 'multiple'",
+        "default": "'single'",
+        "required": false,
+        "description": "`single` (default), `multiple` or `none`: how a click or Enter selects shapes."
+      },
+      {
+        "name": "table",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Start with the data table shown."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Name of the map. Defaults to the `map` text."
+      },
+      {
+        "name": "locale",
+        "type": "string | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "BCP 47 locale of the values. Default: `locale` of `provideStarNg`, else the browser locale."
+      },
+      {
+        "name": "valueFormat",
+        "type": "Intl.NumberFormatOptions | null",
+        "default": "null",
+        "required": false,
+        "description": "`Intl.NumberFormat` options of the values (legend, names, table, tooltip)."
+      }
+    ],
+    "models": [
+      {
+        "name": "zoom",
+        "type": "number | null",
+        "default": "null",
+        "required": false,
+        "description": "Zoom level (the world is `256 × 2^zoom` pixels wide). `null`: fit the data."
+      },
+      {
+        "name": "center",
+        "type": "StarLonLat | null",
+        "default": "null",
+        "required": false,
+        "description": "Longitude and latitude in the middle of the map. `null`: the middle of the data."
+      },
+      {
+        "name": "selected",
+        "type": "readonly string[]",
+        "default": "[]",
+        "required": false,
+        "description": "Keys of the selected shapes."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "shapeClick",
+        "type": "StarMapFeatureEvent<StarGeoJsonFeature>",
+        "default": null,
+        "required": false,
+        "description": "A click, Enter or Space on a shape."
+      },
+      {
+        "name": "markerClick",
+        "type": "StarMapFeatureEvent",
+        "default": null,
+        "required": false,
+        "description": "A click, Enter or Space on a marker or a bubble."
+      }
+    ]
+  },
+  "StarMapMarker": {
+    "kind": "directive",
+    "selector": "ng-template[starMapMarker]",
+    "entry": "@star-ng/ui/map",
+    "description": "Template of a marker: `<ng-template starMapMarker let-feature>`.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
+  "StarMapTooltip": {
+    "kind": "directive",
+    "selector": "ng-template[starMapTooltip]",
+    "entry": "@star-ng/ui/map",
+    "description": "Template of the tooltip: `<ng-template starMapTooltip let-feature>`.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
   "StarMarkdownLite": {
     "kind": "component",
     "selector": "star-markdown-lite",
@@ -14482,6 +14610,9 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "listbox/template": "<star-listbox\n  [options]=\"queues\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  [(value)]=\"templated\"\n  scrollHeight=\"12rem\"\n  ariaLabel=\"Queue with template\"\n>\n  <ng-template starOption [starOptionOf]=\"queues\" let-item let-selected=\"selected\">\n    <span>\n      {{ item.name }}\n      <small>{{ item.site }}</small>\n    </span>\n  </ng-template>\n</star-listbox>",
   "listbox/virtual": "<div class=\"docs-stack\">\n  <star-listbox\n    [options]=\"invoiceNumbers\"\n    [(value)]=\"invoice\"\n    virtualScroll\n    filter\n    scrollHeight=\"16rem\"\n    ariaLabel=\"Invoice number\"\n  />\n  <p class=\"docs-output\" role=\"status\">Invoice: {{ invoice() ?? 'none' }}</p>\n</div>",
   "listbox/virtual-groups": "<div class=\"docs-stack\">\n  <star-listbox\n    [options]=\"shipments\"\n    optionLabel=\"name\"\n    optionValue=\"id\"\n    optionGroup=\"region\"\n    optionDisabled=\"held\"\n    [(value)]=\"picked\"\n    multiple\n    virtualScroll\n    [virtualItemSize]=\"36\"\n    scrollHeight=\"16rem\"\n    ariaLabel=\"Shipments\"\n  >\n    <ng-template starOption [starOptionOf]=\"shipments\" let-item let-selected=\"selected\">\n      {{ item.name }}\n    </ng-template>\n  </star-listbox>\n  <p class=\"docs-output\" role=\"status\">Picked: {{ pickedCount() }}</p>\n</div>",
+  "map/choropleth": "<div class=\"docs-stack\">\n  <star-map\n    [layers]=\"choropleth\"\n    [(selected)]=\"selected\"\n    [(zoom)]=\"zoom\"\n    ariaLabel=\"Sales by region\"\n    (shapeClick)=\"clicked($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Selected: {{ selected().join(', ') || '(none)' }}. Last click: {{ lastClick() }}. Zoom:\n    {{ zoom() === null ? 'fit' : zoom() }}.\n  </p>\n</div>",
+  "map/markers": "<star-map\n  [layers]=\"markerLayers\"\n  projection=\"equirectangular\"\n  selection=\"none\"\n  ariaLabel=\"Towns and visitors\"\n>\n  <ng-template starMapMarker let-town>\n    <span class=\"town\"\n      ><i class=\"ph-fill ph-map-pin\" aria-hidden=\"true\"></i>{{ town.label }}</span\n    >\n  </ng-template>\n  <ng-template starMapTooltip let-feature>\n    <strong>{{ feature.label }}</strong>\n    @if (feature.value !== null) {\n      · {{ feature.value }} visitors\n    }\n  </ng-template>\n</star-map>",
+  "map/tiles": "<div class=\"docs-stack\">\n  <label class=\"docs-row\">\n    <input type=\"checkbox\" [checked]=\"tilesOn()\" (change)=\"tilesOn.set(!tilesOn())\" />\n    Load OpenStreetMap tiles (from tile.openstreetmap.org)\n  </label>\n  <star-map [layers]=\"tileLayers()\" selection=\"none\" ariaLabel=\"Three capitals\" />\n</div>",
   "mega-menu/basic": "<div class=\"docs-stack\">\n  <star-mega-menu\n    ariaLabel=\"Catalogue\"\n    [items]=\"catalogue\"\n    (itemClick)=\"last.set($event.label ?? '')\"\n  />\n  <p class=\"docs-output\" role=\"status\">Last action: {{ last() }}</p>\n</div>",
   "mention/basic": "<div class=\"docs-stack\">\n  <textarea\n    class=\"star-input\"\n    aria-label=\"Comment\"\n    placeholder=\"Write a comment, type @ to mention someone\"\n    starMention\n    #comment=\"starMention\"\n    [suggestions]=\"people\"\n    optionLabel=\"name\"\n    (mentionSelect)=\"last.set($any($event.item).name)\"\n  ></textarea>\n  <p class=\"docs-output\" role=\"status\">\n    Last mention: {{ last() }}. In the text: {{ names(comment.mentions()) }}\n  </p>\n</div>",
   "mention/form": "<div class=\"docs-stack\">\n  <star-field label=\"Assign to\" hint=\"Type @ and a name\">\n    <input\n      starInput\n      [formField]=\"f.assignee\"\n      starMention\n      [suggestions]=\"people\"\n      optionLabel=\"name\"\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Model: {{ model().assignee || '(empty)' }}</p>\n</div>",

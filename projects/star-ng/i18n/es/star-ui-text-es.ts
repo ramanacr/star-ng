@@ -454,4 +454,15 @@ export const STAR_UI_TEXT_ES: StarUiText = {
   imageAnnotationDeleted: (label) => `${label}: eliminada.`,
   imageAnnotateHint:
     'Dibuje en la imagen con un puntero, o elija una forma y pulse Añadir a la imagen. Supr elimina la anotación elegida.',
+  map: 'Mapa',
+  mapHint:
+    'Las flechas pasan de un elemento a otro, Intro selecciona. Mayús y las flechas desplazan, más y menos acercan y alejan.',
+  mapResetView: 'Restablecer la vista',
+  mapFeature: 'Elemento',
+  mapLayer: 'Capa',
+  mapLegend: 'Leyenda',
+  mapNoData: 'Sin datos',
+  mapRange: (min, max) => `${min} a ${max}`,
+  mapFeatureValue: (label, value) => `${label}: ${value}`,
+  mapZoomLevel: (zoom) => `Nivel de zoom ${zoom}`,
 };

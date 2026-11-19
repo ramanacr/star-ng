@@ -1171,6 +1171,21 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'map with a selected shape, the focus in the map and the legend',
+    path: 'controls/map',
+    open: async (page) => {
+      // The page is prerendered: wait for hydration before the first key.
+      await expect(page.locator('star-map[ngh]')).toHaveCount(0, { timeout: 15_000 });
+      const live = example(page, 'Choropleth with a legend');
+      const region = live.getByRole('button', { name: 'Northmoor: 42' });
+      await region.focus();
+      await page.keyboard.press('Enter');
+      await expect(region).toHaveAttribute('aria-pressed', 'true');
+      await expect(live.locator('.star-map__viewport')).toHaveAttribute('role', 'application');
+      await expect(live.getByRole('list', { name: /^Legend/ })).toBeVisible();
+    },
+  },
+  {
     name: 'tree with a loading row',
     path: 'controls/tree',
     open: async (page) => {
