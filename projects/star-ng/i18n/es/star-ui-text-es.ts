@@ -422,6 +422,7 @@ export const STAR_UI_TEXT_ES: StarUiText = {
   cancel: 'Cancelar',
   deleteEvent: 'Eliminar evento',
   endBeforeStart: 'El fin debe ser posterior al inicio.',
+  readOnly: 'Solo lectura',
   ganttTasks: 'Tareas',
   name: 'Nombre',
   duration: 'Duración',
@@ -435,4 +436,6 @@ export const STAR_UI_TEXT_ES: StarUiText = {
   dependencyFF: 'Fin a fin',
   dependencySF: 'Inicio a fin',
   dependsOn: (label) => `Depende de ${label}`,
+  ganttMoveHint:
+    'Alt e Izquierda o Derecha mueven la tarea; Alt, Mayús e Izquierda o Derecha mueven su fin; Alt y Arriba o Abajo cambian su progreso.',
 };

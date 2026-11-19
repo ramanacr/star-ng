@@ -285,9 +285,14 @@ describe('StarGantt', () => {
     });
 
     it('does not change summary tasks or a readonly Gantt', async () => {
-      const { host, row, stable } = await setup();
+      const { host, row, stable, live, gantt } = await setup();
       key(row('build'), 'ArrowRight', { altKey: true });
+      await stable();
       expect(host.changes).toHaveLength(0);
+      expect(live()).toBe('Read only');
+      expect(
+        gantt.querySelector(`#${row('design').getAttribute('aria-describedby')}`)?.textContent,
+      ).toContain('Alt and Up or Down change its progress');
       host.readonly.set(true);
       await stable();
       key(row('design'), 'ArrowRight', { altKey: true });

@@ -296,6 +296,43 @@ describe('StarScheduler', () => {
     });
   });
 
+  describe('event focus', () => {
+    it('gives the events of a view one tab stop', async () => {
+      const { scheduler, event, stable } = await setup();
+      const stops = () =>
+        [
+          ...scheduler.querySelectorAll<HTMLElement>(
+            '.star-scheduler__grid .star-scheduler__event',
+          ),
+        ].filter((e) => e.tabIndex === 0);
+      expect(stops()).toHaveLength(1);
+      event('Team meeting').focus();
+      await stable();
+      expect(stops()).toEqual([event('Team meeting')]);
+    });
+
+    it('moves to the next and the previous event with the arrow keys, then to the slot', async () => {
+      const { scheduler, event, cell, stable } = await setup();
+      const buttons = [
+        ...scheduler.querySelectorAll<HTMLElement>('.star-scheduler__grid .star-scheduler__event'),
+      ];
+      buttons[1].focus();
+      key(buttons[1], 'ArrowRight');
+      await stable();
+      expect(document.activeElement).toBe(buttons[2]);
+      key(buttons[2], 'ArrowUp');
+      expect(document.activeElement).toBe(buttons[1]);
+      const last = buttons.at(-1)!;
+      last.focus();
+      key(last, 'ArrowDown');
+      await stable();
+      const slot = last.closest<HTMLElement>('[data-cell]')!;
+      expect(document.activeElement).toBe(slot);
+      expect(event('Team meeting')).toBeTruthy();
+      expect(cell(0, 0)).toBeTruthy();
+    });
+  });
+
   describe('keyboard move and resize', () => {
     it('moves a focused event by one slot with Alt+arrow and announces it', async () => {
       const { host, event, live, stable } = await setup();
@@ -360,10 +397,12 @@ describe('StarScheduler', () => {
       );
     });
 
-    it('does not move a readonly event', async () => {
-      const { host, event } = await setup();
+    it('does not move a readonly event, and says so', async () => {
+      const { host, event, live, stable } = await setup();
       key(event('Audit'), 'ArrowDown', { altKey: true });
+      await stable();
       expect(host.changes).toHaveLength(0);
+      expect(live()).toBe('Read only');
       expect(event('Audit').hasAttribute('aria-describedby')).toBe(false);
       expect(event('Team meeting').getAttribute('aria-describedby')).toMatch(/hint/);
     });
@@ -553,7 +592,16 @@ describe('StarScheduler', () => {
       await stable();
       const popover = document.querySelector('.star-popover')!;
       expect(popover.getAttribute('aria-label')).toBe('Tuesday 10 March');
-      expect(popover.querySelectorAll('.star-scheduler__event')).toHaveLength(5);
+      const listed = popover.querySelectorAll<HTMLElement>('.star-scheduler__event');
+      expect(listed).toHaveLength(5);
+      // Every entry of the list is in the tab order of the list.
+      expect([...listed].every((e) => e.tabIndex === 0)).toBe(true);
+      // A pick closes the list and gives the focus back to its button.
+      listed[2].focus();
+      listed[2].click();
+      await stable();
+      expect(document.querySelector('.star-popover')).toBeNull();
+      expect(document.activeElement).toBe(more);
     });
 
     it('moves an event by a week with Alt+arrow down', async () => {
@@ -662,6 +710,8 @@ describe('StarScheduler', () => {
       }
       expect(host.saved).toHaveLength(1);
       expect(host.saved[0].event).toBeNull();
+      // The focus goes back to the slot that opened the editor.
+      expect(document.activeElement).toBe(cell(28, 2));
       expect(host.saved[0].value).toMatchObject({
         title: 'Budget review',
         start: at(2026, 3, 4, 14),

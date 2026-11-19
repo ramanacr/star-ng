@@ -423,6 +423,7 @@ export const STAR_UI_TEXT_DE: StarUiText = {
   cancel: 'Abbrechen',
   deleteEvent: 'Termin löschen',
   endBeforeStart: 'Das Ende muss nach dem Beginn liegen.',
+  readOnly: 'Schreibgeschützt',
   ganttTasks: 'Vorgänge',
   name: 'Bezeichnung',
   duration: 'Dauer',
@@ -436,4 +437,6 @@ export const STAR_UI_TEXT_DE: StarUiText = {
   dependencyFF: 'Ende-Ende',
   dependencySF: 'Anfang-Ende',
   dependsOn: (label) => `Abhängig von ${label}`,
+  ganttMoveHint:
+    'Alt und Links oder Rechts verschieben den Vorgang, Alt, Umschalt und Links oder Rechts verschieben das Ende, Alt und Auf oder Ab ändern den Fortschritt.',
 };

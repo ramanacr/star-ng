@@ -319,7 +319,11 @@ onDelete(deleted: StarSchedulerEventSelect) {
     },
     { name: 'Alt + arrow keys', description: 'Move the focused event by one slot or day.' },
     { name: 'Alt + Shift + arrow keys', description: 'Make the focused event longer or shorter.' },
-    { name: 'Tab', description: 'From the grid to the events, in reading order.' },
+    { name: 'Tab', description: 'From the grid to the events: the events are one tab stop.' },
+    {
+      name: 'Arrow keys on an event',
+      description: 'Next or previous event of the view; past the first or last one, its slot.',
+    },
   ];
 }
 

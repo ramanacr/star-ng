@@ -517,6 +517,7 @@ const ALL_DAY_ROW = -1;
       let-style="style"
       let-compact="compact"
       let-item="item"
+      let-inList="inList"
     >
       <button
         type="button"
@@ -532,11 +533,14 @@ const ALL_DAY_ROW = -1;
         [style.--star-scheduler-event-color]="colorOf(occurrence.event)"
         [attr.data-event-id]="occurrence.event.id"
         [attr.data-start]="occurrence.start.getTime()"
+        [attr.data-key]="occurrence.key"
+        [attr.tabindex]="inList || occurrence.key === activeEvent() ? 0 : -1"
         [attr.aria-label]="
           eventSlot() ? null : eventLabel(occurrence, !occurrence.event.allDay && !compact)
         "
         [attr.aria-describedby]="canChange(occurrence) ? hintId : null"
-        (click)="onEventClick($event, occurrence)"
+        (click)="onEventClick($event, occurrence, !!inList)"
+        (focus)="inList || activeEvent.set(occurrence.key)"
         (keydown)="onEventKey($event, occurrence)"
         (pointerdown)="onPointerDown($event, occurrence, 'move')"
       >
@@ -588,7 +592,7 @@ const ALL_DAY_ROW = -1;
             <ng-container
               *ngTemplateOutlet="
                 eventButton;
-                context: { $implicit: occurrence, style: null, compact: true }
+                context: { $implicit: occurrence, style: null, compact: true, inList: true }
               "
             />
           }
@@ -663,6 +667,11 @@ export class StarScheduler {
   /** @internal Active cell of the grid: row and column. */
   readonly active = signal<readonly [number, number]>([0, 0]);
   protected readonly announcement = signal('');
+  /**
+   * @internal Key of the event with the tab stop of the view: events are one tab stop (roving
+   * tabindex), like the cells. Set on focus; the first event of the view when unset or gone.
+   */
+  readonly activeEvent = signal<string | null>(null);
   protected readonly moreDay = signal<Date | null>(null);
   /** @internal Drag preview. */
   readonly preview = signal<Preview | null>(null);
@@ -670,6 +679,8 @@ export class StarScheduler {
   readonly dragging = signal(false);
   private readonly now = signal<Date | null>(null);
   private drag: DragState | null = null;
+  /** The "+N more" button of the open list. */
+  private moreAnchor: HTMLElement | null = null;
   /** Drops the drag in progress; `null` without a drag. */
   private endDrag: (() => void) | null = null;
   private suppressClick = false;
@@ -876,6 +887,7 @@ export class StarScheduler {
     });
     this.destroyRef.onDestroy(() => this.endDrag?.());
     afterEveryRender(() => {
+      this.keepEventTabStop();
       this.restoreFocus();
       this.scrollToWorkDay();
     });
@@ -1060,6 +1072,7 @@ export class StarScheduler {
 
   protected openMore(event: MouseEvent, day: Date): void {
     event.stopPropagation();
+    this.moreAnchor = event.currentTarget as HTMLElement;
     this.moreDay.set(day);
     this.morePopover()?.show(event.currentTarget as HTMLElement);
   }
@@ -1189,7 +1202,8 @@ export class StarScheduler {
     if (!cell) return;
     this.slotSelect.emit({ ...cell });
     if (this.editor() && !this.readonly()) {
-      this.openEditor(null, {
+      const opener = this.host.querySelector<HTMLElement>(`[data-cell="${row}:${column}"]`);
+      this.openEditor(null, opener, {
         title: '',
         start: cell.start,
         end: cell.end,
@@ -1205,21 +1219,48 @@ export class StarScheduler {
     return !this.readonly() && !occurrence.event.readonly;
   }
 
-  protected onEventClick(event: MouseEvent, occurrence: StarSchedulerOccurrence): void {
+  protected onEventClick(
+    event: MouseEvent,
+    occurrence: StarSchedulerOccurrence,
+    inList: boolean,
+  ): void {
     event.stopPropagation();
     if (this.suppressClick) {
       this.suppressClick = false;
       return;
     }
-    this.morePopover()?.hide(false);
-    this.selectEvent(occurrence);
+    // A pick in the "+N more" list closes it and gives the focus back to its button.
+    const popover = this.morePopover();
+    const opener = inList ? this.moreAnchor : (event.currentTarget as HTMLElement);
+    if (inList) popover?.hide();
+    else popover?.hide(false);
+    this.selectEvent(occurrence, opener);
   }
 
-  private selectEvent(occurrence: StarSchedulerOccurrence): void {
+  /** The event buttons of the view, in reading order (not the "+N more" list). */
+  private eventButtons(): HTMLElement[] {
+    return Array.from(
+      this.host.querySelectorAll<HTMLElement>(
+        '.star-scheduler__grid .star-scheduler__event, .star-scheduler__agenda .star-scheduler__event',
+      ),
+    );
+  }
+
+  /** Gives the view one event tab stop: the active event, else the first one. */
+  private keepEventTabStop(): void {
+    const buttons = this.eventButtons();
+    if (!buttons.length) return;
+    const active = this.activeEvent();
+    if (active === null || !buttons.some((b) => b.dataset['key'] === active)) {
+      this.activeEvent.set(buttons[0].dataset['key'] ?? null);
+    }
+  }
+
+  private selectEvent(occurrence: StarSchedulerOccurrence, opener: HTMLElement | null): void {
     const original = this.original(occurrence);
     this.eventSelect.emit({ event: original.event, occurrence: original });
     if (this.editor() && this.canChange(original)) {
-      this.openEditor(original, {
+      this.openEditor(original, opener, {
         title: original.event.title,
         start: original.start,
         end: original.end,
@@ -1239,10 +1280,17 @@ export class StarScheduler {
   }
 
   protected onEventKey(event: KeyboardEvent, occurrence: StarSchedulerOccurrence): void {
-    if (!event.altKey || !event.key.startsWith('Arrow')) return;
+    if (!event.key.startsWith('Arrow')) return;
     event.stopPropagation();
     event.preventDefault();
-    if (!this.canChange(occurrence)) return;
+    if (!event.altKey) {
+      this.focusNeighbour(event);
+      return;
+    }
+    if (!this.canChange(occurrence)) {
+      this.announcement.set(this.text.readOnly);
+      return;
+    }
     const key = starInlineKey(event, this.host);
     const forward = key === 'ArrowDown' || key === 'ArrowRight';
     const sign = forward ? 1 : -1;
@@ -1296,6 +1344,31 @@ export class StarScheduler {
     const start = starShiftDate(base, 0, minutes);
     const end = starShiftDate(start, 0, starWallMinutes(occurrence.start, occurrence.end));
     this.commit(occurrence, start, end, target, 'move');
+  }
+
+  /**
+   * Arrow keys on an event (without Alt): Right or Down go to the next event of the view, Left or
+   * Up to the one before. Past the first or the last event the focus goes to the event's slot.
+   * In the "+N more" list they move inside the list.
+   */
+  private focusNeighbour(event: KeyboardEvent): void {
+    const current = event.currentTarget as HTMLElement;
+    const list = current.closest('.star-scheduler__more-list');
+    const buttons = list
+      ? Array.from(list.querySelectorAll<HTMLElement>('.star-scheduler__event'))
+      : this.eventButtons();
+    const key = starInlineKey(event, this.host);
+    const step = key === 'ArrowRight' || key === 'ArrowDown' ? 1 : -1;
+    const next = buttons[buttons.indexOf(current) + step];
+    if (next) {
+      next.focus();
+      return;
+    }
+    const cell = current.closest<HTMLElement>('[data-cell]');
+    if (cell && !list) {
+      const [row, column] = (cell.dataset['cell'] ?? '0:0').split(':').map(Number);
+      this.focusCell(row, column);
+    }
   }
 
   /**
@@ -1539,6 +1612,7 @@ export class StarScheduler {
 
   private openEditor(
     occurrence: StarSchedulerOccurrence | null,
+    opener: HTMLElement | null,
     value: StarSchedulerEditorValue,
   ): void {
     const data: StarSchedulerEditorData = {
@@ -1564,6 +1638,17 @@ export class StarScheduler {
       this.injector,
     );
     void ref.closed.then((result) => {
+      // The focus goes back to the slot or event that opened the editor, or to the active cell.
+      afterNextRender(
+        () => {
+          const [row, column] = this.activeCell();
+          const target = opener?.isConnected
+            ? opener
+            : this.host.querySelector<HTMLElement>(`[data-cell="${row}:${column}"]`);
+          target?.focus();
+        },
+        { injector: this.injector },
+      );
       if (!result) return;
       if (result.action === 'delete' && occurrence) {
         this.eventDelete.emit({ event: occurrence.event, occurrence });

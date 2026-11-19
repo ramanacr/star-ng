@@ -498,6 +498,8 @@ export interface StarUiText {
   readonly deleteEvent: string;
   /** Error of the editor when the end is not after the start. */
   readonly endBeforeStart: string;
+  /** Live announcement when a read-only event or task cannot move. */
+  readonly readOnly: string;
   // Gantt
   /** Default name of the task tree grid of `star-gantt`. */
   readonly ganttTasks: string;
@@ -515,6 +517,8 @@ export interface StarUiText {
   readonly dependencySF: string;
   /** Text summary of the dependencies of a task: `label` lists the tasks and their types. */
   readonly dependsOn: (label: string) => string;
+  /** Keyboard hint of a movable Gantt task row. */
+  readonly ganttMoveHint: string;
 }
 
 export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
@@ -925,6 +929,7 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   cancel: 'Cancel',
   deleteEvent: 'Delete event',
   endBeforeStart: 'The end must be after the start.',
+  readOnly: 'Read only',
   // Gantt
   ganttTasks: 'Tasks',
   name: 'Name',
@@ -939,6 +944,8 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   dependencyFF: 'Finish to finish',
   dependencySF: 'Start to finish',
   dependsOn: (label) => `Depends on ${label}`,
+  ganttMoveHint:
+    'Alt and Left or Right move the task, Alt, Shift and Left or Right move its end, Alt and Up or Down change its progress.',
 };
 
 /** Parameter names of the function entries, in call order (used for `{{ name }}` in translations). */

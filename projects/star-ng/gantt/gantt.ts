@@ -339,7 +339,7 @@ const key = (id: StarGanttId | null | undefined) =>
         </div>
       </div>
     </div>
-    <p class="star-sr-only" [id]="hintId">{{ text.eventMoveHint }}</p>
+    <p class="star-sr-only" [id]="hintId">{{ text.ganttMoveHint }}</p>
     <p class="star-sr-only" aria-live="polite">{{ announcement() }}</p>
   `,
 })
@@ -701,7 +701,10 @@ export class StarGantt {
   // Changes
 
   private keyboardChange(row: StarGanttRow, name: string, shift: boolean): void {
-    if (!this.canChange(row)) return;
+    if (!this.canChange(row)) {
+      this.announcement.set(this.text.readOnly);
+      return;
+    }
     const scale = this.scale();
     const forward = name === 'ArrowRight' || name === 'ArrowUp';
     const sign = forward ? 1 : -1;
