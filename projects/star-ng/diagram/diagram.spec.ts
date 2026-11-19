@@ -385,6 +385,16 @@ describe('StarDiagram', () => {
     expect(host.diagram().canUndo()).toBe(false);
   });
 
+  it('keeps the exported labels centred', async () => {
+    const { host } = await setup();
+    const svg = host.diagram().exportSvg();
+    // The label keeps its centring without the CSS classes.
+    expect(svg).toMatch(
+      /<text[^>]*text-anchor="middle"[^>]*dominant-baseline="central"[^>]*>\s*Ship/,
+    );
+    expect(svg).toMatch(/<text[^>]*text-anchor="middle"[^>]*>\s*Yes/);
+  });
+
   it('renders on the server platform with plain labels', async () => {
     TestBed.configureTestingModule({ providers: [{ provide: PLATFORM_ID, useValue: 'server' }] });
     const { root, host, stable } = await setup();

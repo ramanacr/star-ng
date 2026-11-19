@@ -310,6 +310,7 @@ function emitChange<P>(
                   @if (edge.label) {
                     <text
                       class="star-diagram__edge-label"
+                      text-anchor="middle"
                       [attr.x]="edge.mid.x"
                       [attr.y]="edge.mid.y - 6"
                     >
@@ -345,6 +346,8 @@ function emitChange<P>(
                   <path class="star-diagram__shape" [attr.d]="shapeOf(node)" />
                   <text
                     class="star-diagram__label"
+                    text-anchor="middle"
+                    dominant-baseline="central"
                     [class.star-diagram__label--hidden]="!!customNode()"
                     [attr.x]="node.x + node.width / 2"
                     [attr.y]="node.y + node.height / 2"
