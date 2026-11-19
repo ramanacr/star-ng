@@ -1041,7 +1041,9 @@ export class StarTable<T> {
     const byGroup = new Map<string, T[]>();
     for (const row of this.lazy() ? this.pageRows() : this.sorted()) {
       const label = this.groupOf(row);
-      byGroup.set(label, [...(byGroup.get(label) ?? []), row]);
+      const rows = byGroup.get(label);
+      if (rows) rows.push(row);
+      else byGroup.set(label, [row]);
     }
     const columns = this.visibleColumns().filter((column) => column.summary);
     for (const [label, rows] of byGroup) {
