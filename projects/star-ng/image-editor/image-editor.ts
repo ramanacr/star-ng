@@ -1318,7 +1318,8 @@ export class StarImageEditor {
     this.naturalSize.set({ width: 0, height: 0 });
     this.history.set(starImageHistoryStart());
     this.closeTool(false);
-    if (!src) return;
+    // Nothing is loaded or drawn on the server (no canvas, and often no base address to check).
+    if (!src || !this.browser) return;
     if (!starImageIsSafeSource(src, this.doc.baseURI || this.doc.location?.href || '')) {
       if (isDevMode()) {
         // Only the scheme: the address itself may hold private data.
@@ -1330,7 +1331,7 @@ export class StarImageEditor {
       return;
     }
     const view = this.doc.defaultView;
-    if (!this.browser || !view || typeof view.Image !== 'function') return;
+    if (!view || typeof view.Image !== 'function') return;
     const image = new view.Image();
     image.onload = () => {
       if (this.src() !== src) return;
