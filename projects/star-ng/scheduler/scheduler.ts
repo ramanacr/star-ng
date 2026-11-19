@@ -21,7 +21,14 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { STAR_SLOT_HOST, STAR_UI_TEXT, starInlineKey, StarSlot, starSlot } from '@star-ng/ui/core';
+import {
+  injectStarControlDefaults,
+  STAR_SLOT_HOST,
+  STAR_UI_TEXT,
+  starInlineKey,
+  StarSlot,
+  starSlot,
+} from '@star-ng/ui/core';
 import { addDays, localeFirstDay, sameDay, startOfDay } from '@star-ng/ui/date-picker';
 import { StarDialogService } from '@star-ng/ui/dialog';
 import { StarPopover } from '@star-ng/ui/popover';
@@ -636,8 +643,9 @@ export class StarScheduler {
   readonly agendaDays = input(7, { transform: numberAttribute });
   /** Events per month cell, including the "+N more" button. */
   readonly monthEventLimit = input(3, { transform: numberAttribute });
-  /** Locale of dates and times. Default: the browser. */
-  readonly locale = input<string | undefined>(undefined);
+  private readonly defaults = injectStarControlDefaults([]);
+  /** Locale of dates and times. Default: `provideStarNg({ locale })`, else the browser. */
+  readonly locale = input<string | undefined>(this.defaults.locale ?? undefined);
   readonly hourFormat = input<'24' | '12'>('24');
   /** Opens the built-in editor dialog on a slot or event selection. */
   readonly editor = input(false, { transform: booleanAttribute });

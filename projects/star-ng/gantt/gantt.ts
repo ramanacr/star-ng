@@ -15,7 +15,12 @@ import {
   output,
   signal,
 } from '@angular/core';
-import { STAR_UI_TEXT, starInlineKey, starIsRtl } from '@star-ng/ui/core';
+import {
+  injectStarControlDefaults,
+  STAR_UI_TEXT,
+  starInlineKey,
+  starIsRtl,
+} from '@star-ng/ui/core';
 import { addDays, localeFirstDay, startOfDay } from '@star-ng/ui/date-picker';
 import {
   STAR_GANTT_DAY_WIDTH,
@@ -360,7 +365,9 @@ export class StarGantt {
   readonly weekendDays = input<readonly number[]>([0, 6]);
   /** First day of the week (0 = Sunday). Default: from the locale. */
   readonly firstDayOfWeek = input<number | null>(null);
-  readonly locale = input<string | undefined>(undefined);
+  private readonly defaults = injectStarControlDefaults([]);
+  /** Locale of dates and times. Default: `provideStarNg({ locale })`, else the browser. */
+  readonly locale = input<string | undefined>(this.defaults.locale ?? undefined);
   /** No task moves, resizes or changes progress. */
   readonly readonly = input(false, { transform: booleanAttribute });
   /** Name of the tree grid. Default: "Tasks". */

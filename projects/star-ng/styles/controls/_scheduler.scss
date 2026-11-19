@@ -465,9 +465,3 @@
   flex-direction: column;
   gap: var(--star-space-3);
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .star-scheduler__event {
-    transition: none;
-  }
-}
