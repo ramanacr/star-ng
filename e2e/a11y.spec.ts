@@ -604,6 +604,60 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'signature pad in typed mode',
+    path: 'controls/signature-pad',
+    open: async (page) => {
+      const area = example(page, 'Type the name instead (keyboard)');
+      await area.getByRole('button', { name: 'Type', exact: true }).click();
+      const field = area.getByRole('textbox', { name: 'Type your name' });
+      await expect(field).toBeFocused();
+      await field.fill('Ana Silva');
+      await expect(area.getByRole('img', { name: 'Signature drawing area, signed' })).toBeVisible();
+    },
+  },
+  {
+    name: 'multi-column combobox open with a filter',
+    path: 'controls/multi-column-combobox',
+    open: async (page) => {
+      const field = example(page, 'Products in columns').getByRole('combobox', { name: 'Product' });
+      await field.click();
+      await field.fill('lamp');
+      await expect(page.getByRole('option', { name: /Desk lamp/ })).toBeVisible();
+    },
+  },
+  {
+    name: 'mention suggestions open',
+    path: 'controls/mention',
+    open: async (page) => {
+      const field = example(page, 'Mention people').getByRole('textbox', { name: 'Comment' });
+      await field.click();
+      await field.pressSequentially('Hello @an');
+      await expect(page.getByRole('listbox', { name: 'Suggestions' })).toBeVisible();
+      await expect(page.getByRole('option', { name: 'Ana Silva' })).toBeVisible();
+    },
+  },
+  {
+    name: 'chat with messages and a typing indicator',
+    path: 'controls/chat',
+    open: async (page) => {
+      const area = example(page, 'Support chat');
+      const composer = area.getByRole('textbox', { name: 'Message' });
+      await composer.fill('Where is my parcel?');
+      await composer.press('Enter');
+      await expect(area.getByText('Order helper is typing')).toBeVisible();
+    },
+  },
+  {
+    name: 'AI prompt with a response',
+    path: 'controls/chat',
+    open: async (page) => {
+      const area = example(page, 'AI prompt');
+      await area.getByRole('button', { name: 'Summarize the order notes' }).click();
+      await area.getByRole('button', { name: 'Generate' }).click();
+      await expect(area.getByRole('button', { name: 'Retry' })).toBeVisible();
+    },
+  },
+  {
     name: 'app sidebar collapsed with a group open',
     path: 'controls/app-sidebar',
     open: async (page) => {

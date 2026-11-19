@@ -302,6 +302,68 @@ export interface StarUiText {
     max: string,
   ) => string;
   readonly meterValue: (value: string, total: number) => string;
+  // Signature pad
+  /** Default name of the `star-signature-pad` group. */
+  readonly signaturePad: string;
+  /** Name of the drawing area of `star-signature-pad` while it is empty. */
+  readonly signatureArea: string;
+  /** Name of the drawing area while it holds a signature. */
+  readonly signatureAreaSigned: string;
+  readonly signatureHint: string;
+  /** Second hint sentence when the pad also takes a typed name (`allowTyped`). */
+  readonly signatureTypedHint: string;
+  readonly clearSignature: string;
+  readonly undo: string;
+  /** Mode button: draw the signature. */
+  readonly drawSignature: string;
+  /** Mode button: type the name instead of drawing. */
+  readonly typeSignature: string;
+  readonly typeYourName: string;
+  readonly signatureCleared: string;
+  readonly strokeUndone: string;
+  // Mention
+  /** Name of the suggestion list of `starMention`. */
+  readonly mentionSuggestions: string;
+  // Chat
+  /** Default name of the message area of `star-chat`. */
+  readonly chatMessages: string;
+  /** Shown while `star-chat` has no message. */
+  readonly chatEmpty: string;
+  /** Label and placeholder of the composer field. */
+  readonly message: string;
+  readonly send: string;
+  /** Screen-reader prefix of a message: author and time. */
+  readonly messageFrom: (name: string, time: string) => string;
+  /** Live announcement of a new message from someone else. */
+  readonly newMessage: (name: string, text: string) => string;
+  readonly messageSending: string;
+  readonly messageSent: string;
+  readonly messageNotSent: string;
+  /** Typing indicator for one person. */
+  readonly isTyping: (name: string) => string;
+  /** Typing indicator for several people. `names` is a list such as "Ana and Jonas". */
+  readonly areTyping: (names: string) => string;
+  // AI prompt
+  /** Label of the prompt field of `star-ai-prompt`. */
+  readonly aiPrompt: string;
+  readonly aiPromptPlaceholder: string;
+  /** Name of the group of prompt suggestion chips. */
+  readonly promptSuggestions: string;
+  readonly generate: string;
+  /** Name of the list of responses. */
+  readonly aiResponses: string;
+  readonly aiGenerating: string;
+  readonly aiResponseReady: string;
+  readonly aiResponseFailed: string;
+  readonly copy: string;
+  readonly copied: string;
+  readonly retry: string;
+  readonly stop: string;
+  /** Live announcement when several messages from others arrive at once. */
+  readonly newMessages: (count: number) => string;
+  /** Visible hint under the prompt field of `star-ai-prompt`. */
+  readonly aiPromptShortcutHint: string;
+  readonly copyFailed: string;
 }
 
 export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
@@ -572,6 +634,45 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   chartDescription: (kind, series, items, min, max) =>
     `${kind} with ${series} series and ${items} ${items === 1 ? 'item' : 'items'}, values from ${min} to ${max}. The same data is in the table.`,
   meterValue: (value, total) => `${value} of ${total}`,
+  signaturePad: 'Signature',
+  signatureArea: 'Signature drawing area, empty',
+  signatureAreaSigned: 'Signature drawing area, signed',
+  signatureHint: 'Draw with a mouse, a pen or a finger.',
+  signatureTypedHint: 'Or choose Type to type your name.',
+  clearSignature: 'Clear signature',
+  undo: 'Undo',
+  drawSignature: 'Draw',
+  typeSignature: 'Type',
+  typeYourName: 'Type your name',
+  signatureCleared: 'Signature cleared',
+  strokeUndone: 'Last stroke removed',
+  mentionSuggestions: 'Suggestions',
+  chatMessages: 'Messages',
+  chatEmpty: 'No messages yet',
+  message: 'Message',
+  send: 'Send',
+  messageFrom: (name, time) => `${name} at ${time}:`,
+  newMessage: (name, text) => `New message from ${name}: ${text}`,
+  messageSending: 'Sending',
+  messageSent: 'Sent',
+  messageNotSent: 'Not sent',
+  isTyping: (name) => `${name} is typing`,
+  areTyping: (names) => `${names} are typing`,
+  aiPrompt: 'Prompt',
+  aiPromptPlaceholder: 'Ask or describe what you need',
+  promptSuggestions: 'Prompt suggestions',
+  generate: 'Generate',
+  aiResponses: 'Responses',
+  aiGenerating: 'Generating',
+  aiResponseReady: 'Response ready',
+  aiResponseFailed: 'The response failed.',
+  copy: 'Copy',
+  copied: 'Copied',
+  retry: 'Retry',
+  stop: 'Stop',
+  newMessages: (count) => `${count} new messages`,
+  aiPromptShortcutHint: 'Press Control+Enter to send.',
+  copyFailed: 'Copy failed',
 };
 
 /** Parameter names of the function entries, in call order (used for `{{ name }}` in translations). */
@@ -629,6 +730,11 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   previewImage: ['alt'],
   meterValue: ['value', 'total'],
   chartDescription: ['kind', 'series', 'items', 'min', 'max'],
+  messageFrom: ['name', 'time'],
+  newMessage: ['name', 'text'],
+  isTyping: ['name'],
+  areTyping: ['names'],
+  newMessages: ['count'],
 };
 
 export const STAR_UI_TEXT = new InjectionToken<StarUiText>('STAR_UI_TEXT', {

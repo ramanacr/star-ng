@@ -1,0 +1,79 @@
+// Signature pad (StarSignaturePad): a canvas on the input surface, with a dashed signing line
+// and a bar with the Draw / Type switch, the typed name field, Undo and Clear.
+
+.star-signature {
+  --star-signature-stroke: var(--star-text-strong);
+  --star-signature-height: 10rem;
+
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  inline-size: 100%;
+  max-inline-size: 32rem;
+}
+.star-signature__surface {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--star-border-strong);
+  border-radius: var(--star-input-radius);
+  background: var(--star-surface);
+
+  // The signing line. Only a guide: it is not part of the value.
+  &::after {
+    position: absolute;
+    inset-inline: 1.5rem;
+    inset-block-end: 2rem;
+    border-block-end: 1px dashed var(--star-border-strong);
+    content: '';
+    pointer-events: none;
+  }
+}
+.star-signature__canvas {
+  display: block;
+  inline-size: 100%;
+  block-size: var(--star-signature-height);
+  // Only the canvas takes the touch gestures: the page still scrolls around it.
+  touch-action: none;
+  cursor: crosshair;
+}
+.star-signature__bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+.star-signature__modes {
+  display: inline-flex;
+  gap: 0.25rem;
+
+  .star-btn {
+    gap: 0.375rem;
+  }
+  .star-btn[aria-pressed='true'] {
+    background: var(--star-primary-soft);
+    color: var(--star-text-strong);
+  }
+}
+.star-signature__typed {
+  flex: 1 1 12rem;
+  min-inline-size: 0;
+}
+.star-signature__actions {
+  display: inline-flex;
+  gap: 0.25rem;
+  margin-inline-start: auto;
+}
+.star-signature--typed .star-signature__canvas,
+.star-signature--disabled .star-signature__canvas,
+.star-signature--readonly .star-signature__canvas {
+  cursor: default;
+}
+.star-signature--disabled {
+  opacity: 0.6;
+}
+.star-signature--invalid .star-signature__surface {
+  border-color: var(--star-danger);
+}
+.star-signature__surface:has(.star-signature__canvas:hover) {
+  border-color: var(--star-text-muted);
+}

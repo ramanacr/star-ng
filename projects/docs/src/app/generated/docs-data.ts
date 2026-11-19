@@ -145,6 +145,73 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ]
   },
+  "StarAiPrompt": {
+    "kind": "component",
+    "selector": "star-ai-prompt",
+    "entry": "@star-ng/ui/chat",
+    "description": "AI prompt panel (Kendo UI `AIPrompt`; PrimeNG, Ignite UI and Syncfusion Angular have none as an Angular control): a prompt field with suggestion chips and a Generate button, and the list of responses with Copy, Retry and, while one streams, Stop.",
+    "inputs": [
+      {
+        "name": "outputs",
+        "type": "readonly StarAiPromptOutput[]",
+        "default": "[]",
+        "required": false,
+        "description": "The responses, in the order shown (put the newest first or last, as you like)."
+      },
+      {
+        "name": "suggestions",
+        "type": "readonly string[]",
+        "default": "[]",
+        "required": false,
+        "description": "Prompt ideas shown as chips. A chip fills the prompt field."
+      },
+      {
+        "name": "placeholder",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Placeholder of the prompt field. Defaults to the `aiPromptPlaceholder` text."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Accessible name of the prompt field. Defaults to the `aiPrompt` text."
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": [
+      {
+        "name": "promptRequest",
+        "type": "{ prompt: string }",
+        "default": null,
+        "required": false,
+        "description": "Emits the prompt when the user asks for a response."
+      },
+      {
+        "name": "retry",
+        "type": "StarAiPromptOutput",
+        "default": null,
+        "required": false,
+        "description": "Emits a response the user wants again."
+      },
+      {
+        "name": "stop",
+        "type": "StarAiPromptOutput",
+        "default": null,
+        "required": false,
+        "description": "Emits the streaming response the user wants to stop."
+      }
+    ]
+  },
   "StarAnimateOnScroll": {
     "kind": "directive",
     "selector": "[starAnimateOnScroll]",
@@ -1472,6 +1539,110 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarChat": {
+    "kind": "component",
+    "selector": "star-chat",
+    "entry": "@star-ng/ui/chat",
+    "description": "Chat (Kendo UI `Chat`; PrimeNG, Ignite UI and Syncfusion Angular have no chat control): a message list with a composer. Messages of the current `user` align to the end (to the left in a right-to-left page), consecutive messages of one author form a group, and a separator starts each day. The text supports a Markdown subset; raw HTML stays text and links open safely.",
+    "inputs": [
+      {
+        "name": "messages",
+        "type": "readonly StarChatMessage[]",
+        "default": "[]",
+        "required": false,
+        "description": "The messages, oldest first."
+      },
+      {
+        "name": "user",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Author id of the current user: those messages align to the end."
+      },
+      {
+        "name": "typing",
+        "type": "readonly StarChatAuthor[]",
+        "default": "[]",
+        "required": false,
+        "description": "Authors who are typing now."
+      },
+      {
+        "name": "loading",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows a loading row at the top (older messages are loading)."
+      },
+      {
+        "name": "hasMore",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "`false` when there are no older messages: scrolling to the top emits nothing."
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Disables the composer."
+      },
+      {
+        "name": "placeholder",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Placeholder of the composer. Defaults to the `message` text."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Accessible name of the message area. Defaults to the `chatMessages` text."
+      },
+      {
+        "name": "locale",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Locale of the times and day separators. Default: the browser's."
+      },
+      {
+        "name": "groupWindow",
+        "type": "number",
+        "default": "5 * 60 * 1000",
+        "required": false,
+        "description": "Longest pause in milliseconds between two messages of one author in one group."
+      }
+    ],
+    "models": [],
+    "outputs": [
+      {
+        "name": "send",
+        "type": "{ text: string }",
+        "default": null,
+        "required": false,
+        "description": "Emits the text of the composer when the user sends it."
+      },
+      {
+        "name": "loadMore",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "Emits when the user scrolled to the top: load older messages."
+      }
+    ]
+  },
+  "StarChatMessageTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starChatMessage]",
+    "entry": "@star-ng/ui/chat",
+    "description": "Content of each message bubble of `star-chat`: `<ng-template starChatMessage let-message>`.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
   "StarCheckbox": {
     "kind": "component",
     "selector": "star-checkbox",
@@ -1677,6 +1848,15 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       }
     ]
+  },
+  "StarColumnCellTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starColumnCell]",
+    "entry": "@star-ng/ui/multi-column-combobox",
+    "description": "Content of each cell of `star-multi-column-combobox`: `<ng-template starColumnCell let-row let-column=\"column\">`. Switch on `column.field` for per-column content. Do not put focusable elements in it: the focus stays in the text field.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
   },
   "StarCommandPalette": {
     "kind": "component",
@@ -4439,6 +4619,23 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarMarkdownLite": {
+    "kind": "component",
+    "selector": "star-markdown-lite",
+    "entry": "@star-ng/ui/chat",
+    "description": "Renders text in the Markdown subset of `starParseMarkdownLite` (paragraphs, line breaks, bold, italic, inline code, fenced code blocks and links). Everything is bound as text: raw HTML in the source shows as text. Links open in a new tab with `rel=\"noopener noreferrer\"`; only `http:`, `https:` and `mailto:` addresses become links. `star-chat` and `star-ai-prompt` use it.",
+    "inputs": [
+      {
+        "name": "text",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "The source text."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
   "StarMegaMenu": {
     "kind": "component",
     "selector": "star-mega-menu",
@@ -4470,6 +4667,100 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       }
     ]
+  },
+  "StarMention": {
+    "kind": "directive",
+    "selector": "textarea[starMention], input[starMention]",
+    "entry": "@star-ng/ui/mention",
+    "description": "Mentions in a text field (Syncfusion `ejs-mention`; PrimeNG has the mention pattern in its autocomplete examples, Kendo UI and Ignite UI have none): type a trigger such as `@` or `#` at the start of a word, and a list of suggestions opens at the caret. Enter, Tab or a click inserts `trigger + label + ' '` as plain text.",
+    "inputs": [
+      {
+        "name": "triggers",
+        "type": "readonly string[]",
+        "default": "['@']",
+        "required": false,
+        "description": "Characters that start a mention. Default `['@']`, for example `['@', '#']`."
+      },
+      {
+        "name": "suggestions",
+        "type": "readonly T[] | StarMentionSource<T>",
+        "default": "[]",
+        "required": false,
+        "description": "The suggestions: an array that the typed text filters (by the label, `filterMatchMode`), or a function `(query, trigger) => T[] | Promise<T[]>` that returns them (for a server search)."
+      },
+      {
+        "name": "optionLabel",
+        "type": "StarOptionKey<T> | null",
+        "default": "null",
+        "required": false,
+        "description": "Property or function that gives the text of a suggestion. Default: the suggestion itself."
+      },
+      {
+        "name": "filterMatchMode",
+        "type": "StarFilterMatchMode",
+        "default": "'contains'",
+        "required": false,
+        "description": "How the typed text filters an array of suggestions (accent and case insensitive)."
+      },
+      {
+        "name": "maxSuggestions",
+        "type": "number",
+        "default": "10",
+        "required": false,
+        "description": "Most suggestions shown at once."
+      }
+    ],
+    "models": [],
+    "outputs": [
+      {
+        "name": "mentionSearch",
+        "type": "StarMentionSearchEvent",
+        "default": null,
+        "required": false,
+        "description": "Emits when the user types after a trigger: the trigger and the text typed after it."
+      },
+      {
+        "name": "mentionSelect",
+        "type": "StarMentionSelectEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "Emits after a suggestion was inserted."
+      }
+    ]
+  },
+  "StarMentionItemTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starMentionItem]",
+    "entry": "@star-ng/ui/mention",
+    "description": "Content of each suggestion of `starMention`. Name the field with a template reference: `<textarea starMention #m=\"starMention\">` and `<ng-template [starMentionItem]=\"m\" let-item>`.",
+    "inputs": [
+      {
+        "name": "starMentionItem",
+        "type": "StarMention<T>",
+        "default": null,
+        "required": true,
+        "description": "The `starMention` field this template belongs to."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
+  "StarMentionPanel": {
+    "kind": "component",
+    "selector": "star-mention-panel",
+    "entry": "@star-ng/ui/mention",
+    "description": "The suggestion panel of `starMention`. Internal: the directive attaches it at the caret.",
+    "inputs": [
+      {
+        "name": "owner",
+        "type": "StarMention<unknown>",
+        "default": null,
+        "required": true,
+        "description": "The directive that owns the panel."
+      }
+    ],
+    "models": [],
+    "outputs": []
   },
   "StarMenu": {
     "kind": "component",
@@ -4733,6 +5024,45 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Fires before the value changes by a user action. Call `cancel()` on the event to keep the old value. Ignite UI combo `selectionChanging`."
       }
     ]
+  },
+  "StarMultiColumnCombobox": {
+    "kind": "component",
+    "selector": "star-multi-column-combobox",
+    "entry": "@star-ng/ui/multi-column-combobox",
+    "description": "Multi-column combobox (Kendo UI `MultiColumnComboBox`, Ignite UI `igx-combo` with an item template of columns): a text field over a grid-like listbox. Each option shows one cell per column under a header row. Typing filters the rows over every column (`filterFields`, accent and case insensitive with `starFilterMatch`), Enter chooses the active row.",
+    "inputs": [
+      {
+        "name": "columns",
+        "type": "readonly StarComboboxColumn<TOption>[]",
+        "default": "[]",
+        "required": false,
+        "description": "The columns: `{ field, header, width? }`."
+      },
+      {
+        "name": "filterFields",
+        "type": "readonly StarOptionKey<TOption>[] | null",
+        "default": "null",
+        "required": false,
+        "description": "Fields the typed text searches. `null` (default): `filterBy` when it is set, else every column field. Kendo UI `filterable` searches the text field only; this searches what the user sees."
+      },
+      {
+        "name": "panelMinWidth",
+        "type": "string | number",
+        "default": "'20rem'",
+        "required": false,
+        "description": "Minimum width of the panel (CSS length or pixels). The panel is at least as wide as the field."
+      }
+    ],
+    "models": [
+      {
+        "name": "value",
+        "type": "TValue | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "outputs": []
   },
   "StarMultiDatePicker": {
     "kind": "component",
@@ -6255,6 +6585,123 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "models": [],
     "outputs": []
+  },
+  "StarSignaturePad": {
+    "kind": "component",
+    "selector": "star-signature-pad",
+    "entry": "@star-ng/ui/signature-pad",
+    "description": "Signature pad (Kendo UI `SignaturePad`; PrimeNG, Ignite UI and Syncfusion Angular have none in their Angular suites, Syncfusion has `ejs-signature`): a canvas that records strokes drawn with a mouse, a pen (with its pressure) or a finger, smoothed with quadratic curves.",
+    "inputs": [
+      {
+        "name": "valueFormat",
+        "type": "StarSignatureFormat",
+        "default": "'png'",
+        "required": false,
+        "description": "Format of the value. `svg` is built from the stroke points and scales without loss."
+      },
+      {
+        "name": "strokeColor",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Color of the strokes on screen. Defaults to the `--star-signature-stroke` token (the strong text color), so it follows the theme. The value uses `exportColor`."
+      },
+      {
+        "name": "strokeWidth",
+        "type": "number",
+        "default": "2",
+        "required": false,
+        "description": "Width of a stroke in CSS pixels. A pen with pressure draws from half to one and a half times it."
+      },
+      {
+        "name": "backgroundColor",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Fill of the drawing area on screen. `null` (default): transparent, the page surface shows through. The value uses `exportBackground`."
+      },
+      {
+        "name": "exportColor",
+        "type": "string",
+        "default": "'#000000'",
+        "required": false,
+        "description": "Ink of the stored value (PNG or SVG). A stored signature is a document, not UI: it does not follow the theme. Default black."
+      },
+      {
+        "name": "exportBackground",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Fill of the stored value. `null` (default): transparent pixels."
+      },
+      {
+        "name": "allowTyped",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows a Draw / Type switch: the user may type the name instead of drawing (keyboard access)."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Accessible name of the group. Defaults to the `signaturePad` text or the `star-field` label."
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "readonly",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "required",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "invalid",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "touched",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [
+      {
+        "name": "value",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "The signature as a data URL (PNG or SVG), `''` while the pad is empty. Only `data:image/` values are drawn; another value stays in the form but the pad shows it as empty."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "touch",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "Emits when the user finished a stroke or left the typed name field."
+      }
+    ]
   },
   "StarSkeleton": {
     "kind": "component",
@@ -9170,6 +9617,8 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "chart/stacked-bar": "<star-chart\n  type=\"stacked-bar\"\n  title=\"Orders per month by channel\"\n  [labels]=\"months\"\n  [series]=\"channelOrders\"\n  categoryLabel=\"Month\"\n/>",
   "chart/stacked-bar-percent": "<star-chart\n  type=\"stacked-bar\"\n  title=\"Share of orders by channel\"\n  [labels]=\"months\"\n  [series]=\"channelOrders\"\n  categoryLabel=\"Month\"\n  percent\n/>",
   "chart/table": "<star-chart\n  type=\"bar\"\n  title=\"Revenue by region, table\"\n  [labels]=\"regions\"\n  [series]=\"revenue\"\n  categoryLabel=\"Region\"\n  table\n/>",
+  "chat/ai-prompt": "<star-ai-prompt\n  [outputs]=\"outputs()\"\n  [suggestions]=\"suggestions\"\n  (promptRequest)=\"ask($event.prompt)\"\n  (retry)=\"ask($event.prompt)\"\n  (stop)=\"stopStream($event.id)\"\n/>",
+  "chat/basic": "<star-chat\n  [messages]=\"messages()\"\n  user=\"me\"\n  [typing]=\"typing()\"\n  [loading]=\"loadingOlder()\"\n  [hasMore]=\"hasMore()\"\n  locale=\"en-US\"\n  ariaLabel=\"Support conversation\"\n  (send)=\"post($event.text)\"\n  (loadMore)=\"loadOlder()\"\n/>",
   "checkbox/basic": "<star-checkbox [(checked)]=\"subscribed\">Send me product news</star-checkbox>\n<p class=\"docs-output\" role=\"status\">Subscribed: {{ subscribed() }}</p>",
   "checkbox/form": "<star-checkbox [formField]=\"terms.accept\">I accept the terms</star-checkbox>\n<p class=\"docs-output\" role=\"status\">Valid: {{ terms().valid() }}</p>",
   "checkbox/indeterminate": "<star-checkbox [(checked)]=\"all\" [(indeterminate)]=\"some\">All regions</star-checkbox>",
@@ -9304,6 +9753,9 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "listbox/virtual": "<div class=\"docs-stack\">\n  <star-listbox\n    [options]=\"invoiceNumbers\"\n    [(value)]=\"invoice\"\n    virtualScroll\n    filter\n    scrollHeight=\"16rem\"\n    ariaLabel=\"Invoice number\"\n  />\n  <p class=\"docs-output\" role=\"status\">Invoice: {{ invoice() ?? 'none' }}</p>\n</div>",
   "listbox/virtual-groups": "<div class=\"docs-stack\">\n  <star-listbox\n    [options]=\"shipments\"\n    optionLabel=\"name\"\n    optionValue=\"id\"\n    optionGroup=\"region\"\n    optionDisabled=\"held\"\n    [(value)]=\"picked\"\n    multiple\n    virtualScroll\n    [virtualItemSize]=\"36\"\n    scrollHeight=\"16rem\"\n    ariaLabel=\"Shipments\"\n  >\n    <ng-template starOption [starOptionOf]=\"shipments\" let-item let-selected=\"selected\">\n      {{ item.name }}\n    </ng-template>\n  </star-listbox>\n  <p class=\"docs-output\" role=\"status\">Picked: {{ pickedCount() }}</p>\n</div>",
   "mega-menu/basic": "<div class=\"docs-stack\">\n  <star-mega-menu\n    ariaLabel=\"Catalogue\"\n    [items]=\"catalogue\"\n    (itemClick)=\"last.set($event.label ?? '')\"\n  />\n  <p class=\"docs-output\" role=\"status\">Last action: {{ last() }}</p>\n</div>",
+  "mention/basic": "<div class=\"docs-stack\">\n  <textarea\n    class=\"star-input\"\n    aria-label=\"Comment\"\n    placeholder=\"Write a comment, type @ to mention someone\"\n    starMention\n    #comment=\"starMention\"\n    [suggestions]=\"people\"\n    optionLabel=\"name\"\n    (mentionSelect)=\"last.set($any($event.item).name)\"\n  ></textarea>\n  <p class=\"docs-output\" role=\"status\">\n    Last mention: {{ last() }}. In the text: {{ names(comment.mentions()) }}\n  </p>\n</div>",
+  "mention/form": "<div class=\"docs-stack\">\n  <star-field label=\"Assign to\" hint=\"Type @ and a name\">\n    <input\n      starInput\n      [formField]=\"f.assignee\"\n      starMention\n      [suggestions]=\"people\"\n      optionLabel=\"name\"\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Model: {{ model().assignee || '(empty)' }}</p>\n</div>",
+  "mention/triggers": "<div class=\"docs-stack\">\n  <textarea\n    class=\"star-input\"\n    aria-label=\"Message\"\n    placeholder=\"Type @ for people or # for topics\"\n    starMention\n    #message=\"starMention\"\n    [triggers]=\"['@', '#']\"\n    [suggestions]=\"search\"\n    [optionLabel]=\"label\"\n    (mentionSearch)=\"query.set($event)\"\n  ></textarea>\n  <ng-template [starMentionItem]=\"message\" let-item>\n    @if ($any(item).tag) {\n      <span>#{{ $any(item).tag }}</span>\n    } @else {\n      <span class=\"person\">\n        <span>{{ $any(item).name }}</span>\n        <small>{{ $any(item).team }}</small>\n      </span>\n    }\n  </ng-template>\n  <p class=\"docs-output\" role=\"status\">\n    Search: {{ query() ? query()!.trigger + query()!.query : 'none' }}\n  </p>\n</div>",
   "menu/icon-trigger": "<button\n  type=\"button\"\n  class=\"star-btn star-btn--secondary star-btn--icon\"\n  aria-label=\"Row actions\"\n  [starMenuTrigger]=\"rowMenu\"\n>\n  <i class=\"ph-bold ph-dots-three-vertical\" aria-hidden=\"true\"></i>\n</button>\n<star-menu #rowMenu [items]=\"fileItems\" />",
   "menu/icons": "<star-button variant=\"secondary\" [starMenuTrigger]=\"editMenu\">Edit</star-button>\n<star-menu #editMenu [items]=\"editItems\" />",
   "menu/inline": "<star-menu inline ariaLabel=\"Inline menu\" [items]=\"viewItems\" />",
@@ -9317,6 +9769,10 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "message/severities": "<div class=\"docs-stack\">\n  <star-message>Your changes are saved as a draft.</star-message>\n  <star-message severity=\"success\">The invoice was sent.</star-message>\n  <star-message severity=\"warn\">The card expires next month.</star-message>\n  <star-message severity=\"error\">The payment was declined.</star-message>\n</div>",
   "meter-group/basic": "<div class=\"docs-stack\">\n  <star-meter-group [items]=\"storage\" [max]=\"100\" unit=\"GB\" ariaLabel=\"Storage used\" />\n</div>",
   "meter-group/sum": "<div class=\"docs-stack\">\n  <star-meter-group [items]=\"regions\" ariaLabel=\"Orders by region\" />\n</div>",
+  "multi-column-combobox/basic": "<div class=\"docs-stack\">\n  <star-multi-column-combobox\n    [options]=\"products\"\n    [columns]=\"columns\"\n    optionLabel=\"name\"\n    optionValue=\"sku\"\n    [(value)]=\"sku\"\n    placeholder=\"Find a product\"\n    ariaLabel=\"Product\"\n    showClear\n  />\n  <p class=\"docs-output\" role=\"status\">Value: {{ sku() ?? 'none' }}</p>\n</div>",
+  "multi-column-combobox/form": "<div class=\"docs-stack\">\n  <star-field label=\"Product\" [state]=\"f.product()\">\n    <star-multi-column-combobox\n      [formField]=\"f.product\"\n      [options]=\"products\"\n      [columns]=\"columns\"\n      optionLabel=\"name\"\n      optionValue=\"sku\"\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ f.product().valid() ? 'yes' : 'no' }}</p>\n</div>",
+  "multi-column-combobox/templates": "<star-multi-column-combobox\n  [options]=\"products\"\n  [columns]=\"columns\"\n  optionLabel=\"name\"\n  optionValue=\"sku\"\n  [filterFields]=\"['name']\"\n  filterMatchMode=\"startsWith\"\n  ariaLabel=\"Product by name\"\n  placeholder=\"Name starts with…\"\n>\n  <ng-template starColumnCell let-row let-column=\"column\">\n    @if ($any(column).field === 'stock') {\n      <span [class.stock-out]=\"$any(row).stock === 0\">\n        {{ $any(row).stock === 0 ? 'Out of stock' : $any(row).stock + ' left' }}\n      </span>\n    } @else {\n      {{ $any(row)[$any(column).field] }}\n    }\n  </ng-template>\n  <ng-template starEmpty let-query>No product name starts with “{{ query }}”.</ng-template>\n  <ng-template starFooter>\n    <div class=\"footer\">{{ products.length }} products</div>\n  </ng-template>\n</star-multi-column-combobox>",
+  "multi-column-combobox/virtual": "<star-multi-column-combobox\n  [options]=\"parts\"\n  [columns]=\"partColumns\"\n  optionLabel=\"code\"\n  optionValue=\"id\"\n  virtualScroll\n  [virtualItemSize]=\"40\"\n  ariaLabel=\"Part\"\n  placeholder=\"Part code or description\"\n/>",
   "multi-select/basic": "<div class=\"docs-stack\">\n  <star-multi-select\n    [options]=\"departments\"\n    optionLabel=\"name\"\n    optionValue=\"id\"\n    [(value)]=\"chosen\"\n    placeholder=\"Select departments\"\n    ariaLabel=\"Departments\"\n  />\n  <p class=\"docs-output\" role=\"status\">Chosen: {{ chosen().join(', ') || 'none' }}</p>\n</div>",
   "multi-select/chips": "<star-multi-select\n  [options]=\"departments\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  [(value)]=\"chips\"\n  display=\"chip\"\n  placeholder=\"Select departments\"\n  ariaLabel=\"Departments as chips\"\n  filter\n  showClear\n/>",
   "multi-select/custom-values": "<div class=\"docs-stack\">\n  <star-multi-select\n    [options]=\"labels()\"\n    [(value)]=\"pickedLabels\"\n    filter\n    allowCustomValues\n    display=\"chip\"\n    placeholder=\"Labels\"\n    ariaLabel=\"Order labels\"\n    (customValueAdd)=\"addLabel($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">Labels: {{ pickedLabels().join(', ') || 'none' }}</p>\n</div>",
@@ -9385,6 +9841,10 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "select/states": "<div class=\"docs-stack\">\n  <star-select [options]=\"regions\" size=\"sm\" placeholder=\"Small\" ariaLabel=\"Small select\" />\n  <star-select [options]=\"regions\" disabled placeholder=\"Disabled\" ariaLabel=\"Disabled\" />\n  <star-select [options]=\"regions\" [value]=\"'EMEA'\" readonly ariaLabel=\"Read-only\" />\n  <star-select [options]=\"[]\" loading placeholder=\"Loading options\" ariaLabel=\"Loading\" />\n</div>",
   "select/template": "<star-select\n  [options]=\"countries\"\n  optionLabel=\"name\"\n  optionValue=\"code\"\n  [(value)]=\"templated\"\n  placeholder=\"Select a country\"\n  ariaLabel=\"Country with template\"\n>\n  <ng-template starOption [starOptionOf]=\"countries\" let-item>\n    <span>\n      {{ item.name }}\n      <small>{{ item.region }}</small>\n    </span>\n  </ng-template>\n</star-select>",
   "select/virtual": "<star-select\n  [options]=\"orders\"\n  [(value)]=\"order\"\n  placeholder=\"5,000 orders\"\n  ariaLabel=\"Order\"\n  virtualScroll\n  filter\n/>",
+  "signature-pad/basic": "<div class=\"docs-stack\">\n  <star-signature-pad [(value)]=\"signature\" ariaLabel=\"Customer signature\" />\n  @if (signature()) {\n    <img class=\"preview\" [src]=\"signature()\" alt=\"Preview of the signature\" />\n  }\n  <p class=\"docs-output\" role=\"status\">Value: {{ summary() }}</p>\n</div>",
+  "signature-pad/disabled": "<star-signature-pad disabled ariaLabel=\"Signature (locked)\" />",
+  "signature-pad/form": "<div class=\"docs-stack\">\n  <star-field label=\"Signature\" [state]=\"f.signature()\">\n    <star-signature-pad [formField]=\"f.signature\" allowTyped exportBackground=\"#ffffff\" />\n  </star-field>\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"model.set({ signature: '' })\">\n      Reset\n    </star-button>\n  </div>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ f.signature().valid() ? 'yes' : 'no' }}</p>\n</div>",
+  "signature-pad/typed": "<star-signature-pad\n  [(value)]=\"typedSignature\"\n  allowTyped\n  valueFormat=\"svg\"\n  [strokeWidth]=\"2.5\"\n  ariaLabel=\"Approver signature\"\n/>\n<p class=\"docs-output\" role=\"status\">\n  Format: {{ typedSignature() ? typedSignature().slice(0, 26) + '…' : '(empty)' }}\n</p>",
   "skeleton/basic": "<div class=\"docs-row\">\n  <star-skeleton shape=\"circle\" size=\"3rem\" />\n  <div class=\"docs-stack\">\n    <star-skeleton width=\"60%\" height=\"1rem\" />\n    <star-skeleton width=\"90%\" height=\"0.75rem\" />\n    <star-skeleton width=\"40%\" height=\"0.75rem\" animation=\"none\" />\n  </div>\n</div>",
   "skeleton/loading": "<div class=\"docs-stack\">\n  @if (loading()) {\n    <star-skeleton height=\"1.25rem\" width=\"50%\" />\n    <star-skeleton height=\"0.75rem\" />\n  } @else {\n    <strong>Orchard Supply</strong>\n    <span>12 items, ships on Friday.</span>\n  }\n  <div class=\"docs-row\">\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"loading.set(!loading())\">\n      {{ loading() ? 'Show content' : 'Show skeleton' }}\n    </star-button>\n  </div>\n</div>",
   "slider/basic": "<div class=\"docs-stack\">\n  <star-slider [(value)]=\"volume\" showValue ariaLabel=\"Volume\" />\n  <p class=\"docs-output\" role=\"status\">Volume: {{ volume() }}</p>\n</div>",
