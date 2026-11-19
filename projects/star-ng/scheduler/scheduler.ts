@@ -680,6 +680,8 @@ export class StarScheduler {
   readonly dragging = signal(false);
   private readonly now = signal<Date | null>(null);
   private drag: DragState | null = null;
+  /** Drops the drag in progress; `null` without a drag. */
+  private endDrag: (() => void) | null = null;
   private suppressClick = false;
   private pendingFocus: { id: StarSchedulerId; start: number; tries: number } | null = null;
   private scrollPending = true;
@@ -882,6 +884,7 @@ export class StarScheduler {
       const timer = view.setInterval(() => this.now.set(new Date()), 60_000);
       this.destroyRef.onDestroy(() => view.clearInterval(timer));
     });
+    this.destroyRef.onDestroy(() => this.endDrag?.());
     afterEveryRender(() => {
       this.restoreFocus();
       this.scrollToWorkDay();
@@ -1411,23 +1414,39 @@ export class StarScheduler {
     this.dragging.set(true);
     const doc = this.host.ownerDocument;
     const move = (e: PointerEvent) => this.onPointerMove(e);
-    const up = (e: PointerEvent) => {
+    const teardown = () => {
       doc.removeEventListener('pointermove', move);
       doc.removeEventListener('pointerup', up);
       doc.removeEventListener('pointercancel', cancel);
+      doc.removeEventListener('keydown', escape, true);
+      this.endDrag = null;
+    };
+    const up = (e: PointerEvent) => {
+      teardown();
       this.onPointerUp(e);
     };
+    // pointercancel, Escape and destroy drop the drag without a change.
     const cancel = () => {
-      doc.removeEventListener('pointermove', move);
-      doc.removeEventListener('pointerup', up);
-      doc.removeEventListener('pointercancel', cancel);
+      teardown();
+      if (this.drag?.moved) {
+        this.suppressClick = true;
+        setTimeout(() => (this.suppressClick = false));
+      }
       this.drag = null;
       this.dragging.set(false);
       this.preview.set(null);
     };
+    const escape = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      e.preventDefault();
+      e.stopPropagation();
+      cancel();
+    };
+    this.endDrag = cancel;
     doc.addEventListener('pointermove', move);
     doc.addEventListener('pointerup', up);
     doc.addEventListener('pointercancel', cancel);
+    doc.addEventListener('keydown', escape, true);
   }
 
   /**

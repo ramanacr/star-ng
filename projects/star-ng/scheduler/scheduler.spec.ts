@@ -486,6 +486,35 @@ describe('StarScheduler', () => {
       });
     });
 
+    it('drops the drag on Escape, without a change', async () => {
+      const { host, event, cell, stable } = await setup();
+      under = cell(20, 1);
+      pointer(event('Team meeting'), 'pointerdown');
+      under = cell(24, 1);
+      pointer(document, 'pointermove');
+      await stable();
+      expect(event('Team meeting').closest('[data-cell]')?.getAttribute('data-cell')).toBe('24:1');
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      await stable();
+      expect(event('Team meeting').closest('[data-cell]')?.getAttribute('data-cell')).toBe('20:1');
+      pointer(document, 'pointerup');
+      expect(host.changes).toHaveLength(0);
+    });
+
+    it('removes the drag listeners when the scheduler is destroyed', async () => {
+      const { host, event, cell, fixture } = await setup();
+      const removed = vi.spyOn(document, 'removeEventListener');
+      under = cell(20, 1);
+      pointer(event('Team meeting'), 'pointerdown');
+      fixture.destroy();
+      expect(removed.mock.calls.map((c) => c[0])).toEqual(
+        expect.arrayContaining(['pointermove', 'pointerup', 'pointercancel', 'keydown']),
+      );
+      pointer(document, 'pointerup');
+      expect(host.changes).toHaveLength(0);
+      removed.mockRestore();
+    });
+
     it('does nothing when the pointer stays in the same cell', async () => {
       const { host, event, cell } = await setup();
       under = cell(20, 1);

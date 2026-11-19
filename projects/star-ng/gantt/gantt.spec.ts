@@ -331,6 +331,36 @@ describe('StarGantt', () => {
       expect(host.changes[0]).toMatchObject({ kind: 'progress', progress: 90 });
     });
 
+    it('drops the drag on Escape, without a change', async () => {
+      const { host, bar, stable } = await setup();
+      pointer(bar('design').querySelector('.star-gantt__bar-track')!, 'pointerdown', 100);
+      pointer(document, 'pointermove', 164);
+      await stable();
+      expect(bar('design').querySelector('.star-gantt__bar-track')?.getAttribute('x')).toBe(
+        String(12 * 16),
+      );
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      await stable();
+      expect(bar('design').querySelector('.star-gantt__bar-track')?.getAttribute('x')).toBe(
+        String(8 * 16),
+      );
+      pointer(document, 'pointerup', 164);
+      expect(host.changes).toHaveLength(0);
+    });
+
+    it('removes the drag listeners when the Gantt is destroyed', async () => {
+      const { host, bar, fixture } = await setup();
+      const removed = vi.spyOn(document, 'removeEventListener');
+      pointer(bar('design').querySelector('.star-gantt__bar-track')!, 'pointerdown', 100);
+      fixture.destroy();
+      expect(removed.mock.calls.map((c) => c[0])).toEqual(
+        expect.arrayContaining(['pointermove', 'pointerup', 'pointercancel', 'keydown']),
+      );
+      pointer(document, 'pointerup', 200);
+      expect(host.changes).toHaveLength(0);
+      removed.mockRestore();
+    });
+
     it('mirrors the drag in right-to-left', async () => {
       const { host, bar } = await setup((h) => h.dir.set('rtl'));
       pointer(bar('design').querySelector('.star-gantt__bar-track')!, 'pointerdown', 300);

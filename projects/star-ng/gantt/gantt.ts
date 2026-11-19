@@ -385,6 +385,8 @@ export class StarGantt {
   private readonly viewport = signal(600);
   private readonly today = signal<Date | null>(null);
   private drag: DragState | null = null;
+  /** Drops the drag in progress; `null` without a drag. */
+  private endDrag: (() => void) | null = null;
   private pendingFocus: string | null = null;
 
   private readonly firstDay = computed(
@@ -515,6 +517,7 @@ export class StarGantt {
       }
     });
     afterEveryRender(() => this.restoreFocus());
+    this.destroyRef.onDestroy(() => this.endDrag?.());
   }
 
   private scroller(): HTMLElement | null {
@@ -779,6 +782,8 @@ export class StarGantt {
       doc.removeEventListener('pointermove', move);
       doc.removeEventListener('pointerup', up);
       doc.removeEventListener('pointercancel', cancel);
+      doc.removeEventListener('keydown', escape, true);
+      this.endDrag = null;
       const drag = this.drag;
       const preview = this.preview();
       this.drag = null;
@@ -801,10 +806,19 @@ export class StarGantt {
       );
     };
     const up = (e: PointerEvent) => stop(e);
+    // pointercancel, Escape and destroy drop the drag without a change.
     const cancel = () => stop(null);
+    const escape = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      e.preventDefault();
+      e.stopPropagation();
+      cancel();
+    };
+    this.endDrag = cancel;
     doc.addEventListener('pointermove', move);
     doc.addEventListener('pointerup', up);
     doc.addEventListener('pointercancel', cancel);
+    doc.addEventListener('keydown', escape, true);
   }
 
   private onPointerMove(event: PointerEvent): void {
