@@ -59,6 +59,11 @@
   font: var(--star-type-body-sm);
   color: var(--star-text-muted);
 }
+// At the limit: a quiet hint on the count. Over the limit: the warning state of the column.
+.star-kanban__column--full .star-kanban__count {
+  background: var(--star-warning-soft);
+  color: var(--star-text-strong);
+}
 .star-kanban__column--over .star-kanban__count {
   font-weight: 600;
   color: var(--star-text-strong);

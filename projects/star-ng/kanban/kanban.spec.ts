@@ -347,6 +347,27 @@ describe('StarKanban', () => {
     expect(host.tasks().find((t) => t.id === 1)?.lane).toBe('b');
   });
 
+  it('keeps cells with similar keys apart and gives the lists index-based ids', async () => {
+    const { root, columns, titles } = await setup((h) => {
+      h.columns.set([
+        { key: 'a-b', title: 'AB' },
+        { key: 'a', title: 'A' },
+      ]);
+      h.lanes.set([
+        { key: 'c', title: 'C' },
+        { key: 'b-c', title: 'BC' },
+      ]);
+      h.tasks.set([
+        { id: 1, title: 'In a-b / c', status: 'a-b', rank: 0, lane: 'c' },
+        { id: 2, title: 'In a / b-c', status: 'a', rank: 0, lane: 'b-c' },
+      ]);
+    });
+    expect(columns().map(titles)).toEqual([['In a-b / c'], [], [], ['In a / b-c']]);
+    const ids = [...root.querySelectorAll('.star-kanban__list')].map((list) => list.id);
+    expect(new Set(ids).size).toBe(4);
+    expect(ids.every((id) => /-c\d+-l\d+$/.test(id))).toBe(true);
+  });
+
   it('collapsible columns hide their cards and keep a count', async () => {
     const { host, root, columns, card, stable } = await setup();
     const button = columns()[2].querySelector<HTMLButtonElement>('.star-kanban__collapse')!;

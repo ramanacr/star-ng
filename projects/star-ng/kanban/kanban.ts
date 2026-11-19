@@ -317,7 +317,7 @@ export class StarKanban<T = unknown> {
     };
     const map = new Map<string, T[]>();
     for (const item of this.items()) {
-      const id = this.cellId(String(starKanbanRead(item, this.columnKey()) ?? ''), laneOf(item));
+      const id = this.cellKey(String(starKanbanRead(item, this.columnKey()) ?? ''), laneOf(item));
       let list = map.get(id);
       if (!list) map.set(id, (list = []));
       list.push(item);
@@ -332,7 +332,7 @@ export class StarKanban<T = unknown> {
     const result = new Map<string, readonly T[]>();
     for (const lane of lanes.length ? lanes : [null]) {
       for (const column of columns) {
-        const id = this.cellId(column.key, lane?.key ?? null);
+        const id = this.cellKey(column.key, lane?.key ?? null);
         result.set(id, map.get(id) ?? []);
       }
     }
@@ -345,11 +345,12 @@ export class StarKanban<T = unknown> {
     const grab = this.grab();
     const lanes = this.lanes();
     const held = grab ? this.findItem(grab.key) : undefined;
-    return (lanes.length ? lanes : [null]).map((lane) => ({
+    return (lanes.length ? lanes : [null]).map((lane, laneIndex) => ({
       lane,
-      cells: this.columns().map((column): Cell<T> => {
-        const id = this.cellId(column.key, lane?.key ?? null);
-        let items = base.get(id) ?? [];
+      cells: this.columns().map((column, columnIndex): Cell<T> => {
+        // The DOM id comes from the positions, so any key text is safe in it.
+        const id = `${this.idPrefix}-c${columnIndex}-l${laneIndex}`;
+        let items = base.get(this.cellKey(column.key, lane?.key ?? null)) ?? [];
         if (grab && held !== undefined) {
           items = items.filter((item) => !Object.is(this.keyOf(item), grab.key));
           if (grab.column === column.key && grab.lane === (lane?.key ?? null)) {
@@ -371,9 +372,29 @@ export class StarKanban<T = unknown> {
     return counts;
   });
 
-  private cellId(column: string, lane: string | null): string {
-    return `${this.idPrefix}-${column}-${lane ?? ''}`;
+  /** Map key of a cell; JSON keeps keys like "a-b" and "a" + "b" apart. */
+  private cellKey(column: string, lane: string | null): string {
+    return JSON.stringify([column, lane]);
   }
+
+  /** Items by key, so a lookup does not scan `items`. */
+  private readonly byKey = computed(() => {
+    const map = new Map<unknown, T>();
+    for (const item of this.items()) map.set(this.keyOf(item), item);
+    return map;
+  });
+  private readonly collapsedKeys = computed(() => new Set(this.collapsed()));
+  /** Key of the card in the Tab order: the last focused card, else the first visible card. */
+  private readonly tabStopKey = computed(() => {
+    const key = this.activeKey();
+    if (key !== undefined && this.byKey().has(key)) return key;
+    for (const row of this.rows()) {
+      for (const cell of row.cells) {
+        if (cell.items.length && !this.isCollapsed(cell.column)) return this.keyOf(cell.items[0]);
+      }
+    }
+    return undefined;
+  });
 
   /** @internal */
   keyOf(item: T): unknown {
@@ -387,7 +408,7 @@ export class StarKanban<T = unknown> {
     return accessor ? String(starKanbanRead(item, accessor) ?? '') : this.keyText(item);
   }
   private findItem(key: unknown): T | undefined {
-    return this.items().find((item) => Object.is(this.keyOf(item), key));
+    return this.byKey().get(key);
   }
 
   protected countOf(key: string): number {
@@ -400,7 +421,7 @@ export class StarKanban<T = unknown> {
     return column.limit !== undefined && this.countOf(column.key) >= column.limit;
   }
   protected isCollapsed(column: StarKanbanColumn): boolean {
-    return this.collapsible() && this.collapsed().includes(column.key);
+    return this.collapsible() && this.collapsedKeys().has(column.key);
   }
   protected cellLabel(cell: Cell<T>): string {
     const title = cell.lane ? `${cell.column.title}, ${cell.lane.title}` : cell.column.title;
@@ -412,13 +433,8 @@ export class StarKanban<T = unknown> {
 
   /** The first card is the Tab stop until another card had the focus. */
   protected isActive(item: T): boolean {
-    const key = this.activeKey();
-    const known = key !== undefined && this.findItem(key) !== undefined;
-    if (known) return Object.is(this.keyOf(item), key);
-    const first = this.rows()
-      .flatMap((row) => row.cells)
-      .find((cell) => cell.items.length && !this.isCollapsed(cell.column));
-    return !!first && Object.is(this.keyOf(first.items[0]), this.keyOf(item));
+    const key = this.tabStopKey();
+    return key !== undefined && Object.is(this.keyOf(item), key);
   }
   protected isGrabbed(item: T): boolean {
     const grab = this.grab();
@@ -467,7 +483,7 @@ export class StarKanban<T = unknown> {
   ): boolean {
     // Size of the target cell after the move, read before the owner changes `items`.
     const sameCell = from.column.key === to.column.key && from.lane?.key === to.lane?.key;
-    const before = this.baseCells().get(this.cellId(to.column.key, to.lane?.key ?? null))?.length;
+    const before = this.baseCells().get(this.cellKey(to.column.key, to.lane?.key ?? null))?.length;
     const total = (before ?? 0) + (sameCell ? 0 : 1);
     let canceled = false;
     const move: StarKanbanMove<T> = {
@@ -649,7 +665,7 @@ export class StarKanban<T = unknown> {
       grab.lane === grab.fromLane &&
       grab.index === grab.fromIndex
     ) {
-      const total = this.baseCells().get(this.cellId(column.key, grab.lane))?.length ?? 1;
+      const total = this.baseCells().get(this.cellKey(column.key, grab.lane))?.length ?? 1;
       this.announcement.set(
         this.text.kanbanDropped(this.labelOf(item), column.title, grab.index + 1, total),
       );
