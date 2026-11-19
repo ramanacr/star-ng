@@ -9,6 +9,7 @@ import {
   contentChild,
   DestroyRef,
   Directive,
+  effect,
   ElementRef,
   inject,
   Injector,
@@ -20,6 +21,7 @@ import {
   PLATFORM_ID,
   signal,
   TemplateRef,
+  untracked,
   viewChild,
 } from '@angular/core';
 import { starChartPng, starChartSvgDocument } from '@star-ng/ui/chart';
@@ -464,6 +466,12 @@ export class StarDiagram {
   readonly readonly = input(false, { transform: booleanAttribute });
   /** Fits the content into the canvas after the first render (browser only). */
   readonly fitContent = input(false, { transform: booleanAttribute });
+  /**
+   * Identity of the document that `nodes` and `edges` show, for example its id. When it changes,
+   * the undo history is cleared, so that no patch of the old document applies to the new one.
+   * Without it, call `clearHistory()` after you load another document.
+   */
+  readonly documentKey = input<unknown>(undefined);
   /** Height of the canvas (a CSS length). */
   readonly height = input('24rem');
   readonly ariaLabel = input<string | null>(null);
@@ -622,6 +630,15 @@ export class StarDiagram {
   });
 
   constructor() {
+    // Another document: the recorded patches belong to the old one.
+    let lastKey: unknown = undefined;
+    let first = true;
+    effect(() => {
+      const key = this.documentKey();
+      if (!first && key !== lastKey) untracked(() => this.clearHistory());
+      first = false;
+      lastKey = key;
+    });
     if (!this.browser) return;
     const destroyRef = inject(DestroyRef);
     afterNextRender(() => {
@@ -725,6 +742,16 @@ export class StarDiagram {
       this.historyVersion.update((v) => v + 1);
     }
     return true;
+  }
+
+  /**
+   * Forgets every recorded change: `undo()` and `redo()` have nothing to do afterwards. Call it
+   * when you replace `nodes` and `edges` with another document (or set `documentKey`), or after
+   * you change them outside the diagram in a way that the recorded patches do not know.
+   */
+  clearHistory(): void {
+    this.history.clear();
+    this.historyVersion.update((v) => v + 1);
   }
 
   /** Emits the inverse of the last recorded change. */

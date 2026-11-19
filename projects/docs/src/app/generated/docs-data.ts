@@ -4172,6 +4172,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Fits the content into the canvas after the first render (browser only)."
       },
       {
+        "name": "documentKey",
+        "type": "unknown",
+        "default": "undefined",
+        "required": false,
+        "description": "Identity of the document that `nodes` and `edges` show, for example its id. When it changes, the undo history is cleared, so that no patch of the old document applies to the new one. Without it, call `clearHistory()` after you load another document."
+      },
+      {
         "name": "height",
         "type": "string",
         "default": "'24rem'",

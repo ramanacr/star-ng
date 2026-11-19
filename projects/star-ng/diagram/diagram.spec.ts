@@ -33,6 +33,7 @@ const EDGES: StarDiagramEdge[] = [
       [(selection)]="selection"
       [(zoom)]="zoom"
       [gridSize]="20"
+      [documentKey]="documentKey()"
       ariaLabel="Order workflow"
       (nodesChange)="onNodes($event)"
       (edgesChange)="onEdges($event)"
@@ -51,6 +52,7 @@ class DiagramHost {
   readonly edges = signal<readonly StarDiagramEdge[]>(EDGES);
   readonly selection = signal<readonly string[]>([]);
   readonly zoom = signal(1);
+  readonly documentKey = signal<string | null>('orders');
   readonly custom = signal(false);
   readonly cancelNodes = signal(false);
   readonly cancelEdges = signal(false);
@@ -363,6 +365,24 @@ describe('StarDiagram', () => {
     expect(svg).toContain('viewBox="0 0 532 232"');
     expect(svg).toContain('<title>Order workflow</title>');
     expect(svg).not.toContain('data-export');
+  });
+
+  it('clears the history with clearHistory() and when the documentKey changes', async () => {
+    const { host, node, stable } = await setup();
+    host.selection.set(['ship']);
+    await stable();
+    key(node('ship'), 'ArrowDown', { altKey: true });
+    await stable();
+    expect(host.diagram().canUndo()).toBe(true);
+    host.diagram().clearHistory();
+    expect(host.diagram().canUndo()).toBe(false);
+    key(node('ship'), 'ArrowDown', { altKey: true });
+    await stable();
+    expect(host.diagram().canUndo()).toBe(true);
+    // Another document: the old patches must not apply to it.
+    host.documentKey.set('invoices');
+    await stable();
+    expect(host.diagram().canUndo()).toBe(false);
   });
 
   it('renders on the server platform with plain labels', async () => {
