@@ -46,6 +46,21 @@ describe('starFormatCellValue', () => {
     expect(starFormatCellValue(46345, { type: 'date' }, 'en-US')).toBe('Nov 19, 2026');
   });
 
+  it('gives #NUM! for a date outside the serial range instead of throwing', () => {
+    expect(starFormatCellValue(2958465, { type: 'date' }, 'en-US')).toBe('Dec 31, 9999');
+    expect(starFormatCellValue(2958466, { type: 'date' }, 'en-US')).toBe('#NUM!');
+    expect(starFormatCellValue(1e12, { type: 'date' }, 'en-US')).toBe('#NUM!');
+    expect(starFormatCellValue(0, { type: 'date' }, 'en-US')).toBe('#NUM!');
+    expect(starFormatCellValue(-5, { type: 'date' }, 'en-US')).toBe('#NUM!');
+  });
+
+  it('falls back to the general format for invalid format options or locales', () => {
+    expect(starFormatCellValue(12.5, { type: 'currency', currency: 'X1' }, 'en-US')).toBe('12.5');
+    expect(starFormatCellValue(12.5, { type: 'number', decimals: -1 }, 'en-US')).toBe('12.5');
+    expect(starFormatCellValue(12.5, { type: 'percent', decimals: 500 }, 'en-US')).toBe('12.5');
+    expect(starFormatCellValue(12.5, { type: 'number' }, 'not a locale!')).toBe('12.5');
+  });
+
   it('shows text, booleans, errors and empty cells', () => {
     expect(starFormatCellValue('Rent', { type: 'number' }, 'en-US')).toBe('Rent');
     expect(starFormatCellValue(true, undefined, 'en-US')).toBe('TRUE');

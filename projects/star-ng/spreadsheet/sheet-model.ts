@@ -97,6 +97,40 @@ export function starFormatCellValue(
   if (typeof value === 'boolean') return value ? 'TRUE' : 'FALSE';
   if (typeof value === 'string') return value;
   const lang = locale || undefined;
+  if (format?.type === 'date') {
+    // Excel shows #### here; a formula error code is the clearest text for a cell.
+    if (!Number.isFinite(value) || value < 1 || value > STAR_SHEET_MAX_DATE_SERIAL) return '#NUM!';
+    try {
+      return new Intl.DateTimeFormat(lang, { dateStyle: 'medium', timeZone: 'UTC' }).format(
+        starSerialToDate(value),
+      );
+    } catch {
+      return generalNumber(value, undefined);
+    }
+  }
+  try {
+    return formatNumber(value, format, lang);
+  } catch {
+    // Invalid options (a currency code, a number of decimals) or an invalid locale: Intl throws a
+    // RangeError. Show the number in the general format rather than break the rendering.
+    try {
+      return generalNumber(value, lang);
+    } catch {
+      return generalNumber(value, undefined);
+    }
+  }
+}
+
+/** Last serial day number that is a date (9999-12-31), as in Excel. */
+export const STAR_SHEET_MAX_DATE_SERIAL = 2958465;
+
+function generalNumber(value: number, lang: string | undefined): string {
+  return new Intl.NumberFormat(lang, { maximumFractionDigits: 10, useGrouping: false }).format(
+    Number(value.toPrecision(15)),
+  );
+}
+
+function formatNumber(value: number, format: StarCellFormat | undefined, lang?: string): string {
   switch (format?.type ?? 'general') {
     case 'number': {
       const d = format?.decimals ?? 2;
@@ -123,15 +157,8 @@ export function starFormatCellValue(
         maximumFractionDigits: d,
       }).format(value);
     }
-    case 'date':
-      return new Intl.DateTimeFormat(lang, { dateStyle: 'medium', timeZone: 'UTC' }).format(
-        starSerialToDate(value),
-      );
     default:
-      return new Intl.NumberFormat(lang, {
-        maximumFractionDigits: 10,
-        useGrouping: false,
-      }).format(Number(value.toPrecision(15)));
+      return generalNumber(value, lang);
   }
 }
 
