@@ -6,7 +6,20 @@ import { StarRipple, StarScrollTop } from '@star-ng/ui/utility';
 
 const root = () => document.documentElement;
 
+// The test browser may report the system setting `prefers-reduced-motion: reduce` (CI runners do).
+// Every test starts with "no preference" and sets the attribute or the media query itself.
+const realMatchMedia = document.defaultView!.matchMedia;
+
+beforeEach(() => {
+  const view = document.defaultView!;
+  view.matchMedia = ((query: string) =>
+    query.includes('reduce')
+      ? ({ matches: false } as MediaQueryList)
+      : realMatchMedia.call(view, query)) as typeof view.matchMedia;
+});
+
 afterEach(() => {
+  document.defaultView!.matchMedia = realMatchMedia;
   root().removeAttribute('data-star-motion');
   vi.useRealTimers();
 });
