@@ -1004,11 +1004,15 @@ export class StarDiagram {
     this.endDrag?.();
     this.drag.set(drag);
     // Pointer capture keeps the moves coming when the pointer leaves the canvas or the window.
-    const canvas = this.canvas()?.nativeElement;
-    try {
-      canvas?.setPointerCapture?.(event.pointerId);
-    } catch {
-      // A synthetic event without an active pointer: the document listeners still work.
+    // Not for a node move: capture retargets pointerup and dblclick to the canvas, and the
+    // double click that edits a label must still reach the node.
+    if (drag.kind !== 'move' && drag.kind !== 'marquee') {
+      const canvas = this.canvas()?.nativeElement;
+      try {
+        canvas?.setPointerCapture?.(event.pointerId);
+      } catch {
+        // A synthetic event without an active pointer: the document listeners still work.
+      }
     }
     const move = (e: PointerEvent) => this.onPointerMove(e);
     const end = () => {

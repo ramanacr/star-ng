@@ -410,22 +410,41 @@ describe('StarDiagram', () => {
     sub2.unsubscribe();
   });
 
-  it('ends a pointer drag when it is destroyed and captures the pointer', async () => {
-    const { fixture, host, node, canvas, stable } = await setup();
+  it('ends a pointer drag when it is destroyed and captures the pointer of a resize', async () => {
+    const { fixture, root, host, node, canvas, stable } = await setup();
     const capture = vi.fn();
     canvas.setPointerCapture = capture;
     host.selection.set(['new']);
     await stable();
+    // A move drag keeps the pointer events on the node, so a double click still finds it.
     node('new').dispatchEvent(
       new MouseEvent('pointerdown', { bubbles: true, clientX: 10, clientY: 10, button: 0 }),
     );
-    expect(capture).toHaveBeenCalled();
+    expect(capture).not.toHaveBeenCalled();
+    document.dispatchEvent(
+      new MouseEvent('pointerup', { bubbles: true, clientX: 10, clientY: 10 }),
+    );
+    root
+      .querySelector('[data-handle="se"]')!
+      .dispatchEvent(
+        new MouseEvent('pointerdown', { bubbles: true, clientX: 100, clientY: 40, button: 0 }),
+      );
+    expect(capture).toHaveBeenCalledTimes(1);
     const removed = vi.spyOn(document, 'removeEventListener');
     fixture.destroy();
     expect(removed.mock.calls.map((call) => call[0])).toEqual(
       expect.arrayContaining(['pointermove', 'pointerup', 'pointercancel']),
     );
     removed.mockRestore();
+  });
+
+  it('edits the label after a double click that follows a pointer down on the node', async () => {
+    const { root, node, stable } = await setup();
+    pointer('pointerdown', node('ship'), 410, 10);
+    pointer('pointerup', document, 410, 10);
+    node('ship').dispatchEvent(new MouseEvent('dblclick', { bubbles: true }));
+    await stable();
+    expect(root.querySelector<HTMLInputElement>('.star-diagram__editor')?.value).toBe('Ship');
   });
 
   it('resizes several selected nodes with one undoable change', async () => {

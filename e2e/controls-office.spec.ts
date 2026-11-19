@@ -192,6 +192,17 @@ test.describe('diagram', () => {
     expect(errors).toEqual([]);
   });
 
+  test('a double click on a node opens the inline label editor', async ({ page }) => {
+    await openPage(page, '/controls/diagram', 'Diagram', 'star-diagram');
+    const live = example(page, 'Order workflow');
+    await live.getByRole('option', { name: 'Ship order' }).dblclick();
+    const editor = live.getByRole('textbox', { name: 'Node label' });
+    await expect(editor).toBeVisible();
+    await expect(editor).toHaveValue('Ship order');
+    await page.keyboard.press('Escape');
+    await expect(editor).toHaveCount(0);
+  });
+
   test('zooms with the buttons and applies a layout', async ({ page }) => {
     await openPage(page, '/controls/diagram', 'Diagram', 'star-diagram');
     const live = example(page, 'Order workflow');
