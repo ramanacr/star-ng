@@ -1,0 +1,326 @@
+// Chat (StarChat), AI prompt (StarAiPrompt) and the Markdown subset they render (StarMarkdownLite).
+
+// ---- Markdown subset ----
+.star-md {
+  display: block;
+  overflow-wrap: anywhere;
+}
+.star-md__p {
+  margin: 0;
+
+  & + & {
+    margin-block-start: 0.5rem;
+  }
+}
+.star-md__code,
+.star-md__pre {
+  border-radius: var(--star-radius-sm);
+  background: var(--star-surface-muted);
+  font: var(--star-type-code);
+}
+.star-md__code {
+  padding: 0.0625rem 0.3125rem;
+}
+.star-md__pre {
+  margin: 0.5rem 0;
+  padding: 0.5rem 0.75rem;
+  overflow-x: auto;
+  border: 1px solid var(--star-border);
+  white-space: pre;
+}
+.star-md a {
+  color: var(--star-accent);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+// ---- Chat ----
+.star-chat {
+  --star-chat-height: 28rem;
+
+  display: flex;
+  flex-direction: column;
+  block-size: var(--star-chat-height);
+  overflow: hidden;
+  border: 1px solid var(--star-border);
+  border-radius: var(--star-radius-lg);
+  background: var(--star-surface);
+  color: var(--star-text);
+  font: var(--star-type-body);
+}
+.star-chat__scroll {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-block-size: 0;
+  padding: 0.75rem 1rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  // The component keeps the place itself (bottom while streaming, top when older messages come).
+  overflow-anchor: none;
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: inset var(--star-focus-ring);
+  }
+}
+.star-chat__loading,
+.star-chat__empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  padding: 0.5rem;
+  color: var(--star-text-muted);
+  font: var(--star-type-body-sm);
+}
+.star-chat__empty {
+  flex: 1;
+}
+.star-chat__day {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-block: 0.75rem 0.25rem;
+  color: var(--star-text-muted);
+  font: var(--star-type-eyebrow);
+
+  &::before,
+  &::after {
+    flex: 1;
+    border-block-start: 1px solid var(--star-border);
+    content: '';
+  }
+}
+.star-chat__message {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+  max-inline-size: min(36rem, 85%);
+}
+.star-chat__message--first {
+  margin-block-start: 0.5rem;
+}
+.star-chat__message--own {
+  flex-direction: row-reverse;
+  align-self: flex-end;
+}
+.star-chat__avatar {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  inline-size: 2rem;
+  block-size: 2rem;
+  overflow: hidden;
+  border-radius: 50%;
+  align-self: flex-start;
+  font: var(--star-type-label);
+  // Only the first message of a group shows the avatar; the others keep its space.
+  .star-chat__message--first & {
+    background: var(--star-accent-soft);
+    color: var(--star-accent);
+  }
+  img {
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+  }
+}
+.star-chat__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-inline-size: 0;
+
+  .star-chat__message--own & {
+    align-items: flex-end;
+  }
+}
+.star-chat__author {
+  color: var(--star-text-muted);
+  font: var(--star-type-label);
+}
+.star-chat__bubble {
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--star-radius-lg);
+  background: var(--star-surface-muted);
+  color: var(--star-text-strong);
+
+  .star-chat__message--own & {
+    background: var(--star-primary-soft);
+  }
+  .star-chat__message--error & {
+    outline: 1px solid var(--star-danger);
+  }
+}
+.star-chat__meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--star-text-muted);
+  font: var(--star-type-body-sm);
+}
+.star-chat__message--error .star-chat__status {
+  color: var(--star-danger);
+}
+.star-chat__typing {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 1rem;
+  color: var(--star-text-muted);
+  font: var(--star-type-body-sm);
+}
+.star-chat__dots {
+  display: inline-flex;
+  gap: 0.1875rem;
+
+  span {
+    inline-size: 0.375rem;
+    block-size: 0.375rem;
+    border-radius: 50%;
+    background: currentColor;
+    animation: star-chat-dot 1.2s infinite ease-in-out;
+  }
+  span:nth-child(2) {
+    animation-delay: 0.15s;
+  }
+  span:nth-child(3) {
+    animation-delay: 0.3s;
+  }
+}
+@keyframes star-chat-dot {
+  0%,
+  80%,
+  100% {
+    opacity: 0.3;
+  }
+  40% {
+    opacity: 1;
+  }
+}
+.star-chat__composer {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-block-start: 1px solid var(--star-border);
+}
+.star-chat__input {
+  flex: 1;
+  min-inline-size: 0;
+  max-block-size: 8rem;
+  resize: none;
+  field-sizing: content;
+}
+
+// ---- AI prompt ----
+.star-ai-prompt {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  color: var(--star-text);
+  font: var(--star-type-body);
+}
+.star-ai-prompt__panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border: 1px solid var(--star-border);
+  border-radius: var(--star-radius-lg);
+  background: var(--star-surface);
+}
+.star-ai-prompt__field {
+  resize: vertical;
+}
+.star-ai-prompt__hint {
+  margin: 0;
+  color: var(--star-text-muted);
+  font: var(--star-type-body-sm);
+}
+.star-ai-prompt__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+.star-ai-prompt__chip {
+  border: 1px solid transparent;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    border-color: var(--star-accent);
+  }
+  &:focus-visible {
+    outline: none;
+    box-shadow: var(--star-focus-ring);
+  }
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+.star-ai-prompt__bar {
+  display: flex;
+  justify-content: flex-end;
+
+  .star-btn {
+    gap: 0.375rem;
+  }
+}
+.star-ai-prompt__outputs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.star-ai-prompt__output {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--star-border);
+  border-radius: var(--star-radius-lg);
+  background: var(--star-surface);
+}
+.star-ai-prompt__prompt {
+  display: flex;
+  gap: 0.375rem;
+  margin: 0;
+  color: var(--star-text-muted);
+  font: var(--star-type-body-sm);
+}
+.star-ai-prompt__error {
+  display: flex;
+  gap: 0.375rem;
+  margin: 0;
+  color: var(--star-danger);
+}
+.star-ai-prompt__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem;
+
+  .star-btn {
+    gap: 0.375rem;
+  }
+}
+.star-ai-prompt__generating {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin-inline-end: auto;
+  color: var(--star-text-muted);
+  font: var(--star-type-body-sm);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .star-chat__dots span {
+    animation: none;
+    opacity: 0.6;
+  }
+}

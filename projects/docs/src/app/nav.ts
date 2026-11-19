@@ -188,6 +188,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         keywords: 'segmented toggle choice',
         load: () => import('./controls/select-button.page').then((m) => m.SelectButtonPage),
       },
+      {
+        label: 'Signature pad',
+        path: 'controls/signature-pad',
+        keywords: 'signature sign draw canvas pen ink handwriting',
+        load: () => import('./controls/signature-pad.page').then((m) => m.SignaturePadPage),
+      },
     ],
   },
   {
@@ -222,6 +228,19 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         path: 'controls/autocomplete',
         keywords: 'suggestions search async typeahead multiple chips',
         load: () => import('./controls/autocomplete.page').then((m) => m.AutocompletePage),
+      },
+      {
+        label: 'Multi-column combobox',
+        path: 'controls/multi-column-combobox',
+        keywords: 'combobox columns grid table dropdown filter virtual kendo multicolumn',
+        load: () =>
+          import('./controls/multi-column-combobox.page').then((m) => m.MultiColumnComboboxPage),
+      },
+      {
+        label: 'Mention',
+        path: 'controls/mention',
+        keywords: 'mention at sign hashtag tag people suggestions textarea caret',
+        load: () => import('./controls/mention.page').then((m) => m.MentionPage),
       },
       {
         label: 'Tree',
@@ -311,6 +330,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         path: 'controls/command-palette',
         keywords: 'command menu cmdk search actions hotkey ctrl k spotlight quick open',
         load: () => import('./controls/command-palette.page').then((m) => m.CommandPalettePage),
+      },
+      {
+        label: 'Chat and AI prompt',
+        path: 'controls/chat',
+        keywords: 'chat messages conversation composer ai prompt assistant streaming markdown',
+        load: () => import('./controls/chat.page').then((m) => m.ChatPage),
       },
     ],
   },

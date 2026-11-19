@@ -1,0 +1,16 @@
+// Mention (StarMention): the suggestion panel at the caret, on the select panel surface.
+
+.star-mention__panel {
+  min-inline-size: 12rem;
+  max-inline-size: min(22rem, calc(100vw - 1rem));
+}
+.star-mention__list {
+  max-block-size: 14rem;
+}
+.star-mention__message {
+  margin: 0;
+}
+// The mirror that measures the caret: never visible, never in the way.
+.star-mention-mirror {
+  pointer-events: none;
+}
