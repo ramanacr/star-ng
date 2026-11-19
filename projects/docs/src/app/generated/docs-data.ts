@@ -6486,6 +6486,110 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "description": "Linear gauge: a value on a straight scale with ranges, ticks and labels. Kendo UI `kendo-lineargauge`, Ignite UI `igx-linear-gauge` and Syncfusion `ejs-lineargauge` are the equivalents.",
     "inputs": [
       {
+        "name": "min",
+        "type": "number | undefined",
+        "default": "0",
+        "required": false,
+        "description": "Lowest value of the scale. Also bound from a Signal Forms `min()` rule.",
+        "inheritedFrom": "StarGaugeBase"
+      },
+      {
+        "name": "max",
+        "type": "number | undefined",
+        "default": "100",
+        "required": false,
+        "description": "Highest value of the scale. Also bound from a Signal Forms `max()` rule.",
+        "inheritedFrom": "StarGaugeBase"
+      },
+      {
+        "name": "ranges",
+        "type": "readonly StarGaugeRange[]",
+        "default": "[]",
+        "required": false,
+        "description": "Coloured bands of the scale.",
+        "inheritedFrom": "StarGaugeBase"
+      },
+      {
+        "name": "ticks",
+        "type": "StarGaugeTicks",
+        "default": "{ major: 5, minor: 2 }",
+        "required": false,
+        "description": "Major intervals (`major`) or the value between major ticks (`step`), and `minor` parts per interval.",
+        "inheritedFrom": "StarGaugeBase"
+      },
+      {
+        "name": "labels",
+        "type": "boolean | Intl.NumberFormatOptions",
+        "default": "true",
+        "required": false,
+        "description": "Labels of the major ticks: `true` (default), `false`, or `Intl.NumberFormat` options that format the labels and the value text, for example `{ style: 'unit', unit: 'percent' }`.",
+        "inheritedFrom": "StarGaugeBase"
+      },
+      {
+        "name": "locale",
+        "type": "string | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "Locale of the numbers (`Intl.NumberFormat`). Default: the runtime locale.",
+        "inheritedFrom": "StarGaugeBase"
+      },
+      {
+        "name": "animate",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Animates the pointer when the value changes. Off when the user prefers reduced motion.",
+        "inheritedFrom": "StarGaugeBase"
+      },
+      {
+        "name": "interactive",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Lets the user set the value: the gauge becomes a slider (keyboard and pointer).",
+        "inheritedFrom": "StarGaugeBase"
+      },
+      {
+        "name": "step",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Step of the keyboard and the pointer in interactive mode. A value not above zero means 1.",
+        "inheritedFrom": "StarGaugeBase"
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Label for assistive technology.",
+        "inheritedFrom": "StarGaugeBase"
+      },
+      {
+        "name": "ariaLabelledby",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Id of the element that labels the gauge.",
+        "inheritedFrom": "StarGaugeBase"
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarGaugeBase"
+      },
+      {
+        "name": "readonly",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarGaugeBase"
+      },
+      {
         "name": "pointer",
         "type": "StarGaugePointer",
         "default": "'bar'",
@@ -6500,8 +6604,26 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "`horizontal` (default) or `vertical` (the scale runs from the bottom)."
       }
     ],
-    "models": [],
-    "outputs": []
+    "models": [
+      {
+        "name": "value",
+        "type": "number",
+        "default": "0",
+        "required": false,
+        "description": "The value. Two-way bindable; a Signal Forms field in interactive mode.",
+        "inheritedFrom": "StarGaugeBase"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "touch",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "Emits when an interactive gauge loses the focus.",
+        "inheritedFrom": "StarGaugeBase"
+      }
+    ]
   },
   "StarList": {
     "kind": "component",
@@ -9741,6 +9863,110 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "description": "Radial (arc) gauge: a value on a circular scale with ranges, ticks and labels. Kendo UI `kendo-radialgauge` and `kendo-arcgauge`, Ignite UI `igx-radial-gauge` and Syncfusion `ejs-circulargauge` are the equivalents.",
     "inputs": [
       {
+        "name": "min",
+        "type": "number | undefined",
+        "default": "0",
+        "required": false,
+        "description": "Lowest value of the scale. Also bound from a Signal Forms `min()` rule.",
+        "inheritedFrom": "StarGaugeBase"
+      },
+      {
+        "name": "max",
+        "type": "number | undefined",
+        "default": "100",
+        "required": false,
+        "description": "Highest value of the scale. Also bound from a Signal Forms `max()` rule.",
+        "inheritedFrom": "StarGaugeBase"
+      },
+      {
+        "name": "ranges",
+        "type": "readonly StarGaugeRange[]",
+        "default": "[]",
+        "required": false,
+        "description": "Coloured bands of the scale.",
+        "inheritedFrom": "StarGaugeBase"
+      },
+      {
+        "name": "ticks",
+        "type": "StarGaugeTicks",
+        "default": "{ major: 5, minor: 2 }",
+        "required": false,
+        "description": "Major intervals (`major`) or the value between major ticks (`step`), and `minor` parts per interval.",
+        "inheritedFrom": "StarGaugeBase"
+      },
+      {
+        "name": "labels",
+        "type": "boolean | Intl.NumberFormatOptions",
+        "default": "true",
+        "required": false,
+        "description": "Labels of the major ticks: `true` (default), `false`, or `Intl.NumberFormat` options that format the labels and the value text, for example `{ style: 'unit', unit: 'percent' }`.",
+        "inheritedFrom": "StarGaugeBase"
+      },
+      {
+        "name": "locale",
+        "type": "string | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "Locale of the numbers (`Intl.NumberFormat`). Default: the runtime locale.",
+        "inheritedFrom": "StarGaugeBase"
+      },
+      {
+        "name": "animate",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Animates the pointer when the value changes. Off when the user prefers reduced motion.",
+        "inheritedFrom": "StarGaugeBase"
+      },
+      {
+        "name": "interactive",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Lets the user set the value: the gauge becomes a slider (keyboard and pointer).",
+        "inheritedFrom": "StarGaugeBase"
+      },
+      {
+        "name": "step",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Step of the keyboard and the pointer in interactive mode. A value not above zero means 1.",
+        "inheritedFrom": "StarGaugeBase"
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Label for assistive technology.",
+        "inheritedFrom": "StarGaugeBase"
+      },
+      {
+        "name": "ariaLabelledby",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Id of the element that labels the gauge.",
+        "inheritedFrom": "StarGaugeBase"
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarGaugeBase"
+      },
+      {
+        "name": "readonly",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarGaugeBase"
+      },
+      {
         "name": "pointer",
         "type": "StarGaugePointer",
         "default": "'needle'",
@@ -9769,8 +9995,26 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Width of the arc, in units of the 200 × 200 view box."
       }
     ],
-    "models": [],
-    "outputs": []
+    "models": [
+      {
+        "name": "value",
+        "type": "number",
+        "default": "0",
+        "required": false,
+        "description": "The value. Two-way bindable; a Signal Forms field in interactive mode.",
+        "inheritedFrom": "StarGaugeBase"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "touch",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "Emits when an interactive gauge loses the focus.",
+        "inheritedFrom": "StarGaugeBase"
+      }
+    ]
   },
   "StarRadio": {
     "kind": "component",
