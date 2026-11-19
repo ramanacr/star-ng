@@ -73,7 +73,8 @@ export interface StarConfig {
    * `always` applies the reduced-motion rules of the system setting for everyone
    * (`data-star-motion="reduced"` on `<html>`): the same transitions stop, the motion durations are
    * 0, and the ripple, the carousel autoplay and smooth scrolling stop (`starPrefersReducedMotion`).
-   * Spinners keep turning. PrimeNG: none (its `ripple: false` only turns the ripple off).
+   * `.star-spinner` keeps turning, while the loading icons of the tree and tree-table rows stop, as
+   * they do under the system setting. PrimeNG: none (its `ripple: false` only turns the ripple off).
    */
   readonly reducedMotion?: 'system' | 'always';
   /**

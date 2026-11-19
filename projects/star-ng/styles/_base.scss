@@ -77,8 +77,9 @@ i[class*=' ph-'] {
 // Global configuration (`provideStarNg`). `overlay.zIndexBase` sets `--star-z-index-base` on
 // `<html>`; the CDK overlay container (default 1000) follows it. `reducedMotion: 'always'` sets
 // `data-star-motion="reduced"`: every `star-reduced-motion` block (the rules of the system
-// setting) applies, and the motion durations are 0, so the panels open without a slide. Spinners
-// and the progress of a busy state keep their animation.
+// setting) applies, and the motion durations are 0, so the panels open without a slide. `.star-spinner`
+// and the progress of a busy state keep their animation, while the loading icons of the tree and
+// tree-table rows stop, as they do under the system setting.
 :root .cdk-overlay-container {
   z-index: var(--star-z-index-base, 1000);
 }

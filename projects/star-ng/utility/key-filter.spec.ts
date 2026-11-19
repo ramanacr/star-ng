@@ -152,6 +152,43 @@ describe('starKeyFilter directive', () => {
     expect(input.value).toBe('42');
   });
 
+  it('keeps the native move when a drag starts in the same field', () => {
+    const { input } = setup('int');
+    input.value = '12';
+    input.dispatchEvent(new Event('dragstart', { bubbles: true }));
+    expect(paste(input, '4x2', 'drop')).toBe(false);
+    input.dispatchEvent(new Event('dragend', { bubbles: true }));
+    expect(paste(input, '4x2', 'drop')).toBe(true);
+  });
+
+  it('never clears or sets a custom validity message of the host app', () => {
+    const { input, fixture, host } = setup('int');
+    input.setCustomValidity('Taken');
+    input.value = '12';
+    input.dispatchEvent(new Event('input'));
+    host.control.setValue('34');
+    fixture.detectChanges();
+    expect(input.validationMessage).toBe('Taken');
+
+    host.validateOnly.set(true);
+    fixture.detectChanges();
+    host.validateOnly.set(false);
+    fixture.detectChanges();
+    // The directive set no message of its own, so the message of the app stays.
+    expect(input.validationMessage).toBe('Taken');
+  });
+
+  it('removes its own message when validateOnly ends', () => {
+    const { input, fixture, host } = setup('int', true);
+    input.value = '1x';
+    input.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    expect(input.validationMessage).not.toBe('');
+    host.validateOnly.set(false);
+    fixture.detectChanges();
+    expect(input.validationMessage).toBe('');
+  });
+
   it('does not block during IME composition and cleans the value after it', () => {
     const { input, host } = setup('alpha');
     input.dispatchEvent(new CompositionEvent('compositionstart'));

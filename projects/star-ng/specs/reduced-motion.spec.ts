@@ -51,6 +51,26 @@ class Host {
   readonly carousel = viewChild.required(StarCarousel);
 }
 
+describe('controls with motion not reduced (control case)', () => {
+  it('the ripple adds ink', () => {
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+    const button = fixture.nativeElement.querySelector('.ink') as HTMLElement;
+    button.dispatchEvent(new MouseEvent('pointerdown', { clientX: 5, clientY: 5, bubbles: true }));
+    expect(button.querySelector('.star-ripple__ink')).not.toBeNull();
+  });
+
+  it('the carousel autoplays', async () => {
+    vi.useFakeTimers();
+    const fixture = TestBed.createComponent(Host);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const goTo = vi.spyOn(fixture.componentInstance.carousel(), 'goTo');
+    vi.advanceTimersByTime(3500);
+    expect(goTo).toHaveBeenCalled();
+  });
+});
+
 describe('controls with reducedMotion: "always"', () => {
   beforeEach(() => root().setAttribute('data-star-motion', 'reduced'));
 

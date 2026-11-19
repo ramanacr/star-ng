@@ -89,6 +89,8 @@ export function starKeyFilterClean(filter: StarKeyFilterRule, text: string): str
     '(beforeinput)': 'onBeforeInput($event)',
     '(paste)': 'onPaste($event)',
     '(drop)': 'onDrop($event)',
+    '(dragstart)': 'dragFromHere = true',
+    '(dragend)': 'dragFromHere = false',
     '(compositionstart)': 'composing = true',
     '(compositionend)': 'onCompositionEnd()',
     '(input)': 'check()',
@@ -113,6 +115,10 @@ export class StarKeyFilter implements Validator {
 
   /** @internal True between `compositionstart` and `compositionend`. */
   composing = false;
+  /** @internal True while a drag that started in this field is running (its drop keeps the native move). */
+  dragFromHere = false;
+  /** True while the native validation message is the one of this directive. */
+  private ownMessage = false;
   private onValidatorChange: () => void = () => undefined;
 
   constructor() {
@@ -143,6 +149,11 @@ export class StarKeyFilter implements Validator {
   }
 
   protected onDrop(raw: Event): void {
+    // Text dragged out of this field and dropped back in keeps its native move.
+    if (this.dragFromHere) {
+      this.dragFromHere = false;
+      return;
+    }
     this.filterTransfer(raw, (raw as DragEvent).dataTransfer);
   }
 
@@ -187,13 +198,27 @@ export class StarKeyFilter implements Validator {
   /** Sets the result of a check of `value`; emits and tells the forms only when it changes. */
   private apply(value: string): void {
     const ok = !this.validateOnly() || starKeyFilterAllows(this.starKeyFilter(), value);
-    this.host.nativeElement.setCustomValidity?.(
-      ok ? '' : (this.validationMessage() ?? this.text.keyFilterInvalid),
-    );
+    this.setMessage(ok ? '' : (this.validationMessage() ?? this.text.keyFilterInvalid));
     if (ok === this.allowed()) return;
     this.allowed.set(ok);
     this.onValidatorChange();
     if (this.validateOnly() || !ok) this.validChange.emit(ok);
+  }
+
+  /**
+   * Sets the native validation message only with `validateOnly`, and clears only a message that
+   * this directive set. A message of the host app is never touched.
+   */
+  private setMessage(message: string): void {
+    const element = this.host.nativeElement;
+    if (!element.setCustomValidity) return;
+    if (this.validateOnly() && message !== '') {
+      element.setCustomValidity(message);
+      this.ownMessage = true;
+    } else if (this.ownMessage) {
+      element.setCustomValidity('');
+      this.ownMessage = false;
+    }
   }
 
   /** @internal Angular forms: the error `starKeyFilter` with `validateOnly`. */
