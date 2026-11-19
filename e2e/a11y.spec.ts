@@ -1423,6 +1423,57 @@ const STATES: readonly State[] = [
       await expect(live.getByRole('row').nth(2)).toBeVisible();
     },
   },
+  // Tabs, editor and chart depth.
+  {
+    name: 'closable scrollable tabs scrolled to the end',
+    path: 'controls/tabs',
+    open: async (page) => {
+      const live = example(page, 'Scrollable tabs');
+      await live.getByRole('tab', { name: 'January' }).click();
+      await page.keyboard.press('End');
+      await expect(live.locator('.star-tabs__scroll--start')).toBeVisible();
+      const closable = example(page, 'Closable tabs');
+      await expect(closable.locator('.star-tabs__close').first()).toBeVisible();
+    },
+  },
+  {
+    name: 'editor link popover open',
+    path: 'controls/editor',
+    open: async (page) => {
+      const live = example(page, 'Full toolbar');
+      await live.getByRole('textbox', { name: 'Shipping report' }).locator('a').click();
+      await live.getByRole('button', { name: 'Link' }).click();
+      await expect(live.getByRole('button', { name: 'Remove link' })).toBeVisible();
+    },
+  },
+  {
+    name: 'chart tooltip shown on a focused data point',
+    path: 'controls/chart',
+    open: async (page) => {
+      const live = example(page, 'Keyboard, tooltip template and point selection');
+      await live.getByRole('img', { name: 'Received, Jan: 120' }).focus();
+      await expect(live.locator('.star-chart__tip')).toBeVisible();
+    },
+  },
+  {
+    name: 'tabs close button of the selected tab focused',
+    path: 'controls/tabs',
+    open: async (page) => {
+      const live = example(page, 'Closable tabs');
+      const close = live.getByRole('button', { name: 'Close orders.csv' });
+      await close.focus();
+      await expect(close).toBeVisible();
+    },
+  },
+  {
+    name: 'vertical tabs with the second tab selected',
+    path: 'controls/tabs',
+    open: async (page) => {
+      const live = example(page, 'Vertical tabs');
+      await live.getByRole('tab', { name: 'Billing' }).click();
+      await expect(live.getByRole('tabpanel', { name: 'Billing' })).toBeVisible();
+    },
+  },
 ];
 
 for (const theme of THEMES) {
