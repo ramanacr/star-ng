@@ -514,7 +514,8 @@ export class StarKanban<T = unknown> {
         event.preventDefault();
         this.moveHeld(key === 'ArrowLeft' ? -1 : 1, 0);
       } else if (event.key === 'Tab') {
-        this.cancelGrab();
+        // The focus moves on with Tab: cancel the move without pulling the focus back.
+        this.cancelGrab(false);
       }
       return;
     }
@@ -665,7 +666,8 @@ export class StarKanban<T = unknown> {
     this.focusCard(grab.key);
   }
 
-  private cancelGrab(): void {
+  /** Puts a held card back. `restoreFocus` focuses the card again after the render. */
+  private cancelGrab(restoreFocus = true): void {
     const grab = this.grab();
     if (!grab) return;
     this.grab.set(null);
@@ -674,7 +676,8 @@ export class StarKanban<T = unknown> {
     if (item !== undefined && column) {
       this.announcement.set(this.text.kanbanCanceled(this.labelOf(item), column.title));
     }
-    this.focusCard(grab.key);
+    if (restoreFocus) this.focusCard(grab.key);
+    else this.activeKey.set(grab.key);
   }
 
   private focusCard(key: unknown): void {

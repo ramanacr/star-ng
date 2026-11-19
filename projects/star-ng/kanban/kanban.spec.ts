@@ -239,6 +239,25 @@ describe('StarKanban', () => {
     expect(titles(columns()[0])).toEqual(['Task 2', 'Task 1']);
   });
 
+  it('Tab while a card is held cancels the move and lets the focus leave', async () => {
+    const { card, columns, titles, live, stable } = await setup();
+    card(2).focus();
+    key(card(2), ' ');
+    key(card(2), 'ArrowRight');
+    await stable();
+    const tab = key(card(2), 'Tab');
+    // The browser moves the focus on; simulate that.
+    expect(tab.defaultPrevented).toBe(false);
+    const outside = document.createElement('button');
+    document.body.append(outside);
+    outside.focus();
+    await stable();
+    expect(live()).toBe('Move cancelled. Task 2 is back in To do');
+    expect(titles(columns()[0])).toEqual(['Task 2', 'Task 1']);
+    expect(document.activeElement).toBe(outside);
+    outside.remove();
+  });
+
   it('enforceLimits blocks a move into a full column', async () => {
     const { fixture, host, card, live, stable } = await setup((h) => h.enforce.set(true));
     card(2).focus();
