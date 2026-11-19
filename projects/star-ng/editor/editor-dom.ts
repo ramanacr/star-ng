@@ -11,10 +11,21 @@ export function starEditorPlainLength(area: Node): number {
   return (area.textContent ?? '').split(ZWSP).join('').length;
 }
 
+/** Sets the `rel` tokens of `anchor`: other tokens stay, `opener` goes, `add` is added. */
+function setRel(anchor: Element, add: readonly string[]): void {
+  const tokens = (anchor.getAttribute('rel') ?? '')
+    .toLowerCase()
+    .split(/\s+/)
+    .filter((token) => token && token !== 'opener');
+  for (const token of add) if (!tokens.includes(token)) tokens.push(token);
+  if (tokens.length) anchor.setAttribute('rel', tokens.join(' '));
+  else anchor.removeAttribute('rel');
+}
+
 /**
  * Links in sanitized HTML that cannot reach back to this page (reverse tabnabbing): a link with
- * a `target` opens a new tab with `rel="noopener noreferrer"`; `_self`, `_parent` and `_top`
- * lose the target. The HTML is parsed in an inert template (no image loads, no scripts).
+ * a `target` opens a new tab and gets `noopener noreferrer` in its `rel` (other tokens stay);
+ * `_self`, `_parent` and `_top` lose the target. The HTML is parsed in an inert template (no image loads, no scripts).
  */
 export function starEditorSafeLinks(html: string, doc: Document): string {
   if (!/\btarget\s*=/i.test(html)) return html;
@@ -24,11 +35,10 @@ export function starEditorSafeLinks(html: string, doc: Document): string {
     const target = anchor.getAttribute('target')?.trim().toLowerCase() ?? '';
     if (!target || target === '_self' || target === '_parent' || target === '_top') {
       anchor.removeAttribute('target');
-      if (anchor.getAttribute('rel')?.toLowerCase().includes('opener'))
-        anchor.removeAttribute('rel');
+      setRel(anchor, []);
     } else {
       anchor.setAttribute('target', '_blank');
-      anchor.setAttribute('rel', 'noopener noreferrer');
+      setRel(anchor, ['noopener', 'noreferrer']);
     }
   }
   return template.innerHTML;

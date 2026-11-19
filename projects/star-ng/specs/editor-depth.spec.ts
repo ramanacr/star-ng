@@ -501,6 +501,32 @@ describe('StarEditor links that open a new tab', () => {
   });
 });
 
+describe('StarEditor rel tokens of links', () => {
+  it('keeps other rel tokens on a link with a target and removes opener', async () => {
+    const fixture = TestBed.createComponent(PasteHost);
+    fixture.componentInstance.html.set(
+      '<p><a href="https://example.com/a" target="_blank" rel="nofollow opener">a</a> <a href="https://example.com/b" target="_blank" rel="nofollow noopener">b</a> <a href="https://example.com/c" target="_self" rel="nofollow">c</a></p>',
+    );
+    await fixture.whenStable();
+    const area = (fixture.nativeElement as HTMLElement).querySelector<HTMLElement>(
+      '.star-editor__area',
+    )!;
+    const [a, b, c] = [...area.querySelectorAll('a')];
+    expect(a.getAttribute('rel')!.split(' ').sort()).toEqual([
+      'nofollow',
+      'noopener',
+      'noreferrer',
+    ]);
+    expect(b.getAttribute('rel')!.split(' ').sort()).toEqual([
+      'nofollow',
+      'noopener',
+      'noreferrer',
+    ]);
+    expect(c.hasAttribute('target')).toBe(false);
+    expect(c.getAttribute('rel')).toBe('nofollow');
+  });
+});
+
 describe('StarEditor fix round 1', () => {
   it('keeps the focus on the text style select after a change', async () => {
     const { el, area } = await setup();
