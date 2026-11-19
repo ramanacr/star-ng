@@ -1,10 +1,10 @@
 export * from './table';
-export * from './table-defaults';
 export {
   StarColumnGroupHeaderTemplate,
   type StarColumnGroup,
   type StarColumnGroupHeaderContext,
 } from './table-column-groups';
+export * from './table-defaults';
 export {
   starCellError,
   type StarBatchChanges,

@@ -49,7 +49,6 @@ import { StarPaginator } from '@star-ng/ui/paginator';
 import { StarPopover } from '@star-ng/ui/popover';
 import { StarMultiSelect, StarSelect } from '@star-ng/ui/select';
 import { StarSkeleton } from '@star-ng/ui/skeleton';
-import { STAR_TABLE_DEFAULTS } from './table-defaults';
 import {
   clusterColumns,
   groupPaths,
@@ -67,6 +66,7 @@ import {
   sameWindow,
   StarColumnWindow,
 } from './table-column-window';
+import { STAR_TABLE_DEFAULTS } from './table-defaults';
 import {
   sameEditValue,
   StarBatchChanges,

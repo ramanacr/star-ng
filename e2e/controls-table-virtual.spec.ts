@@ -11,7 +11,6 @@ async function openPage(page: Page, path: string, heading: string | RegExp): Pro
   await expect(page.locator('[ngh]')).toHaveCount(0, { timeout: 15_000 });
 }
 
-
 /**
  * Virtual scroll of the table with rows of different heights (row detail, groups, stacked
  * layout), with real layout. The examples are on the Table layout page.

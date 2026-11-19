@@ -13,7 +13,6 @@ async function openPage(page: Page, path: string, heading: string | RegExp): Pro
   await expect(page.locator('[ngh]')).toHaveCount(0, { timeout: 15_000 });
 }
 
-
 /** The rows of a table body (not group, spacer, expansion or empty rows). */
 const bodyRows = (table: Locator) => table.locator('tbody tr.star-table__row');
 
