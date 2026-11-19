@@ -285,6 +285,13 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         keywords: 'time hour minute clock timeonly',
         load: () => import('./controls/time-picker.page').then((m) => m.TimePickerPage),
       },
+      {
+        label: 'Scheduler',
+        path: 'controls/scheduler',
+        keywords:
+          'calendar events appointments booking week month agenda timeline rrule recurrence',
+        load: () => import('./controls/scheduler.page').then((m) => m.SchedulerPage),
+      },
     ],
   },
   {
@@ -604,6 +611,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         path: 'controls/org-chart',
         keywords: 'orgchart hierarchy team structure tree connector',
         load: () => import('./controls/org-chart.page').then((m) => m.OrgChartPage),
+      },
+      {
+        label: 'Gantt chart',
+        path: 'controls/gantt',
+        keywords: 'gantt project plan tasks timeline schedule dependencies milestone',
+        load: () => import('./controls/gantt.page').then((m) => m.GanttPage),
       },
     ],
   },

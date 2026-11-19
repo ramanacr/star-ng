@@ -467,6 +467,70 @@ export interface StarUiText {
   readonly newMessages: (count: number) => string;
   /** Visible hint under the prompt field of `star-ai-prompt`. */
   readonly aiPromptShortcutHint: string;
+  // Scheduler
+  /** Default name of `star-scheduler`. */
+  readonly scheduler: string;
+  /** Name of the group of view buttons. */
+  readonly schedulerView: string;
+  readonly viewDay: string;
+  readonly viewWeek: string;
+  readonly viewWorkWeek: string;
+  readonly viewMonth: string;
+  readonly viewAgenda: string;
+  readonly viewTimeline: string;
+  /** Pages one day, week or month back (scheduler toolbar). */
+  readonly previousPeriod: string;
+  readonly nextPeriod: string;
+  readonly allDay: string;
+  /** Button of a month cell with events that are not shown. */
+  readonly moreEvents: (count: number) => string;
+  readonly noEvents: string;
+  /** A time span in an accessible name: "10:00 to 11:00". */
+  readonly timeRange: (start: string, end: string) => string;
+  /** Marks an occurrence of a recurring event. */
+  readonly repeats: string;
+  /** Keyboard hint of a movable event or task bar. */
+  readonly eventMoveHint: string;
+  /** Live announcement after a keyboard move: `when` is the new time span. */
+  readonly eventMoved: (label: string, when: string) => string;
+  /** Live announcement after a keyboard resize. */
+  readonly eventResized: (label: string, when: string) => string;
+  /** Live announcement when the owner canceled a change. */
+  readonly changeCanceled: string;
+  readonly currentTime: string;
+  /** Header of the event editor. */
+  readonly newEvent: string;
+  readonly editEvent: string;
+  readonly title: string;
+  readonly start: string;
+  readonly end: string;
+  readonly resource: string;
+  readonly save: string;
+  readonly cancel: string;
+  readonly deleteEvent: string;
+  /** Error of the editor when the end is not after the start. */
+  readonly endBeforeStart: string;
+  /** Live announcement when a read-only event or task cannot move. */
+  readonly readOnly: string;
+  // Gantt
+  /** Default name of the task tree grid of `star-gantt`. */
+  readonly ganttTasks: string;
+  readonly name: string;
+  readonly duration: string;
+  readonly progress: string;
+  readonly durationDays: (count: number) => string;
+  readonly percentComplete: (value: number) => string;
+  readonly milestone: string;
+  readonly summaryTask: string;
+  /** Dependency types of a Gantt task: finish to start, start to start, and so on. */
+  readonly dependencyFS: string;
+  readonly dependencySS: string;
+  readonly dependencyFF: string;
+  readonly dependencySF: string;
+  /** Text summary of the dependencies of a task: `label` lists the tasks and their types. */
+  readonly dependsOn: (label: string) => string;
+  /** Keyboard hint of a movable Gantt task row. */
+  readonly ganttMoveHint: string;
 }
 
 export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
@@ -855,6 +919,53 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   stop: 'Stop',
   newMessages: (count) => `${count} new messages`,
   aiPromptShortcutHint: 'Press Control+Enter to send.',
+  scheduler: 'Scheduler',
+  schedulerView: 'View',
+  viewDay: 'Day',
+  viewWeek: 'Week',
+  viewWorkWeek: 'Work week',
+  viewMonth: 'Month',
+  viewAgenda: 'Agenda',
+  viewTimeline: 'Timeline',
+  previousPeriod: 'Previous',
+  nextPeriod: 'Next',
+  allDay: 'All day',
+  moreEvents: (count) => `+${count} more`,
+  noEvents: 'No events',
+  timeRange: (start, end) => `${start} to ${end}`,
+  repeats: 'Repeats',
+  eventMoveHint: 'Alt and the arrow keys move it, Alt, Shift and the arrow keys change its length.',
+  eventMoved: (label, when) => `${label} moved to ${when}`,
+  eventResized: (label, when) => `${label} now ${when}`,
+  changeCanceled: 'Change canceled',
+  currentTime: 'Current time',
+  newEvent: 'New event',
+  editEvent: 'Edit event',
+  title: 'Title',
+  start: 'Start',
+  end: 'End',
+  resource: 'Resource',
+  save: 'Save',
+  cancel: 'Cancel',
+  deleteEvent: 'Delete event',
+  endBeforeStart: 'The end must be after the start.',
+  readOnly: 'Read only',
+  // Gantt
+  ganttTasks: 'Tasks',
+  name: 'Name',
+  duration: 'Duration',
+  progress: 'Progress',
+  durationDays: (count) => `${count} ${count === 1 ? 'day' : 'days'}`,
+  percentComplete: (value) => `${value} percent`,
+  milestone: 'Milestone',
+  summaryTask: 'Summary task',
+  dependencyFS: 'Finish to start',
+  dependencySS: 'Start to start',
+  dependencyFF: 'Finish to finish',
+  dependencySF: 'Start to finish',
+  dependsOn: (label) => `Depends on ${label}`,
+  ganttMoveHint:
+    'Alt and Left or Right move the task, Alt, Shift and Left or Right move its end, Alt and Up or Down change its progress.',
 };
 
 /** Parameter names of the function entries, in call order (used for `{{ name }}` in translations). */
@@ -942,6 +1053,13 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   isTyping: ['name'],
   areTyping: ['names'],
   newMessages: ['count'],
+  moreEvents: ['count'],
+  timeRange: ['start', 'end'],
+  eventMoved: ['label', 'when'],
+  eventResized: ['label', 'when'],
+  durationDays: ['count'],
+  percentComplete: ['value'],
+  dependsOn: ['label'],
 };
 
 export const STAR_UI_TEXT = new InjectionToken<StarUiText>('STAR_UI_TEXT', {

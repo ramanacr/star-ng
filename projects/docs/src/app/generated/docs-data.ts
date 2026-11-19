@@ -5314,6 +5314,95 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "outputs": []
   },
+  "StarGantt": {
+    "kind": "component",
+    "selector": "star-gantt",
+    "entry": "@star-ng/ui/gantt",
+    "description": "Gantt chart (Kendo UI Gantt, Syncfusion Gantt, DevExtreme Gantt): a task tree grid on the start side and a timeline on the end side, in one scroll area, so both scroll together.",
+    "inputs": [
+      {
+        "name": "tasks",
+        "type": "readonly StarGanttTask[]",
+        "default": "[]",
+        "required": false,
+        "description": "The tasks. The Gantt never changes this array."
+      },
+      {
+        "name": "rowHeight",
+        "type": "number",
+        "default": "36",
+        "required": false,
+        "description": "Height of a row in pixels."
+      },
+      {
+        "name": "weekendDays",
+        "type": "readonly number[]",
+        "default": "[0, 6]",
+        "required": false,
+        "description": "Weekdays shaded as weekend (0 = Sunday), in the day and week scales."
+      },
+      {
+        "name": "firstDayOfWeek",
+        "type": "number | null",
+        "default": "null",
+        "required": false,
+        "description": "First day of the week (0 = Sunday). Default: from the locale."
+      },
+      {
+        "name": "locale",
+        "type": "string | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "Locale of dates and times. Default: `provideStarNg({ locale })`, else the browser."
+      },
+      {
+        "name": "readonly",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "No task moves, resizes or changes progress."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Name of the tree grid. Default: \"Tasks\"."
+      }
+    ],
+    "models": [
+      {
+        "name": "scale",
+        "type": "StarGanttScale",
+        "default": "'week'",
+        "required": false,
+        "description": "Unit of the time scale and of keyboard moves."
+      },
+      {
+        "name": "collapsed",
+        "type": "readonly StarGanttId[]",
+        "default": "[]",
+        "required": false,
+        "description": "Ids of the collapsed summary tasks."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "taskChange",
+        "type": "StarGanttTaskChange",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "taskSelect",
+        "type": "StarGanttTaskSelect",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
   "StarGaugeBase": {
     "kind": "directive",
     "selector": "",
@@ -10525,6 +10614,197 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarScheduler": {
+    "kind": "component",
+    "selector": "star-scheduler",
+    "entry": "@star-ng/ui/scheduler",
+    "description": "Scheduler (Kendo UI Scheduler, Syncfusion Schedule, DevExtreme Scheduler; PrimeNG had the deprecated `p-fullcalendar`): events in a day, week, work-week, month, agenda or timeline view.",
+    "inputs": [
+      {
+        "name": "events",
+        "type": "readonly StarSchedulerEvent[]",
+        "default": "[]",
+        "required": false,
+        "description": "The events. The scheduler never changes this array."
+      },
+      {
+        "name": "resources",
+        "type": "readonly StarSchedulerResource[]",
+        "default": "[]",
+        "required": false,
+        "description": "Rows of the timeline view, options of the editor, and colours of their events. The timeline shows only the events whose `resourceId` is one of these resources."
+      },
+      {
+        "name": "views",
+        "type": "readonly StarSchedulerView[]",
+        "default": "ALL_VIEWS",
+        "required": false,
+        "description": "Views in the toolbar. `timeline-day` is offered only with `resources`, and it shows only the events of the listed resources (an event without a listed `resourceId` is not in it)."
+      },
+      {
+        "name": "slotMinutes",
+        "type": "number",
+        "default": "30",
+        "required": false,
+        "description": "Length of a slot in minutes; drags and keyboard moves snap to it."
+      },
+      {
+        "name": "workDayStart",
+        "type": "string",
+        "default": "'08:00'",
+        "required": false,
+        "description": "Start of the work day, `HH:mm`. Slots outside the work day are shaded."
+      },
+      {
+        "name": "workDayEnd",
+        "type": "string",
+        "default": "'17:00'",
+        "required": false,
+        "description": "End of the work day, `HH:mm`."
+      },
+      {
+        "name": "workWeekDays",
+        "type": "readonly number[]",
+        "default": "[1, 2, 3, 4, 5]",
+        "required": false,
+        "description": "Weekdays of the work-week view (0 = Sunday)."
+      },
+      {
+        "name": "firstDayOfWeek",
+        "type": "number | null",
+        "default": "null",
+        "required": false,
+        "description": "First day of the week (0 = Sunday). Default: from the locale."
+      },
+      {
+        "name": "agendaDays",
+        "type": "number",
+        "default": "7",
+        "required": false,
+        "description": "Days in the agenda view."
+      },
+      {
+        "name": "monthEventLimit",
+        "type": "number",
+        "default": "3",
+        "required": false,
+        "description": "Events per month cell, including the \"+N more\" button."
+      },
+      {
+        "name": "locale",
+        "type": "string | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "Locale of dates and times. Default: `provideStarNg({ locale })`, else the browser."
+      },
+      {
+        "name": "hourFormat",
+        "type": "'24' | '12'",
+        "default": "'24'",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "editor",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Opens the built-in editor dialog on a slot or event selection."
+      },
+      {
+        "name": "readonly",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "No event moves, resizes or edits."
+      },
+      {
+        "name": "showCurrentTime",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Shows the current-time line in the browser."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [
+      {
+        "name": "view",
+        "type": "StarSchedulerView",
+        "default": "'week'",
+        "required": false,
+        "description": "The shown view."
+      },
+      {
+        "name": "date",
+        "type": "Date",
+        "default": "startOfDay(new Date())",
+        "required": false,
+        "description": "Anchor date of the view: a day of the shown range."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "slotSelect",
+        "type": "StarSchedulerSlotSelect",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "eventSelect",
+        "type": "StarSchedulerEventSelect",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "eventChange",
+        "type": "StarSchedulerEventChange",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "editorSave",
+        "type": "StarSchedulerEditorSave",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "eventDelete",
+        "type": "StarSchedulerEventSelect",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
+  "StarSchedulerEditor": {
+    "kind": "component",
+    "selector": "star-scheduler-editor",
+    "entry": "@star-ng/ui/scheduler",
+    "description": "@internal The built-in event editor of `star-scheduler` (`editor` input), opened with `StarDialogService`. It edits a copy and returns it; the scheduler emits `editorSave`.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
+  "StarSchedulerEventTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starSchedulerEvent]",
+    "entry": "@star-ng/ui/scheduler",
+    "description": "Content of an event in `star-scheduler`. The content goes inside the event button, which keeps its accessible name, keyboard and drag behaviour: do not add focusable elements.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
   "StarScrollPanel": {
     "kind": "component",
     "selector": "star-scroll-panel",
@@ -14472,6 +14752,8 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "forms/two-way": "<star-checkbox [(checked)]=\"remember\">Remember this device</star-checkbox>\n<p class=\"docs-output\" role=\"status\">{{ remember() }}</p>",
   "galleria/basic": "<star-galleria\n  style=\"width: 100%; max-width: 40rem\"\n  [images]=\"images\"\n  ariaLabel=\"Site photos\"\n/>",
   "galleria/model": "<star-galleria\n  style=\"width: 100%; max-width: 40rem\"\n  [images]=\"images\"\n  [(activeIndex)]=\"active\"\n  ariaLabel=\"Linked photos\"\n/>\n<p class=\"docs-output\" role=\"status\">Active index: {{ active() }}</p>",
+  "gantt/large": "<star-gantt [tasks]=\"large\" scale=\"month\" ariaLabel=\"Order batches\" readonly />",
+  "gantt/launch": "<div class=\"docs-stack\">\n  <star-select-button\n    [options]=\"scales\"\n    optionLabel=\"label\"\n    optionValue=\"value\"\n    [allowEmpty]=\"false\"\n    size=\"sm\"\n    ariaLabel=\"Scale\"\n    [(value)]=\"scale\"\n  />\n  <star-gantt\n    [tasks]=\"tasks()\"\n    [(scale)]=\"scale\"\n    [(collapsed)]=\"collapsed\"\n    locale=\"en-GB\"\n    ariaLabel=\"Launch plan\"\n    (taskChange)=\"onChange($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">{{ log() }}</p>\n</div>",
   "gauge/interactive": "<div class=\"docs-stack\">\n  <star-field label=\"Volume\">\n    <star-linear-gauge interactive [step]=\"5\" [formField]=\"model.volume\" />\n  </star-field>\n  <star-radial-gauge pointer=\"bar\" [value]=\"settings().volume\" ariaLabel=\"Volume level\" />\n  <p>Volume: {{ settings().volume }}</p>\n</div>",
   "gauge/linear": "<div class=\"docs-stack\">\n  <star-linear-gauge\n    [value]=\"load()\"\n    [ranges]=\"zones\"\n    [ticks]=\"{ step: 25, minor: 5 }\"\n    ariaLabel=\"Server load\"\n  />\n  <star-linear-gauge\n    [value]=\"load()\"\n    pointer=\"marker\"\n    [ranges]=\"zones\"\n    ariaLabel=\"Server load, marker\"\n  />\n  <div class=\"docs-row\">\n    <star-linear-gauge\n      orientation=\"vertical\"\n      [value]=\"72\"\n      [max]=\"120\"\n      [ticks]=\"{ major: 6, minor: 2 }\"\n      ariaLabel=\"Response time\"\n    />\n    <star-linear-gauge\n      orientation=\"vertical\"\n      pointer=\"needle\"\n      [value]=\"18\"\n      [min]=\"-20\"\n      [max]=\"40\"\n      [ranges]=\"cold\"\n      ariaLabel=\"Room temperature\"\n    />\n  </div>\n</div>",
   "gauge/pointers": "<div class=\"docs-row\">\n  <star-radial-gauge [value]=\"62\" pointer=\"bar\" [arcWidth]=\"16\" ariaLabel=\"Disk use\" />\n  <star-radial-gauge\n    [value]=\"38\"\n    pointer=\"marker\"\n    [startAngle]=\"180\"\n    [endAngle]=\"0\"\n    [ticks]=\"{ major: 4, minor: 5 }\"\n    ariaLabel=\"Memory use\"\n  />\n</div>",
@@ -14598,6 +14880,10 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "rating/states": "<star-rating [value]=\"4\" readonly ariaLabel=\"Average rating\" />\n<star-rating [value]=\"2\" disabled ariaLabel=\"Closed rating\" />",
   "ripple/basic": "<button type=\"button\" class=\"star-btn star-btn--secondary star-btn--md\" starRipple>\n  Save\n</button>\n<button type=\"button\" class=\"star-btn star-btn--primary star-btn--md\" starRipple>\n  Submit order\n</button>",
   "rtl/island": "<div class=\"docs-stack\" dir=\"rtl\">\n  <star-breadcrumb [items]=\"trail\" ariaLabel=\"Island trail\" />\n  <star-tabs [(value)]=\"tab\" ariaLabel=\"Island tabs\">\n    <star-tab value=\"one\" label=\"One\">First panel</star-tab>\n    <star-tab value=\"two\" label=\"Two\">Second panel</star-tab>\n    <star-tab value=\"three\" label=\"Three\">Third panel</star-tab>\n  </star-tabs>\n  <star-select-button\n    [options]=\"['Day', 'Week', 'Month']\"\n    [(value)]=\"period\"\n    ariaLabel=\"Island period\"\n  />\n  <star-paginator [totalRecords]=\"60\" [rows]=\"10\" />\n</div>",
+  "scheduler/agenda": "<star-scheduler\n  [events]=\"agendaEvents\"\n  [resources]=\"rooms\"\n  locale=\"en-GB\"\n  view=\"agenda\"\n  [date]=\"march2\"\n  [views]=\"['agenda', 'week']\"\n  ariaLabel=\"Agenda\"\n>\n  <ng-template starSchedulerEvent let-occurrence>\n    <strong>{{ occurrence.event.title }}</strong>\n    <span class=\"event-room\">{{ roomName(occurrence.event.resourceId) }}</span>\n  </ng-template>\n</star-scheduler>",
+  "scheduler/month": "<star-scheduler\n  [events]=\"busyMonth\"\n  [resources]=\"rooms\"\n  locale=\"en-GB\"\n  view=\"month\"\n  [date]=\"march\"\n  [views]=\"['month', 'agenda']\"\n  ariaLabel=\"Month of March\"\n/>",
+  "scheduler/team": "<div class=\"docs-stack\">\n  <star-scheduler\n    [events]=\"events()\"\n    [resources]=\"rooms\"\n    locale=\"en-GB\"\n    [(view)]=\"view\"\n    [(date)]=\"date\"\n    workDayStart=\"08:00\"\n    workDayEnd=\"18:00\"\n    ariaLabel=\"Team calendar\"\n    (eventChange)=\"onChange($event)\"\n    (slotSelect)=\"onSlot($event)\"\n    (eventSelect)=\"onSelect($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">{{ log() }}</p>\n</div>",
+  "scheduler/timeline": "<star-scheduler\n  [events]=\"roomEvents()\"\n  [resources]=\"rooms\"\n  locale=\"en-GB\"\n  view=\"timeline-day\"\n  [date]=\"march3\"\n  [views]=\"['timeline-day', 'day']\"\n  editor\n  ariaLabel=\"Room bookings\"\n  (editorSave)=\"onSave($event)\"\n  (eventChange)=\"onRoomChange($event)\"\n  (eventDelete)=\"onDelete($event)\"\n/>",
   "scroll-panel/basic": "<star-scroll-panel class=\"docs-panel\" height=\"8rem\" ariaLabel=\"Order notes\">\n  <p class=\"docs-output\">\n    The order was placed on 2 November. The customer asked for delivery to the second\n    address. The warehouse packed the order on 3 November. The carrier picked it up on 4\n    November. The customer asked for a delivery window in the afternoon. The carrier\n    confirmed the window. The order stays open until the customer confirms receipt. All data\n    in this text is fictional.\n  </p>\n</star-scroll-panel>",
   "scroll-panel/max": "<star-scroll-panel class=\"docs-panel\" maxHeight=\"5rem\" ariaLabel=\"Short notes\">\n  <p class=\"docs-output\">Two short lines of text.<br />The panel does not scroll.</p>\n</star-scroll-panel>",
   "scroll-top/target": "<div class=\"docs-scroll-box\">\n  <div #scroller class=\"docs-scroll-box__list\" tabindex=\"0\" aria-label=\"Order list\">\n    @for (row of rows; track row) {\n      <p class=\"docs-output\">Order {{ row }}</p>\n    }\n  </div>\n  <star-scroll-top [target]=\"scroller\" [threshold]=\"100\" />\n</div>",
