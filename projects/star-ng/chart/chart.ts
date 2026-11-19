@@ -1,18 +1,28 @@
 import { _IdGenerator } from '@angular/cdk/a11y';
+import { isPlatformBrowser, NgTemplateOutlet } from '@angular/common';
 import {
+  afterNextRender,
   booleanAttribute,
   ChangeDetectionStrategy,
   Component,
   computed,
+  contentChild,
+  DestroyRef,
+  ElementRef,
   inject,
   input,
   linkedSignal,
+  model,
+  output,
+  PLATFORM_ID,
   signal,
 } from '@angular/core';
 import { STAR_UI_TEXT } from '@star-ng/ui/core';
+import { starChartPng, starChartSvgDocument, starChartViewBox } from './chart-export';
 import {
   areaRadius,
   axisAngles,
+  boundedScale,
   cleanPoints,
   labelAnchor,
   labelOffset,
@@ -34,10 +44,31 @@ import {
   toFinite,
   truncateLabel,
 } from './chart-geometry';
+import {
+  starChartClampCursor,
+  starChartMoveCursor,
+  StarChartPointCursor,
+  StarChartPointInfo,
+  StarChartPointRows,
+  StarChartPointSelectEvent,
+  StarChartPointTarget,
+  StarChartTooltip,
+  StarChartTooltipContext,
+} from './chart-interaction';
 
 export interface StarChartSeries {
   readonly label: string;
   readonly data: readonly number[];
+  /**
+   * Bar, line and area charts: draw this series as bars or as a line, for a combo chart (Chart.js
+   * dataset `type`). Default: the chart type.
+   */
+  readonly type?: 'bar' | 'line';
+  /**
+   * Bar, line and area charts (not horizontal): `'secondary'` measures this series on a second
+   * value axis at the end of the plot (Chart.js `yAxisID`). Default `'primary'`.
+   */
+  readonly axis?: 'primary' | 'secondary';
 }
 
 /** One point of a scatter series. */
@@ -112,8 +143,15 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
  */
 @Component({
   selector: 'star-chart',
+  imports: [NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'star-chart' },
+  host: {
+    class: 'star-chart',
+    '(click)': 'onPlotClick($event)',
+    '[class.star-chart--legend-bottom]': "legendPosition() === 'bottom'",
+    '[class.star-chart--legend-start]': "legendPosition() === 'start'",
+    '[class.star-chart--legend-end]': "legendPosition() === 'end'",
+  },
   template: `
     <figure
       class="star-chart__figure"
@@ -139,438 +177,568 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
       </figcaption>
       <p class="star-sr-only" [id]="descriptionId">{{ description() }}</p>
 
-      @if (legend().length > 1 && !showTable()) {
-        <ul class="star-chart__legend" aria-hidden="true">
-          @for (item of legend(); track item.label) {
-            <li>
-              @if (item.shape) {
-                <svg class="star-chart__swatch-shape" viewBox="-6 -6 12 12">
-                  <path
-                    class="star-chart__mark star-chart__marker"
-                    [attr.d]="item.shape"
-                    [style.--mark]="item.color"
-                  />
-                </svg>
-              } @else {
-                <span class="star-chart__swatch" [style.background]="item.color"></span>
-              }
-              {{ item.label }}
-            </li>
-          }
-        </ul>
-      }
-
-      <div
-        class="star-chart__plot"
-        [hidden]="showTable()"
-        aria-hidden="true"
-        (mouseleave)="hover.set(null)"
-      >
-        @switch (kind()) {
-          @case ('round') {
-            <svg [attr.viewBox]="'0 0 ' + W + ' ' + H" class="star-chart__svg">
-              <g [attr.transform]="'translate(' + W / 2 + ',' + H / 2 + ')'">
-                @for (slice of slices(); track slice.label; let i = $index) {
-                  <path
-                    class="star-chart__slice"
-                    [attr.d]="slice.path"
-                    [style.fill]="slice.color"
-                    [class.star-chart__mark--dim]="hover() !== null && hover() !== i"
-                    (mouseenter)="hover.set(i)"
-                  />
-                }
-                @if (type() === 'doughnut') {
-                  <text class="star-chart__total" y="-2" text-anchor="middle">
-                    {{ format(total()) }}
-                  </text>
-                  <text class="star-chart__total-label" y="18" text-anchor="middle">
-                    {{ text.chartTotal }}
-                  </text>
-                }
-              </g>
-            </svg>
-            @if (hover() !== null) {
-              @let slice = slices()[hover()!];
-              @if (slice) {
-                <div class="star-chart__tip" [style.left.%]="50" [style.top.%]="8">
-                  <span class="star-chart__swatch" [style.background]="slice.color"></span>
-                  {{ slice.label }}: <strong>{{ format(slice.value) }}</strong> ({{
-                    slice.percent
-                  }}%)
-                </div>
-              }
-            }
-          }
-          @case ('radar') {
-            @let plot = radar();
-            <svg [attr.viewBox]="'0 0 ' + RW + ' ' + RH" class="star-chart__svg">
-              <g [attr.transform]="'translate(' + RW / 2 + ',' + RH / 2 + ')'">
-                @for (ring of plot.rings; track ring.value) {
-                  <path class="star-chart__ring" [attr.d]="ring.path" />
-                }
-                @for (spoke of plot.spokes; track $index) {
-                  <line
-                    class="star-chart__grid"
-                    x1="0"
-                    y1="0"
-                    [attr.x2]="spoke.x"
-                    [attr.y2]="spoke.y"
-                  />
-                }
-                @if (hover() !== null && plot.spokes[hover()!]) {
-                  <line
-                    class="star-chart__crosshair"
-                    x1="0"
-                    y1="0"
-                    [attr.x2]="plot.spokes[hover()!].x"
-                    [attr.y2]="plot.spokes[hover()!].y"
-                  />
-                }
-                @for (polygon of plot.polygons; track polygon.label) {
-                  <path
-                    class="star-chart__mark star-chart__polygon"
-                    [attr.d]="polygon.path"
-                    [style.--mark]="polygon.color"
-                  />
-                }
-                @for (polygon of plot.polygons; track polygon.label) {
-                  @for (vertex of polygon.vertices; track vertex.index) {
-                    <path
-                      class="star-chart__mark star-chart__vertex"
-                      [attr.d]="vertex.shape"
-                      [style.--mark]="polygon.color"
-                    />
-                  }
-                }
-                @for (ring of plot.rings; track ring.value) {
-                  <text
-                    class="star-chart__ring-label"
-                    [attr.x]="4"
-                    [attr.y]="-ring.radius + 11"
-                    text-anchor="start"
+      <div class="star-chart__body">
+        @if (legend().length > 1 && !showTable()) {
+          @if (toggleLegend()) {
+            <!-- Each series name is a toggle button: pressed while the series is shown. -->
+            <ul
+              class="star-chart__legend star-chart__legend--toggle"
+              [attr.aria-label]="text.chartLegend"
+            >
+              @for (item of legend(); track item.slot) {
+                <li>
+                  <button
+                    type="button"
+                    class="star-chart__legend-item"
+                    [attr.aria-pressed]="!item.hidden"
+                    (click)="toggleSeries(item.slot)"
                   >
-                    {{ ring.text }}
-                  </text>
-                }
-                @for (label of plot.labels; track $index) {
-                  <text
-                    class="star-chart__axis"
-                    [attr.x]="label.x"
-                    [attr.y]="label.y"
-                    [attr.dy]="label.dy"
-                    [attr.text-anchor]="label.anchor"
-                  >
-                    {{ label.text }}
-                    @if (label.text !== label.full) {
-                      <title>{{ label.full }}</title>
+                    @if (item.shape) {
+                      <svg class="star-chart__swatch-shape" viewBox="-6 -6 12 12">
+                        <path
+                          class="star-chart__mark star-chart__marker"
+                          [attr.d]="item.shape"
+                          [style.--mark]="item.color"
+                        />
+                      </svg>
+                    } @else {
+                      <span class="star-chart__swatch" [style.background]="item.color"></span>
                     }
-                  </text>
-                }
-                @for (hit of plot.hits; track $index; let i = $index) {
-                  <path class="star-chart__hit" [attr.d]="hit" (mouseenter)="hover.set(i)" />
-                }
-              </g>
-            </svg>
-            @if (hover() !== null && labels()[hover()!] !== undefined) {
-              <div class="star-chart__tip star-chart__tip--corner">
-                <span class="star-chart__tip-title">{{ labels()[hover()!] }}</span>
-                @for (s of drawn(); track s.label; let si = $index) {
-                  <span class="star-chart__tip-row">
-                    <span class="star-chart__swatch" [style.background]="color(si)"></span>
-                    {{ s.label }}: <strong>{{ cell(s, hover()!) }}</strong>
-                  </span>
-                }
-              </div>
-            }
-          }
-          @case ('polar') {
-            @let plot = polar();
-            <svg [attr.viewBox]="'0 0 ' + RW + ' ' + RH" class="star-chart__svg">
-              <g [attr.transform]="'translate(' + RW / 2 + ',' + RH / 2 + ')'">
-                @for (ring of plot.rings; track ring.value) {
-                  <circle class="star-chart__ring" [attr.r]="ring.radius" />
-                }
-                @for (sector of plot.sectors; track sector.index) {
-                  @if (sector.path) {
-                    <path
-                      class="star-chart__mark star-chart__sector"
-                      [attr.d]="sector.path"
-                      [style.--mark]="color(0)"
-                      [class.star-chart__mark--dim]="hover() !== null && hover() !== sector.index"
-                    />
-                  }
-                }
-                @for (ring of plot.rings; track ring.value) {
-                  <text
-                    class="star-chart__ring-label"
-                    [attr.x]="ring.x"
-                    [attr.y]="ring.y"
-                    text-anchor="start"
-                  >
-                    {{ ring.text }}
-                  </text>
-                }
-                @for (sector of plot.sectors; track sector.index) {
-                  <text
-                    class="star-chart__axis"
-                    [attr.x]="sector.label.x"
-                    [attr.y]="sector.label.y"
-                    [attr.dy]="sector.label.dy"
-                    [attr.text-anchor]="sector.label.anchor"
-                  >
-                    {{ sector.label.text }}
-                    @if (sector.label.text !== sector.label.full) {
-                      <title>{{ sector.label.full }}</title>
-                    }
-                  </text>
-                }
-                @for (sector of plot.sectors; track sector.index) {
-                  <path
-                    class="star-chart__hit"
-                    [attr.d]="sector.hit"
-                    (mouseenter)="hover.set(sector.index)"
-                  />
-                }
-              </g>
-            </svg>
-            @if (hover() !== null) {
-              @let sector = plot.sectors[hover()!];
-              @if (sector) {
-                <div class="star-chart__tip star-chart__tip--corner">
-                  <span class="star-chart__tip-title">{{ sector.label.full }}</span>
-                  <span class="star-chart__tip-row">
-                    <span class="star-chart__swatch" [style.background]="color(0)"></span>
-                    {{ valueName() }}: <strong>{{ format(sector.value) }}</strong>
-                  </span>
-                </div>
+                    {{ item.label }}
+                  </button>
+                </li>
               }
-            }
-          }
-          @case ('scatter') {
-            @let plot = scatter();
-            <svg [attr.viewBox]="'0 0 ' + W + ' ' + H" class="star-chart__svg">
-              @for (tick of plot.yTicks; track tick.value) {
-                <line
-                  class="star-chart__grid"
-                  [attr.x1]="SP.left"
-                  [attr.x2]="W - SP.right"
-                  [attr.y1]="tick.position"
-                  [attr.y2]="tick.position"
-                />
-                <text
-                  class="star-chart__axis"
-                  [attr.x]="SP.left - 8"
-                  [attr.y]="tick.position + 4"
-                  text-anchor="end"
-                >
-                  {{ tick.text }}
-                </text>
-              }
-              @for (tick of plot.xTicks; track tick.value) {
-                <line
-                  class="star-chart__grid"
-                  [attr.x1]="tick.position"
-                  [attr.x2]="tick.position"
-                  [attr.y1]="SP.top"
-                  [attr.y2]="H - SP.bottom"
-                />
-                <text
-                  class="star-chart__axis"
-                  [attr.x]="tick.position"
-                  [attr.y]="H - SP.bottom + 16"
-                  text-anchor="middle"
-                >
-                  {{ tick.text }}
-                </text>
-              }
-              @if (categoryLabel()) {
-                <text
-                  class="star-chart__axis-title"
-                  [attr.x]="W - SP.right"
-                  [attr.y]="H - 4"
-                  text-anchor="end"
-                >
-                  {{ categoryLabel() }}
-                </text>
-              }
-              @if (valueLabel()) {
-                <text class="star-chart__axis-title" x="4" y="12" text-anchor="start">
-                  {{ valueLabel() }}
-                </text>
-              }
-              @for (point of plot.points; track point.index) {
-                <path
-                  class="star-chart__mark star-chart__point"
-                  [attr.d]="point.shape"
-                  [style.--mark]="point.color"
-                  [class.star-chart__mark--dim]="hover() !== null && hover() !== point.index"
-                />
-              }
-              @for (point of plot.points; track point.index) {
-                <circle
-                  class="star-chart__hit"
-                  r="10"
-                  [attr.cx]="point.px"
-                  [attr.cy]="point.py"
-                  (mouseenter)="hover.set(point.index)"
-                />
-              }
-            </svg>
-            @if (hover() !== null) {
-              @let point = plot.points[hover()!];
-              @if (point) {
-                <div
-                  class="star-chart__tip star-chart__tip--point"
-                  [style.left.%]="(point.px / W) * 100"
-                  [style.top.%]="(point.py / H) * 100"
-                  [style.translate]="
-                    point.px / W > 0.7 ? '-100% 0' : point.px / W < 0.3 ? '0 0' : null
-                  "
-                >
-                  <span class="star-chart__tip-title">{{ point.seriesLabel }}</span>
-                  <span class="star-chart__tip-row">
+            </ul>
+          } @else {
+            <ul class="star-chart__legend" aria-hidden="true">
+              @for (item of legend(); track item.label) {
+                <li>
+                  @if (item.shape) {
                     <svg class="star-chart__swatch-shape" viewBox="-6 -6 12 12">
                       <path
                         class="star-chart__mark star-chart__marker"
-                        [attr.d]="point.legendShape"
-                        [style.--mark]="point.color"
+                        [attr.d]="item.shape"
+                        [style.--mark]="item.color"
                       />
                     </svg>
-                    {{ xName() }}: <strong>{{ precise(point.x) }}</strong>
-                  </span>
-                  <span class="star-chart__tip-row star-chart__tip-indent">
-                    {{ yName() }}: <strong>{{ precise(point.y) }}</strong>
-                  </span>
-                </div>
-              }
-            }
-          }
-          @default {
-            <svg [attr.viewBox]="'0 0 ' + W + ' ' + H" class="star-chart__svg">
-              @for (tick of ticks(); track tick) {
-                <line
-                  class="star-chart__grid"
-                  [attr.x1]="PAD.left"
-                  [attr.x2]="W - PAD.right"
-                  [attr.y1]="y(tick)"
-                  [attr.y2]="y(tick)"
-                />
-                <text
-                  class="star-chart__axis"
-                  [attr.x]="PAD.left - 8"
-                  [attr.y]="y(tick) + 4"
-                  text-anchor="end"
-                >
-                  {{ yTick()(tick) }}
-                </text>
-              }
-              @if (yScale().min < 0) {
-                <line
-                  class="star-chart__baseline"
-                  [attr.x1]="PAD.left"
-                  [attr.x2]="W - PAD.right"
-                  [attr.y1]="y(0)"
-                  [attr.y2]="y(0)"
-                />
-              }
-              @for (label of axisLabels(); track $index; let i = $index) {
-                <text
-                  class="star-chart__axis"
-                  [attr.x]="x(i)"
-                  [attr.y]="H - 12"
-                  text-anchor="middle"
-                >
-                  {{ label.text }}
-                  @if (label.text !== label.full) {
-                    <title>{{ label.full }}</title>
+                  } @else {
+                    <span class="star-chart__swatch" [style.background]="item.color"></span>
                   }
-                </text>
+                  {{ item.label }}
+                </li>
               }
-              @if (type() === 'bar') {
-                @for (bar of bars(); track bar.key) {
-                  <path
-                    class="star-chart__bar"
-                    [attr.d]="bar.path"
-                    [style.fill]="bar.color"
-                    [class.star-chart__mark--dim]="hover() !== null && hover() !== bar.index"
-                  />
-                }
-              } @else if (type() === 'stacked-bar') {
-                @for (segment of segments(); track segment.key) {
-                  <rect
-                    class="star-chart__mark star-chart__segment"
-                    [attr.x]="segment.x"
-                    [attr.y]="segment.y"
-                    [attr.width]="segment.width"
-                    [attr.height]="segment.height"
-                    [style.--mark]="segment.color"
-                    [class.star-chart__mark--dim]="hover() !== null && hover() !== segment.index"
-                  />
-                }
-              } @else {
-                @if (hover() !== null) {
-                  <line
-                    class="star-chart__crosshair"
-                    [attr.x1]="x(hover()!)"
-                    [attr.x2]="x(hover()!)"
-                    [attr.y1]="PAD.top"
-                    [attr.y2]="H - PAD.bottom"
-                  />
-                }
-                @for (line of lines(); track line.label) {
-                  @if (type() === 'area') {
-                    <path class="star-chart__area" [attr.d]="line.area" [style.fill]="line.color" />
-                  }
-                  <path class="star-chart__line" [attr.d]="line.path" [style.stroke]="line.color" />
-                  @if (hover() !== null) {
-                    <circle
-                      class="star-chart__dot"
-                      r="4.5"
-                      [attr.cx]="x(hover()!)"
-                      [attr.cy]="y(line.data[hover()!] ?? 0)"
-                      [style.fill]="line.color"
-                    />
-                  }
-                }
-              }
-              <!-- Hit targets: one full-height column per category, wider than the marks. -->
-              @for (label of labels(); track $index; let i = $index) {
-                <rect
-                  class="star-chart__hit"
-                  [attr.x]="x(i) - band() / 2"
-                  [attr.y]="PAD.top"
-                  [attr.width]="band()"
-                  [attr.height]="H - PAD.top - PAD.bottom"
-                  (mouseenter)="hover.set(i)"
-                />
-              }
-            </svg>
-            @if (hover() !== null) {
-              <div
-                class="star-chart__tip"
-                [style.left.%]="(x(hover()!) / W) * 100"
-                [style.top.%]="6"
-              >
-                <span class="star-chart__tip-title">{{ labels()[hover()!] }}</span>
-                @for (s of drawn(); track s.label; let si = $index) {
-                  <span class="star-chart__tip-row">
-                    <span class="star-chart__swatch" [style.background]="color(si)"></span>
-                    {{ s.label }}: <strong>{{ cell(s, hover()!) }}</strong>
-                    @if (type() === 'stacked-bar' && percent()) {
-                      ({{ share(stack()[hover()!]?.segments?.[si]) }}%)
-                    }
-                  </span>
-                }
-                @if (type() === 'stacked-bar') {
-                  <span class="star-chart__tip-row star-chart__tip-total">
-                    {{ text.chartTotal }}:
-                    <strong>{{ format(stack()[hover()!]?.total ?? 0) }}</strong>
-                  </span>
-                }
-              </div>
-            }
+            </ul>
           }
         }
+
+        <div class="star-chart__frame" [hidden]="showTable()">
+          <div class="star-chart__plot" aria-hidden="true" (mouseleave)="hover.set(null)">
+            @switch (kind()) {
+              @case ('round') {
+                <svg [attr.viewBox]="'0 0 ' + W + ' ' + H" class="star-chart__svg">
+                  <g [attr.transform]="'translate(' + W / 2 + ',' + H / 2 + ')'">
+                    @for (slice of slices(); track slice.label; let i = $index) {
+                      <path
+                        class="star-chart__slice"
+                        [attr.d]="slice.path"
+                        [style.fill]="slice.color"
+                        [class.star-chart__mark--dim]="hover() !== null && hover() !== i"
+                        (mouseenter)="hover.set(i)"
+                      />
+                    }
+                    @if (type() === 'doughnut') {
+                      <text class="star-chart__total" y="-2" text-anchor="middle">
+                        {{ format(total()) }}
+                      </text>
+                      <text class="star-chart__total-label" y="18" text-anchor="middle">
+                        {{ text.chartTotal }}
+                      </text>
+                    }
+                  </g>
+                </svg>
+                @if (hover() !== null) {
+                  @let slice = slices()[hover()!];
+                  @if (slice) {
+                    <div class="star-chart__tip" [style.left.%]="50" [style.top.%]="8">
+                      @if (tooltipTemplate(); as custom) {
+                        <ng-container
+                          *ngTemplateOutlet="custom.template; context: tooltipContext()"
+                        />
+                      } @else {
+                        <span class="star-chart__swatch" [style.background]="slice.color"></span>
+                        {{ slice.label }}: <strong>{{ format(slice.value) }}</strong> ({{
+                          slice.percent
+                        }}%)
+                      }
+                    </div>
+                  }
+                }
+              }
+              @case ('radar') {
+                @let plot = radar();
+                <svg [attr.viewBox]="'0 0 ' + RW + ' ' + RH" class="star-chart__svg">
+                  <g [attr.transform]="'translate(' + RW / 2 + ',' + RH / 2 + ')'">
+                    @for (ring of plot.rings; track ring.value) {
+                      <path class="star-chart__ring" [attr.d]="ring.path" />
+                    }
+                    @for (spoke of plot.spokes; track $index) {
+                      <line
+                        class="star-chart__grid"
+                        x1="0"
+                        y1="0"
+                        [attr.x2]="spoke.x"
+                        [attr.y2]="spoke.y"
+                      />
+                    }
+                    @if (hover() !== null && plot.spokes[hover()!]) {
+                      <line
+                        class="star-chart__crosshair"
+                        x1="0"
+                        y1="0"
+                        [attr.x2]="plot.spokes[hover()!].x"
+                        [attr.y2]="plot.spokes[hover()!].y"
+                      />
+                    }
+                    @for (polygon of plot.polygons; track polygon.label) {
+                      <path
+                        class="star-chart__mark star-chart__polygon"
+                        [attr.d]="polygon.path"
+                        [style.--mark]="polygon.color"
+                      />
+                    }
+                    @for (polygon of plot.polygons; track polygon.label) {
+                      @for (vertex of polygon.vertices; track vertex.index) {
+                        <path
+                          class="star-chart__mark star-chart__vertex"
+                          [attr.d]="vertex.shape"
+                          [style.--mark]="polygon.color"
+                        />
+                      }
+                    }
+                    @for (ring of plot.rings; track ring.value) {
+                      <text
+                        class="star-chart__ring-label"
+                        [attr.x]="4"
+                        [attr.y]="-ring.radius + 11"
+                        text-anchor="start"
+                      >
+                        {{ ring.text }}
+                      </text>
+                    }
+                    @for (label of plot.labels; track $index) {
+                      <text
+                        class="star-chart__axis"
+                        [attr.x]="label.x"
+                        [attr.y]="label.y"
+                        [attr.dy]="label.dy"
+                        [attr.text-anchor]="label.anchor"
+                      >
+                        {{ label.text }}
+                        @if (label.text !== label.full) {
+                          <title>{{ label.full }}</title>
+                        }
+                      </text>
+                    }
+                    @for (hit of plot.hits; track $index; let i = $index) {
+                      <path class="star-chart__hit" [attr.d]="hit" (mouseenter)="hover.set(i)" />
+                    }
+                  </g>
+                </svg>
+                @if (hover() !== null && labels()[hover()!] !== undefined) {
+                  <div class="star-chart__tip star-chart__tip--corner">
+                    @if (tooltipTemplate(); as custom) {
+                      <ng-container
+                        *ngTemplateOutlet="custom.template; context: tooltipContext()"
+                      />
+                    } @else {
+                      <span class="star-chart__tip-title">{{ labels()[hover()!] }}</span>
+                      @for (s of drawn(); track s.slot) {
+                        <span class="star-chart__tip-row">
+                          <span
+                            class="star-chart__swatch"
+                            [style.background]="color(s.slot)"
+                          ></span>
+                          {{ s.label }}: <strong>{{ cell(s, hover()!) }}</strong>
+                        </span>
+                      }
+                    }
+                  </div>
+                }
+              }
+              @case ('polar') {
+                @let plot = polar();
+                <svg [attr.viewBox]="'0 0 ' + RW + ' ' + RH" class="star-chart__svg">
+                  <g [attr.transform]="'translate(' + RW / 2 + ',' + RH / 2 + ')'">
+                    @for (ring of plot.rings; track ring.value) {
+                      <circle class="star-chart__ring" [attr.r]="ring.radius" />
+                    }
+                    @for (sector of plot.sectors; track sector.index) {
+                      @if (sector.path) {
+                        <path
+                          class="star-chart__mark star-chart__sector"
+                          [attr.d]="sector.path"
+                          [style.--mark]="color(0)"
+                          [class.star-chart__mark--dim]="
+                            hover() !== null && hover() !== sector.index
+                          "
+                        />
+                      }
+                    }
+                    @for (ring of plot.rings; track ring.value) {
+                      <text
+                        class="star-chart__ring-label"
+                        [attr.x]="ring.x"
+                        [attr.y]="ring.y"
+                        text-anchor="start"
+                      >
+                        {{ ring.text }}
+                      </text>
+                    }
+                    @for (sector of plot.sectors; track sector.index) {
+                      <text
+                        class="star-chart__axis"
+                        [attr.x]="sector.label.x"
+                        [attr.y]="sector.label.y"
+                        [attr.dy]="sector.label.dy"
+                        [attr.text-anchor]="sector.label.anchor"
+                      >
+                        {{ sector.label.text }}
+                        @if (sector.label.text !== sector.label.full) {
+                          <title>{{ sector.label.full }}</title>
+                        }
+                      </text>
+                    }
+                    @for (sector of plot.sectors; track sector.index) {
+                      <path
+                        class="star-chart__hit"
+                        [attr.d]="sector.hit"
+                        (mouseenter)="hover.set(sector.index)"
+                      />
+                    }
+                  </g>
+                </svg>
+                @if (hover() !== null) {
+                  @let sector = plot.sectors[hover()!];
+                  @if (sector) {
+                    <div class="star-chart__tip star-chart__tip--corner">
+                      @if (tooltipTemplate(); as custom) {
+                        <ng-container
+                          *ngTemplateOutlet="custom.template; context: tooltipContext()"
+                        />
+                      } @else {
+                        <span class="star-chart__tip-title">{{ sector.label.full }}</span>
+                        <span class="star-chart__tip-row">
+                          <span class="star-chart__swatch" [style.background]="color(0)"></span>
+                          {{ valueName() }}: <strong>{{ format(sector.value) }}</strong>
+                        </span>
+                      }
+                    </div>
+                  }
+                }
+              }
+              @case ('scatter') {
+                @let plot = scatter();
+                <svg [attr.viewBox]="'0 0 ' + W + ' ' + H" class="star-chart__svg">
+                  @for (tick of plot.yTicks; track tick.value) {
+                    <line
+                      class="star-chart__grid"
+                      [attr.x1]="SP.left"
+                      [attr.x2]="W - SP.right"
+                      [attr.y1]="tick.position"
+                      [attr.y2]="tick.position"
+                    />
+                    <text
+                      class="star-chart__axis"
+                      [attr.x]="SP.left - 8"
+                      [attr.y]="tick.position + 4"
+                      text-anchor="end"
+                    >
+                      {{ tick.text }}
+                    </text>
+                  }
+                  @for (tick of plot.xTicks; track tick.value) {
+                    <line
+                      class="star-chart__grid"
+                      [attr.x1]="tick.position"
+                      [attr.x2]="tick.position"
+                      [attr.y1]="SP.top"
+                      [attr.y2]="H - SP.bottom"
+                    />
+                    <text
+                      class="star-chart__axis"
+                      [attr.x]="tick.position"
+                      [attr.y]="H - SP.bottom + 16"
+                      text-anchor="middle"
+                    >
+                      {{ tick.text }}
+                    </text>
+                  }
+                  @if (categoryLabel()) {
+                    <text
+                      class="star-chart__axis-title"
+                      [attr.x]="W - SP.right"
+                      [attr.y]="H - 4"
+                      text-anchor="end"
+                    >
+                      {{ categoryLabel() }}
+                    </text>
+                  }
+                  @if (valueLabel()) {
+                    <text class="star-chart__axis-title" x="4" y="12" text-anchor="start">
+                      {{ valueLabel() }}
+                    </text>
+                  }
+                  @for (point of plot.points; track point.index) {
+                    <path
+                      class="star-chart__mark star-chart__point"
+                      [attr.d]="point.shape"
+                      [style.--mark]="point.color"
+                      [class.star-chart__mark--dim]="hover() !== null && hover() !== point.index"
+                    />
+                  }
+                  @for (point of plot.points; track point.index) {
+                    <circle
+                      class="star-chart__hit"
+                      r="10"
+                      [attr.cx]="point.px"
+                      [attr.cy]="point.py"
+                      (mouseenter)="hover.set(point.index)"
+                    />
+                  }
+                </svg>
+                @if (hover() !== null) {
+                  @let point = plot.points[hover()!];
+                  @if (point) {
+                    <div
+                      class="star-chart__tip star-chart__tip--point"
+                      [style.left.%]="(point.px / W) * 100"
+                      [style.top.%]="(point.py / H) * 100"
+                      [style.translate]="
+                        point.px / W > 0.7 ? '-100% 0' : point.px / W < 0.3 ? '0 0' : null
+                      "
+                    >
+                      @if (tooltipTemplate(); as custom) {
+                        <ng-container
+                          *ngTemplateOutlet="custom.template; context: tooltipContext()"
+                        />
+                      } @else {
+                        <span class="star-chart__tip-title">{{ point.seriesLabel }}</span>
+                        <span class="star-chart__tip-row">
+                          <svg class="star-chart__swatch-shape" viewBox="-6 -6 12 12">
+                            <path
+                              class="star-chart__mark star-chart__marker"
+                              [attr.d]="point.legendShape"
+                              [style.--mark]="point.color"
+                            />
+                          </svg>
+                          {{ xName() }}: <strong>{{ precise(point.x) }}</strong>
+                        </span>
+                        <span class="star-chart__tip-row star-chart__tip-indent">
+                          {{ yName() }}: <strong>{{ precise(point.y) }}</strong>
+                        </span>
+                      }
+                    </div>
+                  }
+                }
+              }
+              @default {
+                <svg
+                  [attr.viewBox]="'0 0 ' + W + ' ' + H"
+                  class="star-chart__svg"
+                  [class.star-chart__svg--zoom]="textZoom() > 1"
+                  [style.--star-chart-zoom]="textZoom()"
+                >
+                  @for (tick of valueTicks(); track tick.value) {
+                    <line
+                      class="star-chart__grid"
+                      [attr.x1]="tick.x1"
+                      [attr.x2]="tick.x2"
+                      [attr.y1]="tick.y1"
+                      [attr.y2]="tick.y2"
+                    />
+                    <text
+                      class="star-chart__axis"
+                      [attr.x]="tick.tx"
+                      [attr.y]="tick.ty"
+                      [attr.text-anchor]="tick.anchor"
+                    >
+                      {{ tick.text }}
+                    </text>
+                  }
+                  @if (secondaryTitle()) {
+                    <text class="star-chart__axis-title" [attr.x]="W - 4" y="10" text-anchor="end">
+                      {{ secondaryTitle() }}
+                    </text>
+                  }
+                  @for (tick of secondaryTicks(); track tick.value) {
+                    <text
+                      class="star-chart__axis"
+                      [attr.x]="tick.tx"
+                      [attr.y]="tick.ty"
+                      text-anchor="start"
+                    >
+                      {{ tick.text }}
+                    </text>
+                  }
+                  @if (baseline(); as base) {
+                    <line
+                      class="star-chart__baseline"
+                      [attr.x1]="base.x1"
+                      [attr.x2]="base.x2"
+                      [attr.y1]="base.y1"
+                      [attr.y2]="base.y2"
+                    />
+                  }
+                  @for (label of axisLabels(); track $index) {
+                    @if (label.show) {
+                      <text
+                        class="star-chart__axis star-chart__axis--category"
+                        [attr.x]="label.x"
+                        [attr.y]="label.y"
+                        [attr.text-anchor]="label.anchor"
+                      >
+                        {{ label.text }}
+                        @if (label.text !== label.full) {
+                          <title>{{ label.full }}</title>
+                        }
+                      </text>
+                    }
+                  }
+                  @if (type() === 'stacked-bar') {
+                    @for (segment of segments(); track segment.key) {
+                      <rect
+                        class="star-chart__mark star-chart__segment"
+                        [attr.x]="segment.x"
+                        [attr.y]="segment.y"
+                        [attr.width]="segment.width"
+                        [attr.height]="segment.height"
+                        [style.--mark]="segment.color"
+                        [class.star-chart__mark--dim]="
+                          hover() !== null && hover() !== segment.index
+                        "
+                      />
+                    }
+                  } @else {
+                    @for (bar of bars(); track bar.key) {
+                      <path
+                        class="star-chart__bar"
+                        [attr.d]="bar.path"
+                        [style.fill]="bar.color"
+                        [class.star-chart__mark--dim]="hover() !== null && hover() !== bar.index"
+                      />
+                    }
+                    @if (hover() !== null && lines().length) {
+                      <line
+                        class="star-chart__crosshair"
+                        [attr.x1]="x(hover()!)"
+                        [attr.x2]="x(hover()!)"
+                        [attr.y1]="pad().top"
+                        [attr.y2]="H - pad().bottom"
+                      />
+                    }
+                    @for (line of lines(); track line.slot) {
+                      @if (type() === 'area') {
+                        <path
+                          class="star-chart__area"
+                          [attr.d]="line.area"
+                          [style.fill]="line.color"
+                        />
+                      }
+                      <path
+                        class="star-chart__line"
+                        [attr.d]="line.path"
+                        [style.stroke]="line.color"
+                      />
+                      @if (hover() !== null) {
+                        <circle
+                          class="star-chart__dot"
+                          r="4.5"
+                          [attr.cx]="x(hover()!)"
+                          [attr.cy]="y(line.data[hover()!] ?? 0, line.secondary)"
+                          [style.fill]="line.color"
+                        />
+                      }
+                    }
+                  }
+                  <!-- Hit targets: one full band per category, wider than the marks. -->
+                  @for (hit of hits(); track $index; let i = $index) {
+                    <rect
+                      class="star-chart__hit"
+                      [attr.x]="hit.x"
+                      [attr.y]="hit.y"
+                      [attr.width]="hit.width"
+                      [attr.height]="hit.height"
+                      (mouseenter)="hover.set(i)"
+                    />
+                  }
+                </svg>
+                @if (hover() !== null) {
+                  <div
+                    class="star-chart__tip"
+                    [style.left.%]="tipAt().left"
+                    [style.top.%]="tipAt().top"
+                  >
+                    @if (tooltipTemplate(); as custom) {
+                      <ng-container
+                        *ngTemplateOutlet="custom.template; context: tooltipContext()"
+                      />
+                    } @else {
+                      <span class="star-chart__tip-title">{{ labels()[hover()!] }}</span>
+                      @for (s of drawn(); track s.slot; let si = $index) {
+                        <span class="star-chart__tip-row">
+                          <span
+                            class="star-chart__swatch"
+                            [style.background]="color(s.slot)"
+                          ></span>
+                          {{ s.label }}: <strong>{{ cell(s, hover()!) }}</strong>
+                          @if (type() === 'stacked-bar' && percent()) {
+                            ({{ share(stack()[hover()!]?.segments?.[si]) }}%)
+                          }
+                        </span>
+                      }
+                      @if (type() === 'stacked-bar') {
+                        <span class="star-chart__tip-row star-chart__tip-total">
+                          {{ text.chartTotal }}:
+                          <strong>{{ format(stack()[hover()!]?.total ?? 0) }}</strong>
+                        </span>
+                      }
+                    }
+                  </div>
+                }
+              }
+            }
+          </div>
+          <!--
+            Keyboard and screen reader access to the data points: one focus target per point.
+            The pointer goes through to the marks; (click) serves assistive technology that
+            activates a target.
+          -->
+          <div
+            class="star-chart__points"
+            role="group"
+            [attr.aria-label]="text.chartPoints(title())"
+            [attr.aria-describedby]="pointsHintId"
+          >
+            @for (row of pointRows(); track $index; let r = $index) {
+              @for (point of row; track point.index; let c = $index) {
+                <span
+                  class="star-chart__target"
+                  role="img"
+                  [attr.data-point]="r + '-' + c"
+                  [attr.tabindex]="r === cursor().row && c === cursor().col ? 0 : -1"
+                  [attr.aria-label]="point.name"
+                  [style.left.%]="point.left"
+                  [style.top.%]="point.top"
+                  (focus)="onPointFocus(r, c, point)"
+                  (blur)="hover.set(null)"
+                  (click)="selectPoint(point)"
+                  (keydown)="onPointKeydown($event)"
+                ></span>
+              }
+            }
+            <span class="star-sr-only" [id]="pointsHintId">{{ text.chartPointsHint }}</span>
+          </div>
+        </div>
       </div>
 
       <table class="star-chart__table" [class.star-sr-only]="!showTable()">
@@ -634,7 +802,7 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                   <td>{{ cell(s, i) }}</td>
                 }
                 @if (type() === 'stacked-bar') {
-                  <td>{{ format(stack()[i]?.total ?? 0) }}</td>
+                  <td>{{ format(tableStack()[i]?.total ?? 0) }}</td>
                 }
               </tr>
             }
@@ -701,14 +869,53 @@ export class StarChart {
   /** Scatter and polar area: name of the y axis and column, or of the value column. */
   readonly valueLabel = input<string | null>(null);
   readonly locale = input<string | undefined>(undefined);
+  /**
+   * How values show in the tooltip, the table and the value axis: `Intl.NumberFormat` options,
+   * for example `{ style: 'currency', currency: 'EUR' }` (Chart.js tick `callback`).
+   */
+  readonly valueFormat = input<Intl.NumberFormatOptions | null>(null);
+  /** Lowest value of the value axis (bar, stacked bar, line, area). Default: from the data. */
+  readonly min = input<number | null>(null);
+  /** Highest value of the value axis. Values beyond the ends stop at the end. */
+  readonly max = input<number | null>(null);
+  /** Distance between the ticks of the value axis. Default: a round step. */
+  readonly stepSize = input<number | null>(null);
+  /**
+   * Bar and stacked bar: the bars run along the line and the categories go down the side
+   * (Chart.js `indexAxis: 'y'`). Series `type` and `axis` do not apply.
+   */
+  readonly horizontal = input(false, { transform: booleanAttribute });
   /** Start the table view open. */
   readonly table = input(false, { transform: booleanAttribute });
+  /**
+   * Positions in `series` of the series that are hidden. A click on a legend item adds or
+   * removes its series (Chart.js legend `onClick`, PrimeNG through the Chart.js options). The
+   * table keeps every series.
+   */
+  readonly hiddenSeries = model<readonly number[]>([]);
+  /** Where the legend is: above, below, or at the start or the end of the plot. */
+  readonly legendPosition = input<'top' | 'bottom' | 'start' | 'end'>('top');
+
+  /**
+   * A data point was clicked, or Enter or Space was pressed on a focused one. PrimeNG
+   * `onDataSelect`.
+   */
+  readonly pointSelect = output<StarChartPointSelectEvent>();
 
   protected readonly showTable = linkedSignal(() => this.table());
   protected readonly hover = signal<number | null>(null);
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+  protected readonly pointsHintId = this.ids.getId('star-chart-points-hint-');
+  /** Custom tooltip content (`ng-template starChartTooltip`). */
+  protected readonly tooltipTemplate = contentChild(StarChartTooltip);
+  /** The focus target in the tab order (roving tabindex). */
+  private readonly cursorState = signal<StarChartPointCursor>({ row: 0, col: 0 });
+  protected readonly cursor = computed(() =>
+    starChartClampCursor(this.pointRows(), this.cursorState()),
+  );
 
   private readonly numberFormat = computed(
-    () => new Intl.NumberFormat(this.locale(), { maximumFractionDigits: 1 }),
+    () => new Intl.NumberFormat(this.locale(), this.valueFormat() ?? { maximumFractionDigits: 1 }),
   );
   private readonly preciseFormat = computed(
     () => new Intl.NumberFormat(this.locale(), { maximumFractionDigits: 3 }),
@@ -724,7 +931,16 @@ export class StarChart {
   /** Axis tick text: just enough decimals to show every tick exactly. */
   private tickFormatter(ticks: readonly number[], suffix = ''): (value: number) => string {
     const digits = tickDecimals(ticks);
-    const formatter = new Intl.NumberFormat(this.locale(), { maximumFractionDigits: digits });
+    const options: Intl.NumberFormatOptions = { ...this.valueFormat() };
+    // Ticks show just enough decimals, unless `valueFormat` fixes them.
+    if (options.maximumFractionDigits === undefined) {
+      options.maximumFractionDigits = Math.max(digits, options.minimumFractionDigits ?? 0);
+      options.minimumFractionDigits = Math.min(
+        options.minimumFractionDigits ?? 0,
+        options.maximumFractionDigits,
+      );
+    }
+    const formatter = new Intl.NumberFormat(this.locale(), options);
     return (value) => formatter.format(value) + suffix;
   }
 
@@ -737,10 +953,32 @@ export class StarChart {
     this.series().map((s) => ({
       label: s.label,
       data: (s.data as readonly (number | StarChartPoint)[]).map(valueOf),
+      type: (s as StarChartSeries).type,
+      axis: (s as StarChartSeries).axis,
     })),
   );
-  /** The series that are drawn: the first 8. */
-  protected readonly drawn = computed(() => this.numeric().slice(0, STAR_CHART_SLOTS));
+  /**
+   * The series that are drawn: the first 8 that are not hidden. `slot` is the position in
+   * `series`, which keeps the color, the marker and the legend place of a series.
+   */
+  protected readonly drawn = computed(() => {
+    const hidden = new Set(this.hiddenSeries());
+    return this.numeric()
+      .slice(0, STAR_CHART_SLOTS)
+      .map((s, slot) => ({ ...s, slot }))
+      .filter((s) => !hidden.has(s.slot));
+  });
+  /** The legend toggles series: charts with series (not doughnut, pie or polar area). */
+  protected readonly toggleLegend = computed(() => !this.round() && this.kind() !== 'polar');
+
+  protected toggleSeries(slot: number): void {
+    const hidden = this.hiddenSeries();
+    this.hiddenSeries.set(
+      hidden.includes(slot)
+        ? hidden.filter((s) => s !== slot)
+        : [...hidden, slot].sort((a, b) => a - b),
+    );
+  }
 
   /** Table cell of a series at a category: a missing value reads as 0. */
   protected cell(series: StarChartSeries | undefined, index: number): string {
@@ -762,12 +1000,24 @@ export class StarChart {
 
   protected readonly legend = computed(() => {
     if (this.round())
-      return this.slices().map((s) => ({ label: s.label, color: s.color, shape: '' }));
+      return this.slices().map((s, i) => ({
+        label: s.label,
+        slot: i,
+        hidden: false,
+        color: s.color,
+        shape: '',
+      }));
     // Polar area has one color: the categories are named at the axis, not in a legend.
     if (this.kind() === 'polar') return [];
     const marked = this.kind() === 'radar' || this.kind() === 'scatter';
-    return this.drawn().map((s, i) => ({
-      label: s.label,
+    const hidden = new Set(this.hiddenSeries());
+    const series = this.kind() === 'scatter' ? this.series() : this.numeric();
+    return series.slice(0, STAR_CHART_SLOTS).map((s, i) => ({
+      label: this.onSecondary(s as StarChartSeries)
+        ? this.text.chartSecondaryAxis(s.label)
+        : s.label,
+      slot: i,
+      hidden: hidden.has(i),
       color: this.color(i),
       shape: marked ? markerPath(i, 0, 0, MARKER_RADIUS) : '',
     }));
@@ -812,6 +1062,28 @@ export class StarChart {
 
   // ---------- Axis charts: bar, stacked bar, line, area ----------
 
+  /** Bars along the line, categories down the side: bar and stacked bar with `horizontal`. */
+  protected readonly isHorizontal = computed(
+    () => this.horizontal() && (this.type() === 'bar' || this.type() === 'stacked-bar'),
+  );
+  /** How a drawn series looks: its own `type`, else the chart type. Stacked bars ignore it. */
+  private seriesKind(series: StarChartSeries): 'bar' | 'line' {
+    if (this.type() === 'stacked-bar' || this.isHorizontal()) return 'bar';
+    return series.type ?? (this.type() === 'bar' ? 'bar' : 'line');
+  }
+  /** The series uses the second value axis (vertical bar, line and area charts only). */
+  private onSecondary(series: StarChartSeries): boolean {
+    return !this.isHorizontal() && this.type() !== 'stacked-bar' && series.axis === 'secondary';
+  }
+  protected readonly hasSecondary = computed(() => this.drawn().some((s) => this.onSecondary(s)));
+  /** Room around the plot: more at the start for category names, at the end for a 2nd axis. */
+  protected readonly pad = computed(() => ({
+    top: PAD.top,
+    right: this.hasSecondary() ? 56 : PAD.right,
+    bottom: this.isHorizontal() ? 28 : PAD.bottom,
+    left: this.isHorizontal() ? 104 : PAD.left,
+  }));
+
   protected readonly stack = computed(() =>
     stackColumns(
       this.drawn().map((s) => s.data),
@@ -819,94 +1091,285 @@ export class StarChart {
       this.percent(),
     ),
   );
+  /** The value axis: from the data, or from `min`, `max` and `stepSize`. */
   protected readonly yScale = computed<StarChartScale>(() => {
+    const bounds = { min: this.min(), max: this.max(), stepSize: this.stepSize() };
     if (this.type() === 'stacked-bar') {
       const { min, max } = stackExtent(this.stack());
-      return niceScale(min, max, { includeZero: true });
+      return boundedScale(min, max, { includeZero: true, ...bounds });
     }
-    return niceScale(0, extentOf(this.numeric().flatMap((s) => s.data)).max, {
-      includeZero: true,
+    const { min, max } = extentOf(
+      this.drawn()
+        .filter((s) => !this.onSecondary(s))
+        .flatMap((s) => s.data),
+    );
+    return boundedScale(min, max, { includeZero: true, ...bounds });
+  });
+  /** The second value axis, at the end of the plot. */
+  protected readonly secondaryScale = computed<StarChartScale>(() => {
+    const { min, max } = extentOf(
+      this.drawn()
+        .filter((s) => this.onSecondary(s))
+        .flatMap((s) => s.data),
+    );
+    return niceScale(min, max, { includeZero: true });
+  });
+  protected readonly band = computed(() => {
+    const pad = this.pad();
+    const length = this.isHorizontal() ? H - pad.top - pad.bottom : W - pad.left - pad.right;
+    return length / Math.max(1, this.labels().length);
+  });
+
+  /** Position of a category along the category axis. */
+  protected x(index: number): number {
+    const pad = this.pad();
+    return (this.isHorizontal() ? pad.top : pad.left) + this.band() * (index + 0.5);
+  }
+  /** Position of a value along a value axis. Values outside the axis stop at its ends. */
+  protected y(value: number, secondary = false): number {
+    const { min, max } = secondary ? this.secondaryScale() : this.yScale();
+    const pad = this.pad();
+    const share = (Math.min(Math.max(value, min), max) - min) / (max - min || 1);
+    return this.isHorizontal()
+      ? pad.left + share * (W - pad.left - pad.right)
+      : pad.top + (1 - share) * (H - pad.top - pad.bottom);
+  }
+
+  /** Grid lines and tick labels of the value axis. */
+  protected readonly valueTicks = computed(() => {
+    const scale = this.yScale();
+    const pad = this.pad();
+    const text = this.tickFormatter(
+      scale.ticks,
+      this.type() === 'stacked-bar' && this.percent() ? '%' : '',
+    );
+    return this.inRange(scale).map((value) => {
+      const at = this.y(value);
+      return this.isHorizontal()
+        ? {
+            value,
+            text: text(value),
+            x1: at,
+            x2: at,
+            y1: pad.top,
+            y2: H - pad.bottom,
+            tx: at,
+            ty: H - pad.bottom + 18,
+            anchor: 'middle',
+          }
+        : {
+            value,
+            text: text(value),
+            x1: pad.left,
+            x2: W - pad.right,
+            y1: at,
+            y2: at,
+            tx: pad.left - 8,
+            ty: at + 4,
+            anchor: 'end',
+          };
     });
   });
-  protected readonly ticks = computed(() => this.yScale().ticks);
-  protected readonly yTick = computed(() =>
-    this.tickFormatter(this.ticks(), this.type() === 'stacked-bar' && this.percent() ? '%' : ''),
+  /** Tick labels of the second value axis, at the end of the plot. */
+  protected readonly secondaryTicks = computed(() => {
+    if (!this.hasSecondary()) return [];
+    const scale = this.secondaryScale();
+    const text = this.tickFormatter(scale.ticks);
+    const x = W - this.pad().right + 8;
+    return this.inRange(scale).map((value) => ({
+      value,
+      text: text(value),
+      tx: x,
+      ty: this.y(value, true) + 4,
+    }));
+  });
+  /** Ticks inside the ends of the scale: a tick outside would draw beyond the plot. */
+  private inRange(scale: StarChartScale): number[] {
+    const slack = Math.abs(scale.max - scale.min) * 1e-9;
+    return scale.ticks.filter((t) => t >= scale.min - slack && t <= scale.max + slack);
+  }
+
+  /** Title of the second value axis: the names of its series. */
+  protected readonly secondaryTitle = computed(() =>
+    this.hasSecondary()
+      ? this.drawn()
+          .filter((s) => this.onSecondary(s))
+          .map((s) => s.label)
+          .join(', ')
+      : '',
   );
-  protected readonly band = computed(
-    () => (W - PAD.left - PAD.right) / Math.max(1, this.labels().length),
-  );
-  /** Category labels cut to the width of their column, with the full text as a title. */
+
+  /** The zero line, when the value axis has negative values. */
+  protected readonly baseline = computed(() => {
+    if (!(this.yScale().min < 0)) return null;
+    const pad = this.pad();
+    const at = this.y(0);
+    return this.isHorizontal()
+      ? { x1: at, x2: at, y1: pad.top, y2: H - pad.bottom }
+      : { x1: pad.left, x2: W - pad.right, y1: at, y2: at };
+  });
+  /**
+   * Width of the plot on the screen, in pixels (browser only, from a ResizeObserver). 0 until it
+   * is measured.
+   */
+  protected readonly plotWidth = signal(0);
+  /**
+   * The view box shrinks with a narrow container, and its text with it. Axis text grows back by
+   * this factor (at most 2) so it stays readable, and the category labels thin out to make room.
+   */
+  protected readonly textZoom = computed(() => {
+    const width = this.plotWidth();
+    return width > 0 ? Math.min(2, Math.max(1, W / width)) : 1;
+  });
+  /** Show every `step`-th category label: 1, unless the zoomed labels need more room. */
+  protected readonly labelStep = computed(() => {
+    const zoom = this.textZoom();
+    if (zoom <= 1) return 1;
+    const band = this.band();
+    if (this.isHorizontal()) return Math.max(1, Math.ceil((16 * zoom) / band));
+    const longest = Math.max(0, ...this.labels().map((label) => label.length));
+    const wanted = Math.min(longest, 6) * 6.5 * zoom;
+    return Math.max(1, Math.ceil(wanted / band));
+  });
+  /** Category labels cut to their room, with the full text as a title. */
   protected readonly axisLabels = computed(() => {
-    const max = Math.max(3, Math.floor(this.band() / 6.5));
-    return this.labels().map((label) => ({ text: truncateLabel(label, max), full: label }));
+    const pad = this.pad();
+    const horizontal = this.isHorizontal();
+    const step = this.labelStep();
+    const zoom = this.textZoom();
+    const room = horizontal ? pad.left - 12 : this.band() * step;
+    const max = Math.max(3, Math.floor(room / (6.5 * zoom)));
+    return this.labels().map((label, i) => ({
+      text: truncateLabel(label, max),
+      full: label,
+      show: i % step === 0,
+      x: horizontal ? pad.left - 8 : this.x(i),
+      y: horizontal ? this.x(i) + 4 : H - 12,
+      anchor: horizontal ? 'end' : 'middle',
+    }));
+  });
+  /** Hover targets: one band per category, wider than the marks. */
+  protected readonly hits = computed(() => {
+    const pad = this.pad();
+    const band = this.band();
+    return this.labels().map((_, i) =>
+      this.isHorizontal()
+        ? { x: pad.left, y: this.x(i) - band / 2, width: W - pad.left - pad.right, height: band }
+        : { x: this.x(i) - band / 2, y: pad.top, width: band, height: H - pad.top - pad.bottom },
+    );
+  });
+  /** Where the tooltip of the hovered category goes, in percent of the plot. */
+  protected readonly tipAt = computed(() => {
+    const hover = this.hover() ?? 0;
+    return this.isHorizontal()
+      ? { left: 50, top: ((this.x(hover) + this.band() / 2) / H) * 100 }
+      : { left: (this.x(hover) / W) * 100, top: 6 };
   });
 
-  protected x(index: number): number {
-    return PAD.left + this.band() * (index + 0.5);
-  }
-  protected y(value: number): number {
-    const { min, max } = this.yScale();
-    return PAD.top + (1 - (value - min) / (max - min || 1)) * (H - PAD.top - PAD.bottom);
-  }
-
-  /** Grouped bars: 2px gap between neighbours, 4px rounded top, square base. */
+  /** Grouped bars: 2px gap between neighbours, 4px rounded end, square base. */
   protected readonly bars = computed(() => {
-    const series = this.drawn();
-    const groupWidth = Math.min(this.band() * 0.7, 28 * series.length + 2 * (series.length - 1));
-    const barWidth = (groupWidth - 2 * (series.length - 1)) / Math.max(1, series.length);
-    const base = this.y(0);
+    const series = this.drawn().filter((s) => this.seriesKind(s) === 'bar');
+    const horizontal = this.isHorizontal();
+    const count = Math.max(1, series.length);
+    const group = Math.min(this.band() * 0.7, 28 * count + 2 * (count - 1));
+    const thickness = (group - 2 * (count - 1)) / count;
     return this.labels().flatMap((_, i) =>
       series.map((s, si) => {
-        const left = this.x(i) - groupWidth / 2 + si * (barWidth + 2);
-        const top = this.y(toFinite(s.data[i]));
-        const r = Math.min(4, barWidth / 2, Math.max(0, base - top));
-        const path =
-          `M${left},${base}V${top + r}Q${left},${top} ${left + r},${top}` +
-          `H${left + barWidth - r}Q${left + barWidth},${top} ${left + barWidth},${top + r}V${base}Z`;
-        return { key: `${i}-${si}`, index: i, path, color: this.color(si) };
+        const secondary = this.onSecondary(s);
+        const base = this.y(0, secondary);
+        const end = this.y(toFinite(s.data[i]), secondary);
+        const start = this.x(i) - group / 2 + si * (thickness + 2);
+        let path: string;
+        if (horizontal) {
+          const r = Math.min(4, thickness / 2, Math.max(0, end - base));
+          path =
+            `M${base},${start}H${end - r}Q${end},${start} ${end},${start + r}` +
+            `V${start + thickness - r}Q${end},${start + thickness} ${end - r},${start + thickness}` +
+            `H${base}Z`;
+        } else {
+          const r = Math.min(4, thickness / 2, Math.max(0, base - end));
+          path =
+            `M${start},${base}V${end + r}Q${start},${end} ${start + r},${end}` +
+            `H${start + thickness - r}Q${start + thickness},${end} ${start + thickness},${end + r}V${base}Z`;
+        }
+        return {
+          key: `${i}-${s.slot}`,
+          index: i,
+          slot: s.slot,
+          center: start + thickness / 2,
+          end,
+          path,
+          color: this.color(s.slot),
+        };
       }),
     );
   });
 
   /** Stacked bars: one rectangle per value that is not 0, outlined in a darker tone. */
   protected readonly segments = computed(() => {
-    const width = Math.min(this.band() * 0.6, 64);
+    const thickness = Math.min(this.band() * 0.6, 64);
+    const horizontal = this.isHorizontal();
     return this.stack().flatMap((column, i) =>
       column.segments
         .filter((segment) => segment.start !== segment.end)
         .map((segment) => {
           const a = this.y(segment.start);
           const b = this.y(segment.end);
+          const across = this.x(i) - thickness / 2;
           return {
             key: `${i}-${segment.series}`,
             index: i,
-            x: this.x(i) - width / 2,
-            y: Math.min(a, b),
-            width,
-            height: Math.abs(a - b),
-            color: this.color(segment.series),
+            x: horizontal ? Math.min(a, b) : across,
+            y: horizontal ? across : Math.min(a, b),
+            width: horizontal ? Math.abs(a - b) : thickness,
+            height: horizontal ? thickness : Math.abs(a - b),
+            color: this.color(this.drawn()[segment.series]?.slot ?? segment.series),
           };
         }),
     );
   });
+
+  /**
+   * The stack of every series (not only the shown ones), for the Total column of the table:
+   * the table keeps hidden series, so its total does too.
+   */
+  protected readonly tableStack = computed(() =>
+    stackColumns(
+      this.numeric()
+        .slice(0, STAR_CHART_SLOTS)
+        .map((s) => s.data),
+      this.labels().length,
+    ),
+  );
 
   /** Share of a stack segment in its column, in percent (percent mode). */
   protected share(segment: StarChartStackSegment | undefined): number {
     return segment ? Math.round(Math.abs(segment.end - segment.start) * 10) / 10 : 0;
   }
 
+  /** Lines (line and area charts, and series with `type: 'line'` in a bar chart). */
   protected readonly lines = computed(() =>
-    this.drawn().map((s, si) => ({
-      label: s.label,
-      data: s.data,
-      color: this.color(si),
-      path: s.data.map((v, i) => `${i ? 'L' : 'M'}${this.x(i)},${this.y(v)}`).join(''),
-      // Area: the line, then down to the baseline and back to the first point.
-      area: s.data.length
-        ? s.data.map((v, i) => `${i ? 'L' : 'M'}${this.x(i)},${this.y(v)}`).join('') +
-          `L${this.x(s.data.length - 1)},${this.y(0)}L${this.x(0)},${this.y(0)}Z`
-        : '',
-    })),
+    this.drawn()
+      .filter((s) => this.seriesKind(s) === 'line')
+      .map((s) => {
+        const secondary = this.onSecondary(s);
+        const path = s.data
+          .map((v, i) => `${i ? 'L' : 'M'}${this.x(i)},${this.y(v, secondary)}`)
+          .join('');
+        const base = this.y(0, secondary);
+        return {
+          label: s.label,
+          slot: s.slot,
+          secondary,
+          data: s.data,
+          color: this.color(s.slot),
+          path,
+          // Area: the line, then down to the baseline and back to the first point.
+          area: s.data.length
+            ? `${path}L${this.x(s.data.length - 1)},${base}L${this.x(0)},${base}Z`
+            : '',
+        };
+      }),
   );
 
   // ---------- Doughnut and pie ----------
@@ -948,12 +1411,16 @@ export class StarChart {
         ? `M0,-${outer}A${outer},${outer} 0 1 1 -0.01,-${outer}Z`
         : `M0,0L${p(outer, a0)}A${outer},${outer} 0 ${large} 1 ${p(outer, a1)}Z`;
       const path = inner ? ring : wedge;
+      const mid = a0 + (a1 - a0) / 2;
+      const at = (outer + inner) / 2;
       return {
         label: item.label,
         value: item.value,
         percent: Math.round((item.value / total) * 1000) / 10,
         color: this.color(i),
         path,
+        x: at * Math.cos(mid),
+        y: at * Math.sin(mid),
       };
     });
   });
@@ -993,17 +1460,20 @@ export class StarChart {
       spokes: angles.map((a) => polarPoint(RADIAL, a)),
       labels: this.labels().map((label, i) => this.axisLabel(label, angles[i])),
       hits: angles.map((a) => sectorPath(0, RADIAL + RADIAL_LABEL_GAP, a - half, a + half)),
-      polygons: this.drawn().map((s, si) => {
+      polygons: this.drawn().map((s) => {
         const points = angles.map((a, i) =>
           polarPoint(linearRadius(toFinite(s.data[i]), scale, RADIAL), a),
         );
         return {
           label: s.label,
-          color: this.color(si),
+          slot: s.slot,
+          color: this.color(s.slot),
           path: polygonPath(points),
           vertices: points.map((p, index) => ({
             index,
-            shape: markerPath(si, p.x, p.y, MARKER_RADIUS - 1),
+            x: p.x,
+            y: p.y,
+            shape: markerPath(s.slot, p.x, p.y, MARKER_RADIUS - 1),
           })),
         };
       }),
@@ -1055,7 +1525,11 @@ export class StarChart {
   );
 
   protected readonly scatter = computed(() => {
-    const drawn = this.scatterData().slice(0, STAR_CHART_SLOTS);
+    const hidden = new Set(this.hiddenSeries());
+    const drawn = this.scatterData()
+      .slice(0, STAR_CHART_SLOTS)
+      .map((s, slot) => ({ ...s, slot }))
+      .filter((s) => !hidden.has(s.slot));
     const scales = scatterScales(drawn.flatMap((s) => s.points));
     const left = SCATTER_PAD.left;
     const right = W - SCATTER_PAD.right;
@@ -1075,24 +1549,285 @@ export class StarChart {
         position: scalePosition(value, scales.y, bottom, top),
         text: yText(value),
       })),
-      points: drawn.flatMap((s, si) =>
-        s.points.map((p) => {
+      points: drawn.flatMap((s) =>
+        s.points.map((p, local) => {
           const px = scalePosition(p.x, scales.x, left, right);
           const py = scalePosition(p.y, scales.y, bottom, top);
           return {
             index: index++,
+            local,
+            series: s.slot,
             seriesLabel: s.label,
-            color: this.color(si),
+            color: this.color(s.slot),
             x: p.x,
             y: p.y,
             px,
             py,
             // The shape repeats the series color: series stay apart where two colors are close.
-            shape: markerPath(si, px, py, MARKER_RADIUS),
-            legendShape: markerPath(si, 0, 0, MARKER_RADIUS),
+            shape: markerPath(s.slot, px, py, MARKER_RADIUS),
+            legendShape: markerPath(s.slot, 0, 0, MARKER_RADIUS),
           };
         }),
       ),
     };
   });
+
+  // ---------- Responsive labels ----------
+
+  constructor() {
+    const destroyRef = inject(DestroyRef);
+    afterNextRender(() => {
+      // Browser only: afterNextRender does not run on the server.
+      if (typeof ResizeObserver === 'undefined') return;
+      const observer = new ResizeObserver((entries) => {
+        const width = entries[0]?.contentRect.width ?? 0;
+        if (width !== this.plotWidth()) this.plotWidth.set(width);
+      });
+      const plot = this.host.nativeElement.querySelector('.star-chart__plot');
+      if (plot) observer.observe(plot);
+      destroyRef.onDestroy(() => observer.disconnect());
+    });
+  }
+
+  // ---------- Export ----------
+
+  private readonly browser = isPlatformBrowser(inject(PLATFORM_ID));
+
+  /** The background behind the chart: the first fill that is not transparent. */
+  private surface(): string {
+    const view = this.host.nativeElement.ownerDocument.defaultView;
+    for (let node: Element | null = this.host.nativeElement; node; node = node.parentElement) {
+      const color = view?.getComputedStyle(node).backgroundColor;
+      if (color && color !== 'transparent' && color !== 'rgba(0, 0, 0, 0)') return color;
+    }
+    return '#ffffff';
+  }
+
+  private plotSvg(): SVGSVGElement | null {
+    return this.host.nativeElement.querySelector<SVGSVGElement>('.star-chart__plot svg');
+  }
+
+  /**
+   * The plot as a stand-alone SVG document (colors resolved, with the title), for a download or
+   * a report. An empty string on the server. PrimeNG / Chart.js `toBase64Image` gives a PNG only.
+   */
+  exportSvg(): string {
+    const svg = this.browser ? this.plotSvg() : null;
+    if (!svg) return '';
+    return starChartSvgDocument(svg, { title: this.title(), background: this.surface() });
+  }
+
+  /**
+   * The plot as a PNG image, `scale` times the size of the view box (default 2 for sharp
+   * output). `null` on the server or without a canvas. Chart.js `toBase64Image`.
+   */
+  async exportPng(scale = 2): Promise<Blob | null> {
+    const svgDocument = this.exportSvg();
+    const svg = this.plotSvg();
+    const box = svg ? starChartViewBox(svg) : null;
+    if (!svgDocument || !box) return null;
+    const doc = this.host.nativeElement.ownerDocument;
+    return starChartPng(doc, svgDocument, box.width, box.height, scale);
+  }
+
+  // ---------- Data point focus, tooltip and selection ----------
+
+  /** One focus target per data point, in percent of the plot, one row per drawn series. */
+  protected readonly pointRows = computed<StarChartPointRows>(() => {
+    const labels = this.labels();
+    const target = (
+      seriesIndex: number,
+      series: string,
+      index: number,
+      label: string,
+      value: number,
+      left: number,
+      top: number,
+      hover: number,
+      shown = this.format(value),
+    ): StarChartPointTarget => ({
+      seriesIndex,
+      series,
+      index,
+      label,
+      value,
+      left,
+      top,
+      hover,
+      name: this.text.chartPointLabel(series, label, shown),
+    });
+    switch (this.kind()) {
+      case 'round': {
+        const name = this.series()[0]?.label ?? this.text.chartValue;
+        return [
+          this.slices().map((s, i) =>
+            target(
+              0,
+              name,
+              i,
+              s.label,
+              s.value,
+              ((W / 2 + s.x) / W) * 100,
+              ((H / 2 + s.y) / H) * 100,
+              i,
+            ),
+          ),
+        ];
+      }
+      case 'radar':
+        return this.radar().polygons.map((polygon, si) =>
+          polygon.vertices.map((v) =>
+            target(
+              polygon.slot,
+              polygon.label,
+              v.index,
+              labels[v.index] ?? '',
+              toFinite(this.drawn()[si]?.data[v.index]),
+              ((RADIAL_W / 2 + v.x) / RADIAL_W) * 100,
+              ((RADIAL_H / 2 + v.y) / RADIAL_H) * 100,
+              v.index,
+            ),
+          ),
+        );
+      case 'polar': {
+        const name = this.valueName();
+        return [
+          this.polar().sectors.map((s) => {
+            const at = polarPoint(Math.max(s.radius * 0.6, 8), s.mid);
+            return target(
+              0,
+              name,
+              s.index,
+              s.label.full,
+              s.value,
+              ((RADIAL_W / 2 + at.x) / RADIAL_W) * 100,
+              ((RADIAL_H / 2 + at.y) / RADIAL_H) * 100,
+              s.index,
+            );
+          }),
+        ];
+      }
+      case 'scatter': {
+        const rows: StarChartPointTarget[][] = [];
+        for (const p of this.scatter().points) {
+          (rows[p.series] ??= []).push(
+            target(
+              p.series,
+              p.seriesLabel,
+              p.local,
+              this.precise(p.x),
+              p.y,
+              (p.px / W) * 100,
+              (p.py / H) * 100,
+              p.index,
+              this.precise(p.y),
+            ),
+          );
+        }
+        return rows.filter(Boolean);
+      }
+      default: {
+        const horizontal = this.isHorizontal();
+        return this.drawn().map((s, si) =>
+          labels.map((label, i) => {
+            const value = toFinite(s.data[i]);
+            let along = this.y(value, this.onSecondary(s));
+            let across = this.x(i);
+            if (this.type() === 'stacked-bar') {
+              const segment = this.stack()[i]?.segments[si];
+              along = this.y(segment ? segment.end : 0);
+            } else if (this.seriesKind(s) === 'bar') {
+              const bar = this.bars().find((b) => b.index === i && b.slot === s.slot);
+              across = bar?.center ?? across;
+            }
+            const left = horizontal ? along : across;
+            const top = horizontal ? across : along;
+            return target(s.slot, s.label, i, label, value, (left / W) * 100, (top / H) * 100, i);
+          }),
+        );
+      }
+    }
+  });
+
+  /** Points that the tooltip shows: every point at the hover index. */
+  protected readonly tooltipContext = computed<StarChartTooltipContext>(() => {
+    const hover = this.hover();
+    const points: StarChartPointInfo[] = this.pointRows()
+      .flat()
+      .filter((point) => point.hover === hover)
+      .map(({ seriesIndex, index, value, series, label }) => ({
+        seriesIndex,
+        index,
+        value,
+        series,
+        label,
+      }));
+    const label = this.kind() === 'scatter' ? (points[0]?.series ?? '') : (points[0]?.label ?? '');
+    return { $implicit: points, points, label };
+  });
+
+  protected onPointFocus(row: number, col: number, point: StarChartPointTarget): void {
+    this.cursorState.set({ row, col });
+    this.hover.set(point.hover);
+  }
+
+  /**
+   * A click on the plot selects the data point nearest to the pointer (the focus targets let the
+   * pointer through to the marks).
+   */
+  protected onPlotClick(event: MouseEvent): void {
+    const target = event.target as Element | null;
+    const frame = target?.closest('.star-chart__plot')?.parentElement;
+    if (!frame) return;
+    const box = frame.getBoundingClientRect();
+    const left = box.width ? ((event.clientX - box.left) / box.width) * 100 : 0;
+    const top = box.height ? ((event.clientY - box.top) / box.height) * 100 : 0;
+    let best: StarChartPointTarget | null = null;
+    let distance = Infinity;
+    for (const point of this.pointRows().flat()) {
+      const d = (point.left - left) ** 2 + (point.top - top) ** 2;
+      if (d < distance) [best, distance] = [point, d];
+    }
+    if (best) this.selectPoint(best);
+  }
+
+  protected selectPoint(point: StarChartPointTarget): void {
+    this.pointSelect.emit({
+      seriesIndex: point.seriesIndex,
+      index: point.index,
+      value: point.value,
+    });
+  }
+
+  /** Arrow keys, Home and End move between the points; Enter and Space select one. */
+  protected onPointKeydown(event: KeyboardEvent): void {
+    const rows = this.pointRows();
+    const cursor = this.cursor();
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      const point = rows[cursor.row]?.[cursor.col];
+      if (point) this.selectPoint(point);
+      return;
+    }
+    if (event.key === 'Escape') {
+      this.hover.set(null);
+      return;
+    }
+    // Horizontal bars: the categories run down, so Arrow Down and Up move along a series and
+    // Arrow Right and Left move between the series.
+    const swap: Readonly<Record<string, string>> = {
+      ArrowDown: 'ArrowRight',
+      ArrowUp: 'ArrowLeft',
+      ArrowRight: 'ArrowDown',
+      ArrowLeft: 'ArrowUp',
+    };
+    const key = this.isHorizontal() ? (swap[event.key] ?? event.key) : event.key;
+    const next = starChartMoveCursor(rows, cursor, key);
+    if (!next) return;
+    event.preventDefault();
+    this.cursorState.set(next);
+    this.host.nativeElement
+      .querySelector<HTMLElement>(`[data-point="${next.row}-${next.col}"]`)
+      ?.focus();
+  }
 }

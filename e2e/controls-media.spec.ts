@@ -240,22 +240,56 @@ test.describe('editor', () => {
     await expect(area.locator('li')).toHaveCount(1);
   });
 
-  test('the link button accepts only an http or https address', async ({ page }) => {
+  test('the link form accepts only a safe address and sets rel for a new tab', async ({ page }) => {
     await openPage(page, '/controls/editor', 'Editor');
     const live = example(page, 'Toolbar and value');
     const area = live.getByRole('textbox', { name: 'Delivery note' });
+    const link = live.getByRole('button', { name: 'Link' });
 
     await area.click();
     await page.keyboard.type('Tracking');
     await page.keyboard.press('Control+A');
-    page.once('dialog', (dialog) => dialog.accept('javascript:alert(1)'));
-    await live.getByRole('button', { name: 'Link' }).click();
+    await link.click();
+    await expect(link).toHaveAttribute('aria-expanded', 'true');
+    const address = live.getByRole('textbox', { name: 'Link address (https://…)' });
+    await expect(address).toBeFocused();
+    await address.fill('javascript:alert(1)');
+    await page.keyboard.press('Enter');
+    await expect(address).toHaveAttribute('aria-invalid', 'true');
     await expect(area.locator('a')).toHaveCount(0);
 
-    page.once('dialog', (dialog) => dialog.accept('https://example.com/track'));
-    await live.getByRole('button', { name: 'Link' }).click();
+    await address.fill('https://example.com/track');
+    await live.getByRole('checkbox', { name: 'Open in a new tab' }).check();
+    await live.getByRole('button', { name: 'Apply' }).click();
+    await expect(address).toHaveCount(0);
     await expect(area.locator('a')).toHaveAttribute('href', 'https://example.com/track');
-    await expect(valueOf(live)).toContainText('<a href="https://example.com/track">Tracking</a>');
+    await expect(valueOf(live)).toContainText(
+      '<a href="https://example.com/track" target="_blank" rel="noopener noreferrer">Tracking</a>',
+    );
+
+    // The caret in the link: the form shows the address and can remove the link.
+    await area.locator('a').click();
+    await link.click();
+    await expect(address).toHaveValue('https://example.com/track');
+    await live.getByRole('button', { name: 'Remove link' }).click();
+    await expect(area.locator('a')).toHaveCount(0);
+    await expect(valueOf(live)).toContainText('Tracking');
+
+    // A host name without a scheme is accepted and gets https:// (no browser URL check).
+    await page.keyboard.press('Control+A');
+    await link.click();
+    await address.fill('example.com/x');
+    await page.keyboard.press('Enter');
+    await expect(address).toHaveCount(0);
+    await expect(area.locator('a')).toHaveAttribute('href', 'https://example.com/x');
+
+    // Escape closes the form and the focus goes back to the text.
+    await link.click();
+    // The form moves the focus to its field after it renders; Escape works from there.
+    await expect(address).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(address).toHaveCount(0);
+    await expect(area).toBeFocused();
   });
 
   test('shows sanitized HTML and stores the sanitized HTML after an edit', async ({ page }) => {
@@ -296,6 +330,75 @@ test.describe('editor', () => {
     await expect(disabled).toHaveAttribute('aria-disabled', 'true');
     await expect(live.getByRole('button', { name: 'Bold' }).first()).toBeDisabled();
     await expect(live.getByRole('button', { name: 'Bold' }).last()).toBeDisabled();
+  });
+
+  test('full toolbar: text style, inline code and center alignment', async ({ page }) => {
+    await openPage(page, '/controls/editor', 'Editor');
+    const live = example(page, 'Full toolbar');
+    const area = live.getByRole('textbox', { name: 'Shipping report' });
+    const toolbar = live.getByRole('toolbar', { name: 'Shipping report formatting' });
+    await expect(toolbar.locator('[tabindex="0"]')).toHaveCount(1);
+
+    await area.locator('p').click();
+    await page.keyboard.press('End');
+    await page.keyboard.press('Shift+Home');
+    await live.getByRole('button', { name: 'Center' }).click();
+    await expect(area.locator('p')).toHaveClass('star-text-center');
+    await expect(live.getByRole('button', { name: 'Center' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    await expect(valueOf(live)).toContainText('<p class="star-text-center">');
+
+    await area.locator('b').dblclick();
+    await live.getByRole('button', { name: 'Code' }).click();
+    await expect(area.locator('code')).toHaveText('orders');
+
+    await area.locator('p').click();
+    await live.getByRole('combobox', { name: 'Text style' }).selectOption('h1');
+    await expect(area.locator('h1')).toHaveCount(1);
+    await expect(valueOf(live)).toContainText('<h1');
+
+    // Arrow keys move through the toolbar, the select included.
+    await live.getByRole('button', { name: 'Redo' }).focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(live.getByRole('combobox', { name: 'Text style' })).toBeFocused();
+    await page.keyboard.press('ArrowRight');
+    await expect(live.getByRole('button', { name: 'Bold' })).toBeFocused();
+  });
+
+  test('maxLength stops typing and the counter describes the area', async ({ page }) => {
+    await openPage(page, '/controls/editor', 'Editor');
+    const live = example(page, 'Plain text and a length limit');
+    const area = live.getByRole('textbox', { name: 'Delivery summary' });
+    await expect(area).toHaveAccessibleDescription(/of 120 characters/);
+    await area.click();
+    await page.keyboard.press('Control+End');
+    await page.keyboard.type('x'.repeat(100));
+    await expect(live.locator('.star-editor__counter')).toHaveText('120 of 120 characters');
+    await expect(valueOf(live)).toContainText('Deliver before noon.');
+    expect((await valueOf(live).textContent())!.replace(/\n/g, '').length).toBe(120);
+  });
+
+  test('pasteAsText inserts plain text, the other editor sanitizes HTML', async ({ page }) => {
+    await openPage(page, '/controls/editor', 'Editor');
+    const live = example(page, 'Paste as plain text');
+    const paste = (name: string) =>
+      live.getByRole('textbox', { name }).evaluate((area) => {
+        area.focus();
+        const data = new DataTransfer();
+        data.setData('text/html', '<b onclick="alert(1)">Bold</b><script>alert(1)</script>');
+        data.setData('text/plain', 'Bold');
+        area.dispatchEvent(
+          new ClipboardEvent('paste', { clipboardData: data, bubbles: true, cancelable: true }),
+        );
+        return area.innerHTML;
+      });
+    const formatted = await paste('Pasted with formats');
+    expect(formatted).toContain('<b>Bold</b>');
+    expect(formatted).not.toMatch(/onclick|script/);
+    const plain = await paste('Pasted as plain text');
+    expect(plain).toBe('Bold');
   });
 
   test('has no console errors', async ({ page }) => {

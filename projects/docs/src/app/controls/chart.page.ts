@@ -1,10 +1,16 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { StarChart, StarChartPointSeries, StarChartSeries } from '@star-ng/ui/chart';
+import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import {
+  StarChart,
+  StarChartPointSelectEvent,
+  StarChartPointSeries,
+  StarChartSeries,
+  StarChartTooltip,
+} from '@star-ng/ui/chart';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
   selector: 'docs-chart-page',
-  imports: [DOCS, StarChart],
+  imports: [DOCS, StarChart, StarChartTooltip],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <docs-page
@@ -15,7 +21,7 @@ import { DOCS, DocsRow } from '../shared/docs';
       <docs-example
         heading="Bar chart"
         source="chart/bar"
-        note="Series are grouped per category. A legend appears for two or more series. Hover a column to see its values."
+        note="Series are grouped per category. A legend appears for two or more series; a click on a name hides or shows the series. Hover a column to see its values."
       >
         <star-chart
           type="bar"
@@ -179,12 +185,153 @@ import { DOCS, DocsRow } from '../shared/docs';
       </docs-example>
 
       <docs-example
+        heading="Keyboard, tooltip template and point selection"
+        source="chart/interaction"
+        [script]="interactionScript"
+        note="Tab moves to the data points: one tab stop for the chart. Arrow Right and Arrow Left move along a series, Arrow Down and Arrow Up to the next or the previous series, Home and End to the ends. The tooltip shows on hover and on focus. ng-template starChartTooltip replaces its content (context: the points, and label). A click, or Enter or Space on a focused point, emits pointSelect."
+      >
+        <div class="docs-stack">
+          <star-chart
+            type="line"
+            title="Orders per month, interactive"
+            [labels]="months"
+            [series]="orders"
+            (pointSelect)="picked.set($event)"
+          >
+            <ng-template starChartTooltip let-points let-label="label">
+              <span class="star-chart__tip-title">{{ label }}</span>
+              @for (point of points; track point.seriesIndex) {
+                <span class="star-chart__tip-row"
+                  >{{ point.series }}: {{ point.value }} orders</span
+                >
+              }
+            </ng-template>
+          </star-chart>
+          <p class="docs-output" role="status">
+            Selected:
+            {{
+              picked()
+                ? orders[picked()!.seriesIndex].label +
+                  ', ' +
+                  months[picked()!.index] +
+                  ': ' +
+                  picked()!.value
+                : 'none'
+            }}
+          </p>
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="Value format and axis range"
+        source="chart/value-format"
+        note="valueFormat takes Intl.NumberFormat options for the axis, the tooltip, the table and the names of the points. min, max and stepSize fix the value axis; values beyond an end stop at that end."
+      >
+        <star-chart
+          type="bar"
+          title="Revenue per region"
+          locale="en-US"
+          [labels]="regions"
+          [series]="revenue"
+          [valueFormat]="euro"
+          [min]="0"
+          [max]="60000"
+          [stepSize]="15000"
+        />
+      </docs-example>
+
+      <docs-example
+        heading="Horizontal bars"
+        source="chart/horizontal"
+        note="horizontal turns a bar or stacked bar chart on its side: the bars run along the line and the category names go down the side, with room for long names."
+      >
+        <star-chart
+          type="bar"
+          horizontal
+          title="Orders per region"
+          [labels]="longRegions"
+          [series]="regionChannels"
+        />
+      </docs-example>
+
+      <docs-example
+        heading="Combo chart with a second axis"
+        source="chart/combo"
+        [script]="comboScript"
+        note="In a bar, line or area chart, a series can set type ('bar' or 'line') and axis ('primary' or 'secondary'). Here the order count is bars on the left axis and the return rate is a line on a second axis at the end of the plot. The second axis is titled with the names of its series, and the legend marks them (right axis)."
+      >
+        <star-chart type="bar" title="Orders and return rate" [labels]="months" [series]="combo" />
+      </docs-example>
+
+      <docs-example
+        heading="Export as SVG or PNG"
+        source="chart/export"
+        [script]="exportScript"
+        note="exportSvg() returns the plot as a stand-alone SVG document: the colors of the tokens are resolved and the title is in it. exportPng(scale) draws it on a canvas and resolves to a PNG Blob. Both work in the browser only: on the server exportSvg() returns an empty string and exportPng() resolves to null."
+      >
+        <div class="docs-stack">
+          <star-chart
+            #exported
+            type="bar"
+            title="Orders per month, export"
+            [labels]="months"
+            [series]="orders"
+          />
+          <div class="docs-row">
+            <button
+              type="button"
+              class="star-btn star-btn--secondary"
+              (click)="downloadSvg(exported)"
+            >
+              Download SVG
+            </button>
+            <button
+              type="button"
+              class="star-btn star-btn--secondary"
+              (click)="downloadPng(exported)"
+            >
+              Download PNG
+            </button>
+          </div>
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="Legend: hide series and placement"
+        source="chart/legend"
+        [script]="legendScript"
+        note="Each name in the legend is a toggle button (aria-pressed): a click hides or shows its series, and the hiddenSeries model holds the positions of the hidden series. Colors and markers stay with their series. The data table keeps every series. legendPosition places the legend at the top (default), the bottom, the start or the end."
+      >
+        <div class="docs-stack">
+          <star-chart
+            type="line"
+            title="Orders by channel"
+            [labels]="months"
+            [series]="channelOrders"
+            [(hiddenSeries)]="hiddenChannels"
+            legendPosition="end"
+          />
+          <p class="docs-output" role="status">
+            Hidden series: {{ hiddenChannels().join(', ') || 'none' }}
+          </p>
+        </div>
+      </docs-example>
+
+      <docs-example
         heading="Sizing"
         source="chart/sizing"
-        note="The chart fills the width of its container and keeps its aspect ratio. Set the width on a wrapper."
+        note="The chart fills the width of its container and keeps its aspect ratio (the view box does not change). Set the width on a wrapper. In a narrow container the axis text grows back to stay readable, and the category labels thin out: here every second month has a label. The focus targets, the tooltip and the table keep every month."
       >
         <div class="docs-chart-narrow">
           <star-chart type="bar" title="Orders, narrow" [labels]="months" [series]="single" />
+        </div>
+        <div class="docs-chart-narrow">
+          <star-chart
+            type="line"
+            title="Visits per month, narrow"
+            [labels]="yearMonths"
+            [series]="yearVisits"
+          />
         </div>
       </docs-example>
 
@@ -267,12 +414,88 @@ import { DOCS, DocsRow } from '../shared/docs';
         the Right-to-left guide.
       </p>
 
-      <docs-api [of]="['StarChart']" [cssVars]="cssVars" [keyboard]="keyboard" />
+      <docs-api
+        [of]="['StarChart', 'StarChartTooltip']"
+        [slots]="slots"
+        [cssVars]="cssVars"
+        [keyboard]="keyboard"
+      />
     </docs-page>
   `,
 })
 export class ChartPage {
+  protected readonly euro: Intl.NumberFormatOptions = {
+    style: 'currency',
+    currency: 'EUR',
+    maximumFractionDigits: 0,
+  };
+  protected readonly combo: StarChartSeries[] = [
+    { label: 'Orders', data: [120, 150, 170, 140, 190, 210] },
+    {
+      label: 'Return rate (%)',
+      data: [4.2, 3.8, 5.1, 4.6, 3.2, 2.9],
+      type: 'line',
+      axis: 'secondary',
+    },
+  ];
+  protected readonly comboScript = `readonly combo: StarChartSeries[] = [
+  { label: 'Orders', data: [120, 150, 170, 140, 190, 210] },
+  { label: 'Return rate (%)', data: [4.2, 3.8, 5.1, 4.6, 3.2, 2.9], type: 'line', axis: 'secondary' },
+];`;
+  protected downloadSvg(chart: StarChart): void {
+    const svg = chart.exportSvg();
+    if (svg) this.download(new Blob([svg], { type: 'image/svg+xml' }), 'orders.svg');
+  }
+  protected async downloadPng(chart: StarChart): Promise<void> {
+    const png = await chart.exportPng(2);
+    if (png) this.download(png, 'orders.png');
+  }
+  private download(blob: Blob, name: string): void {
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = name;
+    link.click();
+    URL.revokeObjectURL(link.href);
+  }
+  protected readonly exportScript = `downloadPng(chart: StarChart): void {
+  chart.exportPng(2).then((png) => {
+    if (!png) return;
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(png);
+    link.download = 'orders.png';
+    link.click();
+    URL.revokeObjectURL(link.href);
+  });
+}`;
+  protected readonly hiddenChannels = signal<readonly number[]>([2]);
+  protected readonly legendScript = `readonly hiddenChannels = signal<readonly number[]>([2]);`;
+  protected readonly picked = signal<StarChartPointSelectEvent | null>(null);
+  protected readonly interactionScript = `readonly picked = signal<StarChartPointSelectEvent | null>(null);`;
+  protected readonly slots: readonly DocsRow[] = [
+    {
+      name: 'ng-template starChartTooltip',
+      description:
+        'Content of the tooltip. Context: $implicit and points (seriesIndex, index, value, series, label of each point at the hover position), label (the category, or the series for scatter).',
+    },
+  ];
   protected readonly months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+  protected readonly yearMonths = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+  ];
+  protected readonly yearVisits: StarChartSeries[] = [
+    { label: 'Visits', data: [820, 940, 910, 880, 1020, 960, 870, 900, 1100, 1180, 1250, 1320] },
+  ];
   protected readonly orders: StarChartSeries[] = [
     { label: 'Received', data: [120, 150, 170, 140, 190, 210] },
     { label: 'Shipped', data: [110, 140, 160, 135, 180, 200] },
@@ -377,7 +600,23 @@ export class ChartPage {
     {
       name: 'Tab, then Enter or Space',
       description:
-        'Focuses the Table / Chart button and switches the view. The marks have no keyboard focus: the table gives the same data. The chart has an accessible name (the title) and a description: the kind of chart, the number of series and items, and the range of values.',
+        'Focuses the Table / Chart button and switches the view. The chart has an accessible name (the title) and a description: the kind of chart, the number of series and items, and the range of values.',
     },
+    {
+      name: 'Tab to the data points',
+      description:
+        'One tab stop for all points. Each point reads its series, category and value, and shows the tooltip.',
+    },
+    {
+      name: 'Arrow Right / Arrow Left, Home / End',
+      description: 'Moves along the series. The plot keeps left to right in right-to-left pages.',
+    },
+    { name: 'Arrow Down / Arrow Up', description: 'Moves to the next or the previous series.' },
+    {
+      name: 'Horizontal bars',
+      description:
+        'The categories run down the side, so Arrow Down and Arrow Up move along a series, and Arrow Right and Arrow Left move between the series.',
+    },
+    { name: 'Enter / Space', description: 'Selects the focused point (pointSelect).' },
   ];
 }

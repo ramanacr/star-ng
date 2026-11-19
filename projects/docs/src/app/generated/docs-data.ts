@@ -1529,13 +1529,80 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
+        "name": "valueFormat",
+        "type": "Intl.NumberFormatOptions | null",
+        "default": "null",
+        "required": false,
+        "description": "How values show in the tooltip, the table and the value axis: `Intl.NumberFormat` options, for example `{ style: 'currency', currency: 'EUR' }` (Chart.js tick `callback`)."
+      },
+      {
+        "name": "min",
+        "type": "number | null",
+        "default": "null",
+        "required": false,
+        "description": "Lowest value of the value axis (bar, stacked bar, line, area). Default: from the data."
+      },
+      {
+        "name": "max",
+        "type": "number | null",
+        "default": "null",
+        "required": false,
+        "description": "Highest value of the value axis. Values beyond the ends stop at the end."
+      },
+      {
+        "name": "stepSize",
+        "type": "number | null",
+        "default": "null",
+        "required": false,
+        "description": "Distance between the ticks of the value axis. Default: a round step."
+      },
+      {
+        "name": "horizontal",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Bar and stacked bar: the bars run along the line and the categories go down the side (Chart.js `indexAxis: 'y'`). Series `type` and `axis` do not apply."
+      },
+      {
         "name": "table",
         "type": "boolean",
         "default": "false",
         "required": false,
         "description": "Start the table view open."
+      },
+      {
+        "name": "legendPosition",
+        "type": "'top' | 'bottom' | 'start' | 'end'",
+        "default": "'top'",
+        "required": false,
+        "description": "Where the legend is: above, below, or at the start or the end of the plot."
       }
     ],
+    "models": [
+      {
+        "name": "hiddenSeries",
+        "type": "readonly number[]",
+        "default": "[]",
+        "required": false,
+        "description": "Positions in `series` of the series that are hidden. A click on a legend item adds or removes its series (Chart.js legend `onClick`, PrimeNG through the Chart.js options). The table keeps every series."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "pointSelect",
+        "type": "StarChartPointSelectEvent",
+        "default": null,
+        "required": false,
+        "description": "A data point was clicked, or Enter or Space was pressed on a focused one. PrimeNG `onDataSelect`."
+      }
+    ]
+  },
+  "StarChartTooltip": {
+    "kind": "directive",
+    "selector": "ng-template[starChartTooltip]",
+    "entry": "@star-ng/ui/chart",
+    "description": "Content of the chart tooltip: `<ng-template starChartTooltip let-points let-label=\"label\">`. It shows on hover and on keyboard focus of a data point. PrimeNG / Chart.js `plugins.tooltip.callbacks`.",
+    "inputs": [],
     "models": [],
     "outputs": []
   },
@@ -2969,8 +3036,22 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-editor",
     "entry": "@star-ng/ui/editor",
-    "description": "Rich text field (PrimeNG `p-editor`, without Quill): a `contenteditable` area with a formatting toolbar (bold, italic, underline, heading, lists, link, clear). Value is HTML, sanitized with Angular's `DomSanitizer` both when it is shown and when it is stored.",
+    "description": "Rich text field (PrimeNG `p-editor`, without Quill): a `contenteditable` area with a formatting toolbar. Value is HTML, sanitized with Angular's `DomSanitizer` both when it is shown and when it is stored.",
     "inputs": [
+      {
+        "name": "format",
+        "type": "'html' | 'text'",
+        "default": "'html'",
+        "required": false,
+        "description": "`'html'` (default): the value is HTML. `'text'`: the value is plain text, one line per paragraph; the toolbar still formats the text on the screen, but the value has no markup. PrimeNG `onTextChange` gives the text next to the HTML."
+      },
+      {
+        "name": "maxLength",
+        "type": "number | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "Most characters of text (line breaks do not count). Typing stops at the limit, a counter shows under the area and describes it, and a live message gives the rest near the end. A Signal Forms `maxLength` rule sets it too; note that the rule checks the length of the value (HTML, tags included, with `format=\"html\"`), while the editor counts text. PrimeNG has no equivalent."
+      },
       {
         "name": "placeholder",
         "type": "string",
@@ -3019,6 +3100,20 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "false",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "pasteAsText",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Paste plain text only. Without it, pasted HTML is sanitized (no scripts, no style elements or attributes, no event handlers) before it goes in. PrimeNG has no equivalent (Quill clipboard matchers)."
+      },
+      {
+        "name": "toolbar",
+        "type": "readonly StarEditorToolbarItem[]",
+        "default": "STAR_EDITOR_DEFAULT_TOOLBAR",
+        "required": false,
+        "description": "The toolbar: command names in order, with `'|'` between groups. Unknown names are left out. `STAR_EDITOR_FULL_TOOLBAR` has every command. PrimeNG toolbar formats (Quill `toolbar`)."
       }
     ],
     "models": [
@@ -3027,7 +3122,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "string",
         "default": "''",
         "required": false,
-        "description": "The content as HTML. Edits by the user are stored sanitized."
+        "description": "The content: HTML (sanitized when the user edits it), or plain text with `format=\"text\"`."
       }
     ],
     "outputs": [
@@ -3039,6 +3134,68 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       }
     ]
+  },
+  "StarEditorLink": {
+    "kind": "component",
+    "selector": "star-editor-link",
+    "entry": "@star-ng/ui/editor",
+    "description": "The link popover of `star-editor` (internal): an address field, \"Open in a new tab\", and the buttons Apply, Remove (for an existing link) and Cancel. Escape cancels. It is not modal: it sits under the toolbar, and the editor gives the focus back to the text.",
+    "inputs": [
+      {
+        "name": "initialUrl",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "The address of the link at the caret, `''` for a new link."
+      },
+      {
+        "name": "initialNewTab",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "editing",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "True when the caret is in a link: the Remove button shows."
+      }
+    ],
+    "models": [],
+    "outputs": [
+      {
+        "name": "apply",
+        "type": "StarEditorLinkValue",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "remove",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "dismissed",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
+  "StarEditorToolbarTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starEditorToolbar]",
+    "entry": "@star-ng/ui/editor",
+    "description": "Replaces the toolbar of `star-editor`: `<ng-template starEditorToolbar let-exec=\"exec\" let-isActive=\"isActive\">…</ng-template>`. Give the container `role=\"toolbar\"` and a name, and stop `mousedown` on its buttons (`$event.preventDefault()`) so the text keeps its selection. PrimeNG `#header` template of `p-editor`.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
   },
   "StarEmptyTemplate": {
     "kind": "directive",
@@ -7167,6 +7324,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "false",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "closable",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows a close button on the tab, and the Delete key closes it. `star-tabs` emits `tabClose`; the owner removes the tab. PrimeNG `closable`."
       }
     ],
     "models": [],
@@ -7176,7 +7340,16 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "directive",
     "selector": "ng-template[starTabContent]",
     "entry": "@star-ng/ui/tabs",
-    "description": "Lazy tab body: `<ng-template starTabContent>…</ng-template>` renders on first activation only.",
+    "description": "Lazy tab body: `<ng-template starTabContent>…</ng-template>`. It renders on the first activation of the tab (see `lazy` and `cache` of `star-tabs`). Material `matTabContent`.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
+  "StarTabHeader": {
+    "kind": "directive",
+    "selector": "ng-template[starTabHeader]",
+    "entry": "@star-ng/ui/tabs",
+    "description": "Custom tab label: `<ng-template starTabHeader let-tab let-active=\"active\">…</ng-template>`. Written in `star-tab`, it is the label of that tab; written directly in `star-tabs`, it is the label of every tab that has none of its own. It renders inside the tab button, so it must not hold buttons, links or fields. PrimeNG `p-tab` content, Material `mat-tab-label`.",
     "inputs": [],
     "models": [],
     "outputs": []
@@ -7782,7 +7955,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-tabs",
     "entry": "@star-ng/ui/tabs",
-    "description": "Tabs (PrimeNG `p-tabs`): `[(value)]`, disabled tabs, icons, badges, lazy panels and the WAI-ARIA tabs keyboard model (Arrow keys, Home, End; automatic or manual activation).",
+    "description": "Tabs (PrimeNG `p-tabs`, Material `mat-tab-group`): `[(value)]`, disabled tabs, icons, badges, lazy panels and the WAI-ARIA tabs keyboard model (Arrow keys, Home, End; automatic or manual activation). `scrollable` adds scroll buttons when the tabs do not fit (PrimeNG `scrollable`, Material pagination).",
     "inputs": [
       {
         "name": "variant",
@@ -7804,6 +7977,48 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "null",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "scrollable",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Keeps the tabs on one line and shows previous and next scroll buttons when they do not fit. The selected tab scrolls into view. PrimeNG `scrollable`, Material `disablePagination` off."
+      },
+      {
+        "name": "orientation",
+        "type": "'horizontal' | 'vertical'",
+        "default": "'horizontal'",
+        "required": false,
+        "description": "`'vertical'` puts the tabs in a column at the start of the panels; Arrow Up and Arrow Down move between them. PrimeNG has no equivalent, Material `mat-tab-nav` has none either."
+      },
+      {
+        "name": "alignment",
+        "type": "'start' | 'center' | 'end' | 'stretch'",
+        "default": "'start'",
+        "required": false,
+        "description": "Position of the tabs along the list: at the start, centered, at the end, or filling it (`stretch`). Material `mat-align-tabs` / `alignTabs` (start, center, end) and `mat-stretch-tabs`; PrimeNG has no equivalent."
+      },
+      {
+        "name": "reorderable",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Tabs can be dragged to a new place (CDK drag-drop), or moved with Control+Shift and an arrow key. `star-tabs` emits `tabReorder`; the owner reorders its list. PrimeNG has no equivalent."
+      },
+      {
+        "name": "lazy",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Content in `ng-template starTabContent` renders on the first activation of its tab (the default). `false` renders every template at once. Content placed directly in `star-tab` always renders at once. PrimeNG `lazy`."
+      },
+      {
+        "name": "cache",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Keeps rendered `starTabContent` alive (hidden) when its tab is not active, so it keeps its state (the default). `false` destroys it and renders it again on the next activation. Only applies with `lazy`. PrimeNG `cache`, Material `preserveContent`."
       }
     ],
     "models": [
@@ -7822,6 +8037,20 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": ""
+      },
+      {
+        "name": "tabClose",
+        "type": "StarTabCloseEvent",
+        "default": null,
+        "required": false,
+        "description": "A closable tab asked to close (close button or Delete key). Remove the tab from your list, or call `cancel()`. When the closed tab was selected, the next tab is selected (the previous one at the end). PrimeNG `onClose`, Material has no equivalent."
+      },
+      {
+        "name": "tabReorder",
+        "type": "StarTabReorderEvent",
+        "default": null,
+        "required": false,
+        "description": "A tab was dragged or moved with the keyboard (`reorderable`). Reorder your list."
       }
     ]
   },
@@ -9606,17 +9835,23 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "cascade-select/states": "<div class=\"docs-stack\">\n  <star-cascade-select\n    [options]=\"places\"\n    optionLabel=\"name\"\n    optionValue=\"code\"\n    optionDisabled=\"closed\"\n    placeholder=\"One city is closed\"\n    ariaLabel=\"City with a closed office\"\n  />\n  <star-cascade-select\n    [options]=\"places\"\n    optionLabel=\"name\"\n    optionValue=\"code\"\n    size=\"sm\"\n    disabled\n    placeholder=\"Disabled\"\n    ariaLabel=\"Disabled city\"\n  />\n</div>",
   "chart/area": "<star-chart\n  type=\"area\"\n  title=\"Orders per month, area\"\n  [labels]=\"months\"\n  [series]=\"orders\"\n/>",
   "chart/bar": "<star-chart\n  type=\"bar\"\n  title=\"Orders per month\"\n  [labels]=\"months\"\n  [series]=\"orders\"\n  categoryLabel=\"Month\"\n/>",
+  "chart/combo": "<star-chart type=\"bar\" title=\"Orders and return rate\" [labels]=\"months\" [series]=\"combo\" />",
   "chart/doughnut": "<star-chart\n  type=\"doughnut\"\n  title=\"Traffic by channel\"\n  [labels]=\"channels\"\n  [series]=\"traffic\"\n/>",
+  "chart/export": "<div class=\"docs-stack\">\n  <star-chart\n    #exported\n    type=\"bar\"\n    title=\"Orders per month, export\"\n    [labels]=\"months\"\n    [series]=\"orders\"\n  />\n  <div class=\"docs-row\">\n    <button\n      type=\"button\"\n      class=\"star-btn star-btn--secondary\"\n      (click)=\"downloadSvg(exported)\"\n    >\n      Download SVG\n    </button>\n    <button\n      type=\"button\"\n      class=\"star-btn star-btn--secondary\"\n      (click)=\"downloadPng(exported)\"\n    >\n      Download PNG\n    </button>\n  </div>\n</div>",
+  "chart/horizontal": "<star-chart\n  type=\"bar\"\n  horizontal\n  title=\"Orders per region\"\n  [labels]=\"longRegions\"\n  [series]=\"regionChannels\"\n/>",
+  "chart/interaction": "<div class=\"docs-stack\">\n  <star-chart\n    type=\"line\"\n    title=\"Orders per month, interactive\"\n    [labels]=\"months\"\n    [series]=\"orders\"\n    (pointSelect)=\"picked.set($event)\"\n  >\n    <ng-template starChartTooltip let-points let-label=\"label\">\n      <span class=\"star-chart__tip-title\">{{ label }}</span>\n      @for (point of points; track point.seriesIndex) {\n        <span class=\"star-chart__tip-row\"\n          >{{ point.series }}: {{ point.value }} orders</span\n        >\n      }\n    </ng-template>\n  </star-chart>\n  <p class=\"docs-output\" role=\"status\">\n    Selected:\n    {{\n      picked()\n        ? orders[picked()!.seriesIndex].label +\n          ', ' +\n          months[picked()!.index] +\n          ': ' +\n          picked()!.value\n        : 'none'\n    }}\n  </p>\n</div>",
+  "chart/legend": "<div class=\"docs-stack\">\n  <star-chart\n    type=\"line\"\n    title=\"Orders by channel\"\n    [labels]=\"months\"\n    [series]=\"channelOrders\"\n    [(hiddenSeries)]=\"hiddenChannels\"\n    legendPosition=\"end\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Hidden series: {{ hiddenChannels().join(', ') || 'none' }}\n  </p>\n</div>",
   "chart/line": "<star-chart\n  type=\"line\"\n  title=\"Orders per month, line\"\n  [labels]=\"months\"\n  [series]=\"orders\"\n/>",
   "chart/long-labels": "<div class=\"docs-chart-narrow\">\n  <star-chart\n    type=\"stacked-bar\"\n    title=\"Orders by region\"\n    [labels]=\"longRegions\"\n    [series]=\"regionChannels\"\n  />\n</div>\n<div class=\"docs-chart-narrow\">\n  <star-chart\n    type=\"radar\"\n    title=\"Detailed ratings\"\n    [labels]=\"longCriteria\"\n    [series]=\"ratings\"\n  />\n</div>",
   "chart/pie": "<star-chart type=\"pie\" title=\"Revenue by region\" [labels]=\"regions\" [series]=\"revenue\" />",
   "chart/polar-area": "<star-chart\n  type=\"polar-area\"\n  title=\"Visits by weekday\"\n  [labels]=\"weekdays\"\n  [series]=\"weekdayVisits\"\n  categoryLabel=\"Weekday\"\n/>",
   "chart/radar": "<star-chart\n  type=\"radar\"\n  title=\"Product ratings by criterion\"\n  [labels]=\"criteria\"\n  [series]=\"ratings\"\n  categoryLabel=\"Criterion\"\n/>",
   "chart/scatter": "<star-chart\n  type=\"scatter\"\n  title=\"Price against weight\"\n  [series]=\"products\"\n  categoryLabel=\"Weight (kg)\"\n  valueLabel=\"Price\"\n/>",
-  "chart/sizing": "<div class=\"docs-chart-narrow\">\n  <star-chart type=\"bar\" title=\"Orders, narrow\" [labels]=\"months\" [series]=\"single\" />\n</div>",
+  "chart/sizing": "<div class=\"docs-chart-narrow\">\n  <star-chart type=\"bar\" title=\"Orders, narrow\" [labels]=\"months\" [series]=\"single\" />\n</div>\n<div class=\"docs-chart-narrow\">\n  <star-chart\n    type=\"line\"\n    title=\"Visits per month, narrow\"\n    [labels]=\"yearMonths\"\n    [series]=\"yearVisits\"\n  />\n</div>",
   "chart/stacked-bar": "<star-chart\n  type=\"stacked-bar\"\n  title=\"Orders per month by channel\"\n  [labels]=\"months\"\n  [series]=\"channelOrders\"\n  categoryLabel=\"Month\"\n/>",
   "chart/stacked-bar-percent": "<star-chart\n  type=\"stacked-bar\"\n  title=\"Share of orders by channel\"\n  [labels]=\"months\"\n  [series]=\"channelOrders\"\n  categoryLabel=\"Month\"\n  percent\n/>",
   "chart/table": "<star-chart\n  type=\"bar\"\n  title=\"Revenue by region, table\"\n  [labels]=\"regions\"\n  [series]=\"revenue\"\n  categoryLabel=\"Region\"\n  table\n/>",
+  "chart/value-format": "<star-chart\n  type=\"bar\"\n  title=\"Revenue per region\"\n  locale=\"en-US\"\n  [labels]=\"regions\"\n  [series]=\"revenue\"\n  [valueFormat]=\"euro\"\n  [min]=\"0\"\n  [max]=\"60000\"\n  [stepSize]=\"15000\"\n/>",
   "chat/ai-prompt": "<star-ai-prompt\n  [outputs]=\"outputs()\"\n  [suggestions]=\"suggestions\"\n  (promptRequest)=\"ask($event.prompt)\"\n  (retry)=\"ask($event.prompt)\"\n  (stop)=\"stopStream($event.id)\"\n/>",
   "chat/basic": "<star-chat\n  [messages]=\"messages()\"\n  user=\"me\"\n  [typing]=\"typing()\"\n  [loading]=\"loadingOlder()\"\n  [hasMore]=\"hasMore()\"\n  locale=\"en-US\"\n  ariaLabel=\"Support conversation\"\n  (send)=\"post($event.text)\"\n  (loadMore)=\"loadOlder()\"\n/>",
   "checkbox/basic": "<star-checkbox [(checked)]=\"subscribed\">Send me product news</star-checkbox>\n<p class=\"docs-output\" role=\"status\">Subscribed: {{ subscribed() }}</p>",
@@ -9683,9 +9918,14 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "dropdown/basic": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button\n      variant=\"secondary\"\n      trailingIcon=\"ph-bold ph-caret-down\"\n      [starDropdownTrigger]=\"formats\"\n    >\n      Export as\n    </star-button>\n  </div>\n  <star-dropdown\n    #formats\n    ariaLabel=\"Export format\"\n    [(value)]=\"format\"\n    (selectionChange)=\"onSelect($event)\"\n  >\n    <star-dropdown-item header>Documents</star-dropdown-item>\n    <star-dropdown-item value=\"pdf\">PDF</star-dropdown-item>\n    <star-dropdown-item value=\"docx\" disabled>Word document</star-dropdown-item>\n    <star-dropdown-item divider />\n    <star-dropdown-item header>Data</star-dropdown-item>\n    <star-dropdown-item value=\"csv\">CSV</star-dropdown-item>\n    <star-dropdown-item value=\"xlsx\">Spreadsheet</star-dropdown-item>\n    <star-dropdown-item value=\"json\">JSON</star-dropdown-item>\n  </star-dropdown>\n  <p class=\"docs-output\" role=\"status\">Export format: {{ chosen() }}</p>\n</div>",
   "dropdown/keep-open": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" [starDropdownTrigger]=\"cities\">\n      Add a city\n    </star-button>\n  </div>\n  <star-dropdown\n    #cities\n    ariaLabel=\"Cities\"\n    [closeOnSelect]=\"false\"\n    (selectionChange)=\"added.set(added() + $event.label + ' ')\"\n  >\n    <star-dropdown-item value=\"berlin\">Berlin</star-dropdown-item>\n    <star-dropdown-item value=\"lisbon\">Lisbon</star-dropdown-item>\n    <star-dropdown-item value=\"oslo\">Oslo</star-dropdown-item>\n    <star-dropdown-item value=\"toronto\">Toronto</star-dropdown-item>\n  </star-dropdown>\n  <p class=\"docs-output\" role=\"status\">Added: {{ added() || 'none' }}</p>\n</div>",
   "editor/basic": "<div class=\"docs-stack\">\n  <star-editor\n    [(value)]=\"note\"\n    ariaLabel=\"Delivery note\"\n    placeholder=\"Write the delivery note\"\n  />\n  <pre class=\"docs-output\" role=\"group\" aria-label=\"Value of the editor\">{{ note() }}</pre>\n</div>",
+  "editor/full-toolbar": "<div class=\"docs-stack\">\n  <star-editor [(value)]=\"report\" [toolbar]=\"fullToolbar\" ariaLabel=\"Shipping report\" />\n  <pre class=\"docs-output\" role=\"group\" aria-label=\"Value of the full editor\">{{\n    report()\n  }}</pre>\n</div>",
+  "editor/own-toolbar": "<div class=\"docs-stack\">\n  <star-editor [toolbar]=\"shortToolbar\" ariaLabel=\"Short comment\" minHeight=\"4rem\" />\n</div>",
+  "editor/paste": "<div class=\"docs-stack\">\n  <star-editor ariaLabel=\"Pasted with formats\" minHeight=\"4rem\" />\n  <star-editor pasteAsText ariaLabel=\"Pasted as plain text\" minHeight=\"4rem\" />\n</div>",
   "editor/sanitize": "<div class=\"docs-stack\">\n  <star-editor [(value)]=\"unsafe\" ariaLabel=\"Sanitized content\" />\n  <pre class=\"docs-output\" aria-label=\"Value after sanitizing\">{{ unsafe() }}</pre>\n</div>",
   "editor/size": "<div class=\"docs-stack\">\n  <star-editor\n    [(value)]=\"comment\"\n    ariaLabel=\"Order comment\"\n    placeholder=\"Add a comment\"\n    minHeight=\"4rem\"\n  />\n</div>",
   "editor/states": "<div class=\"docs-stack\">\n  <star-editor [value]=\"saved()\" ariaLabel=\"Saved note\" readonly />\n  <star-editor [value]=\"saved()\" ariaLabel=\"Locked note\" disabled />\n</div>",
+  "editor/text-limit": "<div class=\"docs-stack\">\n  <star-editor\n    [(value)]=\"summary\"\n    format=\"text\"\n    [maxLength]=\"120\"\n    ariaLabel=\"Delivery summary\"\n  />\n  <pre class=\"docs-output\" role=\"group\" aria-label=\"Value of the text editor\">{{\n    summary()\n  }}</pre>\n</div>",
+  "editor/toolbar-slot": "<div class=\"docs-stack\">\n  <star-editor ariaLabel=\"Release note\" minHeight=\"4rem\">\n    <ng-template\n      starEditorToolbar\n      let-exec=\"exec\"\n      let-isActive=\"isActive\"\n      let-disabled=\"disabled\"\n    >\n      <div\n        class=\"star-toolbar star-editor__toolbar\"\n        role=\"toolbar\"\n        aria-label=\"Release note tools\"\n      >\n        <button\n          type=\"button\"\n          class=\"star-btn star-btn--ghost star-btn--sm\"\n          [attr.aria-pressed]=\"isActive('bold')\"\n          [disabled]=\"disabled\"\n          (mousedown)=\"$event.preventDefault()\"\n          (click)=\"exec('bold')\"\n        >\n          Bold\n        </button>\n        <button\n          type=\"button\"\n          class=\"star-btn star-btn--ghost star-btn--sm\"\n          [attr.aria-pressed]=\"isActive('code')\"\n          [disabled]=\"disabled\"\n          (mousedown)=\"$event.preventDefault()\"\n          (click)=\"exec('code')\"\n        >\n          Code\n        </button>\n      </div>\n    </ng-template>\n  </star-editor>\n</div>",
   "field/basic": "<div class=\"docs-stack\">\n  <star-field label=\"Full name\" hint=\"As shown on your account.\">\n    <input starInput placeholder=\"Avery Stone\" />\n  </star-field>\n</div>",
   "field/sizes": "<div class=\"docs-stack\">\n  <input starInput size=\"sm\" aria-label=\"Small\" placeholder=\"Small\" />\n  <input starInput aria-label=\"Medium\" placeholder=\"Medium\" />\n  <input starInput size=\"lg\" aria-label=\"Large\" placeholder=\"Large\" />\n</div>",
   "field/states": "<div class=\"docs-stack\">\n  <star-field label=\"Promo code\" error=\"This code has expired.\">\n    <input starInput value=\"SPRING\" />\n  </star-field>\n  <star-field label=\"Account number\">\n    <input starInput value=\"100-204\" disabled />\n  </star-field>\n</div>",
@@ -9909,8 +10149,15 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "table/slots": "<div class=\"docs-stack\">\n  <input\n    starInput\n    type=\"search\"\n    aria-label=\"Search orders\"\n    placeholder=\"Search orders\"\n    [value]=\"slotQuery()\"\n    (input)=\"slotQuery.set($any($event.target).value)\"\n  />\n  <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"slotLoading.set(!slotLoading())\">\n    {{ slotLoading() ? 'Stop loading' : 'Start loading' }}\n  </star-button>\n  <docs-fill>\n    <star-table\n      [value]=\"slotOrders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders by status\"\n      groupBy=\"status\"\n      [globalFilter]=\"slotQuery()\"\n      [loading]=\"slotLoading()\"\n    >\n      <ng-template starHeaderCell=\"total\" let-column>\n        {{ column.header }} (USD)\n      </ng-template>\n      <ng-template starGroup let-status let-count=\"count\">\n        {{ status }}: {{ count }} orders\n      </ng-template>\n      <ng-template starEmpty let-text>No order matches \"{{ text }}\".</ng-template>\n      <ng-template starLoading>Loading the orders.</ng-template>\n      <p starTableSummary class=\"docs-output\">{{ slotOrders.length }} orders in total</p>\n    </star-table>\n  </docs-fill>\n</div>",
   "table/states": "<div class=\"docs-stack\">\n  <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"loading.set(!loading())\">\n    {{ loading() ? 'Stop loading' : 'Start loading' }}\n  </star-button>\n  <star-table\n    [value]=\"orders.slice(0, 3)\"\n    [columns]=\"columns\"\n    dataKey=\"id\"\n    ariaLabel=\"Orders being loaded\"\n    [loading]=\"loading()\"\n  />\n  <star-table\n    [value]=\"[]\"\n    [columns]=\"columns\"\n    ariaLabel=\"No orders\"\n    emptyMessage=\"No orders yet. Add the first one.\"\n  />\n</div>",
   "table/templates": "<docs-fill>\n  <star-table\n    [value]=\"orders\"\n    [columns]=\"columns\"\n    dataKey=\"id\"\n    ariaLabel=\"Orders with status tags\"\n    paginator\n    [rows]=\"5\"\n  >\n    <ng-template starCell=\"status\" [starCellOf]=\"orders\" let-row>\n      <star-tag [severity]=\"severityOf(row.status)\" [value]=\"row.status\" rounded />\n    </ng-template>\n    <ng-template starCell=\"customer\" [starCellOf]=\"orders\" let-row let-value=\"value\">\n      <strong>{{ value }}</strong>\n      <br />\n      <small>{{ row.email }}</small>\n    </ng-template>\n  </star-table>\n</docs-fill>",
+  "tabs/alignment": "<div class=\"docs-stack\">\n  <star-tabs alignment=\"stretch\" ariaLabel=\"Invoice status\">\n    <star-tab value=\"open\" label=\"Open\">Open invoices.</star-tab>\n    <star-tab value=\"paid\" label=\"Paid\">Paid invoices.</star-tab>\n    <star-tab value=\"overdue\" label=\"Overdue\">Overdue invoices.</star-tab>\n  </star-tabs>\n  <star-tabs alignment=\"center\" variant=\"pill\" ariaLabel=\"Period\">\n    <star-tab value=\"week\" label=\"Week\">This week.</star-tab>\n    <star-tab value=\"month\" label=\"Month\">This month.</star-tab>\n  </star-tabs>\n</div>",
   "tabs/basic": "<div class=\"docs-stack\">\n  <star-tabs [(value)]=\"tab\" ariaLabel=\"Order sections\">\n    <star-tab value=\"details\" label=\"Details\" icon=\"ph-bold ph-file-text\">\n      Order ORD-1042 for Orchard Supply.\n    </star-tab>\n    <star-tab value=\"items\" label=\"Items\" [badge]=\"12\">Twelve items in two boxes.</star-tab>\n    <star-tab value=\"billing\" label=\"Billing\" disabled>Billing is not available.</star-tab>\n    <star-tab value=\"history\" label=\"History\">Created on Monday.</star-tab>\n  </star-tabs>\n  <p class=\"docs-output\" role=\"status\">Selected: {{ tab() ?? 'details' }}</p>\n</div>",
+  "tabs/cache": "<div class=\"docs-stack\">\n  <star-tabs [cache]=\"false\" ariaLabel=\"Notes\">\n    <star-tab value=\"draft\" label=\"Draft\">\n      <ng-template starTabContent>\n        <star-field label=\"Draft note\"><input starInput /></star-field>\n      </ng-template>\n    </star-tab>\n    <star-tab value=\"final\" label=\"Final\">\n      <ng-template starTabContent>The final note is empty.</ng-template>\n    </star-tab>\n  </star-tabs>\n</div>",
+  "tabs/closable": "<div class=\"docs-stack\">\n  <star-tabs\n    scrollable\n    [(value)]=\"openFile\"\n    ariaLabel=\"Open files\"\n    (tabClose)=\"closeFile($event)\"\n  >\n    @for (file of files(); track file) {\n      <star-tab [value]=\"file\" [label]=\"file\" [closable]=\"file !== 'summary.txt'\">\n        Content of {{ file }}.\n      </star-tab>\n    }\n  </star-tabs>\n  <p class=\"docs-output\" role=\"status\">Open: {{ files().join(', ') }}</p>\n</div>",
+  "tabs/header": "<div class=\"docs-stack\">\n  <star-tabs ariaLabel=\"Order queues\">\n    <ng-template starTabHeader let-tab let-active=\"active\">\n      <i\n        class=\"ph-bold\"\n        [class.ph-folder-open]=\"active\"\n        [class.ph-folder]=\"!active\"\n        aria-hidden=\"true\"\n      ></i>\n      <span>{{ tab.label() }}</span>\n      <span class=\"star-badge star-badge--secondary star-badge--sm\">{{ tab.badge() }}</span>\n    </ng-template>\n    <star-tab value=\"new\" label=\"New\" [badge]=\"4\">Four new orders.</star-tab>\n    <star-tab value=\"packed\" label=\"Packed\" [badge]=\"9\">Nine packed orders.</star-tab>\n    <star-tab value=\"shipped\" label=\"Shipped\" [badge]=\"27\">27 shipped orders.</star-tab>\n  </star-tabs>\n</div>",
   "tabs/pill": "<div class=\"docs-stack\">\n  <star-tabs variant=\"pill\" [selectOnFocus]=\"false\" ariaLabel=\"Report views\">\n    <star-tab value=\"daily\" label=\"Daily\">Daily totals.</star-tab>\n    <star-tab value=\"weekly\" label=\"Weekly\">\n      <ng-template starTabContent>Weekly totals, loaded on first use.</ng-template>\n    </star-tab>\n    <star-tab value=\"monthly\" label=\"Monthly\">Monthly totals.</star-tab>\n  </star-tabs>\n</div>",
+  "tabs/reorderable": "<div class=\"docs-stack\">\n  <star-tabs reorderable ariaLabel=\"Project boards\" (tabReorder)=\"moveBoard($event)\">\n    @for (board of boards(); track board) {\n      <star-tab [value]=\"board\" [label]=\"board\">Board {{ board }}.</star-tab>\n    }\n  </star-tabs>\n  <p class=\"docs-output\" role=\"status\">Order: {{ boards().join(', ') }}</p>\n</div>",
+  "tabs/scrollable": "<div class=\"docs-stack\">\n  <star-tabs scrollable ariaLabel=\"Monthly reports\">\n    @for (month of months; track month) {\n      <star-tab [value]=\"month\" [label]=\"month\">Report for {{ month }}.</star-tab>\n    }\n  </star-tabs>\n</div>",
+  "tabs/vertical": "<star-tabs orientation=\"vertical\" ariaLabel=\"Account settings\">\n  <star-tab value=\"profile\" label=\"Profile\" icon=\"ph-bold ph-user\"\n    >Profile settings.</star-tab\n  >\n  <star-tab value=\"billing\" label=\"Billing\" icon=\"ph-bold ph-receipt\">\n    Billing settings.\n  </star-tab>\n  <star-tab value=\"alerts\" label=\"Alerts\" icon=\"ph-bold ph-bell\">Alert settings.</star-tab>\n</star-tabs>",
   "tag/icon": "<star-tag severity=\"success\" icon=\"ph-bold ph-check\" rounded>Shipped</star-tag>\n<star-tag severity=\"warn\" icon=\"ph-bold ph-clock\" rounded>Waiting</star-tag>",
   "tag/severities": "<star-tag value=\"New\" />\n<star-tag severity=\"secondary\" value=\"Draft\" />\n<star-tag severity=\"success\" value=\"Paid\" />\n<star-tag severity=\"info\" value=\"In review\" />\n<star-tag severity=\"warn\" value=\"Due soon\" />\n<star-tag severity=\"danger\" value=\"Overdue\" />",
   "terminal/basic": "<div class=\"docs-stack docs-terminal\">\n  <star-terminal\n    #terminal\n    ariaLabel=\"Diagnostics\"\n    prompt=\"app $\"\n    welcome=\"Type help for the commands.\"\n    [handler]=\"runCommand\"\n    (commandRun)=\"last.set($event)\"\n  />\n  <div class=\"docs-row\">\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"terminal.clear()\">\n      Clear\n    </star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"terminal.run('status')\">\n      Run \"status\"\n    </star-button>\n  </div>\n  <p class=\"docs-output\" role=\"status\">Last command: {{ last() || 'none' }}</p>\n</div>",
