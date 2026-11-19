@@ -171,5 +171,21 @@ test.describe('scheduler', () => {
       parseFloat(getComputedStyle(element).getPropertyValue('block-size')),
     );
     expect(await slot.evaluate((element) => element.offsetHeight)).toBe(Math.round(height));
+    // The day headers keep their height, and the sticky all-day row sits right under them.
+    const head = area.locator('.star-scheduler__grid--time .star-scheduler__head').nth(1);
+    const headHeight = await head.evaluate((element) =>
+      parseFloat(getComputedStyle(element).getPropertyValue('block-size')),
+    );
+    expect(await head.evaluate((element) => element.offsetHeight)).toBe(Math.round(headHeight));
+    const allDayTop = await area
+      .locator('.star-scheduler__cell--all-day')
+      .first()
+      .evaluate((element) => parseFloat(getComputedStyle(element).insetBlockStart));
+    expect(allDayTop).toBe(Math.round(headHeight));
+    // An event of two slots is exactly two slots tall (minus its 2px gap).
+    const meeting = area.getByRole('button', { name: /^Team meeting, 10:00 to 11:00/ });
+    expect(await meeting.evaluate((element) => element.offsetHeight)).toBe(
+      Math.round(height) * 2 - 2,
+    );
   });
 });
