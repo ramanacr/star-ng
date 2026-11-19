@@ -85,7 +85,7 @@ import { DocsFill, formatDay, formatMoney, Order, ORDERS } from './table-demo';
         heading="Pin to start and end"
         source="table-columns/pinned"
         [script]="pinnedScript"
-        note="pinned: 'end' keeps a column at the end edge (frozen: true is the same as pinned: 'start'). pinnableColumns adds Pin to start, Pin to end and Unpin buttons to the Columns panel. pinnedColumns is a two-way model of the pins by field, and pinColumn(field, side) does the same from code. With start pins the selection column sticks too. A shadow marks the inner edge of each pinned area. Pinned columns move within their side only."
+        note="pinned: 'end' keeps a column at the end edge (frozen: true is the same as pinned: 'start'). pinnableColumns adds Pin to start, Pin to end and Unpin buttons to the Columns panel. pinnedColumns is a two-way model of the pins by field, and pinColumn(field, side) does the same from code. While a column is pinned, the selection column sticks at the start too. A second click on a pressed pin button unpins the column. A shadow marks the inner edge of each pinned area. Pinned columns move within their side only."
       >
         <div class="docs-stack">
           <docs-fill>
