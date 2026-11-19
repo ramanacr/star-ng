@@ -910,13 +910,19 @@ export class StarRibbon {
   private modalOutside(): boolean {
     const host = this.host.nativeElement;
     const outside = (element: Element) => !element.contains(host);
+    // Only a connected element that shows counts (`checkVisibility()` where the browser has it).
+    const visible = (element: Element) => {
+      if (!element.isConnected || element.closest('[hidden], dialog:not([open])')) return false;
+      const check = (element as Element & { checkVisibility?: () => boolean }).checkVisibility;
+      return check ? check.call(element) : true;
+    };
     let modals: Element[] = [];
     try {
       modals = [...this.doc.querySelectorAll(':modal')];
     } catch {
       // An engine without `:modal`: the aria-modal check below still works.
     }
-    modals.push(...this.doc.querySelectorAll('[aria-modal="true"]'));
+    modals.push(...[...this.doc.querySelectorAll('[aria-modal="true"]')].filter(visible));
     return modals.some(outside);
   }
 
@@ -1018,8 +1024,11 @@ export class StarRibbon {
       return;
     }
     if (!next) {
-      // The focus left the page (another window, a closed tab).
-      this.hideKeyTips();
+      // The focus left the page (another window), or a re-render removed the focused element.
+      // Hide only when the focus did not land back in the ribbon by the next tick.
+      setTimeout(() => {
+        if (!this.host.nativeElement.contains(this.doc.activeElement)) this.hideKeyTips();
+      });
       return;
     }
     this.hideKeyTips();

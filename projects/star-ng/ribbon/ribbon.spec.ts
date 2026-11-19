@@ -313,9 +313,41 @@ describe('StarRibbon', () => {
     key(tabs()[0], 'F10');
     await stable();
     expect(tips().length).toBe(3);
+    tabs()[0].blur();
     tabs()[0].dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget: null }));
+    await new Promise((resolve) => setTimeout(resolve));
     await stable();
     expect(tips()).toEqual([]);
+  });
+
+  it('keeps the KeyTips when a re-render moves the focus back into the ribbon', async () => {
+    const { tips, tabs, stable } = await setup();
+    tabs()[0].focus();
+    key(tabs()[0], 'F10');
+    await stable();
+    // The focused element leaves (focusout without a target), then the focus lands in the ribbon.
+    tabs()[0].dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget: null }));
+    tabs()[1].focus();
+    await new Promise((resolve) => setTimeout(resolve));
+    await stable();
+    expect(tips()).toEqual(['F', 'H', 'I']);
+  });
+
+  it('ignores a hidden or detached aria-modal element', async () => {
+    const { host, tips, stable } = await setup();
+    host.global.set(true);
+    await stable();
+    const hidden = document.createElement('div');
+    hidden.setAttribute('aria-modal', 'true');
+    hidden.hidden = true;
+    document.body.appendChild(hidden);
+    try {
+      key(document.body, 'F10');
+      await stable();
+      expect(tips()).toEqual(['F', 'H', 'I']);
+    } finally {
+      hidden.remove();
+    }
   });
 
   it('forgets a lone Alt after a window blur or a pointer down', async () => {
