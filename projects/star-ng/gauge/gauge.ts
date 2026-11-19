@@ -251,7 +251,7 @@ export abstract class StarGaugeBase implements FormValueControl<number> {
 
   /** Moves the value while a drag that started on the gauge goes on. */
   protected onPointerMove(event: PointerEvent): void {
-    if (!this.dragging || !this.active()) return;
+    if (!this.dragging || !this.active() || !(event.buttons & 1)) return;
     this.setFromPointer(event);
   }
 

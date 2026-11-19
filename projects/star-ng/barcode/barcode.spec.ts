@@ -101,6 +101,16 @@ describe('StarBarcode', () => {
     expect(firstBar().getAttribute('width')).toBe('2');
   });
 
+  it('falls back to 1 when the module width is not finite', async () => {
+    const { fixture, host, state } = await setup();
+    const firstBar = () => host.querySelector('.star-barcode__bar')!;
+    for (const bad of [Infinity, -Infinity, NaN]) {
+      state.moduleWidth.set(bad);
+      await fixture.whenStable();
+      expect(firstBar().getAttribute('width')).toBe('2');
+    }
+  });
+
   it('renders on the server', async () => {
     const { host } = await setup('server');
     expect(host.querySelectorAll('.star-barcode__bar').length).toBeGreaterThan(0);

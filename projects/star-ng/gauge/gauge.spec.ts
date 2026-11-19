@@ -307,6 +307,31 @@ describe('StarLinearGauge and StarRadialGauge', () => {
     expect(host.value()).toBe(100);
   });
 
+  it('ends the drag when the pointer capture is lost or the button is up', async () => {
+    const { fixture, host, linear } = await setup();
+    host.interactive.set(true);
+    await fixture.whenStable();
+    const svg = linear.querySelector('svg')!;
+    svg.getBoundingClientRect = () => ({ left: 0, top: 0, width: 320, height: 64 }) as DOMRect;
+    const pointer = (type: string, clientX: number, init: PointerEventInit = {}) => {
+      linear.dispatchEvent(
+        new PointerEvent(type, { clientX, clientY: 20, bubbles: true, ...init }),
+      );
+      return fixture.whenStable();
+    };
+
+    await pointer('pointerdown', 160, { button: 0, buttons: 1 });
+    expect(host.value()).toBe(100);
+    await pointer('lostpointercapture', 160);
+    await pointer('pointermove', 88, { buttons: 1 });
+    expect(host.value()).toBe(100);
+
+    // A move without the primary button down does not change the value, even mid-drag.
+    await pointer('pointerdown', 160, { button: 0, buttons: 1 });
+    await pointer('pointermove', 232, { buttons: 0 });
+    expect(host.value()).toBe(100);
+  });
+
   it('renders on the server', async () => {
     const { linear, radial } = await setup('server');
     expect(linear.querySelector('.star-gauge__bar')).not.toBeNull();

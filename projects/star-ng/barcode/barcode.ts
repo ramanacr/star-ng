@@ -103,7 +103,10 @@ export class StarBarcode {
 
   protected readonly encoding = computed(() => starEncodeBarcode(this.value(), this.type()));
   /** Whole pixels per module, so every bar edge falls on a pixel and the widths stay exact. */
-  private readonly module = computed(() => Math.max(1, Math.round(this.moduleWidth() || 1)));
+  private readonly module = computed(() => {
+    const width = Math.round(this.moduleWidth());
+    return Number.isFinite(width) ? Math.max(1, width) : 1;
+  });
 
   protected readonly rects = computed(() => {
     const code = this.encoding();
