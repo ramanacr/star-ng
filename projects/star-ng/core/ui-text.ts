@@ -740,7 +740,9 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   queryAnd: 'and',
   queryOr: 'or',
   queryEmpty: 'No conditions',
-  queryRuleSummary: (field, mode, value) => `${field} ${mode.toLocaleLowerCase('en')} ${value}`,
+  // Only the first letter is lowered: "Is IBAN" reads "is IBAN".
+  queryRuleSummary: (field, mode, value) =>
+    `${field} ${mode.charAt(0).toLocaleLowerCase('en')}${mode.slice(1)} ${value}`,
   queryRange: (min, max) => `${min} and ${max}`,
   queryIncomplete: 'Complete or remove the rules without a value.',
 

@@ -229,6 +229,46 @@ describe('StarQueryBuilder', () => {
     expect(host.builder().undo()).toBe(false);
   });
 
+  it('Backspace also removes a focused rule; undo forgets the removal after other edits', async () => {
+    const { host, rows, root, stable } = await setup();
+    key(rows()[1], 'Backspace');
+    await stable();
+    expect(host.query().rules).toHaveLength(2);
+    // Another edit clears the undo.
+    host.builder().setOperator('', 'or');
+    await stable();
+    expect(host.builder().undo()).toBe(false);
+
+    key(rows()[0], 'Delete');
+    await stable();
+    // A change from outside clears it too.
+    host.query.set({ operator: 'and', rules: [] });
+    await stable();
+    const event = key(root.querySelector('star-query-builder')!, 'z', { ctrlKey: true });
+    expect(event.defaultPrevented).toBe(false);
+    expect(host.query().rules).toEqual([]);
+  });
+
+  it('numbers only the rules of a group, not its sub-groups', async () => {
+    const { host, rows, live, stable } = await setup();
+    host.query.set({
+      operator: 'and',
+      rules: [
+        { field: 'customer', matchMode: 'contains', value: 'a' },
+        { operator: 'or', rules: [{ field: 'total', matchMode: 'gt', value: 1 }] },
+        { field: 'total', matchMode: 'gt', value: 2 },
+      ],
+    });
+    await stable();
+    expect(rows().map((r) => r.getAttribute('aria-label'))).toEqual(['Rule 1', 'Rule 1', 'Rule 2']);
+    expect(rows()[2].querySelector('.star-query__remove button')?.getAttribute('aria-label')).toBe(
+      'Remove rule 2',
+    );
+    key(rows()[2], 'Delete');
+    await stable();
+    expect(live()).toBe('Rule 2 removed. Press Control and Z to undo.');
+  });
+
   it('Alt+Arrow keys move a rule in its group with an announcement', async () => {
     const { host, rows, live, stable } = await setup();
     rows()[0].focus();
@@ -355,7 +395,7 @@ class FormsHost {
   readonly filter = form(this.model, (path) => starQueryComplete(path, FIELDS));
   readonly group = new FormGroup({
     query: new SignalFormControl<StarQueryGroup>({ operator: 'and', rules: [] }, (path) =>
-      starQueryComplete(path, () => FIELDS, { message: 'Finish the rules.' }),
+      starQueryComplete(path, () => FIELDS, { message: () => 'Finish the rules.' }),
     ),
   });
 }

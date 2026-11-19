@@ -1,5 +1,6 @@
 import { STAR_UI_TEXT_DEFAULTS, StarFilterService } from '@star-ng/ui/core';
 import { STAR_UI_TEXT_DE } from '@star-ng/ui/i18n/de';
+import { STAR_UI_TEXT_ES } from '@star-ng/ui/i18n/es';
 import {
   STAR_QUERY_MATCH_MODES,
   starIsQueryGroup,
@@ -160,6 +161,30 @@ describe('query builder model', () => {
     expect(ids(one('paid', 'equals', false))).toEqual([1, 4]);
   });
 
+  it('mode labels: German keeps the case, English and Spanish lower only the first letter', () => {
+    const query = one('total', 'gte', 5);
+    expect(starQueryToText(query, fields, STAR_UI_TEXT_DEFAULTS)).toBe(
+      'Total greater than or equal to 5',
+    );
+    expect(starQueryToText(query, fields, STAR_UI_TEXT_DE)).toBe(
+      `Total ${STAR_UI_TEXT_DE.matchGte} 5`,
+    );
+    const es = STAR_UI_TEXT_ES.matchGte;
+    expect(starQueryToText(query, fields, STAR_UI_TEXT_ES)).toBe(
+      `Total ${es.charAt(0).toLocaleLowerCase('es')}${es.slice(1)} 5`,
+    );
+    expect(STAR_UI_TEXT_DEFAULTS.queryRuleSummary('Name', 'Is IBAN', 'x')).toBe('Name is IBAN x');
+  });
+
+  it('a boolean field reads the texts "false" and "0" as false', () => {
+    const rows = [{ flag: 'false' }, { flag: 'true' }, { flag: '0' }, { flag: true }];
+    const flags: StarQueryField<{ flag: unknown }>[] = [
+      { field: 'flag', label: 'Flag', type: 'boolean' },
+    ];
+    const predicate = starQueryToPredicate(one('flag', 'equals', true), flags);
+    expect(rows.map(predicate)).toEqual([false, true, false, true]);
+  });
+
   it('custom match modes come from StarFilterService', () => {
     const service = new StarFilterService();
     service.register('even', (value) => Number(value) % 2 === 0, 'Is even');
@@ -252,7 +277,7 @@ describe('query builder model', () => {
       'No conditions',
     );
     expect(starQueryToText(one('customer', 'contains', 'an'), fields, STAR_UI_TEXT_DE)).toBe(
-      'Customer enthält an',
+      'Customer Enthält an',
     );
   });
 });

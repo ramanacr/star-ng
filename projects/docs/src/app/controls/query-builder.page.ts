@@ -96,7 +96,7 @@ const isoDay = (date: Date): string =>
         heading="Forms and validation"
         source="query-builder/forms"
         [script]="formsScript"
-        note="Bind the builder with [formField]. starQueryComplete(path, fields) makes the field invalid while a rule has no value; the builder marks such rules after the focus leaves it. With Reactive Forms, use the same rule in a SignalFormControl."
+        note="Bind the builder with [formField]. starQueryComplete(path, fields) makes the field invalid while a rule is incomplete; pass the message from STAR_UI_TEXT (queryIncomplete), as a function so it follows the language. The builder marks such rules and shows the error text after the focus leaves it. The summary prints the raw values, not locale-formatted ones. With Reactive Forms, use the same rule in a SignalFormControl."
       >
         <div class="docs-stack">
           <star-query-builder [fields]="fields" [formField]="filter" />
@@ -197,7 +197,7 @@ export class QueryBuilderPage {
     rules: [{ field: 'customer', matchMode: 'contains', value: '' }],
   });
   protected readonly filter = form(this.filterModel, (path) =>
-    starQueryComplete(path, this.fields),
+    starQueryComplete(path, this.fields, { message: () => this.text.queryIncomplete }),
   );
 
   constructor() {
@@ -262,7 +262,10 @@ constructor() {
   operator: 'and',
   rules: [{ field: 'customer', matchMode: 'contains', value: '' }],
 });
-readonly filter = form(this.filterModel, (path) => starQueryComplete(path, this.fields));`;
+private readonly text = inject(STAR_UI_TEXT);
+readonly filter = form(this.filterModel, (path) =>
+  starQueryComplete(path, this.fields, { message: () => this.text.queryIncomplete }),
+);`;
 
   protected readonly slots: readonly DocsRow[] = [
     {

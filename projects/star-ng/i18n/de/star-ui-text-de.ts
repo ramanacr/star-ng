@@ -324,7 +324,8 @@ export const STAR_UI_TEXT_DE: StarUiText = {
   queryAnd: 'und',
   queryOr: 'oder',
   queryEmpty: 'Keine Bedingungen',
-  queryRuleSummary: (field, mode, value) => `${field} ${mode.toLocaleLowerCase('de')} ${value}`,
+  // German keeps the case of the mode text (nouns stay capitalised).
+  queryRuleSummary: (field, mode, value) => `${field} ${mode} ${value}`,
   queryRange: (min, max) => `${min} und ${max}`,
   queryIncomplete: 'Ergänzen oder entfernen Sie die Regeln ohne Wert.',
   kanbanColumnLabel: (title, count) =>

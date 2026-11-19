@@ -1,6 +1,7 @@
 import { validate, type SchemaPath } from '@angular/forms/signals';
 import {
   STAR_TABLE_MATCH_MODES,
+  STAR_UI_TEXT_DEFAULTS,
   StarColumnFilterType,
   StarFilterFunction,
   StarFilterRuleValue,
@@ -56,7 +57,8 @@ export interface StarQueryGroup {
 
 /**
  * Match modes of each field type, in menu order. The first one is the default. Text, number
- * and date use the modes of the table filter (`STAR_TABLE_MATCH_MODES`).
+ * and date use the modes of the table filter (`STAR_TABLE_MATCH_MODES`). On a `'select'` field,
+ * `equals` and `notEquals` compare the text like the table filter: case and accents are ignored.
  */
 export const STAR_QUERY_MATCH_MODES: Readonly<
   Record<StarQueryFieldType, readonly StarTableMatchMode[]>
@@ -173,6 +175,12 @@ export function starQueryIncompleteCount(
   );
 }
 
+/** A boolean cell value; the texts `'false'`, `'0'` and `''` (any case) are false. */
+function asBoolean(raw: unknown): boolean {
+  if (typeof raw === 'string') return !['false', '0', ''].includes(raw.trim().toLowerCase());
+  return Boolean(raw);
+}
+
 /**
  * A row predicate for a query, with the match logic of the table filter
  * (`ɵstarMatchesRule`): text modes ignore case and accents, number modes compare numbers, date
@@ -200,8 +208,8 @@ export function starQueryToPredicate<T>(
       ? field.value(row)
       : (row as Record<string, unknown> | null)?.[field.field];
     if (field.type === 'boolean' && typeof rule.value === 'boolean') {
-      if (rule.matchMode === 'equals') return Boolean(raw) === rule.value;
-      if (rule.matchMode === 'notEquals') return Boolean(raw) !== rule.value;
+      if (rule.matchMode === 'equals') return asBoolean(raw) === rule.value;
+      if (rule.matchMode === 'notEquals') return asBoolean(raw) !== rule.value;
       const fn = lookup(rule.matchMode);
       return fn ? fn(raw, rule.value, locale) : true;
     }
@@ -262,6 +270,8 @@ function valueText(
  * "Customer contains an and (Status is one of Open, Paid or Total between 10 and 20)".
  * Incomplete rules (see `starQueryRuleComplete`) and empty groups are left out; an empty query
  * gives `uiText.queryEmpty`.
+ * The values are printed as they are stored (`100`, `2026-03-01`), not formatted for a locale;
+ * choice values print their option label.
  * `service` gives the names of custom match modes.
  */
 export function starQueryToText(
@@ -301,8 +311,12 @@ export function starQueryToText(
 
 /** Options of `starQueryComplete`. */
 export interface StarQueryCompleteOptions {
-  /** Error message (default: the English `queryIncomplete` text). */
-  readonly message?: string;
+  /**
+   * Error message, or a function that reads it when the rule runs (for a language that changes
+   * at run time): `{ message: () => text.queryIncomplete }` with `text = inject(STAR_UI_TEXT)`.
+   * Default: the English `queryIncomplete` text.
+   */
+  readonly message?: string | (() => string);
 }
 
 /**
@@ -323,7 +337,9 @@ export function starQueryComplete(
     return starQueryIncompleteCount(value(), list) > 0
       ? {
           kind: 'incompleteQuery',
-          message: options.message ?? 'Complete or remove the rules without a value.',
+          message:
+            (typeof options.message === 'function' ? options.message() : options.message) ??
+            STAR_UI_TEXT_DEFAULTS.queryIncomplete,
         }
       : undefined;
   });

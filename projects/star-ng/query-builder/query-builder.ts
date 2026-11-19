@@ -247,7 +247,7 @@ function groupAt(root: StarQueryGroup, path: string): StarQueryGroup | null {
                 role="group"
                 [attr.tabindex]="disabled() ? null : 0"
                 [attr.data-path]="child(path, i)"
-                [attr.aria-label]="text.filterRule(i + 1)"
+                [attr.aria-label]="text.filterRule(ruleNumber(group, i))"
                 [attr.aria-describedby]="ruleInvalid(item) ? hintId + ' ' + errorId : hintId"
                 [class.star-query__rule--invalid]="ruleInvalid(item)"
                 (keydown)="onRuleKeydown($event, path, i)"
@@ -409,7 +409,7 @@ function groupAt(root: StarQueryGroup, path: string): StarQueryGroup | null {
                   iconOnly
                   leadingIcon="ph-bold ph-x"
                   [disabled]="disabled()"
-                  [ariaLabel]="text.removeRule(i + 1)"
+                  [ariaLabel]="text.removeRule(ruleNumber(group, i))"
                   (pressed)="removeAt(path, i)"
                 />
               </div>
@@ -565,8 +565,23 @@ export class StarQueryBuilder implements FormValueControl<StarQueryGroup> {
 
   // ---- Changes (each writes a new value) ----
 
+  /** The value that the builder wrote last; another value means a change from outside. */
+  private written: StarQueryGroup | null = null;
+
+  /** Writes a new value. Any change but a removal ends the undo of the last removal. */
   private commit(next: StarQueryGroup): void {
+    this.lastRemoved = null;
+    this.written = next;
     this.value.set(next);
+  }
+
+  /** Number of the rule at `index` among the rules (not the sub-groups) of a group, from 1. */
+  protected ruleNumber(group: StarQueryGroup, index: number): number {
+    let number = 0;
+    for (let i = 0; i <= index && i < group.rules.length; i++) {
+      if (!starIsQueryGroup(group.rules[i])) number++;
+    }
+    return number;
   }
 
   private updateRule(path: string, index: number, change: (rule: StarQueryRule) => StarQueryRule) {
@@ -625,14 +640,14 @@ export class StarQueryBuilder implements FormValueControl<StarQueryGroup> {
       ? item.operator === 'or'
         ? this.text.queryGroupAny
         : this.text.queryGroupAll
-      : this.text.filterRule(index + 1);
-    this.lastRemoved = { group: path, index, item, name };
+      : this.text.filterRule(this.ruleNumber(group, index));
     this.commit(
       updateGroup(this.value(), path, (g) => ({
         ...g,
         rules: g.rules.filter((_, i) => i !== index),
       })),
     );
+    this.lastRemoved = { group: path, index, item, name };
     this.announcement.set(this.text.queryRuleRemoved(name));
     const left = group.rules.length - 1;
     if (left > 0) this.focusItem(path, Math.min(index, left - 1));
@@ -642,10 +657,11 @@ export class StarQueryBuilder implements FormValueControl<StarQueryGroup> {
   /** Puts the last removed rule or group back. Returns `false` when there is nothing to undo. */
   undo(): boolean {
     const removed = this.lastRemoved;
-    if (!removed) return false;
+    this.lastRemoved = null;
+    // A value from outside since the removal: the removed place may not exist any more.
+    if (!removed || this.value() !== this.written) return false;
     const group = groupAt(this.value(), removed.group);
     if (!group) return false;
-    this.lastRemoved = null;
     const index = Math.min(removed.index, group.rules.length);
     this.commit(
       updateGroup(this.value(), removed.group, (g) => {
@@ -674,7 +690,11 @@ export class StarQueryBuilder implements FormValueControl<StarQueryGroup> {
       }),
     );
     this.announcement.set(
-      this.text.itemPosition(this.text.filterRule(index + 1), to + 1, group.rules.length),
+      this.text.itemPosition(
+        this.text.filterRule(this.ruleNumber(group, index)),
+        to + 1,
+        group.rules.length,
+      ),
     );
     this.focusItem(path, to);
   }
@@ -721,7 +741,12 @@ export class StarQueryBuilder implements FormValueControl<StarQueryGroup> {
   protected onRuleKeydown(event: KeyboardEvent, path: string, index: number): void {
     // Keys of a control inside the row belong to that control.
     if (event.target !== event.currentTarget || this.disabled()) return;
-    if (event.key === 'Delete' && !event.altKey && !event.ctrlKey && !event.metaKey) {
+    if (
+      (event.key === 'Delete' || event.key === 'Backspace') &&
+      !event.altKey &&
+      !event.ctrlKey &&
+      !event.metaKey
+    ) {
       event.preventDefault();
       this.removeAt(path, index);
     } else if (event.altKey && (event.key === 'ArrowUp' || event.key === 'ArrowDown')) {
@@ -732,23 +757,25 @@ export class StarQueryBuilder implements FormValueControl<StarQueryGroup> {
 
   protected onHostKeydown(event: KeyboardEvent): void {
     if (
-      (event.ctrlKey || event.metaKey) &&
-      !event.altKey &&
-      !event.shiftKey &&
-      event.key.toLowerCase() === 'z' &&
-      !(event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) &&
-      this.lastRemoved
+      !(event.ctrlKey || event.metaKey) ||
+      event.altKey ||
+      event.shiftKey ||
+      event.key.toLowerCase() !== 'z'
     ) {
-      event.preventDefault();
-      this.undo();
+      return;
     }
+    // A text field keeps its own undo. `tagName` works across frames, unlike `instanceof`.
+    const target = event.target as HTMLElement | null;
+    const tag = target?.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || target?.isContentEditable) return;
+    if (this.undo()) event.preventDefault();
   }
 
   protected onFocusOut(event: FocusEvent): void {
-    const next = event.relatedTarget;
-    if (next instanceof Node && this.host.contains(next)) return;
+    const next = event.relatedTarget as Element | null;
+    if (next && this.host.contains(next)) return;
     // A popup of a select or date picker is outside the host; it keeps the focus in the builder.
-    if (next instanceof Element && next.closest('.cdk-overlay-container')) return;
+    if (next?.closest?.('.cdk-overlay-container')) return;
     this.left.set(true);
     this.touch.emit();
   }

@@ -325,7 +325,8 @@ export const STAR_UI_TEXT_ES: StarUiText = {
   queryAnd: 'y',
   queryOr: 'o',
   queryEmpty: 'Sin condiciones',
-  queryRuleSummary: (field, mode, value) => `${field} ${mode.toLocaleLowerCase('es')} ${value}`,
+  queryRuleSummary: (field, mode, value) =>
+    `${field} ${mode.charAt(0).toLocaleLowerCase('es')}${mode.slice(1)} ${value}`,
   queryRange: (min, max) => `${min} y ${max}`,
   queryIncomplete: 'Complete o quite las reglas sin valor.',
   kanbanColumnLabel: (title, count) =>

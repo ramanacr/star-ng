@@ -20,8 +20,6 @@ const SAME_AS_ENGLISH: Record<string, readonly Name[]> = {
     'chartX',
     'chartY',
     'minute',
-    // A rule summary only joins its parts: "Total größer als 100" (the mode text is translated).
-    'queryRuleSummary',
     // A data point reads "series, category: value" in every language.
     'chartPointLabel',
   ],
