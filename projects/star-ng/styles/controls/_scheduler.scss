@@ -186,6 +186,7 @@
 }
 
 .star-scheduler__cell {
+  box-sizing: border-box;
   position: relative;
   min-inline-size: 0;
   border-inline-start: 1px solid var(--star-border);

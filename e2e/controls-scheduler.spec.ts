@@ -129,4 +129,15 @@ test.describe('scheduler', () => {
     await page.keyboard.press('PageDown');
     await expect(area.getByRole('heading', { level: 2 })).toHaveText('April 2026');
   });
+
+  test('keeps the slot height without a global border-box reset', async ({ page }) => {
+    await openPage(page, '/controls/scheduler', 'Scheduler');
+    await page.addStyleTag({ content: '*, ::before, ::after { box-sizing: content-box; }' });
+    const area = example(page, 'Team calendar');
+    const slot = area.locator('[data-cell="20:1"]');
+    const height = await slot.evaluate((element) =>
+      parseFloat(getComputedStyle(element).getPropertyValue('block-size')),
+    );
+    expect(await slot.evaluate((element) => element.offsetHeight)).toBe(Math.round(height));
+  });
 });

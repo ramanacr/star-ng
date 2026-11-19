@@ -59,4 +59,15 @@ test.describe('gantt', () => {
     const bars = area.locator('g.star-gantt__bar');
     expect(await bars.count()).toBe(await grid.locator('[role="row"][data-task-id]').count());
   });
+
+  test('keeps the row height without a global border-box reset', async ({ page }) => {
+    await openPage(page, '/controls/gantt', 'Gantt chart');
+    // An application without the docs reset: every element is content-box.
+    await page.addStyleTag({ content: '*, ::before, ::after { box-sizing: content-box; }' });
+    const area = example(page, 'Product launch plan');
+    const row = area.locator('[role="row"][data-task-id="design"]');
+    expect(await row.evaluate((element) => element.offsetHeight)).toBe(36);
+    expect(await area.locator('.star-gantt__scale').evaluate((e) => e.offsetHeight)).toBe(56);
+    expect(await area.locator('.star-gantt__row--head').evaluate((e) => e.offsetHeight)).toBe(56);
+  });
 });

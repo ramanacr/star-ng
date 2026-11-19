@@ -35,6 +35,7 @@
   background: var(--star-surface);
 }
 .star-gantt__row {
+  box-sizing: border-box;
   display: grid;
   grid-template-columns: minmax(0, 1fr) 6.25rem 6.25rem 4.75rem 4.25rem;
   align-items: center;
@@ -106,6 +107,7 @@
   inline-size: var(--star-gantt-timeline-width);
 }
 .star-gantt__scale {
+  box-sizing: border-box;
   position: sticky;
   inset-block-start: 0;
   z-index: 1;
@@ -117,6 +119,7 @@
   color: var(--star-text-muted);
 }
 .star-gantt__tier {
+  box-sizing: border-box;
   position: relative;
   border-block-end: 1px solid var(--star-border);
 
