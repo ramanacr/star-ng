@@ -513,24 +513,100 @@ describe('StarEditor fix round 1', () => {
   });
 });
 
+function dropEvent(html: string, plain: string): Event {
+  const event = new Event('drop', { bubbles: true, cancelable: true });
+  Object.defineProperty(event, 'dataTransfer', {
+    value: {
+      getData: (type: string) => (type === 'text/html' ? html : type === 'text/plain' ? plain : ''),
+    },
+  });
+  return event;
+}
+
+/** The test DOM has no layout: `caretRangeFromPoint` answers with `at` (or nothing). */
+function resolveDropPointAt(at: (() => Range | null) | undefined): () => void {
+  const doc = document as unknown as { caretRangeFromPoint?: () => Range | null };
+  const original = doc.caretRangeFromPoint;
+  doc.caretRangeFromPoint = at;
+  return () => {
+    doc.caretRangeFromPoint = original;
+  };
+}
+
+function rangeIn(node: Node, offset: number): Range {
+  const range = document.createRange();
+  range.setStart(node.firstChild!, offset);
+  range.collapse(true);
+  return range;
+}
+
 describe('StarEditor drop', () => {
-  it('handles a drop like a paste: sanitized HTML', async () => {
+  async function dropSetup() {
     const fixture = TestBed.createComponent(PasteHost);
     await fixture.whenStable();
     const area = (fixture.nativeElement as HTMLElement).querySelector<HTMLElement>(
       '.star-editor__area',
     )!;
-    select(area.querySelector('p')!, 5, 5);
-    const event = new Event('drop', { bubbles: true, cancelable: true });
-    Object.defineProperty(event, 'dataTransfer', {
-      value: {
-        getData: (type: string) =>
-          type === 'text/html' ? '<i onclick="alert(1)">x</i>' : type === 'text/plain' ? 'x' : '',
-      },
-    });
-    area.dispatchEvent(event);
-    expect(event.defaultPrevented).toBe(true);
-    expect(fixture.componentInstance.html()).toBe('<p>Start<i>x</i></p>');
+    return { fixture, area, p: area.querySelector('p')!, host: fixture.componentInstance };
+  }
+
+  it('handles a drop from outside like a paste: sanitized HTML', async () => {
+    const { area, p, host } = await dropSetup();
+    const restore = resolveDropPointAt(() => rangeIn(p, 5));
+    try {
+      const event = dropEvent('<i onclick="alert(1)">x</i>', 'x');
+      area.dispatchEvent(event);
+      expect(event.defaultPrevented).toBe(true);
+      expect(host.html()).toBe('<p>Start<i>x</i></p>');
+    } finally {
+      restore();
+    }
+  });
+
+  it('leaves a drag that started inside the editor to the browser', async () => {
+    const { area, p, host } = await dropSetup();
+    const before = host.html();
+    const restore = resolveDropPointAt(() => rangeIn(p, 5));
+    try {
+      p.dispatchEvent(new Event('dragstart', { bubbles: true }));
+      const internal = dropEvent('<i>x</i>', 'x');
+      area.dispatchEvent(internal);
+      expect(internal.defaultPrevented).toBe(false);
+      expect(host.html()).toBe(before);
+      // The next drop, from outside, is taken again.
+      const outside = dropEvent('<i>x</i>', 'x');
+      area.dispatchEvent(outside);
+      expect(outside.defaultPrevented).toBe(true);
+    } finally {
+      restore();
+    }
+  });
+
+  it('does not take a drop whose point does not resolve inside the area', async () => {
+    const { area, host } = await dropSetup();
+    const before = host.html();
+    for (const at of [
+      undefined,
+      () => null,
+      () =>
+        rangeIn(
+          document.body
+            .appendChild(document.createElement('b'))
+            .appendChild(document.createTextNode('o')).parentNode!,
+          0,
+        ),
+    ]) {
+      const restore = resolveDropPointAt(at);
+      try {
+        const event = dropEvent('<i>x</i>', 'x');
+        area.dispatchEvent(event);
+        expect(event.defaultPrevented).toBe(false);
+      } finally {
+        restore();
+      }
+    }
+    expect(host.html()).toBe(before);
+    document.body.querySelectorAll(':scope > b').forEach((b) => b.remove());
   });
 });
 

@@ -196,6 +196,8 @@ const FORMAT_TAGS: Readonly<Record<string, StarEditorCommand>> = {
       (beforeinput)="onBeforeInput($event)"
       (input)="onInput()"
       (paste)="onPaste($event)"
+      (dragstart)="dragFromInside = true"
+      (dragend)="dragFromInside = false"
       (drop)="onDrop($event)"
       (focus)="refreshState()"
       (keyup)="refreshState()"
@@ -389,20 +391,28 @@ export class StarEditor implements FormValueControl<string> {
     this.insertData(data);
   }
 
+  /** True while a drag that started inside this editor is under way (the browser moves its text). */
+  protected dragFromInside = false;
+
   /**
-   * A drop is a paste at the drop point: the same sanitizing, `pasteAsText` and `maxLength`.
-   * Files are not taken.
+   * A drop from outside the editor is a paste at the drop point: the same sanitizing,
+   * `pasteAsText` and `maxLength`. Files are not taken. A drag that started inside the editor
+   * keeps the native move. The drop is taken over only when its point resolves inside the area,
+   * so a browser that cannot resolve it (Firefox) keeps its own drop.
    */
   protected onDrop(event: DragEvent): void {
+    const internal = this.dragFromInside;
+    this.dragFromInside = false;
     const data = event.dataTransfer;
-    if (this.locked() || !data) return;
-    event.preventDefault();
+    if (internal || this.locked() || !data) return;
     const area = this.area().nativeElement;
     const doc = area.ownerDocument as Document & {
       caretRangeFromPoint?: (x: number, y: number) => Range | null;
     };
     const at = doc.caretRangeFromPoint?.(event.clientX, event.clientY);
-    if (at && area.contains(at.startContainer)) starEditorRestore(at);
+    if (!at || !area.contains(at.startContainer)) return;
+    event.preventDefault();
+    starEditorRestore(at);
     this.insertData(data);
   }
 
