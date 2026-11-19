@@ -477,6 +477,86 @@ describe('StarFileManager', () => {
     expect(root.querySelectorAll('tr[data-select-key]').length).toBe(4);
   });
 
+  it('calls no provider method when a handler cancels the operation', async () => {
+    const { root, host, stable, row, tool } = await setup();
+    const provider = {
+      list: vi.fn(async (folder: string | null) =>
+        ITEMS.filter((item) => item.parentId === folder),
+      ),
+      rename: vi.fn(),
+      delete: vi.fn(),
+      createFolder: vi.fn(),
+      move: vi.fn(),
+      copy: vi.fn(),
+      upload: vi.fn(),
+      download: vi.fn(),
+    } satisfies StarFileProvider;
+    for (const name of ['move', 'copy', 'createFolder', 'upload', 'download'])
+      host.cancel.add(name);
+    host.items.set([]);
+    host.provider.set(provider);
+    await stable();
+    await new Promise((resolve) => setTimeout(resolve));
+    await stable();
+    const count = (name: string) => host.events.filter((e) => e.name === name).length;
+
+    // move by drop
+    host.selection.set(['notes']);
+    await stable();
+    root
+      .querySelector('[data-file-name="notes"]')!
+      .dispatchEvent(new Event('dragstart', { bubbles: true }));
+    const target = root.querySelector('[data-file-name="plans"]')!;
+    target.dispatchEvent(new Event('dragover', { bubbles: true, cancelable: true }));
+    target.dispatchEvent(new Event('drop', { bubbles: true, cancelable: true }));
+    await stable();
+    expect(count('move')).toBe(1);
+
+    // move by paste: the clipboard stays when the move is canceled
+    key(row('notes'), 'x', { ctrlKey: true });
+    host.manager().navigate('plans');
+    host.manager().paste();
+    expect(count('move')).toBe(2);
+    host.manager().navigate('docs');
+    await stable();
+    await new Promise((resolve) => setTimeout(resolve));
+    await stable();
+
+    // copy
+    host.selection.set(['budget']);
+    await stable();
+    key(row('budget'), 'c', { ctrlKey: true });
+    key(row('budget'), 'v', { ctrlKey: true });
+    expect(count('copy')).toBe(1);
+
+    // download
+    tool('download').click();
+    expect(count('download')).toBe(1);
+
+    // create folder
+    tool('new-folder').click();
+    await stable();
+    const dialog = root.querySelectorAll('dialog')[1];
+    [...dialog.querySelectorAll('button')].find((b) => b.textContent?.trim() === 'Create')!.click();
+    expect(count('createFolder')).toBe(1);
+
+    // upload
+    tool('upload').click();
+    await stable();
+    const input = root.querySelector<HTMLInputElement>('.star-fm__upload input[type="file"]')!;
+    Object.defineProperty(input, 'files', {
+      value: [new File(['data'], 'plan.txt', { type: 'text/plain' })],
+    });
+    input.dispatchEvent(new Event('change'));
+    await stable();
+    expect(count('upload')).toBe(1);
+
+    await new Promise((resolve) => setTimeout(resolve));
+    for (const method of ['move', 'copy', 'createFolder', 'upload', 'download'] as const) {
+      expect(provider[method], method).not.toHaveBeenCalled();
+    }
+  });
+
   it('renders on the server platform', async () => {
     TestBed.configureTestingModule({ providers: [{ provide: PLATFORM_ID, useValue: 'server' }] });
     const { rows } = await setup();
