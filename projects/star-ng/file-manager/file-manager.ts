@@ -105,6 +105,19 @@ export interface StarFileUploadEvent extends StarFileCancelable {
   readonly files: readonly File[];
 }
 
+/** A provider call that can fail. */
+export type StarFileOperation =
+  'list' | 'rename' | 'delete' | 'createFolder' | 'move' | 'copy' | 'upload' | 'download';
+
+/** `error`: a provider call failed. The file manager announces it; a failed `list` shows an error state. */
+export interface StarFileErrorEvent {
+  readonly operation: StarFileOperation;
+  /** What the provider threw or rejected with. */
+  readonly error: unknown;
+  /** The folder of a failed `list`. */
+  readonly folderId?: string | null;
+}
+
 /** View of the content: a sortable table or a grid of large icons. */
 export type StarFileView = 'details' | 'large-icons';
 
@@ -263,7 +276,14 @@ const SORT_FIELDS: readonly StarFileSortField[] = ['name', 'size', 'modified', '
             [starContextMenu]="contextMenu"
           >
             <p class="star-sr-only" [id]="id + '-hint'">{{ text.fileManagerHint }}</p>
-            @if (view() === 'details') {
+            @if (listingFailed()) {
+              <div class="star-fm__error" role="alert">
+                <p>{{ text.fileLoadError }}</p>
+                <star-button variant="secondary" size="sm" (pressed)="refresh()">{{
+                  text.retry
+                }}</star-button>
+              </div>
+            } @else if (view() === 'details') {
               <star-table
                 [value]="visible()"
                 [columns]="columns()"
@@ -456,6 +476,13 @@ export class StarFileManager {
   readonly createFolder = output<StarFileCreateFolderEvent>();
   readonly upload = output<StarFileUploadEvent>();
   readonly download = output<StarFileItemsEvent>();
+  /**
+   * A provider call failed (Kendo `error`, DevExtreme `onErrorOccurred`). The file manager
+   * announces it, and a failed listing shows an error state with a retry button.
+   */
+  // The name is the public API; a native `error` event of an inner element does not bubble.
+  // eslint-disable-next-line @angular-eslint/no-output-native
+  readonly error = output<StarFileErrorEvent>();
 
   protected readonly query = signal('');
   protected readonly expanded = signal<readonly string[]>(['']);
@@ -571,16 +598,28 @@ export class StarFileManager {
     ];
   });
 
+  /** The provider could not list the open folder. */
+  protected readonly listingFailed = computed(
+    () => !!this.provider() && this.listing.status() === 'error',
+  );
+
   protected readonly rowLabel = (item: StarFileItem) => item.name;
 
   constructor() {
     // The provider listing of the open folder goes into the cache.
     effect(() => {
-      const value = this.listing.value();
+      // `value()` throws in the error state: read it only when there is one.
+      const value = this.listing.hasValue() ? this.listing.value() : undefined;
       const provider = this.provider();
       if (!provider || !value) return;
       const key = untracked(this.folder) ?? '';
       untracked(() => this.cache.update((cache) => new Map(cache).set(key, value)));
+    });
+    // A failed listing: announce it and tell the owner once per failure.
+    effect(() => {
+      const failure = this.listing.error();
+      if (!failure) return;
+      untracked(() => this.fail('list', failure, this.folder()));
     });
     // The path of the open folder stays open in the tree; the selection belongs to one folder.
     effect(() => {
@@ -655,11 +694,27 @@ export class StarFileManager {
     void this.announcer.announce(message);
   }
 
-  /** Runs a provider method, then reads the folders again. */
-  private async apply(call: ((provider: StarFileProvider) => unknown) | null): Promise<void> {
+  /** Announces a failed provider call and emits `error`. */
+  private fail(operation: StarFileOperation, error: unknown, folderId?: string | null): void {
+    this.announcer.announce(
+      operation === 'list' ? this.text.fileLoadError : this.text.fileOperationError,
+      'assertive',
+    );
+    this.error.emit(folderId === undefined ? { operation, error } : { operation, error, folderId });
+  }
+
+  /** Runs a provider method, then reads the folders again (also after a failure). */
+  private async apply(
+    operation: StarFileOperation,
+    call: ((provider: StarFileProvider) => unknown) | null,
+  ): Promise<void> {
     const provider = this.provider();
     if (!provider || !call) return;
-    await settle(call(provider) as StarFileResult<unknown>);
+    try {
+      await settle(call(provider) as StarFileResult<unknown>);
+    } catch (error) {
+      this.fail(operation, error);
+    }
     this.refresh();
   }
 
@@ -667,10 +722,11 @@ export class StarFileManager {
   refresh(): void {
     const provider = this.provider();
     if (!provider) return;
-    const keep = new Set(this.expanded());
-    this.cache.set(new Map());
+    // The cache entries are replaced one by one when the new lists arrive, so the items (and the
+    // focus on them) stay while the folders load again.
+    const keys = new Set([...this.expanded(), ...this.cache().keys()]);
     this.version.update((v) => v + 1);
-    for (const key of keep) {
+    for (const key of keys) {
       if (key !== (this.folder() ?? '')) void this.loadFolder(key === '' ? null : key);
     }
   }
@@ -678,8 +734,12 @@ export class StarFileManager {
   private async loadFolder(folderId: string | null): Promise<void> {
     const provider = this.provider();
     if (!provider) return;
-    const list = await settle(provider.list(folderId));
-    this.cache.update((cache) => new Map(cache).set(folderId ?? '', list));
+    try {
+      const list = await settle(provider.list(folderId));
+      this.cache.update((cache) => new Map(cache).set(folderId ?? '', list));
+    } catch (error) {
+      this.fail('list', error, folderId);
+    }
   }
 
   // ---------------------------------------------------------------- navigation
@@ -1158,7 +1218,7 @@ export class StarFileManager {
         : this.text.fileItemsCopiedTo(items.length, name),
     );
     if (kind === 'move') this.selection.set([]);
-    void this.apply((provider) =>
+    void this.apply(kind, (provider) =>
       kind === 'move' ? provider.move(items, targetId) : provider.copy(items, targetId),
     );
     return true;
@@ -1200,7 +1260,7 @@ export class StarFileManager {
       name !== item.name &&
       emitCancelable<StarFileRenameEvent>(this.rename, { item, name })
     ) {
-      void this.apply((provider) => provider.rename(item, name));
+      void this.apply('rename', (provider) => provider.rename(item, name));
     }
     this.refocus(item.id);
   }
@@ -1238,13 +1298,13 @@ export class StarFileManager {
     this.pendingDelete.set([]);
     if (!emitCancelable<StarFileItemsEvent>(this.delete, { items })) return;
     this.selection.set([]);
-    void this.apply((provider) => provider.delete(items));
+    void this.apply('delete', (provider) => provider.delete(items));
   }
 
   private requestDownload(): void {
     const items = this.selectedItems().filter((item) => !item.isFolder);
     if (!items.length || !emitCancelable<StarFileItemsEvent>(this.download, { items })) return;
-    void this.apply((provider) => provider.download?.(items) ?? null);
+    void this.apply('download', (provider) => provider.download?.(items) ?? null);
   }
 
   private askFolderName(): void {
@@ -1259,7 +1319,7 @@ export class StarFileManager {
     this.folderOpen.set(false);
     const parentId = this.folder();
     if (emitCancelable<StarFileCreateFolderEvent>(this.createFolder, { parentId, name })) {
-      void this.apply((provider) => provider.createFolder(parentId, name));
+      void this.apply('createFolder', (provider) => provider.createFolder(parentId, name));
     }
   }
 
@@ -1267,7 +1327,7 @@ export class StarFileManager {
     if (!files.length) return;
     const folderId = this.folder();
     if (emitCancelable<StarFileUploadEvent>(this.upload, { folderId, files })) {
-      void this.apply((provider) => provider.upload?.(folderId, files) ?? null);
+      void this.apply('upload', (provider) => provider.upload?.(folderId, files) ?? null);
     }
     this.uploadFiles.set([]);
     this.uploadOpen.set(false);

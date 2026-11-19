@@ -466,4 +466,6 @@ export const STAR_UI_TEXT_DE: StarUiText = {
   diagramNodeResized: (label, width, height) => `${label} auf ${width} mal ${height} geändert`,
   diagramDeleted: (count) => `${count} ${forCount(count, 'Element', 'Elemente')} gelöscht`,
   diagramZoom: (percent) => `Zoom ${percent} %`,
+  fileLoadError: 'Der Ordner konnte nicht geladen werden.',
+  fileOperationError: 'Der Vorgang ist fehlgeschlagen.',
 };

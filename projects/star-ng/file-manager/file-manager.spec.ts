@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { StarAnnouncer } from '@star-ng/ui/core';
 import {
   StarFileCreateFolderEvent,
+  StarFileErrorEvent,
   StarFileItem,
   StarFileItemsEvent,
   StarFileManager,
@@ -66,6 +67,8 @@ function key(target: Element, key: string, init: KeyboardEventInit = {}): Keyboa
       (copy)="handle('copy', $event)"
       (createFolder)="handle('createFolder', $event)"
       (download)="handle('download', $event)"
+      (upload)="handle('upload', $event)"
+      (error)="handle('error', $event)"
     />
   `,
 })
@@ -81,9 +84,9 @@ class FileHost {
   readonly cancel = new Set<string>();
   readonly events: { name: string; event: unknown }[] = [];
 
-  handle(name: string, event: { cancel(): void }): void {
+  handle(name: string, event: object): void {
     this.events.push({ name, event });
-    if (this.cancel.has(name)) event.cancel();
+    if (this.cancel.has(name)) (event as { cancel(): void }).cancel();
   }
 }
 
@@ -397,6 +400,81 @@ describe('StarFileManager', () => {
     field.dispatchEvent(new Event('copy', { bubbles: true }));
     root.querySelector('input[type="search"]')!.dispatchEvent(new Event('copy', { bubbles: true }));
     expect(host.events.filter((e) => e.name === 'copy')).toEqual([]);
+  });
+
+  it('shows an announced error state when the provider cannot list a folder', async () => {
+    const { root, host, stable, last, announced } = await setup();
+    const failure = new Error('offline');
+    let fail = true;
+    const provider: StarFileProvider = {
+      list: vi.fn(async (folder: string | null) => {
+        if (fail) throw failure;
+        return ITEMS.filter((item) => item.parentId === folder);
+      }),
+      rename: vi.fn(),
+      delete: vi.fn(),
+      createFolder: vi.fn(),
+      move: vi.fn(),
+      copy: vi.fn(),
+    };
+    host.items.set([]);
+    host.provider.set(provider);
+    await stable();
+    await new Promise((resolve) => setTimeout(resolve));
+    await stable();
+    const alert = root.querySelector('.star-fm__error')!;
+    expect(alert.getAttribute('role')).toBe('alert');
+    expect(alert.textContent).toContain('The folder could not be loaded.');
+    expect(last<StarFileErrorEvent>('error')).toMatchObject({ operation: 'list', error: failure });
+    expect(announced).toContain('The folder could not be loaded.');
+    fail = false;
+    alert.querySelector('button')!.click();
+    await stable();
+    await new Promise((resolve) => setTimeout(resolve));
+    await stable();
+    expect(root.querySelector('.star-fm__error')).toBeNull();
+    expect(root.querySelectorAll('tr[data-select-key]').length).toBe(4);
+  });
+
+  it('reports a failed provider operation and keeps the listing while it reloads', async () => {
+    const { root, host, stable, row, last, announced } = await setup();
+    const failure = new Error('denied');
+    const provider: StarFileProvider = {
+      list: vi.fn(async (folder: string | null) =>
+        ITEMS.filter((item) => item.parentId === folder),
+      ),
+      rename: vi.fn(async () => {
+        throw failure;
+      }),
+      delete: vi.fn(),
+      createFolder: vi.fn(),
+      move: vi.fn(),
+      copy: vi.fn(),
+    };
+    host.items.set([]);
+    host.provider.set(provider);
+    await stable();
+    await new Promise((resolve) => setTimeout(resolve));
+    await stable();
+    host.selection.set(['notes']);
+    await stable();
+    key(row('notes'), 'F2');
+    await stable();
+    const field = root.querySelector<HTMLInputElement>('.star-fm__rename')!;
+    field.value = 'minutes.txt';
+    key(field, 'Enter');
+    await stable();
+    await new Promise((resolve) => setTimeout(resolve));
+    await stable();
+    expect(last<StarFileErrorEvent>('error')).toMatchObject({
+      operation: 'rename',
+      error: failure,
+    });
+    expect(announced).toContain('The operation failed.');
+    // The cache entries are replaced, not cleared: the rows stay during the reload.
+    host.manager().refresh();
+    await stable();
+    expect(root.querySelectorAll('tr[data-select-key]').length).toBe(4);
   });
 
   it('renders on the server platform', async () => {

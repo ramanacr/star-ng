@@ -219,3 +219,14 @@
     transition: none;
   }
 }
+.star-fm__error {
+  display: grid;
+  justify-items: start;
+  gap: 0.5rem;
+  padding: 1rem;
+  color: var(--star-danger);
+
+  p {
+    margin: 0;
+  }
+}

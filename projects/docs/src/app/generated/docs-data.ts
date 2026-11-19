@@ -5396,6 +5396,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": ""
+      },
+      {
+        "name": "error",
+        "type": "StarFileErrorEvent",
+        "default": null,
+        "required": false,
+        "description": ""
       }
     ]
   },

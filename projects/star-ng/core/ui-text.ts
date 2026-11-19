@@ -543,6 +543,11 @@ export interface StarUiText {
   readonly diagramNodeResized: (label: string, width: number, height: number) => string;
   readonly diagramDeleted: (count: number) => string;
   readonly diagramZoom: (percent: number) => string;
+  // File manager errors
+  /** Error state of the file manager listing. */
+  readonly fileLoadError: string;
+  /** Announcement when a provider operation fails. */
+  readonly fileOperationError: string;
 }
 
 export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
@@ -995,6 +1000,8 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   diagramNodeResized: (label, width, height) => `${label} resized to ${width} by ${height}`,
   diagramDeleted: (count) => `${count} ${count === 1 ? 'item' : 'items'} deleted`,
   diagramZoom: (percent) => `Zoom ${percent}%`,
+  fileLoadError: 'The folder could not be loaded.',
+  fileOperationError: 'The operation failed.',
 };
 
 /** Parameter names of the function entries, in call order (used for `{{ name }}` in translations). */

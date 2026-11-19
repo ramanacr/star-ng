@@ -466,4 +466,6 @@ export const STAR_UI_TEXT_ES: StarUiText = {
   diagramDeleted: (count) =>
     `${count} ${forCount(count, 'elemento eliminado', 'elementos eliminados')}`,
   diagramZoom: (percent) => `Zoom al ${percent} %`,
+  fileLoadError: 'No se pudo cargar la carpeta.',
+  fileOperationError: 'La operación ha fallado.',
 };
