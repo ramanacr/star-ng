@@ -313,6 +313,37 @@ export const STAR_UI_TEXT_DE: StarUiText = {
   chartValue: 'Wert',
   chartShare: 'Anteil',
   meterValue: (value, total) => `${value} von ${total}`,
+  queryGroupAll: 'Alle folgenden erfüllen',
+  queryGroupAny: 'Mindestens eine erfüllen',
+  queryField: 'Feld',
+  queryValue: 'Wert',
+  addGroup: 'Gruppe hinzufügen',
+  removeGroup: 'Gruppe entfernen',
+  queryRuleHint: 'Entf entfernt die Regel. Alt und Pfeil nach oben oder unten verschieben sie.',
+  queryRuleRemoved: (rule) => `${rule} entfernt. Strg und Z machen es rückgängig.`,
+  queryRuleRestored: (rule) => `${rule} wiederhergestellt.`,
+  queryTrue: 'Ja',
+  queryFalse: 'Nein',
+  queryAnd: 'und',
+  queryOr: 'oder',
+  queryEmpty: 'Keine Bedingungen',
+  // The colon ends the field name, so a capitalised mode text does not stand in mid-sentence.
+  queryRuleSummary: (field, mode, value) => `${field}: ${mode} ${value}`,
+  queryRange: (min, max) => `${min} und ${max}`,
+  queryIncomplete: 'Ergänzen oder entfernen Sie die Regeln ohne Wert.',
+  kanbanColumnLabel: (title, count) =>
+    `${title}, ${count} ${forCount(count, 'Eintrag', 'Einträge')}`,
+  kanbanColumnLimit: (title, count, limit) =>
+    `${title}, ${count} ${forCount(count, 'Eintrag', 'Einträge')}, Limit ${limit}`,
+  kanbanCardHint:
+    'Mit der Leertaste nehmen Sie die Karte auf. Die Pfeiltasten verschieben sie, die Leertaste legt sie ab, Escape bricht ab.',
+  kanbanPickedUp: (card, column) => `${card} in ${column} aufgenommen`,
+  kanbanMoved: (column, position, total) =>
+    `Nach ${column} verschoben, Position ${position} von ${total}`,
+  kanbanDropped: (card, column, position, total) =>
+    `${card} in ${column} abgelegt, Position ${position} von ${total}`,
+  kanbanCanceled: (card, column) => `Verschieben abgebrochen. ${card} ist wieder in ${column}`,
+  kanbanLimitReached: (column) => `${column} hat sein Limit erreicht`,
   sparklineSummary: (first, last, min, max, trend) =>
     `${trend}: erster Wert ${first}, letzter Wert ${last}, niedrigster ${min}, höchster ${max}`,
   sparklineTrendUp: 'Steigend',

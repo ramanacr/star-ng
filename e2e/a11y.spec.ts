@@ -1159,6 +1159,35 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'query builder with a nested group and incomplete rules',
+    path: 'controls/query-builder',
+    open: async (page) => {
+      // The page is prerendered: wait for hydration before the first click.
+      await expect(page.locator('star-query-builder[ngh]')).toHaveCount(0, { timeout: 15_000 });
+      const live = example(page, 'Filter a table');
+      await live.getByRole('button', { name: 'Add group' }).first().click();
+      await expect(live.locator('.star-query__group')).toHaveCount(2);
+      // Leave the builder, so the incomplete rule shows its invalid state.
+      await live.getByRole('status').click();
+      await expect(live.locator('.star-query__rule--invalid')).toHaveCount(1);
+    },
+  },
+  {
+    name: 'kanban board with a card picked up with the keyboard',
+    path: 'controls/kanban',
+    open: async (page) => {
+      // The page is prerendered: wait for hydration before the first key.
+      await expect(page.locator('star-kanban[ngh]')).toHaveCount(0, { timeout: 15_000 });
+      const live = example(page, 'Task board');
+      const card = live.locator('.star-kanban__card').first();
+      await card.focus();
+      await page.keyboard.press('Space');
+      await page.keyboard.press('ArrowRight');
+      await expect(live.locator('.star-kanban__card--grabbed')).toHaveCount(1);
+      await expect(live.locator('[aria-live]')).toContainText('Moved to In progress');
+    },
+  },
+  {
     name: 'tree with a loading row',
     path: 'controls/tree',
     open: async (page) => {

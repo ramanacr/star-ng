@@ -6447,6 +6447,135 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarKanban": {
+    "kind": "component",
+    "selector": "star-kanban",
+    "entry": "@star-ng/ui/kanban",
+    "description": "Kanban board (Syncfusion `ejs-kanban`, Kendo UI `kendo-taskboard`; Ignite UI has none): columns of cards, optional swimlanes, work-in-progress limits and collapsible columns.",
+    "inputs": [
+      {
+        "name": "columns",
+        "type": "readonly StarKanbanColumn[]",
+        "default": "[]",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "items",
+        "type": "readonly T[]",
+        "default": "[]",
+        "required": false,
+        "description": "The cards. The board never changes this array or its items."
+      },
+      {
+        "name": "columnKey",
+        "type": "StarKanbanAccessor<T, string>",
+        "default": null,
+        "required": true,
+        "description": "Column key of an item: a property name or a function."
+      },
+      {
+        "name": "itemKey",
+        "type": "StarKanbanAccessor<T, unknown>",
+        "default": "'id'",
+        "required": false,
+        "description": "Unique key of an item (default: the `id` property)."
+      },
+      {
+        "name": "order",
+        "type": "StarKanbanAccessor<T, number> | null",
+        "default": "null",
+        "required": false,
+        "description": "Number that sorts the cards in a cell (default: the order of `items`)."
+      },
+      {
+        "name": "itemLabel",
+        "type": "StarKanbanAccessor<T, string> | null",
+        "default": "null",
+        "required": false,
+        "description": "Name of a card in the announcements (default: its key)."
+      },
+      {
+        "name": "swimlanes",
+        "type": "readonly StarKanbanSwimlane[]",
+        "default": "[]",
+        "required": false,
+        "description": "Rows of the board; empty for a board without swimlanes."
+      },
+      {
+        "name": "swimlaneKey",
+        "type": "StarKanbanAccessor<T, string> | null",
+        "default": "null",
+        "required": false,
+        "description": "Swimlane key of an item. Items with an unknown key go to the first lane."
+      },
+      {
+        "name": "enforceLimits",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Blocks a move into a column that has `limit` items or more."
+      },
+      {
+        "name": "collapsible",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows a button that collapses and expands each column."
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Turns drag and drop and the keyboard moves off."
+      }
+    ],
+    "models": [
+      {
+        "name": "collapsed",
+        "type": "readonly string[]",
+        "default": "[]",
+        "required": false,
+        "description": "Keys of the collapsed columns."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "itemMove",
+        "type": "StarKanbanMove<T>",
+        "default": null,
+        "required": false,
+        "description": "Emits each move of a card; the owner applies it to `items`."
+      }
+    ]
+  },
+  "StarKanbanCard": {
+    "kind": "directive",
+    "selector": "ng-template[starKanbanCard]",
+    "entry": "@star-ng/ui/kanban",
+    "description": "Template of a card. Context: the item (`let-task`), `column` and `swimlane`.",
+    "inputs": [
+      {
+        "name": "starKanbanCardOf",
+        "type": "readonly T[] | null",
+        "default": "null",
+        "required": false,
+        "description": "Optional: pass the items to type `let-item` in strict templates."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
+  "StarKanbanHeader": {
+    "kind": "directive",
+    "selector": "ng-template[starKanbanHeader]",
+    "entry": "@star-ng/ui/kanban",
+    "description": "Template of a column header. Context: the column, `count`, `over` and `collapsed`.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
   "StarKeyFilter": {
     "kind": "directive",
     "selector": "input[starKeyFilter], textarea[starKeyFilter]",
@@ -9940,6 +10069,84 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "null",
         "required": false,
         "description": "Label for assistive technology. Default: \"QR code: \" and the value."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
+  "StarQueryBuilder": {
+    "kind": "component",
+    "selector": "star-query-builder",
+    "entry": "@star-ng/ui/query-builder",
+    "description": "Query builder: nested groups of filter rules joined with \"and\" or \"or\" (Ignite UI `igx-query-builder`, Syncfusion `ejs-querybuilder`, Kendo UI `kendo-filter`). Each rule has a field, a match mode (the modes of the `star-table` filter) and a value editor by field type.",
+    "inputs": [
+      {
+        "name": "fields",
+        "type": "readonly StarQueryField<never>[]",
+        "default": "[]",
+        "required": false,
+        "description": "Fields that a rule can test."
+      },
+      {
+        "name": "maxDepth",
+        "type": "number",
+        "default": "3",
+        "required": false,
+        "description": "Most levels of groups, the root group included."
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "invalid",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Set by Signal Forms (`[formField]`) or by hand."
+      },
+      {
+        "name": "touched",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Set by Signal Forms (`[formField]`); the builder also counts as touched once the focus left it."
+      }
+    ],
+    "models": [
+      {
+        "name": "value",
+        "type": "StarQueryGroup",
+        "default": "{ operator: 'and', rules: [] }",
+        "required": false,
+        "description": "The query. The builder writes a new object on every change."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "touch",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "Emits when the focus leaves the builder (Signal Forms marks the field touched)."
+      }
+    ]
+  },
+  "StarQueryValue": {
+    "kind": "directive",
+    "selector": "ng-template[starQueryValue]",
+    "entry": "@star-ng/ui/query-builder",
+    "description": "Custom value editor of `star-query-builder`. Give field keys to use it for those fields only; without a value it serves every field.",
+    "inputs": [
+      {
+        "name": "starQueryValue",
+        "type": "string | readonly string[]",
+        "default": "''",
+        "required": false,
+        "description": "Field keys that this editor serves; empty for every field."
       }
     ],
     "models": [],
@@ -14472,6 +14679,9 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "input-tags/basic": "<div class=\"docs-stack\">\n  <star-field label=\"Labels\" hint=\"Press Enter or a comma to add a label.\">\n    <star-input-tags [(value)]=\"labels\" showClear />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">{{ labels().join(', ') || '(none)' }}</p>\n</div>",
   "input-tags/disabled": "<div class=\"docs-stack\">\n  <star-input-tags [value]=\"['north', 'south']\" disabled ariaLabel=\"Regions\" />\n</div>",
   "input-tags/validate": "<div class=\"docs-stack\">\n  <star-field label=\"Recipients\" hint=\"Email addresses, three at most.\">\n    <star-input-tags\n      [(value)]=\"recipients\"\n      [validate]=\"isEmail\"\n      [maxTags]=\"3\"\n      (rejected)=\"rejected.set($event.tag + ': ' + $event.reason)\"\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Rejected: {{ rejected() || '(nothing)' }}</p>\n</div>",
+  "kanban/basic": "<div class=\"docs-stack\">\n  <star-kanban\n    [columns]=\"columns\"\n    [items]=\"tasks()\"\n    columnKey=\"status\"\n    itemKey=\"id\"\n    order=\"rank\"\n    itemLabel=\"title\"\n    (itemMove)=\"onMove($event)\"\n  >\n    <ng-template starKanbanCard [starKanbanCardOf]=\"tasks()\" let-task>\n      <span class=\"card-title\">{{ task.title }}</span>\n      <span class=\"card-meta\">\n        <span>{{ task.owner }}</span>\n        <star-tag [value]=\"task.id\" severity=\"secondary\" />\n      </span>\n    </ng-template>\n  </star-kanban>\n  <p class=\"docs-output\" role=\"status\">{{ lastMove() }}</p>\n</div>",
+  "kanban/cancel": "<div class=\"docs-stack\">\n  <star-kanban\n    [columns]=\"columns\"\n    [items]=\"lockedTasks()\"\n    columnKey=\"status\"\n    itemKey=\"id\"\n    order=\"rank\"\n    itemLabel=\"title\"\n    (itemMove)=\"onLockedMove($event)\"\n  >\n    <ng-template starKanbanCard [starKanbanCardOf]=\"lockedTasks()\" let-task>{{\n      task.title\n    }}</ng-template>\n  </star-kanban>\n  <p class=\"docs-output\" role=\"status\">{{ refused() }}</p>\n</div>",
+  "kanban/lanes": "<star-kanban\n  [columns]=\"columns\"\n  [items]=\"laneTasks()\"\n  columnKey=\"status\"\n  itemKey=\"id\"\n  order=\"rank\"\n  itemLabel=\"title\"\n  [swimlanes]=\"lanes\"\n  swimlaneKey=\"lane\"\n  enforceLimits\n  collapsible\n  [(collapsed)]=\"collapsed\"\n  (itemMove)=\"onLaneMove($event)\"\n>\n  <ng-template starKanbanHeader let-column let-count=\"count\" let-over=\"over\">\n    <span class=\"card-title\">{{ column.title }}</span>\n    <star-tag\n      [value]=\"column.limit ? count + ' of ' + column.limit : '' + count\"\n      [severity]=\"over ? 'warn' : 'secondary'\"\n    />\n  </ng-template>\n  <ng-template starKanbanCard [starKanbanCardOf]=\"laneTasks()\" let-task>\n    <span class=\"card-title\">{{ task.title }}</span>\n    <span class=\"card-meta\">{{ task.owner }}</span>\n  </ng-template>\n</star-kanban>",
   "knob/basic": "<star-knob [(value)]=\"progress\" valueTemplate=\"{value}%\" ariaLabel=\"Progress\" />\n<p class=\"docs-output\" role=\"status\">Value: {{ progress() }}</p>",
   "knob/range": "<star-knob\n  [(value)]=\"temperature\"\n  [min]=\"10\"\n  [max]=\"30\"\n  [step]=\"0.5\"\n  [size]=\"160\"\n  valueTemplate=\"{value}°\"\n  ariaLabel=\"Temperature\"\n/>",
   "knob/states": "<star-knob [value]=\"72\" readonly [size]=\"90\" ariaLabel=\"Disk use\" />\n<star-knob [value]=\"35\" disabled [size]=\"90\" ariaLabel=\"Locked value\" />",
@@ -14554,6 +14764,10 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "qr-code/image": "<star-qr-code value=\"https://example.com/projects\" image=\"favicon.svg\" [size]=\"200\" />",
   "qr-code/levels": "<div class=\"docs-stack\">\n  <star-select-button\n    [options]=\"['L', 'M', 'Q', 'H']\"\n    [(value)]=\"level\"\n    ariaLabel=\"Error correction level\"\n  />\n  <input\n    starInput\n    aria-label=\"QR code value\"\n    [value]=\"value()\"\n    (input)=\"value.set($any($event.target).value)\"\n  />\n  <star-qr-code [value]=\"value()\" [errorCorrection]=\"levelOf(level())\" [size]=\"200\" />\n</div>",
   "qr-code/link": "<star-qr-code value=\"https://example.com/orders/1042\" />",
+  "query-builder/custom": "<div class=\"docs-stack\">\n  <star-query-builder [fields]=\"customFields\" [(value)]=\"custom\">\n    <ng-template starQueryValue=\"region\" let-rule let-setValue=\"setValue\">\n      <star-select-button\n        size=\"sm\"\n        [options]=\"regions\"\n        [value]=\"regionOf(rule.value)\"\n        (valueChange)=\"setValue($event)\"\n        ariaLabel=\"Region\"\n      />\n    </ng-template>\n  </star-query-builder>\n  <p class=\"docs-output\" role=\"status\">\n    {{ customSummary() }} ({{ customRows().length }} orders)\n  </p>\n</div>",
+  "query-builder/forms": "<div class=\"docs-stack\">\n  <star-query-builder [fields]=\"fields\" [formField]=\"filter\" />\n  <p class=\"docs-output\" role=\"status\">\n    {{ filter().valid() ? 'Valid query.' : filter().errors()[0]?.message }}\n  </p>\n</div>",
+  "query-builder/nested": "<star-query-builder [fields]=\"fields\" [maxDepth]=\"3\" [(value)]=\"nested\" />",
+  "query-builder/table": "<div class=\"docs-stack\">\n  <star-query-builder [fields]=\"fields\" [(value)]=\"query\" />\n  <p class=\"docs-output\" role=\"status\">{{ summary() }} ({{ rows().length }} orders)</p>\n  <docs-fill>\n    <star-table\n      [value]=\"rows()\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Filtered orders\"\n      paginator\n      [rows]=\"5\"\n    />\n  </docs-fill>\n</div>",
   "radio/basic": "<star-radio-group [(value)]=\"plan\" ariaLabel=\"Plan\">\n  <star-radio value=\"starter\">Starter</star-radio>\n  <star-radio value=\"team\">Team</star-radio>\n  <star-radio value=\"business\">Business</star-radio>\n</star-radio-group>\n<p class=\"docs-output\" role=\"status\">Plan: {{ plan() }}</p>",
   "radio/disabled": "<star-radio-group [(value)]=\"delivery\" ariaLabel=\"Delivery\">\n  <star-radio value=\"standard\">Standard</star-radio>\n  <star-radio value=\"express\">Express</star-radio>\n  <star-radio value=\"pickup\" disabled>Pick-up (not available)</star-radio>\n</star-radio-group>",
   "radio/horizontal": "<star-radio-group [(value)]=\"size\" orientation=\"horizontal\" ariaLabel=\"Size\">\n  <star-radio value=\"s\">Small</star-radio>\n  <star-radio value=\"m\">Medium</star-radio>\n  <star-radio value=\"l\">Large</star-radio>\n</star-radio-group>",

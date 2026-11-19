@@ -1,0 +1,147 @@
+// Kanban board (StarKanban): columns of cards, optional swimlanes.
+@use '../shared' as *;
+
+.star-kanban {
+  display: block;
+  overflow-x: auto;
+  color: var(--star-text);
+}
+.star-kanban__board {
+  display: grid;
+  // The component sets one track per column: wide, or narrow when collapsed.
+  grid-template-columns: var(--star-kanban-columns, repeat(auto-fit, minmax(15rem, 1fr)));
+  gap: 0.75rem;
+  align-items: start;
+}
+.star-kanban__lane-title {
+  grid-column: 1 / -1;
+  padding-block-start: 0.5rem;
+  font: var(--star-type-title-sm);
+  color: var(--star-text-strong);
+}
+.star-kanban__column {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-inline-size: 0;
+  padding: 0.5rem;
+  border: 1px solid var(--star-border);
+  border-radius: var(--star-radius-lg);
+  background: var(--star-surface-muted);
+}
+.star-kanban__column--over {
+  border-color: var(--star-warning);
+  background: var(--star-warning-soft);
+}
+.star-kanban__header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-block-size: 2rem;
+  padding-inline: 0.25rem;
+}
+.star-kanban__head .star-kanban__header {
+  padding: 0.25rem 0.75rem;
+}
+.star-kanban__title {
+  flex: 1;
+  min-inline-size: 0;
+  overflow: hidden;
+  font: var(--star-type-title-sm);
+  color: var(--star-text-strong);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.star-kanban__count {
+  padding: 0.125rem 0.5rem;
+  border-radius: var(--star-radius-pill);
+  background: var(--star-surface);
+  font: var(--star-type-body-sm);
+  color: var(--star-text-muted);
+}
+// At the limit: a quiet hint on the count. Over the limit: the warning state of the column.
+.star-kanban__column--full .star-kanban__count {
+  background: var(--star-warning-soft);
+  color: var(--star-text-strong);
+}
+.star-kanban__column--over .star-kanban__count {
+  font-weight: 600;
+  color: var(--star-text-strong);
+}
+.star-kanban__collapse {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 1.75rem;
+  block-size: 1.75rem;
+  padding: 0;
+  border: 0;
+  border-radius: var(--star-radius-sm);
+  background: transparent;
+  color: var(--star-text-muted);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--star-surface);
+    color: var(--star-text-strong);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--star-accent);
+    outline-offset: 1px;
+  }
+}
+// A collapsed column shows its title vertically.
+.star-kanban__column--collapsed .star-kanban__header,
+.star-kanban__head--collapsed .star-kanban__header {
+  flex-direction: column;
+
+  .star-kanban__title {
+    writing-mode: vertical-rl;
+  }
+}
+.star-kanban__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-block-size: 3rem;
+}
+.star-kanban__card {
+  padding: 0.75rem;
+  border: 1px solid var(--star-border);
+  border-radius: var(--star-radius-md);
+  background: var(--star-surface);
+  box-shadow: var(--star-shadow-xs);
+  cursor: grab;
+  overflow-wrap: anywhere;
+
+  &:focus-visible {
+    outline: 2px solid var(--star-accent);
+    outline-offset: 2px;
+  }
+}
+.star-kanban__card--grabbed {
+  outline: 2px dashed var(--star-accent);
+  outline-offset: 2px;
+  box-shadow: var(--star-shadow-md);
+
+  &:focus-visible {
+    outline-style: dashed;
+  }
+}
+// CDK drag and drop: the preview follows the pointer, the placeholder keeps the place.
+.star-kanban__card.cdk-drag-preview {
+  box-shadow: var(--star-shadow-lg);
+}
+.star-kanban__card.cdk-drag-placeholder {
+  opacity: 0.4;
+}
+.star-kanban__list.cdk-drop-list-dragging .star-kanban__card:not(.cdk-drag-placeholder),
+.star-kanban__card.cdk-drag-animating {
+  transition: transform var(--star-duration-base) $ease;
+}
+@include star-reduced-motion {
+  .star-kanban__list.cdk-drop-list-dragging .star-kanban__card:not(.cdk-drag-placeholder),
+  .star-kanban__card.cdk-drag-animating {
+    transition: none;
+  }
+}
