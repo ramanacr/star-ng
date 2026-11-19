@@ -67,6 +67,8 @@ test.describe('spreadsheet', () => {
     await grid.focus();
     await page.keyboard.press('ArrowDown');
     await page.keyboard.press('ArrowRight');
+    // Bring the target cell into view first: the mouse drags inside the window.
+    await cell(grid, 'B14').scrollIntoViewIfNeeded();
     const handle = grid.locator('[data-fill]');
     const from = (await handle.boundingBox())!;
     const to = (await cell(grid, 'B14').boundingBox())!;
