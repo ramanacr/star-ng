@@ -586,6 +586,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         keywords: 'orgchart hierarchy team structure tree connector',
         load: () => import('./controls/org-chart.page').then((m) => m.OrgChartPage),
       },
+      {
+        label: 'Gantt chart',
+        path: 'controls/gantt',
+        keywords: 'gantt project plan tasks timeline schedule dependencies milestone',
+        load: () => import('./controls/gantt.page').then((m) => m.GanttPage),
+      },
     ],
   },
   {

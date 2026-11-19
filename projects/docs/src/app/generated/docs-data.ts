@@ -3340,6 +3340,95 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "outputs": []
   },
+  "StarGantt": {
+    "kind": "component",
+    "selector": "star-gantt",
+    "entry": "@star-ng/ui/gantt",
+    "description": "Gantt chart (Kendo UI Gantt, Syncfusion Gantt, DevExtreme Gantt): a task tree grid on the start side and a timeline on the end side, in one scroll area, so both scroll together.",
+    "inputs": [
+      {
+        "name": "tasks",
+        "type": "readonly StarGanttTask[]",
+        "default": "[]",
+        "required": false,
+        "description": "The tasks. The Gantt never changes this array."
+      },
+      {
+        "name": "rowHeight",
+        "type": "number",
+        "default": "36",
+        "required": false,
+        "description": "Height of a row in pixels."
+      },
+      {
+        "name": "weekendDays",
+        "type": "readonly number[]",
+        "default": "[0, 6]",
+        "required": false,
+        "description": "Weekdays shaded as weekend (0 = Sunday), in the day and week scales."
+      },
+      {
+        "name": "firstDayOfWeek",
+        "type": "number | null",
+        "default": "null",
+        "required": false,
+        "description": "First day of the week (0 = Sunday). Default: from the locale."
+      },
+      {
+        "name": "locale",
+        "type": "string | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "readonly",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "No task moves, resizes or changes progress."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Name of the tree grid. Default: \"Tasks\"."
+      }
+    ],
+    "models": [
+      {
+        "name": "scale",
+        "type": "StarGanttScale",
+        "default": "'week'",
+        "required": false,
+        "description": "Unit of the time scale and of keyboard moves."
+      },
+      {
+        "name": "collapsed",
+        "type": "readonly StarGanttId[]",
+        "default": "[]",
+        "required": false,
+        "description": "Ids of the collapsed summary tasks."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "taskChange",
+        "type": "StarGanttTaskChange",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "taskSelect",
+        "type": "StarGanttTaskSelect",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
   "StarGroupTemplate": {
     "kind": "directive",
     "selector": "ng-template[starGroup]",
@@ -9898,6 +9987,8 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "forms/two-way": "<star-checkbox [(checked)]=\"remember\">Remember this device</star-checkbox>\n<p class=\"docs-output\" role=\"status\">{{ remember() }}</p>",
   "galleria/basic": "<star-galleria\n  style=\"width: 100%; max-width: 40rem\"\n  [images]=\"images\"\n  ariaLabel=\"Site photos\"\n/>",
   "galleria/model": "<star-galleria\n  style=\"width: 100%; max-width: 40rem\"\n  [images]=\"images\"\n  [(activeIndex)]=\"active\"\n  ariaLabel=\"Linked photos\"\n/>\n<p class=\"docs-output\" role=\"status\">Active index: {{ active() }}</p>",
+  "gantt/large": "<star-gantt [tasks]=\"large\" scale=\"month\" ariaLabel=\"Order batches\" readonly />",
+  "gantt/launch": "<div class=\"docs-stack\">\n  <star-select-button\n    [options]=\"scales\"\n    optionLabel=\"label\"\n    optionValue=\"value\"\n    [allowEmpty]=\"false\"\n    size=\"sm\"\n    ariaLabel=\"Scale\"\n    [(value)]=\"scale\"\n  />\n  <star-gantt\n    [tasks]=\"tasks()\"\n    [(scale)]=\"scale\"\n    [(collapsed)]=\"collapsed\"\n    locale=\"en-GB\"\n    ariaLabel=\"Launch plan\"\n    (taskChange)=\"onChange($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">{{ log() }}</p>\n</div>",
   "getting-started/result": "<star-button leadingIcon=\"ph-bold ph-plus\">New order</star-button>",
   "i18n/spinner": "<star-spinner />\n<docs-german-text />",
   "i18n/switch": "<div class=\"docs-stack\">\n  <star-select-button\n    [options]=\"languages\"\n    optionLabel=\"label\"\n    optionValue=\"id\"\n    [(value)]=\"language.choice\"\n    [allowEmpty]=\"false\"\n    ariaLabel=\"Language\"\n  />\n  <star-paginator [totalRecords]=\"95\" />\n  <star-field label=\"City\">\n    <star-select [options]=\"cities\" [(value)]=\"city\" filter ariaLabel=\"City\" />\n  </star-field>\n  <star-field label=\"Attachments\">\n    <star-file-upload multiple [maxFileSize]=\"1000000\" [fileLimit]=\"3\" />\n  </star-field>\n  <star-field label=\"New password\">\n    <star-password value=\"abc\" feedback />\n  </star-field>\n</div>",

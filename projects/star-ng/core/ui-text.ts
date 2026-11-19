@@ -407,6 +407,23 @@ export interface StarUiText {
   readonly deleteEvent: string;
   /** Error of the editor when the end is not after the start. */
   readonly endBeforeStart: string;
+  // Gantt
+  /** Default name of the task tree grid of `star-gantt`. */
+  readonly ganttTasks: string;
+  readonly name: string;
+  readonly duration: string;
+  readonly progress: string;
+  readonly durationDays: (count: number) => string;
+  readonly percentComplete: (value: number) => string;
+  readonly milestone: string;
+  readonly summaryTask: string;
+  /** Dependency types of a Gantt task: finish to start, start to start, and so on. */
+  readonly dependencyFS: string;
+  readonly dependencySS: string;
+  readonly dependencyFF: string;
+  readonly dependencySF: string;
+  /** Text summary of the dependencies of a task: `label` lists the tasks and their types. */
+  readonly dependsOn: (label: string) => string;
 }
 
 export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
@@ -746,6 +763,20 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   cancel: 'Cancel',
   deleteEvent: 'Delete event',
   endBeforeStart: 'The end must be after the start.',
+  // Gantt
+  ganttTasks: 'Tasks',
+  name: 'Name',
+  duration: 'Duration',
+  progress: 'Progress',
+  durationDays: (count) => `${count} ${count === 1 ? 'day' : 'days'}`,
+  percentComplete: (value) => `${value} percent`,
+  milestone: 'Milestone',
+  summaryTask: 'Summary task',
+  dependencyFS: 'Finish to start',
+  dependencySS: 'Start to start',
+  dependencyFF: 'Finish to finish',
+  dependencySF: 'Start to finish',
+  dependsOn: (label) => `Depends on ${label}`,
 };
 
 /** Parameter names of the function entries, in call order (used for `{{ name }}` in translations). */
@@ -812,6 +843,9 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   timeRange: ['start', 'end'],
   eventMoved: ['label', 'when'],
   eventResized: ['label', 'when'],
+  durationDays: ['count'],
+  percentComplete: ['value'],
+  dependsOn: ['label'],
 };
 
 export const STAR_UI_TEXT = new InjectionToken<StarUiText>('STAR_UI_TEXT', {

@@ -485,7 +485,8 @@ code {
     star-menubar,
     star-scroll-panel,
     star-paginator,
-    star-scheduler
+    star-scheduler,
+    star-gantt
   ) {
   max-width: none;
 }
@@ -502,7 +503,8 @@ code {
     star-menubar,
     star-paginator,
     star-scroll-panel,
-    star-scheduler
+    star-scheduler,
+    star-gantt
   ) {
   flex: 1 1 100%;
   min-width: 0;

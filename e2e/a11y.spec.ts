@@ -695,6 +695,22 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'Gantt with dependencies, a summary collapsed by keyboard',
+    path: 'controls/gantt',
+    open: async (page) => {
+      const grid = example(page, 'Product launch plan').getByRole('treegrid', {
+        name: 'Launch plan',
+      });
+      const build = grid.getByRole('row', { name: /^Build, / });
+      await build.click();
+      await page.keyboard.press('ArrowLeft');
+      await expect(build).toHaveAttribute('aria-expanded', 'false');
+      await page.keyboard.press('ArrowUp');
+      await page.keyboard.press('Alt+ArrowRight');
+      await expect(grid.getByRole('row', { name: /^Design, 19 March/ })).toBeFocused();
+    },
+  },
+  {
     name: 'two windows, one minimized',
     path: 'controls/window',
     open: async (page) => {

@@ -1,0 +1,212 @@
+// Gantt chart (StarGantt): a task tree grid and an SVG timeline in one scroll area. The grid
+// sticks to the start edge, the headers stick to the top, so both panes scroll together.
+@use '../shared' as *;
+
+.star-gantt {
+  --star-gantt-grid-width: 30rem;
+  --star-gantt-height: 28rem;
+  --star-gantt-bar-color: var(--star-accent);
+  display: block;
+  min-width: 0;
+  color: var(--star-text);
+  font: var(--star-type-body-sm);
+}
+
+.star-gantt__scroll {
+  position: relative;
+  max-block-size: var(--star-gantt-height);
+  overflow: auto;
+  border: 1px solid var(--star-border);
+  border-radius: var(--star-radius-md);
+  background: var(--star-surface);
+}
+.star-gantt__panes {
+  display: grid;
+  grid-template-columns: var(--star-gantt-grid-width) var(--star-gantt-timeline-width);
+  inline-size: max-content;
+  min-inline-size: 100%;
+}
+
+.star-gantt__grid {
+  position: sticky;
+  inset-inline-start: 0;
+  z-index: 2;
+  border-inline-end: 1px solid var(--star-border-strong);
+  background: var(--star-surface);
+}
+.star-gantt__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 6.25rem 6.25rem 4.75rem 4.25rem;
+  align-items: center;
+  block-size: var(--star-gantt-row-height);
+  border-block-end: 1px solid var(--star-border);
+  outline: none;
+  cursor: default;
+
+  &:focus-visible {
+    box-shadow: inset 0 0 0 2px var(--star-accent);
+  }
+}
+.star-gantt__row--head {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 3;
+  block-size: var(--star-gantt-header-height);
+  background: var(--star-surface);
+  color: var(--star-text-muted);
+  font-weight: 600;
+}
+.star-gantt__row--summary {
+  font-weight: 600;
+  color: var(--star-text-strong);
+}
+.star-gantt__row--active:not(.star-gantt__row--head) {
+  background: var(--star-surface-muted);
+}
+.star-gantt__body {
+  box-sizing: border-box;
+}
+.star-gantt__cell {
+  min-inline-size: 0;
+  padding-inline: var(--star-space-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.star-gantt__cell--name {
+  display: flex;
+  align-items: center;
+  gap: var(--star-space-1);
+  padding-inline-start: calc(var(--star-space-2) + var(--star-gantt-level, 0) * 1.25rem);
+}
+.star-gantt__cell--number {
+  text-align: end;
+}
+.star-gantt__toggle {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  inline-size: 1.25rem;
+  block-size: 1.25rem;
+  border-radius: var(--star-radius-xs);
+  color: var(--star-text-muted);
+  cursor: pointer;
+
+  &:empty {
+    cursor: default;
+  }
+}
+.star-gantt__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.star-gantt__timeline {
+  position: relative;
+  inline-size: var(--star-gantt-timeline-width);
+}
+.star-gantt__scale {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 1;
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  block-size: var(--star-gantt-header-height);
+  border-block-end: 1px solid var(--star-border);
+  background: var(--star-surface);
+  color: var(--star-text-muted);
+}
+.star-gantt__tier {
+  position: relative;
+  border-block-end: 1px solid var(--star-border);
+
+  &:last-child {
+    border-block-end: 0;
+  }
+}
+.star-gantt__tick {
+  position: absolute;
+  inset-block: 0;
+  display: flex;
+  align-items: center;
+  padding-inline: 4px;
+  overflow: hidden;
+  border-inline-start: 1px solid var(--star-border);
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+.star-gantt__svg {
+  display: block;
+  overflow: visible;
+  // The timeline runs from right to left in a right-to-left page; it has no text.
+  &:dir(rtl) {
+    transform: scaleX(-1);
+  }
+}
+.star-gantt__weekend {
+  fill: var(--star-surface-muted);
+}
+.star-gantt__stripe {
+  fill: color-mix(in srgb, var(--star-surface-muted) 50%, transparent);
+}
+.star-gantt__today {
+  stroke: var(--star-danger);
+  stroke-width: 2;
+}
+.star-gantt__dependency {
+  fill: none;
+  stroke: var(--star-text-muted);
+  stroke-width: 1.5;
+}
+.star-gantt__arrow-head {
+  fill: var(--star-text-muted);
+}
+.star-gantt__bar {
+  cursor: grab;
+}
+.star-gantt__bar--readonly,
+.star-gantt__bar--summary {
+  cursor: default;
+}
+.star-gantt__bar-track {
+  fill: color-mix(in srgb, var(--star-gantt-bar-color) 30%, var(--star-surface));
+  stroke: var(--star-gantt-bar-color);
+}
+.star-gantt__bar-progress {
+  fill: var(--star-gantt-bar-color);
+  pointer-events: none;
+}
+.star-gantt__bar--summary {
+  .star-gantt__bar-track {
+    fill: color-mix(in srgb, var(--star-text-strong) 20%, var(--star-surface));
+    stroke: var(--star-text-strong);
+  }
+  .star-gantt__bar-progress {
+    fill: var(--star-text-strong);
+  }
+}
+.star-gantt__milestone {
+  fill: var(--star-text-strong);
+}
+.star-gantt__handle {
+  fill: transparent;
+  cursor: ew-resize;
+}
+.star-gantt__progress-handle {
+  fill: var(--star-text-strong);
+  opacity: 0;
+  cursor: ew-resize;
+}
+.star-gantt__bar:hover .star-gantt__progress-handle,
+.star-gantt__bar--dragging .star-gantt__progress-handle {
+  opacity: 1;
+}
+.star-gantt__bar--dragging {
+  opacity: 0.85;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .star-gantt__progress-handle {
+    transition: none;
+  }
+}
