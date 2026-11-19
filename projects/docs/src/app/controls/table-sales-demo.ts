@@ -80,7 +80,7 @@ export const METRIC_ROWS: readonly MetricRow[] = Array.from({ length: 200 }, (_,
   return values as MetricRow;
 });
 
-/** The id column (pinned) and 60 metric columns of 7rem. */
+/** The id column (pinned) and 60 metric columns of 112 px. */
 export function metricColumns(): StarColumn<MetricRow>[] {
   return [
     { field: 'id', header: 'Row', pinned: 'start', width: '6rem' },

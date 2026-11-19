@@ -9,7 +9,15 @@ import {
 import { StarToggleSwitch } from '@star-ng/ui/toggle-switch';
 import { DOCS, DocsRow } from '../shared/docs';
 import { DocsFill, formatMoney, Order, orderColumns, ORDERS } from './table-demo';
-import { CITY_SALES, CitySales, SALES_GROUPS, salesColumns } from './table-sales-demo';
+import {
+  CITY_SALES,
+  CitySales,
+  METRIC_ROWS,
+  metricColumns,
+  MetricRow,
+  SALES_GROUPS,
+  salesColumns,
+} from './table-sales-demo';
 
 interface LogEntry {
   readonly id: string;
@@ -261,6 +269,27 @@ const LOG: readonly LogEntry[] = Array.from({ length: 5000 }, (_, i) => ({
       </docs-example>
 
       <docs-example
+        heading="Column virtualization"
+        source="table-layout/virtual-columns"
+        [script]="metricScript"
+        note="virtualColumns renders only the columns in view, plus 2 on each side, and keeps the width of the others with spacer cells. Pinned columns are always rendered. Each column has a fixed width: the resized width, else width in px or rem, else virtualColumnWidth (160 px). Here virtualScroll renders the rows in view too: 200 rows by 60 metrics. The cells have aria-colindex and the table aria-colcount, so a screen reader announces the real column position."
+      >
+        <docs-fill>
+          <star-table
+            [value]="metrics"
+            [columns]="metricColumns"
+            dataKey="id"
+            ariaLabel="Wide metrics"
+            virtualColumns
+            virtualScroll
+            [virtualRowHeight]="44"
+            scrollHeight="20rem"
+            stickyHeader
+          />
+        </docs-fill>
+      </docs-example>
+
+      <docs-example
         heading="Virtual scroll with row detail"
         source="table-layout/virtual-detail"
         [script]="ticketScript"
@@ -502,6 +531,22 @@ readonly summaryColumns: StarColumn<CitySales>[] = [
   },
   { field: 'city', header: 'City' },
   { field: 'jan', header: 'Jan', align: 'end', format: (row) => formatMoney(row.jan) },
+];`;
+  protected readonly metrics: readonly MetricRow[] = METRIC_ROWS;
+  protected readonly metricColumns: StarColumn<MetricRow>[] = metricColumns();
+  protected readonly metricScript = `readonly metrics = Array.from({ length: 200 }, (_, row) => {
+  const values: Record<string, number | string> = { id: \`M-\${String(row + 1).padStart(3, '0')}\` };
+  for (let i = 1; i <= 60; i++) values[\`m\${i}\`] = (row * 31 + i * 17) % 1000;
+  return values;
+});
+readonly metricColumns: StarColumn<MetricRow>[] = [
+  { field: 'id', header: 'Row', pinned: 'start', width: '6rem' },
+  ...Array.from({ length: 60 }, (_, i) => ({
+    field: \`m\${i + 1}\`,
+    header: \`Metric \${i + 1}\`,
+    width: '112px',
+    align: 'end' as const,
+  })),
 ];`;
   protected readonly columnGroupScript = `readonly salesGroups: StarColumnGroup[] = [
   { header: 'Location', children: ['region', 'city'] },

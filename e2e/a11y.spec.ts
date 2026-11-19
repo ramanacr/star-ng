@@ -947,6 +947,17 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'table with virtual columns scrolled sideways',
+    path: 'controls/table-layout',
+    open: async (page) => {
+      const live = example(page, 'Column virtualization');
+      await live.locator('.star-table__scroll').evaluate((viewport) => {
+        viewport.scrollLeft = 3000;
+      });
+      await expect(live.locator('thead .star-table__col-spacer').first()).toBeAttached();
+    },
+  },
+  {
     name: 'table with a filter select open',
     path: 'controls/table-sort-filter',
     open: async (page) => {

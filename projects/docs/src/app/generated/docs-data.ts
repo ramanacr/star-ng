@@ -6849,6 +6849,20 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Row heights with `virtualScroll`. `'auto'`: one fixed height, unless the table has row expansion, `groupBy` or the stacked layout, which need rows of different heights. `'variable'`: rows of different heights always, for cell text on more than one line. The table measures each rendered row and keeps the heights."
       },
       {
+        "name": "virtualColumns",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Renders only the columns in view (plus 2 on each side) for very wide tables: spacer cells keep the width of the other columns. Pinned columns are always rendered. Each column gets a fixed width: its resized width, else `width` in `px` or `rem`, else `virtualColumnWidth`. Works with `virtualScroll`; the cells have `aria-colindex` and the table `aria-colcount`, so assistive technology knows the full width. Ignite UI column virtualization, AG Grid column virtualisation."
+      },
+      {
+        "name": "virtualColumnWidth",
+        "type": "number",
+        "default": "160",
+        "required": false,
+        "description": "Width in pixels of a column without a `px` or `rem` width, with `virtualColumns`."
+      },
+      {
         "name": "ariaLabel",
         "type": "string | null",
         "default": "null",
@@ -9517,6 +9531,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "table-layout/stack": "<div class=\"docs-stack docs-stack--narrow\">\n  <star-table\n    [value]=\"orders.slice(0, 3)\"\n    [columns]=\"columns\"\n    dataKey=\"id\"\n    ariaLabel=\"Orders stacked\"\n    responsiveLayout=\"stack\"\n  />\n</div>",
   "table-layout/summaries": "<div class=\"docs-stack\">\n  <star-toggle-switch [(checked)]=\"summaryGroups\">Group by region</star-toggle-switch>\n  <docs-fill>\n    <star-table\n      [value]=\"sales\"\n      [columns]=\"summaryColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Sales with summaries\"\n      locale=\"en-US\"\n      [groupBy]=\"summaryGroups() ? 'region' : null\"\n      groupSummary\n    />\n  </docs-fill>\n</div>",
   "table-layout/virtual": "<docs-fill>\n  <star-table\n    [value]=\"log\"\n    [columns]=\"logColumns\"\n    dataKey=\"id\"\n    ariaLabel=\"Audit log\"\n    virtualScroll\n    [virtualRowHeight]=\"44\"\n    scrollHeight=\"20rem\"\n    stickyHeader\n    striped\n  />\n</docs-fill>",
+  "table-layout/virtual-columns": "<docs-fill>\n  <star-table\n    [value]=\"metrics\"\n    [columns]=\"metricColumns\"\n    dataKey=\"id\"\n    ariaLabel=\"Wide metrics\"\n    virtualColumns\n    virtualScroll\n    [virtualRowHeight]=\"44\"\n    scrollHeight=\"20rem\"\n    stickyHeader\n  />\n</docs-fill>",
   "table-layout/virtual-detail": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"tickets\"\n      [columns]=\"ticketColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Tickets with detail\"\n      selectionMode=\"multiple\"\n      [(selection)]=\"ticketSelection\"\n      [(expandedKeys)]=\"ticketsOpen\"\n      virtualScroll\n      [virtualRowHeight]=\"52\"\n      scrollHeight=\"24rem\"\n      stickyHeader\n    >\n      <ng-template starRowExpansion [starRowExpansionOf]=\"tickets\" let-row>\n        <ol class=\"history\">\n          @for (step of historyOf(row); track step) {\n            <li>{{ step }} by {{ row.owner }} in {{ row.city }}</li>\n          }\n        </ol>\n      </ng-template>\n    </star-table>\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">\n    Open: {{ ticketsOpen().length }}, selected: {{ ticketSelection().length }}\n  </p>\n</div>",
   "table-layout/virtual-groups": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"groupedTickets\"\n      [columns]=\"ticketColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Tickets by city\"\n      groupBy=\"city\"\n      [(collapsedGroups)]=\"closedCities\"\n      virtualScroll\n      [virtualRowHeight]=\"52\"\n      scrollHeight=\"24rem\"\n      stickyHeader\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Closed: {{ closedCities().join(', ') || 'none' }}</p>\n</div>",
   "table-layout/virtual-stack": "<docs-fill>\n  <star-table\n    [value]=\"stackedTickets\"\n    [columns]=\"ticketColumns\"\n    dataKey=\"id\"\n    ariaLabel=\"Tickets stacked\"\n    responsiveLayout=\"stack\"\n    virtualScroll\n    scrollHeight=\"24rem\"\n  />\n</docs-fill>",

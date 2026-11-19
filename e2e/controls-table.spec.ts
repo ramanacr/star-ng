@@ -1264,6 +1264,38 @@ test.describe('table: layout', () => {
     await expect(rows.nth(0)).toHaveAttribute('aria-selected', 'false');
   });
 
+  test('renders a window of the 60 metric columns and follows a sideways scroll', async ({
+    page,
+  }) => {
+    await openPage(page, '/controls/table-layout', 'Table layout');
+    const live = example(page, 'Column virtualization');
+    const table = live.getByRole('table', { name: 'Wide metrics' });
+    await table.scrollIntoViewIfNeeded();
+    await expect(table).toHaveAttribute('aria-colcount', '61');
+    const headers = table.locator('thead th[data-field]');
+    const count = await headers.count();
+    expect(count).toBeLessThan(20);
+    await expect(table.getByRole('columnheader', { name: 'Metric 60' })).toHaveCount(0);
+    const scroll = live.locator('.star-table__scroll');
+    const width = await scroll.evaluate((viewport) => viewport.scrollWidth);
+    // 6 rem for the row column, 60 columns of 112 px.
+    expect(width).toBeGreaterThan(60 * 112);
+    await scroll.evaluate((viewport) => (viewport.scrollLeft = viewport.scrollWidth));
+    const last = table.getByRole('columnheader', { name: 'Metric 60' });
+    await expect(last).toBeVisible();
+    await expect(last).toHaveAttribute('aria-colindex', '61');
+    // The scroll width does not change while the window moves.
+    expect(await scroll.evaluate((viewport) => viewport.scrollWidth)).toBe(width);
+    // Header and body cells stay in line.
+    const cell = bodyRows(table).first().locator('td').last();
+    await expect(cell).toHaveAttribute('aria-colindex', '61');
+    const a = (await last.boundingBox())!;
+    const b = (await cell.boundingBox())!;
+    expect(Math.abs(a.x - b.x)).toBeLessThan(2);
+    // The pinned row column stays rendered and in view.
+    await expect(table.getByRole('columnheader', { name: 'Row' })).toBeVisible();
+  });
+
   test('stacks the rows as label and value lines in a narrow table', async ({ page }) => {
     await openPage(page, '/controls/table-layout', 'Table layout');
     const live = example(page, 'Stacked layout');

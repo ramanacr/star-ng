@@ -56,7 +56,14 @@ import {
   parentGroupOf,
   StarColumnGroup,
   StarColumnGroupHeaderContext,
+  StarHeaderCell,
 } from './table-column-groups';
+import {
+  COLUMN_FALLBACK_VIEWPORT,
+  columnWindow,
+  cssPixels,
+  StarColumnWindow,
+} from './table-column-window';
 import {
   sameEditValue,
   StarBatchChanges,
@@ -556,6 +563,7 @@ export class StarRowExpansionTemplate<T = unknown> {
       (scroll)="onScroll($event)"
     >
       <table
+        [attr.aria-colcount]="ariaColCount()"
         [attr.aria-label]="ariaLabel()"
         [attr.aria-busy]="loading() || null"
         [attr.aria-rowcount]="ariaRowCount()"
@@ -617,11 +625,20 @@ export class StarRowExpansionTemplate<T = unknown> {
                 }
               }
               @for (cell of headerRow; track cell.key) {
+                @if (rowIndex === 0 && cellHas(cell, columnWindow().first, 'first')) {
+                  <td
+                    class="star-table__col-spacer"
+                    aria-hidden="true"
+                    [attr.rowspan]="headRowSpan()"
+                    [style.width.px]="columnWindow().before"
+                  ></td>
+                }
                 @if (cell.kind === 'group') {
                   <th
                     scope="colgroup"
                     class="star-table__th star-table__column-group"
                     [attr.colspan]="cell.columns.length"
+                    [attr.aria-colindex]="colIndex(cell.columns[0])"
                     [attr.id]="headerIds()?.cells?.get(cell.key) ?? null"
                     [starTablePin]="groupPinOf(cell.columns)"
                   >
@@ -640,6 +657,7 @@ export class StarRowExpansionTemplate<T = unknown> {
                   @let column = cell.column;
                   <th
                     scope="col"
+                    [attr.aria-colindex]="colIndex(column)"
                     [attr.rowspan]="cell.rowspan > 1 ? cell.rowspan : null"
                     [attr.id]="headerIds()?.cells?.get(cell.key) ?? null"
                     [style.width]="widthOf(column)"
@@ -709,9 +727,22 @@ export class StarRowExpansionTemplate<T = unknown> {
                     }
                   </th>
                 }
+                @if (rowIndex === 0 && cellHas(cell, columnWindow().last, 'last')) {
+                  <td
+                    class="star-table__col-spacer"
+                    aria-hidden="true"
+                    [attr.rowspan]="headRowSpan()"
+                    [style.width.px]="columnWindow().after"
+                  ></td>
+                }
               }
               @if (rowIndex === 0 && rowEditMode()) {
-                <th class="star-table__row-actions" [attr.rowspan]="headRowSpan()" scope="col">
+                <th
+                  class="star-table__row-actions"
+                  [attr.rowspan]="headRowSpan()"
+                  [attr.aria-colindex]="ariaColCount()"
+                  scope="col"
+                >
                   <span class="star-sr-only">{{ text.rowActions }}</span>
                 </th>
               }
@@ -731,9 +762,17 @@ export class StarRowExpansionTemplate<T = unknown> {
               @if (selectionMode()) {
                 <td class="star-table__select"></td>
               }
-              @for (column of visibleColumns(); track column.field) {
+              @for (column of renderedColumns(); track column.field) {
+                @if (column === columnWindow().first) {
+                  <td
+                    class="star-table__col-spacer"
+                    aria-hidden="true"
+                    [style.width.px]="columnWindow().before"
+                  ></td>
+                }
                 <td
                   [starTablePin]="pinOf(column)"
+                  [attr.aria-colindex]="colIndex(column)"
                   [attr.data-label]="column.filter ? column.header : null"
                 >
                   @if (column.filter === 'select') {
@@ -786,6 +825,13 @@ export class StarRowExpansionTemplate<T = unknown> {
                     </span>
                   }
                 </td>
+                @if (column === columnWindow().last) {
+                  <td
+                    class="star-table__col-spacer"
+                    aria-hidden="true"
+                    [style.width.px]="columnWindow().after"
+                  ></td>
+                }
               }
               @if (rowEditMode()) {
                 <td class="star-table__row-actions"></td>
@@ -812,8 +858,22 @@ export class StarRowExpansionTemplate<T = unknown> {
                 @if (selectionMode()) {
                   <td class="star-table__select"><star-skeleton size="1.25rem" /></td>
                 }
-                @for (column of visibleColumns(); track column.field) {
+                @for (column of renderedColumns(); track column.field) {
+                  @if (column === columnWindow().first) {
+                    <td
+                      class="star-table__col-spacer"
+                      aria-hidden="true"
+                      [style.width.px]="columnWindow().before"
+                    ></td>
+                  }
                   <td><star-skeleton height="0.875rem" [width]="row % 2 ? '70%' : '90%'" /></td>
+                  @if (column === columnWindow().last) {
+                    <td
+                      class="star-table__col-spacer"
+                      aria-hidden="true"
+                      [style.width.px]="columnWindow().after"
+                    ></td>
+                  }
                 }
                 @if (rowEditMode()) {
                   <td class="star-table__row-actions"></td>
@@ -872,7 +932,14 @@ export class StarRowExpansionTemplate<T = unknown> {
                   @if (selectionMode()) {
                     <td class="star-table__select"></td>
                   }
-                  @for (column of visibleColumns(); track column.field) {
+                  @for (column of renderedColumns(); track column.field) {
+                    @if (column === columnWindow().first) {
+                      <td
+                        class="star-table__col-spacer"
+                        aria-hidden="true"
+                        [style.width.px]="columnWindow().before"
+                      ></td>
+                    }
                     <td
                       [class]="'star-table__cell--' + (column.align ?? 'start')"
                       [starTablePin]="pinOf(column)"
@@ -884,6 +951,13 @@ export class StarRowExpansionTemplate<T = unknown> {
                         />
                       }
                     </td>
+                    @if (column === columnWindow().last) {
+                      <td
+                        class="star-table__col-spacer"
+                        aria-hidden="true"
+                        [style.width.px]="columnWindow().after"
+                      ></td>
+                    }
                   }
                   @if (rowEditMode()) {
                     <td class="star-table__row-actions"></td>
@@ -972,11 +1046,19 @@ export class StarRowExpansionTemplate<T = unknown> {
                       />
                     </td>
                   }
-                  @for (column of visibleColumns(); track column.field; let firstCell = $first) {
+                  @for (column of renderedColumns(); track column.field; let firstCell = $first) {
+                    @if (column === columnWindow().first) {
+                      <td
+                        class="star-table__col-spacer"
+                        aria-hidden="true"
+                        [style.width.px]="columnWindow().before"
+                      ></td>
+                    }
                     @let span = rowSpan(i, column);
                     @if (span !== 0) {
                       <td
                         [attr.rowspan]="span > 1 ? span : null"
+                        [attr.aria-colindex]="colIndex(column)"
                         [class]="'star-table__cell--' + (column.align ?? 'start')"
                         [class.star-table__cell--merged]="span > 1"
                         [starTablePin]="pinOf(column)"
@@ -1109,9 +1191,16 @@ export class StarRowExpansionTemplate<T = unknown> {
                         }
                       </td>
                     }
+                    @if (column === columnWindow().last) {
+                      <td
+                        class="star-table__col-spacer"
+                        aria-hidden="true"
+                        [style.width.px]="columnWindow().after"
+                      ></td>
+                    }
                   }
                   @if (rowEditMode()) {
-                    <td class="star-table__row-actions">
+                    <td class="star-table__row-actions" [attr.aria-colindex]="ariaColCount()">
                       @if (isRowInEdit(row)) {
                         @if (rowEditActionsSlot(); as custom) {
                           <ng-container
@@ -1199,10 +1288,18 @@ export class StarRowExpansionTemplate<T = unknown> {
               @if (selectionMode()) {
                 <td class="star-table__select"></td>
               }
-              @for (column of visibleColumns(); track column.field) {
+              @for (column of renderedColumns(); track column.field) {
+                @if (column === columnWindow().first) {
+                  <td
+                    class="star-table__col-spacer"
+                    aria-hidden="true"
+                    [style.width.px]="columnWindow().before"
+                  ></td>
+                }
                 <td
                   [class]="'star-table__cell--' + (column.align ?? 'start')"
                   [starTablePin]="pinOf(column)"
+                  [attr.aria-colindex]="colIndex(column)"
                   [attr.data-label]="column.header"
                 >
                   @if (column.footer !== undefined) {
@@ -1213,6 +1310,13 @@ export class StarRowExpansionTemplate<T = unknown> {
                     />
                   }
                 </td>
+                @if (column === columnWindow().last) {
+                  <td
+                    class="star-table__col-spacer"
+                    aria-hidden="true"
+                    [style.width.px]="columnWindow().after"
+                  ></td>
+                }
               }
               @if (rowEditMode()) {
                 <td class="star-table__row-actions"></td>
@@ -1303,6 +1407,17 @@ export class StarTable<T> {
    * table measures each rendered row and keeps the heights.
    */
   readonly virtualRowHeights = input<'auto' | 'variable'>('auto');
+  /**
+   * Renders only the columns in view (plus 2 on each side) for very wide tables: spacer cells keep
+   * the width of the other columns. Pinned columns are always rendered. Each column gets a fixed
+   * width: its resized width, else `width` in `px` or `rem`, else `virtualColumnWidth`. Works with
+   * `virtualScroll`; the cells have `aria-colindex` and the table `aria-colcount`, so assistive
+   * technology knows the full width. Ignite UI column virtualization, AG Grid column
+   * virtualisation.
+   */
+  readonly virtualColumns = input(false, { transform: booleanAttribute });
+  /** Width in pixels of a column without a `px` or `rem` width, with `virtualColumns`. */
+  readonly virtualColumnWidth = input(160);
   readonly ariaLabel = input<string | null>(null);
 
   readonly paginator = input(false, { transform: booleanAttribute });
@@ -1890,7 +2005,7 @@ export class StarTable<T> {
 
   /** Rows of header cells: group rows (`columnGroups`), then the column headers. */
   protected readonly headerLayout = computed(() =>
-    headerRows(this.visibleColumns(), this.groupPaths()),
+    headerRows(this.renderedColumns(), this.groupPaths()),
   );
   /** `rowspan` of the cells that span all header rows (selection, expander, actions). */
   protected readonly headRowSpan = computed(() => {
@@ -2135,8 +2250,13 @@ export class StarTable<T> {
   });
 
   protected onScroll(event: Event): void {
-    if (!this.virtualScroll()) return;
     const viewport = event.target as HTMLElement;
+    if (this.virtualColumns()) {
+      // Right-to-left scroll offsets run below zero.
+      this.scrollLeft.set(Math.abs(viewport.scrollLeft));
+      this.viewportWidth.set(viewport.clientWidth);
+    }
+    if (!this.virtualScroll()) return;
     this.scrollTop.set(viewport.scrollTop);
     this.viewportHeight.set(viewport.clientHeight);
   }
@@ -2323,7 +2443,9 @@ export class StarTable<T> {
   );
   protected readonly colspan = computed(
     () =>
-      this.visibleColumns().length +
+      this.renderedColumns().length +
+      (this.columnWindow().first ? 1 : 0) +
+      (this.columnWindow().last ? 1 : 0) +
       (this.selectionMode() ? 1 : 0) +
       (this.expandable() ? 1 : 0) +
       (this.reorderableRows() ? 1 : 0) +
@@ -2672,6 +2794,7 @@ export class StarTable<T> {
   }
 
   protected resizedWidth(column: StarColumn<T>): string | null {
+    if (this.virtualColumns()) return `${this.columnPixels(column)}px`;
     const width = this.columnWidths()[column.field];
     return width ? `${width}px` : null;
   }
@@ -2708,8 +2831,11 @@ export class StarTable<T> {
           scroller.scrollHeight > scroller.clientHeight + 1,
       );
     }
+    if (scroller && this.virtualColumns() && scroller.clientWidth) {
+      this.viewportWidth.set(scroller.clientWidth);
+    }
     const sides = this.pinnedSides();
-    if (!sides.start && !sides.end && !this.resizableColumns()) return;
+    if (!sides.start && !sides.end && !this.resizableColumns() && !this.virtualColumns()) return;
     const next = measureHeaderCells(this.host.nativeElement);
     if (!sameHeaderWidths(next, untracked(this.headerWidths))) this.headerWidths.set(next);
   }
@@ -2739,6 +2865,69 @@ export class StarTable<T> {
       widths,
     );
   });
+
+  private readonly scrollLeft = signal(0);
+  private readonly viewportWidth = signal(0);
+
+  /** Width in pixels of a column with `virtualColumns`. */
+  private columnPixels(column: StarColumn<T>): number {
+    return (
+      this.columnWidths()[column.field] ??
+      cssPixels(column.width) ??
+      Math.max(MIN_COLUMN_WIDTH, this.virtualColumnWidth())
+    );
+  }
+
+  /** The rendered columns and the spacers (`virtualColumns`); all visible columns without it. */
+  protected readonly columnWindow = computed<StarColumnWindow<StarColumn<T>>>(() => {
+    const columns = this.visibleColumns();
+    if (!this.virtualColumns()) return { columns, first: null, last: null, before: 0, after: 0 };
+    const widths = this.headerWidths();
+    return columnWindow({
+      columns,
+      isPinned: (column) => !!this.sideOf(column),
+      widthOf: (column) => this.columnPixels(column),
+      scroll: this.scrollLeft(),
+      viewport: this.viewportWidth() || COLUMN_FALLBACK_VIEWPORT,
+      fixed: widths.start + widths.end,
+    });
+  });
+
+  protected readonly renderedColumns = computed(() => this.columnWindow().columns);
+
+  /** Position of each visible column among all cells of a row, by field (`virtualColumns`). */
+  private readonly colIndexes = computed(() => {
+    if (!this.virtualColumns()) return null;
+    const lead =
+      (this.reorderableRows() ? 1 : 0) +
+      (this.expandable() ? 1 : 0) +
+      (this.selectionMode() ? 1 : 0);
+    return new Map(this.visibleColumns().map((column, index) => [column.field, lead + index + 1]));
+  });
+
+  /** `aria-colcount` with `virtualColumns`: all columns, rendered or not. */
+  protected readonly ariaColCount = computed(() => {
+    const indexes = this.colIndexes();
+    if (!indexes) return null;
+    const lead = this.colspan() - this.renderedColumns().length - (this.rowEditMode() ? 1 : 0);
+    const spacers = (this.columnWindow().first ? 1 : 0) + (this.columnWindow().last ? 1 : 0);
+    return lead - spacers + this.visibleColumns().length + (this.rowEditMode() ? 1 : 0);
+  });
+
+  protected colIndex(column: StarColumn<T>): number | null {
+    return this.colIndexes()?.get(column.field) ?? null;
+  }
+
+  /** The header cell holds `column` as its first (or last) column. */
+  protected cellHas(
+    cell: StarHeaderCell<StarColumn<T>>,
+    column: StarColumn<T> | null,
+    end: 'first' | 'last',
+  ): boolean {
+    if (!column) return false;
+    if (cell.kind === 'column') return cell.column === column;
+    return cell.columns[end === 'first' ? 0 : cell.columns.length - 1] === column;
+  }
 
   protected pinOf(column: StarColumn<T>): StarPinPlacement | null {
     return this.pinPlacements().get(column.field) ?? null;
