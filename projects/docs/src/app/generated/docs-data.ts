@@ -7274,6 +7274,286 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "description": "Multi-column combobox (Kendo UI `MultiColumnComboBox`, Ignite UI `igx-combo` with an item template of columns): a text field over a grid-like listbox. Each option shows one cell per column under a header row. Typing filters the rows over every column (`filterFields`, accent and case insensitive with `starFilterMatch`), Enter chooses the active row.",
     "inputs": [
       {
+        "name": "options",
+        "type": "readonly TOption[]",
+        "default": "[]",
+        "required": false,
+        "description": "The options. With `lazy`, an entry may be `undefined` while it is not loaded: the list shows a loading row for it, and the keyboard skips it.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "optionLabel",
+        "type": "StarOptionKey<TOption> | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "optionValue",
+        "type": "StarOptionKey<TOption> | null",
+        "default": "null",
+        "required": false,
+        "description": "Value stored in the form. Omit to store the whole option.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "optionDisabled",
+        "type": "StarOptionKey<TOption> | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "compareWith",
+        "type": "(a: TValue, b: TValue) => boolean",
+        "default": "Object.is",
+        "required": false,
+        "description": "Equality for values (default `Object.is`). Use for object values from the server.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "optionGroup",
+        "type": "StarOptionKey<TOption> | null",
+        "default": "null",
+        "required": false,
+        "description": "Group heading of an option (property name or function). Options with the same heading show together under it, in the order in which the headings first appear.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "virtualScroll",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Renders only the lines in view, for long option lists. Every line has the height `virtualItemSize` and option text stays on one line. Keys and type-ahead work over all options, also those that are not in the DOM. Page up and Page down move by the lines in view. Each option has `aria-setsize` and `aria-posinset` for the whole list, and `aria-activedescendant` only names an option that is in the DOM.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "virtualItemSize",
+        "type": "number",
+        "default": "40",
+        "required": false,
+        "description": "Line height in pixels with `virtualScroll`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "lazy",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Loads the options on demand (PrimeNG `lazy` with `onLazyLoad`). Use it with `virtualScroll` and an `options` array of the full length, with `undefined` for the options that are not loaded. The control emits `lazyLoad` when the rows in view need such options, and when the filter text changes. The filter then does not filter the options in the browser: the event has the text.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "focusOnHover",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Moving the pointer over an option makes it the active option (default `true`). PrimeNG `focusOnHover`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "autoOptionFocus",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "When the panel opens without a chosen option, the first enabled option is active (default `true`). Off: no option is active until a key moves. The autocomplete uses `autoHighlight`. PrimeNG `autoOptionFocus`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "placeholder",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "filter",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "filterPlaceholder",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "filterBy",
+        "type": "StarFilterBy<TOption>",
+        "default": "null",
+        "required": false,
+        "description": "Option fields that the filter searches: one key or a list of keys (property names or functions). Default: the label. PrimeNG `filterBy`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "filterMatchMode",
+        "type": "StarFilterMatchMode",
+        "default": "'contains'",
+        "required": false,
+        "description": "How the filter text must match: `contains` (default), `startsWith`, `endsWith`, `equals` or `notContains`. The default comes from `filterMatchMode` of `provideStarNg` when it is set. PrimeNG `filterMatchMode`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "filterLocale",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Locale of the filter compare, for example `de` or `tr`. The compare uses `Intl.Collator` with sensitivity `base`, so case and accents do not count. Default: case and accents do not count, without locale rules; `locale` of `provideStarNg` when it is set. PrimeNG `filterLocale`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "resetFilterOnHide",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Clears the filter text when the panel closes (default `true`). Set `false` to keep the text, and the filtered list, for the next opening. PrimeNG `resetFilterOnHide` (there default `false`).",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "showClear",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "loading",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "emptyMessage",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "scrollHeight",
+        "type": "string",
+        "default": "'16rem'",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "panelClass",
+        "type": "string | readonly string[] | null",
+        "default": "null",
+        "required": false,
+        "description": "Extra CSS classes of the panel (the `.star-panel` element). PrimeNG `panelStyleClass`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "panelStyle",
+        "type": "Record<string, string> | null",
+        "default": "null",
+        "required": false,
+        "description": "Inline styles of the panel, for example `{ 'min-width': '20rem' }`. PrimeNG `panelStyle`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "appendTo",
+        "type": "'self' | 'body'",
+        "default": "'self'",
+        "required": false,
+        "description": "Where the panel is in the DOM (PrimeNG `appendTo`). `self` (default): next to the control. `body`: in the overlay container at the end of the body, for parents that clip their content. Both are native popovers in the top layer, so the panel also shows above a modal dialog. The control reads it when the overlay is created (the first opening): a later change has no effect. The default comes from `overlay.appendTo` of `provideStarNg` when it is set.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "size",
+        "type": "'sm' | 'md'",
+        "default": "'md'",
+        "required": false,
+        "description": "Size. Default: `size` of `provideStarNg` (`small` or `medium`), else `md`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "ariaLabelledBy",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "inputId",
+        "type": "string",
+        "default": "(generated id)",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "readonly",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "required",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "invalid",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "touched",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
         "name": "columns",
         "type": "readonly StarComboboxColumn<TOption>[]",
         "default": "[]",
@@ -7304,7 +7584,48 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       }
     ],
-    "outputs": []
+    "outputs": [
+      {
+        "name": "touch",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "opened",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "closed",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "filterChange",
+        "type": "string",
+        "default": null,
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "lazyLoad",
+        "type": "StarListLazyLoadEvent",
+        "default": null,
+        "required": false,
+        "description": "With `lazy`: the options from `first` to `last` are needed for the filter text `filter`. PrimeNG `onLazyLoad`. Each range is asked for once per filter text; treat the event as idempotent. A range that failed to load is asked for again after `resetLazy()`, or when the owner sets new placeholders with a different array length.",
+        "inheritedFrom": "StarOptionListBase"
+      }
+    ]
   },
   "StarMultiDatePicker": {
     "kind": "component",

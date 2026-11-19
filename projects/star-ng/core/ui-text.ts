@@ -361,14 +361,12 @@ export interface StarUiText {
   readonly aiResponseReady: string;
   readonly aiResponseFailed: string;
   readonly copy: string;
-  readonly copied: string;
   readonly retry: string;
   readonly stop: string;
   /** Live announcement when several messages from others arrive at once. */
   readonly newMessages: (count: number) => string;
   /** Visible hint under the prompt field of `star-ai-prompt`. */
   readonly aiPromptShortcutHint: string;
-  readonly copyFailed: string;
 }
 
 export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
@@ -675,12 +673,10 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   aiResponseReady: 'Response ready',
   aiResponseFailed: 'The response failed.',
   copy: 'Copy',
-  copied: 'Copied',
   retry: 'Retry',
   stop: 'Stop',
   newMessages: (count) => `${count} new messages`,
   aiPromptShortcutHint: 'Press Control+Enter to send.',
-  copyFailed: 'Copy failed',
 };
 
 /** Parameter names of the function entries, in call order (used for `{{ name }}` in translations). */

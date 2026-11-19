@@ -319,10 +319,8 @@ export const STAR_UI_TEXT_DE: StarUiText = {
   aiResponseReady: 'Antwort fertig',
   aiResponseFailed: 'Die Antwort ist fehlgeschlagen.',
   copy: 'Kopieren',
-  copied: 'Kopiert',
   retry: 'Erneut versuchen',
   stop: 'Stoppen',
   newMessages: (count) => `${count} neue Nachrichten`,
   aiPromptShortcutHint: 'Mit Strg+Eingabe senden.',
-  copyFailed: 'Kopieren fehlgeschlagen',
 };

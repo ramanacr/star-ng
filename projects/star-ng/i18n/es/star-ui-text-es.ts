@@ -319,10 +319,8 @@ export const STAR_UI_TEXT_ES: StarUiText = {
   aiResponseReady: 'Respuesta lista',
   aiResponseFailed: 'La respuesta falló.',
   copy: 'Copiar',
-  copied: 'Copiado',
   retry: 'Reintentar',
   stop: 'Detener',
   newMessages: (count) => `${count} mensajes nuevos`,
   aiPromptShortcutHint: 'Pulse Control+Intro para enviar.',
-  copyFailed: 'No se pudo copiar',
 };
