@@ -248,6 +248,24 @@ describe('StarScheduler', () => {
     });
   });
 
+  describe('visible text of an event (guard of the name check)', () => {
+    it('reads "title time" with a space, in a long and in a short event', async () => {
+      const { event } = await setup();
+      const text = (e: HTMLElement) => e.textContent?.replace(/\s+/g, ' ').trim();
+      expect(text(event('Team meeting'))).toBe('Team meeting 10:00 to 11:00');
+      expect(text(event('Stand-up'))).toBe('Stand-up 09:00 to 09:15');
+      // The aria-label starts with the same words, so the visible text is part of the name.
+      const words = (value: string | null | undefined) =>
+        (value ?? '')
+          .replace(/[^\p{L}\p{N} ]/gu, '')
+          .replace(/\s+/g, ' ')
+          .toLowerCase();
+      for (const title of ['Team meeting', 'Stand-up']) {
+        expect(words(event(title).getAttribute('aria-label'))).toContain(words(text(event(title))));
+      }
+    });
+  });
+
   describe('slots and keyboard', () => {
     it('emits slotSelect for a click on an empty slot', async () => {
       const { host, cell } = await setup();
