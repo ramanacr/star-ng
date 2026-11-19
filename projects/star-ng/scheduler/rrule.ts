@@ -66,6 +66,8 @@ const KNOWN = new Set([
   'WKST',
 ]);
 const DAY_MS = 86_400_000;
+/** Weekday (0 = Sunday) of a local day number; 1970-01-01 (day 0) was a Thursday. Works below 0. */
+const weekdayOf = (n: number): number => (((n + 4) % 7) + 7) % 7;
 /** Periods walked at most, so a rule that never matches cannot loop forever. */
 const MAX_PERIODS = 50_000;
 
@@ -228,7 +230,7 @@ function weekdaysIn(byDay: readonly StarRruleWeekday[], first: number, last: num
   const days: number[] = [];
   for (const { day, ordinal } of byDay) {
     // 1970-01-01 (day 0) was a Thursday (4).
-    const firstMatch = first + ((day - ((first + 4) % 7) + 7) % 7);
+    const firstMatch = first + ((day - weekdayOf(first) + 7) % 7);
     const matches: number[] = [];
     for (let n = firstMatch; n <= last; n += 7) matches.push(n);
     if (ordinal === 0) days.push(...matches);
@@ -244,7 +246,7 @@ function weekdaysIn(byDay: readonly StarRruleWeekday[], first: number, last: num
 function periodDays(rule: StarRrule, start: Date, period: number): number[] {
   const startDay = dayNumber(start.getFullYear(), start.getMonth(), start.getDate());
   const weekdayOk = (n: number) =>
-    !rule.byDay.length || rule.byDay.some((d) => d.day === (n + 4) % 7);
+    !rule.byDay.length || rule.byDay.some((d) => d.day === weekdayOf(n));
   const monthOk = (n: number) =>
     !rule.byMonth.length || rule.byMonth.includes(fromDayNumber(n)[1] + 1);
   const monthDayOk = (n: number) => {
@@ -258,7 +260,7 @@ function periodDays(rule: StarRrule, start: Date, period: number): number[] {
       days = [startDay + period].filter((n) => weekdayOk(n) && monthDayOk(n));
       break;
     case 'WEEKLY': {
-      const weekFirst = startDay - ((((startDay + 4) % 7) - rule.weekStart + 7) % 7) + period * 7;
+      const weekFirst = startDay - ((weekdayOf(startDay) - rule.weekStart + 7) % 7) + period * 7;
       days = rule.byDay.length
         ? weekdaysIn(
             rule.byDay.map((d) => ({ day: d.day, ordinal: 0 })),
@@ -319,6 +321,23 @@ function monthCandidates(
   return rule.byMonthDay.length
     ? fromWeekdays.filter((n) => fromMonthDays.includes(n))
     : fromWeekdays;
+}
+
+/** Local day number of the first day of a period. */
+function periodStartDay(rule: StarRrule, start: Date, period: number): number {
+  const startDay = dayNumber(start.getFullYear(), start.getMonth(), start.getDate());
+  switch (rule.freq) {
+    case 'DAILY':
+      return startDay + period;
+    case 'WEEKLY':
+      return startDay - ((weekdayOf(startDay) - rule.weekStart + 7) % 7) + period * 7;
+    case 'MONTHLY': {
+      const total = start.getFullYear() * 12 + start.getMonth() + period;
+      return dayNumber(Math.floor(total / 12), total % 12, 1);
+    }
+    case 'YEARLY':
+      return dayNumber(start.getFullYear() + period, 0, 1);
+  }
 }
 
 /** Number of whole periods between the start and `date`, used to skip ahead without COUNT. */
@@ -384,7 +403,15 @@ export function starExpandRrule(
     const skip = periodsBefore(parsed, start, new Date(from)) - 1;
     if (skip > 0) period = Math.floor(skip / parsed.interval) * parsed.interval;
   }
+  // A period that starts after the range end or after UNTIL cannot add an occurrence.
+  const lastDay = Math.min(
+    dayNumber(range.end.getFullYear(), range.end.getMonth(), range.end.getDate()),
+    parsed.until
+      ? dayNumber(parsed.until.getFullYear(), parsed.until.getMonth(), parsed.until.getDate())
+      : Infinity,
+  );
   for (let walked = 0; walked < MAX_PERIODS; walked++, period += parsed.interval) {
+    if (periodStartDay(parsed, start, period) > lastDay) return result;
     for (const n of periodDays(parsed, start, period)) {
       const [y, m, d] = fromDayNumber(n);
       const date = new Date(

@@ -367,6 +367,31 @@ describe('starExpandRrule', () => {
     });
   });
 
+  describe('early stop and old dates', () => {
+    it('finds weekdays before 1970', () => {
+      // 4 January 1965 was a Monday.
+      expect(expand('FREQ=WEEKLY;BYDAY=MO,FR;COUNT=3', at(1965, 1, 4, 9), at(1960, 1, 1))).toEqual([
+        '1965-01-04 09:00',
+        '1965-01-08 09:00',
+        '1965-01-11 09:00',
+      ]);
+      expect(expand('FREQ=MONTHLY;BYDAY=-1FR;COUNT=2', at(1969, 1, 31), at(1960, 1, 1))).toEqual([
+        '1969-01-31 00:00',
+        '1969-02-28 00:00',
+      ]);
+    });
+
+    it('stops at the range end and at UNTIL when the rule finds no more days', () => {
+      // 30 February never exists: only the start is an occurrence.
+      expect(expand('FREQ=YEARLY;BYMONTH=2;BYMONTHDAY=30', at(2026, 1, 1))).toEqual([
+        '2026-01-01 00:00',
+      ]);
+      expect(expand('FREQ=MONTHLY;BYMONTHDAY=31;BYMONTH=2;UNTIL=20300101', at(2026, 1, 1))).toEqual(
+        ['2026-01-01 00:00'],
+      );
+    });
+  });
+
   describe('range and exceptions', () => {
     it('keeps an occurrence that started before the range but still runs, with a duration', () => {
       const start = at(2026, 3, 1, 22);
