@@ -1,4 +1,11 @@
-import { orderColumns, pinPlacements, pinSideOf, sameWidths, StarPinnable } from './table-pinning';
+import {
+  measureHeaderCells,
+  orderColumns,
+  pinPlacements,
+  pinSideOf,
+  sameWidths,
+  StarPinnable,
+} from './table-pinning';
 
 const COLUMNS: (StarPinnable & { width?: string })[] = [
   { field: 'region' },
@@ -94,5 +101,30 @@ describe('table pinning helpers', () => {
     expect(sameWidths({ a: 10 }, { a: 10.4 })).toBe(true);
     expect(sameWidths({ a: 10 }, { a: 11 })).toBe(false);
     expect(sameWidths({ a: 10 }, { a: 10, b: 1 })).toBe(false);
+  });
+});
+
+describe('measureHeaderCells', () => {
+  it('measures the own header only, not a table nested in a cell', () => {
+    const host = document.createElement('star-table');
+    host.innerHTML = `
+      <div class="star-table__scroll"><table>
+        <thead><tr><th data-lead="select"></th><th data-field="a"></th>
+          <th class="star-table__row-actions"></th></tr></thead>
+        <tbody><tr><td><table><thead><tr><th data-lead="select"></th><th data-field="a"></th>
+          <th data-field="b"></th><th class="star-table__row-actions"></th></tr></thead></table></td></tr></tbody>
+      </table></div>`;
+    const width = new Map<Element, number>();
+    const own = host.querySelectorAll('table')[0].tHead!.querySelectorAll('th');
+    own.forEach((cell, i) => width.set(cell, [40, 100, 70][i]));
+    for (const cell of host.querySelectorAll('th')) {
+      cell.getBoundingClientRect = () => ({ width: width.get(cell) ?? 999 }) as DOMRect;
+    }
+    expect(measureHeaderCells(host)).toEqual({
+      columns: { a: 100 },
+      lead: { select: 0 },
+      start: 40,
+      end: 70,
+    });
   });
 });

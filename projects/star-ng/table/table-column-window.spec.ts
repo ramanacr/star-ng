@@ -2,7 +2,7 @@ import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { StarColumn, StarTable } from './table';
 import { StarColumnGroup } from './table-column-groups';
-import { columnWindow, cssPixels } from './table-column-window';
+import { columnWindow, cssPixels, sameWindow } from './table-column-window';
 
 interface Col {
   readonly field: string;
@@ -73,6 +73,11 @@ describe('columnWindow', () => {
     expect(end.columns.at(-2)?.field).toBe('m20');
   });
 
+  it('compares two windows by their columns and spacers', () => {
+    expect(sameWindow(window(1050), window(1060))).toBe(true);
+    expect(sameWindow(window(1050), window(1150))).toBe(false);
+  });
+
   it('reads px and rem widths', () => {
     expect(cssPixels('120px')).toBe(120);
     expect(cssPixels('7.5rem')).toBe(120);
@@ -89,10 +94,13 @@ type Metric = Record<string, number | string>;
     [value]="rows"
     [columns]="columns"
     [columnGroups]="groups()"
+    [loading]="loading()"
+    [groupBy]="grouped() ? 'group' : null"
+    groupSummary
     dataKey="id"
     selectionMode="multiple"
     virtualColumns
-    virtualScroll
+    [virtualScroll]="!grouped()"
     [virtualRowHeight]="40"
     scrollHeight="300px"
     ariaLabel="Metrics"
@@ -100,7 +108,7 @@ type Metric = Record<string, number | string>;
 })
 class WideHost {
   readonly rows: Metric[] = Array.from({ length: 50 }, (_, row) => {
-    const values: Metric = { id: row + 1 };
+    const values: Metric = { id: row + 1, group: 'All' };
     for (let i = 1; i <= 60; i++) values[`m${i}`] = row * 100 + i;
     return values;
   });
@@ -110,9 +118,12 @@ class WideHost {
       field: `m${i + 1}`,
       header: `Metric ${i + 1}`,
       width: '100px',
+      summary: 'sum' as const,
     })),
   ];
   readonly groups = signal<readonly StarColumnGroup[]>([]);
+  readonly loading = signal(false);
+  readonly grouped = signal(false);
 }
 
 describe('StarTable virtualColumns', () => {
@@ -156,6 +167,26 @@ describe('StarTable virtualColumns', () => {
     expect(cells.length).toBe(1 + 1 + 1 + 10 + 1);
     expect(cells[3].getAttribute('aria-colindex')).toBe('31');
     expect(cells[3].textContent?.trim()).toBe(String(29));
+  });
+
+  it('puts aria-colindex on group summary and skeleton cells', async () => {
+    const { fixture, el, host } = await setup();
+    host.grouped.set(true);
+    await fixture.whenStable();
+    const summary = el.querySelector('tr.star-table__group-footer')!;
+    const cells = [...summary.querySelectorAll('td:not(.star-table__select)')].filter(
+      (td) => !td.classList.contains('star-table__col-spacer'),
+    );
+    expect(cells[1].getAttribute('aria-colindex')).toBe('3');
+    host.loading.set(true);
+    await fixture.whenStable();
+    const skeleton = el.querySelector('tbody tr')!;
+    const data = [...skeleton.querySelectorAll('td')].filter(
+      (td) =>
+        !td.classList.contains('star-table__select') &&
+        !td.classList.contains('star-table__col-spacer'),
+    );
+    expect(data[1].getAttribute('aria-colindex')).toBe('3');
   });
 
   it('keeps column groups aligned with the window', async () => {

@@ -295,12 +295,13 @@ star-select.star-table__filter {
 }
 // `virtualColumns`: each column has the fixed width that the window computes with, padding
 // included, and the text stays on one line.
-.star-table--virtual-columns {
-  th,
-  td {
+.star-table--virtual-columns > .star-table__scroll > table > :is(thead, tbody, tfoot) > tr {
+  > th,
+  > td {
     box-sizing: border-box;
   }
-  td {
+  // Not the detail row: its one cell spans all columns and holds free content.
+  &:not(.star-table__expansion) > td {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;

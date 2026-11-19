@@ -80,6 +80,18 @@ export function columnWindow<C>(input: StarColumnWindowInput<C>): StarColumnWind
   };
 }
 
+/** Two windows render the same columns and spacers (the `equal` of the window signal). */
+export function sameWindow<C>(a: StarColumnWindow<C>, b: StarColumnWindow<C>): boolean {
+  return (
+    a.first === b.first &&
+    a.last === b.last &&
+    a.before === b.before &&
+    a.after === b.after &&
+    a.columns.length === b.columns.length &&
+    a.columns.every((column, index) => column === b.columns[index])
+  );
+}
+
 /**
  * Width in pixels of a CSS width: `px`, or `rem` / `em` at 16 pixels. Other units (percent,
  * `ch`, `calc()`) give `null`.

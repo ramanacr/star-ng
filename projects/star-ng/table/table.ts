@@ -62,6 +62,7 @@ import {
   COLUMN_FALLBACK_VIEWPORT,
   columnWindow,
   cssPixels,
+  sameWindow,
   StarColumnWindow,
 } from './table-column-window';
 import {
@@ -470,7 +471,7 @@ export class StarRowExpansionTemplate<T = unknown> {
     '[style.--star-table-row-height.px]': 'virtualScroll() ? virtualRowHeight() : null',
     // Pinned columns: the selection, expander and reorder columns stick at the start too, and
     // the row actions column at the end.
-    '[class.star-table--pin-lead]': 'pinnedSides().start',
+    '[class.star-table--pin-lead]': 'pinnedSides().start || pinnedSides().end',
     '[class.star-table--pin-trail]': 'pinnedSides().end',
     '[style.--star-table-lead-expander.px]': 'headerWidths().lead["expander"]',
     '[style.--star-table-lead-select.px]': 'headerWidths().lead["select"]',
@@ -1019,11 +1020,15 @@ export class StarTable<T> {
   /** Footer summary cells by field (columns with `summary` and without `footer`). */
   protected readonly footerSummaries = computed(() => {
     const cells = new Map<string, StarSummaryCell | null>();
+    const columns = this.visibleColumns().filter(
+      (column) => column.summary && column.footer === undefined,
+    );
+    // No summary column: the footer does not read the rows.
+    if (!columns.length) return cells;
     const lazy = this.lazy();
     const supplied = this.summaries() ?? {};
     const rows = lazy ? [] : this.sorted();
-    for (const column of this.visibleColumns()) {
-      if (!column.summary || column.footer !== undefined) continue;
+    for (const column of columns) {
       cells.set(
         column.field,
         lazy
@@ -1724,6 +1729,11 @@ export class StarTable<T> {
     return group === null || group === undefined ? '' : String(group);
   }
 
+  /** The summary row of a group is hidden: its group is closed (not in rowspan mode). */
+  protected isGroupFooterHidden(label: string): boolean {
+    return !this.rowSpanMode() && this.isGroupCollapsed(label);
+  }
+
   protected isGroupCollapsed(label: string): boolean {
     return this.collapsedGroups().includes(label);
   }
@@ -1999,19 +2009,23 @@ export class StarTable<T> {
   }
 
   /** The rendered columns and the spacers (`virtualColumns`); all visible columns without it. */
-  protected readonly columnWindow = computed<StarColumnWindow<StarColumn<T>>>(() => {
-    const columns = this.visibleColumns();
-    if (!this.virtualColumns()) return { columns, first: null, last: null, before: 0, after: 0 };
-    const widths = this.headerWidths();
-    return columnWindow({
-      columns,
-      isPinned: (column) => !!this.sideOf(column),
-      widthOf: (column) => this.columnPixels(column),
-      scroll: this.scrollLeft(),
-      viewport: this.viewportWidth() || COLUMN_FALLBACK_VIEWPORT,
-      fixed: widths.start + widths.end,
-    });
-  });
+  protected readonly columnWindow = computed<StarColumnWindow<StarColumn<T>>>(
+    () => {
+      const columns = this.visibleColumns();
+      if (!this.virtualColumns()) return { columns, first: null, last: null, before: 0, after: 0 };
+      const widths = this.headerWidths();
+      return columnWindow({
+        columns,
+        isPinned: (column) => !!this.sideOf(column),
+        widthOf: (column) => this.columnPixels(column),
+        scroll: this.scrollLeft(),
+        viewport: this.viewportWidth() || COLUMN_FALLBACK_VIEWPORT,
+        fixed: widths.start + widths.end,
+      });
+    },
+    // A scroll inside the same range keeps the window: nothing renders again.
+    { equal: sameWindow },
+  );
 
   protected readonly renderedColumns = computed(() => this.columnWindow().columns);
 
@@ -2068,8 +2082,10 @@ export class StarTable<T> {
 
   /** A pin button of the Columns panel. The list moves the item: keep the focus on the button. */
   protected pinFromPanel(column: StarColumn<T>, side: StarPinSide | null): void {
-    if (side === null && !this.sideOf(column)) return;
-    this.pinColumn(column.field, side);
+    const current = this.sideOf(column);
+    if (side === null && !current) return;
+    // A pressed pin button is a toggle: the second click unpins the column.
+    this.pinColumn(column.field, side !== null && side === current ? null : side);
     this.focusPanel([this.moveKey(column, side ?? 'unpin')]);
   }
 

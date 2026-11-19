@@ -28,6 +28,9 @@ describe('table summary helpers', () => {
     expect(summaryText(0.25, { style: 'percent' }, 'en-US')).toBe('25%');
     expect(summaryText(null, undefined, 'en-US')).toBe('');
     expect(summaryText('n/a', undefined, 'en-US')).toBe('n/a');
+    // An invalid locale falls back to the default locale instead of throwing.
+    expect(summaryText(12, undefined, 'not a locale!')).toBe(summaryText(12, undefined, null));
+    expect(summaryText(new Date(2026, 0, 2), undefined, '!!')).not.toBe('');
   });
 
   it('labels the built-in summaries and leaves a function summary without label', () => {
@@ -42,6 +45,7 @@ describe('table summary helpers', () => {
       summaryCell({ summary: (all) => `${all.length} rows` }, rows, value, text, 'en-US'),
     ).toEqual({ label: null, text: '2 rows' });
     expect(summaryCell({}, rows, value, text, 'en-US')).toBeNull();
+    expect(suppliedSummaryCell({ summary: 'sum' }, undefined, text, 'en-US')).toBeNull();
     expect(suppliedSummaryCell({ summary: 'sum' }, 9000, text, 'en-US')).toEqual({
       label: 'Sum',
       text: '9,000',
@@ -72,6 +76,7 @@ const SALES: Sale[] = [
     locale="en-US"
     [groupBy]="groupBy()"
     [groupSummary]="groupSummary()"
+    [rowGroupMode]="mode()"
     [lazy]="lazy()"
     [summaries]="summaries()"
     [globalFilter]="query()"
@@ -93,6 +98,7 @@ class SummaryHost {
   ];
   readonly groupBy = signal<keyof Sale | null>(null);
   readonly groupSummary = signal(false);
+  readonly mode = signal<'subheader' | 'rowspan'>('subheader');
   readonly lazy = signal(false);
   readonly summaries = signal<Record<string, unknown> | null>(null);
   readonly query = signal('');
@@ -146,6 +152,9 @@ describe('StarTable summaries', () => {
     host.closed.set(['North']);
     await fixture.whenStable();
     expect(groupFooters().length).toBe(1);
+    host.mode.set('rowspan');
+    await fixture.whenStable();
+    expect(groupFooters().length).toBe(2);
   });
 
   it('takes the footer values from summaries in lazy mode', async () => {
@@ -154,5 +163,8 @@ describe('StarTable summaries', () => {
     host.summaries.set({ city: 120, revenue: 98765.4 });
     await fixture.whenStable();
     expect(footer()).toEqual(['Count 120', '', 'Units total', 'Sum $98,765.40']);
+    host.summaries.set({ revenue: 5 });
+    await fixture.whenStable();
+    expect(footer()).toEqual(['', '', 'Units total', 'Sum $5.00']);
   });
 });

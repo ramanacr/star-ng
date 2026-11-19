@@ -57,6 +57,16 @@ function isNumber(value: unknown): value is number {
   return typeof value === 'number' && Number.isFinite(value);
 }
 
+/** A formatter for the locale; an invalid locale tag falls back to the default locale. */
+function withLocale<F>(locale: string | null, create: (tag: string | undefined) => F): F {
+  try {
+    return create(locale ?? undefined);
+  } catch (error) {
+    if (!(error instanceof RangeError)) throw error;
+    return create(undefined);
+  }
+}
+
 const numberFormats = new Map<string, Intl.NumberFormat>();
 const dateFormats = new Map<string, Intl.DateTimeFormat>();
 
@@ -74,7 +84,7 @@ export function summaryText(
     const key = `${locale ?? ''}|${JSON.stringify(format ?? {})}`;
     let formatter = numberFormats.get(key);
     if (!formatter) {
-      formatter = new Intl.NumberFormat(locale ?? undefined, format);
+      formatter = withLocale(locale, (tag) => new Intl.NumberFormat(tag, format));
       numberFormats.set(key, formatter);
     }
     return formatter.format(value);
@@ -83,7 +93,10 @@ export function summaryText(
     const key = locale ?? '';
     let formatter = dateFormats.get(key);
     if (!formatter) {
-      formatter = new Intl.DateTimeFormat(locale ?? undefined, { dateStyle: 'medium' });
+      formatter = withLocale(
+        locale,
+        (tag) => new Intl.DateTimeFormat(tag, { dateStyle: 'medium' }),
+      );
       dateFormats.set(key, formatter);
     }
     return Number.isFinite(value.getTime()) ? formatter.format(value) : '';
@@ -140,7 +153,8 @@ export function suppliedSummaryCell<T>(
   locale: string | null,
 ): StarSummaryCell | null {
   const summary = column.summary;
-  if (!summary) return null;
+  // The owner has no value for this column (yet): an empty cell, not a label without a value.
+  if (!summary || value === undefined) return null;
   return {
     label: typeof summary === 'function' ? null : summaryLabel(summary, text),
     text: summaryText(value, column.summaryFormat, locale),

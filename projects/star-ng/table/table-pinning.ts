@@ -116,20 +116,27 @@ export interface StarHeaderWidths {
   readonly end: number;
 }
 
-/** Measures the header cells of a table element (`th[data-field]`, `th[data-lead]`). */
+/**
+ * Measures the header cells of a table element (`th[data-field]`, `th[data-lead]`). Only the head
+ * of its own table counts: a table nested in a cell or a detail row has its own head.
+ */
 export function measureHeaderCells(host: HTMLElement): StarHeaderWidths {
   const columns: Record<string, number> = {};
-  for (const cell of host.querySelectorAll<HTMLElement>('thead th[data-field]')) {
+  const head = host
+    .querySelector('.star-table__scroll')
+    ?.querySelector<HTMLTableElement>(':scope > table')?.tHead;
+  if (!head) return NO_WIDTHS;
+  for (const cell of head.querySelectorAll<HTMLElement>(':scope > tr > th[data-field]')) {
     const field = cell.dataset['field'];
     if (field) columns[field] = cell.getBoundingClientRect().width;
   }
   const lead: Record<string, number> = {};
   let start = 0;
-  for (const cell of host.querySelectorAll<HTMLElement>('thead th[data-lead]')) {
+  for (const cell of head.querySelectorAll<HTMLElement>(':scope > tr > th[data-lead]')) {
     lead[cell.dataset['lead']!] = start;
     start += cell.getBoundingClientRect().width;
   }
-  const actions = host.querySelector<HTMLElement>('thead th.star-table__row-actions');
+  const actions = head.querySelector<HTMLElement>(':scope > tr > th.star-table__row-actions');
   return { columns, lead, start, end: actions?.getBoundingClientRect().width ?? 0 };
 }
 
@@ -178,8 +185,18 @@ export function sameHeaderWidths(next: StarHeaderWidths, current: StarHeaderWidt
 
 /** The pin buttons of a column in the Columns panel. */
 export const PIN_ACTIONS = [
-  { side: 'start', key: 'start', label: 'pinColumnStart', icon: 'ph-bold ph-arrow-line-left' },
-  { side: 'end', key: 'end', label: 'pinColumnEnd', icon: 'ph-bold ph-arrow-line-right' },
+  {
+    side: 'start',
+    key: 'start',
+    label: 'pinColumnStart',
+    icon: 'ph-bold ph-arrow-line-left star-icon-mirror',
+  },
+  {
+    side: 'end',
+    key: 'end',
+    label: 'pinColumnEnd',
+    icon: 'ph-bold ph-arrow-line-right star-icon-mirror',
+  },
   { side: null, key: 'unpin', label: 'unpinColumn', icon: 'ph-bold ph-push-pin-slash' },
 ] as const;
 

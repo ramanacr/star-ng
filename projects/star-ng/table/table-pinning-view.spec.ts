@@ -97,6 +97,11 @@ describe('StarTable column pinning', () => {
     expect(host.events.length).toBe(2);
     expect(headers()).toEqual(['region', 'units', 'total', 'id']);
     expect(header('region').classList).not.toContain('star-table__cell--frozen');
+    // Only end pins left: the selection column still sticks at the start.
+    expect(el.querySelector('star-table')!.classList).toContain('star-table--pin-lead');
+    host.table().pinColumn('total', null);
+    host.table().pinColumn('id', null);
+    await fixture.whenStable();
     expect(el.querySelector('star-table')!.classList).not.toContain('star-table--pin-lead');
   });
 
@@ -146,11 +151,17 @@ describe('StarTable column pinning', () => {
     await fixture.whenStable();
     expect(host.pins()).toEqual({ units: 'end' });
     expect(button('Pin Units to end').getAttribute('aria-pressed')).toBe('true');
+    expect(button('Pin Units to end').querySelector('i')!.classList).toContain('star-icon-mirror');
     // Units is the first end pin now: it cannot move before the unpinned columns.
     const earlier = document.querySelector<HTMLButtonElement>('[aria-label="Move Units earlier"]')!;
     expect(earlier.disabled).toBe(true);
     const later = document.querySelector<HTMLButtonElement>('[aria-label="Move Units later"]')!;
     expect(later.disabled).toBe(false);
+    // A second click on the pressed button unpins the column.
+    button('Pin Units to end').click();
+    await fixture.whenStable();
+    expect(host.pins()).toEqual({ units: null });
+    expect(button('Pin Units to end').getAttribute('aria-pressed')).toBe('false');
   });
 
   it('saves and restores the pins with stateKey', async () => {
