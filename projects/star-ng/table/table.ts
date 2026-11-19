@@ -972,6 +972,7 @@ export class StarTable<T> {
         textOf: (row, field) => this.cellText(row, byField.get(field)!),
         groupOf: groupBy ? (row) => this.groupOf(row) : null,
         endsRun: (row) => expandable && this.isExpanded(row),
+        breaks: (row) => this.isRowInEdit(row) || this.isDeleted(row),
       },
     );
   });

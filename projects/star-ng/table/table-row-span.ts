@@ -11,6 +11,11 @@ export interface StarRowSpanOptions<T> {
   readonly groupOf?: ((row: T) => string) | null;
   /** A run ends after this row (a row with its detail row open). */
   readonly endsRun?: (row: T) => boolean;
+  /**
+   * The row stands alone: a run ends before and after it. For a row in edit (its editors must all
+   * show) and a deleted row (its first cell carries the "deleted" text).
+   */
+  readonly breaks?: (row: T) => boolean;
 }
 
 /**
@@ -36,6 +41,8 @@ export function rowSpans<T>(
         text !== '' &&
         options.textOf(row, field) === text &&
         !options.endsRun?.(previous) &&
+        !options.breaks?.(previous) &&
+        !options.breaks?.(row) &&
         (!options.groupOf || options.groupOf(row) === options.groupOf(previous));
       if (same) continue;
       const length = index - start;

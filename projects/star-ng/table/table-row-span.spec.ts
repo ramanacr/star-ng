@@ -37,6 +37,13 @@ describe('rowSpans', () => {
     expect(open.get('region')).toEqual([2, 0, 1, 3, 0, 0]);
   });
 
+  it('keeps a breaking row (in edit, deleted) out of every run', () => {
+    const spans = rowSpans(SALES, ['region'], { textOf: text, breaks: (row) => row.id === 2 });
+    expect(spans.get('region')).toEqual([1, 1, 1, 3, 0, 0]);
+    const last = rowSpans(SALES, ['region'], { textOf: text, breaks: (row) => row.id === 3 });
+    expect(last.get('region')).toEqual([2, 0, 1, 3, 0, 0]);
+  });
+
   it('handles no rows and one row', () => {
     expect(rowSpans([], ['region'], { textOf: text }).get('region')).toEqual([]);
     expect(rowSpans(SALES.slice(0, 1), ['region'], { textOf: text }).get('region')).toEqual([1]);
@@ -50,6 +57,9 @@ describe('rowSpans', () => {
     [columns]="columns"
     dataKey="id"
     selectionMode="multiple"
+    [editMode]="editMode()"
+    [batchEdit]="batch()"
+    [(editingRowKeys)]="editing"
     groupBy="region"
     [rowGroupMode]="mode()"
     [virtualScroll]="virtual()"
@@ -62,12 +72,15 @@ class RowSpanHost {
   readonly columns: StarColumn<Sale>[] = [
     { field: 'region', header: 'Region' },
     { field: 'city', header: 'City' },
-    { field: 'status', header: 'Status', mergeCells: true },
+    { field: 'status', header: 'Status', mergeCells: true, editable: true },
     { field: 'units', header: 'Units' },
   ];
   readonly mode = signal<'subheader' | 'rowspan'>('rowspan');
   readonly virtual = signal(false);
   readonly selection = signal<readonly Sale[]>([]);
+  readonly editMode = signal<'cell' | 'row'>('cell');
+  readonly batch = signal(false);
+  readonly editing = signal<readonly unknown[]>([]);
 }
 
 describe('StarTable rowGroupMode rowspan', () => {
@@ -78,7 +91,8 @@ describe('StarTable rowGroupMode rowspan', () => {
     const grid = () =>
       [...el.querySelectorAll<HTMLElement>('tbody tr')].map((tr) =>
         [...tr.querySelectorAll<HTMLTableCellElement>('td:not(.star-table__select)')].map(
-          (td) => `${td.textContent?.trim()}${td.rowSpan > 1 ? `/${td.rowSpan}` : ''}`,
+          (td) =>
+            `${td.textContent?.replace('Edit Status:', '').trim()}${td.rowSpan > 1 ? `/${td.rowSpan}` : ''}`,
         ),
       );
     return { fixture, el, host: fixture.componentInstance, grid };
@@ -97,6 +111,29 @@ describe('StarTable rowGroupMode rowspan', () => {
     ]);
     const merged = el.querySelector('td.star-table__cell--merged')!;
     expect(merged.getAttribute('rowspan')).toBe('3');
+  });
+
+  it('gives a row in edit its own cells, so every editor shows', async () => {
+    const { fixture, el, host, grid } = await setup();
+    host.editMode.set('row');
+    host.editing.set([2]);
+    await fixture.whenStable();
+    const editors = el.querySelectorAll('tbody tr:nth-child(2) input.star-table__editor');
+    expect(editors.length).toBe(1);
+    expect(grid()[0][0]).toBe('North');
+    expect(grid()[2][0]).toBe('North');
+  });
+
+  it('keeps the deleted mark of a deleted row in a merged run', async () => {
+    const { fixture, el, host } = await setup();
+    host.batch.set(true);
+    await fixture.whenStable();
+    const table = fixture.debugElement.query((node) => node.name === 'star-table')
+      .componentInstance as StarTable<Sale>;
+    table.deleteRow(SALES[1]);
+    await fixture.whenStable();
+    const second = el.querySelectorAll('tbody tr')[1];
+    expect(second.textContent).toContain('deleted');
   });
 
   it('keeps selection per row: every row keeps its own check box', async () => {
