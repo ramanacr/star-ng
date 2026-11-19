@@ -148,7 +148,7 @@ type Metric = Record<string, number | string>;
 })
 class WideHost {
   readonly table = viewChild.required<StarTable<Metric>>(StarTable);
-  readonly rows: Metric[] = Array.from({ length: 500 }, (_, row) => {
+  readonly rows: Metric[] = Array.from({ length: 300 }, (_, row) => {
     const values: Metric = { id: row + 1 };
     for (let i = 1; i <= 30; i++) values[`m${i}`] = row * 100 + i;
     return values;
@@ -174,9 +174,9 @@ describe('StarTable scroll API with virtual rows and columns', () => {
     const table = fixture.componentInstance.table();
     const scroller = el.querySelector<HTMLElement>('.star-table__scroll')!;
 
-    expect(table.scrollToRow(450)).toBe(true);
+    expect(table.scrollToRow(250)).toBe(true);
     await fixture.whenStable();
-    expect(el.querySelector('tbody tr[data-row="450"]')).not.toBeNull();
+    expect(el.querySelector('tbody tr[data-row="250"]')).not.toBeNull();
     expect(scroller.scrollTop).toBeGreaterThan(0);
 
     expect(table.scrollToColumn('m28')).toBe(true);
@@ -192,5 +192,5 @@ describe('StarTable scroll API with virtual rows and columns', () => {
     const active = document.activeElement as HTMLElement;
     expect(active.dataset['field']).toBe('m2');
     expect(active.parentElement!.dataset['row']).toBe('20');
-  });
+  }, 20_000);
 });

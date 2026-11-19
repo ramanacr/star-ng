@@ -167,7 +167,9 @@ describe('StarTable virtualColumns', () => {
     expect(cells.length).toBe(1 + 1 + 1 + 10 + 1);
     expect(cells[3].getAttribute('aria-colindex')).toBe('31');
     expect(cells[3].textContent?.trim()).toBe(String(29));
-  });
+    // The first test of the file compiles the wide table: under a loaded coverage run it can
+    // pass 5 seconds.
+  }, 20_000);
 
   it('puts aria-colindex on group summary and skeleton cells', async () => {
     const { fixture, el, host } = await setup();

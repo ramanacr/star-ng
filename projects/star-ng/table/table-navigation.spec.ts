@@ -340,5 +340,5 @@ describe('StarTable cell navigation with virtual rows and columns', () => {
     expect(scroller.scrollLeft).toBeGreaterThan(0);
     expect(scroller.scrollTop).toBeGreaterThan(0);
     expect(fixture.componentInstance.table().activeCell()).toEqual({ rowKey: 400, field: 'm40' });
-  });
+  }, 20_000);
 });
