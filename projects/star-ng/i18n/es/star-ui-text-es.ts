@@ -413,4 +413,19 @@ export const STAR_UI_TEXT_ES: StarUiText = {
   fileItemsCopiedTo: (count, name) =>
     `${count} ${forCount(count, 'elemento copiado', 'elementos copiados')} a ${name}`,
   fileRoot: 'Todos los archivos',
+  diagram: 'Diagrama',
+  diagramHint:
+    'Las flechas mueven entre nodos. Alt y una flecha mueve la selección, Mayús, Alt y una flecha cambia el tamaño. Intro edita la etiqueta, Suprimir elimina, Control+Z deshace.',
+  diagramNodes: 'Nodos',
+  diagramConnections: 'Conexiones',
+  diagramEditLabel: 'Etiqueta del nodo',
+  zoomToFit: 'Ajustar al contenido',
+  redo: 'Rehacer',
+  diagramConnection: (from, to) => `${from} a ${to}`,
+  diagramConnected: (from, to) => `${from} conectado a ${to}`,
+  diagramNodeMoved: (label, x, y) => `${label} movido a ${x}, ${y}`,
+  diagramNodeResized: (label, width, height) => `${label} cambiado a ${width} por ${height}`,
+  diagramDeleted: (count) =>
+    `${count} ${forCount(count, 'elemento eliminado', 'elementos eliminados')}`,
+  diagramZoom: (percent) => `Zoom al ${percent} %`,
 };

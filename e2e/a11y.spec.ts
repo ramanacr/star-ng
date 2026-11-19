@@ -1568,6 +1568,21 @@ const STATES: readonly State[] = [
       await expect(popup(page).getByRole('menu')).toBeVisible();
     },
   },
+  // Diagram.
+  {
+    name: 'diagram with a selected node',
+    path: 'controls/diagram',
+    open: async (page) => {
+      await expect(page.locator('star-diagram[ngh]')).toHaveCount(0, { timeout: 15_000 });
+      const live = example(page, 'Order workflow');
+      const node = live.getByRole('option', { name: 'Pick items' });
+      await node.focus();
+      await page.keyboard.press('Space');
+      await page.keyboard.up('Space');
+      await expect(node).toHaveAttribute('aria-selected', 'true');
+      await expect(live.locator('.star-diagram__handle').first()).toBeVisible();
+    },
+  },
 ];
 
 for (const theme of THEMES) {

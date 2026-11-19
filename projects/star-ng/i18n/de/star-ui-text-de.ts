@@ -413,4 +413,18 @@ export const STAR_UI_TEXT_DE: StarUiText = {
   fileItemsCopiedTo: (count, name) =>
     `${count} ${forCount(count, 'Element', 'Elemente')} nach ${name} kopiert`,
   fileRoot: 'Alle Dateien',
+  diagram: 'Diagramm',
+  diagramHint:
+    'Pfeiltasten wechseln zwischen Knoten. Alt und eine Pfeiltaste verschiebt die Auswahl, Umschalt, Alt und eine Pfeiltaste ändert die Größe. Eingabe bearbeitet die Beschriftung, Entf entfernt, Strg+Z macht rückgängig.',
+  diagramNodes: 'Knoten',
+  diagramConnections: 'Verbindungen',
+  diagramEditLabel: 'Knotenbeschriftung',
+  zoomToFit: 'An Inhalt anpassen',
+  redo: 'Wiederholen',
+  diagramConnection: (from, to) => `${from} zu ${to}`,
+  diagramConnected: (from, to) => `${from} mit ${to} verbunden`,
+  diagramNodeMoved: (label, x, y) => `${label} nach ${x}, ${y} verschoben`,
+  diagramNodeResized: (label, width, height) => `${label} auf ${width} mal ${height} geändert`,
+  diagramDeleted: (count) => `${count} ${forCount(count, 'Element', 'Elemente')} gelöscht`,
+  diagramZoom: (percent) => `Zoom ${percent} %`,
 };

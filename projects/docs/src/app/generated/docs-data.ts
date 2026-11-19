@@ -4085,6 +4085,132 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarDiagram": {
+    "kind": "component",
+    "selector": "star-diagram",
+    "entry": "@star-ng/ui/diagram",
+    "description": "Diagram (Syncfusion `ejs-diagram`, DevExtreme `dxDiagram`; Kendo `Diagram`): nodes and connections on an SVG canvas.",
+    "inputs": [
+      {
+        "name": "nodes",
+        "type": "readonly StarDiagramNode[]",
+        "default": "[]",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "edges",
+        "type": "readonly StarDiagramEdge[]",
+        "default": "[]",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "minZoom",
+        "type": "number",
+        "default": "0.25",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "maxZoom",
+        "type": "number",
+        "default": "4",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "gridSize",
+        "type": "number",
+        "default": "20",
+        "required": false,
+        "description": "Grid of the snap and of the keyboard moves, in diagram units. 0: no snap."
+      },
+      {
+        "name": "showGrid",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "connectorRouting",
+        "type": "'straight' | 'orthogonal'",
+        "default": "'orthogonal'",
+        "required": false,
+        "description": "Routing of the connections that the user draws."
+      },
+      {
+        "name": "readonly",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "No changes: select, pan and zoom only."
+      },
+      {
+        "name": "fitContent",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Fits the content into the canvas after the first render (browser only)."
+      },
+      {
+        "name": "height",
+        "type": "string",
+        "default": "'24rem'",
+        "required": false,
+        "description": "Height of the canvas (a CSS length)."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [
+      {
+        "name": "selection",
+        "type": "readonly string[]",
+        "default": "[]",
+        "required": false,
+        "description": "Ids of the selected nodes."
+      },
+      {
+        "name": "zoom",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Zoom factor: 1 is 100 %."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "nodesChange",
+        "type": "StarDiagramChange<StarDiagramNodePatch>",
+        "default": null,
+        "required": false,
+        "description": "Node patches: moves, resizes, labels, deletes, layouts, undo and redo."
+      },
+      {
+        "name": "edgesChange",
+        "type": "StarDiagramChange<StarDiagramEdgePatch>",
+        "default": null,
+        "required": false,
+        "description": "Edge patches: new connections, deletes, undo and redo."
+      }
+    ]
+  },
+  "StarDiagramNodeTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starDiagramNode]",
+    "entry": "@star-ng/ui/diagram",
+    "description": "Custom node content: `<ng-template starDiagramNode let-node>…</ng-template>`. It renders in an SVG `foreignObject` in the browser; the server renders the plain label, and an export shows the plain label too.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
   "StarDialog": {
     "kind": "component",
     "selector": "star-dialog",
@@ -14447,6 +14573,8 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "date-picker/time-range": "<div class=\"docs-stack\">\n  <star-date-range-picker\n    [(value)]=\"shift\"\n    locale=\"en-GB\"\n    showTime\n    [stepMinute]=\"15\"\n    ariaLabel=\"Shift\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Shift: {{ iso(shift()?.start) }} {{ clock(shift()?.start) }} to {{ iso(shift()?.end) }}\n    {{ clock(shift()?.end) }}\n  </p>\n</div>",
   "date-picker/touch": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"touchDate\"\n    locale=\"en-GB\"\n    touchUI\n    ariaLabel=\"Delivery date, touch\"\n  />\n  <star-date-picker\n    [(value)]=\"touchDate\"\n    locale=\"en-GB\"\n    breakpoint=\"640px\"\n    ariaLabel=\"Delivery date, small window\"\n  />\n  <p class=\"docs-output\" role=\"status\">Delivery: {{ iso(touchDate()) }}</p>\n</div>",
   "date-picker/views": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"reportMonth\"\n    view=\"month\"\n    locale=\"en-GB\"\n    ariaLabel=\"Report month\"\n  />\n  <star-date-picker\n    [(value)]=\"reportYear\"\n    view=\"year\"\n    locale=\"en-GB\"\n    ariaLabel=\"Report year\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Month: {{ iso(reportMonth()) }}, year: {{ iso(reportYear()) }}\n  </p>\n</div>",
+  "diagram/template": "<star-diagram\n  [nodes]=\"cards()\"\n  [edges]=\"cardEdges\"\n  readonly\n  [showGrid]=\"false\"\n  height=\"14rem\"\n  ariaLabel=\"Order stages\"\n>\n  <ng-template starDiagramNode let-node>\n    <span class=\"card\">\n      <strong>{{ node.label }}</strong>\n      <small>{{ counts[node.id] }} orders</small>\n    </span>\n  </ng-template>\n</star-diagram>",
+  "diagram/workflow": "<div class=\"docs-stack\">\n  <div class=\"actions\">\n    <star-button variant=\"secondary\" size=\"sm\" (pressed)=\"layoutTree()\"\n      >Tree layout</star-button\n    >\n    <star-button variant=\"secondary\" size=\"sm\" (pressed)=\"layoutGrid()\"\n      >Grid layout</star-button\n    >\n    <star-button variant=\"secondary\" size=\"sm\" (pressed)=\"download()\"\n      >Export SVG</star-button\n    >\n  </div>\n  <star-diagram\n    #workflow\n    [nodes]=\"nodes()\"\n    [edges]=\"edges()\"\n    [(selection)]=\"selection\"\n    fitContent\n    ariaLabel=\"Order workflow\"\n    (nodesChange)=\"onNodes($event)\"\n    (edgesChange)=\"onEdges($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">{{ last() }}</p>\n</div>",
   "dialog/basic": "<star-button (pressed)=\"basicOpen.set(true)\">Edit order</star-button>\n<star-dialog [(visible)]=\"basicOpen\" header=\"Edit order ORD-1042\">\n  <span starDialogHeader class=\"docs-output\">Last saved at 10:42</span>\n  <div class=\"docs-stack\">\n    <star-field label=\"Customer\">\n      <input starInput value=\"Orchard Supply\" />\n    </star-field>\n    <star-field label=\"Delivery note\" hint=\"The driver reads this note.\">\n      <textarea starInput rows=\"3\">Leave at the loading dock.</textarea>\n    </star-field>\n  </div>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button variant=\"ghost\" (pressed)=\"basicOpen.set(false)\">Cancel</star-button>\n    <star-button (pressed)=\"basicOpen.set(false)\">Save</star-button>\n  </div>\n</star-dialog>",
   "dialog/close-rules": "<div class=\"docs-row\">\n  <star-button variant=\"secondary\" (pressed)=\"maskOpen.set(true)\"\n    >Backdrop click</star-button\n  >\n  <star-button variant=\"secondary\" (pressed)=\"lockedOpen.set(true)\">Locked</star-button>\n  <star-button variant=\"secondary\" (pressed)=\"floatOpen.set(true)\">Non-modal</star-button>\n</div>\n<star-dialog [(visible)]=\"maskOpen\" header=\"Closes on a backdrop click\" dismissableMask>\n  <p>Click outside this window to close it.</p>\n</star-dialog>\n<star-dialog\n  [(visible)]=\"lockedOpen\"\n  header=\"Locked dialog\"\n  [closable]=\"false\"\n  [closeOnEscape]=\"false\"\n>\n  <p>This dialog has no close button and ignores Escape.</p>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button (pressed)=\"lockedOpen.set(false)\">Done</star-button>\n  </div>\n</star-dialog>\n<star-dialog [(visible)]=\"floatOpen\" header=\"Non-modal dialog\" [modal]=\"false\">\n  <p>The page behind this window stays usable.</p>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button (pressed)=\"floatOpen.set(false)\">Close</star-button>\n  </div>\n</star-dialog>",
   "dialog/drag": "<div class=\"docs-stack\">\n  <p class=\"docs-output\" role=\"status\">Last position: {{ dragNote() }}</p>\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"dragOpen.set(true)\">\n      Open movable dialog\n    </star-button>\n  </div>\n</div>\n<star-dialog\n  [(visible)]=\"dragOpen\"\n  header=\"Movable dialog\"\n  draggable\n  (dragEnd)=\"dragNote.set($event.x + ', ' + $event.y)\"\n>\n  <p>Drag the header, or focus the move button and press Alt with an arrow key.</p>\n</star-dialog>",

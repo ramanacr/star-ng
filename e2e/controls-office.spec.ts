@@ -143,3 +143,63 @@ test.describe('file manager', () => {
     await expect(live.getByRole('option').nth(1)).toHaveAttribute('aria-selected', 'true');
   });
 });
+
+test.describe('diagram', () => {
+  test('moves, connects, deletes and undoes with the keyboard and the pointer', async ({
+    page,
+  }) => {
+    const errors = collectErrors(page);
+    await openPage(page, '/controls/diagram', 'Diagram', 'star-diagram');
+    const live = example(page, 'Order workflow');
+    const output = live.locator('.docs-output');
+    const node = (name: string) => live.getByRole('option', { name });
+
+    // Arrow keys go to the nearest node; Alt+Arrow moves it.
+    await node('Order placed').focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(node('Payment ok?')).toBeFocused();
+    await expect(node('Payment ok?')).toHaveAttribute('aria-selected', 'true');
+    await expect(live.locator('.star-diagram__canvas')).toHaveAttribute('role', 'application');
+    await page.keyboard.press('Alt+ArrowDown');
+    await expect(output).toHaveText('move: 1 node patch(es)');
+
+    // Enter edits the label.
+    await page.keyboard.press('Enter');
+    await live.getByRole('textbox', { name: 'Node label' }).fill('Paid?');
+    await page.keyboard.press('Enter');
+    await expect(node('Paid?')).toBeVisible();
+
+    // Delete removes the node and its connections; Control+Z brings them back.
+    const edges = live.locator('.star-diagram__edge');
+    await expect(edges).toHaveCount(6);
+    await node('Paid?').focus();
+    await page.keyboard.press('Delete');
+    await expect(node('Paid?')).toHaveCount(0);
+    await expect(edges).toHaveCount(3);
+    await node('Order placed').focus();
+    await page.keyboard.press('Control+z');
+    await expect(node('Paid?')).toHaveCount(1);
+    await expect(edges).toHaveCount(6);
+
+    // Drag a node with the pointer: it snaps to the grid.
+    const ship = node('Ship order');
+    const box = (await ship.boundingBox())!;
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width / 2 + 30, box.y + box.height / 2 + 45, { steps: 4 });
+    await page.mouse.up();
+    await expect(output).toHaveText('move: 1 node patch(es)');
+    expect(errors).toEqual([]);
+  });
+
+  test('zooms with the buttons and applies a layout', async ({ page }) => {
+    await openPage(page, '/controls/diagram', 'Diagram', 'star-diagram');
+    const live = example(page, 'Order workflow');
+    const zoom = live.locator('.star-diagram__zoom');
+    const before = await zoom.textContent();
+    await live.getByRole('button', { name: 'Zoom in' }).click();
+    await expect(zoom).not.toHaveText(before ?? '');
+    await live.getByRole('button', { name: 'Tree layout' }).click();
+    await expect(live.locator('.docs-output')).toHaveText(/layout: \d+ node patch/);
+  });
+});

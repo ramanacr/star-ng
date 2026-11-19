@@ -477,6 +477,22 @@ export interface StarUiText {
   readonly fileItemsCopiedTo: (count: number, name: string) => string;
   /** Default name of the top folder of `star-file-manager`. */
   readonly fileRoot: string;
+  // Diagram
+  /** Name of the canvas of `star-diagram`. */
+  readonly diagram: string;
+  readonly diagramHint: string;
+  readonly diagramNodes: string;
+  readonly diagramConnections: string;
+  readonly diagramEditLabel: string;
+  readonly zoomToFit: string;
+  readonly redo: string;
+  /** A connection in the list of connections. */
+  readonly diagramConnection: (from: string, to: string) => string;
+  readonly diagramConnected: (from: string, to: string) => string;
+  readonly diagramNodeMoved: (label: string, x: number, y: number) => string;
+  readonly diagramNodeResized: (label: string, width: number, height: number) => string;
+  readonly diagramDeleted: (count: number) => string;
+  readonly diagramZoom: (percent: number) => string;
 }
 
 export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
@@ -875,6 +891,20 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   fileItemsCopiedTo: (count, name) =>
     `${count} ${count === 1 ? 'item' : 'items'} copied to ${name}`,
   fileRoot: 'All files',
+  diagram: 'Diagram',
+  diagramHint:
+    'Arrow keys move between nodes. Alt and an arrow key moves the selection, Shift, Alt and an arrow key resizes it. Enter edits the label, Delete removes, Control+Z undoes.',
+  diagramNodes: 'Nodes',
+  diagramConnections: 'Connections',
+  diagramEditLabel: 'Node label',
+  zoomToFit: 'Fit to content',
+  redo: 'Redo',
+  diagramConnection: (from, to) => `${from} to ${to}`,
+  diagramConnected: (from, to) => `Connected ${from} to ${to}`,
+  diagramNodeMoved: (label, x, y) => `${label} moved to ${x}, ${y}`,
+  diagramNodeResized: (label, width, height) => `${label} resized to ${width} by ${height}`,
+  diagramDeleted: (count) => `${count} ${count === 1 ? 'item' : 'items'} deleted`,
+  diagramZoom: (percent) => `Zoom ${percent}%`,
 };
 
 /** Parameter names of the function entries, in call order (used for `{{ name }}` in translations). */
@@ -955,6 +985,12 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   fileItemsCopied: ['count'],
   fileItemsMoved: ['count', 'name'],
   fileItemsCopiedTo: ['count', 'name'],
+  diagramConnection: ['from', 'to'],
+  diagramConnected: ['from', 'to'],
+  diagramNodeMoved: ['label', 'x', 'y'],
+  diagramNodeResized: ['label', 'width', 'height'],
+  diagramDeleted: ['count'],
+  diagramZoom: ['percent'],
 };
 
 export const STAR_UI_TEXT = new InjectionToken<StarUiText>('STAR_UI_TEXT', {
