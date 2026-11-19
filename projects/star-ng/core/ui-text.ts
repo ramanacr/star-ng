@@ -139,6 +139,18 @@ export interface StarUiText {
   readonly resizeColumn: (column: string) => string;
   readonly moveColumnEarlier: (column: string) => string;
   readonly moveColumnLater: (column: string) => string;
+  /** Table Columns panel: pin a column to the inline start. */
+  readonly pinColumnStart: (column: string) => string;
+  /** Table Columns panel: pin a column to the inline end. */
+  readonly pinColumnEnd: (column: string) => string;
+  /** Table Columns panel: unpin a column. */
+  readonly unpinColumn: (column: string) => string;
+  /** Table summary labels. */
+  readonly summarySum: string;
+  readonly summaryAverage: string;
+  readonly summaryMinimum: string;
+  readonly summaryMaximum: string;
+  readonly summaryCount: string;
   readonly layout: string;
   readonly layoutList: string;
   readonly layoutGrid: string;
@@ -575,6 +587,14 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   resizeColumn: (column) => `Resize ${column}`,
   moveColumnEarlier: (column) => `Move ${column} earlier`,
   moveColumnLater: (column) => `Move ${column} later`,
+  pinColumnStart: (column) => `Pin ${column} to start`,
+  pinColumnEnd: (column) => `Pin ${column} to end`,
+  unpinColumn: (column) => `Unpin ${column}`,
+  summarySum: 'Sum',
+  summaryAverage: 'Average',
+  summaryMinimum: 'Minimum',
+  summaryMaximum: 'Maximum',
+  summaryCount: 'Count',
   layout: 'Layout',
   layoutList: 'List',
   layoutGrid: 'Grid',
@@ -868,6 +888,9 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   resizeColumn: ['column'],
   moveColumnEarlier: ['column'],
   moveColumnLater: ['column'],
+  pinColumnStart: ['column'],
+  pinColumnEnd: ['column'],
+  unpinColumn: ['column'],
   itemPosition: ['label', 'position', 'total'],
   treeMovedBefore: ['label', 'target'],
   treeMovedAfter: ['label', 'target'],

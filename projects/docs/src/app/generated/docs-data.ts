@@ -2699,6 +2699,23 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarColumnGroupHeaderTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starColumnGroupHeader]",
+    "entry": "@star-ng/ui/table",
+    "description": "Replaces the label of a column group header cell in `star-table`: `<ng-template starColumnGroupHeader let-group>…</ng-template>` for all groups, or `starColumnGroupHeader=\"Q1\"` for the group with that `header`. PrimeNG header group template, Ignite UI `igxHeader` of a column group.",
+    "inputs": [
+      {
+        "name": "starColumnGroupHeader",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "`header` of the group, or empty for every group."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
   "StarCommandPalette": {
     "kind": "component",
     "selector": "star-command-palette",
@@ -11860,6 +11877,20 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Row heights with `virtualScroll`. `'auto'`: one fixed height, unless the table has row expansion, `groupBy` or the stacked layout, which need rows of different heights. `'variable'`: rows of different heights always, for cell text on more than one line. The table measures each rendered row and keeps the heights."
       },
       {
+        "name": "virtualColumns",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Renders only the columns in view (plus 2 on each side) for very wide tables: spacer cells keep the width of the other columns. Pinned columns are always rendered. Each column gets a fixed width: its resized width, else `width` in `px` or `rem`, else `virtualColumnWidth`. Works with `virtualScroll`; the cells have `aria-colindex` and the table `aria-colcount`, so assistive technology knows the full width. Ignite UI column virtualization, AG Grid column virtualisation."
+      },
+      {
+        "name": "virtualColumnWidth",
+        "type": "number",
+        "default": "160",
+        "required": false,
+        "description": "Width in pixels of a column without a `px` or `rem` width, with `virtualColumns`."
+      },
+      {
         "name": "ariaLabel",
         "type": "string | null",
         "default": "null",
@@ -12007,6 +12038,20 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "The user can change a column width: drag the header edge, or use the arrow keys on it."
       },
       {
+        "name": "pinnableColumns",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Pin buttons in the Columns panel: \"Pin to start\", \"Pin to end\" and \"Unpin\" for each column. Pinned columns move to their side; with `reorderableColumns` they move within their side."
+      },
+      {
+        "name": "columnGroups",
+        "type": "readonly StarColumnGroup[]",
+        "default": "[]",
+        "required": false,
+        "description": "Column groups: header cells that span the columns of a group, in extra header rows above the column headers (`{ header, children }`, children are column fields or nested groups). Columns of a group stay together: a moved column stays inside its group, a hidden column shrinks the group, and a group is pinned when all its columns are. Body cells name their group headers with `headers`. PrimeNG header column groups, Ignite UI `igx-column-group`, AG Grid `ColGroupDef`."
+      },
+      {
         "name": "multiSort",
         "type": "boolean",
         "default": "false",
@@ -12021,6 +12066,34 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Group heading of a row (property name or function). Rows with the same heading show together under it, in the order in which the headings first appear after sorting. With `virtualScroll`, the rows of a closed group take no space."
       },
       {
+        "name": "rowGroupMode",
+        "type": "'subheader' | 'rowspan'",
+        "default": "'subheader'",
+        "required": false,
+        "description": "How `groupBy` shows the groups (PrimeNG `rowGroupMode`). `'subheader'` (default): a heading row above each group, which closes the group. `'rowspan'`: no heading rows; the cells of the `groupBy` column (a property name) and of the columns with `mergeCells` merge over the rows with the same text (`rowspan`). Selection, keyboard and edit stay per row: a merged cell belongs to the first row of its run. With `virtualScroll` the table uses `'subheader'`."
+      },
+      {
+        "name": "groupSummary",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "With `groupBy`: a summary row below the rows of each group, with the column `summary` over all filtered rows of the group (in lazy mode, the loaded rows). On a page that ends inside a group the summary row shows at the end of the page. Ignite UI group summaries, PrimeNG `groupfooter`."
+      },
+      {
+        "name": "summaries",
+        "type": "Readonly<Record<string, unknown>> | null",
+        "default": "null",
+        "required": false,
+        "description": "Footer summary values by column `field` in lazy mode, where the table has one page only: the owner computes them on the server. The table formats them (`summaryFormat`, `locale`)."
+      },
+      {
+        "name": "locale",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Locale of the summary numbers and dates (default: the locale of the browser)."
+      },
+      {
         "name": "reorderableRows",
         "type": "boolean",
         "default": "false",
@@ -12032,7 +12105,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "string | null",
         "default": "null",
         "required": false,
-        "description": "Remembers sort, filters, column order, hidden columns, column widths, page size and closed groups in the browser under this key, and restores them on the next visit."
+        "description": "Remembers sort, filters, column order, hidden columns, column widths, pins, page size and closed groups in the browser under this key, and restores them on the next visit."
       },
       {
         "name": "stateStorage",
@@ -12142,6 +12215,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Column widths in pixels by `field`, set by the user. Two-way."
       },
       {
+        "name": "pinnedColumns",
+        "type": "StarColumnPins",
+        "default": "{}",
+        "required": false,
+        "description": "Runtime pins by column `field` (`'start'`, `'end'`, or `null` to unpin a column that the column definition pins). Wins over `pinned` / `frozen`. Two-way. Ignite UI `pinned`, AG Grid `applyColumnState({ pinned })`."
+      },
+      {
         "name": "sortMeta",
         "type": "readonly StarSortState[]",
         "default": "[]",
@@ -12164,6 +12244,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ],
     "outputs": [
+      {
+        "name": "columnPin",
+        "type": "StarColumnPinEvent",
+        "default": null,
+        "required": false,
+        "description": "The user (or `pinColumn()`) pinned or unpinned a column. AG Grid `columnPinned`."
+      },
       {
         "name": "rowClick",
         "type": "T",
@@ -12358,6 +12445,23 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "The new filter value; `null` removes the filter."
       }
     ]
+  },
+  "StarTablePinCell": {
+    "kind": "directive",
+    "selector": "[starTablePin]",
+    "entry": "@star-ng/ui/table",
+    "description": "Makes a cell of a pinned column sticky: the side class, the offset and the separator shadow. Internal part of `star-table`.",
+    "inputs": [
+      {
+        "name": "starTablePin",
+        "type": "StarPinPlacement | null | undefined",
+        "default": "null",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
   },
   "StarTabs": {
     "kind": "component",
@@ -14546,6 +14650,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "stepper/linear": "<div class=\"docs-stack\">\n  <star-stepper #wizard [(value)]=\"wizardStep\" linear ariaLabel=\"Account setup\">\n    <star-step value=\"name\" label=\"Name\" [completed]=\"name().trim().length > 0\">\n      <star-field label=\"Your name\">\n        <input starInput [value]=\"name()\" (input)=\"name.set($any($event.target).value)\" />\n      </star-field>\n    </star-step>\n    <star-step value=\"confirm\" label=\"Confirm\">\n      Welcome, {{ name() }}. Your account is ready.\n    </star-step>\n  </star-stepper>\n  <div class=\"docs-row\">\n    <star-button\n      variant=\"secondary\"\n      [disabled]=\"wizard.isFirst()\"\n      (pressed)=\"wizard.previous()\"\n    >\n      Back\n    </star-button>\n    <star-button [disabled]=\"wizard.isLast() || !name().trim()\" (pressed)=\"wizard.next()\">\n      Next\n    </star-button>\n  </div>\n</div>",
   "table-columns/frozen": "<docs-fill>\n  <star-table\n    [value]=\"orders.slice(0, 6)\"\n    [columns]=\"wideColumns\"\n    dataKey=\"id\"\n    ariaLabel=\"Wide orders\"\n  />\n</docs-fill>",
   "table-columns/panel": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with column panel\"\n      columnToggle\n      reorderableColumns\n      [(columnOrder)]=\"order\"\n      [(hiddenColumns)]=\"hidden\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">\n    Order: {{ order().join(', ') || 'default' }}. Hidden:\n    {{ hidden().join(', ') || 'none' }}.\n  </p>\n</div>",
+  "table-columns/pinned": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders.slice(0, 6)\"\n      [columns]=\"pinnedColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with pinned columns\"\n      selectionMode=\"multiple\"\n      pinnableColumns\n      reorderableColumns\n      [(pinnedColumns)]=\"pins\"\n      (columnPin)=\"lastPin.set($event.field + ' ' + ($event.side ?? 'unpinned'))\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">\n    Pins: {{ pinText() }}. Last change: {{ lastPin() || 'none' }}.\n  </p>\n</div>",
   "table-columns/resize": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with resizable columns\"\n      resizableColumns\n      [(columnWidths)]=\"widths\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Widths: {{ widthText() }}</p>\n</div>",
   "table-columns/state": "<div class=\"docs-stack\">\n  <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"saved.clearState()\">\n    Clear saved view\n  </star-button>\n  <docs-fill>\n    <star-table\n      #saved\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with saved view\"\n      columnToggle\n      resizableColumns\n      stateKey=\"docs-table-saved-view\"\n      stateStorage=\"session\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n</div>",
   "table-edit/add-delete": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button\n      size=\"sm\"\n      leadingIcon=\"ph-bold ph-plus\"\n      (pressed)=\"addTable.addRow(newOrder(), 'top')\"\n    >\n      Add order\n    </star-button>\n  </div>\n  <docs-fill>\n    <star-table\n      #addTable\n      [value]=\"list()\"\n      [columns]=\"addColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders to add and delete\"\n      editMode=\"row\"\n      (rowAdd)=\"addOrder($event)\"\n      (rowDelete)=\"deleteOrder($event)\"\n      (rowEditSave)=\"updateOrder($event)\"\n    >\n      <ng-template starCell=\"remove\" let-row [starCellOf]=\"list()\">\n        <button\n          type=\"button\"\n          class=\"star-table__toggle\"\n          [attr.aria-label]=\"'Delete ' + row.id\"\n          (click)=\"addTable.deleteRow(row)\"\n        >\n          <i class=\"ph-bold ph-trash\" aria-hidden=\"true\"></i>\n        </button>\n      </ng-template>\n    </star-table>\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">{{ addMessage() }}</p>\n</div>",
@@ -14558,11 +14663,15 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "table-export/print-long": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button\n      size=\"sm\"\n      variant=\"secondary\"\n      leadingIcon=\"ph-bold ph-printer\"\n      (pressed)=\"longTable.print()\"\n    >\n      Print invoices\n    </star-button>\n  </div>\n  <docs-fill>\n    <star-table\n      #longTable\n      ariaLabel=\"Invoices\"\n      [value]=\"invoices\"\n      [columns]=\"invoiceColumns\"\n      dataKey=\"id\"\n      selectionMode=\"multiple\"\n      [hiddenColumns]=\"['region']\"\n      paginator\n      [rows]=\"10\"\n    >\n      <ng-template starCell=\"open\" [starCellOf]=\"invoices\" let-row>\n        <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"opened.set(row.id)\">\n          Open\n        </star-button>\n      </ng-template>\n    </star-table>\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Opened: {{ opened() || 'none' }}</p>\n</div>",
   "table-export/print-wide": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button\n      size=\"sm\"\n      variant=\"secondary\"\n      leadingIcon=\"ph-bold ph-printer\"\n      (pressed)=\"wideTable.print()\"\n    >\n      Print wide table\n    </star-button>\n  </div>\n  <docs-fill>\n    <star-table\n      #wideTable\n      ariaLabel=\"Wide orders\"\n      [value]=\"wideRows\"\n      [columns]=\"wideColumns\"\n      dataKey=\"Order\"\n    />\n  </docs-fill>\n</div>",
   "table-export/text": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"show(preview.toCsv())\">\n      Comma separated\n    </star-button>\n    <star-button\n      size=\"sm\"\n      variant=\"secondary\"\n      (pressed)=\"show(preview.toCsv({ separator: ';' }))\"\n    >\n      Semicolon separated\n    </star-button>\n    <star-button\n      size=\"sm\"\n      variant=\"secondary\"\n      (pressed)=\"show(preview.toCsv({ rows: [orders[40]] }))\"\n    >\n      Rows from the options\n    </star-button>\n  </div>\n  <docs-fill>\n    <star-table\n      #preview\n      ariaLabel=\"Order preview\"\n      [value]=\"orders.slice(0, 3)\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n    />\n  </docs-fill>\n  <pre class=\"docs-output\" aria-label=\"CSV text\" tabindex=\"0\">{{ text() }}</pre>\n</div>",
+  "table-layout/column-groups": "<docs-fill>\n  <star-table\n    [value]=\"sales\"\n    [columns]=\"salesColumns\"\n    [columnGroups]=\"salesGroups\"\n    dataKey=\"id\"\n    ariaLabel=\"Sales by region and quarter\"\n    columnToggle\n    reorderableColumns\n  >\n    <ng-template starColumnGroupHeader=\"Q2\" let-group let-span=\"span\">\n      {{ group.header }}, {{ span }} months\n    </ng-template>\n  </star-table>\n</docs-fill>",
   "table-layout/expansion": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-toggle-switch [(checked)]=\"single\">One row open at a time</star-toggle-switch>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"detailed.expandAll()\">\n      Expand all\n    </star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"detailed.collapseAll()\">\n      Collapse all\n    </star-button>\n  </div>\n  <docs-fill>\n    <star-table\n      #detailed\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with detail\"\n      [rowExpandMode]=\"single() ? 'single' : 'multiple'\"\n      [(expandedKeys)]=\"expanded\"\n      paginator\n      [rows]=\"4\"\n    >\n      <ng-template starRowExpansion [starRowExpansionOf]=\"orders\" let-row>\n        <dl class=\"detail\">\n          <dt>Email</dt>\n          <dd>{{ row.email }}</dd>\n          <dt>Quantity</dt>\n          <dd>{{ row.quantity }} x {{ row.product }}</dd>\n        </dl>\n      </ng-template>\n    </star-table>\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Open: {{ expanded().join(', ') || 'none' }}</p>\n</div>",
   "table-layout/footer": "<docs-fill>\n  <star-table\n    [value]=\"orders.slice(0, 6)\"\n    [columns]=\"footerColumns\"\n    dataKey=\"id\"\n    ariaLabel=\"Orders with totals\"\n  />\n</docs-fill>",
   "table-layout/groups": "<div class=\"docs-stack\">\n  <star-toggle-switch [(checked)]=\"grouped\">Group by region</star-toggle-switch>\n  <docs-fill>\n    <star-table\n      [value]=\"orders.slice(0, 12)\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders in groups\"\n      [groupBy]=\"grouped() ? 'region' : null\"\n      [(collapsedGroups)]=\"closed\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Closed: {{ closed().join(', ') || 'none' }}</p>\n</div>",
+  "table-layout/rowspan": "<docs-fill>\n  <star-table\n    [value]=\"sales\"\n    [columns]=\"rowSpanColumns\"\n    dataKey=\"id\"\n    ariaLabel=\"Sales with merged regions\"\n    groupBy=\"region\"\n    rowGroupMode=\"rowspan\"\n    selectionMode=\"multiple\"\n  />\n</docs-fill>",
   "table-layout/stack": "<div class=\"docs-stack docs-stack--narrow\">\n  <star-table\n    [value]=\"orders.slice(0, 3)\"\n    [columns]=\"columns\"\n    dataKey=\"id\"\n    ariaLabel=\"Orders stacked\"\n    responsiveLayout=\"stack\"\n  />\n</div>",
+  "table-layout/summaries": "<div class=\"docs-stack\">\n  <star-toggle-switch [(checked)]=\"summaryGroups\">Group by region</star-toggle-switch>\n  <docs-fill>\n    <star-table\n      [value]=\"sales\"\n      [columns]=\"summaryColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Sales with summaries\"\n      locale=\"en-US\"\n      [groupBy]=\"summaryGroups() ? 'region' : null\"\n      groupSummary\n    />\n  </docs-fill>\n</div>",
   "table-layout/virtual": "<docs-fill>\n  <star-table\n    [value]=\"log\"\n    [columns]=\"logColumns\"\n    dataKey=\"id\"\n    ariaLabel=\"Audit log\"\n    virtualScroll\n    [virtualRowHeight]=\"44\"\n    scrollHeight=\"20rem\"\n    stickyHeader\n    striped\n  />\n</docs-fill>",
+  "table-layout/virtual-columns": "<docs-fill>\n  <star-table\n    [value]=\"metrics\"\n    [columns]=\"metricColumns\"\n    dataKey=\"id\"\n    ariaLabel=\"Wide metrics\"\n    virtualColumns\n    virtualScroll\n    [virtualRowHeight]=\"44\"\n    scrollHeight=\"20rem\"\n    stickyHeader\n  />\n</docs-fill>",
   "table-layout/virtual-detail": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"tickets\"\n      [columns]=\"ticketColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Tickets with detail\"\n      selectionMode=\"multiple\"\n      [(selection)]=\"ticketSelection\"\n      [(expandedKeys)]=\"ticketsOpen\"\n      virtualScroll\n      [virtualRowHeight]=\"52\"\n      scrollHeight=\"24rem\"\n      stickyHeader\n    >\n      <ng-template starRowExpansion [starRowExpansionOf]=\"tickets\" let-row>\n        <ol class=\"history\">\n          @for (step of historyOf(row); track step) {\n            <li>{{ step }} by {{ row.owner }} in {{ row.city }}</li>\n          }\n        </ol>\n      </ng-template>\n    </star-table>\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">\n    Open: {{ ticketsOpen().length }}, selected: {{ ticketSelection().length }}\n  </p>\n</div>",
   "table-layout/virtual-groups": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"groupedTickets\"\n      [columns]=\"ticketColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Tickets by city\"\n      groupBy=\"city\"\n      [(collapsedGroups)]=\"closedCities\"\n      virtualScroll\n      [virtualRowHeight]=\"52\"\n      scrollHeight=\"24rem\"\n      stickyHeader\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Closed: {{ closedCities().join(', ') || 'none' }}</p>\n</div>",
   "table-layout/virtual-stack": "<docs-fill>\n  <star-table\n    [value]=\"stackedTickets\"\n    [columns]=\"ticketColumns\"\n    dataKey=\"id\"\n    ariaLabel=\"Tickets stacked\"\n    responsiveLayout=\"stack\"\n    virtualScroll\n    scrollHeight=\"24rem\"\n  />\n</docs-fill>",

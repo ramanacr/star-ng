@@ -38,7 +38,8 @@
 .star-table--sticky thead {
   position: sticky;
   top: 0;
-  z-index: 1;
+  // Above the pinned body cells (z-index 1), which come later in the document.
+  z-index: 2;
 }
 .star-table__filters td {
   padding-block: 0.5rem;
@@ -168,8 +169,12 @@ star-select.star-table__filter {
     td {
       display: block;
     }
-    // Header row: only what the user can act on (select all, sort) stays, as a wrap row.
-    thead tr:first-child {
+    // Header rows: only what the user can act on (select all, sort) stays, as a wrap row. A
+    // row of column group headers only has nothing left.
+    thead tr:not(.star-table__filters):not(:has(.star-table__sort, .star-table__select)) {
+      display: none;
+    }
+    thead tr:not(.star-table__filters) {
       display: flex;
       flex-wrap: wrap;
       gap: 0.25rem 1rem;
@@ -203,6 +208,7 @@ star-select.star-table__filter {
       border-bottom: 1px solid var(--star-border);
     }
     .star-table__row td[data-label],
+    .star-table__group-footer td[data-label],
     .star-table__filters td[data-label] {
       position: static;
       display: flex;
@@ -288,6 +294,24 @@ star-select.star-table__filter {
 .star-table--variable .star-table__scroll {
   overflow-anchor: none;
 }
+// `virtualColumns`: each column has the fixed width that the window computes with, padding
+// included, and the text stays on one line.
+.star-table--virtual-columns > .star-table__scroll > table > :is(thead, tbody, tfoot) > tr {
+  > th,
+  > td {
+    box-sizing: border-box;
+  }
+  // Not the detail row: its one cell spans all columns and holds free content.
+  &:not(.star-table__expansion) > td {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+// A spacer cell of `virtualColumns`: the width of the columns that are not rendered.
+.star-table__col-spacer {
+  padding: 0 !important;
+}
 .star-table__spacer td {
   padding: 0 !important;
   border: 0 !important;
@@ -319,6 +343,12 @@ star-select.star-table__filter {
     opacity: 0.35;
     cursor: default;
   }
+}
+// A column group header (`columnGroups`): spans the columns of the group, with a line at the
+// start of the group.
+.star-table__column-group {
+  text-align: center;
+  border-inline-start: 1px solid var(--star-border);
 }
 .star-table__th {
   position: relative;
@@ -361,23 +391,101 @@ star-select.star-table__filter {
     outline-offset: -2px;
   }
 }
-.star-table__cell--frozen {
+// Pinned columns (`pinned`, `frozen`): sticky at the inline start or end. With start pins the
+// reorder, expander and selection columns stick too; with end pins the row actions column.
+.star-table__cell--frozen,
+.star-table__cell--pinned-end,
+.star-table--pin-lead :is(.star-table__reorder, .star-table__expander, .star-table__select),
+.star-table--pin-trail .star-table__row-actions {
   position: sticky;
   z-index: 1;
   background: var(--star-surface);
 }
-th.star-table__cell--frozen,
-.star-table__filters .star-table__cell--frozen {
+.star-table--pin-lead {
+  .star-table__reorder {
+    inset-inline-start: 0;
+  }
+  .star-table__expander {
+    inset-inline-start: var(--star-table-lead-expander, 0);
+  }
+  .star-table__select {
+    inset-inline-start: var(--star-table-lead-select, 0);
+  }
+}
+.star-table--pin-trail .star-table__row-actions {
+  inset-inline-end: 0;
+}
+.star-table {
+  th,
+  .star-table__filters td,
+  tfoot td {
+    &:is(.star-table__cell--frozen, .star-table__cell--pinned-end) {
+      background: var(--star-surface-muted);
+    }
+  }
+}
+.star-table--pin-lead
+  :is(th, .star-table__filters td, tfoot td):is(
+    .star-table__reorder,
+    .star-table__expander,
+    .star-table__select
+  ),
+.star-table--pin-trail :is(th, .star-table__filters td, tfoot td).star-table__row-actions {
   background: var(--star-surface-muted);
 }
-.star-table--striped .star-table__row--alt .star-table__cell--frozen {
-  background: color-mix(in srgb, var(--star-surface-muted) 60%, var(--star-surface));
+.star-table--striped .star-table__row--alt {
+  .star-table__cell--frozen,
+  .star-table__cell--pinned-end {
+    background: color-mix(in srgb, var(--star-surface-muted) 60%, var(--star-surface));
+  }
 }
-.star-table__row:hover .star-table__cell--frozen {
-  background: var(--star-surface-muted);
+.star-table__row:hover {
+  .star-table__cell--frozen,
+  .star-table__cell--pinned-end {
+    background: var(--star-surface-muted);
+  }
 }
-.star-table__row--selected .star-table__cell--frozen {
-  background: var(--star-primary-soft);
+.star-table__row--selected {
+  .star-table__cell--frozen,
+  .star-table__cell--pinned-end {
+    background: var(--star-primary-soft);
+  }
+}
+// The separator shadow on the inner edge of the pinned area. It mirrors in right-to-left.
+.star-table__cell--frozen.star-table__cell--pin-edge {
+  box-shadow:
+    inset -1px 0 0 var(--star-border-strong),
+    6px 0 6px -6px var(--star-border-strong);
+
+  &:dir(rtl) {
+    box-shadow:
+      inset 1px 0 0 var(--star-border-strong),
+      -6px 0 6px -6px var(--star-border-strong);
+  }
+}
+.star-table__cell--pinned-end.star-table__cell--pin-edge {
+  box-shadow:
+    inset 1px 0 0 var(--star-border-strong),
+    -6px 0 6px -6px var(--star-border-strong);
+
+  &:dir(rtl) {
+    box-shadow:
+      inset -1px 0 0 var(--star-border-strong),
+      6px 0 6px -6px var(--star-border-strong);
+  }
+}
+.star-table__columns-pin {
+  display: inline-flex;
+  margin-inline-start: auto;
+
+  .star-table__toggle[aria-pressed='true'] {
+    background: var(--star-primary-soft);
+    color: var(--star-primary);
+  }
+  .star-table__toggle[aria-disabled='true'] {
+    opacity: 0.35;
+    cursor: default;
+  }
 }
 .star-table__edit {
   display: inline-flex;
@@ -526,6 +634,24 @@ star-select.star-table__editor {
   border-top: 1px solid var(--star-border-strong);
   border-bottom: 0;
   background: var(--star-surface-muted);
+  font-weight: 600;
+  color: var(--star-text-strong);
+}
+// A merged cell (`rowGroupMode="rowspan"`) spans the rows of its run: it keeps its own surface,
+// so the hover and the stripes of its first row do not paint the whole run.
+.star-table__row .star-table__cell--merged {
+  vertical-align: top;
+  background: var(--star-surface);
+  border-inline-end: 1px solid var(--star-border);
+}
+// Summaries: the label of a built-in summary, and the summary row below a group.
+.star-table__summary-label {
+  margin-inline-end: 0.375rem;
+  font: var(--star-type-label);
+  color: var(--star-text-muted);
+}
+.star-table__group-footer td {
+  background: color-mix(in srgb, var(--star-surface-muted) 60%, var(--star-surface));
   font-weight: 600;
   color: var(--star-text-strong);
 }

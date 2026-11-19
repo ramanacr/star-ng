@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { StarButton } from '@star-ng/ui/button';
-import { StarColumn, StarTable } from '@star-ng/ui/table';
+import { StarColumn, StarColumnPins, StarTable } from '@star-ng/ui/table';
 import { DOCS, DocsRow } from '../shared/docs';
 import { DocsFill, formatDay, formatMoney, Order, ORDERS } from './table-demo';
 
@@ -82,6 +82,32 @@ import { DocsFill, formatDay, formatMoney, Order, ORDERS } from './table-demo';
       </docs-example>
 
       <docs-example
+        heading="Pin to start and end"
+        source="table-columns/pinned"
+        [script]="pinnedScript"
+        note="pinned: 'end' keeps a column at the end edge (frozen: true is the same as pinned: 'start'). pinnableColumns adds Pin to start, Pin to end and Unpin buttons to the Columns panel. pinnedColumns is a two-way model of the pins by field, and pinColumn(field, side) does the same from code. While a column is pinned, the selection column sticks at the start too. A second click on a pressed pin button unpins the column. A shadow marks the inner edge of each pinned area. Pinned columns move within their side only."
+      >
+        <div class="docs-stack">
+          <docs-fill>
+            <star-table
+              [value]="orders.slice(0, 6)"
+              [columns]="pinnedColumns"
+              dataKey="id"
+              ariaLabel="Orders with pinned columns"
+              selectionMode="multiple"
+              pinnableColumns
+              reorderableColumns
+              [(pinnedColumns)]="pins"
+              (columnPin)="lastPin.set($event.field + ' ' + ($event.side ?? 'unpinned'))"
+            />
+          </docs-fill>
+          <p class="docs-output" role="status">
+            Pins: {{ pinText() }}. Last change: {{ lastPin() || 'none' }}.
+          </p>
+        </div>
+      </docs-example>
+
+      <docs-example
         heading="Saved view"
         source="table-columns/state"
         [script]="stateScript"
@@ -112,8 +138,9 @@ import { DocsFill, formatDay, formatMoney, Order, ORDERS } from './table-demo';
       <h2>Right-to-left</h2>
       <p>
         In a right-to-left page the first column is on the right, the resize handle is on the left
-        edge of a header, and frozen columns stick to the right edge. Arrow left makes a column
-        wider. A drag to the left makes it wider. See the Right-to-left guide.
+        edge of a header, start pins (and frozen columns) stick to the right edge, end pins stick to
+        the left edge, and the separator shadows mirror. Arrow left makes a column wider. A drag to
+        the left makes it wider. See the Right-to-left guide.
       </p>
 
       <docs-api [of]="['StarTable']" [keyboard]="keyboard" />
@@ -177,6 +204,31 @@ export class TableColumnsPage {
     },
   ];
 
+  protected readonly pinnedColumns: StarColumn<Order>[] = this.wideColumns.map((column) =>
+    column.field === 'customer'
+      ? { ...column, frozen: false }
+      : column.field === 'total'
+        ? { ...column, pinned: 'end' as const }
+        : column,
+  );
+  protected readonly pins = signal<StarColumnPins>({});
+  protected readonly lastPin = signal('');
+  protected pinText(): string {
+    const entries = Object.entries(this.pins());
+    return entries.length
+      ? entries.map(([field, side]) => `${field} ${side ?? 'unpinned'}`).join(', ')
+      : 'from the columns';
+  }
+
+  protected readonly pinnedScript = `readonly pins = signal<StarColumnPins>({});
+readonly lastPin = signal('');
+readonly pinnedColumns: StarColumn<Order>[] = [
+  { field: 'id', header: 'Order', frozen: true },
+  { field: 'customer', header: 'Customer' },
+  { field: 'email', header: 'Email', width: '14rem' },
+  // ... more columns than fit the width
+  { field: 'total', header: 'Total', width: '10rem', pinned: 'end' },
+];`;
   protected readonly panelScript = `readonly order = signal<readonly string[]>([]);
 readonly hidden = signal<readonly string[]>([]);
 readonly columns: StarColumn<Order>[] = [
@@ -201,7 +253,8 @@ readonly columns: StarColumn<Order>[] = [
     },
     {
       name: 'Tab',
-      description: 'In the panel: moves through the checkboxes and the move buttons.',
+      description:
+        'In the panel: moves through the checkboxes, the pin buttons and the move buttons.',
     },
     {
       name: 'Arrow left / Arrow right',

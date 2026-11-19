@@ -1,7 +1,17 @@
-import { expect, Locator, test } from '@playwright/test';
+import { expect, Locator, Page, test } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { collectErrors, example, openPage } from './support';
+import { collectErrors, example, openPage as openDocsPage } from './support';
+
+/**
+ * Opens a docs page and waits until the page is hydrated. The page is prerendered, so it is
+ * visible before the application runs, and a key or a click before hydration is lost. A hydrated
+ * component loses its `ngh` attribute.
+ */
+async function openPage(page: Page, path: string, heading: string | RegExp): Promise<void> {
+  await openDocsPage(page, path, heading);
+  await expect(page.locator('[ngh]')).toHaveCount(0, { timeout: 15_000 });
+}
 
 /** The rows of a table body (not group, spacer, expansion or empty rows). */
 const bodyRows = (table: Locator) => table.locator('tbody tr.star-table__row');
@@ -160,6 +170,9 @@ test.describe('table: basics', () => {
 test.describe('table: sorting and filtering', () => {
   test('sorts from a header with Enter and Space and sets aria-sort', async ({ page }) => {
     await openPage(page, '/controls/table-sort-filter', 'Table sorting and filtering');
+    // The prerendered page answers keys only after hydration: wait until no component is left
+    // with its `ngh` hydration marker.
+    await expect(page.locator('[ngh]')).toHaveCount(0);
     const live = example(page, 'Sorting');
     const table = live.getByRole('table', { name: 'Sortable orders' });
     const customer = table.getByRole('columnheader', { name: 'Customer' });
@@ -816,6 +829,9 @@ test.describe('table: editing', () => {
     page,
   }) => {
     await openPage(page, '/controls/table-edit', 'Table editing');
+    // The prerendered page answers keys only after hydration: wait until no component is left
+    // with its `ngh` hydration marker.
+    await expect(page.locator('[ngh]')).toHaveCount(0);
     const live = example(page, 'Row edit with validation');
     const table = live.getByRole('table', { name: 'Orders with row edit' });
     const edit = table.getByRole('button', { name: 'Edit row' }).first();
@@ -1045,6 +1061,39 @@ test.describe('table: columns', () => {
     expect((await email.boundingBox())!.x).toBeLessThan(left + 600);
   });
 
+  test('pins columns to both edges from the Columns panel', async ({ page }) => {
+    await page.setViewportSize({ width: 700, height: 900 });
+    await openPage(page, '/controls/table-columns', 'Table columns');
+    const live = example(page, 'Pin to start and end');
+    const table = live.getByRole('table', { name: 'Orders with pinned columns' });
+    await table.scrollIntoViewIfNeeded();
+    const scroll = live.locator('.star-table__scroll');
+    // The end pin touches the end edge of the scroll area before and after a sideways scroll.
+    const edge = () =>
+      scroll.evaluate((viewport) => {
+        const cell = viewport.querySelector('th[data-field="total"]')!.getBoundingClientRect();
+        const area = viewport.getBoundingClientRect();
+        return Math.abs(cell.right - (area.left + viewport.clientLeft + viewport.clientWidth)) < 2;
+      });
+    await expect.poll(edge).toBe(true);
+    await scroll.evaluate((viewport) => (viewport.scrollLeft = 200));
+    await expect.poll(edge).toBe(true);
+
+    // Pin Email to the start from the panel: it moves next to Order and sticks.
+    await live.getByRole('button', { name: 'Columns' }).click();
+    await page.getByRole('button', { name: 'Pin Email to start' }).click();
+    await expect(page.getByRole('button', { name: 'Pin Email to start' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    await expect(page.getByRole('button', { name: 'Pin Email to start' })).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(live.getByRole('status')).toContainText('email start');
+    const headers = table.locator('thead th[data-field]');
+    await expect(headers.nth(1)).toHaveAttribute('data-field', 'email');
+    await expect(headers.nth(1)).toHaveClass(/star-table__cell--frozen/);
+  });
+
   test('saves the view in the session and restores it after a reload', async ({ page }) => {
     await openPage(page, '/controls/table-columns', 'Table columns');
     const live = example(page, 'Saved view');
@@ -1160,6 +1209,114 @@ test.describe('table: layout', () => {
     const sum = (values: number[]) => values.reduce((a, b) => a + b, 0);
     await expect(footer.nth(2)).toHaveText(String(sum(quantities)));
     expect(money(await footer.nth(3).textContent())).toBeCloseTo(sum(totals), 2);
+  });
+
+  test('spans column groups over their columns and names them in the cells', async ({ page }) => {
+    await openPage(page, '/controls/table-layout', 'Table layout');
+    const live = example(page, 'Column groups');
+    const table = live.getByRole('table', { name: 'Sales by region and quarter' });
+    await expect(table.locator('thead tr')).toHaveCount(3);
+    const sales = table.getByRole('columnheader', { name: 'Sales', exact: true });
+    await expect(sales).toHaveAttribute('colspan', '6');
+    await expect(sales).toHaveAttribute('scope', 'colgroup');
+    await expect(table.getByRole('columnheader', { name: 'Q2, 3 months' })).toBeVisible();
+    // The cell of March names Sales, Q1 and Mar.
+    const ids = (await bodyRows(table).first().locator('td').nth(4).getAttribute('headers'))!;
+    const names = await Promise.all(
+      ids.split(' ').map((id) => table.locator(`[id="${id}"]`).innerText()),
+    );
+    expect(names.map((name) => name.trim())).toEqual(['Sales', 'Q1', 'Mar']);
+    // The group is as wide as its columns.
+    const q1 = (await table.getByRole('columnheader', { name: 'Q1' }).boundingBox())!;
+    const jan = (await table.getByRole('columnheader', { name: 'Jan' }).boundingBox())!;
+    const mar = (await table.getByRole('columnheader', { name: 'Mar' }).boundingBox())!;
+    expect(Math.abs(q1.x - jan.x)).toBeLessThan(2);
+    expect(Math.abs(q1.x + q1.width - (mar.x + mar.width))).toBeLessThan(2);
+
+    // Hiding a month shrinks its group.
+    await live.getByRole('button', { name: 'Columns' }).click();
+    await page.getByRole('checkbox', { name: 'Feb' }).uncheck();
+    await page.keyboard.press('Escape');
+    await expect(table.getByRole('columnheader', { name: 'Q1' })).toHaveAttribute('colspan', '2');
+    await expect(sales).toHaveAttribute('colspan', '5');
+  });
+
+  test('shows a summary row and a summary below each group', async ({ page }) => {
+    await openPage(page, '/controls/table-layout', 'Table layout');
+    const live = example(page, 'Summaries');
+    const table = live.getByRole('table', { name: 'Sales with summaries' });
+    const footer = table.locator('tfoot td');
+    await expect(footer.nth(1)).toHaveText(/Count\s*8/);
+    await expect(footer.nth(2)).toContainText('Sum');
+    // The group summaries of the January column add up to the footer sum.
+    const groups = table.locator('tbody tr.star-table__group-footer');
+    await expect(groups).toHaveCount(3);
+    // The summary styles apply at every width, not only in the stacked phone layout.
+    await expect(groups.first().locator('td').nth(2)).toHaveCSS('font-weight', '600');
+    await expect(footer.nth(2).locator('.star-table__summary-label')).toHaveCSS(
+      'margin-inline-end',
+      '6px',
+    );
+    const januaries = await groups.locator('td:nth-child(3)').allTextContents();
+    const total = januaries.map(money).reduce((a, b) => a + b, 0);
+    expect(total).toBe(money(await footer.nth(2).textContent()));
+    await live.getByRole('switch', { name: 'Group by region' }).click();
+    await expect(groups).toHaveCount(0);
+    await expect(footer.nth(1)).toHaveText(/Count\s*8/);
+  });
+
+  test('merges the group cells over their rows with rowspan', async ({ page }) => {
+    await openPage(page, '/controls/table-layout', 'Table layout');
+    const table = example(page, 'Merged group cells').getByRole('table', {
+      name: 'Sales with merged regions',
+    });
+    await expect(table.locator('tbody tr.star-table__group')).toHaveCount(0);
+    const europe = table.getByRole('cell', { name: 'Europe', exact: true });
+    await expect(europe).toHaveAttribute('rowspan', '3');
+    await expect(europe).toHaveCSS('vertical-align', 'top');
+    // The merged cell is as tall as its three rows.
+    const rows = bodyRows(table);
+    const first = (await rows.nth(0).boundingBox())!;
+    const third = (await rows.nth(2).boundingBox())!;
+    const cell = (await europe.boundingBox())!;
+    expect(Math.abs(cell.y - first.y)).toBeLessThan(2);
+    expect(Math.abs(cell.y + cell.height - (third.y + third.height))).toBeLessThan(2);
+    // Selection stays per row.
+    await rows.nth(1).getByRole('checkbox').check();
+    await expect(rows.nth(1)).toHaveAttribute('aria-selected', 'true');
+    await expect(rows.nth(0)).toHaveAttribute('aria-selected', 'false');
+  });
+
+  test('renders a window of the 60 metric columns and follows a sideways scroll', async ({
+    page,
+  }) => {
+    await openPage(page, '/controls/table-layout', 'Table layout');
+    const live = example(page, 'Column virtualization');
+    const table = live.getByRole('table', { name: 'Wide metrics' });
+    await table.scrollIntoViewIfNeeded();
+    await expect(table).toHaveAttribute('aria-colcount', '61');
+    const headers = table.locator('thead th[data-field]');
+    const count = await headers.count();
+    expect(count).toBeLessThan(20);
+    await expect(table.getByRole('columnheader', { name: 'Metric 60' })).toHaveCount(0);
+    const scroll = live.locator('.star-table__scroll');
+    const width = await scroll.evaluate((viewport) => viewport.scrollWidth);
+    // 6 rem for the row column, 60 columns of 112 px.
+    expect(width).toBeGreaterThan(60 * 112);
+    await scroll.evaluate((viewport) => (viewport.scrollLeft = viewport.scrollWidth));
+    const last = table.getByRole('columnheader', { name: 'Metric 60' });
+    await expect(last).toBeVisible();
+    await expect(last).toHaveAttribute('aria-colindex', '61');
+    // The scroll width does not change while the window moves.
+    expect(await scroll.evaluate((viewport) => viewport.scrollWidth)).toBe(width);
+    // Header and body cells stay in line.
+    const cell = bodyRows(table).first().locator('td').last();
+    await expect(cell).toHaveAttribute('aria-colindex', '61');
+    const a = (await last.boundingBox())!;
+    const b = (await cell.boundingBox())!;
+    expect(Math.abs(a.x - b.x)).toBeLessThan(2);
+    // The pinned row column stays rendered and in view.
+    await expect(table.getByRole('columnheader', { name: 'Row' })).toBeVisible();
   });
 
   test('stacks the rows as label and value lines in a narrow table', async ({ page }) => {
