@@ -636,6 +636,12 @@ export class StarDiagram {
 
   constructor() {
     inject(DestroyRef).onDestroy(() => this.endDrag?.());
+    // A zoom from outside (the model) stays within minZoom and maxZoom.
+    effect(() => {
+      const zoom = this.zoom();
+      const next = Math.min(this.maxZoom(), Math.max(this.minZoom(), zoom));
+      if (next !== zoom) untracked(() => this.zoom.set(next));
+    });
     // Another document: the recorded patches belong to the old one.
     let lastKey: unknown = undefined;
     let first = true;

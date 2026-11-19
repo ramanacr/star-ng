@@ -442,6 +442,16 @@ describe('StarDiagram', () => {
     expect(host.nodes().find((n) => n.id === 'ship')!.width).toBe(100);
   });
 
+  it('keeps the zoom model within the limits', async () => {
+    const { host, stable } = await setup();
+    host.zoom.set(10);
+    await stable();
+    expect(host.zoom()).toBe(4);
+    host.zoom.set(0.01);
+    await stable();
+    expect(host.zoom()).toBe(0.25);
+  });
+
   it('renders on the server platform with plain labels', async () => {
     TestBed.configureTestingModule({ providers: [{ provide: PLATFORM_ID, useValue: 'server' }] });
     const { root, host, stable } = await setup();
