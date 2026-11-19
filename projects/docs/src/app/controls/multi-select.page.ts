@@ -314,7 +314,7 @@ interface Parcel {
       </docs-example>
 
       <docs-api
-        [of]="['StarMultiSelect', 'StarOptionListBase', 'StarChipTemplate']"
+        [of]="['StarMultiSelect', 'StarChipTemplate']"
         [slots]="slots"
         [cssVars]="cssVars"
         [keyboard]="keyboard"

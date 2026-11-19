@@ -1,4 +1,5 @@
 // Bottom navigation (StarBottomNav, StarBottomNavItem): the tab bar of a mobile layout.
+@use '../shared' as *;
 .star-bottom-nav {
   display: block;
   z-index: 20;
@@ -84,7 +85,7 @@
   inset-inline-start: calc(50% + 0.5rem);
 }
 
-@media (prefers-reduced-motion: reduce) {
+@include star-reduced-motion {
   .star-bottom-nav__item,
   .star-bottom-nav__icon {
     transition: none;

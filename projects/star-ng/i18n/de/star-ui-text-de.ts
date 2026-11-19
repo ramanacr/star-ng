@@ -28,6 +28,9 @@ export const STAR_UI_TEXT_DE: StarUiText = {
   collapseItem: (label) => `${label} zuklappen`,
   removeItem: (label) => `${label} entfernen`,
   moreCount: (count) => `${count} weitere`,
+  copied: 'Kopiert',
+  copyFailed: 'Kopieren fehlgeschlagen',
+  keyFilterInvalid: 'Der Wert enthält ein unzulässiges Zeichen.',
   tagsHint:
     'Mit der Eingabetaste oder einem Komma hinzufügen. Die Rücktaste entfernt den letzten Eintrag.',
   tagAdded: (label) => `${label} hinzugefügt`,
@@ -354,10 +357,8 @@ export const STAR_UI_TEXT_DE: StarUiText = {
   aiResponseReady: 'Antwort fertig',
   aiResponseFailed: 'Die Antwort ist fehlgeschlagen.',
   copy: 'Kopieren',
-  copied: 'Kopiert',
   retry: 'Erneut versuchen',
   stop: 'Stoppen',
   newMessages: (count) => `${count} neue Nachrichten`,
   aiPromptShortcutHint: 'Mit Strg+Eingabe senden.',
-  copyFailed: 'Kopieren fehlgeschlagen',
 };

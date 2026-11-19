@@ -31,6 +31,11 @@ export interface StarUiText {
   readonly removeItem: (label: string) => string;
   /** Label of the "+N" entry for items that are not shown (avatar group). */
   readonly moreCount: (count: number) => string;
+  // Clipboard (`starCopy`)
+  readonly copied: string;
+  readonly copyFailed: string;
+  /** Validation message of `starKeyFilter` with `validateOnly`. */
+  readonly keyFilterInvalid: string;
   // Tags field
   readonly tagsHint: string;
   readonly tagAdded: (label: string) => string;
@@ -406,14 +411,12 @@ export interface StarUiText {
   readonly aiResponseReady: string;
   readonly aiResponseFailed: string;
   readonly copy: string;
-  readonly copied: string;
   readonly retry: string;
   readonly stop: string;
   /** Live announcement when several messages from others arrive at once. */
   readonly newMessages: (count: number) => string;
   /** Visible hint under the prompt field of `star-ai-prompt`. */
   readonly aiPromptShortcutHint: string;
-  readonly copyFailed: string;
 }
 
 export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
@@ -433,6 +436,9 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   collapseItem: (label) => `Collapse ${label}`,
   removeItem: (label) => `Remove ${label}`,
   moreCount: (count) => `${count} more`,
+  copied: 'Copied',
+  copyFailed: 'Copy failed',
+  keyFilterInvalid: 'The value has a character that is not allowed.',
   tagsHint: 'Press Enter or comma to add. Backspace removes the last item.',
   tagAdded: (label) => `${label} added`,
   tagRemoved: (label) => `${label} removed`,
@@ -755,12 +761,10 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   aiResponseReady: 'Response ready',
   aiResponseFailed: 'The response failed.',
   copy: 'Copy',
-  copied: 'Copied',
   retry: 'Retry',
   stop: 'Stop',
   newMessages: (count) => `${count} new messages`,
   aiPromptShortcutHint: 'Press Control+Enter to send.',
-  copyFailed: 'Copy failed',
 };
 
 /** Parameter names of the function entries, in call order (used for `{{ name }}` in translations). */

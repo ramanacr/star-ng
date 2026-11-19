@@ -16,7 +16,7 @@ import {
   signal,
   TemplateRef,
 } from '@angular/core';
-import { STAR_UI_TEXT } from '@star-ng/ui/core';
+import { STAR_UI_TEXT, starPrefersReducedMotion } from '@star-ng/ui/core';
 
 /** Read view of `star-inplace`: `<ng-template starInplaceDisplay>…</ng-template>`. */
 @Directive({ selector: 'ng-template[starInplaceDisplay]' })
@@ -217,8 +217,7 @@ export class StarRipple {
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
 
   protected show(event: PointerEvent): void {
-    const view = this.host.ownerDocument.defaultView;
-    if (view?.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+    if (starPrefersReducedMotion(this.host.ownerDocument)) return;
     const box = this.host.getBoundingClientRect();
     const size = Math.max(box.width, box.height) * 2;
     const ink = this.host.ownerDocument.createElement('span');

@@ -1,4 +1,3 @@
-import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { DOCUMENT, NgTemplateOutlet } from '@angular/common';
 import {
   afterNextRender,
@@ -30,9 +29,11 @@ import { StarButton } from '@star-ng/ui/button';
 import { StarCheckbox } from '@star-ng/ui/checkbox';
 import {
   compareValues,
+  injectStarControlDefaults,
   readOption,
   STAR_SLOT_HOST,
   STAR_UI_TEXT,
+  StarAnnouncer,
   StarEmptyContext,
   starFilterMatchAny,
   StarFilterMatchMode,
@@ -48,6 +49,7 @@ import { StarPaginator } from '@star-ng/ui/paginator';
 import { StarPopover } from '@star-ng/ui/popover';
 import { StarMultiSelect, StarSelect } from '@star-ng/ui/select';
 import { StarSkeleton } from '@star-ng/ui/skeleton';
+import { STAR_TABLE_DEFAULTS } from './table-defaults';
 import {
   sameEditValue,
   StarBatchChanges,
@@ -1071,6 +1073,11 @@ export class StarRowExpansionTemplate<T = unknown> {
 })
 export class StarTable<T> {
   protected readonly text = inject(STAR_UI_TEXT);
+  /** Defaults from `provideStarTableDefaults`, then `provideStarNg`. */
+  protected readonly defaults = injectStarControlDefaults(
+    ['sm', 'md'],
+    inject(STAR_TABLE_DEFAULTS),
+  );
   private readonly document = inject(DOCUMENT);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly injector = inject(Injector);
@@ -1083,9 +1090,12 @@ export class StarTable<T> {
   readonly dataKey = input<StarOptionKey<T> | null>(null);
   readonly loading = input(false, { transform: booleanAttribute });
   readonly emptyMessage = input<string | null>(null);
-  readonly striped = input(false, { transform: booleanAttribute });
-  readonly size = input<'sm' | 'md'>('md');
-  readonly stickyHeader = input(false, { transform: booleanAttribute });
+  readonly striped = input(this.defaults.striped ?? false, { transform: booleanAttribute });
+  /** Row density. Default: `size` of `provideStarNg` (`small` or `medium`), else `md`. */
+  readonly size = input<'sm' | 'md'>(this.defaults.size ?? 'md');
+  readonly stickyHeader = input(this.defaults.stickyHeader ?? false, {
+    transform: booleanAttribute,
+  });
   readonly scrollHeight = input<string | null>(null);
   /**
    * Layout when the table is narrower than 40rem (a phone). `'scroll'`: the table scrolls
@@ -1117,7 +1127,9 @@ export class StarTable<T> {
   readonly paginator = input(false, { transform: booleanAttribute });
   readonly first = model(0);
   readonly rows = model(10);
-  readonly rowsPerPageOptions = input<readonly number[]>([10, 25, 50]);
+  readonly rowsPerPageOptions = input<readonly number[]>(
+    this.defaults.rowsPerPageOptions ?? [10, 25, 50],
+  );
 
   readonly sortField = model<string | null>(null);
   readonly sortOrder = model<StarSortOrder>(1);
@@ -1130,14 +1142,19 @@ export class StarTable<T> {
   readonly globalFilterFields = input<readonly string[] | null>(null);
   /**
    * How the global filter text matches (default `contains`). A row passes when one searched cell
-   * matches; with `notContains`, when no searched cell has the text.
+   * matches; with `notContains`, when no searched cell has the text. The default comes from
+   * `provideStarTableDefaults`, then `filterMatchMode` of `provideStarNg`.
    */
-  readonly globalFilterMatchMode = input<StarFilterMatchMode>('contains');
+  readonly globalFilterMatchMode = input<StarFilterMatchMode>(
+    this.defaults.filterMatchMode ?? 'contains',
+  );
   /**
    * Locale of the text filters (PrimeNG `filterLocale`): with it, `Intl.Collator` compares the
-   * folded texts, so letters that the locale treats as equal match. Default: no locale.
+   * folded texts, so letters that the locale treats as equal match. Default: `locale` of `provideStarNg`, else none.
    */
-  readonly filterLocale = input<string | null>(null);
+  readonly filterLocale = input<string | null>(
+    this.defaults.filterLocale ?? this.defaults.locale ?? null,
+  );
   /**
    * Where the column filters show (PrimeNG `filterDisplay`): `'row'` (default), a second header
    * row; `'menu'`, a filter button in each header cell that opens a filter menu with match modes,
@@ -1340,7 +1357,7 @@ export class StarTable<T> {
 
   /** The cell in edit mode: `<row key>|<field>` text, or `null`. */
   private readonly editing = signal<string | null>(null);
-  private readonly announcer = inject(LiveAnnouncer);
+  private readonly announcer = inject(StarAnnouncer);
   /** Editor values of the rows (or the cell) in edit. */
   private readonly drafts = new StarEditDrafts();
   /** Pending change set of `batchEdit`. */

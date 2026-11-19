@@ -15,7 +15,7 @@ import {
   output,
   signal,
 } from '@angular/core';
-import { STAR_UI_TEXT, starIsRtl } from '@star-ng/ui/core';
+import { STAR_UI_TEXT, starIsRtl, starPrefersReducedMotion } from '@star-ng/ui/core';
 import { StarMenuItem } from '@star-ng/ui/menu';
 import { StarSpinner } from '@star-ng/ui/spinner';
 
@@ -327,10 +327,11 @@ export class StarScrollTop {
   /** Scroll container; default the window. */
   readonly target = input<HTMLElement | null>(null);
   protected readonly visible = signal(false);
+  private readonly doc = inject(DOCUMENT);
 
   constructor() {
     // The injected document, not the global: the global does not exist when the page is prerendered.
-    const doc = inject(DOCUMENT);
+    const doc = this.doc;
     const onScroll = (event: Event) => {
       const el = this.target();
       if (el && event.target !== el) return;
@@ -344,7 +345,7 @@ export class StarScrollTop {
   }
 
   protected toTop(): void {
-    const reduce = matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    const reduce = starPrefersReducedMotion(this.doc);
     (this.target() ?? document.scrollingElement ?? document.documentElement).scrollTo?.({
       top: 0,
       behavior: reduce ? 'auto' : 'smooth',

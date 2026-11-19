@@ -1,4 +1,5 @@
 // Data table: header, cells, filters, sorting, selection, expansion, stacked and virtual layouts.
+@use '../shared' as *;
 .star-table {
   display: block;
   font: var(--star-type-body-lg);
@@ -149,7 +150,7 @@ star-select.star-table__filter {
   padding: 1rem 1.25rem 1.25rem;
   background: var(--star-surface-muted);
 }
-@media (prefers-reduced-motion: reduce) {
+@include star-reduced-motion {
   .star-table__toggle i {
     transition: none;
   }
