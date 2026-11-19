@@ -22,9 +22,11 @@ const SAME_AS_ENGLISH: Record<string, readonly Name[]> = {
     'minute',
     'summaryMinimum',
     'summaryMaximum',
+    // A data point reads "series, category: value" in every language.
+    'chartPointLabel',
   ],
   // "Color", "Editor" and "Total" are the Spanish words too. "X" and "Y" are axis names in every language.
-  es: ['colorLabel', 'editorLabel', 'chartTotal', 'chartX', 'chartY'],
+  es: ['colorLabel', 'editorLabel', 'chartTotal', 'chartX', 'chartY', 'chartPointLabel'],
 };
 
 const PACKS: Record<string, StarUiText> = { de: STAR_UI_TEXT_DE, es: STAR_UI_TEXT_ES };

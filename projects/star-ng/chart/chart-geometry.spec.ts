@@ -1,6 +1,7 @@
 import {
   areaRadius,
   axisAngles,
+  boundedScale,
   circlePath,
   cleanPoints,
   labelAnchor,
@@ -466,5 +467,35 @@ describe('markerPath', () => {
   it('keeps a zero radius from breaking the path', () => {
     expect(markerPath(3, 5, 5, 0)).not.toContain('NaN');
     expect(markerPath(0, 5, 5, -2)).not.toContain('NaN');
+  });
+});
+
+describe('boundedScale', () => {
+  it('is the nice scale without bounds', () => {
+    expect(boundedScale(3, 87, { includeZero: true })).toEqual(
+      niceScale(3, 87, { includeZero: true }),
+    );
+  });
+
+  it('keeps fixed ends and puts round ticks between them', () => {
+    const scale = boundedScale(3, 87, { min: 5, max: 95 });
+    expect(scale.min).toBe(5);
+    expect(scale.max).toBe(95);
+    expect(scale.ticks[0]).toBe(5);
+    expect(scale.ticks.at(-1)).toBe(95);
+    expect(scale.ticks.slice(1, -1)).toEqual([25, 50, 75]);
+  });
+
+  it('steps from the lower end and ends on the upper end', () => {
+    expect(boundedScale(0, 87, { stepSize: 25, includeZero: true }).ticks).toEqual([
+      0, 25, 50, 75, 100,
+    ]);
+    expect(boundedScale(0, 87, { min: 10, max: 60, stepSize: 20 }).ticks).toEqual([10, 30, 50, 60]);
+  });
+
+  it('falls back to round ticks for a step that makes too many', () => {
+    const scale = boundedScale(0, 1000, { stepSize: 1 });
+    expect(scale.ticks.length).toBeLessThan(10);
+    expect(scale.max).toBe(1000);
   });
 });
