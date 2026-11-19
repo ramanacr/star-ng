@@ -70,6 +70,26 @@ export interface StarBatchChanges<T> {
 
 const isEmpty = (value: unknown) => value === null || value === undefined || value === '';
 
+/** A number in plain decimal syntax: optional sign, digits, optional decimal part and exponent. */
+const DECIMAL_NUMBER = /^[+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?$/i;
+
+/**
+ * Value of an editor text: a number or `null` for the `'number'` editor, else the text. The
+ * number editor accepts only a finite number in plain decimal syntax (sign, digits, decimal part,
+ * exponent); other text ("Infinity", "0x10", "0b1", "1e999") gives `NaN`.
+ */
+export function parseEditorText(
+  editor: 'text' | 'number' | 'select' | undefined,
+  text: string,
+): string | number | null {
+  if (editor !== 'number') return text;
+  const trimmed = text.trim();
+  if (trimmed === '') return null;
+  if (!DECIMAL_NUMBER.test(trimmed)) return Number.NaN;
+  const value = Number(trimmed);
+  return Number.isFinite(value) ? value : Number.NaN;
+}
+
 /** Same value for the editor: `Object.is`, and an empty text equals a missing value. */
 export function sameEditValue(a: unknown, b: unknown): boolean {
   return Object.is(a, b) || (isEmpty(a) && isEmpty(b));
@@ -292,6 +312,21 @@ export class StarEditBatch<T> {
   change(row: T, cells: readonly StarCellChange[]): boolean {
     const state = this.state();
     const updates = this.updatesWith(state, row, cells);
+    if (!updates) return false;
+    this.commitState({ ...state, updates });
+    return true;
+  }
+
+  /** Records cell changes of several rows (a paste) as one step. */
+  changeRows(
+    rows: readonly { readonly row: T; readonly cells: readonly StarCellChange[] }[],
+  ): boolean {
+    const state = this.state();
+    let updates: Map<unknown, RowUpdate<T>> | null = null;
+    for (const { row, cells } of rows) {
+      updates =
+        this.updatesWith({ ...state, updates: updates ?? state.updates }, row, cells) ?? updates;
+    }
     if (!updates) return false;
     this.commitState({ ...state, updates });
     return true;

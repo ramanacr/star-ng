@@ -68,6 +68,7 @@ import {
 } from './table-column-window';
 import { STAR_TABLE_DEFAULTS } from './table-defaults';
 import {
+  parseEditorText,
   sameEditValue,
   StarBatchChanges,
   starCellError,
@@ -327,8 +328,6 @@ function isTextEntry(target: EventTarget | null): boolean {
   return target instanceof HTMLInputElement && TEXT_INPUTS.has(target.type);
 }
 
-/** A number in plain decimal syntax: optional sign, digits, optional decimal part and exponent. */
-const DECIMAL_NUMBER = /^[+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?$/i;
 /** Smallest width, in pixels, that the user can give a column. */
 const MIN_COLUMN_WIDTH = 48;
 /** `aria-valuemax` of a resize handle. The column width itself has no upper limit. */
@@ -824,7 +823,7 @@ export class StarTable<T> extends StarTableInteraction<T> {
   /** Editor values of the rows (or the cell) in edit. */
   private readonly drafts = new StarEditDrafts();
   /** Pending change set of `batchEdit`. */
-  private readonly batch = new StarEditBatch<T>((row) => this.trackKey(row));
+  protected readonly batch = new StarEditBatch<T>((row) => this.trackKey(row));
   /** New rows in row edit that the user did not save yet (without `batchEdit`). */
   private readonly newRows = signal<readonly { row: T; position: 'top' | 'bottom' }[]>([]);
   private readonly editingRowSet = computed(() => new Set(this.editingRowKeys()));
@@ -1106,7 +1105,7 @@ export class StarTable<T> extends StarTableInteraction<T> {
   });
 
   /** Sorted rows with the new rows. */
-  private readonly withAdded = computed(() => {
+  protected readonly withAdded = computed(() => {
     const { top, bottom } = this.addedRows();
     const rows = this.sorted();
     return top.length || bottom.length ? [...top, ...rows, ...bottom] : rows;
@@ -1810,7 +1809,7 @@ export class StarTable<T> extends StarTableInteraction<T> {
   }
 
   /** Cell value in the row (`value`), without pending changes. */
-  private rawValue(row: T, column: StarColumn<T>): unknown {
+  protected rawValue(row: T, column: StarColumn<T>): unknown {
     return column.value
       ? column.value(row)
       : (row as Record<string, unknown> | null)?.[column.field];
@@ -2192,20 +2191,6 @@ export class StarTable<T> extends StarTableInteraction<T> {
   }
 
   /**
-   * Value of an editor text: a number or `null` for the `'number'` editor, else the text. The
-   * number editor accepts only a finite number in plain decimal syntax (sign, digits, decimal
-   * part, exponent); other text ("Infinity", "0x10", "0b1", "1e999") gives `NaN`.
-   */
-  private parseEditor(column: StarColumn<T>, text: string): string | number | null {
-    if (column.editor !== 'number') return text;
-    const trimmed = text.trim();
-    if (trimmed === '') return null;
-    if (!DECIMAL_NUMBER.test(trimmed)) return Number.NaN;
-    const value = Number(trimmed);
-    return Number.isFinite(value) ? value : Number.NaN;
-  }
-
-  /**
    * The user typed in an editor: keep the raw text (what the editor shows) and the parsed value
    * (what validation and Save use), so its error shows at once. Text that is not a number (or
    * `validity.badInput`) gives `NaN`, which shows a message and blocks Save.
@@ -2216,7 +2201,9 @@ export class StarTable<T> extends StarTableInteraction<T> {
     editor: HTMLInputElement | HTMLSelectElement,
   ): void {
     const key = this.trackKey(row);
-    const value = editor.validity?.badInput ? Number.NaN : this.parseEditor(column, editor.value);
+    const value = editor.validity?.badInput
+      ? Number.NaN
+      : parseEditorText(column.editor, editor.value);
     this.drafts.set(key, column.field, value);
     this.drafts.setText(key, column.field, editor.value);
   }
@@ -2305,7 +2292,7 @@ export class StarTable<T> extends StarTableInteraction<T> {
     const previous = this.rawValue(row, column);
     // Text that is not a number: the browser gives '' (`validity.badInput`). The value is NaN,
     // which fails validation: the editor stays open with its message.
-    const value = badInput ? Number.NaN : this.parseEditor(column, text);
+    const value = badInput ? Number.NaN : parseEditorText(column.editor, text);
     const error = this.errorOf(row, column, value);
     if (error) {
       // A text or number editor stays open with its message; the value is not saved.
@@ -2344,7 +2331,7 @@ export class StarTable<T> extends StarTableInteraction<T> {
     this.focusAfterRender(`[data-edit="${CSS.escape(key)}"]`);
   }
 
-  private announce(message: string): void {
+  protected announce(message: string): void {
     void this.announcer.announce(message, 'polite');
   }
 

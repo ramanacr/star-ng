@@ -1,4 +1,9 @@
 export * from './table';
+export type {
+  StarTableCopyOptions,
+  StarTablePasteCell,
+  StarTablePasteEvent,
+} from './table-clipboard';
 export {
   StarColumnGroupHeaderTemplate,
   type StarColumnGroup,

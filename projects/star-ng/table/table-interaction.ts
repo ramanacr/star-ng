@@ -1,6 +1,8 @@
+import { DOCUMENT } from '@angular/common';
 import {
   afterNextRender,
   ApplicationRef,
+  booleanAttribute,
   computed,
   Directive,
   ElementRef,
@@ -9,13 +11,35 @@ import {
   input,
   model,
   output,
+  OutputEmitterRef,
   Signal,
   signal,
   WritableSignal,
 } from '@angular/core';
-import { starInlineKey, starIsRtl, StarUiText, ɵstarOptionalBoolean } from '@star-ng/ui/core';
-import type { StarColumn } from './table';
+import {
+  StarClipboard,
+  starInlineKey,
+  starIsRtl,
+  StarUiText,
+  ɵstarOptionalBoolean,
+} from '@star-ng/ui/core';
+import type { StarCellEditEvent, StarColumn } from './table';
+import {
+  parseTsv,
+  StarTableCopyOptions,
+  StarTablePasteCell,
+  StarTablePasteEvent,
+  toTsv,
+} from './table-clipboard';
 import { COLUMN_FALLBACK_VIEWPORT } from './table-column-window';
+import {
+  parseEditorText,
+  sameEditValue,
+  StarCellChange,
+  starCellError,
+  StarEditBatch,
+  StarRowEditSaveEvent,
+} from './table-editing';
 import {
   cellNavigationTarget,
   columnScrollOffset,
@@ -50,10 +74,13 @@ interface CellTarget<T> {
     '(keydown)': 'onCellKeydown($event)',
     '(mousedown)': 'onCellMouseDown($event)',
     '(click)': 'onCellClick($event)',
+    '(paste)': 'onCellPaste($event)',
   },
 })
 export abstract class StarTableInteraction<T> {
   protected readonly interactionInjector = inject(Injector);
+  private readonly interactionDocument = inject(DOCUMENT);
+  private readonly clipboard = inject(StarClipboard);
   private readonly interactionApp = inject(ApplicationRef);
 
   // ---------------------------------------------------------------- table parts
@@ -89,6 +116,16 @@ export abstract class StarTableInteraction<T> {
   protected abstract readonly viewportWidth: WritableSignal<number>;
   protected abstract sideOf(column: StarColumn<T>): StarPinSide | null;
   protected abstract columnPixels(column: StarColumn<T>): number;
+  abstract readonly selection: Signal<readonly T[]>;
+  abstract readonly batchEdit: Signal<boolean>;
+  abstract readonly cellEdit: OutputEmitterRef<StarCellEditEvent<T>>;
+  abstract readonly rowEditSave: OutputEmitterRef<StarRowEditSaveEvent<T>>;
+  protected abstract readonly batch: StarEditBatch<T>;
+  /** Rows of all pages in display order (sorted, filtered, with new rows). */
+  protected abstract readonly withAdded: Signal<readonly T[]>;
+  protected abstract isSelected(row: T): boolean;
+  protected abstract rawValue(row: T, column: StarColumn<T>): unknown;
+  protected abstract announce(message: string): void;
 
   // ---------------------------------------------------------------- inputs
 
@@ -125,6 +162,27 @@ export abstract class StarTableInteraction<T> {
   readonly cellNavigation = input<boolean | undefined, boolean | string | undefined>(undefined, {
     transform: ɵstarOptionalBoolean,
   });
+
+  /**
+   * Ctrl+C (Cmd+C) and the Copy items of the context menu add a first line with the column
+   * headers. AG Grid `copyHeadersToClipboard`, Ignite UI `clipboardOptions.copyHeaders`.
+   */
+  readonly copyHeaders = input(false, { transform: booleanAttribute });
+
+  /**
+   * Ctrl+V (Cmd+V) on a cell pastes tab-separated text (from a spreadsheet or `copyToClipboard`)
+   * into the editable cells from that cell to the right and down. Each value goes through the
+   * editor parse and the column rules (`required`, `min`, `max`, `pattern`, `validators`; a
+   * `'select'` editor needs one of its `editOptions`): a value that is not valid is left out.
+   * Then the table emits `cellEdit` per changed cell (`editMode="row"`: `rowEditSave` per row),
+   * or with `batchEdit` adds all cells to the pending changes as one undo step. Cells that are not
+   * editable, rows in edit and text past the last row or column are left out. `beforePaste` can
+   * cancel. AG Grid clipboard paste, Ignite UI paste handling.
+   */
+  readonly pasteEditable = input(false, { transform: booleanAttribute });
+
+  /** Before Ctrl+V writes cells: the cells and the text. `cancel()` stops the paste. */
+  readonly beforePaste = output<StarTablePasteEvent<T>>();
 
   /** The focused cell changed (keyboard, click or `focusCell`). Ignite UI `activeNodeChange`. */
   readonly activeCellChange = output<StarTableCellRef | null>();
@@ -269,7 +327,8 @@ export abstract class StarTableInteraction<T> {
   }
 
   protected onCellKeydown(event: KeyboardEvent): void {
-    if (event.defaultPrevented || !this.cellMode() || event.altKey) return;
+    if (event.defaultPrevented || this.onCopyKey(event)) return;
+    if (!this.cellMode() || event.altKey) return;
     const target = this.cellOf(event.target);
     if (!target || (event.target as Element).closest(OWN_KEYS)) return;
     const { row, column, cell } = target;
@@ -307,6 +366,198 @@ export abstract class StarTableInteraction<T> {
     this.moveFocus(rows[index], nextColumn, true);
     if (extend) this.selectCell(rows[index], nextColumn, 'extend');
     else this.cellAnchor = { rowKey: this.trackKey(rows[index]), field: nextColumn.field };
+  }
+
+  // ---------------------------------------------------------------- clipboard
+
+  /**
+   * Copies cells to the clipboard as tab-separated text (TSV) and announces "Copied N cells". The
+   * cells are, in this order: the cell selection (`selectionMode` `'cell'` / `'range'`: the
+   * rectangle around the selected cells of the page, other cells in it stay empty), else the
+   * selected rows (all pages, all visible columns), else the active cell. A cell copies its
+   * `exportValue`, else its display text. Ctrl+C (Cmd+C) in the table body does the same, unless
+   * text is selected on the page or the focus is in a field. Resolves with the number of copied
+   * cells (0: nothing to copy, or the browser refused). AG Grid `copySelectedRangeToClipboard`,
+   * Ignite UI `clipboardOptions`.
+   */
+  async copyToClipboard(options: StarTableCopyOptions = {}): Promise<number> {
+    const block = this.copyBlock();
+    if (!block) return 0;
+    const lines = block.rows.map((row) =>
+      block.columns.map((column) => (block.has(row, column) ? this.copyText(row, column) : '')),
+    );
+    if (options.headers ?? this.copyHeaders()) {
+      lines.unshift(block.columns.map((column) => column.header));
+    }
+    const done = await this.clipboard.copy(toTsv(lines));
+    this.announce(done ? this.text.copiedCells(block.count) : this.text.copyFailed);
+    return done ? block.count : 0;
+  }
+
+  /** The rows, columns and cells that a copy takes (see `copyToClipboard`), or `null`. */
+  private copyBlock(): {
+    readonly rows: readonly T[];
+    readonly columns: readonly StarColumn<T>[];
+    readonly has: (row: T, column: StarColumn<T>) => boolean;
+    readonly count: number;
+  } | null {
+    const columns = this.visibleColumns();
+    if (this.cellSelectionMode() && this.cellSelection().length) {
+      const rows = this.navRows();
+      const picked = this.selectedCells();
+      const rowIndexes = rows.flatMap((row, i) => (picked.has(this.trackKey(row)) ? [i] : []));
+      const fields = new Set(this.cellSelection().map((cell) => cell.field));
+      const colIndexes = columns.flatMap((column, i) => (fields.has(column.field) ? [i] : []));
+      if (rowIndexes.length && colIndexes.length) {
+        const blockRows = rows.slice(rowIndexes[0], rowIndexes[rowIndexes.length - 1] + 1);
+        const blockColumns = columns.slice(colIndexes[0], colIndexes[colIndexes.length - 1] + 1);
+        const has = (row: T, column: StarColumn<T>) => this.isCellSelected(row, column);
+        let count = 0;
+        for (const row of blockRows)
+          for (const column of blockColumns) if (has(row, column)) count++;
+        return { rows: blockRows, columns: blockColumns, has, count };
+      }
+    }
+    if (this.rowSelectionMode() && this.selection().length) {
+      const rows = this.withAdded().filter((row) => this.isSelected(row));
+      if (rows.length && columns.length) {
+        return { rows, columns, has: () => true, count: rows.length * columns.length };
+      }
+    }
+    const active = this.active();
+    const row =
+      active && this.navRows().find((item) => Object.is(this.trackKey(item), active.rowKey));
+    const column = active && columns.find((item) => item.field === active.field);
+    if (row === null || row === undefined || !column) return null;
+    return { rows: [row], columns: [column], has: () => true, count: 1 };
+  }
+
+  /** Clipboard text of a cell: `exportValue`, else the display text. */
+  private copyText(row: T, column: StarColumn<T>): string {
+    return column.exportValue ? String(column.exportValue(row) ?? '') : this.cellText(row, column);
+  }
+
+  /** Ctrl+C (Cmd+C) in the body: copies (see `copyToClipboard`). Returns true when handled. */
+  private onCopyKey(event: KeyboardEvent): boolean {
+    const ctrl = event.ctrlKey || event.metaKey;
+    if (!ctrl || event.altKey || event.shiftKey || event.key.toLowerCase() !== 'c') return false;
+    const target = event.target as Element;
+    const body = this.body()?.nativeElement;
+    if (!body?.contains(target) || target.closest(OWN_KEYS)) return false;
+    // Text that the user selected on the page: the browser copies it.
+    const selected = this.interactionDocument.getSelection?.();
+    if (selected && !selected.isCollapsed && selected.toString()) return false;
+    if (!this.copyBlock()) return false;
+    event.preventDefault();
+    void this.copyToClipboard();
+    return true;
+  }
+
+  /** Ctrl+V (Cmd+V) on a cell with `pasteEditable`. */
+  protected onCellPaste(event: ClipboardEvent): void {
+    if (!this.pasteEditable() || event.defaultPrevented) return;
+    const target = this.cellOf(event.target);
+    if (!target || (event.target as Element).closest(OWN_KEYS)) return;
+    const text = event.clipboardData?.getData('text/plain') ?? '';
+    const lines = parseTsv(text);
+    if (!lines.length) return;
+    event.preventDefault();
+    this.pasteLines(target.row, target.column, text, lines);
+  }
+
+  /** Writes pasted lines into the editable cells from a cell to the right and down. */
+  private pasteLines(row: T, column: StarColumn<T>, text: string, lines: string[][]): void {
+    const rows = this.navRows();
+    const columns = this.visibleColumns();
+    const top = rows.findIndex((item) => Object.is(this.trackKey(item), this.trackKey(row)));
+    const left = columns.indexOf(column);
+    if (top < 0 || left < 0) return;
+    const cells: (StarTablePasteCell<T> & { readonly column: StarColumn<T> })[] = [];
+    lines.forEach((line, i) => {
+      const target = rows[top + i];
+      if (target === undefined || this.isRowInEdit(target)) return;
+      line.forEach((value, j) => {
+        const col = columns[left + j];
+        if (!col || !this.isEditable(target, col)) return;
+        const parsed = parseEditorText(col.editor, value);
+        const previous = this.rawValue(target, col);
+        cells.push({ row: target, field: col.field, column: col, value: parsed, previous });
+      });
+    });
+    if (!cells.length) return;
+    let canceled = false;
+    this.beforePaste.emit({
+      cells: cells.map(({ row: item, field, value, previous }) => ({
+        row: item,
+        field,
+        value,
+        previous,
+      })),
+      text,
+      cancel: () => (canceled = true),
+    });
+    if (canceled) return;
+    // Validate each cell with the pasted values of its row, so a rule can compare fields.
+    const byRow = new Map<unknown, { row: T; cells: typeof cells }>();
+    for (const cell of cells) {
+      const key = this.trackKey(cell.row);
+      const group = byRow.get(key) ?? { row: cell.row, cells: [] };
+      group.cells.push(cell);
+      byRow.set(key, group);
+    }
+    let skipped = 0;
+    const groups = [...byRow.values()].map((group) => {
+      const values = Object.fromEntries(group.cells.map((cell) => [cell.field, cell.value]));
+      const draft = { ...group.row, ...values } as T;
+      const valid = group.cells.filter((cell) => {
+        const options = cell.column.editor === 'select' ? cell.column.editOptions : undefined;
+        const error =
+          (options && !options.includes(String(cell.value ?? ''))) ||
+          starCellError(cell.column, cell.value, draft, this.text);
+        if (error) skipped++;
+        return !error;
+      });
+      return { row: group.row, valid };
+    });
+    const pasted = this.applyPaste(groups);
+    const message = this.text.pastedCells(pasted);
+    this.announce(skipped ? `${message}. ${this.text.skippedCells(skipped)}` : message);
+  }
+
+  /** Emits the edit events of a paste (or records a batch step). Returns the written cells. */
+  private applyPaste(
+    groups: readonly { readonly row: T; readonly valid: readonly StarTablePasteCell<T>[] }[],
+  ): number {
+    let count = 0;
+    if (this.batchEdit()) {
+      const rows = groups.map(({ row, valid }) => ({
+        row,
+        cells: valid.map((cell): StarCellChange => ({
+          field: cell.field,
+          value: cell.value,
+          original: cell.previous,
+        })),
+      }));
+      this.batch.changeRows(rows);
+      return groups.reduce((sum, group) => sum + group.valid.length, 0);
+    }
+    for (const { row, valid } of groups) {
+      const changed = valid.filter((cell) => !sameEditValue(cell.value, cell.previous));
+      count += changed.length;
+      if (!changed.length) continue;
+      if (this.rowEditMode()) {
+        this.rowEditSave.emit({
+          row,
+          changes: Object.fromEntries(changed.map((cell) => [cell.field, cell.value])),
+          previous: Object.fromEntries(changed.map((cell) => [cell.field, cell.previous])),
+        });
+        continue;
+      }
+      for (const cell of changed) {
+        this.cellEdit.emit({ row, field: cell.field, value: cell.value, previous: cell.previous });
+      }
+    }
+    return count;
   }
 
   // ---------------------------------------------------------------- cell selection
