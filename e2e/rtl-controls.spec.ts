@@ -692,6 +692,30 @@ test.describe('right-to-left controls', () => {
     });
   });
 
+  test.describe('table pinning', () => {
+    test('end pins stick to the left edge and the shadow mirrors', async ({ page }) => {
+      await page.setViewportSize({ width: 700, height: 900 });
+      await openPage(page, '/controls/table-columns', 'Table columns');
+      const live = example(page, 'Pin to start and end');
+      const table = live.getByRole('table', { name: 'Orders with pinned columns' });
+      await table.scrollIntoViewIfNeeded();
+      const scroll = live.locator('.star-table__scroll');
+      const total = table.locator('thead th[data-field="total"]');
+      const atLeft = () =>
+        scroll.evaluate((viewport) => {
+          const cell = viewport.querySelector('th[data-field="total"]')!.getBoundingClientRect();
+          const area = viewport.getBoundingClientRect();
+          return Math.abs(cell.left - (area.left + viewport.clientLeft)) < 2;
+        });
+      await expect.poll(atLeft).toBe(true);
+      await scroll.evaluate((viewport) => (viewport.scrollLeft = -200));
+      await expect.poll(atLeft).toBe(true);
+      // The separator shadow is on the inner (right) edge of the end pin.
+      const shadow = await total.evaluate((cell) => getComputedStyle(cell).boxShadow);
+      expect(shadow).toMatch(/ 6px 0px 6px -6px/);
+    });
+  });
+
   test.describe('icons and geometry', () => {
     const scaleOf = (locator: Locator) =>
       locator.evaluate((element) => getComputedStyle(element).scale);

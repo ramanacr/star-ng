@@ -1,9 +1,23 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { StarButton } from '@star-ng/ui/button';
-import { StarColumn, StarRowExpansionTemplate, StarTable } from '@star-ng/ui/table';
+import {
+  StarColumn,
+  StarColumnGroupHeaderTemplate,
+  StarRowExpansionTemplate,
+  StarTable,
+} from '@star-ng/ui/table';
 import { StarToggleSwitch } from '@star-ng/ui/toggle-switch';
 import { DOCS, DocsRow } from '../shared/docs';
 import { DocsFill, formatMoney, Order, orderColumns, ORDERS } from './table-demo';
+import {
+  CITY_SALES,
+  CitySales,
+  METRIC_ROWS,
+  metricColumns,
+  MetricRow,
+  SALES_GROUPS,
+  salesColumns,
+} from './table-sales-demo';
 
 interface LogEntry {
   readonly id: string;
@@ -57,12 +71,20 @@ const LOG: readonly LogEntry[] = Array.from({ length: 5000 }, (_, i) => ({
 
 @Component({
   selector: 'docs-table-layout-page',
-  imports: [DOCS, StarTable, StarRowExpansionTemplate, StarButton, StarToggleSwitch, DocsFill],
+  imports: [
+    DOCS,
+    StarTable,
+    StarRowExpansionTemplate,
+    StarColumnGroupHeaderTemplate,
+    StarButton,
+    StarToggleSwitch,
+    DocsFill,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <docs-page
       heading="Table layout"
-      lead="Show more than one line of data per row: row detail, row groups and a footer. Fit the table to a phone with the stacked layout, and render thousands of rows with virtual scroll."
+      lead="Show more than one line of data per row: row detail, row groups, column groups, summaries and a footer. Fit the table to a phone with the stacked layout, and render thousands of rows with virtual scroll."
       importFrom="import { StarTable, StarRowExpansionTemplate } from '@star-ng/ui/table';"
     >
       <docs-example
@@ -133,7 +155,7 @@ const LOG: readonly LogEntry[] = Array.from({ length: 5000 }, (_, i) => ({
         heading="Footer"
         source="table-layout/footer"
         [script]="footerScript"
-        note="footer on a column is fixed text, or a function that gets the filtered rows of all pages. The table has a footer row when at least one visible column has a footer."
+        note="footer on a column is fixed text, or a function that gets the filtered rows of all pages. The table has a footer row when at least one visible column has a footer or a summary (see Summaries)."
       >
         <docs-fill>
           <star-table
@@ -141,6 +163,70 @@ const LOG: readonly LogEntry[] = Array.from({ length: 5000 }, (_, i) => ({
             [columns]="footerColumns"
             dataKey="id"
             ariaLabel="Orders with totals"
+          />
+        </docs-fill>
+      </docs-example>
+
+      <docs-example
+        heading="Column groups"
+        source="table-layout/column-groups"
+        [script]="columnGroupScript"
+        note="columnGroups adds header rows above the column headers: each group header spans its columns (colspan), and a column outside a group spans all header rows (rowspan). Groups nest. A group header has scope colgroup, and each body cell names its group and column headers with the headers attribute. Hide a month in the Columns panel: its group gets narrower. A moved column stays inside its group. An ng-template with starColumnGroupHeader replaces the label of a group (here Q2)."
+      >
+        <docs-fill>
+          <star-table
+            [value]="sales"
+            [columns]="salesColumns"
+            [columnGroups]="salesGroups"
+            dataKey="id"
+            ariaLabel="Sales by region and quarter"
+            columnToggle
+            reorderableColumns
+          >
+            <ng-template starColumnGroupHeader="Q2" let-group let-span="span">
+              {{ group.header }}, {{ span }} months
+            </ng-template>
+          </star-table>
+        </docs-fill>
+      </docs-example>
+
+      <docs-example
+        heading="Summaries"
+        source="table-layout/summaries"
+        [script]="summaryScript"
+        note="summary on a column adds a summary row in the footer over all filtered rows: sum, avg, min, max, count (values that are not empty) or a function of the rows. summaryFormat takes Intl.NumberFormat options, with the table locale. With groupBy, groupSummary adds a summary row below each group. A column footer wins over its summary in the footer row. In lazy mode, pass the footer values from the server with summaries (field to value)."
+      >
+        <div class="docs-stack">
+          <star-toggle-switch [(checked)]="summaryGroups">Group by region</star-toggle-switch>
+          <docs-fill>
+            <star-table
+              [value]="sales"
+              [columns]="summaryColumns"
+              dataKey="id"
+              ariaLabel="Sales with summaries"
+              locale="en-US"
+              [groupBy]="summaryGroups() ? 'region' : null"
+              groupSummary
+            />
+          </docs-fill>
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="Merged group cells"
+        source="table-layout/rowspan"
+        [script]="rowSpanScript"
+        note="rowGroupMode rowspan shows the groups of groupBy without heading rows: the cells of the groupBy column merge over the rows of each group with rowspan. mergeCells: true merges equal cells of another column too, within each group. Selection, keyboard and edit stay per row; a merged cell belongs to the first row of its run. With virtualScroll the table shows heading rows instead."
+      >
+        <docs-fill>
+          <star-table
+            [value]="sales"
+            [columns]="rowSpanColumns"
+            dataKey="id"
+            ariaLabel="Sales with merged regions"
+            groupBy="region"
+            rowGroupMode="rowspan"
+            selectionMode="multiple"
           />
         </docs-fill>
       </docs-example>
@@ -178,6 +264,27 @@ const LOG: readonly LogEntry[] = Array.from({ length: 5000 }, (_, i) => ({
             scrollHeight="20rem"
             stickyHeader
             striped
+          />
+        </docs-fill>
+      </docs-example>
+
+      <docs-example
+        heading="Column virtualization"
+        source="table-layout/virtual-columns"
+        [script]="metricScript"
+        note="virtualColumns renders only the columns in view, plus 2 on each side, and keeps the width of the others with spacer cells. Pinned columns are always rendered. Each column has a fixed width: the resized width, else width in px or rem, else virtualColumnWidth (160 px). Here virtualScroll renders the rows in view too: 200 rows by 60 metrics. The cells have aria-colindex and the table aria-colcount, so a screen reader announces the real column position."
+      >
+        <docs-fill>
+          <star-table
+            [value]="metrics"
+            [columns]="metricColumns"
+            dataKey="id"
+            ariaLabel="Wide metrics"
+            virtualColumns
+            virtualScroll
+            [virtualRowHeight]="44"
+            scrollHeight="20rem"
+            stickyHeader
           />
         </docs-fill>
       </docs-example>
@@ -262,7 +369,7 @@ const LOG: readonly LogEntry[] = Array.from({ length: 5000 }, (_, i) => ({
       </docs-example>
 
       <docs-api
-        [of]="['StarTable', 'StarRowExpansionTemplate']"
+        [of]="['StarTable', 'StarRowExpansionTemplate', 'StarColumnGroupHeaderTemplate']"
         [slots]="slots"
         [keyboard]="keyboard"
       />
@@ -353,6 +460,105 @@ export class TableLayoutPage {
     },
   ];
 
+  protected readonly sales: readonly CitySales[] = CITY_SALES;
+  protected readonly salesColumns: StarColumn<CitySales>[] = salesColumns();
+  protected readonly salesGroups = SALES_GROUPS;
+  protected readonly summaryGroups = signal(true);
+  protected readonly summaryColumns: StarColumn<CitySales>[] = [
+    { field: 'region', header: 'Region' },
+    { field: 'city', header: 'City', summary: 'count' },
+    ...(['jan', 'feb', 'mar'] as const).map((month): StarColumn<CitySales> => ({
+      field: month,
+      header: month[0].toUpperCase() + month.slice(1),
+      align: 'end',
+      summary: 'sum',
+      summaryFormat: { style: 'currency', currency: 'USD', maximumFractionDigits: 0 },
+      format: (row) => formatMoney(row[month]),
+    })),
+    {
+      field: 'avg',
+      header: 'Monthly average',
+      align: 'end',
+      value: (row) => (row.jan + row.feb + row.mar) / 3,
+      format: (row) => formatMoney((row.jan + row.feb + row.mar) / 3),
+      summary: 'max',
+      summaryFormat: { style: 'currency', currency: 'USD' },
+    },
+  ];
+  protected readonly summaryScript = `readonly summaryGroups = signal(true);
+readonly summaryColumns: StarColumn<CitySales>[] = [
+  { field: 'region', header: 'Region' },
+  { field: 'city', header: 'City', summary: 'count' },
+  {
+    field: 'jan',
+    header: 'Jan',
+    align: 'end',
+    summary: 'sum',
+    summaryFormat: { style: 'currency', currency: 'USD', maximumFractionDigits: 0 },
+  },
+  // ... Feb and Mar
+  {
+    field: 'avg',
+    header: 'Monthly average',
+    value: (row) => (row.jan + row.feb + row.mar) / 3,
+    summary: 'max',
+    summaryFormat: { style: 'currency', currency: 'USD' },
+  },
+];`;
+  protected readonly rowSpanColumns: StarColumn<CitySales>[] = [
+    { field: 'region', header: 'Region' },
+    {
+      field: 'quarter',
+      header: 'Best quarter',
+      value: (row) => (row.jan + row.feb + row.mar >= row.apr + row.may + row.jun ? 'Q1' : 'Q2'),
+      mergeCells: true,
+    },
+    { field: 'city', header: 'City' },
+    {
+      field: 'jan',
+      header: 'Jan',
+      align: 'end',
+      format: (row) => formatMoney(row.jan),
+    },
+  ];
+  protected readonly rowSpanScript = `readonly rowSpanColumns: StarColumn<CitySales>[] = [
+  { field: 'region', header: 'Region' },
+  {
+    field: 'quarter',
+    header: 'Best quarter',
+    value: (row) => (row.jan + row.feb + row.mar >= row.apr + row.may + row.jun ? 'Q1' : 'Q2'),
+    mergeCells: true,
+  },
+  { field: 'city', header: 'City' },
+  { field: 'jan', header: 'Jan', align: 'end', format: (row) => formatMoney(row.jan) },
+];`;
+  protected readonly metrics: readonly MetricRow[] = METRIC_ROWS;
+  protected readonly metricColumns: StarColumn<MetricRow>[] = metricColumns();
+  protected readonly metricScript = `readonly metrics = Array.from({ length: 200 }, (_, row) => {
+  const values: Record<string, number | string> = { id: \`M-\${String(row + 1).padStart(3, '0')}\` };
+  for (let i = 1; i <= 60; i++) values[\`m\${i}\`] = (row * 31 + i * 17) % 1000;
+  return values;
+});
+readonly metricColumns: StarColumn<MetricRow>[] = [
+  { field: 'id', header: 'Row', pinned: 'start', width: '6rem' },
+  ...Array.from({ length: 60 }, (_, i) => ({
+    field: \`m\${i + 1}\`,
+    header: \`Metric \${i + 1}\`,
+    width: '112px',
+    align: 'end' as const,
+  })),
+];`;
+  protected readonly columnGroupScript = `readonly salesGroups: StarColumnGroup[] = [
+  { header: 'Location', children: ['region', 'city'] },
+  {
+    header: 'Sales',
+    children: [
+      { header: 'Q1', children: ['jan', 'feb', 'mar'] },
+      { header: 'Q2', children: ['apr', 'may', 'jun'] },
+    ],
+  },
+];`;
+
   protected readonly log: readonly LogEntry[] = LOG;
   protected readonly logColumns: StarColumn<LogEntry>[] = [
     { field: 'id', header: 'Entry', width: '8rem', sortable: true },
@@ -422,6 +628,11 @@ readonly closed = signal<readonly string[]>([]);`;
 }));`;
 
   protected readonly slots: readonly DocsRow[] = [
+    {
+      name: 'ng-template[starColumnGroupHeader]',
+      description:
+        'Label of a column group header: starColumnGroupHeader="Q1" for one group (by header), empty for all groups. The context has $implicit (the group) and span (its rendered columns).',
+    },
     {
       name: 'ng-template[starRowExpansion]',
       description:

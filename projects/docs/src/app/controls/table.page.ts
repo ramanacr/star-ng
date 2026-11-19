@@ -464,8 +464,13 @@ readonly slotLoading = signal(false);`;
     {
       name: 'frozen',
       type: 'boolean',
+      description: "Same as pinned: 'start'.",
+    },
+    {
+      name: 'pinned',
+      type: "'start' | 'end' | null",
       description:
-        'Keeps the column in view when the table scrolls sideways. Frozen columns come first.',
+        'Keeps the column in view when the table scrolls sideways, at the start or the end edge. pinnedColumns overrides it at run time.',
     },
     {
       name: 'hideable',
@@ -490,6 +495,22 @@ readonly slotLoading = signal(false);`;
       description:
         'Footer cell: fixed text, or a function of the filtered rows (all pages). The table has a footer row when one column has a footer.',
     },
+    {
+      name: 'summary',
+      type: "'sum' | 'avg' | 'min' | 'max' | 'count' | (rows) => unknown",
+      description:
+        'Summary in the footer row (all filtered rows) and, with groupSummary, below each group. footer wins in the footer row.',
+    },
+    {
+      name: 'summaryFormat',
+      type: 'Intl.NumberFormatOptions',
+      description: 'Number format of the summary, with the table locale.',
+    },
+    {
+      name: 'mergeCells',
+      type: 'boolean',
+      description: 'With rowGroupMode rowspan: equal cells below each other merge (rowspan).',
+    },
   ];
 
   protected readonly methodRows = [
@@ -503,6 +524,11 @@ readonly slotLoading = signal(false);`;
       name: 'moveColumn(field, targetField)',
       type: 'void',
       description: 'Moves a column to the place of another column.',
+    },
+    {
+      name: 'pinColumn(field, side)',
+      type: 'void',
+      description: "Pins a column to 'start' or 'end', or unpins it (null). Emits columnPin.",
     },
     {
       name: 'toggleExpansion(row)',

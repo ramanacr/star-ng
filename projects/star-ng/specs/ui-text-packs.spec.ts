@@ -9,7 +9,7 @@ type Name = keyof StarUiText;
  * Every entry is checked: a stale entry (a text that differs) fails the test.
  */
 const SAME_AS_ENGLISH: Record<string, readonly Name[]> = {
-  // "Layout", "Details", "Dock", "System", "Editor", "Link" and "Minute" are the usual German UI words.
+  // "Layout", "Details", "Dock", "System", "Editor", "Link", "Minute", "Minimum" and "Maximum" are the usual German UI words.
   de: [
     'layout',
     'rowDetails',
@@ -21,11 +21,24 @@ const SAME_AS_ENGLISH: Record<string, readonly Name[]> = {
     'chartY',
     'minute',
     'fileName',
+    'summaryMinimum',
+    'summaryMaximum',
     // A data point reads "series, category: value" in every language.
     'chartPointLabel',
   ],
-  // "Color", "Editor" and "Total" are the Spanish words too. "X" and "Y" are axis names in every language.
-  es: ['colorLabel', 'editorLabel', 'chartTotal', 'chartX', 'chartY', 'chartPointLabel'],
+  // "Color", "Editor" and "Total" are the Spanish words too. "X" and "Y" are axis names in every
+  // language. "No" is the Spanish answer too. A rule summary and a data point only join their
+  // parts (the mode text is translated).
+  es: [
+    'colorLabel',
+    'editorLabel',
+    'chartTotal',
+    'chartX',
+    'chartY',
+    'queryFalse',
+    'queryRuleSummary',
+    'chartPointLabel',
+  ],
 };
 
 const PACKS: Record<string, StarUiText> = { de: STAR_UI_TEXT_DE, es: STAR_UI_TEXT_ES };
@@ -38,6 +51,15 @@ const TEXT_PARAMS: Record<string, readonly string[]> = {
   fileMaxSize: ['size'],
   meterValue: ['value'],
   chartDescription: ['kind', 'min', 'max'],
+  queryRuleRemoved: ['rule'],
+  queryRuleRestored: ['rule'],
+  queryRuleSummary: ['field', 'mode', 'value'],
+  queryRange: ['min', 'max'],
+  kanbanColumnLabel: ['title'],
+  kanbanColumnLimit: ['title'],
+  kanbanPickedUp: ['card'],
+  kanbanDropped: ['card'],
+  kanbanCanceled: ['card'],
   sparklineSummary: ['first', 'last', 'min', 'max', 'trend'],
   barcodeInvalid: ['type'],
   qrCodeLabel: ['value'],
