@@ -495,6 +495,22 @@ readonly slotLoading = signal(false);`;
       description:
         'Footer cell: fixed text, or a function of the filtered rows (all pages). The table has a footer row when one column has a footer.',
     },
+    {
+      name: 'summary',
+      type: "'sum' | 'avg' | 'min' | 'max' | 'count' | (rows) => unknown",
+      description:
+        'Summary in the footer row (all filtered rows) and, with groupSummary, below each group. footer wins in the footer row.',
+    },
+    {
+      name: 'summaryFormat',
+      type: 'Intl.NumberFormatOptions',
+      description: 'Number format of the summary, with the table locale.',
+    },
+    {
+      name: 'mergeCells',
+      type: 'boolean',
+      description: 'With rowGroupMode rowspan: equal cells below each other merge (rowspan).',
+    },
   ];
 
   protected readonly methodRows = [
