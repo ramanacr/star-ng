@@ -269,6 +269,44 @@ describe('StarLinearGauge and StarRadialGauge', () => {
     expect(host.value()).toBe(100);
   });
 
+  it('drags only after a primary button press on the gauge', async () => {
+    const { fixture, host, linear } = await setup();
+    host.interactive.set(true);
+    await fixture.whenStable();
+    const svg = linear.querySelector('svg')!;
+    svg.getBoundingClientRect = () => ({ left: 0, top: 0, width: 320, height: 64 }) as DOMRect;
+    const pointer = (type: string, clientX: number, init: PointerEventInit = {}) => {
+      linear.dispatchEvent(
+        new PointerEvent(type, { clientX, clientY: 20, bubbles: true, ...init }),
+      );
+      return fixture.whenStable();
+    };
+
+    // A drag that started elsewhere enters the gauge with the button down: no change.
+    await pointer('pointermove', 160, { buttons: 1 });
+    expect(host.value()).toBe(50);
+
+    // A right-button press changes nothing, and neither does the move after it.
+    await pointer('pointerdown', 160, { button: 2, buttons: 2 });
+    await pointer('pointermove', 200, { buttons: 2 });
+    expect(host.value()).toBe(50);
+
+    // A primary press starts a drag; the move follows; the release ends it.
+    await pointer('pointerdown', 160, { button: 0, buttons: 1 });
+    expect(host.value()).toBe(100);
+    await pointer('pointermove', 232, { buttons: 1 });
+    expect(host.value()).toBe(150);
+    await pointer('pointerup', 232, { button: 0 });
+    await pointer('pointermove', 88, { buttons: 1 });
+    expect(host.value()).toBe(150);
+
+    // A cancelled pointer ends the drag too.
+    await pointer('pointerdown', 160, { button: 0, buttons: 1 });
+    await pointer('pointercancel', 160);
+    await pointer('pointermove', 88, { buttons: 1 });
+    expect(host.value()).toBe(100);
+  });
+
   it('renders on the server', async () => {
     const { linear, radial } = await setup('server');
     expect(linear.querySelector('.star-gauge__bar')).not.toBeNull();

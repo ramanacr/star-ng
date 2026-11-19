@@ -212,20 +212,38 @@ export abstract class StarGaugeBase implements FormValueControl<number> {
     }
   }
 
-  protected onPointer(event: PointerEvent, start: boolean): void {
-    if (!this.active()) return;
-    if (start) {
-      event.preventDefault();
-      this.focus();
-      const target = this.host.nativeElement;
-      if (typeof target.setPointerCapture === 'function' && event.pointerId !== undefined) {
-        try {
-          target.setPointerCapture(event.pointerId);
-        } catch {
-          // A synthetic event has no active pointer to capture.
-        }
+  /** `true` between a primary button press on the gauge and its release or cancel. */
+  private dragging = false;
+
+  /** A primary button press starts a drag and sets the value under the pointer. */
+  protected onPointerDown(event: PointerEvent): void {
+    if (!this.active() || event.button !== 0) return;
+    event.preventDefault();
+    this.focus();
+    this.dragging = true;
+    const target = this.host.nativeElement;
+    if (typeof target.setPointerCapture === 'function' && event.pointerId !== undefined) {
+      try {
+        target.setPointerCapture(event.pointerId);
+      } catch {
+        // A synthetic event has no active pointer to capture.
       }
     }
+    this.setFromPointer(event);
+  }
+
+  /** Moves the value while a drag that started on the gauge goes on. */
+  protected onPointerMove(event: PointerEvent): void {
+    if (!this.dragging || !this.active()) return;
+    this.setFromPointer(event);
+  }
+
+  /** `pointerup`, `pointercancel` and `lostpointercapture` end the drag. */
+  protected endDrag(): void {
+    this.dragging = false;
+  }
+
+  private setFromPointer(event: PointerEvent): void {
     const ratio = this.ratioAt(event);
     if (ratio === null) return;
     this.set(this.lowest() + ratio * (this.highest() - this.lowest()));
@@ -260,8 +278,11 @@ const GAUGE_HOST = {
   '[class.star-gauge--interactive]': 'active()',
   '[class.star-gauge--disabled]': 'disabled()',
   '(keydown)': 'onKeydown($event)',
-  '(pointerdown)': 'onPointer($event, true)',
-  '(pointermove)': '$event.buttons === 1 && onPointer($event, false)',
+  '(pointerdown)': 'onPointerDown($event)',
+  '(pointermove)': 'onPointerMove($event)',
+  '(pointerup)': 'endDrag()',
+  '(pointercancel)': 'endDrag()',
+  '(lostpointercapture)': 'endDrag()',
   '(blur)': 'touch.emit()',
 };
 
