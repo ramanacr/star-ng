@@ -532,13 +532,16 @@ const ALL_DAY_ROW = -1;
         [style.--star-scheduler-event-color]="colorOf(occurrence.event)"
         [attr.data-event-id]="occurrence.event.id"
         [attr.data-start]="occurrence.start.getTime()"
+        [attr.aria-label]="
+          eventSlot() ? null : eventLabel(occurrence, !occurrence.event.allDay && !compact)
+        "
         [attr.aria-describedby]="canChange(occurrence) ? hintId : null"
         (click)="onEventClick($event, occurrence)"
         (keydown)="onEventKey($event, occurrence)"
         (pointerdown)="onPointerDown($event, occurrence, 'move')"
       >
-        <!-- The name comes from the content: the visible text, then the rest for screen readers,
-             so the visible text is always part of the name. -->
+        <!-- Default content: the name is aria-label, which starts with the visible text. A custom
+             template is the content of the name, followed by the full name for screen readers. -->
         @if (eventSlot(); as custom) {
           <span class="star-scheduler__event-content">
             <ng-container
@@ -554,22 +557,9 @@ const ALL_DAY_ROW = -1;
           </span>
           <span class="star-sr-only">{{ eventName(occurrence) }}</span>
         } @else {
-          @let timeShown = !occurrence.event.allDay && !compact;
-          <!-- The rest of the name is inline text of size 0 inside the visible spans, so the name
-               has no extra space before a comma (an absolute sr-only span counts as a block). -->
-          <span class="star-scheduler__event-title"
-            >{{ occurrence.event.title
-            }}<span class="star-scheduler__aside">{{
-              timeShown ? ', ' : eventDetails(occurrence, false)
-            }}</span></span
-          >
-          @if (timeShown) {
-            <span class="star-scheduler__event-time"
-              >{{ timeSpan(occurrence)
-              }}<span class="star-scheduler__aside">{{
-                eventDetails(occurrence, true)
-              }}</span></span
-            >
+          <span class="star-scheduler__event-title">{{ occurrence.event.title }}</span>
+          @if (!occurrence.event.allDay && !compact) {
+            <span class="star-scheduler__event-time">{{ timeSpan(occurrence) }}</span>
           }
           @if (occurrence.recurring) {
             <i class="ph-bold ph-repeat star-scheduler__event-repeat" aria-hidden="true"></i>
@@ -989,21 +979,22 @@ export class StarScheduler {
   }
 
   /**
-   * The part of the accessible name after the visible text. With the time shown on the event:
-   * ", Tuesday 3 March, Room A"; else ", Tuesday 3 March, 10:00 to 11:00, Room A". "Repeats" ends
-   * the name of a series occurrence.
+   * Accessible name of an event button with the default content. It starts with the visible
+   * text: with the time shown, "Team meeting, 10:00 to 11:00, Tuesday 3 March, Room A"; without,
+   * the full name "Fair, Thursday 5 March to Friday 6 March, All day". "Repeats" ends the name of a
+   * series occurrence.
    */
-  protected eventDetails(occurrence: StarSchedulerOccurrence, timeShown: boolean): string {
-    const parts: string[] = [];
-    if (timeShown) {
-      parts.push(this.dayLabel(occurrence.start));
-      const resource = this.resources().find((r) => sameId(r.id, occurrence.event.resourceId));
-      if (resource) parts.push(resource.name);
-      if (occurrence.recurring) parts.push(this.text.repeats);
-    } else {
-      parts.push(this.eventName(occurrence).slice(occurrence.event.title.length + 2));
-    }
-    return `, ${parts.join(', ')}`;
+  protected eventLabel(occurrence: StarSchedulerOccurrence, timeShown: boolean): string {
+    if (!timeShown) return this.eventName(occurrence);
+    const parts = [
+      occurrence.event.title,
+      this.timeSpan(occurrence),
+      this.dayLabel(occurrence.start),
+    ];
+    const resource = this.resources().find((r) => sameId(r.id, occurrence.event.resourceId));
+    if (resource) parts.push(resource.name);
+    if (occurrence.recurring) parts.push(this.text.repeats);
+    return parts.join(', ');
   }
 
   /** Full name: "Team meeting, Tuesday 3 March, 10:00 to 11:00, Room A". */

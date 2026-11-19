@@ -122,8 +122,9 @@ class Host {
   }
 }
 
-/** The accessible name of an event button: its text, with the hidden parts. */
+/** The accessible name of an event button: its aria-label, else its text. */
 const nameOf = (element: Element | null | undefined): string =>
+  element?.getAttribute('aria-label') ??
   (element?.textContent ?? '').replace(/\s+/g, ' ').replace(/ ,/g, ',').trim();
 
 function key(target: Element, name: string, init: KeyboardEventInit = {}): KeyboardEvent {
@@ -197,7 +198,8 @@ describe('StarScheduler', () => {
         'Stand-up, 09:00 to 09:15, Monday 2 March, Room A, Repeats',
       );
       expect(nameOf(event('Fair'))).toBe('Fair, Thursday 5 March to Friday 6 March, All day');
-      expect(event('Team meeting').hasAttribute('aria-label')).toBe(false);
+      // The visible text is the start of the name, and no hidden text is in the button.
+      expect(event('Team meeting').querySelector('.star-sr-only')).toBeNull();
     });
 
     it('lays overlapping events out side by side', async () => {

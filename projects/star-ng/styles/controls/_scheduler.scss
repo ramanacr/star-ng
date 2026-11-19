@@ -285,10 +285,6 @@
 .star-scheduler__event-content {
   display: contents;
 }
-// The part of the accessible name that is not shown: inline text of size 0.
-.star-scheduler__aside {
-  font-size: 0;
-}
 .star-scheduler__event--readonly {
   cursor: pointer;
 }
