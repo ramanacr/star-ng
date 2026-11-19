@@ -1016,9 +1016,19 @@ export class StarTable<T> {
     return starts;
   });
 
-  protected readonly hasFooter = computed(() =>
-    this.visibleColumns().some((column) => column.footer !== undefined || column.summary),
-  );
+  /**
+   * The footer row exists when a column has a `footer` text, or a column has a `summary` with a
+   * value to show. In lazy mode the values come from `summaries`: while the owner gives none
+   * (null, or every value undefined), the row would be empty, so it is not drawn.
+   */
+  protected readonly hasFooter = computed(() => {
+    const columns = this.visibleColumns();
+    if (columns.some((column) => column.footer !== undefined)) return true;
+    if (!columns.some((column) => column.summary)) return false;
+    if (!this.lazy()) return true;
+    for (const cell of this.footerSummaries().values()) if (cell) return true;
+    return false;
+  });
 
   /** Summary rows below the groups (`groupBy` with `groupSummary`). */
   private readonly groupFooters = computed(() => !!this.groupBy() && this.groupSummary());

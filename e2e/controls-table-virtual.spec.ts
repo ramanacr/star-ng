@@ -1,5 +1,16 @@
 import { expect, Locator, Page, test } from '@playwright/test';
-import { collectErrors, example, needsDevBuild, openPage } from './support';
+import { collectErrors, example, needsDevBuild, openPage as openDocsPage } from './support';
+
+/**
+ * Opens a docs page and waits until the page is hydrated. The page is prerendered, so it is
+ * visible before the application runs, and a key or a click before hydration is lost. A hydrated
+ * component loses its `ngh` attribute.
+ */
+async function openPage(page: Page, path: string, heading: string | RegExp): Promise<void> {
+  await openDocsPage(page, path, heading);
+  await expect(page.locator('[ngh]')).toHaveCount(0, { timeout: 15_000 });
+}
+
 
 /**
  * Virtual scroll of the table with rows of different heights (row detail, groups, stacked

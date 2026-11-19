@@ -168,3 +168,46 @@ describe('StarTable summaries', () => {
     expect(footer()).toEqual(['', '', 'Units total', 'Sum $5.00']);
   });
 });
+
+@Component({
+  imports: [StarTable],
+  template: `<star-table
+    [value]="rows"
+    [columns]="columns"
+    dataKey="id"
+    locale="en-US"
+    [lazy]="true"
+    [summaries]="summaries()"
+  />`,
+})
+class LazySummaryHost {
+  readonly rows = SALES;
+  readonly columns: StarColumn<Sale>[] = [
+    { field: 'city', header: 'City', summary: 'count' },
+    { field: 'units', header: 'Units', summary: 'sum' },
+  ];
+  readonly summaries = signal<Record<string, unknown> | null>(null);
+}
+
+describe('StarTable lazy summaries without a footer text', () => {
+  it('draws no summary row while the owner gives no value', async () => {
+    const fixture = TestBed.createComponent(LazySummaryHost);
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+    const host = fixture.componentInstance;
+    // `summaries` is null.
+    expect(el.querySelector('tfoot')).toBeNull();
+    // Every value is undefined.
+    host.summaries.set({ city: undefined, units: undefined });
+    await fixture.whenStable();
+    expect(el.querySelector('tfoot')).toBeNull();
+    // One value is enough to draw the row.
+    host.summaries.set({ units: 20 });
+    await fixture.whenStable();
+    expect(el.querySelector('tfoot')).not.toBeNull();
+    expect(el.querySelector('tfoot')?.textContent?.replace(/\s+/g, ' ').trim()).toBe('Sum 20');
+    host.summaries.set(null);
+    await fixture.whenStable();
+    expect(el.querySelector('tfoot')).toBeNull();
+  });
+});
