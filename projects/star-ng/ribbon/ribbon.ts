@@ -169,9 +169,10 @@ type KeyTipLevel = 'tabs' | 'items' | 'group';
 
 const SPLIT_MENU = '::menu';
 
-/** A text escaped for a quoted CSS attribute value. */
-function cssString(value: string): string {
-  return value.replace(/["\\]/g, '\\$&');
+/** A value escaped for a CSS selector: `CSS.escape`, or a plain escape where it is missing. */
+function cssEscape(value: string): string {
+  const css = (globalThis as { CSS?: { escape?: (text: string) => string } }).CSS;
+  return css?.escape ? css.escape(value) : value.replace(/["\\]/g, '\\$&');
 }
 
 /**
@@ -995,11 +996,11 @@ export class StarRibbon {
       this.openGroup.set(g);
       this.keyTipGroup.set(g);
       this.keyTipLevel.set('group');
-      this.focus(`[data-keytip="${cssString(target)}"]`);
+      this.focus(`[data-keytip="${cssEscape(target)}"]`);
       return;
     }
     const element = this.host.nativeElement.querySelector<HTMLElement>(
-      `[data-keytip="${cssString(target)}"]`,
+      `[data-keytip="${cssEscape(target)}"]`,
     );
     this.hideKeyTips();
     element?.focus();

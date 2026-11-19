@@ -357,6 +357,23 @@ describe('StarRibbon', () => {
     expect(host.commands).toEqual([{ id: ODD_ID }]);
   });
 
+  it('escapes the ids with CSS.escape when the browser has it', async () => {
+    const escape = vi.fn((value: string) => value.replace(/["\\ ]/g, '\\$&'));
+    vi.stubGlobal('CSS', { escape });
+    const { host, tabs, stable } = await setup();
+    host.font.update((items) => [...items, { id: ODD_ID, label: 'Quote', keyTip: 'Q' }]);
+    await stable();
+    tabs()[0].focus();
+    key(tabs()[0], 'F10');
+    key(tabs()[0], 'h');
+    await stable();
+    key(document.activeElement!, 'q');
+    await stable();
+    expect(host.commands).toEqual([{ id: ODD_ID }]);
+    expect(escape).toHaveBeenCalled();
+    vi.unstubAllGlobals();
+  });
+
   it('collapses to the tab headers and shows the panel on demand', async () => {
     const { host, root, button, tabs, stable } = await setup();
     const panel = root.querySelector<HTMLElement>('[role="tabpanel"]')!;
