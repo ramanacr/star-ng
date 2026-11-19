@@ -431,6 +431,52 @@ export interface StarUiText {
   readonly ribbonGroupOptions: (label: string) => string;
   /** Name of the menu part of a ribbon split button. */
   readonly ribbonSplitMenu: (label: string) => string;
+  // File manager
+  /** Name of `star-file-manager`. */
+  readonly fileManager: string;
+  /** Name of the folder tree. */
+  readonly fileFolders: string;
+  readonly fileContent: string;
+  readonly fileToolbar: string;
+  readonly newFolder: string;
+  readonly upload: string;
+  readonly download: string;
+  readonly open: string;
+  readonly rename: string;
+  readonly delete: string;
+  readonly cut: string;
+  readonly paste: string;
+  readonly cancel: string;
+  readonly create: string;
+  readonly search: string;
+  readonly sortBy: string;
+  readonly sortAscending: string;
+  readonly sortDescending: string;
+  readonly fileViewDetails: string;
+  readonly fileViewIcons: string;
+  /** Column header of the file name. */
+  readonly fileName: string;
+  readonly fileSize: string;
+  readonly fileModified: string;
+  readonly fileType: string;
+  /** Type text of a folder. */
+  readonly fileFolderType: string;
+  readonly folderName: string;
+  readonly fileEmptyFolder: string;
+  readonly fileNoResults: string;
+  readonly fileDetailsPane: string;
+  readonly fileNoSelection: string;
+  readonly fileMoveNotAllowed: string;
+  readonly fileManagerHint: string;
+  /** Question of the delete confirmation of `star-file-manager`. */
+  readonly fileDeleteConfirm: (count: number) => string;
+  readonly fileItemsCut: (count: number) => string;
+  readonly fileItemsCopied: (count: number) => string;
+  /** Announcement after a move to the folder `name`. */
+  readonly fileItemsMoved: (count: number, name: string) => string;
+  readonly fileItemsCopiedTo: (count: number, name: string) => string;
+  /** Default name of the top folder of `star-file-manager`. */
+  readonly fileRoot: string;
 }
 
 export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
@@ -787,6 +833,48 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   ribbonKeyTipsShown: 'Key tips shown. Press a letter, or Escape to go back.',
   ribbonGroupOptions: (label) => `${label} options`,
   ribbonSplitMenu: (label) => `More ${label} options`,
+  fileManager: 'File manager',
+  fileFolders: 'Folders',
+  fileContent: 'Folder content',
+  fileToolbar: 'File actions',
+  newFolder: 'New folder',
+  upload: 'Upload',
+  download: 'Download',
+  open: 'Open',
+  rename: 'Rename',
+  delete: 'Delete',
+  cut: 'Cut',
+  paste: 'Paste',
+  cancel: 'Cancel',
+  create: 'Create',
+  search: 'Search',
+  sortBy: 'Sort by',
+  sortAscending: 'Ascending',
+  sortDescending: 'Descending',
+  fileViewDetails: 'Details view',
+  fileViewIcons: 'Large icons',
+  fileName: 'Name',
+  fileSize: 'Size',
+  fileModified: 'Modified',
+  fileType: 'Type',
+  fileFolderType: 'Folder',
+  folderName: 'Folder name',
+  fileEmptyFolder: 'This folder is empty.',
+  fileNoResults: 'No item matches the search.',
+  fileDetailsPane: 'Item details',
+  fileNoSelection: 'No item selected.',
+  fileMoveNotAllowed: 'A folder cannot go into itself.',
+  fileManagerHint:
+    'Press F2 to rename, Delete to delete, Control+X, Control+C and Control+V to move and copy, Shift+F10 for the menu.',
+  fileDeleteConfirm: (count) => `Delete ${count} ${count === 1 ? 'item' : 'items'}?`,
+  fileItemsCut: (count) =>
+    `${count} ${count === 1 ? 'item' : 'items'} cut. Press Control+V in the target folder.`,
+  fileItemsCopied: (count) =>
+    `${count} ${count === 1 ? 'item' : 'items'} copied. Press Control+V in the target folder.`,
+  fileItemsMoved: (count, name) => `${count} ${count === 1 ? 'item' : 'items'} moved to ${name}`,
+  fileItemsCopiedTo: (count, name) =>
+    `${count} ${count === 1 ? 'item' : 'items'} copied to ${name}`,
+  fileRoot: 'All files',
 };
 
 /** Parameter names of the function entries, in call order (used for `{{ name }}` in translations). */
@@ -862,6 +950,11 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   newMessages: ['count'],
   ribbonGroupOptions: ['label'],
   ribbonSplitMenu: ['label'],
+  fileDeleteConfirm: ['count'],
+  fileItemsCut: ['count'],
+  fileItemsCopied: ['count'],
+  fileItemsMoved: ['count', 'name'],
+  fileItemsCopiedTo: ['count', 'name'],
 };
 
 export const STAR_UI_TEXT = new InjectionToken<StarUiText>('STAR_UI_TEXT', {

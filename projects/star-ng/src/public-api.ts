@@ -29,6 +29,7 @@ export * from '@star-ng/ui/drawer';
 export * from '@star-ng/ui/dropdown';
 export * from '@star-ng/ui/editor';
 export * from '@star-ng/ui/field';
+export * from '@star-ng/ui/file-manager';
 export * from '@star-ng/ui/file-upload';
 export * from '@star-ng/ui/gauge';
 export * from '@star-ng/ui/input-group';

@@ -20,6 +20,7 @@ const SAME_AS_ENGLISH: Record<string, readonly Name[]> = {
     'chartX',
     'chartY',
     'minute',
+    'fileName',
     // A data point reads "series, category: value" in every language.
     'chartPointLabel',
   ],

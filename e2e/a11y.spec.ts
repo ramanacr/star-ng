@@ -1546,6 +1546,28 @@ const STATES: readonly State[] = [
       await expect(live.locator('.star-ribbon-group--open [role="toolbar"]')).toBeVisible();
     },
   },
+  // File manager.
+  {
+    name: 'file manager details view with a context menu',
+    path: 'controls/file-manager',
+    open: async (page) => {
+      await expect(page.locator('star-file-manager[ngh]')).toHaveCount(0, { timeout: 15_000 });
+      const live = example(page, 'Project folder');
+      await live.getByRole('row', { name: /Budget\.csv/ }).click({ button: 'right' });
+      await expect(popup(page).getByRole('menu')).toBeVisible();
+    },
+  },
+  {
+    name: 'file manager large icons with a context menu',
+    path: 'controls/file-manager',
+    open: async (page) => {
+      await expect(page.locator('star-file-manager[ngh]')).toHaveCount(0, { timeout: 15_000 });
+      const live = example(page, 'Large icons and a provider');
+      await live.getByRole('option', { name: /Project Atlas/ }).dblclick();
+      await live.getByRole('option', { name: /Budget\.csv/ }).click({ button: 'right' });
+      await expect(popup(page).getByRole('menu')).toBeVisible();
+    },
+  },
 ];
 
 for (const theme of THEMES) {

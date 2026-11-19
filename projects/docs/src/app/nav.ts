@@ -605,6 +605,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         keywords: 'orgchart hierarchy team structure tree connector',
         load: () => import('./controls/org-chart.page').then((m) => m.OrgChartPage),
       },
+      {
+        label: 'File manager',
+        path: 'controls/file-manager',
+        keywords: 'file explorer folders browser upload rename move copy tree details icons',
+        load: () => import('./controls/file-manager.page').then((m) => m.FileManagerPage),
+      },
     ],
   },
   {

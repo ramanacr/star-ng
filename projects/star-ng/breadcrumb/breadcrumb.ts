@@ -7,6 +7,8 @@ export interface StarBreadcrumbItem {
   readonly routerLink?: string | readonly unknown[];
   readonly url?: string;
   readonly icon?: string;
+  /** Action of an item without a link: the item renders as a button. */
+  readonly command?: () => void;
 }
 
 /**
@@ -47,6 +49,13 @@ export interface StarBreadcrumbItem {
                 </a>
               } @else if (item.url) {
                 <a class="star-breadcrumb__link" [href]="item.url">{{ item.label }}</a>
+              } @else if (item.command) {
+                <button type="button" class="star-breadcrumb__link" (click)="item.command()">
+                  @if (item.icon) {
+                    <i [class]="item.icon" aria-hidden="true"></i>
+                  }
+                  {{ item.label }}
+                </button>
               } @else {
                 <span>{{ item.label }}</span>
               }

@@ -5097,6 +5097,165 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "outputs": []
   },
+  "StarFileManager": {
+    "kind": "component",
+    "selector": "star-file-manager",
+    "entry": "@star-ng/ui/file-manager",
+    "description": "File manager (Kendo `FileManager`, Syncfusion `ejs-filemanager`, DevExtreme `dxFileManager`): folder tree, breadcrumb, toolbar, search, a details table or large icons, and an optional details pane.",
+    "inputs": [
+      {
+        "name": "items",
+        "type": "readonly StarFileItem[]",
+        "default": "[]",
+        "required": false,
+        "description": "All files and folders. Not used when `provider` is set."
+      },
+      {
+        "name": "provider",
+        "type": "StarFileProvider | null",
+        "default": "null",
+        "required": false,
+        "description": "Lists folders on demand and runs the operations. See `StarFileProvider`."
+      },
+      {
+        "name": "detailsPane",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows a pane with the details of the selection."
+      },
+      {
+        "name": "confirmDelete",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Asks before `delete` is emitted. Default on."
+      },
+      {
+        "name": "locale",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Locale of sizes and dates. Default: the application locale."
+      },
+      {
+        "name": "rootLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Name of the top folder. Default: the `fileRoot` text."
+      },
+      {
+        "name": "height",
+        "type": "string",
+        "default": "'28rem'",
+        "required": false,
+        "description": "Height of the file manager (a CSS length)."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [
+      {
+        "name": "folder",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "The open folder (`null`: the top folder)."
+      },
+      {
+        "name": "selection",
+        "type": "readonly string[]",
+        "default": "[]",
+        "required": false,
+        "description": "Ids of the selected items of the open folder."
+      },
+      {
+        "name": "view",
+        "type": "StarFileView",
+        "default": "'details'",
+        "required": false,
+        "description": "`details` (table) or `large-icons` (grid)."
+      },
+      {
+        "name": "sortField",
+        "type": "StarFileSortField",
+        "default": "'name'",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "sortOrder",
+        "type": "1 | -1",
+        "default": "1",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "outputs": [
+      {
+        "name": "open",
+        "type": "StarFileOpenEvent",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "rename",
+        "type": "StarFileRenameEvent",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "delete",
+        "type": "StarFileItemsEvent",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "move",
+        "type": "StarFileTransferEvent",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "copy",
+        "type": "StarFileTransferEvent",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "createFolder",
+        "type": "StarFileCreateFolderEvent",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "upload",
+        "type": "StarFileUploadEvent",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "download",
+        "type": "StarFileItemsEvent",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
   "StarFileTemplate": {
     "kind": "directive",
     "selector": "ng-template[starFile]",
@@ -14323,6 +14482,8 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "field/states": "<div class=\"docs-stack\">\n  <star-field label=\"Promo code\" error=\"This code has expired.\">\n    <input starInput value=\"SPRING\" />\n  </star-field>\n  <star-field label=\"Account number\">\n    <input starInput value=\"100-204\" disabled />\n  </star-field>\n</div>",
   "field/textarea": "<div class=\"docs-stack\">\n  <star-field label=\"Notes\">\n    <textarea starInput autoResize placeholder=\"Add a note\"></textarea>\n  </star-field>\n</div>",
   "field/validation": "<div class=\"docs-stack\">\n  <star-field label=\"Email\" [state]=\"contact.email()\">\n    <input starInput type=\"email\" [formField]=\"contact.email\" />\n  </star-field>\n</div>",
+  "file-manager/project": "<div class=\"docs-stack\">\n  <star-file-manager\n    [items]=\"files()\"\n    [(folder)]=\"folder\"\n    detailsPane\n    (open)=\"onOpen($event)\"\n    (rename)=\"onRename($event)\"\n    (delete)=\"onDelete($event)\"\n    (move)=\"onMove($event)\"\n    (copy)=\"onCopy($event)\"\n    (createFolder)=\"onCreateFolder($event)\"\n    (upload)=\"onUpload($event)\"\n    (download)=\"onDownload($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">{{ log() }}</p>\n</div>",
+  "file-manager/provider": "<star-file-manager\n  [provider]=\"provider\"\n  view=\"large-icons\"\n  height=\"22rem\"\n  ariaLabel=\"Shared files\"\n/>",
   "file-upload/drop": "<div class=\"docs-stack\">\n  <star-file-upload [(value)]=\"dropped\" accept=\"image/*,.pdf\" multiple />\n</div>",
   "file-upload/limits": "<div class=\"docs-stack\">\n  <star-file-upload\n    [(value)]=\"limited\"\n    accept=\".pdf,image/*\"\n    [maxFileSize]=\"1000000\"\n    [fileLimit]=\"3\"\n    multiple\n    (rejectedChange)=\"rejected.set($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Added: {{ limited().length }}. Rejected in the last try: {{ rejected().length }}.\n  </p>\n</div>",
   "file-upload/modes": "<div class=\"docs-stack\">\n  <star-file-upload [(value)]=\"single\" />\n  <star-file-upload [(value)]=\"several\" multiple />\n  <p class=\"docs-output\" role=\"status\">\n    Single: {{ single().length }} file. Multiple: {{ several().length }} files.\n  </p>\n</div>",
