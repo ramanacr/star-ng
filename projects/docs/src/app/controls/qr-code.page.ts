@@ -53,16 +53,11 @@ import { DOCS, DocsRow } from '../shared/docs';
       </docs-example>
 
       <docs-example
-        heading="Colours"
+        heading="Size and colours"
         source="qr-code/colours"
-        note="foreground and background take a CSS colour or a token. The default tokens --star-code-dark and --star-code-light keep the code dark on light in both themes, because many readers cannot read a light code on a dark field. Under forced colours the code keeps these colours (forced-color-adjust: none), so a high-contrast theme does not invert it."
+        note="size sets the width and height in pixels. The default tokens --star-code-dark and --star-code-light keep the code dark on light in both themes, because many readers cannot read a light code on a dark field. foreground and background change them; keep a dark, fixed colour on a light one, not a theme token that turns light in the dark theme. Under forced colours the code keeps its colours (forced-color-adjust: none), so a high-contrast theme does not invert it."
       >
-        <star-qr-code
-          value="INVOICE 2026-0042"
-          foreground="var(--star-primary)"
-          [size]="120"
-          ariaLabel="Invoice 2026-0042"
-        />
+        <star-qr-code value="INVOICE 2026-0042" [size]="120" ariaLabel="Invoice 2026-0042" />
       </docs-example>
 
       <docs-api [of]="['StarQrCode']" [cssVars]="cssVars" />

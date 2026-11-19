@@ -40,8 +40,9 @@ function modulePath(modules: readonly (readonly boolean[])[]): string {
  * chosen automatically; `errorCorrection` is L, M (default), Q or H. The symbol keeps a quiet
  * zone of 4 modules and draws its dark modules as one path. An optional centre `image` covers
  * part of the symbol, so it forces level H. The code is an image (`role="img"`) labelled
- * "QR code: value". The modules stay dark on light in both themes and under forced colours
- * (`forced-color-adjust: none`), because many scanners cannot read an inverted code.
+ * "QR code: value"; an empty value renders nothing. The modules stay dark on light in both
+ * themes and under forced colours (`forced-color-adjust: none`), because many scanners cannot
+ * read an inverted code.
  *
  * `<star-qr-code value="https://example.com" [size]="160" />`
  */
@@ -49,9 +50,9 @@ function modulePath(modules: readonly (readonly boolean[])[]): string {
   selector: 'star-qr-code',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
-    role: 'img',
     class: 'star-qr-code',
-    '[class.star-qr-code--invalid]': '!code()',
+    '[attr.role]': "value() ? 'img' : null",
+    '[class.star-qr-code--invalid]': '!!error()',
     '[attr.aria-label]': 'label()',
     '[style.--star-code-dark]': 'foreground()',
     '[style.--star-code-light]': 'background()',
@@ -88,8 +89,8 @@ function modulePath(modules: readonly (readonly boolean[])[]): string {
           />
         }
       </svg>
-    } @else {
-      <span class="star-qr-code__error">{{ text.qrCodeTooLong }}</span>
+    } @else if (error()) {
+      <span class="star-qr-code__error">{{ error() }}</span>
     }
   `,
 })
@@ -102,7 +103,11 @@ export class StarQrCode {
   readonly errorCorrection = input<StarQrErrorCorrection>('M');
   /** Width and height in pixels. */
   readonly size = input(160);
-  /** Colour of the dark modules, for example `var(--star-text-strong)`. Default `--star-code-dark`. */
+  /**
+   * Colour of the dark modules. Default `--star-code-dark` (black in both themes). Keep it dark
+   * and fixed: a theme token such as `--star-text-strong` turns light in the dark theme, and
+   * many readers cannot read a light code.
+   */
   readonly foreground = input<string | null>(null);
   /** Colour of the light modules and the quiet zone. Default `--star-code-light`. */
   readonly background = input<string | null>(null);
@@ -119,13 +124,20 @@ export class StarQrCode {
     this.image() ? 'H' : this.errorCorrection(),
   );
 
-  protected readonly code = computed(() => {
+  /** The encoded symbol, or the error text; nothing for an empty value. */
+  private readonly result = computed(() => {
+    if (!this.value()) return { code: null, error: null };
     try {
-      return qrEncode(this.value(), { errorCorrection: this.level() });
-    } catch {
-      return null;
+      return { code: qrEncode(this.value(), { errorCorrection: this.level() }), error: null };
+    } catch (error) {
+      // The encoder throws a RangeError when the value does not fit in version 40.
+      const message =
+        error instanceof RangeError ? this.text.qrCodeTooLong : this.text.barcodeInvalid('QR Code');
+      return { code: null, error: message };
     }
   });
+  protected readonly code = computed(() => this.result().code);
+  protected readonly error = computed(() => this.result().error);
 
   protected readonly side = computed(() => (this.code()?.modules.length ?? 0) + 2 * QUIET_ZONE);
   protected readonly path = computed(() => modulePath(this.code()?.modules ?? []));
@@ -142,11 +154,16 @@ export class StarQrCode {
   });
 
   protected readonly label = computed(() => {
+    if (!this.value()) return null;
     if (this.ariaLabel()) return this.ariaLabel()!;
-    if (!this.code()) return this.text.qrCodeTooLong;
-    const value = this.value();
+    const error = this.error();
+    if (error) return error;
+    // Cut on code points, so a character outside the BMP is never split.
+    const chars = [...this.value()];
     const short =
-      value.length > LABEL_LENGTH ? `${value.slice(0, LABEL_LENGTH).trimEnd()}…` : value;
+      chars.length > LABEL_LENGTH
+        ? `${chars.slice(0, LABEL_LENGTH).join('').trimEnd()}…`
+        : this.value();
     return this.text.qrCodeLabel(short);
   });
 }

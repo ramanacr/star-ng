@@ -5968,7 +5968,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "string | null",
         "default": "null",
         "required": false,
-        "description": "Colour of the dark modules, for example `var(--star-text-strong)`. Default `--star-code-dark`."
+        "description": "Colour of the dark modules. Default `--star-code-dark` (black in both themes). Keep it dark and fixed: a theme token such as `--star-text-strong` turns light in the dark theme, and many readers cannot read a light code."
       },
       {
         "name": "background",
@@ -9747,7 +9747,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "progress-bar/basic": "<div class=\"docs-stack\">\n  <star-progress-bar [value]=\"value()\" showValue ariaLabel=\"Upload\" />\n  <div class=\"docs-row\">\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"step(-20)\">Less</star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"step(20)\">More</star-button>\n  </div>\n</div>",
   "progress-bar/indeterminate": "<div class=\"docs-stack\">\n  <star-progress-bar indeterminate ariaLabel=\"Loading\" />\n</div>",
   "progress-bar/severities": "<div class=\"docs-stack\">\n  <star-progress-bar [value]=\"60\" ariaLabel=\"Primary\" />\n  <star-progress-bar [value]=\"80\" severity=\"success\" ariaLabel=\"Success\" />\n  <star-progress-bar [value]=\"45\" severity=\"warn\" ariaLabel=\"Warning\" />\n  <star-progress-bar [value]=\"25\" severity=\"danger\" ariaLabel=\"Danger\" />\n  <star-progress-bar [value]=\"70\" severity=\"info\" size=\"sm\" ariaLabel=\"Info, thin\" />\n</div>",
-  "qr-code/colours": "<star-qr-code\n  value=\"INVOICE 2026-0042\"\n  foreground=\"var(--star-primary)\"\n  [size]=\"120\"\n  ariaLabel=\"Invoice 2026-0042\"\n/>",
+  "qr-code/colours": "<star-qr-code value=\"INVOICE 2026-0042\" [size]=\"120\" ariaLabel=\"Invoice 2026-0042\" />",
   "qr-code/image": "<star-qr-code value=\"https://example.com/projects\" image=\"favicon.svg\" [size]=\"200\" />",
   "qr-code/levels": "<div class=\"docs-stack\">\n  <star-select-button\n    [options]=\"['L', 'M', 'Q', 'H']\"\n    [(value)]=\"level\"\n    ariaLabel=\"Error correction level\"\n  />\n  <input\n    starInput\n    aria-label=\"QR code value\"\n    [value]=\"value()\"\n    (input)=\"value.set($any($event.target).value)\"\n  />\n  <star-qr-code [value]=\"value()\" [errorCorrection]=\"levelOf(level())\" [size]=\"200\" />\n</div>",
   "qr-code/link": "<star-qr-code value=\"https://example.com/orders/1042\" />",

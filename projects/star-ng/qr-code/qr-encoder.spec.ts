@@ -308,6 +308,11 @@ describe('QR encoder (ISO/IEC 18004)', () => {
     expect(decoded.text).toBe(value);
   });
 
+  it('encodes a lone surrogate as the replacement character U+FFFD (valid UTF-8)', () => {
+    const decoded = decode(starEncodeQr('A\uD800B', { errorCorrection: 'L' }));
+    expect(decoded.text).toBe('A�B');
+  });
+
   it('interleaves several blocks and keeps each block a valid Reed-Solomon code word', () => {
     // 5-Q: 2 blocks of 15 and 2 blocks of 16 data codewords, 18 error correction codewords each.
     const value = 'INVOICE 2026-0042 TOTAL 1234.50 EUR PAID';

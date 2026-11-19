@@ -79,11 +79,15 @@ class BitBuffer {
   }
 }
 
-/** UTF-8 bytes of a text (no TextEncoder, so the encoder runs anywhere). */
+/**
+ * UTF-8 bytes of a text (no TextEncoder, so the encoder runs anywhere). A lone surrogate is not
+ * a character: it becomes U+FFFD, as TextEncoder does.
+ */
 function utf8(text: string): number[] {
   const bytes: number[] = [];
   for (const char of text) {
-    const code = char.codePointAt(0)!;
+    let code = char.codePointAt(0)!;
+    if (code >= 0xd800 && code <= 0xdfff) code = 0xfffd;
     if (code < 0x80) bytes.push(code);
     else if (code < 0x800) bytes.push(0xc0 | (code >> 6), 0x80 | (code & 63));
     else if (code < 0x10000) {

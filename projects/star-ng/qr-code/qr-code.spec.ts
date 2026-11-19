@@ -60,6 +60,24 @@ describe('StarQrCode', () => {
     expect(host.getAttribute('aria-label')).toBe('Order link');
   });
 
+  it('cuts the label on whole characters', async () => {
+    const { fixture, host, state } = await setup();
+    state.value.set('a'.repeat(79) + '😀' + 'b'.repeat(10));
+    await fixture.whenStable();
+    expect(host.getAttribute('aria-label')).toBe('QR code: ' + 'a'.repeat(79) + '😀…');
+  });
+
+  it('renders nothing for an empty value', async () => {
+    const { fixture, host, state } = await setup();
+    state.value.set('');
+    await fixture.whenStable();
+    expect(host.querySelector('svg')).toBeNull();
+    expect(host.querySelector('.star-qr-code__error')).toBeNull();
+    expect(host.hasAttribute('role')).toBe(false);
+    expect(host.hasAttribute('aria-label')).toBe(false);
+    expect(host.classList).not.toContain('star-qr-code--invalid');
+  });
+
   it('draws the dark modules as one path with a quiet zone of 4 modules', async () => {
     const { host } = await setup();
     const modules = starEncodeQr('https://example.com/orders/1042');
