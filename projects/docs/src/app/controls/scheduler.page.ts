@@ -134,7 +134,7 @@ function monthEvents(): StarSchedulerEvent[] {
         heading="Rooms on a timeline, with the editor"
         source="scheduler/timeline"
         [script]="timelineScript"
-        note="timeline-day shows the resources as rows. With editor, a slot or event opens a dialog with title, start, end, all day and room; the page applies editorSave."
+        note="timeline-day shows the resources as rows; it shows only the events whose resourceId is one of the listed resources. With editor, a slot or event opens a dialog with title, start, end, all day and room; the page applies editorSave."
       >
         <star-scheduler
           [events]="roomEvents()"

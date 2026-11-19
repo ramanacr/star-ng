@@ -10615,14 +10615,14 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "readonly StarSchedulerResource[]",
         "default": "[]",
         "required": false,
-        "description": "Rows of the timeline view, options of the editor, and colours of their events."
+        "description": "Rows of the timeline view, options of the editor, and colours of their events. The timeline shows only the events whose `resourceId` is one of these resources."
       },
       {
         "name": "views",
         "type": "readonly StarSchedulerView[]",
         "default": "ALL_VIEWS",
         "required": false,
-        "description": "Views in the toolbar. `timeline-day` is offered only with `resources`."
+        "description": "Views in the toolbar. `timeline-day` is offered only with `resources`, and it shows only the events of the listed resources (an event without a listed `resourceId` is not in it)."
       },
       {
         "name": "slotMinutes",

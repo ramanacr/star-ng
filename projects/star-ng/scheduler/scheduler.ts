@@ -619,13 +619,19 @@ export class StarScheduler {
 
   /** The events. The scheduler never changes this array. */
   readonly events = input<readonly StarSchedulerEvent[]>([]);
-  /** Rows of the timeline view, options of the editor, and colours of their events. */
+  /**
+   * Rows of the timeline view, options of the editor, and colours of their events. The timeline
+   * shows only the events whose `resourceId` is one of these resources.
+   */
   readonly resources = input<readonly StarSchedulerResource[]>([]);
   /** The shown view. */
   readonly view = model<StarSchedulerView>('week');
   /** Anchor date of the view: a day of the shown range. */
   readonly date = model<Date>(startOfDay(new Date()));
-  /** Views in the toolbar. `timeline-day` is offered only with `resources`. */
+  /**
+   * Views in the toolbar. `timeline-day` is offered only with `resources`, and it shows only the
+   * events of the listed resources (an event without a listed `resourceId` is not in it).
+   */
   readonly views = input<readonly StarSchedulerView[]>(ALL_VIEWS);
   /** Length of a slot in minutes; drags and keyboard moves snap to it. */
   readonly slotMinutes = input(30, { transform: numberAttribute });
