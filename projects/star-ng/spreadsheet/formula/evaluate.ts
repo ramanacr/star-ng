@@ -85,6 +85,9 @@ export function starSerialToDate(serial: number): Date {
   return new Date(EPOCH + Math.floor(serial) * DAY);
 }
 
+/** Decimal number text, as typed in a cell: `12`, `-1.5`, `.5`, `1e3`. */
+const DECIMAL = /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/;
+
 // Coercions --------------------------------------------------------------------------------
 
 /** One value from a range of one cell; a bigger range is `#VALUE!`. */
@@ -100,7 +103,9 @@ function toNumber(value: Value): number | StarFormulaError {
   if (typeof v === 'boolean') return v ? 1 : 0;
   if (v instanceof StarFormulaError) return v;
   const text = v.trim();
-  const n = text === '' ? NaN : Number(text);
+  // Decimal notation only: Number() would also read "0x10", "0b11" and "Infinity".
+  if (!DECIMAL.test(text)) return err('#VALUE!');
+  const n = Number(text);
   return Number.isFinite(n) ? n : err('#VALUE!');
 }
 
@@ -191,7 +196,8 @@ function text(fn: (text: string) => StarFormulaValue): Fn {
 
 /** Rounds half away from zero, without binary artefacts (`ROUND(1.005, 2)` is 1.01). */
 function round(value: number, digits: number): number {
-  const d = Math.trunc(digits);
+  // Excel accepts digits far outside this range; beyond it the result does not change.
+  const d = Math.min(15, Math.max(-308, Math.trunc(digits)));
   const sign = value < 0 ? -1 : 1;
   const abs = Math.abs(value);
   const text = String(abs);
@@ -235,7 +241,7 @@ const FUNCTIONS: Readonly<Record<string, Fn>> = {
     let count = 0;
     for (const arg of args) {
       if (arg instanceof RangeValue) {
-        for (const v of arg.values()) if (v !== null && v !== '') count++;
+        for (const v of arg.values()) if (v !== null) count++;
       } else if (arg !== null) count++;
     }
     return count;
@@ -386,7 +392,7 @@ function evaluateNode(node: StarFormulaNode, ctx: StarFormulaContext): Value {
         if (cond) return scalar(evaluateNode(node.args[1], ctx));
         return node.args.length > 2 ? scalar(evaluateNode(node.args[2], ctx)) : false;
       }
-      const fn = FUNCTIONS[node.name];
+      const fn = Object.hasOwn(FUNCTIONS, node.name) ? FUNCTIONS[node.name] : undefined;
       if (!fn) return err('#NAME?');
       // A reference argument is a range of one cell, so SUM(A1) skips text as SUM(A1:A1) does.
       const args = node.args.map((arg) => {

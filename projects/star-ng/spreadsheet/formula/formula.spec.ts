@@ -310,6 +310,29 @@ describe('starEvaluate: functions', () => {
   });
 });
 
+describe('starEvaluate: hardening', () => {
+  it('does not take Object.prototype members for functions', () => {
+    expect(code(starEvaluate('=toString(1)'))).toBe('#NAME?');
+    expect(code(starEvaluate('=CONSTRUCTOR(1)'))).toBe('#NAME?');
+    expect(code(starEvaluate('=__PROTO__(1)'))).toBe('#NAME?');
+  });
+
+  it('reads only decimal numbers from text', () => {
+    expect(code(starEvaluate('="0x10"+1'))).toBe('#VALUE!');
+    expect(code(starEvaluate('="0b11"+1'))).toBe('#VALUE!');
+    expect(code(starEvaluate('="Infinity"+1'))).toBe('#VALUE!');
+    expect(starEvaluate('=" 12 "+1')).toBe(13);
+    expect(starEvaluate('="1e3"+1')).toBe(1001);
+    expect(starEvaluate('="-.5"*2')).toBe(-1);
+  });
+
+  it('limits the digits of ROUND', () => {
+    expect(starEvaluate('=ROUND(1.5,400)')).toBe(1.5);
+    expect(starEvaluate('=ROUND(123,-400)')).toBe(0);
+    expect(starEvaluate('=ROUND(2.567,2.9)')).toBe(2.57);
+  });
+});
+
 describe('starShiftFormula (fill handle and paste)', () => {
   it('moves relative parts and keeps absolute parts', () => {
     expect(starShiftFormula('=A1+$B$1+C$1+$D1', 1, 1)).toBe('=B2+$B$1+D$1+$D2');

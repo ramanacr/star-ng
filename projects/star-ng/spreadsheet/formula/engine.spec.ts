@@ -106,6 +106,12 @@ describe('StarFormulaEngine', () => {
     expect(engine.value('Long', 'A5000')).toBe(5001);
   });
 
+  it('counts a formula result of empty text in COUNTA, not an empty cell', () => {
+    engine.setCell('Sheet1', 'N1', { formula: '=""' });
+    engine.setCell('Sheet1', 'N3', { formula: '=COUNTA(N1:N2)' });
+    expect(engine.value('Sheet1', 'N3')).toBe(1);
+  });
+
   it('evaluates TODAY with the engine date', () => {
     engine.setCell('Sheet1', 'M1', { formula: '=TODAY()-DATE(2026,11,1)' });
     expect(engine.value('Sheet1', 'M1')).toBe(18);
