@@ -1243,6 +1243,27 @@ test.describe('table: layout', () => {
     await expect(footer.nth(1)).toHaveText(/Count\s*8/);
   });
 
+  test('merges the group cells over their rows with rowspan', async ({ page }) => {
+    await openPage(page, '/controls/table-layout', 'Table layout');
+    const table = example(page, 'Merged group cells').getByRole('table', {
+      name: 'Sales with merged regions',
+    });
+    await expect(table.locator('tbody tr.star-table__group')).toHaveCount(0);
+    const europe = table.getByRole('cell', { name: 'Europe' });
+    await expect(europe).toHaveAttribute('rowspan', '3');
+    // The merged cell is as tall as its three rows.
+    const rows = bodyRows(table);
+    const first = (await rows.nth(0).boundingBox())!;
+    const third = (await rows.nth(2).boundingBox())!;
+    const cell = (await europe.boundingBox())!;
+    expect(Math.abs(cell.y - first.y)).toBeLessThan(2);
+    expect(Math.abs(cell.y + cell.height - (third.y + third.height))).toBeLessThan(2);
+    // Selection stays per row.
+    await rows.nth(1).getByRole('checkbox').check();
+    await expect(rows.nth(1)).toHaveAttribute('aria-selected', 'true');
+    await expect(rows.nth(0)).toHaveAttribute('aria-selected', 'false');
+  });
+
   test('stacks the rows as label and value lines in a narrow table', async ({ page }) => {
     await openPage(page, '/controls/table-layout', 'Table layout');
     const live = example(page, 'Stacked layout');

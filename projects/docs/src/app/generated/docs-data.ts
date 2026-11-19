@@ -7024,6 +7024,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Group heading of a row (property name or function). Rows with the same heading show together under it, in the order in which the headings first appear after sorting. With `virtualScroll`, the rows of a closed group take no space."
       },
       {
+        "name": "rowGroupMode",
+        "type": "'subheader' | 'rowspan'",
+        "default": "'subheader'",
+        "required": false,
+        "description": "How `groupBy` shows the groups (PrimeNG `rowGroupMode`). `'subheader'` (default): a heading row above each group, which closes the group. `'rowspan'`: no heading rows; the cells of the `groupBy` column (a property name) and of the columns with `mergeCells` merge over the rows with the same text (`rowspan`). Selection, keyboard and edit stay per row: a merged cell belongs to the first row of its run. With `virtualScroll` the table uses `'subheader'`."
+      },
+      {
         "name": "groupSummary",
         "type": "boolean",
         "default": "false",
@@ -9506,6 +9513,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "table-layout/expansion": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-toggle-switch [(checked)]=\"single\">One row open at a time</star-toggle-switch>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"detailed.expandAll()\">\n      Expand all\n    </star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"detailed.collapseAll()\">\n      Collapse all\n    </star-button>\n  </div>\n  <docs-fill>\n    <star-table\n      #detailed\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with detail\"\n      [rowExpandMode]=\"single() ? 'single' : 'multiple'\"\n      [(expandedKeys)]=\"expanded\"\n      paginator\n      [rows]=\"4\"\n    >\n      <ng-template starRowExpansion [starRowExpansionOf]=\"orders\" let-row>\n        <dl class=\"detail\">\n          <dt>Email</dt>\n          <dd>{{ row.email }}</dd>\n          <dt>Quantity</dt>\n          <dd>{{ row.quantity }} x {{ row.product }}</dd>\n        </dl>\n      </ng-template>\n    </star-table>\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Open: {{ expanded().join(', ') || 'none' }}</p>\n</div>",
   "table-layout/footer": "<docs-fill>\n  <star-table\n    [value]=\"orders.slice(0, 6)\"\n    [columns]=\"footerColumns\"\n    dataKey=\"id\"\n    ariaLabel=\"Orders with totals\"\n  />\n</docs-fill>",
   "table-layout/groups": "<div class=\"docs-stack\">\n  <star-toggle-switch [(checked)]=\"grouped\">Group by region</star-toggle-switch>\n  <docs-fill>\n    <star-table\n      [value]=\"orders.slice(0, 12)\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders in groups\"\n      [groupBy]=\"grouped() ? 'region' : null\"\n      [(collapsedGroups)]=\"closed\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Closed: {{ closed().join(', ') || 'none' }}</p>\n</div>",
+  "table-layout/rowspan": "<docs-fill>\n  <star-table\n    [value]=\"sales\"\n    [columns]=\"rowSpanColumns\"\n    dataKey=\"id\"\n    ariaLabel=\"Sales with merged regions\"\n    groupBy=\"region\"\n    rowGroupMode=\"rowspan\"\n    selectionMode=\"multiple\"\n  />\n</docs-fill>",
   "table-layout/stack": "<div class=\"docs-stack docs-stack--narrow\">\n  <star-table\n    [value]=\"orders.slice(0, 3)\"\n    [columns]=\"columns\"\n    dataKey=\"id\"\n    ariaLabel=\"Orders stacked\"\n    responsiveLayout=\"stack\"\n  />\n</div>",
   "table-layout/summaries": "<div class=\"docs-stack\">\n  <star-toggle-switch [(checked)]=\"summaryGroups\">Group by region</star-toggle-switch>\n  <docs-fill>\n    <star-table\n      [value]=\"sales\"\n      [columns]=\"summaryColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Sales with summaries\"\n      locale=\"en-US\"\n      [groupBy]=\"summaryGroups() ? 'region' : null\"\n      groupSummary\n    />\n  </docs-fill>\n</div>",
   "table-layout/virtual": "<docs-fill>\n  <star-table\n    [value]=\"log\"\n    [columns]=\"logColumns\"\n    dataKey=\"id\"\n    ariaLabel=\"Audit log\"\n    virtualScroll\n    [virtualRowHeight]=\"44\"\n    scrollHeight=\"20rem\"\n    stickyHeader\n    striped\n  />\n</docs-fill>",

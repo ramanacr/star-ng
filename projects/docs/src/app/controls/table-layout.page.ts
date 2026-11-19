@@ -205,6 +205,25 @@ const LOG: readonly LogEntry[] = Array.from({ length: 5000 }, (_, i) => ({
       </docs-example>
 
       <docs-example
+        heading="Merged group cells"
+        source="table-layout/rowspan"
+        [script]="rowSpanScript"
+        note="rowGroupMode rowspan shows the groups of groupBy without heading rows: the cells of the groupBy column merge over the rows of each group with rowspan. mergeCells: true merges equal cells of another column too, within each group. Selection, keyboard and edit stay per row; a merged cell belongs to the first row of its run. With virtualScroll the table shows heading rows instead."
+      >
+        <docs-fill>
+          <star-table
+            [value]="sales"
+            [columns]="rowSpanColumns"
+            dataKey="id"
+            ariaLabel="Sales with merged regions"
+            groupBy="region"
+            rowGroupMode="rowspan"
+            selectionMode="multiple"
+          />
+        </docs-fill>
+      </docs-example>
+
+      <docs-example
         heading="Stacked layout"
         source="table-layout/stack"
         note="responsiveLayout stack changes the layout when the table is narrower than 40rem. Each row becomes a block with one line per column (label and value). The sortable headers stay as a row of buttons. The default, scroll, keeps the table and scrolls it sideways."
@@ -456,6 +475,33 @@ readonly summaryColumns: StarColumn<CitySales>[] = [
     summary: 'max',
     summaryFormat: { style: 'currency', currency: 'USD' },
   },
+];`;
+  protected readonly rowSpanColumns: StarColumn<CitySales>[] = [
+    { field: 'region', header: 'Region' },
+    {
+      field: 'quarter',
+      header: 'Best quarter',
+      value: (row) => (row.jan + row.feb + row.mar >= row.apr + row.may + row.jun ? 'Q1' : 'Q2'),
+      mergeCells: true,
+    },
+    { field: 'city', header: 'City' },
+    {
+      field: 'jan',
+      header: 'Jan',
+      align: 'end',
+      format: (row) => formatMoney(row.jan),
+    },
+  ];
+  protected readonly rowSpanScript = `readonly rowSpanColumns: StarColumn<CitySales>[] = [
+  { field: 'region', header: 'Region' },
+  {
+    field: 'quarter',
+    header: 'Best quarter',
+    value: (row) => (row.jan + row.feb + row.mar >= row.apr + row.may + row.jun ? 'Q1' : 'Q2'),
+    mergeCells: true,
+  },
+  { field: 'city', header: 'City' },
+  { field: 'jan', header: 'Jan', align: 'end', format: (row) => formatMoney(row.jan) },
 ];`;
   protected readonly columnGroupScript = `readonly salesGroups: StarColumnGroup[] = [
   { header: 'Location', children: ['region', 'city'] },

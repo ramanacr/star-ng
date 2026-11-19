@@ -939,6 +939,14 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'table with merged group cells (rowspan)',
+    path: 'controls/table-layout',
+    open: async (page) => {
+      const live = example(page, 'Merged group cells');
+      await expect(live.locator('td[rowspan]').first()).toBeVisible();
+    },
+  },
+  {
     name: 'table with a filter select open',
     path: 'controls/table-sort-filter',
     open: async (page) => {

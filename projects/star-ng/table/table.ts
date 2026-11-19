@@ -104,6 +104,7 @@ import {
   StarPinSide,
   StarTablePinCell,
 } from './table-pinning';
+import { rowSpans } from './table-row-span';
 import {
   StarHeaderCheckboxToggleEvent,
   StarRowSelectEvent,
@@ -218,6 +219,11 @@ export interface StarColumn<T> extends StarColumnRules<T> {
   readonly summary?: StarColumnSummary<T>;
   /** `Intl.NumberFormat` options of a number summary, with the table `locale`. */
   readonly summaryFormat?: Intl.NumberFormatOptions;
+  /**
+   * With `rowGroupMode="rowspan"`: a cell merges with the cells below it that have the same text
+   * (one cell with `rowspan`), within a group of `groupBy`. PrimeNG `rowGroupMode="rowspan"`.
+   */
+  readonly mergeCells?: boolean;
 }
 
 export interface StarCellEditEvent<T> {
@@ -967,137 +973,142 @@ export class StarRowExpansionTemplate<T = unknown> {
                     </td>
                   }
                   @for (column of visibleColumns(); track column.field; let firstCell = $first) {
-                    <td
-                      [class]="'star-table__cell--' + (column.align ?? 'start')"
-                      [starTablePin]="pinOf(column)"
-                      [attr.headers]="headerIds()?.headers?.get(column.field) ?? null"
-                      [class.star-table__cell--changed]="isChanged(row, column)"
-                      [attr.data-label]="column.header"
-                    >
-                      @if (firstCell && isDeleted(row)) {
-                        <span class="star-sr-only">{{ text.rowDeleted }}: </span>
-                      }
-                      @if (isRowInEdit(row) && isEditable(row, column)) {
-                        @let rowError = editorError(row, column);
-                        @if (column.editor === 'select') {
-                          <select
-                            class="star-input star-input--sm star-table__editor"
-                            [attr.data-row-editor]="rowKeyText(row)"
-                            [attr.aria-label]="text.editCell(column.header)"
-                            [attr.aria-invalid]="rowError ? 'true' : null"
-                            [attr.aria-describedby]="rowError ? errorId(i, column) : null"
-                            (change)="setDraft(row, column, $any($event.target))"
-                            (keydown)="onRowEditorKey(row, $event)"
-                          >
-                            @for (choice of column.editOptions ?? []; track choice) {
-                              <option
-                                [value]="choice"
-                                [selected]="choice === draftText(row, column)"
-                              >
-                                {{ choice }}
-                              </option>
-                            }
-                          </select>
-                        } @else {
-                          <input
-                            class="star-input star-input--sm star-table__editor"
-                            type="text"
-                            [attr.inputmode]="column.editor === 'number' ? 'decimal' : null"
-                            [attr.data-row-editor]="rowKeyText(row)"
-                            [attr.aria-label]="text.editCell(column.header)"
-                            [attr.aria-invalid]="rowError ? 'true' : null"
-                            [attr.aria-describedby]="rowError ? errorId(i, column) : null"
-                            [attr.aria-required]="column.required || null"
-                            [value]="draftText(row, column)"
-                            (input)="setDraft(row, column, $any($event.target))"
-                            (keydown)="onRowEditorKey(row, $event)"
-                          />
+                    @let span = rowSpan(i, column);
+                    @if (span !== 0) {
+                      <td
+                        [attr.rowspan]="span > 1 ? span : null"
+                        [class]="'star-table__cell--' + (column.align ?? 'start')"
+                        [class.star-table__cell--merged]="span > 1"
+                        [starTablePin]="pinOf(column)"
+                        [attr.headers]="headerIds()?.headers?.get(column.field) ?? null"
+                        [class.star-table__cell--changed]="isChanged(row, column)"
+                        [attr.data-label]="column.header"
+                      >
+                        @if (firstCell && isDeleted(row)) {
+                          <span class="star-sr-only">{{ text.rowDeleted }}: </span>
                         }
-                        @if (rowError) {
-                          <span class="star-table__error" [id]="errorId(i, column)">{{
-                            rowError
-                          }}</span>
-                        }
-                      } @else if (isEditing(row, column)) {
-                        @if (column.editor === 'select') {
-                          <!-- A choice commits at once; Escape or closing the list cancels. -->
-                          <star-select
-                            #selectEditor
-                            class="star-table__editor"
-                            size="sm"
-                            [options]="column.editOptions ?? []"
-                            [value]="cellText(row, column)"
-                            [ariaLabel]="text.editCell(column.header)"
-                            (valueChange)="commitEdit(row, column, $event ?? '')"
-                            (closed)="onEditorClosed(row, column)"
-                            (keydown.escape)="cancelEdit($event, row, column)"
-                          />
-                        } @else {
-                          @let cellError = editorError(row, column);
-                          <input
-                            class="star-input star-input--sm star-table__editor"
-                            [type]="column.editor === 'number' ? 'number' : 'text'"
-                            [attr.aria-label]="text.editCell(column.header)"
-                            [attr.aria-invalid]="cellError ? 'true' : null"
-                            [attr.aria-describedby]="cellError ? errorId(i, column) : null"
-                            [attr.aria-required]="column.required || null"
-                            [value]="editText(row, column)"
-                            (input)="setDraft(row, column, $any($event.target))"
-                            (blur)="
-                              commitEdit(
-                                row,
-                                column,
-                                $any($event.target).value,
-                                $any($event.target).validity?.badInput
-                              )
-                            "
-                            (keydown.enter)="
-                              commitEdit(
-                                row,
-                                column,
-                                $any($event.target).value,
-                                $any($event.target).validity?.badInput
-                              )
-                            "
-                            (keydown.escape)="cancelEdit($event, row, column)"
-                          />
-                          @if (cellError) {
+                        @if (isRowInEdit(row) && isEditable(row, column)) {
+                          @let rowError = editorError(row, column);
+                          @if (column.editor === 'select') {
+                            <select
+                              class="star-input star-input--sm star-table__editor"
+                              [attr.data-row-editor]="rowKeyText(row)"
+                              [attr.aria-label]="text.editCell(column.header)"
+                              [attr.aria-invalid]="rowError ? 'true' : null"
+                              [attr.aria-describedby]="rowError ? errorId(i, column) : null"
+                              (change)="setDraft(row, column, $any($event.target))"
+                              (keydown)="onRowEditorKey(row, $event)"
+                            >
+                              @for (choice of column.editOptions ?? []; track choice) {
+                                <option
+                                  [value]="choice"
+                                  [selected]="choice === draftText(row, column)"
+                                >
+                                  {{ choice }}
+                                </option>
+                              }
+                            </select>
+                          } @else {
+                            <input
+                              class="star-input star-input--sm star-table__editor"
+                              type="text"
+                              [attr.inputmode]="column.editor === 'number' ? 'decimal' : null"
+                              [attr.data-row-editor]="rowKeyText(row)"
+                              [attr.aria-label]="text.editCell(column.header)"
+                              [attr.aria-invalid]="rowError ? 'true' : null"
+                              [attr.aria-describedby]="rowError ? errorId(i, column) : null"
+                              [attr.aria-required]="column.required || null"
+                              [value]="draftText(row, column)"
+                              (input)="setDraft(row, column, $any($event.target))"
+                              (keydown)="onRowEditorKey(row, $event)"
+                            />
+                          }
+                          @if (rowError) {
                             <span class="star-table__error" [id]="errorId(i, column)">{{
-                              cellError
+                              rowError
                             }}</span>
                           }
-                        }
-                      } @else if (!rowEditMode() && isEditable(row, column)) {
-                        <button
-                          type="button"
-                          class="star-table__edit"
-                          [attr.data-edit]="editKey(row, column)"
-                          (click)="startEdit(row, column)"
-                        >
-                          <!-- The name is the action and the visible value (WCAG 2.5.3). -->
-                          <span class="star-sr-only">{{ text.editCell(column.header) }}: </span>
-                          <span class="star-table__edit-value">
-                            <ng-container
-                              *ngTemplateOutlet="
-                                cell;
-                                context: { $implicit: row, column, index: i }
-                              "
+                        } @else if (isEditing(row, column)) {
+                          @if (column.editor === 'select') {
+                            <!-- A choice commits at once; Escape or closing the list cancels. -->
+                            <star-select
+                              #selectEditor
+                              class="star-table__editor"
+                              size="sm"
+                              [options]="column.editOptions ?? []"
+                              [value]="cellText(row, column)"
+                              [ariaLabel]="text.editCell(column.header)"
+                              (valueChange)="commitEdit(row, column, $event ?? '')"
+                              (closed)="onEditorClosed(row, column)"
+                              (keydown.escape)="cancelEdit($event, row, column)"
                             />
-                          </span>
+                          } @else {
+                            @let cellError = editorError(row, column);
+                            <input
+                              class="star-input star-input--sm star-table__editor"
+                              [type]="column.editor === 'number' ? 'number' : 'text'"
+                              [attr.aria-label]="text.editCell(column.header)"
+                              [attr.aria-invalid]="cellError ? 'true' : null"
+                              [attr.aria-describedby]="cellError ? errorId(i, column) : null"
+                              [attr.aria-required]="column.required || null"
+                              [value]="editText(row, column)"
+                              (input)="setDraft(row, column, $any($event.target))"
+                              (blur)="
+                                commitEdit(
+                                  row,
+                                  column,
+                                  $any($event.target).value,
+                                  $any($event.target).validity?.badInput
+                                )
+                              "
+                              (keydown.enter)="
+                                commitEdit(
+                                  row,
+                                  column,
+                                  $any($event.target).value,
+                                  $any($event.target).validity?.badInput
+                                )
+                              "
+                              (keydown.escape)="cancelEdit($event, row, column)"
+                            />
+                            @if (cellError) {
+                              <span class="star-table__error" [id]="errorId(i, column)">{{
+                                cellError
+                              }}</span>
+                            }
+                          }
+                        } @else if (!rowEditMode() && isEditable(row, column)) {
+                          <button
+                            type="button"
+                            class="star-table__edit"
+                            [attr.data-edit]="editKey(row, column)"
+                            (click)="startEdit(row, column)"
+                          >
+                            <!-- The name is the action and the visible value (WCAG 2.5.3). -->
+                            <span class="star-sr-only">{{ text.editCell(column.header) }}: </span>
+                            <span class="star-table__edit-value">
+                              <ng-container
+                                *ngTemplateOutlet="
+                                  cell;
+                                  context: { $implicit: row, column, index: i }
+                                "
+                              />
+                            </span>
+                            @if (isChanged(row, column)) {
+                              <span class="star-sr-only">, {{ text.cellChanged }}</span>
+                            }
+                            <i class="ph-bold ph-pencil-simple" aria-hidden="true"></i>
+                          </button>
+                        } @else {
+                          <ng-container
+                            *ngTemplateOutlet="cell; context: { $implicit: row, column, index: i }"
+                          />
                           @if (isChanged(row, column)) {
                             <span class="star-sr-only">, {{ text.cellChanged }}</span>
                           }
-                          <i class="ph-bold ph-pencil-simple" aria-hidden="true"></i>
-                        </button>
-                      } @else {
-                        <ng-container
-                          *ngTemplateOutlet="cell; context: { $implicit: row, column, index: i }"
-                        />
-                        @if (isChanged(row, column)) {
-                          <span class="star-sr-only">, {{ text.cellChanged }}</span>
                         }
-                      }
-                    </td>
+                      </td>
+                    }
                   }
                   @if (rowEditMode()) {
                     <td class="star-table__row-actions">
@@ -1460,6 +1471,14 @@ export class StarTable<T> {
   /** Headings of the closed groups. Two-way. */
   readonly collapsedGroups = model<readonly string[]>([]);
   /**
+   * How `groupBy` shows the groups (PrimeNG `rowGroupMode`). `'subheader'` (default): a heading
+   * row above each group, which closes the group. `'rowspan'`: no heading rows; the cells of the
+   * `groupBy` column (a property name) and of the columns with `mergeCells` merge over the rows
+   * with the same text (`rowspan`). Selection, keyboard and edit stay per row: a merged cell
+   * belongs to the first row of its run. With `virtualScroll` the table uses `'subheader'`.
+   */
+  readonly rowGroupMode = input<'subheader' | 'rowspan'>('subheader');
+  /**
    * With `groupBy`: a summary row below the rows of each group, with the column `summary` over
    * all filtered rows of the group (in lazy mode, the loaded rows). On a page that ends inside a
    * group the summary row shows at the end of the page. Ignite UI group summaries, PrimeNG
@@ -1699,10 +1718,41 @@ export class StarTable<T> {
       .map(({ row }) => row);
   });
 
+  /** `rowGroupMode="rowspan"` is in effect (not with virtual scroll). */
+  private readonly rowSpanMode = computed(
+    () => this.rowGroupMode() === 'rowspan' && !this.virtualScroll(),
+  );
+
+  /** Row spans of the merged columns on the page, by field (`rowGroupMode="rowspan"`). */
+  private readonly rowSpanMap = computed(() => {
+    if (!this.rowSpanMode()) return null;
+    const groupBy = this.groupBy();
+    const columns = this.visibleColumns().filter(
+      (column) => column.mergeCells || (typeof groupBy === 'string' && column.field === groupBy),
+    );
+    if (!columns.length) return null;
+    const byField = new Map(columns.map((column) => [column.field, column]));
+    const expandable = this.expandable();
+    return rowSpans(
+      this.pageRows(),
+      columns.map((column) => column.field),
+      {
+        textOf: (row, field) => this.cellText(row, byField.get(field)!),
+        groupOf: groupBy ? (row) => this.groupOf(row) : null,
+        endsRun: (row) => expandable && this.isExpanded(row),
+      },
+    );
+  });
+
+  /** `rowspan` of a body cell: `0` when a merged cell above covers it. */
+  protected rowSpan(index: number, column: StarColumn<T>): number {
+    return this.rowSpanMap()?.get(column.field)?.[index] ?? 1;
+  }
+
   /** First row index of each group on the page, with the heading and the row count. */
   private readonly groupStarts = computed(() => {
     const starts = new Map<number, { label: string; count: number }>();
-    if (!this.groupBy()) return starts;
+    if (!this.groupBy() || this.rowSpanMode()) return starts;
     let current: { label: string; count: number } | null = null;
     this.pageRows().forEach((row, index) => {
       const label = this.groupOf(row);
@@ -2347,6 +2397,11 @@ export class StarTable<T> {
             'star-table: virtualScroll needs scrollHeight. Without it the table does not scroll inside its own area, and rows after the first window are not rendered.',
           );
         }
+        if (this.rowGroupMode() === 'rowspan' && this.virtualScroll()) {
+          console.warn(
+            'star-table: rowGroupMode="rowspan" does not work with virtualScroll; the table shows group heading rows.',
+          );
+        }
         if (this.virtualRowHeights() === 'variable' && !this.virtualScroll()) {
           console.warn('star-table: virtualRowHeights has no effect without virtualScroll.');
         }
@@ -2432,6 +2487,7 @@ export class StarTable<T> {
   }
 
   protected isRowCollapsed(row: T): boolean {
+    if (this.rowSpanMode()) return false;
     return !!this.groupBy() && this.isGroupCollapsed(this.groupOf(row));
   }
 
