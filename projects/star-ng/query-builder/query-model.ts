@@ -183,7 +183,7 @@ function asBoolean(raw: unknown): boolean {
 
 /**
  * A row predicate for a query, with the match logic of the table filter
- * (`ɵstarMatchesRule`): text modes ignore case and accents, number modes compare numbers, date
+ * (the same rule matching): text modes ignore case and accents, number modes compare numbers, date
  * modes compare calendar days, `in` tests a list of choices. A mode that is not built in comes
  * from `service` (`StarFilterService`). An incomplete rule (no value, only one bound of `between`,
  * no choice for `in`, an unknown field) and an empty group match every row.
