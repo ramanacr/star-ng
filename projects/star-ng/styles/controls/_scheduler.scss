@@ -297,6 +297,10 @@
   align-items: center;
   inline-size: 100%;
 }
+// While an event is dragged, the pointer goes through every event to the slot below it.
+.star-scheduler--dragging .star-scheduler__event {
+  pointer-events: none;
+}
 .star-scheduler__event--dragging {
   z-index: 6;
   box-shadow: var(--star-shadow-md);

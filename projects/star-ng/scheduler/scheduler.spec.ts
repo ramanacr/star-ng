@@ -376,14 +376,29 @@ describe('StarScheduler', () => {
   });
 
   describe('pointer drag', () => {
-    let original: typeof document.elementFromPoint;
+    // jsdom has no layout. The stubs give what a browser gives: the elements at the point from the
+    // top, an event button (`over`) above the slot (`under`). The slot must be found below it.
+    const doc = document as Document & {
+      elementsFromPoint?: (x: number, y: number) => Element[];
+    };
+    let originalAll: typeof doc.elementsFromPoint;
+    let originalOne: typeof document.elementFromPoint;
     let under: HTMLElement | null = null;
+    let over: HTMLElement | null = null;
     beforeEach(() => {
-      original = document.elementFromPoint;
-      document.elementFromPoint = () => under;
+      originalAll = doc.elementsFromPoint;
+      originalOne = document.elementFromPoint;
+      doc.elementsFromPoint = () =>
+        [over, under].filter(
+          (e): e is HTMLElement =>
+            !!e && !e.closest('.star-scheduler--dragging .star-scheduler__event'),
+        );
+      document.elementFromPoint = () => over ?? under;
     });
     afterEach(() => {
-      document.elementFromPoint = original;
+      doc.elementsFromPoint = originalAll;
+      document.elementFromPoint = originalOne;
+      over = null;
     });
 
     const pointer = (target: EventTarget, type: string) =>
@@ -399,6 +414,7 @@ describe('StarScheduler', () => {
 
     it('moves an event to the slot under the pointer, with a preview while dragging', async () => {
       const { host, event, cell, stable } = await setup();
+      over = event('Team meeting');
       under = cell(20, 1);
       pointer(event('Team meeting'), 'pointerdown');
       under = cell(24, 2);
@@ -418,6 +434,26 @@ describe('StarScheduler', () => {
       // The click after the drag does not select the event.
       event('Team meeting').click();
       expect(host.selected).toHaveLength(0);
+    });
+
+    it('keeps the grab offset: a 2-slot event grabbed in its second slot moves by one slot', async () => {
+      const { host, event, cell, scheduler, stable } = await setup();
+      // The pointer is on the event, over its second slot (10:30).
+      over = event('Team meeting');
+      under = cell(21, 1);
+      pointer(over, 'pointerdown');
+      await stable();
+      expect(scheduler.classList).toContain('star-scheduler--dragging');
+      under = cell(22, 1);
+      pointer(document, 'pointermove');
+      pointer(document, 'pointerup');
+      await stable();
+      expect(host.changes[0]).toMatchObject({
+        kind: 'move',
+        start: at(2026, 3, 3, 10, 30),
+        end: at(2026, 3, 3, 11, 30),
+      });
+      expect(scheduler.classList).not.toContain('star-scheduler--dragging');
     });
 
     it('resizes from the end handle, snapped to the slot', async () => {

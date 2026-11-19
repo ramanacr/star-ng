@@ -11,6 +11,17 @@ async function dragTo(page: Page, from: Locator, x: number, y: number): Promise<
   await page.mouse.up();
 }
 
+/** Waits until the prerendered team calendar is hydrated: an arrow key then moves the focus. */
+async function waitForHydration(page: Page, area: Locator): Promise<void> {
+  const grid = area.getByRole('grid');
+  await expect(async () => {
+    await grid.locator('[role="gridcell"][tabindex="0"]').focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(grid.locator('[data-cell="0:1"]')).toBeFocused({ timeout: 1000 });
+  }).toPass();
+  await page.keyboard.press('ArrowLeft');
+}
+
 test.describe('scheduler', () => {
   test('moves and resizes an event with the keyboard and keeps the focus', async ({ page }) => {
     await openPage(page, '/controls/scheduler', 'Scheduler');
@@ -66,6 +77,34 @@ test.describe('scheduler', () => {
     await expect(
       area.getByRole('button', { name: /^Supplier call, 11:00 to 11:30, Friday 6 March/ }),
     ).toBeVisible();
+  });
+
+  test('drags a 2-slot event by one slot and shrinks it from the top edge', async ({ page }) => {
+    await openPage(page, '/controls/scheduler', 'Scheduler');
+    const area = example(page, 'Team calendar');
+    await waitForHydration(page, area);
+    const meeting = area.getByRole('button', { name: /^Team meeting, 10:00 to 11:00/ });
+    await meeting.scrollIntoViewIfNeeded();
+    const slot = (await area.locator('[data-cell="20:1"]').boundingBox())!.height;
+    let box = (await meeting.boundingBox())!;
+    // Grab the event in its lower half (its second slot) and move it down by one slot.
+    const x = box.x + box.width / 2;
+    let y = box.y + box.height * 0.75;
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    await page.mouse.move(x, y + slot, { steps: 8 });
+    await page.mouse.up();
+    const moved = area.getByRole('button', { name: /^Team meeting, 10:30 to 11:30/ });
+    await expect(moved).toBeVisible();
+
+    // Shrink from the top edge by one slot: 11:00 to 11:30.
+    box = (await moved.boundingBox())!;
+    y = box.y + 2;
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    await page.mouse.move(x, y + slot, { steps: 8 });
+    await page.mouse.up();
+    await expect(area.getByRole('button', { name: /^Team meeting, 11:00 to 11:30/ })).toBeVisible();
   });
 
   test('opens the list of a full month day', async ({ page }) => {

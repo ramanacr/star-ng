@@ -204,6 +204,7 @@ const ALL_DAY_ROW = -1;
   providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarScheduler) }],
   host: {
     class: 'star-scheduler',
+    '[class.star-scheduler--dragging]': 'dragging()',
     role: 'group',
     '[attr.aria-label]': 'ariaLabel() ?? text.scheduler',
     '[style.--star-scheduler-days]': 'days().length',
@@ -675,6 +676,8 @@ export class StarScheduler {
   protected readonly moreDay = signal<Date | null>(null);
   /** @internal Drag preview. */
   readonly preview = signal<Preview | null>(null);
+  /** @internal True while the pointer drags an event: the events let the pointer through. */
+  readonly dragging = signal(false);
   private readonly now = signal<Date | null>(null);
   private drag: DragState | null = null;
   private suppressClick = false;
@@ -1396,6 +1399,8 @@ export class StarScheduler {
   ): void {
     event.stopPropagation();
     if (event.button !== 0 || !this.canChange(occurrence) || this.drag) return;
+    // The slot under the pointer, not the slot where the event starts: a 2-slot event grabbed in
+    // its second slot keeps that grab offset while it moves.
     const button = event.currentTarget as HTMLElement;
     const origin =
       this.cellAt(event.clientX, event.clientY) ??
@@ -1403,6 +1408,7 @@ export class StarScheduler {
       null;
     if (!origin) return;
     this.drag = { occurrence, mode, origin, moved: false };
+    this.dragging.set(true);
     const doc = this.host.ownerDocument;
     const move = (e: PointerEvent) => this.onPointerMove(e);
     const up = (e: PointerEvent) => {
@@ -1416,6 +1422,7 @@ export class StarScheduler {
       doc.removeEventListener('pointerup', up);
       doc.removeEventListener('pointercancel', cancel);
       this.drag = null;
+      this.dragging.set(false);
       this.preview.set(null);
     };
     doc.addEventListener('pointermove', move);
@@ -1423,13 +1430,22 @@ export class StarScheduler {
     doc.addEventListener('pointercancel', cancel);
   }
 
-  /** Key (`row:column`) of the cell under a point, or `null`. */
+  /**
+   * Key (`row:column`) of the slot under a point, or `null`. All elements at the point are
+   * checked, so an event button (or its preview) over the slot does not hide it.
+   */
   private cellAt(x: number, y: number): string | null {
     const doc = this.host.ownerDocument;
-    if (typeof doc.elementFromPoint !== 'function') return null;
-    const element = doc.elementFromPoint(x, y);
-    const cell = element?.closest<HTMLElement>('[data-cell]');
-    return cell && this.host.contains(cell) ? (cell.dataset['cell'] ?? null) : null;
+    if (typeof doc.elementsFromPoint !== 'function') return null;
+    const cell = doc
+      .elementsFromPoint(x, y)
+      .find(
+        (element): element is HTMLElement =>
+          element instanceof HTMLElement &&
+          element.matches('[data-cell]') &&
+          this.host.contains(element),
+      );
+    return cell?.dataset['cell'] ?? null;
   }
 
   private onPointerMove(event: PointerEvent): void {
@@ -1445,6 +1461,7 @@ export class StarScheduler {
   private onPointerUp(event: PointerEvent): void {
     const drag = this.drag;
     this.drag = null;
+    this.dragging.set(false);
     if (!drag) return;
     const key = this.cellAt(event.clientX, event.clientY);
     const result = drag.moved ? (key ? this.dragResult(drag, key) : this.preview()) : null;
