@@ -803,6 +803,33 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'action sheet with danger and disabled actions',
+    path: 'controls/action-sheet',
+    open: async (page) => {
+      await example(page, 'Icons, danger and disabled actions')
+        .getByRole('button', { name: 'Project actions' })
+        .click();
+      await expect(page.getByRole('dialog', { name: 'Project North depot actions' })).toBeVisible();
+    },
+  },
+  {
+    name: 'non-modal bottom sheet container',
+    path: 'controls/bottom-sheet-container',
+    open: async (page) => {
+      await example(page, 'Non-modal sheet').getByRole('button', { name: 'Show filters' }).click();
+      await expect(page.getByRole('dialog', { name: 'Order filters' })).toBeVisible();
+    },
+  },
+  {
+    name: 'key filter error in validateOnly mode',
+    path: 'guides/configuration',
+    open: async (page) => {
+      const live = example(page, 'Filtered fields');
+      await live.getByLabel('Reference').fill('ORD 1042');
+      await expect(live.getByText('Use letters, digits and the underscore only.')).toBeVisible();
+    },
+  },
+  {
     name: 'popover',
     path: 'controls/popover',
     open: async (page) => {
@@ -1143,6 +1170,35 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'query builder with a nested group and incomplete rules',
+    path: 'controls/query-builder',
+    open: async (page) => {
+      // The page is prerendered: wait for hydration before the first click.
+      await expect(page.locator('star-query-builder[ngh]')).toHaveCount(0, { timeout: 15_000 });
+      const live = example(page, 'Filter a table');
+      await live.getByRole('button', { name: 'Add group' }).first().click();
+      await expect(live.locator('.star-query__group')).toHaveCount(2);
+      // Leave the builder, so the incomplete rule shows its invalid state.
+      await live.getByRole('status').click();
+      await expect(live.locator('.star-query__rule--invalid')).toHaveCount(1);
+    },
+  },
+  {
+    name: 'kanban board with a card picked up with the keyboard',
+    path: 'controls/kanban',
+    open: async (page) => {
+      // The page is prerendered: wait for hydration before the first key.
+      await expect(page.locator('star-kanban[ngh]')).toHaveCount(0, { timeout: 15_000 });
+      const live = example(page, 'Task board');
+      const card = live.locator('.star-kanban__card').first();
+      await card.focus();
+      await page.keyboard.press('Space');
+      await page.keyboard.press('ArrowRight');
+      await expect(live.locator('.star-kanban__card--grabbed')).toHaveCount(1);
+      await expect(live.locator('[aria-live]')).toContainText('Moved to In progress');
+    },
+  },
+  {
     name: 'tree with a loading row',
     path: 'controls/tree',
     open: async (page) => {
@@ -1238,6 +1294,53 @@ const STATES: readonly State[] = [
         .first()
         .click();
       await expect(page.getByRole('button', { name: /^Expand row: / }).first()).toBeVisible();
+    },
+  },
+
+  // Charts, gauges and codes.
+  {
+    name: 'sparklines in right-to-left',
+    path: 'controls/sparkline',
+    open: async (page) => {
+      await page.evaluate(() => (document.documentElement.dir = 'rtl'));
+      const line = example(page, 'In a table').locator('star-sparkline').first();
+      await expect(line).toHaveAttribute('aria-label', /^Trend up/);
+    },
+  },
+
+  {
+    name: 'interactive gauge after keyboard input',
+    path: 'controls/gauge',
+    open: async (page) => {
+      const live = example(page, 'Interactive with Signal Forms');
+      const gauge = live.getByRole('slider', { name: 'Volume' });
+      await gauge.focus();
+      await page.keyboard.press('End');
+      await expect(gauge).toHaveAttribute('aria-valuenow', '100');
+    },
+  },
+
+  {
+    name: 'barcode with a value that cannot be encoded',
+    path: 'controls/barcode',
+    open: async (page) => {
+      const live = example(page, 'Error state');
+      await expect(live.locator('.star-barcode__error')).toBeVisible();
+      await live.getByRole('textbox', { name: 'Barcode value' }).fill('5901234123457');
+      await expect(live.locator('star-barcode svg')).toBeVisible();
+      await live.getByRole('textbox', { name: 'Barcode value' }).fill('59012341234X');
+      await expect(live.locator('.star-barcode__error')).toBeVisible();
+    },
+  },
+
+  {
+    name: 'QR code with a value that is too long',
+    path: 'controls/qr-code',
+    open: async (page) => {
+      const live = example(page, 'Error correction');
+      await live.getByRole('radio', { name: 'H' }).click();
+      await live.getByRole('textbox', { name: 'QR code value' }).fill('x'.repeat(1300));
+      await expect(live.locator('.star-qr-code__error')).toBeVisible();
     },
   },
 

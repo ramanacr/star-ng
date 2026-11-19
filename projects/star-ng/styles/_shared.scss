@@ -1,2 +1,13 @@
 // Sass values shared by the control partials. This file emits no CSS.
 $ease: cubic-bezier(0.2, 0, 0, 1);
+
+// Reduced motion: the rules inside apply when the system asks for it (`prefers-reduced-motion`)
+// and when `provideStarNg({ reducedMotion: 'always' })` sets `data-star-motion="reduced"` on <html>.
+@mixin star-reduced-motion {
+  @media (prefers-reduced-motion: reduce) {
+    @content;
+  }
+  :root[data-star-motion='reduced'] {
+    @content;
+  }
+}

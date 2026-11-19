@@ -1,4 +1,5 @@
 export * from './table';
+export * from './table-defaults';
 export {
   StarColumnGroupHeaderTemplate,
   type StarColumnGroup,

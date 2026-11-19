@@ -1,0 +1,37 @@
+// Barcode: dark modules on a light field (`--star-code-dark` on `--star-code-light`) in both
+// themes and under forced colours (`forced-color-adjust: none`): many scanners cannot read an
+// inverted code, which a dark high-contrast theme would give. The error text keeps the system
+// colours.
+.star-barcode {
+  display: inline-block;
+  line-height: 0;
+  vertical-align: middle;
+}
+.star-barcode__svg {
+  forced-color-adjust: none;
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+.star-barcode__background {
+  fill: var(--star-code-light);
+}
+.star-barcode__bar {
+  fill: var(--star-code-dark);
+}
+.star-barcode__text {
+  fill: var(--star-code-dark);
+  font: var(--star-type-body-sm);
+  font-family: var(--star-font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.1em;
+}
+.star-barcode__error {
+  display: inline-block;
+  padding: 0.5rem 0.75rem;
+  border: 1px dashed var(--star-danger);
+  border-radius: var(--star-radius-sm);
+  color: var(--star-danger);
+  font: var(--star-type-body);
+  line-height: normal;
+}

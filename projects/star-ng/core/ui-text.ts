@@ -31,6 +31,11 @@ export interface StarUiText {
   readonly removeItem: (label: string) => string;
   /** Label of the "+N" entry for items that are not shown (avatar group). */
   readonly moreCount: (count: number) => string;
+  // Clipboard (`starCopy`)
+  readonly copied: string;
+  readonly copyFailed: string;
+  /** Validation message of `starKeyFilter` with `validateOnly`. */
+  readonly keyFilterInvalid: string;
   // Tags field
   readonly tagsHint: string;
   readonly tagAdded: (label: string) => string;
@@ -340,6 +345,68 @@ export interface StarUiText {
     max: string,
   ) => string;
   readonly meterValue: (value: string, total: number) => string;
+  // Query builder
+  /** Name of a group whose rules must all match. */
+  readonly queryGroupAll: string;
+  /** Name of a group where one rule must match. */
+  readonly queryGroupAny: string;
+  readonly queryField: string;
+  readonly queryValue: string;
+  readonly addGroup: string;
+  readonly removeGroup: string;
+  /** Hint of a focused rule row. */
+  readonly queryRuleHint: string;
+  readonly queryRuleRemoved: (rule: string) => string;
+  readonly queryRuleRestored: (rule: string) => string;
+  readonly queryTrue: string;
+  readonly queryFalse: string;
+  /** Words that join the rules in the summary text. */
+  readonly queryAnd: string;
+  readonly queryOr: string;
+  /** Summary of a query without rules. */
+  readonly queryEmpty: string;
+  /** One rule in the summary text, for example "Total greater than 100". */
+  readonly queryRuleSummary: (field: string, mode: string, value: string) => string;
+  /** The two values of a `between` rule in the summary text. */
+  readonly queryRange: (min: string, max: string) => string;
+  /** Error of a query with rules that have no value. */
+  readonly queryIncomplete: string;
+  // Kanban board
+  /** Name of a column (or a column in a swimlane) without a limit. */
+  readonly kanbanColumnLabel: (title: string, count: number) => string;
+  /** Name of a column with a work-in-progress limit. */
+  readonly kanbanColumnLimit: (title: string, count: number, limit: number) => string;
+  /** Hint of a card. */
+  readonly kanbanCardHint: string;
+  readonly kanbanPickedUp: (card: string, column: string) => string;
+  readonly kanbanMoved: (column: string, position: number, total: number) => string;
+  readonly kanbanDropped: (card: string, column: string, position: number, total: number) => string;
+  readonly kanbanCanceled: (card: string, column: string) => string;
+  readonly kanbanLimitReached: (column: string) => string;
+  // Sparkline
+  /** Label of a sparkline: the trend word and the formatted first, last, lowest and highest value. */
+  readonly sparklineSummary: (
+    first: string,
+    last: string,
+    min: string,
+    max: string,
+    trend: string,
+  ) => string;
+  readonly sparklineTrendUp: string;
+  readonly sparklineTrendDown: string;
+  readonly sparklineTrendFlat: string;
+  /** Label of a win-loss sparkline. */
+  readonly sparklineWinLoss: (wins: number, losses: number) => string;
+  /** Label of a sparkline without a value. */
+  readonly sparklineNoData: string;
+  // Barcode
+  /** Error of a barcode whose value cannot be encoded; `type` is the symbology, for example "EAN-13". */
+  readonly barcodeInvalid: (type: string) => string;
+  // QR code
+  /** Default label of a QR code; `value` is the encoded text, shortened when it is long. */
+  readonly qrCodeLabel: (value: string) => string;
+  /** Error of a QR code whose value does not fit in version 40. */
+  readonly qrCodeTooLong: string;
   // Signature pad
   /** Default name of the `star-signature-pad` group. */
   readonly signaturePad: string;
@@ -394,14 +461,12 @@ export interface StarUiText {
   readonly aiResponseReady: string;
   readonly aiResponseFailed: string;
   readonly copy: string;
-  readonly copied: string;
   readonly retry: string;
   readonly stop: string;
   /** Live announcement when several messages from others arrive at once. */
   readonly newMessages: (count: number) => string;
   /** Visible hint under the prompt field of `star-ai-prompt`. */
   readonly aiPromptShortcutHint: string;
-  readonly copyFailed: string;
 }
 
 export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
@@ -421,6 +486,9 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   collapseItem: (label) => `Collapse ${label}`,
   removeItem: (label) => `Remove ${label}`,
   moreCount: (count) => `${count} more`,
+  copied: 'Copied',
+  copyFailed: 'Copy failed',
+  keyFilterInvalid: 'The value has a character that is not allowed.',
   tagsHint: 'Press Enter or comma to add. Backspace removes the last item.',
   tagAdded: (label) => `${label} added`,
   tagRemoved: (label) => `${label} removed`,
@@ -707,6 +775,49 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   chartDescription: (kind, series, items, min, max) =>
     `${kind} with ${series} series and ${items} ${items === 1 ? 'item' : 'items'}, values from ${min} to ${max}. The same data is in the table.`,
   meterValue: (value, total) => `${value} of ${total}`,
+
+  queryGroupAll: 'Match all of',
+  queryGroupAny: 'Match any of',
+  queryField: 'Field',
+  queryValue: 'Value',
+  addGroup: 'Add group',
+  removeGroup: 'Remove group',
+  queryRuleHint: 'Delete removes the rule. Alt and the up or down arrow move it.',
+  queryRuleRemoved: (rule) => `${rule} removed. Press Control and Z to undo.`,
+  queryRuleRestored: (rule) => `${rule} restored.`,
+  queryTrue: 'Yes',
+  queryFalse: 'No',
+  queryAnd: 'and',
+  queryOr: 'or',
+  queryEmpty: 'No conditions',
+  // Only the first letter is lowered: "Is IBAN" reads "is IBAN".
+  queryRuleSummary: (field, mode, value) =>
+    `${field} ${mode.charAt(0).toLocaleLowerCase('en')}${mode.slice(1)} ${value}`,
+  queryRange: (min, max) => `${min} and ${max}`,
+  queryIncomplete: 'Complete or remove the rules without a value.',
+
+  kanbanColumnLabel: (title, count) => `${title}, ${count} ${count === 1 ? 'item' : 'items'}`,
+  kanbanColumnLimit: (title, count, limit) =>
+    `${title}, ${count} ${count === 1 ? 'item' : 'items'}, limit ${limit}`,
+  kanbanCardHint:
+    'Press Space to pick up the card. The arrow keys move it, Space drops it and Escape cancels.',
+  kanbanPickedUp: (card, column) => `Picked up ${card} in ${column}`,
+  kanbanMoved: (column, position, total) => `Moved to ${column}, position ${position} of ${total}`,
+  kanbanDropped: (card, column, position, total) =>
+    `${card} dropped in ${column}, position ${position} of ${total}`,
+  kanbanCanceled: (card, column) => `Move cancelled. ${card} is back in ${column}`,
+  kanbanLimitReached: (column) => `${column} is at its limit`,
+  sparklineSummary: (first, last, min, max, trend) =>
+    `${trend}: first ${first}, last ${last}, lowest ${min}, highest ${max}`,
+  sparklineTrendUp: 'Trend up',
+  sparklineTrendDown: 'Trend down',
+  sparklineTrendFlat: 'No change',
+  sparklineWinLoss: (wins, losses) =>
+    `${wins} ${wins === 1 ? 'win' : 'wins'}, ${losses} ${losses === 1 ? 'loss' : 'losses'}`,
+  sparklineNoData: 'No data',
+  barcodeInvalid: (type) => `The value cannot be encoded as ${type}.`,
+  qrCodeLabel: (value) => `QR code: ${value}`,
+  qrCodeTooLong: 'The value is too long for a QR code.',
   signaturePad: 'Signature',
   signatureArea: 'Signature drawing area, empty',
   signatureAreaSigned: 'Signature drawing area, signed',
@@ -740,12 +851,10 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   aiResponseReady: 'Response ready',
   aiResponseFailed: 'The response failed.',
   copy: 'Copy',
-  copied: 'Copied',
   retry: 'Retry',
   stop: 'Stop',
   newMessages: (count) => `${count} new messages`,
   aiPromptShortcutHint: 'Press Control+Enter to send.',
-  copyFailed: 'Copy failed',
 };
 
 /** Parameter names of the function entries, in call order (used for `{{ name }}` in translations). */
@@ -813,6 +922,21 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   previewImage: ['alt'],
   meterValue: ['value', 'total'],
   chartDescription: ['kind', 'series', 'items', 'min', 'max'],
+  queryRuleRemoved: ['rule'],
+  queryRuleRestored: ['rule'],
+  queryRuleSummary: ['field', 'mode', 'value'],
+  queryRange: ['min', 'max'],
+  kanbanColumnLabel: ['title', 'count'],
+  kanbanColumnLimit: ['title', 'count', 'limit'],
+  kanbanPickedUp: ['card', 'column'],
+  kanbanMoved: ['column', 'position', 'total'],
+  kanbanDropped: ['card', 'column', 'position', 'total'],
+  kanbanCanceled: ['card', 'column'],
+  kanbanLimitReached: ['column'],
+  sparklineSummary: ['first', 'last', 'min', 'max', 'trend'],
+  sparklineWinLoss: ['wins', 'losses'],
+  barcodeInvalid: ['type'],
+  qrCodeLabel: ['value'],
   messageFrom: ['name', 'time'],
   newMessage: ['name', 'text'],
   isTyping: ['name'],

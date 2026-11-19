@@ -1,6 +1,11 @@
 import { Component, inject } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { STAR_DIALOG_DATA, StarDialogRef, StarDialogService } from '@star-ng/ui/dialog';
+import {
+  provideStarDialogDefaults,
+  STAR_DIALOG_DATA,
+  StarDialogRef,
+  StarDialogService,
+} from '@star-ng/ui/dialog';
 
 // jsdom has no HTMLDialogElement methods. Minimal stand-ins (real browsers implement these).
 const dialogProto = HTMLDialogElement.prototype as Partial<HTMLDialogElement>;
@@ -90,5 +95,55 @@ describe('StarDialogService', () => {
     await settle();
     await expect(first.closed).resolves.toBeUndefined();
     expect(document.querySelector('star-dialog-container')).toBeNull();
+  });
+});
+
+describe('StarDialogService with STAR_DIALOG_DEFAULTS', () => {
+  beforeEach(() =>
+    TestBed.configureTestingModule({
+      providers: [
+        provideStarDialogDefaults({
+          size: 'lg',
+          closable: false,
+          closeOnEscape: false,
+          dismissableMask: true,
+        }),
+      ],
+    }),
+  );
+  afterEach(() => TestBed.inject(StarDialogService).closeAll());
+
+  const dialog = () => document.querySelector<HTMLDialogElement>('star-dialog-container dialog')!;
+
+  it('uses the token for size, closable and dismissableMask', async () => {
+    const ref = TestBed.inject(StarDialogService).open(Content, {
+      header: 'Defaults',
+      data: { name: 'Ada' },
+    });
+    await settle();
+    expect(dialog().classList).toContain('star-dialog--lg');
+    expect(dialog().querySelector('[aria-label="Close"]')).toBeNull();
+    dialog().dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    await settle();
+    await expect(ref.closed).resolves.toBeUndefined();
+  });
+
+  it('uses the token for closeOnEscape, and the open() config wins over the token', async () => {
+    const ref = TestBed.inject(StarDialogService).open(Content, {
+      header: 'Config wins',
+      data: { name: 'Ada' },
+      size: 'sm',
+      closable: true,
+      dismissableMask: false,
+    });
+    await settle();
+    expect(dialog().classList).toContain('star-dialog--sm');
+    expect(dialog().querySelector('[aria-label="Close"]')).not.toBeNull();
+    dialog().dispatchEvent(new Event('cancel', { cancelable: true }));
+    dialog().dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    await settle();
+    expect(dialog().hasAttribute('open')).toBe(true);
+    ref.close();
+    await settle();
   });
 });

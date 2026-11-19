@@ -1,4 +1,5 @@
 // Base rules shared by every control.
+@use 'shared' as *;
 
 // Text color on a filled tone (primary, success, warning, danger). The dark theme uses
 // lighter tones, where white text is under 3:1, so the text turns dark there.
@@ -39,7 +40,7 @@ table.star-sr-only {
   border: 0;
 }
 
-@media (prefers-reduced-motion: reduce) {
+@include star-reduced-motion {
   .star-panel,
   .star-toast,
   .star-tooltip,
@@ -71,4 +72,19 @@ i[class*=' ph-'] {
 // `direction` property. `scale` is separate from `rotate` and `translate`, so it does not clash.
 .star-icon-mirror:dir(rtl) {
   scale: -1 1;
+}
+
+// Global configuration (`provideStarNg`). `overlay.zIndexBase` sets `--star-z-index-base` on
+// `<html>`; the CDK overlay container (default 1000) follows it. `reducedMotion: 'always'` sets
+// `data-star-motion="reduced"`: every `star-reduced-motion` block (the rules of the system
+// setting) applies, and the motion durations are 0, so the panels open without a slide. `.star-spinner`
+// and the progress of a busy state keep their animation, while the loading icons of the tree and
+// tree-table rows stop, as they do under the system setting.
+:root .cdk-overlay-container {
+  z-index: var(--star-z-index-base, 1000);
+}
+:root[data-star-motion='reduced'] {
+  --star-duration-fast: 0s;
+  --star-duration-base: 0s;
+  --star-duration-slow: 0s;
 }

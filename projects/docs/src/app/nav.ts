@@ -29,6 +29,13 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         load: () => import('./guides/getting-started.guide').then((m) => m.GettingStartedGuide),
       },
       {
+        label: 'Configuration',
+        path: 'guides/configuration',
+        keywords:
+          'provideStarNg config defaults tokens StarConfigService announcer clipboard copy pipes key filter',
+        load: () => import('./guides/configuration.guide').then((m) => m.ConfigurationGuide),
+      },
+      {
         label: 'Theming and tokens',
         path: 'guides/theming',
         keywords: 'css variables colors palette override brand',
@@ -396,6 +403,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         keywords: 'grid list tiles dashboard reorder resize drag drop span columns responsive',
         load: () => import('./controls/tile-layout.page').then((m) => m.TileLayoutPage),
       },
+      {
+        label: 'Kanban board',
+        path: 'controls/kanban',
+        keywords: 'task board columns cards swimlanes wip limit drag drop move',
+        load: () => import('./controls/kanban.page').then((m) => m.KanbanPage),
+      },
     ],
   },
   {
@@ -465,6 +478,19 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         path: 'controls/bottom-sheet',
         keywords: 'action sheet mobile bottom panel slide up choices service',
         load: () => import('./controls/bottom-sheet.page').then((m) => m.BottomSheetPage),
+      },
+      {
+        label: 'Action sheet',
+        path: 'controls/action-sheet',
+        keywords: 'bottom sheet actions mobile choices cancel openActions',
+        load: () => import('./controls/action-sheet.page').then((m) => m.ActionSheetPage),
+      },
+      {
+        label: 'Bottom sheet container',
+        path: 'controls/bottom-sheet-container',
+        keywords: 'bottom sheet dialog host non-modal backdrop max height panel class',
+        load: () =>
+          import('./controls/bottom-sheet-container.page').then((m) => m.BottomSheetContainerPage),
       },
       {
         label: 'Popover',
@@ -599,6 +625,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         load: () => import('./controls/table-sort-filter.page').then((m) => m.TableSortFilterPage),
       },
       {
+        label: 'Query builder',
+        path: 'controls/query-builder',
+        keywords: 'filter builder conditions rules groups and or predicate advanced search',
+        load: () => import('./controls/query-builder.page').then((m) => m.QueryBuilderPage),
+      },
+      {
         label: 'Table paging',
         path: 'controls/table-paging',
         keywords: 'pagination paginator lazy server side load rows per page',
@@ -673,6 +705,30 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         path: 'controls/chart',
         keywords: 'bar line area doughnut pie graph svg data table series',
         load: () => import('./controls/chart.page').then((m) => m.ChartPage),
+      },
+      {
+        label: 'Sparkline',
+        path: 'controls/sparkline',
+        keywords: 'tiny inline chart trend line area bar win loss table cell micro',
+        load: () => import('./controls/sparkline.page').then((m) => m.SparklinePage),
+      },
+      {
+        label: 'Gauge',
+        path: 'controls/gauge',
+        keywords: 'linear radial arc gauge meter dial needle scale ranges ticks kpi',
+        load: () => import('./controls/gauge.page').then((m) => m.GaugePage),
+      },
+      {
+        label: 'Barcode',
+        path: 'controls/barcode',
+        keywords: 'code 128 ean 13 upc code 39 product label scanner print svg',
+        load: () => import('./controls/barcode.page').then((m) => m.BarcodePage),
+      },
+      {
+        label: 'QR code',
+        path: 'controls/qr-code',
+        keywords: 'qr 2d matrix barcode link url scan error correction logo svg',
+        load: () => import('./controls/qr-code.page').then((m) => m.QrCodePage),
       },
     ],
   },

@@ -343,7 +343,7 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
+@include star-reduced-motion {
   .star-speed-dial__fab,
   .star-speed-dial__list li,
   .star-dock__item,
@@ -538,7 +538,7 @@
 .star-float__wrap .star-select__placeholder {
   color: transparent;
 }
-@media (prefers-reduced-motion: reduce) {
+@include star-reduced-motion {
   .star-float__label {
     transition: none;
   }
@@ -642,7 +642,7 @@
   opacity: 1;
   translate: 0 0;
 }
-@media (prefers-reduced-motion: reduce) {
+@include star-reduced-motion {
   .star-ripple__ink {
     display: none;
   }
@@ -651,4 +651,16 @@
     translate: none;
     transition: none;
   }
+}
+
+// `starHighlight` pipe: the matching part of a text.
+mark.star-highlight {
+  background: var(--star-warning-soft);
+  color: var(--star-text-strong);
+  border-radius: var(--star-radius-xs);
+}
+
+// `starKeyFilter` with `validateOnly`: a value with a character that is not allowed.
+.star-input.star-key-filter--invalid {
+  border-color: var(--star-danger);
 }

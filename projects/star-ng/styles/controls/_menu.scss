@@ -178,7 +178,7 @@
   margin: 0.375rem 0.25rem;
   background: var(--star-border);
 }
-@media (prefers-reduced-motion: reduce) {
+@include star-reduced-motion {
   .star-panel-menu__caret {
     transition: none;
   }

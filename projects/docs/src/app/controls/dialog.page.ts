@@ -363,12 +363,7 @@ const POSITIONS: readonly StarDialogPosition[] = [
         </star-dialog>
       </docs-example>
 
-      <docs-api
-        [of]="['StarDialog', 'StarDialogBase']"
-        [slots]="slots"
-        [cssVars]="cssVars"
-        [keyboard]="keyboard"
-      />
+      <docs-api [of]="['StarDialog']" [slots]="slots" [cssVars]="cssVars" [keyboard]="keyboard" />
 
       <h2>Dialog service</h2>
       <div class="docs-table-wrap">

@@ -328,12 +328,7 @@ interface OfficeCity {
       </docs-example>
 
       <docs-api
-        [of]="[
-          'StarAutoComplete',
-          'StarMultiAutoComplete',
-          'StarAutoCompleteBase',
-          'StarOptionListBase',
-        ]"
+        [of]="['StarAutoComplete', 'StarMultiAutoComplete']"
         [slots]="slots"
         [cssVars]="cssVars"
         [keyboard]="keyboard"

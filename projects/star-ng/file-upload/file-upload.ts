@@ -18,6 +18,7 @@ import {
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
 import {
+  injectStarControlDefaults,
   STAR_SLOT_HOST,
   STAR_UI_TEXT,
   StarEmptyContext,
@@ -239,6 +240,7 @@ export function fileMatchesAccept(file: File, accept: string): boolean {
   `,
 })
 export class StarFileUpload implements FormValueControl<readonly File[]> {
+  private readonly defaults = injectStarControlDefaults([]);
   protected readonly text = inject(STAR_UI_TEXT);
   private readonly ids = inject(_IdGenerator);
 
@@ -258,8 +260,8 @@ export class StarFileUpload implements FormValueControl<readonly File[]> {
   readonly maxFileSize = input(0);
   /** Maximum number of files (0 = no limit). */
   readonly fileLimit = input(0);
-  /** Locale for the file sizes (default: the application locale). */
-  readonly locale = input<string | undefined>(undefined);
+  /** Locale for the file sizes. Default: `locale` of `provideStarNg`, else the browser locale. */
+  readonly locale = input<string | undefined>(this.defaults.locale ?? undefined);
   /**
    * Upload state of a file, or `null`. Read your own signal in the function: the list then
    * follows the upload.
