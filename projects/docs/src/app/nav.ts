@@ -765,6 +765,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         keywords: 'picture preview zoom lazy photo',
         load: () => import('./controls/image.page').then((m) => m.ImagePage),
       },
+      {
+        label: 'Image editor',
+        path: 'controls/image-editor',
+        keywords: 'photo crop rotate flip resize brightness contrast filter annotate draw canvas',
+        load: () => import('./controls/image-editor.page').then((m) => m.ImageEditorPage),
+      },
     ],
   },
   {

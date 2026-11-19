@@ -5654,6 +5654,66 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "outputs": []
   },
+  "StarImageEditor": {
+    "kind": "component",
+    "selector": "star-image-editor",
+    "entry": "@star-ng/ui/image-editor",
+    "description": "Image editor (Syncfusion `ejs-imageeditor`, Kendo UI ImageEditor; DevExtreme and Ignite UI have none): crop with free or fixed ratios, rotate by 90° or by any angle, flip, resize, colour adjustments (brightness, contrast, saturation, grayscale, sepia) and annotations (pen, rectangle, ellipse, arrow, text), with undo and redo.",
+    "inputs": [
+      {
+        "name": "src",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "The image to edit: a `data:image/` URL, a `blob:` URL (for example from a file input) or an address of the same origin. Any other address is not drawn (canvas taint rule)."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Name of the editor group. Defaults to the `imageEditor` text."
+      },
+      {
+        "name": "imageAlt",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Name of the image. Defaults to the `imageCanvas` text."
+      },
+      {
+        "name": "aspectRatios",
+        "type": "readonly StarImageAspectRatio[]",
+        "default": "STAR_IMAGE_ASPECT_RATIOS",
+        "required": false,
+        "description": "Ratios of the crop panel. A `null` ratio is free; an empty label shows the `imageAspectFree` text."
+      },
+      {
+        "name": "colors",
+        "type": "readonly string[]",
+        "default": "STAR_IMAGE_COLORS",
+        "required": false,
+        "description": "Annotation colours (CSS colours or `var()` of tokens). Defaults to `--star-chart-1…8`."
+      },
+      {
+        "name": "historyLimit",
+        "type": "number",
+        "default": "100",
+        "required": false,
+        "description": "Most undo steps kept."
+      }
+    ],
+    "models": [
+      {
+        "name": "value",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "The edited image as a PNG data URL after each edit; `''` while there is no edit."
+      }
+    ],
+    "outputs": []
+  },
   "StarInplace": {
     "kind": "component",
     "selector": "star-inplace",
@@ -14378,6 +14438,8 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "ifta-label/basic": "<div class=\"docs-stack\">\n  <star-ifta-label label=\"Customer name\" hint=\"As on the invoice.\">\n    <input starInput placeholder=\"Avery Stone\" />\n  </star-ifta-label>\n  <star-ifta-label label=\"City\">\n    <star-select [options]=\"cities\" [(value)]=\"city\" />\n  </star-ifta-label>\n  <star-ifta-label label=\"Delivery date\">\n    <star-date-picker />\n  </star-ifta-label>\n  <star-ifta-label label=\"Quantity\">\n    <star-input-number [(value)]=\"quantity\" [min]=\"1\" />\n  </star-ifta-label>\n</div>",
   "ifta-label/validation": "<div class=\"docs-stack\">\n  <star-ifta-label label=\"Order number\" [state]=\"order.number()\">\n    <input starInput [formField]=\"order.number\" />\n  </star-ifta-label>\n</div>",
   "image-compare/basic": "<div class=\"docs-stack\">\n  <star-image-compare\n    [leftSrc]=\"before\"\n    [rightSrc]=\"after\"\n    leftAlt=\"Before: grey shapes\"\n    rightAlt=\"After: colored shapes\"\n    ariaLabel=\"Compare before and after\"\n    [(value)]=\"position\"\n  />\n  <p class=\"docs-output\" role=\"status\">Divider at {{ position() }}%</p>\n</div>",
+  "image-editor/basic": "<div class=\"docs-stack\">\n  <star-image-editor\n    #editor\n    [src]=\"scene\"\n    [(value)]=\"edited\"\n    ariaLabel=\"Landscape editor\"\n    imageAlt=\"Landscape with hills, a lake and a house\"\n  />\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"exportPng()\">Export PNG</star-button>\n    <star-button variant=\"secondary\" (pressed)=\"exportJpeg()\">Export JPEG</star-button>\n  </div>\n  <p class=\"docs-output\" role=\"status\">{{ exported() }}</p>\n  @if (edited()) {\n    <img class=\"preview\" [src]=\"edited()\" alt=\"Preview of the edited image\" />\n  }\n  <p class=\"docs-output\">Value: {{ summary() }}</p>\n</div>",
+  "image-editor/file": "<div class=\"docs-stack\">\n  <label class=\"docs-row\">\n    Image file\n    <input type=\"file\" accept=\"image/*\" (change)=\"openFile($event)\" />\n  </label>\n  <star-image-editor [src]=\"fileUrl()\" ariaLabel=\"File editor\" />\n</div>",
   "image/basic": "<star-image [src]=\"shelf\" alt=\"Shelf photo\" [width]=\"240\" />",
   "image/preview": "<star-image [src]=\"shelf\" alt=\"Shelf photo\" [width]=\"240\" preview />",
   "inplace/active": "<div class=\"docs-stack\">\n  <star-inplace ariaLabel=\"Edit title\" [(active)]=\"editing\">\n    <ng-template starInplaceDisplay>{{ title() }}</ng-template>\n    <ng-template starInplaceContent>\n      <input\n        starInput\n        size=\"sm\"\n        aria-label=\"Title\"\n        [value]=\"title()\"\n        (input)=\"title.set($any($event.target).value)\"\n        (keydown.enter)=\"editing.set(false)\"\n      />\n    </ng-template>\n  </star-inplace>\n  <p class=\"docs-output\" role=\"status\">Editing: {{ editing() }}</p>\n  <star-inplace disabled ariaLabel=\"Locked value\">\n    <ng-template starInplaceDisplay>Locked value</ng-template>\n    <ng-template starInplaceContent>Not shown</ng-template>\n  </star-inplace>\n</div>",

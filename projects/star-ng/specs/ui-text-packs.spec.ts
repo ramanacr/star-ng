@@ -60,6 +60,10 @@ const TEXT_PARAMS: Record<string, readonly string[]> = {
   sparklineSummary: ['first', 'last', 'min', 'max', 'trend'],
   barcodeInvalid: ['type'],
   qrCodeLabel: ['value'],
+  imageDescription: ['edits'],
+  imageEditList: ['edits'],
+  imageApplied: ['tool'],
+  imageAnnotationItem: ['kind'],
 };
 const TEXT_NAMES = new Set(['label', 'column', 'name', 'alt']);
 

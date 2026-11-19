@@ -1153,6 +1153,24 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'image editor with the crop tool active',
+    path: 'controls/image-editor',
+    open: async (page) => {
+      // The page is prerendered: wait for hydration before the first click.
+      await expect(page.locator('star-image-editor[ngh]')).toHaveCount(0, { timeout: 15_000 });
+      const live = example(page, 'Edit an image');
+      const crop = live.getByRole('button', { name: 'Crop', exact: true });
+      // The tools are enabled once the image is loaded.
+      await expect(crop).not.toHaveAttribute('aria-disabled', 'true');
+      await crop.click();
+      await live.getByRole('button', { name: '4:3' }).click();
+      const box = live.getByRole('group', { name: /^Crop area/ });
+      await box.focus();
+      await page.keyboard.press('ArrowRight');
+      await expect(box).toHaveAttribute('aria-label', /Crop area \d+ × \d+ pixels/);
+    },
+  },
+  {
     name: 'tree with a loading row',
     path: 'controls/tree',
     open: async (page) => {
