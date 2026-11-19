@@ -290,6 +290,40 @@ describe('QR encoder (ISO/IEC 18004)', () => {
     expect(decoded.text).toBe('01234567');
   });
 
+  it('keeps the full module matrix of "01234567" 1-M with mask 2', () => {
+    // A fixed regression fixture. It was produced by this encoder and checked with the test
+    // decoder above (annex I codewords, format information M-2 = 101111001111100 of table C.1);
+    // it is not transcribed from the printed symbol of annex I.
+    const code = qrEncode('01234567', { errorCorrection: 'M', mask: 2 });
+    expect(qrFormatBits('M', 2)).toBe(0b101111001111100);
+    expect(code.modules.map((row) => row.map((dark) => (dark ? '1' : '0')).join(''))).toEqual([
+      '111111100101101111111',
+      '100000100111101000001',
+      '101110101000001011101',
+      '101110101100001011101',
+      '101110101011101011101',
+      '100000101000101000001',
+      '111111101010101111111',
+      '000000001001100000000',
+      '101111100100101111100',
+      '000101011010100101100',
+      '001000110101010011111',
+      '000010000100000111100',
+      '000111111001010010000',
+      '000000001011111001100',
+      '111111100110101100000',
+      '100000101011111000101',
+      '101110101000100101100',
+      '101110101100100100000',
+      '101110101011010010100',
+      '100000100000000110110',
+      '111111101111010010100',
+    ]);
+    const decoded = decode(code.modules);
+    expect(decoded.mask).toBe(2);
+    expect(decoded.text).toBe('01234567');
+  });
+
   it('encodes a link in byte mode and decodes it back', () => {
     const value = 'https://example.com/orders/1042';
     const code = qrEncode(value);
