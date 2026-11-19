@@ -2,6 +2,7 @@
  * Scroll helpers of `star-tabs` with `scrollable`. They read the DOM only when they are called,
  * so they are safe on the server (no call there) and in tests (no layout: every size is 0).
  */
+import { starPrefersReducedMotion } from '@star-ng/ui/core';
 
 /** Which ends of a scroll container have hidden content. */
 export interface StarTabsOverflow {
@@ -25,7 +26,7 @@ export function starTabsOverflow(list: HTMLElement, vertical: boolean): StarTabs
 /** `true` when the user asks for less motion, or when the browser cannot say. */
 function reducedMotion(list: HTMLElement): boolean {
   const view = list.ownerDocument.defaultView;
-  return !view?.matchMedia || view.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  return !view?.matchMedia || starPrefersReducedMotion(list.ownerDocument);
 }
 
 /** Scrolls `list` by `delta` pixels (physical: positive is right or down). */
