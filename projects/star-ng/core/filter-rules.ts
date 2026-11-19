@@ -6,6 +6,9 @@ import { StarFilterFunction } from './filter-service';
  * `star-query-builder`: the old value shapes (text, text list, range) and the rule model of the
  * filter menu (`StarFilterConstraint`, PrimeNG `FilterMetadata[]` with `operator`). Text matching
  * uses `starFilterMatch`. Pure functions, so they run on the server too.
+ *
+ * The types and `STAR_TABLE_MATCH_MODES` are public. The functions carry the `ɵ` prefix: they are
+ * shared by the StarNG entry points only and are not part of the public API.
  */
 
 /** Filter control of a column (and value type of a filter rule). */
@@ -83,7 +86,7 @@ export interface StarFilterCell {
 export type StarFilterLookup = (name: string) => StarFilterFunction | undefined;
 
 /** The value is a rule set (`StarFilterConstraint`). */
-export function starIsFilterConstraint(value: unknown): value is StarFilterConstraint {
+export function ɵstarIsFilterConstraint(value: unknown): value is StarFilterConstraint {
   return (
     typeof value === 'object' &&
     value !== null &&
@@ -92,38 +95,38 @@ export function starIsFilterConstraint(value: unknown): value is StarFilterConst
 }
 
 /** The value is a range (`{ min, max }`), not a text list or a rule set. */
-export function starIsRangeFilter(value: unknown): value is StarRangeFilter {
+export function ɵstarIsRangeFilter(value: unknown): value is StarRangeFilter {
   return (
     typeof value === 'object' &&
     value !== null &&
     !Array.isArray(value) &&
-    !starIsFilterConstraint(value)
+    !ɵstarIsFilterConstraint(value)
   );
 }
 
 /** A range bound is set (not `null`, `undefined` or `''`). */
-export function starHasBound(bound: number | string | null | undefined): bound is number | string {
+export function ɵstarHasBound(bound: number | string | null | undefined): bound is number | string {
   return bound !== null && bound !== undefined && bound !== '';
 }
 
 /** A rule with a value to match (an empty rule matches every row). */
-export function starRuleActive(rule: StarFilterRule): boolean {
+export function ɵstarRuleActive(rule: StarFilterRule): boolean {
   const value = rule.value;
   if (value === null || value === undefined) return false;
   if (typeof value === 'number') return !Number.isNaN(value);
-  if (starIsRangeFilter(value)) return starHasBound(value.min) || starHasBound(value.max);
+  if (ɵstarIsRangeFilter(value)) return ɵstarHasBound(value.min) || ɵstarHasBound(value.max);
   return value.length > 0;
 }
 
 /** The filter value filters something. */
-export function starIsActiveFilter(value: StarFilterValue | undefined): value is StarFilterValue {
-  if (starIsFilterConstraint(value)) return value.rules.some(starRuleActive);
-  if (starIsRangeFilter(value)) return starHasBound(value.min) || starHasBound(value.max);
+export function ɵstarIsActiveFilter(value: StarFilterValue | undefined): value is StarFilterValue {
+  if (ɵstarIsFilterConstraint(value)) return value.rules.some(ɵstarRuleActive);
+  if (ɵstarIsRangeFilter(value)) return ɵstarHasBound(value.min) || ɵstarHasBound(value.max);
   return !!value && value.length > 0;
 }
 
 /** Local calendar day of a cell value as `yyyy-mm-dd`, or `''` when it is not a date. */
-export function starDayKey(value: unknown): string {
+export function ɵstarDayKey(value: unknown): string {
   if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}/.test(value)) return value.slice(0, 10);
   const date = value instanceof Date ? value : new Date(value as string | number);
   if (value === null || value === undefined || Number.isNaN(date.getTime())) return '';
@@ -150,15 +153,15 @@ function inRange(
   toBound: (b: number | string) => number | string,
 ): boolean {
   return (
-    (!starHasBound(range.min) || value >= toBound(range.min)) &&
-    (!starHasBound(range.max) || value <= toBound(range.max))
+    (!ɵstarHasBound(range.min) || value >= toBound(range.min)) &&
+    (!ɵstarHasBound(range.max) || value <= toBound(range.max))
   );
 }
 
 function matchNumber(raw: unknown, mode: string, value: StarFilterRuleValue): boolean {
   const amount = amountOf(raw);
   if (Number.isNaN(amount)) return false;
-  if (mode === 'between') return starIsRangeFilter(value) && inRange(amount, value, Number);
+  if (mode === 'between') return ɵstarIsRangeFilter(value) && inRange(amount, value, Number);
   const target = Number(value);
   switch (mode) {
     case 'notEquals':
@@ -177,10 +180,10 @@ function matchNumber(raw: unknown, mode: string, value: StarFilterRuleValue): bo
 }
 
 function matchDate(raw: unknown, mode: string, value: StarFilterRuleValue): boolean {
-  const day = starDayKey(raw);
+  const day = ɵstarDayKey(raw);
   if (!day) return false;
-  if (mode === 'between') return starIsRangeFilter(value) && inRange(day, value, starDayKey);
-  const target = starDayKey(value);
+  if (mode === 'between') return ɵstarIsRangeFilter(value) && inRange(day, value, ɵstarDayKey);
+  const target = ɵstarDayKey(value);
   switch (mode) {
     case 'dateIsNot':
       return day !== target;
@@ -197,14 +200,14 @@ function matchDate(raw: unknown, mode: string, value: StarFilterRuleValue): bool
  * True when a cell matches one rule. An inactive rule (no value) matches. A mode that is not
  * built in comes from `custom` (`StarFilterService`); an unknown mode matches every row.
  */
-export function starMatchesRule(
+export function ɵstarMatchesRule(
   cell: StarFilterCell,
   type: StarColumnFilterType | undefined,
   rule: StarFilterRule,
   locale: string | null = null,
   custom?: StarFilterLookup,
 ): boolean {
-  if (!starRuleActive(rule)) return true;
+  if (!ɵstarRuleActive(rule)) return true;
   const { matchMode: mode, value } = rule;
   if (!BUILT_IN.has(mode)) {
     const fn = custom?.(mode);
@@ -225,7 +228,7 @@ export function starMatchesRule(
  * numbers or days between the bounds, a text list matches one of its texts, a text equals the
  * cell for a `'select'` column and else matches with `mode` (default `contains`).
  */
-export function starMatchesFilter(
+export function ɵstarMatchesFilter(
   cell: StarFilterCell,
   type: StarColumnFilterType | undefined,
   value: StarFilterValue,
@@ -233,13 +236,13 @@ export function starMatchesFilter(
   locale: string | null = null,
   custom?: StarFilterLookup,
 ): boolean {
-  if (starIsFilterConstraint(value)) {
-    const rules = value.rules.filter(starRuleActive);
+  if (ɵstarIsFilterConstraint(value)) {
+    const rules = value.rules.filter(ɵstarRuleActive);
     if (!rules.length) return true;
-    const test = (rule: StarFilterRule) => starMatchesRule(cell, type, rule, locale, custom);
+    const test = (rule: StarFilterRule) => ɵstarMatchesRule(cell, type, rule, locale, custom);
     return value.operator === 'or' ? rules.some(test) : rules.every(test);
   }
-  if (starIsRangeFilter(value)) {
+  if (ɵstarIsRangeFilter(value)) {
     return type === 'date'
       ? matchDate(cell.raw, 'between', value)
       : matchNumber(cell.raw, 'between', value);
@@ -249,5 +252,5 @@ export function starMatchesFilter(
   // A text without a column mode keeps its old meaning on every column: the display text
   // contains it (also on a number or date column).
   if (!mode) return starFilterMatch(cell.text, value, 'contains', locale);
-  return starMatchesRule(cell, type, { matchMode: mode, value }, locale, custom);
+  return ɵstarMatchesRule(cell, type, { matchMode: mode, value }, locale, custom);
 }

@@ -4,12 +4,12 @@ import {
   StarColumnFilterType,
   StarFilterFunction,
   StarFilterRuleValue,
-  starHasBound,
-  starIsRangeFilter,
-  starMatchesRule,
-  starRuleActive,
   StarTableMatchMode,
   StarUiText,
+  ɵstarHasBound,
+  ɵstarIsRangeFilter,
+  ɵstarMatchesRule,
+  ɵstarRuleActive,
 } from '@star-ng/ui/core';
 
 /** Value type of a query field; it decides the match modes and the value editor. */
@@ -148,9 +148,9 @@ export function starQueryRuleComplete(
   const value = rule.value;
   if (typeof value === 'boolean') return field.type === 'boolean';
   if (rule.matchMode === 'between') {
-    return starIsRangeFilter(value) && starHasBound(value.min) && starHasBound(value.max);
+    return ɵstarIsRangeFilter(value) && ɵstarHasBound(value.min) && ɵstarHasBound(value.max);
   }
-  return starRuleActive({ matchMode: rule.matchMode, value });
+  return ɵstarRuleActive({ matchMode: rule.matchMode, value });
 }
 
 /** Number of incomplete rules in a query, nested groups included. */
@@ -177,13 +177,13 @@ export function starQueryIncompleteCount(
 function ruleActive(rule: StarQueryRule): boolean {
   return (
     typeof rule.value === 'boolean' ||
-    starRuleActive({ matchMode: rule.matchMode, value: rule.value })
+    ɵstarRuleActive({ matchMode: rule.matchMode, value: rule.value })
   );
 }
 
 /**
  * A row predicate for a query, with the match logic of the table filter
- * (`starMatchesRule`): text modes ignore case and accents, number modes compare numbers, date
+ * (`ɵstarMatchesRule`): text modes ignore case and accents, number modes compare numbers, date
  * modes compare calendar days, `in` tests a list of choices. A mode that is not built in comes
  * from `service` (`StarFilterService`). A rule without a value, an unknown field or an empty group
  * matches every row.
@@ -216,7 +216,7 @@ export function starQueryToPredicate<T>(
     const text = raw === null || raw === undefined ? '' : String(raw);
     const type: StarColumnFilterType | undefined =
       field.type === 'boolean' ? undefined : field.type;
-    return starMatchesRule(
+    return ɵstarMatchesRule(
       { raw, text },
       type,
       { matchMode: rule.matchMode, value: rule.value as StarFilterRuleValue },
@@ -257,7 +257,7 @@ function valueText(
   const choice = (item: string) =>
     starQueryOptions(field).find((option) => option.value === item)?.label ?? item;
   if (Array.isArray(value)) return list(value.map(choice));
-  if (starIsRangeFilter(value)) return text.queryRange(String(value.min), String(value.max));
+  if (ɵstarIsRangeFilter(value)) return text.queryRange(String(value.min), String(value.max));
   return field.type === 'select' ? choice(String(value)) : String(value);
 }
 
