@@ -200,6 +200,10 @@ describe('StarScheduler', () => {
       expect(nameOf(event('Fair'))).toBe('Fair, Thursday 5 March to Friday 6 March, All day');
       // The visible text is the start of the name, and no hidden text is in the button.
       expect(event('Team meeting').querySelector('.star-sr-only')).toBeNull();
+      // The title and the time read as one phrase: "Team meeting 10:00 to 11:00".
+      expect(event('Team meeting').textContent?.replace(/\s+/g, ' ').trim()).toBe(
+        'Team meeting 10:00 to 11:00',
+      );
     });
 
     it('lays overlapping events out side by side', async () => {

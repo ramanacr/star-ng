@@ -281,6 +281,18 @@
   align-items: center;
   gap: 0.375rem;
   white-space: nowrap;
+
+  // The title keeps up to half the width; the time gives way first.
+  .star-scheduler__event-title {
+    flex: 0 0 auto;
+    max-inline-size: 50%;
+  }
+  .star-scheduler__event-time {
+    flex: 0 1 auto;
+    min-inline-size: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 .star-scheduler__event-content {
   display: contents;

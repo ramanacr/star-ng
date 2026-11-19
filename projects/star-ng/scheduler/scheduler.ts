@@ -564,7 +564,9 @@ const TIME_VIEWS: ReadonlySet<StarSchedulerView> = new Set(['day', 'week', 'work
           </span>
           <span class="star-sr-only">{{ eventName(occurrence) }}</span>
         } @else {
-          <span class="star-scheduler__event-title">{{ occurrence.event.title }}</span>
+          <!-- The trailing space keeps the visible text "Title 10:00 to 11:00" one phrase for the
+               name check (axe label-content-name-mismatch joins the spans without a space). -->
+          <span class="star-scheduler__event-title">{{ occurrence.event.title + ' ' }}</span>
           @if (!occurrence.event.allDay && !compact) {
             <span class="star-scheduler__event-time">{{ timeSpan(occurrence) }}</span>
           }
