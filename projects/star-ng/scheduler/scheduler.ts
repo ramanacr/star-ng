@@ -1309,7 +1309,7 @@ export class StarScheduler {
       return;
     }
     if (!this.canChange(occurrence)) {
-      this.announcement.set(this.text.readOnly);
+      this.announce(this.text.readOnly);
       return;
     }
     const key = starInlineKey(event, this.host);
@@ -1419,11 +1419,11 @@ export class StarScheduler {
       },
     });
     if (canceled) {
-      this.announcement.set(this.text.changeCanceled);
+      this.announce(this.text.changeCanceled);
       return false;
     }
     const when = this.whenText(start, end, !!original.event.allDay, resourceId);
-    this.announcement.set(
+    this.announce(
       kind === 'move'
         ? this.text.eventMoved(original.event.title, when)
         : this.text.eventResized(original.event.title, when),
@@ -1476,6 +1476,14 @@ export class StarScheduler {
           cell.offsetTop - (header?.offsetHeight ?? 0) - (allDay?.offsetHeight ?? 0);
       }
     }
+  }
+
+  /**
+   * Sets the live region. The same text twice gets a trailing space, so the region changes and a
+   * screen reader reads it again.
+   */
+  private announce(text: string): void {
+    this.announcement.update((now) => (now === text ? `${text} ` : text));
   }
 
   // Pointer drag

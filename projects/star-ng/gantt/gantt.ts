@@ -702,7 +702,7 @@ export class StarGantt {
 
   private keyboardChange(row: StarGanttRow, name: string, shift: boolean): void {
     if (!this.canChange(row)) {
-      this.announcement.set(this.text.readOnly);
+      this.announce(this.text.readOnly);
       return;
     }
     const scale = this.scale();
@@ -750,11 +750,11 @@ export class StarGantt {
       },
     });
     if (canceled) {
-      this.announcement.set(this.text.changeCanceled);
+      this.announce(this.text.changeCanceled);
       return false;
     }
     const when = this.whenText(start, end, row.milestone);
-    this.announcement.set(
+    this.announce(
       kind === 'move'
         ? this.text.eventMoved(row.task.name, when)
         : kind === 'resize'
@@ -762,6 +762,14 @@ export class StarGantt {
           : this.text.eventResized(row.task.name, this.text.percentComplete(progress)),
     );
     return true;
+  }
+
+  /**
+   * Sets the live region. The same text twice gets a trailing space, so the region changes and a
+   * screen reader reads it again.
+   */
+  private announce(text: string): void {
+    this.announcement.update((now) => (now === text ? `${text} ` : text));
   }
 
   // Pointer

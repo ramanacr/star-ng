@@ -290,6 +290,12 @@ describe('StarGantt', () => {
       await stable();
       expect(host.changes).toHaveLength(0);
       expect(live()).toBe('Read only');
+      const region = () => gantt.querySelector('[aria-live="polite"]')!.textContent;
+      const first = region();
+      key(row('build'), 'ArrowRight', { altKey: true });
+      await stable();
+      expect(region()).not.toBe(first);
+      expect(region()?.trim()).toBe('Read only');
       expect(
         gantt.querySelector(`#${row('design').getAttribute('aria-describedby')}`)?.textContent,
       ).toContain('Alt and Up or Down change its progress');

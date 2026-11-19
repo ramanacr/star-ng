@@ -402,11 +402,19 @@ describe('StarScheduler', () => {
     });
 
     it('does not move a readonly event, and says so', async () => {
-      const { host, event, live, stable } = await setup();
+      const { host, event, live, stable, scheduler } = await setup();
       key(event('Audit'), 'ArrowDown', { altKey: true });
       await stable();
       expect(host.changes).toHaveLength(0);
       expect(live()).toBe('Read only');
+      // The same message again still changes the live region, so it is read again.
+      const region = () =>
+        scheduler.querySelector('[aria-live="polite"].star-sr-only')!.textContent;
+      const first = region();
+      key(event('Audit'), 'ArrowDown', { altKey: true });
+      await stable();
+      expect(region()).not.toBe(first);
+      expect(region()?.trim()).toBe('Read only');
       expect(event('Audit').hasAttribute('aria-describedby')).toBe(false);
       expect(event('Team meeting').getAttribute('aria-describedby')).toMatch(/hint/);
     });
