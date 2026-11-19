@@ -1055,6 +1055,19 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'kanban board with a card picked up with the keyboard',
+    path: 'controls/kanban',
+    open: async (page) => {
+      const live = example(page, 'Task board');
+      const card = live.locator('.star-kanban__card').first();
+      await card.focus();
+      await page.keyboard.press('Space');
+      await page.keyboard.press('ArrowRight');
+      await expect(live.locator('.star-kanban__card--grabbed')).toHaveCount(1);
+      await expect(live.locator('[aria-live]')).toContainText('Moved to In progress');
+    },
+  },
+  {
     name: 'tree with a loading row',
     path: 'controls/tree',
     open: async (page) => {

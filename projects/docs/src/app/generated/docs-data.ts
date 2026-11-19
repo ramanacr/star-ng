@@ -4143,11 +4143,11 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "description": "Template of a card. Context: the item (`let-task`), `column` and `swimlane`.",
     "inputs": [
       {
-        "name": "starKanbanCard",
-        "type": "readonly T[] | '' | undefined",
-        "default": "undefined",
+        "name": "starKanbanCardOf",
+        "type": "readonly T[] | null",
+        "default": "null",
         "required": false,
-        "description": "Type of the items, for type checking the template context: `[starKanbanCard]=\"tasks()\"`."
+        "description": "Optional: pass the items to type `let-item` in strict templates."
       }
     ],
     "models": [],
@@ -9490,6 +9490,9 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "input-tags/basic": "<div class=\"docs-stack\">\n  <star-field label=\"Labels\" hint=\"Press Enter or a comma to add a label.\">\n    <star-input-tags [(value)]=\"labels\" showClear />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">{{ labels().join(', ') || '(none)' }}</p>\n</div>",
   "input-tags/disabled": "<div class=\"docs-stack\">\n  <star-input-tags [value]=\"['north', 'south']\" disabled ariaLabel=\"Regions\" />\n</div>",
   "input-tags/validate": "<div class=\"docs-stack\">\n  <star-field label=\"Recipients\" hint=\"Email addresses, three at most.\">\n    <star-input-tags\n      [(value)]=\"recipients\"\n      [validate]=\"isEmail\"\n      [maxTags]=\"3\"\n      (rejected)=\"rejected.set($event.tag + ': ' + $event.reason)\"\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Rejected: {{ rejected() || '(nothing)' }}</p>\n</div>",
+  "kanban/basic": "<div class=\"docs-stack\">\n  <star-kanban\n    [columns]=\"columns\"\n    [items]=\"tasks()\"\n    columnKey=\"status\"\n    itemKey=\"id\"\n    order=\"rank\"\n    itemLabel=\"title\"\n    (itemMove)=\"onMove($event)\"\n  >\n    <ng-template starKanbanCard [starKanbanCardOf]=\"tasks()\" let-task>\n      <span class=\"card-title\">{{ task.title }}</span>\n      <span class=\"card-meta\">\n        <span>{{ task.owner }}</span>\n        <star-tag [value]=\"task.id\" severity=\"secondary\" />\n      </span>\n    </ng-template>\n  </star-kanban>\n  <p class=\"docs-output\" role=\"status\">{{ lastMove() }}</p>\n</div>",
+  "kanban/cancel": "<div class=\"docs-stack\">\n  <star-kanban\n    [columns]=\"columns\"\n    [items]=\"lockedTasks()\"\n    columnKey=\"status\"\n    itemKey=\"id\"\n    order=\"rank\"\n    itemLabel=\"title\"\n    (itemMove)=\"onLockedMove($event)\"\n  >\n    <ng-template starKanbanCard [starKanbanCardOf]=\"lockedTasks()\" let-task>{{\n      task.title\n    }}</ng-template>\n  </star-kanban>\n  <p class=\"docs-output\" role=\"status\">{{ refused() }}</p>\n</div>",
+  "kanban/lanes": "<star-kanban\n  [columns]=\"columns\"\n  [items]=\"laneTasks()\"\n  columnKey=\"status\"\n  itemKey=\"id\"\n  order=\"rank\"\n  itemLabel=\"title\"\n  [swimlanes]=\"lanes\"\n  swimlaneKey=\"lane\"\n  enforceLimits\n  collapsible\n  [(collapsed)]=\"collapsed\"\n  (itemMove)=\"onLaneMove($event)\"\n>\n  <ng-template starKanbanHeader let-column let-count=\"count\" let-over=\"over\">\n    <span class=\"card-title\">{{ column.title }}</span>\n    <star-tag\n      [value]=\"column.limit ? count + ' of ' + column.limit : '' + count\"\n      [severity]=\"over ? 'warn' : 'secondary'\"\n    />\n  </ng-template>\n  <ng-template starKanbanCard [starKanbanCardOf]=\"laneTasks()\" let-task>\n    <span class=\"card-title\">{{ task.title }}</span>\n    <span class=\"card-meta\">{{ task.owner }}</span>\n  </ng-template>\n</star-kanban>",
   "knob/basic": "<star-knob [(value)]=\"progress\" valueTemplate=\"{value}%\" ariaLabel=\"Progress\" />\n<p class=\"docs-output\" role=\"status\">Value: {{ progress() }}</p>",
   "knob/range": "<star-knob\n  [(value)]=\"temperature\"\n  [min]=\"10\"\n  [max]=\"30\"\n  [step]=\"0.5\"\n  [size]=\"160\"\n  valueTemplate=\"{value}°\"\n  ariaLabel=\"Temperature\"\n/>",
   "knob/states": "<star-knob [value]=\"72\" readonly [size]=\"90\" ariaLabel=\"Disk use\" />\n<star-knob [value]=\"35\" disabled [size]=\"90\" ariaLabel=\"Locked value\" />",

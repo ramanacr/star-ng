@@ -51,6 +51,11 @@ const TEXT_PARAMS: Record<string, readonly string[]> = {
   queryRuleRestored: ['rule'],
   queryRuleSummary: ['field', 'mode', 'value'],
   queryRange: ['min', 'max'],
+  kanbanColumnLabel: ['title'],
+  kanbanColumnLimit: ['title'],
+  kanbanPickedUp: ['card'],
+  kanbanDropped: ['card'],
+  kanbanCanceled: ['card'],
 };
 const TEXT_NAMES = new Set(['label', 'column', 'name', 'alt']);
 

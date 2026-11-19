@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, Locator, Page, test } from '@playwright/test';
 import { example, openPage } from './support';
 
 test.describe('query builder', () => {
@@ -36,5 +36,79 @@ test.describe('query builder', () => {
     await expect(status).toContainText('Customer contains stone');
     const rows = live.locator('star-table tbody tr');
     await expect(rows.first()).toContainText('Ava Stone');
+  });
+});
+
+/** Drags with the mouse in small steps, as the CDK needs. */
+async function drag(page: Page, from: Locator, to: Locator): Promise<void> {
+  await from.scrollIntoViewIfNeeded();
+  const start = (await from.boundingBox())!;
+  const x = start.x + start.width / 2;
+  const y = start.y + start.height / 2;
+  await page.mouse.move(x, y);
+  await page.mouse.down();
+  for (let step = 1; step <= 10; step++) await page.mouse.move(x + step * 2, y + step * 2);
+  const end = (await to.boundingBox())!;
+  await page.mouse.move(end.x + end.width / 2, end.y + end.height / 2, { steps: 20 });
+  await page.mouse.up();
+}
+
+test.describe('kanban board', () => {
+  test('moves a card with the keyboard and announces each step', async ({ page }) => {
+    await openPage(page, '/controls/kanban', 'Kanban board');
+    const live = example(page, 'Task board');
+    const announce = live.locator('[aria-live]');
+    const card = live.locator('.star-kanban__card[data-key="T-101"]');
+    await card.focus();
+    await page.keyboard.press('Space');
+    await expect(announce).toHaveText('Picked up Draft the order form in To do');
+    await page.keyboard.press('ArrowRight');
+    await page.keyboard.press('ArrowRight');
+    await expect(announce).toHaveText('Moved to Review, position 1 of 2');
+    await page.keyboard.press('Space');
+    await expect(announce).toHaveText('Draft the order form dropped in Review, position 1 of 2');
+    await expect(live.getByRole('status')).toHaveText(
+      'Draft the order form: todo → review, position 1.',
+    );
+    await expect(live.getByRole('group', { name: 'Review, 2 items, limit 1' })).toBeVisible();
+    await expect(live.locator('.star-kanban__column--over')).toHaveCount(1);
+    await expect(card).toBeFocused();
+
+    // Escape puts a held card back.
+    await page.keyboard.press('Space');
+    await page.keyboard.press('ArrowLeft');
+    await page.keyboard.press('Escape');
+    await expect(announce).toHaveText('Move cancelled. Draft the order form is back in Review');
+  });
+
+  test('moves a card with drag and drop', async ({ page }) => {
+    await openPage(page, '/controls/kanban', 'Kanban board');
+    const live = example(page, 'Task board');
+    await drag(
+      page,
+      live.locator('.star-kanban__card[data-key="T-102"]'),
+      live.locator('.star-kanban__card[data-key="T-107"]'),
+    );
+    await expect(live.getByRole('status')).toContainText('Price list import: todo → done');
+    await expect(
+      live.getByRole('group', { name: /^Done, 3 items/ }).locator('[data-key="T-102"]'),
+    ).toBeVisible();
+  });
+
+  test('a cancelled move keeps the card in its column', async ({ page }) => {
+    await openPage(page, '/controls/kanban', 'Kanban board');
+    const live = example(page, 'Cancel a move');
+    const card = live.locator('.star-kanban__card[data-key="T-107"]');
+    await card.focus();
+    await page.keyboard.press('Space');
+    await page.keyboard.press('ArrowLeft');
+    await page.keyboard.press('Space');
+    await expect(live.getByRole('status')).toHaveText('Customer search is done and stays in Done.');
+    await expect(live.locator('[aria-live]')).toHaveText(
+      'Move cancelled. Customer search is back in Done',
+    );
+    await expect(
+      live.getByRole('group', { name: /^Done, 2 items/ }).locator('[data-key="T-107"]'),
+    ).toBeVisible();
   });
 });

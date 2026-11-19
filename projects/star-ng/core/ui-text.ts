@@ -328,6 +328,18 @@ export interface StarUiText {
   readonly queryRange: (min: string, max: string) => string;
   /** Error of a query with rules that have no value. */
   readonly queryIncomplete: string;
+  // Kanban board
+  /** Name of a column (or a column in a swimlane) without a limit. */
+  readonly kanbanColumnLabel: (title: string, count: number) => string;
+  /** Name of a column with a work-in-progress limit. */
+  readonly kanbanColumnLimit: (title: string, count: number, limit: number) => string;
+  /** Hint of a card. */
+  readonly kanbanCardHint: string;
+  readonly kanbanPickedUp: (card: string, column: string) => string;
+  readonly kanbanMoved: (column: string, position: number, total: number) => string;
+  readonly kanbanDropped: (card: string, column: string, position: number, total: number) => string;
+  readonly kanbanCanceled: (card: string, column: string) => string;
+  readonly kanbanLimitReached: (column: string) => string;
 }
 
 export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
@@ -616,6 +628,18 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   queryRuleSummary: (field, mode, value) => `${field} ${mode.toLocaleLowerCase('en')} ${value}`,
   queryRange: (min, max) => `${min} and ${max}`,
   queryIncomplete: 'Complete or remove the rules without a value.',
+
+  kanbanColumnLabel: (title, count) => `${title}, ${count} ${count === 1 ? 'item' : 'items'}`,
+  kanbanColumnLimit: (title, count, limit) =>
+    `${title}, ${count} ${count === 1 ? 'item' : 'items'}, limit ${limit}`,
+  kanbanCardHint:
+    'Press Space to pick up the card. The arrow keys move it, Space drops it and Escape cancels.',
+  kanbanPickedUp: (card, column) => `Picked up ${card} in ${column}`,
+  kanbanMoved: (column, position, total) => `Moved to ${column}, position ${position} of ${total}`,
+  kanbanDropped: (card, column, position, total) =>
+    `${card} dropped in ${column}, position ${position} of ${total}`,
+  kanbanCanceled: (card, column) => `Move cancelled. ${card} is back in ${column}`,
+  kanbanLimitReached: (column) => `${column} is at its limit`,
 };
 
 /** Parameter names of the function entries, in call order (used for `{{ name }}` in translations). */
@@ -677,6 +701,13 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   queryRuleRestored: ['rule'],
   queryRuleSummary: ['field', 'mode', 'value'],
   queryRange: ['min', 'max'],
+  kanbanColumnLabel: ['title', 'count'],
+  kanbanColumnLimit: ['title', 'count', 'limit'],
+  kanbanPickedUp: ['card', 'column'],
+  kanbanMoved: ['column', 'position', 'total'],
+  kanbanDropped: ['card', 'column', 'position', 'total'],
+  kanbanCanceled: ['card', 'column'],
+  kanbanLimitReached: ['column'],
 };
 
 export const STAR_UI_TEXT = new InjectionToken<StarUiText>('STAR_UI_TEXT', {

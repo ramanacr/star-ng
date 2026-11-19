@@ -33,6 +33,7 @@ export * from '@star-ng/ui/input-mask';
 export * from '@star-ng/ui/input-number';
 export * from '@star-ng/ui/input-otp';
 export * from '@star-ng/ui/input-tags';
+export * from '@star-ng/ui/kanban';
 export * from '@star-ng/ui/knob';
 export * from '@star-ng/ui/layout';
 export * from '@star-ng/ui/list';

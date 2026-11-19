@@ -371,6 +371,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         keywords: 'grid list tiles dashboard reorder resize drag drop span columns responsive',
         load: () => import('./controls/tile-layout.page').then((m) => m.TileLayoutPage),
       },
+      {
+        label: 'Kanban board',
+        path: 'controls/kanban',
+        keywords: 'task board columns cards swimlanes wip limit drag drop move',
+        load: () => import('./controls/kanban.page').then((m) => m.KanbanPage),
+      },
     ],
   },
   {

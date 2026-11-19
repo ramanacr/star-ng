@@ -300,4 +300,16 @@ export const STAR_UI_TEXT_ES: StarUiText = {
   queryRuleSummary: (field, mode, value) => `${field} ${mode.toLocaleLowerCase('es')} ${value}`,
   queryRange: (min, max) => `${min} y ${max}`,
   queryIncomplete: 'Complete o quite las reglas sin valor.',
+  kanbanColumnLabel: (title, count) =>
+    `${title}, ${count} ${forCount(count, 'elemento', 'elementos')}`,
+  kanbanColumnLimit: (title, count, limit) =>
+    `${title}, ${count} ${forCount(count, 'elemento', 'elementos')}, límite ${limit}`,
+  kanbanCardHint:
+    'Pulse Espacio para tomar la tarjeta. Las flechas la mueven, Espacio la suelta y Escape cancela.',
+  kanbanPickedUp: (card, column) => `${card} tomada en ${column}`,
+  kanbanMoved: (column, position, total) => `Movida a ${column}, posición ${position} de ${total}`,
+  kanbanDropped: (card, column, position, total) =>
+    `${card} soltada en ${column}, posición ${position} de ${total}`,
+  kanbanCanceled: (card, column) => `Movimiento cancelado. ${card} vuelve a ${column}`,
+  kanbanLimitReached: (column) => `${column} ha llegado a su límite`,
 };

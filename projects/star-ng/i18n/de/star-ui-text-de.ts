@@ -300,4 +300,17 @@ export const STAR_UI_TEXT_DE: StarUiText = {
   queryRuleSummary: (field, mode, value) => `${field} ${mode.toLocaleLowerCase('de')} ${value}`,
   queryRange: (min, max) => `${min} und ${max}`,
   queryIncomplete: 'Ergänzen oder entfernen Sie die Regeln ohne Wert.',
+  kanbanColumnLabel: (title, count) =>
+    `${title}, ${count} ${forCount(count, 'Eintrag', 'Einträge')}`,
+  kanbanColumnLimit: (title, count, limit) =>
+    `${title}, ${count} ${forCount(count, 'Eintrag', 'Einträge')}, Limit ${limit}`,
+  kanbanCardHint:
+    'Mit der Leertaste nehmen Sie die Karte auf. Die Pfeiltasten verschieben sie, die Leertaste legt sie ab, Escape bricht ab.',
+  kanbanPickedUp: (card, column) => `${card} in ${column} aufgenommen`,
+  kanbanMoved: (column, position, total) =>
+    `Nach ${column} verschoben, Position ${position} von ${total}`,
+  kanbanDropped: (card, column, position, total) =>
+    `${card} in ${column} abgelegt, Position ${position} von ${total}`,
+  kanbanCanceled: (card, column) => `Verschieben abgebrochen. ${card} ist wieder in ${column}`,
+  kanbanLimitReached: (column) => `${column} hat sein Limit erreicht`,
 };
