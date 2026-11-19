@@ -228,7 +228,7 @@ const BACKGROUNDS: readonly StarCellBackground[] = [
             (click)="changeDecimals(-1)"
           >
             <i class="ph-bold ph-arrow-left" aria-hidden="true"></i
-            ><span class="star-spreadsheet__decimals" aria-hidden="true">.0</span>
+            ><span class="star-spreadsheet__decimals" data-glyph=".0" aria-hidden="true"></span>
           </button>
           <button
             type="button"
@@ -236,7 +236,7 @@ const BACKGROUNDS: readonly StarCellBackground[] = [
             [attr.aria-label]="text.spreadsheetMoreDecimals"
             (click)="changeDecimals(1)"
           >
-            <span class="star-spreadsheet__decimals" aria-hidden="true">.00</span>
+            <span class="star-spreadsheet__decimals" data-glyph=".00" aria-hidden="true"></span>
           </button>
           <select
             class="star-spreadsheet__select"

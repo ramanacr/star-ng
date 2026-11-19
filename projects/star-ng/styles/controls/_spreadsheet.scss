@@ -22,8 +22,13 @@
   margin-inline: 0.25rem;
   background: var(--star-border);
 }
+// The ".0" and ".00" glyphs are generated content, so the button name is only its label.
 .star-spreadsheet__decimals {
   font: var(--star-type-label);
+
+  &::before {
+    content: attr(data-glyph);
+  }
 }
 .star-spreadsheet__select {
   block-size: 2rem;
