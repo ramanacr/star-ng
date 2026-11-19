@@ -334,3 +334,51 @@ describe('StarLinearGauge in Signal Forms', () => {
     expect(fixture.componentInstance.data().load).toBe(31);
   });
 });
+
+@Component({
+  imports: [StarLinearGauge],
+  template: `<star-linear-gauge
+    interactive
+    [(value)]="value"
+    [min]="min()"
+    [max]="max()"
+    [step]="step()"
+    ariaLabel="Load"
+  />`,
+})
+class BoundsHost {
+  readonly value = signal(40);
+  readonly min = signal<number | undefined>(100);
+  readonly max = signal<number | undefined>(0);
+  readonly step = signal(0);
+}
+
+describe('StarLinearGauge bounds and step', () => {
+  it('swaps a min above the max, and uses the default for a bound that is not finite', async () => {
+    const fixture = TestBed.createComponent(BoundsHost);
+    await fixture.whenStable();
+    const gauge = (fixture.nativeElement as HTMLElement).querySelector('star-linear-gauge')!;
+    expect(gauge.getAttribute('aria-valuemin')).toBe('0');
+    expect(gauge.getAttribute('aria-valuemax')).toBe('100');
+    expect(gauge.getAttribute('aria-valuenow')).toBe('40');
+    fixture.componentInstance.min.set(NaN);
+    fixture.componentInstance.max.set(Infinity);
+    await fixture.whenStable();
+    expect(gauge.getAttribute('aria-valuemin')).toBe('0');
+    expect(gauge.getAttribute('aria-valuemax')).toBe('100');
+  });
+
+  it('uses a step of 1 when the step is not above zero', async () => {
+    const fixture = TestBed.createComponent(BoundsHost);
+    await fixture.whenStable();
+    const gauge = (fixture.nativeElement as HTMLElement).querySelector('star-linear-gauge')!;
+    key(gauge, 'ArrowUp');
+    await fixture.whenStable();
+    expect(fixture.componentInstance.value()).toBe(41);
+    fixture.componentInstance.step.set(-5);
+    await fixture.whenStable();
+    key(gauge, 'ArrowDown');
+    await fixture.whenStable();
+    expect(fixture.componentInstance.value()).toBe(40);
+  });
+});

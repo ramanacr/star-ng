@@ -100,7 +100,7 @@ export abstract class StarGaugeBase implements FormValueControl<number> {
   readonly ticks = input<StarGaugeTicks>({ major: 5, minor: 2 });
   /**
    * Labels of the major ticks: `true` (default), `false`, or `Intl.NumberFormat` options that
-   * format the labels and the value text, for example `{ style: 'percent' }`.
+   * format the labels and the value text, for example `{ style: 'unit', unit: 'percent' }`.
    */
   readonly labels = input<boolean | Intl.NumberFormatOptions>(true);
   /** Locale of the numbers (`Intl.NumberFormat`). Default: the runtime locale. */
@@ -109,7 +109,7 @@ export abstract class StarGaugeBase implements FormValueControl<number> {
   readonly animate = input(true, { transform: booleanAttribute });
   /** Lets the user set the value: the gauge becomes a slider (keyboard and pointer). */
   readonly interactive = input(false, { transform: booleanAttribute });
-  /** Step of the keyboard and the pointer in interactive mode. */
+  /** Step of the keyboard and the pointer in interactive mode. A value not above zero means 1. */
   readonly step = input(1);
   /** Label for assistive technology. */
   readonly ariaLabel = input<string | null>(null);
@@ -138,8 +138,24 @@ export abstract class StarGaugeBase implements FormValueControl<number> {
     });
   }
 
-  protected readonly lowest = computed(() => this.min() ?? 0);
-  protected readonly highest = computed(() => Math.max(this.lowest(), this.max() ?? 100));
+  /**
+   * The scale ends: a bound that is not a finite number uses its default (0 or 100), and a `min`
+   * above the `max` is swapped with it.
+   */
+  private readonly bounds = computed(() => {
+    const min = this.min();
+    const max = this.max();
+    const low = min !== undefined && Number.isFinite(min) ? min : 0;
+    const high = max !== undefined && Number.isFinite(max) ? max : 100;
+    return low <= high ? [low, high] : [high, low];
+  });
+  protected readonly lowest = computed(() => this.bounds()[0]);
+  protected readonly highest = computed(() => this.bounds()[1]);
+  /** The step in use: 1 when `step` is not a number above zero. */
+  protected readonly stepSize = computed(() => {
+    const step = this.step();
+    return step > 0 && Number.isFinite(step) ? step : 1;
+  });
   /** The value kept on the scale. */
   protected readonly shown = computed(() =>
     Math.min(this.highest(), Math.max(this.lowest(), Number(this.value()) || 0)),
@@ -183,7 +199,7 @@ export abstract class StarGaugeBase implements FormValueControl<number> {
 
   protected set(next: number): void {
     if (!this.active()) return;
-    this.value.set(snapGaugeValue(next, this.lowest(), this.highest(), this.step()));
+    this.value.set(snapGaugeValue(next, this.lowest(), this.highest(), this.stepSize()));
   }
 
   /** `true` when the horizontal arrow keys follow the reading direction. */
@@ -193,13 +209,14 @@ export abstract class StarGaugeBase implements FormValueControl<number> {
 
   protected onKeydown(event: KeyboardEvent): void {
     if (!this.active()) return;
-    const big = Math.max(this.step(), (this.highest() - this.lowest()) / 10);
+    const step = this.stepSize();
+    const big = Math.max(step, (this.highest() - this.lowest()) / 10);
     const key = this.inlineArrows() ? starInlineKey(event, this.host.nativeElement) : event.key;
     const moves: Record<string, number> = {
-      ArrowUp: this.step(),
-      ArrowRight: this.step(),
-      ArrowDown: -this.step(),
-      ArrowLeft: -this.step(),
+      ArrowUp: step,
+      ArrowRight: step,
+      ArrowDown: -step,
+      ArrowLeft: -step,
       PageUp: big,
       PageDown: -big,
     };

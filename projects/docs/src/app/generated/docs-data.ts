@@ -3259,7 +3259,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "boolean | Intl.NumberFormatOptions",
         "default": "true",
         "required": false,
-        "description": "Labels of the major ticks: `true` (default), `false`, or `Intl.NumberFormat` options that format the labels and the value text, for example `{ style: 'percent' }`."
+        "description": "Labels of the major ticks: `true` (default), `false`, or `Intl.NumberFormat` options that format the labels and the value text, for example `{ style: 'unit', unit: 'percent' }`."
       },
       {
         "name": "locale",
@@ -3287,7 +3287,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "number",
         "default": "1",
         "required": false,
-        "description": "Step of the keyboard and the pointer in interactive mode."
+        "description": "Step of the keyboard and the pointer in interactive mode. A value not above zero means 1."
       },
       {
         "name": "ariaLabel",
