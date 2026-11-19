@@ -82,6 +82,7 @@
   (scroll)="onScroll($event)"
 >
   <table
+    [attr.role]="cellMode() ? 'grid' : null"
     [attr.aria-colcount]="ariaColCount()"
     [attr.aria-label]="ariaLabel()"
     [attr.aria-busy]="loading() || null"
@@ -274,7 +275,7 @@
           @if (expandable()) {
             <td class="star-table__expander"></td>
           }
-          @if (selectionMode()) {
+          @if (rowSelectionMode()) {
             <td class="star-table__select"></td>
           }
           @for (column of renderedColumns(); track column.field) {
@@ -372,7 +373,7 @@
             @if (expandable()) {
               <td class="star-table__expander"></td>
             }
-            @if (selectionMode()) {
+            @if (rowSelectionMode()) {
               <td class="star-table__select"><star-skeleton size="1.25rem" /></td>
             }
             @for (column of renderedColumns(); track column.field) {
@@ -450,7 +451,7 @@
               @if (expandable()) {
                 <td class="star-table__expander"></td>
               }
-              @if (selectionMode()) {
+              @if (rowSelectionMode()) {
                 <td class="star-table__select"></td>
               }
               @for (column of renderedColumns(); track column.field) {
@@ -501,9 +502,10 @@
               [class.star-table__row--expanded]="expandable() && isExpanded(row)"
               [class.star-table__row--editing]="isRowInEdit(row)"
               [class.star-table__row--deleted]="isDeleted(row)"
-              [attr.aria-selected]="selectionMode() ? isSelected(row) : null"
+              [attr.aria-selected]="rowSelectionMode() ? isSelected(row) : null"
               [attr.tabindex]="rowTabIndex(row)"
-              [attr.data-select-key]="selectionMode() ? rowKeyText(row) : null"
+              [attr.data-select-key]="rowSelectionMode() ? rowKeyText(row) : null"
+              [attr.data-row]="cellMode() ? rowKeyText(row) : null"
               (click)="onRowClick(row, $event)"
               (focusin)="onRowFocus(row)"
               (keydown)="onRowKey(row, $event); onSelectionKey(row, $event)"
@@ -590,6 +592,8 @@
                     [attr.headers]="headerIds()?.headers?.get(column.field) ?? null"
                     [class.star-table__cell--changed]="isChanged(row, column)"
                     [attr.data-label]="column.header"
+                    [attr.data-field]="cellMode() ? column.field : null"
+                    [attr.tabindex]="cellTabIndex(row, column)"
                   >
                     @if (firstCell && isDeleted(row)) {
                       <span class="star-sr-only">{{ text.rowDeleted }}: </span>
@@ -686,6 +690,7 @@
                         type="button"
                         class="star-table__edit"
                         [attr.data-edit]="editKey(row, column)"
+                        [attr.tabindex]="editTabIndex(row, column)"
                         (click)="startEdit(row, column)"
                       >
                         <!-- The name is the action and the visible value (WCAG 2.5.3). -->
@@ -801,7 +806,7 @@
           @if (expandable()) {
             <td class="star-table__expander"></td>
           }
-          @if (selectionMode()) {
+          @if (rowSelectionMode()) {
             <td class="star-table__select"></td>
           }
           @for (column of renderedColumns(); track column.field) {
