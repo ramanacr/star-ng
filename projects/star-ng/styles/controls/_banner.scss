@@ -64,7 +64,7 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
+@include star-reduced-motion {
   .star-banner__inner {
     animation: none;
   }

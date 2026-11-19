@@ -1,4 +1,8 @@
+export * from './announcer';
 export * from './breakpoints';
+export * from './clipboard';
+export * from './clock';
+export * from './config';
 export * from './direction';
 export * from './filter-match';
 // Filter rules: the types and the match modes are public; the `ɵ` functions are shared by the
@@ -25,7 +29,9 @@ export {
   type StarTableMatchMode,
 } from './filter-rules';
 export * from './filter-service';
+export * from './format';
 export * from './list-windowing';
+export * from './motion';
 export * from './options';
 export * from './reactive-forms';
 export * from './slots';

@@ -28,6 +28,9 @@ export const STAR_UI_TEXT_DE: StarUiText = {
   collapseItem: (label) => `${label} zuklappen`,
   removeItem: (label) => `${label} entfernen`,
   moreCount: (count) => `${count} weitere`,
+  copied: 'Kopiert',
+  copyFailed: 'Kopieren fehlgeschlagen',
+  keyFilterInvalid: 'Der Wert enthält ein unzulässiges Zeichen.',
   tagsHint:
     'Mit der Eingabetaste oder einem Komma hinzufügen. Die Rücktaste entfernt den letzten Eintrag.',
   tagAdded: (label) => `${label} hinzugefügt`,
@@ -341,6 +344,17 @@ export const STAR_UI_TEXT_DE: StarUiText = {
     `${card} in ${column} abgelegt, Position ${position} von ${total}`,
   kanbanCanceled: (card, column) => `Verschieben abgebrochen. ${card} ist wieder in ${column}`,
   kanbanLimitReached: (column) => `${column} hat sein Limit erreicht`,
+  sparklineSummary: (first, last, min, max, trend) =>
+    `${trend}: erster Wert ${first}, letzter Wert ${last}, niedrigster ${min}, höchster ${max}`,
+  sparklineTrendUp: 'Steigend',
+  sparklineTrendDown: 'Fallend',
+  sparklineTrendFlat: 'Unverändert',
+  sparklineWinLoss: (wins, losses) =>
+    `${wins} ${forCount(wins, 'Gewinn', 'Gewinne')}, ${losses} ${forCount(losses, 'Verlust', 'Verluste')}`,
+  sparklineNoData: 'Keine Daten',
+  barcodeInvalid: (type) => `Der Wert kann nicht als ${type} codiert werden.`,
+  qrCodeLabel: (value) => `QR-Code: ${value}`,
+  qrCodeTooLong: 'Der Wert ist für einen QR-Code zu lang.',
   signaturePad: 'Unterschrift',
   signatureArea: 'Unterschriftsfeld, leer',
   signatureAreaSigned: 'Unterschriftsfeld, unterschrieben',
@@ -374,10 +388,8 @@ export const STAR_UI_TEXT_DE: StarUiText = {
   aiResponseReady: 'Antwort fertig',
   aiResponseFailed: 'Die Antwort ist fehlgeschlagen.',
   copy: 'Kopieren',
-  copied: 'Kopiert',
   retry: 'Erneut versuchen',
   stop: 'Stoppen',
   newMessages: (count) => `${count} neue Nachrichten`,
   aiPromptShortcutHint: 'Mit Strg+Eingabe senden.',
-  copyFailed: 'Kopieren fehlgeschlagen',
 };

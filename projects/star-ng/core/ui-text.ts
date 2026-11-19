@@ -31,6 +31,11 @@ export interface StarUiText {
   readonly removeItem: (label: string) => string;
   /** Label of the "+N" entry for items that are not shown (avatar group). */
   readonly moreCount: (count: number) => string;
+  // Clipboard (`starCopy`)
+  readonly copied: string;
+  readonly copyFailed: string;
+  /** Validation message of `starKeyFilter` with `validateOnly`. */
+  readonly keyFilterInvalid: string;
   // Tags field
   readonly tagsHint: string;
   readonly tagAdded: (label: string) => string;
@@ -366,6 +371,30 @@ export interface StarUiText {
   readonly kanbanDropped: (card: string, column: string, position: number, total: number) => string;
   readonly kanbanCanceled: (card: string, column: string) => string;
   readonly kanbanLimitReached: (column: string) => string;
+  // Sparkline
+  /** Label of a sparkline: the trend word and the formatted first, last, lowest and highest value. */
+  readonly sparklineSummary: (
+    first: string,
+    last: string,
+    min: string,
+    max: string,
+    trend: string,
+  ) => string;
+  readonly sparklineTrendUp: string;
+  readonly sparklineTrendDown: string;
+  readonly sparklineTrendFlat: string;
+  /** Label of a win-loss sparkline. */
+  readonly sparklineWinLoss: (wins: number, losses: number) => string;
+  /** Label of a sparkline without a value. */
+  readonly sparklineNoData: string;
+  // Barcode
+  /** Error of a barcode whose value cannot be encoded; `type` is the symbology, for example "EAN-13". */
+  readonly barcodeInvalid: (type: string) => string;
+  // QR code
+  /** Default label of a QR code; `value` is the encoded text, shortened when it is long. */
+  readonly qrCodeLabel: (value: string) => string;
+  /** Error of a QR code whose value does not fit in version 40. */
+  readonly qrCodeTooLong: string;
   // Signature pad
   /** Default name of the `star-signature-pad` group. */
   readonly signaturePad: string;
@@ -420,14 +449,12 @@ export interface StarUiText {
   readonly aiResponseReady: string;
   readonly aiResponseFailed: string;
   readonly copy: string;
-  readonly copied: string;
   readonly retry: string;
   readonly stop: string;
   /** Live announcement when several messages from others arrive at once. */
   readonly newMessages: (count: number) => string;
   /** Visible hint under the prompt field of `star-ai-prompt`. */
   readonly aiPromptShortcutHint: string;
-  readonly copyFailed: string;
 }
 
 export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
@@ -447,6 +474,9 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   collapseItem: (label) => `Collapse ${label}`,
   removeItem: (label) => `Remove ${label}`,
   moreCount: (count) => `${count} more`,
+  copied: 'Copied',
+  copyFailed: 'Copy failed',
+  keyFilterInvalid: 'The value has a character that is not allowed.',
   tagsHint: 'Press Enter or comma to add. Backspace removes the last item.',
   tagAdded: (label) => `${label} added`,
   tagRemoved: (label) => `${label} removed`,
@@ -757,6 +787,17 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
     `${card} dropped in ${column}, position ${position} of ${total}`,
   kanbanCanceled: (card, column) => `Move cancelled. ${card} is back in ${column}`,
   kanbanLimitReached: (column) => `${column} is at its limit`,
+  sparklineSummary: (first, last, min, max, trend) =>
+    `${trend}: first ${first}, last ${last}, lowest ${min}, highest ${max}`,
+  sparklineTrendUp: 'Trend up',
+  sparklineTrendDown: 'Trend down',
+  sparklineTrendFlat: 'No change',
+  sparklineWinLoss: (wins, losses) =>
+    `${wins} ${wins === 1 ? 'win' : 'wins'}, ${losses} ${losses === 1 ? 'loss' : 'losses'}`,
+  sparklineNoData: 'No data',
+  barcodeInvalid: (type) => `The value cannot be encoded as ${type}.`,
+  qrCodeLabel: (value) => `QR code: ${value}`,
+  qrCodeTooLong: 'The value is too long for a QR code.',
   signaturePad: 'Signature',
   signatureArea: 'Signature drawing area, empty',
   signatureAreaSigned: 'Signature drawing area, signed',
@@ -790,12 +831,10 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   aiResponseReady: 'Response ready',
   aiResponseFailed: 'The response failed.',
   copy: 'Copy',
-  copied: 'Copied',
   retry: 'Retry',
   stop: 'Stop',
   newMessages: (count) => `${count} new messages`,
   aiPromptShortcutHint: 'Press Control+Enter to send.',
-  copyFailed: 'Copy failed',
 };
 
 /** Parameter names of the function entries, in call order (used for `{{ name }}` in translations). */
@@ -871,6 +910,10 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   kanbanDropped: ['card', 'column', 'position', 'total'],
   kanbanCanceled: ['card', 'column'],
   kanbanLimitReached: ['column'],
+  sparklineSummary: ['first', 'last', 'min', 'max', 'trend'],
+  sparklineWinLoss: ['wins', 'losses'],
+  barcodeInvalid: ['type'],
+  qrCodeLabel: ['value'],
   messageFrom: ['name', 'time'],
   newMessage: ['name', 'text'],
   isTyping: ['name'],

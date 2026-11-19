@@ -108,7 +108,7 @@
 // A non-modal drawer is not in the top layer (native show()): it stacks above the page and its
 // sticky headers, below the CDK overlay container (z-index 1000), like a non-modal bottom sheet.
 .star-drawer:not(.star-dialog--modal) {
-  z-index: 999;
+  z-index: calc(var(--star-z-index-base, 1000) - 1);
 }
 // Full screen: covers the window, slides in from the edge of its position.
 .star-drawer--full {
@@ -118,7 +118,7 @@
   border-radius: 0;
 }
 
-@media (prefers-reduced-motion: reduce) {
+@include star-reduced-motion {
   .star-drawer,
   .star-drawer::backdrop {
     animation: none;

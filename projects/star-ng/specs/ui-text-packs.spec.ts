@@ -57,6 +57,9 @@ const TEXT_PARAMS: Record<string, readonly string[]> = {
   kanbanPickedUp: ['card'],
   kanbanDropped: ['card'],
   kanbanCanceled: ['card'],
+  sparklineSummary: ['first', 'last', 'min', 'max', 'trend'],
+  barcodeInvalid: ['type'],
+  qrCodeLabel: ['value'],
 };
 const TEXT_NAMES = new Set(['label', 'column', 'name', 'alt']);
 

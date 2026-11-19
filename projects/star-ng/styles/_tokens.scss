@@ -75,6 +75,11 @@
   --star-media-control: rgba(255, 255, 255, 0.85);
   --star-media-control-text: #0f172a;
 
+  // Barcode and QR code: dark modules on a light field in both themes, so a scanner can read
+  // them. They do not follow the theme.
+  --star-code-dark: #000000;
+  --star-code-light: #ffffff;
+
   // Chart series (star-chart, star-meter-group). Fixed order, never cycled. Both themes pass the
   // categorical checks (lightness, chroma, adjacent-pair color-vision and normal-vision distance).
   // Some slots are under 3:1 on white, so every chart also offers its data as a table.

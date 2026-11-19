@@ -1,0 +1,65 @@
+// Sparkline: a tiny inline chart. The colour is a slot of the chart palette (set on the host).
+.star-sparkline {
+  --star-sparkline-color: var(--star-chart-1);
+  display: inline-block;
+  line-height: 0;
+  vertical-align: -0.125em;
+}
+.star-sparkline__svg {
+  display: block;
+  overflow: visible;
+}
+.star-sparkline__line {
+  fill: none;
+  stroke: var(--star-sparkline-color);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+.star-sparkline__area {
+  fill: var(--star-sparkline-color);
+  stroke: none;
+  opacity: 0.2;
+}
+.star-sparkline__marker {
+  fill: none;
+  stroke: var(--star-text-strong);
+  stroke-width: 4;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+.star-sparkline__marker--last {
+  stroke: var(--star-sparkline-color);
+}
+.star-sparkline__bar {
+  fill: var(--star-sparkline-color);
+  opacity: 0.75;
+}
+.star-sparkline__bar--negative {
+  fill: var(--star-danger);
+}
+.star-sparkline__bar--marked {
+  opacity: 1;
+}
+.star-sparkline__reference {
+  stroke: var(--star-text-muted);
+  stroke-width: 1;
+  stroke-dasharray: 2 2;
+  vector-effect: non-scaling-stroke;
+}
+
+@media (forced-colors: active) {
+  .star-sparkline__line,
+  .star-sparkline__marker,
+  .star-sparkline__reference {
+    stroke: CanvasText;
+  }
+  .star-sparkline__area,
+  .star-sparkline__bar {
+    fill: CanvasText;
+  }
+  .star-sparkline__bar--negative {
+    fill: GrayText;
+  }
+}
