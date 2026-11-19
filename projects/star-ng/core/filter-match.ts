@@ -35,6 +35,14 @@ function fold(text: string, locale: string | undefined): string {
 }
 
 /**
+ * The text as the filters compare it: Unicode NFD, accents removed, lower case (with the case rules
+ * of `locale` when it is set). `starFoldText('Málaga')` is `'malaga'`.
+ */
+export function starFoldText(text: string, locale?: string | null): string {
+  return fold(text, locale || undefined);
+}
+
+/**
  * Compares two folded texts of the same length. With a locale, `Intl.Collator` (sensitivity
  * `base`) decides, so letters that the locale treats as equal match.
  */

@@ -1,5 +1,5 @@
 import { _IdGenerator } from '@angular/cdk/a11y';
-import { NgTemplateOutlet } from '@angular/common';
+import { DOCUMENT, NgTemplateOutlet } from '@angular/common';
 import {
   booleanAttribute,
   ChangeDetectionStrategy,
@@ -16,7 +16,7 @@ import {
   TemplateRef,
   viewChild,
 } from '@angular/core';
-import { STAR_UI_TEXT, starInlineKey, starIsRtl } from '@star-ng/ui/core';
+import { STAR_UI_TEXT, starInlineKey, starIsRtl, starPrefersReducedMotion } from '@star-ng/ui/core';
 import { StarDialog } from '@star-ng/ui/dialog';
 
 // ---------------------------------------------------------------- Carousel
@@ -134,11 +134,12 @@ export class StarCarouselItem<T = unknown> {
 })
 export class StarCarousel<T = unknown> {
   protected readonly text = inject(STAR_UI_TEXT);
+  private readonly doc = inject(DOCUMENT);
   /** The slides: one item per slide. The `starCarouselItem` template draws each item. */
   readonly items = input<readonly T[]>([]);
   /** Number of slides in one page. */
   readonly numVisible = input(1);
-  /** Autoplay interval in milliseconds (0 = off). */
+  /** Autoplay interval in milliseconds (0 = off). It does not advance while motion is reduced (system setting or `reducedMotion: 'always'`). */
   readonly autoplay = input(0);
   /** Accessible name of the carousel region. */
   readonly ariaLabel = input<string | null>(null);
@@ -159,7 +160,7 @@ export class StarCarousel<T = unknown> {
       const ms = this.autoplay();
       if (!ms) return;
       const id = setInterval(() => {
-        if (!this.playing() || this.hovering()) return;
+        if (!this.playing() || this.hovering() || starPrefersReducedMotion(this.doc)) return;
         this.goTo(this.page() >= this.pages() - 1 ? 0 : this.page() + 1);
       }, ms);
       onCleanup(() => clearInterval(id));
@@ -171,7 +172,7 @@ export class StarCarousel<T = unknown> {
     this.page.set(target);
     const track = this.track().nativeElement;
     const slide = track.children[target * this.numVisible()] as HTMLElement | undefined;
-    const reduce = matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    const reduce = starPrefersReducedMotion(this.doc);
     // Scroll by the distance between the slide and the track at their inline-start edge. In
     // right-to-left the scroll offset is negative and the first slide is at the right edge, so a
     // distance (not an absolute `scrollLeft`) works in both directions.

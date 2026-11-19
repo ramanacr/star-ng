@@ -126,3 +126,11 @@ textarea.star-input--auto-resize {
     padding-block-end: 0.5rem;
   }
 }
+
+// `variant="filled"` (or `inputVariant: 'filled'` in `provideStarNg`): a filled surface with a
+// line at the end of the block instead of a border on every side. Focus and invalid keep their rules.
+.star-input--filled,
+.star-number--filled .star-number__control {
+  border-color: transparent;
+  border-block-end-color: var(--star-border-strong);
+}

@@ -838,6 +838,33 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'action sheet with danger and disabled actions',
+    path: 'controls/action-sheet',
+    open: async (page) => {
+      await example(page, 'Icons, danger and disabled actions')
+        .getByRole('button', { name: 'Project actions' })
+        .click();
+      await expect(page.getByRole('dialog', { name: 'Project North depot actions' })).toBeVisible();
+    },
+  },
+  {
+    name: 'non-modal bottom sheet container',
+    path: 'controls/bottom-sheet-container',
+    open: async (page) => {
+      await example(page, 'Non-modal sheet').getByRole('button', { name: 'Show filters' }).click();
+      await expect(page.getByRole('dialog', { name: 'Order filters' })).toBeVisible();
+    },
+  },
+  {
+    name: 'key filter error in validateOnly mode',
+    path: 'guides/configuration',
+    open: async (page) => {
+      const live = example(page, 'Filtered fields');
+      await live.getByLabel('Reference').fill('ORD 1042');
+      await expect(live.getByText('Use letters, digits and the underscore only.')).toBeVisible();
+    },
+  },
+  {
     name: 'popover',
     path: 'controls/popover',
     open: async (page) => {
@@ -1230,6 +1257,53 @@ const STATES: readonly State[] = [
     },
   },
 
+  // Charts, gauges and codes.
+  {
+    name: 'sparklines in right-to-left',
+    path: 'controls/sparkline',
+    open: async (page) => {
+      await page.evaluate(() => (document.documentElement.dir = 'rtl'));
+      const line = example(page, 'In a table').locator('star-sparkline').first();
+      await expect(line).toHaveAttribute('aria-label', /^Trend up/);
+    },
+  },
+
+  {
+    name: 'interactive gauge after keyboard input',
+    path: 'controls/gauge',
+    open: async (page) => {
+      const live = example(page, 'Interactive with Signal Forms');
+      const gauge = live.getByRole('slider', { name: 'Volume' });
+      await gauge.focus();
+      await page.keyboard.press('End');
+      await expect(gauge).toHaveAttribute('aria-valuenow', '100');
+    },
+  },
+
+  {
+    name: 'barcode with a value that cannot be encoded',
+    path: 'controls/barcode',
+    open: async (page) => {
+      const live = example(page, 'Error state');
+      await expect(live.locator('.star-barcode__error')).toBeVisible();
+      await live.getByRole('textbox', { name: 'Barcode value' }).fill('5901234123457');
+      await expect(live.locator('star-barcode svg')).toBeVisible();
+      await live.getByRole('textbox', { name: 'Barcode value' }).fill('59012341234X');
+      await expect(live.locator('.star-barcode__error')).toBeVisible();
+    },
+  },
+
+  {
+    name: 'QR code with a value that is too long',
+    path: 'controls/qr-code',
+    open: async (page) => {
+      const live = example(page, 'Error correction');
+      await live.getByRole('radio', { name: 'H' }).click();
+      await live.getByRole('textbox', { name: 'QR code value' }).fill('x'.repeat(1300));
+      await expect(live.locator('.star-qr-code__error')).toBeVisible();
+    },
+  },
+
   // Steps and media.
   {
     name: 'stepper on the second step',
@@ -1429,6 +1503,57 @@ const STATES: readonly State[] = [
       await live.scrollIntoViewIfNeeded();
       await scrollToMiddle(live.locator('.star-table__scroll'));
       await expect(live.getByRole('row').nth(2)).toBeVisible();
+    },
+  },
+  // Tabs, editor and chart depth.
+  {
+    name: 'closable scrollable tabs scrolled to the end',
+    path: 'controls/tabs',
+    open: async (page) => {
+      const live = example(page, 'Scrollable tabs');
+      await live.getByRole('tab', { name: 'January' }).click();
+      await page.keyboard.press('End');
+      await expect(live.locator('.star-tabs__scroll--start')).toBeVisible();
+      const closable = example(page, 'Closable tabs');
+      await expect(closable.locator('.star-tabs__close').first()).toBeVisible();
+    },
+  },
+  {
+    name: 'editor link popover open',
+    path: 'controls/editor',
+    open: async (page) => {
+      const live = example(page, 'Full toolbar');
+      await live.getByRole('textbox', { name: 'Shipping report' }).locator('a').click();
+      await live.getByRole('button', { name: 'Link' }).click();
+      await expect(live.getByRole('button', { name: 'Remove link' })).toBeVisible();
+    },
+  },
+  {
+    name: 'chart tooltip shown on a focused data point',
+    path: 'controls/chart',
+    open: async (page) => {
+      const live = example(page, 'Keyboard, tooltip template and point selection');
+      await live.getByRole('img', { name: 'Received, Jan: 120' }).focus();
+      await expect(live.locator('.star-chart__tip')).toBeVisible();
+    },
+  },
+  {
+    name: 'tabs close button of the selected tab focused',
+    path: 'controls/tabs',
+    open: async (page) => {
+      const live = example(page, 'Closable tabs');
+      const close = live.getByRole('button', { name: 'Close orders.csv' });
+      await close.focus();
+      await expect(close).toBeVisible();
+    },
+  },
+  {
+    name: 'vertical tabs with the second tab selected',
+    path: 'controls/tabs',
+    open: async (page) => {
+      const live = example(page, 'Vertical tabs');
+      await live.getByRole('tab', { name: 'Billing' }).click();
+      await expect(live.getByRole('tabpanel', { name: 'Billing' })).toBeVisible();
     },
   },
 ];

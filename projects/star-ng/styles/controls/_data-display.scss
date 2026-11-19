@@ -1,4 +1,5 @@
 // Tree table
+@use '../shared' as *;
 .star-tree-table__first {
   display: inline-flex;
   align-items: center;
@@ -59,7 +60,7 @@
 .star-tree-table__loading td {
   color: var(--star-text-muted);
 }
-@media (prefers-reduced-motion: reduce) {
+@include star-reduced-motion {
   .star-tree-table__loading .star-spin {
     animation: none;
   }

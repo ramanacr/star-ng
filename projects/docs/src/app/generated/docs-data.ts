@@ -5,6 +5,8 @@ export interface DocsApiMember {
   readonly default: string | null;
   readonly required: boolean;
   readonly description: string;
+  /** The base class that declares an inherited member, for example `StarOptionListBase`. */
+  readonly inheritedFrom?: string;
 }
 
 export interface DocsApiEntry {
@@ -451,6 +453,334 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "description": "Autocomplete (PrimeNG `p-autocomplete`). Local mode filters `options`; server mode listens to `(completeMethod)` and shows `[suggestions]`. Only listed options can be chosen: on blur an exact label match is taken, and other text reverts to the label of the value (or clears it with `forceSelection`).",
     "inputs": [
       {
+        "name": "options",
+        "type": "readonly TOption[]",
+        "default": "[]",
+        "required": false,
+        "description": "The options. With `lazy`, an entry may be `undefined` while it is not loaded: the list shows a loading row for it, and the keyboard skips it.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "optionLabel",
+        "type": "StarOptionKey<TOption> | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "optionValue",
+        "type": "StarOptionKey<TOption> | null",
+        "default": "null",
+        "required": false,
+        "description": "Value stored in the form. Omit to store the whole option.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "optionDisabled",
+        "type": "StarOptionKey<TOption> | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "compareWith",
+        "type": "(a: TValue, b: TValue) => boolean",
+        "default": "Object.is",
+        "required": false,
+        "description": "Equality for values (default `Object.is`). Use for object values from the server.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "optionGroup",
+        "type": "StarOptionKey<TOption> | null",
+        "default": "null",
+        "required": false,
+        "description": "Group heading of an option (property name or function). Options with the same heading show together under it, in the order in which the headings first appear.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "virtualScroll",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Renders only the lines in view, for long option lists. Every line has the height `virtualItemSize` and option text stays on one line. Keys and type-ahead work over all options, also those that are not in the DOM. Page up and Page down move by the lines in view. Each option has `aria-setsize` and `aria-posinset` for the whole list, and `aria-activedescendant` only names an option that is in the DOM.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "virtualItemSize",
+        "type": "number",
+        "default": "40",
+        "required": false,
+        "description": "Line height in pixels with `virtualScroll`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "lazy",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Loads the options on demand (PrimeNG `lazy` with `onLazyLoad`). Use it with `virtualScroll` and an `options` array of the full length, with `undefined` for the options that are not loaded. The control emits `lazyLoad` when the rows in view need such options, and when the filter text changes. The filter then does not filter the options in the browser: the event has the text.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "focusOnHover",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Moving the pointer over an option makes it the active option (default `true`). PrimeNG `focusOnHover`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "autoOptionFocus",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "When the panel opens without a chosen option, the first enabled option is active (default `true`). Off: no option is active until a key moves. The autocomplete uses `autoHighlight`. PrimeNG `autoOptionFocus`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "placeholder",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "filter",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "filterPlaceholder",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "filterBy",
+        "type": "StarFilterBy<TOption>",
+        "default": "null",
+        "required": false,
+        "description": "Option fields that the filter searches: one key or a list of keys (property names or functions). Default: the label. PrimeNG `filterBy`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "filterMatchMode",
+        "type": "StarFilterMatchMode",
+        "default": "'contains'",
+        "required": false,
+        "description": "How the filter text must match: `contains` (default), `startsWith`, `endsWith`, `equals` or `notContains`. The default comes from `filterMatchMode` of `provideStarNg` when it is set. PrimeNG `filterMatchMode`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "filterLocale",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Locale of the filter compare, for example `de` or `tr`. The compare uses `Intl.Collator` with sensitivity `base`, so case and accents do not count. Default: case and accents do not count, without locale rules; `locale` of `provideStarNg` when it is set. PrimeNG `filterLocale`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "resetFilterOnHide",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Clears the filter text when the panel closes (default `true`). Set `false` to keep the text, and the filtered list, for the next opening. PrimeNG `resetFilterOnHide` (there default `false`).",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "showClear",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "loading",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "emptyMessage",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "scrollHeight",
+        "type": "string",
+        "default": "'16rem'",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "panelClass",
+        "type": "string | readonly string[] | null",
+        "default": "null",
+        "required": false,
+        "description": "Extra CSS classes of the panel (the `.star-panel` element). PrimeNG `panelStyleClass`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "panelStyle",
+        "type": "Record<string, string> | null",
+        "default": "null",
+        "required": false,
+        "description": "Inline styles of the panel, for example `{ 'min-width': '20rem' }`. PrimeNG `panelStyle`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "appendTo",
+        "type": "'self' | 'body'",
+        "default": "'self'",
+        "required": false,
+        "description": "Where the panel is in the DOM (PrimeNG `appendTo`). `self` (default): next to the control. `body`: in the overlay container at the end of the body, for parents that clip their content. Both are native popovers in the top layer, so the panel also shows above a modal dialog. The control reads it when the overlay is created (the first opening): a later change has no effect. The default comes from `overlay.appendTo` of `provideStarNg` when it is set.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "size",
+        "type": "'sm' | 'md'",
+        "default": "'md'",
+        "required": false,
+        "description": "Size. Default: `size` of `provideStarNg` (`small` or `medium`), else `md`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "ariaLabelledBy",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "inputId",
+        "type": "string",
+        "default": "(generated id)",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "readonly",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "required",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "invalid",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "touched",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "suggestions",
+        "type": "readonly TOption[] | null",
+        "default": "null",
+        "required": false,
+        "description": "Server results. When set, the control shows these instead of filtering `options`.",
+        "inheritedFrom": "StarAutoCompleteBase"
+      },
+      {
+        "name": "minQueryLength",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarAutoCompleteBase"
+      },
+      {
+        "name": "delay",
+        "type": "number",
+        "default": "300",
+        "required": false,
+        "description": "Debounce in ms before `(completeMethod)` fires.",
+        "inheritedFrom": "StarAutoCompleteBase"
+      },
+      {
+        "name": "dropdown",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows a button that lists all options (local) or searches with an empty query.",
+        "inheritedFrom": "StarAutoCompleteBase"
+      },
+      {
+        "name": "autoHighlight",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Highlights the first result, so Enter picks it.",
+        "inheritedFrom": "StarAutoCompleteBase"
+      },
+      {
+        "name": "showEmptyMessage",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarAutoCompleteBase"
+      },
+      {
         "name": "forceSelection",
         "type": "boolean",
         "default": "false",
@@ -468,6 +798,70 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ],
     "outputs": [
+      {
+        "name": "touch",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "opened",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "closed",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "filterChange",
+        "type": "string",
+        "default": null,
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "lazyLoad",
+        "type": "StarListLazyLoadEvent",
+        "default": null,
+        "required": false,
+        "description": "With `lazy`: the options from `first` to `last` are needed for the filter text `filter`. PrimeNG `onLazyLoad`. Each range is asked for once per filter text; treat the event as idempotent. A range that failed to load is asked for again after `resetLazy()`, or when the owner sets new placeholders with a different array length.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "completeMethod",
+        "type": "StarAutoCompleteSearch",
+        "default": null,
+        "required": false,
+        "description": "Fires (debounced) when the user types; load `suggestions` in reply (PrimeNG `completeMethod`).",
+        "inheritedFrom": "StarAutoCompleteBase"
+      },
+      {
+        "name": "optionSelect",
+        "type": "TOption",
+        "default": null,
+        "required": false,
+        "description": "An option was chosen (also from typed text). PrimeNG `onSelect`.",
+        "inheritedFrom": "StarAutoCompleteBase"
+      },
+      {
+        "name": "optionUnselect",
+        "type": "TValue",
+        "default": null,
+        "required": false,
+        "description": "A value was removed by the user: a chip, Backspace, or the clear of a single value. PrimeNG `onUnselect`.",
+        "inheritedFrom": "StarAutoCompleteBase"
+      },
       {
         "name": "selected",
         "type": "TOption",
@@ -490,6 +884,286 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "entry": "@star-ng/ui/autocomplete",
     "description": "Shared behaviour of the autocomplete controls (WAI-ARIA combobox with list autocomplete): local filtering of `options`, or server search through `(completeMethod)` + `[suggestions]` with a debounce, minimum query length, loading state, match highlighting, dropdown button and a screen-reader result count.",
     "inputs": [
+      {
+        "name": "options",
+        "type": "readonly TOption[]",
+        "default": "[]",
+        "required": false,
+        "description": "The options. With `lazy`, an entry may be `undefined` while it is not loaded: the list shows a loading row for it, and the keyboard skips it.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "optionLabel",
+        "type": "StarOptionKey<TOption> | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "optionValue",
+        "type": "StarOptionKey<TOption> | null",
+        "default": "null",
+        "required": false,
+        "description": "Value stored in the form. Omit to store the whole option.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "optionDisabled",
+        "type": "StarOptionKey<TOption> | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "compareWith",
+        "type": "(a: TValue, b: TValue) => boolean",
+        "default": "Object.is",
+        "required": false,
+        "description": "Equality for values (default `Object.is`). Use for object values from the server.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "optionGroup",
+        "type": "StarOptionKey<TOption> | null",
+        "default": "null",
+        "required": false,
+        "description": "Group heading of an option (property name or function). Options with the same heading show together under it, in the order in which the headings first appear.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "virtualScroll",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Renders only the lines in view, for long option lists. Every line has the height `virtualItemSize` and option text stays on one line. Keys and type-ahead work over all options, also those that are not in the DOM. Page up and Page down move by the lines in view. Each option has `aria-setsize` and `aria-posinset` for the whole list, and `aria-activedescendant` only names an option that is in the DOM.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "virtualItemSize",
+        "type": "number",
+        "default": "40",
+        "required": false,
+        "description": "Line height in pixels with `virtualScroll`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "lazy",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Loads the options on demand (PrimeNG `lazy` with `onLazyLoad`). Use it with `virtualScroll` and an `options` array of the full length, with `undefined` for the options that are not loaded. The control emits `lazyLoad` when the rows in view need such options, and when the filter text changes. The filter then does not filter the options in the browser: the event has the text.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "focusOnHover",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Moving the pointer over an option makes it the active option (default `true`). PrimeNG `focusOnHover`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "autoOptionFocus",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "When the panel opens without a chosen option, the first enabled option is active (default `true`). Off: no option is active until a key moves. The autocomplete uses `autoHighlight`. PrimeNG `autoOptionFocus`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "placeholder",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "filter",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "filterPlaceholder",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "filterBy",
+        "type": "StarFilterBy<TOption>",
+        "default": "null",
+        "required": false,
+        "description": "Option fields that the filter searches: one key or a list of keys (property names or functions). Default: the label. PrimeNG `filterBy`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "filterMatchMode",
+        "type": "StarFilterMatchMode",
+        "default": "'contains'",
+        "required": false,
+        "description": "How the filter text must match: `contains` (default), `startsWith`, `endsWith`, `equals` or `notContains`. The default comes from `filterMatchMode` of `provideStarNg` when it is set. PrimeNG `filterMatchMode`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "filterLocale",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Locale of the filter compare, for example `de` or `tr`. The compare uses `Intl.Collator` with sensitivity `base`, so case and accents do not count. Default: case and accents do not count, without locale rules; `locale` of `provideStarNg` when it is set. PrimeNG `filterLocale`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "resetFilterOnHide",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Clears the filter text when the panel closes (default `true`). Set `false` to keep the text, and the filtered list, for the next opening. PrimeNG `resetFilterOnHide` (there default `false`).",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "showClear",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "loading",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "emptyMessage",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "scrollHeight",
+        "type": "string",
+        "default": "'16rem'",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "panelClass",
+        "type": "string | readonly string[] | null",
+        "default": "null",
+        "required": false,
+        "description": "Extra CSS classes of the panel (the `.star-panel` element). PrimeNG `panelStyleClass`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "panelStyle",
+        "type": "Record<string, string> | null",
+        "default": "null",
+        "required": false,
+        "description": "Inline styles of the panel, for example `{ 'min-width': '20rem' }`. PrimeNG `panelStyle`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "appendTo",
+        "type": "'self' | 'body'",
+        "default": "'self'",
+        "required": false,
+        "description": "Where the panel is in the DOM (PrimeNG `appendTo`). `self` (default): next to the control. `body`: in the overlay container at the end of the body, for parents that clip their content. Both are native popovers in the top layer, so the panel also shows above a modal dialog. The control reads it when the overlay is created (the first opening): a later change has no effect. The default comes from `overlay.appendTo` of `provideStarNg` when it is set.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "size",
+        "type": "'sm' | 'md'",
+        "default": "'md'",
+        "required": false,
+        "description": "Size. Default: `size` of `provideStarNg` (`small` or `medium`), else `md`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "ariaLabelledBy",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "inputId",
+        "type": "string",
+        "default": "(generated id)",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "readonly",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "required",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "invalid",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "touched",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
       {
         "name": "suggestions",
         "type": "readonly TOption[] | null",
@@ -535,6 +1209,46 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "models": [],
     "outputs": [
+      {
+        "name": "touch",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "opened",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "closed",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "filterChange",
+        "type": "string",
+        "default": null,
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "lazyLoad",
+        "type": "StarListLazyLoadEvent",
+        "default": null,
+        "required": false,
+        "description": "With `lazy`: the options from `first` to `last` are needed for the filter text `filter`. PrimeNG `onLazyLoad`. Each range is asked for once per filter text; treat the event as idempotent. A range that failed to load is asked for again after `resetLazy()`, or when the owner sets new placeholders with a different array length.",
+        "inheritedFrom": "StarOptionListBase"
+      },
       {
         "name": "completeMethod",
         "type": "StarAutoCompleteSearch",
@@ -730,6 +1444,66 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": "Emits when the user dismisses the banner with its button."
+      }
+    ]
+  },
+  "StarBarcode": {
+    "kind": "component",
+    "selector": "star-barcode",
+    "entry": "@star-ng/ui/barcode",
+    "description": "Barcode: a linear barcode drawn as SVG rectangles. Kendo UI `kendo-barcode` and Syncfusion `ejs-barcodegenerator` are the equivalents.",
+    "inputs": [
+      {
+        "name": "value",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "The value to encode."
+      },
+      {
+        "name": "type",
+        "type": "StarBarcodeType",
+        "default": "'code128'",
+        "required": false,
+        "description": "The symbology: `code128` (default), `ean13`, `upca` or `code39`."
+      },
+      {
+        "name": "showText",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Shows the human-readable text under the bars."
+      },
+      {
+        "name": "barHeight",
+        "type": "number",
+        "default": "64",
+        "required": false,
+        "description": "Height of the bars in pixels."
+      },
+      {
+        "name": "moduleWidth",
+        "type": "number",
+        "default": "2",
+        "required": false,
+        "description": "Width of the narrowest bar (one module) in pixels. Rounded to whole pixels, at least 1."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Label for assistive technology. Default: the human-readable value."
+      }
+    ],
+    "models": [],
+    "outputs": [
+      {
+        "name": "invalid",
+        "type": "boolean",
+        "default": null,
+        "required": false,
+        "description": "Emits `true` when the value cannot be encoded, and `false` when it can be again."
       }
     ]
   },
@@ -1145,7 +1919,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "string | undefined",
         "default": "undefined",
         "required": false,
-        "description": ""
+        "description": "BCP 47 locale for names. Default: `locale` of `provideStarNg`, else the browser locale."
       },
       {
         "name": "specialDates",
@@ -1243,7 +2017,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "number",
         "default": "0",
         "required": false,
-        "description": "Autoplay interval in milliseconds (0 = off)."
+        "description": "Autoplay interval in milliseconds (0 = off). It does not advance while motion is reduced (system setting or `reducedMotion: 'always'`)."
       },
       {
         "name": "ariaLabel",
@@ -1364,7 +2138,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "'sm' | 'md'",
         "default": "'md'",
         "required": false,
-        "description": ""
+        "description": "Size. Default: `size` of `provideStarNg` (`small` or `medium`), else `md`."
       },
       {
         "name": "ariaLabel",
@@ -1526,7 +2300,42 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "string | undefined",
         "default": "undefined",
         "required": false,
-        "description": ""
+        "description": "BCP 47 locale of the number format. Default: `locale` of `provideStarNg`, else the browser locale."
+      },
+      {
+        "name": "valueFormat",
+        "type": "Intl.NumberFormatOptions | null",
+        "default": "null",
+        "required": false,
+        "description": "How values show in the tooltip, the table and the value axis: `Intl.NumberFormat` options, for example `{ style: 'currency', currency: 'EUR' }` (Chart.js tick `callback`)."
+      },
+      {
+        "name": "min",
+        "type": "number | null",
+        "default": "null",
+        "required": false,
+        "description": "Lowest value of the value axis (bar, stacked bar, line, area). Default: from the data."
+      },
+      {
+        "name": "max",
+        "type": "number | null",
+        "default": "null",
+        "required": false,
+        "description": "Highest value of the value axis. Values beyond the ends stop at the end."
+      },
+      {
+        "name": "stepSize",
+        "type": "number | null",
+        "default": "null",
+        "required": false,
+        "description": "Distance between the ticks of the value axis. Default: a round step."
+      },
+      {
+        "name": "horizontal",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Bar and stacked bar: the bars run along the line and the categories go down the side (Chart.js `indexAxis: 'y'`). Series `type` and `axis` do not apply."
       },
       {
         "name": "table",
@@ -1534,8 +2343,40 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "false",
         "required": false,
         "description": "Start the table view open."
+      },
+      {
+        "name": "legendPosition",
+        "type": "'top' | 'bottom' | 'start' | 'end'",
+        "default": "'top'",
+        "required": false,
+        "description": "Where the legend is: above, below, or at the start or the end of the plot."
       }
     ],
+    "models": [
+      {
+        "name": "hiddenSeries",
+        "type": "readonly number[]",
+        "default": "[]",
+        "required": false,
+        "description": "Positions in `series` of the series that are hidden. A click on a legend item adds or removes its series (Chart.js legend `onClick`, PrimeNG through the Chart.js options). The table keeps every series."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "pointSelect",
+        "type": "StarChartPointSelectEvent",
+        "default": null,
+        "required": false,
+        "description": "A data point was clicked, or Enter or Space was pressed on a focused one. PrimeNG `onDataSelect`."
+      }
+    ]
+  },
+  "StarChartTooltip": {
+    "kind": "directive",
+    "selector": "ng-template[starChartTooltip]",
+    "entry": "@star-ng/ui/chart",
+    "description": "Content of the chart tooltip: `<ng-template starChartTooltip let-points let-label=\"label\">`. It shows on hover and on keyboard focus of a data point. PrimeNG / Chart.js `plugins.tooltip.callbacks`.",
+    "inputs": [],
     "models": [],
     "outputs": []
   },
@@ -1977,6 +2818,38 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarCopy": {
+    "kind": "directive",
+    "selector": "[starCopy]",
+    "entry": "@star-ng/ui/utility",
+    "description": "Copies text to the clipboard when the host is clicked (CDK `cdkCopyToClipboard`; PrimeNG has no directive). After the copy it announces the `copied` UI text (\"Copied\"), or `copyFailed`, through `StarAnnouncer`, and emits `copied` with `true` or `false`. Put it on a button:",
+    "inputs": [
+      {
+        "name": "starCopy",
+        "type": "string",
+        "default": null,
+        "required": true,
+        "description": "The text to copy."
+      },
+      {
+        "name": "copyAnnounce",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Announces the result to screen readers (default `true`). Set `false` when the page shows it in its own live region."
+      }
+    ],
+    "models": [],
+    "outputs": [
+      {
+        "name": "copied",
+        "type": "boolean",
+        "default": null,
+        "required": false,
+        "description": "`true` after a successful copy, `false` when the copy failed."
+      }
+    ]
+  },
   "StarDataView": {
     "kind": "component",
     "selector": "star-data-view",
@@ -2107,7 +2980,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "string | undefined",
         "default": "undefined",
         "required": false,
-        "description": "BCP 47 locale for names and formats. Default: the browser locale."
+        "description": "BCP 47 locale for names and formats. Default: `locale` of `provideStarNg`, else the browser locale."
       },
       {
         "name": "dateFormat",
@@ -2261,7 +3134,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "'sm' | 'md'",
         "default": "'md'",
         "required": false,
-        "description": ""
+        "description": "Size. Default: `size` of `provideStarNg` (`small` or `medium`), else `md`."
       },
       {
         "name": "ariaLabel",
@@ -2387,6 +3260,310 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "description": "Date picker (PrimeNG `p-datepicker`): typed entry (`dd/mm/yyyy` or the locale's order, or ISO), calendar popup with month / year views, min / max, disabled dates and weekdays, Today / Clear.",
     "inputs": [
       {
+        "name": "placeholder",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "minDate",
+        "type": "Date | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "maxDate",
+        "type": "Date | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "disabledDates",
+        "type": "readonly Date[]",
+        "default": "[]",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "disabledDays",
+        "type": "readonly number[]",
+        "default": "[]",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "dateDisabled",
+        "type": "((date: Date) => boolean) | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "firstDayOfWeek",
+        "type": "number | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "locale",
+        "type": "string | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "BCP 47 locale for names and formats. Default: `locale` of `provideStarNg`, else the browser locale.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "dateFormat",
+        "type": "Intl.DateTimeFormatOptions",
+        "default": "DEFAULT_DATE_FORMAT",
+        "required": false,
+        "description": "`Intl.DateTimeFormat` options for the input text (default numeric day / month / year). The shared default of `displayFormat` and `inputFormat`.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "displayFormat",
+        "type": "Intl.DateTimeFormatOptions | null",
+        "default": "null",
+        "required": false,
+        "description": "`Intl.DateTimeFormat` options of the text while the field does not have the focus, for example `{ dateStyle: 'long' }` (Ignite UI `displayFormat`). Default: `dateFormat`.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "inputFormat",
+        "type": "Intl.DateTimeFormatOptions | null",
+        "default": "null",
+        "required": false,
+        "description": "`Intl.DateTimeFormat` options of the text while the field has the focus (Ignite UI `inputFormat`, PrimeNG `dateFormat`). Typed text is read in the order of day, month and year of this format, with any separators; the month names of the locale are accepted too. Default: `dateFormat`.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "keepInvalid",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Keeps typed text that is not a valid date (PrimeNG `keepInvalid`). The field is marked invalid (`aria-invalid`) and the value becomes empty, so a required check fails. Without it, such text goes back to the text of the value.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "dataType",
+        "type": "'date' | 'string'",
+        "default": "'date'",
+        "required": false,
+        "description": "Type of the value (PrimeNG `dataType`): `'date'` (default) gives `Date` objects, `'string'` gives ISO text: `yyyy-mm-dd`, or `yyyy-mm-ddTHH:mm` (`yyyy-mm-ddTHH:mm:ss` with `showSeconds`) with `showTime`. The text that the picker writes is a local date and time, without a time zone. A value may be a `Date` or ISO text in both modes; the picker also reads fractional seconds and a zone (`2026-11-22T13:30:15.123Z`, `...+01:00`), as server JSON often has them, and shows that instant in local time.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "touchUI",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Opens the popup as a modal sheet in the middle of the window, in a native `<dialog>` with a backdrop, and with larger days for touch (PrimeNG `touchUI`). The keyboard model does not change; Escape and a click on the backdrop close it. While it is open, the page does not scroll (the scroll lock of `star-dialog`).",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "breakpoint",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Window width at or below which the popup opens as a sheet (as `touchUI`): a CSS length, for example `'640px'` or `'40rem'`, used in the media query `(max-width: <breakpoint>)` (PrimeNG `breakpoint`). The width is checked when the popup opens. While the sheet is open, the page does not scroll.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "numberOfMonths",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Months shown side by side in the popup.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "showWeek",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows the ISO 8601 week number at the start of each week.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "showOtherMonths",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Shows the days of the month before and after (PrimeNG `showOtherMonths`).",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "selectOtherMonths",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "The shown days of the month before and after can be chosen (PrimeNG `selectOtherMonths`).",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "specialDates",
+        "type": "readonly StarSpecialDate[]",
+        "default": "[]",
+        "required": false,
+        "description": "Marked days in the calendar, for example holidays (Ignite UI `specialDates`). The kind and the label are part of the accessible name of the day.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "hourFormat",
+        "type": "'24' | '12'",
+        "default": "'24'",
+        "required": false,
+        "description": "Clock of the typed time with `showTime`: `'24'` (14:30) or `'12'` (2:30 PM). Both forms are accepted when the user types.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "showSeconds",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Adds seconds to the time with `showTime`: the text is `hh:mm:ss` and the popup has a second column (PrimeNG `showSeconds`).",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "minTime",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Earliest and latest time of every day with `showTime`, `HH:mm` or `HH:mm:ss`, for example opening hours (Ignite UI `minValue` / `maxValue` of the time part). They add to `minDate` / `maxDate`: the columns disable the other times, typed text outside them is not taken, and a picked day moves its time into them.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "maxTime",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "stepHour",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Hour step of the time columns with `showTime` (PrimeNG `stepHour`).",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "stepSecond",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Second step of the time columns with `showSeconds` (PrimeNG `stepSecond`).",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "showButtonBar",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "showClear",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "readonlyInput",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Disables typing; the date can only be picked.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "size",
+        "type": "'sm' | 'md'",
+        "default": "'md'",
+        "required": false,
+        "description": "Size. Default: `size` of `provideStarNg` (`small` or `medium`), else `md`.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "inputId",
+        "type": "string",
+        "default": "(generated id)",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "readonly",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "required",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "invalid",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "touched",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
         "name": "showTime",
         "type": "boolean",
         "default": "false",
@@ -2419,6 +3596,70 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "outputs": [
       {
+        "name": "touch",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "opened",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "closed",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "monthChange",
+        "type": "StarCalendarMonthChange",
+        "default": null,
+        "required": false,
+        "description": "The user moved the calendar to another month (PrimeNG `onMonthChange`).",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "yearChange",
+        "type": "StarCalendarYearChange",
+        "default": null,
+        "required": false,
+        "description": "The user moved the calendar to another year (PrimeNG `onYearChange`).",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "viewChange",
+        "type": "StarCalendarView",
+        "default": null,
+        "required": false,
+        "description": "The user switched the calendar between the day, month and year views.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "todayClick",
+        "type": "Date",
+        "default": null,
+        "required": false,
+        "description": "The user chose Today in the button bar, after the value changed; the event is today (PrimeNG `onTodayClick`). Not emitted when today cannot be chosen.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "clearClick",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "The user chose Clear in the button bar or the clear button, after the value was cleared (PrimeNG `onClearClick`).",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
         "name": "dateSelect",
         "type": "Date",
         "default": null,
@@ -2433,6 +3674,310 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "entry": "@star-ng/ui/date-picker",
     "description": "Date range picker (PrimeNG `p-datepicker selectionMode=\"range\"`). Value: `{ start, end }`. First click sets the start, second click the end (swapped if earlier); hovering previews. Type `01/11/2026 – 15/11/2026` (any separator between the two dates).",
     "inputs": [
+      {
+        "name": "placeholder",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "minDate",
+        "type": "Date | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "maxDate",
+        "type": "Date | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "disabledDates",
+        "type": "readonly Date[]",
+        "default": "[]",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "disabledDays",
+        "type": "readonly number[]",
+        "default": "[]",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "dateDisabled",
+        "type": "((date: Date) => boolean) | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "firstDayOfWeek",
+        "type": "number | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "locale",
+        "type": "string | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "BCP 47 locale for names and formats. Default: `locale` of `provideStarNg`, else the browser locale.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "dateFormat",
+        "type": "Intl.DateTimeFormatOptions",
+        "default": "DEFAULT_DATE_FORMAT",
+        "required": false,
+        "description": "`Intl.DateTimeFormat` options for the input text (default numeric day / month / year). The shared default of `displayFormat` and `inputFormat`.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "displayFormat",
+        "type": "Intl.DateTimeFormatOptions | null",
+        "default": "null",
+        "required": false,
+        "description": "`Intl.DateTimeFormat` options of the text while the field does not have the focus, for example `{ dateStyle: 'long' }` (Ignite UI `displayFormat`). Default: `dateFormat`.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "inputFormat",
+        "type": "Intl.DateTimeFormatOptions | null",
+        "default": "null",
+        "required": false,
+        "description": "`Intl.DateTimeFormat` options of the text while the field has the focus (Ignite UI `inputFormat`, PrimeNG `dateFormat`). Typed text is read in the order of day, month and year of this format, with any separators; the month names of the locale are accepted too. Default: `dateFormat`.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "keepInvalid",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Keeps typed text that is not a valid date (PrimeNG `keepInvalid`). The field is marked invalid (`aria-invalid`) and the value becomes empty, so a required check fails. Without it, such text goes back to the text of the value.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "dataType",
+        "type": "'date' | 'string'",
+        "default": "'date'",
+        "required": false,
+        "description": "Type of the value (PrimeNG `dataType`): `'date'` (default) gives `Date` objects, `'string'` gives ISO text: `yyyy-mm-dd`, or `yyyy-mm-ddTHH:mm` (`yyyy-mm-ddTHH:mm:ss` with `showSeconds`) with `showTime`. The text that the picker writes is a local date and time, without a time zone. A value may be a `Date` or ISO text in both modes; the picker also reads fractional seconds and a zone (`2026-11-22T13:30:15.123Z`, `...+01:00`), as server JSON often has them, and shows that instant in local time.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "touchUI",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Opens the popup as a modal sheet in the middle of the window, in a native `<dialog>` with a backdrop, and with larger days for touch (PrimeNG `touchUI`). The keyboard model does not change; Escape and a click on the backdrop close it. While it is open, the page does not scroll (the scroll lock of `star-dialog`).",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "breakpoint",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Window width at or below which the popup opens as a sheet (as `touchUI`): a CSS length, for example `'640px'` or `'40rem'`, used in the media query `(max-width: <breakpoint>)` (PrimeNG `breakpoint`). The width is checked when the popup opens. While the sheet is open, the page does not scroll.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "numberOfMonths",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Months shown side by side in the popup.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "showWeek",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows the ISO 8601 week number at the start of each week.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "showOtherMonths",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Shows the days of the month before and after (PrimeNG `showOtherMonths`).",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "selectOtherMonths",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "The shown days of the month before and after can be chosen (PrimeNG `selectOtherMonths`).",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "specialDates",
+        "type": "readonly StarSpecialDate[]",
+        "default": "[]",
+        "required": false,
+        "description": "Marked days in the calendar, for example holidays (Ignite UI `specialDates`). The kind and the label are part of the accessible name of the day.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "hourFormat",
+        "type": "'24' | '12'",
+        "default": "'24'",
+        "required": false,
+        "description": "Clock of the typed time with `showTime`: `'24'` (14:30) or `'12'` (2:30 PM). Both forms are accepted when the user types.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "showSeconds",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Adds seconds to the time with `showTime`: the text is `hh:mm:ss` and the popup has a second column (PrimeNG `showSeconds`).",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "minTime",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Earliest and latest time of every day with `showTime`, `HH:mm` or `HH:mm:ss`, for example opening hours (Ignite UI `minValue` / `maxValue` of the time part). They add to `minDate` / `maxDate`: the columns disable the other times, typed text outside them is not taken, and a picked day moves its time into them.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "maxTime",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "stepHour",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Hour step of the time columns with `showTime` (PrimeNG `stepHour`).",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "stepSecond",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Second step of the time columns with `showSeconds` (PrimeNG `stepSecond`).",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "showButtonBar",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "showClear",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "readonlyInput",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Disables typing; the date can only be picked.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "size",
+        "type": "'sm' | 'md'",
+        "default": "'md'",
+        "required": false,
+        "description": "Size. Default: `size` of `provideStarNg` (`small` or `medium`), else `md`.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "inputId",
+        "type": "string",
+        "default": "(generated id)",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "readonly",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "required",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "invalid",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "touched",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
       {
         "name": "showTime",
         "type": "boolean",
@@ -2459,6 +4004,70 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "outputs": [
       {
+        "name": "touch",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "opened",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "closed",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "monthChange",
+        "type": "StarCalendarMonthChange",
+        "default": null,
+        "required": false,
+        "description": "The user moved the calendar to another month (PrimeNG `onMonthChange`).",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "yearChange",
+        "type": "StarCalendarYearChange",
+        "default": null,
+        "required": false,
+        "description": "The user moved the calendar to another year (PrimeNG `onYearChange`).",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "viewChange",
+        "type": "StarCalendarView",
+        "default": null,
+        "required": false,
+        "description": "The user switched the calendar between the day, month and year views.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "todayClick",
+        "type": "Date",
+        "default": null,
+        "required": false,
+        "description": "The user chose Today in the button bar, after the value changed; the event is today (PrimeNG `onTodayClick`). Not emitted when today cannot be chosen.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "clearClick",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "The user chose Clear in the button bar or the clear button, after the value was cleared (PrimeNG `onClearClick`).",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
         "name": "rangeSelect",
         "type": "StarDateRange",
         "default": null,
@@ -2482,6 +4091,110 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "entry": "@star-ng/ui/dialog",
     "description": "Dialog (PrimeNG `p-dialog`) built on the native `<dialog>` element: top-layer rendering, focus trap, focus restore and Escape handling come from the browser. Entry / exit animate with `@starting-style`; page scroll locks with `:has(dialog[open])` (`blockScroll`).",
     "inputs": [
+      {
+        "name": "header",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDialogBase"
+      },
+      {
+        "name": "size",
+        "type": "StarDialogSize",
+        "default": "'md'",
+        "required": false,
+        "description": "Width step of a dialog (no effect on a drawer).",
+        "inheritedFrom": "StarDialogBase"
+      },
+      {
+        "name": "width",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Fixed CSS width of a dialog; overrides `size` (no effect on a drawer).",
+        "inheritedFrom": "StarDialogBase"
+      },
+      {
+        "name": "modal",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Modal blocks the page behind (backdrop). Non-modal dialogs float above it.",
+        "inheritedFrom": "StarDialogBase"
+      },
+      {
+        "name": "closable",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDialogBase"
+      },
+      {
+        "name": "closeOnEscape",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDialogBase"
+      },
+      {
+        "name": "dismissableMask",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Clicking the backdrop closes the dialog.",
+        "inheritedFrom": "StarDialogBase"
+      },
+      {
+        "name": "showHeader",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDialogBase"
+      },
+      {
+        "name": "role",
+        "type": "'dialog' | 'alertdialog'",
+        "default": "'dialog'",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDialogBase"
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Accessible name when there is no visible header title.",
+        "inheritedFrom": "StarDialogBase"
+      },
+      {
+        "name": "ariaLabelledby",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Id of the element that names the dialog, for example your own heading in a headless dialog.",
+        "inheritedFrom": "StarDialogBase"
+      },
+      {
+        "name": "blockScroll",
+        "type": "boolean | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "Stops the page behind from scrolling while open, and gives the scroll back after the close (PrimeNG `blockScroll`). Default: on for a modal, off for a non-modal.",
+        "inheritedFrom": "StarDialogBase"
+      },
+      {
+        "name": "focusOnShow",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Moves the focus into the content on open (PrimeNG `focusOnShow`): the first focusable element, or the one marked with `autofocus` / `data-autofocus`. When false, the dialog box itself takes the focus, so the first press of Tab reaches the first control.",
+        "inheritedFrom": "StarDialogBase"
+      },
       {
         "name": "position",
         "type": "StarDialogPosition",
@@ -2541,6 +4254,14 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "models": [
       {
+        "name": "visible",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDialogBase"
+      },
+      {
         "name": "maximized",
         "type": "boolean",
         "default": "false",
@@ -2549,6 +4270,22 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ],
     "outputs": [
+      {
+        "name": "shown",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDialogBase"
+      },
+      {
+        "name": "hidden",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDialogBase"
+      },
       {
         "name": "dragEnd",
         "type": "StarDialogPoint",
@@ -2811,6 +4548,110 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "description": "Drawer (PrimeNG `p-drawer`): side sheet on the native `<dialog>` element. Same API as `star-dialog` (`[(visible)]`, `header`, `modal`, `dismissableMask`, `closeOnEscape`, footer slot) plus `position` and a CSS `size`. `left` and `right` are the physical edges of the screen, as in CSS; `start` and `end` follow the writing direction (`end` is the right edge in LTR and the left edge in RTL). Use `start` / `end` for a drawer that must switch sides in right-to-left.",
     "inputs": [
       {
+        "name": "header",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDialogBase"
+      },
+      {
+        "name": "size",
+        "type": "StarDialogSize",
+        "default": "'md'",
+        "required": false,
+        "description": "Width step of a dialog (no effect on a drawer).",
+        "inheritedFrom": "StarDialogBase"
+      },
+      {
+        "name": "width",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Fixed CSS width of a dialog; overrides `size` (no effect on a drawer).",
+        "inheritedFrom": "StarDialogBase"
+      },
+      {
+        "name": "modal",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Modal blocks the page behind (backdrop). Non-modal dialogs float above it.",
+        "inheritedFrom": "StarDialogBase"
+      },
+      {
+        "name": "closable",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDialogBase"
+      },
+      {
+        "name": "closeOnEscape",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDialogBase"
+      },
+      {
+        "name": "dismissableMask",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Clicking the backdrop closes the dialog.",
+        "inheritedFrom": "StarDialogBase"
+      },
+      {
+        "name": "showHeader",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDialogBase"
+      },
+      {
+        "name": "role",
+        "type": "'dialog' | 'alertdialog'",
+        "default": "'dialog'",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDialogBase"
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Accessible name when there is no visible header title.",
+        "inheritedFrom": "StarDialogBase"
+      },
+      {
+        "name": "ariaLabelledby",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Id of the element that names the dialog, for example your own heading in a headless dialog.",
+        "inheritedFrom": "StarDialogBase"
+      },
+      {
+        "name": "blockScroll",
+        "type": "boolean | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "Stops the page behind from scrolling while open, and gives the scroll back after the close (PrimeNG `blockScroll`). Default: on for a modal, off for a non-modal.",
+        "inheritedFrom": "StarDialogBase"
+      },
+      {
+        "name": "focusOnShow",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Moves the focus into the content on open (PrimeNG `focusOnShow`): the first focusable element, or the one marked with `autofocus` / `data-autofocus`. When false, the dialog box itself takes the focus, so the first press of Tab reaches the first control.",
+        "inheritedFrom": "StarDialogBase"
+      },
+      {
         "name": "position",
         "type": "'left' | 'right' | 'start' | 'end' | 'top' | 'bottom'",
         "default": "'right'",
@@ -2839,8 +4680,34 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "A click on the backdrop closes the drawer (PrimeNG `dismissible`). Same effect as `dismissableMask`. The default is false, which differs from PrimeNG (default true): a drawer without `dismissible` or `dismissableMask` stays open on a backdrop click."
       }
     ],
-    "models": [],
-    "outputs": []
+    "models": [
+      {
+        "name": "visible",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDialogBase"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "shown",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDialogBase"
+      },
+      {
+        "name": "hidden",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDialogBase"
+      }
+    ]
   },
   "StarDropdown": {
     "kind": "component",
@@ -2969,8 +4836,22 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-editor",
     "entry": "@star-ng/ui/editor",
-    "description": "Rich text field (PrimeNG `p-editor`, without Quill): a `contenteditable` area with a formatting toolbar (bold, italic, underline, heading, lists, link, clear). Value is HTML, sanitized with Angular's `DomSanitizer` both when it is shown and when it is stored.",
+    "description": "Rich text field (PrimeNG `p-editor`, without Quill): a `contenteditable` area with a formatting toolbar. Value is HTML, sanitized with Angular's `DomSanitizer` both when it is shown and when it is stored.",
     "inputs": [
+      {
+        "name": "format",
+        "type": "'html' | 'text'",
+        "default": "'html'",
+        "required": false,
+        "description": "`'html'` (default): the value is HTML. `'text'`: the value is plain text, one line per paragraph; the toolbar still formats the text on the screen, but the value has no markup. PrimeNG `onTextChange` gives the text next to the HTML."
+      },
+      {
+        "name": "maxLength",
+        "type": "number | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "Most characters of text (line breaks do not count). Typing stops at the limit, a counter shows under the area and describes it, and a live message gives the rest near the end. A Signal Forms `maxLength` rule sets it too; note that the rule checks the length of the value (HTML, tags included, with `format=\"html\"`), while the editor counts text. PrimeNG has no equivalent."
+      },
       {
         "name": "placeholder",
         "type": "string",
@@ -3019,6 +4900,20 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "false",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "pasteAsText",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Paste plain text only. Without it, pasted HTML is sanitized (no scripts, no style elements or attributes, no event handlers) before it goes in. PrimeNG has no equivalent (Quill clipboard matchers)."
+      },
+      {
+        "name": "toolbar",
+        "type": "readonly StarEditorToolbarItem[]",
+        "default": "STAR_EDITOR_DEFAULT_TOOLBAR",
+        "required": false,
+        "description": "The toolbar: command names in order, with `'|'` between groups. Unknown names are left out. `STAR_EDITOR_FULL_TOOLBAR` has every command. PrimeNG toolbar formats (Quill `toolbar`)."
       }
     ],
     "models": [
@@ -3027,7 +4922,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "string",
         "default": "''",
         "required": false,
-        "description": "The content as HTML. Edits by the user are stored sanitized."
+        "description": "The content: HTML (sanitized when the user edits it), or plain text with `format=\"text\"`."
       }
     ],
     "outputs": [
@@ -3039,6 +4934,68 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       }
     ]
+  },
+  "StarEditorLink": {
+    "kind": "component",
+    "selector": "star-editor-link",
+    "entry": "@star-ng/ui/editor",
+    "description": "The link popover of `star-editor` (internal): an address field, \"Open in a new tab\", and the buttons Apply, Remove (for an existing link) and Cancel. Escape cancels. It is not modal: it sits under the toolbar, and the editor gives the focus back to the text.",
+    "inputs": [
+      {
+        "name": "initialUrl",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "The address of the link at the caret, `''` for a new link."
+      },
+      {
+        "name": "initialNewTab",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "editing",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "True when the caret is in a link: the Remove button shows."
+      }
+    ],
+    "models": [],
+    "outputs": [
+      {
+        "name": "apply",
+        "type": "StarEditorLinkValue",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "remove",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "dismissed",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
+  "StarEditorToolbarTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starEditorToolbar]",
+    "entry": "@star-ng/ui/editor",
+    "description": "Replaces the toolbar of `star-editor`: `<ng-template starEditorToolbar let-exec=\"exec\" let-isActive=\"isActive\">…</ng-template>`. Give the container `role=\"toolbar\"` and a name, and stop `mousedown` on its buttons (`$event.preventDefault()`) so the text keeps its selection. PrimeNG `#header` template of `p-editor`.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
   },
   "StarEmptyTemplate": {
     "kind": "directive",
@@ -3188,7 +5145,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "string | undefined",
         "default": "undefined",
         "required": false,
-        "description": "Locale for the file sizes (default: the application locale)."
+        "description": "Locale for the file sizes. Default: `locale` of `provideStarNg`, else the browser locale."
       },
       {
         "name": "fileStatus",
@@ -3379,7 +5336,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "string | undefined",
         "default": "undefined",
         "required": false,
-        "description": ""
+        "description": "Locale of dates and times. Default: `provideStarNg({ locale })`, else the browser."
       },
       {
         "name": "readonly",
@@ -3426,6 +5383,123 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": ""
+      }
+    ]
+  },
+  "StarGaugeBase": {
+    "kind": "directive",
+    "selector": "",
+    "entry": "@star-ng/ui/gauge",
+    "description": "Shared inputs and behaviour of `star-linear-gauge` and `star-radial-gauge`: the value and the scale, ranges, ticks, labels, formatting, motion and the optional interactive (slider) mode with keyboard, pointer and Signal Forms support.",
+    "inputs": [
+      {
+        "name": "min",
+        "type": "number | undefined",
+        "default": "0",
+        "required": false,
+        "description": "Lowest value of the scale. Also bound from a Signal Forms `min()` rule."
+      },
+      {
+        "name": "max",
+        "type": "number | undefined",
+        "default": "100",
+        "required": false,
+        "description": "Highest value of the scale. Also bound from a Signal Forms `max()` rule."
+      },
+      {
+        "name": "ranges",
+        "type": "readonly StarGaugeRange[]",
+        "default": "[]",
+        "required": false,
+        "description": "Coloured bands of the scale."
+      },
+      {
+        "name": "ticks",
+        "type": "StarGaugeTicks",
+        "default": "{ major: 5, minor: 2 }",
+        "required": false,
+        "description": "Major intervals (`major`) or the value between major ticks (`step`), and `minor` parts per interval."
+      },
+      {
+        "name": "labels",
+        "type": "boolean | Intl.NumberFormatOptions",
+        "default": "true",
+        "required": false,
+        "description": "Labels of the major ticks: `true` (default), `false`, or `Intl.NumberFormat` options that format the labels and the value text, for example `{ style: 'unit', unit: 'percent' }`."
+      },
+      {
+        "name": "locale",
+        "type": "string | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "Locale of the numbers (`Intl.NumberFormat`). Default: the runtime locale."
+      },
+      {
+        "name": "animate",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Animates the pointer when the value changes. Off when the user prefers reduced motion."
+      },
+      {
+        "name": "interactive",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Lets the user set the value: the gauge becomes a slider (keyboard and pointer)."
+      },
+      {
+        "name": "step",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Step of the keyboard and the pointer in interactive mode. A value not above zero means 1."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Label for assistive technology."
+      },
+      {
+        "name": "ariaLabelledby",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Id of the element that labels the gauge."
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "readonly",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [
+      {
+        "name": "value",
+        "type": "number",
+        "default": "0",
+        "required": false,
+        "description": "The value. Two-way bindable; a Signal Forms field in interactive mode."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "touch",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "Emits when an interactive gauge loses the focus."
       }
     ]
   },
@@ -3517,7 +5591,64 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "selector": "star-ifta-label",
     "entry": "@star-ng/ui/field",
     "description": "In-field top-aligned label (PrimeNG `p-iftalabel`): the label sits inside the box of the control, above the value, and stays there. It is a `star-field` with another layout, so it has the same inputs (`label`, `hint`, `error`, `state`, `required`, `for`) and links its label the same way: `starInput`, `star-select`, `star-date-picker`, `star-input-number` and the other StarNG form controls register with it (see `StarField.linkControl`).",
-    "inputs": [],
+    "inputs": [
+      {
+        "name": "label",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarField"
+      },
+      {
+        "name": "hint",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarField"
+      },
+      {
+        "name": "error",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Explicit error text. Wins over `state` errors.",
+        "inheritedFrom": "StarField"
+      },
+      {
+        "name": "state",
+        "type": "StarFieldStateLike | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarField"
+      },
+      {
+        "name": "required",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarField"
+      },
+      {
+        "name": "messages",
+        "type": "Readonly<Record<string, string>>",
+        "default": "{}",
+        "required": false,
+        "description": "Messages per validation error kind, for errors without a `message`.",
+        "inheritedFrom": "StarField"
+      },
+      {
+        "name": "for",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Id of the labelled control. Set automatically by `starInput` and by the StarNG form controls (see `linkControl`). Set it only for a native control that is not a StarNG control.",
+        "inheritedFrom": "StarField"
+      }
+    ],
     "models": [],
     "outputs": []
   },
@@ -3680,7 +5811,14 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "'sm' | 'md' | 'lg'",
         "default": "'md'",
         "required": false,
-        "description": ""
+        "description": "Size. Default: `size` of `provideStarNg`, else `md`."
+      },
+      {
+        "name": "variant",
+        "type": "StarInputVariant",
+        "default": "'outlined'",
+        "required": false,
+        "description": "Look: border on every side, or a filled surface. Default: `inputVariant` of `provideStarNg`, else `outlined`. PrimeNG `variant`."
       },
       {
         "name": "invalid",
@@ -3910,7 +6048,14 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "string | undefined",
         "default": "undefined",
         "required": false,
-        "description": ""
+        "description": "BCP 47 locale of the number format. Default: `locale` of `provideStarNg`, else the browser locale."
+      },
+      {
+        "name": "variant",
+        "type": "StarInputVariant",
+        "default": "'outlined'",
+        "required": false,
+        "description": "Look: border on every side, or a filled surface. Default: `inputVariant` of `provideStarNg`, else `outlined`. PrimeNG `variant`."
       },
       {
         "name": "minFractionDigits",
@@ -4302,6 +6447,45 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarKeyFilter": {
+    "kind": "directive",
+    "selector": "input[starKeyFilter], textarea[starKeyFilter]",
+    "entry": "@star-ng/ui/utility",
+    "description": "Lets the user type only the allowed characters into an `input` or a `textarea` (PrimeNG `pKeyFilter`). The filter is a preset (`int`, `num`, `money`, `hex`, `alpha`, `alphanum`, `email`) or a `RegExp` that one allowed character matches.",
+    "inputs": [
+      {
+        "name": "starKeyFilter",
+        "type": "StarKeyFilterRule",
+        "default": null,
+        "required": true,
+        "description": "The allowed characters: a preset name or a `RegExp` for one character."
+      },
+      {
+        "name": "validateOnly",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Does not block; marks a value with characters that are not allowed as invalid. PrimeNG `pValidateOnly`."
+      },
+      {
+        "name": "validationMessage",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Message of the native validation error with `validateOnly`. Default: the `keyFilterInvalid` UI text."
+      }
+    ],
+    "models": [],
+    "outputs": [
+      {
+        "name": "validChange",
+        "type": "boolean",
+        "default": null,
+        "required": false,
+        "description": "Emits with `validateOnly` when the result of the check changes: `true` when the value has only allowed characters."
+      }
+    ]
+  },
   "StarKnob": {
     "kind": "component",
     "selector": "star-knob",
@@ -4381,6 +6565,152 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": ""
+      }
+    ]
+  },
+  "StarLinearGauge": {
+    "kind": "component",
+    "selector": "star-linear-gauge",
+    "entry": "@star-ng/ui/gauge",
+    "description": "Linear gauge: a value on a straight scale with ranges, ticks and labels. Kendo UI `kendo-lineargauge`, Ignite UI `igx-linear-gauge` and Syncfusion `ejs-lineargauge` are the equivalents.",
+    "inputs": [
+      {
+        "name": "min",
+        "type": "number | undefined",
+        "default": "0",
+        "required": false,
+        "description": "Lowest value of the scale. Also bound from a Signal Forms `min()` rule.",
+        "inheritedFrom": "StarGaugeBase"
+      },
+      {
+        "name": "max",
+        "type": "number | undefined",
+        "default": "100",
+        "required": false,
+        "description": "Highest value of the scale. Also bound from a Signal Forms `max()` rule.",
+        "inheritedFrom": "StarGaugeBase"
+      },
+      {
+        "name": "ranges",
+        "type": "readonly StarGaugeRange[]",
+        "default": "[]",
+        "required": false,
+        "description": "Coloured bands of the scale.",
+        "inheritedFrom": "StarGaugeBase"
+      },
+      {
+        "name": "ticks",
+        "type": "StarGaugeTicks",
+        "default": "{ major: 5, minor: 2 }",
+        "required": false,
+        "description": "Major intervals (`major`) or the value between major ticks (`step`), and `minor` parts per interval.",
+        "inheritedFrom": "StarGaugeBase"
+      },
+      {
+        "name": "labels",
+        "type": "boolean | Intl.NumberFormatOptions",
+        "default": "true",
+        "required": false,
+        "description": "Labels of the major ticks: `true` (default), `false`, or `Intl.NumberFormat` options that format the labels and the value text, for example `{ style: 'unit', unit: 'percent' }`.",
+        "inheritedFrom": "StarGaugeBase"
+      },
+      {
+        "name": "locale",
+        "type": "string | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "Locale of the numbers (`Intl.NumberFormat`). Default: the runtime locale.",
+        "inheritedFrom": "StarGaugeBase"
+      },
+      {
+        "name": "animate",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Animates the pointer when the value changes. Off when the user prefers reduced motion.",
+        "inheritedFrom": "StarGaugeBase"
+      },
+      {
+        "name": "interactive",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Lets the user set the value: the gauge becomes a slider (keyboard and pointer).",
+        "inheritedFrom": "StarGaugeBase"
+      },
+      {
+        "name": "step",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Step of the keyboard and the pointer in interactive mode. A value not above zero means 1.",
+        "inheritedFrom": "StarGaugeBase"
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Label for assistive technology.",
+        "inheritedFrom": "StarGaugeBase"
+      },
+      {
+        "name": "ariaLabelledby",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Id of the element that labels the gauge.",
+        "inheritedFrom": "StarGaugeBase"
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarGaugeBase"
+      },
+      {
+        "name": "readonly",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarGaugeBase"
+      },
+      {
+        "name": "pointer",
+        "type": "StarGaugePointer",
+        "default": "'bar'",
+        "required": false,
+        "description": "`bar` (default), `needle` or `marker`."
+      },
+      {
+        "name": "orientation",
+        "type": "StarGaugeOrientation",
+        "default": "'horizontal'",
+        "required": false,
+        "description": "`horizontal` (default) or `vertical` (the scale runs from the bottom)."
+      }
+    ],
+    "models": [
+      {
+        "name": "value",
+        "type": "number",
+        "default": "0",
+        "required": false,
+        "description": "The value. Two-way bindable; a Signal Forms field in interactive mode.",
+        "inheritedFrom": "StarGaugeBase"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "touch",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "Emits when an interactive gauge loses the focus.",
+        "inheritedFrom": "StarGaugeBase"
       }
     ]
   },
@@ -4517,14 +6847,14 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "StarFilterMatchMode",
         "default": "'contains'",
         "required": false,
-        "description": "How the filter text must match (default `contains`). PrimeNG `filterMatchMode`."
+        "description": "How the filter text must match (default `contains`, or `filterMatchMode` of `provideStarNg`). PrimeNG `filterMatchMode`."
       },
       {
         "name": "filterLocale",
         "type": "string | null",
         "default": "null",
         "required": false,
-        "description": "Locale of the filter compare (`Intl.Collator`, sensitivity `base`). PrimeNG `filterLocale`."
+        "description": "Locale of the filter compare (`Intl.Collator`, sensitivity `base`). Default: `locale` of `provideStarNg`. PrimeNG `filterLocale`."
       },
       {
         "name": "scrollHeight",
@@ -5046,6 +7376,334 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "description": "Multiple-value autocomplete (PrimeNG `p-autocomplete [multiple]`): chosen items become removable chips, Backspace in an empty field removes the last chip, chosen options leave the result list.",
     "inputs": [
       {
+        "name": "options",
+        "type": "readonly TOption[]",
+        "default": "[]",
+        "required": false,
+        "description": "The options. With `lazy`, an entry may be `undefined` while it is not loaded: the list shows a loading row for it, and the keyboard skips it.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "optionLabel",
+        "type": "StarOptionKey<TOption> | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "optionValue",
+        "type": "StarOptionKey<TOption> | null",
+        "default": "null",
+        "required": false,
+        "description": "Value stored in the form. Omit to store the whole option.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "optionDisabled",
+        "type": "StarOptionKey<TOption> | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "compareWith",
+        "type": "(a: TValue, b: TValue) => boolean",
+        "default": "Object.is",
+        "required": false,
+        "description": "Equality for values (default `Object.is`). Use for object values from the server.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "optionGroup",
+        "type": "StarOptionKey<TOption> | null",
+        "default": "null",
+        "required": false,
+        "description": "Group heading of an option (property name or function). Options with the same heading show together under it, in the order in which the headings first appear.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "virtualScroll",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Renders only the lines in view, for long option lists. Every line has the height `virtualItemSize` and option text stays on one line. Keys and type-ahead work over all options, also those that are not in the DOM. Page up and Page down move by the lines in view. Each option has `aria-setsize` and `aria-posinset` for the whole list, and `aria-activedescendant` only names an option that is in the DOM.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "virtualItemSize",
+        "type": "number",
+        "default": "40",
+        "required": false,
+        "description": "Line height in pixels with `virtualScroll`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "lazy",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Loads the options on demand (PrimeNG `lazy` with `onLazyLoad`). Use it with `virtualScroll` and an `options` array of the full length, with `undefined` for the options that are not loaded. The control emits `lazyLoad` when the rows in view need such options, and when the filter text changes. The filter then does not filter the options in the browser: the event has the text.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "focusOnHover",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Moving the pointer over an option makes it the active option (default `true`). PrimeNG `focusOnHover`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "autoOptionFocus",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "When the panel opens without a chosen option, the first enabled option is active (default `true`). Off: no option is active until a key moves. The autocomplete uses `autoHighlight`. PrimeNG `autoOptionFocus`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "placeholder",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "filter",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "filterPlaceholder",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "filterBy",
+        "type": "StarFilterBy<TOption>",
+        "default": "null",
+        "required": false,
+        "description": "Option fields that the filter searches: one key or a list of keys (property names or functions). Default: the label. PrimeNG `filterBy`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "filterMatchMode",
+        "type": "StarFilterMatchMode",
+        "default": "'contains'",
+        "required": false,
+        "description": "How the filter text must match: `contains` (default), `startsWith`, `endsWith`, `equals` or `notContains`. The default comes from `filterMatchMode` of `provideStarNg` when it is set. PrimeNG `filterMatchMode`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "filterLocale",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Locale of the filter compare, for example `de` or `tr`. The compare uses `Intl.Collator` with sensitivity `base`, so case and accents do not count. Default: case and accents do not count, without locale rules; `locale` of `provideStarNg` when it is set. PrimeNG `filterLocale`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "resetFilterOnHide",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Clears the filter text when the panel closes (default `true`). Set `false` to keep the text, and the filtered list, for the next opening. PrimeNG `resetFilterOnHide` (there default `false`).",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "showClear",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "loading",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "emptyMessage",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "scrollHeight",
+        "type": "string",
+        "default": "'16rem'",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "panelClass",
+        "type": "string | readonly string[] | null",
+        "default": "null",
+        "required": false,
+        "description": "Extra CSS classes of the panel (the `.star-panel` element). PrimeNG `panelStyleClass`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "panelStyle",
+        "type": "Record<string, string> | null",
+        "default": "null",
+        "required": false,
+        "description": "Inline styles of the panel, for example `{ 'min-width': '20rem' }`. PrimeNG `panelStyle`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "appendTo",
+        "type": "'self' | 'body'",
+        "default": "'self'",
+        "required": false,
+        "description": "Where the panel is in the DOM (PrimeNG `appendTo`). `self` (default): next to the control. `body`: in the overlay container at the end of the body, for parents that clip their content. Both are native popovers in the top layer, so the panel also shows above a modal dialog. The control reads it when the overlay is created (the first opening): a later change has no effect. The default comes from `overlay.appendTo` of `provideStarNg` when it is set.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "size",
+        "type": "'sm' | 'md'",
+        "default": "'md'",
+        "required": false,
+        "description": "Size. Default: `size` of `provideStarNg` (`small` or `medium`), else `md`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "ariaLabelledBy",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "inputId",
+        "type": "string",
+        "default": "(generated id)",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "readonly",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "required",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "invalid",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "touched",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "suggestions",
+        "type": "readonly TOption[] | null",
+        "default": "null",
+        "required": false,
+        "description": "Server results. When set, the control shows these instead of filtering `options`.",
+        "inheritedFrom": "StarAutoCompleteBase"
+      },
+      {
+        "name": "minQueryLength",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarAutoCompleteBase"
+      },
+      {
+        "name": "delay",
+        "type": "number",
+        "default": "300",
+        "required": false,
+        "description": "Debounce in ms before `(completeMethod)` fires.",
+        "inheritedFrom": "StarAutoCompleteBase"
+      },
+      {
+        "name": "dropdown",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows a button that lists all options (local) or searches with an empty query.",
+        "inheritedFrom": "StarAutoCompleteBase"
+      },
+      {
+        "name": "autoHighlight",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Highlights the first result, so Enter picks it.",
+        "inheritedFrom": "StarAutoCompleteBase"
+      },
+      {
+        "name": "showEmptyMessage",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarAutoCompleteBase"
+      },
+      {
         "name": "selectionLimit",
         "type": "number",
         "default": "0",
@@ -5099,6 +7757,70 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "outputs": [
       {
+        "name": "touch",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "opened",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "closed",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "filterChange",
+        "type": "string",
+        "default": null,
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "lazyLoad",
+        "type": "StarListLazyLoadEvent",
+        "default": null,
+        "required": false,
+        "description": "With `lazy`: the options from `first` to `last` are needed for the filter text `filter`. PrimeNG `onLazyLoad`. Each range is asked for once per filter text; treat the event as idempotent. A range that failed to load is asked for again after `resetLazy()`, or when the owner sets new placeholders with a different array length.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "completeMethod",
+        "type": "StarAutoCompleteSearch",
+        "default": null,
+        "required": false,
+        "description": "Fires (debounced) when the user types; load `suggestions` in reply (PrimeNG `completeMethod`).",
+        "inheritedFrom": "StarAutoCompleteBase"
+      },
+      {
+        "name": "optionSelect",
+        "type": "TOption",
+        "default": null,
+        "required": false,
+        "description": "An option was chosen (also from typed text). PrimeNG `onSelect`.",
+        "inheritedFrom": "StarAutoCompleteBase"
+      },
+      {
+        "name": "optionUnselect",
+        "type": "TValue",
+        "default": null,
+        "required": false,
+        "description": "A value was removed by the user: a chip, Backspace, or the clear of a single value. PrimeNG `onUnselect`.",
+        "inheritedFrom": "StarAutoCompleteBase"
+      },
+      {
         "name": "customValueAdd",
         "type": "string",
         "default": null,
@@ -5120,6 +7842,286 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "entry": "@star-ng/ui/multi-column-combobox",
     "description": "Multi-column combobox (Kendo UI `MultiColumnComboBox`, Ignite UI `igx-combo` with an item template of columns): a text field over a grid-like listbox. Each option shows one cell per column under a header row. Typing filters the rows over every column (`filterFields`, accent and case insensitive with `starFilterMatch`), Enter chooses the active row.",
     "inputs": [
+      {
+        "name": "options",
+        "type": "readonly TOption[]",
+        "default": "[]",
+        "required": false,
+        "description": "The options. With `lazy`, an entry may be `undefined` while it is not loaded: the list shows a loading row for it, and the keyboard skips it.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "optionLabel",
+        "type": "StarOptionKey<TOption> | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "optionValue",
+        "type": "StarOptionKey<TOption> | null",
+        "default": "null",
+        "required": false,
+        "description": "Value stored in the form. Omit to store the whole option.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "optionDisabled",
+        "type": "StarOptionKey<TOption> | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "compareWith",
+        "type": "(a: TValue, b: TValue) => boolean",
+        "default": "Object.is",
+        "required": false,
+        "description": "Equality for values (default `Object.is`). Use for object values from the server.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "optionGroup",
+        "type": "StarOptionKey<TOption> | null",
+        "default": "null",
+        "required": false,
+        "description": "Group heading of an option (property name or function). Options with the same heading show together under it, in the order in which the headings first appear.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "virtualScroll",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Renders only the lines in view, for long option lists. Every line has the height `virtualItemSize` and option text stays on one line. Keys and type-ahead work over all options, also those that are not in the DOM. Page up and Page down move by the lines in view. Each option has `aria-setsize` and `aria-posinset` for the whole list, and `aria-activedescendant` only names an option that is in the DOM.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "virtualItemSize",
+        "type": "number",
+        "default": "40",
+        "required": false,
+        "description": "Line height in pixels with `virtualScroll`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "lazy",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Loads the options on demand (PrimeNG `lazy` with `onLazyLoad`). Use it with `virtualScroll` and an `options` array of the full length, with `undefined` for the options that are not loaded. The control emits `lazyLoad` when the rows in view need such options, and when the filter text changes. The filter then does not filter the options in the browser: the event has the text.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "focusOnHover",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Moving the pointer over an option makes it the active option (default `true`). PrimeNG `focusOnHover`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "autoOptionFocus",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "When the panel opens without a chosen option, the first enabled option is active (default `true`). Off: no option is active until a key moves. The autocomplete uses `autoHighlight`. PrimeNG `autoOptionFocus`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "placeholder",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "filter",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "filterPlaceholder",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "filterBy",
+        "type": "StarFilterBy<TOption>",
+        "default": "null",
+        "required": false,
+        "description": "Option fields that the filter searches: one key or a list of keys (property names or functions). Default: the label. PrimeNG `filterBy`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "filterMatchMode",
+        "type": "StarFilterMatchMode",
+        "default": "'contains'",
+        "required": false,
+        "description": "How the filter text must match: `contains` (default), `startsWith`, `endsWith`, `equals` or `notContains`. The default comes from `filterMatchMode` of `provideStarNg` when it is set. PrimeNG `filterMatchMode`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "filterLocale",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Locale of the filter compare, for example `de` or `tr`. The compare uses `Intl.Collator` with sensitivity `base`, so case and accents do not count. Default: case and accents do not count, without locale rules; `locale` of `provideStarNg` when it is set. PrimeNG `filterLocale`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "resetFilterOnHide",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Clears the filter text when the panel closes (default `true`). Set `false` to keep the text, and the filtered list, for the next opening. PrimeNG `resetFilterOnHide` (there default `false`).",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "showClear",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "loading",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "emptyMessage",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "scrollHeight",
+        "type": "string",
+        "default": "'16rem'",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "panelClass",
+        "type": "string | readonly string[] | null",
+        "default": "null",
+        "required": false,
+        "description": "Extra CSS classes of the panel (the `.star-panel` element). PrimeNG `panelStyleClass`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "panelStyle",
+        "type": "Record<string, string> | null",
+        "default": "null",
+        "required": false,
+        "description": "Inline styles of the panel, for example `{ 'min-width': '20rem' }`. PrimeNG `panelStyle`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "appendTo",
+        "type": "'self' | 'body'",
+        "default": "'self'",
+        "required": false,
+        "description": "Where the panel is in the DOM (PrimeNG `appendTo`). `self` (default): next to the control. `body`: in the overlay container at the end of the body, for parents that clip their content. Both are native popovers in the top layer, so the panel also shows above a modal dialog. The control reads it when the overlay is created (the first opening): a later change has no effect. The default comes from `overlay.appendTo` of `provideStarNg` when it is set.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "size",
+        "type": "'sm' | 'md'",
+        "default": "'md'",
+        "required": false,
+        "description": "Size. Default: `size` of `provideStarNg` (`small` or `medium`), else `md`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "ariaLabelledBy",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "inputId",
+        "type": "string",
+        "default": "(generated id)",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "readonly",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "required",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "invalid",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "touched",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
       {
         "name": "columns",
         "type": "readonly StarComboboxColumn<TOption>[]",
@@ -5151,7 +8153,48 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       }
     ],
-    "outputs": []
+    "outputs": [
+      {
+        "name": "touch",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "opened",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "closed",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "filterChange",
+        "type": "string",
+        "default": null,
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "lazyLoad",
+        "type": "StarListLazyLoadEvent",
+        "default": null,
+        "required": false,
+        "description": "With `lazy`: the options from `first` to `last` are needed for the filter text `filter`. PrimeNG `onLazyLoad`. Each range is asked for once per filter text; treat the event as idempotent. A range that failed to load is asked for again after `resetLazy()`, or when the owner sets new placeholders with a different array length.",
+        "inheritedFrom": "StarOptionListBase"
+      }
+    ]
   },
   "StarMultiDatePicker": {
     "kind": "component",
@@ -5159,6 +8202,310 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "entry": "@star-ng/ui/date-picker",
     "description": "Multiple-date picker (PrimeNG `p-datepicker selectionMode=\"multiple\"`). Value: a list of days in date order. A click adds a day or removes it; the popup stays open. Type the dates with a comma or a semicolon between them.",
     "inputs": [
+      {
+        "name": "placeholder",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "minDate",
+        "type": "Date | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "maxDate",
+        "type": "Date | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "disabledDates",
+        "type": "readonly Date[]",
+        "default": "[]",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "disabledDays",
+        "type": "readonly number[]",
+        "default": "[]",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "dateDisabled",
+        "type": "((date: Date) => boolean) | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "firstDayOfWeek",
+        "type": "number | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "locale",
+        "type": "string | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "BCP 47 locale for names and formats. Default: `locale` of `provideStarNg`, else the browser locale.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "dateFormat",
+        "type": "Intl.DateTimeFormatOptions",
+        "default": "DEFAULT_DATE_FORMAT",
+        "required": false,
+        "description": "`Intl.DateTimeFormat` options for the input text (default numeric day / month / year). The shared default of `displayFormat` and `inputFormat`.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "displayFormat",
+        "type": "Intl.DateTimeFormatOptions | null",
+        "default": "null",
+        "required": false,
+        "description": "`Intl.DateTimeFormat` options of the text while the field does not have the focus, for example `{ dateStyle: 'long' }` (Ignite UI `displayFormat`). Default: `dateFormat`.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "inputFormat",
+        "type": "Intl.DateTimeFormatOptions | null",
+        "default": "null",
+        "required": false,
+        "description": "`Intl.DateTimeFormat` options of the text while the field has the focus (Ignite UI `inputFormat`, PrimeNG `dateFormat`). Typed text is read in the order of day, month and year of this format, with any separators; the month names of the locale are accepted too. Default: `dateFormat`.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "keepInvalid",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Keeps typed text that is not a valid date (PrimeNG `keepInvalid`). The field is marked invalid (`aria-invalid`) and the value becomes empty, so a required check fails. Without it, such text goes back to the text of the value.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "dataType",
+        "type": "'date' | 'string'",
+        "default": "'date'",
+        "required": false,
+        "description": "Type of the value (PrimeNG `dataType`): `'date'` (default) gives `Date` objects, `'string'` gives ISO text: `yyyy-mm-dd`, or `yyyy-mm-ddTHH:mm` (`yyyy-mm-ddTHH:mm:ss` with `showSeconds`) with `showTime`. The text that the picker writes is a local date and time, without a time zone. A value may be a `Date` or ISO text in both modes; the picker also reads fractional seconds and a zone (`2026-11-22T13:30:15.123Z`, `...+01:00`), as server JSON often has them, and shows that instant in local time.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "touchUI",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Opens the popup as a modal sheet in the middle of the window, in a native `<dialog>` with a backdrop, and with larger days for touch (PrimeNG `touchUI`). The keyboard model does not change; Escape and a click on the backdrop close it. While it is open, the page does not scroll (the scroll lock of `star-dialog`).",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "breakpoint",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Window width at or below which the popup opens as a sheet (as `touchUI`): a CSS length, for example `'640px'` or `'40rem'`, used in the media query `(max-width: <breakpoint>)` (PrimeNG `breakpoint`). The width is checked when the popup opens. While the sheet is open, the page does not scroll.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "numberOfMonths",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Months shown side by side in the popup.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "showWeek",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows the ISO 8601 week number at the start of each week.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "showOtherMonths",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Shows the days of the month before and after (PrimeNG `showOtherMonths`).",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "selectOtherMonths",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "The shown days of the month before and after can be chosen (PrimeNG `selectOtherMonths`).",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "specialDates",
+        "type": "readonly StarSpecialDate[]",
+        "default": "[]",
+        "required": false,
+        "description": "Marked days in the calendar, for example holidays (Ignite UI `specialDates`). The kind and the label are part of the accessible name of the day.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "hourFormat",
+        "type": "'24' | '12'",
+        "default": "'24'",
+        "required": false,
+        "description": "Clock of the typed time with `showTime`: `'24'` (14:30) or `'12'` (2:30 PM). Both forms are accepted when the user types.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "showSeconds",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Adds seconds to the time with `showTime`: the text is `hh:mm:ss` and the popup has a second column (PrimeNG `showSeconds`).",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "minTime",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Earliest and latest time of every day with `showTime`, `HH:mm` or `HH:mm:ss`, for example opening hours (Ignite UI `minValue` / `maxValue` of the time part). They add to `minDate` / `maxDate`: the columns disable the other times, typed text outside them is not taken, and a picked day moves its time into them.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "maxTime",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "stepHour",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Hour step of the time columns with `showTime` (PrimeNG `stepHour`).",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "stepSecond",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Second step of the time columns with `showSeconds` (PrimeNG `stepSecond`).",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "showButtonBar",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "showClear",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "readonlyInput",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Disables typing; the date can only be picked.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "size",
+        "type": "'sm' | 'md'",
+        "default": "'md'",
+        "required": false,
+        "description": "Size. Default: `size` of `provideStarNg` (`small` or `medium`), else `md`.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "inputId",
+        "type": "string",
+        "default": "(generated id)",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "readonly",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "required",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "invalid",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "touched",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
       {
         "name": "maxDates",
         "type": "number",
@@ -5176,7 +8523,72 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "The days: `Date`s, or ISO text with `dataType: 'string'`."
       }
     ],
-    "outputs": []
+    "outputs": [
+      {
+        "name": "touch",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "opened",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "closed",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "monthChange",
+        "type": "StarCalendarMonthChange",
+        "default": null,
+        "required": false,
+        "description": "The user moved the calendar to another month (PrimeNG `onMonthChange`).",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "yearChange",
+        "type": "StarCalendarYearChange",
+        "default": null,
+        "required": false,
+        "description": "The user moved the calendar to another year (PrimeNG `onYearChange`).",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "viewChange",
+        "type": "StarCalendarView",
+        "default": null,
+        "required": false,
+        "description": "The user switched the calendar between the day, month and year views.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "todayClick",
+        "type": "Date",
+        "default": null,
+        "required": false,
+        "description": "The user chose Today in the button bar, after the value changed; the event is today (PrimeNG `onTodayClick`). Not emitted when today cannot be chosen.",
+        "inheritedFrom": "StarDateInputBase"
+      },
+      {
+        "name": "clearClick",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "The user chose Clear in the button bar or the clear button, after the value was cleared (PrimeNG `onClearClick`).",
+        "inheritedFrom": "StarDateInputBase"
+      }
+    ]
   },
   "StarMultiSelect": {
     "kind": "component",
@@ -5184,6 +8596,286 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "entry": "@star-ng/ui/select",
     "description": "Multiple-choice dropdown (PrimeNG `p-multiselect`): checkbox list, \"select all\", filter, chip or comma display, `maxSelectedLabels`, `selectionLimit` and clear. Same keyboard model as `star-select`; Enter / Space toggle the active option and keep the panel open.",
     "inputs": [
+      {
+        "name": "options",
+        "type": "readonly TOption[]",
+        "default": "[]",
+        "required": false,
+        "description": "The options. With `lazy`, an entry may be `undefined` while it is not loaded: the list shows a loading row for it, and the keyboard skips it.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "optionLabel",
+        "type": "StarOptionKey<TOption> | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "optionValue",
+        "type": "StarOptionKey<TOption> | null",
+        "default": "null",
+        "required": false,
+        "description": "Value stored in the form. Omit to store the whole option.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "optionDisabled",
+        "type": "StarOptionKey<TOption> | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "compareWith",
+        "type": "(a: TValue, b: TValue) => boolean",
+        "default": "Object.is",
+        "required": false,
+        "description": "Equality for values (default `Object.is`). Use for object values from the server.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "optionGroup",
+        "type": "StarOptionKey<TOption> | null",
+        "default": "null",
+        "required": false,
+        "description": "Group heading of an option (property name or function). Options with the same heading show together under it, in the order in which the headings first appear.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "virtualScroll",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Renders only the lines in view, for long option lists. Every line has the height `virtualItemSize` and option text stays on one line. Keys and type-ahead work over all options, also those that are not in the DOM. Page up and Page down move by the lines in view. Each option has `aria-setsize` and `aria-posinset` for the whole list, and `aria-activedescendant` only names an option that is in the DOM.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "virtualItemSize",
+        "type": "number",
+        "default": "40",
+        "required": false,
+        "description": "Line height in pixels with `virtualScroll`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "lazy",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Loads the options on demand (PrimeNG `lazy` with `onLazyLoad`). Use it with `virtualScroll` and an `options` array of the full length, with `undefined` for the options that are not loaded. The control emits `lazyLoad` when the rows in view need such options, and when the filter text changes. The filter then does not filter the options in the browser: the event has the text.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "focusOnHover",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Moving the pointer over an option makes it the active option (default `true`). PrimeNG `focusOnHover`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "autoOptionFocus",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "When the panel opens without a chosen option, the first enabled option is active (default `true`). Off: no option is active until a key moves. The autocomplete uses `autoHighlight`. PrimeNG `autoOptionFocus`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "placeholder",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "filter",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "filterPlaceholder",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "filterBy",
+        "type": "StarFilterBy<TOption>",
+        "default": "null",
+        "required": false,
+        "description": "Option fields that the filter searches: one key or a list of keys (property names or functions). Default: the label. PrimeNG `filterBy`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "filterMatchMode",
+        "type": "StarFilterMatchMode",
+        "default": "'contains'",
+        "required": false,
+        "description": "How the filter text must match: `contains` (default), `startsWith`, `endsWith`, `equals` or `notContains`. The default comes from `filterMatchMode` of `provideStarNg` when it is set. PrimeNG `filterMatchMode`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "filterLocale",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Locale of the filter compare, for example `de` or `tr`. The compare uses `Intl.Collator` with sensitivity `base`, so case and accents do not count. Default: case and accents do not count, without locale rules; `locale` of `provideStarNg` when it is set. PrimeNG `filterLocale`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "resetFilterOnHide",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Clears the filter text when the panel closes (default `true`). Set `false` to keep the text, and the filtered list, for the next opening. PrimeNG `resetFilterOnHide` (there default `false`).",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "showClear",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "loading",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "emptyMessage",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "scrollHeight",
+        "type": "string",
+        "default": "'16rem'",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "panelClass",
+        "type": "string | readonly string[] | null",
+        "default": "null",
+        "required": false,
+        "description": "Extra CSS classes of the panel (the `.star-panel` element). PrimeNG `panelStyleClass`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "panelStyle",
+        "type": "Record<string, string> | null",
+        "default": "null",
+        "required": false,
+        "description": "Inline styles of the panel, for example `{ 'min-width': '20rem' }`. PrimeNG `panelStyle`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "appendTo",
+        "type": "'self' | 'body'",
+        "default": "'self'",
+        "required": false,
+        "description": "Where the panel is in the DOM (PrimeNG `appendTo`). `self` (default): next to the control. `body`: in the overlay container at the end of the body, for parents that clip their content. Both are native popovers in the top layer, so the panel also shows above a modal dialog. The control reads it when the overlay is created (the first opening): a later change has no effect. The default comes from `overlay.appendTo` of `provideStarNg` when it is set.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "size",
+        "type": "'sm' | 'md'",
+        "default": "'md'",
+        "required": false,
+        "description": "Size. Default: `size` of `provideStarNg` (`small` or `medium`), else `md`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "ariaLabelledBy",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "inputId",
+        "type": "string",
+        "default": "(generated id)",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "readonly",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "required",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "invalid",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "touched",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
       {
         "name": "display",
         "type": "'comma' | 'chip'",
@@ -5230,6 +8922,46 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ],
     "outputs": [
+      {
+        "name": "touch",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "opened",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "closed",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "filterChange",
+        "type": "string",
+        "default": null,
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "lazyLoad",
+        "type": "StarListLazyLoadEvent",
+        "default": null,
+        "required": false,
+        "description": "With `lazy`: the options from `first` to `last` are needed for the filter text `filter`. PrimeNG `onLazyLoad`. Each range is asked for once per filter text; treat the event as idempotent. A range that failed to load is asked for again after `resetLazy()`, or when the owner sets new placeholders with a different array length.",
+        "inheritedFrom": "StarOptionListBase"
+      },
       {
         "name": "customValueAdd",
         "type": "string",
@@ -5379,14 +9111,14 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "StarFilterMatchMode",
         "default": "'contains'",
         "required": false,
-        "description": "How the filter text must match: `contains` (default), `startsWith`, `endsWith`, `equals` or `notContains`. PrimeNG `filterMatchMode`."
+        "description": "How the filter text must match: `contains` (default), `startsWith`, `endsWith`, `equals` or `notContains`. The default comes from `filterMatchMode` of `provideStarNg` when it is set. PrimeNG `filterMatchMode`."
       },
       {
         "name": "filterLocale",
         "type": "string | null",
         "default": "null",
         "required": false,
-        "description": "Locale of the filter compare, for example `de` or `tr`. The compare uses `Intl.Collator` with sensitivity `base`, so case and accents do not count. Default: case and accents do not count, without locale rules. PrimeNG `filterLocale`."
+        "description": "Locale of the filter compare, for example `de` or `tr`. The compare uses `Intl.Collator` with sensitivity `base`, so case and accents do not count. Default: case and accents do not count, without locale rules; `locale` of `provideStarNg` when it is set. PrimeNG `filterLocale`."
       },
       {
         "name": "resetFilterOnHide",
@@ -5442,14 +9174,14 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "'self' | 'body'",
         "default": "'self'",
         "required": false,
-        "description": "Where the panel is in the DOM (PrimeNG `appendTo`). `self` (default): next to the control. `body`: in the overlay container at the end of the body, for parents that clip their content. Both are native popovers in the top layer, so the panel also shows above a modal dialog. The control reads it when the overlay is created (the first opening): a later change has no effect."
+        "description": "Where the panel is in the DOM (PrimeNG `appendTo`). `self` (default): next to the control. `body`: in the overlay container at the end of the body, for parents that clip their content. Both are native popovers in the top layer, so the panel also shows above a modal dialog. The control reads it when the overlay is created (the first opening): a later change has no effect. The default comes from `overlay.appendTo` of `provideStarNg` when it is set."
       },
       {
         "name": "size",
         "type": "'sm' | 'md'",
         "default": "'md'",
         "required": false,
-        "description": ""
+        "description": "Size. Default: `size` of `provideStarNg` (`small` or `medium`), else `md`."
       },
       {
         "name": "ariaLabel",
@@ -6154,6 +9886,225 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarQrCode": {
+    "kind": "component",
+    "selector": "star-qr-code",
+    "entry": "@star-ng/ui/qr-code",
+    "description": "QR code: a QR Code model 2 symbol drawn as SVG, encoded from ISO/IEC 18004 without a library. Kendo UI `kendo-qrcode`, Ignite UI `igx-qr-code-barcode` and Syncfusion `ejs-qrcodegenerator` are the equivalents.",
+    "inputs": [
+      {
+        "name": "value",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "The text to encode, for example a link."
+      },
+      {
+        "name": "errorCorrection",
+        "type": "StarQrErrorCorrection",
+        "default": "'M'",
+        "required": false,
+        "description": "Error correction level: L (7 %), M (15 %, default), Q (25 %) or H (30 %)."
+      },
+      {
+        "name": "size",
+        "type": "number",
+        "default": "160",
+        "required": false,
+        "description": "Width and height in pixels."
+      },
+      {
+        "name": "foreground",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Colour of the dark modules. Default `--star-code-dark` (black in both themes). Keep it dark and fixed: a theme token such as `--star-text-strong` turns light in the dark theme, and many readers cannot read a light code."
+      },
+      {
+        "name": "background",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Colour of the light modules and the quiet zone. Default `--star-code-light`."
+      },
+      {
+        "name": "image",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Address of an image in the centre, for example a logo. It hides modules, so the level is H. Keep the colours dark on light and test the code with the readers of your users."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Label for assistive technology. Default: \"QR code: \" and the value."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
+  "StarRadialGauge": {
+    "kind": "component",
+    "selector": "star-radial-gauge",
+    "entry": "@star-ng/ui/gauge",
+    "description": "Radial (arc) gauge: a value on a circular scale with ranges, ticks and labels. Kendo UI `kendo-radialgauge` and `kendo-arcgauge`, Ignite UI `igx-radial-gauge` and Syncfusion `ejs-circulargauge` are the equivalents.",
+    "inputs": [
+      {
+        "name": "min",
+        "type": "number | undefined",
+        "default": "0",
+        "required": false,
+        "description": "Lowest value of the scale. Also bound from a Signal Forms `min()` rule.",
+        "inheritedFrom": "StarGaugeBase"
+      },
+      {
+        "name": "max",
+        "type": "number | undefined",
+        "default": "100",
+        "required": false,
+        "description": "Highest value of the scale. Also bound from a Signal Forms `max()` rule.",
+        "inheritedFrom": "StarGaugeBase"
+      },
+      {
+        "name": "ranges",
+        "type": "readonly StarGaugeRange[]",
+        "default": "[]",
+        "required": false,
+        "description": "Coloured bands of the scale.",
+        "inheritedFrom": "StarGaugeBase"
+      },
+      {
+        "name": "ticks",
+        "type": "StarGaugeTicks",
+        "default": "{ major: 5, minor: 2 }",
+        "required": false,
+        "description": "Major intervals (`major`) or the value between major ticks (`step`), and `minor` parts per interval.",
+        "inheritedFrom": "StarGaugeBase"
+      },
+      {
+        "name": "labels",
+        "type": "boolean | Intl.NumberFormatOptions",
+        "default": "true",
+        "required": false,
+        "description": "Labels of the major ticks: `true` (default), `false`, or `Intl.NumberFormat` options that format the labels and the value text, for example `{ style: 'unit', unit: 'percent' }`.",
+        "inheritedFrom": "StarGaugeBase"
+      },
+      {
+        "name": "locale",
+        "type": "string | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "Locale of the numbers (`Intl.NumberFormat`). Default: the runtime locale.",
+        "inheritedFrom": "StarGaugeBase"
+      },
+      {
+        "name": "animate",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Animates the pointer when the value changes. Off when the user prefers reduced motion.",
+        "inheritedFrom": "StarGaugeBase"
+      },
+      {
+        "name": "interactive",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Lets the user set the value: the gauge becomes a slider (keyboard and pointer).",
+        "inheritedFrom": "StarGaugeBase"
+      },
+      {
+        "name": "step",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Step of the keyboard and the pointer in interactive mode. A value not above zero means 1.",
+        "inheritedFrom": "StarGaugeBase"
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Label for assistive technology.",
+        "inheritedFrom": "StarGaugeBase"
+      },
+      {
+        "name": "ariaLabelledby",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Id of the element that labels the gauge.",
+        "inheritedFrom": "StarGaugeBase"
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarGaugeBase"
+      },
+      {
+        "name": "readonly",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarGaugeBase"
+      },
+      {
+        "name": "pointer",
+        "type": "StarGaugePointer",
+        "default": "'needle'",
+        "required": false,
+        "description": "`needle` (default), `bar` or `marker`."
+      },
+      {
+        "name": "startAngle",
+        "type": "number",
+        "default": "225",
+        "required": false,
+        "description": "Angle of the lowest value, in math degrees (0 points right, 90 up)."
+      },
+      {
+        "name": "endAngle",
+        "type": "unknown",
+        "default": "-45",
+        "required": false,
+        "description": "Angle of the highest value, in math degrees. Smaller than `startAngle`: the arc runs clockwise."
+      },
+      {
+        "name": "arcWidth",
+        "type": "number",
+        "default": "10",
+        "required": false,
+        "description": "Width of the arc, in units of the 200 × 200 view box."
+      }
+    ],
+    "models": [
+      {
+        "name": "value",
+        "type": "number",
+        "default": "0",
+        "required": false,
+        "description": "The value. Two-way bindable; a Signal Forms field in interactive mode.",
+        "inheritedFrom": "StarGaugeBase"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "touch",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "Emits when an interactive gauge loses the focus.",
+        "inheritedFrom": "StarGaugeBase"
+      }
+    ]
+  },
   "StarRadio": {
     "kind": "component",
     "selector": "star-radio",
@@ -6520,7 +10471,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "string | undefined",
         "default": "undefined",
         "required": false,
-        "description": "Locale of dates and times. Default: the browser."
+        "description": "Locale of dates and times. Default: `provideStarNg({ locale })`, else the browser."
       },
       {
         "name": "hourFormat",
@@ -6692,6 +10643,286 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "description": "Single-choice dropdown (PrimeNG `p-select`): typed options, `optionLabel` / `optionValue` / `optionDisabled`, filter, clear button, loading state, typeahead and full keyboard support (WAI-ARIA select-only combobox). The panel is a native popover, so it also works inside modal `star-dialog`s.",
     "inputs": [
       {
+        "name": "options",
+        "type": "readonly TOption[]",
+        "default": "[]",
+        "required": false,
+        "description": "The options. With `lazy`, an entry may be `undefined` while it is not loaded: the list shows a loading row for it, and the keyboard skips it.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "optionLabel",
+        "type": "StarOptionKey<TOption> | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "optionValue",
+        "type": "StarOptionKey<TOption> | null",
+        "default": "null",
+        "required": false,
+        "description": "Value stored in the form. Omit to store the whole option.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "optionDisabled",
+        "type": "StarOptionKey<TOption> | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "compareWith",
+        "type": "(a: TValue, b: TValue) => boolean",
+        "default": "Object.is",
+        "required": false,
+        "description": "Equality for values (default `Object.is`). Use for object values from the server.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "optionGroup",
+        "type": "StarOptionKey<TOption> | null",
+        "default": "null",
+        "required": false,
+        "description": "Group heading of an option (property name or function). Options with the same heading show together under it, in the order in which the headings first appear.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "virtualScroll",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Renders only the lines in view, for long option lists. Every line has the height `virtualItemSize` and option text stays on one line. Keys and type-ahead work over all options, also those that are not in the DOM. Page up and Page down move by the lines in view. Each option has `aria-setsize` and `aria-posinset` for the whole list, and `aria-activedescendant` only names an option that is in the DOM.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "virtualItemSize",
+        "type": "number",
+        "default": "40",
+        "required": false,
+        "description": "Line height in pixels with `virtualScroll`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "lazy",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Loads the options on demand (PrimeNG `lazy` with `onLazyLoad`). Use it with `virtualScroll` and an `options` array of the full length, with `undefined` for the options that are not loaded. The control emits `lazyLoad` when the rows in view need such options, and when the filter text changes. The filter then does not filter the options in the browser: the event has the text.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "focusOnHover",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Moving the pointer over an option makes it the active option (default `true`). PrimeNG `focusOnHover`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "autoOptionFocus",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "When the panel opens without a chosen option, the first enabled option is active (default `true`). Off: no option is active until a key moves. The autocomplete uses `autoHighlight`. PrimeNG `autoOptionFocus`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "placeholder",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "filter",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "filterPlaceholder",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "filterBy",
+        "type": "StarFilterBy<TOption>",
+        "default": "null",
+        "required": false,
+        "description": "Option fields that the filter searches: one key or a list of keys (property names or functions). Default: the label. PrimeNG `filterBy`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "filterMatchMode",
+        "type": "StarFilterMatchMode",
+        "default": "'contains'",
+        "required": false,
+        "description": "How the filter text must match: `contains` (default), `startsWith`, `endsWith`, `equals` or `notContains`. The default comes from `filterMatchMode` of `provideStarNg` when it is set. PrimeNG `filterMatchMode`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "filterLocale",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Locale of the filter compare, for example `de` or `tr`. The compare uses `Intl.Collator` with sensitivity `base`, so case and accents do not count. Default: case and accents do not count, without locale rules; `locale` of `provideStarNg` when it is set. PrimeNG `filterLocale`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "resetFilterOnHide",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Clears the filter text when the panel closes (default `true`). Set `false` to keep the text, and the filtered list, for the next opening. PrimeNG `resetFilterOnHide` (there default `false`).",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "showClear",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "loading",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "emptyMessage",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "scrollHeight",
+        "type": "string",
+        "default": "'16rem'",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "panelClass",
+        "type": "string | readonly string[] | null",
+        "default": "null",
+        "required": false,
+        "description": "Extra CSS classes of the panel (the `.star-panel` element). PrimeNG `panelStyleClass`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "panelStyle",
+        "type": "Record<string, string> | null",
+        "default": "null",
+        "required": false,
+        "description": "Inline styles of the panel, for example `{ 'min-width': '20rem' }`. PrimeNG `panelStyle`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "appendTo",
+        "type": "'self' | 'body'",
+        "default": "'self'",
+        "required": false,
+        "description": "Where the panel is in the DOM (PrimeNG `appendTo`). `self` (default): next to the control. `body`: in the overlay container at the end of the body, for parents that clip their content. Both are native popovers in the top layer, so the panel also shows above a modal dialog. The control reads it when the overlay is created (the first opening): a later change has no effect. The default comes from `overlay.appendTo` of `provideStarNg` when it is set.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "size",
+        "type": "'sm' | 'md'",
+        "default": "'md'",
+        "required": false,
+        "description": "Size. Default: `size` of `provideStarNg` (`small` or `medium`), else `md`.",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "ariaLabelledBy",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "inputId",
+        "type": "string",
+        "default": "(generated id)",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "readonly",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "required",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "invalid",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "touched",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
         "name": "editable",
         "type": "boolean",
         "default": "false",
@@ -6723,6 +10954,46 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ],
     "outputs": [
+      {
+        "name": "touch",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "opened",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "closed",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "filterChange",
+        "type": "string",
+        "default": null,
+        "required": false,
+        "description": "",
+        "inheritedFrom": "StarOptionListBase"
+      },
+      {
+        "name": "lazyLoad",
+        "type": "StarListLazyLoadEvent",
+        "default": null,
+        "required": false,
+        "description": "With `lazy`: the options from `first` to `last` are needed for the filter text `filter`. PrimeNG `onLazyLoad`. Each range is asked for once per filter text; treat the event as idempotent. A range that failed to load is asked for again after `resetLazy()`, or when the owner sets new placeholders with a different array length.",
+        "inheritedFrom": "StarOptionListBase"
+      },
       {
         "name": "customValue",
         "type": "string",
@@ -7133,6 +11404,93 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarSparkline": {
+    "kind": "component",
+    "selector": "star-sparkline",
+    "entry": "@star-ng/ui/sparkline",
+    "description": "Sparkline: a tiny chart without axes that fits in a line of text or a table cell. Kendo UI `kendo-sparkline`, Ignite UI `igx-sparkline` and Syncfusion `ejs-sparkline` are the equivalents.",
+    "inputs": [
+      {
+        "name": "type",
+        "type": "StarSparklineType",
+        "default": "'line'",
+        "required": false,
+        "description": "`line` (default), `area`, `bar` or `win-loss`."
+      },
+      {
+        "name": "data",
+        "type": "readonly number[]",
+        "default": "[]",
+        "required": false,
+        "description": "The values, in order. A value that is not finite leaves a gap in a line."
+      },
+      {
+        "name": "min",
+        "type": "number | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "Lowest value of the plot. Default: the lowest value (zero for bars)."
+      },
+      {
+        "name": "max",
+        "type": "number | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "Highest value of the plot. Default: the highest value (zero for bars)."
+      },
+      {
+        "name": "highlight",
+        "type": "readonly StarSparklineHighlight[]",
+        "default": "[]",
+        "required": false,
+        "description": "Values that get a marker (line, area) or a strong colour (bar). Default: none."
+      },
+      {
+        "name": "referenceLine",
+        "type": "number | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "A value that gets a dashed horizontal line, for example a target. The automatic range includes it."
+      },
+      {
+        "name": "color",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Colour slot of the chart palette, 1 to 8 (`--star-chart-1…8`)."
+      },
+      {
+        "name": "width",
+        "type": "string | number",
+        "default": "'6em'",
+        "required": false,
+        "description": "Width: a number of pixels or a CSS length. Default: `6em`."
+      },
+      {
+        "name": "height",
+        "type": "string | number",
+        "default": "'1em'",
+        "required": false,
+        "description": "Height: a number of pixels or a CSS length. Default: `1em`, the height of the text."
+      },
+      {
+        "name": "locale",
+        "type": "string | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "Locale of the numbers in the label (`Intl.NumberFormat`). Default: the runtime locale."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Label for assistive technology. Default: a summary of the data."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
   "StarSpeedDial": {
     "kind": "component",
     "selector": "star-speed-dial",
@@ -7447,6 +11805,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "false",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "closable",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows a close button on the tab, and the Delete key closes it. `star-tabs` emits `tabClose`; the owner removes the tab. PrimeNG `closable`."
       }
     ],
     "models": [],
@@ -7456,7 +11821,16 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "directive",
     "selector": "ng-template[starTabContent]",
     "entry": "@star-ng/ui/tabs",
-    "description": "Lazy tab body: `<ng-template starTabContent>…</ng-template>` renders on first activation only.",
+    "description": "Lazy tab body: `<ng-template starTabContent>…</ng-template>`. It renders on the first activation of the tab (see `lazy` and `cache` of `star-tabs`). Material `matTabContent`.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
+  "StarTabHeader": {
+    "kind": "directive",
+    "selector": "ng-template[starTabHeader]",
+    "entry": "@star-ng/ui/tabs",
+    "description": "Custom tab label: `<ng-template starTabHeader let-tab let-active=\"active\">…</ng-template>`. Written in `star-tab`, it is the label of that tab; written directly in `star-tabs`, it is the label of every tab that has none of its own. It renders inside the tab button, so it must not hold buttons, links or fields. PrimeNG `p-tab` content, Material `mat-tab-label`.",
     "inputs": [],
     "models": [],
     "outputs": []
@@ -7514,7 +11888,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "'sm' | 'md'",
         "default": "'md'",
         "required": false,
-        "description": ""
+        "description": "Row density. Default: `size` of `provideStarNg` (`small` or `medium`), else `md`."
       },
       {
         "name": "stickyHeader",
@@ -7598,14 +11972,14 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "StarFilterMatchMode",
         "default": "'contains'",
         "required": false,
-        "description": "How the global filter text matches (default `contains`). A row passes when one searched cell matches; with `notContains`, when no searched cell has the text."
+        "description": "How the global filter text matches (default `contains`). A row passes when one searched cell matches; with `notContains`, when no searched cell has the text. The default comes from `provideStarTableDefaults`, then `filterMatchMode` of `provideStarNg`."
       },
       {
         "name": "filterLocale",
         "type": "string | null",
         "default": "null",
         "required": false,
-        "description": "Locale of the text filters (PrimeNG `filterLocale`): with it, `Intl.Collator` compares the folded texts, so letters that the locale treats as equal match. Default: no locale."
+        "description": "Locale of the text filters (PrimeNG `filterLocale`): with it, `Intl.Collator` compares the folded texts, so letters that the locale treats as equal match. Default: `locale` of `provideStarNg`, else none."
       },
       {
         "name": "filterDisplay",
@@ -8062,7 +12436,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-tabs",
     "entry": "@star-ng/ui/tabs",
-    "description": "Tabs (PrimeNG `p-tabs`): `[(value)]`, disabled tabs, icons, badges, lazy panels and the WAI-ARIA tabs keyboard model (Arrow keys, Home, End; automatic or manual activation).",
+    "description": "Tabs (PrimeNG `p-tabs`, Material `mat-tab-group`): `[(value)]`, disabled tabs, icons, badges, lazy panels and the WAI-ARIA tabs keyboard model (Arrow keys, Home, End; automatic or manual activation). `scrollable` adds scroll buttons when the tabs do not fit (PrimeNG `scrollable`, Material pagination).",
     "inputs": [
       {
         "name": "variant",
@@ -8084,6 +12458,48 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "null",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "scrollable",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Keeps the tabs on one line and shows previous and next scroll buttons when they do not fit. The selected tab scrolls into view. PrimeNG `scrollable`, Material `disablePagination` off."
+      },
+      {
+        "name": "orientation",
+        "type": "'horizontal' | 'vertical'",
+        "default": "'horizontal'",
+        "required": false,
+        "description": "`'vertical'` puts the tabs in a column at the start of the panels; Arrow Up and Arrow Down move between them. PrimeNG has no equivalent, Material `mat-tab-nav` has none either."
+      },
+      {
+        "name": "alignment",
+        "type": "'start' | 'center' | 'end' | 'stretch'",
+        "default": "'start'",
+        "required": false,
+        "description": "Position of the tabs along the list: at the start, centered, at the end, or filling it (`stretch`). Material `mat-align-tabs` / `alignTabs` (start, center, end) and `mat-stretch-tabs`; PrimeNG has no equivalent."
+      },
+      {
+        "name": "reorderable",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Tabs can be dragged to a new place (CDK drag-drop), or moved with Control+Shift and an arrow key. `star-tabs` emits `tabReorder`; the owner reorders its list. PrimeNG has no equivalent."
+      },
+      {
+        "name": "lazy",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Content in `ng-template starTabContent` renders on the first activation of its tab (the default). `false` renders every template at once. Content placed directly in `star-tab` always renders at once. PrimeNG `lazy`."
+      },
+      {
+        "name": "cache",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Keeps rendered `starTabContent` alive (hidden) when its tab is not active, so it keeps its state (the default). `false` destroys it and renders it again on the next activation. Only applies with `lazy`. PrimeNG `cache`, Material `preserveContent`."
       }
     ],
     "models": [
@@ -8102,6 +12518,20 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": ""
+      },
+      {
+        "name": "tabClose",
+        "type": "StarTabCloseEvent",
+        "default": null,
+        "required": false,
+        "description": "A closable tab asked to close (close button or Delete key). Remove the tab from your list, or call `cancel()`. When the closed tab was selected, the next tab is selected (the previous one at the end). PrimeNG `onClose`, Material has no equivalent."
+      },
+      {
+        "name": "tabReorder",
+        "type": "StarTabReorderEvent",
+        "default": null,
+        "required": false,
+        "description": "A tab was dragged or moved with the keyboard (`reorderable`). Reorder your list."
       }
     ]
   },
@@ -8411,7 +12841,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "string | undefined",
         "default": "undefined",
         "required": false,
-        "description": ""
+        "description": "Locale of the event dates. Default: `locale` of `provideStarNg`, else the browser locale."
       },
       {
         "name": "ariaLabel",
@@ -8493,7 +12923,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "'sm' | 'md'",
         "default": "'md'",
         "required": false,
-        "description": ""
+        "description": "Size. Default: `size` of `provideStarNg` (`small` or `medium`), else `md`."
       },
       {
         "name": "ariaLabel",
@@ -8579,7 +13009,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "inputs": [
       {
         "name": "position",
-        "type": "| 'top-right' | 'top-left' | 'top-start' | 'top-end' | 'top-center' | 'bottom-right' | 'bottom-left' | 'bottom-start' | 'bottom-end' | 'bottom-center'",
+        "type": "StarToastPosition",
         "default": "'top-right'",
         "required": false,
         "description": "Corner of the screen. `-left` and `-right` are physical; `-start` and `-end` follow the writing direction (the start corner is on the right in right-to-left)."
@@ -8921,7 +13351,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "string | null",
         "default": "null",
         "required": false,
-        "description": "Locale of the filter compare (PrimeNG `filterLocale`), for example `de`. Case and accents never count; with a locale, the compare follows the letters of that language."
+        "description": "Locale of the filter compare (PrimeNG `filterLocale`), for example `de`. Case and accents never count; with a locale, the compare follows the letters of that language. Default: `locale` of `provideStarNg`."
       },
       {
         "name": "scrollHeight",
@@ -9150,7 +13580,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "string | null",
         "default": "null",
         "required": false,
-        "description": "Locale of the filter compare (PrimeNG `filterLocale`)."
+        "description": "Locale of the filter compare (PrimeNG `filterLocale`). Default: `locale` of `provideStarNg`."
       },
       {
         "name": "propagateSelectionUp",
@@ -9820,6 +14250,8 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
 export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "accordion/basic": "<div class=\"docs-stack\">\n  <star-accordion [(value)]=\"open\">\n    <star-accordion-panel value=\"shipping\" header=\"Shipping\" icon=\"ph-bold ph-truck\">\n      Orders ship within two working days.\n    </star-accordion-panel>\n    <star-accordion-panel\n      value=\"returns\"\n      header=\"Returns\"\n      icon=\"ph-bold ph-arrow-u-up-left\"\n    >\n      Items can be returned for 30 days.\n    </star-accordion-panel>\n    <star-accordion-panel value=\"billing\" header=\"Billing\" disabled>\n      This section is disabled.\n    </star-accordion-panel>\n  </star-accordion>\n  <p class=\"docs-output\" role=\"status\">Open: {{ open().join(', ') || 'none' }}</p>\n</div>",
   "accordion/multiple": "<div class=\"docs-stack\">\n  <star-accordion multiple [value]=\"['summary']\">\n    <star-accordion-panel value=\"summary\" header=\"Summary\">\n      Twelve items, one parcel.\n    </star-accordion-panel>\n    <star-accordion-panel value=\"history\" header=\"History\">\n      <ng-template starAccordionContent>\n        <p>Created on Monday. Packed on Tuesday.</p>\n      </ng-template>\n    </star-accordion-panel>\n  </star-accordion>\n</div>",
+  "action-sheet/basic": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button\n      variant=\"secondary\"\n      leadingIcon=\"ph-bold ph-dots-three\"\n      (pressed)=\"invoiceActions()\"\n    >\n      Invoice actions\n    </star-button>\n  </div>\n  <p class=\"docs-output\" role=\"status\">Chosen: {{ chosen() }}</p>\n</div>",
+  "action-sheet/states": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button\n      variant=\"secondary\"\n      leadingIcon=\"ph-bold ph-folder\"\n      (pressed)=\"projectActions()\"\n    >\n      Project actions\n    </star-button>\n  </div>\n  <p class=\"docs-output\" role=\"status\">Project action: {{ projectAction() }}</p>\n</div>",
   "action-strip/menu": "<ul class=\"orders\">\n  <li>\n    Invoice 2042\n    <star-action-strip\n      persistent\n      [actions]=\"moreActions\"\n      [max]=\"2\"\n      ariaLabel=\"Invoice 2042 actions\"\n    />\n  </li>\n</ul>",
   "action-strip/rows": "<div class=\"docs-stack\">\n  <ul class=\"orders\">\n    @for (order of orders; track order) {\n      <li>\n        {{ order }}\n        <star-action-strip\n          [actions]=\"actions\"\n          [ariaLabel]=\"order + ' actions'\"\n          (actionClick)=\"last.set(($event.label ?? '') + ' ' + order)\"\n        />\n      </li>\n    }\n  </ul>\n  <p class=\"docs-output\" role=\"status\">Last action: {{ last() }}</p>\n</div>",
   "action-strip/table": "<table class=\"invoices\">\n  <thead>\n    <tr>\n      <th scope=\"col\">Invoice</th>\n      <th scope=\"col\">City</th>\n      <th scope=\"col\"><span class=\"star-sr-only\">Actions</span></th>\n    </tr>\n  </thead>\n  <tbody>\n    @for (invoice of invoices; track invoice.id) {\n      <tr>\n        <td>{{ invoice.id }}</td>\n        <td>{{ invoice.city }}</td>\n        <td class=\"actions-cell\">\n          <star-action-strip [actions]=\"actions\" [ariaLabel]=\"invoice.id + ' actions'\" />\n        </td>\n      </tr>\n    }\n  </tbody>\n</table>",
@@ -9850,9 +14282,15 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "badge/sizes": "<star-badge [value]=\"7\" size=\"sm\" />\n<star-badge [value]=\"7\" />\n<star-badge [value]=\"7\" size=\"lg\" />\n<star-badge severity=\"success\" ariaLabel=\"online\" />",
   "banner/basic": "<div class=\"docs-stack\">\n  <star-banner severity=\"warn\" dismissible [(open)]=\"open\">\n    Invoice export is slow today. Large exports can take up to ten minutes.\n    <star-button starBannerActions variant=\"ghost\" size=\"sm\">Status page</star-button>\n  </star-banner>\n  @if (!open()) {\n    <div class=\"docs-row\">\n      <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"open.set(true)\">\n        Show the banner again\n      </star-button>\n    </div>\n  }\n</div>",
   "banner/severity": "<div class=\"docs-stack\">\n  <star-banner>Projects can now have more than one owner.</star-banner>\n  <star-banner severity=\"success\">All orders of March are invoiced.</star-banner>\n  <star-banner severity=\"warn\" icon=\"ph-fill ph-cloud-warning\">\n    Some cities report slow deliveries.\n  </star-banner>\n  <star-banner severity=\"danger\">The order service is not available.</star-banner>\n  <star-banner icon=\"\">A banner without an icon.</star-banner>\n</div>",
+  "barcode/code128": "<star-barcode value=\"ORDER-2026-00418\" />",
+  "barcode/error": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-select\n      [options]=\"types\"\n      optionLabel=\"label\"\n      optionValue=\"value\"\n      [(value)]=\"type\"\n      ariaLabel=\"Barcode type\"\n      [style.width.rem]=\"10\"\n    />\n    <input\n      starInput\n      aria-label=\"Barcode value\"\n      [value]=\"value()\"\n      (input)=\"value.set($any($event.target).value)\"\n    />\n  </div>\n  <star-barcode\n    [value]=\"value()\"\n    [type]=\"type() ?? 'code128'\"\n    (invalid)=\"invalid.set($event)\"\n  />\n  <p>Valid: {{ invalid() ? 'no' : 'yes' }}</p>\n</div>",
+  "barcode/product": "<div class=\"docs-row\">\n  <star-barcode value=\"5901234123457\" type=\"ean13\" />\n  <star-barcode value=\"036000291452\" type=\"upca\" />\n  <star-barcode value=\"PART-42\" type=\"code39\" [moduleWidth]=\"1\" />\n</div>",
+  "barcode/size": "<star-barcode value=\"4006381333931\" type=\"ean13\" [moduleWidth]=\"3\" [barHeight]=\"90\" />\n<star-barcode value=\"INV-1042\" [showText]=\"false\" [barHeight]=\"40\" />",
   "block-ui/basic": "<div class=\"docs-stack\">\n  <star-block-ui [blocked]=\"blocked()\" message=\"Saving…\">\n    <div class=\"docs-stack\">\n      <star-field label=\"Note\">\n        <input starInput value=\"Waiting for approval\" />\n      </star-field>\n      <star-field label=\"Reference\">\n        <input starInput value=\"PO-1042\" />\n      </star-field>\n    </div>\n  </star-block-ui>\n  <star-button variant=\"secondary\" (pressed)=\"blockFor(1500)\">\n    Save (blocks for 1.5 s)\n  </star-button>\n  <star-button variant=\"secondary\" (pressed)=\"blocked.set(!blocked())\">\n    {{ blocked() ? 'Unblock' : 'Block' }}\n  </star-button>\n</div>",
   "bottom-nav/router": "<star-bottom-nav ariaLabel=\"Docs pages\">\n  <star-bottom-nav-item\n    routerLink=\"/controls/list\"\n    label=\"List\"\n    icon=\"ph ph-list-bullets\"\n  />\n  <star-bottom-nav-item\n    routerLink=\"/controls/bottom-nav\"\n    label=\"Bottom nav\"\n    icon=\"ph ph-dots-three-outline\"\n  />\n  <star-bottom-nav-item\n    routerLink=\"/controls/app-bar\"\n    label=\"App bar\"\n    icon=\"ph ph-browser\"\n  />\n</star-bottom-nav>",
   "bottom-nav/value": "<div class=\"docs-bottom-nav-frame\">\n  <p class=\"docs-bottom-nav-view\" role=\"status\">{{ views[section() ?? 'orders'] }}</p>\n  <star-bottom-nav [(value)]=\"section\" ariaLabel=\"Sections\">\n    <star-bottom-nav-item value=\"orders\" label=\"Orders\" icon=\"ph ph-package\" badge=\"3\" />\n    <star-bottom-nav-item value=\"cities\" label=\"Cities\" icon=\"ph ph-map-pin\" />\n    <star-bottom-nav-item value=\"projects\" label=\"Projects\" icon=\"ph ph-folder\" />\n    <star-bottom-nav-item value=\"settings\" label=\"Settings\" icon=\"ph ph-gear\" />\n  </star-bottom-nav>\n</div>",
+  "bottom-sheet-container/height": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"openCities(cities)\">\n      Choose a city\n    </star-button>\n  </div>\n  <p class=\"docs-output\" role=\"status\">City: {{ city() }}</p>\n</div>\n<ng-template #cities let-data let-ref=\"ref\">\n  <div class=\"docs-stack\">\n    <h2 class=\"star-dialog__title\">Cities</h2>\n    @for (name of data; track name) {\n      <star-button variant=\"ghost\" (pressed)=\"ref.dismiss(name)\">{{ name }}</star-button>\n    }\n  </div>\n</ng-template>",
+  "bottom-sheet-container/non-modal": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"openFilters(filters)\">\n      Show filters\n    </star-button>\n  </div>\n  <p class=\"docs-output\" role=\"status\">Filter: {{ filter() }}</p>\n</div>\n<ng-template #filters let-ref=\"ref\">\n  <div class=\"docs-stack\">\n    <h2 class=\"star-dialog__title\">Order filters</h2>\n    <div class=\"docs-row\">\n      <star-button variant=\"secondary\" (pressed)=\"ref.dismiss('Open orders')\">\n        Open orders\n      </star-button>\n      <star-button variant=\"secondary\" (pressed)=\"ref.dismiss('Shipped orders')\">\n        Shipped orders\n      </star-button>\n      <star-button variant=\"ghost\" (pressed)=\"ref.dismiss()\">Close</star-button>\n    </div>\n  </div>\n</ng-template>",
   "bottom-sheet/actions": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button\n      variant=\"secondary\"\n      leadingIcon=\"ph-bold ph-dots-three\"\n      (pressed)=\"orderActions()\"\n    >\n      Order actions\n    </star-button>\n  </div>\n  <p class=\"docs-output\" role=\"status\">Action: {{ action() }}</p>\n</div>",
   "bottom-sheet/component": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button leadingIcon=\"ph-bold ph-export\" (pressed)=\"exportInvoice()\">\n      Export invoice\n    </star-button>\n  </div>\n  <p class=\"docs-output\" role=\"status\">Export format: {{ format() }}</p>\n</div>",
   "bottom-sheet/template": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"showProjects(projects)\">\n      Pick a project\n    </star-button>\n  </div>\n  <p class=\"docs-output\" role=\"status\">Project: {{ project() }}</p>\n</div>\n<ng-template #projects let-data let-ref=\"ref\">\n  <div class=\"docs-stack\">\n    <h2 class=\"star-dialog__title\">Projects</h2>\n    @for (name of data; track name) {\n      <star-button variant=\"ghost\" (pressed)=\"ref.dismiss(name)\">{{ name }}</star-button>\n    }\n  </div>\n</ng-template>",
@@ -9886,17 +14324,23 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "cascade-select/states": "<div class=\"docs-stack\">\n  <star-cascade-select\n    [options]=\"places\"\n    optionLabel=\"name\"\n    optionValue=\"code\"\n    optionDisabled=\"closed\"\n    placeholder=\"One city is closed\"\n    ariaLabel=\"City with a closed office\"\n  />\n  <star-cascade-select\n    [options]=\"places\"\n    optionLabel=\"name\"\n    optionValue=\"code\"\n    size=\"sm\"\n    disabled\n    placeholder=\"Disabled\"\n    ariaLabel=\"Disabled city\"\n  />\n</div>",
   "chart/area": "<star-chart\n  type=\"area\"\n  title=\"Orders per month, area\"\n  [labels]=\"months\"\n  [series]=\"orders\"\n/>",
   "chart/bar": "<star-chart\n  type=\"bar\"\n  title=\"Orders per month\"\n  [labels]=\"months\"\n  [series]=\"orders\"\n  categoryLabel=\"Month\"\n/>",
+  "chart/combo": "<star-chart type=\"bar\" title=\"Orders and return rate\" [labels]=\"months\" [series]=\"combo\" />",
   "chart/doughnut": "<star-chart\n  type=\"doughnut\"\n  title=\"Traffic by channel\"\n  [labels]=\"channels\"\n  [series]=\"traffic\"\n/>",
+  "chart/export": "<div class=\"docs-stack\">\n  <star-chart\n    #exported\n    type=\"bar\"\n    title=\"Orders per month, export\"\n    [labels]=\"months\"\n    [series]=\"orders\"\n  />\n  <div class=\"docs-row\">\n    <button\n      type=\"button\"\n      class=\"star-btn star-btn--secondary\"\n      (click)=\"downloadSvg(exported)\"\n    >\n      Download SVG\n    </button>\n    <button\n      type=\"button\"\n      class=\"star-btn star-btn--secondary\"\n      (click)=\"downloadPng(exported)\"\n    >\n      Download PNG\n    </button>\n  </div>\n</div>",
+  "chart/horizontal": "<star-chart\n  type=\"bar\"\n  horizontal\n  title=\"Orders per region\"\n  [labels]=\"longRegions\"\n  [series]=\"regionChannels\"\n/>",
+  "chart/interaction": "<div class=\"docs-stack\">\n  <star-chart\n    type=\"line\"\n    title=\"Orders per month, interactive\"\n    [labels]=\"months\"\n    [series]=\"orders\"\n    (pointSelect)=\"picked.set($event)\"\n  >\n    <ng-template starChartTooltip let-points let-label=\"label\">\n      <span class=\"star-chart__tip-title\">{{ label }}</span>\n      @for (point of points; track point.seriesIndex) {\n        <span class=\"star-chart__tip-row\"\n          >{{ point.series }}: {{ point.value }} orders</span\n        >\n      }\n    </ng-template>\n  </star-chart>\n  <p class=\"docs-output\" role=\"status\">\n    Selected:\n    {{\n      picked()\n        ? orders[picked()!.seriesIndex].label +\n          ', ' +\n          months[picked()!.index] +\n          ': ' +\n          picked()!.value\n        : 'none'\n    }}\n  </p>\n</div>",
+  "chart/legend": "<div class=\"docs-stack\">\n  <star-chart\n    type=\"line\"\n    title=\"Orders by channel\"\n    [labels]=\"months\"\n    [series]=\"channelOrders\"\n    [(hiddenSeries)]=\"hiddenChannels\"\n    legendPosition=\"end\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Hidden series: {{ hiddenChannels().join(', ') || 'none' }}\n  </p>\n</div>",
   "chart/line": "<star-chart\n  type=\"line\"\n  title=\"Orders per month, line\"\n  [labels]=\"months\"\n  [series]=\"orders\"\n/>",
   "chart/long-labels": "<div class=\"docs-chart-narrow\">\n  <star-chart\n    type=\"stacked-bar\"\n    title=\"Orders by region\"\n    [labels]=\"longRegions\"\n    [series]=\"regionChannels\"\n  />\n</div>\n<div class=\"docs-chart-narrow\">\n  <star-chart\n    type=\"radar\"\n    title=\"Detailed ratings\"\n    [labels]=\"longCriteria\"\n    [series]=\"ratings\"\n  />\n</div>",
   "chart/pie": "<star-chart type=\"pie\" title=\"Revenue by region\" [labels]=\"regions\" [series]=\"revenue\" />",
   "chart/polar-area": "<star-chart\n  type=\"polar-area\"\n  title=\"Visits by weekday\"\n  [labels]=\"weekdays\"\n  [series]=\"weekdayVisits\"\n  categoryLabel=\"Weekday\"\n/>",
   "chart/radar": "<star-chart\n  type=\"radar\"\n  title=\"Product ratings by criterion\"\n  [labels]=\"criteria\"\n  [series]=\"ratings\"\n  categoryLabel=\"Criterion\"\n/>",
   "chart/scatter": "<star-chart\n  type=\"scatter\"\n  title=\"Price against weight\"\n  [series]=\"products\"\n  categoryLabel=\"Weight (kg)\"\n  valueLabel=\"Price\"\n/>",
-  "chart/sizing": "<div class=\"docs-chart-narrow\">\n  <star-chart type=\"bar\" title=\"Orders, narrow\" [labels]=\"months\" [series]=\"single\" />\n</div>",
+  "chart/sizing": "<div class=\"docs-chart-narrow\">\n  <star-chart type=\"bar\" title=\"Orders, narrow\" [labels]=\"months\" [series]=\"single\" />\n</div>\n<div class=\"docs-chart-narrow\">\n  <star-chart\n    type=\"line\"\n    title=\"Visits per month, narrow\"\n    [labels]=\"yearMonths\"\n    [series]=\"yearVisits\"\n  />\n</div>",
   "chart/stacked-bar": "<star-chart\n  type=\"stacked-bar\"\n  title=\"Orders per month by channel\"\n  [labels]=\"months\"\n  [series]=\"channelOrders\"\n  categoryLabel=\"Month\"\n/>",
   "chart/stacked-bar-percent": "<star-chart\n  type=\"stacked-bar\"\n  title=\"Share of orders by channel\"\n  [labels]=\"months\"\n  [series]=\"channelOrders\"\n  categoryLabel=\"Month\"\n  percent\n/>",
   "chart/table": "<star-chart\n  type=\"bar\"\n  title=\"Revenue by region, table\"\n  [labels]=\"regions\"\n  [series]=\"revenue\"\n  categoryLabel=\"Region\"\n  table\n/>",
+  "chart/value-format": "<star-chart\n  type=\"bar\"\n  title=\"Revenue per region\"\n  locale=\"en-US\"\n  [labels]=\"regions\"\n  [series]=\"revenue\"\n  [valueFormat]=\"euro\"\n  [min]=\"0\"\n  [max]=\"60000\"\n  [stepSize]=\"15000\"\n/>",
   "chat/ai-prompt": "<star-ai-prompt\n  [outputs]=\"outputs()\"\n  [suggestions]=\"suggestions\"\n  (promptRequest)=\"ask($event.prompt)\"\n  (retry)=\"ask($event.prompt)\"\n  (stop)=\"stopStream($event.id)\"\n/>",
   "chat/basic": "<star-chat\n  [messages]=\"messages()\"\n  user=\"me\"\n  [typing]=\"typing()\"\n  [loading]=\"loadingOlder()\"\n  [hasMore]=\"hasMore()\"\n  locale=\"en-US\"\n  ariaLabel=\"Support conversation\"\n  (send)=\"post($event.text)\"\n  (loadMore)=\"loadOlder()\"\n/>",
   "checkbox/basic": "<star-checkbox [(checked)]=\"subscribed\">Send me product news</star-checkbox>\n<p class=\"docs-output\" role=\"status\">Subscribed: {{ subscribed() }}</p>",
@@ -9910,6 +14354,11 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "color-picker/swatches": "<star-color-picker\n  [(value)]=\"category\"\n  [swatches]=\"['#0f766e', '#b45309', '#7c3aed', '#be123c']\"\n  ariaLabel=\"Category color\"\n/>",
   "command-palette/basic": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"open.set(true)\">\n      Open command palette\n    </star-button>\n  </div>\n  <star-command-palette\n    [commands]=\"commands\"\n    [(visible)]=\"open\"\n    (commandRun)=\"last.set($event.label)\"\n  />\n  <p class=\"docs-output\" role=\"status\">Last command: {{ last() }}</p>\n</div>",
   "command-palette/templates": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"peopleOpen.set(true)\">\n      Find a person\n    </star-button>\n  </div>\n  <star-command-palette\n    [commands]=\"people\"\n    [(visible)]=\"peopleOpen\"\n    [hotkey]=\"null\"\n    [maxRecent]=\"0\"\n    placeholder=\"Search people\"\n    ariaLabel=\"Find a person\"\n    (commandRun)=\"person.set($event.label)\"\n  >\n    <ng-template starCommand let-command>\n      <i class=\"ph ph-user-circle\" aria-hidden=\"true\"></i>\n      <span class=\"option\">\n        <span>{{ command.label }}</span>\n        <small>{{ command.group }} · {{ command.keywords?.[0] }}</small>\n      </span>\n    </ng-template>\n    <ng-template starEmpty let-query>No person matches “{{ query }}”.</ng-template>\n  </star-command-palette>\n  <p class=\"docs-output\" role=\"status\">Chosen: {{ person() }}</p>\n</div>",
+  "configuration/copy": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button\n      variant=\"secondary\"\n      leadingIcon=\"ph-bold ph-copy\"\n      starCopy=\"ORD-1042\"\n      (copied)=\"copied.set($event ? 'copied' : 'failed')\"\n    >\n      Copy order id\n    </star-button>\n  </div>\n  <p class=\"docs-output\">Copy: {{ copied() }}</p>\n</div>",
+  "configuration/filled": "<div class=\"docs-stack docs-stack--narrow\">\n  <star-field label=\"Project name\">\n    <input starInput variant=\"filled\" placeholder=\"North depot\" />\n  </star-field>\n</div>",
+  "configuration/key-filter": "<div class=\"docs-stack docs-stack--narrow\">\n  <star-field label=\"Quantity\">\n    <input starInput starKeyFilter=\"int\" inputmode=\"numeric\" />\n  </star-field>\n  <star-field label=\"Color code (hex)\">\n    <input starInput starKeyFilter=\"hex\" maxlength=\"6\" />\n  </star-field>\n  <star-field\n    label=\"Reference\"\n    [error]=\"referenceValid() ? '' : 'Use letters, digits and the underscore only.'\"\n  >\n    <input\n      starInput\n      starKeyFilter=\"alphanum\"\n      validateOnly\n      (validChange)=\"referenceValid.set($event)\"\n    />\n  </star-field>\n</div>",
+  "configuration/pipes": "<div class=\"docs-stack\">\n  <ul class=\"docs-output\">\n    @for (file of files; track file.name) {\n      <li>\n        <span [innerHTML]=\"file.name | starHighlight: 'report'\"></span>,\n        {{ file.bytes | starFileSize: 'en-US' }}, changed\n        {{ file.changed | starRelativeTime: clock.now() : 'en-US' }} by\n        <abbr [title]=\"file.owner\">{{ file.owner | starInitials }}</abbr>\n      </li>\n    }\n  </ul>\n</div>",
+  "configuration/select-defaults": "<div class=\"docs-stack docs-stack--narrow\">\n  <docs-compact-select />\n</div>",
   "confirm/dialog": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button\n      variant=\"ghost-danger\"\n      leadingIcon=\"ph-bold ph-trash\"\n      (pressed)=\"deleteOrder()\"\n    >\n      Delete order\n    </star-button>\n  </div>\n  <p class=\"docs-output\" role=\"status\">Result: {{ result() }}</p>\n</div>",
   "confirm/options": "<div class=\"docs-row\">\n  <star-button variant=\"secondary\" (pressed)=\"publish()\">Publish price list</star-button>\n  <star-button variant=\"secondary\" (pressed)=\"acknowledge()\">Show notice</star-button>\n</div>",
   "confirm/popup": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button\n      variant=\"ghost\"\n      leadingIcon=\"ph-bold ph-archive\"\n      (pressed)=\"archive($event)\"\n    >\n      Archive\n    </star-button>\n  </div>\n  <p class=\"docs-output\" role=\"status\">Archive result: {{ popupResult() }}</p>\n</div>",
@@ -9963,9 +14412,14 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "dropdown/basic": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button\n      variant=\"secondary\"\n      trailingIcon=\"ph-bold ph-caret-down\"\n      [starDropdownTrigger]=\"formats\"\n    >\n      Export as\n    </star-button>\n  </div>\n  <star-dropdown\n    #formats\n    ariaLabel=\"Export format\"\n    [(value)]=\"format\"\n    (selectionChange)=\"onSelect($event)\"\n  >\n    <star-dropdown-item header>Documents</star-dropdown-item>\n    <star-dropdown-item value=\"pdf\">PDF</star-dropdown-item>\n    <star-dropdown-item value=\"docx\" disabled>Word document</star-dropdown-item>\n    <star-dropdown-item divider />\n    <star-dropdown-item header>Data</star-dropdown-item>\n    <star-dropdown-item value=\"csv\">CSV</star-dropdown-item>\n    <star-dropdown-item value=\"xlsx\">Spreadsheet</star-dropdown-item>\n    <star-dropdown-item value=\"json\">JSON</star-dropdown-item>\n  </star-dropdown>\n  <p class=\"docs-output\" role=\"status\">Export format: {{ chosen() }}</p>\n</div>",
   "dropdown/keep-open": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" [starDropdownTrigger]=\"cities\">\n      Add a city\n    </star-button>\n  </div>\n  <star-dropdown\n    #cities\n    ariaLabel=\"Cities\"\n    [closeOnSelect]=\"false\"\n    (selectionChange)=\"added.set(added() + $event.label + ' ')\"\n  >\n    <star-dropdown-item value=\"berlin\">Berlin</star-dropdown-item>\n    <star-dropdown-item value=\"lisbon\">Lisbon</star-dropdown-item>\n    <star-dropdown-item value=\"oslo\">Oslo</star-dropdown-item>\n    <star-dropdown-item value=\"toronto\">Toronto</star-dropdown-item>\n  </star-dropdown>\n  <p class=\"docs-output\" role=\"status\">Added: {{ added() || 'none' }}</p>\n</div>",
   "editor/basic": "<div class=\"docs-stack\">\n  <star-editor\n    [(value)]=\"note\"\n    ariaLabel=\"Delivery note\"\n    placeholder=\"Write the delivery note\"\n  />\n  <pre class=\"docs-output\" role=\"group\" aria-label=\"Value of the editor\">{{ note() }}</pre>\n</div>",
+  "editor/full-toolbar": "<div class=\"docs-stack\">\n  <star-editor [(value)]=\"report\" [toolbar]=\"fullToolbar\" ariaLabel=\"Shipping report\" />\n  <pre class=\"docs-output\" role=\"group\" aria-label=\"Value of the full editor\">{{\n    report()\n  }}</pre>\n</div>",
+  "editor/own-toolbar": "<div class=\"docs-stack\">\n  <star-editor [toolbar]=\"shortToolbar\" ariaLabel=\"Short comment\" minHeight=\"4rem\" />\n</div>",
+  "editor/paste": "<div class=\"docs-stack\">\n  <star-editor ariaLabel=\"Pasted with formats\" minHeight=\"4rem\" />\n  <star-editor pasteAsText ariaLabel=\"Pasted as plain text\" minHeight=\"4rem\" />\n</div>",
   "editor/sanitize": "<div class=\"docs-stack\">\n  <star-editor [(value)]=\"unsafe\" ariaLabel=\"Sanitized content\" />\n  <pre class=\"docs-output\" aria-label=\"Value after sanitizing\">{{ unsafe() }}</pre>\n</div>",
   "editor/size": "<div class=\"docs-stack\">\n  <star-editor\n    [(value)]=\"comment\"\n    ariaLabel=\"Order comment\"\n    placeholder=\"Add a comment\"\n    minHeight=\"4rem\"\n  />\n</div>",
   "editor/states": "<div class=\"docs-stack\">\n  <star-editor [value]=\"saved()\" ariaLabel=\"Saved note\" readonly />\n  <star-editor [value]=\"saved()\" ariaLabel=\"Locked note\" disabled />\n</div>",
+  "editor/text-limit": "<div class=\"docs-stack\">\n  <star-editor\n    [(value)]=\"summary\"\n    format=\"text\"\n    [maxLength]=\"120\"\n    ariaLabel=\"Delivery summary\"\n  />\n  <pre class=\"docs-output\" role=\"group\" aria-label=\"Value of the text editor\">{{\n    summary()\n  }}</pre>\n</div>",
+  "editor/toolbar-slot": "<div class=\"docs-stack\">\n  <star-editor ariaLabel=\"Release note\" minHeight=\"4rem\">\n    <ng-template\n      starEditorToolbar\n      let-exec=\"exec\"\n      let-isActive=\"isActive\"\n      let-disabled=\"disabled\"\n    >\n      <div\n        class=\"star-toolbar star-editor__toolbar\"\n        role=\"toolbar\"\n        aria-label=\"Release note tools\"\n      >\n        <button\n          type=\"button\"\n          class=\"star-btn star-btn--ghost star-btn--sm\"\n          [attr.aria-pressed]=\"isActive('bold')\"\n          [disabled]=\"disabled\"\n          (mousedown)=\"$event.preventDefault()\"\n          (click)=\"exec('bold')\"\n        >\n          Bold\n        </button>\n        <button\n          type=\"button\"\n          class=\"star-btn star-btn--ghost star-btn--sm\"\n          [attr.aria-pressed]=\"isActive('code')\"\n          [disabled]=\"disabled\"\n          (mousedown)=\"$event.preventDefault()\"\n          (click)=\"exec('code')\"\n        >\n          Code\n        </button>\n      </div>\n    </ng-template>\n  </star-editor>\n</div>",
   "field/basic": "<div class=\"docs-stack\">\n  <star-field label=\"Full name\" hint=\"As shown on your account.\">\n    <input starInput placeholder=\"Avery Stone\" />\n  </star-field>\n</div>",
   "field/sizes": "<div class=\"docs-stack\">\n  <input starInput size=\"sm\" aria-label=\"Small\" placeholder=\"Small\" />\n  <input starInput aria-label=\"Medium\" placeholder=\"Medium\" />\n  <input starInput size=\"lg\" aria-label=\"Large\" placeholder=\"Large\" />\n</div>",
   "field/states": "<div class=\"docs-stack\">\n  <star-field label=\"Promo code\" error=\"This code has expired.\">\n    <input starInput value=\"SPRING\" />\n  </star-field>\n  <star-field label=\"Account number\">\n    <input starInput value=\"100-204\" disabled />\n  </star-field>\n</div>",
@@ -9989,6 +14443,10 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "galleria/model": "<star-galleria\n  style=\"width: 100%; max-width: 40rem\"\n  [images]=\"images\"\n  [(activeIndex)]=\"active\"\n  ariaLabel=\"Linked photos\"\n/>\n<p class=\"docs-output\" role=\"status\">Active index: {{ active() }}</p>",
   "gantt/large": "<star-gantt [tasks]=\"large\" scale=\"month\" ariaLabel=\"Order batches\" readonly />",
   "gantt/launch": "<div class=\"docs-stack\">\n  <star-select-button\n    [options]=\"scales\"\n    optionLabel=\"label\"\n    optionValue=\"value\"\n    [allowEmpty]=\"false\"\n    size=\"sm\"\n    ariaLabel=\"Scale\"\n    [(value)]=\"scale\"\n  />\n  <star-gantt\n    [tasks]=\"tasks()\"\n    [(scale)]=\"scale\"\n    [(collapsed)]=\"collapsed\"\n    locale=\"en-GB\"\n    ariaLabel=\"Launch plan\"\n    (taskChange)=\"onChange($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">{{ log() }}</p>\n</div>",
+  "gauge/interactive": "<div class=\"docs-stack\">\n  <star-field label=\"Volume\">\n    <star-linear-gauge interactive [step]=\"5\" [formField]=\"model.volume\" />\n  </star-field>\n  <star-radial-gauge pointer=\"bar\" [value]=\"settings().volume\" ariaLabel=\"Volume level\" />\n  <p>Volume: {{ settings().volume }}</p>\n</div>",
+  "gauge/linear": "<div class=\"docs-stack\">\n  <star-linear-gauge\n    [value]=\"load()\"\n    [ranges]=\"zones\"\n    [ticks]=\"{ step: 25, minor: 5 }\"\n    ariaLabel=\"Server load\"\n  />\n  <star-linear-gauge\n    [value]=\"load()\"\n    pointer=\"marker\"\n    [ranges]=\"zones\"\n    ariaLabel=\"Server load, marker\"\n  />\n  <div class=\"docs-row\">\n    <star-linear-gauge\n      orientation=\"vertical\"\n      [value]=\"72\"\n      [max]=\"120\"\n      [ticks]=\"{ major: 6, minor: 2 }\"\n      ariaLabel=\"Response time\"\n    />\n    <star-linear-gauge\n      orientation=\"vertical\"\n      pointer=\"needle\"\n      [value]=\"18\"\n      [min]=\"-20\"\n      [max]=\"40\"\n      [ranges]=\"cold\"\n      ariaLabel=\"Room temperature\"\n    />\n  </div>\n</div>",
+  "gauge/pointers": "<div class=\"docs-row\">\n  <star-radial-gauge [value]=\"62\" pointer=\"bar\" [arcWidth]=\"16\" ariaLabel=\"Disk use\" />\n  <star-radial-gauge\n    [value]=\"38\"\n    pointer=\"marker\"\n    [startAngle]=\"180\"\n    [endAngle]=\"0\"\n    [ticks]=\"{ major: 4, minor: 5 }\"\n    ariaLabel=\"Memory use\"\n  />\n</div>",
+  "gauge/radial": "<div class=\"docs-stack\">\n  <star-radial-gauge\n    [value]=\"load()\"\n    [ranges]=\"zones\"\n    [labels]=\"{ style: 'unit', unit: 'percent' }\"\n    locale=\"en-US\"\n    ariaLabel=\"Server load\"\n  />\n  <div class=\"docs-row\">\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"change(-15)\">Less</star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"change(15)\">More</star-button>\n  </div>\n</div>",
   "getting-started/result": "<star-button leadingIcon=\"ph-bold ph-plus\">New order</star-button>",
   "i18n/spinner": "<star-spinner />\n<docs-german-text />",
   "i18n/switch": "<div class=\"docs-stack\">\n  <star-select-button\n    [options]=\"languages\"\n    optionLabel=\"label\"\n    optionValue=\"id\"\n    [(value)]=\"language.choice\"\n    [allowEmpty]=\"false\"\n    ariaLabel=\"Language\"\n  />\n  <star-paginator [totalRecords]=\"95\" />\n  <star-field label=\"City\">\n    <star-select [options]=\"cities\" [(value)]=\"city\" filter ariaLabel=\"City\" />\n  </star-field>\n  <star-field label=\"Attachments\">\n    <star-file-upload multiple [maxFileSize]=\"1000000\" [fileLimit]=\"3\" />\n  </star-field>\n  <star-field label=\"New password\">\n    <star-password value=\"abc\" feedback />\n  </star-field>\n</div>",
@@ -10092,6 +14550,10 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "progress-bar/basic": "<div class=\"docs-stack\">\n  <star-progress-bar [value]=\"value()\" showValue ariaLabel=\"Upload\" />\n  <div class=\"docs-row\">\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"step(-20)\">Less</star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"step(20)\">More</star-button>\n  </div>\n</div>",
   "progress-bar/indeterminate": "<div class=\"docs-stack\">\n  <star-progress-bar indeterminate ariaLabel=\"Loading\" />\n</div>",
   "progress-bar/severities": "<div class=\"docs-stack\">\n  <star-progress-bar [value]=\"60\" ariaLabel=\"Primary\" />\n  <star-progress-bar [value]=\"80\" severity=\"success\" ariaLabel=\"Success\" />\n  <star-progress-bar [value]=\"45\" severity=\"warn\" ariaLabel=\"Warning\" />\n  <star-progress-bar [value]=\"25\" severity=\"danger\" ariaLabel=\"Danger\" />\n  <star-progress-bar [value]=\"70\" severity=\"info\" size=\"sm\" ariaLabel=\"Info, thin\" />\n</div>",
+  "qr-code/colours": "<star-qr-code value=\"INVOICE 2026-0042\" [size]=\"120\" ariaLabel=\"Invoice 2026-0042\" />",
+  "qr-code/image": "<star-qr-code value=\"https://example.com/projects\" image=\"favicon.svg\" [size]=\"200\" />",
+  "qr-code/levels": "<div class=\"docs-stack\">\n  <star-select-button\n    [options]=\"['L', 'M', 'Q', 'H']\"\n    [(value)]=\"level\"\n    ariaLabel=\"Error correction level\"\n  />\n  <input\n    starInput\n    aria-label=\"QR code value\"\n    [value]=\"value()\"\n    (input)=\"value.set($any($event.target).value)\"\n  />\n  <star-qr-code [value]=\"value()\" [errorCorrection]=\"levelOf(level())\" [size]=\"200\" />\n</div>",
+  "qr-code/link": "<star-qr-code value=\"https://example.com/orders/1042\" />",
   "radio/basic": "<star-radio-group [(value)]=\"plan\" ariaLabel=\"Plan\">\n  <star-radio value=\"starter\">Starter</star-radio>\n  <star-radio value=\"team\">Team</star-radio>\n  <star-radio value=\"business\">Business</star-radio>\n</star-radio-group>\n<p class=\"docs-output\" role=\"status\">Plan: {{ plan() }}</p>",
   "radio/disabled": "<star-radio-group [(value)]=\"delivery\" ariaLabel=\"Delivery\">\n  <star-radio value=\"standard\">Standard</star-radio>\n  <star-radio value=\"express\">Express</star-radio>\n  <star-radio value=\"pickup\" disabled>Pick-up (not available)</star-radio>\n</star-radio-group>",
   "radio/horizontal": "<star-radio-group [(value)]=\"size\" orientation=\"horizontal\" ariaLabel=\"Size\">\n  <star-radio value=\"s\">Small</star-radio>\n  <star-radio value=\"m\">Medium</star-radio>\n  <star-radio value=\"l\">Large</star-radio>\n</star-radio-group>",
@@ -10137,6 +14599,10 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "slider/disabled": "<div class=\"docs-stack\">\n  <star-slider [value]=\"30\" disabled ariaLabel=\"Locked value\" />\n</div>",
   "slider/format": "<div class=\"docs-stack\">\n  <star-slider\n    [(value)]=\"discount\"\n    [min]=\"0\"\n    [max]=\"50\"\n    [step]=\"5\"\n    showValue\n    [format]=\"percent\"\n    ariaLabel=\"Discount\"\n  />\n</div>",
   "slider/range": "<div class=\"docs-stack\">\n  <star-range-slider\n    [(value)]=\"price\"\n    [bounds]=\"[0, 500]\"\n    [step]=\"10\"\n    showValue\n    ariaLabel=\"Price range\"\n  />\n  <p class=\"docs-output\" role=\"status\">From {{ price()[0] }} to {{ price()[1] }}</p>\n</div>",
+  "sparkline/line": "<p>\n  Weekly sales <star-sparkline [data]=\"sales\" [highlight]=\"['last']\" /> rose to 21.5\n  thousand.\n</p>",
+  "sparkline/markers": "<star-sparkline\n  [data]=\"load\"\n  [highlight]=\"['min', 'max', 'last']\"\n  [referenceLine]=\"70\"\n  [min]=\"0\"\n  [max]=\"100\"\n  [width]=\"200\"\n  [height]=\"40\"\n  ariaLabel=\"Server load, target 70 percent\"\n/>",
+  "sparkline/table": "<star-table\n  [value]=\"regions\"\n  [columns]=\"columns\"\n  dataKey=\"region\"\n  ariaLabel=\"Sales per region\"\n>\n  <ng-template starCell=\"trend\" [starCellOf]=\"regions\" let-row>\n    <star-sparkline [data]=\"row.trend\" [highlight]=\"['last']\" />\n  </ng-template>\n</star-table>",
+  "sparkline/types": "<div class=\"docs-stack\">\n  <span\n    >Line <star-sparkline [data]=\"sales\" [width]=\"120\" [height]=\"28\" ariaLabel=\"Line\"\n  /></span>\n  <span\n    >Area\n    <star-sparkline\n      type=\"area\"\n      [data]=\"sales\"\n      [color]=\"3\"\n      [width]=\"120\"\n      [height]=\"28\"\n      ariaLabel=\"Area\"\n  /></span>\n  <span\n    >Bar\n    <star-sparkline\n      type=\"bar\"\n      [data]=\"change\"\n      [color]=\"7\"\n      [width]=\"120\"\n      [height]=\"28\"\n      ariaLabel=\"Bar\"\n  /></span>\n  <span\n    >Win-loss <star-sparkline type=\"win-loss\" [data]=\"change\" [width]=\"120\" [height]=\"28\"\n  /></span>\n</div>",
   "speed-dial/basic": "<div class=\"docs-row docs-dial-area\">\n  <star-speed-dial\n    [items]=\"actions\"\n    direction=\"right\"\n    ariaLabel=\"Quick actions\"\n    (itemClick)=\"last.set($event.label ?? '')\"\n  />\n  <p class=\"docs-output\" role=\"status\">Last action: {{ last() }}</p>\n</div>",
   "speed-dial/choice": "<div class=\"docs-row docs-dial-area\">\n  <star-speed-dial\n    size=\"sm\"\n    direction=\"down\"\n    icon=\"ph-bold ph-sort-ascending\"\n    [items]=\"sortItems\"\n    [activeIndex]=\"sortIndex()\"\n    ariaLabel=\"Sort\"\n  />\n  <p class=\"docs-output\" role=\"status\">Sorted by: {{ sortItems[sortIndex()].label }}</p>\n</div>",
   "speed-dial/directions": "<div class=\"docs-row docs-dial-area docs-dial-area--wide\">\n  <star-speed-dial [items]=\"actions\" direction=\"up\" ariaLabel=\"Actions up\" />\n  <star-speed-dial [items]=\"actions\" direction=\"down\" ariaLabel=\"Actions down\" />\n  <star-speed-dial [items]=\"actions\" direction=\"left\" ariaLabel=\"Actions left\" />\n  <star-speed-dial [items]=\"actions\" direction=\"right\" ariaLabel=\"Actions right\" />\n</div>",
@@ -10195,8 +14661,15 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "table/slots": "<div class=\"docs-stack\">\n  <input\n    starInput\n    type=\"search\"\n    aria-label=\"Search orders\"\n    placeholder=\"Search orders\"\n    [value]=\"slotQuery()\"\n    (input)=\"slotQuery.set($any($event.target).value)\"\n  />\n  <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"slotLoading.set(!slotLoading())\">\n    {{ slotLoading() ? 'Stop loading' : 'Start loading' }}\n  </star-button>\n  <docs-fill>\n    <star-table\n      [value]=\"slotOrders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders by status\"\n      groupBy=\"status\"\n      [globalFilter]=\"slotQuery()\"\n      [loading]=\"slotLoading()\"\n    >\n      <ng-template starHeaderCell=\"total\" let-column>\n        {{ column.header }} (USD)\n      </ng-template>\n      <ng-template starGroup let-status let-count=\"count\">\n        {{ status }}: {{ count }} orders\n      </ng-template>\n      <ng-template starEmpty let-text>No order matches \"{{ text }}\".</ng-template>\n      <ng-template starLoading>Loading the orders.</ng-template>\n      <p starTableSummary class=\"docs-output\">{{ slotOrders.length }} orders in total</p>\n    </star-table>\n  </docs-fill>\n</div>",
   "table/states": "<div class=\"docs-stack\">\n  <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"loading.set(!loading())\">\n    {{ loading() ? 'Stop loading' : 'Start loading' }}\n  </star-button>\n  <star-table\n    [value]=\"orders.slice(0, 3)\"\n    [columns]=\"columns\"\n    dataKey=\"id\"\n    ariaLabel=\"Orders being loaded\"\n    [loading]=\"loading()\"\n  />\n  <star-table\n    [value]=\"[]\"\n    [columns]=\"columns\"\n    ariaLabel=\"No orders\"\n    emptyMessage=\"No orders yet. Add the first one.\"\n  />\n</div>",
   "table/templates": "<docs-fill>\n  <star-table\n    [value]=\"orders\"\n    [columns]=\"columns\"\n    dataKey=\"id\"\n    ariaLabel=\"Orders with status tags\"\n    paginator\n    [rows]=\"5\"\n  >\n    <ng-template starCell=\"status\" [starCellOf]=\"orders\" let-row>\n      <star-tag [severity]=\"severityOf(row.status)\" [value]=\"row.status\" rounded />\n    </ng-template>\n    <ng-template starCell=\"customer\" [starCellOf]=\"orders\" let-row let-value=\"value\">\n      <strong>{{ value }}</strong>\n      <br />\n      <small>{{ row.email }}</small>\n    </ng-template>\n  </star-table>\n</docs-fill>",
+  "tabs/alignment": "<div class=\"docs-stack\">\n  <star-tabs alignment=\"stretch\" ariaLabel=\"Invoice status\">\n    <star-tab value=\"open\" label=\"Open\">Open invoices.</star-tab>\n    <star-tab value=\"paid\" label=\"Paid\">Paid invoices.</star-tab>\n    <star-tab value=\"overdue\" label=\"Overdue\">Overdue invoices.</star-tab>\n  </star-tabs>\n  <star-tabs alignment=\"center\" variant=\"pill\" ariaLabel=\"Period\">\n    <star-tab value=\"week\" label=\"Week\">This week.</star-tab>\n    <star-tab value=\"month\" label=\"Month\">This month.</star-tab>\n  </star-tabs>\n</div>",
   "tabs/basic": "<div class=\"docs-stack\">\n  <star-tabs [(value)]=\"tab\" ariaLabel=\"Order sections\">\n    <star-tab value=\"details\" label=\"Details\" icon=\"ph-bold ph-file-text\">\n      Order ORD-1042 for Orchard Supply.\n    </star-tab>\n    <star-tab value=\"items\" label=\"Items\" [badge]=\"12\">Twelve items in two boxes.</star-tab>\n    <star-tab value=\"billing\" label=\"Billing\" disabled>Billing is not available.</star-tab>\n    <star-tab value=\"history\" label=\"History\">Created on Monday.</star-tab>\n  </star-tabs>\n  <p class=\"docs-output\" role=\"status\">Selected: {{ tab() ?? 'details' }}</p>\n</div>",
+  "tabs/cache": "<div class=\"docs-stack\">\n  <star-tabs [cache]=\"false\" ariaLabel=\"Notes\">\n    <star-tab value=\"draft\" label=\"Draft\">\n      <ng-template starTabContent>\n        <star-field label=\"Draft note\"><input starInput /></star-field>\n      </ng-template>\n    </star-tab>\n    <star-tab value=\"final\" label=\"Final\">\n      <ng-template starTabContent>The final note is empty.</ng-template>\n    </star-tab>\n  </star-tabs>\n</div>",
+  "tabs/closable": "<div class=\"docs-stack\">\n  <star-tabs\n    scrollable\n    [(value)]=\"openFile\"\n    ariaLabel=\"Open files\"\n    (tabClose)=\"closeFile($event)\"\n  >\n    @for (file of files(); track file) {\n      <star-tab [value]=\"file\" [label]=\"file\" [closable]=\"file !== 'summary.txt'\">\n        Content of {{ file }}.\n      </star-tab>\n    }\n  </star-tabs>\n  <p class=\"docs-output\" role=\"status\">Open: {{ files().join(', ') }}</p>\n</div>",
+  "tabs/header": "<div class=\"docs-stack\">\n  <star-tabs ariaLabel=\"Order queues\">\n    <ng-template starTabHeader let-tab let-active=\"active\">\n      <i\n        class=\"ph-bold\"\n        [class.ph-folder-open]=\"active\"\n        [class.ph-folder]=\"!active\"\n        aria-hidden=\"true\"\n      ></i>\n      <span>{{ tab.label() }}</span>\n      <span class=\"star-badge star-badge--secondary star-badge--sm\">{{ tab.badge() }}</span>\n    </ng-template>\n    <star-tab value=\"new\" label=\"New\" [badge]=\"4\">Four new orders.</star-tab>\n    <star-tab value=\"packed\" label=\"Packed\" [badge]=\"9\">Nine packed orders.</star-tab>\n    <star-tab value=\"shipped\" label=\"Shipped\" [badge]=\"27\">27 shipped orders.</star-tab>\n  </star-tabs>\n</div>",
   "tabs/pill": "<div class=\"docs-stack\">\n  <star-tabs variant=\"pill\" [selectOnFocus]=\"false\" ariaLabel=\"Report views\">\n    <star-tab value=\"daily\" label=\"Daily\">Daily totals.</star-tab>\n    <star-tab value=\"weekly\" label=\"Weekly\">\n      <ng-template starTabContent>Weekly totals, loaded on first use.</ng-template>\n    </star-tab>\n    <star-tab value=\"monthly\" label=\"Monthly\">Monthly totals.</star-tab>\n  </star-tabs>\n</div>",
+  "tabs/reorderable": "<div class=\"docs-stack\">\n  <star-tabs reorderable ariaLabel=\"Project boards\" (tabReorder)=\"moveBoard($event)\">\n    @for (board of boards(); track board) {\n      <star-tab [value]=\"board\" [label]=\"board\">Board {{ board }}.</star-tab>\n    }\n  </star-tabs>\n  <p class=\"docs-output\" role=\"status\">Order: {{ boards().join(', ') }}</p>\n</div>",
+  "tabs/scrollable": "<div class=\"docs-stack\">\n  <star-tabs scrollable ariaLabel=\"Monthly reports\">\n    @for (month of months; track month) {\n      <star-tab [value]=\"month\" [label]=\"month\">Report for {{ month }}.</star-tab>\n    }\n  </star-tabs>\n</div>",
+  "tabs/vertical": "<star-tabs orientation=\"vertical\" ariaLabel=\"Account settings\">\n  <star-tab value=\"profile\" label=\"Profile\" icon=\"ph-bold ph-user\"\n    >Profile settings.</star-tab\n  >\n  <star-tab value=\"billing\" label=\"Billing\" icon=\"ph-bold ph-receipt\">\n    Billing settings.\n  </star-tab>\n  <star-tab value=\"alerts\" label=\"Alerts\" icon=\"ph-bold ph-bell\">Alert settings.</star-tab>\n</star-tabs>",
   "tag/icon": "<star-tag severity=\"success\" icon=\"ph-bold ph-check\" rounded>Shipped</star-tag>\n<star-tag severity=\"warn\" icon=\"ph-bold ph-clock\" rounded>Waiting</star-tag>",
   "tag/severities": "<star-tag value=\"New\" />\n<star-tag severity=\"secondary\" value=\"Draft\" />\n<star-tag severity=\"success\" value=\"Paid\" />\n<star-tag severity=\"info\" value=\"In review\" />\n<star-tag severity=\"warn\" value=\"Due soon\" />\n<star-tag severity=\"danger\" value=\"Overdue\" />",
   "terminal/basic": "<div class=\"docs-stack docs-terminal\">\n  <star-terminal\n    #terminal\n    ariaLabel=\"Diagnostics\"\n    prompt=\"app $\"\n    welcome=\"Type help for the commands.\"\n    [handler]=\"runCommand\"\n    (commandRun)=\"last.set($event)\"\n  />\n  <div class=\"docs-row\">\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"terminal.clear()\">\n      Clear\n    </star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"terminal.run('status')\">\n      Run \"status\"\n    </star-button>\n  </div>\n  <p class=\"docs-output\" role=\"status\">Last command: {{ last() || 'none' }}</p>\n</div>",

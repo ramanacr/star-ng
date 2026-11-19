@@ -485,6 +485,7 @@ code {
     star-menubar,
     star-scroll-panel,
     star-paginator,
+    star-chart,
     star-scheduler,
     star-gantt
   ) {
@@ -579,6 +580,13 @@ code {
   font: var(--star-type-eyebrow);
   color: color-mix(in srgb, var(--star-danger) 80%, var(--star-text-strong));
   text-transform: uppercase;
+}
+.docs-table__inherited {
+  display: block;
+  margin-block-start: var(--star-space-1);
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--star-text-muted);
 }
 
 // ---------- Home ----------

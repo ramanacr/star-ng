@@ -16,6 +16,7 @@ import {
 } from '@angular/core';
 import { StarDialog, StarDialogPosition } from './dialog';
 import { StarDialogSize } from './dialog-base';
+import { STAR_DIALOG_DEFAULTS } from './dialog-defaults';
 
 /** Data passed to the component opened by `StarDialogService.open()`. */
 export const STAR_DIALOG_DATA = new InjectionToken<unknown>('STAR_DIALOG_DATA');
@@ -25,11 +26,11 @@ export interface StarDialogConfig<D = unknown> {
   readonly size?: StarDialogSize;
   readonly width?: string;
   readonly data?: D;
-  /** Default true. */
+  /** Default: `STAR_DIALOG_DEFAULTS`, else true. */
   readonly closable?: boolean;
-  /** Default true. */
+  /** Default: `STAR_DIALOG_DEFAULTS`, else true. */
   readonly closeOnEscape?: boolean;
-  /** Close on a backdrop click. Default false. */
+  /** Close on a backdrop click. Default: `STAR_DIALOG_DEFAULTS`, else false. */
   readonly dismissableMask?: boolean;
   readonly role?: 'dialog' | 'alertdialog';
   /** Accessible name when there is no header. */
@@ -89,11 +90,11 @@ export class StarDialogRef<R = unknown> {
     <star-dialog
       [(visible)]="visible"
       [header]="c.header ?? ''"
-      [size]="c.size ?? 'md'"
+      [size]="c.size ?? defaults.size ?? 'md'"
       [width]="c.width ?? null"
-      [closable]="c.closable ?? true"
-      [closeOnEscape]="c.closeOnEscape ?? true"
-      [dismissableMask]="c.dismissableMask ?? false"
+      [closable]="c.closable ?? defaults.closable ?? true"
+      [closeOnEscape]="c.closeOnEscape ?? defaults.closeOnEscape ?? true"
+      [dismissableMask]="c.dismissableMask ?? defaults.dismissableMask ?? false"
       [role]="c.role ?? 'dialog'"
       [ariaLabel]="c.ariaLabel ?? null"
       [position]="c.position ?? 'center'"
@@ -111,6 +112,8 @@ export class StarDialogRef<R = unknown> {
   `,
 })
 export class StarDialogContainer {
+  /** `STAR_DIALOG_DEFAULTS`: used where the `open()` config sets nothing. */
+  protected readonly defaults = inject(STAR_DIALOG_DEFAULTS);
   readonly component = input.required<Type<unknown>>();
   readonly config = input.required<StarDialogConfig>();
   readonly contentInjector = input.required<Injector>();

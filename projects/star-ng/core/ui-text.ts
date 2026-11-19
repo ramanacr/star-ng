@@ -31,6 +31,11 @@ export interface StarUiText {
   readonly removeItem: (label: string) => string;
   /** Label of the "+N" entry for items that are not shown (avatar group). */
   readonly moreCount: (count: number) => string;
+  // Clipboard (`starCopy`)
+  readonly copied: string;
+  readonly copyFailed: string;
+  /** Validation message of `starKeyFilter` with `validateOnly`. */
+  readonly keyFilterInvalid: string;
   // Tags field
   readonly tagsHint: string;
   readonly tagAdded: (label: string) => string;
@@ -251,6 +256,32 @@ export interface StarUiText {
   readonly editorClearFormatting: string;
   readonly editorLink: string;
   readonly editorLinkPrompt: string;
+  readonly tabClose: (label: string) => string;
+  readonly tabCloseHint: string;
+  readonly tabReorderHint: string;
+  readonly editorStrikethrough: string;
+  readonly editorCode: string;
+  readonly editorQuote: string;
+  readonly editorTextStyle: string;
+  readonly editorParagraph: string;
+  readonly editorHeadingLevel: (level: number) => string;
+  readonly editorAlignStart: string;
+  readonly editorAlignCenter: string;
+  readonly editorAlignEnd: string;
+  readonly editorUndo: string;
+  readonly editorRedo: string;
+  readonly editorLinkNewTab: string;
+  readonly editorLinkApply: string;
+  readonly editorLinkRemove: string;
+  readonly editorLinkCancel: string;
+  readonly editorLinkInvalid: string;
+  readonly editorCharacterCount: (count: number, max: number) => string;
+  readonly editorCharactersLeft: (count: number) => string;
+  readonly chartPoints: (title: string) => string;
+  readonly chartPointsHint: string;
+  readonly chartPointLabel: (series: string, label: string, value: string) => string;
+  readonly chartLegend: string;
+  readonly chartSecondaryAxis: (label: string) => string;
   // Navigation and layout
   readonly breadcrumb: string;
   readonly stepperLabel: string;
@@ -302,6 +333,30 @@ export interface StarUiText {
     max: string,
   ) => string;
   readonly meterValue: (value: string, total: number) => string;
+  // Sparkline
+  /** Label of a sparkline: the trend word and the formatted first, last, lowest and highest value. */
+  readonly sparklineSummary: (
+    first: string,
+    last: string,
+    min: string,
+    max: string,
+    trend: string,
+  ) => string;
+  readonly sparklineTrendUp: string;
+  readonly sparklineTrendDown: string;
+  readonly sparklineTrendFlat: string;
+  /** Label of a win-loss sparkline. */
+  readonly sparklineWinLoss: (wins: number, losses: number) => string;
+  /** Label of a sparkline without a value. */
+  readonly sparklineNoData: string;
+  // Barcode
+  /** Error of a barcode whose value cannot be encoded; `type` is the symbology, for example "EAN-13". */
+  readonly barcodeInvalid: (type: string) => string;
+  // QR code
+  /** Default label of a QR code; `value` is the encoded text, shortened when it is long. */
+  readonly qrCodeLabel: (value: string) => string;
+  /** Error of a QR code whose value does not fit in version 40. */
+  readonly qrCodeTooLong: string;
   // Signature pad
   /** Default name of the `star-signature-pad` group. */
   readonly signaturePad: string;
@@ -356,14 +411,12 @@ export interface StarUiText {
   readonly aiResponseReady: string;
   readonly aiResponseFailed: string;
   readonly copy: string;
-  readonly copied: string;
   readonly retry: string;
   readonly stop: string;
   /** Live announcement when several messages from others arrive at once. */
   readonly newMessages: (count: number) => string;
   /** Visible hint under the prompt field of `star-ai-prompt`. */
   readonly aiPromptShortcutHint: string;
-  readonly copyFailed: string;
   // Scheduler
   /** Default name of `star-scheduler`. */
   readonly scheduler: string;
@@ -443,6 +496,9 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   collapseItem: (label) => `Collapse ${label}`,
   removeItem: (label) => `Remove ${label}`,
   moreCount: (count) => `${count} more`,
+  copied: 'Copied',
+  copyFailed: 'Copy failed',
+  keyFilterInvalid: 'The value has a character that is not allowed.',
   tagsHint: 'Press Enter or comma to add. Backspace removes the last item.',
   tagAdded: (label) => `${label} added`,
   tagRemoved: (label) => `${label} removed`,
@@ -649,6 +705,33 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   editorLink: 'Link',
   editorLinkPrompt: 'Link address (https://…)',
 
+  tabClose: (label) => `Close ${label}`,
+  tabCloseHint: 'Press Delete to close the tab.',
+  tabReorderHint: 'Press Control+Shift and an arrow key to move the tab.',
+  editorStrikethrough: 'Strikethrough',
+  editorCode: 'Code',
+  editorQuote: 'Quote',
+  editorTextStyle: 'Text style',
+  editorParagraph: 'Paragraph',
+  editorHeadingLevel: (level) => `Heading ${level}`,
+  editorAlignStart: 'Align to the start',
+  editorAlignCenter: 'Center',
+  editorAlignEnd: 'Align to the end',
+  editorUndo: 'Undo',
+  editorRedo: 'Redo',
+  editorLinkNewTab: 'Open in a new tab',
+  editorLinkApply: 'Apply',
+  editorLinkRemove: 'Remove link',
+  editorLinkCancel: 'Cancel',
+  editorLinkInvalid:
+    'Enter a web address (https://…), an e-mail address (mailto:…) or a phone number (tel:…).',
+  editorCharacterCount: (count, max) => `${count} of ${max} characters`,
+  editorCharactersLeft: (count) => (count === 1 ? '1 character left' : `${count} characters left`),
+  chartPoints: (title) => `${title}: data points`,
+  chartPointsHint: 'Arrow keys move between the points and the series. Enter selects a point.',
+  chartPointLabel: (series, label, value) => `${series}, ${label}: ${value}`,
+  chartLegend: 'Legend: show or hide a series',
+  chartSecondaryAxis: (label) => `${label} (right axis)`,
   breadcrumb: 'Breadcrumb',
   stepperLabel: 'Progress',
   stepCompleted: '(completed)',
@@ -694,6 +777,17 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   chartDescription: (kind, series, items, min, max) =>
     `${kind} with ${series} series and ${items} ${items === 1 ? 'item' : 'items'}, values from ${min} to ${max}. The same data is in the table.`,
   meterValue: (value, total) => `${value} of ${total}`,
+  sparklineSummary: (first, last, min, max, trend) =>
+    `${trend}: first ${first}, last ${last}, lowest ${min}, highest ${max}`,
+  sparklineTrendUp: 'Trend up',
+  sparklineTrendDown: 'Trend down',
+  sparklineTrendFlat: 'No change',
+  sparklineWinLoss: (wins, losses) =>
+    `${wins} ${wins === 1 ? 'win' : 'wins'}, ${losses} ${losses === 1 ? 'loss' : 'losses'}`,
+  sparklineNoData: 'No data',
+  barcodeInvalid: (type) => `The value cannot be encoded as ${type}.`,
+  qrCodeLabel: (value) => `QR code: ${value}`,
+  qrCodeTooLong: 'The value is too long for a QR code.',
   signaturePad: 'Signature',
   signatureArea: 'Signature drawing area, empty',
   signatureAreaSigned: 'Signature drawing area, signed',
@@ -727,12 +821,10 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   aiResponseReady: 'Response ready',
   aiResponseFailed: 'The response failed.',
   copy: 'Copy',
-  copied: 'Copied',
   retry: 'Retry',
   stop: 'Stop',
   newMessages: (count) => `${count} new messages`,
   aiPromptShortcutHint: 'Press Control+Enter to send.',
-  copyFailed: 'Copy failed',
   scheduler: 'Scheduler',
   schedulerView: 'View',
   viewDay: 'Day',
@@ -829,11 +921,22 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   fileTypeNotAllowed: ['name'],
   fileTooLarge: ['name', 'max'],
   fileLimitReached: ['limit'],
+  tabClose: ['label'],
+  editorHeadingLevel: ['level'],
+  editorCharacterCount: ['count', 'max'],
+  editorCharactersLeft: ['count'],
+  chartPoints: ['title'],
+  chartPointLabel: ['series', 'label', 'value'],
+  chartSecondaryAxis: ['label'],
   editorFormatting: ['label'],
   showImage: ['alt'],
   previewImage: ['alt'],
   meterValue: ['value', 'total'],
   chartDescription: ['kind', 'series', 'items', 'min', 'max'],
+  sparklineSummary: ['first', 'last', 'min', 'max', 'trend'],
+  sparklineWinLoss: ['wins', 'losses'],
+  barcodeInvalid: ['type'],
+  qrCodeLabel: ['value'],
   messageFrom: ['name', 'time'],
   newMessage: ['name', 'text'],
   isTyping: ['name'],

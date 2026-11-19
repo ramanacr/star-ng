@@ -1,4 +1,5 @@
 // Chat (StarChat), AI prompt (StarAiPrompt) and the Markdown subset they render (StarMarkdownLite).
+@use '../shared' as *;
 
 // ---- Markdown subset ----
 .star-md {
@@ -318,7 +319,7 @@
   font: var(--star-type-body-sm);
 }
 
-@media (prefers-reduced-motion: reduce) {
+@include star-reduced-motion {
   .star-chat__dots span {
     animation: none;
     opacity: 0.6;

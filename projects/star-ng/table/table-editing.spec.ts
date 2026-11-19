@@ -500,6 +500,19 @@ describe('StarTable batch edit', () => {
     expect(messages()).toContain('Changes discarded.');
   });
 
+  it('announces each undo, also two identical ones within one second', async () => {
+    const { host, stable, el, messages } = await setup({ batch: true });
+    host.table().deleteRow(ORDERS[0]);
+    host.table().deleteRow(ORDERS[1]);
+    await stable();
+    const table = el.querySelector('star-table')!;
+    key(table, 'z', { ctrlKey: true });
+    await stable();
+    key(table, 'z', { ctrlKey: true });
+    await stable();
+    expect(messages().filter((message) => message === 'Change undone.').length).toBe(2);
+  });
+
   it('keeps the text undo of an editor', async () => {
     const { host, cell, stable, el } = await setup({ batch: true });
     host.table().deleteRow(ORDERS[0]);

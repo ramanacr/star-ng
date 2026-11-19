@@ -23,6 +23,7 @@ import {
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
 import {
+  injectStarControlDefaults,
   STAR_SLOT_HOST,
   STAR_UI_TEXT,
   StarDirectionService,
@@ -52,6 +53,7 @@ import {
   starTimeOf,
   starWithTime as withTime,
 } from './date-format';
+import { STAR_DATE_PICKER_DEFAULTS } from './date-picker-defaults';
 import { STAR_DATE_HOST, STAR_DATE_TEMPLATE } from './date-picker.template';
 import { StarDateSheet } from './date-sheet';
 import type { StarDateContext } from './date-slots';
@@ -90,6 +92,11 @@ export abstract class StarDateInputBase<TValue> {
   private readonly directionSync = inject(StarDirectionService);
   protected readonly text = inject(STAR_UI_TEXT);
   private readonly ids = inject(_IdGenerator);
+  /** Defaults from `provideStarDatePickerDefaults`, then `provideStarNg`. */
+  protected readonly defaults = injectStarControlDefaults(
+    ['sm', 'md'],
+    inject(STAR_DATE_PICKER_DEFAULTS),
+  );
   /**
    * The parent `star-field` when it labels this picker: the label points at the input with `for`,
    * the hint or error describes it.
@@ -104,9 +111,9 @@ export abstract class StarDateInputBase<TValue> {
   readonly disabledDates = input<readonly Date[]>([]);
   readonly disabledDays = input<readonly number[]>([]);
   readonly dateDisabled = input<((date: Date) => boolean) | null>(null);
-  readonly firstDayOfWeek = input<number | null>(null);
-  /** BCP 47 locale for names and formats. Default: the browser locale. */
-  readonly locale = input<string | undefined>(undefined);
+  readonly firstDayOfWeek = input<number | null>(this.defaults.firstDayOfWeek ?? null);
+  /** BCP 47 locale for names and formats. Default: `locale` of `provideStarNg`, else the browser locale. */
+  readonly locale = input<string | undefined>(this.defaults.locale ?? undefined);
   /**
    * `Intl.DateTimeFormat` options for the input text (default numeric day / month / year). The
    * shared default of `displayFormat` and `inputFormat`.
@@ -156,7 +163,7 @@ export abstract class StarDateInputBase<TValue> {
   /** Months shown side by side in the popup. */
   readonly numberOfMonths = input(1);
   /** Shows the ISO 8601 week number at the start of each week. */
-  readonly showWeek = input(false, { transform: booleanAttribute });
+  readonly showWeek = input(this.defaults.showWeek ?? false, { transform: booleanAttribute });
   /** Shows the days of the month before and after (PrimeNG `showOtherMonths`). */
   readonly showOtherMonths = input(true, { transform: booleanAttribute });
   /** The shown days of the month before and after can be chosen (PrimeNG `selectOtherMonths`). */
@@ -170,7 +177,7 @@ export abstract class StarDateInputBase<TValue> {
    * Clock of the typed time with `showTime`: `'24'` (14:30) or `'12'` (2:30 PM). Both forms
    * are accepted when the user types.
    */
-  readonly hourFormat = input<'24' | '12'>('24');
+  readonly hourFormat = input<'24' | '12'>(this.defaults.hourFormat ?? '24');
   /**
    * Adds seconds to the time with `showTime`: the text is `hh:mm:ss` and the popup has a second
    * column (PrimeNG `showSeconds`).
@@ -188,11 +195,14 @@ export abstract class StarDateInputBase<TValue> {
   readonly stepHour = input(1);
   /** Second step of the time columns with `showSeconds` (PrimeNG `stepSecond`). */
   readonly stepSecond = input(1);
-  readonly showButtonBar = input(false, { transform: booleanAttribute });
+  readonly showButtonBar = input(this.defaults.showButtonBar ?? false, {
+    transform: booleanAttribute,
+  });
   readonly showClear = input(false, { transform: booleanAttribute });
   /** Disables typing; the date can only be picked. */
   readonly readonlyInput = input(false, { transform: booleanAttribute });
-  readonly size = input<'sm' | 'md'>('md');
+  /** Size. Default: `size` of `provideStarNg` (`small` or `medium`), else `md`. */
+  readonly size = input<'sm' | 'md'>(this.defaults.size ?? 'md');
   readonly ariaLabel = input<string | null>(null);
   readonly inputId = input(this.ids.getId('star-date-'));
 

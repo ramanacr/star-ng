@@ -1,4 +1,5 @@
 // Tree and the tree panel of the tree select.
+@use '../shared' as *;
 .star-tree {
   display: block;
   overflow: hidden;
@@ -138,7 +139,7 @@
   color: var(--star-text-muted);
   font: var(--star-type-body);
 }
-@media (prefers-reduced-motion: reduce) {
+@include star-reduced-motion {
   .star-tree .star-spin {
     animation: none;
   }
