@@ -75,6 +75,12 @@ export interface StarSpreadsheetCsvOptions {
   readonly formulas?: boolean;
   /** Field delimiter (default `,`). */
   readonly delimiter?: string;
+  /**
+   * Prefix an apostrophe to text that starts with `=`, `+`, `-` or `@` (default true), so a
+   * spreadsheet application that opens the file does not run it as a formula (CSV injection).
+   * `fromCsv` reads the apostrophe back as text.
+   */
+  readonly escapeFormulas?: boolean;
 }
 
 /** Height of the column header row and width of the row header column, in pixels. */
@@ -705,7 +711,9 @@ export class StarSpreadsheet {
     const rows: string[][] = [];
     for (let r = 0; r <= used.bottom; r++) {
       const row: string[] = [];
-      for (let c = 0; c <= used.right; c++) row.push(this.cellExportText(r, c, !!options.formulas));
+      for (let c = 0; c <= used.right; c++) {
+        row.push(this.cellExportText(r, c, !!options.formulas, options.escapeFormulas ?? true));
+      }
       rows.push(row);
     }
     return starFormatDelimited(rows, options.delimiter ?? ',');
@@ -1477,15 +1485,20 @@ export class StarSpreadsheet {
 
   // Clipboard --------------------------------------------------------------------------------
 
-  private cellExportText(row: number, col: number, formulas: boolean): string {
+  private cellExportText(row: number, col: number, formulas: boolean, escape = false): string {
     const address = starCellAddress(row, col);
     const cell = this.currentCells()[address];
-    if (formulas) return starCellText(cell);
+    const guard = (text: string): string => (escape && /^[=+\-@]/.test(text) ? `'${text}` : text);
+    if (formulas) {
+      if (cell?.formula) return cell.formula;
+      const text = starCellText(cell);
+      return typeof cell?.value === 'string' && !text.startsWith("'") ? guard(text) : text;
+    }
     const value = this.value(address);
     if (value === null) return '';
     if (typeof value === 'number') return starNumberText(value);
     if (typeof value === 'boolean') return value ? 'TRUE' : 'FALSE';
-    return String(value);
+    return guard(String(value));
   }
 
   private rememberCopy(): Copied {

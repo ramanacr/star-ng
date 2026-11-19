@@ -336,6 +336,30 @@ describe('StarSpreadsheet', () => {
     expect(JSON.parse(host.sheet().toJson()).sheets[0].name).toBe('Sheet1');
   });
 
+  it('escapes text that starts like a formula in CSV (formula injection)', async () => {
+    const { fixture, host } = await setup();
+    host.cells.set({
+      A1: { value: '=HYPERLINK("x")' },
+      B1: { value: '@cmd' },
+      C1: { value: -5 },
+      D1: { formula: '=C1*2' },
+      E1: { value: '+1 note' },
+    });
+    await fixture.whenStable();
+    expect(host.sheet().toCsv()).toBe(`"'=HYPERLINK(""x"")",'@cmd,-5,-10,'+1 note`);
+    expect(host.sheet().toCsv({ formulas: true })).toBe(
+      `"'=HYPERLINK(""x"")",'@cmd,-5,=C1*2,'+1 note`,
+    );
+    expect(host.sheet().toCsv({ escapeFormulas: false })).toBe(
+      `"=HYPERLINK(""x"")",@cmd,-5,-10,+1 note`,
+    );
+    // The apostrophe reads back as text.
+    host.sheet().fromCsv(host.sheet().toCsv({ formulas: true }));
+    await fixture.whenStable();
+    expect(host.cells()['A1']).toEqual({ value: '=HYPERLINK("x")' });
+    expect(host.cells()['D1']).toEqual({ formula: '=C1*2' });
+  });
+
   it('does not edit when read-only', async () => {
     const { fixture, grid, press, el, host } = await setup();
     host.readonly.set(true);

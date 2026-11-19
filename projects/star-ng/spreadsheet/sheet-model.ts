@@ -80,7 +80,10 @@ export function starCellText(cell: StarSpreadsheetCell | null | undefined): stri
   if (v === undefined || v === null) return '';
   if (typeof v === 'number') return starNumberText(v);
   if (typeof v === 'boolean') return v ? 'TRUE' : 'FALSE';
-  return v;
+  if (v === '') return '';
+  // Text that would read back as a number, a boolean or a formula keeps a leading apostrophe.
+  const parsed = starParseCellText(v);
+  return v.startsWith("'") || parsed?.value !== v ? `'${v}` : v;
 }
 
 /**

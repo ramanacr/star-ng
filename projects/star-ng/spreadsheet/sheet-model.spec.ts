@@ -31,6 +31,18 @@ describe('cell text', () => {
     expect(starCellText({ value: false })).toBe('FALSE');
     expect(starCellText(undefined)).toBe('');
   });
+
+  it('keeps an apostrophe for text that would read as a number, a boolean or a formula', () => {
+    expect(starCellText({ value: '42' })).toBe("'42");
+    expect(starCellText({ value: 'TRUE' })).toBe("'TRUE");
+    expect(starCellText({ value: '=A1' })).toBe("'=A1");
+    expect(starCellText({ value: "'x" })).toBe("''x");
+    expect(starCellText({ value: 'Rent' })).toBe('Rent');
+    expect(starCellText({ value: '' })).toBe('');
+    for (const text of ['42', 'TRUE', '=A1', "'x", 'Rent']) {
+      expect(starParseCellText(starCellText({ value: text }))).toEqual({ value: text });
+    }
+  });
 });
 
 describe('starFormatCellValue', () => {
