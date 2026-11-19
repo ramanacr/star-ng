@@ -11,6 +11,7 @@ const root = () => document.documentElement;
 const realMatchMedia = document.defaultView!.matchMedia;
 
 beforeEach(() => {
+  root().removeAttribute('data-star-motion');
   const view = document.defaultView!;
   view.matchMedia = ((query: string) =>
     query.includes('reduce')
