@@ -143,7 +143,7 @@ const BACKGROUNDS: readonly StarCellBackground[] = [
  *   double click edit it, Enter and Tab commit and move, Escape cancels, Delete clears, Control+C,
  *   X and V copy, cut and paste tab-separated text (Excel and Google Sheets), Control+Z and
  *   Control+Y undo and redo, Control+D and Control+R fill down and right, Control+B and Control+I
- *   format.
+ *   format, Alt+Shift and the arrows resize the column or the row of the active cell (8 px steps).
  * - `role="grid"` with `aria-rowcount`, `aria-colcount`, `aria-rowindex` and `aria-colindex`
  *   across the window; the active cell is the `aria-activedescendant` of the grid and is announced
  *   with its address, value and formula ("B3, 42, formula SUM of A1 to A5").
@@ -1028,6 +1028,10 @@ export class StarSpreadsheet {
       }
       return;
     }
+    if (event.altKey && shift && key.startsWith('Arrow')) {
+      if (editable) this.resizeByKey(key);
+      return done();
+    }
     if (event.altKey) return;
     const page = Math.max(1, this.visibleRows().length - 9);
     switch (key) {
@@ -1211,6 +1215,22 @@ export class StarSpreadsheet {
       this.columnWidths.update((w) => ({ ...w, [starColumnName(r.index)]: size }));
     } else {
       this.rowHeights.update((h) => ({ ...h, [String(r.index + 1)]: size }));
+    }
+  }
+
+  /** Alt+Shift+arrow: the column (left, right) or the row (up, down) of the active cell, by 8 px. */
+  private resizeByKey(key: string): void {
+    const { row, col } = this.anchor();
+    if (key === 'ArrowLeft' || key === 'ArrowRight') {
+      const offsets = this.colOffsets();
+      const size = Math.max(24, offsets[col + 1] - offsets[col] + (key === 'ArrowRight' ? 8 : -8));
+      const name = starColumnName(col);
+      this.columnWidths.update((w) => ({ ...w, [name]: size }));
+      this.announcer.announce(this.text.spreadsheetColumnWidth(name, size), 'polite');
+    } else {
+      const size = Math.max(16, this.rowHeight(row) + (key === 'ArrowDown' ? 8 : -8));
+      this.rowHeights.update((h) => ({ ...h, [String(row + 1)]: size }));
+      this.announcer.announce(this.text.spreadsheetRowHeight(row + 1, size), 'polite');
     }
   }
 

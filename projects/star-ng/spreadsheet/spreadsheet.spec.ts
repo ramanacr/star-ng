@@ -15,6 +15,8 @@ import {
     [rows]="rows()"
     [columns]="8"
     [readonly]="readonly()"
+    [(columnWidths)]="widths"
+    [(rowHeights)]="heights"
     locale="en-US"
     (selectionChange)="selection = $event"
   />`,
@@ -30,6 +32,8 @@ class Host {
   });
   readonly rows = signal(20);
   readonly readonly = signal(false);
+  readonly widths = signal<Readonly<Record<string, number>>>({});
+  readonly heights = signal<Readonly<Record<string, number>>>({});
   selection: StarSpreadsheetSelection | null = null;
 }
 
@@ -358,6 +362,25 @@ describe('StarSpreadsheet', () => {
     await fixture.whenStable();
     expect(host.cells()['A1']).toEqual({ value: '=HYPERLINK("x")' });
     expect(host.cells()['D1']).toEqual({ formula: '=C1*2' });
+  });
+
+  it('resizes the column and the row of the active cell with Alt+Shift+arrows', async () => {
+    const { grid, press, host } = await setup();
+    grid.focus();
+    await press('ArrowRight');
+    await press('ArrowRight', { altKey: true, shiftKey: true });
+    expect(host.widths()).toEqual({ B: 104 });
+    expect(announce).toHaveBeenLastCalledWith('Column B width 104 pixels', 'polite');
+    await press('ArrowLeft', { altKey: true, shiftKey: true });
+    await press('ArrowLeft', { altKey: true, shiftKey: true });
+    expect(host.widths()).toEqual({ B: 88 });
+    await press('ArrowDown', { altKey: true, shiftKey: true });
+    expect(host.heights()).toEqual({ '1': 36 });
+    expect(announce).toHaveBeenLastCalledWith('Row 1 height 36 pixels', 'polite');
+    for (let i = 0; i < 5; i++) await press('ArrowUp', { altKey: true, shiftKey: true });
+    expect(host.heights()).toEqual({ '1': 16 });
+    // The selection did not move.
+    expect(host.selection?.address).toBe('B1');
   });
 
   it('does not edit when read-only', async () => {

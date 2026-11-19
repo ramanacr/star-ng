@@ -402,7 +402,7 @@ export const STAR_UI_TEXT_ES: StarUiText = {
   aiPromptShortcutHint: 'Pulse Control+Intro para enviar.',
   spreadsheet: 'Hoja de cálculo',
   spreadsheetHint:
-    'Escriba para reemplazar la celda. F2 o Intro la editan. Mayús y las flechas seleccionan un rango.',
+    'Escriba para reemplazar la celda. F2 o Intro la editan. Mayús y las flechas seleccionan un rango. Alt, Mayús y las flechas cambian el ancho de la columna o el alto de la fila.',
   spreadsheetSelectAll: 'Seleccionar todo',
   spreadsheetFormulaBar: 'Barra de fórmulas',
   spreadsheetFormatting: 'Formato',
@@ -417,6 +417,8 @@ export const STAR_UI_TEXT_ES: StarUiText = {
   spreadsheetCleared: (range) => `${range} borrado`,
   spreadsheetFilled: (range) => `${range} rellenado`,
   spreadsheetPasted: (range) => `Pegado en ${range}`,
+  spreadsheetColumnWidth: (column, size) => `Columna ${column}, ancho ${size} píxeles`,
+  spreadsheetRowHeight: (row, size) => `Fila ${row}, alto ${size} píxeles`,
   spreadsheetNumberFormat: 'Formato de número',
   spreadsheetFormatGeneral: 'General',
   spreadsheetFormatNumber: 'Número',

@@ -264,6 +264,11 @@ starEvaluate('=ROUND(2.5)'); // 3`;
     { name: 'Control + D, Control + R', description: 'Fill down or right.' },
     { name: 'Control + B, Control + I', description: 'Bold and italic.' },
     { name: 'Control + A', description: 'Select all cells.' },
+    {
+      name: 'Alt + Shift + arrow keys',
+      description:
+        'Make the column of the active cell wider or narrower (right, left) or its row taller or shorter (down, up), by 8 pixels. The new size is announced. The pointer can also drag the edge of a header.',
+    },
     { name: 'Shift + Space, Control + Space', description: 'Select the row or the column.' },
   ];
 }

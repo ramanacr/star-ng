@@ -402,7 +402,7 @@ export const STAR_UI_TEXT_DE: StarUiText = {
   aiPromptShortcutHint: 'Mit Strg+Eingabe senden.',
   spreadsheet: 'Tabelle',
   spreadsheetHint:
-    'Tippen ersetzt die Zelle. F2 oder Eingabe bearbeitet sie. Umschalt und die Pfeiltasten wählen einen Bereich aus.',
+    'Tippen ersetzt die Zelle. F2 oder Eingabe bearbeitet sie. Umschalt und die Pfeiltasten wählen einen Bereich aus. Alt, Umschalt und die Pfeiltasten ändern die Spaltenbreite oder Zeilenhöhe.',
   spreadsheetSelectAll: 'Alles auswählen',
   spreadsheetFormulaBar: 'Bearbeitungsleiste',
   spreadsheetFormatting: 'Formatierung',
@@ -417,6 +417,8 @@ export const STAR_UI_TEXT_DE: StarUiText = {
   spreadsheetCleared: (range) => `${range} geleert`,
   spreadsheetFilled: (range) => `${range} ausgefüllt`,
   spreadsheetPasted: (range) => `In ${range} eingefügt`,
+  spreadsheetColumnWidth: (column, size) => `Spalte ${column} Breite ${size} Pixel`,
+  spreadsheetRowHeight: (row, size) => `Zeile ${row} Höhe ${size} Pixel`,
   spreadsheetNumberFormat: 'Zahlenformat',
   spreadsheetFormatGeneral: 'Standard',
   spreadsheetFormatNumber: 'Zahl',

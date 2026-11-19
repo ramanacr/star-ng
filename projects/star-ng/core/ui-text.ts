@@ -490,6 +490,10 @@ export interface StarUiText {
   readonly spreadsheetCleared: (range: string) => string;
   readonly spreadsheetFilled: (range: string) => string;
   readonly spreadsheetPasted: (range: string) => string;
+  /** Announcement of a keyboard column resize. */
+  readonly spreadsheetColumnWidth: (column: string, size: number) => string;
+  /** Announcement of a keyboard row resize. */
+  readonly spreadsheetRowHeight: (row: number, size: number) => string;
   readonly spreadsheetNumberFormat: string;
   readonly spreadsheetFormatGeneral: string;
   readonly spreadsheetFormatNumber: string;
@@ -920,7 +924,7 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   aiPromptShortcutHint: 'Press Control+Enter to send.',
   spreadsheet: 'Spreadsheet',
   spreadsheetHint:
-    'Type to replace the cell. F2 or Enter edits it. Shift and the arrow keys select a range.',
+    'Type to replace the cell. F2 or Enter edits it. Shift and the arrow keys select a range. Alt, Shift and the arrow keys resize the column or the row.',
   spreadsheetSelectAll: 'Select all',
   spreadsheetFormulaBar: 'Formula bar',
   spreadsheetFormatting: 'Formatting',
@@ -935,6 +939,8 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   spreadsheetCleared: (range) => `${range} cleared`,
   spreadsheetFilled: (range) => `Filled ${range}`,
   spreadsheetPasted: (range) => `Pasted into ${range}`,
+  spreadsheetColumnWidth: (column, size) => `Column ${column} width ${size} pixels`,
+  spreadsheetRowHeight: (row, size) => `Row ${row} height ${size} pixels`,
   spreadsheetNumberFormat: 'Number format',
   spreadsheetFormatGeneral: 'General',
   spreadsheetFormatNumber: 'Number',
@@ -1066,6 +1072,8 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   spreadsheetCleared: ['range'],
   spreadsheetFilled: ['range'],
   spreadsheetPasted: ['range'],
+  spreadsheetColumnWidth: ['column', 'size'],
+  spreadsheetRowHeight: ['row', 'size'],
   documentPageOf: ['page', 'total'],
   documentPageCount: ['total'],
   documentSearchResults: ['count', 'pages'],
