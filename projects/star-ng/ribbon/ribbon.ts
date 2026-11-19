@@ -169,6 +169,11 @@ type KeyTipLevel = 'tabs' | 'items' | 'group';
 
 const SPLIT_MENU = '::menu';
 
+/** A text escaped for a quoted CSS attribute value. */
+function cssString(value: string): string {
+  return value.replace(/["\\]/g, '\\$&');
+}
+
 /**
  * Ribbon (Kendo `Ribbon`, Syncfusion `ejs-ribbon`; DevExtreme has no ribbon): tabs of command
  * groups, as in office applications.
@@ -200,7 +205,7 @@ const SPLIT_MENU = '::menu';
     '(keyup)': 'onHostKeyup($event)',
     '(focusout)': 'onFocusOut($event)',
     '(focusin)': 'onFocusIn($event)',
-    '(pointerdown)': 'hideKeyTips()',
+    '(pointerdown)': 'onHostPointerDown()',
   },
   template: `
     <div
@@ -645,20 +650,29 @@ export class StarRibbon {
       const onPointer = (event: Event) => {
         const target = event.target as Element | null;
         if (!target || this.host.nativeElement.contains(target) || this.inOverlay(target)) return;
+        this.altAlone = false;
+        this.hideKeyTips();
         this.openGroup.set(null);
         this.peek.set(false);
       };
+      // Alt released in another window must not count as a lone Alt here.
+      const onBlur = () => {
+        this.altAlone = false;
+      };
       this.doc.addEventListener('pointerdown', onPointer, true);
+      view?.addEventListener('blur', onBlur);
       destroyRef.onDestroy(() => {
         observer?.disconnect();
         this.doc.removeEventListener('pointerdown', onPointer, true);
+        view?.removeEventListener('blur', onBlur);
       });
     });
     // The page-wide KeyTip keys.
     effect((onCleanup) => {
       if (!this.globalKeyTips()) return;
-      const down = (event: KeyboardEvent) => this.onKeydown(event);
-      const up = (event: KeyboardEvent) => this.onKeyup(event);
+      // Behind a modal dialog the page-wide keys belong to the dialog.
+      const down = (event: KeyboardEvent) => this.modalOutside() || this.onKeydown(event);
+      const up = (event: KeyboardEvent) => this.modalOutside() || this.onKeyup(event);
       this.doc.addEventListener('keydown', down);
       this.doc.addEventListener('keyup', up);
       onCleanup(() => {
@@ -883,6 +897,28 @@ export class StarRibbon {
     void this.announcer.announce(this.text.ribbonKeyTipsShown);
   }
 
+  protected onHostPointerDown(): void {
+    this.altAlone = false;
+    this.hideKeyTips();
+  }
+
+  /**
+   * True when a modal dialog outside the ribbon is open: a native modal `<dialog>` (`:modal`) or
+   * an element with `aria-modal="true"`.
+   */
+  private modalOutside(): boolean {
+    const host = this.host.nativeElement;
+    const outside = (element: Element) => !element.contains(host);
+    let modals: Element[] = [];
+    try {
+      modals = [...this.doc.querySelectorAll(':modal')];
+    } catch {
+      // An engine without `:modal`: the aria-modal check below still works.
+    }
+    modals.push(...this.doc.querySelectorAll('[aria-modal="true"]'));
+    return modals.some(outside);
+  }
+
   /** Hides the KeyTips. */
   hideKeyTips(): void {
     this.typed = '';
@@ -902,6 +938,8 @@ export class StarRibbon {
       this.altAlone = true;
       return;
     }
+    // Alt with a letter is an application or browser shortcut, not a KeyTip.
+    if (event.altKey) return;
     if (key === 'F10') {
       event.preventDefault();
       this.hideKeyTips();
@@ -957,10 +995,12 @@ export class StarRibbon {
       this.openGroup.set(g);
       this.keyTipGroup.set(g);
       this.keyTipLevel.set('group');
-      this.focus(`[data-keytip="${target}"]`);
+      this.focus(`[data-keytip="${cssString(target)}"]`);
       return;
     }
-    const element = this.host.nativeElement.querySelector<HTMLElement>(`[data-keytip="${target}"]`);
+    const element = this.host.nativeElement.querySelector<HTMLElement>(
+      `[data-keytip="${cssString(target)}"]`,
+    );
     this.hideKeyTips();
     element?.focus();
     element?.click();
@@ -976,7 +1016,11 @@ export class StarRibbon {
       }
       return;
     }
-    if (!next) return;
+    if (!next) {
+      // The focus left the page (another window, a closed tab).
+      this.hideKeyTips();
+      return;
+    }
     this.hideKeyTips();
     this.openGroup.set(null);
     this.peek.set(false);

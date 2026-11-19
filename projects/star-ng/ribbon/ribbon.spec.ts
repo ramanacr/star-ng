@@ -20,6 +20,9 @@ function keyUp(target: Element, key: string): void {
   target.dispatchEvent(new KeyboardEvent('keyup', { key, bubbles: true, cancelable: true }));
 }
 
+/** An item id with a quote and a backslash, which a CSS attribute selector must escape. */
+const ODD_ID = 'say "hi" \\ now';
+
 const CLIPBOARD: StarRibbonItem[] = [
   {
     id: 'paste',
@@ -277,6 +280,81 @@ describe('StarRibbon', () => {
     key(document.activeElement!, 'Escape');
     await stable();
     expect(tips()).toEqual([]);
+  });
+
+  it('ignores the page-wide keys while a modal dialog is open outside the ribbon', async () => {
+    const { host, tips, stable } = await setup();
+    host.global.set(true);
+    await stable();
+    const dialog = document.createElement('dialog');
+    dialog.setAttribute('open', '');
+    dialog.setAttribute('aria-modal', 'true');
+    document.body.appendChild(dialog);
+    try {
+      key(dialog, 'F10');
+      await stable();
+      expect(tips()).toEqual([]);
+    } finally {
+      dialog.remove();
+    }
+  });
+
+  it('hides the KeyTips on a pointer down outside and when the focus leaves the page', async () => {
+    const { host, tips, stable, tabs } = await setup();
+    host.global.set(true);
+    await stable();
+    key(document.body, 'F10');
+    await stable();
+    expect(tips().length).toBe(3);
+    document.body.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true }));
+    await stable();
+    expect(tips()).toEqual([]);
+    tabs()[0].focus();
+    key(tabs()[0], 'F10');
+    await stable();
+    expect(tips().length).toBe(3);
+    tabs()[0].dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget: null }));
+    await stable();
+    expect(tips()).toEqual([]);
+  });
+
+  it('forgets a lone Alt after a window blur or a pointer down', async () => {
+    const { ribbonEl, tips, stable, tabs } = await setup();
+    tabs()[0].focus();
+    key(ribbonEl, 'Alt', { altKey: true });
+    window.dispatchEvent(new Event('blur'));
+    keyUp(ribbonEl, 'Alt');
+    await stable();
+    expect(tips()).toEqual([]);
+    key(ribbonEl, 'Alt', { altKey: true });
+    ribbonEl.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true }));
+    keyUp(ribbonEl, 'Alt');
+    await stable();
+    expect(tips()).toEqual([]);
+  });
+
+  it('skips letters typed with Alt while the KeyTips show', async () => {
+    const { host, tips, tabs, stable } = await setup();
+    tabs()[0].focus();
+    key(tabs()[0], 'F10');
+    await stable();
+    key(document.activeElement!, 'i', { altKey: true });
+    await stable();
+    expect(host.tab()).toBeNull();
+    expect(tips()).toEqual(['F', 'H', 'I']);
+  });
+
+  it('activates items whose ids need escaping in a selector', async () => {
+    const { host, tabs, stable } = await setup();
+    host.font.update((items) => [...items, { id: ODD_ID, label: 'Quote', keyTip: 'Q' }]);
+    await stable();
+    tabs()[0].focus();
+    key(tabs()[0], 'F10');
+    key(tabs()[0], 'h');
+    await stable();
+    key(document.activeElement!, 'q');
+    await stable();
+    expect(host.commands).toEqual([{ id: ODD_ID }]);
   });
 
   it('collapses to the tab headers and shows the panel on demand', async () => {
