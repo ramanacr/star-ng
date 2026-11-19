@@ -510,6 +510,8 @@ export class StarDiagram {
   } | null>(null);
   private readonly history = new StarDiagramHistory<StarDiagramNode, StarDiagramEdge>();
   private readonly historyVersion = signal(0);
+  /** Removes the document listeners of the drag in progress. */
+  private endDrag: (() => void) | null = null;
   private edgeCount = 0;
 
   /** True when `undo()` has a change to revert. */
@@ -633,6 +635,7 @@ export class StarDiagram {
   });
 
   constructor() {
+    inject(DestroyRef).onDestroy(() => this.endDrag?.());
     // Another document: the recorded patches belong to the old one.
     let lastKey: unknown = undefined;
     let first = true;
@@ -923,11 +926,14 @@ export class StarDiagram {
     const point = this.toDiagram(event);
     if (event.button === 1 || (event.button === 0 && this.space())) {
       event.preventDefault();
-      this.start({
-        kind: 'pan',
-        client: { x: event.clientX, y: event.clientY },
-        view: this.view(),
-      });
+      this.start(
+        {
+          kind: 'pan',
+          client: { x: event.clientX, y: event.clientY },
+          view: this.view(),
+        },
+        event,
+      );
       return;
     }
     if (event.button !== 0) return;
@@ -938,7 +944,10 @@ export class StarDiagram {
     const node = this.nodes().find((n) => n.id === nodeId);
     if (handle && node && !this.readonly()) {
       event.preventDefault();
-      this.start({ kind: 'resize', id: node.id, handle, start: point, rect: node, current: node });
+      this.start(
+        { kind: 'resize', id: node.id, handle, start: point, rect: node, current: node },
+        event,
+      );
       return;
     }
     const portEl = target.closest('[data-port]');
@@ -949,7 +958,7 @@ export class StarDiagram {
         fromNode && starPortsOf(fromNode).find((p) => p.id === portEl.getAttribute('data-port'));
       if (port) {
         event.preventDefault();
-        this.start({ kind: 'connect', from, port, current: point, target: null });
+        this.start({ kind: 'connect', from, port, current: point, target: null }, event);
         return;
       }
     }
@@ -965,7 +974,7 @@ export class StarDiagram {
         this.selection.set([id]);
       }
       if (!this.readonly() && this.isSelected(id)) {
-        this.start({ kind: 'move', start: point, ids: this.selection(), dx: 0, dy: 0 });
+        this.start({ kind: 'move', start: point, ids: this.selection(), dx: 0, dy: 0 }, event);
       }
       return;
     }
@@ -976,24 +985,40 @@ export class StarDiagram {
       return;
     }
     this.selectedEdge.set(null);
-    this.start({
-      kind: 'marquee',
-      start: point,
-      current: point,
-      base: event.shiftKey ? this.selection() : [],
-    });
+    this.start(
+      {
+        kind: 'marquee',
+        start: point,
+        current: point,
+        base: event.shiftKey ? this.selection() : [],
+      },
+      event,
+    );
     if (!event.shiftKey) this.selection.set([]);
   }
 
-  private start(drag: Drag): void {
+  private start(drag: Drag, event: PointerEvent): void {
+    this.endDrag?.();
     this.drag.set(drag);
+    // Pointer capture keeps the moves coming when the pointer leaves the canvas or the window.
+    const canvas = this.canvas()?.nativeElement;
+    try {
+      canvas?.setPointerCapture?.(event.pointerId);
+    } catch {
+      // A synthetic event without an active pointer: the document listeners still work.
+    }
     const move = (e: PointerEvent) => this.onPointerMove(e);
-    const up = (e: PointerEvent) => {
+    const end = () => {
       this.doc.removeEventListener('pointermove', move);
       this.doc.removeEventListener('pointerup', up);
       this.doc.removeEventListener('pointercancel', up);
+      this.endDrag = null;
+    };
+    const up = (e: PointerEvent) => {
+      end();
       this.onPointerUp(e);
     };
+    this.endDrag = end;
     this.doc.addEventListener('pointermove', move);
     this.doc.addEventListener('pointerup', up);
     this.doc.addEventListener('pointercancel', up);

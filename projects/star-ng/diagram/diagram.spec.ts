@@ -410,6 +410,24 @@ describe('StarDiagram', () => {
     sub2.unsubscribe();
   });
 
+  it('ends a pointer drag when it is destroyed and captures the pointer', async () => {
+    const { fixture, host, node, canvas, stable } = await setup();
+    const capture = vi.fn();
+    canvas.setPointerCapture = capture;
+    host.selection.set(['new']);
+    await stable();
+    node('new').dispatchEvent(
+      new MouseEvent('pointerdown', { bubbles: true, clientX: 10, clientY: 10, button: 0 }),
+    );
+    expect(capture).toHaveBeenCalled();
+    const removed = vi.spyOn(document, 'removeEventListener');
+    fixture.destroy();
+    expect(removed.mock.calls.map((call) => call[0])).toEqual(
+      expect.arrayContaining(['pointermove', 'pointerup', 'pointercancel']),
+    );
+    removed.mockRestore();
+  });
+
   it('renders on the server platform with plain labels', async () => {
     TestBed.configureTestingModule({ providers: [{ provide: PLATFORM_ID, useValue: 'server' }] });
     const { root, host, stable } = await setup();
