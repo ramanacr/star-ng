@@ -403,6 +403,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         keywords: 'grid list tiles dashboard reorder resize drag drop span columns responsive',
         load: () => import('./controls/tile-layout.page').then((m) => m.TileLayoutPage),
       },
+      {
+        label: 'Kanban board',
+        path: 'controls/kanban',
+        keywords: 'task board columns cards swimlanes wip limit drag drop move',
+        load: () => import('./controls/kanban.page').then((m) => m.KanbanPage),
+      },
     ],
   },
   {
@@ -617,6 +623,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         keywords:
           'sort multi-sort global filter column filter search range multiselect date number',
         load: () => import('./controls/table-sort-filter.page').then((m) => m.TableSortFilterPage),
+      },
+      {
+        label: 'Query builder',
+        path: 'controls/query-builder',
+        keywords: 'filter builder conditions rules groups and or predicate advanced search',
+        load: () => import('./controls/query-builder.page').then((m) => m.QueryBuilderPage),
       },
       {
         label: 'Table paging',

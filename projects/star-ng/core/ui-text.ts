@@ -333,6 +333,44 @@ export interface StarUiText {
     max: string,
   ) => string;
   readonly meterValue: (value: string, total: number) => string;
+  // Query builder
+  /** Name of a group whose rules must all match. */
+  readonly queryGroupAll: string;
+  /** Name of a group where one rule must match. */
+  readonly queryGroupAny: string;
+  readonly queryField: string;
+  readonly queryValue: string;
+  readonly addGroup: string;
+  readonly removeGroup: string;
+  /** Hint of a focused rule row. */
+  readonly queryRuleHint: string;
+  readonly queryRuleRemoved: (rule: string) => string;
+  readonly queryRuleRestored: (rule: string) => string;
+  readonly queryTrue: string;
+  readonly queryFalse: string;
+  /** Words that join the rules in the summary text. */
+  readonly queryAnd: string;
+  readonly queryOr: string;
+  /** Summary of a query without rules. */
+  readonly queryEmpty: string;
+  /** One rule in the summary text, for example "Total greater than 100". */
+  readonly queryRuleSummary: (field: string, mode: string, value: string) => string;
+  /** The two values of a `between` rule in the summary text. */
+  readonly queryRange: (min: string, max: string) => string;
+  /** Error of a query with rules that have no value. */
+  readonly queryIncomplete: string;
+  // Kanban board
+  /** Name of a column (or a column in a swimlane) without a limit. */
+  readonly kanbanColumnLabel: (title: string, count: number) => string;
+  /** Name of a column with a work-in-progress limit. */
+  readonly kanbanColumnLimit: (title: string, count: number, limit: number) => string;
+  /** Hint of a card. */
+  readonly kanbanCardHint: string;
+  readonly kanbanPickedUp: (card: string, column: string) => string;
+  readonly kanbanMoved: (column: string, position: number, total: number) => string;
+  readonly kanbanDropped: (card: string, column: string, position: number, total: number) => string;
+  readonly kanbanCanceled: (card: string, column: string) => string;
+  readonly kanbanLimitReached: (column: string) => string;
   // Sparkline
   /** Label of a sparkline: the trend word and the formatted first, last, lowest and highest value. */
   readonly sparklineSummary: (
@@ -717,6 +755,38 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   chartDescription: (kind, series, items, min, max) =>
     `${kind} with ${series} series and ${items} ${items === 1 ? 'item' : 'items'}, values from ${min} to ${max}. The same data is in the table.`,
   meterValue: (value, total) => `${value} of ${total}`,
+
+  queryGroupAll: 'Match all of',
+  queryGroupAny: 'Match any of',
+  queryField: 'Field',
+  queryValue: 'Value',
+  addGroup: 'Add group',
+  removeGroup: 'Remove group',
+  queryRuleHint: 'Delete removes the rule. Alt and the up or down arrow move it.',
+  queryRuleRemoved: (rule) => `${rule} removed. Press Control and Z to undo.`,
+  queryRuleRestored: (rule) => `${rule} restored.`,
+  queryTrue: 'Yes',
+  queryFalse: 'No',
+  queryAnd: 'and',
+  queryOr: 'or',
+  queryEmpty: 'No conditions',
+  // Only the first letter is lowered: "Is IBAN" reads "is IBAN".
+  queryRuleSummary: (field, mode, value) =>
+    `${field} ${mode.charAt(0).toLocaleLowerCase('en')}${mode.slice(1)} ${value}`,
+  queryRange: (min, max) => `${min} and ${max}`,
+  queryIncomplete: 'Complete or remove the rules without a value.',
+
+  kanbanColumnLabel: (title, count) => `${title}, ${count} ${count === 1 ? 'item' : 'items'}`,
+  kanbanColumnLimit: (title, count, limit) =>
+    `${title}, ${count} ${count === 1 ? 'item' : 'items'}, limit ${limit}`,
+  kanbanCardHint:
+    'Press Space to pick up the card. The arrow keys move it, Space drops it and Escape cancels.',
+  kanbanPickedUp: (card, column) => `Picked up ${card} in ${column}`,
+  kanbanMoved: (column, position, total) => `Moved to ${column}, position ${position} of ${total}`,
+  kanbanDropped: (card, column, position, total) =>
+    `${card} dropped in ${column}, position ${position} of ${total}`,
+  kanbanCanceled: (card, column) => `Move cancelled. ${card} is back in ${column}`,
+  kanbanLimitReached: (column) => `${column} is at its limit`,
   sparklineSummary: (first, last, min, max, trend) =>
     `${trend}: first ${first}, last ${last}, lowest ${min}, highest ${max}`,
   sparklineTrendUp: 'Trend up',
@@ -829,6 +899,17 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   previewImage: ['alt'],
   meterValue: ['value', 'total'],
   chartDescription: ['kind', 'series', 'items', 'min', 'max'],
+  queryRuleRemoved: ['rule'],
+  queryRuleRestored: ['rule'],
+  queryRuleSummary: ['field', 'mode', 'value'],
+  queryRange: ['min', 'max'],
+  kanbanColumnLabel: ['title', 'count'],
+  kanbanColumnLimit: ['title', 'count', 'limit'],
+  kanbanPickedUp: ['card', 'column'],
+  kanbanMoved: ['column', 'position', 'total'],
+  kanbanDropped: ['card', 'column', 'position', 'total'],
+  kanbanCanceled: ['card', 'column'],
+  kanbanLimitReached: ['column'],
   sparklineSummary: ['first', 'last', 'min', 'max', 'trend'],
   sparklineWinLoss: ['wins', 'losses'],
   barcodeInvalid: ['type'],
