@@ -1032,6 +1032,52 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'table with columns pinned at both edges and the pin buttons',
+    path: 'controls/table-columns',
+    open: async (page) => {
+      const live = example(page, 'Pin to start and end');
+      await live.getByRole('button', { name: 'Columns' }).click();
+      await page.getByRole('button', { name: 'Pin Email to start' }).click();
+      await expect(live.locator('.star-table__cell--pinned-end').first()).toBeVisible();
+    },
+  },
+  {
+    name: 'table with column groups (two header levels)',
+    path: 'controls/table-layout',
+    open: async (page) => {
+      const live = example(page, 'Column groups');
+      await expect(live.locator('th.star-table__column-group').first()).toBeVisible();
+    },
+  },
+  {
+    name: 'table with a summary row and group summary rows',
+    path: 'controls/table-layout',
+    open: async (page) => {
+      const live = example(page, 'Summaries');
+      await expect(live.locator('.star-table__group-footer').first()).toBeVisible();
+      await expect(live.locator('tfoot .star-table__summary-label').first()).toBeVisible();
+    },
+  },
+  {
+    name: 'table with merged group cells (rowspan)',
+    path: 'controls/table-layout',
+    open: async (page) => {
+      const live = example(page, 'Merged group cells');
+      await expect(live.locator('td[rowspan]').first()).toBeVisible();
+    },
+  },
+  {
+    name: 'table with virtual columns scrolled sideways',
+    path: 'controls/table-layout',
+    open: async (page) => {
+      const live = example(page, 'Column virtualization');
+      await live.locator('.star-table__scroll').evaluate((viewport) => {
+        viewport.scrollLeft = 3000;
+      });
+      await expect(live.locator('thead .star-table__col-spacer').first()).toBeAttached();
+    },
+  },
+  {
     name: 'table with a filter select open',
     path: 'controls/table-sort-filter',
     open: async (page) => {
