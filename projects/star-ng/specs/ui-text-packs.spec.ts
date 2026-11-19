@@ -35,6 +35,8 @@ const SAME_AS_ENGLISH: Record<string, readonly Name[]> = {
     'queryFalse',
     'queryRuleSummary',
     'chartPointLabel',
+    // "General" is the Spanish name of the number format too.
+    'spreadsheetFormatGeneral',
   ],
 };
 
@@ -60,6 +62,14 @@ const TEXT_PARAMS: Record<string, readonly string[]> = {
   sparklineSummary: ['first', 'last', 'min', 'max', 'trend'],
   barcodeInvalid: ['type'],
   qrCodeLabel: ['value'],
+  spreadsheetCellInfo: ['address', 'value', 'formula'],
+  spreadsheetFunction: ['args'],
+  spreadsheetRange: ['from', 'to'],
+  spreadsheetSelected: ['range'],
+  spreadsheetEditing: ['address'],
+  spreadsheetCleared: ['range'],
+  spreadsheetFilled: ['range'],
+  spreadsheetPasted: ['range'],
 };
 const TEXT_NAMES = new Set(['label', 'column', 'name', 'alt']);
 

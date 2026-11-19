@@ -1153,6 +1153,32 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'spreadsheet with a selected range',
+    path: 'controls/spreadsheet',
+    open: async (page) => {
+      // The page is prerendered: wait for hydration before the first key.
+      await expect(page.locator('star-spreadsheet[ngh]')).toHaveCount(0, { timeout: 15_000 });
+      const grid = example(page, 'Budget').getByRole('grid', { name: 'Budget' });
+      await grid.focus();
+      await page.keyboard.press('ArrowDown');
+      await page.keyboard.press('Shift+ArrowDown');
+      await page.keyboard.press('Shift+ArrowRight');
+      await expect(grid.locator('[role=gridcell][aria-selected=true]')).toHaveCount(4);
+    },
+  },
+  {
+    name: 'spreadsheet with a cell in edit mode',
+    path: 'controls/spreadsheet',
+    open: async (page) => {
+      await expect(page.locator('star-spreadsheet[ngh]')).toHaveCount(0, { timeout: 15_000 });
+      const grid = example(page, 'Budget').getByRole('grid', { name: 'Budget' });
+      await grid.focus();
+      await page.keyboard.press('ArrowDown');
+      await page.keyboard.press('F2');
+      await expect(grid.locator('.star-spreadsheet__editor')).toBeFocused();
+    },
+  },
+  {
     name: 'tree with a loading row',
     path: 'controls/tree',
     open: async (page) => {

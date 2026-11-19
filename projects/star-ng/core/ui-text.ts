@@ -455,6 +455,44 @@ export interface StarUiText {
   readonly newMessages: (count: number) => string;
   /** Visible hint under the prompt field of `star-ai-prompt`. */
   readonly aiPromptShortcutHint: string;
+  // Spreadsheet
+  /** Default name of the `star-spreadsheet` grid. */
+  readonly spreadsheet: string;
+  /** Keyboard hint of the grid. */
+  readonly spreadsheetHint: string;
+  /** Name of the top-left header cell, which selects every cell. */
+  readonly spreadsheetSelectAll: string;
+  readonly spreadsheetFormulaBar: string;
+  readonly spreadsheetFormatting: string;
+  readonly spreadsheetSheets: string;
+  /** The active cell: address, shown value and the formula as words (empty without one). */
+  readonly spreadsheetCellInfo: (address: string, value: string, formula: string) => string;
+  /** The value of an empty cell in `spreadsheetCellInfo`. */
+  readonly spreadsheetBlank: string;
+  /** A function call read as words: "SUM of A1 to A5". */
+  readonly spreadsheetFunction: (name: string, args: string) => string;
+  /** A range read as words: "A1 to A5". */
+  readonly spreadsheetRange: (from: string, to: string) => string;
+  readonly spreadsheetSelected: (range: string) => string;
+  readonly spreadsheetEditing: (address: string) => string;
+  readonly spreadsheetCleared: (range: string) => string;
+  readonly spreadsheetFilled: (range: string) => string;
+  readonly spreadsheetPasted: (range: string) => string;
+  readonly spreadsheetNumberFormat: string;
+  readonly spreadsheetFormatGeneral: string;
+  readonly spreadsheetFormatNumber: string;
+  readonly spreadsheetFormatPercent: string;
+  readonly spreadsheetFormatCurrency: string;
+  readonly spreadsheetFormatDate: string;
+  readonly spreadsheetMoreDecimals: string;
+  readonly spreadsheetFewerDecimals: string;
+  readonly spreadsheetBackground: string;
+  readonly spreadsheetNoBackground: string;
+  readonly spreadsheetBackgroundAccent: string;
+  readonly spreadsheetBackgroundSuccess: string;
+  readonly spreadsheetBackgroundWarning: string;
+  readonly spreadsheetBackgroundDanger: string;
+  readonly spreadsheetBackgroundMuted: string;
 }
 
 export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
@@ -835,6 +873,38 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   stop: 'Stop',
   newMessages: (count) => `${count} new messages`,
   aiPromptShortcutHint: 'Press Control+Enter to send.',
+  spreadsheet: 'Spreadsheet',
+  spreadsheetHint:
+    'Type to replace the cell. F2 or Enter edits it. Shift and the arrow keys select a range.',
+  spreadsheetSelectAll: 'Select all',
+  spreadsheetFormulaBar: 'Formula bar',
+  spreadsheetFormatting: 'Formatting',
+  spreadsheetSheets: 'Sheets',
+  spreadsheetCellInfo: (address, value, formula) =>
+    formula ? `${address}, ${value}, formula ${formula}` : `${address}, ${value}`,
+  spreadsheetBlank: 'blank',
+  spreadsheetFunction: (name, args) => `${name} of ${args}`,
+  spreadsheetRange: (from, to) => `${from} to ${to}`,
+  spreadsheetSelected: (range) => `${range} selected`,
+  spreadsheetEditing: (address) => `Editing ${address}`,
+  spreadsheetCleared: (range) => `${range} cleared`,
+  spreadsheetFilled: (range) => `Filled ${range}`,
+  spreadsheetPasted: (range) => `Pasted into ${range}`,
+  spreadsheetNumberFormat: 'Number format',
+  spreadsheetFormatGeneral: 'General',
+  spreadsheetFormatNumber: 'Number',
+  spreadsheetFormatPercent: 'Percent',
+  spreadsheetFormatCurrency: 'Currency',
+  spreadsheetFormatDate: 'Date',
+  spreadsheetMoreDecimals: 'More decimal places',
+  spreadsheetFewerDecimals: 'Fewer decimal places',
+  spreadsheetBackground: 'Cell background',
+  spreadsheetNoBackground: 'No background',
+  spreadsheetBackgroundAccent: 'Blue',
+  spreadsheetBackgroundSuccess: 'Green',
+  spreadsheetBackgroundWarning: 'Amber',
+  spreadsheetBackgroundDanger: 'Red',
+  spreadsheetBackgroundMuted: 'Grey',
 };
 
 /** Parameter names of the function entries, in call order (used for `{{ name }}` in translations). */
@@ -919,6 +989,14 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   isTyping: ['name'],
   areTyping: ['names'],
   newMessages: ['count'],
+  spreadsheetCellInfo: ['address', 'value', 'formula'],
+  spreadsheetFunction: ['name', 'args'],
+  spreadsheetRange: ['from', 'to'],
+  spreadsheetSelected: ['range'],
+  spreadsheetEditing: ['address'],
+  spreadsheetCleared: ['range'],
+  spreadsheetFilled: ['range'],
+  spreadsheetPasted: ['range'],
 };
 
 export const STAR_UI_TEXT = new InjectionToken<StarUiText>('STAR_UI_TEXT', {

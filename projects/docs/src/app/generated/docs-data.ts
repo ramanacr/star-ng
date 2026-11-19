@@ -11615,6 +11615,137 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "outputs": []
   },
+  "StarSpreadsheet": {
+    "kind": "component",
+    "selector": "star-spreadsheet",
+    "entry": "@star-ng/ui/spreadsheet",
+    "description": "Spreadsheet (Syncfusion `ejs-spreadsheet`, Kendo UI `kendo-spreadsheet`, DevExtreme has none (its DataGrid is not a spreadsheet), Ignite UI `igx-spreadsheet` (Angular wrapper of a licensed engine)): a grid of cells with column letters and row numbers, formulas with their own engine (`starEvaluate`, no `eval`), formats, clipboard, fill handle, undo and redo.",
+    "inputs": [
+      {
+        "name": "rows",
+        "type": "number",
+        "default": "100",
+        "required": false,
+        "description": "Number of rows (default 100)."
+      },
+      {
+        "name": "columns",
+        "type": "number",
+        "default": "26",
+        "required": false,
+        "description": "Number of columns (default 26, A to Z)."
+      },
+      {
+        "name": "sheetName",
+        "type": "string",
+        "default": "'Sheet1'",
+        "required": false,
+        "description": "Name of the sheet when `sheets` is empty (for references such as `Sheet1!A1`)."
+      },
+      {
+        "name": "defaultColumnWidth",
+        "type": "number",
+        "default": "96",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "defaultRowHeight",
+        "type": "number",
+        "default": "28",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "readonly",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "No editing: selection, copy and navigation only."
+      },
+      {
+        "name": "showToolbar",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Shows the formatting toolbar (default true; hidden when read-only)."
+      },
+      {
+        "name": "showFormulaBar",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Shows the formula bar with the address and the raw formula of the active cell."
+      },
+      {
+        "name": "height",
+        "type": "string",
+        "default": "'24rem'",
+        "required": false,
+        "description": "CSS height of the scrolling grid."
+      },
+      {
+        "name": "locale",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "BCP 47 locale of the number and date formats (default: `provideStarNg` locale, browser)."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Name of the grid (default: the UI text `spreadsheet`)."
+      }
+    ],
+    "models": [
+      {
+        "name": "cells",
+        "type": "StarSpreadsheetCells",
+        "default": "{}",
+        "required": false,
+        "description": "Cells of the sheet when `sheets` is empty. Two-way: each edit emits a new record."
+      },
+      {
+        "name": "sheets",
+        "type": "readonly StarSpreadsheetSheet[]",
+        "default": "[]",
+        "required": false,
+        "description": "Named sheets, shown as tabs. When it is not empty it replaces `cells` and `sheetName`."
+      },
+      {
+        "name": "activeSheet",
+        "type": "number",
+        "default": "0",
+        "required": false,
+        "description": "Index of the shown sheet in `sheets`."
+      },
+      {
+        "name": "columnWidths",
+        "type": "Readonly<Record<string, number>>",
+        "default": "{}",
+        "required": false,
+        "description": "Column widths in pixels by column letter, for example `{ A: 160 }`. Resizing writes it."
+      },
+      {
+        "name": "rowHeights",
+        "type": "Readonly<Record<string, number>>",
+        "default": "{}",
+        "required": false,
+        "description": "Row heights in pixels by row number, for example `{ '1': 36 }`. Resizing writes it."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "selectionChange",
+        "type": "StarSpreadsheetSelection",
+        "default": null,
+        "required": false,
+        "description": "Emits when the active cell or the selected range changes."
+      }
+    ]
+  },
   "StarStep": {
     "kind": "component",
     "selector": "star-step",
@@ -14542,6 +14673,9 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "split-button/variants": "<star-split-button label=\"Save\" variant=\"secondary\" size=\"sm\" [items]=\"orderOptions\" />\n<star-split-button label=\"Approve\" variant=\"success\" [items]=\"orderOptions\" />\n<star-split-button label=\"Remove\" variant=\"danger\" size=\"lg\" [items]=\"orderOptions\" />",
   "splitter/basic": "<star-splitter class=\"docs-splitter\" [(size)]=\"split\" ariaLabel=\"Resize the order panes\">\n  <div starSplitterStart>\n    <strong>Orders</strong>\n    <p class=\"docs-output\">Drag the gutter or use the arrow keys.</p>\n  </div>\n  <div starSplitterEnd>\n    <strong>Details</strong>\n    <p class=\"docs-output\" role=\"status\">First pane: {{ split() }}%</p>\n  </div>\n</star-splitter>",
   "splitter/vertical": "<star-splitter\n  class=\"docs-splitter\"\n  layout=\"vertical\"\n  [size]=\"40\"\n  [minSize]=\"25\"\n  ariaLabel=\"Resize the invoice panes\"\n>\n  <div starSplitterStart><strong>Invoices</strong></div>\n  <div starSplitterEnd><strong>Preview</strong></div>\n</star-splitter>",
+  "spreadsheet/budget": "<div class=\"docs-stack\">\n  <star-spreadsheet\n    [(cells)]=\"budget\"\n    [rows]=\"200\"\n    [columns]=\"12\"\n    [columnWidths]=\"{ A: 140 }\"\n    height=\"20rem\"\n    ariaLabel=\"Budget\"\n    locale=\"en-IE\"\n    (selectionChange)=\"onSelection($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">{{ status() }}</p>\n</div>",
+  "spreadsheet/csv": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <button\n      type=\"button\"\n      class=\"star-btn star-btn--secondary star-btn--sm\"\n      (click)=\"exportCsv()\"\n    >\n      Export CSV\n    </button>\n    <button\n      type=\"button\"\n      class=\"star-btn star-btn--secondary star-btn--sm\"\n      (click)=\"importCsv()\"\n    >\n      Import the CSV again\n    </button>\n  </div>\n  <star-spreadsheet\n    #csvSheet\n    [(cells)]=\"csvCells\"\n    [rows]=\"20\"\n    [columns]=\"6\"\n    height=\"12rem\"\n    ariaLabel=\"CSV data\"\n    [showToolbar]=\"false\"\n  />\n  <pre class=\"docs-output\">{{ csv() }}</pre>\n</div>",
+  "spreadsheet/sheets": "<star-spreadsheet\n  [(sheets)]=\"sheets\"\n  [(activeSheet)]=\"activeSheet\"\n  [rows]=\"20\"\n  [columns]=\"6\"\n  [columnWidths]=\"{ A: 140 }\"\n  height=\"14rem\"\n  ariaLabel=\"Cost summary\"\n  locale=\"en-IE\"\n  [showToolbar]=\"false\"\n/>",
   "stepper/basic": "<div class=\"docs-stack\">\n  <star-stepper [(value)]=\"step\" ariaLabel=\"Checkout steps\">\n    <star-step value=\"cart\" label=\"Cart\" description=\"Review items\" completed>\n      Three items in the cart.\n    </star-step>\n    <star-step value=\"address\" label=\"Address\" description=\"Where to ship\">\n      Enter the delivery address.\n    </star-step>\n    <star-step value=\"pay\" label=\"Payment\">Choose a way to pay.</star-step>\n  </star-stepper>\n  <p class=\"docs-output\" role=\"status\">Active step: {{ step() ?? 'cart' }}</p>\n</div>",
   "stepper/linear": "<div class=\"docs-stack\">\n  <star-stepper #wizard [(value)]=\"wizardStep\" linear ariaLabel=\"Account setup\">\n    <star-step value=\"name\" label=\"Name\" [completed]=\"name().trim().length > 0\">\n      <star-field label=\"Your name\">\n        <input starInput [value]=\"name()\" (input)=\"name.set($any($event.target).value)\" />\n      </star-field>\n    </star-step>\n    <star-step value=\"confirm\" label=\"Confirm\">\n      Welcome, {{ name() }}. Your account is ready.\n    </star-step>\n  </star-stepper>\n  <div class=\"docs-row\">\n    <star-button\n      variant=\"secondary\"\n      [disabled]=\"wizard.isFirst()\"\n      (pressed)=\"wizard.previous()\"\n    >\n      Back\n    </star-button>\n    <star-button [disabled]=\"wizard.isLast() || !name().trim()\" (pressed)=\"wizard.next()\">\n      Next\n    </star-button>\n  </div>\n</div>",
   "table-columns/frozen": "<docs-fill>\n  <star-table\n    [value]=\"orders.slice(0, 6)\"\n    [columns]=\"wideColumns\"\n    dataKey=\"id\"\n    ariaLabel=\"Wide orders\"\n  />\n</docs-fill>",

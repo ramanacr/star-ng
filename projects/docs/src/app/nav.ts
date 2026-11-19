@@ -605,6 +605,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         keywords: 'orgchart hierarchy team structure tree connector',
         load: () => import('./controls/org-chart.page').then((m) => m.OrgChartPage),
       },
+      {
+        label: 'Spreadsheet',
+        path: 'controls/spreadsheet',
+        keywords: 'excel sheet cells formulas sum grid workbook csv tsv fill handle budget',
+        load: () => import('./controls/spreadsheet.page').then((m) => m.SpreadsheetPage),
+      },
     ],
   },
   {
