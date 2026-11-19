@@ -160,6 +160,9 @@ test.describe('table: basics', () => {
 test.describe('table: sorting and filtering', () => {
   test('sorts from a header with Enter and Space and sets aria-sort', async ({ page }) => {
     await openPage(page, '/controls/table-sort-filter', 'Table sorting and filtering');
+    // The prerendered page answers keys only after hydration: wait until no component is left
+    // with its `ngh` hydration marker.
+    await expect(page.locator('[ngh]')).toHaveCount(0);
     const live = example(page, 'Sorting');
     const table = live.getByRole('table', { name: 'Sortable orders' });
     const customer = table.getByRole('columnheader', { name: 'Customer' });
@@ -816,6 +819,9 @@ test.describe('table: editing', () => {
     page,
   }) => {
     await openPage(page, '/controls/table-edit', 'Table editing');
+    // The prerendered page answers keys only after hydration: wait until no component is left
+    // with its `ngh` hydration marker.
+    await expect(page.locator('[ngh]')).toHaveCount(0);
     const live = example(page, 'Row edit with validation');
     const table = live.getByRole('table', { name: 'Orders with row edit' });
     const edit = table.getByRole('button', { name: 'Edit row' }).first();
