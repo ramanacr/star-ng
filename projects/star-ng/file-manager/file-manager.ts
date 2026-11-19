@@ -707,24 +707,49 @@ export class StarFileManager {
   private async apply(
     operation: StarFileOperation,
     call: ((provider: StarFileProvider) => unknown) | null,
+    removed: readonly StarFileItem[] = [],
   ): Promise<void> {
     const provider = this.provider();
     if (!provider || !call) return;
     try {
       await settle(call(provider) as StarFileResult<unknown>);
+      this.forget(removed);
     } catch (error) {
       this.fail(operation, error);
     }
     this.refresh();
   }
 
+  /** Drops deleted folders (and their subfolders) from the open folders and the cache. */
+  private forget(removed: readonly StarFileItem[]): void {
+    if (!removed.length) return;
+    const known = this.known();
+    const gone = new Set(removed.map((item) => item.id));
+    for (let size = -1; size !== gone.size;) {
+      size = gone.size;
+      for (const item of known) if (item.parentId && gone.has(item.parentId)) gone.add(item.id);
+    }
+    const open = this.folder();
+    if (open !== null && gone.has(open)) {
+      // The open folder went away: go to the nearest folder that is left.
+      const path = starFilePath(known, open);
+      const first = path.findIndex((item) => gone.has(item.id));
+      this.navigate(first > 0 ? path[first - 1].id : null);
+    }
+    this.expanded.update((keys) => keys.filter((key) => !gone.has(key)));
+    this.cache.update((cache) => new Map([...cache].filter(([key]) => !gone.has(key))));
+  }
+
   /** Reads the open folder and the open tree folders from the provider again. */
   refresh(): void {
     const provider = this.provider();
     if (!provider) return;
-    // The cache entries are replaced one by one when the new lists arrive, so the items (and the
-    // focus on them) stay while the folders load again.
-    const keys = new Set([...this.expanded(), ...this.cache().keys()]);
+    // Only the open folder and the expanded tree folders load again. Their cache entries are
+    // replaced one by one when the new lists arrive, so the items (and the focus on them) stay
+    // meanwhile; the other entries are dropped and load again when they are opened.
+    const open = this.folder() ?? '';
+    const keys = new Set([open, ...this.expanded()]);
+    this.cache.update((cache) => new Map([...cache].filter(([key]) => keys.has(key))));
     this.version.update((v) => v + 1);
     for (const key of keys) {
       if (key !== (this.folder() ?? '')) void this.loadFolder(key === '' ? null : key);
@@ -1298,7 +1323,7 @@ export class StarFileManager {
     this.pendingDelete.set([]);
     if (!emitCancelable<StarFileItemsEvent>(this.delete, { items })) return;
     this.selection.set([]);
-    void this.apply('delete', (provider) => provider.delete(items));
+    void this.apply('delete', (provider) => provider.delete(items), items);
   }
 
   private requestDownload(): void {

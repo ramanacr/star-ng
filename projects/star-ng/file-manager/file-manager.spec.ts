@@ -557,6 +557,59 @@ describe('StarFileManager', () => {
     }
   });
 
+  it('reloads only the open and expanded folders, and not a deleted one', async () => {
+    const { host, stable } = await setup();
+    const deleted = new Set<string>();
+    const provider: StarFileProvider = {
+      list: vi.fn(async (folder: string | null) => {
+        if (folder && deleted.has(folder)) throw new Error('no such folder');
+        return ITEMS.filter((item) => item.parentId === folder && !deleted.has(item.id));
+      }),
+      rename: vi.fn(),
+      delete: vi.fn(async (items: readonly StarFileItem[]) => {
+        for (const item of items) deleted.add(item.id);
+      }),
+      createFolder: vi.fn(),
+      move: vi.fn(),
+      copy: vi.fn(),
+    };
+    const flush = async () => {
+      await stable();
+      await new Promise((resolve) => setTimeout(resolve));
+      await stable();
+    };
+    host.confirm.set(false);
+    host.items.set([]);
+    host.provider.set(provider);
+    await flush();
+    // Visit Plans (it stays expanded in the tree), then go back.
+    host.manager().navigate('plans');
+    await flush();
+    host.manager().navigate('docs');
+    await flush();
+    host.selection.set(['plans']);
+    await flush();
+    vi.mocked(provider.list).mockClear();
+    host.manager().requestDelete();
+    await flush();
+    await flush();
+    expect(provider.delete).toHaveBeenCalled();
+    expect(host.events.filter((e) => e.name === 'error')).toEqual([]);
+    const listed = vi.mocked(provider.list).mock.calls.map((call) => call[0]);
+    expect(listed).not.toContain('plans');
+    expect(listed).toContain('docs');
+    // A folder that is neither open nor expanded is not read again.
+    vi.mocked(provider.list).mockClear();
+    host.manager().refresh();
+    await flush();
+    expect(
+      vi
+        .mocked(provider.list)
+        .mock.calls.map((call) => call[0])
+        .sort(),
+    ).toEqual(expect.not.arrayContaining(['plans']));
+  });
+
   it('renders on the server platform', async () => {
     TestBed.configureTestingModule({ providers: [{ provide: PLATFORM_ID, useValue: 'server' }] });
     const { rows } = await setup();
