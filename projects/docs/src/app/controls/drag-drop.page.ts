@@ -152,7 +152,10 @@ interface Order {
         keys go to the next or the previous drop zone that accepts it, in the order of the page; the
         focus stays on the item. Space or Enter drops; Escape, Tab and a lost focus cancel.
         <code>StarAnnouncer</code> reads each step. In right-to-left, Arrow left goes to the next
-        zone.
+        zone. After a keyboard drop the focus goes to the item again, also when your code moves it
+        to another list: the new element whose <code>[starDraggable]</code> value is the same object
+        (<code>===</code>) takes the focus. Keep the same object when you move an item; an item
+        without data keeps the focus only when it stays in place.
       </p>
       <p>
         On a touch screen, a long press (400 ms) starts the drag and a copy of the element follows

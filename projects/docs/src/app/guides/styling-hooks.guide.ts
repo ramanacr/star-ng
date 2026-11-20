@@ -32,11 +32,24 @@ import { DOCS } from '../shared/docs';
           part, for example all the <code>cell</code> elements of a table.
         </li>
         <li>
-          An element without such a class takes the name of the part around it plus its role:
-          <code>clearIcon</code> (the icon of the clear button), <code>filterIcon</code>,
-          <code>nodeList</code>. When one part has several of them, the UI text or the icon gives
-          the name: <code>zoomInButton</code>, <code>leadingIcon</code> and
-          <code>trailingIcon</code> of the button.
+          An element without such a class has a name of the form
+          <code>&lt;purpose&gt;&lt;Role&gt;</code> in camelCase, at most three words. The purpose
+          says what the element does; it never repeats the control name, never names the icon glyph
+          and never comes from a UI text. The role is one of <code>Button</code>, <code>Icon</code>,
+          <code>Label</code>, <code>Input</code>, <code>Option</code>, <code>List</code>,
+          <code>Item</code>, <code>Panel</code>, <code>Header</code>, <code>Cell</code>,
+          <code>Row</code>, <code>Text</code> (and <code>Root</code>, <code>Track</code>,
+          <code>Thumb</code>, <code>Handle</code> for the parts of a slider or a resizable element).
+          A role is not doubled (<code>restoreIcon</code>, not <code>restoreButtonIcon</code>). A
+          single word without a role is allowed for a structural element, for example
+          <code>head</code> and <code>body</code> of a table.
+        </li>
+        <li>
+          An icon takes the name of what it belongs to: <code>clearIcon</code>,
+          <code>firstPageIcon</code>, <code>moreIcon</code>, <code>leadingIcon</code> and
+          <code>trailingIcon</code> of the button. The commands of one toolbar share a name
+          (<code>toolButton</code>, <code>toolIcon</code>, <code>alignOption</code>); an element
+          gets its own name only when you would style it alone.
         </li>
         <li>
           In one control, a name is used for one kind of element only. A tools test fails when a
@@ -56,6 +69,11 @@ import { DOCS } from '../shared/docs';
         <code>MutationObserver</code> finds the parts that the control creates after that. The
         invisible pointer targets of a chart and the rows and cells of the chart data table have no
         part (there is one of them per data point); style them through the part <code>table</code>.
+      </p>
+      <p>
+        Two limits. A template class that you also set through <code>pt</code> is removed when the
+        <code>pt</code> drops it. On the server the parts get their pass-through after each render,
+        so the HTML of a prerendered page has it too.
       </p>
 
       <h2>Pass-through for one control</h2>
