@@ -14,6 +14,11 @@ export type StarPivotArea = 'rows' | 'columns' | 'values' | 'filters';
 export interface StarPivotField<T = unknown> {
   readonly field: string;
   readonly label?: string;
+  /**
+   * Reads the value of a record (default: `record[field]`). The dimension, the value, the filter
+   * and the member list of the filter popover all use it.
+   */
+  readonly value?: (record: T) => unknown;
   /** Used when the field goes to Rows or Columns. */
   readonly dateHierarchy?: boolean | readonly StarPivotDateLevel[];
   /** Member label, used when the field goes to Rows or Columns. */
@@ -84,6 +89,7 @@ export function starPivotMoveField<T>(
     config.columns.find((item) => item.field === name) ?? {
       field: name,
       ...(field.label !== undefined ? { label: field.label } : {}),
+      ...(field.value ? { value: field.value } : {}),
       ...(field.dateHierarchy !== undefined ? { dateHierarchy: field.dateHierarchy } : {}),
       ...(field.format ? { format: field.format } : {}),
     };
@@ -91,6 +97,7 @@ export function starPivotMoveField<T>(
     field: name,
     aggregate: field.aggregate ?? 'sum',
     ...(field.label !== undefined ? { label: field.label } : {}),
+    ...(field.value || dimension.value ? { value: field.value ?? dimension.value } : {}),
     ...(field.valueFormat ? { format: field.valueFormat } : {}),
   };
   let rows = config.rows.filter((item) => item.field !== name);
@@ -102,7 +109,11 @@ export function starPivotMoveField<T>(
   if (to === 'columns') columns = insert(columns, dimension, index);
   if (to === 'values') values = insert(values, value, index);
   if (to === 'filters') {
-    const existing = filters.find((item) => item.field === name) ?? { field: name };
+    const accessor = field.value ?? dimension.value;
+    const existing = filters.find((item) => item.field === name) ?? {
+      field: name,
+      ...(accessor ? { value: accessor } : {}),
+    };
     filters = filters.filter((item) => item.field !== name);
     // The index counts the filter chips of the Filters area only.
     const shown = starPivotAreas({ ...config, rows, columns, values, filters }).filters;

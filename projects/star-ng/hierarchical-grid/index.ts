@@ -3,4 +3,4 @@ export {
   type StarChildGridCreatedEvent,
   type StarHierarchicalRowEvent,
 } from './hierarchical-grid';
-export * from './row-island';
+export { StarRowIsland, type StarRowIslandLoader } from './row-island';

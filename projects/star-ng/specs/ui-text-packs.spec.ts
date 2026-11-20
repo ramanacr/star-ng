@@ -27,6 +27,8 @@ const SAME_AS_ENGLISH: Record<string, readonly Name[]> = {
     'documentZoom',
     // A data point reads "series, category: value" in every language.
     'chartPointLabel',
+    // "Q1" is the usual German quarter label.
+    'pivotQuarter',
   ],
   // "Color", "Editor" and "Total" are the Spanish words too. "X" and "Y" are axis names in every
   // language. "No" is the Spanish answer too. A rule summary and a data point only join their

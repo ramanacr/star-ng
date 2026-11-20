@@ -60,7 +60,7 @@ const AGGREGATES: readonly StarPivotAggregate[] = [
             [attr.data-pivot-area]="list"
             (cdkDropListDropped)="onDrop($event)"
           >
-            @for (name of fieldsIn(list); track name; let i = $index; let count = $count) {
+            @for (name of fieldsIn(list); track name) {
               <li
                 class="star-pivot-config__field"
                 cdkDrag
@@ -72,7 +72,7 @@ const AGGREGATES: readonly StarPivotAggregate[] = [
                   aria-hidden="true"
                 ></i>
                 <span class="star-pivot-config__label">{{ labelOf(name) }}</span>
-                @if (list === 'values') {
+                @if (list === 'values' && aggregateOf(name)) {
                   <select
                     class="star-pivot-config__aggregate"
                     [attr.aria-label]="text.pivotAggregate(labelOf(name))"
@@ -107,7 +107,7 @@ const AGGREGATES: readonly StarPivotAggregate[] = [
                 <star-menu
                   #menu
                   [ariaLabel]="text.pivotMoveField(labelOf(name))"
-                  [items]="moveItems(name, list, i, count)"
+                  [items]="moveMenus().get(name) ?? []"
                 />
               </li>
             } @empty {
@@ -136,12 +136,42 @@ export class StarPivotConfigurator<T = unknown> {
   private readonly byName = computed(
     () => new Map(this.fields().map((field) => [field.field, field] as const)),
   );
-  /** Members per field, computed when a filter list needs them. */
+  /**
+   * Members per field. The map is new when the data, the locale or the fields change; a field's
+   * list is built the first time a filter needs it (a memo, not state).
+   */
   private readonly members = computed(() => {
     this.data();
     this.locale();
+    this.fields();
+    this.config().rows;
+    this.config().columns;
+    this.config().values;
     return new Map<string, readonly StarPivotMember[]>();
   });
+
+  /** The move menu items of each field, rebuilt only when the areas or the fields change. */
+  protected readonly moveMenus = computed(() => {
+    const menus = new Map<string, StarMenuItem[]>();
+    for (const list of LISTS) {
+      const names = this.fieldsIn(list);
+      names.forEach((name, index) =>
+        menus.set(name, this.moveItems(name, list, index, names.length)),
+      );
+    }
+    return menus;
+  });
+
+  /** The value accessor of a field: from `fields`, else from a dimension or value of the config. */
+  private valueOf(name: string): ((record: T) => unknown) | undefined {
+    const config = this.config();
+    return (
+      this.byName().get(name)?.value ??
+      [...config.rows, ...config.columns, ...config.values].find(
+        (item) => item.field === name && item.value,
+      )?.value
+    );
+  }
 
   protected fieldsIn(list: ListName): readonly string[] {
     if (list !== 'fields') return this.areas()[list];
@@ -195,7 +225,7 @@ export class StarPivotConfigurator<T = unknown> {
       const field = this.byName().get(name);
       found = starPivotMembers(
         this.data(),
-        { field: name, format: field?.format },
+        { field: name, format: field?.format, value: this.valueOf(name) },
         { locale: this.locale(), blankLabel: this.text.pivotBlank },
       );
       cache.set(name, found);
@@ -204,10 +234,11 @@ export class StarPivotConfigurator<T = unknown> {
   }
 
   protected filterOf(name: string): StarPivotFilter | undefined {
-    return this.config().filters?.find((filter) => filter.field === name);
+    return this.config().filters?.find((filter) => filter.field === name) as
+      StarPivotFilter | undefined;
   }
 
-  protected moveItems(name: string, list: ListName, index: number, count: number): StarMenuItem[] {
+  private moveItems(name: string, list: ListName, index: number, count: number): StarMenuItem[] {
     const items: StarMenuItem[] = [];
     if (list !== 'fields') {
       items.push(
@@ -268,8 +299,15 @@ export class StarPivotConfigurator<T = unknown> {
     const area = this.areas().filters.includes(name);
     const others = filters.filter((item) => item.field !== name);
     const index = filters.findIndex((item) => item.field === name);
+    // The filter reads the field as the member list does (its value accessor).
+    const value = this.valueOf(name);
     // A field of the Filters area keeps its chip (an entry without members).
-    const entry = filter ?? (area ? { field: name } : null);
+    const base: StarPivotFilter<T> | null = filter
+      ? { ...(filter as StarPivotFilter<T>) }
+      : area
+        ? { field: name }
+        : null;
+    const entry = base && value ? { ...base, value } : base;
     const next = [...others];
     if (entry) next.splice(index < 0 ? next.length : index, 0, entry);
     this.configChange.emit({ ...config, filters: next });

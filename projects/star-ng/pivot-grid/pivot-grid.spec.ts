@@ -1,17 +1,22 @@
 import { Component, PLATFORM_ID, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { StarAnnouncer } from '@star-ng/ui/core';
+import * as pivotApi from '@star-ng/ui/pivot-grid';
 import {
   StarPivotCellClickEvent,
   StarPivotConfig,
   StarPivotField,
   StarPivotGrid,
-  starPivotAreas,
-  starPivotMoveField,
   starPivotPathKey,
 } from '@star-ng/ui/pivot-grid';
 import { StarPivotConfigurator } from './pivot-configurator';
-import { starPivotClipHeaders, starPivotHeaderGrid, starPivotWindow } from './pivot-layout';
+import {
+  starPivotAreas,
+  starPivotClipHeaders,
+  starPivotHeaderGrid,
+  starPivotMoveField,
+  starPivotWindow,
+} from './pivot-layout';
 
 interface Sale {
   readonly region: string;
@@ -48,7 +53,7 @@ const FIELDS: readonly StarPivotField<Sale>[] = [
 class Host {
   readonly grid = viewChild.required(StarPivotGrid<Sale>);
   readonly data = signal<readonly Sale[]>(SALES);
-  readonly fields = FIELDS;
+  fields: readonly StarPivotField<Sale>[] = FIELDS;
   readonly configurator = signal(false);
   readonly config = signal<StarPivotConfig<Sale>>({
     rows: [
@@ -325,6 +330,98 @@ describe('StarPivotGrid', () => {
     fixture.detectChanges();
     expect(host.config().values[0].aggregate).toBe('count');
     expect(texts(el.querySelectorAll('tbody tr:last-child td'))).toEqual(['2', '2', '4']);
+  });
+
+  it('exports only the component, starPivot and starPivotPathKey as values', () => {
+    expect(Object.keys(pivotApi).sort()).toEqual([
+      'StarPivotGrid',
+      'starPivot',
+      'starPivotPathKey',
+    ]);
+  });
+
+  it('does not emit cellClick for a parent row without values', () => {
+    const { fixture, host, el } = setup();
+    host.config.update((config) => ({ ...config, rowSubtotals: false }));
+    fixture.detectChanges();
+    el.querySelector<HTMLElement>('[data-pos="0:0"]')!.click();
+    expect(host.clicked).toBeNull();
+    el.querySelector<HTMLElement>('[data-pos="1:0"]')!.click();
+    expect(host.clicked!.value).toBe(100);
+  });
+
+  it('hides the aggregate select of a value with a custom aggregate', () => {
+    const { fixture, host, el } = setup();
+    host.configurator.set(true);
+    host.config.update((config) => ({
+      ...config,
+      values: [{ field: 'amount', aggregate: (values) => values.length }],
+    }));
+    fixture.detectChanges();
+    expect(el.querySelector('[data-pivot-area="values"] select')).toBeNull();
+  });
+
+  it('uses the value accessor of a field in the filter list, the filter and a move', async () => {
+    const { fixture, host, el } = setup();
+    const size: StarPivotField<Sale> = {
+      field: 'size',
+      label: 'Size',
+      value: (sale) => (sale.amount >= 100 ? 'Large' : 'Small'),
+    };
+    host.fields = [...FIELDS, size];
+    host.configurator.set(true);
+    host.config.update((config) => ({
+      ...config,
+      rows: [{ field: 'size', label: 'Size', value: size.value }],
+    }));
+    fixture.detectChanges();
+    expect(texts(el.querySelectorAll('tbody th[role="rowheader"]'))).toEqual([
+      'Large',
+      'Small',
+      'Grand total',
+    ]);
+    el.querySelector<HTMLButtonElement>('[data-pivot-filter="size"]')!.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const panel = document.querySelector<HTMLElement>('.star-pivot-filter__panel')!;
+    const boxes = panel.querySelectorAll<HTMLInputElement>('.star-pivot-filter__list input');
+    expect(texts(panel.querySelectorAll('.star-pivot-filter__list .star-check__text'))).toEqual([
+      'Large',
+      'Small',
+    ]);
+    boxes[1].click();
+    fixture.detectChanges();
+    expect(texts(el.querySelectorAll('tbody th[role="rowheader"]'))).toEqual([
+      'Large',
+      'Grand total',
+    ]);
+    const config = fixture.debugElement.query(
+      (node) => node.componentInstance instanceof StarPivotConfigurator,
+    ).componentInstance as StarPivotConfigurator<Sale>;
+    config.move('size', 'columns');
+    fixture.detectChanges();
+    expect(host.config().columns.at(-1)!.value).toBe(size.value);
+    config.move('size', 'values');
+    fixture.detectChanges();
+    expect(host.config().values.at(-1)!.value).toBe(size.value);
+  });
+
+  it('applies Select all to the members that match the search', async () => {
+    const { fixture, host, el } = setup();
+    host.configurator.set(true);
+    fixture.detectChanges();
+    el.querySelector<HTMLButtonElement>('[data-pivot-filter="product"]')!.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const panel = document.querySelector<HTMLElement>('.star-pivot-filter__panel')!;
+    const search = panel.querySelector<HTMLInputElement>('input[type="search"]')!;
+    search.value = 'la';
+    search.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    const all = panel.querySelector<HTMLInputElement>('.star-pivot-filter__all input')!;
+    all.click();
+    fixture.detectChanges();
+    expect(host.config().filters).toEqual([{ field: 'product', exclude: ['Lamp'] }]);
   });
 
   it('filters members with the filter popover (search, uncheck, clear)', async () => {

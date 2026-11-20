@@ -594,8 +594,9 @@ export const STAR_UI_TEXT_ES: StarUiText = {
   pivotAggregate: (label) => `Cálculo de ${label}`,
   pivotHint:
     'Las flechas cambian de celda. Intro o Espacio expande o contrae un elemento. Intro en una celda de valor muestra sus registros.',
-  gridExpandAll: 'Expandir todo',
-  gridCollapseAll: 'Contraer todo',
+  pivotQuarter: (quarter) => `T${quarter}`,
+  expandAll: 'Expandir todo',
+  collapseAll: 'Contraer todo',
   hierarchicalGrid: 'Cuadrícula jerárquica',
   hierarchicalLoadError: 'No se pudieron cargar las filas.',
   hierarchicalChildGrid: (label, parent) => `${label} de ${parent}`,

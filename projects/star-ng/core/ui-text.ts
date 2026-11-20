@@ -721,8 +721,10 @@ export interface StarUiText {
   readonly pivotAggregate: (label: string) => string;
   /** Keyboard hint of the pivot table. */
   readonly pivotHint: string;
-  readonly gridExpandAll: string;
-  readonly gridCollapseAll: string;
+  /** Quarter label of a date hierarchy, for example "Q1". */
+  readonly pivotQuarter: (quarter: number) => string;
+  readonly expandAll: string;
+  readonly collapseAll: string;
   // Hierarchical grid
   /** Default name of `star-hierarchical-grid`. */
   readonly hierarchicalGrid: string;
@@ -1313,8 +1315,9 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   pivotAggregate: (label) => `Aggregate of ${label}`,
   pivotHint:
     'Arrow keys move between cells. Enter or Space expands or collapses a member. Enter on a value cell shows its records.',
-  gridExpandAll: 'Expand all',
-  gridCollapseAll: 'Collapse all',
+  pivotQuarter: (quarter) => `Q${quarter}`,
+  expandAll: 'Expand all',
+  collapseAll: 'Collapse all',
   hierarchicalGrid: 'Hierarchical grid',
   hierarchicalLoadError: 'The rows could not be loaded.',
   hierarchicalChildGrid: (label, parent) => `${label} of ${parent}`,
@@ -1447,6 +1450,7 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   pivotMoveTo: ['area'],
   pivotMoved: ['label', 'area'],
   pivotAggregate: ['label'],
+  pivotQuarter: ['quarter'],
   hierarchicalChildGrid: ['label', 'parent'],
 };
 

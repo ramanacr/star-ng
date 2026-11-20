@@ -112,7 +112,7 @@ interface Position {
         <div class="star-pivot__tools">
           <button type="button" class="star-btn star-btn--ghost star-btn--sm" (click)="expandAll()">
             <i class="ph-bold ph-arrows-out-simple" aria-hidden="true"></i>
-            {{ text.gridExpandAll }}
+            {{ text.expandAll }}
           </button>
           <button
             type="button"
@@ -120,7 +120,7 @@ interface Position {
             (click)="collapseAll()"
           >
             <i class="ph-bold ph-arrows-in-simple" aria-hidden="true"></i>
-            {{ text.gridCollapseAll }}
+            {{ text.collapseAll }}
           </button>
         </div>
       }
@@ -323,6 +323,7 @@ export class StarPivotGrid<T = unknown> {
     starPivot(this.data(), this.config(), {
       locale: this.lang(),
       blankLabel: this.text.pivotBlank,
+      quarterLabel: (quarter) => this.text.pivotQuarter(quarter),
     }),
   );
 
@@ -335,12 +336,15 @@ export class StarPivotGrid<T = unknown> {
       seen.set(item.field, {
         field: item.field,
         label: item.label,
+        value: item.value,
         dateHierarchy: item.dateHierarchy,
         format: item.format,
       });
     }
     for (const item of config.values) {
-      if (!seen.has(item.field)) seen.set(item.field, { field: item.field, label: item.label });
+      if (!seen.has(item.field)) {
+        seen.set(item.field, { field: item.field, label: item.label, value: item.value });
+      }
     }
     for (const item of config.filters ?? []) {
       if (!seen.has(item.field)) seen.set(item.field, { field: item.field });
@@ -614,13 +618,14 @@ export class StarPivotGrid<T = unknown> {
     const result = this.result();
     const pivotRow = result.rows[row];
     const pivotColumn = result.columns[column];
-    if (!pivotRow || !pivotColumn) return;
+    // A parent row without subtotals shows no values: nothing to drill into.
+    if (!pivotRow || !pivotColumn || !pivotRow.hasValues) return;
     this.cellClick.emit({
       row: pivotRow,
       column: pivotColumn,
       rowPath: pivotRow.path,
       columnPath: pivotColumn.path,
-      value: pivotRow.hasValues ? result.cells[row][column] : null,
+      value: result.cells[row][column],
       records: result.records(row, column),
     });
   }

@@ -127,8 +127,14 @@ export class StarPivotFilterButton {
     this.emit(out);
   }
 
+  /** Select all acts on the members in the list: the search results when there is a search. */
   protected setAll(checked: boolean): void {
-    this.emit(checked ? new Set() : new Set(this.members().map((member) => member.key)));
+    const out = new Set(this.excluded());
+    for (const member of this.shown()) {
+      if (checked) out.delete(member.key);
+      else out.add(member.key);
+    }
+    this.emit(out);
   }
 
   protected clear(): void {
