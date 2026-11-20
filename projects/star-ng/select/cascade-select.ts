@@ -2,6 +2,7 @@ import { _IdGenerator } from '@angular/cdk/a11y';
 import { CdkMenuTrigger } from '@angular/cdk/menu';
 import { NgTemplateOutlet } from '@angular/common';
 import {
+  afterNextRender,
   booleanAttribute,
   ChangeDetectionStrategy,
   Component,
@@ -23,16 +24,18 @@ import {
   STAR_SLOT_HOST,
   STAR_UI_TEXT,
   StarDirectionService,
+  StarIconContext,
   StarOptionKey,
   StarSlot,
   starSlot,
+  starSlotMap,
   StarStyled,
   ɵSTAR_PART_HOST,
 } from '@star-ng/ui/core';
 import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/ui/field';
 import { STAR_MENU_POSITIONS, StarMenu, StarMenuInDialog, StarMenuItem } from '@star-ng/ui/menu';
 import { STAR_SELECT_DEFAULTS } from './select-defaults';
-import type { StarCascadeOptionContext } from './select-slots';
+import type { StarCascadeOptionContext, StarSelectedContext } from './select-slots';
 
 interface Leaf<TOption, TValue> {
   readonly option: TOption;
@@ -63,8 +66,19 @@ interface CascadeItem<TOption> extends StarMenuItem {
  *                     optionValue="code" [(value)]="city" showPath />
  * ```
  *
- * Slot: `ng-template[starCascadeOption]` replaces the label of each menu entry
- * (`StarCascadeOptionTemplate`).
+ * Slots: `ng-template[starCascadeOption]` replaces the label of each menu entry
+ * (`StarCascadeOptionTemplate`, PrimeNG `#option`); `ng-template[starSelected]` replaces the text
+ * of the chosen leaf in the trigger (PrimeNG `#value`); `starIcon` with `dropdown`, `clear` and
+ * `loading` replaces those icons.
+ *
+ * PrimeNG names that star-ng covers in another way: `optionGroupChildren` = `optionChildren`,
+ * `dataKey` = `compareWith`, `id` = `inputId`, `onChange` = `valueChange` and `optionSelect`,
+ * `onFocus` and `onBlur` = the native `focusin` and `focusout` events of the host, `variant` =
+ * `inputVariant` of `provideStarNg`, `panelStyle` and `panelStyleClass` = `pt` of the menu. Not
+ * applicable: `appendTo`, `overlayOptions` and `motionOptions` (the menu is a CDK overlay with
+ * theme motion), `searchLocale`, `searchMessage`, `emptySearchMessage`, `focusOnHover`,
+ * `selectOnFocus` and `autoOptionFocus` (the menu has typeahead and the keyboard model of the CDK
+ * menu, not a search field), `breakpoint`.
  */
 @Component({
   selector: 'star-cascade-select',
@@ -75,6 +89,8 @@ interface CascadeItem<TOption> extends StarMenuItem {
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-select star-cascade',
+    '[class.star-cascade--fluid]': 'fluid()',
+    '[attr.aria-busy]': 'loading() || null',
     '[class.star-select--disabled]': 'disabled()',
     '[class.star-select--invalid]': 'showInvalid()',
     '[class.star-select--sm]': "size() === 'sm'",
@@ -96,10 +112,18 @@ interface CascadeItem<TOption> extends StarMenuItem {
         [attr.aria-labelledby]="labelledBy()"
         [attr.aria-describedby]="fieldDescribedBy()"
         [attr.aria-invalid]="showInvalid() || null"
-        (cdkMenuClosed)="touch.emit()"
+        [attr.tabindex]="tabindex()"
+        (cdkMenuOpened)="beforeShow.emit(); show.emit()"
+        (cdkMenuClosed)="beforeHide.emit(); hide.emit(); touch.emit()"
       >
         @if (selected(); as leaf) {
-          <span data-star-part="valueText" class="star-select__value">{{ display(leaf) }}</span>
+          @if (selectedSlot(); as custom) {
+            <span data-star-part="valueText" class="star-select__value">
+              <ng-container *ngTemplateOutlet="custom; context: { $implicit: leaf.option }" />
+            </span>
+          } @else {
+            <span data-star-part="valueText" class="star-select__value">{{ display(leaf) }}</span>
+          }
         } @else {
           <span data-star-part="placeholderText" class="star-select__placeholder">{{
             placeholder() ?? text.selectPlaceholder
@@ -114,19 +138,44 @@ interface CascadeItem<TOption> extends StarMenuItem {
           [attr.aria-label]="text.clear"
           (click)="clear()"
         >
-          <i data-star-part="clearIcon" class="ph-bold ph-x" aria-hidden="true"></i>
+          @if (icons().get('clear'); as custom) {
+            <span data-star-part="clearIcon" class="star-cascade__icon" aria-hidden="true">
+              <ng-container *ngTemplateOutlet="custom; context: iconContext" />
+            </span>
+          } @else {
+            <i data-star-part="clearIcon" class="ph-bold ph-x" aria-hidden="true"></i>
+          }
         </button>
       }
-      <i
-        data-star-part="dropdownIcon"
-        class="ph-bold ph-caret-down star-select__caret"
-        aria-hidden="true"
-      ></i>
+      @if (loading()) {
+        @if (icons().get('loading'); as custom) {
+          <span data-star-part="dropdownIcon" class="star-select__caret" aria-hidden="true">
+            <ng-container *ngTemplateOutlet="custom; context: iconContext" />
+          </span>
+        } @else {
+          <i
+            data-star-part="dropdownIcon"
+            class="star-select__caret"
+            [class]="loadingIcon()"
+            aria-hidden="true"
+          ></i>
+        }
+      } @else if (icons().get('dropdown'); as custom) {
+        <span data-star-part="dropdownIcon" class="star-select__caret" aria-hidden="true">
+          <ng-container *ngTemplateOutlet="custom; context: iconContext" />
+        </span>
+      } @else {
+        <i
+          data-star-part="dropdownIcon"
+          class="ph-bold ph-caret-down star-select__caret"
+          aria-hidden="true"
+        ></i>
+      }
     </div>
     <star-menu
       #menu
       [ariaLabel]="ariaLabel() ?? (field?.label() || null)"
-      [itemTemplate]="optionSlot() ? optionItem : null"
+      [itemTemplate]="optionSlot() && options().length ? optionItem : null"
     />
     <ng-template #optionItem let-item>
       <ng-container *ngTemplateOutlet="optionSlot(); context: optionContext(item)" />
@@ -162,7 +211,26 @@ export class StarCascadeSelect<
   /** Size. Default: `size` of `provideStarNg` (`small` or `medium`), else `md`. */
   readonly size = input<'sm' | 'md'>(this.defaults.size ?? 'md');
   readonly ariaLabel = input<string | null>(null);
+  /** Id of an element that names the control (in place of a `star-field` label or `ariaLabel`). */
+  readonly ariaLabelledBy = input<string | null>(null);
   readonly inputId = input(inject(_IdGenerator).getId('star-cascade-'));
+  /**
+   * Label of a parent option (a group) when it differs from the label of a leaf. Default:
+   * `optionLabel`. PrimeNG `optionGroupLabel`.
+   */
+  readonly optionGroupLabel = input<StarOptionKey<TOption> | null>(null);
+  /** Text of the menu when there are no options (default `STAR_UI_TEXT.emptyMessage`). */
+  readonly emptyMessage = input<string | null>(null);
+  /** Shows a loading icon in place of the caret and sets `aria-busy`; the menu still opens. */
+  readonly loading = input(false, { transform: booleanAttribute });
+  /** Icon classes of the loading state. */
+  readonly loadingIcon = input('ph-bold ph-spinner-gap star-spin');
+  /** The control fills the width of its container. PrimeNG `fluid`. */
+  readonly fluid = input(false, { transform: booleanAttribute });
+  /** `tabindex` of the trigger button. */
+  readonly tabindex = input<number | null>(null);
+  /** Focuses the trigger once, after the first render. PrimeNG `autofocus`. */
+  readonly autofocus = input(false, { transform: booleanAttribute });
   /**
    * The parent `star-field` when it labels this control. A label `for` a button would click it
    * (and open the menu), so the trigger takes its name with aria-labelledby, and a click on the
@@ -178,6 +246,16 @@ export class StarCascadeSelect<
   readonly touch = output<void>();
   /** The user chose a leaf. */
   readonly optionSelect = output<TOption>();
+  /** Emits when the menu opens, before `show`. PrimeNG `onBeforeShow`. */
+  readonly beforeShow = output<void>();
+  /** Emits when the menu opens. PrimeNG `onShow`. */
+  readonly show = output<void>();
+  /** Emits when the menu closes, before `hide`. PrimeNG `onBeforeHide`. */
+  readonly beforeHide = output<void>();
+  /** Emits when the menu closes. PrimeNG `onHide`. */
+  readonly hide = output<void>();
+  /** Emits after the clear button removed the value. PrimeNG `onClear`. */
+  readonly cleared = output<void>();
 
   /** Invalid after touch, or while the parent `star-field` shows an error. */
   protected readonly showInvalid = computed(
@@ -188,10 +266,18 @@ export class StarCascadeSelect<
    * name is the label and the text on the button (WCAG 2.5.3).
    */
   protected readonly labelledBy = computed(() => {
+    const own = this.ariaLabelledBy();
+    if (own) return `${own} ${this.inputId()}`;
     const label = starFieldLabelledBy(this.field, this.ariaLabel());
     return label ? `${label} ${this.inputId()}` : null;
   });
   protected readonly fieldDescribedBy = computed(() => starJoinIds(this.field?.describedBy()));
+
+  constructor() {
+    afterNextRender(() => {
+      if (this.autofocus()) this.focus();
+    });
+  }
 
   focus(options?: FocusOptions): void {
     this.button().nativeElement.focus(options);
@@ -206,13 +292,18 @@ export class StarCascadeSelect<
     return optionText(option, this.optionLabel() ?? null);
   }
 
+  /** The label of a parent option: `optionGroupLabel`, else `optionLabel`. */
+  private groupLabelOf(option: TOption): string {
+    return optionText(option, this.optionGroupLabel() ?? this.optionLabel() ?? null);
+  }
+
   /** Every leaf with its path, in display order. */
   private readonly leaves = computed(() => {
     const out: Leaf<TOption, TValue>[] = [];
     const walk = (options: readonly TOption[], path: readonly string[]) => {
       for (const option of options) {
-        const next = [...path, this.labelOf(option)];
         const children = this.childrenOf(option);
+        const next = [...path, children.length ? this.groupLabelOf(option) : this.labelOf(option)];
         if (children.length) walk(children, next);
         else {
           out.push({
@@ -239,6 +330,13 @@ export class StarCascadeSelect<
     this,
     'option',
   );
+  protected readonly selectedSlot = starSlot<StarSelectedContext<TOption>>(
+    this.slots,
+    this,
+    'selected',
+  );
+  protected readonly icons = starSlotMap<StarIconContext>(this.slots, this, 'icon');
+  protected readonly iconContext: StarIconContext = {};
 
   /** Context of the option slot for one menu entry. The entries are the `CascadeItem`s of `menuItems`. */
   protected optionContext(item: StarMenuItem): StarCascadeOptionContext<TOption> {
@@ -264,7 +362,12 @@ export class StarCascadeSelect<
         const chosen = !hasChildren && option === selected;
         const entry = { option, level, index, hasChildren, selected: chosen };
         return hasChildren
-          ? { ...entry, label: this.labelOf(option), disabled, items: build(children, level + 1) }
+          ? {
+              ...entry,
+              label: this.groupLabelOf(option),
+              disabled,
+              items: build(children, level + 1),
+            }
           : {
               ...entry,
               label: this.labelOf(option),
@@ -273,7 +376,19 @@ export class StarCascadeSelect<
               command: () => this.choose(option),
             };
       });
-    return build(this.options(), 1);
+    const items = build(this.options(), 1);
+    if (items.length) return items;
+    // No options: one disabled entry with the empty message, so the menu is not empty.
+    const empty = {
+      option: undefined as unknown as TOption,
+      level: 1,
+      index: 0,
+      hasChildren: false,
+      selected: false,
+      label: this.emptyMessage() ?? this.text.emptyMessage,
+      disabled: true,
+    };
+    return [empty];
   });
 
   /**
@@ -299,5 +414,6 @@ export class StarCascadeSelect<
 
   clear(): void {
     this.value.set(null);
+    this.cleared.emit();
   }
 }

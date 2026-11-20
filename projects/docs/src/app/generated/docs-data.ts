@@ -2862,11 +2862,67 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
+        "name": "ariaLabelledBy",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Id of an element that names the control (in place of a `star-field` label or `ariaLabel`)."
+      },
+      {
         "name": "inputId",
         "type": "string",
         "default": "(generated id)",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "optionGroupLabel",
+        "type": "StarOptionKey<TOption> | null",
+        "default": "null",
+        "required": false,
+        "description": "Label of a parent option (a group) when it differs from the label of a leaf. Default: `optionLabel`. PrimeNG `optionGroupLabel`."
+      },
+      {
+        "name": "emptyMessage",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Text of the menu when there are no options (default `STAR_UI_TEXT.emptyMessage`)."
+      },
+      {
+        "name": "loading",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows a loading icon in place of the caret and sets `aria-busy`; the menu still opens."
+      },
+      {
+        "name": "loadingIcon",
+        "type": "string",
+        "default": "'ph-bold ph-spinner-gap star-spin'",
+        "required": false,
+        "description": "Icon classes of the loading state."
+      },
+      {
+        "name": "fluid",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The control fills the width of its container. PrimeNG `fluid`."
+      },
+      {
+        "name": "tabindex",
+        "type": "number | null",
+        "default": "null",
+        "required": false,
+        "description": "`tabindex` of the trigger button."
+      },
+      {
+        "name": "autofocus",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Focuses the trigger once, after the first render. PrimeNG `autofocus`."
       },
       {
         "name": "disabled",
@@ -2943,6 +2999,41 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": "The user chose a leaf."
+      },
+      {
+        "name": "beforeShow",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "Emits when the menu opens, before `show`. PrimeNG `onBeforeShow`."
+      },
+      {
+        "name": "show",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "Emits when the menu opens. PrimeNG `onShow`."
+      },
+      {
+        "name": "beforeHide",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "Emits when the menu closes, before `hide`. PrimeNG `onBeforeHide`."
+      },
+      {
+        "name": "hide",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "Emits when the menu closes. PrimeNG `onHide`."
+      },
+      {
+        "name": "cleared",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "Emits after the clear button removed the value. PrimeNG `onClear`."
       }
     ],
     "parts": [
@@ -21931,6 +22022,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "carousel/basic": "<star-carousel\n  style=\"width: 100%; max-width: 40rem\"\n  [items]=\"photos\"\n  ariaLabel=\"Warehouse photos\"\n>\n  <ng-template starCarouselItem [starCarouselItemOf]=\"photos\" let-photo>\n    <img\n      style=\"display: block; width: 100%; height: auto\"\n      [src]=\"photo.src\"\n      [alt]=\"photo.label\"\n    />\n  </ng-template>\n</star-carousel>",
   "carousel/visible": "<star-carousel\n  style=\"width: 100%; max-width: 40rem\"\n  [items]=\"photos\"\n  [numVisible]=\"3\"\n  ariaLabel=\"Warehouse photo pages\"\n>\n  <ng-template starCarouselItem [starCarouselItemOf]=\"photos\" let-photo let-index=\"index\">\n    <figure style=\"margin: 0\">\n      <img\n        style=\"display: block; width: 100%; height: auto\"\n        [src]=\"photo.src\"\n        [alt]=\"photo.label\"\n      />\n      <figcaption>Slide {{ index + 1 }}</figcaption>\n    </figure>\n  </ng-template>\n</star-carousel>",
   "cascade-select/basic": "<div class=\"docs-stack\">\n  <star-cascade-select\n    [options]=\"places\"\n    optionLabel=\"name\"\n    optionValue=\"code\"\n    [(value)]=\"place\"\n    placeholder=\"Choose a city\"\n    ariaLabel=\"City\"\n  />\n  <p class=\"docs-output\" role=\"status\">Value: {{ place() ?? 'none' }}</p>\n</div>",
+  "cascade-select/events": "<div class=\"docs-stack\">\n  <star-cascade-select\n    [options]=\"loadingPlaces() ? [] : places\"\n    optionLabel=\"name\"\n    optionValue=\"code\"\n    [(value)]=\"eventPlace\"\n    [loading]=\"loadingPlaces()\"\n    emptyMessage=\"The places are loading\"\n    ariaLabel=\"City while loading\"\n    showClear\n    fluid\n    (show)=\"menuLog.set('menu open')\"\n    (hide)=\"menuLog.set('menu closed')\"\n    (cleared)=\"menuLog.set('cleared')\"\n  />\n  <div class=\"docs-row\">\n    <button\n      type=\"button\"\n      class=\"star-btn star-btn--secondary star-btn--sm\"\n      (click)=\"loadingPlaces.set(!loadingPlaces())\"\n    >\n      {{ loadingPlaces() ? 'Finish loading' : 'Load again' }}\n    </button>\n    <span class=\"docs-output\" role=\"status\">{{ menuLog() || 'No event yet' }}</span>\n  </div>\n</div>",
   "cascade-select/form": "<div class=\"docs-stack\">\n  <star-field label=\"Office city\" for=\"cascade-form-city\" [state]=\"office.city()\">\n    <star-cascade-select\n      inputId=\"cascade-form-city\"\n      [formField]=\"office.city\"\n      [options]=\"places\"\n      optionLabel=\"name\"\n      optionValue=\"code\"\n      placeholder=\"Choose a city\"\n      showPath\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Valid: {{ office().valid() }}</p>\n</div>",
   "cascade-select/option": "<div class=\"docs-stack\">\n  <star-cascade-select\n    [options]=\"places\"\n    optionLabel=\"name\"\n    optionValue=\"code\"\n    [(value)]=\"templated\"\n    placeholder=\"Choose a city\"\n    ariaLabel=\"City with option template\"\n  >\n    <ng-template\n      starCascadeOption\n      [starCascadeOptionOf]=\"places\"\n      let-place\n      let-hasChildren=\"hasChildren\"\n    >\n      @if (hasChildren) {\n        <strong>{{ place.name }}</strong>\n      } @else {\n        {{ place.name }} ({{ place.code }})\n      }\n    </ng-template>\n  </star-cascade-select>\n  <p class=\"docs-output\" role=\"status\">Value: {{ templated() ?? 'none' }}</p>\n</div>",
   "cascade-select/path": "<star-cascade-select\n  [options]=\"places\"\n  optionLabel=\"name\"\n  optionValue=\"code\"\n  [(value)]=\"pathPlace\"\n  placeholder=\"Choose a city\"\n  ariaLabel=\"City with path\"\n  showPath\n  showClear\n/>",

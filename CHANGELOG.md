@@ -259,6 +259,8 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 
 #### Select, autocomplete and listbox
 
+- Cascade select: `loading` and `loadingIcon` (with `aria-busy`), `emptyMessage` (a disabled menu entry when there are no options), `optionGroupLabel`, `fluid`, `tabindex`, `autofocus`, `ariaLabelledBy`, the outputs `beforeShow`, `show`, `beforeHide`, `hide` and `cleared`, and the slots `starSelected` and `starIcon` (`dropdown`, `clear`, `loading`) (PrimeNG `p-cascadeselect`).
+
 - Select, multi-select and autocomplete: `filterBy`, `filterMatchMode`, `filterLocale` and `resetFilterOnHide`; listbox: `filterBy`, `filterMatchMode` and `filterLocale`. New helper `starFilterMatch` in `@star-ng/ui/core`.
 - Select, multi-select, autocomplete and listbox: lazy loading (`lazy`, `lazyLoad` with `StarListLazyLoadEvent`, `resetLazy()` to ask again after a failed load). Options that are not loaded are `undefined` in the array, show as skeleton rows, are skipped by the keyboard, and the list has `aria-busy`.
 - Select: `editable` with `allowCustomValue` and `customValue`. Multi-select and multiple autocomplete: `allowCustomValues` with an "Add “text”" row and `customValueAdd`.
