@@ -261,6 +261,39 @@ describe('StarImageEditor', () => {
     expect(document.activeElement).toBe(tool('crop'));
   });
 
+  for (const panel of ['crop', 'resize'] as const) {
+    it(`locks the other geometry tools while the ${panel} panel is open`, async () => {
+      const { editor, tool, button, stable } = await setup();
+      tool(panel).click();
+      await stable();
+      const locked = [
+        'crop',
+        'rotate',
+        'rotateLeft',
+        'rotateRight',
+        'flipHorizontal',
+        'flipVertical',
+        'resize',
+      ].filter((id) => id !== panel);
+      for (const id of locked) expect(tool(id).getAttribute('aria-disabled'), id).toBe('true');
+      // The open tool can still close its panel; colour tools are not geometry.
+      expect(tool(panel).getAttribute('aria-disabled')).toBeNull();
+      expect(tool('adjust').getAttribute('aria-disabled')).toBeNull();
+      for (const id of locked) tool(id).click();
+      editor.rotate(90);
+      editor.flip('vertical');
+      await stable();
+      expect(editor.operations()).toEqual([]);
+      expect(editor.tool()).toBe(panel);
+      button('Cancel').click();
+      await stable();
+      expect(tool('rotateRight').getAttribute('aria-disabled')).toBeNull();
+      tool('rotateRight').click();
+      await stable();
+      expect(editor.operations()).toEqual([{ type: 'rotate', angle: 90 }]);
+    });
+  }
+
   it('rotates by a free angle from a labelled slider', async () => {
     const { root, editor, tool, button, stable } = await setup();
     tool('rotate').click();

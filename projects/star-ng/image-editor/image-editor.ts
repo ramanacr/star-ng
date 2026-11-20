@@ -103,6 +103,17 @@ const KINDS: readonly { kind: StarImageAnnotationKind; icon: string }[] = [
   { kind: 'text', icon: 'ph-text-t' },
 ];
 
+/** Tools that change the geometry (size, turn, mirror) of the image. */
+const GEOMETRY_TOOLS: ReadonlySet<string> = new Set([
+  'crop',
+  'rotate',
+  'rotateLeft',
+  'rotateRight',
+  'flipHorizontal',
+  'flipVertical',
+  'resize',
+]);
+
 const HANDLES: readonly StarImageCropHandle[] = ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w'];
 
 type ToolbarId =
@@ -618,16 +629,26 @@ export class StarImageEditor {
     return { width: Math.round(size.width * scale), height: Math.round(size.height * scale) };
   });
 
+  /** True while the crop or the resize panel is open: no other geometry edit then. */
+  private readonly geometryLocked = computed(() => {
+    const tool = this.tool();
+    return tool === 'crop' || tool === 'resize';
+  });
+
   protected readonly toolbar = computed<readonly ToolbarItem[]>(() => {
     const t = this.text;
     const none = !this.loaded();
     const tool = this.tool();
+    // While the crop or resize panel is open, its values belong to the current geometry: the
+    // other geometry tools wait until Apply or Cancel.
+    const locked = this.geometryLocked();
+    const geometry = (id: ToolbarId) => none || (locked && id !== tool);
     const toggle = (id: StarImageTool, icon: string, label: string, group = false) => ({
       id,
       icon,
       label,
       pressed: tool === id,
-      disabled: none,
+      disabled: GEOMETRY_TOOLS.has(id) ? geometry(id) : none,
       group,
     });
     const action = (
@@ -647,10 +668,15 @@ export class StarImageEditor {
     return [
       toggle('crop', 'ph-crop', t.imageCrop),
       toggle('rotate', 'ph-angle', t.imageRotate),
-      action('rotateLeft', 'ph-arrow-counter-clockwise', t.imageRotateLeft, none),
-      action('rotateRight', 'ph-arrow-clockwise', t.imageRotateRight, none),
-      action('flipHorizontal', 'ph-flip-horizontal', t.imageFlipHorizontal, none),
-      action('flipVertical', 'ph-flip-vertical', t.imageFlipVertical, none),
+      action('rotateLeft', 'ph-arrow-counter-clockwise', t.imageRotateLeft, geometry('rotateLeft')),
+      action('rotateRight', 'ph-arrow-clockwise', t.imageRotateRight, geometry('rotateRight')),
+      action(
+        'flipHorizontal',
+        'ph-flip-horizontal',
+        t.imageFlipHorizontal,
+        geometry('flipHorizontal'),
+      ),
+      action('flipVertical', 'ph-flip-vertical', t.imageFlipVertical, geometry('flipVertical')),
       toggle('resize', 'ph-arrows-out', t.imageResize, true),
       toggle('adjust', 'ph-sliders-horizontal', t.imageAdjust),
       toggle('annotate', 'ph-pencil-simple', t.imageAnnotate),
@@ -808,14 +834,15 @@ export class StarImageEditor {
     this.commit([], this.text.imageResetDone);
   }
 
-  /** Rotates by `angle` degrees, clockwise (for example 90 or -90). */
+  /** Rotates by `angle` degrees, clockwise (for example 90 or -90). Ignored while the crop or resize panel is open. */
   rotate(angle: number): void {
-    if (this.loaded() && angle % 360) this.push({ type: 'rotate', angle });
+    if (this.loaded() && !this.geometryLocked() && angle % 360)
+      this.push({ type: 'rotate', angle });
   }
 
-  /** Mirrors the image. */
+  /** Mirrors the image. Ignored while the crop or resize panel is open. */
   flip(axis: 'horizontal' | 'vertical'): void {
-    if (this.loaded()) this.push({ type: 'flip', axis });
+    if (this.loaded() && !this.geometryLocked()) this.push({ type: 'flip', axis });
   }
 
   /** Adds any operation (for example a crop from code). */
