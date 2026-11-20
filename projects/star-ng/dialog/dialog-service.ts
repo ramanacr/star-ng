@@ -14,6 +14,7 @@ import {
   signal,
   Type,
 } from '@angular/core';
+import { StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 import { StarDialog, StarDialogPosition } from './dialog';
 import { StarDialogSize } from './dialog-base';
 import { STAR_DIALOG_DEFAULTS } from './dialog-defaults';
@@ -83,6 +84,8 @@ export class StarDialogRef<R = unknown> {
 /** Internal host: an `star-dialog` whose body is the requested component. */
 @Component({
   selector: 'star-dialog-container',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   imports: [StarDialog, NgComponentOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `

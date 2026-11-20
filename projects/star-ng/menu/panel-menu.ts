@@ -10,6 +10,7 @@ import {
   output,
 } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
+import { StarPart, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 import { StarMenuItem } from './menu';
 
 /**
@@ -25,23 +26,30 @@ import { StarMenuItem } from './menu';
  */
 @Component({
   selector: 'star-panel-menu',
-  imports: [NgTemplateOutlet, RouterLink, RouterLinkActive],
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [StarPart, NgTemplateOutlet, RouterLink, RouterLinkActive],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-panel-menu' },
   template: `
-    <nav [attr.aria-label]="ariaLabel()">
+    <nav starPart="nav" [attr.aria-label]="ariaLabel()">
       <ng-container *ngTemplateOutlet="list; context: { $implicit: items(), path: '', level: 0 }" />
     </nav>
 
     <ng-template #list let-entries let-path="path" let-level="level">
-      <ul class="star-panel-menu__list" [class.star-panel-menu__list--nested]="level > 0">
+      <ul
+        starPart="list"
+        class="star-panel-menu__list"
+        [class.star-panel-menu__list--nested]="level > 0"
+      >
         @for (item of entries; track $index; let i = $index) {
           @let key = path ? path + '.' + i : '' + i;
           @if (item.separator) {
-            <li class="star-panel-menu__separator" role="separator"></li>
+            <li starPart="separator" class="star-panel-menu__separator" role="separator"></li>
           } @else if (item.items?.length) {
-            <li>
+            <li starPart="item">
               <button
+                starPart="item"
                 type="button"
                 class="star-panel-menu__item star-panel-menu__item--parent"
                 [class.star-panel-menu__item--root]="level === 0"
@@ -52,13 +60,22 @@ import { StarMenuItem } from './menu';
                 (click)="toggle(key)"
               >
                 @if (item.icon) {
-                  <i class="star-panel-menu__icon" [class]="item.icon" aria-hidden="true"></i>
+                  <i
+                    starPart="icon"
+                    class="star-panel-menu__icon"
+                    [class]="item.icon"
+                    aria-hidden="true"
+                  ></i>
                 }
-                <span class="star-panel-menu__label">{{ item.label }}</span>
-                <i class="ph-bold ph-caret-down star-panel-menu__caret" aria-hidden="true"></i>
+                <span starPart="label" class="star-panel-menu__label">{{ item.label }}</span>
+                <i
+                  starPart="caret"
+                  class="ph-bold ph-caret-down star-panel-menu__caret"
+                  aria-hidden="true"
+                ></i>
               </button>
               @if (isOpen(key)) {
-                <div [id]="regionId(key)">
+                <div starPart="section" [id]="regionId(key)">
                   <ng-container
                     *ngTemplateOutlet="
                       list;
@@ -69,8 +86,9 @@ import { StarMenuItem } from './menu';
               }
             </li>
           } @else if (item.routerLink) {
-            <li>
+            <li starPart="item">
               <a
+                starPart="item"
                 class="star-panel-menu__item"
                 routerLinkActive="star-panel-menu__item--active"
                 ariaCurrentWhenActive="page"
@@ -83,8 +101,9 @@ import { StarMenuItem } from './menu';
               </a>
             </li>
           } @else if (item.url) {
-            <li>
+            <li starPart="item">
               <a
+                starPart="item"
                 class="star-panel-menu__item"
                 [style.--star-level]="level"
                 [attr.href]="item.disabled ? null : item.url"
@@ -95,8 +114,9 @@ import { StarMenuItem } from './menu';
               </a>
             </li>
           } @else {
-            <li>
+            <li starPart="item">
               <button
+                starPart="item"
                 type="button"
                 class="star-panel-menu__item"
                 [class.star-panel-menu__item--danger]="item.danger"
@@ -114,9 +134,9 @@ import { StarMenuItem } from './menu';
 
     <ng-template #content let-item>
       @if (item.icon) {
-        <i class="star-panel-menu__icon" [class]="item.icon" aria-hidden="true"></i>
+        <i starPart="icon" class="star-panel-menu__icon" [class]="item.icon" aria-hidden="true"></i>
       }
-      <span class="star-panel-menu__label">{{ item.label }}</span>
+      <span starPart="label" class="star-panel-menu__label">{{ item.label }}</span>
     </ng-template>
   `,
 })

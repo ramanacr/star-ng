@@ -22,7 +22,13 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { StarButton, StarButtonSize, StarButtonVariant } from '@star-ng/ui/button';
-import { STAR_UI_TEXT, StarDirectionService } from '@star-ng/ui/core';
+import {
+  STAR_UI_TEXT,
+  StarDirectionService,
+  StarPart,
+  StarStyled,
+  ɵSTAR_PART_HOST,
+} from '@star-ng/ui/core';
 
 /** One menu entry (PrimeNG `MenuItem`). `items` makes a submenu (tiered menu). */
 export interface StarMenuItem {
@@ -112,18 +118,29 @@ export class StarMenuInDialog {
  */
 @Component({
   selector: 'star-menu',
-  imports: [CdkMenu, CdkMenuItem, CdkMenuTrigger, NgTemplateOutlet, RouterLink, StarMenuInDialog],
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [
+    StarPart,
+    CdkMenu,
+    CdkMenuItem,
+    CdkMenuTrigger,
+    NgTemplateOutlet,
+    RouterLink,
+    StarMenuInDialog,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-menu-host' },
   template: `
     <ng-template #menu let-items>
       <!-- Items must be direct template children of cdkMenu: CDK resolves the menu by DI. -->
-      <div class="star-menu" cdkMenu [attr.aria-label]="ariaLabel()">
+      <div starPart="menu" class="star-menu" cdkMenu [attr.aria-label]="ariaLabel()">
         @for (item of items; track $index) {
           @if (item.separator) {
-            <div class="star-menu__separator" role="separator"></div>
+            <div starPart="separator" class="star-menu__separator" role="separator"></div>
           } @else if (item.items?.length) {
             <button
+              starPart="item"
               type="button"
               class="star-menu__item"
               cdkMenuItem
@@ -133,12 +150,14 @@ export class StarMenuInDialog {
             >
               <ng-container *ngTemplateOutlet="content; context: { $implicit: item }" />
               <i
+                starPart="sub"
                 class="ph-bold ph-caret-right star-menu__sub star-icon-mirror"
                 aria-hidden="true"
               ></i>
             </button>
           } @else if (item.routerLink) {
             <a
+              starPart="item"
               class="star-menu__item"
               cdkMenuItem
               [class.star-menu__item--danger]="item.danger"
@@ -150,6 +169,7 @@ export class StarMenuInDialog {
             </a>
           } @else if (item.url) {
             <a
+              starPart="item"
               class="star-menu__item"
               cdkMenuItem
               [href]="item.url"
@@ -160,6 +180,7 @@ export class StarMenuInDialog {
             </a>
           } @else {
             <button
+              starPart="item"
               type="button"
               class="star-menu__item"
               cdkMenuItem
@@ -176,9 +197,9 @@ export class StarMenuInDialog {
 
     <ng-template #content let-item>
       @if (item.icon) {
-        <i class="star-menu__icon" [class]="item.icon" aria-hidden="true"></i>
+        <i starPart="icon" class="star-menu__icon" [class]="item.icon" aria-hidden="true"></i>
       }
-      <span class="star-menu__label">
+      <span starPart="label" class="star-menu__label">
         @if (itemTemplate(); as template) {
           <ng-container *ngTemplateOutlet="template; context: { $implicit: item }" />
         } @else {
@@ -186,7 +207,7 @@ export class StarMenuInDialog {
         }
       </span>
       @if (item.shortcut) {
-        <kbd class="star-menu__shortcut">{{ item.shortcut }}</kbd>
+        <kbd starPart="shortcut" class="star-menu__shortcut">{{ item.shortcut }}</kbd>
       }
     </ng-template>
 
@@ -352,7 +373,9 @@ export class StarMenuTrigger {
  */
 @Component({
   selector: 'star-split-button',
-  imports: [StarButton, StarMenu, StarMenuTrigger],
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [StarPart, StarButton, StarMenu, StarMenuTrigger],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-split' },
   template: `
@@ -367,6 +390,7 @@ export class StarMenuTrigger {
       {{ label() }}
     </star-button>
     <button
+      starPart="toggle"
       type="button"
       class="star-btn star-split__toggle"
       [class]="'star-btn star-split__toggle star-btn--' + variant() + ' star-btn--' + size()"
@@ -374,7 +398,7 @@ export class StarMenuTrigger {
       [attr.aria-label]="text.moreActions"
       [starMenuTrigger]="menu"
     >
-      <i class="ph-bold ph-caret-down" aria-hidden="true"></i>
+      <i starPart="icon" class="ph-bold ph-caret-down" aria-hidden="true"></i>
     </button>
     <star-menu #menu [items]="items()" (itemClick)="itemClick.emit($event)" />
   `,

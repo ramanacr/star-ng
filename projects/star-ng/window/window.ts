@@ -19,7 +19,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { STAR_UI_TEXT, starIsRtl } from '@star-ng/ui/core';
+import { STAR_UI_TEXT, starIsRtl, StarPart, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 
 /** State of a `star-window`. */
 export type StarWindowState = 'normal' | 'minimized' | 'maximized';
@@ -102,11 +102,15 @@ export class StarWindowStack {
  */
 @Component({
   selector: 'star-window',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <!-- Keys and pointer presses from inside the window: Escape and bringing it to the front. -->
     <!-- eslint-disable-next-line @angular-eslint/template/interactive-supports-focus -->
     <dialog
+      starPart="window"
       #dialog
       class="star-window"
       [class.star-window--minimized]="state() === 'minimized'"
@@ -127,6 +131,7 @@ export class StarWindowStack {
     >
       <!-- The title bar takes the focus for the move and resize keys; the pointer drags it. -->
       <div
+        starPart="titlebar"
         class="star-window__titlebar"
         tabindex="0"
         role="group"
@@ -138,24 +143,26 @@ export class StarWindowStack {
         (dblclick)="onTitleDoubleClick($event)"
       >
         @if (header()) {
-          <h2 class="star-window__title" [id]="titleId">{{ header() }}</h2>
+          <h2 starPart="title" class="star-window__title" [id]="titleId">{{ header() }}</h2>
         } @else {
           <!-- Keeps the buttons at the inline end without a title. -->
-          <span class="star-window__title" aria-hidden="true"></span>
+          <span starPart="title" class="star-window__title" aria-hidden="true"></span>
         }
         <ng-content select="[starWindowHeader]" />
-        <div class="star-window__actions">
+        <div starPart="actions" class="star-window__actions">
           <!-- Stable toggles: the focused button stays when the state changes. A window that is
                minimized or maximized from code always shows its restore button, also when that
                action is off; after the restore the button goes, and the focus goes to the title bar. -->
           @if (minimizable() || state() === 'minimized') {
             <button
+              starPart="button"
               type="button"
               class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
               [attr.aria-label]="state() === 'minimized' ? text.restore : text.minimize"
               (click)="toggleMinimized()"
             >
               <i
+                starPart="icon"
                 [class]="state() === 'minimized' ? 'ph-bold ph-copy-simple' : 'ph-bold ph-minus'"
                 aria-hidden="true"
               ></i>
@@ -163,12 +170,14 @@ export class StarWindowStack {
           }
           @if (maximizable() || state() === 'maximized') {
             <button
+              starPart="button"
               type="button"
               class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
               [attr.aria-label]="state() === 'maximized' ? text.restore : text.maximize"
               (click)="toggleMaximized()"
             >
               <i
+                starPart="icon"
                 [class]="state() === 'maximized' ? 'ph-bold ph-copy-simple' : 'ph-bold ph-square'"
                 aria-hidden="true"
               ></i>
@@ -176,28 +185,30 @@ export class StarWindowStack {
           }
           @if (closable()) {
             <button
+              starPart="button"
               type="button"
               class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
               [attr.aria-label]="text.close"
               (click)="close()"
             >
-              <i class="ph-bold ph-x" aria-hidden="true"></i>
+              <i starPart="icon" class="ph-bold ph-x" aria-hidden="true"></i>
             </button>
           }
         </div>
       </div>
-      <div class="star-window__content" [hidden]="state() === 'minimized'">
-        <div class="star-window__body"><ng-content /></div>
+      <div starPart="content" class="star-window__content" [hidden]="state() === 'minimized'">
+        <div starPart="body" class="star-window__body"><ng-content /></div>
         <ng-content select="[starWindowFooter]" />
       </div>
       @if (resizable() && state() === 'normal') {
         <span
+          starPart="resize"
           class="star-window__resize"
           aria-hidden="true"
           (pointerdown)="onResizeStart($event)"
         ></span>
       }
-      <p class="star-sr-only" [id]="hintId">{{ hint() }}</p>
+      <p starPart="srText" class="star-sr-only" [id]="hintId">{{ hint() }}</p>
     </dialog>
   `,
 })

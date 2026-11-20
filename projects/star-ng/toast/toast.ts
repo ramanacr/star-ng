@@ -20,9 +20,12 @@ import {
   STAR_SLOT_HOST,
   STAR_UI_TEXT,
   starBreakpointValue,
+  StarPart,
   StarSlot,
   starSlot,
+  StarStyled,
   starViewportWidth,
+  ɵSTAR_PART_HOST,
 } from '@star-ng/ui/core';
 import { Observable, Subject } from 'rxjs';
 import { STAR_TOAST_DEFAULTS, StarToastPosition } from './toast-defaults';
@@ -217,7 +220,9 @@ const ICONS: Record<StarToastSeverity, string> = {
  */
 @Component({
   selector: 'star-toast',
-  imports: [NgTemplateOutlet],
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [StarPart, NgTemplateOutlet],
   providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarToast) }],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
@@ -232,6 +237,7 @@ const ICONS: Record<StarToastSeverity, string> = {
   template: `
     @for (message of visible(); track message.id) {
       <div
+        starPart="toast"
         class="star-toast"
         [class]="'star-toast star-toast--' + message.severity"
         [attr.role]="message.severity === 'error' ? 'alert' : 'status'"
@@ -240,24 +246,30 @@ const ICONS: Record<StarToastSeverity, string> = {
         (focusin)="toasts.pause(message.id)"
         (focusout)="toasts.resume(message.id)"
       >
-        <i class="star-toast__icon" [class]="icon(message.severity)" aria-hidden="true"></i>
-        <div class="star-toast__copy">
+        <i
+          starPart="icon"
+          class="star-toast__icon"
+          [class]="icon(message.severity)"
+          aria-hidden="true"
+        ></i>
+        <div starPart="copy" class="star-toast__copy">
           @if (messageSlot(); as slot) {
             <ng-container *ngTemplateOutlet="slot; context: messageContext(message)" />
           } @else {
-            <p class="star-toast__summary">{{ message.summary }}</p>
+            <p starPart="summary" class="star-toast__summary">{{ message.summary }}</p>
             @if (message.detail) {
-              <p class="star-toast__detail">{{ message.detail }}</p>
+              <p starPart="detail" class="star-toast__detail">{{ message.detail }}</p>
             }
           }
         </div>
         <button
+          starPart="close"
           type="button"
           class="star-toast__close"
           [attr.aria-label]="text.close"
           (click)="toasts.remove(message.id)"
         >
-          <i class="ph-bold ph-x" aria-hidden="true"></i>
+          <i starPart="icon" class="ph-bold ph-x" aria-hidden="true"></i>
         </button>
       </div>
     }

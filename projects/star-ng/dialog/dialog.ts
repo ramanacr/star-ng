@@ -11,7 +11,14 @@ import {
   output,
   signal,
 } from '@angular/core';
-import { starBreakpointValue, starIsRtl, starViewportWidth } from '@star-ng/ui/core';
+import {
+  starBreakpointValue,
+  starIsRtl,
+  StarPart,
+  StarStyled,
+  starViewportWidth,
+  ɵSTAR_PART_HOST,
+} from '@star-ng/ui/core';
 import { StarDialogBase } from './dialog-base';
 import {
   arrowDelta,
@@ -58,11 +65,15 @@ export type StarDialogPosition =
  */
 @Component({
   selector: 'star-dialog',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <!-- Backdrop click only; keyboard users close with Escape (native cancel event). -->
     <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events -->
     <dialog
+      starPart="dialog"
       #dialog
       class="star-dialog"
       [class]="'star-dialog--' + size() + ' star-dialog--at-' + position()"
@@ -84,40 +95,44 @@ export type StarDialogPosition =
       (close)="onNativeClose()"
       (click)="onDialogClick($event)"
     >
-      <div class="star-dialog__surface">
+      <div starPart="surface" class="star-dialog__surface">
         @if (titleShown()) {
           <!-- Pointer drag on the whole header; the keyboard moves the dialog from the move button. -->
           <header
+            starPart="header"
             class="star-dialog__header"
             [class.star-dialog__header--draggable]="canDrag()"
             (pointerdown)="onDragStart($event)"
           >
-            <div class="star-dialog__heading">
+            <div starPart="heading" class="star-dialog__heading">
               @if (header()) {
-                <h2 class="star-dialog__title" [id]="headerId">{{ header() }}</h2>
+                <h2 starPart="title" class="star-dialog__title" [id]="headerId">{{ header() }}</h2>
               }
               <ng-content select="[starDialogHeader]" />
             </div>
-            <div class="star-dialog__controls">
+            <div starPart="controls" class="star-dialog__controls">
               @if (canDrag()) {
                 <button
+                  starPart="move"
                   type="button"
                   class="star-btn star-btn--ghost star-btn--icon star-dialog__move"
                   [attr.aria-label]="text.moveDialog"
                   aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight"
                   (keydown)="onDragKey($event)"
                 >
-                  <i class="ph-bold ph-arrows-out-cardinal" aria-hidden="true"></i>
+                  <i starPart="icon" class="ph-bold ph-arrows-out-cardinal" aria-hidden="true"></i>
                 </button>
               }
               @if (maximizable()) {
                 <button
+                  starPart="maximize"
                   type="button"
                   class="star-btn star-btn--ghost star-btn--icon star-dialog__maximize"
                   [attr.aria-label]="maximized() ? text.restore : text.maximize"
                   (click)="toggleMaximize()"
                 >
                   <i
+                    starPart="icon"
                     [class]="maximized() ? 'ph-bold ph-corners-in' : 'ph-bold ph-corners-out'"
                     aria-hidden="true"
                   ></i>
@@ -125,22 +140,24 @@ export type StarDialogPosition =
               }
               @if (closable()) {
                 <button
+                  starPart="close"
                   type="button"
                   class="star-btn star-btn--ghost star-btn--icon star-dialog__close"
                   [attr.aria-label]="text.close"
                   (click)="close()"
                 >
-                  <i class="ph-bold ph-x" aria-hidden="true"></i>
+                  <i starPart="icon" class="ph-bold ph-x" aria-hidden="true"></i>
                 </button>
               }
             </div>
           </header>
         }
-        <div class="star-dialog__body"><ng-content /></div>
+        <div starPart="body" class="star-dialog__body"><ng-content /></div>
         <ng-content select="[starDialogFooter]" />
       </div>
       @if (resizable() && free()) {
         <button
+          starPart="resize"
           type="button"
           class="star-dialog__resize"
           [attr.aria-label]="text.resizeDialog"

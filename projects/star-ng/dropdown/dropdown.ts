@@ -30,7 +30,7 @@ import {
   viewChild,
   ViewContainerRef,
 } from '@angular/core';
-import { StarDirectionService } from '@star-ng/ui/core';
+import { StarDirectionService, StarPart, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 import { Subscription } from 'rxjs';
 
 /** Payload of `selectionChange` of `star-dropdown`. */
@@ -81,6 +81,9 @@ class DropdownOption implements Highlightable {
  */
 @Component({
   selector: 'star-dropdown-item',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '[id]': 'id',
@@ -95,9 +98,9 @@ class DropdownOption implements Highlightable {
   },
   template: `
     @if (!divider()) {
-      <span class="star-listbox__label"><ng-content /></span>
+      <span starPart="label" class="star-listbox__label"><ng-content /></span>
       @if (selected()) {
-        <i class="ph-bold ph-check star-listbox__check" aria-hidden="true"></i>
+        <i starPart="check" class="ph-bold ph-check star-listbox__check" aria-hidden="true"></i>
       }
     }
   `,
@@ -172,11 +175,15 @@ export class StarDropdownItem {
  */
 @Component({
   selector: 'star-dropdown',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <ng-template #panel>
-      <div class="star-panel star-dropdown">
+      <div starPart="panel" class="star-panel star-dropdown">
         <div
+          starPart="listbox"
           class="star-listbox"
           role="listbox"
           tabindex="0"
