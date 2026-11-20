@@ -6,6 +6,7 @@ import {
   booleanAttribute,
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   Directive,
   effect,
   ElementRef,
@@ -264,8 +265,13 @@ export class StarMenuTrigger {
     });
     afterNextRender(() => this.syncInnerButton(false));
     // The CDK host bindings write the new state in the render after the event: sync after it.
-    const later = (open: boolean) =>
+    // A menu that closes while the trigger is destroyed registers no hook on the gone view.
+    let destroyed = false;
+    inject(DestroyRef).onDestroy(() => (destroyed = true));
+    const later = (open: boolean) => {
+      if (destroyed) return;
       afterNextRender(() => this.syncInnerButton(open), { injector: this.injector });
+    };
     this.trigger.opened.pipe(takeUntilDestroyed()).subscribe(() => later(true));
     this.trigger.closed.pipe(takeUntilDestroyed()).subscribe(() => later(false));
     this.adaptWrapperHost();

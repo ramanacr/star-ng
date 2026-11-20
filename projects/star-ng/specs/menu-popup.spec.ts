@@ -1,4 +1,4 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA, PLATFORM_ID } from '@angular/core';
+import { ApplicationRef, Component, CUSTOM_ELEMENTS_SCHEMA, PLATFORM_ID } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { StarButton } from '@star-ng/ui/button';
 import {
@@ -96,6 +96,20 @@ describe('StarMenuTrigger on a wrapper host', () => {
     await fixture.whenStable();
     expect(inner.getAttribute('aria-expanded')).toBe('true');
     expect(wrapper.hasAttribute('aria-expanded')).toBe(false);
+  });
+
+  it('can be destroyed while its menu is open or closing', async () => {
+    const fixture = TestBed.createComponent(WrapperHost);
+    await fixture.whenStable();
+    const inner = (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>(
+      '#wrapper button',
+    )!;
+    inner.click();
+    await fixture.whenStable();
+    expect(inner.getAttribute('aria-expanded')).toBe('true');
+    // The destroy closes the menu: its close must not register a hook on the destroyed view.
+    expect(() => fixture.destroy()).not.toThrow();
+    await TestBed.inject(ApplicationRef).whenStable();
   });
 
   it('keeps the button role of a host without an inner button', async () => {
