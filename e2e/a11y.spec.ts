@@ -1625,6 +1625,22 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'data view with paginators at both ends, on page 2',
+    path: 'controls/data-view',
+    open: async (page) => {
+      const live = example(page, 'Sort field, filter, paginator options and loading');
+      await live
+        .getByRole('navigation', { name: 'Catalog pages, bottom' })
+        .getByRole('button', { name: 'Next page' })
+        .click();
+      await expect(
+        live.getByRole('navigation', { name: 'Catalog pages, top' }).getByRole('button', {
+          name: 'Page 2',
+        }),
+      ).toHaveAttribute('aria-current', 'page');
+    },
+  },
+  {
     name: 'galleria full screen',
     path: 'controls/galleria',
     open: async (page) => {

@@ -110,6 +110,17 @@ describe('StarDataView depth', () => {
     expect(t.el.querySelector('star-paginator [role=combobox]')).not.toBeNull();
   });
 
+  it('names the two paginators of position both apart and keeps one live report', async () => {
+    const t = await setup((h) => h.position.set('both'));
+    const navs = [...t.el.querySelectorAll('star-paginator nav')];
+    expect(navs.map((n) => n.getAttribute('aria-label'))).toEqual([
+      'Pagination, top',
+      'Pagination, bottom',
+    ]);
+    const reports = [...t.el.querySelectorAll('.star-paginator__report')];
+    expect(reports.map((r) => r.getAttribute('aria-live'))).toEqual([null, 'polite']);
+  });
+
   it('puts the paginator at the top, at both ends, and can always show it', async () => {
     const t = await setup((h) => h.position.set('both'));
     expect(t.el.querySelectorAll('star-paginator').length).toBe(2);

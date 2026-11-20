@@ -68,6 +68,10 @@ export interface StarUiText {
   readonly rowsPerPage: string;
   /** Label of the jump-to-page field and select of the paginator. */
   readonly goToPage: string;
+  /** Name of the upper of two paginators of one list, for example "Pagination, top". */
+  readonly paginationTop: (label: string) => string;
+  /** Name of the lower of two paginators of one list. */
+  readonly paginationBottom: (label: string) => string;
   readonly pageReport: (first: number, last: number, total: number) => string;
   readonly noData: string;
   /** Short label of a missing value: a sparkline without values, the map legend entry of shapes without a value. */
@@ -958,6 +962,8 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   rowsPerPage: 'Rows per page',
   pageReport: (first, last, total) => `${first}–${last} of ${total}`,
   goToPage: 'Go to page',
+  paginationTop: (label) => `${label}, top`,
+  paginationBottom: (label) => `${label}, bottom`,
   noData: 'No records found',
   missingData: 'No data',
   selectRow: 'Select row',
@@ -1693,6 +1699,8 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   pastedCells: ['count'],
   itemPosition: ['label', 'position', 'total'],
   itemsMoved: ['count', 'list'],
+  paginationTop: ['label'],
+  paginationBottom: ['label'],
   treeMovedBefore: ['label', 'target'],
   treeMovedAfter: ['label', 'target'],
   treeMovedInside: ['label', 'target'],

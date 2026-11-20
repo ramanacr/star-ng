@@ -137,7 +137,7 @@ export interface StarDataViewLazyLoadEvent {
       </div>
     </div>
     @if (showPaginator() && paginatorPosition() !== 'bottom') {
-      <ng-container *ngTemplateOutlet="pager" />
+      <ng-container *ngTemplateOutlet="pager; context: { $implicit: 'top' }" />
     }
     <ul
       data-star-part="itemsList"
@@ -184,12 +184,12 @@ export interface StarDataViewLazyLoadEvent {
       </div>
     }
     @if (showPaginator() && paginatorPosition() !== 'top') {
-      <ng-container *ngTemplateOutlet="pager" />
+      <ng-container *ngTemplateOutlet="pager; context: { $implicit: 'bottom' }" />
     }
     @if (footerSlot(); as footer) {
       <ng-container *ngTemplateOutlet="footer" />
     }
-    <ng-template #pager>
+    <ng-template #pager let-at>
       <div data-star-part="pagerPanel" class="star-data-view__pager">
         @if (pagerSlots().get('start'); as custom) {
           <ng-container *ngTemplateOutlet="custom; context: { $implicit: pageState() }" />
@@ -207,7 +207,8 @@ export interface StarDataViewLazyLoadEvent {
           [showJumpToPageDropdown]="showJumpToPageDropdown()"
           [showFirstLast]="showFirstLastIcon()"
           [showPageLinks]="showPageLinks()"
-          [ariaLabel]="paginatorAriaLabel()"
+          [ariaLabel]="pagerName(at)"
+          [liveReport]="paginatorPosition() !== 'both' || at === 'bottom'"
           (pageChange)="onPage($event)"
         />
         @if (pagerSlots().get('end'); as custom) {
@@ -247,7 +248,9 @@ export class StarDataView<T = unknown> {
   readonly showFirstLastIcon = input(true, { transform: booleanAttribute });
   /**
    * Accessible name of the paginator navigation (default `STAR_UI_TEXT.pagination`). Give each
-   * data view on a page its own name, so the navigation landmarks differ.
+   * data view on a page its own name, so the navigation landmarks differ. With
+   * `paginatorPosition="both"` the two get ", top" and ", bottom", and only the bottom report is
+   * a live region.
    */
   readonly paginatorAriaLabel = input<string | null>(null);
   /** Page number buttons in the paginator (default `true`). */
@@ -343,6 +346,17 @@ export class StarDataView<T = unknown> {
   private lastSort: { field: StarOptionKey<T> | null; order: 1 | -1 } | undefined;
   /** The first render is done: a lazy sort change may ask for data. */
   private started = false;
+
+  /**
+   * Name of a paginator navigation. With `paginatorPosition="both"` the two get "…, top" and
+   * "…, bottom" (`STAR_UI_TEXT.paginationTop` and `paginationBottom`), so the landmarks differ.
+   */
+  protected pagerName(at: 'top' | 'bottom'): string | null {
+    const label = this.paginatorAriaLabel();
+    if (this.paginatorPosition() !== 'both') return label;
+    const name = label ?? this.text.pagination;
+    return at === 'top' ? this.text.paginationTop(name) : this.text.paginationBottom(name);
+  }
 
   constructor() {
     afterNextRender(() => {

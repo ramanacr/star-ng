@@ -61,6 +61,8 @@ export const STAR_UI_TEXT_DE: StarUiText = {
   page: (page) => `Seite ${page}`,
   rowsPerPage: 'Zeilen pro Seite',
   goToPage: 'Gehe zu Seite',
+  paginationTop: (label) => `${label}, oben`,
+  paginationBottom: (label) => `${label}, unten`,
   pageReport: (first, last, total) => `${first}–${last} von ${total}`,
   noData: 'Keine Datensätze gefunden',
   missingData: 'Keine Daten',

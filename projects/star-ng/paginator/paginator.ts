@@ -98,9 +98,12 @@ export class StarPaginatorTemplate extends StarSlot<{ $implicit: StarPageEvent }
       </div>
     }
     @if (showCurrentPageReport()) {
-      <span data-star-part="reportText" class="star-paginator__report" aria-live="polite">{{
-        report()
-      }}</span>
+      <span
+        data-star-part="reportText"
+        class="star-paginator__report"
+        [attr.aria-live]="liveReport() ? 'polite' : null"
+        >{{ report() }}</span
+      >
     }
     <nav
       data-star-part="pagesPanel"
@@ -258,6 +261,11 @@ export class StarPaginator {
   readonly ariaLabel = input<string | null>(null);
   /** Shows the paginator also when there is only one page (default `true`). PrimeNG `alwaysShow`. */
   readonly alwaysShow = input(true, { transform: booleanAttribute });
+  /**
+   * The report announces the new page (`aria-live="polite"`, default `true`). Turn it off when two
+   * paginators show the same pages, so the page is announced once.
+   */
+  readonly liveReport = input(true, { transform: booleanAttribute });
   /** The page number buttons (default `true`). PrimeNG `showPageLinks`. */
   readonly showPageLinks = input(true, { transform: booleanAttribute });
   /** A select of every page next to the buttons. PrimeNG `showJumpToPageDropdown`. */

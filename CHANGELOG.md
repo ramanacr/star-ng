@@ -81,7 +81,7 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 
 #### Data view
 
-- Data view: `sortField` and `sortOrder`, `filter(text)` with `filterBy` and `filterLocale`, lazy mode (`lazy`, `totalRecords`, `lazyLoadOnInit`, output `lazyLoad`, also once after a sort change; a sort change goes back to the first page), `loading` and `loadingIcon` (with `aria-busy`), the paginator options `rowsPerPageOptions`, `paginatorPosition` (`top`, `bottom`, `both`), `alwaysShowPaginator`, `pageLinks`, `showCurrentPageReport`, `currentPageReportTemplate`, `showJumpToPageDropdown`, `showFirstLastIcon`, `showPageLinks` and `paginatorAriaLabel`, the output `pageChange`, and the slots `starLoading`, `starPaginatorTemplate` (`start`, `end`) and `starIcon` (`list`, `grid`, `loading`); `starEmpty` gets the filter text (PrimeNG `p-dataview`). The data view moves to its own file in `@star-ng/ui/data-display`.
+- Data view: `sortField` and `sortOrder`, `filter(text)` with `filterBy` and `filterLocale`, lazy mode (`lazy`, `totalRecords`, `lazyLoadOnInit`, output `lazyLoad`, also once after a sort change; a sort change goes back to the first page), `loading` and `loadingIcon` (with `aria-busy`), the paginator options `rowsPerPageOptions`, `paginatorPosition` (`top`, `bottom`, `both`), `alwaysShowPaginator`, `pageLinks`, `showCurrentPageReport`, `currentPageReportTemplate`, `showJumpToPageDropdown`, `showFirstLastIcon`, `showPageLinks` and `paginatorAriaLabel` (with `both`, the two paginators are named "…, top" and "…, bottom", `STAR_UI_TEXT.paginationTop` and `paginationBottom` with German and Spanish texts, and only the lower report is live), the output `pageChange`, and the slots `starLoading`, `starPaginatorTemplate` (`start`, `end`) and `starIcon` (`list`, `grid`, `loading`); `starEmpty` gets the filter text (PrimeNG `p-dataview`). The data view moves to its own file in `@star-ng/ui/data-display`.
 
 #### Date and time pickers
 
@@ -230,7 +230,7 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 
 #### Paginator
 
-- Paginator: `showJumpToPageInput` and `showJumpToPageDropdown` (`STAR_UI_TEXT.goToPage`, with German and Spanish texts), `currentPageReportTemplate` (placeholders `{currentPage}`, `{totalPages}`, `{first}`, `{last}`, `{rows}`, `{totalRecords}`), `locale` of the numbers, `showPageLinks`, `alwaysShow`, and the slots `starPaginatorTemplate` (`start`, `end`) and `starIcon` (`first`, `previous`, `next`, `last`) (PrimeNG `p-paginator`).
+- Paginator: `showJumpToPageInput` and `showJumpToPageDropdown` (`STAR_UI_TEXT.goToPage`, with German and Spanish texts), `currentPageReportTemplate` (placeholders `{currentPage}`, `{totalPages}`, `{first}`, `{last}`, `{rows}`, `{totalRecords}`), `locale` of the numbers, `showPageLinks`, `alwaysShow`, `liveReport`, and the slots `starPaginatorTemplate` (`start`, `end`) and `starIcon` (`first`, `previous`, `next`, `last`) (PrimeNG `p-paginator`).
 
 #### Panel
 
@@ -379,6 +379,7 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 
 ### Changed
 
+- Paginator: the page numbers and the report numbers are formatted with `Intl.NumberFormat` for `locale` (default: `locale` of `provideStarNg`, else the browser locale), for example "1,200" or "1.200". Set `locale` (or the `provideStarNg` locale) so that a prerendered page and the browser show the same digits.
 - Speed dial: a click outside closes the open actions (`hideOnClickOutside`, on by default, as in PrimeNG). Set it to `false` for the old behavior.
 - Every control template element now has the attribute `data-star-part`. In a few templates the text of an element now starts or ends with a space in `textContent` (the rendered text is the same); compare the trimmed text in tests.
 - Table: the sticky header (`stickyHeader`) has `z-index: 2`, so pinned body cells scroll under it.
