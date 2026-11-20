@@ -1,8 +1,8 @@
 import { CdkContextMenuTrigger } from '@angular/cdk/menu';
 import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import {
-  afterEveryRender,
   afterNextRender,
+  afterRenderEffect,
   ApplicationRef,
   booleanAttribute,
   computed,
@@ -131,6 +131,7 @@ function isLeadField(field: string): boolean {
 export abstract class StarTableInteraction<T> {
   protected readonly interactionInjector = inject(Injector);
   private readonly interactionDocument = inject(DOCUMENT);
+  private readonly interactionHost = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
   private readonly clipboard = inject(StarClipboard);
   private readonly interactionApp = inject(ApplicationRef);
   /** The focus and scroll API needs a browser (`CSS.escape`, layout); on the server it does nothing. */
@@ -196,6 +197,7 @@ export abstract class StarTableInteraction<T> {
   protected abstract canHide(column: StarColumn<T>): boolean;
   protected abstract setColumnVisible(column: StarColumn<T>, visible: boolean): void;
   abstract readonly reorderableRows: Signal<boolean>;
+  abstract readonly editingRowKeys: Signal<readonly unknown[]>;
   protected abstract readonly expandable: Signal<boolean>;
 
   // ---------------------------------------------------------------- inputs
@@ -386,7 +388,18 @@ export abstract class StarTableInteraction<T> {
     });
     // Grid: the controls of the lead and trail cells (check boxes, radios, buttons, custom row
     // actions) leave the tab order; their cell is the key stop.
-    afterEveryRender({ write: () => this.syncLeadControls() });
+    // It runs after a render that changed the rendered rows, the lead or trail cells, the grid
+    // mode or the rows in edit (custom row actions), not on every application tick.
+    afterRenderEffect({
+      write: () => {
+        this.cellMode();
+        this.renderedRows();
+        this.leadFields();
+        this.trailFields();
+        this.editingRowKeys();
+        untracked(() => this.syncLeadControls());
+      },
+    });
   }
 
   private syncLeadControls(): void {
@@ -1363,7 +1376,9 @@ export abstract class StarTableInteraction<T> {
     const nextRow = rows[row >= 0 ? row : Math.min(Math.max(pos.row, 0), rows.length - 1)];
     const nextField = fields[col >= 0 ? col : Math.min(Math.max(pos.col, 0), fields.length - 1)];
     this.setActive(nextRow, nextField);
-    if (!this.gridFocused) return;
+    // Take the focus back only when the grid owns it now (the old cell is still in the DOM here).
+    const owned = this.interactionHost.contains(this.interactionDocument.activeElement);
+    if (!this.gridFocused || !owned) return;
     afterNextRender(
       () => {
         const doc = this.interactionDocument;
@@ -1379,8 +1394,15 @@ export abstract class StarTableInteraction<T> {
   /** The focus left the table: a later change of the grid does not take the focus back. */
   protected onCellFocusOut(event: FocusEvent): void {
     const next = event.relatedTarget as Node | null;
-    const host = (event.currentTarget as HTMLElement | null) ?? null;
-    if (next && host && !host.contains(next)) this.gridFocused = false;
+    const host = this.interactionHost;
+    if (next) {
+      if (!host.contains(next)) this.gridFocused = false;
+      return;
+    }
+    // No new target (a click on a part of the page that takes no focus): check after the move.
+    setTimeout(() => {
+      if (!host.contains(this.interactionDocument.activeElement)) this.gridFocused = false;
+    });
   }
 
   /**

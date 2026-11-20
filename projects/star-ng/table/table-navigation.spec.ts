@@ -294,6 +294,21 @@ describe('StarTable cell navigation', () => {
     expect(el.querySelector('.star-table__editor')).toBeNull();
   });
 
+  it('does not take the focus back after the focus left the grid without a new target', async () => {
+    const { fixture, el, cell, host } = await setupNav();
+    document.body.append(el);
+    cell(30, 'name').focus();
+    await fixture.whenStable();
+    // A click on a part of the page that takes no focus: focusout with relatedTarget null.
+    (document.activeElement as HTMLElement).blur();
+    await fixture.whenStable();
+    host.rows.set(ITEMS.slice(0, 29));
+    await fixture.whenStable();
+    await fixture.whenStable();
+    expect(host.table().activeCell()).toEqual({ rowKey: 'SKU-29', field: 'name' });
+    expect(document.activeElement).toBe(document.body);
+  });
+
   it('moves the active cell when its cell goes, and gives null when the grid is empty', async () => {
     const { fixture, el, cell, focused, host } = await setupNav();
     document.body.append(el);
