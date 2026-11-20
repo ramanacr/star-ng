@@ -332,10 +332,10 @@ const SORT_FIELDS: readonly StarFileSortField[] = ['name', 'size', 'modified', '
                   @for (item of visible(); track item.id) {
                     <div
                       class="star-fm__icon"
-                      role="option"
                       draggable="true"
+                      [attr.role]="renaming() === item.id ? 'group' : 'option'"
                       [attr.data-file-id]="item.id"
-                      [attr.aria-selected]="isSelected(item.id)"
+                      [attr.aria-selected]="renaming() === item.id ? null : isSelected(item.id)"
                       [class.star-fm__icon--selected]="isSelected(item.id)"
                       [class.star-fm__icon--cut]="isCut(item.id)"
                       [class.star-fm__icon--drop]="dropTarget() === item.id"
@@ -343,6 +343,8 @@ const SORT_FIELDS: readonly StarFileSortField[] = ['name', 'size', 'modified', '
                       (focus)="focusId.set(item.id)"
                     >
                       <i class="star-fm__icon-glyph" [class]="iconOf(item)" aria-hidden="true"></i>
+                      <!-- While renaming, the item is a group: the children of an option are
+                        presentational, so the field must not be inside one. -->
                       @if (renaming() === item.id) {
                         <input
                           class="star-input star-fm__rename"
