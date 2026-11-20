@@ -15,6 +15,7 @@ import {
   inject,
   Injector,
   input,
+  linkedSignal,
   model,
   output,
   PLATFORM_ID,
@@ -508,14 +509,24 @@ export class StarRibbon {
   );
   protected readonly activeGroups = computed(() => this.tabs()[this.activeIndex()]?.groups() ?? []);
 
+  // The group state below belongs to the active tab: a new tab starts it again (linkedSignal).
   /** Mode of each group of the active tab (measured in the browser). */
-  private readonly modes = signal<readonly StarRibbonGroupMode[]>([]);
+  private readonly modes = linkedSignal<string | null, readonly StarRibbonGroupMode[]>({
+    source: this.activeKey,
+    computation: () => [],
+  });
   /** The collapsed group whose flyout is open. */
-  protected readonly openGroup = signal<number | null>(null);
+  protected readonly openGroup = linkedSignal<string | null, number | null>({
+    source: this.activeKey,
+    computation: () => null,
+  });
   /** The collapsed ribbon shows its panel for now. */
   protected readonly peek = signal(false);
   /** Roving tab stop of each group toolbar (focus key). */
-  private readonly stops = signal<ReadonlyMap<number, string>>(new Map());
+  private readonly stops = linkedSignal<string | null, ReadonlyMap<number, string>>({
+    source: this.activeKey,
+    computation: () => new Map(),
+  });
 
   protected readonly keyTipLevel = signal<KeyTipLevel | null>(null);
   private readonly keyTipGroup = signal<number | null>(null);
@@ -577,14 +588,6 @@ export class StarRibbon {
       this.activeKey();
       untracked(() => {
         if (this.browser) afterNextRender(() => this.refit(), { injector: this.injector });
-      });
-    });
-    effect(() => {
-      this.activeKey();
-      untracked(() => {
-        this.modes.set([]);
-        this.openGroup.set(null);
-        this.stops.set(new Map());
       });
     });
     if (this.browser) this.observe();
