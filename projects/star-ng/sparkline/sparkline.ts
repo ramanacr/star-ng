@@ -63,7 +63,7 @@ const toLength = (value: string | number) => (typeof value === 'number' ? `${val
   },
   template: `
     <svg
-      data-star-part="svg"
+      data-star-part="graphic"
       class="star-sparkline__svg"
       [attr.viewBox]="viewBox"
       preserveAspectRatio="none"
@@ -76,7 +76,7 @@ const toLength = (value: string | number) => (typeof value === 'number' ? `${val
     >
       @if (referenceY(); as y) {
         <line
-          data-star-part="reference"
+          data-star-part="referenceItem"
           class="star-sparkline__reference"
           x1="0"
           [attr.x2]="viewWidth"
@@ -87,7 +87,7 @@ const toLength = (value: string | number) => (typeof value === 'number' ? `${val
       @if (bars(); as list) {
         @for (bar of list; track $index) {
           <rect
-            data-star-part="bar"
+            data-star-part="barItem"
             class="star-sparkline__bar"
             [class.star-sparkline__bar--negative]="bar.negative"
             [class.star-sparkline__bar--marked]="marked().has($index)"
@@ -99,9 +99,9 @@ const toLength = (value: string | number) => (typeof value === 'number' ? `${val
         }
       } @else if (line()) {
         @if (type() === 'area') {
-          <path data-star-part="area" class="star-sparkline__area" [attr.d]="area()" />
+          <path data-star-part="areaItem" class="star-sparkline__area" [attr.d]="area()" />
         }
-        <path data-star-part="line" class="star-sparkline__line" [attr.d]="line()" />
+        <path data-star-part="lineItem" class="star-sparkline__line" [attr.d]="line()" />
         @for (marker of markers(); track marker.kind) {
           <path
             [attr.class]="'star-sparkline__marker star-sparkline__marker--' + marker.kind"

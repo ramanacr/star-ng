@@ -726,7 +726,7 @@ export class StarMentionItemTemplate<T = unknown> {
           }
         </ul>
       } @else {
-        <p data-star-part="empty" class="star-listbox__empty star-mention__message">
+        <p data-star-part="emptyText" class="star-listbox__empty star-mention__message">
           {{ mention.loading() ? text.loading : text.emptyFilterMessage }}
         </p>
       }

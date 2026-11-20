@@ -261,14 +261,14 @@ export abstract class StarAutoCompleteBase<TOption, TValue> extends StarOptionLi
 }
 
 const TEMPLATE = `
-  <div data-star-part="control" #control class="star-select__control star-ac__control" cdkOverlayOrigin #origin="cdkOverlayOrigin">
-    <div data-star-part="main" class="star-ac__main">
+  <div data-star-part="controlPanel" #control class="star-select__control star-ac__control" cdkOverlayOrigin #origin="cdkOverlayOrigin">
+    <div data-star-part="mainPanel" class="star-ac__main">
       @if (isMultiple) {
         @for (chip of chips(); track $index) {
-          <span data-star-part="chip" class="star-chip star-chip--sm">
+          <span data-star-part="chipPanel" class="star-chip star-chip--sm">
             {{ chip.label }}
             @if (interactive()) {
-              <button data-star-part="remove"
+              <button data-star-part="removeButton"
                 type="button"
                 class="star-chip__remove"
                 tabindex="-1"
@@ -354,7 +354,7 @@ const TEMPLATE = `
       @if (headerSlot(); as header) {
         <ng-container *ngTemplateOutlet="header" />
       }
-      <ul data-star-part="listbox"
+      <ul data-star-part="optionList"
         class="star-listbox"
         role="listbox"
         [id]="listId"
@@ -367,16 +367,16 @@ const TEMPLATE = `
         (scroll)="onListScroll($event)"
       >
         @if (loadingRow(); as loader) {
-          <li data-star-part="empty" class="star-listbox__empty" role="presentation">
+          <li data-star-part="emptyItem" class="star-listbox__empty" role="presentation">
             <ng-container *ngTemplateOutlet="loader" />
           </li>
         }
         @if (virtualWindow().before) {
-          <li data-star-part="spacer" class="star-listbox__spacer" role="presentation" [style.height.px]="virtualWindow().before"></li>
+          <li data-star-part="spacerItem" class="star-listbox__spacer" role="presentation" [style.height.px]="virtualWindow().before"></li>
         }
         @for (row of renderedRows(); track row.key) {
           @if (row.kind === 'group') {
-            <li data-star-part="group" class="star-listbox__group" role="presentation" [id]="row.id">
+            <li data-star-part="groupItem" class="star-listbox__group" role="presentation" [id]="row.id">
               @if (groupSlot(); as custom) {
                 <ng-container *ngTemplateOutlet="custom; context: groupContext(row.label)" />
               } @else {
@@ -404,20 +404,20 @@ const TEMPLATE = `
           >
             <span data-star-part="label" class="star-listbox__label">
               @if (option === undefined) {
-                <span data-star-part="skeleton" class="star-skeleton star-listbox__skeleton" aria-hidden="true"></span>
+                <span data-star-part="skeletonText" class="star-skeleton star-listbox__skeleton" aria-hidden="true"></span>
                 <span class="star-sr-only">{{ text.loading }}</span>
               } @else if (optionTemplate(); as custom) {
                 <ng-container *ngTemplateOutlet="custom.template; context: optionContext(option, i)" />
               } @else {
                 @let parts = highlight(labelOf(option));
-                {{ parts[0] }}<mark data-star-part="match" class="star-ac__match">{{ parts[1] }}</mark>{{ parts[2] }}
+                {{ parts[0] }}<mark data-star-part="matchText" class="star-ac__match">{{ parts[1] }}</mark>{{ parts[2] }}
               }
             </span>
           </li>
           }
         } @empty {
           @if (!loadingRow() && customRow() === null) {
-            <li data-star-part="empty" class="star-listbox__empty" role="presentation">
+            <li data-star-part="emptyItem" class="star-listbox__empty" role="presentation">
               @if (emptySlot(); as custom) {
                 <ng-container *ngTemplateOutlet="custom; context: emptyContext()" />
               } @else {
@@ -427,7 +427,7 @@ const TEMPLATE = `
           }
         }
         @if (virtualWindow().after) {
-          <li data-star-part="spacer" class="star-listbox__spacer" role="presentation" [style.height.px]="virtualWindow().after"></li>
+          <li data-star-part="spacerItem" class="star-listbox__spacer" role="presentation" [style.height.px]="virtualWindow().after"></li>
         }
         @if (customRow(); as custom) {
           <!-- Keyboard is handled on the combobox via aria-activedescendant (WAI-ARIA combobox pattern). -->

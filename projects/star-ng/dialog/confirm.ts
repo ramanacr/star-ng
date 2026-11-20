@@ -160,7 +160,7 @@ export class StarConfirmService {
           (keydown.tab)="cycleTab($event)"
           (keydown.shift.tab)="cycleTab($event)"
         >
-          <div data-star-part="confirm" class="star-confirm star-confirm--popup">
+          <div data-star-part="dialogPanel" class="star-confirm star-confirm--popup">
             @if (popup.icon) {
               <span data-star-part="icon" class="star-confirm__icon" aria-hidden="true"
                 ><i data-star-part="severityIcon" [class]="popup.icon"></i
@@ -202,7 +202,7 @@ export class StarConfirmService {
       (visibleChange)="!$event && confirm.settle(false)"
     >
       @if (request) {
-        <div data-star-part="confirm" class="star-confirm">
+        <div data-star-part="dialogPanel" class="star-confirm">
           @if (request.icon) {
             <span data-star-part="icon" class="star-confirm__icon" aria-hidden="true"
               ><i data-star-part="severityIcon" [class]="request.icon"></i

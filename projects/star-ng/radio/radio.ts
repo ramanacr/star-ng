@@ -114,7 +114,7 @@ export class StarRadioGroup<T = unknown> implements FormValueControl<T | null> {
         (change)="onChange(radio)"
         (blur)="group.touch.emit()"
       />
-      <span data-star-part="dot" class="star-radio__dot" aria-hidden="true"></span>
+      <span data-star-part="indicatorButton" class="star-radio__dot" aria-hidden="true"></span>
       <span data-star-part="text" class="star-radio__text"><ng-content /></span>
     </label>
   `,

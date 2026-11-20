@@ -89,7 +89,7 @@ const MODE_TEXT: Readonly<Record<string, keyof StarUiText>> = {
       <div data-star-part="filterPanel" class="star-table-filter" cdkTrapFocus>
         @if (draft().length > 1) {
           <select
-            data-star-part="operator"
+            data-star-part="operatorInput"
             class="star-input star-input--sm star-table-filter__operator"
             [attr.aria-label]="text.filterOperator"
             (change)="setOperator($any($event.target).value)"
@@ -103,7 +103,7 @@ const MODE_TEXT: Readonly<Record<string, keyof StarUiText>> = {
           </select>
         }
         @for (rule of draft(); track $index; let i = $index) {
-          <fieldset data-star-part="rule" class="star-table-filter__rule">
+          <fieldset data-star-part="rulePanel" class="star-table-filter__rule">
             <legend class="star-sr-only">{{ text.filterRule(i + 1) }}</legend>
             @if (showModes()) {
               <select
@@ -145,13 +145,13 @@ const MODE_TEXT: Readonly<Record<string, keyof StarUiText>> = {
               </select>
             } @else if (type() === 'multiselect') {
               <div
-                data-star-part="choices"
+                data-star-part="choicesPanel"
                 class="star-table-filter__choices"
                 role="group"
                 [attr.aria-label]="text.filterBy(header())"
               >
                 @for (choice of choices(); track choice) {
-                  <label data-star-part="choice" class="star-table-filter__choice">
+                  <label data-star-part="choiceLabel" class="star-table-filter__choice">
                     <input
                       data-star-part="choiceInput"
                       type="checkbox"
@@ -163,7 +163,7 @@ const MODE_TEXT: Readonly<Record<string, keyof StarUiText>> = {
                 }
               </div>
             } @else if (rule.matchMode === 'between') {
-              <span data-star-part="range" class="star-table-filter__range">
+              <span data-star-part="rangePanel" class="star-table-filter__range">
                 <input
                   data-star-part="input"
                   class="star-input star-input--sm"
@@ -194,13 +194,13 @@ const MODE_TEXT: Readonly<Record<string, keyof StarUiText>> = {
             }
             @if (draft().length > 1) {
               <button
-                data-star-part="toggle"
+                data-star-part="removeButton"
                 type="button"
                 class="star-table__toggle"
                 [attr.aria-label]="text.removeRule(i + 1)"
                 (click)="removeRule(i)"
               >
-                <i data-star-part="toggleIcon" class="ph-bold ph-trash" aria-hidden="true"></i>
+                <i data-star-part="removeIcon" class="ph-bold ph-trash" aria-hidden="true"></i>
               </button>
             }
           </fieldset>
@@ -216,7 +216,7 @@ const MODE_TEXT: Readonly<Record<string, keyof StarUiText>> = {
             {{ text.addRule }}
           </star-button>
         }
-        <div data-star-part="buttons" class="star-table-filter__buttons">
+        <div data-star-part="buttonsPanel" class="star-table-filter__buttons">
           <star-button size="sm" variant="secondary" (pressed)="clear()">
             {{ text.clear }}
           </star-button>

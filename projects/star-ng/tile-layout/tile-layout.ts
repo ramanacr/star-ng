@@ -291,7 +291,7 @@ export class StarTileLayout {
     <div data-star-part="body" class="star-tile__body"><ng-content /></div>
     @if (layout.resizable()) {
       <span
-        data-star-part="resize"
+        data-star-part="resizeText"
         class="star-tile__resize"
         aria-hidden="true"
         (pointerdown)="onResizeStart($event)"

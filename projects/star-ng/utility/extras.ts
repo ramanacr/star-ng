@@ -73,7 +73,7 @@ export class StarInplaceContent {
       </span>
     } @else {
       <button
-        data-star-part="display"
+        data-star-part="displayButton"
         type="button"
         class="star-inplace__display"
         [disabled]="disabled()"
@@ -200,7 +200,7 @@ export class StarFocusTrap {}
   template: `
     <!-- The control is projected into the label, so the label wraps it at run time. -->
     <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
-    <label data-star-part="wrap" class="star-float__wrap">
+    <label data-star-part="wrapLabel" class="star-float__wrap">
       <ng-content />
       <span data-star-part="label" class="star-float__label">{{ label() }}</span>
     </label>
@@ -317,7 +317,7 @@ export class StarAnimateOnScroll {
       <i data-star-part="dividerIcon" class="ph-bold ph-arrows-horizontal"></i>
     </span>
     <input
-      data-star-part="range"
+      data-star-part="rangeInput"
       type="range"
       class="star-compare__range"
       min="0"

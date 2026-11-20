@@ -50,7 +50,7 @@ const TEXT_ROOM = 18;
   template: `
     @if (encoding(); as code) {
       <svg
-        data-star-part="svg"
+        data-star-part="graphic"
         class="star-barcode__svg"
         [attr.viewBox]="'0 0 ' + width() + ' ' + height()"
         [attr.width]="width()"
@@ -60,14 +60,14 @@ const TEXT_ROOM = 18;
         shape-rendering="crispEdges"
       >
         <rect
-          data-star-part="background"
+          data-star-part="backgroundItem"
           class="star-barcode__background"
           [attr.width]="width()"
           [attr.height]="height()"
         />
         @for (bar of rects(); track $index) {
           <rect
-            data-star-part="bar"
+            data-star-part="barItem"
             class="star-barcode__bar"
             [attr.x]="bar.x"
             y="0"
@@ -87,7 +87,7 @@ const TEXT_ROOM = 18;
         }
       </svg>
     } @else {
-      <span data-star-part="error" class="star-barcode__error">{{ error() }}</span>
+      <span data-star-part="errorText" class="star-barcode__error">{{ error() }}</span>
     }
   `,
 })

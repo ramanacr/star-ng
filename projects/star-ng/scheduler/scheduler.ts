@@ -221,10 +221,10 @@ const TIME_VIEWS: ReadonlySet<StarSchedulerView> = new Set(['day', 'week', 'work
     '[style.--star-scheduler-slots]': 'slots().length',
   },
   template: `
-    <div data-star-part="toolbar" class="star-scheduler__toolbar">
-      <div data-star-part="nav" class="star-scheduler__nav">
+    <div data-star-part="toolbarPanel" class="star-scheduler__toolbar">
+      <div data-star-part="navigation" class="star-scheduler__nav">
         <button
-          data-star-part="button"
+          data-star-part="viewButton"
           type="button"
           class="star-scheduler__button"
           (click)="goToday()"
@@ -232,7 +232,7 @@ const TIME_VIEWS: ReadonlySet<StarSchedulerView> = new Set(['day', 'week', 'work
           {{ text.today }}
         </button>
         <button
-          data-star-part="button"
+          data-star-part="viewButton"
           type="button"
           class="star-scheduler__button star-scheduler__button--icon"
           [attr.aria-label]="text.previousPeriod"
@@ -245,7 +245,7 @@ const TIME_VIEWS: ReadonlySet<StarSchedulerView> = new Set(['day', 'week', 'work
           ></i>
         </button>
         <button
-          data-star-part="button"
+          data-star-part="viewButton"
           type="button"
           class="star-scheduler__button star-scheduler__button--icon"
           [attr.aria-label]="text.nextPeriod"
@@ -267,14 +267,14 @@ const TIME_VIEWS: ReadonlySet<StarSchedulerView> = new Set(['day', 'week', 'work
         {{ rangeTitle() }}
       </h2>
       <div
-        data-star-part="views"
+        data-star-part="viewsPanel"
         class="star-scheduler__views"
         role="group"
         [attr.aria-label]="text.schedulerView"
       >
         @for (option of shownViews(); track option) {
           <button
-            data-star-part="button"
+            data-star-part="viewButton"
             type="button"
             class="star-scheduler__button"
             [class.star-scheduler__button--active]="option === view()"
@@ -321,7 +321,7 @@ const TIME_VIEWS: ReadonlySet<StarSchedulerView> = new Set(['day', 'week', 'work
                   (click)="onCellClick($event, r, c)"
                   (focus)="active.set([r, c])"
                 >
-                  <span data-star-part="date" class="star-scheduler__date">
+                  <span data-star-part="datePanel" class="star-scheduler__date">
                     <span data-star-part="dateText" aria-hidden="true">{{ day.getDate() }}</span>
                     <span class="star-sr-only">{{ dayLabel(day) }}</span>
                   </span>
@@ -336,7 +336,7 @@ const TIME_VIEWS: ReadonlySet<StarSchedulerView> = new Set(['day', 'week', 'work
                   }
                   @if (cell.more) {
                     <button
-                      data-star-part="more"
+                      data-star-part="moreButton"
                       type="button"
                       class="star-scheduler__more"
                       (click)="openMore($event, day)"
@@ -352,7 +352,7 @@ const TIME_VIEWS: ReadonlySet<StarSchedulerView> = new Set(['day', 'week', 'work
       }
       @case ('agenda') {
         <div
-          data-star-part="agenda"
+          data-star-part="agendaPanel"
           class="star-scheduler__agenda"
           role="list"
           [attr.aria-labelledby]="titleId"
@@ -383,14 +383,14 @@ const TIME_VIEWS: ReadonlySet<StarSchedulerView> = new Set(['day', 'week', 'work
               </ul>
             </div>
           } @empty {
-            <p data-star-part="empty" class="star-scheduler__empty" role="listitem">
+            <p data-star-part="emptyText" class="star-scheduler__empty" role="listitem">
               {{ text.noEvents }}
             </p>
           }
         </div>
       }
       @case ('timeline-day') {
-        <div data-star-part="scroll" class="star-scheduler__scroll" #scroll>
+        <div data-star-part="scrollPanel" class="star-scheduler__scroll" #scroll>
           <!-- The keys of the focused cell bubble to the grid (roving tabindex). -->
           <!-- eslint-disable-next-line @angular-eslint/template/interactive-supports-focus -->
           <div
@@ -465,7 +465,7 @@ const TIME_VIEWS: ReadonlySet<StarSchedulerView> = new Set(['day', 'week', 'work
         </div>
       }
       @default {
-        <div data-star-part="scroll" class="star-scheduler__scroll" #scroll>
+        <div data-star-part="scrollPanel" class="star-scheduler__scroll" #scroll>
           <!-- The keys of the focused cell bubble to the grid (roving tabindex). -->
           <!-- eslint-disable-next-line @angular-eslint/template/interactive-supports-focus -->
           <div
@@ -491,7 +491,7 @@ const TIME_VIEWS: ReadonlySet<StarSchedulerView> = new Set(['day', 'week', 'work
                   [class.star-scheduler__head--today]="isToday(day)"
                 >
                   <span
-                    data-star-part="weekday"
+                    data-star-part="weekdayText"
                     class="star-scheduler__weekday"
                     aria-hidden="true"
                     >{{ weekdayShort(day) }}</span
@@ -572,7 +572,7 @@ const TIME_VIEWS: ReadonlySet<StarSchedulerView> = new Set(['day', 'week', 'work
                   >
                     @if (nowCell() === r + ':' + c) {
                       <span
-                        data-star-part="now"
+                        data-star-part="nowText"
                         class="star-scheduler__now"
                         role="img"
                         [attr.aria-label]="text.currentTime"
@@ -664,7 +664,7 @@ const TIME_VIEWS: ReadonlySet<StarSchedulerView> = new Set(['day', 'week', 'work
           }
           @if (occurrence.recurring) {
             <i
-              data-star-part="repeatIcon"
+              data-star-part="recurrenceIcon"
               class="ph-bold ph-repeat star-scheduler__event-repeat"
               aria-hidden="true"
             ></i>

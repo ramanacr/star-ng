@@ -116,9 +116,9 @@ interface Position {
         (configChange)="config.set($event)"
       />
     }
-    <div data-star-part="main" class="star-pivot__main">
+    <div data-star-part="mainPanel" class="star-pivot__main">
       @if (expandableAny()) {
-        <div data-star-part="tools" class="star-pivot__tools">
+        <div data-star-part="toolsPanel" class="star-pivot__tools">
           <button
             data-star-part="expandAllButton"
             type="button"
@@ -148,14 +148,14 @@ interface Position {
         </div>
       }
       <div
-        data-star-part="scroller"
+        data-star-part="scrollerPanel"
         #scroller
         class="star-pivot__scroller"
         [style.max-height]="height()"
         (scroll)="onScroll()"
       >
         <table
-          data-star-part="table"
+          data-star-part="tablePanel"
           class="star-pivot__table"
           role="grid"
           aria-readonly="true"
@@ -186,7 +186,7 @@ interface Position {
               >
                 @if (h === 0) {
                   <th
-                    data-star-part="corner"
+                    data-star-part="cornerCell"
                     class="star-pivot__corner"
                     scope="col"
                     [attr.rowspan]="headerCount() > 1 ? headerCount() : null"
@@ -198,7 +198,7 @@ interface Position {
                   </th>
                   @if (columnWindow().before) {
                     <th
-                      data-star-part="spacer"
+                      data-star-part="spacerCell"
                       class="star-pivot__spacer"
                       aria-hidden="true"
                       [attr.rowspan]="headerCount() > 1 ? headerCount() : null"
@@ -225,7 +225,7 @@ interface Position {
                     <span data-star-part="headerPanel" class="star-pivot__head-content">
                       @if (cell.expandable) {
                         <span
-                          data-star-part="toggle"
+                          data-star-part="togglePanel"
                           class="star-pivot__toggle"
                           [class.star-pivot__toggle--open]="cell.expanded"
                           aria-hidden="true"
@@ -243,7 +243,7 @@ interface Position {
                 }
                 @if (h === 0 && columnWindow().after) {
                   <th
-                    data-star-part="spacer"
+                    data-star-part="spacerCell"
                     class="star-pivot__spacer"
                     aria-hidden="true"
                     [attr.rowspan]="headerCount() > 1 ? headerCount() : null"
@@ -256,7 +256,7 @@ interface Position {
             @if (rowWindow().before) {
               <tr data-star-part="spacerRow" class="star-pivot__spacer-row" aria-hidden="true">
                 <td
-                  data-star-part="spacerCell"
+                  data-star-part="fillerCell"
                   [attr.colspan]="renderedSpan()"
                   [style.height.px]="rowWindow().before"
                 ></td>
@@ -284,7 +284,7 @@ interface Position {
                   <span data-star-part="headerPanel" class="star-pivot__head-content">
                     @if (row.expandable) {
                       <span
-                        data-star-part="toggle"
+                        data-star-part="togglePanel"
                         class="star-pivot__toggle"
                         [class.star-pivot__toggle--open]="row.expanded"
                         aria-hidden="true"
@@ -304,7 +304,11 @@ interface Position {
                   </span>
                 </th>
                 @if (columnWindow().before) {
-                  <td data-star-part="spacer" class="star-pivot__spacer" aria-hidden="true"></td>
+                  <td
+                    data-star-part="spacerCell"
+                    class="star-pivot__spacer"
+                    aria-hidden="true"
+                  ></td>
                 }
                 @for (c of renderedColumns(); track c) {
                   @let pos = r + ':' + c;
@@ -320,14 +324,18 @@ interface Position {
                   </td>
                 }
                 @if (columnWindow().after) {
-                  <td data-star-part="spacer" class="star-pivot__spacer" aria-hidden="true"></td>
+                  <td
+                    data-star-part="spacerCell"
+                    class="star-pivot__spacer"
+                    aria-hidden="true"
+                  ></td>
                 }
               </tr>
             }
             @if (rowWindow().after) {
               <tr data-star-part="spacerRow" class="star-pivot__spacer-row" aria-hidden="true">
                 <td
-                  data-star-part="spacerCell"
+                  data-star-part="fillerCell"
                   [attr.colspan]="renderedSpan()"
                   [style.height.px]="rowWindow().after"
                 ></td>

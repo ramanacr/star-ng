@@ -78,7 +78,7 @@ export class StarDataViewItem<T = unknown> {
     <div data-star-part="header" class="star-data-view__header">
       <ng-content select="[starDataViewHeader]" />
       <div
-        data-star-part="segmented"
+        data-star-part="segmentedPanel"
         class="star-segmented star-segmented--sm"
         role="radiogroup"
         [attr.aria-label]="text.layout"
@@ -100,7 +100,7 @@ export class StarDataViewItem<T = unknown> {
       </div>
     </div>
     <ul
-      data-star-part="items"
+      data-star-part="itemsList"
       class="star-data-view__items"
       [class.star-data-view__items--grid]="layout() === 'grid'"
     >
@@ -116,7 +116,7 @@ export class StarDataViewItem<T = unknown> {
           }
         </li>
       } @empty {
-        <li data-star-part="empty" class="star-table__empty">
+        <li data-star-part="emptyItem" class="star-table__empty">
           <i data-star-part="emptyIcon" class="ph-bold ph-tray" aria-hidden="true"></i>
           @if (emptySlot(); as custom) {
             <ng-container *ngTemplateOutlet="custom; context: emptyContext" />
@@ -186,7 +186,7 @@ export class StarDataView<T = unknown> {
   host: { class: 'star-order-list' },
   template: `
     <div
-      data-star-part="buttons"
+      data-star-part="buttonsPanel"
       class="star-order-list__buttons"
       role="group"
       [attr.aria-label]="text.moveSelectedItem"
@@ -224,7 +224,7 @@ export class StarDataView<T = unknown> {
           (keydown)="onKeydown($event, i)"
         >
           <i
-            data-star-part="grip"
+            data-star-part="dragHandle"
             class="ph-bold ph-dots-six-vertical star-order-list__grip"
             aria-hidden="true"
           ></i>
@@ -325,7 +325,7 @@ export class StarOrderList<T = unknown> {
     @for (side of sides; track side) {
       @let items = side === 'source' ? source() : target();
       <section
-        data-star-part="side"
+        data-star-part="sidePanel"
         class="star-pick-list__side"
         [attr.aria-labelledby]="ids[side]"
       >
@@ -335,11 +335,13 @@ export class StarOrderList<T = unknown> {
               ? (sourceHeader() ?? text.pickListSource)
               : (targetHeader() ?? text.pickListTarget)
           }}
-          <span data-star-part="badge" class="star-badge star-badge--secondary star-badge--sm">{{
-            items.length
-          }}</span>
+          <span
+            data-star-part="badgeText"
+            class="star-badge star-badge--secondary star-badge--sm"
+            >{{ items.length }}</span
+          >
         </h3>
-        <div data-star-part="box" class="star-pick-list__box">
+        <div data-star-part="boxPanel" class="star-pick-list__box">
           <ul
             data-star-part="list"
             class="star-listbox star-pick-list__list"
@@ -371,7 +373,7 @@ export class StarOrderList<T = unknown> {
           <!-- Outside the listbox: a listbox may contain options and groups only. -->
           @if (!items.length) {
             <div
-              data-star-part="empty"
+              data-star-part="emptyPanel"
               class="star-listbox__empty star-pick-list__empty"
               role="presentation"
             >
@@ -382,7 +384,7 @@ export class StarOrderList<T = unknown> {
       </section>
       @if (side === 'source') {
         <div
-          data-star-part="buttons"
+          data-star-part="buttonsPanel"
           class="star-pick-list__buttons"
           role="group"
           [attr.aria-label]="text.transfer"

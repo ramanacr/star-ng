@@ -36,12 +36,12 @@ export interface StarPageEvent {
   host: { class: 'star-paginator' },
   template: `
     @if (showCurrentPageReport()) {
-      <span data-star-part="report" class="star-paginator__report" aria-live="polite">{{
+      <span data-star-part="reportText" class="star-paginator__report" aria-live="polite">{{
         report()
       }}</span>
     }
     <nav
-      data-star-part="pages"
+      data-star-part="pagesPanel"
       class="star-paginator__pages"
       [attr.aria-label]="ariaLabel() ?? text.pagination"
     >
@@ -120,7 +120,7 @@ export interface StarPageEvent {
       }
     </nav>
     @if (rowsPerPageOptions().length) {
-      <span data-star-part="rows" class="star-paginator__rows">
+      <span data-star-part="rowsPanel" class="star-paginator__rows">
         <span data-star-part="rowsText" [id]="rowsLabelId">{{ text.rowsPerPage }}</span>
         <star-select
           class="star-paginator__select"

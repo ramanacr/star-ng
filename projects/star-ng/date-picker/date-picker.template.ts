@@ -3,7 +3,7 @@
  * `star-multi-date-picker` (see `StarDateInputBase`). Internal.
  */
 export const STAR_DATE_TEMPLATE = `
-  <div data-star-part="control" #control class="star-date__control" cdkOverlayOrigin #origin="cdkOverlayOrigin">
+  <div data-star-part="controlPanel" #control class="star-date__control" cdkOverlayOrigin #origin="cdkOverlayOrigin">
     <input data-star-part="input"
       #input
       type="text"
@@ -33,7 +33,7 @@ export const STAR_DATE_TEMPLATE = `
         <i data-star-part="clearIcon" class="ph-bold ph-x" aria-hidden="true"></i>
       </button>
     }
-    <button data-star-part="toggle"
+    <button data-star-part="toggleButton"
       type="button"
       class="star-date__toggle"
       [disabled]="!interactive()"
@@ -67,7 +67,7 @@ export const STAR_DATE_TEMPLATE = `
        locks the page scroll while the sheet is open, as for star-dialog. -->
   @if (open() && sheet.active()) {
     <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
-    <dialog data-star-part="sheet"
+    <dialog data-star-part="sheetPanel"
       #sheetDialog
       class="star-date__sheet star-dialog--block-scroll"
       [attr.aria-label]="text.chooseDate"
@@ -141,7 +141,7 @@ export const STAR_DATE_TEMPLATE = `
         </div>
       }
       @if (showButtonBar()) {
-        <div data-star-part="bar" class="star-date__bar">
+        <div data-star-part="barPanel" class="star-date__bar">
           <button data-star-part="todayButton" type="button" class="star-btn star-btn--ghost star-btn--sm" (click)="today()">{{ text.today }}</button>
           <button data-star-part="footerClearButton" type="button" class="star-btn star-btn--ghost star-btn--sm" (click)="onClearClick()">{{ text.clear }}</button>
         </div>

@@ -44,14 +44,14 @@ import { starSelectionChanging, StarSelectionChangingEvent } from './selection-c
   },
   template: `
     <div
-      data-star-part="control"
+      data-star-part="controlPanel"
       class="star-select__control"
       cdkOverlayOrigin
       #origin="cdkOverlayOrigin"
     >
       @if (editable()) {
         <input
-          data-star-part="trigger"
+          data-star-part="triggerInput"
           #trigger
           type="text"
           class="star-select__trigger star-select__input"
@@ -79,7 +79,7 @@ import { starSelectionChanging, StarSelectionChangingEvent } from './selection-c
         />
       } @else {
         <div
-          data-star-part="trigger"
+          data-star-part="triggerPanel"
           #trigger
           class="star-select__trigger"
           role="combobox"
@@ -101,7 +101,7 @@ import { starSelectionChanging, StarSelectionChangingEvent } from './selection-c
           (blur)="onTriggerBlur()"
         >
           @if (selectedOption(); as option) {
-            <span data-star-part="value" class="star-select__value">
+            <span data-star-part="valuePanel" class="star-select__value">
               @if (selectedSlot(); as custom) {
                 <ng-container *ngTemplateOutlet="custom; context: { $implicit: option }" />
               } @else {
@@ -109,7 +109,7 @@ import { starSelectionChanging, StarSelectionChangingEvent } from './selection-c
               }
             </span>
           } @else {
-            <span data-star-part="placeholder" class="star-select__placeholder">{{
+            <span data-star-part="placeholderText" class="star-select__placeholder">{{
               placeholder() ?? text.selectPlaceholder
             }}</span>
           }
@@ -181,7 +181,7 @@ import { starSelectionChanging, StarSelectionChangingEvent } from './selection-c
           <ng-container *ngTemplateOutlet="header" />
         }
         @if (filter() && !editable()) {
-          <div data-star-part="filter" class="star-panel__filter">
+          <div data-star-part="filterPanel" class="star-panel__filter">
             @if (iconSlot('filter'); as icon) {
               <span data-star-part="filterIcon" aria-hidden="true"
                 ><ng-container *ngTemplateOutlet="icon"
@@ -211,7 +211,7 @@ import { starSelectionChanging, StarSelectionChangingEvent } from './selection-c
           </div>
         }
         <ul
-          data-star-part="listbox"
+          data-star-part="optionList"
           class="star-listbox"
           role="listbox"
           [id]="listId"
@@ -224,13 +224,13 @@ import { starSelectionChanging, StarSelectionChangingEvent } from './selection-c
           (scroll)="onListScroll($event)"
         >
           @if (loadingRow(); as loader) {
-            <li data-star-part="empty" class="star-listbox__empty" role="presentation">
+            <li data-star-part="emptyItem" class="star-listbox__empty" role="presentation">
               <ng-container *ngTemplateOutlet="loader" />
             </li>
           }
           @if (virtualWindow().before) {
             <li
-              data-star-part="spacer"
+              data-star-part="spacerItem"
               class="star-listbox__spacer"
               role="presentation"
               [style.height.px]="virtualWindow().before"
@@ -239,7 +239,7 @@ import { starSelectionChanging, StarSelectionChangingEvent } from './selection-c
           @for (row of renderedRows(); track row.key) {
             @if (row.kind === 'group') {
               <li
-                data-star-part="group"
+                data-star-part="groupItem"
                 class="star-listbox__group"
                 role="presentation"
                 [id]="row.id"
@@ -274,7 +274,7 @@ import { starSelectionChanging, StarSelectionChangingEvent } from './selection-c
                 <span data-star-part="label" class="star-listbox__label">
                   @if (option === undefined) {
                     <span
-                      data-star-part="skeleton"
+                      data-star-part="skeletonText"
                       class="star-skeleton star-listbox__skeleton"
                       aria-hidden="true"
                     ></span>
@@ -289,12 +289,15 @@ import { starSelectionChanging, StarSelectionChangingEvent } from './selection-c
                 </span>
                 @if (isSelected(option)) {
                   @if (iconSlot('check'); as icon) {
-                    <span data-star-part="checkIcon" class="star-listbox__check" aria-hidden="true"
+                    <span
+                      data-star-part="selectedIcon"
+                      class="star-listbox__check"
+                      aria-hidden="true"
                       ><ng-container *ngTemplateOutlet="icon"
                     /></span>
                   } @else {
                     <i
-                      data-star-part="checkIcon"
+                      data-star-part="selectedIcon"
                       class="ph-bold ph-check star-listbox__check"
                       aria-hidden="true"
                     ></i>
@@ -304,7 +307,7 @@ import { starSelectionChanging, StarSelectionChangingEvent } from './selection-c
             }
           } @empty {
             @if (!loadingRow()) {
-              <li data-star-part="empty" class="star-listbox__empty" role="presentation">
+              <li data-star-part="emptyItem" class="star-listbox__empty" role="presentation">
                 @if (emptySlot(); as custom) {
                   <ng-container *ngTemplateOutlet="custom; context: emptyContext()" />
                 } @else {
@@ -315,7 +318,7 @@ import { starSelectionChanging, StarSelectionChangingEvent } from './selection-c
           }
           @if (virtualWindow().after) {
             <li
-              data-star-part="spacer"
+              data-star-part="spacerItem"
               class="star-listbox__spacer"
               role="presentation"
               [style.height.px]="virtualWindow().after"

@@ -170,7 +170,7 @@ const FALLBACK_SIZE = { width: 300, height: 150 };
   template: `
     <div data-star-part="surface" class="star-signature__surface">
       <canvas
-        data-star-part="canvas"
+        data-star-part="canvasPanel"
         #canvas
         class="star-signature__canvas"
         role="img"
@@ -181,9 +181,9 @@ const FALLBACK_SIZE = { width: 300, height: 150 };
         (pointercancel)="onPointerUp($event)"
       ></canvas>
     </div>
-    <div data-star-part="bar" class="star-signature__bar">
+    <div data-star-part="barPanel" class="star-signature__bar">
       @if (allowTyped()) {
-        <div data-star-part="modes" class="star-signature__modes">
+        <div data-star-part="modesPanel" class="star-signature__modes">
           <button
             data-star-part="drawButton"
             type="button"
@@ -210,7 +210,7 @@ const FALLBACK_SIZE = { width: 300, height: 150 };
       }
       @if (mode() === 'type') {
         <input
-          data-star-part="typed"
+          data-star-part="textInput"
           #typedInput
           type="text"
           class="star-input star-input--sm star-signature__typed"

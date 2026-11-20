@@ -202,13 +202,13 @@ function emitChange<P>(
   template: `
     <div data-star-part="surface" class="star-diagram" [style.--star-diagram-height]="height()">
       <div
-        data-star-part="toolbar"
+        data-star-part="toolbarPanel"
         class="star-diagram__toolbar"
         role="toolbar"
         [attr.aria-label]="ariaLabel() ?? text.diagram"
       >
         <button
-          data-star-part="tool"
+          data-star-part="toolButton"
           type="button"
           class="star-diagram__tool"
           [attr.aria-label]="text.zoomOut"
@@ -220,11 +220,11 @@ function emitChange<P>(
             aria-hidden="true"
           ></i>
         </button>
-        <output data-star-part="zoom" class="star-diagram__zoom" aria-live="off"
+        <output data-star-part="zoomText" class="star-diagram__zoom" aria-live="off"
           >{{ percent() }}%</output
         >
         <button
-          data-star-part="tool"
+          data-star-part="toolButton"
           type="button"
           class="star-diagram__tool"
           [attr.aria-label]="text.zoomIn"
@@ -237,7 +237,7 @@ function emitChange<P>(
           ></i>
         </button>
         <button
-          data-star-part="tool"
+          data-star-part="toolButton"
           type="button"
           class="star-diagram__tool"
           [attr.aria-label]="text.zoomToFit"
@@ -247,7 +247,7 @@ function emitChange<P>(
         </button>
         @if (!readonly()) {
           <button
-            data-star-part="tool"
+            data-star-part="toolButton"
             type="button"
             class="star-diagram__tool"
             [attr.aria-label]="text.undo"
@@ -261,7 +261,7 @@ function emitChange<P>(
             ></i>
           </button>
           <button
-            data-star-part="tool"
+            data-star-part="toolButton"
             type="button"
             class="star-diagram__tool"
             [attr.aria-label]="text.redo"
@@ -274,7 +274,7 @@ function emitChange<P>(
       </div>
 
       <div
-        data-star-part="canvas"
+        data-star-part="canvasPanel"
         #canvas
         class="star-diagram__canvas"
         dir="ltr"
@@ -284,7 +284,7 @@ function emitChange<P>(
         [attr.aria-describedby]="id + '-hint'"
         [attr.tabindex]="nodes().length ? -1 : 0"
       >
-        <svg data-star-part="svg" #svg class="star-diagram__svg" width="100%" height="100%">
+        <svg data-star-part="graphic" #svg class="star-diagram__svg" width="100%" height="100%">
           <defs>
             <marker
               [id]="id + '-arrow'"
@@ -306,7 +306,13 @@ function emitChange<P>(
               [attr.x]="view().x"
               [attr.y]="view().y"
             >
-              <circle data-star-part="dot" class="star-diagram__dot" cx="1" cy="1" r="1" />
+              <circle
+                data-star-part="indicatorButton"
+                class="star-diagram__dot"
+                cx="1"
+                cy="1"
+                r="1"
+              />
             </pattern>
           </defs>
           @if (showGrid() && gridSize() > 0) {
@@ -320,10 +326,10 @@ function emitChange<P>(
             />
           }
           <g data-star-part="content" class="star-diagram__content" [attr.transform]="transform()">
-            <g data-star-part="edges" class="star-diagram__edges" aria-hidden="true">
+            <g data-star-part="edgesItem" class="star-diagram__edges" aria-hidden="true">
               @for (edge of edgeViews(); track edge.id) {
                 <g
-                  data-star-part="edge"
+                  data-star-part="edgeItem"
                   class="star-diagram__edge"
                   [class.star-diagram__edge--selected]="selectedEdge() === edge.id"
                   [attr.data-edge-id]="edge.id"
@@ -335,7 +341,7 @@ function emitChange<P>(
                     [attr.d]="edge.d"
                   />
                   <path
-                    data-star-part="edgeItem"
+                    data-star-part="edgeLineItem"
                     class="star-diagram__edge-line"
                     [attr.d]="edge.d"
                     [attr.marker-end]="edge.end"
@@ -356,7 +362,7 @@ function emitChange<P>(
               }
               @if (connectLine(); as line) {
                 <path
-                  data-star-part="edgeItem"
+                  data-star-part="edgeLineItem"
                   class="star-diagram__edge-line star-diagram__edge-line--draft"
                   data-export="skip"
                   [attr.d]="line"
@@ -364,7 +370,7 @@ function emitChange<P>(
               }
             </g>
             <g
-              data-star-part="nodes"
+              data-star-part="nodesItem"
               class="star-diagram__nodes"
               role="listbox"
               aria-multiselectable="true"
@@ -372,7 +378,7 @@ function emitChange<P>(
             >
               @for (node of nodeViews(); track node.id) {
                 <g
-                  data-star-part="node"
+                  data-star-part="nodeItem"
                   class="star-diagram__node"
                   role="option"
                   [class.star-diagram__node--selected]="isSelected(node.id)"
@@ -382,7 +388,7 @@ function emitChange<P>(
                   [attr.tabindex]="focusStop() === node.id ? 0 : -1"
                 >
                   <path
-                    data-star-part="shape"
+                    data-star-part="shapeItem"
                     class="star-diagram__shape"
                     [attr.d]="shapeOf(node)"
                   />
@@ -405,7 +411,7 @@ function emitChange<P>(
                       [attr.width]="node.width"
                       [attr.height]="node.height"
                     >
-                      <div data-star-part="custom" class="star-diagram__custom">
+                      <div data-star-part="customButton" class="star-diagram__custom">
                         <ng-container
                           *ngTemplateOutlet="
                             template;
@@ -420,14 +426,14 @@ function emitChange<P>(
             </g>
             @if (!readonly()) {
               <g
-                data-star-part="handles"
+                data-star-part="handlesItem"
                 class="star-diagram__handles"
                 aria-hidden="true"
                 data-export="skip"
               >
                 @for (port of portViews(); track port.key) {
                   <circle
-                    data-star-part="port"
+                    data-star-part="portItem"
                     class="star-diagram__port"
                     [attr.data-port]="port.port.id"
                     [attr.data-port-node]="port.node"
@@ -452,7 +458,7 @@ function emitChange<P>(
             }
             @if (marqueeRect(); as box) {
               <rect
-                data-star-part="marquee"
+                data-star-part="marqueeItem"
                 class="star-diagram__marquee"
                 data-export="skip"
                 [attr.x]="box.x"
@@ -465,7 +471,7 @@ function emitChange<P>(
         </svg>
         @if (editing(); as edit) {
           <input
-            data-star-part="editor"
+            data-star-part="cellInput"
             class="star-input star-diagram__editor"
             [attr.aria-label]="text.diagramEditLabel"
             [value]="edit.label"
@@ -482,7 +488,7 @@ function emitChange<P>(
         <p data-star-part="nodesLabel" [id]="id + '-nodes'">{{ text.diagramNodes }}</p>
         <ul data-star-part="nodeList" [attr.aria-labelledby]="id + '-nodes'">
           @for (node of nodes(); track node.id) {
-            <li data-star-part="nodeItem">{{ node.label }}</li>
+            <li data-star-part="nodeEntryItem">{{ node.label }}</li>
           }
         </ul>
         <p data-star-part="edgesLabel" [id]="id + '-edges'">{{ text.diagramConnections }}</p>

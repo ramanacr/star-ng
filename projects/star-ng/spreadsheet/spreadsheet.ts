@@ -222,11 +222,11 @@ const BACKGROUNDS: readonly StarCellBackground[] = [
             [attr.aria-pressed]="!!activeFormat().italic"
             (click)="toggleStyle('italic')"
           >
-            <i data-star-part="italicIcon" class="ph-bold ph-text-italic" aria-hidden="true"></i>
+            <i data-star-part="emphasisIcon" class="ph-bold ph-text-italic" aria-hidden="true"></i>
           </button>
           @for (align of aligns; track align.value) {
             <button
-              data-star-part="button"
+              data-star-part="toolButton"
               type="button"
               class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
               [attr.aria-label]="align.label()"
@@ -242,7 +242,7 @@ const BACKGROUNDS: readonly StarCellBackground[] = [
             aria-hidden="true"
           ></span>
           <select
-            data-star-part="select"
+            data-star-part="formatInput"
             class="star-spreadsheet__select"
             [attr.aria-label]="text.spreadsheetNumberFormat"
             (change)="setNumberFormat($any($event.target).value)"
@@ -266,7 +266,7 @@ const BACKGROUNDS: readonly StarCellBackground[] = [
           >
             <i data-star-part="toolIcon" class="ph-bold ph-arrow-left" aria-hidden="true"></i
             ><span
-              data-star-part="decimals"
+              data-star-part="decimalsText"
               class="star-spreadsheet__decimals"
               data-glyph=".0"
               aria-hidden="true"
@@ -280,14 +280,14 @@ const BACKGROUNDS: readonly StarCellBackground[] = [
             (click)="changeDecimals(1)"
           >
             <span
-              data-star-part="decimals"
+              data-star-part="decimalsText"
               class="star-spreadsheet__decimals"
               data-glyph=".00"
               aria-hidden="true"
             ></span>
           </button>
           <select
-            data-star-part="select"
+            data-star-part="formatInput"
             class="star-spreadsheet__select"
             [attr.aria-label]="text.spreadsheetBackground"
             (change)="setBackground($any($event.target).value)"
@@ -309,13 +309,15 @@ const BACKGROUNDS: readonly StarCellBackground[] = [
       </star-toolbar>
     }
     @if (showFormulaBar()) {
-      <div data-star-part="bar" class="star-spreadsheet__bar">
+      <div data-star-part="barPanel" class="star-spreadsheet__bar">
         <span data-star-part="addressText" class="star-spreadsheet__name" aria-hidden="true">{{
           activeAddress()
         }}</span>
-        <span data-star-part="fx" class="star-spreadsheet__fx" aria-hidden="true">fx</span>
+        <span data-star-part="formulaLabel" class="star-spreadsheet__fx" aria-hidden="true"
+          >fx</span
+        >
         <input
-          data-star-part="formula"
+          data-star-part="formulaInput"
           #bar
           class="star-spreadsheet__formula"
           type="text"
@@ -378,7 +380,7 @@ const BACKGROUNDS: readonly StarCellBackground[] = [
             [style.padding-left.px]="leadWidth()"
           >
             <div
-              data-star-part="corner"
+              data-star-part="cornerPanel"
               class="star-spreadsheet__corner"
               role="gridcell"
               aria-colindex="1"
@@ -399,7 +401,7 @@ const BACKGROUNDS: readonly StarCellBackground[] = [
                 {{ columnName(col) }}
                 @if (!readonly()) {
                   <span
-                    data-star-part="resizer"
+                    data-star-part="resizerText"
                     class="star-spreadsheet__resizer star-spreadsheet__resizer--col"
                     aria-hidden="true"
                     (pointerdown)="startResize($event, 'col', col)"
@@ -439,7 +441,7 @@ const BACKGROUNDS: readonly StarCellBackground[] = [
                   {{ row + 1 }}
                   @if (!readonly()) {
                     <span
-                      data-star-part="resizer"
+                      data-star-part="resizerText"
                       class="star-spreadsheet__resizer star-spreadsheet__resizer--row"
                       aria-hidden="true"
                       (pointerdown)="startResize($event, 'row', row)"
@@ -462,7 +464,7 @@ const BACKGROUNDS: readonly StarCellBackground[] = [
                   >
                     @if (isEditingCell(row, col)) {
                       <input
-                        data-star-part="editor"
+                        data-star-part="cellInput"
                         #editor
                         class="star-spreadsheet__editor"
                         type="text"
@@ -483,7 +485,7 @@ const BACKGROUNDS: readonly StarCellBackground[] = [
             }
           </div>
           <div
-            data-star-part="selection"
+            data-star-part="selectionPanel"
             class="star-spreadsheet__selection"
             aria-hidden="true"
             [style.left.px]="rangeBox(selection()).left"
@@ -492,7 +494,7 @@ const BACKGROUNDS: readonly StarCellBackground[] = [
             [style.height.px]="rangeBox(selection()).height"
           >
             @if (!readonly()) {
-              <span data-star-part="fill" class="star-spreadsheet__fill" data-fill></span>
+              <span data-star-part="fillText" class="star-spreadsheet__fill" data-fill></span>
             }
           </div>
           @if (fillTarget(); as target) {
@@ -511,14 +513,14 @@ const BACKGROUNDS: readonly StarCellBackground[] = [
     </div>
     @if (showTabs()) {
       <div
-        data-star-part="tabs"
+        data-star-part="tabsPanel"
         class="star-spreadsheet__tabs"
         role="tablist"
         [attr.aria-label]="text.spreadsheetSheets"
       >
         @for (sheet of sheetList(); track $index; let i = $index) {
           <button
-            data-star-part="tab"
+            data-star-part="tabButton"
             type="button"
             role="tab"
             class="star-spreadsheet__tab"

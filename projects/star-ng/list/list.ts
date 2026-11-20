@@ -78,7 +78,7 @@ export class StarListSubheader {}
     @switch (kind()) {
       @case ('router') {
         <a
-          data-star-part="main"
+          data-star-part="mainItem"
           #focusable
           class="star-list__main"
           [routerLink]="routerLink()"
@@ -94,7 +94,7 @@ export class StarListSubheader {}
       }
       @case ('href') {
         <a
-          data-star-part="main"
+          data-star-part="mainItem"
           #focusable
           class="star-list__main"
           [class.star-list__main--active]="active()"
@@ -109,7 +109,7 @@ export class StarListSubheader {}
       }
       @case ('button') {
         <button
-          data-star-part="main"
+          data-star-part="mainButton"
           #focusable
           type="button"
           class="star-list__main"
@@ -124,7 +124,7 @@ export class StarListSubheader {}
       }
       @default {
         <div
-          data-star-part="main"
+          data-star-part="mainPanel"
           class="star-list__main"
           [attr.aria-disabled]="disabled() || null"
         >
@@ -228,7 +228,7 @@ export class StarListItem {
     <ng-content />
     @if (!hasItems()) {
       @if (emptySlot(); as custom) {
-        <div data-star-part="empty" class="star-list__empty">
+        <div data-star-part="emptyPanel" class="star-list__empty">
           <ng-container *ngTemplateOutlet="custom; context: { $implicit: '' }" />
         </div>
       }

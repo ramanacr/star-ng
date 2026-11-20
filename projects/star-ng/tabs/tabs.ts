@@ -192,11 +192,11 @@ export class StarTab {
     '[class.star-tabs--align-stretch]': "alignment() === 'stretch'",
   },
   template: `
-    <div data-star-part="nav" class="star-tabs__nav">
+    <div data-star-part="navigation" class="star-tabs__nav">
       @if (scrollable()) {
         <!-- Pointer helpers only: the keyboard reaches every tab with the arrow keys. -->
         <button
-          data-star-part="scroll"
+          data-star-part="scrollButton"
           type="button"
           class="star-tabs__scroll star-tabs__scroll--start"
           tabindex="-1"
@@ -238,7 +238,7 @@ export class StarTab {
             [cdkDragDisabled]="!reorderable() || tab.disabled()"
           >
             <button
-              data-star-part="tab"
+              data-star-part="tabButton"
               #tabButton
               type="button"
               role="tab"
@@ -268,7 +268,7 @@ export class StarTab {
                 <span data-star-part="tabText">{{ tab.label() }}</span>
                 @if (tab.badge() !== null) {
                   <span
-                    data-star-part="badge"
+                    data-star-part="badgeText"
                     class="star-badge star-badge--secondary star-badge--sm"
                     >{{ tab.badge() }}</span
                   >
@@ -321,7 +321,7 @@ export class StarTab {
       }
       @if (scrollable()) {
         <button
-          data-star-part="scroll"
+          data-star-part="scrollButton"
           type="button"
           class="star-tabs__scroll star-tabs__scroll--end"
           tabindex="-1"

@@ -55,9 +55,9 @@ export class StarOrgNodeTemplate<T = unknown> {
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-org' },
   template: `
-    <div data-star-part="scroll" class="star-org__scroll">
+    <div data-star-part="scrollPanel" class="star-org__scroll">
       <ul
-        data-star-part="level"
+        data-star-part="levelList"
         class="star-org__level star-org__level--root"
         [attr.aria-label]="ariaLabel()"
       >
@@ -66,16 +66,16 @@ export class StarOrgNodeTemplate<T = unknown> {
     </div>
 
     <ng-template #branch let-node let-level="level">
-      <li starPart="branch" class="star-org__branch">
+      <li starPart="branchItem" class="star-org__branch">
         <div
-          data-star-part="node"
+          data-star-part="nodePanel"
           class="star-org__node"
           [class.star-org__node--selected]="selectedKey() === node.key"
           [class.star-org__node--parent]="!!node.children?.length && !isCollapsed(node)"
         >
           @if (selectable()) {
             <button
-              data-star-part="card"
+              data-star-part="cardButton"
               type="button"
               class="star-org__card star-org__card--button"
               [attr.aria-pressed]="selectedKey() === node.key"
@@ -84,13 +84,13 @@ export class StarOrgNodeTemplate<T = unknown> {
               <ng-container *ngTemplateOutlet="content; context: { $implicit: node, level }" />
             </button>
           } @else {
-            <div data-star-part="card" class="star-org__card">
+            <div data-star-part="cardPanel" class="star-org__card">
               <ng-container *ngTemplateOutlet="content; context: { $implicit: node, level }" />
             </div>
           }
           @if (node.children?.length) {
             <button
-              data-star-part="toggle"
+              data-star-part="toggleButton"
               type="button"
               class="star-org__toggle"
               [attr.aria-expanded]="!isCollapsed(node)"
@@ -110,7 +110,7 @@ export class StarOrgNodeTemplate<T = unknown> {
           }
         </div>
         @if (node.children?.length && !isCollapsed(node)) {
-          <ul data-star-part="level" class="star-org__level">
+          <ul data-star-part="levelList" class="star-org__level">
             @for (child of node.children; track child.key) {
               <ng-container
                 *ngTemplateOutlet="branch; context: { $implicit: child, level: level + 1 }"
@@ -127,7 +127,7 @@ export class StarOrgNodeTemplate<T = unknown> {
       } @else {
         <span starPart="label" class="star-org__label">{{ node.label }}</span>
         @if (node.subtitle) {
-          <span starPart="subtitle" class="star-org__subtitle">{{ node.subtitle }}</span>
+          <span starPart="subtitleText" class="star-org__subtitle">{{ node.subtitle }}</span>
         }
       }
     </ng-template>

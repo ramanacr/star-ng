@@ -37,7 +37,7 @@ export class StarAccordionContent {
     '[class.star-accordion__panel--disabled]': 'disabled()',
   },
   template: `
-    <h3 data-star-part="heading" class="star-accordion__heading">
+    <h3 data-star-part="headingPanel" class="star-accordion__heading">
       <button
         data-star-part="header"
         type="button"
@@ -62,14 +62,14 @@ export class StarAccordionContent {
       </button>
     </h3>
     <div
-      data-star-part="region"
+      data-star-part="regionPanel"
       class="star-accordion__region"
       role="region"
       [id]="regionId"
       [attr.aria-labelledby]="headerId"
       [attr.inert]="expanded() ? null : ''"
     >
-      <div data-star-part="inner" class="star-accordion__inner">
+      <div data-star-part="innerPanel" class="star-accordion__inner">
         <div data-star-part="body" class="star-accordion__body">
           @if (lazy(); as lazyContent) {
             @if (rendered()) {

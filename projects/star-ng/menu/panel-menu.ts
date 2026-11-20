@@ -32,7 +32,7 @@ import { StarMenuItem } from './menu';
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-panel-menu' },
   template: `
-    <nav data-star-part="nav" [attr.aria-label]="ariaLabel()">
+    <nav data-star-part="navigation" [attr.aria-label]="ariaLabel()">
       <ng-container *ngTemplateOutlet="list; context: { $implicit: items(), path: '', level: 0 }" />
     </nav>
 
@@ -75,7 +75,7 @@ import { StarMenuItem } from './menu';
                 ></i>
               </button>
               @if (isOpen(key)) {
-                <div data-star-part="region" [id]="regionId(key)">
+                <div data-star-part="regionPanel" [id]="regionId(key)">
                   <ng-container
                     *ngTemplateOutlet="
                       list;

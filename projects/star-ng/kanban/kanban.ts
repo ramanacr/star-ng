@@ -135,7 +135,7 @@ interface Grab {
     '[style.--star-kanban-columns]': 'gridColumns()',
   },
   template: `
-    <div data-star-part="board" class="star-kanban__board" cdkDropListGroup>
+    <div data-star-part="boardPanel" class="star-kanban__board" cdkDropListGroup>
       @if (lanes().length) {
         @for (column of columns(); track column.key) {
           <div
@@ -191,7 +191,7 @@ interface Grab {
               >
                 @for (item of cell.items; track keyOf(item); let i = $index) {
                   <div
-                    data-star-part="card"
+                    data-star-part="cardPanel"
                     class="star-kanban__card"
                     role="listitem"
                     cdkDrag
@@ -242,13 +242,13 @@ interface Grab {
           />
         } @else {
           <span data-star-part="titleText" class="star-kanban__title">{{ column.title }}</span>
-          <span data-star-part="count" class="star-kanban__count" aria-hidden="true">
+          <span data-star-part="countText" class="star-kanban__count" aria-hidden="true">
             {{ column.limit ? countOf(column.key) + ' / ' + column.limit : countOf(column.key) }}
           </span>
         }
         @if (collapsible()) {
           <button
-            data-star-part="collapse"
+            data-star-part="collapseButton"
             type="button"
             class="star-kanban__collapse"
             [attr.aria-expanded]="!isCollapsed(column)"

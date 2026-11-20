@@ -22,9 +22,9 @@ import { starParseMarkdownLite } from './markdown-lite';
         <pre
           data-star-part="codePanel"
           class="star-md__pre"
-        ><code data-star-part="code" [attr.data-language]="block.language || null">{{ block.text }}</code></pre>
+        ><code data-star-part="codeText" [attr.data-language]="block.language || null">{{ block.text }}</code></pre>
       } @else {
-        <p data-star-part="paragraph" class="star-md__p">
+        <p data-star-part="paragraphPanel" class="star-md__p">
           @for (line of block.lines; track $index; let last = $last) {
             @for (part of line; track $index) {
               @if (part.kind === 'strong') {
@@ -32,10 +32,10 @@ import { starParseMarkdownLite } from './markdown-lite';
               } @else if (part.kind === 'em') {
                 <em data-star-part="inlineText">{{ part.text }}</em>
               } @else if (part.kind === 'code') {
-                <code data-star-part="code" class="star-md__code">{{ part.text }}</code>
+                <code data-star-part="codeText" class="star-md__code">{{ part.text }}</code>
               } @else if (part.kind === 'link') {
                 <a
-                  data-star-part="link"
+                  data-star-part="linkItem"
                   [href]="part.href"
                   target="_blank"
                   rel="noopener noreferrer"

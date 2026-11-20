@@ -155,7 +155,7 @@ function plainText(text: string): string {
   host: { class: 'star-chat' },
   template: `
     <div
-      data-star-part="scroll"
+      data-star-part="scrollPanel"
       #scroller
       class="star-chat__scroll"
       role="region"
@@ -177,7 +177,7 @@ function plainText(text: string): string {
       @for (row of rows(); track row.key) {
         @if (row.kind === 'day') {
           <div
-            data-star-part="day"
+            data-star-part="dayPanel"
             class="star-chat__day"
             role="separator"
             [attr.aria-label]="row.label"
@@ -195,10 +195,10 @@ function plainText(text: string): string {
             [class.star-chat__message--error]="message.status === 'error'"
           >
             @if (!row.own) {
-              <span data-star-part="avatar" class="star-chat__avatar" aria-hidden="true">
+              <span data-star-part="avatarPanel" class="star-chat__avatar" aria-hidden="true">
                 @if (row.first) {
                   @if (message.author.avatar) {
-                    <img data-star-part="photo" [src]="message.author.avatar" alt="" />
+                    <img data-star-part="picture" [src]="message.author.avatar" alt="" />
                   } @else {
                     {{ initialsOf(message.author.name) }}
                   }
@@ -207,11 +207,11 @@ function plainText(text: string): string {
             }
             <div data-star-part="body" class="star-chat__body">
               @if (row.first && !row.own) {
-                <span data-star-part="author" class="star-chat__author" aria-hidden="true">{{
+                <span data-star-part="authorText" class="star-chat__author" aria-hidden="true">{{
                   message.author.name
                 }}</span>
               }
-              <div data-star-part="bubble" class="star-chat__bubble">
+              <div data-star-part="bubblePanel" class="star-chat__bubble">
                 <span class="star-sr-only">{{
                   row.time
                     ? text.messageFrom(message.author.name, row.time)
@@ -229,7 +229,7 @@ function plainText(text: string): string {
                 }
               </div>
               @if (row.last || message.status) {
-                <div data-star-part="meta" class="star-chat__meta">
+                <div data-star-part="infoText" class="star-chat__meta">
                   @if (row.last && row.time) {
                     <time data-star-part="timeText" aria-hidden="true" [attr.datetime]="row.iso">{{
                       row.time
@@ -237,7 +237,7 @@ function plainText(text: string): string {
                   }
                   @if (message.status) {
                     <i
-                      data-star-part="status"
+                      data-star-part="statusIcon"
                       class="star-chat__status ph"
                       role="img"
                       [class.ph-clock]="message.status === 'sending'"
@@ -253,7 +253,7 @@ function plainText(text: string): string {
         }
       } @empty {
         @if (!loading()) {
-          <div data-star-part="empty" class="star-chat__empty">
+          <div data-star-part="emptyPanel" class="star-chat__empty">
             @if (emptyTemplate(); as template) {
               <ng-container *ngTemplateOutlet="template; context: { $implicit: '' }" />
             } @else {
@@ -264,7 +264,7 @@ function plainText(text: string): string {
       }
     </div>
     @if (typingText(); as typingLine) {
-      <div data-star-part="typing" class="star-chat__typing">
+      <div data-star-part="typingPanel" class="star-chat__typing">
         <span data-star-part="typingIcon" class="star-chat__dots" aria-hidden="true"
           ><span data-star-part="dotItem"></span><span data-star-part="dotItem"></span
           ><span data-star-part="dotItem"></span
@@ -273,7 +273,7 @@ function plainText(text: string): string {
       </div>
     }
     <form
-      data-star-part="composer"
+      data-star-part="composerPanel"
       class="star-chat__composer"
       (submit)="$event.preventDefault(); sendDraft()"
     >

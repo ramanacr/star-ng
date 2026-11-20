@@ -64,7 +64,7 @@ const PICKER_COLS = 10;
           >{{ hover()?.[0] ?? rows() }} × {{ hover()?.[1] ?? cols() }}</span
         >
       </div>
-      <label data-star-part="field" class="star-editor__field star-editor__field--narrow">
+      <label data-star-part="fieldLabel" class="star-editor__field star-editor__field--narrow">
         <span data-star-part="rowsLabel">{{ text.editorRows }}</span>
         <input
           data-star-part="input"
@@ -76,7 +76,7 @@ const PICKER_COLS = 10;
           (input)="rows.set(clamp($any($event.target).value, 50))"
         />
       </label>
-      <label data-star-part="field" class="star-editor__field star-editor__field--narrow">
+      <label data-star-part="fieldLabel" class="star-editor__field star-editor__field--narrow">
         <span data-star-part="columnsText">{{ text.columns }}</span>
         <input
           data-star-part="input"
@@ -177,10 +177,10 @@ export class StarEditorTableInsert {
       novalidate
       (submit)="submit($event)"
     >
-      <label data-star-part="field" class="star-editor__field">
+      <label data-star-part="fieldLabel" class="star-editor__field">
         <span data-star-part="bordersLabel">{{ text.editorBorders }}</span>
         <select
-          data-star-part="select"
+          data-star-part="formatInput"
           class="star-editor__select"
           (change)="borders.set($any($event.target).value)"
         >
@@ -195,10 +195,10 @@ export class StarEditorTableInsert {
           </option>
         </select>
       </label>
-      <label data-star-part="field" class="star-editor__field">
+      <label data-star-part="fieldLabel" class="star-editor__field">
         <span data-star-part="alignLabel">{{ text.editorTableAlign }}</span>
         <select
-          data-star-part="select"
+          data-star-part="formatInput"
           class="star-editor__select"
           (change)="align.set($any($event.target).value)"
         >

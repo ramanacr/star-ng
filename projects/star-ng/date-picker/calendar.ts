@@ -103,7 +103,7 @@ export function isoWeek(date: Date): number {
     }
     <div data-star-part="header" class="star-calendar__header">
       <button
-        data-star-part="nav"
+        data-star-part="navigation"
         type="button"
         class="star-calendar__nav"
         [attr.aria-label]="view() === 'year' ? text.previousYears : text.previousMonth"
@@ -149,7 +149,7 @@ export function isoWeek(date: Date): number {
         }
       </h2>
       <button
-        data-star-part="nav"
+        data-star-part="navigation"
         type="button"
         class="star-calendar__nav"
         [attr.aria-label]="view() === 'year' ? text.nextYears : text.nextMonth"
@@ -166,7 +166,7 @@ export function isoWeek(date: Date): number {
     @switch (view()) {
       @case ('day') {
         <div
-          data-star-part="months"
+          data-star-part="monthsPanel"
           class="star-calendar__months"
           [class.star-calendar__months--many]="monthCount() > 1"
         >
@@ -192,7 +192,7 @@ export function isoWeek(date: Date): number {
                 <tr data-star-part="weekShortRow">
                   @if (showWeek()) {
                     <th
-                      data-star-part="week"
+                      data-star-part="weekCell"
                       scope="col"
                       class="star-calendar__week"
                       [attr.abbr]="text.weekNumber"
@@ -211,7 +211,7 @@ export function isoWeek(date: Date): number {
                 @for (week of grid.weeks; track $index) {
                   <tr data-star-part="gridBodyRow">
                     @if (showWeek()) {
-                      <th data-star-part="week" scope="row" class="star-calendar__week">
+                      <th data-star-part="weekCell" scope="row" class="star-calendar__week">
                         {{ week.number }}
                       </th>
                     }
@@ -228,7 +228,7 @@ export function isoWeek(date: Date): number {
                           [class.star-calendar__cell--range-end]="isRangeEdge(cell.date, 'end')"
                         >
                           <button
-                            data-star-part="day"
+                            data-star-part="dayButton"
                             type="button"
                             class="star-calendar__day"
                             [attr.data-date]="cell.key"
@@ -278,7 +278,7 @@ export function isoWeek(date: Date): number {
       }
       @case ('month') {
         <div
-          data-star-part="picker"
+          data-star-part="pickerPanel"
           class="star-calendar__picker"
           role="group"
           [attr.aria-label]="text.chooseMonth"
@@ -286,7 +286,7 @@ export function isoWeek(date: Date): number {
         >
           @for (month of months(); track $index; let i = $index) {
             <button
-              data-star-part="pick"
+              data-star-part="pickButton"
               type="button"
               class="star-calendar__pick"
               [attr.data-pick]="i"
@@ -303,7 +303,7 @@ export function isoWeek(date: Date): number {
       }
       @case ('year') {
         <div
-          data-star-part="picker"
+          data-star-part="pickerPanel"
           class="star-calendar__picker"
           role="group"
           [attr.aria-label]="text.chooseYear"
@@ -311,7 +311,7 @@ export function isoWeek(date: Date): number {
         >
           @for (year of years(); track year) {
             <button
-              data-star-part="pick"
+              data-star-part="pickButton"
               type="button"
               class="star-calendar__pick"
               [attr.data-pick]="year"

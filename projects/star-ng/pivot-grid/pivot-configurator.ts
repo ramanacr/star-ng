@@ -54,7 +54,7 @@ const AGGREGATES: readonly StarPivotAggregate[] = [
     >
       @for (list of lists; track list) {
         <div
-          data-star-part="area"
+          data-star-part="areaPanel"
           class="star-pivot-config__area"
           [class]="'star-pivot-config__area--' + list"
         >
@@ -75,14 +75,14 @@ const AGGREGATES: readonly StarPivotAggregate[] = [
           >
             @for (name of fieldsIn(list); track name) {
               <li
-                data-star-part="field"
+                data-star-part="fieldItem"
                 class="star-pivot-config__field"
                 cdkDrag
                 [cdkDragData]="name"
                 [attr.data-pivot-field]="name"
               >
                 <i
-                  data-star-part="grip"
+                  data-star-part="dragHandle"
                   class="ph-bold ph-dots-six-vertical star-pivot-config__grip"
                   aria-hidden="true"
                 ></i>
@@ -91,7 +91,7 @@ const AGGREGATES: readonly StarPivotAggregate[] = [
                 }}</span>
                 @if (list === 'values' && aggregateOf(name)) {
                   <select
-                    data-star-part="aggregate"
+                    data-star-part="aggregateInput"
                     class="star-pivot-config__aggregate"
                     [attr.aria-label]="text.pivotAggregate(labelOf(name))"
                     (change)="setAggregate(name, $any($event.target).value)"
@@ -138,7 +138,7 @@ const AGGREGATES: readonly StarPivotAggregate[] = [
                 />
               </li>
             } @empty {
-              <li data-star-part="empty" class="star-pivot-config__empty">
+              <li data-star-part="emptyItem" class="star-pivot-config__empty">
                 {{ text.pivotDropHere }}
               </li>
             }

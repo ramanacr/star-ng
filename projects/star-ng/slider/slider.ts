@@ -46,7 +46,7 @@ import { injectStarFieldLink, starJoinIds } from '@star-ng/ui/field';
       (blur)="touch.emit()"
     />
     @if (showValue()) {
-      <output data-star-part="value" class="star-slider__value" [attr.for]="inputId()">{{
+      <output data-star-part="valueText" class="star-slider__value" [attr.for]="inputId()">{{
         valueText()
       }}</output>
     }
@@ -131,7 +131,7 @@ export class StarSlider implements FormValueControl<number> {
       />
     </div>
     @if (showValue()) {
-      <output data-star-part="value" class="star-slider__value"
+      <output data-star-part="valueText" class="star-slider__value"
         >{{ format()(value()[0]) }} – {{ format()(value()[1]) }}</output
       >
     }

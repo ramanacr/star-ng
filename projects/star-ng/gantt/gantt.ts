@@ -128,8 +128,8 @@ const key = (id: StarGanttId | null | undefined) =>
     '[style.--star-gantt-timeline-width.px]': 'timelineWidth()',
   },
   template: `
-    <div data-star-part="scroll" class="star-gantt__scroll" (scroll)="onScroll($event)">
-      <div data-star-part="panes" class="star-gantt__panes">
+    <div data-star-part="scrollPanel" class="star-gantt__scroll" (scroll)="onScroll($event)">
+      <div data-star-part="panesPanel" class="star-gantt__panes">
         <!-- The keys of the focused row bubble to the tree grid (roving tabindex). -->
         <!-- eslint-disable-next-line @angular-eslint/template/interactive-supports-focus -->
         <div
@@ -210,7 +210,7 @@ const key = (id: StarGanttId | null | undefined) =>
                 >
                   @if (row.summary) {
                     <span
-                      data-star-part="toggle"
+                      data-star-part="togglePanel"
                       class="star-gantt__toggle"
                       aria-hidden="true"
                       (click)="toggle(row, $event)"
@@ -224,7 +224,7 @@ const key = (id: StarGanttId | null | undefined) =>
                     </span>
                   } @else {
                     <span
-                      data-star-part="toggle"
+                      data-star-part="toggleText"
                       class="star-gantt__toggle"
                       aria-hidden="true"
                     ></span>
@@ -258,13 +258,13 @@ const key = (id: StarGanttId | null | undefined) =>
           </div>
         </div>
 
-        <div data-star-part="timeline" class="star-gantt__timeline" aria-hidden="true">
-          <div data-star-part="scale" class="star-gantt__scale">
+        <div data-star-part="timelinePanel" class="star-gantt__timeline" aria-hidden="true">
+          <div data-star-part="scalePanel" class="star-gantt__scale">
             @for (tier of [ticks().upper, ticks().lower]; track $index) {
-              <div data-star-part="tier" class="star-gantt__tier">
+              <div data-star-part="tierPanel" class="star-gantt__tier">
                 @for (tick of tier; track tick.x) {
                   <span
-                    data-star-part="tick"
+                    data-star-part="tickText"
                     class="star-gantt__tick"
                     [style.inset-inline-start.px]="tick.x"
                     [style.inline-size.px]="tick.width"
@@ -276,7 +276,7 @@ const key = (id: StarGanttId | null | undefined) =>
             }
           </div>
           <svg
-            data-star-part="svg"
+            data-star-part="graphic"
             class="star-gantt__svg"
             [attr.width]="timelineWidth()"
             [attr.height]="rows().length * rowHeight()"
@@ -294,7 +294,7 @@ const key = (id: StarGanttId | null | undefined) =>
                 orient="auto-start-reverse"
               >
                 <path
-                  data-star-part="arrowIcon"
+                  data-star-part="dependencyIcon"
                   d="M 0 0 L 8 4 L 0 8 z"
                   class="star-gantt__arrow-head"
                 />
@@ -302,7 +302,7 @@ const key = (id: StarGanttId | null | undefined) =>
             </defs>
             @for (weekend of weekends(); track weekend) {
               <rect
-                data-star-part="weekend"
+                data-star-part="weekendItem"
                 class="star-gantt__weekend"
                 [attr.x]="weekend"
                 y="0"
@@ -313,7 +313,7 @@ const key = (id: StarGanttId | null | undefined) =>
             @for (row of shownRows(); track row.task.id) {
               @if (row.index % 2 === 1) {
                 <rect
-                  data-star-part="stripe"
+                  data-star-part="stripeItem"
                   class="star-gantt__stripe"
                   x="0"
                   [attr.y]="row.index * rowHeight()"
@@ -324,7 +324,7 @@ const key = (id: StarGanttId | null | undefined) =>
             }
             @for (path of dependencyPaths(); track path.key) {
               <path
-                data-star-part="dependency"
+                data-star-part="dependencyItem"
                 class="star-gantt__dependency"
                 [attr.d]="path.d"
                 [attr.marker-end]="'url(#' + markerId + ')'"
@@ -332,7 +332,7 @@ const key = (id: StarGanttId | null | undefined) =>
             }
             @for (bar of bars(); track bar.row.task.id) {
               <g
-                data-star-part="bar"
+                data-star-part="barItem"
                 class="star-gantt__bar"
                 [class.star-gantt__bar--summary]="bar.row.summary"
                 [class.star-gantt__bar--milestone]="bar.row.milestone"

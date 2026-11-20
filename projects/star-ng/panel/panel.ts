@@ -31,7 +31,7 @@ import { STAR_UI_TEXT, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
         <ng-content select="[starPanelActions]" />
         @if (toggleable()) {
           <button
-            data-star-part="toggle"
+            data-star-part="toggleButton"
             type="button"
             class="star-btn star-btn--ghost star-btn--icon star-panel-box__toggle"
             [attr.aria-expanded]="!collapsed()"
@@ -47,14 +47,14 @@ import { STAR_UI_TEXT, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
       </div>
     </header>
     <div
-      data-star-part="region"
+      data-star-part="regionPanel"
       class="star-accordion__region"
       role="region"
       [id]="contentId"
       [attr.aria-labelledby]="titleId"
       [attr.inert]="collapsed() ? '' : null"
     >
-      <div data-star-part="inner" class="star-accordion__inner">
+      <div data-star-part="innerPanel" class="star-accordion__inner">
         <div data-star-part="body" class="star-panel-box__body"><ng-content /></div>
       </div>
     </div>
@@ -93,7 +93,7 @@ export class StarPanel {
       <legend data-star-part="legend" class="star-fieldset__legend">
         @if (toggleable()) {
           <button
-            data-star-part="toggle"
+            data-star-part="toggleButton"
             type="button"
             class="star-fieldset__toggle"
             [attr.aria-expanded]="!collapsed()"
@@ -112,12 +112,12 @@ export class StarPanel {
         }
       </legend>
       <div
-        data-star-part="region"
+        data-star-part="regionPanel"
         class="star-accordion__region"
         [id]="contentId"
         [attr.inert]="collapsed() ? '' : null"
       >
-        <div data-star-part="inner" class="star-accordion__inner">
+        <div data-star-part="innerPanel" class="star-accordion__inner">
           <div data-star-part="body" class="star-fieldset__body"><ng-content /></div>
         </div>
       </div>

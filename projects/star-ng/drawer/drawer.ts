@@ -42,7 +42,7 @@ import { StarDialogBase } from '@star-ng/ui/dialog';
       <div data-star-part="surface" class="star-dialog__surface">
         @if (showHeader()) {
           <header data-star-part="header" class="star-dialog__header">
-            <div data-star-part="heading" class="star-dialog__heading">
+            <div data-star-part="headingPanel" class="star-dialog__heading">
               @if (header()) {
                 <h2 data-star-part="titleText" class="star-dialog__title" [id]="headerId">
                   {{ header() }}

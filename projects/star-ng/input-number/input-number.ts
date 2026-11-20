@@ -45,7 +45,7 @@ import { injectStarFieldLink } from '@star-ng/ui/field';
     '[class.star-number--filled]': "variant() === 'filled'",
   },
   template: `
-    <div data-star-part="control" class="star-number__control">
+    <div data-star-part="controlPanel" class="star-number__control">
       @if (showButtons()) {
         <button
           data-star-part="stepButton"

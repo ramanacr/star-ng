@@ -82,7 +82,7 @@ const LINK = '.star-app-sidebar__link';
       <!-- The keys come from the links inside (roving focus); the nav itself is not focusable. -->
       <!-- eslint-disable-next-line @angular-eslint/template/interactive-supports-focus -->
       <nav
-        starPart="nav"
+        starPart="navigation"
         class="star-app-sidebar__nav"
         [attr.aria-label]="label()"
         (keydown)="onKeydown($event)"
@@ -270,12 +270,12 @@ export class StarAppSidebarFooter {}
   host: { class: 'star-app-sidebar__section' },
   template: `
     @if (heading()) {
-      <div data-star-part="heading" class="star-app-sidebar__heading" [id]="headingId">
+      <div data-star-part="headingPanel" class="star-app-sidebar__heading" [id]="headingId">
         {{ heading() }}
       </div>
     }
     <div
-      data-star-part="items"
+      data-star-part="itemsPanel"
       class="star-app-sidebar__items"
       role="group"
       [attr.aria-labelledby]="heading() ? headingId : null"
@@ -323,7 +323,7 @@ export class StarAppSidebarSection {
         <!-- The space keeps the label and the badge apart in the accessible name. -->
         {{ ' ' }}
         <span
-          starPart="badge"
+          starPart="badgeText"
           class="star-badge star-badge--danger star-badge--sm star-app-sidebar__badge"
           [attr.aria-hidden]="badgeLabel() ? 'true' : null"
           >{{ badge() }}</span
@@ -342,7 +342,7 @@ export class StarAppSidebarSection {
     </ng-template>
     @if (hasChildren()) {
       <button
-        data-star-part="link"
+        data-star-part="linkButton"
         type="button"
         class="star-app-sidebar__link"
         [attr.aria-expanded]="expanded()"
@@ -356,7 +356,7 @@ export class StarAppSidebarSection {
       </button>
     } @else if (routerLink() !== null) {
       <a
-        data-star-part="link"
+        data-star-part="linkItem"
         class="star-app-sidebar__link"
         [routerLink]="routerLink()"
         routerLinkActive="star-app-sidebar__link--active"
@@ -371,7 +371,7 @@ export class StarAppSidebarSection {
       </a>
     } @else if (href() !== null) {
       <a
-        data-star-part="link"
+        data-star-part="linkItem"
         class="star-app-sidebar__link"
         [class.star-app-sidebar__link--active]="active()"
         [attr.href]="href()"
@@ -385,7 +385,7 @@ export class StarAppSidebarSection {
       </a>
     } @else {
       <button
-        data-star-part="link"
+        data-star-part="linkButton"
         type="button"
         class="star-app-sidebar__link"
         [class.star-app-sidebar__link--active]="active()"
@@ -399,7 +399,7 @@ export class StarAppSidebarSection {
       </button>
     }
     <div
-      data-star-part="group"
+      data-star-part="groupPanel"
       class="star-app-sidebar__group"
       role="group"
       [id]="groupId"

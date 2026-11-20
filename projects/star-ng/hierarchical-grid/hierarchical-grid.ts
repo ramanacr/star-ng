@@ -187,7 +187,7 @@ const BODY_FOCUS =
       @if (childIslands().length) {
         <ng-template starRowExpansion let-row let-i="index">
           <div
-            starPart="children"
+            starPart="childrenPanel"
             class="star-hierarchical__children"
             [attr.data-level]="level() + 1"
           >
@@ -466,14 +466,19 @@ type ChildState =
   template: `
     @switch (state().kind) {
       @case ('loading') {
-        <div data-star-part="status" class="star-hierarchical__status" role="status" tabindex="-1">
+        <div
+          data-star-part="statusPanel"
+          class="star-hierarchical__status"
+          role="status"
+          tabindex="-1"
+        >
           <star-spinner size="1rem" />
           <span data-star-part="statusText">{{ text.loading }}</span>
         </div>
       }
       @case ('error') {
         <div
-          data-star-part="status"
+          data-star-part="statusPanel"
           class="star-hierarchical__status star-hierarchical__status--error"
           role="alert"
         >

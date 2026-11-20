@@ -77,10 +77,12 @@ import { StarPivotFilter, StarPivotMember, starPivotMemberKey as keyOf } from '.
               >{{ member.label }}</star-checkbox
             >
           } @empty {
-            <p data-star-part="empty" class="star-pivot-filter__empty">{{ text.fileNoResults }}</p>
+            <p data-star-part="emptyText" class="star-pivot-filter__empty">
+              {{ text.fileNoResults }}
+            </p>
           }
         </div>
-        <div data-star-part="buttons" class="star-pivot-filter__buttons">
+        <div data-star-part="buttonsPanel" class="star-pivot-filter__buttons">
           <star-button size="sm" variant="secondary" (pressed)="clear()">
             {{ text.clear }}
           </star-button>

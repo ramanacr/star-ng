@@ -49,7 +49,7 @@ export function starPasswordRules(text: StarUiText, minLength = 12): readonly St
     '[class.star-password--invalid]': 'showInvalid()',
   },
   template: `
-    <div data-star-part="control" class="star-password__control">
+    <div data-star-part="controlPanel" class="star-password__control">
       <input
         data-star-part="input"
         #input
@@ -88,21 +88,21 @@ export function starPasswordRules(text: StarUiText, minLength = 12): readonly St
       </button>
     </div>
     @if (feedback()) {
-      <div data-star-part="feedback" class="star-password__feedback" [id]="feedbackId">
-        <div data-star-part="meter" class="star-password__meter" aria-hidden="true">
+      <div data-star-part="feedbackPanel" class="star-password__feedback" [id]="feedbackId">
+        <div data-star-part="meterPanel" class="star-password__meter" aria-hidden="true">
           @for (bar of bars; track bar) {
             <span
-              data-star-part="bar"
+              data-star-part="barText"
               class="star-password__bar"
               [class.star-password__bar--on]="bar < score()"
               [attr.data-level]="level()"
             ></span>
           }
         </div>
-        <p data-star-part="level" class="star-password__level" aria-live="polite">
+        <p data-star-part="levelText" class="star-password__level" aria-live="polite">
           {{ value() ? levelText() : '' }}
         </p>
-        <ul data-star-part="rules" class="star-password__rules">
+        <ul data-star-part="rulesList" class="star-password__rules">
           @for (rule of activeRules(); track $index) {
             @let ok = rule.test(value());
             <li data-star-part="rulesItem" [class.star-password__rule--ok]="ok">

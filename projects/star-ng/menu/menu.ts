@@ -207,7 +207,7 @@ export class StarMenuInDialog {
         }
       </span>
       @if (item.shortcut) {
-        <kbd starPart="shortcut" class="star-menu__shortcut">{{ item.shortcut }}</kbd>
+        <kbd starPart="shortcutText" class="star-menu__shortcut">{{ item.shortcut }}</kbd>
       }
     </ng-template>
 
@@ -390,7 +390,7 @@ export class StarMenuTrigger {
       {{ label() }}
     </star-button>
     <button
-      data-star-part="toggle"
+      data-star-part="toggleButton"
       type="button"
       class="star-btn star-split__toggle"
       [class]="'star-btn star-split__toggle star-btn--' + variant() + ' star-btn--' + size()"

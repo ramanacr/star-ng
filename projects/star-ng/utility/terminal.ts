@@ -40,7 +40,7 @@ export type StarTerminalHandler = (command: string) => string | Promise<string>;
   host: { class: 'star-terminal', '(click)': 'focus()' },
   template: `
     <div
-      data-star-part="log"
+      data-star-part="logPanel"
       #log
       class="star-terminal__log"
       role="log"
@@ -48,26 +48,26 @@ export type StarTerminalHandler = (command: string) => string | Promise<string>;
       [attr.aria-label]="ariaLabel()"
     >
       @if (welcome()) {
-        <p data-star-part="welcome" class="star-terminal__welcome">{{ welcome() }}</p>
+        <p data-star-part="welcomeText" class="star-terminal__welcome">{{ welcome() }}</p>
       }
       @for (entry of entries(); track $index) {
-        <p data-star-part="command" class="star-terminal__command">
-          <span data-star-part="prompt" class="star-terminal__prompt" aria-hidden="true">{{
+        <p data-star-part="commandPanel" class="star-terminal__command">
+          <span data-star-part="promptText" class="star-terminal__prompt" aria-hidden="true">{{
             prompt()
           }}</span>
           {{ entry.command }}
         </p>
         @if (entry.response !== null) {
           <pre
-            data-star-part="response"
+            data-star-part="responseText"
             class="star-terminal__response"
             [class.star-terminal__response--error]="entry.error"
             >{{ entry.response }}</pre>
         }
       }
     </div>
-    <div data-star-part="line" class="star-terminal__line">
-      <label data-star-part="prompt" class="star-terminal__prompt" [for]="inputId">{{
+    <div data-star-part="linePanel" class="star-terminal__line">
+      <label data-star-part="promptLabel" class="star-terminal__prompt" [for]="inputId">{{
         prompt()
       }}</label>
       <input

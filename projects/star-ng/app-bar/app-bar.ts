@@ -33,7 +33,7 @@ export type StarAppBarPosition = 'static' | 'sticky' | 'fixed';
   },
   template: `
     <header
-      data-star-part="bar"
+      data-star-part="barPanel"
       class="star-app-bar__bar"
       [attr.role]="landmark() ? 'banner' : 'none'"
     >

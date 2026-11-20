@@ -50,11 +50,11 @@ import { StarSpinner } from '@star-ng/ui/spinner';
     '[style.--star-split]': "size() + '%'",
   },
   template: `
-    <div data-star-part="pane" class="star-splitter__pane">
+    <div data-star-part="panePanel" class="star-splitter__pane">
       <ng-content select="[starSplitterStart]" />
     </div>
     <div
-      data-star-part="gutter"
+      data-star-part="gutterPanel"
       class="star-splitter__gutter"
       role="separator"
       tabindex="0"
@@ -68,7 +68,7 @@ import { StarSpinner } from '@star-ng/ui/spinner';
     >
       <span data-star-part="handle" class="star-splitter__handle" aria-hidden="true"></span>
     </div>
-    <div data-star-part="pane" class="star-splitter__pane">
+    <div data-star-part="panePanel" class="star-splitter__pane">
       <ng-content select="[starSplitterEnd]" />
     </div>
   `,
@@ -154,7 +154,7 @@ export class StarSplitter {
   },
   template: `
     <button
-      data-star-part="fab"
+      data-star-part="triggerButton"
       #fab
       type="button"
       class="star-speed-dial__fab"
@@ -164,7 +164,7 @@ export class StarSplitter {
       [attr.aria-label]="ariaLabel() ?? text.actions"
       (click)="toggle(list)"
     >
-      <i data-star-part="fabIcon" [class]="icon()" aria-hidden="true"></i>
+      <i data-star-part="triggerIcon" [class]="icon()" aria-hidden="true"></i>
     </button>
     <ul
       data-star-part="list"
@@ -176,7 +176,7 @@ export class StarSplitter {
       @for (item of items(); track $index; let i = $index) {
         <li data-star-part="listItem" [style.--star-i]="i">
           <button
-            data-star-part="action"
+            data-star-part="actionButton"
             type="button"
             class="star-speed-dial__action"
             [class.star-speed-dial__action--active]="i === activeIndex()"
@@ -300,7 +300,7 @@ export class StarSpeedDial {
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '[class]': "'star-dock star-dock--' + position()" },
   template: `
-    <nav data-star-part="nav" [attr.aria-label]="ariaLabel() ?? text.dock">
+    <nav data-star-part="navigation" [attr.aria-label]="ariaLabel() ?? text.dock">
       <ul data-star-part="list" class="star-dock__list">
         @for (item of items(); track $index) {
           <li data-star-part="listItem">
@@ -414,7 +414,7 @@ export class StarScrollTop {
       <ng-content />
     </div>
     @if (blocked()) {
-      <div data-star-part="mask" class="star-block-ui__mask">
+      <div data-star-part="maskPanel" class="star-block-ui__mask">
         <star-spinner size="2rem" [ariaLabel]="message()" />
         @if (message()) {
           <span data-star-part="messageText" class="star-block-ui__message">{{ message() }}</span>
@@ -450,10 +450,10 @@ export interface StarMeterItem {
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-meter-group', role: 'group', '[attr.aria-label]': 'ariaLabel()' },
   template: `
-    <div data-star-part="bar" class="star-meter-group__bar">
+    <div data-star-part="barPanel" class="star-meter-group__bar">
       @for (item of items(); track item.label; let i = $index) {
         <span
-          data-star-part="part"
+          data-star-part="partText"
           class="star-meter-group__part"
           role="meter"
           [attr.aria-label]="item.label"
@@ -472,7 +472,7 @@ export interface StarMeterItem {
       @for (item of items(); track item.label; let i = $index) {
         <li data-star-part="legendItem">
           <span
-            data-star-part="swatch"
+            data-star-part="swatchText"
             class="star-chart__swatch"
             [style.background]="color(i)"
           ></span>

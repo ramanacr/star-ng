@@ -130,7 +130,7 @@ export class StarWindowStack {
     >
       <!-- The title bar takes the focus for the move and resize keys; the pointer drags it. -->
       <div
-        data-star-part="titlebar"
+        data-star-part="titlebarPanel"
         class="star-window__titlebar"
         tabindex="0"
         role="group"
@@ -203,7 +203,7 @@ export class StarWindowStack {
       </div>
       @if (resizable() && state() === 'normal') {
         <span
-          data-star-part="resize"
+          data-star-part="resizeText"
           class="star-window__resize"
           aria-hidden="true"
           (pointerdown)="onResizeStart($event)"

@@ -62,7 +62,7 @@ function modulePath(modules: readonly (readonly boolean[])[]): string {
   template: `
     @if (code(); as symbol) {
       <svg
-        data-star-part="svg"
+        data-star-part="graphic"
         class="star-qr-code__svg"
         [attr.viewBox]="'0 0 ' + side() + ' ' + side()"
         [attr.width]="size()"
@@ -72,12 +72,12 @@ function modulePath(modules: readonly (readonly boolean[])[]): string {
         shape-rendering="crispEdges"
       >
         <rect
-          data-star-part="background"
+          data-star-part="backgroundItem"
           class="star-qr-code__background"
           [attr.width]="side()"
           [attr.height]="side()"
         />
-        <path data-star-part="modules" class="star-qr-code__modules" [attr.d]="path()" />
+        <path data-star-part="modulesItem" class="star-qr-code__modules" [attr.d]="path()" />
         @if (imageBox(); as box) {
           <rect
             data-star-part="logoPanel"
@@ -88,7 +88,7 @@ function modulePath(modules: readonly (readonly boolean[])[]): string {
             [attr.height]="box.size + 1"
           />
           <image
-            data-star-part="logo"
+            data-star-part="logoItem"
             class="star-qr-code__image"
             [attr.href]="image()"
             [attr.x]="box.x"
@@ -100,7 +100,7 @@ function modulePath(modules: readonly (readonly boolean[])[]): string {
         }
       </svg>
     } @else if (error()) {
-      <span data-star-part="error" class="star-qr-code__error">{{ error() }}</span>
+      <span data-star-part="errorText" class="star-qr-code__error">{{ error() }}</span>
     }
   `,
 })

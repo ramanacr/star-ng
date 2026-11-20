@@ -80,9 +80,9 @@ interface CascadeItem<TOption> extends StarMenuItem {
     '[class.star-select--sm]': "size() === 'sm'",
   },
   template: `
-    <div data-star-part="control" class="star-select__control">
+    <div data-star-part="controlPanel" class="star-select__control">
       <button
-        data-star-part="trigger"
+        data-star-part="triggerButton"
         #trigger="cdkMenuTriggerFor"
         #button
         type="button"
@@ -99,9 +99,9 @@ interface CascadeItem<TOption> extends StarMenuItem {
         (cdkMenuClosed)="touch.emit()"
       >
         @if (selected(); as leaf) {
-          <span data-star-part="value" class="star-select__value">{{ display(leaf) }}</span>
+          <span data-star-part="valueText" class="star-select__value">{{ display(leaf) }}</span>
         } @else {
-          <span data-star-part="placeholder" class="star-select__placeholder">{{
+          <span data-star-part="placeholderText" class="star-select__placeholder">{{
             placeholder() ?? text.selectPlaceholder
           }}</span>
         }

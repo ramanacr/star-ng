@@ -24,22 +24,24 @@ import { StarField } from './field';
   providers: [{ provide: StarField, useExisting: forwardRef(() => StarIftaLabel) }],
   host: { class: 'star-ifta' },
   template: `
-    <div data-star-part="box" class="star-ifta__box">
+    <div data-star-part="boxPanel" class="star-ifta__box">
       <!-- The label lets the pointer through (CSS), so a click reaches the control below it. -->
       <label data-star-part="label" class="star-ifta__label" [id]="labelId" [attr.for]="labelFor()">
         {{ label() }}
         @if (isRequired()) {
-          <span data-star-part="required" class="star-field__required" aria-hidden="true">*</span>
+          <span data-star-part="requiredText" class="star-field__required" aria-hidden="true"
+            >*</span
+          >
         }
       </label>
       <ng-content />
     </div>
     @if (errorText(); as error) {
-      <p data-star-part="error" class="star-field__error" [id]="errorId" role="alert">
+      <p data-star-part="errorText" class="star-field__error" [id]="errorId" role="alert">
         {{ error }}
       </p>
     } @else if (hint()) {
-      <p data-star-part="hint" class="star-field__hint" [id]="hintId">{{ hint() }}</p>
+      <p data-star-part="hintText" class="star-field__hint" [id]="hintId">{{ hint() }}</p>
     }
   `,
 })

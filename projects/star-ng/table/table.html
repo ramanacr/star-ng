@@ -1,6 +1,6 @@
 <ng-content select="[starTableCaption]" />
 @if (columnToggle() || pinnableColumns()) {
-  <div data-star-part="tools" class="star-table__tools">
+  <div data-star-part="toolsPanel" class="star-table__tools">
     <star-button
       size="sm"
       variant="secondary"
@@ -12,7 +12,7 @@
     <star-popover #columnsPanel [ariaLabel]="text.columns">
       <ul data-star-part="columnList" class="star-table__columns">
         @for (column of orderedColumns(); track column.field) {
-          <li data-star-part="columnsItem">
+          <li data-star-part="columnItem">
             @if (columnToggle()) {
               <star-checkbox
                 [checked]="!isHidden(column)"
@@ -29,7 +29,7 @@
               <span data-star-part="columnPinButton" class="star-table__columns-pin">
                 @for (action of pinActions; track action.side) {
                   <button
-                    data-star-part="toggle"
+                    data-star-part="toggleButton"
                     type="button"
                     class="star-table__toggle"
                     [attr.data-pin]="moveKey(column, action.key)"
@@ -46,7 +46,7 @@
             @if (reorderableColumns()) {
               <span data-star-part="columnMoveButton" class="star-table__columns-move">
                 <button
-                  data-star-part="toggle"
+                  data-star-part="toggleButton"
                   type="button"
                   class="star-table__toggle"
                   [disabled]="!canMoveBy(column, -1)"
@@ -57,7 +57,7 @@
                   <i data-star-part="moveIcon" class="ph-bold ph-arrow-up" aria-hidden="true"></i>
                 </button>
                 <button
-                  data-star-part="toggle"
+                  data-star-part="toggleButton"
                   type="button"
                   class="star-table__toggle"
                   [disabled]="!canMoveBy(column, 1)"
@@ -76,7 +76,7 @@
   </div>
 }
 <div
-  data-star-part="scroll"
+  data-star-part="scrollPanel"
   #scroller
   class="star-table__scroll"
   [attr.role]="scrollable() ? 'group' : null"
@@ -105,7 +105,7 @@
           @if (rowIndex === 0) {
             @if (reorderableRows()) {
               <th
-                data-star-part="reorder"
+                data-star-part="reorderCell"
                 class="star-table__reorder"
                 [attr.rowspan]="headRowSpan()"
                 scope="col"
@@ -116,7 +116,7 @@
             }
             @if (expandable()) {
               <th
-                data-star-part="expander"
+                data-star-part="expanderCell"
                 class="star-table__expander"
                 [attr.rowspan]="headRowSpan()"
                 scope="col"
@@ -127,7 +127,7 @@
             }
             @if (selectionMode() === 'multiple') {
               <th
-                data-star-part="select"
+                data-star-part="selectionCell"
                 class="star-table__select"
                 [attr.rowspan]="headRowSpan()"
                 scope="col"
@@ -147,7 +147,7 @@
               </th>
             } @else if (selectionMode() === 'single') {
               <th
-                data-star-part="select"
+                data-star-part="selectionCell"
                 class="star-table__select"
                 [attr.rowspan]="headRowSpan()"
                 scope="col"
@@ -213,7 +213,7 @@
               >
                 @if (column.sortable) {
                   <button
-                    data-star-part="sort"
+                    data-star-part="sortButton"
                     type="button"
                     class="star-table__sort"
                     [attr.title]="multiSort() ? text.sortMultiHint : null"
@@ -249,7 +249,7 @@
                 }
                 @if (resizableColumns()) {
                   <span
-                    data-star-part="resizer"
+                    data-star-part="resizerText"
                     class="star-table__resizer"
                     role="separator"
                     aria-orientation="vertical"
@@ -290,18 +290,18 @@
       }
       @if (hasColumnFilters()) {
         <tr
-          data-star-part="filters"
+          data-star-part="filtersRow"
           class="star-table__filters"
           [attr.aria-rowindex]="virtualScroll() ? headerLayout().length + 1 : null"
         >
           @if (reorderableRows()) {
-            <td data-star-part="reorder" class="star-table__reorder"></td>
+            <td data-star-part="reorderCell" class="star-table__reorder"></td>
           }
           @if (expandable()) {
-            <td data-star-part="expander" class="star-table__expander"></td>
+            <td data-star-part="expanderCell" class="star-table__expander"></td>
           }
           @if (rowSelectionMode()) {
-            <td data-star-part="select" class="star-table__select"></td>
+            <td data-star-part="selectionCell" class="star-table__select"></td>
           }
           @for (column of renderedColumns(); track column.field) {
             @if (column === columnWindow().first) {
@@ -332,7 +332,7 @@
                 />
               } @else if (column.filter === 'text') {
                 <input
-                  data-star-part="filter"
+                  data-star-part="filterInput"
                   type="search"
                   class="star-input star-input--sm star-table__filter"
                   [attr.aria-label]="text.filterBy(column.header)"
@@ -352,7 +352,7 @@
               } @else if (column.filter === 'number' || column.filter === 'date') {
                 <span data-star-part="rangePanel" class="star-table__filter-range">
                   <input
-                    data-star-part="filter"
+                    data-star-part="filterInput"
                     class="star-input star-input--sm star-table__filter"
                     [type]="column.filter"
                     [attr.aria-label]="text.filterMin(column.header)"
@@ -361,7 +361,7 @@
                     (input)="setBound(column, 'min', $any($event.target).value)"
                   />
                   <input
-                    data-star-part="filter"
+                    data-star-part="filterInput"
                     class="star-input star-input--sm star-table__filter"
                     [type]="column.filter"
                     [attr.aria-label]="text.filterMax(column.header)"
@@ -405,13 +405,13 @@
         @for (row of skeletonRows(); track row) {
           <tr data-star-part="row" class="star-table__row">
             @if (reorderableRows()) {
-              <td data-star-part="reorder" class="star-table__reorder"></td>
+              <td data-star-part="reorderCell" class="star-table__reorder"></td>
             }
             @if (expandable()) {
-              <td data-star-part="expander" class="star-table__expander"></td>
+              <td data-star-part="expanderCell" class="star-table__expander"></td>
             }
             @if (rowSelectionMode()) {
-              <td data-star-part="select" class="star-table__select">
+              <td data-star-part="selectionCell" class="star-table__select">
                 <star-skeleton size="1.25rem" />
               </td>
             }
@@ -450,7 +450,7 @@
       } @else {
         @for (entry of bodyEntries(); track entry.key) {
           @if (entry.kind === 'spacer') {
-            <tr data-star-part="spacer" class="star-table__spacer" aria-hidden="true">
+            <tr data-star-part="spacerRow" class="star-table__spacer" aria-hidden="true">
               <td
                 data-star-part="fillerCell"
                 [attr.colspan]="colspan()"
@@ -460,7 +460,7 @@
           } @else if (entry.kind === 'group') {
             @let group = entry;
             <tr
-              data-star-part="group"
+              data-star-part="groupRow"
               class="star-table__group"
               [attr.aria-rowindex]="group.aria"
               [attr.data-vi]="group.item"
@@ -504,13 +504,13 @@
               [hidden]="isGroupFooterHidden(entry.label)"
             >
               @if (reorderableRows()) {
-                <td data-star-part="reorder" class="star-table__reorder"></td>
+                <td data-star-part="reorderCell" class="star-table__reorder"></td>
               }
               @if (expandable()) {
-                <td data-star-part="expander" class="star-table__expander"></td>
+                <td data-star-part="expanderCell" class="star-table__expander"></td>
               }
               @if (rowSelectionMode()) {
-                <td data-star-part="select" class="star-table__select"></td>
+                <td data-star-part="selectionCell" class="star-table__select"></td>
               }
               @for (column of renderedColumns(); track column.field) {
                 @if (column === columnWindow().first) {
@@ -576,13 +576,13 @@
             >
               @if (reorderableRows()) {
                 <td
-                  data-star-part="reorder"
+                  data-star-part="reorderCell"
                   class="star-table__reorder"
                   [attr.data-field]="cellKeys() ? '$reorder' : null"
                   [attr.tabindex]="leadTabIndex(row, '$reorder')"
                 >
                   <button
-                    data-star-part="toggle"
+                    data-star-part="toggleButton"
                     type="button"
                     class="star-table__toggle"
                     [disabled]="!canMoveRow(row, -1)"
@@ -592,7 +592,7 @@
                     <i data-star-part="moveIcon" class="ph-bold ph-arrow-up" aria-hidden="true"></i>
                   </button>
                   <button
-                    data-star-part="toggle"
+                    data-star-part="toggleButton"
                     type="button"
                     class="star-table__toggle"
                     [disabled]="!canMoveRow(row, 1)"
@@ -609,13 +609,13 @@
               }
               @if (expandable()) {
                 <td
-                  data-star-part="expander"
+                  data-star-part="expanderCell"
                   class="star-table__expander"
                   [attr.data-field]="cellKeys() ? '$expander' : null"
                   [attr.tabindex]="leadTabIndex(row, '$expander')"
                 >
                   <button
-                    data-star-part="toggle"
+                    data-star-part="toggleButton"
                     type="button"
                     class="star-table__toggle"
                     [attr.aria-expanded]="isExpanded(row)"
@@ -633,7 +633,7 @@
               }
               @if (selectionMode() === 'multiple') {
                 <td
-                  data-star-part="select"
+                  data-star-part="selectionCell"
                   class="star-table__select"
                   [attr.data-field]="cellKeys() ? '$select' : null"
                   [attr.tabindex]="leadTabIndex(row, '$select')"
@@ -649,13 +649,13 @@
                 </td>
               } @else if (selectionMode() === 'single') {
                 <td
-                  data-star-part="select"
+                  data-star-part="selectionCell"
                   class="star-table__select"
                   [attr.data-field]="cellKeys() ? '$select' : null"
                   [attr.tabindex]="leadTabIndex(row, '$select')"
                 >
                   <input
-                    data-star-part="radio"
+                    data-star-part="radioInput"
                     type="radio"
                     class="star-table__radio"
                     [name]="radioName"
@@ -704,7 +704,7 @@
                       @let rowError = editorError(row, column);
                       @if (column.editor === 'select') {
                         <select
-                          data-star-part="editor"
+                          data-star-part="cellInput"
                           class="star-input star-input--sm star-table__editor"
                           [attr.data-row-editor]="rowKeyText(row)"
                           [attr.aria-label]="text.editCell(column.header)"
@@ -725,7 +725,7 @@
                         </select>
                       } @else {
                         <input
-                          data-star-part="editor"
+                          data-star-part="cellInput"
                           class="star-input star-input--sm star-table__editor"
                           type="text"
                           [attr.inputmode]="column.editor === 'number' ? 'decimal' : null"
@@ -741,7 +741,7 @@
                       }
                       @if (rowError) {
                         <span
-                          data-star-part="error"
+                          data-star-part="errorText"
                           class="star-table__error"
                           [id]="errorId(i, column)"
                           >{{ rowError }}</span
@@ -764,7 +764,7 @@
                       } @else {
                         @let cellError = editorError(row, column);
                         <input
-                          data-star-part="editor"
+                          data-star-part="cellInput"
                           class="star-input star-input--sm star-table__editor"
                           [type]="column.editor === 'number' ? 'number' : 'text'"
                           [attr.aria-label]="text.editCell(column.header)"
@@ -793,7 +793,7 @@
                         />
                         @if (cellError) {
                           <span
-                            data-star-part="error"
+                            data-star-part="errorText"
                             class="star-table__error"
                             [id]="errorId(i, column)"
                             >{{ cellError }}</span
@@ -802,7 +802,7 @@
                       }
                     } @else if (!rowEditMode() && isEditable(row, column)) {
                       <button
-                        data-star-part="edit"
+                        data-star-part="editButton"
                         type="button"
                         class="star-table__edit"
                         [attr.data-edit]="editKey(row, column)"
@@ -858,7 +858,7 @@
                       <ng-container *ngTemplateOutlet="custom; context: rowActionsContext(row)" />
                     } @else {
                       <button
-                        data-star-part="toggle"
+                        data-star-part="toggleButton"
                         type="button"
                         class="star-table__toggle"
                         [attr.data-row-save]="rowKeyText(row)"
@@ -873,7 +873,7 @@
                         ></i>
                       </button>
                       <button
-                        data-star-part="toggle"
+                        data-star-part="toggleButton"
                         type="button"
                         class="star-table__toggle"
                         [attr.aria-label]="text.cancel"
@@ -884,7 +884,7 @@
                     }
                   } @else if (!isDeleted(row)) {
                     <button
-                      data-star-part="toggle"
+                      data-star-part="toggleButton"
                       type="button"
                       class="star-table__toggle"
                       [attr.data-row-edit]="rowKeyText(row)"
@@ -904,7 +904,7 @@
             @if (expansionTemplate(); as detail) {
               @if (isExpanded(row) && !isRowCollapsed(row)) {
                 <tr
-                  data-star-part="expansion"
+                  data-star-part="expansionRow"
                   class="star-table__expansion"
                   [id]="detailId(i)"
                   [attr.aria-rowindex]="entry.aria === null ? null : entry.aria + 1"
@@ -921,7 +921,7 @@
           }
         } @empty {
           <tr data-star-part="scrollBodyRow">
-            <td data-star-part="empty" class="star-table__empty" [attr.colspan]="colspan()">
+            <td data-star-part="emptyCell" class="star-table__empty" [attr.colspan]="colspan()">
               <i data-star-part="emptyIcon" class="ph-bold ph-tray" aria-hidden="true"></i>
               @if (emptySlot(); as custom) {
                 <ng-container *ngTemplateOutlet="custom; context: { $implicit: globalFilter() }" />
@@ -941,13 +941,13 @@
           [attr.aria-rowindex]="virtualScroll() ? ariaRowCount() : null"
         >
           @if (reorderableRows()) {
-            <td data-star-part="reorder" class="star-table__reorder"></td>
+            <td data-star-part="reorderCell" class="star-table__reorder"></td>
           }
           @if (expandable()) {
-            <td data-star-part="expander" class="star-table__expander"></td>
+            <td data-star-part="expanderCell" class="star-table__expander"></td>
           }
           @if (rowSelectionMode()) {
-            <td data-star-part="select" class="star-table__select"></td>
+            <td data-star-part="selectionCell" class="star-table__select"></td>
           }
           @for (column of renderedColumns(); track column.field) {
             @if (column === columnWindow().first) {
@@ -1027,7 +1027,7 @@
     @for (part of searchParts(row, column); track $index) {
       @if (part.match) {
         <mark
-          starPart="mark"
+          starPart="markText"
           class="star-table__mark"
           [class.star-table__mark--active]="part.active"
           >{{ part.text }}</mark

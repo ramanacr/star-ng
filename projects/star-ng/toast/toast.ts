@@ -255,9 +255,9 @@ const ICONS: Record<StarToastSeverity, string> = {
           @if (messageSlot(); as slot) {
             <ng-container *ngTemplateOutlet="slot; context: messageContext(message)" />
           } @else {
-            <p data-star-part="summary" class="star-toast__summary">{{ message.summary }}</p>
+            <p data-star-part="summaryText" class="star-toast__summary">{{ message.summary }}</p>
             @if (message.detail) {
-              <p data-star-part="detail" class="star-toast__detail">{{ message.detail }}</p>
+              <p data-star-part="detailText" class="star-toast__detail">{{ message.detail }}</p>
             }
           }
         </div>

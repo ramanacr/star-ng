@@ -52,7 +52,7 @@ import { injectStarFieldLink, starJoinIds } from '@star-ng/ui/field';
         (change)="onChange(box)"
         (blur)="touch.emit()"
       />
-      <span data-star-part="box" class="star-check__box" aria-hidden="true">
+      <span data-star-part="boxPanel" class="star-check__box" aria-hidden="true">
         @if (indeterminate()) {
           <i data-star-part="boxIcon" class="ph-bold ph-minus"></i>
         } @else if (checked()) {

@@ -60,7 +60,7 @@ const PANEL_POSITIONS: ConnectedPosition[] = [
   },
   template: `
     <div
-      data-star-part="control"
+      data-star-part="controlPanel"
       #control
       class="star-date__control"
       cdkOverlayOrigin
@@ -89,7 +89,7 @@ const PANEL_POSITIONS: ConnectedPosition[] = [
         (blur)="touch.emit()"
       />
       <button
-        data-star-part="toggle"
+        data-star-part="toggleButton"
         #toggle
         type="button"
         class="star-date__toggle"
@@ -134,7 +134,7 @@ const PANEL_POSITIONS: ConnectedPosition[] = [
           [showSeconds]="showSeconds()"
           [hourFormat]="hourFormat()"
         />
-        <div data-star-part="bar" class="star-time__bar">
+        <div data-star-part="barPanel" class="star-time__bar">
           <button
             data-star-part="barButton"
             type="button"

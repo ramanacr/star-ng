@@ -240,14 +240,14 @@ function matchesHotkey(event: KeyboardEvent, hotkey: Hotkey): boolean {
       >
         @for (group of groups(); track group.key) {
           <div
-            data-star-part="group"
+            data-star-part="groupPanel"
             class="star-command-palette__group"
             role="group"
             [attr.aria-labelledby]="group.label ? listId + '-g-' + $index : null"
           >
             @if (group.label) {
               <div
-                data-star-part="heading"
+                data-star-part="headingPanel"
                 class="star-command-palette__heading"
                 role="presentation"
                 [id]="listId + '-g-' + $index"
@@ -292,7 +292,7 @@ function matchesHotkey(event: KeyboardEvent, hotkey: Hotkey): boolean {
                     command.label
                   }}</span>
                   @if (command.shortcut) {
-                    <kbd data-star-part="shortcut" class="star-command-palette__shortcut">{{
+                    <kbd data-star-part="shortcutText" class="star-command-palette__shortcut">{{
                       command.shortcut
                     }}</kbd>
                   }

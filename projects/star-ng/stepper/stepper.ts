@@ -84,7 +84,7 @@ export class StarStep {
             [disabled]="!reachable(i)"
             (click)="value.set(step.value())"
           >
-            <span data-star-part="number" class="star-stepper__number" aria-hidden="true">
+            <span data-star-part="numberPanel" class="star-stepper__number" aria-hidden="true">
               @if (step.completed() && !step.active()) {
                 <i data-star-part="numberIcon" class="ph-bold ph-check"></i>
               } @else {
@@ -104,7 +104,7 @@ export class StarStep {
             }
           </button>
           @if (!last) {
-            <span data-star-part="line" class="star-stepper__line" aria-hidden="true"></span>
+            <span data-star-part="lineText" class="star-stepper__line" aria-hidden="true"></span>
           }
         </li>
       }

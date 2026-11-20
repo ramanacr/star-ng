@@ -177,7 +177,7 @@ function groupAt(root: StarQueryGroup, path: string): StarQueryGroup | null {
       [ngTemplateOutletContext]="{ $implicit: value(), path: '', depth: 1 }"
     />
     @if (showMessage()) {
-      <p data-star-part="error" class="star-query__error" [id]="errorId">
+      <p data-star-part="errorPanel" class="star-query__error" [id]="errorId">
         <i data-star-part="errorIcon" class="ph-bold ph-warning-circle" aria-hidden="true"></i>
         {{ text.queryIncomplete }}
       </p>
@@ -187,7 +187,7 @@ function groupAt(root: StarQueryGroup, path: string): StarQueryGroup | null {
 
     <ng-template #groupTpl let-group let-path="path" let-depth="depth">
       <div
-        starPart="group"
+        starPart="groupPanel"
         class="star-query__group"
         role="group"
         [attr.data-path]="path"
@@ -240,7 +240,7 @@ function groupAt(root: StarQueryGroup, path: string): StarQueryGroup | null {
             />
           }
         </div>
-        <div data-star-part="rules" class="star-query__rules">
+        <div data-star-part="rulesPanel" class="star-query__rules">
           @for (item of group.rules; track $index; let i = $index) {
             @if (isGroup(item)) {
               <ng-container
@@ -254,7 +254,7 @@ function groupAt(root: StarQueryGroup, path: string): StarQueryGroup | null {
             } @else {
               @let field = fieldOf(item.field);
               <div
-                data-star-part="rule"
+                data-star-part="rulePanel"
                 class="star-query__rule"
                 role="group"
                 [attr.tabindex]="disabled() ? null : 0"
@@ -288,7 +288,7 @@ function groupAt(root: StarQueryGroup, path: string): StarQueryGroup | null {
                     (valueChange)="setMode(path, i, $any($event))"
                   />
                 }
-                <div data-star-part="value" class="star-query__value">
+                <div data-star-part="valuePanel" class="star-query__value">
                   @switch (editorOf(item, field)) {
                     @case ('custom') {
                       <ng-container

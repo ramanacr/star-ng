@@ -36,7 +36,12 @@ import { STAR_MENU_POSITIONS, StarMenuInDialog, StarMenuItem } from './menu';
   // CDK resolves the menu of an item by DI, so every `cdkMenuItem` is written in place:
   // a shared `ng-template` for the items would be outside the menu.
   template: `
-    <div data-star-part="bar" class="star-menubar__bar" cdkMenuBar [attr.aria-label]="ariaLabel()">
+    <div
+      data-star-part="barPanel"
+      class="star-menubar__bar"
+      cdkMenuBar
+      [attr.aria-label]="ariaLabel()"
+    >
       @for (item of items(); track $index) {
         @if (item.items?.length) {
           <button
@@ -102,7 +107,7 @@ import { STAR_MENU_POSITIONS, StarMenuInDialog, StarMenuItem } from './menu';
           >
             @if (column.label) {
               <div
-                data-star-part="heading"
+                data-star-part="headingPanel"
                 class="star-mega-menu__heading"
                 [id]="panelId + '-' + c"
               >

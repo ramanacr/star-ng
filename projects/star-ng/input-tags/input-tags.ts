@@ -41,11 +41,11 @@ export type StarTagRejection = 'invalid' | 'duplicate' | 'limit';
     <!-- Pointer convenience only: keyboard users reach the input directly. -->
     <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
     <div
-      data-star-part="control"
+      data-star-part="controlPanel"
       class="star-select__control star-ac__control star-tags__control"
       (click)="focus()"
     >
-      <div data-star-part="main" class="star-ac__main">
+      <div data-star-part="mainPanel" class="star-ac__main">
         <ul
           data-star-part="list"
           class="star-tags__list"
@@ -53,11 +53,11 @@ export type StarTagRejection = 'invalid' | 'duplicate' | 'limit';
           [attr.aria-disabled]="disabled() || null"
         >
           @for (tag of value(); track tag; let i = $index) {
-            <li data-star-part="chip" class="star-chip star-chip--sm">
+            <li data-star-part="chipItem" class="star-chip star-chip--sm">
               {{ tag }}
               @if (!disabled() && !readonly()) {
                 <button
-                  data-star-part="remove"
+                  data-star-part="removeButton"
                   type="button"
                   class="star-chip__remove"
                   tabindex="-1"
@@ -107,7 +107,7 @@ export type StarTagRejection = 'invalid' | 'duplicate' | 'limit';
     <p class="star-sr-only" [id]="hintId">{{ text.tagsHint }}</p>
     <p class="star-sr-only" aria-live="polite">{{ announcement() }}</p>
     @if (rejectionText(); as message) {
-      <p data-star-part="error" class="star-field__error star-tags__error" role="alert">
+      <p data-star-part="errorText" class="star-field__error star-tags__error" role="alert">
         {{ message }}
       </p>
     }

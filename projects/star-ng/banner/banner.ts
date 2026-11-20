@@ -46,7 +46,7 @@ const ICONS: Record<StarBannerSeverity, string> = {
   },
   template: `
     @if (open()) {
-      <div data-star-part="inner" class="star-banner__inner">
+      <div data-star-part="innerPanel" class="star-banner__inner">
         @if (iconClass(); as iconClass) {
           <i
             data-star-part="icon"

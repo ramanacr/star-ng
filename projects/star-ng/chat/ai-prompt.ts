@@ -56,7 +56,7 @@ export interface StarAiPromptOutput {
   template: `
     <div data-star-part="panel" class="star-ai-prompt__panel">
       <textarea
-        data-star-part="field"
+        data-star-part="fieldInput"
         #field
         class="star-input star-ai-prompt__field"
         rows="3"
@@ -69,19 +69,19 @@ export interface StarAiPromptOutput {
         (input)="prompt.set(field.value)"
         (keydown)="onKeydown($event)"
       ></textarea>
-      <p data-star-part="hint" class="star-ai-prompt__hint" [id]="hintId">
+      <p data-star-part="hintText" class="star-ai-prompt__hint" [id]="hintId">
         {{ text.aiPromptShortcutHint }}
       </p>
       @if (suggestions().length) {
         <div
-          data-star-part="chips"
+          data-star-part="chipsPanel"
           class="star-ai-prompt__chips"
           role="group"
           [attr.aria-label]="text.promptSuggestions"
         >
           @for (suggestion of suggestions(); track $index) {
             <button
-              data-star-part="chip"
+              data-star-part="chipButton"
               type="button"
               class="star-chip star-ai-prompt__chip"
               [disabled]="disabled()"
@@ -92,7 +92,7 @@ export interface StarAiPromptOutput {
           }
         </div>
       }
-      <div data-star-part="bar" class="star-ai-prompt__bar">
+      <div data-star-part="barPanel" class="star-ai-prompt__bar">
         <button
           data-star-part="barButton"
           type="button"
@@ -107,18 +107,18 @@ export interface StarAiPromptOutput {
     </div>
     @if (outputs().length) {
       <ul
-        data-star-part="outputs"
+        data-star-part="outputsList"
         class="star-ai-prompt__outputs"
         [attr.aria-label]="text.aiResponses"
       >
         @for (output of outputs(); track output.id) {
           @let streaming = output.status === 'streaming';
           <li
-            data-star-part="output"
+            data-star-part="outputItem"
             class="star-ai-prompt__output"
             [attr.aria-busy]="streaming || null"
           >
-            <p data-star-part="prompt" class="star-ai-prompt__prompt">
+            <p data-star-part="promptPanel" class="star-ai-prompt__prompt">
               <i data-star-part="promptIcon" class="ph-bold ph-chat-text" aria-hidden="true"></i
               >{{ output.prompt }}
             </p>
@@ -126,7 +126,7 @@ export interface StarAiPromptOutput {
               <star-markdown-lite class="star-ai-prompt__text" [text]="output.text" />
             }
             @if (output.status === 'error') {
-              <p data-star-part="error" class="star-ai-prompt__error">
+              <p data-star-part="errorPanel" class="star-ai-prompt__error">
                 <i
                   data-star-part="errorIcon"
                   class="ph-bold ph-warning-circle"
@@ -137,7 +137,7 @@ export interface StarAiPromptOutput {
             }
             <div data-star-part="actionList" class="star-ai-prompt__actions">
               @if (streaming) {
-                <span data-star-part="generating" class="star-ai-prompt__generating">
+                <span data-star-part="statusText" class="star-ai-prompt__generating">
                   <i
                     data-star-part="generatingIcon"
                     class="ph-bold ph-spinner-gap star-spin"
@@ -166,7 +166,7 @@ export interface StarAiPromptOutput {
                     class="star-btn star-btn--ghost star-btn--sm"
                     (click)="copy(output)"
                   >
-                    <i data-star-part="copyIcon" class="ph-bold ph-copy" aria-hidden="true"></i
+                    <i data-star-part="clipboardIcon" class="ph-bold ph-copy" aria-hidden="true"></i
                     >{{ text.copy }}
                   </button>
                 }

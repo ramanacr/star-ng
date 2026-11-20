@@ -111,13 +111,13 @@ const ROW_GUESS = 40;
   },
   template: `
     <div
-      data-star-part="control"
+      data-star-part="controlPanel"
       class="star-select__control"
       cdkOverlayOrigin
       #origin="cdkOverlayOrigin"
     >
       <input
-        data-star-part="trigger"
+        data-star-part="triggerInput"
         #trigger
         type="text"
         class="star-select__trigger star-select__input"
@@ -220,13 +220,13 @@ const ROW_GUESS = 40;
           (scroll)="onListScroll($event)"
         >
           @if (loadingRow(); as loader) {
-            <li data-star-part="empty" class="star-listbox__empty" role="presentation">
+            <li data-star-part="emptyItem" class="star-listbox__empty" role="presentation">
               <ng-container *ngTemplateOutlet="loader" />
             </li>
           }
           @if (virtualWindow().before) {
             <li
-              data-star-part="spacer"
+              data-star-part="spacerItem"
               class="star-listbox__spacer"
               role="presentation"
               [style.height.px]="virtualWindow().before"
@@ -235,7 +235,7 @@ const ROW_GUESS = 40;
           @for (row of renderedRows(); track row.key) {
             @if (row.kind === 'group') {
               <li
-                data-star-part="group"
+                data-star-part="groupItem"
                 class="star-listbox__group"
                 role="presentation"
                 [id]="row.id"
@@ -264,7 +264,7 @@ const ROW_GUESS = 40;
               >
                 @if (option === undefined) {
                   <span
-                    data-star-part="skeleton"
+                    data-star-part="skeletonText"
                     class="star-skeleton star-listbox__skeleton"
                     aria-hidden="true"
                   ></span>
@@ -292,7 +292,7 @@ const ROW_GUESS = 40;
             }
           } @empty {
             @if (!loadingRow()) {
-              <li data-star-part="empty" class="star-listbox__empty" role="presentation">
+              <li data-star-part="emptyItem" class="star-listbox__empty" role="presentation">
                 @if (emptySlot(); as custom) {
                   <ng-container *ngTemplateOutlet="custom; context: emptyContext()" />
                 } @else {
@@ -303,7 +303,7 @@ const ROW_GUESS = 40;
           }
           @if (virtualWindow().after) {
             <li
-              data-star-part="spacer"
+              data-star-part="spacerItem"
               class="star-listbox__spacer"
               role="presentation"
               [style.height.px]="virtualWindow().after"

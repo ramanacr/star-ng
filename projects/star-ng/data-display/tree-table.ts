@@ -222,7 +222,7 @@ const LOADING_KEY = '\u0000loading';
       <ng-container *ngTemplateOutlet="header" />
     }
     @if (filter()) {
-      <div data-star-part="filter" class="star-panel__filter star-tree-table__search">
+      <div data-star-part="filterPanel" class="star-panel__filter star-tree-table__search">
         <i data-star-part="filterIcon" class="ph-bold ph-magnifying-glass" aria-hidden="true"></i>
         <input
           data-star-part="input"
@@ -237,7 +237,7 @@ const LOADING_KEY = '\u0000loading';
       </div>
     }
     <div
-      data-star-part="scroll"
+      data-star-part="scrollPanel"
       #scroller
       class="star-table__scroll"
       [attr.role]="windowed() ? 'group' : null"
@@ -279,7 +279,7 @@ const LOADING_KEY = '\u0000loading';
               >
                 @if (column.sortable) {
                   <button
-                    data-star-part="sort"
+                    data-star-part="sortButton"
                     type="button"
                     class="star-table__sort"
                     [attr.title]="multiSort() ? text.sortMultiHint : null"
@@ -297,9 +297,9 @@ const LOADING_KEY = '\u0000loading';
                   {{ column.header }}
                 }
                 @if (canMove(column)) {
-                  <span data-star-part="move" class="star-tree-table__move">
+                  <span data-star-part="movePanel" class="star-tree-table__move">
                     <button
-                      data-star-part="toggle"
+                      data-star-part="toggleButton"
                       type="button"
                       class="star-table__toggle"
                       [disabled]="!canMoveBy(column, -1)"
@@ -313,7 +313,7 @@ const LOADING_KEY = '\u0000loading';
                       ></i>
                     </button>
                     <button
-                      data-star-part="toggle"
+                      data-star-part="toggleButton"
                       type="button"
                       class="star-table__toggle"
                       [disabled]="!canMoveBy(column, 1)"
@@ -330,7 +330,7 @@ const LOADING_KEY = '\u0000loading';
                 }
                 @if (resizableColumns()) {
                   <span
-                    data-star-part="resizer"
+                    data-star-part="resizerText"
                     class="star-table__resizer"
                     role="separator"
                     aria-orientation="vertical"
@@ -348,7 +348,7 @@ const LOADING_KEY = '\u0000loading';
           </tr>
           @if (hasColumnFilters()) {
             <tr
-              data-star-part="filters"
+              data-star-part="filtersRow"
               class="star-table__filters"
               [attr.aria-rowindex]="windowed() ? 2 : null"
             >
@@ -360,7 +360,7 @@ const LOADING_KEY = '\u0000loading';
                 >
                   @if (column.filter) {
                     <input
-                      data-star-part="filter"
+                      data-star-part="filterInput"
                       type="search"
                       class="star-input star-input--sm star-table__filter"
                       autocomplete="off"
@@ -406,7 +406,7 @@ const LOADING_KEY = '\u0000loading';
 
     <ng-template #body>
       @if (window().before > 0) {
-        <tr starPart="spacer" class="star-table__spacer" aria-hidden="true">
+        <tr starPart="spacerRow" class="star-table__spacer" aria-hidden="true">
           <td
             data-star-part="spacerCell"
             [attr.colspan]="visibleColumns().length"
@@ -417,7 +417,7 @@ const LOADING_KEY = '\u0000loading';
       @if (showEmpty()) {
         <tr starPart="emptyRow" [attr.aria-rowindex]="windowed() ? headerRows() + 1 : null">
           <td
-            data-star-part="empty"
+            data-star-part="emptyCell"
             class="star-table__empty"
             [attr.colspan]="visibleColumns().length"
           >
@@ -441,12 +441,12 @@ const LOADING_KEY = '\u0000loading';
           >
             <td data-star-part="loadingCell" [attr.colspan]="visibleColumns().length">
               <span
-                data-star-part="first"
+                data-star-part="firstPanel"
                 class="star-tree-table__first"
                 [style.--star-tree-level]="row.level"
               >
                 <span
-                  data-star-part="toggle"
+                  data-star-part="toggleText"
                   class="star-tree__toggle star-tree__toggle--leaf"
                 ></span>
                 <i
@@ -492,13 +492,13 @@ const LOADING_KEY = '\u0000loading';
               >
                 @if (first) {
                   <span
-                    data-star-part="first"
+                    data-star-part="firstPanel"
                     class="star-tree-table__first"
                     [style.--star-tree-level]="row.level - 1"
                   >
                     @if (isExpandable(row.node)) {
                       <button
-                        data-star-part="toggle"
+                        data-star-part="expandButton"
                         type="button"
                         class="star-tree__toggle star-tree-table__toggle"
                         tabindex="-1"
@@ -517,7 +517,7 @@ const LOADING_KEY = '\u0000loading';
                       </button>
                     } @else {
                       <span
-                        data-star-part="toggle"
+                        data-star-part="toggleText"
                         class="star-tree__toggle star-tree__toggle--leaf"
                       ></span>
                     }
@@ -525,7 +525,7 @@ const LOADING_KEY = '\u0000loading';
                       <!-- The row owns the keys (Space checks) and the focus; the box takes the pointer. -->
                       <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
                       <span
-                        data-star-part="box"
+                        data-star-part="boxPanel"
                         class="star-check__box star-tree__check star-tree-table__check"
                         role="checkbox"
                         [class.star-tree__check--on]="checkState(row.node.key) !== false"
@@ -572,7 +572,7 @@ const LOADING_KEY = '\u0000loading';
         }
       }
       @if (window().after > 0) {
-        <tr starPart="spacer" class="star-table__spacer" aria-hidden="true">
+        <tr starPart="spacerRow" class="star-table__spacer" aria-hidden="true">
           <td
             data-star-part="spacerCell"
             [attr.colspan]="visibleColumns().length"
@@ -584,7 +584,7 @@ const LOADING_KEY = '\u0000loading';
 
     <ng-template #editor let-node let-column="column">
       <input
-        starPart="editor"
+        starPart="cellInput"
         class="star-input star-input--sm star-table__editor star-tree-table__editor"
         [type]="column.editor === 'number' ? 'number' : 'text'"
         [attr.aria-label]="text.editCell(column.header)"

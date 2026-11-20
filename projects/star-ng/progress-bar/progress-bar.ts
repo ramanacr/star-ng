@@ -31,13 +31,13 @@ import { StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
   template: `
     <span data-star-part="track" class="star-progress__track">
       <span
-        data-star-part="fill"
+        data-star-part="fillText"
         class="star-progress__fill"
         [style.width.%]="indeterminate() ? null : clamped()"
       ></span>
     </span>
     @if (showValue() && !indeterminate()) {
-      <span data-star-part="value" class="star-progress__value" aria-hidden="true"
+      <span data-star-part="valueText" class="star-progress__value" aria-hidden="true"
         >{{ clamped() }}%</span
       >
     }

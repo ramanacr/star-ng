@@ -41,7 +41,7 @@ import { starInlineKey, StarPart, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/
         <!-- The space keeps the label and the badge apart in the accessible name. -->
         {{ ' ' }}
         <span
-          starPart="badge"
+          starPart="badgeText"
           class="star-badge star-badge--danger star-badge--sm star-bottom-nav__badge"
           >{{ badge() }}</span
         >
@@ -163,7 +163,7 @@ export class StarBottomNavItem {
     '[class.star-bottom-nav--fixed]': 'fixed()',
   },
   template: `
-    <nav data-star-part="nav" class="star-bottom-nav__nav" [attr.aria-label]="ariaLabel()">
+    <nav data-star-part="navigation" class="star-bottom-nav__nav" [attr.aria-label]="ariaLabel()">
       <div data-star-part="list" class="star-bottom-nav__list" role="list"><ng-content /></div>
     </nav>
   `,

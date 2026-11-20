@@ -37,7 +37,7 @@ import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/
   template: `
     @for (slot of slots(); track slot) {
       <input
-        data-star-part="box"
+        data-star-part="boxInput"
         #box
         class="star-otp__box"
         maxlength="1"

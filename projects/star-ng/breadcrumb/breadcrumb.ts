@@ -25,7 +25,7 @@ export interface StarBreadcrumbItem {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <nav
-      data-star-part="trail"
+      data-star-part="trailPanel"
       class="star-breadcrumb"
       [attr.aria-label]="ariaLabel() ?? text.breadcrumb"
     >
@@ -33,7 +33,11 @@ export interface StarBreadcrumbItem {
         @for (item of all(); track $index; let last = $last) {
           <li data-star-part="item" class="star-breadcrumb__item">
             @if (last) {
-              <span data-star-part="current" class="star-breadcrumb__current" aria-current="page">
+              <span
+                data-star-part="currentPanel"
+                class="star-breadcrumb__current"
+                aria-current="page"
+              >
                 @if (item.icon) {
                   <i data-star-part="currentIcon" [class]="item.icon" aria-hidden="true"></i>
                 }
@@ -42,7 +46,7 @@ export interface StarBreadcrumbItem {
             } @else {
               @if (item.routerLink) {
                 <a
-                  data-star-part="link"
+                  data-star-part="linkItem"
                   class="star-breadcrumb__link"
                   [routerLink]="item.routerLink"
                   [attr.aria-label]="item.icon && $first && home() ? item.label : null"
@@ -55,12 +59,12 @@ export interface StarBreadcrumbItem {
                   }
                 </a>
               } @else if (item.url) {
-                <a data-star-part="link" class="star-breadcrumb__link" [href]="item.url">{{
+                <a data-star-part="linkItem" class="star-breadcrumb__link" [href]="item.url">{{
                   item.label
                 }}</a>
               } @else if (item.command) {
                 <button
-                  data-star-part="link"
+                  data-star-part="linkButton"
                   type="button"
                   class="star-breadcrumb__link"
                   (click)="item.command()"

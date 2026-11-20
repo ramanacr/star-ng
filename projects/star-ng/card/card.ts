@@ -22,12 +22,12 @@ import { StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
     <ng-content select="[starCardMedia]" />
     @if (header() || subheader()) {
       <header data-star-part="header" class="star-card-cmp__header">
-        <div data-star-part="heading">
+        <div data-star-part="headingPanel">
           @if (header()) {
             <h3 data-star-part="titleText" class="star-card-cmp__title">{{ header() }}</h3>
           }
           @if (subheader()) {
-            <p data-star-part="subtitle" class="star-card-cmp__subtitle">{{ subheader() }}</p>
+            <p data-star-part="subtitleText" class="star-card-cmp__subtitle">{{ subheader() }}</p>
           }
         </div>
         <ng-content select="[starCardActions]" />

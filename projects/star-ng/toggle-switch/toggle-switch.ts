@@ -52,7 +52,7 @@ import { injectStarFieldLink, starJoinIds } from '@star-ng/ui/field';
         (blur)="touch.emit()"
       />
       <span data-star-part="track" class="star-switch__track" aria-hidden="true"
-        ><span data-star-part="thumb" class="star-switch__thumb"></span
+        ><span data-star-part="thumbnail" class="star-switch__thumb"></span
       ></span>
       @if (hasLabel()) {
         <span data-star-part="text" class="star-switch__text"><ng-content /></span>

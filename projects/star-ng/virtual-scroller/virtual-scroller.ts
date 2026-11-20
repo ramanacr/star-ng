@@ -116,7 +116,7 @@ export class StarVirtualItemTemplate<T = unknown> extends StarSlot<StarVirtualIt
   template: `
     @if (items().length === 0) {
       <div
-        data-star-part="empty"
+        data-star-part="emptyPanel"
         class="star-scroller__empty"
         [style.height]="orientation() === 'horizontal' ? scrollHeight() : null"
       >

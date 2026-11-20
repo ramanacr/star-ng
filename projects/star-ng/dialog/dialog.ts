@@ -102,7 +102,7 @@ export type StarDialogPosition =
             [class.star-dialog__header--draggable]="canDrag()"
             (pointerdown)="onDragStart($event)"
           >
-            <div data-star-part="heading" class="star-dialog__heading">
+            <div data-star-part="headingPanel" class="star-dialog__heading">
               @if (header()) {
                 <h2 data-star-part="titleText" class="star-dialog__title" [id]="headerId">
                   {{ header() }}
@@ -110,10 +110,10 @@ export type StarDialogPosition =
               }
               <ng-content select="[starDialogHeader]" />
             </div>
-            <div data-star-part="controls" class="star-dialog__controls">
+            <div data-star-part="controlsPanel" class="star-dialog__controls">
               @if (canDrag()) {
                 <button
-                  data-star-part="move"
+                  data-star-part="moveButton"
                   type="button"
                   class="star-btn star-btn--ghost star-btn--icon star-dialog__move"
                   [attr.aria-label]="text.moveDialog"
@@ -161,7 +161,7 @@ export type StarDialogPosition =
       </div>
       @if (resizable() && free()) {
         <button
-          data-star-part="resize"
+          data-star-part="resizeButton"
           type="button"
           class="star-dialog__resize"
           [attr.aria-label]="text.resizeDialog"

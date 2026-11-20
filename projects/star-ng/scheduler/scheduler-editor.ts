@@ -43,7 +43,7 @@ export type StarSchedulerEditorResult =
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-scheduler-editor' },
   template: `
-    <form data-star-part="form" class="star-scheduler-editor__form" (submit)="save($event)">
+    <form data-star-part="formPanel" class="star-scheduler-editor__form" (submit)="save($event)">
       <star-field [label]="text.title">
         <input
           data-star-part="formInput"

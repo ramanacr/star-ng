@@ -262,8 +262,8 @@ const classColor = (index: number, count: number) =>
     '[class.star-map--table]': 'showTable()',
   },
   template: `
-    <div data-star-part="bar" class="star-map__bar">
-      <div data-star-part="zoom" class="star-map__zoom">
+    <div data-star-part="barPanel" class="star-map__bar">
+      <div data-star-part="zoomPanel" class="star-map__zoom">
         <button
           data-star-part="zoomInButton"
           type="button"
@@ -298,7 +298,7 @@ const classColor = (index: number, count: number) =>
         </button>
       </div>
       <button
-        data-star-part="barButton"
+        data-star-part="tableButton"
         type="button"
         class="star-btn star-btn--ghost star-btn--sm"
         [attr.aria-pressed]="showTable()"
@@ -335,7 +335,7 @@ const classColor = (index: number, count: number) =>
       (wheel)="onWheel($event)"
     >
       <svg
-        data-star-part="svg"
+        data-star-part="graphic"
         class="star-map__svg"
         role="none"
         [attr.viewBox]="'0 0 ' + viewport().width + ' ' + viewport().height"
@@ -343,7 +343,7 @@ const classColor = (index: number, count: number) =>
       >
         @if (tiles().length) {
           <g
-            data-star-part="tiles"
+            data-star-part="tilesItem"
             class="star-map__tiles"
             [attr.opacity]="tileLayer()?.opacity ?? 1"
             aria-hidden="true"
@@ -363,7 +363,7 @@ const classColor = (index: number, count: number) =>
         <g [attr.transform]="transform()">
           @for (item of shapeItems(); track item.key) {
             <path
-              data-star-part="shape"
+              data-star-part="shapeItem"
               class="star-map__shape"
               [class.star-map__shape--line]="item.shape?.kind === 'line'"
               [class.star-map__shape--point]="item.shape?.kind === 'point'"
@@ -387,7 +387,7 @@ const classColor = (index: number, count: number) =>
         </g>
         @for (bubble of bubbleItems(); track bubble.item.key) {
           <circle
-            data-star-part="bubble"
+            data-star-part="bubbleItem"
             class="star-map__bubble"
             [attr.cx]="bubble.x"
             [attr.cy]="bubble.y"
@@ -408,7 +408,7 @@ const classColor = (index: number, count: number) =>
 
       @for (marker of markerItems(); track marker.item.key) {
         <div
-          data-star-part="marker"
+          data-star-part="markerPanel"
           class="star-map__marker"
           role="button"
           [attr.data-map-key]="marker.item.key"
@@ -430,14 +430,18 @@ const classColor = (index: number, count: number) =>
               "
             />
           } @else {
-            <i data-star-part="pin" class="ph-fill ph-map-pin star-map__pin" aria-hidden="true"></i>
+            <i
+              data-star-part="markerIcon"
+              class="ph-fill ph-map-pin star-map__pin"
+              aria-hidden="true"
+            ></i>
           }
         </div>
       }
 
       @if (tooltip(); as tip) {
         <div
-          data-star-part="tooltip"
+          data-star-part="tooltipPanel"
           class="star-map__tooltip"
           aria-hidden="true"
           [style.left.px]="tip.x"
@@ -457,7 +461,7 @@ const classColor = (index: number, count: number) =>
       }
 
       @if (tileLayer(); as tile) {
-        <div data-star-part="attribution" class="star-map__attribution" dir="auto">
+        <div data-star-part="attributionPanel" class="star-map__attribution" dir="auto">
           {{ tile.attribution }}
         </div>
       }
@@ -480,7 +484,7 @@ const classColor = (index: number, count: number) =>
           @for (entry of legend.entries; track $index) {
             <li data-star-part="legendItem" class="star-map__legend-item">
               <span
-                data-star-part="swatch"
+                data-star-part="swatchText"
                 class="star-map__swatch"
                 [style.background]="entry.color"
                 aria-hidden="true"
@@ -492,7 +496,7 @@ const classColor = (index: number, count: number) =>
       </div>
     }
 
-    <table data-star-part="table" class="star-map__table" [class.star-sr-only]="!showTable()">
+    <table data-star-part="tablePanel" class="star-map__table" [class.star-sr-only]="!showTable()">
       <caption class="star-sr-only">
         {{
           ariaLabel() ?? text.map

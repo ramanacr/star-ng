@@ -51,7 +51,7 @@ import { StarMenu, StarMenuItem, StarMenuTrigger } from '@star-ng/ui/menu';
   template: `
     @for (action of inlineActions(); track $index) {
       <button
-        data-star-part="button"
+        data-star-part="actionButton"
         type="button"
         class="star-btn star-btn--ghost star-btn--sm star-btn--icon star-action-strip__button"
         [class.star-action-strip__button--danger]="action.danger"
@@ -70,7 +70,7 @@ import { StarMenu, StarMenuItem, StarMenuTrigger } from '@star-ng/ui/menu';
     }
     @if (overflowActions().length) {
       <button
-        data-star-part="button"
+        data-star-part="actionButton"
         type="button"
         class="star-btn star-btn--ghost star-btn--sm star-btn--icon star-action-strip__button"
         [attr.aria-label]="text.moreActions"

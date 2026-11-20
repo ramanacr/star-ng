@@ -47,7 +47,7 @@ function focusFirst(host: ElementRef<HTMLElement>): void {
       novalidate
       (submit)="submit($event)"
     >
-      <label data-star-part="field" class="star-editor__field">
+      <label data-star-part="fieldLabel" class="star-editor__field">
         <span data-star-part="addressLabel">{{ text.editorImageAddress }}</span>
         <input
           data-star-part="input"
@@ -60,7 +60,7 @@ function focusFirst(host: ElementRef<HTMLElement>): void {
           (input)="src.set($any($event.target).value); sourceError.set(false)"
         />
       </label>
-      <label data-star-part="field" class="star-editor__field">
+      <label data-star-part="fieldLabel" class="star-editor__field">
         <span data-star-part="fileLabel">{{ text.editorImageFile }}</span>
         <input
           data-star-part="fieldInput"
@@ -74,7 +74,7 @@ function focusFirst(host: ElementRef<HTMLElement>): void {
           busy() ? text.editorImageUploading : text.editorImageInvalid
         }}</span>
       }
-      <label data-star-part="field" class="star-editor__field">
+      <label data-star-part="fieldLabel" class="star-editor__field">
         <span data-star-part="altLabel">{{ text.editorAltText }}</span>
         <input
           data-star-part="input"
@@ -102,7 +102,7 @@ function focusFirst(host: ElementRef<HTMLElement>): void {
         />
         {{ text.editorDecorative }}
       </label>
-      <label data-star-part="field" class="star-editor__field">
+      <label data-star-part="fieldLabel" class="star-editor__field">
         <span data-star-part="captionLabel">{{ text.editorCaption }}</span>
         <input
           data-star-part="input"
@@ -112,7 +112,7 @@ function focusFirst(host: ElementRef<HTMLElement>): void {
           (input)="caption.set($any($event.target).value)"
         />
       </label>
-      <label data-star-part="field" class="star-editor__field star-editor__field--narrow">
+      <label data-star-part="fieldLabel" class="star-editor__field star-editor__field--narrow">
         <span data-star-part="imageWidthText">{{ text.imageWidth }}</span>
         <input
           data-star-part="input"
@@ -245,7 +245,7 @@ export class StarEditorImage {
       novalidate
       (submit)="submit($event)"
     >
-      <label data-star-part="field" class="star-editor__field">
+      <label data-star-part="fieldLabel" class="star-editor__field">
         <span data-star-part="addressLabel">{{ text.editorEmbedAddress }}</span>
         <input
           data-star-part="input"
@@ -263,7 +263,7 @@ export class StarEditorImage {
           text.editorEmbedNotAllowed
         }}</span>
       }
-      <label data-star-part="field" class="star-editor__field">
+      <label data-star-part="fieldLabel" class="star-editor__field">
         <span data-star-part="titleText">{{ text.title }}</span>
         <input
           data-star-part="input"

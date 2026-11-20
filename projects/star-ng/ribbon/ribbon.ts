@@ -236,7 +236,7 @@ function cssEscape(value: string): string {
       <div data-star-part="header" class="star-ribbon__header">
         @if (backstage(); as stage) {
           <button
-            data-star-part="file"
+            data-star-part="fileButton"
             type="button"
             class="star-ribbon__file"
             data-keytip="file"
@@ -250,7 +250,7 @@ function cssEscape(value: string): string {
           </button>
         }
         <div
-          data-star-part="tabs"
+          data-star-part="tabsPanel"
           class="star-ribbon__tabs"
           role="tablist"
           [attr.aria-label]="ariaLabel() ?? text.ribbon"
@@ -258,7 +258,7 @@ function cssEscape(value: string): string {
         >
           @for (tab of tabs(); track tab.key(); let i = $index) {
             <button
-              data-star-part="tab"
+              data-star-part="tabButton"
               type="button"
               role="tab"
               class="star-ribbon__tab"
@@ -278,7 +278,7 @@ function cssEscape(value: string): string {
           }
         </div>
         <button
-          data-star-part="collapse"
+          data-star-part="collapseButton"
           type="button"
           class="star-ribbon__collapse"
           [attr.aria-label]="collapsed() ? text.ribbonExpand : text.ribbonCollapse"
@@ -299,7 +299,7 @@ function cssEscape(value: string): string {
 
       @if (backstageOpen() && backstage(); as stage) {
         <div
-          data-star-part="backstage"
+          data-star-part="backstagePanel"
           class="star-ribbon__backstage"
           role="region"
           [id]="id + '-backstage'"
@@ -327,7 +327,7 @@ function cssEscape(value: string): string {
             [class.star-ribbon-group--open]="mode(g) === 'collapsed' && openGroup() === g"
           >
             <button
-              data-star-part="overflow"
+              data-star-part="overflowButton"
               type="button"
               class="star-ribbon-group__overflow"
               [attr.tabindex]="mode(g) === 'collapsed' ? 0 : -1"
@@ -351,7 +351,7 @@ function cssEscape(value: string): string {
               <ng-container *ngTemplateOutlet="tip; context: { $implicit: 'group:' + g }" />
             </button>
             <div
-              data-star-part="items"
+              data-star-part="itemsPanel"
               class="star-ribbon-group__items"
               role="toolbar"
               [id]="id + '-group-' + g"
@@ -370,7 +370,7 @@ function cssEscape(value: string): string {
               }}</span>
               @if (group.dialogLauncher(); as launcher) {
                 <button
-                  data-star-part="launcher"
+                  data-star-part="launcherButton"
                   type="button"
                   class="star-ribbon-group__launcher"
                   [attr.aria-label]="text.ribbonGroupOptions(group.label())"
@@ -434,7 +434,7 @@ function cssEscape(value: string): string {
               <ng-container *ngTemplateOutlet="face; context: { $implicit: item }" />
             </button>
             <button
-              data-star-part="toggle"
+              data-star-part="toggleButton"
               type="button"
               class="star-ribbon-split__toggle"
               [disabled]="item.disabled"
@@ -514,7 +514,9 @@ function cssEscape(value: string): string {
 
     <ng-template #tip let-target>
       @if (tipOf(target); as letters) {
-        <span starPart="keytip" class="star-ribbon__keytip" aria-hidden="true">{{ letters }}</span>
+        <span starPart="keytipText" class="star-ribbon__keytip" aria-hidden="true">{{
+          letters
+        }}</span>
       }
     </ng-template>
   `,

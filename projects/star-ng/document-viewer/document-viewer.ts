@@ -86,7 +86,7 @@ export interface StarDocumentSearchResult {
   },
   template: `
     <canvas
-      data-star-part="canvas"
+      data-star-part="canvasPanel"
       #canvas
       class="star-document-page__canvas"
       aria-hidden="true"
@@ -95,13 +95,13 @@ export interface StarDocumentSearchResult {
       [style.transform]="'translate(-50%, -50%) rotate(' + rotation() + 'deg)'"
     ></canvas>
     @if (failed()) {
-      <span data-star-part="failed" class="star-document-page__failed">
+      <span data-star-part="errorText" class="star-document-page__failed">
         <i data-star-part="failedIcon" class="ph-bold ph-warning-circle" aria-hidden="true"></i>
         {{ text.documentPageError }}
       </span>
     } @else if (!rendered()) {
       <span
-        data-star-part="skeleton"
+        data-star-part="skeletonText"
         class="star-document-page__skeleton"
         aria-hidden="true"
       ></span>
@@ -296,7 +296,7 @@ const WHEEL_STEP = 50;
           (change)="onPageInput($event)"
           (keydown.enter)="onPageInput($event)"
         />
-        <span data-star-part="count" class="star-document-viewer__count" [id]="countId">
+        <span data-star-part="countText" class="star-document-viewer__count" [id]="countId">
           {{ text.documentPageCount(pageCount()) }}
         </span>
       </ng-container>
@@ -315,7 +315,7 @@ const WHEEL_STEP = 50;
           ></i>
         </button>
         <select
-          data-star-part="zoom"
+          data-star-part="zoomInput"
           class="star-document-viewer__zoom"
           [attr.aria-label]="text.documentZoom"
           (change)="onZoomSelect($event)"
@@ -406,11 +406,7 @@ const WHEEL_STEP = 50;
             [attr.aria-label]="text.download"
             (click)="download.emit()"
           >
-            <i
-              data-star-part="downloadIcon"
-              class="ph-bold ph-download-simple"
-              aria-hidden="true"
-            ></i>
+            <i data-star-part="saveIcon" class="ph-bold ph-download-simple" aria-hidden="true"></i>
           </button>
         }
         @if (showPrint()) {
@@ -472,7 +468,7 @@ const WHEEL_STEP = 50;
     <div data-star-part="body" class="star-document-viewer__body">
       @if (thumbnails() && pageCount()) {
         <nav
-          data-star-part="thumbs"
+          data-star-part="thumbsPanel"
           #thumbs
           class="star-document-viewer__thumbs"
           [attr.aria-label]="text.documentThumbnails"
@@ -490,7 +486,7 @@ const WHEEL_STEP = 50;
                 [style.top.px]="index * thumbSlot"
               >
                 <button
-                  data-star-part="thumb"
+                  data-star-part="thumbnail"
                   type="button"
                   class="star-document-viewer__thumb"
                   [attr.aria-current]="index + 1 === page() ? 'page' : null"
@@ -515,7 +511,7 @@ const WHEEL_STEP = 50;
         </nav>
       }
       <div
-        data-star-part="pages"
+        data-star-part="pagesPanel"
         #scroller
         class="star-document-viewer__pages"
         role="region"
@@ -528,7 +524,7 @@ const WHEEL_STEP = 50;
       >
         @switch (status()) {
           @case ('error') {
-            <div data-star-part="error" class="star-document-viewer__error" role="alert">
+            <div data-star-part="errorPanel" class="star-document-viewer__error" role="alert">
               @if (errorTpl(); as tpl) {
                 <ng-container
                   [ngTemplateOutlet]="tpl.template"
@@ -546,7 +542,7 @@ const WHEEL_STEP = 50;
           }
           @case ('ready') {
             <div
-              data-star-part="stack"
+              data-star-part="stackPanel"
               class="star-document-viewer__stack"
               [style.height.px]="contentHeight()"
               [style.min-width.px]="contentWidth()"
@@ -577,7 +573,7 @@ const WHEEL_STEP = 50;
           @case ('loading') {
             <div data-star-part="loadingItem" class="star-document-viewer__loading">
               <span
-                data-star-part="skeleton"
+                data-star-part="skeletonText"
                 class="star-document-page__skeleton"
                 aria-hidden="true"
               ></span>

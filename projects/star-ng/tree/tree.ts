@@ -176,7 +176,7 @@ const MOVE_KEYS: Readonly<Record<string, TreeMoveDirection>> = {
       <ng-container *ngTemplateOutlet="header" />
     }
     @if (filter()) {
-      <div data-star-part="filter" class="star-panel__filter">
+      <div data-star-part="filterPanel" class="star-panel__filter">
         <i data-star-part="filterIcon" class="ph-bold ph-magnifying-glass" aria-hidden="true"></i>
         <input
           data-star-part="input"
@@ -224,7 +224,7 @@ const MOVE_KEYS: Readonly<Record<string, TreeMoveDirection>> = {
       >
         @if (isBranch(item.node)) {
           <span
-            data-star-part="toggle"
+            data-star-part="togglePanel"
             class="star-tree__toggle"
             aria-hidden="true"
             (click)="$event.stopPropagation(); onToggleClick(item.node, $event)"
@@ -241,14 +241,14 @@ const MOVE_KEYS: Readonly<Record<string, TreeMoveDirection>> = {
           </span>
         } @else {
           <span
-            data-star-part="toggle"
+            data-star-part="toggleText"
             class="star-tree__toggle star-tree__toggle--leaf"
             aria-hidden="true"
           ></span>
         }
         @if (selectionMode() === 'checkbox') {
           <span
-            data-star-part="box"
+            data-star-part="boxPanel"
             class="star-check__box star-tree__check"
             aria-hidden="true"
             [class.star-tree__check--on]="checkState(item.node) !== false"
@@ -284,7 +284,7 @@ const MOVE_KEYS: Readonly<Record<string, TreeMoveDirection>> = {
           [style.--star-tree-level]="item.level"
         >
           <span
-            data-star-part="toggle"
+            data-star-part="toggleText"
             class="star-tree__toggle star-tree__toggle--leaf"
             aria-hidden="true"
           ></span>
@@ -344,7 +344,7 @@ const MOVE_KEYS: Readonly<Record<string, TreeMoveDirection>> = {
               [ngTemplateOutletContext]="{ $implicit: item }"
             />
           } @empty {
-            <li data-star-part="empty" class="star-listbox__empty" role="presentation">
+            <li data-star-part="emptyItem" class="star-listbox__empty" role="presentation">
               @if (emptySlot(); as custom) {
                 <ng-container *ngTemplateOutlet="custom; context: emptyContext()" />
               } @else {
@@ -1110,13 +1110,13 @@ const POSITIONS: ConnectedPosition[] = [
   },
   template: `
     <div
-      data-star-part="control"
+      data-star-part="controlPanel"
       class="star-select__control"
       cdkOverlayOrigin
       #origin="cdkOverlayOrigin"
     >
       <button
-        data-star-part="trigger"
+        data-star-part="triggerButton"
         #trigger
         type="button"
         class="star-select__trigger star-tree-select__trigger"
@@ -1133,17 +1133,17 @@ const POSITIONS: ConnectedPosition[] = [
         (blur)="!open() && touch.emit()"
       >
         @if (chips(); as list) {
-          <span data-star-part="chips" class="star-select__chips">
+          <span data-star-part="chipsPanel" class="star-select__chips">
             @for (label of list; track $index) {
               <!-- A space between the chips keeps the visible text equal to the name. -->
               {{ $first ? '' : ' '
-              }}<span data-star-part="chip" class="star-chip star-chip--sm">{{ label }}</span>
+              }}<span data-star-part="chipText" class="star-chip star-chip--sm">{{ label }}</span>
             }
           </span>
         } @else if (summary()) {
-          <span data-star-part="value" class="star-select__value">{{ summary() }}</span>
+          <span data-star-part="valueText" class="star-select__value">{{ summary() }}</span>
         } @else {
-          <span data-star-part="placeholder" class="star-select__placeholder">{{
+          <span data-star-part="placeholderText" class="star-select__placeholder">{{
             placeholder() ?? text.selectPlaceholder
           }}</span>
         }

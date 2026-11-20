@@ -60,17 +60,19 @@ export interface StarFieldStateLike {
       >
         {{ label() }}
         @if (isRequired()) {
-          <span data-star-part="required" class="star-field__required" aria-hidden="true">*</span>
+          <span data-star-part="requiredText" class="star-field__required" aria-hidden="true"
+            >*</span
+          >
         }
       </label>
     }
     <ng-content />
     @if (errorText(); as error) {
-      <p data-star-part="error" class="star-field__error" [id]="errorId" role="alert">
+      <p data-star-part="errorText" class="star-field__error" [id]="errorId" role="alert">
         {{ error }}
       </p>
     } @else if (hint()) {
-      <p data-star-part="hint" class="star-field__hint" [id]="hintId">{{ hint() }}</p>
+      <p data-star-part="hintText" class="star-field__hint" [id]="hintId">{{ hint() }}</p>
     }
   `,
 })

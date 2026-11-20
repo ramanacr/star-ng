@@ -18,7 +18,7 @@ import { STAR_UI_TEXT, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
     '[style.height]': 'size()',
   },
   template: `
-    <svg data-star-part="svg" viewBox="0 0 50 50" aria-hidden="true">
+    <svg data-star-part="graphic" viewBox="0 0 50 50" aria-hidden="true">
       <circle
         data-star-part="track"
         class="star-spinner__track"
@@ -29,7 +29,7 @@ import { STAR_UI_TEXT, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
         [attr.stroke-width]="strokeWidth()"
       />
       <circle
-        data-star-part="arc"
+        data-star-part="arcItem"
         class="star-spinner__arc"
         cx="25"
         cy="25"

@@ -43,7 +43,12 @@ import {
   host: { class: 'star-menubar' },
   template: `
     <ng-content select="[starMenubarStart]" />
-    <div data-star-part="bar" class="star-menubar__bar" cdkMenuBar [attr.aria-label]="ariaLabel()">
+    <div
+      data-star-part="barPanel"
+      class="star-menubar__bar"
+      cdkMenuBar
+      [attr.aria-label]="ariaLabel()"
+    >
       @for (item of items(); track $index) {
         @if (item.items?.length) {
           <button

@@ -67,13 +67,13 @@ export class StarDivider {
     '(focusin)': 'onFocusIn($event)',
   },
   template: `
-    <div data-star-part="group" class="star-toolbar__group">
+    <div data-star-part="groupPanel" class="star-toolbar__group">
       <ng-content select="[starToolbarStart]" />
     </div>
-    <div data-star-part="group" class="star-toolbar__group star-toolbar__group--center">
+    <div data-star-part="groupPanel" class="star-toolbar__group star-toolbar__group--center">
       <ng-content select="[starToolbarCenter]" />
     </div>
-    <div data-star-part="group" class="star-toolbar__group star-toolbar__group--end">
+    <div data-star-part="groupPanel" class="star-toolbar__group star-toolbar__group--end">
       <ng-content select="[starToolbarEnd]" />
     </div>
   `,
@@ -153,7 +153,7 @@ export class StarTimelineContent {
           class="star-timeline__event"
           [class]="'star-timeline__event star-timeline__event--' + (event.severity ?? 'primary')"
         >
-          <span data-star-part="marker" class="star-timeline__marker" aria-hidden="true">
+          <span data-star-part="markerPanel" class="star-timeline__marker" aria-hidden="true">
             @if (event.icon) {
               <i data-star-part="markerIcon" [class]="event.icon"></i>
             }
@@ -166,7 +166,7 @@ export class StarTimelineContent {
             } @else {
               @if (event.date) {
                 <time
-                  data-star-part="date"
+                  data-star-part="dateText"
                   class="star-timeline__date"
                   [attr.datetime]="isoDate(event.date)"
                   >{{ dateText(event.date) }}</time
@@ -227,7 +227,7 @@ export class StarTimeline {
     <span data-star-part="text">{{ label() }}<ng-content /></span>
     @if (removable()) {
       <button
-        data-star-part="remove"
+        data-star-part="removeButton"
         type="button"
         class="star-chip__remove"
         [attr.aria-label]="text.removeItem(label())"

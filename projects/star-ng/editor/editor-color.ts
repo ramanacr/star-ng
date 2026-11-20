@@ -52,7 +52,7 @@ function hexOf(value: string): string {
     '(keydown.escape)': 'onEscape($event)',
   },
   template: `
-    <div data-star-part="swatches" class="star-editor__swatches">
+    <div data-star-part="swatchesPanel" class="star-editor__swatches">
       <button
         data-star-part="swatchesButton"
         type="button"
@@ -64,7 +64,7 @@ function hexOf(value: string): string {
       </button>
       @for (swatch of swatches(); track swatch.value) {
         <button
-          data-star-part="swatch"
+          data-star-part="swatchButton"
           type="button"
           class="star-editor__swatch"
           [style.background]="swatch.value"
@@ -78,7 +78,7 @@ function hexOf(value: string): string {
     <label data-star-part="customColorLabel" class="star-editor__color-custom">
       {{ text.customColor }}
       <input
-        data-star-part="colorCustomInput"
+        data-star-part="customColorInput"
         #custom
         type="color"
         [value]="hex()"
@@ -86,7 +86,7 @@ function hexOf(value: string): string {
       />
     </label>
     <button
-      data-star-part="button"
+      data-star-part="colorButton"
       type="button"
       class="star-btn star-btn--ghost star-btn--sm"
       (click)="dismissed.emit()"

@@ -1,7 +1,7 @@
 <ng-template #control let-cmd>
   @if (cmd === 'formatBlock') {
     <select
-      starPart="select"
+      starPart="formatInput"
       class="star-editor__select"
       data-editor-control
       [attr.data-editor-key]="cmd"
@@ -24,7 +24,7 @@
     </select>
   } @else if (cmd === 'fontSize') {
     <select
-      starPart="select"
+      starPart="formatInput"
       class="star-editor__select"
       data-editor-control
       [attr.data-editor-key]="cmd"
@@ -82,7 +82,7 @@
   </div>
 } @else {
   <div
-    data-star-part="toolbar"
+    data-star-part="toolbarPanel"
     #toolbarElement
     class="star-toolbar star-editor__toolbar"
     [class.star-editor__toolbar--fit]="fitting()"
@@ -100,7 +100,11 @@
             aria-orientation="vertical"
           ></span>
         }
-        <div data-star-part="group" class="star-toolbar__group" [attr.data-editor-group]="index">
+        <div
+          data-star-part="groupPanel"
+          class="star-toolbar__group"
+          [attr.data-editor-group]="index"
+        >
           @for (cmd of group; track cmd) {
             <ng-container *ngTemplateOutlet="control; context: { $implicit: cmd }" />
           }
@@ -114,7 +118,7 @@
         role="separator"
         aria-orientation="vertical"
       ></span>
-      <div data-star-part="more" class="star-editor__more">
+      <div data-star-part="moreButton" class="star-editor__more">
         <button
           data-star-part="toolButton"
           type="button"
@@ -133,10 +137,10 @@
           <i data-star-part="moreIcon" class="ph-bold ph-dots-three" aria-hidden="true"></i>
         </button>
         @if (moreOpen()) {
-          <div data-star-part="overflow" class="star-editor__overflow" [id]="overflowId">
+          <div data-star-part="overflowPanel" class="star-editor__overflow" [id]="overflowId">
             @for (group of groups(); track $index; let index = $index) {
               @if (index >= visibleCount()) {
-                <div data-star-part="group" class="star-toolbar__group">
+                <div data-star-part="groupPanel" class="star-toolbar__group">
                   @for (cmd of group; track cmd) {
                     <ng-container *ngTemplateOutlet="control; context: { $implicit: cmd }" />
                   }
@@ -201,7 +205,7 @@
     [attr.aria-label]="mode === 'replace' ? text.editorFindReplace : text.editorFind"
     (keydown)="onFindKeydown($event)"
   >
-    <label data-star-part="field" class="star-editor__field">
+    <label data-star-part="fieldLabel" class="star-editor__field">
       <span data-star-part="findLabel">{{ text.editorFind }}</span>
       <input
         data-star-part="input"
@@ -213,7 +217,7 @@
       />
     </label>
     @if (mode === 'replace') {
-      <label data-star-part="field" class="star-editor__field">
+      <label data-star-part="fieldLabel" class="star-editor__field">
         <span data-star-part="replaceLabel">{{ text.editorReplaceWith }}</span>
         <input
           data-star-part="input"
@@ -344,7 +348,7 @@
   </div>
 }
 @if (sourceMode()) {
-  <div data-star-part="source" class="star-editor__source">
+  <div data-star-part="sourcePanel" class="star-editor__source">
     <textarea
       data-star-part="sourceText"
       class="star-editor__source-text"
@@ -377,7 +381,7 @@
   </div>
 }
 <div
-  data-star-part="area"
+  data-star-part="areaPanel"
   #area
   class="star-editor__area"
   role="textbox"
@@ -442,12 +446,12 @@
 @if (maxLength() !== undefined || showCount()) {
   <div data-star-part="footer" class="star-editor__footer">
     @if (showCount()) {
-      <span data-star-part="count" class="star-editor__count">{{
+      <span data-star-part="countText" class="star-editor__count">{{
         text.editorWordCount(counts().words, counts().characters)
       }}</span>
     }
     @if (maxLength() !== undefined) {
-      <span data-star-part="counter" class="star-editor__counter" [id]="counterId">
+      <span data-star-part="counterText" class="star-editor__counter" [id]="counterId">
         {{ text.editorCharacterCount(length(), maxLength()!) }}
       </span>
     }
@@ -467,7 +471,7 @@
     {{ text.editorShortcuts }}
   </h2>
   <table data-star-part="shortcutList" class="star-editor__shortcuts-table">
-    <tbody data-star-part="keymap">
+    <tbody data-star-part="keymapPanel">
       @for (row of shortcutRows(); track $index) {
         <tr data-star-part="shortcutRow">
           <th data-star-part="shortcutHeader" scope="row">

@@ -254,6 +254,10 @@ const GLYPHS = new Set([
   'pencil',
   'star',
   'eyedropper',
+  'x',
+  'arrow',
+  'trash',
+  'gear',
 ]);
 /** Abbreviations: a part name uses whole words. */
 const ABBREVIATIONS = new Set([
@@ -282,6 +286,59 @@ const ABBREVIATIONS = new Set([
   'ctrl',
   'src',
   'el',
+  'nav',
+  'prev',
+  'txt',
+  'lbl',
+  'svg',
+  'fx',
+  'fab',
+]);
+
+/**
+ * The reviewed allowlist of one-word parts: structural role words. Every other name has the form
+ * `<purpose><Role>`. The guide "Styling hooks" lists exactly these words (a test checks it).
+ */
+export const SINGLE_WORDS = new Set([
+  'root',
+  'header',
+  'body',
+  'footer',
+  'head',
+  'foot',
+  'track',
+  'thumb',
+  'thumbnail',
+  'handle',
+  'panel',
+  'label',
+  'title',
+  'content',
+  'list',
+  'item',
+  'row',
+  'cell',
+  'column',
+  'text',
+  'icon',
+  'input',
+  'option',
+  'picture',
+  'graphic',
+  'navigation',
+  'frame',
+  'surface',
+  'shell',
+  'separator',
+  'divider',
+  'caption',
+  'description',
+  'backdrop',
+  'grid',
+  'legend',
+  'axis',
+  'viewport',
+  'plot',
 ]);
 
 /** The keys of `STAR_UI_TEXT`: a part is not named after a text. */
@@ -331,6 +388,9 @@ export function badNames(template, block) {
       }
     }
     if (parts.length > 1 && !ROLES.has(parts.at(-1))) reasons.push('role not in the list');
+    if (parts.length === 1 && !SINGLE_WORDS.has(part.name)) {
+      reasons.push('one word outside the allowlist of structural words: name it <purpose><Role>');
+    }
     if (parts.some((word) => ABBREVIATIONS.has(lower(word)))) reasons.push('abbreviation');
     if (
       block &&
@@ -339,18 +399,10 @@ export function badNames(template, block) {
     ) {
       reasons.push('control name');
     }
-    // A shape word, or the full name of the element's own icon when it has several words
-    // (`magnifyingGlassPlusIcon`). A one-word icon that also says the purpose (`copyIcon` with
-    // `ph-copy`) is allowed.
-    const glyph = (part.glyph ?? '').replace(/^ph-/, '').split('-');
-    const glyphName =
-      glyph.length > 1
-        ? glyph.map((word, at) => (at ? word[0].toUpperCase() + word.slice(1) : word)).join('')
-        : '';
-    if (
-      parts.some((word) => GLYPHS.has(lower(word))) ||
-      (glyphName && part.name.startsWith(glyphName))
-    ) {
+    // A shape word of the list, or any word of the element's own icon class (`ph-copy` rejects
+    // `copyIcon`): an icon takes the name of what it belongs to.
+    const glyph = new Set(part.glyph ? part.glyph.replace(/^ph-/, '').split('-') : []);
+    if (parts.some((word) => GLYPHS.has(lower(word)) || glyph.has(lower(word)))) {
       reasons.push('glyph name');
     }
     // The name is not the key of a UI text, and its purpose is not a UI text key that names a
@@ -359,7 +411,8 @@ export function badNames(template, block) {
     const purpose = ROLES.has(parts.at(-1)) ? parts.slice(0, -1) : parts;
     const purposeName = purpose.map((word, at) => (at ? word : lower(word))).join('');
     const namesControl = purpose.some((word) => CONTROL_WORDS.has(lower(word)));
-    if (TEXT_KEYS.has(part.name) || (namesControl && TEXT_KEYS.has(purposeName))) {
+    const textKey = TEXT_KEYS.has(part.name) && !SINGLE_WORDS.has(part.name);
+    if (textKey || (namesControl && TEXT_KEYS.has(purposeName))) {
       reasons.push('UI text key');
     }
     if (reasons.length) found.add(`${part.name} (${[...new Set(reasons)].join(', ')})`);
@@ -420,29 +473,17 @@ test('part names follow the naming rule', () => {
   assert.deepEqual(found, []);
 });
 
-test('the guide lists every single-word part name', () => {
+test('the guide lists the allowlist of one-word parts', () => {
   const guide = readFileSync(
     join(root, 'projects/docs/src/app/guides/styling-hooks.guide.ts'),
     'utf8',
   );
   const block = /<p class="docs-part-words">([\s\S]*?)<\/p>/.exec(guide)?.[1] ?? '';
-  const listed = new Set([...block.matchAll(/<code>([a-z]+)<\/code>/g)].map(([, word]) => word));
-  const used = new Set(
-    all.flatMap((item) =>
-      partsOf(item.template)
-        .map((part) => part.name)
-        .filter((name) => /^[a-z]+$/.test(name) && name !== 'root'),
-    ),
-  );
+  const listed = [...block.matchAll(/<code>([a-z]+)<\/code>/g)].map(([, word]) => word);
   assert.deepEqual(
-    [...used].filter((word) => !listed.has(word)).sort(),
-    [],
-    'single-word part names missing from the guide "Styling hooks"',
-  );
-  assert.deepEqual(
-    [...listed].filter((word) => !used.has(word)).sort(),
-    [],
-    'words in the guide list that no template uses',
+    listed,
+    [...SINGLE_WORDS],
+    'the guide "Styling hooks" must list SINGLE_WORDS of tools/styling-hooks.test.mjs, in order',
   );
 });
 
@@ -466,6 +507,7 @@ test('the naming check finds bad names', () => {
       'restoreButtonIcon (doubled role)',
       'rowSection (role not in the list)',
       'drawSignatureButton (UI text key)',
+      'trigger (one word outside the allowlist of structural words: name it <purpose><Role>)',
     ],
   );
 });

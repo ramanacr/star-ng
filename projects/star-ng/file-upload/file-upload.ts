@@ -116,7 +116,7 @@ export function fileMatchesAccept(file: File, accept: string): boolean {
   },
   template: `
     <div
-      data-star-part="zone"
+      data-star-part="zonePanel"
       class="star-upload__zone"
       (dragenter)="onDrag($event, true)"
       (dragover)="onDrag($event, true)"
@@ -128,9 +128,9 @@ export function fileMatchesAccept(file: File, accept: string): boolean {
         class="ph-bold ph-cloud-arrow-up star-upload__icon"
         aria-hidden="true"
       ></i>
-      <p data-star-part="lead" class="star-upload__lead">{{ text.dropFiles }}</p>
+      <p data-star-part="leadText" class="star-upload__lead">{{ text.dropFiles }}</p>
       <label
-        data-star-part="choose"
+        data-star-part="chooseButton"
         class="star-btn star-btn--secondary star-btn--sm star-upload__choose"
         [for]="inputId"
       >
@@ -149,7 +149,7 @@ export function fileMatchesAccept(file: File, accept: string): boolean {
         (blur)="touch.emit()"
       />
       @if (hint()) {
-        <p data-star-part="hint" class="star-upload__hint" [id]="hintId">{{ hint() }}</p>
+        <p data-star-part="hintText" class="star-upload__hint" [id]="hintId">{{ hint() }}</p>
       }
     </div>
 
@@ -158,7 +158,7 @@ export function fileMatchesAccept(file: File, accept: string): boolean {
         @for (file of value(); track file; let i = $index; let first = $first; let last = $last) {
           @let status = statusOf(file);
           <li
-            data-star-part="file"
+            data-star-part="fileItem"
             class="star-upload__file"
             [class.star-upload__file--error]="status?.state === 'error'"
             [class.star-upload__file--drop]="dropIndex() === i"
@@ -173,26 +173,31 @@ export function fileMatchesAccept(file: File, accept: string): boolean {
             } @else {
               @if (status?.state === 'done') {
                 <i
-                  data-star-part="fileIcon"
+                  data-star-part="typeIcon"
                   class="ph-fill ph-check-circle star-upload__state--done"
                   aria-hidden="true"
                 ></i>
               } @else if (status?.state === 'error') {
                 <i
-                  data-star-part="fileIcon"
+                  data-star-part="typeIcon"
                   class="ph-fill ph-warning-circle star-upload__state--error"
                   aria-hidden="true"
                 ></i>
               } @else if (thumbnailOf(file); as thumbnail) {
-                <img data-star-part="thumb" class="star-upload__thumb" alt="" [src]="thumbnail" />
+                <img
+                  data-star-part="thumbnail"
+                  class="star-upload__thumb"
+                  alt=""
+                  [src]="thumbnail"
+                />
               } @else {
                 <i
-                  data-star-part="fileIcon"
+                  data-star-part="typeIcon"
                   class="ph-bold ph-file star-upload__file-icon"
                   aria-hidden="true"
                 ></i>
               }
-              <span data-star-part="main" class="star-upload__main">
+              <span data-star-part="mainPanel" class="star-upload__main">
                 <span data-star-part="nameText" class="star-upload__name">{{ file.name }}</span>
                 @if (status?.state === 'uploading') {
                   <span
@@ -219,9 +224,11 @@ export function fileMatchesAccept(file: File, accept: string): boolean {
                 }
               </span>
               @if (status?.state === 'uploading') {
-                <span data-star-part="size" class="star-upload__size">{{ percent(status) }}%</span>
+                <span data-star-part="sizeText" class="star-upload__size"
+                  >{{ percent(status) }}%</span
+                >
               } @else {
-                <span data-star-part="size" class="star-upload__size">{{ size(file) }}</span>
+                <span data-star-part="sizeText" class="star-upload__size">{{ size(file) }}</span>
               }
               @if (canReorder()) {
                 <button
@@ -265,8 +272,8 @@ export function fileMatchesAccept(file: File, accept: string): boolean {
     }
 
     @if (rejected().length) {
-      <div data-star-part="section" role="alert">
-        <ul data-star-part="errors" class="star-upload__errors">
+      <div data-star-part="sectionPanel" role="alert">
+        <ul data-star-part="errorsList" class="star-upload__errors">
           @for (item of rejected(); track $index) {
             <li data-star-part="errorsItem">{{ rejectionText(item) }}</li>
           }
