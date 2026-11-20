@@ -26,6 +26,8 @@ import {
   StarOptionKey,
   StarSlot,
   starSlot,
+  StarStyled,
+  ɵSTAR_PART_HOST,
 } from '@star-ng/ui/core';
 import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/ui/field';
 import { STAR_MENU_POSITIONS, StarMenu, StarMenuInDialog, StarMenuItem } from '@star-ng/ui/menu';
@@ -66,6 +68,8 @@ interface CascadeItem<TOption> extends StarMenuItem {
  */
 @Component({
   selector: 'star-cascade-select',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   imports: [CdkMenuTrigger, NgTemplateOutlet, StarMenu, StarMenuInDialog],
   providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarCascadeSelect) }],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -76,8 +80,9 @@ interface CascadeItem<TOption> extends StarMenuItem {
     '[class.star-select--sm]': "size() === 'sm'",
   },
   template: `
-    <div class="star-select__control">
+    <div data-star-part="controlPanel" class="star-select__control">
       <button
+        data-star-part="triggerButton"
         #trigger="cdkMenuTriggerFor"
         #button
         type="button"
@@ -94,24 +99,29 @@ interface CascadeItem<TOption> extends StarMenuItem {
         (cdkMenuClosed)="touch.emit()"
       >
         @if (selected(); as leaf) {
-          <span class="star-select__value">{{ display(leaf) }}</span>
+          <span data-star-part="valueText" class="star-select__value">{{ display(leaf) }}</span>
         } @else {
-          <span class="star-select__placeholder">{{
+          <span data-star-part="placeholderText" class="star-select__placeholder">{{
             placeholder() ?? text.selectPlaceholder
           }}</span>
         }
       </button>
       @if (showClear() && selected() && !disabled() && !readonly()) {
         <button
+          data-star-part="clearButton"
           type="button"
           class="star-select__icon-btn"
           [attr.aria-label]="text.clear"
           (click)="clear()"
         >
-          <i class="ph-bold ph-x" aria-hidden="true"></i>
+          <i data-star-part="clearIcon" class="ph-bold ph-x" aria-hidden="true"></i>
         </button>
       }
-      <i class="ph-bold ph-caret-down star-select__caret" aria-hidden="true"></i>
+      <i
+        data-star-part="dropdownIcon"
+        class="ph-bold ph-caret-down star-select__caret"
+        aria-hidden="true"
+      ></i>
     </div>
     <star-menu
       #menu

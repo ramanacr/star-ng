@@ -29,6 +29,7 @@ import { StarPivotFilter, StarPivotMember, starPivotMemberKey as keyOf } from '.
   host: { class: 'star-pivot-filter' },
   template: `
     <button
+      data-star-part="iconButton"
       type="button"
       class="star-pivot__icon-button"
       [class.star-pivot__icon-button--active]="active()"
@@ -38,11 +39,16 @@ import { StarPivotFilter, StarPivotMember, starPivotMemberKey as keyOf } from '.
       [attr.data-pivot-filter]="field()"
       (click)="open($event)"
     >
-      <i [class]="active() ? 'ph-fill ph-funnel' : 'ph-bold ph-funnel'" aria-hidden="true"></i>
+      <i
+        data-star-part="actionIcon"
+        [class]="active() ? 'ph-fill ph-funnel' : 'ph-bold ph-funnel'"
+        aria-hidden="true"
+      ></i>
     </button>
     <star-popover #panel [ariaLabel]="text.filterMenu(label())">
-      <div class="star-pivot-filter__panel" cdkTrapFocus>
+      <div data-star-part="panel" class="star-pivot-filter__panel" cdkTrapFocus>
         <input
+          data-star-part="input"
           class="star-input star-input--sm"
           type="search"
           data-autofocus
@@ -58,7 +64,12 @@ import { StarPivotFilter, StarPivotMember, starPivotMemberKey as keyOf } from '.
           (checkedChange)="setAll($event)"
           >{{ text.selectAll }}</star-checkbox
         >
-        <div class="star-pivot-filter__list" role="group" [attr.aria-label]="label()">
+        <div
+          data-star-part="list"
+          class="star-pivot-filter__list"
+          role="group"
+          [attr.aria-label]="label()"
+        >
           @for (member of shown(); track member.key) {
             <star-checkbox
               [checked]="!excluded().has(member.key)"
@@ -66,10 +77,12 @@ import { StarPivotFilter, StarPivotMember, starPivotMemberKey as keyOf } from '.
               >{{ member.label }}</star-checkbox
             >
           } @empty {
-            <p class="star-pivot-filter__empty">{{ text.fileNoResults }}</p>
+            <p data-star-part="emptyText" class="star-pivot-filter__empty">
+              {{ text.fileNoResults }}
+            </p>
           }
         </div>
-        <div class="star-pivot-filter__buttons">
+        <div data-star-part="buttonsPanel" class="star-pivot-filter__buttons">
           <star-button size="sm" variant="secondary" (pressed)="clear()">
             {{ text.clear }}
           </star-button>

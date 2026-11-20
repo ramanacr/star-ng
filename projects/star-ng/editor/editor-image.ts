@@ -12,7 +12,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { STAR_UI_TEXT } from '@star-ng/ui/core';
+import { STAR_UI_TEXT, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 import { StarEditorImageValue, starEditorReadFile, StarEditorUpload } from './editor-media';
 import { starEditorUrlAllowed } from './editor-sanitize';
 
@@ -31,6 +31,8 @@ function focusFirst(host: ElementRef<HTMLElement>): void {
  */
 @Component({
   selector: 'star-editor-image',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-editor__panel star-editor__image-panel',
@@ -39,10 +41,16 @@ function focusFirst(host: ElementRef<HTMLElement>): void {
     '(keydown.escape)': 'onEscape($event)',
   },
   template: `
-    <form class="star-editor__panel-form" novalidate (submit)="submit($event)">
-      <label class="star-editor__field">
-        <span>{{ text.editorImageAddress }}</span>
+    <form
+      data-star-part="formPanel"
+      class="star-editor__panel-form"
+      novalidate
+      (submit)="submit($event)"
+    >
+      <label data-star-part="fieldLabel" class="star-editor__field">
+        <span data-star-part="addressLabel">{{ text.editorImageAddress }}</span>
         <input
+          data-star-part="input"
           class="star-input star-input--sm"
           type="text"
           inputmode="url"
@@ -52,18 +60,24 @@ function focusFirst(host: ElementRef<HTMLElement>): void {
           (input)="src.set($any($event.target).value); sourceError.set(false)"
         />
       </label>
-      <label class="star-editor__field">
-        <span>{{ text.editorImageFile }}</span>
-        <input type="file" accept="image/*" (change)="chooseFile($any($event.target).files)" />
+      <label data-star-part="fieldLabel" class="star-editor__field">
+        <span data-star-part="fileLabel">{{ text.editorImageFile }}</span>
+        <input
+          data-star-part="fieldInput"
+          type="file"
+          accept="image/*"
+          (change)="chooseFile($any($event.target).files)"
+        />
       </label>
       @if (sourceError()) {
-        <span class="star-editor__panel-error" [id]="sourceErrorId">{{
+        <span data-star-part="errorText" class="star-editor__panel-error" [id]="sourceErrorId">{{
           busy() ? text.editorImageUploading : text.editorImageInvalid
         }}</span>
       }
-      <label class="star-editor__field">
-        <span>{{ text.editorAltText }}</span>
+      <label data-star-part="fieldLabel" class="star-editor__field">
+        <span data-star-part="altLabel">{{ text.editorAltText }}</span>
         <input
+          data-star-part="input"
           #altField
           class="star-input star-input--sm"
           type="text"
@@ -75,28 +89,33 @@ function focusFirst(host: ElementRef<HTMLElement>): void {
         />
       </label>
       @if (altError()) {
-        <span class="star-editor__panel-error" [id]="altErrorId">{{ text.editorAltRequired }}</span>
+        <span data-star-part="errorText" class="star-editor__panel-error" [id]="altErrorId">{{
+          text.editorAltRequired
+        }}</span>
       }
-      <label class="star-editor__link-check">
+      <label data-star-part="newTabLabel" class="star-editor__link-check">
         <input
+          data-star-part="linkCheckInput"
           type="checkbox"
           [checked]="decorative()"
           (change)="decorative.set($any($event.target).checked); altError.set(false)"
         />
         {{ text.editorDecorative }}
       </label>
-      <label class="star-editor__field">
-        <span>{{ text.editorCaption }}</span>
+      <label data-star-part="fieldLabel" class="star-editor__field">
+        <span data-star-part="captionLabel">{{ text.editorCaption }}</span>
         <input
+          data-star-part="input"
           class="star-input star-input--sm"
           type="text"
           [value]="caption()"
           (input)="caption.set($any($event.target).value)"
         />
       </label>
-      <label class="star-editor__field star-editor__field--narrow">
-        <span>{{ text.imageWidth }}</span>
+      <label data-star-part="fieldLabel" class="star-editor__field star-editor__field--narrow">
+        <span data-star-part="imageWidthText">{{ text.imageWidth }}</span>
         <input
+          data-star-part="input"
           class="star-input star-input--sm"
           type="number"
           min="16"
@@ -106,11 +125,17 @@ function focusFirst(host: ElementRef<HTMLElement>): void {
           (input)="width.set(+$any($event.target).value || null)"
         />
       </label>
-      <div class="star-editor__link-actions">
-        <button type="submit" class="star-btn star-btn--primary star-btn--sm" [disabled]="busy()">
+      <div data-star-part="actionList" class="star-editor__link-actions">
+        <button
+          data-star-part="applyButton"
+          type="submit"
+          class="star-btn star-btn--primary star-btn--sm"
+          [disabled]="busy()"
+        >
           {{ text.apply }}
         </button>
         <button
+          data-star-part="cancelButton"
           type="button"
           class="star-btn star-btn--ghost star-btn--sm"
           (click)="dismissed.emit()"
@@ -203,6 +228,9 @@ export class StarEditorImage {
  */
 @Component({
   selector: 'star-editor-embed',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-editor__panel',
@@ -211,10 +239,16 @@ export class StarEditorImage {
     '(keydown.escape)': 'onEscape($event)',
   },
   template: `
-    <form class="star-editor__panel-form" novalidate (submit)="submit($event)">
-      <label class="star-editor__field">
-        <span>{{ text.editorEmbedAddress }}</span>
+    <form
+      data-star-part="formPanel"
+      class="star-editor__panel-form"
+      novalidate
+      (submit)="submit($event)"
+    >
+      <label data-star-part="fieldLabel" class="star-editor__field">
+        <span data-star-part="addressLabel">{{ text.editorEmbedAddress }}</span>
         <input
+          data-star-part="input"
           #address
           class="star-input star-input--sm"
           type="text"
@@ -225,13 +259,14 @@ export class StarEditorImage {
         />
       </label>
       @if (urlError()) {
-        <span class="star-editor__panel-error" [id]="urlErrorId">{{
+        <span data-star-part="errorText" class="star-editor__panel-error" [id]="urlErrorId">{{
           text.editorEmbedNotAllowed
         }}</span>
       }
-      <label class="star-editor__field">
-        <span>{{ text.title }}</span>
+      <label data-star-part="fieldLabel" class="star-editor__field">
+        <span data-star-part="titleText">{{ text.title }}</span>
         <input
+          data-star-part="input"
           #name
           class="star-input star-input--sm"
           type="text"
@@ -241,13 +276,20 @@ export class StarEditorImage {
         />
       </label>
       @if (titleError()) {
-        <span class="star-editor__panel-error" [id]="titleErrorId">{{ text.valueRequired }}</span>
+        <span data-star-part="errorText" class="star-editor__panel-error" [id]="titleErrorId">{{
+          text.valueRequired
+        }}</span>
       }
-      <div class="star-editor__link-actions">
-        <button type="submit" class="star-btn star-btn--primary star-btn--sm">
+      <div data-star-part="actionList" class="star-editor__link-actions">
+        <button
+          data-star-part="applyButton"
+          type="submit"
+          class="star-btn star-btn--primary star-btn--sm"
+        >
           {{ text.apply }}
         </button>
         <button
+          data-star-part="cancelButton"
           type="button"
           class="star-btn star-btn--ghost star-btn--sm"
           (click)="dismissed.emit()"

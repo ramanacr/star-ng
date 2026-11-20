@@ -37,6 +37,8 @@ import {
   starFilterMatch,
   StarFilterMatchMode,
   StarOptionKey,
+  StarStyled,
+  ɵSTAR_PART_HOST,
 } from '@star-ng/ui/core';
 
 /** Event of `mentionSearch`: the trigger and the text typed after it. */
@@ -674,14 +676,21 @@ export class StarMentionItemTemplate<T = unknown> {
 /** The suggestion panel of `starMention`. Internal: the directive attaches it at the caret. */
 @Component({
   selector: 'star-mention-panel',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   imports: [NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @let mention = owner();
     <!-- The field keeps the focus: a press in the panel must not blur it. -->
-    <div class="star-panel star-mention__panel" (mousedown)="$event.preventDefault()">
+    <div
+      data-star-part="panel"
+      class="star-panel star-mention__panel"
+      (mousedown)="$event.preventDefault()"
+    >
       @if (mention.items().length) {
         <ul
+          data-star-part="list"
           class="star-listbox star-mention__list"
           role="listbox"
           [id]="mention.listId"
@@ -692,6 +701,7 @@ export class StarMentionItemTemplate<T = unknown> {
             <!-- Keys are handled on the field through aria-activedescendant. -->
             <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
             <li
+              data-star-part="option"
               class="star-listbox__option"
               role="option"
               [id]="mention.optionId(i)"
@@ -708,13 +718,15 @@ export class StarMentionItemTemplate<T = unknown> {
                   "
                 />
               } @else {
-                <span class="star-listbox__label">{{ mention.labelOf(item) }}</span>
+                <span data-star-part="label" class="star-listbox__label">{{
+                  mention.labelOf(item)
+                }}</span>
               }
             </li>
           }
         </ul>
       } @else {
-        <p class="star-listbox__empty star-mention__message">
+        <p data-star-part="emptyText" class="star-listbox__empty star-mention__message">
           {{ mention.loading() ? text.loading : text.emptyFilterMessage }}
         </p>
       }

@@ -18,7 +18,14 @@ import {
   viewChild,
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
-import { STAR_UI_TEXT, StarDirectionService, starIsRtl } from '@star-ng/ui/core';
+import {
+  STAR_UI_TEXT,
+  StarDirectionService,
+  starIsRtl,
+  StarPart,
+  StarStyled,
+  ɵSTAR_PART_HOST,
+} from '@star-ng/ui/core';
 import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/ui/field';
 
 /**
@@ -28,10 +35,13 @@ import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/
  */
 @Component({
   selector: 'star-knob',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-knob', '[class.star-knob--disabled]': 'disabled()' },
   template: `
     <svg
+      data-star-part="graphic"
       viewBox="0 0 100 100"
       [attr.width]="size()"
       [attr.height]="size()"
@@ -51,9 +61,11 @@ import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/
       (pointermove)="$event.buttons === 1 && onPointer($event)"
       (blur)="touch.emit()"
     >
-      <path class="star-knob__track" [attr.d]="arc(1)" />
-      <path class="star-knob__value" [attr.d]="arc(ratio())" />
-      <text class="star-knob__text" x="50" y="57" text-anchor="middle">{{ text() }}</text>
+      <path data-star-part="track" class="star-knob__track" [attr.d]="arc(1)" />
+      <path data-star-part="valueItem" class="star-knob__value" [attr.d]="arc(ratio())" />
+      <text data-star-part="text" class="star-knob__text" x="50" y="57" text-anchor="middle">
+        {{ text() }}
+      </text>
     </svg>
   `,
 })
@@ -263,6 +275,9 @@ function hsvToHex({ h, s, v }: Hsv): string {
   return `#${channel(5)}${channel(3)}${channel(1)}`;
 }
 
+/** The constructor of the `EyeDropper` browser API (not in the TypeScript DOM types yet). */
+type StarEyeDropperType = new () => { open(): Promise<{ sRGBHex: string }> };
+
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
 /**
@@ -278,11 +293,14 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
  */
 @Component({
   selector: 'star-color-picker',
-  imports: [CdkConnectedOverlay, CdkOverlayOrigin],
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [StarPart, CdkConnectedOverlay, CdkOverlayOrigin],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-color', '[class.star-color--open]': 'open()' },
   template: `
     <div
+      data-star-part="swatchesPanel"
       class="star-color__swatches"
       role="radiogroup"
       [attr.aria-label]="labelledBy() ? null : (ariaLabel() ?? text.colorLabel)"
@@ -291,6 +309,7 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
     >
       @for (swatch of shownSwatches(); track swatch) {
         <button
+          data-star-part="swatchButton"
           type="button"
           role="radio"
           class="star-color__swatch"
@@ -298,11 +317,12 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
           [attr.aria-checked]="swatch.toLowerCase() === value().toLowerCase()"
           [attr.aria-label]="swatch"
           [disabled]="disabled()"
-          (click)="value.set(swatch)"
+          (click)="commit(swatch)"
         ></button>
       }
     </div>
     <button
+      data-star-part="customButton"
       #custom
       type="button"
       class="star-color__custom"
@@ -316,7 +336,21 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
       [disabled]="disabled()"
       (click)="togglePanel()"
     ></button>
+    @if (canEyeDrop()) {
+      <button
+        data-star-part="pickButton"
+        type="button"
+        class="star-btn star-btn--ghost star-btn--icon star-btn--sm star-color__eyedropper"
+        [attr.aria-label]="text.eyeDropper"
+        [attr.title]="text.eyeDropper"
+        [disabled]="disabled()"
+        (click)="pickFromScreen()"
+      >
+        <i data-star-part="pickIcon" class="ph-bold ph-eyedropper" aria-hidden="true"></i>
+      </button>
+    }
     <input
+      data-star-part="hexInput"
       class="star-input star-input--sm star-color__hex"
       [value]="value()"
       [disabled]="disabled()"
@@ -337,6 +371,7 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
       (overlayOutsideClick)="onOutsideClick($event)"
     >
       <div
+        starPart="panel"
         class="star-panel star-date__panel star-color__panel"
         role="dialog"
         [id]="panelId"
@@ -345,6 +380,7 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
         (keydown)="onPanelKeydown($event)"
       >
         <div
+          data-star-part="areaPanel"
           #area
           class="star-color__area"
           role="slider"
@@ -360,6 +396,7 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
           (pointermove)="$event.buttons === 1 && onAreaPointer($event, false)"
         >
           <span
+            data-star-part="thumbnail"
             class="star-color__thumb"
             [style.inset-inline-start.%]="hsv().s"
             [style.top.%]="100 - hsv().v"
@@ -367,6 +404,7 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
           ></span>
         </div>
         <div
+          data-star-part="hueTrack"
           class="star-color__hue"
           role="slider"
           tabindex="0"
@@ -382,15 +420,22 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
           (pointermove)="$event.buttons === 1 && onHuePointer($event, false)"
         >
           <span
+            data-star-part="thumbnail"
             class="star-color__thumb"
             [style.inset-inline-start.%]="(hsv().h / 359) * 100"
             [style.background]="hueColor()"
           ></span>
         </div>
-        <div class="star-color__bar">
-          <span class="star-color__preview" [style.background]="value()" aria-hidden="true"></span>
-          <span class="star-color__code">{{ value() }}</span>
+        <div data-star-part="barPanel" class="star-color__bar">
+          <span
+            data-star-part="previewText"
+            class="star-color__preview"
+            [style.background]="value()"
+            aria-hidden="true"
+          ></span>
+          <span data-star-part="codeText" class="star-color__code">{{ value() }}</span>
           <button
+            data-star-part="barButton"
             type="button"
             class="star-btn star-btn--primary star-btn--sm"
             (click)="closePanel()"
@@ -426,6 +471,11 @@ export class StarColorPicker implements FormValueControl<string> {
   readonly ariaLabel = input<string | null>(null);
   readonly disabled = input(false, { transform: booleanAttribute });
   readonly touch = output<void>();
+  /**
+   * The color that the user chose: a swatch, a typed hex value, the custom color panel or the eye
+   * dropper. A value that the application sets does not emit. PrimeNG `onChange`.
+   */
+  readonly changed = output<string>();
   /** The parent `star-field` when it labels the swatch group (a group is not labelable). */
   protected readonly field = injectStarFieldLink(null, () => this.focus());
   protected readonly labelledBy = computed(() => starFieldLabelledBy(this.field, this.ariaLabel()));
@@ -443,6 +493,7 @@ export class StarColorPicker implements FormValueControl<string> {
   constructor() {
     // Browser only (this callback does not run on the server). One read, no theme-change watcher.
     afterNextRender(() => {
+      this.canEyeDrop.set(typeof this.eyeDropperType() === 'function');
       if (this.swatches() !== undefined) return;
       const found = readThemeSwatches(this.doc, this.host.nativeElement);
       if (found.length) this.themeSwatches.set(found);
@@ -450,6 +501,40 @@ export class StarColorPicker implements FormValueControl<string> {
   }
 
   private readonly themeSwatches = signal<readonly string[] | null>(null);
+  /**
+   * `true` in a browser with the `EyeDropper` API (PrimeNG `p-inputcolor-eyedropper`). Set after
+   * the first render, so the server and the first client render have no eye dropper button.
+   */
+  protected readonly canEyeDrop = signal(false);
+
+  private eyeDropperType(): StarEyeDropperType | undefined {
+    return (this.doc.defaultView as (Window & { EyeDropper?: StarEyeDropperType }) | null)
+      ?.EyeDropper;
+  }
+
+  /**
+   * Opens the eye dropper of the browser. The color that the user picks becomes the value; a
+   * cancel (Escape) keeps the value.
+   */
+  async pickFromScreen(): Promise<void> {
+    const EyeDropper = this.eyeDropperType();
+    if (this.disabled() || typeof EyeDropper !== 'function') return;
+    try {
+      const result = await new EyeDropper().open();
+      const hex = result?.sRGBHex?.toLowerCase() ?? '';
+      if (/^#[0-9a-f]{6}$/.test(hex)) this.commit(hex);
+      // A pick is a user interaction, like a blur: Signal Forms mark the field touched.
+      this.touch.emit();
+    } catch {
+      // The user canceled the eye dropper: keep the value.
+    }
+  }
+
+  /** Sets the value that the user chose and emits `changed`. */
+  protected commit(hex: string): void {
+    this.value.set(hex);
+    this.changed.emit(hex);
+  }
   protected readonly shownSwatches = computed(
     () => this.swatches() ?? this.themeSwatches() ?? SWATCHES,
   );
@@ -588,7 +673,7 @@ export class StarColorPicker implements FormValueControl<string> {
   protected onHex(input: HTMLInputElement): void {
     const raw = input.value.trim();
     const hex = raw.startsWith('#') ? raw : `#${raw}`;
-    if (/^#[0-9a-f]{6}$/i.test(hex)) this.value.set(hex.toLowerCase());
+    if (/^#[0-9a-f]{6}$/i.test(hex)) this.commit(hex.toLowerCase());
     else input.value = this.value();
   }
 
@@ -620,6 +705,6 @@ export class StarColorPicker implements FormValueControl<string> {
       v: Math.round(clamp(change.v ?? current.v, 0, 100)),
     };
     this.hsv.set(next);
-    this.value.set(hsvToHex(next));
+    this.commit(hsvToHex(next));
   }
 }

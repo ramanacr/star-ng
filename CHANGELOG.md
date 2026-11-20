@@ -61,6 +61,10 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 
 - Chat and AI prompt (`star-chat`, `star-ai-prompt`, `star-markdown-lite`, `StarChatMessageTemplate`, new entry `@star-ng/ui/chat`): a message list with own messages at the end, author groups, day separators, a composer (Enter sends, Shift+Enter adds a line, `send`), a typing indicator, `loadMore` at the top with a kept scroll position, in-place streaming with a polite announcement once a message from others is `sent`, and a Markdown subset rendered as text (bold, italic, code, code blocks, safe links with `rel="noopener noreferrer"`, no raw HTML); and a prompt panel with suggestion chips, `promptRequest`, responses with Copy, Retry (`retry`) and Stop (`stop`) while streaming. No network or model call (Kendo UI Chat and AIPrompt). UI texts `chatMessages`, `chatEmpty`, `message`, `send`, `messageFrom`, `newMessage`, `newMessages`, `messageSending`, `messageSent`, `messageNotSent`, `isTyping`, `areTyping`, `aiPrompt`, `aiPromptPlaceholder`, `promptSuggestions`, `generate`, `aiResponses`, `aiGenerating`, `aiResponseReady`, `aiResponseFailed`, `aiPromptShortcutHint`, `copy`, `copied`, `copyFailed`, `retry` and `stop` (English, German, Spanish).
 
+#### Color picker
+
+- Eye dropper button in `star-color-picker` (`@star-ng/ui/knob`): picks a color from the screen with the `EyeDropper` API of the browser; hidden when the browser has no such API (PrimeNG `p-inputcolor-eyedropper`). New output `changed` emits the color that the user chose. UI text `eyeDropper` (English, German, Spanish).
+
 #### Command palette
 
 - Command palette (`star-command-palette`, `StarCommandTemplate`, new entry `@star-ng/ui/command-palette`): a modal search over commands on a native `<dialog>`, opened with a global `hotkey` (default Control+K or Command+K), with ranked accent-insensitive filtering, groups, recent commands, `commandRun`, and the `starCommand`, `starEmpty` and `starLoading` slots (PrimeNG `p-commandmenu`). UI texts `commandPalette`, `commandPlaceholder` and `recentCommands` (English, German, Spanish).
@@ -72,6 +76,7 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - `StarAnnouncer` (`@star-ng/ui/core`): screen-reader announcements through the CDK `LiveAnnouncer`, with de-duplication per source: `announce(message, politeness?, { source })` drops the same text from the same source within `STAR_ANNOUNCER_DEDUPE_MS`; a message without a source is always announced.
 - `StarClipboard` (`@star-ng/ui/core`): copies text with the async `navigator.clipboard` and falls back to the CDK `Clipboard`; does nothing on the server. `starCopy` directive (`@star-ng/ui/utility`): copies on click, emits `copied(success)` and announces it. UI texts `copied` and `copyFailed` (English, German, Spanish).
 - `StarFilterService` (`@star-ng/ui/core`): `register(name, fn, label)` adds a custom match mode for the table filters (PrimeNG `FilterService.register`).
+- Styling hooks for every control (PrimeNG pass-through `pt` and `unstyled`): each element of a control template has a part name (`data-star-part`, set by the `starPart` directive; the host is `root`), and each control has the inputs `pt` (classes, styles and the safe attributes `title`, `data-*`, `aria-*` per part; `id` and event handlers are refused; a dropped attribute gets the template value back) and `unstyled`, through the host directive `StarStyled`. `provideStarNg({ pt, unstyled })` sets them for all controls, keyed by tag name; the instance `pt` merges over it. The unstyled mode sets `data-star-unstyled` on the control and its parts, and one CSS rule turns the design tokens off there, so colors, borders, radius, shadows, fonts and token spacing fall back to the browser defaults while the layout stays; the focus ring stays visible. Selected, hover and surface states that StarNG shows only with a color or a background need the classes of the application. A styled control and the application content inside an unstyled control keep the theme (`--star-theme-*` copies on `:root`). Part names follow one rule (the StarNG class, else the part around plus the role) and are unique per control; visually hidden text is not a part. While a control has no `pt` and is not unstyled, its parts carry only their name. New types `StarPassThrough`, `StarPassThroughOptions`, `StarPassThroughClass` and `StarGlobalPassThrough`. The docs list the parts of each control in its API section and in the agent data, and the guide "Styling hooks" explains them.
 
 #### Date and time pickers
 
@@ -108,11 +113,16 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - Docs: pages "Action sheet" (`StarActionSheet`) and "Bottom sheet container" (`StarBottomSheetContainer`) with examples.
 - Docs: guide "Configuration" (`provideStarNg`, the default tokens, precedence, `StarConfigService`, `StarAnnouncer`, `StarClipboard` and `starCopy`, the pipes and `starKeyFilter`).
 - Docs: page "Table interaction" with examples for cell navigation, range selection, the context menu, copy and paste, search highlight and the scroll API.
+- Docs: section "Overlays and stacking" in the guide "Configuration": the popups are in the top layer of the browser (native popovers and `showModal()`), so `appendTo` and `zIndex` are not needed for stacking; `overlay.appendTo` only chooses the place in the DOM, and `overlay.zIndexBase` applies to the surfaces outside the top layer (windows, non-modal dialogs, drawers and sheets, the full-screen editor).
 
 #### Document viewer
 
 - Document viewer (`star-document-viewer`, `ng-template[starDocumentError]`, `@star-ng/ui/document-viewer`): a viewer shell for paged documents behind a renderer interface, `StarDocumentRenderer` (`load` and `renderPage` with an optional `AbortSignal`, optional `textContent`, `dispose`), provided with `STAR_DOCUMENT_RENDERER` or the `renderer` input. No PDF engine and no new dependency. The recommended engine is PDF Viewer Native (`pdfviewer-embed`); its adapter becomes possible when its headless rendering API ships ([pdf-viewer#185](https://github.com/ramanacr/pdf-viewer/issues/185)). Until then the JSDoc and the docs page show a PDF.js (`pdfjs-dist`) adapter as an interim alternative; an application that wants a complete viewer with annotations and forms can embed `View.previewFile` of `pdfviewer-embed` directly. Toolbar with previous and next page, a page number field ("3 of 12"), zoom (fit width, fit page, presets, Control+plus and minus, Control and the mouse wheel), rotation, a lazy thumbnails sidebar, continuous and single-page modes, full screen, and the `download` and `print` outputs. Search (Control+F) with result counts and jumps to the pages when the renderer gives text. Only the visible pages plus one have a canvas, sized by `devicePixelRatio`; pages that leave the view free it; a skeleton per page and an error state. The page area is a region named with `title`; each page is an image, or a document with a hidden text layer; page changes are announced; Page Up, Page Down, Home and End navigate (PDF.js viewer, Syncfusion PDF Viewer, Kendo UI PDFViewer).
 - UI texts `documentToolbar`, `documentDefaultTitle`, `documentPageOf`, `documentPageInput`, `documentPageCount`, `documentZoom`, `documentFitWidth`, `documentFitPage`, `documentRotate`, `documentThumbnails`, `documentSinglePage`, `fullScreen`, `documentDownload`, `documentPrint`, `documentSearch`, `previousResult`, `nextResult`, `noResults`, `documentSearchResults`, `documentLoadError` and `documentPageError` (English, German, Spanish).
+
+#### Drag and drop
+
+- `starDraggable` and `starDroppable` (new entry `@star-ng/ui/drag-drop`): generic drag and drop with a data payload, scopes, a drag handle, a drag image, drop effects, an accept rule and the outputs `dragStart`, `dragEnd`, `dragEnter`, `dragLeave` and `dropped` (PrimeNG `pDraggable` / `pDroppable`, Ignite UI `igxDrag` / `igxDrop`). The mouse uses the native drag of the browser, touch starts with a long press, and the keyboard picks up with Space, moves between the drop zones with the arrow keys (mirrored in right-to-left), drops with Space and cancels with Escape, with announcements through `StarAnnouncer`. UI texts `dragHint`, `dragPickedUp`, `dragOver`, `dragDropped`, `dragCanceled` and `dragNoTarget` (English, German, Spanish).
 
 #### Drawer
 
@@ -321,6 +331,7 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 
 ### Changed
 
+- Every control template element now has the attribute `data-star-part`. In a few templates the text of an element now starts or ends with a space in `textContent` (the rendered text is the same); compare the trimmed text in tests.
 - Table: the sticky header (`stickyHeader`) has `z-index: 2`, so pinned body cells scroll under it.
 - Table: a table with `frozen` columns now also keeps the selection, expander and reorder columns at the start while it scrolls sideways (before, they scrolled away under the frozen columns), and the last frozen column has a separator shadow.
 - Tabs: each tab button is now inside a wrapper element (`span.star-tabs__item`, which also holds the close button of a closable tab), and the tab list is inside `div.star-tabs__nav`. Styles or tests that select `.star-tabs__list > .star-tabs__tab` must use `.star-tabs__list .star-tabs__tab`.
@@ -351,6 +362,7 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 
 ### Fixed
 
+- Editor: Control+F and Control+H focus the find field in the same key event, so the keys typed at once go into the field and not into the content.
 - Table: a Shift move into a lead cell no longer leaves a stale range target behind (internal state only).
 - Window: a window that is minimized or maximized from code while `minimizable` or `maximizable` is off now shows its restore button, so the user can bring it back. After the restore the button goes and the focus moves to the title bar.
 - Image editor: after an enlarging resize the preview was blurry, because the cached base was drawn at the view scale of the larger output and then stretched. The base scale now includes the resize enlargement (at most 2x the view per side, and never above the natural size); the export did not change.

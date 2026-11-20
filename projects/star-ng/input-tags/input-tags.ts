@@ -13,7 +13,7 @@ import {
   viewChild,
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
-import { STAR_UI_TEXT } from '@star-ng/ui/core';
+import { STAR_UI_TEXT, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 import { injectStarFieldLink } from '@star-ng/ui/field';
 
 export type StarTagRejection = 'invalid' | 'duplicate' | 'limit';
@@ -29,6 +29,8 @@ export type StarTagRejection = 'invalid' | 'duplicate' | 'limit';
  */
 @Component({
   selector: 'star-input-tags',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-select star-tags',
@@ -38,31 +40,38 @@ export type StarTagRejection = 'invalid' | 'duplicate' | 'limit';
   template: `
     <!-- Pointer convenience only: keyboard users reach the input directly. -->
     <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
-    <div class="star-select__control star-ac__control star-tags__control" (click)="focus()">
-      <div class="star-ac__main">
+    <div
+      data-star-part="controlPanel"
+      class="star-select__control star-ac__control star-tags__control"
+      (click)="focus()"
+    >
+      <div data-star-part="mainPanel" class="star-ac__main">
         <ul
+          data-star-part="list"
           class="star-tags__list"
           [attr.aria-label]="ariaLabel()"
           [attr.aria-disabled]="disabled() || null"
         >
           @for (tag of value(); track tag; let i = $index) {
-            <li class="star-chip star-chip--sm">
+            <li data-star-part="chipItem" class="star-chip star-chip--sm">
               {{ tag }}
               @if (!disabled() && !readonly()) {
                 <button
+                  data-star-part="removeButton"
                   type="button"
                   class="star-chip__remove"
                   tabindex="-1"
                   [attr.aria-label]="text.removeItem(tag)"
                   (click)="$event.stopPropagation(); removeAt(i)"
                 >
-                  <i class="ph-bold ph-x" aria-hidden="true"></i>
+                  <i data-star-part="removeIcon" class="ph-bold ph-x" aria-hidden="true"></i>
                 </button>
               }
             </li>
           }
         </ul>
         <input
+          data-star-part="input"
           #input
           type="text"
           class="star-ac__input"
@@ -85,19 +94,22 @@ export type StarTagRejection = 'invalid' | 'duplicate' | 'limit';
       </div>
       @if (showClear() && value().length && !disabled() && !readonly()) {
         <button
+          data-star-part="clearButton"
           type="button"
           class="star-select__icon-btn"
           [attr.aria-label]="text.clear"
           (click)="$event.stopPropagation(); clear()"
         >
-          <i class="ph-bold ph-x" aria-hidden="true"></i>
+          <i data-star-part="clearIcon" class="ph-bold ph-x" aria-hidden="true"></i>
         </button>
       }
     </div>
     <p class="star-sr-only" [id]="hintId">{{ text.tagsHint }}</p>
     <p class="star-sr-only" aria-live="polite">{{ announcement() }}</p>
     @if (rejectionText(); as message) {
-      <p class="star-field__error star-tags__error" role="alert">{{ message }}</p>
+      <p data-star-part="errorText" class="star-field__error star-tags__error" role="alert">
+        {{ message }}
+      </p>
     }
   `,
 })

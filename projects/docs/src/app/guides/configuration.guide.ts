@@ -144,6 +144,36 @@ export class DocsCompactSelect {
         </div>
       </docs-example>
 
+      <h2>Overlays and stacking</h2>
+      <p>
+        StarNG opens its popups in the top layer of the browser. The panels of the select family,
+        the autocompletes, the date and time pickers, the dropdowns, the menus and context menus,
+        the popover, the tooltip, the mention list and the color panel are native popovers (the CDK
+        overlay with <code>usePopover</code>). The toast outlet is a manual popover. Modal dialogs,
+        drawers and bottom sheets use <code>showModal()</code>. A top-layer element is above every
+        <code>z-index</code> of the page and is not clipped by an ancestor with
+        <code>overflow: hidden</code> or a <code>transform</code>. So StarNG needs no
+        <code>appendTo="body"</code> and no <code>zIndex</code> option to keep a popup on top
+        (PrimeNG needs them for that).
+      </p>
+      <p>
+        <code>overlay.appendTo</code> (and the <code>appendTo</code> input of the select family)
+        only chooses where the popover element is in the DOM. <code>self</code> (default) keeps it
+        next to the control: it inherits the custom properties and the theme of its container, and
+        its events bubble through the control. <code>body</code> puts it in the overlay container.
+        The stacking is the same in both cases. Inside a modal <code>star-dialog</code>, menus go
+        into the dialog, so they stay usable while the rest of the page is inert.
+      </p>
+      <p>
+        <code>overlay.zIndexBase</code> (default 1000, the CSS variable
+        <code>--star-z-index-base</code>) applies only to the surfaces that are not in the top
+        layer: the CDK overlay container (used when the browser has no popover support), windows
+        (<code>star-window</code>), non-modal dialogs, drawers and bottom sheets (one below the
+        base, so a popup that they open stays on top), and the full-screen editor and the touch copy
+        of <code>starDraggable</code> (above the base). Raise it when your own fixed header or side
+        bar has a <code>z-index</code> above 1000.
+      </p>
+
       <h2>Copy to the clipboard</h2>
       <p>
         <code>StarClipboard</code> copies text with <code>navigator.clipboard</code> and falls back
@@ -348,7 +378,8 @@ readonly files = [
     },
     {
       name: 'overlay.appendTo',
-      description: "'self' or 'body'. Default appendTo of the select family.",
+      description:
+        "'self' or 'body'. Default appendTo of the select family: where the popover element is in the DOM. Popups are in the top layer either way (see Overlays and stacking).",
     },
     {
       name: 'overlay.zIndexBase',

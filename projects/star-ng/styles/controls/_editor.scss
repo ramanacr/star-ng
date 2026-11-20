@@ -415,7 +415,7 @@ ul.star-checklist {
   touch-action: none;
 
   &:focus-visible {
-    outline: 2px solid var(--star-text);
+    outline: 2px solid var(--star-text, currentColor);
     outline-offset: 2px;
   }
 }

@@ -10,11 +10,13 @@ import {
   input,
   model,
 } from '@angular/core';
-import { STAR_UI_TEXT } from '@star-ng/ui/core';
+import { STAR_UI_TEXT, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 
 /** One step of `star-stepper`; its content is the step panel. */
 @Component({
   selector: 'star-step',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-stepper__panel',
@@ -55,17 +57,25 @@ export class StarStep {
  */
 @Component({
   selector: 'star-stepper',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-stepper' },
   template: `
-    <ol class="star-stepper__list" [attr.aria-label]="ariaLabel() ?? text.stepperLabel">
+    <ol
+      data-star-part="list"
+      class="star-stepper__list"
+      [attr.aria-label]="ariaLabel() ?? text.stepperLabel"
+    >
       @for (step of steps(); track step.value(); let i = $index; let last = $last) {
         <li
+          data-star-part="item"
           class="star-stepper__item"
           [class.star-stepper__item--active]="step.active()"
           [class.star-stepper__item--done]="step.completed()"
         >
           <button
+            data-star-part="header"
             type="button"
             class="star-stepper__header"
             [id]="step.headerId"
@@ -74,17 +84,19 @@ export class StarStep {
             [disabled]="!reachable(i)"
             (click)="value.set(step.value())"
           >
-            <span class="star-stepper__number" aria-hidden="true">
+            <span data-star-part="numberPanel" class="star-stepper__number" aria-hidden="true">
               @if (step.completed() && !step.active()) {
-                <i class="ph-bold ph-check"></i>
+                <i data-star-part="numberIcon" class="ph-bold ph-check"></i>
               } @else {
                 {{ i + 1 }}
               }
             </span>
-            <span class="star-stepper__text">
-              <span class="star-stepper__label">{{ step.label() }}</span>
+            <span data-star-part="text" class="star-stepper__text">
+              <span data-star-part="label" class="star-stepper__label">{{ step.label() }}</span>
               @if (step.description()) {
-                <span class="star-stepper__desc">{{ step.description() }}</span>
+                <span data-star-part="description" class="star-stepper__desc">{{
+                  step.description()
+                }}</span>
               }
             </span>
             @if (step.completed()) {
@@ -92,7 +104,7 @@ export class StarStep {
             }
           </button>
           @if (!last) {
-            <span class="star-stepper__line" aria-hidden="true"></span>
+            <span data-star-part="lineText" class="star-stepper__line" aria-hidden="true"></span>
           }
         </li>
       }

@@ -11,6 +11,7 @@ import {
   output,
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
+import { StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/ui/field';
 
 /**
@@ -26,6 +27,8 @@ import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/
  */
 @Component({
   selector: 'star-radio-group',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-radio-group',
@@ -89,14 +92,17 @@ export class StarRadioGroup<T = unknown> implements FormValueControl<T | null> {
 
 @Component({
   selector: 'star-radio',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-radio',
     '[class.star-radio--disabled]': 'isDisabled()',
   },
   template: `
-    <label class="star-radio__label">
+    <label data-star-part="label" class="star-radio__label">
       <input
+        data-star-part="input"
         #radio
         type="radio"
         class="star-radio__input"
@@ -108,8 +114,8 @@ export class StarRadioGroup<T = unknown> implements FormValueControl<T | null> {
         (change)="onChange(radio)"
         (blur)="group.touch.emit()"
       />
-      <span class="star-radio__dot" aria-hidden="true"></span>
-      <span class="star-radio__text"><ng-content /></span>
+      <span data-star-part="indicatorButton" class="star-radio__dot" aria-hidden="true"></span>
+      <span data-star-part="text" class="star-radio__text"><ng-content /></span>
     </label>
   `,
 })

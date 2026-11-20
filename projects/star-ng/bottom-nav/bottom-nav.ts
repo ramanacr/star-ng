@@ -14,7 +14,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-import { starInlineKey } from '@star-ng/ui/core';
+import { starInlineKey, StarPart, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 
 /**
  * One destination of `star-bottom-nav` (Ignite `igx-bottom-nav-item`). With `routerLink` or `href`
@@ -22,7 +22,9 @@ import { starInlineKey } from '@star-ng/ui/core';
  */
 @Component({
   selector: 'star-bottom-nav-item',
-  imports: [NgTemplateOutlet, RouterLink, RouterLinkActive],
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [StarPart, NgTemplateOutlet, RouterLink, RouterLinkActive],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-bottom-nav__entry',
@@ -32,23 +34,26 @@ import { starInlineKey } from '@star-ng/ui/core';
   template: `
     <ng-template #body>
       @if (icon(); as icon) {
-        <i class="star-bottom-nav__icon" [class]="icon" aria-hidden="true"></i>
+        <i starPart="icon" class="star-bottom-nav__icon" [class]="icon" aria-hidden="true"></i>
       }
-      <span class="star-bottom-nav__label">{{ label() }}</span>
+      <span starPart="label" class="star-bottom-nav__label">{{ label() }}</span>
       @if (badge() !== null) {
         <!-- The space keeps the label and the badge apart in the accessible name. -->
         {{ ' ' }}
-        <span class="star-badge star-badge--danger star-badge--sm star-bottom-nav__badge">{{
-          badge()
-        }}</span>
+        <span
+          starPart="badgeText"
+          class="star-badge star-badge--danger star-badge--sm star-bottom-nav__badge"
+          >{{ badge() }}</span
+        >
       }
     </ng-template>
     @if (disabled()) {
-      <button #focusable type="button" class="star-bottom-nav__item" disabled>
+      <button data-star-part="item" #focusable type="button" class="star-bottom-nav__item" disabled>
         <ng-container *ngTemplateOutlet="body" />
       </button>
     } @else if (routerLink() !== null) {
       <a
+        data-star-part="item"
         #focusable
         class="star-bottom-nav__item"
         [routerLink]="routerLink()"
@@ -64,6 +69,7 @@ import { starInlineKey } from '@star-ng/ui/core';
       </a>
     } @else if (href() !== null) {
       <a
+        data-star-part="item"
         #focusable
         class="star-bottom-nav__item"
         [class.star-bottom-nav__item--active]="active()"
@@ -77,6 +83,7 @@ import { starInlineKey } from '@star-ng/ui/core';
       </a>
     } @else {
       <button
+        data-star-part="item"
         #focusable
         type="button"
         class="star-bottom-nav__item"
@@ -148,14 +155,16 @@ export class StarBottomNavItem {
  */
 @Component({
   selector: 'star-bottom-nav',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-bottom-nav',
     '[class.star-bottom-nav--fixed]': 'fixed()',
   },
   template: `
-    <nav class="star-bottom-nav__nav" [attr.aria-label]="ariaLabel()">
-      <div class="star-bottom-nav__list" role="list"><ng-content /></div>
+    <nav data-star-part="navigation" class="star-bottom-nav__nav" [attr.aria-label]="ariaLabel()">
+      <div data-star-part="list" class="star-bottom-nav__list" role="list"><ng-content /></div>
     </nav>
   `,
 })

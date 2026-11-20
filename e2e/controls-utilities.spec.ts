@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, Page, test } from '@playwright/test';
 import { collectErrors, example, openPage } from './support';
 
 const PAGES: readonly [path: string, heading: string][] = [
@@ -573,5 +573,71 @@ test.describe('theme switch', () => {
       .locator('star-theme-switch')
       .evaluate((element) => getComputedStyle(element).position);
     expect(position).not.toBe('fixed');
+  });
+});
+
+test.describe('drag and drop directives', () => {
+  const hydrated = (page: Page) =>
+    expect(page.locator('docs-drag-drop-page[ngh]')).toHaveCount(0, { timeout: 15_000 });
+
+  test('moves an order with the keyboard and announces each step', async ({ page }) => {
+    await openPage(page, '/controls/drag-drop', 'Drag and drop');
+    await hydrated(page);
+    const live = example(page, 'Move orders between lists');
+    const open = live.getByRole('region', { name: 'Open orders' });
+    const shipped = live.getByRole('region', { name: 'Shipped orders' });
+    const order = open.locator('.star-draggable', { hasText: 'ORD-1042' });
+    await expect(order).toHaveAttribute('tabindex', '0');
+    await expect(order).toHaveAccessibleDescription(/Press Space to pick up/);
+    await order.focus();
+    await page.keyboard.press('Space');
+    await expect(order).toHaveClass(/star-draggable--picked/);
+    await expect(page.locator('.cdk-live-announcer-element')).toHaveText('Picked up ORD-1042');
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('ArrowDown');
+    await expect(shipped).toHaveClass(/star-droppable--over/);
+    await expect(page.locator('.cdk-live-announcer-element')).toHaveText('Over Shipped orders');
+    await page.keyboard.press('Space');
+    await expect(shipped.locator('.star-draggable', { hasText: 'ORD-1042' })).toHaveCount(1);
+    // The owner re-creates the item in the other list; the focus follows it.
+    await expect(shipped.locator('.star-draggable', { hasText: 'ORD-1042' })).toBeFocused();
+    await expect(live.getByRole('status')).toHaveText('ORD-1042 moved to Shipped');
+    await expect(page.locator('.cdk-live-announcer-element')).toHaveText(
+      'ORD-1042 dropped on Shipped orders',
+    );
+  });
+
+  test('Escape cancels a keyboard drag', async ({ page }) => {
+    await openPage(page, '/controls/drag-drop', 'Drag and drop');
+    await hydrated(page);
+    const live = example(page, 'Move orders between lists');
+    const order = live.locator('.star-draggable', { hasText: 'ORD-1043' });
+    await order.focus();
+    await page.keyboard.press('Space');
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('Escape');
+    await expect(order).not.toHaveClass(/star-draggable--picked/);
+    await expect(live.locator('.star-droppable--over')).toHaveCount(0);
+    await expect(live.getByRole('status')).toHaveText('No move yet');
+  });
+
+  test('drags an order with the mouse', async ({ page }) => {
+    await openPage(page, '/controls/drag-drop', 'Drag and drop');
+    await hydrated(page);
+    const live = example(page, 'Move orders between lists');
+    const shipped = live.getByRole('region', { name: 'Shipped orders' });
+    await live.locator('.star-draggable', { hasText: 'ORD-1044' }).dragTo(shipped);
+    await expect(shipped.locator('.star-draggable', { hasText: 'ORD-1044' })).toHaveCount(1);
+  });
+
+  test('a zone of another scope refuses the item', async ({ page }) => {
+    await openPage(page, '/controls/drag-drop', 'Drag and drop');
+    await hydrated(page);
+    const live = example(page, 'Scopes, a handle and a copy effect');
+    await live.locator('.star-draggable', { hasText: 'Draft order ORD-1050' }).focus();
+    await page.keyboard.press('Space');
+    await expect(page.locator('.cdk-live-announcer-element')).toHaveText(
+      'No drop zone accepts this item',
+    );
   });
 });

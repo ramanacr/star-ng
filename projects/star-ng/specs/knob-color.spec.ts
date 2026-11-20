@@ -242,4 +242,73 @@ describe('Knob, color picker', () => {
       expect(labels[0]).toBe('#4f46e5');
     });
   });
+
+  describe('eye dropper', () => {
+    @Component({
+      imports: [StarColorPicker],
+      template: `<star-color-picker
+        [(value)]="color"
+        (changed)="changes.push($event)"
+        (touch)="touched = true"
+      />`,
+    })
+    class DropperHost {
+      readonly color = signal('#4f46e5');
+      readonly changes: string[] = [];
+      touched = false;
+    }
+
+    const win = window as unknown as { EyeDropper?: unknown };
+    afterEach(() => delete win.EyeDropper);
+
+    it('hides the eye dropper button when the browser has no EyeDropper API', async () => {
+      delete win.EyeDropper;
+      const fixture = TestBed.createComponent(DropperHost);
+      await fixture.whenStable();
+      const el = fixture.nativeElement as HTMLElement;
+      expect(el.querySelector('.star-color__eyedropper')).toBeNull();
+    });
+
+    it('picks a color from the screen, sets the value and emits changed', async () => {
+      const open = vi.fn().mockResolvedValue({ sRGBHex: '#16A34A' });
+      win.EyeDropper = class {
+        open = open;
+      };
+      const fixture = TestBed.createComponent(DropperHost);
+      await fixture.whenStable();
+      const el = fixture.nativeElement as HTMLElement;
+      const button = el.querySelector<HTMLButtonElement>('.star-color__eyedropper')!;
+      expect(button).not.toBeNull();
+      expect(button.getAttribute('aria-label')).toBe('Pick a color from the screen');
+      expect(button.type).toBe('button');
+      button.click();
+      await fixture.whenStable();
+      await new Promise((resolve) => setTimeout(resolve));
+      expect(open).toHaveBeenCalledTimes(1);
+      expect(fixture.componentInstance.color()).toBe('#16a34a');
+      expect(fixture.componentInstance.changes).toEqual(['#16a34a']);
+      expect(fixture.componentInstance.touched).toBe(true);
+    });
+
+    it('keeps the value when the user cancels the eye dropper', async () => {
+      win.EyeDropper = class {
+        open = vi.fn().mockRejectedValue(new DOMException('canceled', 'AbortError'));
+      };
+      const fixture = TestBed.createComponent(DropperHost);
+      await fixture.whenStable();
+      const el = fixture.nativeElement as HTMLElement;
+      el.querySelector<HTMLButtonElement>('.star-color__eyedropper')!.click();
+      await new Promise((resolve) => setTimeout(resolve));
+      expect(fixture.componentInstance.color()).toBe('#4f46e5');
+      expect(fixture.componentInstance.changes).toEqual([]);
+    });
+
+    it('emits changed when the user picks a swatch', async () => {
+      const fixture = TestBed.createComponent(DropperHost);
+      await fixture.whenStable();
+      const el = fixture.nativeElement as HTMLElement;
+      el.querySelectorAll<HTMLButtonElement>('.star-color__swatch')[1].click();
+      expect(fixture.componentInstance.changes).toEqual([fixture.componentInstance.color()]);
+    });
+  });
 });

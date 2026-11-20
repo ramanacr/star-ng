@@ -451,7 +451,7 @@
 
   &:hover:not(:disabled),
   &:focus-visible {
-    border-color: var(--star-border-strong);
+    border-color: var(--star-border-strong, currentColor);
     background: var(--star-surface-muted);
   }
   &:focus-visible {

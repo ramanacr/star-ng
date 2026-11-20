@@ -17,7 +17,12 @@ import {
   PLATFORM_ID,
   signal,
 } from '@angular/core';
-import { injectStarControlDefaults, STAR_UI_TEXT } from '@star-ng/ui/core';
+import {
+  injectStarControlDefaults,
+  STAR_UI_TEXT,
+  StarStyled,
+  ɵSTAR_PART_HOST,
+} from '@star-ng/ui/core';
 import { starChartPng, starChartSvgDocument, starChartViewBox } from './chart-export';
 import {
   areaRadius,
@@ -143,6 +148,8 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
  */
 @Component({
   selector: 'star-chart',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   imports: [NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
@@ -154,19 +161,24 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
   },
   template: `
     <figure
+      data-star-part="figurePanel"
       class="star-chart__figure"
       [attr.aria-labelledby]="titleId"
       [attr.aria-describedby]="descriptionId"
     >
-      <figcaption class="star-chart__head">
-        <span class="star-chart__title" [id]="titleId">{{ title() }}</span>
+      <figcaption data-star-part="head" class="star-chart__head">
+        <span data-star-part="titleText" class="star-chart__title" [id]="titleId">{{
+          title()
+        }}</span>
         <button
+          data-star-part="headButton"
           type="button"
           class="star-btn star-btn--ghost star-btn--sm"
           [attr.aria-pressed]="showTable()"
           (click)="showTable.set(!showTable())"
         >
           <i
+            data-star-part="headIcon"
             class="ph-bold"
             [class.ph-table]="!showTable()"
             [class.ph-chart-bar]="showTable()"
@@ -177,32 +189,43 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
       </figcaption>
       <p class="star-sr-only" [id]="descriptionId">{{ description() }}</p>
 
-      <div class="star-chart__body">
+      <div data-star-part="body" class="star-chart__body">
         @if (legend().length > 1 && !showTable()) {
           @if (toggleLegend()) {
             <!-- Each series name is a toggle button: pressed while the series is shown. -->
             <ul
+              data-star-part="legend"
               class="star-chart__legend star-chart__legend--toggle"
               [attr.aria-label]="text.chartLegend"
             >
               @for (item of legend(); track item.slot) {
-                <li>
+                <li data-star-part="legendRow">
                   <button
+                    data-star-part="legendItem"
                     type="button"
                     class="star-chart__legend-item"
                     [attr.aria-pressed]="!item.hidden"
                     (click)="toggleSeries(item.slot)"
                   >
                     @if (item.shape) {
-                      <svg class="star-chart__swatch-shape" viewBox="-6 -6 12 12">
+                      <svg
+                        data-star-part="swatchIcon"
+                        class="star-chart__swatch-shape"
+                        viewBox="-6 -6 12 12"
+                      >
                         <path
+                          data-star-part="markerItem"
                           class="star-chart__mark star-chart__marker"
                           [attr.d]="item.shape"
                           [style.--mark]="item.color"
                         />
                       </svg>
                     } @else {
-                      <span class="star-chart__swatch" [style.background]="item.color"></span>
+                      <span
+                        data-star-part="swatchText"
+                        class="star-chart__swatch"
+                        [style.background]="item.color"
+                      ></span>
                     }
                     {{ item.label }}
                   </button>
@@ -210,19 +233,28 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
               }
             </ul>
           } @else {
-            <ul class="star-chart__legend" aria-hidden="true">
+            <ul data-star-part="legend" class="star-chart__legend" aria-hidden="true">
               @for (item of legend(); track item.label) {
-                <li>
+                <li data-star-part="legendRow">
                   @if (item.shape) {
-                    <svg class="star-chart__swatch-shape" viewBox="-6 -6 12 12">
+                    <svg
+                      data-star-part="swatchIcon"
+                      class="star-chart__swatch-shape"
+                      viewBox="-6 -6 12 12"
+                    >
                       <path
+                        data-star-part="markerItem"
                         class="star-chart__mark star-chart__marker"
                         [attr.d]="item.shape"
                         [style.--mark]="item.color"
                       />
                     </svg>
                   } @else {
-                    <span class="star-chart__swatch" [style.background]="item.color"></span>
+                    <span
+                      data-star-part="swatchText"
+                      class="star-chart__swatch"
+                      [style.background]="item.color"
+                    ></span>
                   }
                   {{ item.label }}
                 </li>
@@ -231,14 +263,24 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
           }
         }
 
-        <div class="star-chart__frame" [hidden]="showTable()">
-          <div class="star-chart__plot" aria-hidden="true" (mouseleave)="hover.set(null)">
+        <div data-star-part="frame" class="star-chart__frame" [hidden]="showTable()">
+          <div
+            data-star-part="plot"
+            class="star-chart__plot"
+            aria-hidden="true"
+            (mouseleave)="hover.set(null)"
+          >
             @switch (kind()) {
               @case ('round') {
-                <svg [attr.viewBox]="'0 0 ' + W + ' ' + H" class="star-chart__svg">
+                <svg
+                  data-star-part="graphic"
+                  [attr.viewBox]="'0 0 ' + W + ' ' + H"
+                  class="star-chart__svg"
+                >
                   <g [attr.transform]="'translate(' + W / 2 + ',' + H / 2 + ')'">
                     @for (slice of slices(); track slice.label; let i = $index) {
                       <path
+                        data-star-part="sliceItem"
                         class="star-chart__slice"
                         [attr.d]="slice.path"
                         [style.fill]="slice.color"
@@ -247,10 +289,20 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                       />
                     }
                     @if (type() === 'doughnut') {
-                      <text class="star-chart__total" y="-2" text-anchor="middle">
+                      <text
+                        data-star-part="totalText"
+                        class="star-chart__total"
+                        y="-2"
+                        text-anchor="middle"
+                      >
                         {{ format(total()) }}
                       </text>
-                      <text class="star-chart__total-label" y="18" text-anchor="middle">
+                      <text
+                        data-star-part="totalLabel"
+                        class="star-chart__total-label"
+                        y="18"
+                        text-anchor="middle"
+                      >
                         {{ text.chartTotal }}
                       </text>
                     }
@@ -259,14 +311,24 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                 @if (hover() !== null) {
                   @let slice = slices()[hover()!];
                   @if (slice) {
-                    <div class="star-chart__tip" [style.left.%]="50" [style.top.%]="8">
+                    <div
+                      data-star-part="tipPanel"
+                      class="star-chart__tip"
+                      [style.left.%]="50"
+                      [style.top.%]="8"
+                    >
                       @if (tooltipTemplate(); as custom) {
                         <ng-container
                           *ngTemplateOutlet="custom.template; context: tooltipContext()"
                         />
                       } @else {
-                        <span class="star-chart__swatch" [style.background]="slice.color"></span>
-                        {{ slice.label }}: <strong>{{ format(slice.value) }}</strong> ({{
+                        <span
+                          data-star-part="swatchText"
+                          class="star-chart__swatch"
+                          [style.background]="slice.color"
+                        ></span>
+                        {{ slice.label }}:
+                        <strong data-star-part="tipText">{{ format(slice.value) }}</strong> ({{
                           slice.percent
                         }}%)
                       }
@@ -276,13 +338,22 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
               }
               @case ('radar') {
                 @let plot = radar();
-                <svg [attr.viewBox]="'0 0 ' + RW + ' ' + RH" class="star-chart__svg">
+                <svg
+                  data-star-part="graphic"
+                  [attr.viewBox]="'0 0 ' + RW + ' ' + RH"
+                  class="star-chart__svg"
+                >
                   <g [attr.transform]="'translate(' + RW / 2 + ',' + RH / 2 + ')'">
                     @for (ring of plot.rings; track ring.value) {
-                      <path class="star-chart__ring" [attr.d]="ring.path" />
+                      <path
+                        data-star-part="ringItem"
+                        class="star-chart__ring"
+                        [attr.d]="ring.path"
+                      />
                     }
                     @for (spoke of plot.spokes; track $index) {
                       <line
+                        data-star-part="grid"
                         class="star-chart__grid"
                         x1="0"
                         y1="0"
@@ -292,6 +363,7 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                     }
                     @if (hover() !== null && plot.spokes[hover()!]) {
                       <line
+                        data-star-part="crosshairItem"
                         class="star-chart__crosshair"
                         x1="0"
                         y1="0"
@@ -301,6 +373,7 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                     }
                     @for (polygon of plot.polygons; track polygon.label) {
                       <path
+                        data-star-part="polygonItem"
                         class="star-chart__mark star-chart__polygon"
                         [attr.d]="polygon.path"
                         [style.--mark]="polygon.color"
@@ -309,6 +382,7 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                     @for (polygon of plot.polygons; track polygon.label) {
                       @for (vertex of polygon.vertices; track vertex.index) {
                         <path
+                          data-star-part="vertexItem"
                           class="star-chart__mark star-chart__vertex"
                           [attr.d]="vertex.shape"
                           [style.--mark]="polygon.color"
@@ -317,6 +391,7 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                     }
                     @for (ring of plot.rings; track ring.value) {
                       <text
+                        data-star-part="ringLabel"
                         class="star-chart__ring-label"
                         [attr.x]="4"
                         [attr.y]="-ring.radius + 11"
@@ -327,6 +402,7 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                     }
                     @for (label of plot.labels; track $index) {
                       <text
+                        data-star-part="axis"
                         class="star-chart__axis"
                         [attr.x]="label.x"
                         [attr.y]="label.y"
@@ -345,20 +421,24 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                   </g>
                 </svg>
                 @if (hover() !== null && labels()[hover()!] !== undefined) {
-                  <div class="star-chart__tip star-chart__tip--corner">
+                  <div data-star-part="tipPanel" class="star-chart__tip star-chart__tip--corner">
                     @if (tooltipTemplate(); as custom) {
                       <ng-container
                         *ngTemplateOutlet="custom.template; context: tooltipContext()"
                       />
                     } @else {
-                      <span class="star-chart__tip-title">{{ labels()[hover()!] }}</span>
+                      <span data-star-part="tipHeader" class="star-chart__tip-title">{{
+                        labels()[hover()!]
+                      }}</span>
                       @for (s of drawn(); track s.slot) {
-                        <span class="star-chart__tip-row">
+                        <span data-star-part="tipRow" class="star-chart__tip-row">
                           <span
+                            data-star-part="swatchText"
                             class="star-chart__swatch"
                             [style.background]="color(s.slot)"
                           ></span>
-                          {{ s.label }}: <strong>{{ cell(s, hover()!) }}</strong>
+                          {{ s.label }}:
+                          <strong data-star-part="valueText">{{ cell(s, hover()!) }}</strong>
                         </span>
                       }
                     }
@@ -367,14 +447,23 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
               }
               @case ('polar') {
                 @let plot = polar();
-                <svg [attr.viewBox]="'0 0 ' + RW + ' ' + RH" class="star-chart__svg">
+                <svg
+                  data-star-part="graphic"
+                  [attr.viewBox]="'0 0 ' + RW + ' ' + RH"
+                  class="star-chart__svg"
+                >
                   <g [attr.transform]="'translate(' + RW / 2 + ',' + RH / 2 + ')'">
                     @for (ring of plot.rings; track ring.value) {
-                      <circle class="star-chart__ring" [attr.r]="ring.radius" />
+                      <circle
+                        data-star-part="ringItem"
+                        class="star-chart__ring"
+                        [attr.r]="ring.radius"
+                      />
                     }
                     @for (sector of plot.sectors; track sector.index) {
                       @if (sector.path) {
                         <path
+                          data-star-part="sectorItem"
                           class="star-chart__mark star-chart__sector"
                           [attr.d]="sector.path"
                           [style.--mark]="color(0)"
@@ -386,6 +475,7 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                     }
                     @for (ring of plot.rings; track ring.value) {
                       <text
+                        data-star-part="ringLabel"
                         class="star-chart__ring-label"
                         [attr.x]="ring.x"
                         [attr.y]="ring.y"
@@ -396,6 +486,7 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                     }
                     @for (sector of plot.sectors; track sector.index) {
                       <text
+                        data-star-part="axis"
                         class="star-chart__axis"
                         [attr.x]="sector.label.x"
                         [attr.y]="sector.label.y"
@@ -420,16 +511,23 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                 @if (hover() !== null) {
                   @let sector = plot.sectors[hover()!];
                   @if (sector) {
-                    <div class="star-chart__tip star-chart__tip--corner">
+                    <div data-star-part="tipPanel" class="star-chart__tip star-chart__tip--corner">
                       @if (tooltipTemplate(); as custom) {
                         <ng-container
                           *ngTemplateOutlet="custom.template; context: tooltipContext()"
                         />
                       } @else {
-                        <span class="star-chart__tip-title">{{ sector.label.full }}</span>
-                        <span class="star-chart__tip-row">
-                          <span class="star-chart__swatch" [style.background]="color(0)"></span>
-                          {{ valueName() }}: <strong>{{ format(sector.value) }}</strong>
+                        <span data-star-part="tipHeader" class="star-chart__tip-title">{{
+                          sector.label.full
+                        }}</span>
+                        <span data-star-part="tipRow" class="star-chart__tip-row">
+                          <span
+                            data-star-part="swatchText"
+                            class="star-chart__swatch"
+                            [style.background]="color(0)"
+                          ></span>
+                          {{ valueName() }}:
+                          <strong data-star-part="valueText">{{ format(sector.value) }}</strong>
                         </span>
                       }
                     </div>
@@ -438,9 +536,14 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
               }
               @case ('scatter') {
                 @let plot = scatter();
-                <svg [attr.viewBox]="'0 0 ' + W + ' ' + H" class="star-chart__svg">
+                <svg
+                  data-star-part="graphic"
+                  [attr.viewBox]="'0 0 ' + W + ' ' + H"
+                  class="star-chart__svg"
+                >
                   @for (tick of plot.yTicks; track tick.value) {
                     <line
+                      data-star-part="grid"
                       class="star-chart__grid"
                       [attr.x1]="SP.left"
                       [attr.x2]="W - SP.right"
@@ -448,6 +551,7 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                       [attr.y2]="tick.position"
                     />
                     <text
+                      data-star-part="axis"
                       class="star-chart__axis"
                       [attr.x]="SP.left - 8"
                       [attr.y]="tick.position + 4"
@@ -458,6 +562,7 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                   }
                   @for (tick of plot.xTicks; track tick.value) {
                     <line
+                      data-star-part="grid"
                       class="star-chart__grid"
                       [attr.x1]="tick.position"
                       [attr.x2]="tick.position"
@@ -465,6 +570,7 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                       [attr.y2]="H - SP.bottom"
                     />
                     <text
+                      data-star-part="axis"
                       class="star-chart__axis"
                       [attr.x]="tick.position"
                       [attr.y]="H - SP.bottom + 16"
@@ -475,6 +581,7 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                   }
                   @if (categoryLabel()) {
                     <text
+                      data-star-part="axisLabel"
                       class="star-chart__axis-title"
                       [attr.x]="W - SP.right"
                       [attr.y]="H - 4"
@@ -484,12 +591,19 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                     </text>
                   }
                   @if (valueLabel()) {
-                    <text class="star-chart__axis-title" x="4" y="12" text-anchor="start">
+                    <text
+                      data-star-part="axisLabel"
+                      class="star-chart__axis-title"
+                      x="4"
+                      y="12"
+                      text-anchor="start"
+                    >
                       {{ valueLabel() }}
                     </text>
                   }
                   @for (point of plot.points; track point.index) {
                     <path
+                      data-star-part="pointItem"
                       class="star-chart__mark star-chart__point"
                       [attr.d]="point.shape"
                       [style.--mark]="point.color"
@@ -510,6 +624,7 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                   @let point = plot.points[hover()!];
                   @if (point) {
                     <div
+                      data-star-part="tipPanel"
                       class="star-chart__tip star-chart__tip--point"
                       [style.left.%]="(point.px / W) * 100"
                       [style.top.%]="(point.py / H) * 100"
@@ -522,19 +637,31 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                           *ngTemplateOutlet="custom.template; context: tooltipContext()"
                         />
                       } @else {
-                        <span class="star-chart__tip-title">{{ point.seriesLabel }}</span>
-                        <span class="star-chart__tip-row">
-                          <svg class="star-chart__swatch-shape" viewBox="-6 -6 12 12">
+                        <span data-star-part="tipHeader" class="star-chart__tip-title">{{
+                          point.seriesLabel
+                        }}</span>
+                        <span data-star-part="tipRow" class="star-chart__tip-row">
+                          <svg
+                            data-star-part="swatchIcon"
+                            class="star-chart__swatch-shape"
+                            viewBox="-6 -6 12 12"
+                          >
                             <path
+                              data-star-part="markerItem"
                               class="star-chart__mark star-chart__marker"
                               [attr.d]="point.legendShape"
                               [style.--mark]="point.color"
                             />
                           </svg>
-                          {{ xName() }}: <strong>{{ precise(point.x) }}</strong>
+                          {{ xName() }}:
+                          <strong data-star-part="valueText">{{ precise(point.x) }}</strong>
                         </span>
-                        <span class="star-chart__tip-row star-chart__tip-indent">
-                          {{ yName() }}: <strong>{{ precise(point.y) }}</strong>
+                        <span
+                          data-star-part="tipRow"
+                          class="star-chart__tip-row star-chart__tip-indent"
+                        >
+                          {{ yName() }}:
+                          <strong data-star-part="valueText">{{ precise(point.y) }}</strong>
                         </span>
                       }
                     </div>
@@ -543,6 +670,7 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
               }
               @default {
                 <svg
+                  data-star-part="graphic"
                   [attr.viewBox]="'0 0 ' + W + ' ' + H"
                   class="star-chart__svg"
                   [class.star-chart__svg--zoom]="textZoom() > 1"
@@ -550,6 +678,7 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                 >
                   @for (tick of valueTicks(); track tick.value) {
                     <line
+                      data-star-part="grid"
                       class="star-chart__grid"
                       [attr.x1]="tick.x1"
                       [attr.x2]="tick.x2"
@@ -557,6 +686,7 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                       [attr.y2]="tick.y2"
                     />
                     <text
+                      data-star-part="axis"
                       class="star-chart__axis"
                       [attr.x]="tick.tx"
                       [attr.y]="tick.ty"
@@ -566,12 +696,19 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                     </text>
                   }
                   @if (secondaryTitle()) {
-                    <text class="star-chart__axis-title" [attr.x]="W - 4" y="10" text-anchor="end">
+                    <text
+                      data-star-part="axisLabel"
+                      class="star-chart__axis-title"
+                      [attr.x]="W - 4"
+                      y="10"
+                      text-anchor="end"
+                    >
                       {{ secondaryTitle() }}
                     </text>
                   }
                   @for (tick of secondaryTicks(); track tick.value) {
                     <text
+                      data-star-part="axis"
                       class="star-chart__axis"
                       [attr.x]="tick.tx"
                       [attr.y]="tick.ty"
@@ -582,6 +719,7 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                   }
                   @if (baseline(); as base) {
                     <line
+                      data-star-part="baselineItem"
                       class="star-chart__baseline"
                       [attr.x1]="base.x1"
                       [attr.x2]="base.x2"
@@ -592,6 +730,7 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                   @for (label of axisLabels(); track $index) {
                     @if (label.show) {
                       <text
+                        data-star-part="axis"
                         class="star-chart__axis star-chart__axis--category"
                         [attr.x]="label.x"
                         [attr.y]="label.y"
@@ -607,6 +746,7 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                   @if (type() === 'stacked-bar') {
                     @for (segment of segments(); track segment.key) {
                       <rect
+                        data-star-part="segmentItem"
                         class="star-chart__mark star-chart__segment"
                         [attr.x]="segment.x"
                         [attr.y]="segment.y"
@@ -621,6 +761,7 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                   } @else {
                     @for (bar of bars(); track bar.key) {
                       <path
+                        data-star-part="barItem"
                         class="star-chart__bar"
                         [attr.d]="bar.path"
                         [style.fill]="bar.color"
@@ -629,6 +770,7 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                     }
                     @if (hover() !== null && lines().length) {
                       <line
+                        data-star-part="crosshairItem"
                         class="star-chart__crosshair"
                         [attr.x1]="x(hover()!)"
                         [attr.x2]="x(hover()!)"
@@ -639,18 +781,21 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                     @for (line of lines(); track line.slot) {
                       @if (type() === 'area') {
                         <path
+                          data-star-part="areaItem"
                           class="star-chart__area"
                           [attr.d]="line.area"
                           [style.fill]="line.color"
                         />
                       }
                       <path
+                        data-star-part="lineItem"
                         class="star-chart__line"
                         [attr.d]="line.path"
                         [style.stroke]="line.color"
                       />
                       @if (hover() !== null) {
                         <circle
+                          data-star-part="indicatorButton"
                           class="star-chart__dot"
                           r="4.5"
                           [attr.cx]="x(hover()!)"
@@ -674,6 +819,7 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                 </svg>
                 @if (hover() !== null) {
                   <div
+                    data-star-part="tipPanel"
                     class="star-chart__tip"
                     [style.left.%]="tipAt().left"
                     [style.top.%]="tipAt().top"
@@ -683,23 +829,32 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                         *ngTemplateOutlet="custom.template; context: tooltipContext()"
                       />
                     } @else {
-                      <span class="star-chart__tip-title">{{ labels()[hover()!] }}</span>
+                      <span data-star-part="tipHeader" class="star-chart__tip-title">{{
+                        labels()[hover()!]
+                      }}</span>
                       @for (s of drawn(); track s.slot; let si = $index) {
-                        <span class="star-chart__tip-row">
+                        <span data-star-part="tipRow" class="star-chart__tip-row">
                           <span
+                            data-star-part="swatchText"
                             class="star-chart__swatch"
                             [style.background]="color(s.slot)"
                           ></span>
-                          {{ s.label }}: <strong>{{ cell(s, hover()!) }}</strong>
+                          {{ s.label }}:
+                          <strong data-star-part="valueText">{{ cell(s, hover()!) }}</strong>
                           @if (type() === 'stacked-bar' && percent()) {
                             ({{ share(stack()[hover()!]?.segments?.[si]) }}%)
                           }
                         </span>
                       }
                       @if (type() === 'stacked-bar') {
-                        <span class="star-chart__tip-row star-chart__tip-total">
+                        <span
+                          data-star-part="tipRow"
+                          class="star-chart__tip-row star-chart__tip-total"
+                        >
                           {{ text.chartTotal }}:
-                          <strong>{{ format(stack()[hover()!]?.total ?? 0) }}</strong>
+                          <strong data-star-part="valueText">{{
+                            format(stack()[hover()!]?.total ?? 0)
+                          }}</strong>
                         </span>
                       }
                     }
@@ -714,6 +869,7 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
             activates a target.
           -->
           <div
+            data-star-part="pointsPanel"
             class="star-chart__points"
             role="group"
             [attr.aria-label]="text.chartPoints(title())"
@@ -722,6 +878,7 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
             @for (row of pointRows(); track $index; let r = $index) {
               @for (point of row; track point.index; let c = $index) {
                 <span
+                  data-star-part="targetText"
                   class="star-chart__target"
                   role="img"
                   [attr.data-point]="r + '-' + c"
@@ -741,7 +898,11 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
         </div>
       </div>
 
-      <table class="star-chart__table" [class.star-sr-only]="!showTable()">
+      <table
+        data-star-part="tablePanel"
+        class="star-chart__table"
+        [class.star-sr-only]="!showTable()"
+      >
         <caption class="star-sr-only">
           {{
             title()
@@ -753,16 +914,26 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
               {{ firstHeader() }}
             </th>
             @if (round()) {
-              <th scope="col">{{ series()[0]?.label ?? text.chartValue }}</th>
+              <th scope="col">
+                {{ series()[0]?.label ?? text.chartValue }}
+              </th>
               <th scope="col">{{ text.chartShare }}</th>
             } @else if (kind() === 'polar') {
-              <th scope="col">{{ valueName() }}</th>
+              <th scope="col">
+                {{ valueName() }}
+              </th>
             } @else if (kind() === 'scatter') {
-              <th scope="col">{{ xName() }}</th>
-              <th scope="col">{{ yName() }}</th>
+              <th scope="col">
+                {{ xName() }}
+              </th>
+              <th scope="col">
+                {{ yName() }}
+              </th>
             } @else {
               @for (s of series(); track s.label) {
-                <th scope="col">{{ s.label }}</th>
+                <th scope="col">
+                  {{ s.label }}
+                </th>
               }
               @if (type() === 'stacked-bar') {
                 <th scope="col">{{ text.chartTotal }}</th>
@@ -775,7 +946,9 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
             @for (slice of slices(); track slice.label) {
               <tr>
                 <th scope="row">{{ slice.label }}</th>
-                <td>{{ format(slice.value) }}</td>
+                <td>
+                  {{ format(slice.value) }}
+                </td>
                 <td>{{ slice.percent }}%</td>
               </tr>
             }
@@ -790,8 +963,12 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
             @for (row of scatterRows(); track $index) {
               <tr>
                 <th scope="row">{{ row.series }}</th>
-                <td>{{ precise(row.x) }}</td>
-                <td>{{ precise(row.y) }}</td>
+                <td>
+                  {{ precise(row.x) }}
+                </td>
+                <td>
+                  {{ precise(row.y) }}
+                </td>
               </tr>
             }
           } @else {
@@ -799,10 +976,14 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
               <tr>
                 <th scope="row">{{ label }}</th>
                 @for (s of numeric(); track s.label) {
-                  <td>{{ cell(s, i) }}</td>
+                  <td>
+                    {{ cell(s, i) }}
+                  </td>
                 }
                 @if (type() === 'stacked-bar') {
-                  <td>{{ format(tableStack()[i]?.total ?? 0) }}</td>
+                  <td>
+                    {{ format(tableStack()[i]?.total ?? 0) }}
+                  </td>
                 }
               </tr>
             }

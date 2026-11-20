@@ -13,7 +13,7 @@ import {
   viewChild,
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
-import { STAR_UI_TEXT, StarUiText } from '@star-ng/ui/core';
+import { STAR_UI_TEXT, StarStyled, StarUiText, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 import { injectStarFieldLink } from '@star-ng/ui/field';
 
 export interface StarPasswordRule {
@@ -41,14 +41,17 @@ export function starPasswordRules(text: StarUiText, minLength = 12): readonly St
  */
 @Component({
   selector: 'star-password',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-password',
     '[class.star-password--invalid]': 'showInvalid()',
   },
   template: `
-    <div class="star-password__control">
+    <div data-star-part="controlPanel" class="star-password__control">
       <input
+        data-star-part="input"
         #input
         class="star-password__input"
         [type]="masked() ? 'password' : 'text'"
@@ -67,6 +70,7 @@ export function starPasswordRules(text: StarUiText, minLength = 12): readonly St
         (blur)="touch.emit()"
       />
       <button
+        data-star-part="revealButton"
         type="button"
         class="star-select__icon-btn"
         [attr.aria-label]="masked() ? text.showPassword : text.hidePassword"
@@ -75,6 +79,7 @@ export function starPasswordRules(text: StarUiText, minLength = 12): readonly St
         (click)="masked.set(!masked())"
       >
         <i
+          data-star-part="revealIcon"
           class="ph-bold"
           [class.ph-eye]="masked()"
           [class.ph-eye-slash]="!masked()"
@@ -83,24 +88,26 @@ export function starPasswordRules(text: StarUiText, minLength = 12): readonly St
       </button>
     </div>
     @if (feedback()) {
-      <div class="star-password__feedback" [id]="feedbackId">
-        <div class="star-password__meter" aria-hidden="true">
+      <div data-star-part="feedbackPanel" class="star-password__feedback" [id]="feedbackId">
+        <div data-star-part="meterPanel" class="star-password__meter" aria-hidden="true">
           @for (bar of bars; track bar) {
             <span
+              data-star-part="barText"
               class="star-password__bar"
               [class.star-password__bar--on]="bar < score()"
               [attr.data-level]="level()"
             ></span>
           }
         </div>
-        <p class="star-password__level" aria-live="polite">
+        <p data-star-part="levelText" class="star-password__level" aria-live="polite">
           {{ value() ? levelText() : '' }}
         </p>
-        <ul class="star-password__rules">
+        <ul data-star-part="rulesList" class="star-password__rules">
           @for (rule of activeRules(); track $index) {
             @let ok = rule.test(value());
-            <li [class.star-password__rule--ok]="ok">
+            <li data-star-part="rulesItem" [class.star-password__rule--ok]="ok">
               <i
+                data-star-part="rulesIcon"
                 class="ph-bold"
                 [class.ph-check-circle]="ok"
                 [class.ph-circle]="!ok"

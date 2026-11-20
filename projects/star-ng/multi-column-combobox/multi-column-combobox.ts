@@ -20,8 +20,11 @@ import {
   starListKeyboardTarget,
   starListPageSize,
   StarOptionKey,
+  StarPart,
   StarSlot,
   starSlot,
+  StarStyled,
+  ɵSTAR_PART_HOST,
 } from '@star-ng/ui/core';
 import { StarOptionListBase } from '@star-ng/ui/select';
 
@@ -94,7 +97,9 @@ const ROW_GUESS = 40;
  */
 @Component({
   selector: 'star-multi-column-combobox',
-  imports: [CdkConnectedOverlay, CdkOverlayOrigin, NgTemplateOutlet],
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [StarPart, CdkConnectedOverlay, CdkOverlayOrigin, NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarMultiColumnCombobox) }],
   host: {
@@ -105,8 +110,14 @@ const ROW_GUESS = 40;
     '[class.star-select--sm]': "size() === 'sm'",
   },
   template: `
-    <div class="star-select__control" cdkOverlayOrigin #origin="cdkOverlayOrigin">
+    <div
+      data-star-part="controlPanel"
+      class="star-select__control"
+      cdkOverlayOrigin
+      #origin="cdkOverlayOrigin"
+    >
       <input
+        data-star-part="triggerInput"
         #trigger
         type="text"
         class="star-select__trigger star-select__input"
@@ -134,16 +145,18 @@ const ROW_GUESS = 40;
       />
       @if (showClear() && selectedOption() !== undefined && interactive()) {
         <button
+          data-star-part="clearButton"
           type="button"
           class="star-select__icon-btn"
           [attr.aria-label]="text.clear"
           (click)="clear()"
         >
-          <i class="ph-bold ph-x" aria-hidden="true"></i>
+          <i data-star-part="clearIcon" class="ph-bold ph-x" aria-hidden="true"></i>
         </button>
       }
       @if (loading()) {
         <i
+          data-star-part="dropdownIcon"
           class="ph-bold ph-spinner-gap star-spin star-select__caret"
           role="img"
           [attr.aria-label]="text.loading"
@@ -151,6 +164,7 @@ const ROW_GUESS = 40;
       } @else {
         <!-- The field opens the list by keys; the caret is a pointer shortcut. -->
         <i
+          data-star-part="dropdownIcon"
           class="ph-bold ph-caret-down star-select__caret star-mcc__caret"
           aria-hidden="true"
           (mousedown)="$event.preventDefault()"
@@ -174,6 +188,7 @@ const ROW_GUESS = 40;
       <!-- The panel handles keys and focus that bubble up from its header and footer. -->
       <!-- eslint-disable-next-line @angular-eslint/template/interactive-supports-focus -->
       <div
+        starPart="panel"
         class="star-panel star-mcc__panel"
         [class]="panelClasses()"
         [style]="panelStyle()"
@@ -186,12 +201,13 @@ const ROW_GUESS = 40;
         @if (headerSlot(); as header) {
           <ng-container *ngTemplateOutlet="header" />
         }
-        <div class="star-mcc__header" role="presentation">
+        <div data-star-part="header" class="star-mcc__header" role="presentation">
           @for (column of columns(); track $index) {
-            <span class="star-mcc__head">{{ column.header }}</span>
+            <span data-star-part="head" class="star-mcc__head">{{ column.header }}</span>
           }
         </div>
         <ul
+          data-star-part="list"
           class="star-listbox star-mcc__list"
           role="listbox"
           [id]="listId"
@@ -204,12 +220,13 @@ const ROW_GUESS = 40;
           (scroll)="onListScroll($event)"
         >
           @if (loadingRow(); as loader) {
-            <li class="star-listbox__empty" role="presentation">
+            <li data-star-part="emptyItem" class="star-listbox__empty" role="presentation">
               <ng-container *ngTemplateOutlet="loader" />
             </li>
           }
           @if (virtualWindow().before) {
             <li
+              data-star-part="spacerItem"
               class="star-listbox__spacer"
               role="presentation"
               [style.height.px]="virtualWindow().before"
@@ -217,7 +234,12 @@ const ROW_GUESS = 40;
           }
           @for (row of renderedRows(); track row.key) {
             @if (row.kind === 'group') {
-              <li class="star-listbox__group" role="presentation" [id]="row.id">
+              <li
+                data-star-part="groupItem"
+                class="star-listbox__group"
+                role="presentation"
+                [id]="row.id"
+              >
                 {{ row.label }}
               </li>
             } @else {
@@ -226,6 +248,7 @@ const ROW_GUESS = 40;
               <!-- Keyboard is handled on the combobox via aria-activedescendant (WAI-ARIA combobox pattern). -->
               <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
               <li
+                data-star-part="option"
                 class="star-listbox__option star-mcc__row"
                 role="option"
                 [id]="optionId(i)"
@@ -240,11 +263,15 @@ const ROW_GUESS = 40;
                 (mousemove)="onOptionHover(i)"
               >
                 @if (option === undefined) {
-                  <span class="star-skeleton star-listbox__skeleton" aria-hidden="true"></span>
+                  <span
+                    data-star-part="skeletonText"
+                    class="star-skeleton star-listbox__skeleton"
+                    aria-hidden="true"
+                  ></span>
                   <span class="star-sr-only">{{ text.loading }}</span>
                 } @else {
                   @for (column of columns(); track $index; let c = $index, last = $last) {
-                    <span class="star-mcc__cell">
+                    <span data-star-part="cell" class="star-mcc__cell">
                       @if (cellTemplate(); as custom) {
                         <ng-container
                           *ngTemplateOutlet="
@@ -265,7 +292,7 @@ const ROW_GUESS = 40;
             }
           } @empty {
             @if (!loadingRow()) {
-              <li class="star-listbox__empty" role="presentation">
+              <li data-star-part="emptyItem" class="star-listbox__empty" role="presentation">
                 @if (emptySlot(); as custom) {
                   <ng-container *ngTemplateOutlet="custom; context: emptyContext()" />
                 } @else {
@@ -276,6 +303,7 @@ const ROW_GUESS = 40;
           }
           @if (virtualWindow().after) {
             <li
+              data-star-part="spacerItem"
               class="star-listbox__spacer"
               role="presentation"
               [style.height.px]="virtualWindow().after"

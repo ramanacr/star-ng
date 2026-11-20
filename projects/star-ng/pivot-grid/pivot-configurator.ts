@@ -47,14 +47,25 @@ const AGGREGATES: readonly StarPivotAggregate[] = [
   host: { class: 'star-pivot-config' },
   template: `
     <section
+      data-star-part="panel"
       class="star-pivot-config__panel"
       [attr.aria-label]="text.pivotSettings"
       cdkDropListGroup
     >
       @for (list of lists; track list) {
-        <div class="star-pivot-config__area" [class]="'star-pivot-config__area--' + list">
-          <span class="star-pivot-config__title" [id]="id + '-' + list">{{ listLabel(list) }}</span>
+        <div
+          data-star-part="areaPanel"
+          class="star-pivot-config__area"
+          [class]="'star-pivot-config__area--' + list"
+        >
+          <span
+            data-star-part="titleText"
+            class="star-pivot-config__title"
+            [id]="id + '-' + list"
+            >{{ listLabel(list) }}</span
+          >
           <ul
+            data-star-part="list"
             class="star-pivot-config__list"
             cdkDropList
             [cdkDropListData]="list"
@@ -64,24 +75,33 @@ const AGGREGATES: readonly StarPivotAggregate[] = [
           >
             @for (name of fieldsIn(list); track name) {
               <li
+                data-star-part="fieldItem"
                 class="star-pivot-config__field"
                 cdkDrag
                 [cdkDragData]="name"
                 [attr.data-pivot-field]="name"
               >
                 <i
+                  data-star-part="dragHandle"
                   class="ph-bold ph-dots-six-vertical star-pivot-config__grip"
                   aria-hidden="true"
                 ></i>
-                <span class="star-pivot-config__label">{{ labelOf(name) }}</span>
+                <span data-star-part="label" class="star-pivot-config__label">{{
+                  labelOf(name)
+                }}</span>
                 @if (list === 'values' && aggregateOf(name)) {
                   <select
+                    data-star-part="aggregateInput"
                     class="star-pivot-config__aggregate"
                     [attr.aria-label]="text.pivotAggregate(labelOf(name))"
                     (change)="setAggregate(name, $any($event.target).value)"
                   >
                     @for (aggregate of aggregates; track aggregate) {
-                      <option [value]="aggregate" [selected]="aggregateOf(name) === aggregate">
+                      <option
+                        data-star-part="aggregateOption"
+                        [value]="aggregate"
+                        [selected]="aggregateOf(name) === aggregate"
+                      >
                         {{ aggregateLabel(aggregate) }}
                       </option>
                     }
@@ -98,13 +118,18 @@ const AGGREGATES: readonly StarPivotAggregate[] = [
                   />
                 }
                 <button
+                  data-star-part="iconButton"
                   type="button"
                   class="star-pivot__icon-button"
                   [starMenuTrigger]="menu"
                   [attr.aria-label]="text.pivotMoveField(labelOf(name))"
                   [attr.data-pivot-move]="name"
                 >
-                  <i class="ph-bold ph-dots-three" aria-hidden="true"></i>
+                  <i
+                    data-star-part="actionIcon"
+                    class="ph-bold ph-dots-three"
+                    aria-hidden="true"
+                  ></i>
                 </button>
                 <star-menu
                   #menu
@@ -113,7 +138,9 @@ const AGGREGATES: readonly StarPivotAggregate[] = [
                 />
               </li>
             } @empty {
-              <li class="star-pivot-config__empty">{{ text.pivotDropHere }}</li>
+              <li data-star-part="emptyItem" class="star-pivot-config__empty">
+                {{ text.pivotDropHere }}
+              </li>
             }
           </ul>
         </div>

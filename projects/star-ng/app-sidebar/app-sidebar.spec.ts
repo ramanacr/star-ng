@@ -104,9 +104,9 @@ describe('StarAppSidebar', () => {
     expect(nav.querySelector('.star-app-sidebar__footer')?.textContent).toBe('Signed in');
     const group = nav.querySelector('.star-app-sidebar__items')!;
     expect(group.getAttribute('role')).toBe('group');
-    expect(root.querySelector(`#${group.getAttribute('aria-labelledby')}`)?.textContent).toBe(
-      'Sales',
-    );
+    expect(
+      root.querySelector(`#${group.getAttribute('aria-labelledby')}`)?.textContent?.trim(),
+    ).toBe('Sales');
     fixture.componentInstance.label.set('Workspace');
     await fixture.whenStable();
     expect(nav.getAttribute('aria-label')).toBe('Workspace');

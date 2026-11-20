@@ -25,6 +25,8 @@ import {
   starFormatFileSize,
   StarSlot,
   starSlot,
+  StarStyled,
+  ɵSTAR_PART_HOST,
 } from '@star-ng/ui/core';
 import { injectStarFieldLink, starJoinIds } from '@star-ng/ui/field';
 import type { StarFileContext } from './file-upload-slots';
@@ -100,6 +102,8 @@ export function fileMatchesAccept(file: File, accept: string): boolean {
  */
 @Component({
   selector: 'star-file-upload',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   imports: [NgTemplateOutlet],
   providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarFileUpload) }],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -112,15 +116,24 @@ export function fileMatchesAccept(file: File, accept: string): boolean {
   },
   template: `
     <div
+      data-star-part="zonePanel"
       class="star-upload__zone"
       (dragenter)="onDrag($event, true)"
       (dragover)="onDrag($event, true)"
       (dragleave)="onDrag($event, false)"
       (drop)="onDrop($event)"
     >
-      <i class="ph-bold ph-cloud-arrow-up star-upload__icon" aria-hidden="true"></i>
-      <p class="star-upload__lead">{{ text.dropFiles }}</p>
-      <label class="star-btn star-btn--secondary star-btn--sm star-upload__choose" [for]="inputId">
+      <i
+        data-star-part="icon"
+        class="ph-bold ph-cloud-arrow-up star-upload__icon"
+        aria-hidden="true"
+      ></i>
+      <p data-star-part="leadText" class="star-upload__lead">{{ text.dropFiles }}</p>
+      <label
+        data-star-part="chooseButton"
+        class="star-btn star-btn--secondary star-btn--sm star-upload__choose"
+        [for]="inputId"
+      >
         {{ text.chooseFiles }}
       </label>
       <input
@@ -136,15 +149,16 @@ export function fileMatchesAccept(file: File, accept: string): boolean {
         (blur)="touch.emit()"
       />
       @if (hint()) {
-        <p class="star-upload__hint" [id]="hintId">{{ hint() }}</p>
+        <p data-star-part="hintText" class="star-upload__hint" [id]="hintId">{{ hint() }}</p>
       }
     </div>
 
     @if (value().length) {
-      <ul class="star-upload__list" [attr.aria-label]="text.chooseFiles">
+      <ul data-star-part="list" class="star-upload__list" [attr.aria-label]="text.chooseFiles">
         @for (file of value(); track file; let i = $index; let first = $first; let last = $last) {
           @let status = statusOf(file);
           <li
+            data-star-part="fileItem"
             class="star-upload__file"
             [class.star-upload__file--error]="status?.state === 'error'"
             [class.star-upload__file--drop]="dropIndex() === i"
@@ -158,21 +172,36 @@ export function fileMatchesAccept(file: File, accept: string): boolean {
               <ng-container *ngTemplateOutlet="slot; context: fileContext(file, i, status)" />
             } @else {
               @if (status?.state === 'done') {
-                <i class="ph-fill ph-check-circle star-upload__state--done" aria-hidden="true"></i>
+                <i
+                  data-star-part="typeIcon"
+                  class="ph-fill ph-check-circle star-upload__state--done"
+                  aria-hidden="true"
+                ></i>
               } @else if (status?.state === 'error') {
                 <i
+                  data-star-part="typeIcon"
                   class="ph-fill ph-warning-circle star-upload__state--error"
                   aria-hidden="true"
                 ></i>
               } @else if (thumbnailOf(file); as thumbnail) {
-                <img class="star-upload__thumb" alt="" [src]="thumbnail" />
+                <img
+                  data-star-part="thumbnail"
+                  class="star-upload__thumb"
+                  alt=""
+                  [src]="thumbnail"
+                />
               } @else {
-                <i class="ph-bold ph-file star-upload__file-icon" aria-hidden="true"></i>
+                <i
+                  data-star-part="typeIcon"
+                  class="ph-bold ph-file star-upload__file-icon"
+                  aria-hidden="true"
+                ></i>
               }
-              <span class="star-upload__main">
-                <span class="star-upload__name">{{ file.name }}</span>
+              <span data-star-part="mainPanel" class="star-upload__main">
+                <span data-star-part="nameText" class="star-upload__name">{{ file.name }}</span>
                 @if (status?.state === 'uploading') {
                   <span
+                    data-star-part="progressPanel"
                     class="star-upload__progress"
                     role="progressbar"
                     aria-valuemin="0"
@@ -181,49 +210,57 @@ export function fileMatchesAccept(file: File, accept: string): boolean {
                     [attr.aria-label]="text.uploadingFile(file.name)"
                   >
                     <span
+                      data-star-part="progressTrack"
                       class="star-upload__progress-bar"
                       [style.width.%]="percent(status)"
                     ></span>
                   </span>
                 } @else if (status?.state === 'error' && status?.message) {
-                  <span class="star-upload__message">{{ status?.message }}</span>
+                  <span data-star-part="messageText" class="star-upload__message">{{
+                    status?.message
+                  }}</span>
                 } @else if (status?.state === 'done') {
                   <span class="star-sr-only">{{ text.uploaded }}</span>
                 }
               </span>
               @if (status?.state === 'uploading') {
-                <span class="star-upload__size">{{ percent(status) }}%</span>
+                <span data-star-part="sizeText" class="star-upload__size"
+                  >{{ percent(status) }}%</span
+                >
               } @else {
-                <span class="star-upload__size">{{ size(file) }}</span>
+                <span data-star-part="sizeText" class="star-upload__size">{{ size(file) }}</span>
               }
               @if (canReorder()) {
                 <button
+                  data-star-part="clearButton"
                   type="button"
                   class="star-select__icon-btn"
                   [disabled]="first"
                   [attr.aria-label]="text.moveUp + ': ' + file.name"
                   (click)="move(i, i - 1)"
                 >
-                  <i class="ph-bold ph-arrow-up" aria-hidden="true"></i>
+                  <i data-star-part="moveIcon" class="ph-bold ph-arrow-up" aria-hidden="true"></i>
                 </button>
                 <button
+                  data-star-part="clearButton"
                   type="button"
                   class="star-select__icon-btn"
                   [disabled]="last"
                   [attr.aria-label]="text.moveDown + ': ' + file.name"
                   (click)="move(i, i + 1)"
                 >
-                  <i class="ph-bold ph-arrow-down" aria-hidden="true"></i>
+                  <i data-star-part="moveIcon" class="ph-bold ph-arrow-down" aria-hidden="true"></i>
                 </button>
               }
               @if (!disabled() && !readonly()) {
                 <button
+                  data-star-part="clearButton"
                   type="button"
                   class="star-select__icon-btn"
                   [attr.aria-label]="text.removeItem(file.name)"
                   (click)="remove(file)"
                 >
-                  <i class="ph-bold ph-x" aria-hidden="true"></i>
+                  <i data-star-part="removeIcon" class="ph-bold ph-x" aria-hidden="true"></i>
                 </button>
               }
             }
@@ -235,10 +272,10 @@ export function fileMatchesAccept(file: File, accept: string): boolean {
     }
 
     @if (rejected().length) {
-      <div role="alert">
-        <ul class="star-upload__errors">
+      <div data-star-part="sectionPanel" role="alert">
+        <ul data-star-part="errorsList" class="star-upload__errors">
           @for (item of rejected(); track $index) {
-            <li>{{ rejectionText(item) }}</li>
+            <li data-star-part="errorsItem">{{ rejectionText(item) }}</li>
           }
         </ul>
       </div>

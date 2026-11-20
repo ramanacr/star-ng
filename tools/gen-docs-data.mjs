@@ -68,14 +68,25 @@ function decoratorOf(node) {
     if (name !== 'Component' && name !== 'Directive') continue;
     const config = call.arguments[0];
     let selector = '';
+    let styled = false;
+    let template = '';
     if (config && ts.isObjectLiteralExpression(config)) {
       for (const property of config.properties) {
-        if (ts.isPropertyAssignment(property) && property.name.getText() === 'selector') {
-          selector = property.initializer.getText().slice(1, -1);
+        if (!ts.isPropertyAssignment(property)) continue;
+        const key = property.name.getText();
+        if (key === 'selector') selector = property.initializer.getText().slice(1, -1);
+        // Styling hooks: the host directive `StarStyled` gives the inputs `pt` and `unstyled`.
+        if (key === 'hostDirectives')
+          styled = /\bStarStyled\b/.test(property.initializer.getText());
+        if (key === 'template') template = property.initializer.getText();
+        if (key === 'templateUrl') {
+          const url = property.initializer.getText().slice(1, -1);
+          const file = join(dirname(node.getSourceFile().fileName), url);
+          if (existsSync(file)) template = readFileSync(file, 'utf8');
         }
       }
     }
-    return { kind: name.toLowerCase(), selector };
+    return { kind: name.toLowerCase(), selector, styled, template };
   }
   return null;
 }
@@ -180,10 +191,31 @@ function readApi() {
         inputs: members.filter((member) => member.kind === 'input').map(strip),
         models: members.filter((member) => member.kind === 'model').map(strip),
         outputs: members.filter((member) => member.kind === 'output').map(strip),
+        ...(decorator.styled ? { parts: partsOf(decorator.template) } : {}),
       };
     });
   }
+  // A control with the host directive `StarStyled` gets its inputs `pt` and `unstyled`.
+  const hooks = api.StarStyled?.inputs ?? [];
+  for (const item of Object.values(api)) {
+    if (!item.parts) continue;
+    const names = new Set(item.inputs.map((member) => member.name));
+    item.inputs.push(
+      ...hooks
+        .filter((member) => !names.has(member.name))
+        .map((member) => ({ ...member, inheritedFrom: 'StarStyled' })),
+    );
+  }
   return Object.fromEntries(Object.entries(api).sort(([a], [b]) => a.localeCompare(b)));
+}
+
+/** The part names of a control template (`data-star-part="header"`, `starPart="panel"`), in order, `root` first. */
+function partsOf(template) {
+  const parts = ['root'];
+  for (const [, name] of template.matchAll(/(?:\bstarPart|data-star-part)="'?([a-z][\w-]*)'?"/g)) {
+    if (!parts.includes(name)) parts.push(name);
+  }
+  return parts;
 }
 
 function strip({ kind: _kind, ...member }) {
@@ -248,6 +280,8 @@ export interface DocsApiEntry {
   readonly inputs: readonly DocsApiMember[];
   readonly models: readonly DocsApiMember[];
   readonly outputs: readonly DocsApiMember[];
+  /** Part names for \`pt\` and \`data-star-part\` (controls with styling hooks only). */
+  readonly parts?: readonly string[];
 }
 
 export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = ${JSON.stringify(readDocsApi(), null, 2)};

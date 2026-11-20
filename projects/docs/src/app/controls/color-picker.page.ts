@@ -41,6 +41,16 @@ import { DOCS, DocsRow } from '../shared/docs';
         <star-color-picker value="#64748b" disabled ariaLabel="Locked color" />
       </docs-example>
 
+      <h2>Eye dropper</h2>
+      <p>
+        In a browser with the <code>EyeDropper</code> API, an eye dropper button follows the custom
+        tile (PrimeNG <code>p-inputcolor-eyedropper</code>). It lets the user pick a color anywhere
+        on the screen; the color becomes the value and the control emits <code>changed</code>.
+        Escape cancels and keeps the value. The control checks for the API after the first render,
+        so the server page and a browser without the API show no button. The label comes from
+        <code>STAR_UI_TEXT.eyeDropper</code>.
+      </p>
+
       <h2>Accessibility and right-to-left</h2>
       <p>
         The area and the hue slider each have the slider role and a value text, for example

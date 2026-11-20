@@ -1,0 +1,42 @@
+// Drag and drop directives (`starDraggable`, `starDroppable`). PrimeNG `pDraggable` / `pDroppable`.
+.star-draggable:not(.star-draggable--disabled) {
+  cursor: grab;
+  // A long press starts a touch drag: no text selection or callout on the way.
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+.star-draggable:focus-visible {
+  outline: 2px solid var(--star-accent);
+  outline-offset: 2px;
+}
+.star-draggable--dragging {
+  opacity: 0.5;
+}
+// Picked up with the keyboard: the item stays in place, a dashed outline marks it.
+.star-draggable--picked {
+  opacity: 1;
+  outline: 2px dashed var(--star-accent);
+  outline-offset: 2px;
+}
+// A zone that accepts the drag in progress.
+.star-droppable--active {
+  outline: 2px dashed var(--star-border-strong);
+  outline-offset: -2px;
+}
+// The zone under the drag.
+.star-droppable--over {
+  outline-color: var(--star-accent);
+  background: var(--star-accent-soft);
+}
+// The copy of the item that follows the finger in a touch drag.
+.star-drag-ghost {
+  position: fixed;
+  // Physical sides on purpose: the pointer coordinates are physical in both directions.
+  top: 0;
+  left: 0;
+  z-index: calc(var(--star-z-index-base, 1000) + 10);
+  margin: 0;
+  box-shadow: var(--star-shadow-lg);
+  opacity: 0.9;
+  pointer-events: none;
+}

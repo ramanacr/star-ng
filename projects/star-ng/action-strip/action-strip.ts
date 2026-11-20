@@ -9,7 +9,7 @@ import {
   output,
   signal,
 } from '@angular/core';
-import { STAR_UI_TEXT, starInlineKey } from '@star-ng/ui/core';
+import { STAR_UI_TEXT, starInlineKey, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 import { StarMenu, StarMenuItem, StarMenuTrigger } from '@star-ng/ui/menu';
 
 /**
@@ -35,6 +35,8 @@ import { StarMenu, StarMenuItem, StarMenuTrigger } from '@star-ng/ui/menu';
  */
 @Component({
   selector: 'star-action-strip',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   imports: [StarMenu, StarMenuTrigger],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
@@ -49,6 +51,7 @@ import { StarMenu, StarMenuItem, StarMenuTrigger } from '@star-ng/ui/menu';
   template: `
     @for (action of inlineActions(); track $index) {
       <button
+        data-star-part="actionButton"
         type="button"
         class="star-btn star-btn--ghost star-btn--sm star-btn--icon star-action-strip__button"
         [class.star-action-strip__button--danger]="action.danger"
@@ -58,11 +61,16 @@ import { StarMenu, StarMenuItem, StarMenuTrigger } from '@star-ng/ui/menu';
         [tabIndex]="tabStop() === $index ? 0 : -1"
         (click)="run(action)"
       >
-        <i [class]="action.icon || 'ph-bold ph-circle'" aria-hidden="true"></i>
+        <i
+          data-star-part="buttonIcon"
+          [class]="action.icon || 'ph-bold ph-circle'"
+          aria-hidden="true"
+        ></i>
       </button>
     }
     @if (overflowActions().length) {
       <button
+        data-star-part="actionButton"
         type="button"
         class="star-btn star-btn--ghost star-btn--sm star-btn--icon star-action-strip__button"
         [attr.aria-label]="text.moreActions"
@@ -72,7 +80,7 @@ import { StarMenu, StarMenuItem, StarMenuTrigger } from '@star-ng/ui/menu';
         (menuOpened)="menuOpen.set(true)"
         (menuClosed)="menuOpen.set(false)"
       >
-        <i class="ph-bold ph-dots-three-vertical" aria-hidden="true"></i>
+        <i data-star-part="moreIcon" class="ph-bold ph-dots-three-vertical" aria-hidden="true"></i>
       </button>
       <star-menu #menu [items]="overflowActions()" (itemClick)="actionClick.emit($event)" />
     }

@@ -488,7 +488,7 @@ describe('StarImageEditor', () => {
     const { root, editor, tool, button, stable, announce } = await setup();
     tool('annotate').click();
     await stable();
-    expect(root.querySelector('.star-image-editor__empty-list')?.textContent).toBe(
+    expect(root.querySelector('.star-image-editor__empty-list')?.textContent?.trim()).toBe(
       'No annotations yet.',
     );
     const canvas = root.querySelector('canvas')!;

@@ -13,7 +13,13 @@ import {
   viewChild,
 } from '@angular/core';
 import { StarButton } from '@star-ng/ui/button';
-import { STAR_UI_TEXT, StarFilterService, StarUiText } from '@star-ng/ui/core';
+import {
+  STAR_UI_TEXT,
+  StarFilterService,
+  StarStyled,
+  StarUiText,
+  ɵSTAR_PART_HOST,
+} from '@star-ng/ui/core';
 import { StarPopover } from '@star-ng/ui/popover';
 import {
   hasBound,
@@ -57,11 +63,14 @@ const MODE_TEXT: Readonly<Record<string, keyof StarUiText>> = {
  */
 @Component({
   selector: 'star-table-filter-menu',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   imports: [StarButton, StarPopover, CdkTrapFocus],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-table-filter-menu' },
   template: `
     <button
+      data-star-part="filterButton"
       type="button"
       class="star-table__filter-button"
       [class.star-table__filter-button--active]="active()"
@@ -70,31 +79,45 @@ const MODE_TEXT: Readonly<Record<string, keyof StarUiText>> = {
       [attr.aria-label]="active() ? text.filterMenuActive(header()) : text.filterMenu(header())"
       (click)="toggle($event)"
     >
-      <i [class]="active() ? 'ph-fill ph-funnel' : 'ph-bold ph-funnel'" aria-hidden="true"></i>
+      <i
+        data-star-part="filterIcon"
+        [class]="active() ? 'ph-fill ph-funnel' : 'ph-bold ph-funnel'"
+        aria-hidden="true"
+      ></i>
     </button>
     <star-popover #panel [ariaLabel]="text.filterMenu(header())">
-      <div class="star-table-filter" cdkTrapFocus>
+      <div data-star-part="filterPanel" class="star-table-filter" cdkTrapFocus>
         @if (draft().length > 1) {
           <select
+            data-star-part="operatorInput"
             class="star-input star-input--sm star-table-filter__operator"
             [attr.aria-label]="text.filterOperator"
             (change)="setOperator($any($event.target).value)"
           >
-            <option value="and" [selected]="operator() === 'and'">{{ text.matchAll }}</option>
-            <option value="or" [selected]="operator() === 'or'">{{ text.matchAny }}</option>
+            <option data-star-part="matchAllOption" value="and" [selected]="operator() === 'and'">
+              {{ text.matchAll }}
+            </option>
+            <option data-star-part="matchAnyOption" value="or" [selected]="operator() === 'or'">
+              {{ text.matchAny }}
+            </option>
           </select>
         }
         @for (rule of draft(); track $index; let i = $index) {
-          <fieldset class="star-table-filter__rule">
+          <fieldset data-star-part="rulePanel" class="star-table-filter__rule">
             <legend class="star-sr-only">{{ text.filterRule(i + 1) }}</legend>
             @if (showModes()) {
               <select
+                data-star-part="input"
                 class="star-input star-input--sm"
                 [attr.aria-label]="text.matchMode"
                 (change)="setMode(i, $any($event.target).value)"
               >
                 @for (mode of modes(); track mode) {
-                  <option [value]="mode" [selected]="mode === rule.matchMode">
+                  <option
+                    data-star-part="valueOption"
+                    [value]="mode"
+                    [selected]="mode === rule.matchMode"
+                  >
                     {{ modeLabel(mode) }}
                   </option>
                 }
@@ -102,24 +125,35 @@ const MODE_TEXT: Readonly<Record<string, keyof StarUiText>> = {
             }
             @if (type() === 'select') {
               <select
+                data-star-part="input"
                 class="star-input star-input--sm"
                 [attr.aria-label]="text.filterBy(header())"
                 (change)="setValue(i, $any($event.target).value)"
               >
-                <option value="" [selected]="!rule.value">{{ text.filterAll }}</option>
+                <option data-star-part="filterAllOption" value="" [selected]="!rule.value">
+                  {{ text.filterAll }}
+                </option>
                 @for (choice of choices(); track choice) {
-                  <option [value]="choice" [selected]="choice === rule.value">{{ choice }}</option>
+                  <option
+                    data-star-part="valueOption"
+                    [value]="choice"
+                    [selected]="choice === rule.value"
+                  >
+                    {{ choice }}
+                  </option>
                 }
               </select>
             } @else if (type() === 'multiselect') {
               <div
+                data-star-part="choicesPanel"
                 class="star-table-filter__choices"
                 role="group"
                 [attr.aria-label]="text.filterBy(header())"
               >
                 @for (choice of choices(); track choice) {
-                  <label class="star-table-filter__choice">
+                  <label data-star-part="choiceLabel" class="star-table-filter__choice">
                     <input
+                      data-star-part="choiceInput"
                       type="checkbox"
                       [checked]="listOf(rule).includes(choice)"
                       (change)="toggleChoice(i, choice, $any($event.target).checked)"
@@ -129,8 +163,9 @@ const MODE_TEXT: Readonly<Record<string, keyof StarUiText>> = {
                 }
               </div>
             } @else if (rule.matchMode === 'between') {
-              <span class="star-table-filter__range">
+              <span data-star-part="rangePanel" class="star-table-filter__range">
                 <input
+                  data-star-part="input"
                   class="star-input star-input--sm"
                   [type]="inputType()"
                   [attr.aria-label]="text.filterMin(header())"
@@ -138,6 +173,7 @@ const MODE_TEXT: Readonly<Record<string, keyof StarUiText>> = {
                   (input)="setBound(i, 'min', $any($event.target).value)"
                 />
                 <input
+                  data-star-part="input"
                   class="star-input star-input--sm"
                   [type]="inputType()"
                   [attr.aria-label]="text.filterMax(header())"
@@ -147,6 +183,7 @@ const MODE_TEXT: Readonly<Record<string, keyof StarUiText>> = {
               </span>
             } @else {
               <input
+                data-star-part="input"
                 class="star-input star-input--sm"
                 [type]="inputType()"
                 [attr.aria-label]="text.filterBy(header())"
@@ -157,12 +194,13 @@ const MODE_TEXT: Readonly<Record<string, keyof StarUiText>> = {
             }
             @if (draft().length > 1) {
               <button
+                data-star-part="removeButton"
                 type="button"
                 class="star-table__toggle"
                 [attr.aria-label]="text.removeRule(i + 1)"
                 (click)="removeRule(i)"
               >
-                <i class="ph-bold ph-trash" aria-hidden="true"></i>
+                <i data-star-part="removeIcon" class="ph-bold ph-trash" aria-hidden="true"></i>
               </button>
             }
           </fieldset>
@@ -178,7 +216,7 @@ const MODE_TEXT: Readonly<Record<string, keyof StarUiText>> = {
             {{ text.addRule }}
           </star-button>
         }
-        <div class="star-table-filter__buttons">
+        <div data-star-part="buttonsPanel" class="star-table-filter__buttons">
           <star-button size="sm" variant="secondary" (pressed)="clear()">
             {{ text.clear }}
           </star-button>

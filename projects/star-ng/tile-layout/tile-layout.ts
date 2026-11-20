@@ -20,7 +20,13 @@ import {
   output,
   signal,
 } from '@angular/core';
-import { STAR_UI_TEXT, starInlineKey, starIsRtl } from '@star-ng/ui/core';
+import {
+  STAR_UI_TEXT,
+  starInlineKey,
+  starIsRtl,
+  StarStyled,
+  ɵSTAR_PART_HOST,
+} from '@star-ng/ui/core';
 
 /**
  * Columns per container width of `star-tile-layout`. Each entry applies while the layout is
@@ -71,8 +77,9 @@ const clamp = (value: number, min: number, max: number): number =>
  */
 @Component({
   selector: 'star-tile-layout',
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  hostDirectives: [CdkDropList],
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }, CdkDropList],
   host: {
     class: 'star-tile-layout',
     '[class.star-tile-layout--reorderable]': 'reorderable()',
@@ -84,7 +91,9 @@ const clamp = (value: number, min: number, max: number): number =>
     '[style.--star-tile-gap]': 'gap()',
   },
   template: `
-    <div class="star-tile-layout__grid" role="presentation"><ng-content /></div>
+    <div data-star-part="grid" class="star-tile-layout__grid" role="presentation">
+      <ng-content />
+    </div>
     <p class="star-sr-only" [id]="hintId">{{ hintText() }}</p>
     <p class="star-sr-only" aria-live="polite">{{ announcement() }}</p>
   `,
@@ -258,8 +267,10 @@ export class StarTileLayout {
  */
 @Component({
   selector: 'star-tile',
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+
   changeDetection: ChangeDetectionStrategy.OnPush,
-  hostDirectives: [CdkDrag],
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }, CdkDrag],
   host: {
     class: 'star-tile',
     role: 'group',
@@ -274,10 +285,13 @@ export class StarTileLayout {
     '(keydown)': 'onKeydown($event)',
   },
   template: `
-    <div class="star-tile__header" [id]="headerId"><ng-content select="[starTileHeader]" /></div>
-    <div class="star-tile__body"><ng-content /></div>
+    <div data-star-part="header" class="star-tile__header" [id]="headerId">
+      <ng-content select="[starTileHeader]" />
+    </div>
+    <div data-star-part="body" class="star-tile__body"><ng-content /></div>
     @if (layout.resizable()) {
       <span
+        data-star-part="resizeText"
         class="star-tile__resize"
         aria-hidden="true"
         (pointerdown)="onResizeStart($event)"

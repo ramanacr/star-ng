@@ -6,6 +6,7 @@ import {
   afterRenderEffect,
   booleanAttribute,
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   computed,
   contentChild,
@@ -24,7 +25,10 @@ import type { FormValueControl } from '@angular/forms/signals';
 import {
   STAR_UI_TEXT,
   starInlineKey,
+  StarPart,
+  StarStyled,
   StarUiText,
+  ɵSTAR_PART_HOST,
   ɵstarIsContextMenuKey,
   ɵstarOpenContextMenu,
 } from '@star-ng/ui/core';
@@ -182,7 +186,10 @@ type Panel = 'textColor' | 'highlight';
  */
 @Component({
   selector: 'star-editor',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   imports: [
+    StarPart,
     StarEditorTableInsert,
     StarEditorTableProperties,
     StarMenu,
@@ -1080,16 +1087,15 @@ export class StarEditor implements FormValueControl<string> {
     if (selected && !selected.includes('\n') && selected.length < 100) this.findQuery.set(selected);
     this.findOpen.set(mode);
     this.runFind();
-    const injector = this.injector;
-    afterNextRender(
-      () => {
-        const field = this.host.nativeElement.querySelector<HTMLInputElement>(`#${this.findId}`);
-        field?.focus();
-        field?.select();
-      },
-      { injector },
-    );
+    // Render the panel now and focus its field in the same key event: the keys that the user
+    // types next go into the field, not into the content (a render wait lost them).
+    this.changeDetector.detectChanges();
+    const field = this.host.nativeElement.querySelector<HTMLInputElement>(`#${this.findId}`);
+    field?.focus();
+    field?.select();
   }
+
+  private readonly changeDetector = inject(ChangeDetectorRef);
 
   private readonly injector = inject(Injector);
 

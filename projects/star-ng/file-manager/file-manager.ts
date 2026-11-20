@@ -27,6 +27,9 @@ import {
   starFormatFileSize,
   starInlineKey,
   starIsRtl,
+  StarPart,
+  StarStyled,
+  ɵSTAR_PART_HOST,
 } from '@star-ng/ui/core';
 import { StarDialog } from '@star-ng/ui/dialog';
 import { StarFileUpload } from '@star-ng/ui/file-upload';
@@ -163,7 +166,10 @@ const SORT_FIELDS: readonly StarFileSortField[] = ['name', 'size', 'modified', '
  */
 @Component({
   selector: 'star-file-manager',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   imports: [
+    StarPart,
     StarBreadcrumb,
     StarButton,
     StarCellTemplate,
@@ -192,20 +198,22 @@ const SORT_FIELDS: readonly StarFileSortField[] = ['name', 'size', 'modified', '
   },
   template: `
     <!-- The native copy event bubbles: it stops here, so only the copy output reaches the owner. -->
-    <div class="star-fm-root" (copy)="$event.stopPropagation()">
+    <div data-star-part="shell" class="star-fm-root" (copy)="$event.stopPropagation()">
       <div
+        data-star-part="frame"
         class="star-fm"
         role="region"
         [attr.aria-label]="ariaLabel() ?? text.fileManager"
         [style.--star-fm-height]="height()"
       >
-        <div class="star-fm__bar">
+        <div data-star-part="barPanel" class="star-fm__bar">
           <star-breadcrumb
             class="star-fm__path"
             [items]="trail()"
             [ariaLabel]="(ariaLabel() ?? text.fileManager) + ': ' + text.breadcrumb"
           />
           <input
+            data-star-part="searchInput"
             type="search"
             class="star-input star-fm__search"
             [attr.aria-label]="text.search"
@@ -215,10 +223,16 @@ const SORT_FIELDS: readonly StarFileSortField[] = ['name', 'size', 'modified', '
           />
         </div>
 
-        <div class="star-fm__toolbar" role="toolbar" [attr.aria-label]="text.fileToolbar">
+        <div
+          data-star-part="toolbarPanel"
+          class="star-fm__toolbar"
+          role="toolbar"
+          [attr.aria-label]="text.fileToolbar"
+        >
           @for (action of toolbar(); track action.id) {
             @if (action.id === 'sort') {
               <button
+                data-star-part="toolButton"
                 type="button"
                 class="star-fm__tool"
                 data-tool="sort"
@@ -226,11 +240,16 @@ const SORT_FIELDS: readonly StarFileSortField[] = ['name', 'size', 'modified', '
                 [starMenuTrigger]="sortMenu"
                 (focus)="toolStop.set('sort')"
               >
-                <i class="ph-bold ph-sort-ascending" aria-hidden="true"></i>
-                <span>{{ text.sortBy }}</span>
+                <i
+                  data-star-part="toolIcon"
+                  class="ph-bold ph-sort-ascending"
+                  aria-hidden="true"
+                ></i>
+                <span data-star-part="toolText">{{ text.sortBy }}</span>
               </button>
             } @else {
               <button
+                data-star-part="toolButton"
                 type="button"
                 class="star-fm__tool"
                 [attr.data-tool]="action.id"
@@ -241,9 +260,9 @@ const SORT_FIELDS: readonly StarFileSortField[] = ['name', 'size', 'modified', '
                 (click)="action.disabled || action.run()"
                 (focus)="toolStop.set(action.id)"
               >
-                <i [class]="action.icon" aria-hidden="true"></i>
+                <i data-star-part="toolIcon" [class]="action.icon" aria-hidden="true"></i>
                 @if (!action.iconOnly) {
-                  <span>{{ action.label }}</span>
+                  <span data-star-part="toolText">{{ action.label }}</span>
                 }
               </button>
             }
@@ -252,13 +271,17 @@ const SORT_FIELDS: readonly StarFileSortField[] = ['name', 'size', 'modified', '
         <star-menu #sortMenu [items]="sortItems()" />
 
         @if (uploadOpen()) {
-          <div class="star-fm__upload">
+          <div data-star-part="uploadPanel" class="star-fm__upload">
             <star-file-upload multiple [(value)]="uploadFiles" (selected)="onUpload($event)" />
           </div>
         }
 
-        <div class="star-fm__body" [class.star-fm__body--details]="detailsPane()">
-          <div class="star-fm__tree">
+        <div
+          data-star-part="body"
+          class="star-fm__body"
+          [class.star-fm__body--details]="detailsPane()"
+        >
+          <div data-star-part="treePanel" class="star-fm__tree">
             <star-tree
               [nodes]="tree()"
               selectionMode="single"
@@ -271,14 +294,17 @@ const SORT_FIELDS: readonly StarFileSortField[] = ['name', 'size', 'modified', '
           </div>
 
           <div
+            data-star-part="content"
             class="star-fm__content"
             [attr.aria-describedby]="id + '-hint'"
             [starContextMenu]="contextMenu"
           >
-            <p class="star-sr-only" [id]="id + '-hint'">{{ text.fileManagerHint }}</p>
+            <p class="star-sr-only" [id]="id + '-hint'">
+              {{ text.fileManagerHint }}
+            </p>
             @if (listingFailed()) {
-              <div class="star-fm__error" role="alert">
-                <p>{{ text.fileLoadError }}</p>
+              <div data-star-part="errorPanel" class="star-fm__error" role="alert">
+                <p data-star-part="errorText">{{ text.fileLoadError }}</p>
                 <star-button variant="secondary" size="sm" (pressed)="refresh()">{{
                   text.retry
                 }}</star-button>
@@ -301,14 +327,16 @@ const SORT_FIELDS: readonly StarFileSortField[] = ['name', 'size', 'modified', '
               >
                 <ng-template starCell="name" [starCellOf]="visible()" let-row>
                   <span
+                    starPart="nameText"
                     class="star-fm__name"
                     draggable="true"
                     [attr.data-file-name]="row.id"
                     [class.star-fm__name--drop]="dropTarget() === row.id"
                   >
-                    <i [class]="iconOf(row)" aria-hidden="true"></i>
+                    <i data-star-part="nameIcon" [class]="iconOf(row)" aria-hidden="true"></i>
                     @if (renaming() === row.id) {
                       <input
+                        data-star-part="renameInput"
                         class="star-input star-fm__rename"
                         [attr.aria-label]="text.rename"
                         [value]="row.name"
@@ -316,7 +344,7 @@ const SORT_FIELDS: readonly StarFileSortField[] = ['name', 'size', 'modified', '
                         (blur)="commitRename(row, $any($event.target).value)"
                       />
                     } @else {
-                      <span>{{ row.name }}</span>
+                      <span data-star-part="nameLabel">{{ row.name }}</span>
                     }
                   </span>
                 </ng-template>
@@ -324,6 +352,7 @@ const SORT_FIELDS: readonly StarFileSortField[] = ['name', 'size', 'modified', '
             } @else {
               @if (visible().length) {
                 <div
+                  data-star-part="iconsPanel"
                   class="star-fm__icons"
                   role="listbox"
                   aria-multiselectable="true"
@@ -331,6 +360,7 @@ const SORT_FIELDS: readonly StarFileSortField[] = ['name', 'size', 'modified', '
                 >
                   @for (item of visible(); track item.id) {
                     <div
+                      data-star-part="icon"
                       class="star-fm__icon"
                       draggable="true"
                       [attr.role]="renaming() === item.id ? 'group' : 'option'"
@@ -342,11 +372,17 @@ const SORT_FIELDS: readonly StarFileSortField[] = ['name', 'size', 'modified', '
                       [attr.tabindex]="iconStop() === item.id ? 0 : -1"
                       (focus)="focusId.set(item.id)"
                     >
-                      <i class="star-fm__icon-glyph" [class]="iconOf(item)" aria-hidden="true"></i>
+                      <i
+                        data-star-part="tileIcon"
+                        class="star-fm__icon-glyph"
+                        [class]="iconOf(item)"
+                        aria-hidden="true"
+                      ></i>
                       <!-- While renaming, the item is a group: the children of an option are
                         presentational, so the field must not be inside one. -->
                       @if (renaming() === item.id) {
                         <input
+                          data-star-part="renameInput"
                           class="star-input star-fm__rename"
                           [attr.aria-label]="text.rename"
                           [value]="item.name"
@@ -355,41 +391,57 @@ const SORT_FIELDS: readonly StarFileSortField[] = ['name', 'size', 'modified', '
                           (blur)="commitRename(item, $any($event.target).value)"
                         />
                       } @else {
-                        <span class="star-fm__icon-name">{{ item.name }}</span>
+                        <span data-star-part="tileLabel" class="star-fm__icon-name">{{
+                          item.name
+                        }}</span>
                       }
                     </div>
                   }
                 </div>
               } @else {
-                <p class="star-fm__empty">{{ emptyText() }}</p>
+                <p data-star-part="emptyText" class="star-fm__empty">{{ emptyText() }}</p>
               }
             }
           </div>
 
           @if (detailsPane()) {
-            <aside class="star-fm__details" [attr.aria-label]="text.fileDetailsPane">
+            <aside
+              data-star-part="detailsPanel"
+              class="star-fm__details"
+              [attr.aria-label]="text.fileDetailsPane"
+            >
               @if (selectedItems(); as chosen) {
                 @if (chosen.length === 1) {
-                  <h3 class="star-fm__details-title">
-                    <i [class]="iconOf(chosen[0])" aria-hidden="true"></i>
+                  <h3 data-star-part="detailsHeader" class="star-fm__details-title">
+                    <i
+                      data-star-part="detailsTitleIcon"
+                      [class]="iconOf(chosen[0])"
+                      aria-hidden="true"
+                    ></i>
                     {{ chosen[0].name }}
                   </h3>
-                  <dl class="star-fm__facts">
-                    <dt>{{ text.fileType }}</dt>
-                    <dd>{{ typeOf(chosen[0]) }}</dd>
+                  <dl data-star-part="factsList" class="star-fm__facts">
+                    <dt data-star-part="factLabel">{{ text.fileType }}</dt>
+                    <dd data-star-part="factText">
+                      {{ typeOf(chosen[0]) }}
+                    </dd>
                     @if (!chosen[0].isFolder) {
-                      <dt>{{ text.fileSize }}</dt>
-                      <dd>{{ chosen[0].size | starFileSize: locale() }}</dd>
+                      <dt data-star-part="factLabel">{{ text.fileSize }}</dt>
+                      <dd data-star-part="factText">
+                        {{ chosen[0].size | starFileSize: locale() }}
+                      </dd>
                     }
                     @if (chosen[0].modified !== undefined) {
-                      <dt>{{ text.fileModified }}</dt>
-                      <dd>{{ dateOf(chosen[0]) }}</dd>
+                      <dt data-star-part="factLabel">{{ text.fileModified }}</dt>
+                      <dd data-star-part="factText">
+                        {{ dateOf(chosen[0]) }}
+                      </dd>
                     }
                   </dl>
                 } @else if (chosen.length > 1) {
-                  <p>{{ text.selectedItems(chosen.length) }}</p>
+                  <p data-star-part="detailsText">{{ text.selectedItems(chosen.length) }}</p>
                 } @else {
-                  <p class="star-fm__muted">{{ text.fileNoSelection }}</p>
+                  <p data-star-part="noteText" class="star-fm__muted">{{ text.fileNoSelection }}</p>
                 }
               }
             </aside>
@@ -405,8 +457,8 @@ const SORT_FIELDS: readonly StarFileSortField[] = ['name', 'size', 'modified', '
         size="sm"
         [role]="'alertdialog'"
       >
-        <p>{{ text.fileDeleteConfirm(pendingDelete().length) }}</p>
-        <div starDialogFooter>
+        <p data-star-part="confirmText">{{ text.fileDeleteConfirm(pendingDelete().length) }}</p>
+        <div data-star-part="confirmPanel" starDialogFooter>
           <star-button variant="ghost" (pressed)="confirmOpen.set(false)">{{
             text.cancel
           }}</star-button>
@@ -415,9 +467,10 @@ const SORT_FIELDS: readonly StarFileSortField[] = ['name', 'size', 'modified', '
       </star-dialog>
 
       <star-dialog [(visible)]="folderOpen" [header]="text.newFolder" size="sm">
-        <label class="star-fm__field">
-          <span>{{ text.folderName }}</span>
+        <label data-star-part="fieldLabel" class="star-fm__field">
+          <span data-star-part="fieldText">{{ text.folderName }}</span>
           <input
+            data-star-part="input"
             class="star-input"
             data-autofocus
             [value]="folderName()"
@@ -425,7 +478,7 @@ const SORT_FIELDS: readonly StarFileSortField[] = ['name', 'size', 'modified', '
             (keydown.enter)="submitFolder()"
           />
         </label>
-        <div starDialogFooter>
+        <div data-star-part="confirmPanel" starDialogFooter>
           <star-button variant="ghost" (pressed)="folderOpen.set(false)">{{
             text.cancel
           }}</star-button>

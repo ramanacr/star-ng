@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 
 /**
  * Button group (PrimeNG `p-buttongroup`): joins adjacent buttons into one bar. The buttons share
@@ -15,6 +16,8 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
  */
 @Component({
   selector: 'star-button-group',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-button-group', role: 'group', '[attr.aria-label]': 'ariaLabel()' },
   template: `<ng-content />`,

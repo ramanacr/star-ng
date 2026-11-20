@@ -22,7 +22,7 @@ import {
   viewChild,
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
-import { STAR_UI_TEXT } from '@star-ng/ui/core';
+import { STAR_UI_TEXT, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/ui/field';
 
 /** One sampled point of a stroke, in CSS pixels of the drawing area. */
@@ -152,6 +152,8 @@ const FALLBACK_SIZE = { width: 300, height: 150 };
  */
 @Component({
   selector: 'star-signature-pad',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-signature',
@@ -166,8 +168,9 @@ const FALLBACK_SIZE = { width: 300, height: 150 };
     '[class.star-signature--invalid]': '(invalid() && touched()) || !!field?.errorText()',
   },
   template: `
-    <div class="star-signature__surface">
+    <div data-star-part="surface" class="star-signature__surface">
       <canvas
+        data-star-part="canvasPanel"
         #canvas
         class="star-signature__canvas"
         role="img"
@@ -178,31 +181,36 @@ const FALLBACK_SIZE = { width: 300, height: 150 };
         (pointercancel)="onPointerUp($event)"
       ></canvas>
     </div>
-    <div class="star-signature__bar">
+    <div data-star-part="barPanel" class="star-signature__bar">
       @if (allowTyped()) {
-        <div class="star-signature__modes">
+        <div data-star-part="modesPanel" class="star-signature__modes">
           <button
+            data-star-part="drawButton"
             type="button"
             class="star-btn star-btn--ghost star-btn--sm"
             [attr.aria-pressed]="mode() === 'draw'"
             [disabled]="!interactive()"
             (click)="setMode('draw')"
           >
-            <i class="ph-bold ph-pen-nib" aria-hidden="true"></i>{{ text.drawSignature }}
+            <i data-star-part="drawIcon" class="ph-bold ph-pen-nib" aria-hidden="true"></i
+            >{{ text.drawSignature }}
           </button>
           <button
+            data-star-part="typeButton"
             type="button"
             class="star-btn star-btn--ghost star-btn--sm"
             [attr.aria-pressed]="mode() === 'type'"
             [disabled]="!interactive()"
             (click)="setMode('type')"
           >
-            <i class="ph-bold ph-keyboard" aria-hidden="true"></i>{{ text.typeSignature }}
+            <i data-star-part="typeIcon" class="ph-bold ph-keyboard" aria-hidden="true"></i
+            >{{ text.typeSignature }}
           </button>
         </div>
       }
       @if (mode() === 'type') {
         <input
+          data-star-part="textInput"
           #typedInput
           type="text"
           class="star-input star-input--sm star-signature__typed"
@@ -217,26 +225,32 @@ const FALLBACK_SIZE = { width: 300, height: 150 };
           (blur)="touch.emit()"
         />
       }
-      <div class="star-signature__actions">
+      <div data-star-part="actionList" class="star-signature__actions">
         @if (mode() === 'draw') {
           <button
+            data-star-part="undoButton"
             type="button"
             class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
             [attr.aria-label]="text.undo"
             [disabled]="!interactive() || !strokes().length"
             (click)="undo()"
           >
-            <i class="ph-bold ph-arrow-counter-clockwise" aria-hidden="true"></i>
+            <i
+              data-star-part="undoIcon"
+              class="ph-bold ph-arrow-counter-clockwise"
+              aria-hidden="true"
+            ></i>
           </button>
         }
         <button
+          data-star-part="clearButton"
           type="button"
           class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
           [attr.aria-label]="text.clearSignature"
           [disabled]="!interactive() || isEmpty()"
           (click)="clear()"
         >
-          <i class="ph-bold ph-eraser" aria-hidden="true"></i>
+          <i data-star-part="clearIcon" class="ph-bold ph-eraser" aria-hidden="true"></i>
         </button>
       </div>
     </div>

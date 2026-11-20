@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
-import { StarSeverity } from '@star-ng/ui/core';
+import { StarSeverity, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 
 /**
  * Count or dot badge (PrimeNG `p-badge`). Without a value it renders a dot.
@@ -7,6 +7,8 @@ import { StarSeverity } from '@star-ng/ui/core';
  */
 @Component({
   selector: 'star-badge',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '[class]': "'star-badge star-badge--' + severity() + ' star-badge--' + size()",

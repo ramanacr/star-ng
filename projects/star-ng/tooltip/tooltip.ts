@@ -23,7 +23,7 @@ import {
   numberAttribute,
   signal,
 } from '@angular/core';
-import { StarDirectionService } from '@star-ng/ui/core';
+import { StarDirectionService, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 
 /**
  * Side of the host. `left` and `right` are the physical sides of the screen, as in CSS;
@@ -78,6 +78,8 @@ function positionsFor(position: StarTooltipPosition, rtl: boolean): ConnectedPos
 
 @Component({
   selector: 'star-tooltip-panel',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-tooltip', role: 'tooltip', '[id]': 'id()' },
   template: `{{ text() }}`,
