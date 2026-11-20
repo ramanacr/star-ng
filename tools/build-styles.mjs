@@ -1,8 +1,9 @@
 // Compiles the library SCSS entry to CSS and puts it in the built package:
 //   dist/star-ng/styles/star-ng.css      (readable)
 //   dist/star-ng/styles/star-ng.min.css  (compressed)
-// It also copies README.md and LICENSE of the repository root into the package: ng-packagr
-// cannot read assets from outside the library folder, and npm shows the README on the package page.
+// It also copies README.md, LICENSE and THIRD_PARTY_NOTICES.md of the repository root into the
+// package: ng-packagr cannot read assets from outside the library folder (so the notices are not
+// an `assets` entry of ng-package.json), and npm shows the README on the package page.
 // Run after `ng build star-ng` (see the `build:lib` script). The SCSS sources are copied
 // into the package by ng-packagr (`assets` in projects/star-ng/ng-package.json).
 import { copyFileSync, existsSync, mkdirSync, writeFileSync } from 'node:fs';
@@ -29,7 +30,7 @@ for (const [file, style] of [
   console.log(`${file}: ${(css.length / 1024).toFixed(1)} kB`);
 }
 
-for (const file of ['README.md', 'LICENSE']) {
+for (const file of ['README.md', 'LICENSE', 'THIRD_PARTY_NOTICES.md']) {
   copyFileSync(join(root, file), join(root, 'dist/star-ng', file));
   console.log(`${file}: copied from the repository root`);
 }

@@ -114,6 +114,14 @@ export const DIRECTION_KEY = 'star-direction';
       <main id="main" class="docs-main" tabindex="-1">
         <router-outlet />
       </main>
+      <footer class="docs-footer">
+        <p>
+          PrimeNG, Angular Material, Ignite UI, Kendo UI, Syncfusion, DevExtreme and AG Grid are
+          trademarks of their respective owners. StarNG has no affiliation with these owners, and
+          they do not endorse it. The docs name these products only to show which StarNG API does
+          the same job.
+        </p>
+      </footer>
     </div>
     <star-toast />
     <star-confirm-host />

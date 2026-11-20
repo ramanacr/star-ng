@@ -2,6 +2,10 @@
  * Inline and block formats of `star-editor` that change the DOM directly (not
  * `document.execCommand`): text color, highlight, font size, subscript, superscript, clear
  * formatting, indentation and the horizontal rule. The editor's own history makes them undoable.
+ *
+ * Ported from Aurora RTE `packages/editor/src/commands.ts`, `packages/features/src/basic.ts`
+ * and `packages/ui/src/toolbar.ts`, MIT (https://github.com/ramanacr/aurora-rte, see
+ * THIRD_PARTY_NOTICES.md).
  */
 import {
   starEditorBlocks,

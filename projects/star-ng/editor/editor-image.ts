@@ -1,3 +1,5 @@
+// Ported from Aurora RTE `packages/features/src/media.ts` and `packages/ui/src/toolbar.ts`, MIT
+// (https://github.com/ramanacr/aurora-rte, see THIRD_PARTY_NOTICES.md).
 import { _IdGenerator } from '@angular/cdk/a11y';
 import {
   afterNextRender,
