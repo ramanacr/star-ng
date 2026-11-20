@@ -206,8 +206,12 @@ export abstract class StarTableInteraction<T> {
    * column of `virtualColumns` and a row of `virtualScroll` into view first, and skip the rows that
    * a merged cell covers. The selection, expander, reorder and row action cells are grid cells:
    * their controls leave the tab order, Space toggles the row check box, Enter or F2 goes into the
-   * controls and Escape or F2 back. `undefined` (default) is automatic: on when a column is `editable` or
-   * `selectionMode` is `'cell'` or `'range'`, else the rows keep today's keys. Ignite UI grid keyboard navigation, AG Grid cell navigation.
+   * controls and Escape or F2 back. The table takes those controls out of the tab order after a
+   * change of the rows or the rows in edit; a control that a custom row action or lead template
+   * adds at another time keeps its tab stop until then, so give it `tabindex="-1"`. `undefined`
+   * (default) is automatic: on when a column is `editable` or `selectionMode` is `'cell'` or
+   * `'range'`, else the rows keep today's keys. Ignite UI grid keyboard navigation, AG Grid cell
+   * navigation.
    */
   readonly cellNavigation = input<boolean | undefined, boolean | string | undefined>(undefined, {
     transform: ɵstarOptionalBoolean,
@@ -554,11 +558,12 @@ export abstract class StarTableInteraction<T> {
     this.setActive(target.row, target.field);
     // Any focus of a cell (Tab in, a click, focusCell, navigateTo) sets the range anchor, unless
     // a Shift move or Shift + click stretches the range to this cell.
-    // A lead or trail cell is never the corner of a range.
-    if (!target.column) return;
-    const cell = { rowKey: this.trackKey(target.row), field: target.field };
+    // A lead or trail cell is never the corner of a range. The Shift move target is used up by
+    // this focus in either case, so it never stays stale.
     const extend = this.extendTarget;
     this.extendTarget = null;
+    if (!target.column) return;
+    const cell = { rowKey: this.trackKey(target.row), field: target.field };
     if (!extend || !Object.is(extend.rowKey, cell.rowKey) || extend.field !== cell.field) {
       this.cellAnchor = cell;
     }
