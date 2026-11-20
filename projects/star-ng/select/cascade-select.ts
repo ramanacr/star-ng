@@ -246,11 +246,17 @@ export class StarCascadeSelect<
   readonly touch = output<void>();
   /** The user chose a leaf. */
   readonly optionSelect = output<TOption>();
-  /** Emits when the menu opens, before `show`. PrimeNG `onBeforeShow`. */
+  /**
+   * Emits right before `show`, after the menu opened (the CDK menu has no earlier hook).
+   * PrimeNG `onBeforeShow`.
+   */
   readonly beforeShow = output<void>();
   /** Emits when the menu opens. PrimeNG `onShow`. */
   readonly show = output<void>();
-  /** Emits when the menu closes, before `hide`. PrimeNG `onBeforeHide`. */
+  /**
+   * Emits right before `hide`, after the menu closed (the CDK menu has no earlier hook).
+   * PrimeNG `onBeforeHide`.
+   */
   readonly beforeHide = output<void>();
   /** Emits when the menu closes. PrimeNG `onHide`. */
   readonly hide = output<void>();

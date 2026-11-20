@@ -3005,7 +3005,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "void",
         "default": null,
         "required": false,
-        "description": "Emits when the menu opens, before `show`. PrimeNG `onBeforeShow`."
+        "description": "Emits right before `show`, after the menu opened (the CDK menu has no earlier hook). PrimeNG `onBeforeShow`."
       },
       {
         "name": "show",
@@ -3019,7 +3019,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "void",
         "default": null,
         "required": false,
-        "description": "Emits when the menu closes, before `hide`. PrimeNG `onBeforeHide`."
+        "description": "Emits right before `hide`, after the menu closed (the CDK menu has no earlier hook). PrimeNG `onBeforeHide`."
       },
       {
         "name": "hide",
@@ -7040,7 +7040,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "StarEditorSelectionChange | null",
         "default": null,
         "required": false,
-        "description": "Emits when the selection in the area changes: its text offset, length and text, or `null` when the selection leaves the area. PrimeNG `onSelectionChange` (its `range`; `oldRange` is the previous event)."
+        "description": "Emits when the selection in the area changes: its text offset, length and text, or `null` when the selection leaves the area. A caret move is a change too (also while the user types), and the offset is counted from the start of the area each time: keep the handler light. PrimeNG `onSelectionChange` (its `range`; `oldRange` is the previous event)."
       }
     ],
     "parts": [
@@ -17941,14 +17941,14 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "void",
         "default": null,
         "required": false,
-        "description": "Emits when the actions show. PrimeNG `onShow`."
+        "description": "Emits when the actions show after a user action (the main button). A change of `visible` by the owner emits `visibleChange` only, and does not move the focus. PrimeNG `onShow`."
       },
       {
         "name": "hide",
         "type": "void",
         "default": null,
         "required": false,
-        "description": "Emits when the actions hide. PrimeNG `onHide`."
+        "description": "Emits when the actions hide after a user action (main button, action, Escape, click outside, mask). PrimeNG `onHide`."
       }
     ],
     "parts": [

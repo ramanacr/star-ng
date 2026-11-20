@@ -314,7 +314,9 @@ export class StarEditor implements FormValueControl<string> {
   readonly textChange = output<StarEditorTextChange>();
   /**
    * Emits when the selection in the area changes: its text offset, length and text, or `null`
-   * when the selection leaves the area. PrimeNG `onSelectionChange` (its `range`; `oldRange` is the
+   * when the selection leaves the area. A caret move is a change too (also while the user
+   * types), and the offset is counted from the start of the area each time: keep the handler
+   * light. PrimeNG `onSelectionChange` (its `range`; `oldRange` is the
    * previous event).
    */
   readonly selectionChange = output<StarEditorSelectionChange | null>();
@@ -681,9 +683,11 @@ export class StarEditor implements FormValueControl<string> {
     const changed = value !== this.value();
     this.value.set(value);
     if (changed) {
+      // Reuse the value: it is already the sanitized HTML, or the text with `format="text"`.
+      const text = this.format() === 'text';
       this.textChange.emit({
-        html: this.clean(element.innerHTML),
-        text: starEditorText(element),
+        html: text ? this.clean(element.innerHTML) : value,
+        text: text ? value : starEditorText(element),
       });
     }
     this.length.set(length);

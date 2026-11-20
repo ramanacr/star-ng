@@ -267,9 +267,15 @@ export class StarSpeedDial {
   readonly itemClick = output<StarMenuItem>();
   /** Emits a click on the main button. PrimeNG `onClick`. */
   readonly pressed = output<MouseEvent>();
-  /** Emits when the actions show. PrimeNG `onShow`. */
+  /**
+   * Emits when the actions show after a user action (the main button). A change of `visible` by
+   * the owner emits `visibleChange` only, and does not move the focus. PrimeNG `onShow`.
+   */
   readonly show = output<void>();
-  /** Emits when the actions hide. PrimeNG `onHide`. */
+  /**
+   * Emits when the actions hide after a user action (main button, action, Escape, click outside,
+   * mask). PrimeNG `onHide`.
+   */
   readonly hide = output<void>();
 
   private readonly slots = contentChildren(StarSlot, { descendants: true });
