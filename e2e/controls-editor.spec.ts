@@ -49,7 +49,7 @@ test.describe('editor formatting', () => {
     await expect(area.locator(':scope > ul > li')).toHaveCount(2);
     await expect(area.locator('ul ul > li')).toHaveCount(3);
     await page.keyboard.press('Control+Enter');
-    await expect(area.locator('li', { hasText: 'Send the announcement' })).toHaveAttribute(
+    await expect(area.locator('li', { hasText: /^Send the announcement$/ })).toHaveAttribute(
       'data-checked',
       'true',
     );
@@ -136,6 +136,7 @@ test.describe('editor images', () => {
     await handle.focus();
     await page.keyboard.press('Shift+ArrowRight');
     await expect(area.locator('figure img')).toHaveAttribute('width', '290');
+    await expect(handle).toHaveAttribute('aria-valuenow', '290');
     const box = (await handle.boundingBox())!;
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
     await page.mouse.down();

@@ -66,6 +66,13 @@ export function starEditorPath(node: Node | null, area: HTMLElement): string[] {
 /** The block elements that the range touches. Text straight in the area is wrapped in a `p`. */
 export function starEditorBlocks(area: HTMLElement, range: Range): HTMLElement[] {
   const doc = area.ownerDocument;
+  // Moving a node resets a range boundary in it: keep the boundaries to set them again.
+  const kept = [
+    range.startContainer,
+    range.startOffset,
+    range.endContainer,
+    range.endOffset,
+  ] as const;
   // Loose inline content at the top level: put it in a paragraph first.
   for (const node of [...area.childNodes]) {
     if (node instanceof Element && BLOCKS.has(node.tagName)) continue;
@@ -81,6 +88,10 @@ export function starEditorBlocks(area: HTMLElement, range: Range): HTMLElement[]
       if (next instanceof Element && (next.tagName === 'UL' || next.tagName === 'OL')) break;
       paragraph.appendChild(next);
     }
+  }
+  if (area.contains(kept[0]) && area.contains(kept[2])) {
+    range.setStart(kept[0], kept[1]);
+    range.setEnd(kept[2], kept[3]);
   }
   const blocks = [...area.querySelectorAll<HTMLElement>([...BLOCKS].join(','))].filter((block) =>
     range.intersectsNode(block),

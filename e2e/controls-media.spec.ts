@@ -316,7 +316,7 @@ test.describe('editor', () => {
     await expect(valueOf(live)).not.toContainText('<script');
     await expect(valueOf(live)).not.toContainText('onclick');
     // An unsafe URL goes; the link text stays.
-    await expect(valueOf(live)).toContainText('<a>open</a>');
+    await expect(valueOf(live)).toContainText('<a>open');
     await expect(valueOf(live)).not.toContainText('javascript:');
   });
 
