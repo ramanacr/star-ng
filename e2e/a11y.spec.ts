@@ -1745,12 +1745,75 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'editor image panel open',
+    path: 'controls/editor',
+    open: async (page) => {
+      await expect(page.locator('star-editor[ngh]')).toHaveCount(0, { timeout: 15_000 });
+      const live = example(page, 'Images and embeds');
+      await live.getByRole('textbox', { name: 'Release with images' }).locator('p').click();
+      await live.getByRole('button', { name: 'Image', exact: true }).click();
+      await live
+        .getByRole('group', { name: 'Image' })
+        .getByRole('button', { name: 'Apply' })
+        .click();
+      await expect(live.getByText('Describe the image, or mark it as decorative.')).toBeVisible();
+    },
+  },
+  {
+    name: 'editor source view with an error',
+    path: 'controls/editor',
+    open: async (page) => {
+      await expect(page.locator('star-editor[ngh]')).toHaveCount(0, { timeout: 15_000 });
+      const live = example(page, 'HTML source view');
+      await live.getByRole('button', { name: 'HTML source' }).click();
+      await live.getByRole('textbox', { name: 'HTML source' }).fill('<p><b>Open</p>');
+      await expect(live.getByText('The element <b> is not closed.')).toBeVisible();
+    },
+  },
+  {
+    name: 'editor table with context menu',
+    path: 'controls/editor',
+    open: async (page) => {
+      await expect(page.locator('star-editor[ngh]')).toHaveCount(0, { timeout: 15_000 });
+      const live = example(page, 'Tables');
+      await live.getByRole('textbox', { name: 'Price table' }).locator('td').first().click();
+      await page.keyboard.press('Shift+F10');
+      await expect(page.getByRole('menu')).toBeVisible();
+    },
+  },
+  {
+    name: 'editor find and replace open',
+    path: 'controls/editor',
+    open: async (page) => {
+      await expect(page.locator('star-editor[ngh]')).toHaveCount(0, { timeout: 15_000 });
+      const live = example(page, 'Find, counts, full screen and shortcuts');
+      await live.getByRole('textbox', { name: 'Release notes' }).click();
+      await page.keyboard.press('Control+H');
+      await page.keyboard.type('plan');
+      await expect(live.getByRole('status')).toHaveText('1 of 3');
+    },
+  },
+  {
+    name: 'editor accessibility check open',
+    path: 'controls/editor',
+    open: async (page) => {
+      await expect(page.locator('star-editor[ngh]')).toHaveCount(0, { timeout: 15_000 });
+      const live = example(page, 'Accessibility check');
+      await live.getByRole('button', { name: 'Accessibility check' }).click();
+      await expect(live.getByRole('status')).toHaveText('2 problems found.');
+    },
+  },
+  {
     name: 'editor link popover open',
     path: 'controls/editor',
     open: async (page) => {
       const live = example(page, 'Full toolbar');
-      await live.getByRole('textbox', { name: 'Shipping report' }).locator('a').click();
-      await live.getByRole('button', { name: 'Link' }).click();
+      await expect(page.locator('star-editor[ngh]')).toHaveCount(0, { timeout: 15_000 });
+      await live.getByRole('textbox', { name: 'Product announcement' }).locator('a').click();
+      const link = live.getByRole('button', { name: 'Link', exact: true });
+      if ((await link.count()) === 0)
+        await live.getByRole('button', { name: 'More actions' }).click();
+      await link.click();
       await expect(live.getByRole('button', { name: 'Remove link' })).toBeVisible();
     },
   },

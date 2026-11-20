@@ -11,39 +11,6 @@ export function starEditorPlainLength(area: Node): number {
   return (area.textContent ?? '').split(ZWSP).join('').length;
 }
 
-/** Sets the `rel` tokens of `anchor`: other tokens stay, `opener` goes, `add` is added. */
-function setRel(anchor: Element, add: readonly string[]): void {
-  const tokens = (anchor.getAttribute('rel') ?? '')
-    .toLowerCase()
-    .split(/\s+/)
-    .filter((token) => token && token !== 'opener');
-  for (const token of add) if (!tokens.includes(token)) tokens.push(token);
-  if (tokens.length) anchor.setAttribute('rel', tokens.join(' '));
-  else anchor.removeAttribute('rel');
-}
-
-/**
- * Links in sanitized HTML that cannot reach back to this page (reverse tabnabbing): a link with
- * a `target` opens a new tab and gets `noopener noreferrer` in its `rel` (other tokens stay);
- * `_self`, `_parent` and `_top` lose the target. The HTML is parsed in an inert template (no image loads, no scripts).
- */
-export function starEditorSafeLinks(html: string, doc: Document): string {
-  if (!/\btarget\s*=/i.test(html)) return html;
-  const template = doc.createElement('template');
-  template.innerHTML = html;
-  for (const anchor of template.content.querySelectorAll('a[target]')) {
-    const target = anchor.getAttribute('target')?.trim().toLowerCase() ?? '';
-    if (!target || target === '_self' || target === '_parent' || target === '_top') {
-      anchor.removeAttribute('target');
-      setRel(anchor, []);
-    } else {
-      anchor.setAttribute('target', '_blank');
-      setRel(anchor, ['noopener', 'noreferrer']);
-    }
-  }
-  return template.innerHTML;
-}
-
 /** Block elements that the toolbar formats or aligns. */
 const BLOCKS = new Set(['P', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'LI', 'BLOCKQUOTE', 'DIV', 'PRE']);
 
@@ -51,9 +18,10 @@ const BLOCKS = new Set(['P', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'LI', 'BLOCKQUO
 export const STAR_EDITOR_ALIGN_CLASSES = {
   center: 'star-text-center',
   end: 'star-text-end',
+  justify: 'star-text-justify',
 } as const;
 
-export type StarEditorAlignment = 'start' | 'center' | 'end';
+export type StarEditorAlignment = 'start' | 'center' | 'end' | 'justify';
 
 /** The range of the selection when it is inside `area`, else `null`. */
 export function starEditorRange(area: HTMLElement): Range | null {
@@ -98,6 +66,13 @@ export function starEditorPath(node: Node | null, area: HTMLElement): string[] {
 /** The block elements that the range touches. Text straight in the area is wrapped in a `p`. */
 export function starEditorBlocks(area: HTMLElement, range: Range): HTMLElement[] {
   const doc = area.ownerDocument;
+  // Moving a node resets a range boundary in it: keep the boundaries to set them again.
+  const kept = [
+    range.startContainer,
+    range.startOffset,
+    range.endContainer,
+    range.endOffset,
+  ] as const;
   // Loose inline content at the top level: put it in a paragraph first.
   for (const node of [...area.childNodes]) {
     if (node instanceof Element && BLOCKS.has(node.tagName)) continue;
@@ -113,6 +88,10 @@ export function starEditorBlocks(area: HTMLElement, range: Range): HTMLElement[]
       if (next instanceof Element && (next.tagName === 'UL' || next.tagName === 'OL')) break;
       paragraph.appendChild(next);
     }
+  }
+  if (area.contains(kept[0]) && area.contains(kept[2])) {
+    range.setStart(kept[0], kept[1]);
+    range.setEnd(kept[2], kept[3]);
   }
   const blocks = [...area.querySelectorAll<HTMLElement>([...BLOCKS].join(','))].filter((block) =>
     range.intersectsNode(block),
@@ -130,7 +109,10 @@ export function starEditorAlign(
   alignment: StarEditorAlignment,
 ): void {
   for (const block of starEditorBlocks(area, range)) {
-    block.classList.remove(STAR_EDITOR_ALIGN_CLASSES.center, STAR_EDITOR_ALIGN_CLASSES.end);
+    block.classList.remove(...Object.values(STAR_EDITOR_ALIGN_CLASSES));
+    // A pasted or migrated style alignment gives way to the class.
+    block.style?.removeProperty('text-align');
+    if (block.getAttribute('style') === '') block.removeAttribute('style');
     if (alignment !== 'start') block.classList.add(STAR_EDITOR_ALIGN_CLASSES[alignment]);
     if (!block.classList.length) block.removeAttribute('class');
   }
@@ -141,6 +123,7 @@ export function starEditorAlignmentAt(node: Node | null, area: HTMLElement): Sta
   const block = starEditorClosest(node, area, [...BLOCKS]);
   if (block?.classList.contains(STAR_EDITOR_ALIGN_CLASSES.center)) return 'center';
   if (block?.classList.contains(STAR_EDITOR_ALIGN_CLASSES.end)) return 'end';
+  if (block?.classList.contains(STAR_EDITOR_ALIGN_CLASSES.justify)) return 'justify';
   return 'start';
 }
 

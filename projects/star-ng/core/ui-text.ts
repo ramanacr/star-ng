@@ -300,6 +300,92 @@ export interface StarUiText {
   readonly editorLinkInvalid: string;
   readonly editorCharacterCount: (count: number, max: number) => string;
   readonly editorCharactersLeft: (count: number) => string;
+  readonly editorSubscript: string;
+  readonly editorSuperscript: string;
+  readonly editorTextColor: string;
+  readonly editorHighlight: string;
+  /** Button of the color panel that removes the color. */
+  readonly editorNoColor: string;
+  readonly editorFontSize: string;
+  readonly editorSizeSmall: string;
+  readonly editorSizeNormal: string;
+  readonly editorSizeLarge: string;
+  readonly editorSizeLarger: string;
+  readonly editorSizeLargest: string;
+  readonly editorJustify: string;
+  readonly editorIndent: string;
+  readonly editorOutdent: string;
+  readonly editorChecklist: string;
+  readonly editorHorizontalRule: string;
+  readonly editorImage: string;
+  readonly editorImageAddress: string;
+  readonly editorImageFile: string;
+  readonly editorImageInvalid: string;
+  readonly editorImageUploading: string;
+  /** Field of the image panel: the alternative text of the image. */
+  readonly editorAltText: string;
+  readonly editorAltRequired: string;
+  readonly editorDecorative: string;
+  readonly editorCaption: string;
+  /** Name of the resize handle of a selected image (a slider of its width). */
+  readonly editorResizeImage: string;
+  readonly editorEmbed: string;
+  readonly editorEmbedAddress: string;
+  readonly editorEmbedNotAllowed: string;
+  /** The source view button and the name of its text field. */
+  readonly editorSource: string;
+  readonly editorSourceChanged: string;
+  /** Error of the source view: an element that is opened and never closed; `name` is the tag name. */
+  readonly editorSourceUnclosed: (name: string) => string;
+  readonly editorTable: string;
+  /** Field of the insert table panel: the number of rows. */
+  readonly editorRows: string;
+  readonly editorHeaderRow: string;
+  readonly editorRowAbove: string;
+  readonly editorRowBelow: string;
+  readonly editorColumnBefore: string;
+  readonly editorColumnAfter: string;
+  readonly editorDeleteRow: string;
+  readonly editorDeleteColumn: string;
+  readonly editorDeleteTable: string;
+  readonly editorMergeNext: string;
+  readonly editorMergeBelow: string;
+  readonly editorSplitCell: string;
+  readonly editorTableProperties: string;
+  readonly editorBorders: string;
+  readonly editorBordersAll: string;
+  readonly editorBordersRows: string;
+  readonly editorBordersNone: string;
+  readonly editorTableAlign: string;
+  readonly editorFindReplace: string;
+  readonly editorFind: string;
+  readonly editorReplaceWith: string;
+  readonly editorReplace: string;
+  readonly editorReplaceAll: string;
+  readonly editorMatchCase: string;
+  readonly editorWholeWord: string;
+  /** Status of the find panel: the current match and the number of matches. */
+  readonly editorMatchCount: (current: number, total: number) => string;
+  readonly editorReplaced: (count: number) => string;
+  readonly editorWordCount: (words: number, characters: number) => string;
+  readonly editorShortcuts: string;
+  readonly editorPastePlain: string;
+  readonly editorCheckItem: string;
+  readonly editorNextCell: string;
+  readonly editorTableMenu: string;
+  readonly editorColumnWidth: string;
+  /** Line of the shortcut help about the Markdown input rules. */
+  readonly editorMarkdownHint: string;
+  readonly editorAccessibility: string;
+  readonly editorIssueCount: (count: number) => string;
+  readonly editorIssueAlt: string;
+  readonly editorIssueEmptyLink: string;
+  /** A heading skips a level: `from` is the level before (0 at the start), `to` the level of the heading. */
+  readonly editorIssueHeading: (from: number, to: number) => string;
+  readonly editorIssueTableHeader: string;
+  readonly editorIssueContrast: (ratio: number) => string;
+  readonly editorGoTo: string;
+  readonly editorFix: string;
   readonly chartPoints: (title: string) => string;
   readonly chartPointsHint: string;
   readonly chartPointLabel: (series: string, label: string, value: string) => string;
@@ -592,11 +678,12 @@ export interface StarUiText {
   readonly spreadsheetFewerDecimals: string;
   readonly spreadsheetBackground: string;
   readonly spreadsheetNoBackground: string;
-  readonly spreadsheetBackgroundAccent: string;
-  readonly spreadsheetBackgroundSuccess: string;
-  readonly spreadsheetBackgroundWarning: string;
-  readonly spreadsheetBackgroundDanger: string;
-  readonly spreadsheetBackgroundMuted: string;
+  /** Names of the theme palette colors (spreadsheet cell backgrounds, editor text colors). */
+  readonly colorBlue: string;
+  readonly colorGreen: string;
+  readonly colorAmber: string;
+  readonly colorRed: string;
+  readonly colorGrey: string;
   // Document viewer
   readonly documentToolbar: string;
   /** Name of the page area when the viewer has no `title`. */
@@ -613,12 +700,15 @@ export interface StarUiText {
   readonly documentRotate: string;
   readonly documentThumbnails: string;
   readonly documentSinglePage: string;
-  readonly documentFullScreen: string;
+  /** Full screen button (document viewer, editor). */
+  readonly fullScreen: string;
+  readonly documentDownload: string;
   readonly documentPrint: string;
   readonly documentSearch: string;
-  readonly documentPreviousResult: string;
-  readonly documentNextResult: string;
-  readonly documentNoResults: string;
+  /** Search results: previous, next, none (document viewer, editor find). */
+  readonly previousResult: string;
+  readonly nextResult: string;
+  readonly noResults: string;
   readonly documentSearchResults: (count: number, pages: number) => string;
   readonly documentLoadError: string;
   /** Text of a page that could not be drawn. */
@@ -1064,6 +1154,91 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
     'Enter a web address (https://…), an e-mail address (mailto:…) or a phone number (tel:…).',
   editorCharacterCount: (count, max) => `${count} of ${max} characters`,
   editorCharactersLeft: (count) => (count === 1 ? '1 character left' : `${count} characters left`),
+  editorSubscript: 'Subscript',
+  editorSuperscript: 'Superscript',
+  editorTextColor: 'Text color',
+  editorHighlight: 'Highlight color',
+  editorNoColor: 'No color',
+  editorFontSize: 'Font size',
+  editorSizeSmall: 'Small',
+  editorSizeNormal: 'Normal',
+  editorSizeLarge: 'Large',
+  editorSizeLarger: 'Larger',
+  editorSizeLargest: 'Largest',
+  editorJustify: 'Justify',
+  editorIndent: 'Increase indent',
+  editorOutdent: 'Decrease indent',
+  editorChecklist: 'Checklist',
+  editorHorizontalRule: 'Horizontal line',
+  editorImage: 'Image',
+  editorImageAddress: 'Image address (https://…)',
+  editorImageFile: 'Or choose an image file',
+  editorImageInvalid: 'Enter an image address (https://…) or choose an image file.',
+  editorImageUploading: 'Uploading the image…',
+  editorAltText: 'Alternative text',
+  editorAltRequired: 'Describe the image, or mark it as decorative.',
+  editorDecorative: 'Decorative image (no alternative text)',
+  editorCaption: 'Caption',
+  editorResizeImage: 'Image width',
+  editorEmbed: 'Embed',
+  editorEmbedAddress: 'Video or page address',
+  editorEmbedNotAllowed: 'This address is not on the list of allowed embeds.',
+  editorSource: 'HTML source',
+  editorSourceChanged: 'Some markup is not allowed: it was removed or changed to current markup.',
+  editorSourceUnclosed: (name) => `The element <${name}> is not closed.`,
+  editorTable: 'Table',
+  editorRows: 'Rows',
+  editorHeaderRow: 'Header row',
+  editorRowAbove: 'Insert row above',
+  editorRowBelow: 'Insert row below',
+  editorColumnBefore: 'Insert column before',
+  editorColumnAfter: 'Insert column after',
+  editorDeleteRow: 'Delete row',
+  editorDeleteColumn: 'Delete column',
+  editorDeleteTable: 'Delete table',
+  editorMergeNext: 'Merge with the next cell',
+  editorMergeBelow: 'Merge with the cell below',
+  editorSplitCell: 'Split cell',
+  editorTableProperties: 'Table properties',
+  editorBorders: 'Borders',
+  editorBordersAll: 'All borders',
+  editorBordersRows: 'Lines between rows',
+  editorBordersNone: 'No borders',
+  editorTableAlign: 'Table alignment',
+  editorFindReplace: 'Find and replace',
+  editorFind: 'Find',
+  editorReplaceWith: 'Replace with',
+  editorReplace: 'Replace',
+  editorReplaceAll: 'Replace all',
+  editorMatchCase: 'Match case',
+  editorWholeWord: 'Whole words only',
+  editorMatchCount: (current, total) => `${current} of ${total}`,
+  editorReplaced: (count) => (count === 1 ? '1 match replaced' : `${count} matches replaced`),
+  editorWordCount: (words, characters) =>
+    `${words} ${words === 1 ? 'word' : 'words'}, ${characters} ${characters === 1 ? 'character' : 'characters'}`,
+  editorShortcuts: 'Keyboard shortcuts',
+  editorPastePlain: 'Paste as plain text',
+  editorCheckItem: 'Check or uncheck a checklist item',
+  editorNextCell: 'Next or previous table cell',
+  editorTableMenu: 'Table menu',
+  editorColumnWidth: 'Narrower or wider column',
+  editorMarkdownHint: 'Type # , ## , > , - , 1. or [] at the start of a paragraph, or **text**',
+  editorAccessibility: 'Accessibility check',
+  editorIssueCount: (count) =>
+    count === 0
+      ? 'No problems found.'
+      : count === 1
+        ? '1 problem found.'
+        : `${count} problems found.`,
+  editorIssueAlt: 'An image has no alternative text.',
+  editorIssueEmptyLink: 'A link has no text.',
+  editorIssueHeading: (from, to) =>
+    `Heading ${to} follows ${from ? `heading ${from}` : 'the start'}: a level is skipped.`,
+  editorIssueTableHeader: 'A table has no header cells.',
+  editorIssueContrast: (ratio) =>
+    `A text color has low contrast (${ratio}:1, at least 4.5:1 is needed).`,
+  editorGoTo: 'Go to',
+  editorFix: 'Fix',
   chartPoints: (title) => `${title}: data points`,
   chartPointsHint: 'Arrow keys move between the points and the series. Enter selects a point.',
   chartPointLabel: (series, label, value) => `${series}, ${label}: ${value}`,
@@ -1291,11 +1466,11 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   spreadsheetFewerDecimals: 'Fewer decimal places',
   spreadsheetBackground: 'Cell background',
   spreadsheetNoBackground: 'No background',
-  spreadsheetBackgroundAccent: 'Blue',
-  spreadsheetBackgroundSuccess: 'Green',
-  spreadsheetBackgroundWarning: 'Amber',
-  spreadsheetBackgroundDanger: 'Red',
-  spreadsheetBackgroundMuted: 'Grey',
+  colorBlue: 'Blue',
+  colorGreen: 'Green',
+  colorAmber: 'Amber',
+  colorRed: 'Red',
+  colorGrey: 'Grey',
   documentToolbar: 'Document tools',
   documentDefaultTitle: 'Document',
   documentPageOf: (page, total) => `Page ${page} of ${total}`,
@@ -1307,12 +1482,13 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   documentRotate: 'Rotate clockwise',
   documentThumbnails: 'Page thumbnails',
   documentSinglePage: 'Single page',
-  documentFullScreen: 'Full screen',
+  fullScreen: 'Full screen',
+  documentDownload: 'Download',
   documentPrint: 'Print',
   documentSearch: 'Search in document',
-  documentPreviousResult: 'Previous result',
-  documentNextResult: 'Next result',
-  documentNoResults: 'No results',
+  previousResult: 'Previous result',
+  nextResult: 'Next result',
+  noResults: 'No results',
   documentSearchResults: (count, pages) =>
     `${count} ${count === 1 ? 'result' : 'results'} on ${pages} ${pages === 1 ? 'page' : 'pages'}`,
   documentLoadError: 'The document could not be loaded.',
@@ -1588,6 +1764,13 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   durationDays: ['count'],
   percentComplete: ['value'],
   dependsOn: ['label'],
+  editorSourceUnclosed: ['name'],
+  editorMatchCount: ['current', 'total'],
+  editorReplaced: ['count'],
+  editorWordCount: ['words', 'characters'],
+  editorIssueCount: ['count'],
+  editorIssueHeading: ['from', 'to'],
+  editorIssueContrast: ['ratio'],
   pivotTotalOf: ['label'],
   pivotMoveField: ['label'],
   pivotMoveTo: ['area'],

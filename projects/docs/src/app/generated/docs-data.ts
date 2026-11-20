@@ -5157,7 +5157,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-editor",
     "entry": "@star-ng/ui/editor",
-    "description": "Rich text field (PrimeNG `p-editor`, without Quill): a `contenteditable` area with a formatting toolbar. Value is HTML, sanitized with Angular's `DomSanitizer` both when it is shown and when it is stored.",
+    "description": "Rich text field (PrimeNG `p-editor`, without Quill): a `contenteditable` area with a formatting toolbar. Value is HTML, sanitized with the allow-list of the editor both when it is shown and when it is stored.",
     "inputs": [
       {
         "name": "format",
@@ -5227,7 +5227,14 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "boolean",
         "default": "false",
         "required": false,
-        "description": "Paste plain text only. Without it, pasted HTML is sanitized (no scripts, no style elements or attributes, no event handlers) before it goes in. PrimeNG has no equivalent (Quill clipboard matchers)."
+        "description": "Paste plain text only. Without it, pasted HTML is sanitized (no scripts, no style elements, no event handlers, only allowed styles) before it goes in. PrimeNG has no equivalent (Quill clipboard matchers)."
+      },
+      {
+        "name": "sanitize",
+        "type": "StarEditorSanitizeConfig",
+        "default": "STAR_EDITOR_SANITIZE_DEFAULTS",
+        "required": false,
+        "description": "The allow-list of the sanitizer: elements, attributes per element, URL protocols and the hosts of embeds. Spread `STAR_EDITOR_SANITIZE_DEFAULTS` to change it. Script, style, SVG and form elements, event handlers and `javascript:`, `vbscript:` and `data:` addresses (except `data:` images) never pass, whatever the list says. PrimeNG has no equivalent."
       },
       {
         "name": "toolbar",
@@ -5235,6 +5242,27 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "STAR_EDITOR_DEFAULT_TOOLBAR",
         "required": false,
         "description": "The toolbar: command names in order, with `'|'` between groups. Unknown names are left out. `STAR_EDITOR_FULL_TOOLBAR` has every command. PrimeNG toolbar formats (Quill `toolbar`)."
+      },
+      {
+        "name": "showCount",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows the number of words and characters under the area. With `maxLength` the counter of the limit shows next to it. PrimeNG has no equivalent."
+      },
+      {
+        "name": "markdownShortcuts",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Markdown-style input rules: `# `, `## ` and `### ` at the start of a paragraph make headings, `> ` a quote, `- ` or `* ` a bulleted list, `1. ` a numbered list, `[] ` a checklist, and `**text**` bold text. Off by default. PrimeNG has no equivalent."
+      },
+      {
+        "name": "upload",
+        "type": "StarEditorUpload | null",
+        "default": "null",
+        "required": false,
+        "description": "Stores an image file that the user chose in the image panel and gives back its address. Without it, the file goes into the HTML as a `data:` address (large values)."
       }
     ],
     "models": [
@@ -5249,6 +5277,123 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "outputs": [
       {
         "name": "touch",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
+  "StarEditorColor": {
+    "kind": "component",
+    "selector": "star-editor-color",
+    "entry": "@star-ng/ui/editor",
+    "description": "The color panel of `star-editor` (internal): palette swatches from the theme tokens, \"No color\", and a custom color field. It sits under the toolbar like the link form; Escape closes it and the editor gives the focus back to the text.",
+    "inputs": [
+      {
+        "name": "kind",
+        "type": "'textColor' | 'highlight'",
+        "default": "'textColor'",
+        "required": false,
+        "description": "`'textColor'` or `'highlight'`."
+      },
+      {
+        "name": "value",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "The color at the caret, `''` for none."
+      }
+    ],
+    "models": [],
+    "outputs": [
+      {
+        "name": "pick",
+        "type": "string",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "dismissed",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
+  "StarEditorEmbed": {
+    "kind": "component",
+    "selector": "star-editor-embed",
+    "entry": "@star-ng/ui/editor",
+    "description": "The embed panel of `star-editor` (internal): a video or page address and a title (required: the name of the frame). Only addresses whose player is on the embed hosts of the allow-list pass.",
+    "inputs": [
+      {
+        "name": "resolve",
+        "type": "(url: string) => string | null",
+        "default": null,
+        "required": true,
+        "description": "Turns the address into a player address on the allowed hosts, or `null`."
+      }
+    ],
+    "models": [],
+    "outputs": [
+      {
+        "name": "apply",
+        "type": "{ src: string; title: string }",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "dismissed",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
+  "StarEditorImage": {
+    "kind": "component",
+    "selector": "star-editor-image",
+    "entry": "@star-ng/ui/editor",
+    "description": "The image panel of `star-editor` (internal): an address or a file, the alternative text (required, or the image is marked decorative), a caption and a width. It sits under the toolbar like the link form; Escape closes it.",
+    "inputs": [
+      {
+        "name": "initial",
+        "type": "StarEditorImageValue | null",
+        "default": "null",
+        "required": false,
+        "description": "The image at the caret, or `null` for a new image."
+      },
+      {
+        "name": "upload",
+        "type": "StarEditorUpload | null",
+        "default": "null",
+        "required": false,
+        "description": "The owner's upload of a chosen file; without it, a file becomes a `data:` address."
+      },
+      {
+        "name": "protocols",
+        "type": "readonly string[]",
+        "default": "['http:', 'https:']",
+        "required": false,
+        "description": "URL protocols of the allow-list (`sanitize` of the editor)."
+      }
+    ],
+    "models": [],
+    "outputs": [
+      {
+        "name": "apply",
+        "type": "StarEditorImageValue",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "dismissed",
         "type": "void",
         "default": null,
         "required": false,
@@ -5296,6 +5441,62 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       {
         "name": "remove",
         "type": "void",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "dismissed",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
+  "StarEditorTableInsert": {
+    "kind": "component",
+    "selector": "star-editor-table-insert",
+    "entry": "@star-ng/ui/editor",
+    "description": "The insert table panel of `star-editor` (internal): rows, columns and a header row, with a grid that a pointer can pick the size from (the fields are the keyboard way). Escape closes it.",
+    "inputs": [],
+    "models": [],
+    "outputs": [
+      {
+        "name": "apply",
+        "type": "{ rows: number; cols: number; header: boolean }",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "dismissed",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
+  "StarEditorTableProperties": {
+    "kind": "component",
+    "selector": "star-editor-table-properties",
+    "entry": "@star-ng/ui/editor",
+    "description": "The table properties panel of `star-editor` (internal): borders and alignment.",
+    "inputs": [
+      {
+        "name": "initial",
+        "type": "{ borders: StarEditorTableBorders; align: StarEditorTableAlign }",
+        "default": "{ borders: 'all', align: 'start', }",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": [
+      {
+        "name": "apply",
+        "type": "{ borders: StarEditorTableBorders; align: StarEditorTableAlign }",
         "default": null,
         "required": false,
         "description": ""
@@ -16104,13 +16305,20 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "drawer/position": "<div class=\"docs-row\">\n  @for (item of positions; track item) {\n    <star-button variant=\"secondary\" (pressed)=\"openAt(item)\">{{ item }}</star-button>\n  }\n</div>\n<star-drawer\n  [(visible)]=\"positionOpen\"\n  [position]=\"position()\"\n  [drawerSize]=\"position() === 'top' || position() === 'bottom' ? '14rem' : '22rem'\"\n  [header]=\"'Drawer at the ' + position()\"\n>\n  <p>This drawer is pinned to the {{ position() }} edge.</p>\n</star-drawer>",
   "dropdown/basic": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button\n      variant=\"secondary\"\n      trailingIcon=\"ph-bold ph-caret-down\"\n      [starDropdownTrigger]=\"formats\"\n    >\n      Export as\n    </star-button>\n  </div>\n  <star-dropdown\n    #formats\n    ariaLabel=\"Export format\"\n    [(value)]=\"format\"\n    (selectionChange)=\"onSelect($event)\"\n  >\n    <star-dropdown-item header>Documents</star-dropdown-item>\n    <star-dropdown-item value=\"pdf\">PDF</star-dropdown-item>\n    <star-dropdown-item value=\"docx\" disabled>Word document</star-dropdown-item>\n    <star-dropdown-item divider />\n    <star-dropdown-item header>Data</star-dropdown-item>\n    <star-dropdown-item value=\"csv\">CSV</star-dropdown-item>\n    <star-dropdown-item value=\"xlsx\">Spreadsheet</star-dropdown-item>\n    <star-dropdown-item value=\"json\">JSON</star-dropdown-item>\n  </star-dropdown>\n  <p class=\"docs-output\" role=\"status\">Export format: {{ chosen() }}</p>\n</div>",
   "dropdown/keep-open": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" [starDropdownTrigger]=\"cities\">\n      Add a city\n    </star-button>\n  </div>\n  <star-dropdown\n    #cities\n    ariaLabel=\"Cities\"\n    [closeOnSelect]=\"false\"\n    (selectionChange)=\"added.set(added() + $event.label + ' ')\"\n  >\n    <star-dropdown-item value=\"berlin\">Berlin</star-dropdown-item>\n    <star-dropdown-item value=\"lisbon\">Lisbon</star-dropdown-item>\n    <star-dropdown-item value=\"oslo\">Oslo</star-dropdown-item>\n    <star-dropdown-item value=\"toronto\">Toronto</star-dropdown-item>\n  </star-dropdown>\n  <p class=\"docs-output\" role=\"status\">Added: {{ added() || 'none' }}</p>\n</div>",
+  "editor/accessibility": "<div class=\"docs-stack\">\n  <star-editor\n    [(value)]=\"audited\"\n    [toolbar]=\"auditToolbar\"\n    ariaLabel=\"Checked announcement\"\n  />\n</div>",
+  "editor/allow-list": "<div class=\"docs-stack\">\n  <star-editor\n    [(value)]=\"strict\"\n    [sanitize]=\"strictRules\"\n    ariaLabel=\"Strict announcement\"\n  />\n  <pre class=\"docs-output\" role=\"group\" aria-label=\"Value of the strict editor\">{{\n    strict()\n  }}</pre>\n</div>",
   "editor/basic": "<div class=\"docs-stack\">\n  <star-editor\n    [(value)]=\"note\"\n    ariaLabel=\"Delivery note\"\n    placeholder=\"Write the delivery note\"\n  />\n  <pre class=\"docs-output\" role=\"group\" aria-label=\"Value of the editor\">{{ note() }}</pre>\n</div>",
-  "editor/full-toolbar": "<div class=\"docs-stack\">\n  <star-editor [(value)]=\"report\" [toolbar]=\"fullToolbar\" ariaLabel=\"Shipping report\" />\n  <pre class=\"docs-output\" role=\"group\" aria-label=\"Value of the full editor\">{{\n    report()\n  }}</pre>\n</div>",
+  "editor/full-toolbar": "<div class=\"docs-stack\">\n  <star-editor\n    [(value)]=\"report\"\n    [toolbar]=\"fullToolbar\"\n    ariaLabel=\"Product announcement\"\n  />\n  <pre class=\"docs-output\" role=\"group\" aria-label=\"Value of the full editor\">{{\n    report()\n  }}</pre>\n</div>",
+  "editor/lists": "<div class=\"docs-stack\">\n  <star-editor [(value)]=\"plan\" [toolbar]=\"listToolbar\" ariaLabel=\"Launch plan\" />\n</div>",
+  "editor/media": "<div class=\"docs-stack\">\n  <star-editor\n    [(value)]=\"media\"\n    [toolbar]=\"mediaToolbar\"\n    [upload]=\"upload\"\n    [sanitize]=\"embedRules\"\n    ariaLabel=\"Release with images\"\n  />\n</div>",
   "editor/own-toolbar": "<div class=\"docs-stack\">\n  <star-editor [toolbar]=\"shortToolbar\" ariaLabel=\"Short comment\" minHeight=\"4rem\" />\n</div>",
   "editor/paste": "<div class=\"docs-stack\">\n  <star-editor ariaLabel=\"Pasted with formats\" minHeight=\"4rem\" />\n  <star-editor pasteAsText ariaLabel=\"Pasted as plain text\" minHeight=\"4rem\" />\n</div>",
+  "editor/productivity": "a quote, - or * a bulleted list, 1. a numbered list, [] a checklist, and **text** bold text.\"\n     >\n       <div class=\"docs-stack\">\n         <star-editor\n           [(value)]=\"notes\"\n           [toolbar]=\"productivityToolbar\"\n           showCount\n           markdownShortcuts\n           ariaLabel=\"Release notes\"\n         />\n       </div>",
   "editor/sanitize": "<div class=\"docs-stack\">\n  <star-editor [(value)]=\"unsafe\" ariaLabel=\"Sanitized content\" />\n  <pre class=\"docs-output\" aria-label=\"Value after sanitizing\">{{ unsafe() }}</pre>\n</div>",
   "editor/size": "<div class=\"docs-stack\">\n  <star-editor\n    [(value)]=\"comment\"\n    ariaLabel=\"Order comment\"\n    placeholder=\"Add a comment\"\n    minHeight=\"4rem\"\n  />\n</div>",
+  "editor/source": "<div class=\"docs-stack\">\n  <star-editor\n    [(value)]=\"sourceValue\"\n    [toolbar]=\"sourceToolbar\"\n    ariaLabel=\"Release source\"\n  />\n  <pre class=\"docs-output\" role=\"group\" aria-label=\"Value of the source editor\">{{\n    sourceValue()\n  }}</pre>\n</div>",
   "editor/states": "<div class=\"docs-stack\">\n  <star-editor [value]=\"saved()\" ariaLabel=\"Saved note\" readonly />\n  <star-editor [value]=\"saved()\" ariaLabel=\"Locked note\" disabled />\n</div>",
+  "editor/tables": "<div class=\"docs-stack\">\n  <star-editor [(value)]=\"tables\" [toolbar]=\"tableToolbar\" ariaLabel=\"Price table\" />\n</div>",
   "editor/text-limit": "<div class=\"docs-stack\">\n  <star-editor\n    [(value)]=\"summary\"\n    format=\"text\"\n    [maxLength]=\"120\"\n    ariaLabel=\"Delivery summary\"\n  />\n  <pre class=\"docs-output\" role=\"group\" aria-label=\"Value of the text editor\">{{\n    summary()\n  }}</pre>\n</div>",
   "editor/toolbar-slot": "<div class=\"docs-stack\">\n  <star-editor ariaLabel=\"Release note\" minHeight=\"4rem\">\n    <ng-template\n      starEditorToolbar\n      let-exec=\"exec\"\n      let-isActive=\"isActive\"\n      let-disabled=\"disabled\"\n    >\n      <div\n        class=\"star-toolbar star-editor__toolbar\"\n        role=\"toolbar\"\n        aria-label=\"Release note tools\"\n      >\n        <button\n          type=\"button\"\n          class=\"star-btn star-btn--ghost star-btn--sm\"\n          [attr.aria-pressed]=\"isActive('bold')\"\n          [disabled]=\"disabled\"\n          (mousedown)=\"$event.preventDefault()\"\n          (click)=\"exec('bold')\"\n        >\n          Bold\n        </button>\n        <button\n          type=\"button\"\n          class=\"star-btn star-btn--ghost star-btn--sm\"\n          [attr.aria-pressed]=\"isActive('code')\"\n          [disabled]=\"disabled\"\n          (mousedown)=\"$event.preventDefault()\"\n          (click)=\"exec('code')\"\n        >\n          Code\n        </button>\n      </div>\n    </ng-template>\n  </star-editor>\n</div>",
   "field/basic": "<div class=\"docs-stack\">\n  <star-field label=\"Full name\" hint=\"As shown on your account.\">\n    <input starInput placeholder=\"Avery Stone\" />\n  </star-field>\n</div>",

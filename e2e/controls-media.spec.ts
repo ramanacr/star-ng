@@ -1,5 +1,5 @@
 import { expect, Locator, Page, test } from '@playwright/test';
-import { collectErrors, example, openPage } from './support';
+import { collectErrors, editorTool, example, openPage } from './support';
 
 const pdf = (name: string, size = 1) => ({
   name,
@@ -302,9 +302,10 @@ test.describe('editor', () => {
     const shown = await area.evaluate((el) => el.innerHTML);
     expect(shown).not.toContain('<script');
     expect(shown).not.toContain('onclick');
-    expect(shown).not.toContain('style=');
+    // Only the allowed style (color) stays; position goes.
+    expect(shown).toContain('style="color: var(--star-danger)"');
     expect(shown).not.toMatch(/href="javascript:/i);
-    await expect(area.locator('a')).toHaveAttribute('href', 'unsafe:javascript:alert(1)');
+    await expect(area.locator('a')).not.toHaveAttribute('href');
 
     // The model keeps the value that the page set until the user edits the area.
     await expect(valueOf(live)).toContainText('<script>alert(1)</script>');
@@ -314,9 +315,9 @@ test.describe('editor', () => {
     await expect(valueOf(live)).toContainText('ORD-1042');
     await expect(valueOf(live)).not.toContainText('<script');
     await expect(valueOf(live)).not.toContainText('onclick');
-    // An unsafe URL stays as text but cannot run: it gets the prefix "unsafe:".
-    await expect(valueOf(live)).toContainText('href="unsafe:javascript:alert(1)"');
-    await expect(valueOf(live)).not.toContainText('href="javascript:');
+    // An unsafe URL goes; the link text stays.
+    await expect(valueOf(live)).toContainText('<a>open');
+    await expect(valueOf(live)).not.toContainText('javascript:');
   });
 
   test('read-only and disabled editors cannot be edited', async ({ page }) => {
@@ -335,34 +336,40 @@ test.describe('editor', () => {
   test('full toolbar: text style, inline code and center alignment', async ({ page }) => {
     await openPage(page, '/controls/editor', 'Editor');
     const live = example(page, 'Full toolbar');
-    const area = live.getByRole('textbox', { name: 'Shipping report' });
-    const toolbar = live.getByRole('toolbar', { name: 'Shipping report formatting' });
+    const area = live.getByRole('textbox', { name: 'Product announcement' });
+    const toolbar = live.getByRole('toolbar', { name: 'Product announcement formatting' });
+    await expect(page.locator('star-editor[ngh]')).toHaveCount(0, { timeout: 15_000 });
     await expect(toolbar.locator('[tabindex="0"]')).toHaveCount(1);
 
     await area.locator('p').click();
     await page.keyboard.press('End');
     await page.keyboard.press('Shift+Home');
-    await live.getByRole('button', { name: 'Center' }).click();
+    const center = await editorTool(live, 'Center');
+    await center.click();
     await expect(area.locator('p')).toHaveClass('star-text-center');
-    await expect(live.getByRole('button', { name: 'Center' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    );
+    await expect(await editorTool(live, 'Center')).toHaveAttribute('aria-pressed', 'true');
     await expect(valueOf(live)).toContainText('<p class="star-text-center">');
 
-    await area.locator('b').dblclick();
-    await live.getByRole('button', { name: 'Code' }).click();
-    await expect(area.locator('code')).toHaveText('orders');
+    await area.locator('b').evaluate((bold) => {
+      const range = document.createRange();
+      range.selectNodeContents(bold);
+      document.getSelection()!.removeAllRanges();
+      document.getSelection()!.addRange(range);
+    });
+    await (await editorTool(live, 'Code')).click();
+    await expect(area.locator('code')).toHaveText('new dashboard');
 
     await area.locator('p').click();
     await live.getByRole('combobox', { name: 'Text style' }).selectOption('h1');
     await expect(area.locator('h1')).toHaveCount(1);
     await expect(valueOf(live)).toContainText('<h1');
 
-    // Arrow keys move through the toolbar, the select included.
+    // Arrow keys move through the toolbar, the selects included.
     await live.getByRole('button', { name: 'Redo' }).focus();
     await page.keyboard.press('ArrowRight');
     await expect(live.getByRole('combobox', { name: 'Text style' })).toBeFocused();
+    await page.keyboard.press('ArrowRight');
+    await expect(live.getByRole('combobox', { name: 'Font size' })).toBeFocused();
     await page.keyboard.press('ArrowRight');
     await expect(live.getByRole('button', { name: 'Bold' })).toBeFocused();
   });

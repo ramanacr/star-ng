@@ -83,3 +83,15 @@ export async function lowContrast(
   });
   return measured.filter((item) => item.ratio < minimum);
 }
+
+/**
+ * A toolbar control of an editor example. When its group is in the "More actions" panel (a
+ * narrow page), the panel opens first.
+ */
+export async function editorTool(live: Locator, name: string): Promise<Locator> {
+  const control = live.getByRole('button', { name, exact: true });
+  if ((await control.count()) === 0) {
+    await live.getByRole('button', { name: 'More actions' }).click();
+  }
+  return control;
+}

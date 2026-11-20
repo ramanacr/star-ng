@@ -2,33 +2,73 @@ import { Directive, inject, TemplateRef } from '@angular/core';
 import type { StarUiText } from '@star-ng/ui/core';
 
 /**
- * A command of `star-editor`. Most names are `document.execCommand` names. The others:
+ * A command of `star-editor`. `bold`, `italic`, `underline` and `strikeThrough` are
+ * `document.execCommand` names. The others:
  * `heading` turns the block into a level 3 heading and back; `formatBlock` is the text style
- * select (paragraph, heading 1 to 3); `blockquote` and `code` (inline) wrap and unwrap; `link`
- * opens the link popover; `justifyLeft`, `justifyCenter` and `justifyRight` align the block to the
- * start, the center and the end of the line (logical: the start is on the right in right-to-left).
- * Alignment is stored as the classes `star-text-center` and `star-text-end`, so the HTML needs the
- * StarNG CSS where it is shown. `undo` and `redo` are the browser history: they do not include
- * `code`, the alignment, and the fallbacks of link and paste, which change the DOM directly.
+ * select (paragraph, heading 1 to 3) and `fontSize` the font size select (small, normal, large,
+ * larger, largest); `blockquote` and `code` (inline) wrap and unwrap; `subscript` and
+ * `superscript` toggle; `textColor` and `highlight` open a color panel (palette tokens, no color,
+ * a custom color); `link` opens the link popover; `justifyLeft`, `justifyCenter`, `justifyRight`
+ * and `justifyFull` align the block to the start, the center and the end of the line, or justify
+ * it (logical: the start is on the right in right-to-left); `insertUnorderedList`,
+ * `insertOrderedList` and `checklist` toggle lists; `indent` and `outdent` nest a list item or
+ * indent a block; `image` opens the image panel (address or file, required alternative text or
+ * decorative, caption, width; with the image at the caret it edits it) and `embed` the embed
+ * panel (a video or page on the embed hosts of the allow-list); `horizontalRule` inserts a line;
+ * `table` inserts a table (rows, columns, header row), or in a table opens its properties
+ * (borders, alignment); `removeFormat` clears inline formats and the alignment; `source`
+ * switches to the HTML source view and back; `find` opens find and replace (Ctrl+F, Ctrl+H);
+ * `fullScreen` shows the editor over the whole window (Escape leaves); `shortcuts` opens the
+ * keyboard shortcut help; `accessibility` checks the content (images without alternative text,
+ * links without text, skipped heading levels, tables without header cells, low contrast colors)
+ * with "Go to" and "Fix" for each problem. Alignment is stored as the classes `star-text-center`, `star-text-end` and
+ * `star-text-justify`, so the HTML needs the StarNG CSS where it is shown. `undo` and `redo` use
+ * the history of the editor, which has every change.
  */
 export type StarEditorCommand =
   | 'bold'
   | 'italic'
   | 'underline'
   | 'strikeThrough'
+  | 'subscript'
+  | 'superscript'
   | 'code'
+  | 'textColor'
+  | 'highlight'
+  | 'fontSize'
   | 'heading'
   | 'formatBlock'
   | 'blockquote'
   | 'insertUnorderedList'
   | 'insertOrderedList'
+  | 'checklist'
+  | 'indent'
+  | 'outdent'
   | 'justifyLeft'
   | 'justifyCenter'
   | 'justifyRight'
+  | 'justifyFull'
   | 'link'
+  | 'image'
+  | 'embed'
+  | 'table'
+  | 'horizontalRule'
+  | 'source'
+  | 'find'
+  | 'fullScreen'
+  | 'shortcuts'
+  | 'accessibility'
   | 'removeFormat'
   | 'undo'
   | 'redo';
+
+/** The commands that the toolbar shows as a select, not a button. */
+export type StarEditorSelectCommand = 'formatBlock' | 'fontSize';
+
+/** True for the commands that the toolbar shows as a select. */
+export function starEditorIsSelect(command: string): command is StarEditorSelectCommand {
+  return command === 'formatBlock' || command === 'fontSize';
+}
 
 /** An entry of the `toolbar` input: a command, or `'|'` for a separator between groups. */
 export type StarEditorToolbarItem = StarEditorCommand | '|';
@@ -54,23 +94,43 @@ export const STAR_EDITOR_FULL_TOOLBAR: readonly StarEditorToolbarItem[] = [
   'redo',
   '|',
   'formatBlock',
+  'fontSize',
   '|',
   'bold',
   'italic',
   'underline',
   'strikeThrough',
+  'subscript',
+  'superscript',
   'code',
+  '|',
+  'textColor',
+  'highlight',
   '|',
   'insertUnorderedList',
   'insertOrderedList',
+  'checklist',
+  'outdent',
+  'indent',
   'blockquote',
   '|',
   'justifyLeft',
   'justifyCenter',
   'justifyRight',
+  'justifyFull',
   '|',
   'link',
+  'image',
+  'embed',
+  'table',
+  'horizontalRule',
   'removeFormat',
+  '|',
+  'find',
+  'source',
+  'fullScreen',
+  'shortcuts',
+  'accessibility',
 ];
 
 /** A toolbar button: its label in `STAR_UI_TEXT`, its icon, and whether it shows `aria-pressed`. */
@@ -81,7 +141,7 @@ export interface StarEditorButtonInfo {
 }
 
 export const STAR_EDITOR_BUTTONS: Readonly<
-  Record<Exclude<StarEditorCommand, 'formatBlock'>, StarEditorButtonInfo>
+  Record<Exclude<StarEditorCommand, StarEditorSelectCommand>, StarEditorButtonInfo>
 > = {
   bold: { label: 'editorBold', icon: 'ph-bold ph-text-b', toggle: true },
   italic: { label: 'editorItalic', icon: 'ph-bold ph-text-italic', toggle: true },
@@ -91,15 +151,36 @@ export const STAR_EDITOR_BUTTONS: Readonly<
     icon: 'ph-bold ph-text-strikethrough',
     toggle: true,
   },
+  subscript: { label: 'editorSubscript', icon: 'ph-bold ph-text-subscript', toggle: true },
+  superscript: { label: 'editorSuperscript', icon: 'ph-bold ph-text-superscript', toggle: true },
   code: { label: 'editorCode', icon: 'ph-bold ph-code', toggle: true },
+  textColor: { label: 'editorTextColor', icon: 'ph-bold ph-text-a-underline', toggle: false },
+  highlight: { label: 'editorHighlight', icon: 'ph-bold ph-highlighter', toggle: false },
   heading: { label: 'editorHeading', icon: 'ph-bold ph-text-h', toggle: false },
   blockquote: { label: 'editorQuote', icon: 'ph-bold ph-quotes', toggle: true },
   insertUnorderedList: { label: 'editorBulletList', icon: 'ph-bold ph-list-bullets', toggle: true },
   insertOrderedList: { label: 'editorNumberedList', icon: 'ph-bold ph-list-numbers', toggle: true },
+  checklist: { label: 'editorChecklist', icon: 'ph-bold ph-list-checks', toggle: true },
+  indent: { label: 'editorIndent', icon: 'ph-bold ph-text-indent', toggle: false },
+  outdent: { label: 'editorOutdent', icon: 'ph-bold ph-text-outdent', toggle: false },
   justifyLeft: { label: 'editorAlignStart', icon: 'ph-bold ph-text-align-left', toggle: true },
   justifyCenter: { label: 'editorAlignCenter', icon: 'ph-bold ph-text-align-center', toggle: true },
   justifyRight: { label: 'editorAlignEnd', icon: 'ph-bold ph-text-align-right', toggle: true },
+  justifyFull: { label: 'editorJustify', icon: 'ph-bold ph-text-align-justify', toggle: true },
   link: { label: 'editorLink', icon: 'ph-bold ph-link', toggle: true },
+  image: { label: 'editorImage', icon: 'ph-bold ph-image', toggle: false },
+  embed: { label: 'editorEmbed', icon: 'ph-bold ph-film-strip', toggle: false },
+  table: { label: 'editorTable', icon: 'ph-bold ph-table', toggle: false },
+  source: { label: 'editorSource', icon: 'ph-bold ph-file-html', toggle: true },
+  find: { label: 'editorFindReplace', icon: 'ph-bold ph-magnifying-glass', toggle: false },
+  fullScreen: { label: 'fullScreen', icon: 'ph-bold ph-arrows-out', toggle: true },
+  shortcuts: { label: 'editorShortcuts', icon: 'ph-bold ph-keyboard', toggle: false },
+  accessibility: {
+    label: 'editorAccessibility',
+    icon: 'ph-bold ph-person-arms-spread',
+    toggle: false,
+  },
+  horizontalRule: { label: 'editorHorizontalRule', icon: 'ph-bold ph-minus', toggle: false },
   removeFormat: { label: 'editorClearFormatting', icon: 'ph-bold ph-text-t-slash', toggle: false },
   undo: { label: 'undo', icon: 'ph-bold ph-arrow-counter-clockwise', toggle: false },
   redo: { label: 'redo', icon: 'ph-bold ph-arrow-clockwise', toggle: false },
@@ -149,7 +230,7 @@ export function starEditorGroups(
     if (item === '|') groups.push([]);
     else if (
       !seen.has(item) &&
-      (item === 'formatBlock' || Object.hasOwn(STAR_EDITOR_BUTTONS, item))
+      (starEditorIsSelect(item) || Object.hasOwn(STAR_EDITOR_BUTTONS, item))
     ) {
       // A command shows once: its first place wins.
       seen.add(item);
@@ -177,4 +258,28 @@ export function starEditorToolbarMove(key: string, index: number, count: number)
     default:
       return null;
   }
+}
+
+/**
+ * How many toolbar groups fit in `available` pixels: the groups in order, with `gap` between
+ * them, and room for the "More" button when some groups do not fit. At least one group shows.
+ */
+export function starEditorFit(
+  widths: readonly number[],
+  available: number,
+  more: number,
+  gap = 0,
+): number {
+  const total =
+    widths.reduce((sum, width) => sum + width, 0) + gap * Math.max(0, widths.length - 1);
+  if (total <= available) return widths.length;
+  let used = more;
+  let count = 0;
+  for (const width of widths) {
+    const next = used + width + gap;
+    if (next > available) break;
+    used = next;
+    count++;
+  }
+  return Math.max(1, count);
 }

@@ -50,25 +50,43 @@ describe('StarEditor toolbar', () => {
     const toolbar = el.querySelector('[role=toolbar]')!;
     expect(toolbar.getAttribute('aria-label')).toBe('Note formatting');
     expect(toolbar.getAttribute('aria-controls')).toBe(area.id);
-    expect(el.querySelectorAll('[role=separator]').length).toBe(5);
+    expect(el.querySelectorAll('[role=separator]').length).toBe(7);
     const controls = [...el.querySelectorAll<HTMLElement>('[data-editor-control]')];
     expect(controls.map((c) => c.getAttribute('aria-label'))).toEqual([
       'Undo',
       'Redo',
       'Text style',
+      'Font size',
       'Bold',
       'Italic',
       'Underline',
       'Strikethrough',
+      'Subscript',
+      'Superscript',
       'Code',
+      'Text color',
+      'Highlight color',
       'Bulleted list',
       'Numbered list',
+      'Checklist',
+      'Decrease indent',
+      'Increase indent',
       'Quote',
       'Align to the start',
       'Center',
       'Align to the end',
+      'Justify',
       'Link',
+      'Image',
+      'Embed',
+      'Table',
+      'Horizontal line',
       'Clear formatting',
+      'Find and replace',
+      'HTML source',
+      'Full screen',
+      'Keyboard shortcuts',
+      'Accessibility check',
     ]);
     expect(controls.map((c) => c.tabIndex)).toEqual([0, ...controls.slice(1).map(() => -1)]);
     expect(controls[2].tagName).toBe('SELECT');
@@ -78,9 +96,11 @@ describe('StarEditor toolbar', () => {
       'Heading 2',
       'Heading 3',
     ]);
-    // Toggle buttons have aria-pressed; actions do not.
-    expect(controls[3].getAttribute('aria-pressed')).toBe('false');
+    // Toggle buttons have aria-pressed; actions do not. Undo has nothing to undo yet.
+    expect(controls[4].getAttribute('aria-pressed')).toBe('false');
     expect(controls[0].hasAttribute('aria-pressed')).toBe(false);
+    expect(controls[0].getAttribute('aria-disabled')).toBe('true');
+    expect(controls[3].tagName).toBe('SELECT');
   });
 
   it('moves the focus with the arrow keys, Home and End, and keeps one tab stop', async () => {
@@ -168,7 +188,6 @@ describe('StarEditor toolbar', () => {
     try {
       select(area.querySelector('p')!, 0, 5);
       button('Strikethrough').click();
-      button('Undo').click();
       const style = el.querySelector<HTMLSelectElement>('select')!;
       style.value = 'h2';
       style.dispatchEvent(new Event('change'));
@@ -178,7 +197,6 @@ describe('StarEditor toolbar', () => {
     }
     expect(calls).toEqual([
       ['strikeThrough', false, undefined],
-      ['undo', false, undefined],
       ['formatBlock', false, 'h2'],
       ['formatBlock', false, 'blockquote'],
     ]);
@@ -384,11 +402,11 @@ describe('StarEditor paste', () => {
     return { area, host: fixture.componentInstance };
   }
 
-  it('pastes sanitized HTML: no script, style or event handler', async () => {
+  it('pastes sanitized HTML: no script, style element, unknown style or event handler', async () => {
     const { area, host } = await setupPaste(false);
     const event = paste(area, {
       'text/html':
-        '<style>p { color: red }</style><b onclick="alert(1)" style="color: red">bold</b><script>alert(1)</script><img src="x" onerror="alert(1)">',
+        '<style>p { color: red }</style><b onclick="alert(1)" style="position: fixed">bold</b><script>alert(1)</script><img src="x" onerror="alert(1)">',
       'text/plain': 'bold',
     });
     expect(event.defaultPrevented).toBe(true);

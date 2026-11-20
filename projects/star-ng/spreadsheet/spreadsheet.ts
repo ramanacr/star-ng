@@ -863,11 +863,11 @@ export class StarSpreadsheet {
   protected backgroundLabel(bg: StarCellBackground): string {
     const t = this.text;
     return {
-      accent: t.spreadsheetBackgroundAccent,
-      success: t.spreadsheetBackgroundSuccess,
-      warning: t.spreadsheetBackgroundWarning,
-      danger: t.spreadsheetBackgroundDanger,
-      muted: t.spreadsheetBackgroundMuted,
+      accent: t.colorBlue,
+      success: t.colorGreen,
+      warning: t.colorAmber,
+      danger: t.colorRed,
+      muted: t.colorGrey,
     }[bg];
   }
 
