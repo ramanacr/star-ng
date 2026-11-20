@@ -7740,6 +7740,90 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
+        "name": "mode",
+        "type": "'advanced' | 'basic'",
+        "default": "'advanced'",
+        "required": false,
+        "description": "`'advanced'` (default): a drop zone and a file list. `'basic'`: one button that chooses the files and shows their names. PrimeNG `mode`."
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "`name` of the file input, for a native form post (a Signal Forms field sets it too)."
+      },
+      {
+        "name": "auto",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Emits `uploadHandler` right after files are chosen. PrimeNG `auto`."
+      },
+      {
+        "name": "showUploadButton",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows an Upload button above the list that emits `uploadHandler`."
+      },
+      {
+        "name": "showCancelButton",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows a Cancel button above the list that removes every file (`clear`)."
+      },
+      {
+        "name": "chooseLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Text of the choose button (default `STAR_UI_TEXT.chooseFiles`)."
+      },
+      {
+        "name": "uploadLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Text of the upload button (default `STAR_UI_TEXT.upload`)."
+      },
+      {
+        "name": "cancelLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Text of the cancel button (default `STAR_UI_TEXT.cancel`)."
+      },
+      {
+        "name": "chooseIcon",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Icon classes of the choose button (default: none)."
+      },
+      {
+        "name": "uploadIcon",
+        "type": "string | null",
+        "default": "'ph-bold ph-upload-simple'",
+        "required": false,
+        "description": "Icon classes of the upload button (default an upload arrow)."
+      },
+      {
+        "name": "cancelIcon",
+        "type": "string | null",
+        "default": "'ph-bold ph-x'",
+        "required": false,
+        "description": "Icon classes of the cancel button (default a cross)."
+      },
+      {
+        "name": "previewWidth",
+        "type": "number | null",
+        "default": "null",
+        "required": false,
+        "description": "Width and height of the image thumbnails in pixels (with `thumbnails`)."
+      },
+      {
         "name": "pt",
         "type": "StarPassThrough | null",
         "default": "null",
@@ -7786,14 +7870,47 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": "Emits the files that failed a check, with the reason (`type`, `size` or `limit`)."
+      },
+      {
+        "name": "uploadHandler",
+        "type": "StarFileUploadEvent",
+        "default": null,
+        "required": false,
+        "description": "Emits the files to upload when the user presses Upload, or after the choice with `auto`. Upload them in your own service and report the state with `fileStatus`. PrimeNG `uploadHandler` (with `customUpload`)."
+      },
+      {
+        "name": "cleared",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "Emits after Cancel or `clear()` removed every file. PrimeNG `onClear`."
+      },
+      {
+        "name": "fileRemove",
+        "type": "File",
+        "default": null,
+        "required": false,
+        "description": "Emits a file that the user removed from the list. PrimeNG `onRemove`."
+      },
+      {
+        "name": "imageError",
+        "type": "Event",
+        "default": null,
+        "required": false,
+        "description": "Emits the `error` event of a thumbnail that cannot load. PrimeNG `onImageError`."
       }
     ],
     "parts": [
       "root",
+      "header",
+      "buttonIcon",
+      "toolbarPanel",
+      "uploadButton",
+      "cancelButton",
+      "chooseButton",
       "zonePanel",
       "icon",
       "leadText",
-      "chooseButton",
       "hintText",
       "list",
       "fileItem",
@@ -7812,6 +7929,23 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "errorsList",
       "errorsItem"
     ]
+  },
+  "StarFileUploadTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starFileUploadTemplate]",
+    "entry": "@star-ng/ui/file-upload",
+    "description": "Replaces a part of `star-file-upload`: `toolbar` (the row of choose, upload and cancel buttons), `content` (the file list and the empty content) or `fileLabel` (the text of the button in `mode=\"basic\"`). PrimeNG `#toolbar`, `#content` and `#filelabel` templates. The context has the files and the actions `choose()`, `upload()`, `clear()` and `remove(file)`.",
+    "inputs": [
+      {
+        "name": "starFileUploadTemplate",
+        "type": "'toolbar' | 'content' | 'fileLabel'",
+        "default": null,
+        "required": true,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
   },
   "StarFloatLabel": {
     "kind": "component",
@@ -21722,6 +21856,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "file-upload/slots": "<div class=\"docs-stack\">\n  <star-file-upload [(value)]=\"templated\" multiple>\n    <ng-template starEmpty>\n      <p class=\"docs-output\">No file yet. Add an invoice or a packing list.</p>\n    </ng-template>\n    <ng-template\n      starFile\n      let-file\n      let-remove=\"remove\"\n      let-index=\"index\"\n      let-interactive=\"interactive\"\n    >\n      <i class=\"ph-bold ph-file-pdf star-upload__file-icon\" aria-hidden=\"true\"></i>\n      <span class=\"star-upload__main\">\n        <span class=\"star-upload__name\">{{ index + 1 }}. {{ file.name }}</span>\n      </span>\n      <span class=\"star-upload__size\">{{ file.size }} bytes</span>\n      @if (interactive) {\n        <button\n          type=\"button\"\n          class=\"star-select__icon-btn\"\n          [attr.aria-label]=\"'Remove ' + file.name\"\n          (click)=\"remove()\"\n        >\n          <i class=\"ph-bold ph-trash\" aria-hidden=\"true\"></i>\n        </button>\n      }\n    </ng-template>\n  </star-file-upload>\n</div>",
   "file-upload/states": "<div class=\"docs-stack\">\n  <star-file-upload [value]=\"existing\" readonly />\n  <star-file-upload disabled />\n</div>",
   "file-upload/status": "<div class=\"docs-stack\">\n  <star-file-upload\n    [(value)]=\"uploads\"\n    accept=\".pdf\"\n    multiple\n    [fileStatus]=\"statusOf\"\n    (selected)=\"send($event)\"\n  />\n</div>",
+  "file-upload/upload-hooks": "<div class=\"docs-stack\">\n  <star-file-upload\n    [(value)]=\"queued\"\n    multiple\n    showUploadButton\n    showCancelButton\n    chooseLabel=\"Add invoices\"\n    (uploadHandler)=\"uploadLog.set('Upload ' + $event.files.length + ' files')\"\n    (cleared)=\"uploadLog.set('Cleared')\"\n    (fileRemove)=\"uploadLog.set('Removed ' + $event.name)\"\n  />\n  <star-file-upload [(value)]=\"basic\" mode=\"basic\" chooseLabel=\"Attach a receipt\" />\n  <p class=\"docs-output\" role=\"status\">{{ uploadLog() || 'Nothing yet' }}</p>\n</div>",
   "float-label/basic": "<div class=\"docs-stack\">\n  <star-float-label label=\"Customer name\">\n    <input starInput [value]=\"name()\" (input)=\"name.set($any($event.target).value)\" />\n  </star-float-label>\n  <star-float-label label=\"Delivery note\">\n    <textarea starInput rows=\"3\"></textarea>\n  </star-float-label>\n  <p class=\"docs-output\" role=\"status\">Customer: {{ name() || 'empty' }}</p>\n</div>",
   "float-label/select": "<div class=\"docs-stack\">\n  <star-float-label label=\"City\">\n    <star-select [options]=\"cities\" [(value)]=\"city\" ariaLabel=\"City\" />\n  </star-float-label>\n</div>",
   "focus-trap/basic": "<div class=\"docs-stack\">\n  <div class=\"docs-row docs-trap\" [starFocusTrap]=\"trapOn()\">\n    <star-toggle-switch [(checked)]=\"trapOn\">Keep Tab in this row</star-toggle-switch>\n    <star-button size=\"sm\" variant=\"secondary\">One</star-button>\n    <star-button size=\"sm\" variant=\"secondary\">Two</star-button>\n  </div>\n  <p class=\"docs-output\" role=\"status\">Trap is {{ trapOn() ? 'on' : 'off' }}.</p>\n</div>",

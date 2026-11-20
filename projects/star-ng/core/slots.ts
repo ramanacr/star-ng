@@ -179,7 +179,10 @@ export type StarIconSlotName =
   | 'rotateLeft'
   | 'rotateRight'
   | 'icon'
-  | 'loading';
+  | 'loading'
+  | 'choose'
+  | 'upload'
+  | 'cancel';
 
 /** Context of the icon slot. */
 export interface StarIconContext {

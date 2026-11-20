@@ -184,6 +184,39 @@ function fakeUpload(file: File): Observable<HttpEvent<Receipt>> {
         </div>
       </docs-example>
 
+      <docs-example
+        heading="Upload buttons, auto and basic mode"
+        source="file-upload/upload-hooks"
+        [script]="hooksScript"
+        note="The control does no HTTP request; it gives you the moment to upload. showUploadButton adds an Upload button that emits uploadHandler with the chosen files, and showCancelButton a Cancel button that removes them (cleared). auto emits uploadHandler right after a choice. chooseLabel, uploadLabel and cancelLabel change the texts; chooseIcon, uploadIcon and cancelIcon the icons (or starIcon with choose, upload or cancel). mode basic is one button that shows the chosen file names. fileRemove emits a file that the user removed."
+      >
+        <div class="docs-stack">
+          <star-file-upload
+            [(value)]="queued"
+            multiple
+            showUploadButton
+            showCancelButton
+            chooseLabel="Add invoices"
+            (uploadHandler)="uploadLog.set('Upload ' + $event.files.length + ' files')"
+            (cleared)="uploadLog.set('Cleared')"
+            (fileRemove)="uploadLog.set('Removed ' + $event.name)"
+          />
+          <star-file-upload [(value)]="basic" mode="basic" chooseLabel="Attach a receipt" />
+          <p class="docs-output" role="status">{{ uploadLog() || 'Nothing yet' }}</p>
+        </div>
+      </docs-example>
+
+      <h2>Names in PrimeNG</h2>
+      <p>
+        The PrimeNG p-fileupload names that StarNG gives in another way: customUpload is always on
+        (uploadHandler gives the files, fileStatus shows the progress); onSelect is selected;
+        onBeforeUpload is uploadHandler; onClear is cleared; onRemove is fileRemove; the
+        invalidFile...Message inputs are the UI texts fileTypeNotAllowed, fileTooLarge and
+        fileLimitReached; style, styleClass and the ...StyleClass and ...ButtonProps inputs are the
+        pass-through pt. Not needed, because your service sends the files: url, method, headers,
+        withCredentials, onSend, onUpload, onProgress, onError and onRemoveUploadedFile.
+      </p>
+
       <h2>Send the files</h2>
       <p>
         The control only collects files. Use the <code>selected</code> output (it emits only the
@@ -200,7 +233,7 @@ function fakeUpload(file: File): Observable<HttpEvent<Receipt>> {
       </p>
 
       <docs-api
-        [of]="['StarFileUpload', 'StarFileTemplate']"
+        [of]="['StarFileUpload', 'StarFileTemplate', 'StarFileUploadTemplate']"
         [slots]="slots"
         [cssVars]="cssVars"
         [keyboard]="keyboard"
@@ -261,6 +294,13 @@ export class FileUploadPage {
   protected readonly rejected = signal<readonly StarRejectedFile[]>([]);
   protected readonly dropped = signal<readonly File[]>([]);
   protected readonly ordered = signal<readonly File[]>([]);
+  protected readonly queued = signal<readonly File[]>([]);
+  protected readonly basic = signal<readonly File[]>([]);
+  protected readonly uploadLog = signal('');
+  protected readonly hooksScript = `readonly queued = signal<readonly File[]>([]);
+readonly basic = signal<readonly File[]>([]);
+readonly uploadLog = signal('');
+// In (uploadHandler), send $event.files with your own service (see "Send the files").`;
   protected readonly templated = signal<readonly File[]>([
     new File(['x'], 'invoice-1042.pdf', { type: 'application/pdf' }),
     new File(['xx'], 'packing-list.pdf', { type: 'application/pdf' }),
@@ -371,6 +411,20 @@ send(files: readonly File[]): void {
       name: 'ng-template[starEmpty]',
       description:
         'Content child. Shown in place of the file list while no file is chosen. $implicit is an empty string, because this control has no filter.',
+    },
+    {
+      name: 'ng-template[starHeader]',
+      description: 'Content child. Content above the control. PrimeNG header template.',
+    },
+    {
+      name: 'ng-template[starFileUploadTemplate]',
+      description:
+        'Content child. "toolbar" replaces the row of buttons, "content" the file list and the empty content, "fileLabel" the text of the basic button. The context has $implicit (the files), choose(), upload(), clear(), remove(file) and interactive. PrimeNG toolbar, content and filelabel templates.',
+    },
+    {
+      name: 'ng-template[starIcon]',
+      description:
+        'Content child. "choose", "upload" or "cancel" replaces the icon of that button. PrimeNG chooseicon, uploadicon and cancelicon.',
     },
   ];
 
