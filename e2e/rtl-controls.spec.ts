@@ -1,5 +1,5 @@
 import { expect, Locator, Page, test } from '@playwright/test';
-import { example, openPage } from './support';
+import { example, menuTrigger, openPage } from './support';
 
 /**
  * Right-to-left behavior of the controls in a real browser: key direction, which side a popup
@@ -344,7 +344,7 @@ test.describe('right-to-left controls', () => {
       page,
     }) => {
       await openPage(page, '/controls/menu', 'Menu');
-      const trigger = example(page, 'Nested submenu').getByRole('button', { name: 'View' });
+      const trigger = await menuTrigger(example(page, 'Nested submenu'), 'View');
       await trigger.focus();
       await page.keyboard.press('Enter');
       await expect(popup(page).getByRole('menu')).toBeVisible();
@@ -873,7 +873,7 @@ test.describe('right-to-left controls', () => {
         .getByRole('link', { name: 'Menu', exact: true })
         .click();
       await expect(page.getByRole('heading', { level: 1, name: 'Menu' })).toBeVisible();
-      const trigger = example(page, 'Nested submenu').getByRole('button', { name: 'View' });
+      const trigger = await menuTrigger(example(page, 'Nested submenu'), 'View');
       await trigger.focus();
       await page.keyboard.press('Enter');
       // Each key waits for the state of the one before (the menu opens and moves its focus after

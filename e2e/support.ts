@@ -39,6 +39,18 @@ export function example(page: Page, heading: string): Locator {
     .locator('.docs-example__live');
 }
 
+/**
+ * The menu trigger button of an example. On a wrapper such as `<star-button>` the menu trigger
+ * moves its button role to the inner button after the first render (after hydration on a
+ * prerendered page); until then the host and the inner button both match. This waits until
+ * exactly one button has the name, so a test never acts on the page before that.
+ */
+export async function menuTrigger(live: Locator, name: string): Promise<Locator> {
+  const trigger = live.getByRole('button', { name });
+  await expect(trigger).toHaveCount(1);
+  return trigger;
+}
+
 /** Console errors and page errors of a page, collected from the moment of the call. */
 export function collectErrors(page: Page): string[] {
   const errors: string[] = [];

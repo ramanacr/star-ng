@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { example, openPage } from './support';
+import { example, menuTrigger, openPage } from './support';
 
 // Popups of the menus live in the CDK overlay container, outside the example area.
 const popup = (page: import('@playwright/test').Page) => page.locator('.cdk-overlay-container');
@@ -10,7 +10,7 @@ test.describe('menu', () => {
   }) => {
     await openPage(page, '/controls/menu', 'Menu');
     const live = example(page, 'Popup menu');
-    const trigger = live.getByRole('button', { name: 'File' });
+    const trigger = await menuTrigger(live, 'File');
     await expect(trigger).toHaveAttribute('aria-haspopup', 'menu');
     await expect(trigger).toHaveAttribute('aria-expanded', 'false');
 
@@ -32,7 +32,7 @@ test.describe('menu', () => {
   test('opens with Arrow down, wraps around, and closes with Escape', async ({ page }) => {
     await openPage(page, '/controls/menu', 'Menu');
     const live = example(page, 'Popup menu');
-    const trigger = live.getByRole('button', { name: 'File' });
+    const trigger = await menuTrigger(live, 'File');
 
     await trigger.focus();
     await page.keyboard.press('ArrowDown');
@@ -54,14 +54,14 @@ test.describe('menu', () => {
   test('opens with the mouse and runs an item with a click', async ({ page }) => {
     await openPage(page, '/controls/menu', 'Menu');
     const live = example(page, 'Popup menu');
-    await live.getByRole('button', { name: 'File' }).click();
+    await (await menuTrigger(live, 'File')).click();
     await popup(page).getByRole('menuitem', { name: 'Save' }).click();
     await expect(live.getByRole('status')).toHaveText('Last action: Save');
   });
 
   test('shows icons and shortcuts, and keeps a disabled item out of reach', async ({ page }) => {
     await openPage(page, '/controls/menu', 'Menu');
-    await example(page, 'Icons and shortcuts').getByRole('button', { name: 'Edit' }).click();
+    await (await menuTrigger(example(page, 'Icons and shortcuts'), 'Edit')).click();
     await expect(popup(page).locator('.star-menu__shortcut')).toHaveText([
       'Ctrl+X',
       'Ctrl+C',
@@ -85,7 +85,7 @@ test.describe('menu', () => {
     page,
   }) => {
     await openPage(page, '/controls/menu', 'Menu');
-    const trigger = example(page, 'Nested submenu').getByRole('button', { name: 'View' });
+    const trigger = await menuTrigger(example(page, 'Nested submenu'), 'View');
     await trigger.focus();
     await page.keyboard.press('Enter');
     await page.keyboard.press('ArrowDown');

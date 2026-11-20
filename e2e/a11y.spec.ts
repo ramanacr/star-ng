@@ -1,7 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, Locator, Page, test } from '@playwright/test';
 import { appendFileSync } from 'node:fs';
-import { DOCS_PAGES, example } from './support';
+import { DOCS_PAGES, example, menuTrigger } from './support';
 
 /**
  * Automated accessibility scan (axe-core) of the docs application.
@@ -427,7 +427,7 @@ const STATES: readonly State[] = [
     name: 'popup menu',
     path: 'controls/menu',
     open: async (page) => {
-      await example(page, 'Popup menu').getByRole('button', { name: 'File' }).click();
+      await (await menuTrigger(example(page, 'Popup menu'), 'File')).click();
       await expect(popup(page).getByRole('menu')).toBeVisible();
     },
   },
@@ -435,9 +435,9 @@ const STATES: readonly State[] = [
     name: 'menu with icons, shortcuts and a danger item',
     path: 'controls/menu',
     open: async (page) => {
-      await example(page, 'Separators, disabled and danger items')
-        .getByRole('button', { name: 'Order actions' })
-        .click();
+      await (
+        await menuTrigger(example(page, 'Separators, disabled and danger items'), 'Order actions')
+      ).click();
       await expect(popup(page).getByRole('menu')).toBeVisible();
     },
   },
@@ -445,7 +445,7 @@ const STATES: readonly State[] = [
     name: 'menu with a submenu',
     path: 'controls/menu',
     open: async (page) => {
-      await example(page, 'Nested submenu').getByRole('button', { name: 'View' }).click();
+      await (await menuTrigger(example(page, 'Nested submenu'), 'View')).click();
       await page.keyboard.press('ArrowDown');
       await page.keyboard.press('ArrowDown');
       await page.keyboard.press('ArrowRight');
