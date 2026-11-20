@@ -18,7 +18,15 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { injectStarConfig, STAR_UI_TEXT, starInlineKey, starIsRtl } from '@star-ng/ui/core';
+import {
+  injectStarConfig,
+  STAR_UI_TEXT,
+  starInlineKey,
+  starIsRtl,
+  StarPart,
+  StarStyled,
+  ɵSTAR_PART_HOST,
+} from '@star-ng/ui/core';
 import {
   starPivot,
   StarPivotColumn,
@@ -86,7 +94,9 @@ interface Position {
  */
 @Component({
   selector: 'star-pivot-grid',
-  imports: [StarPivotConfigurator],
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [StarPart, StarPivotConfigurator],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-pivot',
@@ -107,30 +117,38 @@ interface Position {
         (configChange)="config.set($event)"
       />
     }
-    <div class="star-pivot__main">
+    <div starPart="main" class="star-pivot__main">
       @if (expandableAny()) {
-        <div class="star-pivot__tools">
-          <button type="button" class="star-btn star-btn--ghost star-btn--sm" (click)="expandAll()">
-            <i class="ph-bold ph-arrows-out-simple" aria-hidden="true"></i>
+        <div starPart="tools" class="star-pivot__tools">
+          <button
+            starPart="button"
+            type="button"
+            class="star-btn star-btn--ghost star-btn--sm"
+            (click)="expandAll()"
+          >
+            <i starPart="icon" class="ph-bold ph-arrows-out-simple" aria-hidden="true"></i>
             {{ text.expandAll }}
           </button>
           <button
+            starPart="button"
             type="button"
             class="star-btn star-btn--ghost star-btn--sm"
             (click)="collapseAll()"
           >
-            <i class="ph-bold ph-arrows-in-simple" aria-hidden="true"></i>
+            <i starPart="icon" class="ph-bold ph-arrows-in-simple" aria-hidden="true"></i>
             {{ text.collapseAll }}
           </button>
         </div>
       }
       <div
+        starPart="scroller"
         #scroller
         class="star-pivot__scroller"
         [style.max-height]="height()"
         (scroll)="onScroll()"
       >
         <table
+          starPart="table"
           class="star-pivot__table"
           role="grid"
           aria-readonly="true"
@@ -140,23 +158,24 @@ interface Position {
           [attr.aria-colcount]="result().columns.length + 1"
           [style.width.px]="tableWidth()"
         >
-          <colgroup>
-            <col [style.width.px]="rowHeaderWidth()" />
+          <colgroup starPart="columns">
+            <col starPart="column" [style.width.px]="rowHeaderWidth()" />
             @if (columnWindow().before) {
-              <col [style.width.px]="columnWindow().before" />
+              <col starPart="column" [style.width.px]="columnWindow().before" />
             }
             @for (c of renderedColumns(); track c) {
-              <col [style.width.px]="columnWidth()" />
+              <col starPart="column" [style.width.px]="columnWidth()" />
             }
             @if (columnWindow().after) {
-              <col [style.width.px]="columnWindow().after" />
+              <col starPart="column" [style.width.px]="columnWindow().after" />
             }
           </colgroup>
-          <thead>
+          <thead starPart="thead">
             @for (cells of clippedHeaders(); track $index; let h = $index) {
-              <tr class="star-pivot__header-row" [attr.aria-rowindex]="h + 1">
+              <tr starPart="headerRow" class="star-pivot__header-row" [attr.aria-rowindex]="h + 1">
                 @if (h === 0) {
                   <th
+                    starPart="corner"
                     class="star-pivot__corner"
                     scope="col"
                     [attr.rowspan]="headerCount() > 1 ? headerCount() : null"
@@ -168,6 +187,7 @@ interface Position {
                   </th>
                   @if (columnWindow().before) {
                     <th
+                      starPart="spacer"
                       class="star-pivot__spacer"
                       aria-hidden="true"
                       [attr.rowspan]="headerCount() > 1 ? headerCount() : null"
@@ -178,6 +198,7 @@ interface Position {
                   @let cell = item.cell;
                   @let pos = cell.row - headerCount() + ':' + cell.column;
                   <th
+                    starPart="head"
                     scope="col"
                     class="star-pivot__head"
                     [class]="'star-pivot__head--' + cell.kind"
@@ -190,21 +211,23 @@ interface Position {
                     [attr.data-pos]="pos"
                     [attr.tabindex]="tabIndex(pos)"
                   >
-                    <span class="star-pivot__head-content">
+                    <span starPart="headContent" class="star-pivot__head-content">
                       @if (cell.expandable) {
                         <span
+                          starPart="toggle"
                           class="star-pivot__toggle"
                           [class.star-pivot__toggle--open]="cell.expanded"
                           aria-hidden="true"
-                          ><i class="ph-bold ph-caret-right star-icon-mirror"></i
+                          ><i starPart="icon" class="ph-bold ph-caret-right star-icon-mirror"></i
                         ></span>
                       }
-                      <span class="star-pivot__text">{{ headerLabel(cell) }}</span>
+                      <span starPart="text" class="star-pivot__text">{{ headerLabel(cell) }}</span>
                     </span>
                   </th>
                 }
                 @if (h === 0 && columnWindow().after) {
                   <th
+                    starPart="spacer"
                     class="star-pivot__spacer"
                     aria-hidden="true"
                     [attr.rowspan]="headerCount() > 1 ? headerCount() : null"
@@ -213,21 +236,27 @@ interface Position {
               </tr>
             }
           </thead>
-          <tbody>
+          <tbody starPart="tbody">
             @if (rowWindow().before) {
-              <tr class="star-pivot__spacer-row" aria-hidden="true">
-                <td [attr.colspan]="renderedSpan()" [style.height.px]="rowWindow().before"></td>
+              <tr starPart="spacerRow" class="star-pivot__spacer-row" aria-hidden="true">
+                <td
+                  starPart="cell"
+                  [attr.colspan]="renderedSpan()"
+                  [style.height.px]="rowWindow().before"
+                ></td>
               </tr>
             }
             @for (r of renderedRows(); track result().rows[r].key) {
               @let row = result().rows[r];
               <tr
+                starPart="row"
                 class="star-pivot__row"
                 [class.star-pivot__row--total]="row.kind === 'total'"
                 [class.star-pivot__row--parent]="row.expandable"
                 [attr.aria-rowindex]="headerCount() + r + 1"
               >
                 <th
+                  starPart="rowHead"
                   scope="row"
                   role="rowheader"
                   class="star-pivot__row-head"
@@ -236,26 +265,32 @@ interface Position {
                   [attr.data-pos]="r + ':-1'"
                   [attr.tabindex]="tabIndex(r + ':-1')"
                 >
-                  <span class="star-pivot__head-content">
+                  <span starPart="headContent" class="star-pivot__head-content">
                     @if (row.expandable) {
                       <span
+                        starPart="toggle"
                         class="star-pivot__toggle"
                         [class.star-pivot__toggle--open]="row.expanded"
                         aria-hidden="true"
-                        ><i class="ph-bold ph-caret-right star-icon-mirror"></i
+                        ><i starPart="icon" class="ph-bold ph-caret-right star-icon-mirror"></i
                       ></span>
                     } @else if (row.kind === 'member') {
-                      <span class="star-pivot__toggle-space" aria-hidden="true"></span>
+                      <span
+                        starPart="toggleSpace"
+                        class="star-pivot__toggle-space"
+                        aria-hidden="true"
+                      ></span>
                     }
-                    <span class="star-pivot__text">{{ rowLabel(row) }}</span>
+                    <span starPart="text" class="star-pivot__text">{{ rowLabel(row) }}</span>
                   </span>
                 </th>
                 @if (columnWindow().before) {
-                  <td class="star-pivot__spacer" aria-hidden="true"></td>
+                  <td starPart="spacer" class="star-pivot__spacer" aria-hidden="true"></td>
                 }
                 @for (c of renderedColumns(); track c) {
                   @let pos = r + ':' + c;
                   <td
+                    starPart="cell"
                     class="star-pivot__cell"
                     [class.star-pivot__cell--total]="result().columns[c].kind !== 'member'"
                     [attr.aria-colindex]="c + 2"
@@ -266,19 +301,23 @@ interface Position {
                   </td>
                 }
                 @if (columnWindow().after) {
-                  <td class="star-pivot__spacer" aria-hidden="true"></td>
+                  <td starPart="spacer" class="star-pivot__spacer" aria-hidden="true"></td>
                 }
               </tr>
             }
             @if (rowWindow().after) {
-              <tr class="star-pivot__spacer-row" aria-hidden="true">
-                <td [attr.colspan]="renderedSpan()" [style.height.px]="rowWindow().after"></td>
+              <tr starPart="spacerRow" class="star-pivot__spacer-row" aria-hidden="true">
+                <td
+                  starPart="cell"
+                  [attr.colspan]="renderedSpan()"
+                  [style.height.px]="rowWindow().after"
+                ></td>
               </tr>
             }
           </tbody>
         </table>
       </div>
-      <p class="star-sr-only" [id]="id + '-hint'">{{ text.pivotHint }}</p>
+      <p starPart="srText" class="star-sr-only" [id]="id + '-hint'">{{ text.pivotHint }}</p>
     </div>
   `,
 })

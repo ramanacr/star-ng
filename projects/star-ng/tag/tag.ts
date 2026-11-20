@@ -1,5 +1,5 @@
 import { booleanAttribute, ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { StarSeverity } from '@star-ng/ui/core';
+import { StarPart, StarSeverity, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 
 /**
  * Status label (PrimeNG `p-tag`): severity color, optional icon, rounded pill.
@@ -7,6 +7,9 @@ import { StarSeverity } from '@star-ng/ui/core';
  */
 @Component({
   selector: 'star-tag',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '[class]': "'star-tag star-tag--' + severity()",
@@ -14,9 +17,9 @@ import { StarSeverity } from '@star-ng/ui/core';
   },
   template: `
     @if (icon(); as icon) {
-      <i [class]="icon" aria-hidden="true"></i>
+      <i starPart="icon" [class]="icon" aria-hidden="true"></i>
     }
-    <span>{{ value() }}<ng-content /></span>
+    <span starPart="text">{{ value() }}<ng-content /></span>
   `,
 })
 export class StarTag {

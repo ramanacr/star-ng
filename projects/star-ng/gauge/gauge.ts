@@ -13,7 +13,14 @@ import {
   signal,
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
-import { StarDirectionService, starInlineKey, starIsRtl } from '@star-ng/ui/core';
+import {
+  StarDirectionService,
+  starInlineKey,
+  starIsRtl,
+  StarPart,
+  StarStyled,
+  ɵSTAR_PART_HOST,
+} from '@star-ng/ui/core';
 import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/ui/field';
 import {
   arcPath,
@@ -316,6 +323,9 @@ const GAUGE_HOST = {
  */
 @Component({
   selector: 'star-linear-gauge',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     ...GAUGE_HOST,
@@ -323,8 +333,15 @@ const GAUGE_HOST = {
     '[attr.aria-orientation]': "interactive() && orientation() === 'vertical' ? 'vertical' : null",
   },
   template: `
-    <svg class="star-gauge__svg" [attr.viewBox]="viewBox()" aria-hidden="true" focusable="false">
+    <svg
+      starPart="svg"
+      class="star-gauge__svg"
+      [attr.viewBox]="viewBox()"
+      aria-hidden="true"
+      focusable="false"
+    >
       <line
+        starPart="track"
         class="star-gauge__track"
         [attr.stroke-width]="trackWidth"
         [attr.x1]="track().x1"
@@ -334,6 +351,7 @@ const GAUGE_HOST = {
       />
       @for (band of bands(); track $index) {
         <line
+          starPart="range"
           class="star-gauge__range"
           [style.--star-gauge-range]="band.color"
           [attr.x1]="band.x1"
@@ -344,6 +362,7 @@ const GAUGE_HOST = {
       }
       @for (tick of minorTicks(); track $index) {
         <line
+          starPart="tick"
           class="star-gauge__tick star-gauge__tick--minor"
           [attr.x1]="tick.x1"
           [attr.y1]="tick.y1"
@@ -353,6 +372,7 @@ const GAUGE_HOST = {
       }
       @for (tick of majorTicks(); track $index) {
         <line
+          starPart="tick"
           class="star-gauge__tick star-gauge__tick--major"
           [attr.x1]="tick.line.x1"
           [attr.y1]="tick.line.y1"
@@ -361,6 +381,7 @@ const GAUGE_HOST = {
         />
         @if (labels() !== false) {
           <text
+            starPart="label"
             class="star-gauge__label"
             [attr.x]="tick.label.x"
             [attr.y]="tick.label.y"
@@ -373,6 +394,7 @@ const GAUGE_HOST = {
       @switch (pointer()) {
         @case ('needle') {
           <line
+            starPart="needle"
             class="star-gauge__needle"
             [style.transform]="move()"
             [attr.x1]="vertical() ? 6 : 0"
@@ -383,6 +405,7 @@ const GAUGE_HOST = {
         }
         @case ('marker') {
           <path
+            starPart="marker"
             class="star-gauge__marker"
             [style.transform]="move()"
             [attr.d]="vertical() ? 'M 2 -6 L 2 6 L 12 0 Z' : 'M -6 2 L 6 2 L 0 12 Z'"
@@ -390,6 +413,7 @@ const GAUGE_HOST = {
         }
         @default {
           <line
+            starPart="bar"
             class="star-gauge__bar"
             pathLength="100"
             [attr.stroke-width]="trackWidth"
@@ -491,16 +515,36 @@ export class StarLinearGauge extends StarGaugeBase {
  */
 @Component({
   selector: 'star-radial-gauge',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { ...GAUGE_HOST, class: 'star-gauge star-gauge--radial' },
   template: `
-    <svg class="star-gauge__svg" [attr.viewBox]="viewBox" aria-hidden="true" focusable="false">
-      <path class="star-gauge__track" [attr.d]="track()" [attr.stroke-width]="width()" />
+    <svg
+      starPart="svg"
+      class="star-gauge__svg"
+      [attr.viewBox]="viewBox"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <path
+        starPart="track"
+        class="star-gauge__track"
+        [attr.d]="track()"
+        [attr.stroke-width]="width()"
+      />
       @for (band of bands(); track $index) {
-        <path class="star-gauge__range" [style.--star-gauge-range]="band.color" [attr.d]="band.d" />
+        <path
+          starPart="range"
+          class="star-gauge__range"
+          [style.--star-gauge-range]="band.color"
+          [attr.d]="band.d"
+        />
       }
       @for (tick of minorTicks(); track $index) {
         <line
+          starPart="tick"
           class="star-gauge__tick star-gauge__tick--minor"
           [attr.x1]="tick.x1"
           [attr.y1]="tick.y1"
@@ -510,6 +554,7 @@ export class StarLinearGauge extends StarGaugeBase {
       }
       @for (tick of majorTicks(); track $index) {
         <line
+          starPart="tick"
           class="star-gauge__tick star-gauge__tick--major"
           [attr.x1]="tick.line.x1"
           [attr.y1]="tick.line.y1"
@@ -518,6 +563,7 @@ export class StarLinearGauge extends StarGaugeBase {
         />
         @if (labels() !== false) {
           <text
+            starPart="label"
             class="star-gauge__label"
             [attr.x]="tick.label.x"
             [attr.y]="tick.label.y"
@@ -530,6 +576,7 @@ export class StarLinearGauge extends StarGaugeBase {
       @switch (pointer()) {
         @case ('bar') {
           <path
+            starPart="bar"
             class="star-gauge__bar"
             pathLength="100"
             [attr.d]="track()"
@@ -538,12 +585,17 @@ export class StarLinearGauge extends StarGaugeBase {
           />
         }
         @case ('marker') {
-          <path class="star-gauge__marker" [style.transform]="turn()" [attr.d]="marker()" />
+          <path
+            starPart="marker"
+            class="star-gauge__marker"
+            [style.transform]="turn()"
+            [attr.d]="marker()"
+          />
         }
         @default {
-          <g class="star-gauge__needle" [style.transform]="turn()">
-            <path class="star-gauge__needle-body" [attr.d]="needle()" />
-            <circle class="star-gauge__hub" cx="100" cy="100" r="6" />
+          <g starPart="needle" class="star-gauge__needle" [style.transform]="turn()">
+            <path starPart="needleBody" class="star-gauge__needle-body" [attr.d]="needle()" />
+            <circle starPart="hub" class="star-gauge__hub" cx="100" cy="100" r="6" />
           </g>
         }
       }

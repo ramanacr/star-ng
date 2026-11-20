@@ -27,9 +27,12 @@ import {
   STAR_UI_TEXT,
   StarEmptyContext,
   starInlineKey,
+  StarPart,
   StarSlot,
   starSlot,
+  StarStyled,
   ɵSTAR_MIN_COLUMN_WIDTH,
+  ɵSTAR_PART_HOST,
   ɵstarAriaSort,
   ɵstarClampColumnWidth,
   ɵstarEditText,
@@ -203,7 +206,9 @@ const LOADING_KEY = '\u0000loading';
  */
 @Component({
   selector: 'star-tree-table',
-  imports: [NgTemplateOutlet, StarContextMenu, StarMenu, StarPaginator],
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [StarPart, NgTemplateOutlet, StarContextMenu, StarMenu, StarPaginator],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarTreeTable) }],
   host: {
@@ -217,9 +222,10 @@ const LOADING_KEY = '\u0000loading';
       <ng-container *ngTemplateOutlet="header" />
     }
     @if (filter()) {
-      <div class="star-panel__filter star-tree-table__search">
-        <i class="ph-bold ph-magnifying-glass" aria-hidden="true"></i>
+      <div starPart="filter" class="star-panel__filter star-tree-table__search">
+        <i starPart="icon" class="ph-bold ph-magnifying-glass" aria-hidden="true"></i>
         <input
+          starPart="input"
           type="search"
           class="star-input star-input--sm"
           autocomplete="off"
@@ -231,6 +237,7 @@ const LOADING_KEY = '\u0000loading';
       </div>
     }
     <div
+      starPart="scroll"
       #scroller
       class="star-table__scroll"
       [attr.role]="windowed() ? 'group' : null"
@@ -243,15 +250,17 @@ const LOADING_KEY = '\u0000loading';
       (keydown)="onScrollerKeydown($event)"
     >
       <table
+        starPart="table"
         role="treegrid"
         [attr.aria-label]="ariaLabel()"
         [attr.aria-multiselectable]="multiselectable()"
         [attr.aria-rowcount]="windowed() ? ariaRowCountValue() : null"
       >
-        <thead #header>
-          <tr [attr.aria-rowindex]="windowed() ? 1 : null">
+        <thead starPart="thead" #header>
+          <tr starPart="row" [attr.aria-rowindex]="windowed() ? 1 : null">
             @for (column of visibleColumns(); track column.field) {
               <th
+                starPart="headerCell"
                 scope="col"
                 [style.width]="widthOf(column)"
                 [style.min-width]="resizedWidth(column)"
@@ -270,44 +279,48 @@ const LOADING_KEY = '\u0000loading';
               >
                 @if (column.sortable) {
                   <button
+                    starPart="sort"
                     type="button"
                     class="star-table__sort"
                     [attr.title]="multiSort() ? text.sortMultiHint : null"
                     (click)="sortBy(column, $event)"
                   >
                     {{ column.header }}
-                    <i [class]="sortIcon(column)" aria-hidden="true"></i>
+                    <i starPart="icon" [class]="sortIcon(column)" aria-hidden="true"></i>
                     @if (sortRank(column); as rank) {
-                      <span class="star-table__sort-rank">{{ rank }}</span>
+                      <span starPart="sortRank" class="star-table__sort-rank">{{ rank }}</span>
                     }
                   </button>
                 } @else {
                   {{ column.header }}
                 }
                 @if (canMove(column)) {
-                  <span class="star-tree-table__move">
+                  <span starPart="move" class="star-tree-table__move">
                     <button
+                      starPart="toggle"
                       type="button"
                       class="star-table__toggle"
                       [disabled]="!canMoveBy(column, -1)"
                       [attr.aria-label]="text.moveColumnEarlier(column.header)"
                       (click)="moveColumnBy(column, -1)"
                     >
-                      <i class="ph-bold ph-caret-left" aria-hidden="true"></i>
+                      <i starPart="icon" class="ph-bold ph-caret-left" aria-hidden="true"></i>
                     </button>
                     <button
+                      starPart="toggle"
                       type="button"
                       class="star-table__toggle"
                       [disabled]="!canMoveBy(column, 1)"
                       [attr.aria-label]="text.moveColumnLater(column.header)"
                       (click)="moveColumnBy(column, 1)"
                     >
-                      <i class="ph-bold ph-caret-right" aria-hidden="true"></i>
+                      <i starPart="icon" class="ph-bold ph-caret-right" aria-hidden="true"></i>
                     </button>
                   </span>
                 }
                 @if (resizableColumns()) {
                   <span
+                    starPart="resizer"
                     class="star-table__resizer"
                     role="separator"
                     aria-orientation="vertical"
@@ -324,14 +337,20 @@ const LOADING_KEY = '\u0000loading';
             }
           </tr>
           @if (hasColumnFilters()) {
-            <tr class="star-table__filters" [attr.aria-rowindex]="windowed() ? 2 : null">
+            <tr
+              starPart="filters"
+              class="star-table__filters"
+              [attr.aria-rowindex]="windowed() ? 2 : null"
+            >
               @for (column of visibleColumns(); track column.field) {
                 <td
+                  starPart="cell"
                   [class.star-table__cell--frozen]="column.frozen"
                   [style.inset-inline-start]="frozenOffset(column)"
                 >
                   @if (column.filter) {
                     <input
+                      starPart="filter"
                       type="search"
                       class="star-input star-input--sm star-table__filter"
                       autocomplete="off"
@@ -346,11 +365,11 @@ const LOADING_KEY = '\u0000loading';
           }
         </thead>
         @if (contextMenu().length) {
-          <tbody [starContextMenu]="rowMenu" (menuClosed)="onMenuClosed()">
+          <tbody starPart="tbody" [starContextMenu]="rowMenu" (menuClosed)="onMenuClosed()">
             <ng-container *ngTemplateOutlet="body" />
           </tbody>
         } @else {
-          <tbody>
+          <tbody starPart="tbody">
             <ng-container *ngTemplateOutlet="body" />
           </tbody>
         }
@@ -377,14 +396,18 @@ const LOADING_KEY = '\u0000loading';
 
     <ng-template #body>
       @if (window().before > 0) {
-        <tr class="star-table__spacer" aria-hidden="true">
-          <td [attr.colspan]="visibleColumns().length" [style.height.px]="window().before"></td>
+        <tr starPart="spacer" class="star-table__spacer" aria-hidden="true">
+          <td
+            starPart="cell"
+            [attr.colspan]="visibleColumns().length"
+            [style.height.px]="window().before"
+          ></td>
         </tr>
       }
       @if (showEmpty()) {
-        <tr [attr.aria-rowindex]="windowed() ? headerRows() + 1 : null">
-          <td class="star-table__empty" [attr.colspan]="visibleColumns().length">
-            <i class="ph-bold ph-tray" aria-hidden="true"></i>
+        <tr starPart="row" [attr.aria-rowindex]="windowed() ? headerRows() + 1 : null">
+          <td starPart="empty" class="star-table__empty" [attr.colspan]="visibleColumns().length">
+            <i starPart="icon" class="ph-bold ph-tray" aria-hidden="true"></i>
             @if (emptySlot(); as custom) {
               <ng-container *ngTemplateOutlet="custom; context: emptyContext()" />
             } @else {
@@ -397,20 +420,26 @@ const LOADING_KEY = '\u0000loading';
         @let row = entry.row;
         @if (entry.loading) {
           <tr
+            starPart="loading"
             class="star-tree-table__loading"
             [attr.aria-rowindex]="entry.aria"
             [attr.aria-level]="row.level + 1"
           >
-            <td [attr.colspan]="visibleColumns().length">
-              <span class="star-tree-table__first" [style.--star-tree-level]="row.level">
-                <span class="star-tree__toggle star-tree__toggle--leaf"></span>
-                <i class="ph-bold ph-spinner-gap star-spin" aria-hidden="true"></i>
+            <td starPart="cell" [attr.colspan]="visibleColumns().length">
+              <span
+                starPart="first"
+                class="star-tree-table__first"
+                [style.--star-tree-level]="row.level"
+              >
+                <span starPart="toggle" class="star-tree__toggle star-tree__toggle--leaf"></span>
+                <i starPart="icon" class="ph-bold ph-spinner-gap star-spin" aria-hidden="true"></i>
                 {{ text.loading }}
               </span>
             </td>
           </tr>
         } @else {
           <tr
+            starPart="row"
             class="star-table__row"
             [class.star-table__row--selected]="isSelected(row.node.key)"
             [attr.aria-rowindex]="entry.aria"
@@ -433,6 +462,7 @@ const LOADING_KEY = '\u0000loading';
               let ci = $index
             ) {
               <td
+                starPart="cell"
                 [class]="'star-table__cell--' + (column.align ?? 'start')"
                 [class.star-table__cell--frozen]="column.frozen"
                 [style.inset-inline-start]="frozenOffset(column)"
@@ -440,9 +470,14 @@ const LOADING_KEY = '\u0000loading';
                 [attr.tabindex]="cellTabIndex(row.node.key, ci)"
               >
                 @if (first) {
-                  <span class="star-tree-table__first" [style.--star-tree-level]="row.level - 1">
+                  <span
+                    starPart="first"
+                    class="star-tree-table__first"
+                    [style.--star-tree-level]="row.level - 1"
+                  >
                     @if (isExpandable(row.node)) {
                       <button
+                        starPart="toggle"
                         type="button"
                         class="star-tree__toggle star-tree-table__toggle"
                         tabindex="-1"
@@ -453,15 +488,19 @@ const LOADING_KEY = '\u0000loading';
                         "
                         (click)="userToggle(row.node)"
                       >
-                        <i class="ph-bold ph-caret-right" aria-hidden="true"></i>
+                        <i starPart="icon" class="ph-bold ph-caret-right" aria-hidden="true"></i>
                       </button>
                     } @else {
-                      <span class="star-tree__toggle star-tree__toggle--leaf"></span>
+                      <span
+                        starPart="toggle"
+                        class="star-tree__toggle star-tree__toggle--leaf"
+                      ></span>
                     }
                     @if (selectionMode() === 'checkbox') {
                       <!-- The row owns the keys (Space checks) and the focus; the box takes the pointer. -->
                       <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
                       <span
+                        starPart="box"
                         class="star-check__box star-tree__check star-tree-table__check"
                         role="checkbox"
                         [class.star-tree__check--on]="checkState(row.node.key) !== false"
@@ -471,9 +510,9 @@ const LOADING_KEY = '\u0000loading';
                         (click)="onCheckClick($event, row.node)"
                       >
                         @if (checkState(row.node.key) === 'mixed') {
-                          <i class="ph-bold ph-minus" aria-hidden="true"></i>
+                          <i starPart="icon" class="ph-bold ph-minus" aria-hidden="true"></i>
                         } @else if (checkState(row.node.key) === true) {
-                          <i class="ph-bold ph-check" aria-hidden="true"></i>
+                          <i starPart="icon" class="ph-bold ph-check" aria-hidden="true"></i>
                         }
                       </span>
                     }
@@ -500,14 +539,19 @@ const LOADING_KEY = '\u0000loading';
         }
       }
       @if (window().after > 0) {
-        <tr class="star-table__spacer" aria-hidden="true">
-          <td [attr.colspan]="visibleColumns().length" [style.height.px]="window().after"></td>
+        <tr starPart="spacer" class="star-table__spacer" aria-hidden="true">
+          <td
+            starPart="cell"
+            [attr.colspan]="visibleColumns().length"
+            [style.height.px]="window().after"
+          ></td>
         </tr>
       }
     </ng-template>
 
     <ng-template #editor let-node let-column="column">
       <input
+        starPart="editor"
         class="star-input star-input--sm star-table__editor star-tree-table__editor"
         [type]="column.editor === 'number' ? 'number' : 'text'"
         [attr.aria-label]="text.editCell(column.header)"

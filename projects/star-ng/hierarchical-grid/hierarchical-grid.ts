@@ -23,7 +23,14 @@ import {
   viewChild,
   WritableSignal,
 } from '@angular/core';
-import { readOption, STAR_UI_TEXT, StarOptionKey } from '@star-ng/ui/core';
+import {
+  readOption,
+  STAR_UI_TEXT,
+  StarOptionKey,
+  StarPart,
+  StarStyled,
+  ɵSTAR_PART_HOST,
+} from '@star-ng/ui/core';
 import { StarSpinner } from '@star-ng/ui/spinner';
 import { StarColumn, StarRowExpansionTemplate, StarTable } from '@star-ng/ui/table';
 import { firstValueFrom, fromEvent, isObservable, Observable, takeUntil } from 'rxjs';
@@ -152,7 +159,7 @@ const BODY_FOCUS =
  */
 @Component({
   selector: 'star-hierarchical-level',
-  imports: [StarTable, StarRowExpansionTemplate, forwardRef(() => StarHierarchicalChild)],
+  imports: [StarPart, StarTable, StarRowExpansionTemplate, forwardRef(() => StarHierarchicalChild)],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-hierarchical-level',
@@ -179,7 +186,11 @@ const BODY_FOCUS =
     >
       @if (childIslands().length) {
         <ng-template starRowExpansion let-row let-i="index">
-          <div class="star-hierarchical__children" [attr.data-level]="level() + 1">
+          <div
+            starPart="children"
+            class="star-hierarchical__children"
+            [attr.data-level]="level() + 1"
+          >
             @for (child of childIslands(); track child) {
               <star-hierarchical-child
                 [parentRow]="row"
@@ -449,22 +460,31 @@ type ChildState =
  */
 @Component({
   selector: 'star-hierarchical-child',
-  imports: [StarSpinner, StarHierarchicalLevel],
+  imports: [StarPart, StarSpinner, StarHierarchicalLevel],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-hierarchical__child' },
   template: `
     @switch (state().kind) {
       @case ('loading') {
-        <div class="star-hierarchical__status" role="status" tabindex="-1">
+        <div starPart="status" class="star-hierarchical__status" role="status" tabindex="-1">
           <star-spinner size="1rem" />
-          <span>{{ text.loading }}</span>
+          <span starPart="text">{{ text.loading }}</span>
         </div>
       }
       @case ('error') {
-        <div class="star-hierarchical__status star-hierarchical__status--error" role="alert">
-          <i class="ph-bold ph-warning-circle" aria-hidden="true"></i>
-          <span>{{ text.hierarchicalLoadError }}</span>
-          <button type="button" class="star-btn star-btn--secondary star-btn--sm" (click)="retry()">
+        <div
+          starPart="status"
+          class="star-hierarchical__status star-hierarchical__status--error"
+          role="alert"
+        >
+          <i starPart="icon" class="ph-bold ph-warning-circle" aria-hidden="true"></i>
+          <span starPart="text">{{ text.hierarchicalLoadError }}</span>
+          <button
+            starPart="button"
+            type="button"
+            class="star-btn star-btn--secondary star-btn--sm"
+            (click)="retry()"
+          >
             {{ text.retry }}
           </button>
         </div>
@@ -645,6 +665,8 @@ export class StarHierarchicalChild {
  */
 @Component({
   selector: 'star-hierarchical-grid',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   imports: [StarHierarchicalLevel],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-hierarchical' },

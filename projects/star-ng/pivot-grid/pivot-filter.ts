@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import { StarButton } from '@star-ng/ui/button';
 import { StarCheckbox } from '@star-ng/ui/checkbox';
-import { STAR_UI_TEXT } from '@star-ng/ui/core';
+import { STAR_UI_TEXT, StarPart } from '@star-ng/ui/core';
 import { StarPopover } from '@star-ng/ui/popover';
 import { StarPivotFilter, StarPivotMember, starPivotMemberKey as keyOf } from './engine';
 
@@ -24,11 +24,12 @@ import { StarPivotFilter, StarPivotMember, starPivotMemberKey as keyOf } from '.
  */
 @Component({
   selector: 'star-pivot-filter',
-  imports: [StarButton, StarCheckbox, StarPopover, CdkTrapFocus],
+  imports: [StarPart, StarButton, StarCheckbox, StarPopover, CdkTrapFocus],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-pivot-filter' },
   template: `
     <button
+      starPart="iconButton"
       type="button"
       class="star-pivot__icon-button"
       [class.star-pivot__icon-button--active]="active()"
@@ -38,11 +39,16 @@ import { StarPivotFilter, StarPivotMember, starPivotMemberKey as keyOf } from '.
       [attr.data-pivot-filter]="field()"
       (click)="open($event)"
     >
-      <i [class]="active() ? 'ph-fill ph-funnel' : 'ph-bold ph-funnel'" aria-hidden="true"></i>
+      <i
+        starPart="icon"
+        [class]="active() ? 'ph-fill ph-funnel' : 'ph-bold ph-funnel'"
+        aria-hidden="true"
+      ></i>
     </button>
     <star-popover #panel [ariaLabel]="text.filterMenu(label())">
-      <div class="star-pivot-filter__panel" cdkTrapFocus>
+      <div starPart="panel" class="star-pivot-filter__panel" cdkTrapFocus>
         <input
+          starPart="input"
           class="star-input star-input--sm"
           type="search"
           data-autofocus
@@ -58,7 +64,12 @@ import { StarPivotFilter, StarPivotMember, starPivotMemberKey as keyOf } from '.
           (checkedChange)="setAll($event)"
           >{{ text.selectAll }}</star-checkbox
         >
-        <div class="star-pivot-filter__list" role="group" [attr.aria-label]="label()">
+        <div
+          starPart="list"
+          class="star-pivot-filter__list"
+          role="group"
+          [attr.aria-label]="label()"
+        >
           @for (member of shown(); track member.key) {
             <star-checkbox
               [checked]="!excluded().has(member.key)"
@@ -66,10 +77,10 @@ import { StarPivotFilter, StarPivotMember, starPivotMemberKey as keyOf } from '.
               >{{ member.label }}</star-checkbox
             >
           } @empty {
-            <p class="star-pivot-filter__empty">{{ text.fileNoResults }}</p>
+            <p starPart="empty" class="star-pivot-filter__empty">{{ text.fileNoResults }}</p>
           }
         </div>
-        <div class="star-pivot-filter__buttons">
+        <div starPart="buttons" class="star-pivot-filter__buttons">
           <star-button size="sm" variant="secondary" (pressed)="clear()">
             {{ text.clear }}
           </star-button>

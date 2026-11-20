@@ -7,6 +7,7 @@ import {
   input,
   signal,
 } from '@angular/core';
+import { StarPart, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 
 /**
  * Provided by `star-avatar-group`. An avatar inside a group asks it whether it is one of the
@@ -23,6 +24,9 @@ export const STAR_AVATAR_GROUP = new InjectionToken<{ hides(avatar: StarAvatar):
  */
 @Component({
   selector: 'star-avatar',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '[class]': "'star-avatar star-avatar--' + size() + ' star-avatar--' + shape()",
@@ -34,11 +38,11 @@ export const STAR_AVATAR_GROUP = new InjectionToken<{ hides(avatar: StarAvatar):
   },
   template: `
     @if (image() && !failed()) {
-      <img [src]="image()" alt="" (error)="failed.set(true)" />
+      <img starPart="image" [src]="image()" alt="" (error)="failed.set(true)" />
     } @else if (initials()) {
-      <span aria-hidden="true">{{ initials() }}</span>
+      <span starPart="text" aria-hidden="true">{{ initials() }}</span>
     } @else {
-      <i [class]="icon()" aria-hidden="true"></i>
+      <i starPart="icon" [class]="icon()" aria-hidden="true"></i>
     }
   `,
 })

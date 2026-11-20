@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { StarPart, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 
 /**
  * Content card (PrimeNG `p-card`) on the StarNG `.star-card` surface: title, subtitle,
@@ -13,24 +14,27 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
  */
 @Component({
   selector: 'star-card',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-card star-card-cmp' },
   template: `
     <ng-content select="[starCardMedia]" />
     @if (header() || subheader()) {
-      <header class="star-card-cmp__header">
-        <div>
+      <header starPart="header" class="star-card-cmp__header">
+        <div starPart="section">
           @if (header()) {
-            <h3 class="star-card-cmp__title">{{ header() }}</h3>
+            <h3 starPart="title" class="star-card-cmp__title">{{ header() }}</h3>
           }
           @if (subheader()) {
-            <p class="star-card-cmp__subtitle">{{ subheader() }}</p>
+            <p starPart="subtitle" class="star-card-cmp__subtitle">{{ subheader() }}</p>
           }
         </div>
         <ng-content select="[starCardActions]" />
       </header>
     }
-    <div class="star-card-cmp__body"><ng-content /></div>
+    <div starPart="body" class="star-card-cmp__body"><ng-content /></div>
     <ng-content select="[starCardFooter]" />
   `,
 })

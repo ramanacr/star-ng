@@ -5,6 +5,7 @@ import {
   computed,
   input,
 } from '@angular/core';
+import { StarPart, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 
 /**
  * Progress bar (PrimeNG `p-progressbar`): determinate value or indeterminate stripe,
@@ -14,6 +15,9 @@ import {
  */
 @Component({
   selector: 'star-progress-bar',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     role: 'progressbar',
@@ -26,11 +30,15 @@ import {
     '[attr.aria-label]': 'ariaLabel()',
   },
   template: `
-    <span class="star-progress__track">
-      <span class="star-progress__fill" [style.width.%]="indeterminate() ? null : clamped()"></span>
+    <span starPart="track" class="star-progress__track">
+      <span
+        starPart="fill"
+        class="star-progress__fill"
+        [style.width.%]="indeterminate() ? null : clamped()"
+      ></span>
     </span>
     @if (showValue() && !indeterminate()) {
-      <span class="star-progress__value" aria-hidden="true">{{ clamped() }}%</span>
+      <span starPart="value" class="star-progress__value" aria-hidden="true">{{ clamped() }}%</span>
     }
   `,
 })

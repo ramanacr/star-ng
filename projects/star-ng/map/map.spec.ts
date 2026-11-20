@@ -424,7 +424,7 @@ describe('StarMap', () => {
     expect(images[0].getAttribute('href')).toMatch(
       /^https:\/\/tiles\.example\/\d+\/\d+\/\d+\.png$/,
     );
-    expect(root.querySelector('.star-map__attribution')?.textContent).toBe('© Example tiles');
+    expect(root.querySelector('.star-map__attribution')?.textContent?.trim()).toBe('© Example tiles');
 
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     host.layers.set([{ ...tile, attribution: '' }, ...LAYERS]);

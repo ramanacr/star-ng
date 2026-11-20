@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 
 /**
  * Loading placeholder (PrimeNG `p-skeleton`). Respects `prefers-reduced-motion`.
@@ -6,6 +7,8 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
  */
 @Component({
   selector: 'star-skeleton',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-skeleton',

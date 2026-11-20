@@ -9,7 +9,7 @@ import {
   output,
   untracked,
 } from '@angular/core';
-import { STAR_UI_TEXT } from '@star-ng/ui/core';
+import { STAR_UI_TEXT, StarPart, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 import { StarBarcodeType, starEncodeBarcode } from './barcode-encoder';
 
 /** Names of the symbologies in the error text. */
@@ -38,6 +38,9 @@ const TEXT_ROOM = 18;
  */
 @Component({
   selector: 'star-barcode',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     role: 'img',
@@ -48,6 +51,7 @@ const TEXT_ROOM = 18;
   template: `
     @if (encoding(); as code) {
       <svg
+        starPart="svg"
         class="star-barcode__svg"
         [attr.viewBox]="'0 0 ' + width() + ' ' + height()"
         [attr.width]="width()"
@@ -56,9 +60,15 @@ const TEXT_ROOM = 18;
         focusable="false"
         shape-rendering="crispEdges"
       >
-        <rect class="star-barcode__background" [attr.width]="width()" [attr.height]="height()" />
+        <rect
+          starPart="background"
+          class="star-barcode__background"
+          [attr.width]="width()"
+          [attr.height]="height()"
+        />
         @for (bar of rects(); track $index) {
           <rect
+            starPart="bar"
             class="star-barcode__bar"
             [attr.x]="bar.x"
             y="0"
@@ -68,6 +78,7 @@ const TEXT_ROOM = 18;
         }
         @if (showText()) {
           <text
+            starPart="text"
             class="star-barcode__text"
             [attr.x]="width() / 2"
             [attr.y]="barHeight() + 14"
@@ -77,7 +88,7 @@ const TEXT_ROOM = 18;
         }
       </svg>
     } @else {
-      <span class="star-barcode__error">{{ error() }}</span>
+      <span starPart="error" class="star-barcode__error">{{ error() }}</span>
     }
   `,
 })

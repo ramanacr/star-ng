@@ -1,7 +1,7 @@
 import { _IdGenerator } from '@angular/cdk/a11y';
 import { CdkDrag, CdkDragDrop, CdkDropList, CdkDropListGroup } from '@angular/cdk/drag-drop';
 import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
-import { STAR_UI_TEXT, StarAnnouncer } from '@star-ng/ui/core';
+import { STAR_UI_TEXT, StarAnnouncer, StarPart } from '@star-ng/ui/core';
 import { StarMenu, StarMenuItem, StarMenuTrigger } from '@star-ng/ui/menu';
 import {
   StarPivotAggregate,
@@ -36,6 +36,7 @@ const AGGREGATES: readonly StarPivotAggregate[] = [
 @Component({
   selector: 'star-pivot-configurator',
   imports: [
+    StarPart,
     CdkDrag,
     CdkDropList,
     CdkDropListGroup,
@@ -47,14 +48,22 @@ const AGGREGATES: readonly StarPivotAggregate[] = [
   host: { class: 'star-pivot-config' },
   template: `
     <section
+      starPart="panel"
       class="star-pivot-config__panel"
       [attr.aria-label]="text.pivotSettings"
       cdkDropListGroup
     >
       @for (list of lists; track list) {
-        <div class="star-pivot-config__area" [class]="'star-pivot-config__area--' + list">
-          <span class="star-pivot-config__title" [id]="id + '-' + list">{{ listLabel(list) }}</span>
+        <div
+          starPart="area"
+          class="star-pivot-config__area"
+          [class]="'star-pivot-config__area--' + list"
+        >
+          <span starPart="title" class="star-pivot-config__title" [id]="id + '-' + list">{{
+            listLabel(list)
+          }}</span>
           <ul
+            starPart="list"
             class="star-pivot-config__list"
             cdkDropList
             [cdkDropListData]="list"
@@ -64,24 +73,31 @@ const AGGREGATES: readonly StarPivotAggregate[] = [
           >
             @for (name of fieldsIn(list); track name) {
               <li
+                starPart="field"
                 class="star-pivot-config__field"
                 cdkDrag
                 [cdkDragData]="name"
                 [attr.data-pivot-field]="name"
               >
                 <i
+                  starPart="grip"
                   class="ph-bold ph-dots-six-vertical star-pivot-config__grip"
                   aria-hidden="true"
                 ></i>
-                <span class="star-pivot-config__label">{{ labelOf(name) }}</span>
+                <span starPart="label" class="star-pivot-config__label">{{ labelOf(name) }}</span>
                 @if (list === 'values' && aggregateOf(name)) {
                   <select
+                    starPart="aggregate"
                     class="star-pivot-config__aggregate"
                     [attr.aria-label]="text.pivotAggregate(labelOf(name))"
                     (change)="setAggregate(name, $any($event.target).value)"
                   >
                     @for (aggregate of aggregates; track aggregate) {
-                      <option [value]="aggregate" [selected]="aggregateOf(name) === aggregate">
+                      <option
+                        starPart="option"
+                        [value]="aggregate"
+                        [selected]="aggregateOf(name) === aggregate"
+                      >
                         {{ aggregateLabel(aggregate) }}
                       </option>
                     }
@@ -98,13 +114,14 @@ const AGGREGATES: readonly StarPivotAggregate[] = [
                   />
                 }
                 <button
+                  starPart="iconButton"
                   type="button"
                   class="star-pivot__icon-button"
                   [starMenuTrigger]="menu"
                   [attr.aria-label]="text.pivotMoveField(labelOf(name))"
                   [attr.data-pivot-move]="name"
                 >
-                  <i class="ph-bold ph-dots-three" aria-hidden="true"></i>
+                  <i starPart="icon" class="ph-bold ph-dots-three" aria-hidden="true"></i>
                 </button>
                 <star-menu
                   #menu
@@ -113,7 +130,7 @@ const AGGREGATES: readonly StarPivotAggregate[] = [
                 />
               </li>
             } @empty {
-              <li class="star-pivot-config__empty">{{ text.pivotDropHere }}</li>
+              <li starPart="empty" class="star-pivot-config__empty">{{ text.pivotDropHere }}</li>
             }
           </ul>
         </div>

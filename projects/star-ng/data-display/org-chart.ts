@@ -10,7 +10,7 @@ import {
   output,
   TemplateRef,
 } from '@angular/core';
-import { STAR_UI_TEXT } from '@star-ng/ui/core';
+import { STAR_UI_TEXT, StarPart, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 
 export interface StarOrgNode<T = unknown> {
   /** Unique id of the node in the chart. */
@@ -49,25 +49,33 @@ export class StarOrgNodeTemplate<T = unknown> {
  */
 @Component({
   selector: 'star-org-chart',
-  imports: [NgTemplateOutlet],
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [StarPart, NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-org' },
   template: `
-    <div class="star-org__scroll">
-      <ul class="star-org__level star-org__level--root" [attr.aria-label]="ariaLabel()">
+    <div starPart="scroll" class="star-org__scroll">
+      <ul
+        starPart="level"
+        class="star-org__level star-org__level--root"
+        [attr.aria-label]="ariaLabel()"
+      >
         <ng-container *ngTemplateOutlet="branch; context: { $implicit: value(), level: 0 }" />
       </ul>
     </div>
 
     <ng-template #branch let-node let-level="level">
-      <li class="star-org__branch">
+      <li starPart="branch" class="star-org__branch">
         <div
+          starPart="node"
           class="star-org__node"
           [class.star-org__node--selected]="selectedKey() === node.key"
           [class.star-org__node--parent]="!!node.children?.length && !isCollapsed(node)"
         >
           @if (selectable()) {
             <button
+              starPart="card"
               type="button"
               class="star-org__card star-org__card--button"
               [attr.aria-pressed]="selectedKey() === node.key"
@@ -76,12 +84,13 @@ export class StarOrgNodeTemplate<T = unknown> {
               <ng-container *ngTemplateOutlet="content; context: { $implicit: node, level }" />
             </button>
           } @else {
-            <div class="star-org__card">
+            <div starPart="card" class="star-org__card">
               <ng-container *ngTemplateOutlet="content; context: { $implicit: node, level }" />
             </div>
           }
           @if (node.children?.length) {
             <button
+              starPart="toggle"
               type="button"
               class="star-org__toggle"
               [attr.aria-expanded]="!isCollapsed(node)"
@@ -91,6 +100,7 @@ export class StarOrgNodeTemplate<T = unknown> {
               (click)="toggle(node)"
             >
               <i
+                starPart="icon"
                 class="ph-bold"
                 [class.ph-caret-down]="isCollapsed(node)"
                 [class.ph-caret-up]="!isCollapsed(node)"
@@ -100,7 +110,7 @@ export class StarOrgNodeTemplate<T = unknown> {
           }
         </div>
         @if (node.children?.length && !isCollapsed(node)) {
-          <ul class="star-org__level">
+          <ul starPart="level" class="star-org__level">
             @for (child of node.children; track child.key) {
               <ng-container
                 *ngTemplateOutlet="branch; context: { $implicit: child, level: level + 1 }"
@@ -115,9 +125,9 @@ export class StarOrgNodeTemplate<T = unknown> {
       @if (nodeTemplate(); as custom) {
         <ng-container *ngTemplateOutlet="custom.template; context: { $implicit: node, level }" />
       } @else {
-        <span class="star-org__label">{{ node.label }}</span>
+        <span starPart="label" class="star-org__label">{{ node.label }}</span>
         @if (node.subtitle) {
-          <span class="star-org__subtitle">{{ node.subtitle }}</span>
+          <span starPart="subtitle" class="star-org__subtitle">{{ node.subtitle }}</span>
         }
       }
     </ng-template>
