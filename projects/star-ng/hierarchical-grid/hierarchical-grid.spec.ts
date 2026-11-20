@@ -37,7 +37,7 @@ const CUSTOMERS: readonly Customer[] = [
 ];
 
 const CUSTOMER_COLUMNS: StarColumn<Customer>[] = [
-  { field: 'id', header: 'Id' },
+  { field: 'id', header: 'Id', sortable: true },
   { field: 'name', header: 'Name' },
 ];
 const ORDER_COLUMNS: StarColumn<Order>[] = [
@@ -52,7 +52,7 @@ const LINE_COLUMNS: StarColumn<Line>[] = [
 @Component({
   imports: [StarHierarchicalGrid, StarRowIsland],
   template: `<star-hierarchical-grid
-    [data]="data"
+    [data]="data()"
     [columns]="customerColumns"
     dataKey="id"
     [rowLabel]="customerName"
@@ -69,13 +69,21 @@ const LINE_COLUMNS: StarColumn<Line>[] = [
       [columns]="orderColumns"
       [rowLabel]="orderLabel"
     >
-      <star-row-island label="Lines" [childData]="loadLines" [columns]="lineColumns" dataKey="id" />
+      @if (showLines()) {
+        <star-row-island
+          label="Lines"
+          [childData]="linesLoader()"
+          [columns]="lineColumns"
+          dataKey="id"
+        />
+      }
     </star-row-island>
   </star-hierarchical-grid>`,
 })
 class Host {
   readonly grid = viewChild.required(StarHierarchicalGrid<Customer>);
-  readonly data = CUSTOMERS;
+  readonly data = signal<readonly Customer[]>(CUSTOMERS);
+  readonly showLines = signal(true);
   readonly customerColumns = CUSTOMER_COLUMNS;
   readonly orderColumns = ORDER_COLUMNS;
   readonly lineColumns = LINE_COLUMNS;
@@ -98,6 +106,13 @@ class Host {
       this.pending.push({ resolve, reject });
     });
   };
+
+  readonly linesLoader = signal<
+    (
+      order: Order,
+      signal: AbortSignal,
+    ) => Promise<Line[]> | ReturnType<Subject<Line[]>['asObservable']>
+  >(this.loadLines);
 
   onExpand(event: StarHierarchicalRowEvent<Customer>): void {
     this.expands.push(event);
@@ -330,6 +345,142 @@ describe('StarHierarchicalGrid', () => {
     host.observable.next([{ id: 7, item: 'Stapler', quantity: 1 }]);
     await settle();
     expect(childTables(el, /^Lines of ORD-1$/)[0].textContent).toContain('Stapler');
+  });
+
+  /** Opens customer 1 and its order ORD-1, and loads the lines of ORD-1 with one line. */
+  async function openLines(fixture: Awaited<ReturnType<typeof setup>>) {
+    const { el, host, settle } = fixture;
+    host.grid().expandAll();
+    await settle();
+    const [orders] = childTables(el, /^Orders of Example Ltd\.$/);
+    rowsOf(orders)[0].querySelector<HTMLButtonElement>('.star-table__expander button')!.click();
+    await settle();
+    host.pending.at(-1)!.resolve([{ id: 1, item: 'Paper, A4', quantity: 3 }]);
+    await settle();
+  }
+
+  it('reloads kept child rows when the island loader changes', async () => {
+    const fixture = await setup();
+    const { el, host, settle } = fixture;
+    await openLines(fixture);
+    host.linesLoader.set(() => Promise.resolve([{ id: 2, item: 'Folders', quantity: 4 }]));
+    await settle();
+    expect(childTables(el, /^Lines of ORD-1$/)[0].textContent).toContain('Folders');
+  });
+
+  it('reloads when the parent row object is replaced under the same key', async () => {
+    const fixture = await setup();
+    const { el, host, settle } = fixture;
+    await openLines(fixture);
+    expect(host.signals).toHaveLength(1);
+    host.data.set(
+      CUSTOMERS.map((customer) => ({
+        ...customer,
+        orders: customer.orders.map((order) => ({ ...order })),
+      })),
+    );
+    await settle();
+    expect(host.signals).toHaveLength(2);
+    host.pending.at(-1)!.resolve([{ id: 3, item: 'Stapler', quantity: 1 }]);
+    await settle();
+    expect(childTables(el, /^Lines of ORD-1$/)[0].textContent).toContain('Stapler');
+  });
+
+  it('reloads the loaded child grids of one root row or of all rows with reloadChildren', async () => {
+    const fixture = await setup();
+    const { host, settle } = fixture;
+    await openLines(fixture);
+    host.grid().reloadChildren(CUSTOMERS[1]);
+    await settle();
+    expect(host.signals).toHaveLength(1);
+    host.grid().reloadChildren(CUSTOMERS[0]);
+    await settle();
+    expect(host.signals).toHaveLength(2);
+    host.pending.at(-1)!.resolve([]);
+    await settle();
+    host.grid().reloadChildren();
+    await settle();
+    expect(host.signals).toHaveLength(3);
+  });
+
+  it('moves the focus to a header cell or the expander when a Retry loads no rows', async () => {
+    const { el, host, settle } = await setup();
+    host.grid().expandAll();
+    await settle();
+    const [orders] = childTables(el, /^Orders of Example Ltd\.$/);
+    const expander = rowsOf(orders)[0].querySelector<HTMLButtonElement>(
+      '.star-table__expander button',
+    )!;
+    expander.click();
+    await settle();
+    host.pending[0].reject(new Error('offline'));
+    await settle();
+    const retry = el.querySelector<HTMLButtonElement>('.star-hierarchical__status--error button')!;
+    retry.focus();
+    retry.click();
+    await settle();
+    host.pending[1].resolve([]);
+    await settle();
+    const active = document.activeElement!;
+    expect(active).not.toBe(document.body);
+    const [lines] = childTables(el, /^Lines of ORD-1$/);
+    const inHeader = !!lines.querySelector('thead')?.contains(active);
+    const onParent = rowsOf(orders)[0].contains(active);
+    expect(inHeader || onParent).toBe(true);
+  });
+
+  it('leaves the focus where the user moved it while a Retry loads', async () => {
+    const { el, host, settle } = await setup();
+    host.grid().expandAll();
+    await settle();
+    const [orders] = childTables(el, /^Orders of Example Ltd\.$/);
+    rowsOf(orders)[0].querySelector<HTMLButtonElement>('.star-table__expander button')!.click();
+    await settle();
+    host.pending[0].reject(new Error('offline'));
+    await settle();
+    const retry = el.querySelector<HTMLButtonElement>('.star-hierarchical__status--error button')!;
+    retry.focus();
+    retry.click();
+    await settle();
+    const elsewhere = rowsOf(rootTable(el))[1].querySelector<HTMLElement>('td[data-field="name"]')!;
+    elsewhere.focus();
+    host.pending[1].resolve([{ id: 1, item: 'Paper, A4', quantity: 3 }]);
+    await settle();
+    expect(document.activeElement).toBe(elsewhere);
+  });
+
+  it('drops the kept state of an island that leaves the layout', async () => {
+    const fixture = await setup();
+    const { host, settle } = fixture;
+    await openLines(fixture);
+    interface Node {
+      islands: Map<unknown, Map<unknown, Node>>;
+    }
+    const root = (host.grid() as unknown as { rootCache: Node }).rootCache;
+    const ordersEntry = () => [...[...root.islands.values()][0].values()][0];
+    expect(ordersEntry().islands.size).toBe(1);
+    host.showLines.set(false);
+    await settle();
+    expect(ordersEntry().islands.size).toBe(0);
+  });
+
+  it('keeps aria-controls on the child grids after a sort of the parent', async () => {
+    const { el, host, settle } = await setup();
+    host.grid().expandAll();
+    await settle();
+    rootTable(el)
+      .querySelector<HTMLElement>('th[data-field="id"] button, th[data-field="id"]')!
+      .click();
+    await settle();
+    rootTable(el)
+      .querySelector<HTMLElement>('th[data-field="id"] button, th[data-field="id"]')!
+      .click();
+    await settle();
+    for (const row of rowsOf(rootTable(el))) {
+      const button = row.querySelector('.star-table__expander button')!;
+      const target = document.getElementById(button.getAttribute('aria-controls')!);
+      expect(target?.classList).toContain('star-hierarchical__children');
+    }
   });
 
   it('expands with Alt+Arrow keys, goes into the child grid and back to the parent row', async () => {

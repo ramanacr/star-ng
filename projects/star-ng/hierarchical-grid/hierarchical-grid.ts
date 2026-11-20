@@ -94,7 +94,13 @@ interface CacheNode {
  * row that leaves and enters the virtual window) gets it back without a new load.
  */
 interface ChildCache extends CacheNode {
+  /** Loaded rows, valid for `loader` and `parent`; `null`: not loaded (or to load again). */
   readonly rows: WritableSignal<readonly unknown[] | null>;
+  /** The loader and the parent row object of the loaded rows: a change of either reloads. */
+  loader: unknown;
+  parent: unknown;
+  /** Counts the reload requests (`reloadChildren`). */
+  readonly version: WritableSignal<number>;
   readonly expanded: WritableSignal<readonly unknown[]>;
   readonly first: WritableSignal<number>;
   readonly selection: WritableSignal<readonly unknown[]>;
@@ -115,6 +121,9 @@ function cacheEntry(node: CacheNode, island: IslandView, key: unknown): ChildCac
     entry = {
       islands: new Map(),
       rows: signal(null),
+      loader: null,
+      parent: null,
+      version: signal(0),
       expanded: signal([]),
       first: signal(0),
       selection: signal([]),
@@ -122,6 +131,13 @@ function cacheEntry(node: CacheNode, island: IslandView, key: unknown): ChildCac
     byKey.set(key, entry);
   }
   return entry;
+}
+
+/** Marks the loaded rows of an entry and of its own child grids as stale (they load again). */
+function markStale(entry: ChildCache): void {
+  entry.rows.set(null);
+  entry.version.update((count) => count + 1);
+  for (const byKey of entry.islands.values()) for (const child of byKey.values()) markStale(child);
 }
 
 /** A focusable cell or control of a table body, for a move into a child grid. */
@@ -183,6 +199,7 @@ const BODY_FOCUS =
 export class StarHierarchicalLevel {
   private readonly grid = inject(StarHierarchicalGrid);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+  private readonly destroyRef = inject(DestroyRef);
   readonly rows = input.required<readonly unknown[]>();
   readonly columns = input.required<readonly unknown[]>();
   readonly dataKey = input<unknown>(null);
@@ -218,16 +235,36 @@ export class StarHierarchicalLevel {
     this.host.addEventListener('keydown', capture, true);
     inject(DestroyRef).onDestroy(() => this.host.removeEventListener('keydown', capture, true));
     // A parent row that left the data takes its kept child grids along.
+    // An island that left the layout takes its kept child grids along too.
     effect(() => {
       const rows = this.rows();
       const node = this.cache();
+      const islands = new Set(this.childIslands());
       untracked(() => {
         const dataKey = this.tableKey();
         const keys = new Set(rows.map((row) => keyOf(row, dataKey)));
-        for (const byKey of node.islands.values()) {
+        for (const [island, byKey] of [...node.islands]) {
+          if (!islands.has(island)) {
+            node.islands.delete(island);
+            continue;
+          }
           for (const key of [...byKey.keys()]) if (!keys.has(key)) byKey.delete(key);
         }
       });
+    });
+    // The table renders its rows again on a sort, a page or a virtual window move, and binds the
+    // expand button's aria-controls again: link it to the child grids after each such change.
+    afterNextRender(() => {
+      const view = this.host.ownerDocument.defaultView;
+      if (!view || typeof view.MutationObserver !== 'function') return;
+      const observer = new view.MutationObserver(() => this.linkDetails());
+      observer.observe(this.host, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['aria-controls'],
+      });
+      this.destroyRef.onDestroy(() => observer.disconnect());
     });
     // The expand button of a row controls the child grids of its detail row.
     afterRenderEffect({
@@ -455,6 +492,15 @@ export class StarHierarchicalChild {
   /** A Retry moved the focus: it follows the load (status, then the grid or the new Retry). */
   private focusAfterLoad = false;
 
+  /** The kept rows, when they were loaded by the current loader for the current parent row. */
+  private readonly keptRows = computed(() => {
+    const entry = this.entry();
+    const rows = entry.rows();
+    entry.version();
+    const fresh = entry.loader === this.island().childData() && entry.parent === this.parentRow();
+    return rows && fresh ? rows : null;
+  });
+
   protected readonly name = computed(() => {
     const label = this.island().label();
     const parent = this.parentLabel();
@@ -465,8 +511,8 @@ export class StarHierarchicalChild {
     // Kept rows need no load (the params are undefined: the resource stays idle).
     params: () => {
       const loader = this.island().childData();
-      if (!loader || this.entry().rows()) return undefined;
-      return { row: this.parentRow(), loader };
+      if (!loader || this.keptRows()) return undefined;
+      return { row: this.parentRow(), loader, version: this.entry().version() };
     },
     loader: async ({ params, abortSignal }) => {
       const load = params.loader as unknown as (row: unknown, signal: AbortSignal) => unknown;
@@ -488,7 +534,12 @@ export class StarHierarchicalChild {
     effect(() => {
       if (this.loaded.status() !== 'resolved') return;
       const rows = this.loaded.value();
-      untracked(() => this.entry().rows.set(rows ?? []));
+      untracked(() => {
+        const entry = this.entry();
+        entry.loader = this.island().childData();
+        entry.parent = this.parentRow();
+        entry.rows.set(rows ?? []);
+      });
     });
     // After a Retry the focus goes to the loading row, then into the grid or to the new Retry.
     effect(() => {
@@ -500,14 +551,33 @@ export class StarHierarchicalChild {
   }
 
   private focusFor(kind: ChildState['kind']): void {
+    // The user moved on while the rows loaded: leave the focus there.
+    const focused = this.host.ownerDocument.activeElement;
+    const doc = this.host.ownerDocument;
+    if (focused && focused !== doc.body && !this.host.contains(focused)) return;
+    const find = (selector: string) => this.host.querySelector<HTMLElement>(selector);
     const target =
       kind === 'loading'
-        ? this.host.querySelector<HTMLElement>('.star-hierarchical__status[role="status"]')
+        ? find('.star-hierarchical__status[role="status"]')
         : kind === 'error'
-          ? this.host.querySelector<HTMLElement>('.star-hierarchical__status--error button')
-          : (this.host.querySelector<HTMLElement>('star-table tbody [tabindex="0"]') ??
-            this.host.querySelector<HTMLElement>('star-table tbody [tabindex]'));
+          ? find('.star-hierarchical__status--error button')
+          : (find('star-table tbody [tabindex="0"]') ??
+            find('star-table tbody [tabindex]') ??
+            // No rows: a header cell of the child grid, else the parent row's expand button.
+            find('star-table thead [tabindex="0"]') ??
+            find('star-table thead [tabindex], star-table thead button') ??
+            this.parentExpander());
     target?.focus();
+  }
+
+  /** The expand button (or focusable cell) of the parent row of this child grid. */
+  private parentExpander(): HTMLElement | null {
+    const parent = this.host.closest('tr.star-table__expansion')?.previousElementSibling;
+    return (
+      parent?.querySelector<HTMLElement>(':scope > td.star-table__expander[tabindex]') ??
+      parent?.querySelector<HTMLElement>(':scope > td.star-table__expander button') ??
+      null
+    );
   }
 
   protected readonly state = computed<ChildState>(() => {
@@ -517,7 +587,7 @@ export class StarHierarchicalChild {
       const value = key ? readOption(this.parentRow(), key as never) : null;
       return { kind: 'ready', rows: Array.isArray(value) ? (value as readonly unknown[]) : [] };
     }
-    const kept = this.entry().rows();
+    const kept = this.keptRows();
     if (kept) return { kind: 'ready', rows: kept };
     const status = this.loaded.status();
     if (status === 'error') return { kind: 'error' };
@@ -615,6 +685,22 @@ export class StarHierarchicalGrid<T = unknown> {
   /** The root `star-table`. */
   get grid(): StarTable<T> {
     return this.root().table() as unknown as StarTable<T>;
+  }
+
+  /**
+   * Loads the child rows again: of the child grids of `row` (and their own child grids), or of
+   * every loaded child grid without an argument. Child grids in view load at once, the others
+   * when they open. Child rows also load again when the island's `childData` or the parent row
+   * object (same key, new object) changes. Ignite UI has no direct equivalent (reassign `data`).
+   */
+  reloadChildren(row?: T): void {
+    const node = this.rootCache;
+    const key = row === undefined ? undefined : keyOf(row, this.dataKey());
+    for (const byKey of node.islands.values()) {
+      for (const [entryKey, entry] of byKey) {
+        if (row === undefined || Object.is(entryKey, key)) markStale(entry);
+      }
+    }
   }
 
   /** Expands every root row (no events). Ignite UI `expandAll`. */
