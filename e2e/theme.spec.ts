@@ -100,10 +100,18 @@ test.describe('theme', () => {
 });
 
 // Pages that show filled controls: text on a fill must reach WCAG AA (4.5:1) in both themes.
-const FILLED =
-  '.star-btn--primary, .star-btn--success, .star-btn--warning, .star-btn--danger, .star-btn--info, ' +
-  '.star-btn--help, .star-btn--contrast, .star-badge, .star-tag, ' +
-  '.star-paginator__page--active, .star-stepper__item--done .star-stepper__number';
+// Buttons with the outlined, text or link appearance have no fill (a transparent background),
+// so they are left out here; their text is measured on the surface below.
+const UNFILLED = ':not(.star-btn--outlined):not(.star-btn--text):not(.star-btn--link)';
+const FILLED = [
+  ...['primary', 'success', 'warning', 'danger', 'info', 'help', 'contrast'].map(
+    (variant) => `.star-btn--${variant}${UNFILLED}`,
+  ),
+  '.star-badge',
+  '.star-tag',
+  '.star-paginator__page--active',
+  '.star-stepper__item--done .star-stepper__number',
+].join(', ');
 const PAGES = [
   '/controls/button',
   '/controls/badge',
@@ -126,6 +134,37 @@ for (const theme of ['light', 'dark'] as const) {
       await expect.poll(() => lowContrast(filled), { message: path }).toEqual([]);
     }
     expect(measured).toBeGreaterThan(15);
+  });
+
+  test(`outlined, text and link buttons have AA text on the surface in the ${theme} theme`, async ({
+    page,
+  }) => {
+    await page.addInitScript((name) => localStorage.setItem('star-theme', name), theme);
+    await page.goto('/controls/button');
+    await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
+    const buttons = page.locator('.star-btn--outlined, .star-btn--text, .star-btn--link');
+    await expect(buttons.first()).toBeVisible();
+    const ratios = async () =>
+      buttons.evaluateAll((nodes) => {
+        const rgb = (color: string) =>
+          (color.match(/[\d.]+/g) ?? []).slice(0, 3).map((value) => Number(value) / 255);
+        const luminance = (color: string) => {
+          const [red, green, blue] = rgb(color).map((share) =>
+            share <= 0.03928 ? share / 12.92 : ((share + 0.055) / 1.055) ** 2.4,
+          );
+          return 0.2126 * red + 0.7152 * green + 0.0722 * blue;
+        };
+        return nodes
+          .map((node) => {
+            const live = node.closest('.docs-example__live') ?? document.body;
+            const fill = luminance(getComputedStyle(live).backgroundColor);
+            const text = luminance(getComputedStyle(node).color);
+            const ratio = (Math.max(text, fill) + 0.05) / (Math.min(text, fill) + 0.05);
+            return { name: node.className, ratio: Math.round(ratio * 10) / 10 };
+          })
+          .filter((entry) => entry.ratio < 4.5);
+      });
+    await expect.poll(ratios).toEqual([]);
   });
 
   test(`page text has AA contrast in the ${theme} theme`, async ({ page }) => {
