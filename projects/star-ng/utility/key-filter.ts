@@ -13,6 +13,7 @@ import {
 } from '@angular/core';
 import { AbstractControl, NG_VALIDATORS, ValidationErrors, Validator } from '@angular/forms';
 import { STAR_UI_TEXT } from '@star-ng/ui/core';
+import { starKeyFilterAllows, starKeyFilterClean } from './key-filter-rules';
 
 /**
  * Named character sets of `starKeyFilter` (PrimeNG `pKeyFilter`):
@@ -28,34 +29,6 @@ export type StarKeyFilterPreset = 'int' | 'num' | 'money' | 'hex' | 'alpha' | 'a
 
 /** A preset name, or a regular expression that one allowed character matches. */
 export type StarKeyFilterRule = StarKeyFilterPreset | RegExp;
-
-/** The character test of each preset. */
-export const STAR_KEY_FILTER_PRESETS: Readonly<Record<StarKeyFilterPreset, RegExp>> = {
-  int: /^[\d-]$/,
-  num: /^[\d.,-]$/,
-  money: /^[\d.,\s']$/,
-  hex: /^[0-9a-f]$/i,
-  alpha: /^[\p{L}\p{M}_]$/u,
-  alphanum: /^[\p{L}\p{M}\p{N}_]$/u,
-  email: /^[\p{L}\p{N}_.\-+@]$/u,
-};
-
-/** True when every character of `text` passes the filter. */
-export function starKeyFilterAllows(filter: StarKeyFilterRule, text: string): boolean {
-  const test = typeof filter === 'string' ? STAR_KEY_FILTER_PRESETS[filter] : filter;
-  for (const char of Array.from(text)) {
-    test.lastIndex = 0;
-    if (!test.test(char)) return false;
-  }
-  return true;
-}
-
-/** `text` without the characters that the filter does not allow. */
-export function starKeyFilterClean(filter: StarKeyFilterRule, text: string): string {
-  return Array.from(text)
-    .filter((char) => starKeyFilterAllows(filter, char))
-    .join('');
-}
 
 /**
  * Lets the user type only the allowed characters into an `input` or a `textarea` (PrimeNG
