@@ -5,6 +5,7 @@
 import { isPlatformBrowser } from '@angular/common';
 import {
   AfterViewChecked,
+  ApplicationRef,
   booleanAttribute,
   computed,
   DestroyRef,
@@ -180,6 +181,21 @@ export class StarStyled implements AfterViewChecked {
       });
     });
     inject(DestroyRef).onDestroy(() => this.observer?.disconnect());
+    // On the server a control view can render again on its own (a signal of the control), and
+    // then the view hook below does not run: adopt again each time the application becomes
+    // stable, so the HTML written after the last render has every part.
+    if (!this.canObserve) {
+      const subscription = inject(ApplicationRef).isStable.subscribe((stable) => {
+        if (stable) this.adoptAll();
+      });
+      inject(DestroyRef).onDestroy(() => subscription.unsubscribe());
+    }
+  }
+
+  private adoptAll(): void {
+    if (!this.switchedOn || this.observer) return;
+    this.adopt(this.host);
+    for (const portal of this.portals) this.adopt(portal);
   }
 
   /** A portal root (`starPart` directive). Tracked at once after the switch. @internal */
@@ -206,9 +222,7 @@ export class StarStyled implements AfterViewChecked {
    * after the render, so the server HTML has the pass-through and the unstyled mode of every part.
    */
   ngAfterViewChecked(): void {
-    if (!this.switchedOn || this.observer) return;
-    this.adopt(this.host);
-    for (const portal of this.portals) this.adopt(portal);
+    this.adoptAll();
   }
 
   /** Stops tracking `element` and the parts below it (they left the page). */
