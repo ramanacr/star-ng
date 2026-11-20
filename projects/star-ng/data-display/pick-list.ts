@@ -410,7 +410,11 @@ export class StarPickList<T = unknown> {
   readonly showSourceControls = input(false, { transform: booleanAttribute });
   /** Buttons that reorder the selected items of the target list (default `false`). */
   readonly showTargetControls = input(false, { transform: booleanAttribute });
-  /** Move items with the mouse: between the lists and to another place in a list. */
+  /**
+   * Move items with the mouse: between the lists and to another place in a list. It uses the
+   * native drag and drop of the browser, so it does not work with touch; the keys and the buttons
+   * do the same on every device.
+   */
   readonly dragdrop = input(false, { transform: booleanAttribute });
   /**
    * Window width at or under which the lists stack (for example `'960px'`). Default: the style
@@ -527,16 +531,22 @@ export class StarPickList<T = unknown> {
   protected isPicked(side: StarPickListSide, item: T): boolean {
     return this.selection()[side].includes(item);
   }
-  /** The items that a transfer button moves: the selection, or every shown item. */
+  /**
+   * The items that a transfer button moves: the selected items, or every item, that the filter
+   * shows (a hidden selected item stays).
+   */
   protected movable(side: StarPickListSide, all: boolean): readonly T[] {
-    if (!all) return this.picked(side);
-    return this.visible()
-      [side].map((entry) => entry.item)
-      .filter((item) => !this.isOptionDisabled(side, item));
+    const shown = this.visible()[side].map((entry) => entry.item);
+    if (!all) return shown.filter((item) => this.isPicked(side, item));
+    return shown.filter((item) => !this.isOptionDisabled(side, item));
   }
 
   private setPicked(side: StarPickListSide, items: readonly T[]): void {
     this.selection.update((sel) => ({ ...sel, [side]: items }));
+    this.emitSelect(side, items);
+  }
+
+  private emitSelect(side: StarPickListSide, items: readonly T[]): void {
     (side === 'source' ? this.sourceSelect : this.targetSelect).emit({ items });
   }
 
@@ -578,14 +588,16 @@ export class StarPickList<T = unknown> {
       const at = before === null || before === undefined ? -1 : list.indexOf(before);
       return at < 0 ? [...list, ...items] : [...list.slice(0, at), ...items, ...list.slice(at)];
     });
-    this.selection.update((sel) => ({
-      ...sel,
-      [from]: sel[from].filter((item) => !moving.has(item)),
-      [to]: this.keepSelection() ? [...sel[to], ...items] : sel[to],
-    }));
+    const prior = this.selection();
+    const fromPicked = prior[from].filter((item) => !moving.has(item));
+    const toPicked = this.keepSelection() ? [...prior[to], ...items] : prior[to];
+    this.selection.set({ ...prior, [from]: fromPicked, [to]: toPicked } as typeof prior);
     const event = { items };
     if (from === 'source') (all ? this.moveAllToTarget : this.moveToTarget).emit(event);
     else (all ? this.moveAllToSource : this.moveToSource).emit(event);
+    // The selection of a list changed: report it like a change by the user.
+    if (fromPicked.length !== prior[from].length) this.emitSelect(from, fromPicked);
+    if (toPicked !== prior[to]) this.emitSelect(to, toPicked);
     const list =
       to === 'target'
         ? (this.targetHeader() ?? this.text.pickListTarget)
@@ -598,8 +610,13 @@ export class StarPickList<T = unknown> {
     const picked = this.picked(side);
     if (this.disabled() || !picked.length) return;
     const list = side === 'source' ? this.source : this.target;
-    list.set(ɵstarReorderPicked(list(), picked, direction));
+    const next = ɵstarReorderPicked(list(), picked, direction);
+    list.set(next);
     (side === 'source' ? this.sourceReorder : this.targetReorder).emit({ items: picked });
+    const first = next.find((item) => picked.includes(item))!;
+    void this.announcer.announce(
+      this.text.itemPosition(this.labelOf(first), next.indexOf(first) + 1, next.length),
+    );
   }
 
   protected onKeydown(event: KeyboardEvent): void {

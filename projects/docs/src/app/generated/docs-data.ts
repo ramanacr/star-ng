@@ -14872,7 +14872,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "boolean",
         "default": "false",
         "required": false,
-        "description": "Move items with the mouse: between the lists and to another place in a list."
+        "description": "Move items with the mouse: between the lists and to another place in a list. It uses the native drag and drop of the browser, so it does not work with touch; the keys and the buttons do the same on every device."
       },
       {
         "name": "breakpoint",

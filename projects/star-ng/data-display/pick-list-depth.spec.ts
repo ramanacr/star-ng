@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { StarEmptyTemplate, StarIconTemplate } from '@star-ng/ui/core';
+import { StarAnnouncer, StarEmptyTemplate, StarIconTemplate } from '@star-ng/ui/core';
 import {
   StarListFilterEvent,
   StarListFilterTemplate,
@@ -171,11 +171,15 @@ describe('StarPickList depth', () => {
     expect(t.host.log.at(-1)).toEqual(['sourceSelect', { items: [CITIES[1]] }]);
     t.button('Move selected to target').click();
     await t.stable();
-    expect(t.host.log.at(-1)).toEqual(['toTarget', { items: [CITIES[1]] }]);
+    expect(t.host.log.slice(-3)).toEqual([
+      ['toTarget', { items: [CITIES[1]] }],
+      ['sourceSelect', { items: [] }],
+      ['targetSelect', { items: [CITIES[1]] }],
+    ]);
     expect(t.options(1)[0].getAttribute('aria-selected')).toBe('true');
     t.button('Move selected to source').click();
     await t.stable();
-    expect(t.host.log.at(-1)).toEqual(['toSource', { items: [CITIES[1]] }]);
+    expect(t.host.log.slice(-3)[0]).toEqual(['toSource', { items: [CITIES[1]] }]);
     t.button('Move all to source').click();
     await t.stable();
     expect(t.host.log.filter(([name]) => name === 'allToSource')).toEqual([]);
@@ -239,6 +243,43 @@ describe('StarPickList depth', () => {
     await t.stable();
     expect(t.labels(0)).toEqual(['Oslo', 'Lyon', 'Lille', 'Porto']);
     expect(t.host.log.at(-1)).toEqual(['sourceReorder', { items: [CITIES[2]] }]);
+  });
+
+  it('"Move selected" moves only the selected items that the filter shows', async () => {
+    const t = await setup((h) => h.filter.set(true));
+    t.options(0)[0].click();
+    t.options(0)[1].click();
+    await t.stable();
+    type(t.el.querySelector<HTMLInputElement>('input[type=search]')!, 'ly');
+    await t.stable();
+    t.button('Move selected to target').click();
+    await t.stable();
+    expect(t.host.target().map((c) => c.name)).toEqual(['Lyon']);
+    expect(t.host.source().map((c) => c.name)).toEqual(['Oslo', 'Porto', 'Lille']);
+  });
+
+  it('emits the select outputs when a transfer changes the selection', async () => {
+    const t = await setup();
+    t.options(0)[1].click();
+    await t.stable();
+    t.button('Move selected to target').click();
+    await t.stable();
+    expect(t.host.log.slice(-2)).toEqual([
+      ['toTarget', { items: [CITIES[1]] }],
+      ['sourceSelect', { items: [] }],
+    ]);
+  });
+
+  it('announces the new position after a reorder', async () => {
+    const t = await setup((h) => h.controls.set(true));
+    const announce = vi.spyOn(TestBed.inject(StarAnnouncer), 'announce');
+    t.options(0)[2].click();
+    await t.stable();
+    t.el
+      .querySelectorAll('[data-star-part=reorderPanel]')[0]
+      .querySelector<HTMLButtonElement>('[aria-label="Move to top"]')!
+      .click();
+    expect(announce).toHaveBeenCalledWith('Porto, position 1 of 4');
   });
 
   it('moves items by drag and drop between the lists and inside a list', async () => {
