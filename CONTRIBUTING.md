@@ -64,6 +64,7 @@ This file explains how to work on the StarNG repository: set up, run the checks,
 - **Entry points import each other by package name**, for example `@star-ng/ui/core`, never with a relative path across folders.
 - **Keep comments that name the PrimeNG equivalent of a control.** They help readers who know PrimeNG.
 - **Large templates.** Keep the template inline. When a component template grows past about 500 lines (for example `table/table.html`), put it in a `.html` file next to the component and use `templateUrl`; Prettier formats it with the `angular` parser.
+- **Input names.** A new control spells the label reference input `ariaLabelledBy` (as PrimeNG and the select family do). The dialog and the popover keep their released `ariaLabelledby`.
 - **Accessibility.** Use native elements first. Every action must work with the keyboard. Every control needs a visible focus.
 
 ## Public API scope

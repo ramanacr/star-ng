@@ -29,8 +29,8 @@ export {
   type StarTableMatchMode,
 } from './filter-rules';
 export * from './filter-service';
-// Grid keys: shared by the table and the tree table only, not public API.
 export * from './format';
+// Grid keys: shared by the table and the tree table only, not public API.
 export { ɵstarIsContextMenuKey, ɵstarOpenContextMenu, ɵstarOptionalBoolean } from './grid-keys';
 export * from './list-windowing';
 export * from './motion';

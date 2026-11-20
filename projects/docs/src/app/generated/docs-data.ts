@@ -5950,7 +5950,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Label for assistive technology."
       },
       {
-        "name": "ariaLabelledby",
+        "name": "ariaLabelledBy",
         "type": "string | null",
         "default": "null",
         "required": false,
@@ -7331,7 +7331,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "inheritedFrom": "StarGaugeBase"
       },
       {
-        "name": "ariaLabelledby",
+        "name": "ariaLabelledBy",
         "type": "string | null",
         "default": "null",
         "required": false,
@@ -10914,7 +10914,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "inheritedFrom": "StarGaugeBase"
       },
       {
-        "name": "ariaLabelledby",
+        "name": "ariaLabelledBy",
         "type": "string | null",
         "default": "null",
         "required": false,
