@@ -183,7 +183,7 @@ const MODE_TEXT: Readonly<Record<string, keyof StarUiText>> = {
             {{ text.clear }}
           </star-button>
           @if (showApply()) {
-            <star-button size="sm" (pressed)="apply()">{{ text.applyFilter }}</star-button>
+            <star-button size="sm" (pressed)="apply()">{{ text.apply }}</star-button>
           }
         </div>
       </div>

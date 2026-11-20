@@ -1,7 +1,7 @@
 import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { Component, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { STAR_UI_TEXT_DEFAULTS } from '@star-ng/ui/core';
+import { provideStarUiText, STAR_UI_TEXT_DEFAULTS } from '@star-ng/ui/core';
 import { StarCellEditEvent, StarColumn, StarTable } from './table';
 import {
   StarBatchChanges,
@@ -372,6 +372,21 @@ describe('StarTable row edit mode', () => {
     row(0).querySelector<HTMLButtonElement>('.custom-cancel')!.click();
     await stable();
     expect(host.log.at(-1)).toEqual(['rowEditCancel', { row: ORDERS[0] }]);
+  });
+});
+
+describe('StarTable row edit texts', () => {
+  it('labels the Save and Cancel buttons with the generic save and cancel texts', async () => {
+    TestBed.configureTestingModule({
+      providers: [provideStarUiText({ save: 'Keep', cancel: 'Drop' })],
+    });
+    const { row, stable } = await setup({ mode: 'row' });
+    row(0).querySelector<HTMLButtonElement>('[data-row-edit="ORD-1"]')!.click();
+    await stable();
+    const labels = [...row(0).querySelectorAll<HTMLElement>('button')].map((b) =>
+      b.getAttribute('aria-label'),
+    );
+    expect(labels).toEqual(['Keep', 'Drop']);
   });
 });
 

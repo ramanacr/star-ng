@@ -330,6 +330,7 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - Table: `selectionMode` moved to the base class `StarTableInteraction` and its type adds `'cell'` and `'range'`; the row selection modes work as before.
 - Editor: link targets in values set through the model are rewritten (security hardening). A link with `target="_blank"` gets `rel="noopener noreferrer"`, and `_self`, `_parent` and `_top` lose the `target`. Migration: a value read back from the editor can differ from the value written; compare or store the value that the editor gives back.
 - Internal refactors with no API change (shared helpers of the table, tree table and tree).
+- Table: the Apply button of the filter menu and the Save and Cancel buttons of row edit use the shared UI texts `apply`, `save` and `cancel` (no separate table keys).
 
 ### Deprecated
 
