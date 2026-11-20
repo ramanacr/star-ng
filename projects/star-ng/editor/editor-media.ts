@@ -165,6 +165,9 @@ export function starEditorPutEmbed(
   const block = doc.createElement('div');
   block.className = STAR_EDITOR_EMBED_CLASS;
   const frame = doc.createElement('iframe');
+  // The sandbox applies when the frame navigates: set it (and the referrer and loading rules) on
+  // the detached frame before the address, and insert the frame last.
+  for (const [name, value] of STAR_EDITOR_FRAME_ATTRIBUTES) frame.setAttribute(name, value);
   frame.setAttribute('src', src);
   frame.setAttribute('title', title);
   frame.setAttribute('allowfullscreen', '');

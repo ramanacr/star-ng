@@ -94,7 +94,43 @@ describe('starEditorPutEmbed', () => {
       'Demo',
     );
     expect(el.innerHTML).toBe(
-      '<div class="star-editor-embed" contenteditable="false"><iframe src="https://player.vimeo.com/video/1" title="Demo" allowfullscreen="" sandbox="allow-scripts allow-popups allow-presentation" loading="lazy" referrerpolicy="no-referrer"></iframe></div><p><br></p>',
+      '<div class="star-editor-embed" contenteditable="false"><iframe sandbox="allow-scripts allow-popups allow-presentation" loading="lazy" referrerpolicy="no-referrer" src="https://player.vimeo.com/video/1" title="Demo" allowfullscreen=""></iframe></div><p><br></p>',
     );
+  });
+});
+
+describe('starEditorPutEmbed: sandbox before the address', () => {
+  it('sets every frame attribute before src, and never connects a frame without sandbox', () => {
+    const el = area('<p></p>');
+    const calls: string[] = [];
+    const original = HTMLIFrameElement.prototype.setAttribute;
+    const observer = new MutationObserver(() => undefined);
+    const connected: (string | null)[] = [];
+    observer.observe(el, { childList: true, subtree: true });
+    HTMLIFrameElement.prototype.setAttribute = function (name: string, value: string) {
+      calls.push(name);
+      return original.call(this, name, value);
+    };
+    try {
+      starEditorPutEmbed(
+        el,
+        caret(el.querySelector('p')!, 0),
+        'https://player.vimeo.com/video/1',
+        'Demo',
+      );
+    } finally {
+      HTMLIFrameElement.prototype.setAttribute = original;
+    }
+    for (const record of observer.takeRecords())
+      for (const node of record.addedNodes)
+        for (const frame of (node as Element).querySelectorAll?.('iframe') ?? [])
+          connected.push(frame.getAttribute('sandbox'));
+    observer.disconnect();
+    const src = calls.indexOf('src');
+    for (const name of ['sandbox', 'referrerpolicy', 'loading'])
+      expect(calls.indexOf(name), name).toBeGreaterThanOrEqual(0);
+    for (const name of ['sandbox', 'referrerpolicy', 'loading'])
+      expect(calls.indexOf(name), name).toBeLessThan(src);
+    expect(connected).toEqual(['allow-scripts allow-popups allow-presentation']);
   });
 });
