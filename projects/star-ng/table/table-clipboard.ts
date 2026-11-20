@@ -18,7 +18,10 @@ export interface StarTablePasteEvent<T> {
   readonly cells: readonly StarTablePasteCell<T>[];
   /** The pasted text. */
   readonly text: string;
+  /** Stops the paste: no cell changes. */
   cancel(): void;
+  /** True after `cancel()`. */
+  readonly canceled: boolean;
 }
 
 /** Options of `copyToClipboard`. */

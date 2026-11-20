@@ -173,6 +173,7 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - Tree table: the context menu key check and the keyboard open of the menu use the shared core helpers `ɵstarIsContextMenuKey` and `ɵstarOpenContextMenu` (internal); the behaviour does not change.
 - Table and tree table: the sort, column resize, sticky offset and edit compare helpers are shared in `@star-ng/ui/core` (`grid-columns.ts`, internal `ɵ` names) instead of a copy in each grid; the behaviour does not change.
 - Table: the copy and paste, the body context menu and the search highlight of `StarTableInteraction` moved to focused internal helper files (`table-interaction-clipboard.ts`, `table-interaction-menu.ts`, `table-interaction-search.ts`); the public API and the behaviour do not change.
+- Table: `StarTablePasteEvent` (the `beforePaste` payload) has `readonly canceled: boolean` next to `cancel()`, like the other cancelable events.
 - Table docs: the interaction page and the `cellNavigation` description say that a control which a custom row action or lead template adds without a row or edit change keeps its tab stop; give it `tabindex="-1"`.
 
 ### Fixed

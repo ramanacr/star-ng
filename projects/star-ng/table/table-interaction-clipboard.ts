@@ -169,7 +169,12 @@ export class StarTableClipboardActions<T> {
         previous,
       })),
       text,
-      cancel: () => (canceled = true),
+      cancel: () => {
+        canceled = true;
+      },
+      get canceled() {
+        return canceled;
+      },
     });
     if (canceled) return;
     const { groups, skipped } = this.validate(cells);

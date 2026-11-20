@@ -219,6 +219,7 @@ describe('StarTable clipboard', () => {
     // Row 3: unchanged name, a new stock.
     expect(await pasteText('Bolt M6\t7\tC\textra\n\t500\tZ\nWasher\t3\n')).toBe(true);
     expect(host.before).toHaveLength(1);
+    expect(host.before[0].canceled).toBe(false);
     expect(
       host.before[0].cells.map((cell) => `${cell.row.sku}.${cell.field}=${cell.value}`),
     ).toEqual([
@@ -246,6 +247,7 @@ describe('StarTable clipboard', () => {
     await focus('P-2', 'stock');
     expect(await pasteText('5')).toBe(true);
     expect(host.before).toHaveLength(1);
+    expect(host.before[0].canceled).toBe(true);
     expect(host.edits).toEqual([]);
 
     host.paste.set(false);
