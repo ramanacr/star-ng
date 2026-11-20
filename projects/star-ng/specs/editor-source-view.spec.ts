@@ -55,3 +55,33 @@ describe('StarEditor HTML source view', () => {
     );
   });
 });
+
+@Component({
+  imports: [StarEditor],
+  template: `<star-editor [(value)]="html" [toolbar]="['undo', 'source']" ariaLabel="Spaces" />`,
+})
+class SpacesHost {
+  readonly html = signal('<p>x</p> <b>y</b> <i>z</i><span class="note">kept in the area</span>');
+}
+
+describe('StarEditor HTML source view without edits', () => {
+  it('changes nothing when the source is opened and closed', async () => {
+    const fixture = TestBed.createComponent(SpacesHost);
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+    const area = el.querySelector<HTMLElement>('.star-editor__area')!;
+    // Markup that the browser put in the area and the value does not have yet.
+    area.insertAdjacentHTML('beforeend', '<span></span>');
+    const before = area.innerHTML;
+    const source = el.querySelector<HTMLButtonElement>('[aria-label="HTML source"]')!;
+    source.click();
+    await fixture.whenStable();
+    source.click();
+    await fixture.whenStable();
+    expect(area.innerHTML).toBe(before);
+    expect(fixture.componentInstance.html()).toBe(
+      '<p>x</p> <b>y</b> <i>z</i><span class="note">kept in the area</span>',
+    );
+    expect(el.querySelector('[aria-label=Undo]')!.getAttribute('aria-disabled')).toBe('true');
+  });
+});

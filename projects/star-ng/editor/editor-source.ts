@@ -40,9 +40,6 @@ const BLOCK = new Set([
   'IFRAME',
 ]);
 
-/** Elements that hold only blocks: white space in them has no meaning. */
-const CONTAINER = new Set(['UL', 'OL', 'TABLE', 'THEAD', 'TBODY', 'TFOOT', 'TR', 'COLGROUP', 'DL']);
-
 /** Elements whose end tag may be left out (the parser closes them). */
 const OPTIONAL_END = new Set([
   'p',
@@ -76,68 +73,76 @@ const VOID = new Set([
   'track',
 ]);
 
-function hasBlocks(element: Element): boolean {
-  return [...element.children].some((child) => BLOCK.has(child.tagName));
-}
-
 function openTag(element: Element): string {
   const copy = element.cloneNode(false) as Element;
   const html = copy.outerHTML;
   return html.slice(0, html.length - `</${element.localName}>`.length);
 }
 
-/** The value as indented HTML: one block per line, inline content as it is. */
+/**
+ * True when every child of `parent` is a block element or white space only: white space in it
+ * has no meaning, so the source view may indent its children and drop the indentation again.
+ */
+/** Other elements that are blocks or have no text, for the layout of a typed source. */
+const LAYOUT_TOO = new Set([
+  'CENTER',
+  'SECTION',
+  'ARTICLE',
+  'HEADER',
+  'FOOTER',
+  'NAV',
+  'MAIN',
+  'ASIDE',
+  'ADDRESS',
+  'SCRIPT',
+  'STYLE',
+  'TEMPLATE',
+  'NOSCRIPT',
+]);
+
+function blocksOnly(parent: ParentNode): boolean {
+  const nodes = [...parent.childNodes];
+  return (
+    nodes.some((node) => node instanceof Element) &&
+    nodes.every((node) =>
+      node instanceof Element
+        ? BLOCK.has(node.tagName) || LAYOUT_TOO.has(node.tagName)
+        : node.nodeType === 3
+          ? !node.textContent!.trim()
+          : true,
+    )
+  );
+}
+
+/**
+ * The value as indented HTML: the children of a container that holds only blocks go on their own
+ * lines; any other content (text, inline elements, mixed content, `pre`) stays exactly as it is,
+ * on one line. Only white space that has no meaning is added, so the source reads back to the
+ * same value.
+ */
 export function starEditorFormatHtml(html: string, doc: Document): string {
   const template = doc.createElement('template');
   template.innerHTML = html;
+  if (!blocksOnly(template.content)) return html;
   const lines: string[] = [];
-  const walk = (parent: ParentNode, depth: number) => {
-    let inline = '';
-    const flush = () => {
-      if (inline.trim()) lines.push('  '.repeat(depth) + inline.trim());
-      inline = '';
-    };
-    for (const node of parent.childNodes) {
-      const element = node instanceof Element ? node : null;
-      if (element && BLOCK.has(element.tagName)) {
-        flush();
-        if (hasBlocks(element) && element.tagName !== 'PRE') {
-          lines.push('  '.repeat(depth) + openTag(element));
-          walk(element, depth + 1);
-          lines.push(`${'  '.repeat(depth)}</${element.localName}>`);
-        } else lines.push('  '.repeat(depth) + element.outerHTML);
-      } else if (element) inline += element.outerHTML;
-      else if (node.nodeType === 3) {
-        const holder = doc.createElement('span');
-        holder.textContent = node.textContent;
-        inline += holder.innerHTML;
-      }
-    }
-    flush();
+  const line = (element: Element, depth: number) => {
+    const indent = '  '.repeat(depth);
+    if (element.tagName !== 'PRE' && element.children.length && blocksOnly(element)) {
+      lines.push(indent + openTag(element));
+      for (const child of element.children) line(child, depth + 1);
+      lines.push(`${indent}</${element.localName}>`);
+    } else lines.push(indent + element.outerHTML);
   };
-  walk(template.content, 0);
+  for (const child of template.content.children) line(child, 0);
   return lines.join('\n');
 }
 
-/** Removes white space text between blocks (the indentation of the source). */
+/** Removes white space text in containers that hold only blocks (the indentation of the source). */
 function dropLayout(parent: ParentNode): void {
-  const top = !(parent instanceof Element) || CONTAINER.has(parent.tagName);
-  const mixed = parent instanceof Element && hasBlocks(parent);
-  const block = (side: ChildNode | null) =>
-    !side || (side instanceof Element && BLOCK.has(side.tagName));
+  const layout = blocksOnly(parent);
   for (const node of [...parent.childNodes]) {
-    if (node.nodeType === 3 && (top || mixed)) {
-      let text = node.textContent!;
-      if (top && !text.trim()) {
-        node.remove();
-        continue;
-      }
-      // White space next to a block (or at the start or end) is layout.
-      if (block(node.previousSibling)) text = text.replace(/^\s+/, '');
-      if (block(node.nextSibling)) text = text.replace(/\s+$/, '');
-      if (text) node.textContent = text;
-      else node.remove();
-    } else if (node instanceof Element && node.tagName !== 'PRE') dropLayout(node);
+    if (node.nodeType === 3 && layout) node.remove();
+    else if (node instanceof Element && node.tagName !== 'PRE') dropLayout(node);
   }
 }
 

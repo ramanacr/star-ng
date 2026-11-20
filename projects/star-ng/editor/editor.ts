@@ -396,6 +396,8 @@ export class StarEditor implements FormValueControl<string> {
   protected readonly sourceId = this.ids.getId('star-editor-source-');
   protected readonly sourceStatusId = this.ids.getId('star-editor-source-status-');
   private sourceTimer: ReturnType<typeof setTimeout> | null = null;
+  /** The source text when the view opened. */
+  private sourceOpened = '';
   /** The open image or embed panel, and the image it edits. */
   protected readonly mediaPanel = signal<'image' | 'embed' | null>(null);
   /** The open table panel, and the table its properties are for. */
@@ -1020,12 +1022,14 @@ export class StarEditor implements FormValueControl<string> {
       this.mediaPanel.set(null);
       this.selectImage(null);
       this.sourceText.set(starEditorFormatHtml(this.clean(area.innerHTML), area.ownerDocument));
+      this.sourceOpened = this.sourceText();
       this.sourceChanged.set(false);
       this.sourceUnclosed.set(null);
       this.sourceMode.set(true);
       return;
     }
-    this.readSource();
+    // A source that was not edited is not read back: the area and the value stay as they are.
+    if (this.sourceText() !== this.sourceOpened || this.sourceTimer) this.readSource();
     this.sourceMode.set(false);
     area.focus();
     this.refreshState();
