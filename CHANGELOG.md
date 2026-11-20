@@ -112,6 +112,7 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - Docs: pages "Action sheet" (`StarActionSheet`) and "Bottom sheet container" (`StarBottomSheetContainer`) with examples.
 - Docs: guide "Configuration" (`provideStarNg`, the default tokens, precedence, `StarConfigService`, `StarAnnouncer`, `StarClipboard` and `starCopy`, the pipes and `starKeyFilter`).
 - Docs: page "Table interaction" with examples for cell navigation, range selection, the context menu, copy and paste, search highlight and the scroll API.
+- Docs: section "Overlays and stacking" in the guide "Configuration": the popups are in the top layer of the browser (native popovers and `showModal()`), so `appendTo` and `zIndex` are not needed for stacking; `overlay.appendTo` only chooses the place in the DOM, and `overlay.zIndexBase` applies to the surfaces outside the top layer (windows, non-modal dialogs, drawers and sheets, the full-screen editor).
 
 #### Document viewer
 
