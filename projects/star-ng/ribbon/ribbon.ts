@@ -521,6 +521,8 @@ export class StarRibbon {
   private readonly keyTipGroup = signal<number | null>(null);
   private typed = '';
   private altAlone = false;
+  /** The deferred focus check of a focusout without a target. */
+  private focusCheck: ReturnType<typeof setTimeout> | undefined;
 
   /** KeyTips of the level that shows. */
   private readonly keyTips = computed<ReadonlyMap<string, string>>(() => {
@@ -565,6 +567,7 @@ export class StarRibbon {
   });
 
   constructor() {
+    inject(DestroyRef).onDestroy(() => clearTimeout(this.focusCheck));
     // A new tab or new items: measure the groups again once they are in the DOM.
     effect(() => {
       this.activeGroups().forEach((group) => group.items());
@@ -656,9 +659,11 @@ export class StarRibbon {
         this.openGroup.set(null);
         this.peek.set(false);
       };
-      // Alt released in another window must not count as a lone Alt here.
+      // The window lost the focus (Alt+Tab): an Alt released elsewhere is no lone Alt here, and the
+      // KeyTips hide.
       const onBlur = () => {
         this.altAlone = false;
+        this.hideKeyTips();
       };
       this.doc.addEventListener('pointerdown', onPointer, true);
       view?.addEventListener('blur', onBlur);
@@ -1026,8 +1031,13 @@ export class StarRibbon {
     if (!next) {
       // The focus left the page (another window), or a re-render removed the focused element.
       // Hide only when the focus did not land back in the ribbon by the next tick.
-      setTimeout(() => {
-        if (!this.host.nativeElement.contains(this.doc.activeElement)) this.hideKeyTips();
+      // When the window loses the focus, the active element stays in the ribbon: check hasFocus().
+      clearTimeout(this.focusCheck);
+      this.focusCheck = setTimeout(() => {
+        this.focusCheck = undefined;
+        if (!this.doc.hasFocus() || !this.host.nativeElement.contains(this.doc.activeElement)) {
+          this.hideKeyTips();
+        }
       });
       return;
     }

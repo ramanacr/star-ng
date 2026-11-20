@@ -392,18 +392,62 @@ describe('StarRibbon', () => {
   it('escapes the ids with CSS.escape when the browser has it', async () => {
     const escape = vi.fn((value: string) => value.replace(/["\\ ]/g, '\\$&'));
     vi.stubGlobal('CSS', { escape });
-    const { host, tabs, stable } = await setup();
-    host.font.update((items) => [...items, { id: ODD_ID, label: 'Quote', keyTip: 'Q' }]);
-    await stable();
+    try {
+      const { host, tabs, stable } = await setup();
+      host.font.update((items) => [...items, { id: ODD_ID, label: 'Quote', keyTip: 'Q' }]);
+      await stable();
+      tabs()[0].focus();
+      key(tabs()[0], 'F10');
+      key(tabs()[0], 'h');
+      await stable();
+      key(document.activeElement!, 'q');
+      await stable();
+      expect(host.commands).toEqual([{ id: ODD_ID }]);
+      expect(escape).toHaveBeenCalled();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('hides the KeyTips when the window loses the focus', async () => {
+    const { tips, tabs, stable } = await setup();
+    const hasFocus = vi.spyOn(document, 'hasFocus');
+    try {
+      tabs()[0].focus();
+      key(tabs()[0], 'F10');
+      await stable();
+      expect(tips().length).toBe(3);
+      // Alt+Tab: focusout without a target, the active element stays in the ribbon.
+      hasFocus.mockReturnValue(false);
+      tabs()[0].dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget: null }));
+      await new Promise((resolve) => setTimeout(resolve));
+      await stable();
+      expect(tips()).toEqual([]);
+      // The window blur alone hides them too.
+      hasFocus.mockReturnValue(true);
+      key(tabs()[0], 'F10');
+      await stable();
+      expect(tips().length).toBe(3);
+      window.dispatchEvent(new Event('blur'));
+      await stable();
+      expect(tips()).toEqual([]);
+    } finally {
+      hasFocus.mockRestore();
+    }
+  });
+
+  it('cancels the deferred focus check when it is destroyed', async () => {
+    const { fixture, tabs, stable } = await setup();
+    const hide = vi.spyOn(fixture.componentInstance.ribbon(), 'hideKeyTips');
     tabs()[0].focus();
     key(tabs()[0], 'F10');
-    key(tabs()[0], 'h');
     await stable();
-    key(document.activeElement!, 'q');
-    await stable();
-    expect(host.commands).toEqual([{ id: ODD_ID }]);
-    expect(escape).toHaveBeenCalled();
-    vi.unstubAllGlobals();
+    tabs()[0].blur();
+    tabs()[0].dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget: null }));
+    hide.mockClear();
+    fixture.destroy();
+    await new Promise((resolve) => setTimeout(resolve));
+    expect(hide).not.toHaveBeenCalled();
   });
 
   it('collapses to the tab headers and shows the panel on demand', async () => {
