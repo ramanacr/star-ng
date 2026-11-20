@@ -4,14 +4,20 @@ import {
   Component,
   contentChildren,
   input,
+  numberAttribute,
 } from '@angular/core';
 import type { StarOptionKey } from '@star-ng/ui/core';
 import type { StarColumn } from '@star-ng/ui/table';
 import type { Observable } from 'rxjs';
 
-/** The child rows of a parent row: an array, a promise or an observable (first value). */
+/**
+ * The child rows of a parent row: an array, a promise or an observable (first value). `signal`
+ * aborts when the load is no longer needed (the row closed, the grid was destroyed, a retry): pass
+ * it to `fetch`; an observable is unsubscribed.
+ */
 export type StarRowIslandLoader<P = unknown, C = unknown> = (
   parent: P,
+  signal: AbortSignal,
 ) => readonly C[] | Promise<readonly C[]> | Observable<readonly C[]>;
 
 /**
@@ -52,7 +58,12 @@ export class StarRowIsland<C = unknown> {
   readonly rowLabel = input<((row: C) => string) | null>(null);
   readonly paginator = input(false, { transform: booleanAttribute });
   /** Rows per page with `paginator`. */
-  readonly rows = input(5);
+  readonly rows = input(5, { transform: numberAttribute });
+  /**
+   * Row or cell selection of the child grids. Each child grid keeps its own selection (also when
+   * its detail row renders again); read it from the table that `childGridCreated` gives
+   * (`grid.selection()`, `grid.rowSelect`).
+   */
   readonly selectionMode = input<'single' | 'multiple' | 'cell' | 'range' | null>(null);
   readonly editMode = input<'cell' | 'row'>('cell');
   readonly filterDisplay = input<'row' | 'menu'>('row');

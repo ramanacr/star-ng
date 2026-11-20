@@ -71,7 +71,7 @@ function linesOf(order: Order): OrderLine[] {
         heading="Customers, orders and order lines"
         source="hierarchical-grid/customers"
         [script]="customersScript"
-        note="Orders come from the orders field of each customer (key). Order lines load when an order opens (childData returns a promise): a loading row shows first. Alt+Arrow Down expands the focused row, Arrow Down goes into its child grid, Control+Arrow Up or Escape goes back to the parent row."
+        note="Orders come from the orders field of each customer (key). Order lines load when an order opens (childData returns a promise): a loading row shows first. Alt+Arrow Down expands the focused row, Arrow Down goes into its child grid, Control+Arrow Up or Escape goes back to the parent row. A child grid keeps its rows, expanded rows, page and selection when its row closes and opens again. For assistive technology each level is its own named grid (Orders of Customer 01) in the detail row, and the expand button points to it (aria-expanded, aria-controls)."
       >
         <div class="docs-stack">
           <star-hierarchical-grid

@@ -55,7 +55,7 @@ const FIELDS: readonly StarPivotField<Sale>[] = [
         heading="Sales by region, product and quarter"
         source="pivot-grid/sales"
         [script]="salesScript"
-        note="Rows nest region and product; the columns split the date into year and quarter. Parent rows show subtotals; each year has a total column. Click a value cell (or press Enter on it) to see its source records: cellClick gives the paths, the value and the records."
+        note="Rows nest region and product; the columns split the date into year and quarter. Parent rows show subtotals; each year has a total column. Click a value cell (or press Enter on it) to see its source records: cellClick gives the paths, the value and the records. The date buckets use config.timeZone (an IANA zone; default: the local zone of the runtime). Set it when the data holds instants, so a server render and the browser put a record in the same month."
       >
         <div class="docs-stack">
           <star-pivot-grid
@@ -130,6 +130,7 @@ export class PivotGridPage {
     columns: [{ field: 'date', label: 'Date', dateHierarchy: ['year', 'quarter'] }],
     values: [{ field: 'amount', label: 'Amount', aggregate: 'sum', format: EURO }],
     collapsedRows: ['["South"]', '["East"]', '["West"]'],
+    timeZone: 'UTC',
   });
   protected readonly openConfig = signal<StarPivotConfig<Sale>>({
     rows: [{ field: 'product', label: 'Product' }],

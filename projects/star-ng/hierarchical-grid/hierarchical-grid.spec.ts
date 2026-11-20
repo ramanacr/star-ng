@@ -7,6 +7,7 @@ import {
   StarRowIsland,
 } from '@star-ng/ui/hierarchical-grid';
 import { StarColumn } from '@star-ng/ui/table';
+import { Subject } from 'rxjs';
 
 interface Line {
   readonly id: number;
@@ -86,11 +87,17 @@ class Host {
   readonly collapses: StarHierarchicalRowEvent<Customer>[] = [];
   readonly created: StarChildGridCreatedEvent<Customer>[] = [];
   pending: { resolve: (rows: Line[]) => void; reject: (error: unknown) => void }[] = [];
-  readonly loadLines = (order: Order) =>
-    new Promise<Line[]>((resolve, reject) => {
+  /** When set, the loader returns this observable instead of a promise. */
+  observable: Subject<Line[]> | null = null;
+  readonly signals: AbortSignal[] = [];
+  readonly loadLines = (order: Order, signal: AbortSignal) => {
+    this.signals.push(signal);
+    if (this.observable) return this.observable.asObservable();
+    return new Promise<Line[]>((resolve, reject) => {
       void order;
       this.pending.push({ resolve, reject });
     });
+  };
 
   onExpand(event: StarHierarchicalRowEvent<Customer>): void {
     this.expands.push(event);
@@ -235,6 +242,96 @@ describe('StarHierarchicalGrid', () => {
     expect(lines.textContent).toContain('Paper, A4');
   });
 
+  it('moves the focus to the loading row after Retry, then into the loaded grid', async () => {
+    const { el, host, settle } = await setup();
+    host.grid().expandAll();
+    await settle();
+    const [orders] = childTables(el, /^Orders of Example Ltd\.$/);
+    rowsOf(orders)[0].querySelector<HTMLButtonElement>('.star-table__expander button')!.click();
+    await settle();
+    host.pending[0].reject(new Error('offline'));
+    await settle();
+    const retry = el.querySelector<HTMLButtonElement>('.star-hierarchical__status--error button')!;
+    retry.focus();
+    retry.click();
+    await settle();
+    const status = el.querySelector('.star-hierarchical__status[role="status"]');
+    expect(document.activeElement).toBe(status);
+    // A second error: the focus goes to the new Retry button.
+    host.pending[1].reject(new Error('offline'));
+    await settle();
+    const again = el.querySelector<HTMLButtonElement>('.star-hierarchical__status--error button')!;
+    expect(document.activeElement).toBe(again);
+    again.click();
+    await settle();
+    host.pending[2].resolve([{ id: 1, item: 'Paper, A4', quantity: 3 }]);
+    await settle();
+    const [lines] = childTables(el, /^Lines of ORD-1$/);
+    expect(lines.contains(document.activeElement)).toBe(true);
+    expect(document.activeElement).not.toBe(document.body);
+  });
+
+  it('keeps loaded rows and nested expansion when a detail row renders again', async () => {
+    const { el, host, settle } = await setup();
+    host.grid().expandAll();
+    await settle();
+    let [orders] = childTables(el, /^Orders of Example Ltd\.$/);
+    rowsOf(orders)[0].querySelector<HTMLButtonElement>('.star-table__expander button')!.click();
+    await settle();
+    host.pending[0].resolve([{ id: 1, item: 'Paper, A4', quantity: 3 }]);
+    await settle();
+    expect(childTables(el, /^Lines of ORD-1$/)).toHaveLength(1);
+    // Collapse and expand the customer: the order stays open, the lines are not loaded again.
+    host.grid().collapseAll();
+    await settle();
+    host.grid().expandAll();
+    await settle();
+    [orders] = childTables(el, /^Orders of Example Ltd\.$/);
+    expect(childTables(el, /^Lines of ORD-1$/)).toHaveLength(1);
+    expect(host.signals).toHaveLength(1);
+    // A sort of the orders renders the detail rows again: still one load.
+    orders
+      .querySelector<HTMLElement>('th[data-field="total"] button, th[data-field="total"]')!
+      .click();
+    await settle();
+    expect(childTables(el, /^Lines of ORD-1$/)).toHaveLength(1);
+    expect(host.signals).toHaveLength(1);
+  });
+
+  it('points the expand button to the child grids with aria-controls', async () => {
+    const { el, host, settle } = await setup();
+    host.grid().expandAll();
+    await settle();
+    const button = rowsOf(rootTable(el))[0].querySelector('.star-table__expander button')!;
+    const target = document.getElementById(button.getAttribute('aria-controls')!)!;
+    expect(target.classList).toContain('star-hierarchical__children');
+    expect(target.querySelector('table')!.getAttribute('aria-label')).toBe(
+      'Orders of Example Ltd.',
+    );
+  });
+
+  it('loads from an observable and unsubscribes when the row closes during the load', async () => {
+    const { el, host, settle } = await setup();
+    host.observable = new Subject<Line[]>();
+    host.grid().expandAll();
+    await settle();
+    const [orders] = childTables(el, /^Orders of Example Ltd\.$/);
+    const toggle = () =>
+      rowsOf(orders)[0].querySelector<HTMLButtonElement>('.star-table__expander button')!;
+    toggle().click();
+    await settle();
+    expect(host.observable.observed).toBe(true);
+    toggle().click();
+    await settle();
+    expect(host.signals[0].aborted).toBe(true);
+    expect(host.observable.observed).toBe(false);
+    toggle().click();
+    await settle();
+    host.observable.next([{ id: 7, item: 'Stapler', quantity: 1 }]);
+    await settle();
+    expect(childTables(el, /^Lines of ORD-1$/)[0].textContent).toContain('Stapler');
+  });
+
   it('expands with Alt+Arrow keys, goes into the child grid and back to the parent row', async () => {
     const { el, host, settle } = await setup();
     const root = rootTable(el);
@@ -276,5 +373,72 @@ describe('StarHierarchicalGrid', () => {
     const { el } = await setup();
     expect(rowsOf(rootTable(el))).toHaveLength(2);
     expect(el.querySelectorAll('table')).toHaveLength(1);
+  });
+});
+
+@Component({
+  imports: [StarHierarchicalGrid, StarRowIsland],
+  template: `<star-hierarchical-grid
+    [data]="data"
+    [columns]="columns"
+    dataKey="id"
+    virtualScroll
+    scrollHeight="400px"
+    [(expandedRows)]="expanded"
+  >
+    <star-row-island label="Orders" [childData]="load" [columns]="orderColumns" dataKey="id" />
+  </star-hierarchical-grid>`,
+})
+class VirtualHost {
+  readonly data: Customer[] = Array.from({ length: 300 }, (_, i) => ({
+    id: i + 1,
+    name: `Customer ${i + 1}`,
+    orders: [],
+  }));
+  readonly columns = CUSTOMER_COLUMNS;
+  readonly orderColumns = ORDER_COLUMNS;
+  readonly expanded = signal<readonly unknown[]>([1]);
+  calls = 0;
+  readonly load = () => {
+    this.calls++;
+    return Promise.resolve([{ id: 'ORD-9', total: 9 }]);
+  };
+}
+
+describe('StarHierarchicalGrid with a virtual root', () => {
+  it('keeps the child grid of a row that leaves the window and comes back (one load)', async () => {
+    const fixture = TestBed.createComponent(VirtualHost);
+    const el = fixture.nativeElement as HTMLElement;
+    const settle = async () => {
+      for (let i = 0; i < 3; i++) {
+        fixture.detectChanges();
+        await new Promise((resolve) => setTimeout(resolve));
+      }
+    };
+    await settle();
+    expect(childTables(el, /^Orders/)).toHaveLength(1);
+    // jsdom has no layout: every row is 48 pixels high.
+    const rect = vi
+      .spyOn(HTMLTableRowElement.prototype, 'getBoundingClientRect')
+      .mockReturnValue(new DOMRect(0, 0, 600, 48));
+    const viewport = el.querySelector<HTMLElement>('.star-table__scroll')!;
+    Object.defineProperty(viewport, 'clientHeight', { configurable: true, value: 400 });
+    // The body moves up as the view scrolls down.
+    const body = vi
+      .spyOn(HTMLTableSectionElement.prototype, 'getBoundingClientRect')
+      .mockImplementation(() => new DOMRect(0, -viewport.scrollTop, 600, 0));
+    viewport.dispatchEvent(new Event('scroll'));
+    await settle();
+    viewport.scrollTop = 6000;
+    viewport.dispatchEvent(new Event('scroll'));
+    await settle();
+    expect(childTables(el, /^Orders/)).toHaveLength(0);
+    viewport.scrollTop = 0;
+    viewport.dispatchEvent(new Event('scroll'));
+    await settle();
+    expect(childTables(el, /^Orders/)).toHaveLength(1);
+    expect(fixture.componentInstance.calls).toBe(1);
+    rect.mockRestore();
+    body.mockRestore();
   });
 });

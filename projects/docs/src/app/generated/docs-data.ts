@@ -6046,6 +6046,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
+        "name": "parentKey",
+        "type": "unknown",
+        "default": "null",
+        "required": false,
+        "description": "The key of the parent row in its grid (the cache key)."
+      },
+      {
         "name": "parentLabel",
         "type": "string",
         "default": "''",
@@ -6065,6 +6072,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "2",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "cache",
+        "type": "CacheNode",
+        "default": null,
+        "required": true,
+        "description": "The kept child grids of the parent grid."
       }
     ],
     "models": [],
@@ -6241,6 +6255,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "null",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "cache",
+        "type": "CacheNode",
+        "default": "newNode()",
+        "required": false,
+        "description": "The kept child grids of this grid."
       }
     ],
     "models": [
@@ -6250,6 +6271,20 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "[]",
         "required": false,
         "description": "Expanded row keys. Two-way."
+      },
+      {
+        "name": "first",
+        "type": "number",
+        "default": "0",
+        "required": false,
+        "description": "First row of the page (paginator). Two-way."
+      },
+      {
+        "name": "selection",
+        "type": "readonly unknown[]",
+        "default": "[]",
+        "required": false,
+        "description": "Selected rows. Two-way."
       }
     ],
     "outputs": []
@@ -11739,7 +11774,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "'single' | 'multiple' | 'cell' | 'range' | null",
         "default": "null",
         "required": false,
-        "description": ""
+        "description": "Row or cell selection of the child grids. Each child grid keeps its own selection (also when its detail row renders again); read it from the table that `childGridCreated` gives (`grid.selection()`, `grid.rowSelect`)."
       },
       {
         "name": "editMode",
