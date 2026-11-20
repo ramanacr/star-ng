@@ -205,6 +205,7 @@ export interface StarDataViewLazyLoadEvent {
           [showJumpToPageDropdown]="showJumpToPageDropdown()"
           [showFirstLast]="showFirstLastIcon()"
           [showPageLinks]="showPageLinks()"
+          [ariaLabel]="paginatorAriaLabel()"
           (pageChange)="onPage($event)"
         />
         @if (pagerSlots().get('end'); as custom) {
@@ -242,6 +243,11 @@ export class StarDataView<T = unknown> {
   readonly showJumpToPageDropdown = input(false, { transform: booleanAttribute });
   /** First and last page buttons in the paginator (default `true`). */
   readonly showFirstLastIcon = input(true, { transform: booleanAttribute });
+  /**
+   * Accessible name of the paginator navigation (default `STAR_UI_TEXT.pagination`). Give each
+   * data view on a page its own name, so the navigation landmarks differ.
+   */
+  readonly paginatorAriaLabel = input<string | null>(null);
   /** Page number buttons in the paginator (default `true`). */
   readonly showPageLinks = input(true, { transform: booleanAttribute });
   /**

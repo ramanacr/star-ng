@@ -140,8 +140,8 @@ export class StarButton {
   /** Fully round ends. PrimeNG `rounded`. */
   readonly rounded = input(false, { transform: booleanAttribute });
   /**
-   * A small badge after the text, for example a count. Give the button an `ariaLabel` that says
-   * what the number means when the text alone does not. PrimeNG `badge`.
+   * A small badge after the text, for example a count. The badge text is part of the accessible
+   * name; an `ariaLabel` must keep the visible text (WCAG 2.5.3). PrimeNG `badge`.
    */
   readonly badge = input<string | number | null>(null);
   /** Color of the badge. PrimeNG `badgeSeverity`. */

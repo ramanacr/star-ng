@@ -60,7 +60,7 @@ import { DOCS, DocsRow } from '../shared/docs';
       <docs-example
         heading="Appearance, badge and label"
         source="button/appearance"
-        note="appearance draws the variant without its fill: outlined (border and text in the variant color), text (no border) or link (underlined). raised adds a shadow and rounded makes fully round ends. badge shows a small count after the text, in the badgeSeverity color; give the button an ariaLabel when the number needs words. label sets the text without content; with iconOnly it is the accessible name. loadingIcon changes the icon of the loading state, and starIcon with icon or loading replaces those icons with a template."
+        note="appearance draws the variant without its fill: outlined (border and text in the variant color), text (no border) or link (underlined). raised adds a shadow and rounded makes fully round ends. badge shows a small count after the text, in the badgeSeverity color; the count is part of the accessible name (here Inbox 4), so keep the visible text in any ariaLabel you set. label sets the text without content; with iconOnly it is the accessible name. loadingIcon changes the icon of the loading state, and starIcon with icon or loading replaces those icons with a template."
       >
         <div class="docs-row">
           <star-button appearance="outlined">Outlined</star-button>
@@ -69,13 +69,7 @@ import { DOCS, DocsRow } from '../shared/docs';
           <star-button variant="danger" appearance="outlined">Delete</star-button>
           <star-button raised>Raised</star-button>
           <star-button rounded variant="secondary">Rounded</star-button>
-          <star-button
-            variant="secondary"
-            label="Inbox"
-            [badge]="4"
-            badgeSeverity="info"
-            ariaLabel="Inbox, 4 new"
-          />
+          <star-button variant="secondary" label="Inbox" [badge]="4" badgeSeverity="info" />
           <star-button iconOnly leadingIcon="ph-bold ph-gear" label="Settings" variant="ghost" />
         </div>
       </docs-example>

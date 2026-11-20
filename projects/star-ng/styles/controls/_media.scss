@@ -202,6 +202,8 @@
   }
 }
 .star-galleria__indicators {
+  position: relative;
+  z-index: 0;
   display: flex;
   justify-content: center;
   gap: 0.5rem;
@@ -210,22 +212,35 @@
   position: absolute;
   inset: auto 0 3.25rem;
 }
+// The button is 24px (WCAG 2.5.8 target size); the visible dot is drawn inside it.
 .star-galleria__indicator {
+  position: relative;
   display: inline-grid;
   place-items: center;
-  min-width: 0.875rem;
-  height: 0.875rem;
-  padding: 0;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  padding: 0 0.25rem;
   border: 0;
   border-radius: var(--star-radius-pill);
-  background: var(--star-border-strong);
+  background: none;
   color: var(--star-text);
   font: var(--star-type-body-sm);
   cursor: pointer;
 
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0.3125rem;
+    z-index: -1;
+    border-radius: var(--star-radius-pill);
+    background: var(--star-border-strong);
+  }
   &[aria-current='true'] {
-    background: var(--star-primary);
     color: var(--star-on-tone);
+
+    &::before {
+      background: var(--star-primary);
+    }
   }
   &:focus-visible {
     outline: 2px solid var(--star-accent);

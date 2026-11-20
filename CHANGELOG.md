@@ -81,7 +81,7 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 
 #### Data view
 
-- Data view: `sortField` and `sortOrder`, `filter(text)` with `filterBy` and `filterLocale`, lazy mode (`lazy`, `totalRecords`, `lazyLoadOnInit`, output `lazyLoad`), `loading` and `loadingIcon` (with `aria-busy`), the paginator options `rowsPerPageOptions`, `paginatorPosition` (`top`, `bottom`, `both`), `alwaysShowPaginator`, `pageLinks`, `showCurrentPageReport`, `currentPageReportTemplate`, `showJumpToPageDropdown`, `showFirstLastIcon` and `showPageLinks`, the output `pageChange`, and the slots `starLoading`, `starPaginatorTemplate` (`start`, `end`) and `starIcon` (`list`, `grid`, `loading`); `starEmpty` gets the filter text (PrimeNG `p-dataview`). The data view moves to its own file in `@star-ng/ui/data-display`.
+- Data view: `sortField` and `sortOrder`, `filter(text)` with `filterBy` and `filterLocale`, lazy mode (`lazy`, `totalRecords`, `lazyLoadOnInit`, output `lazyLoad`), `loading` and `loadingIcon` (with `aria-busy`), the paginator options `rowsPerPageOptions`, `paginatorPosition` (`top`, `bottom`, `both`), `alwaysShowPaginator`, `pageLinks`, `showCurrentPageReport`, `currentPageReportTemplate`, `showJumpToPageDropdown`, `showFirstLastIcon`, `showPageLinks` and `paginatorAriaLabel`, the output `pageChange`, and the slots `starLoading`, `starPaginatorTemplate` (`start`, `end`) and `starIcon` (`list`, `grid`, `loading`); `starEmpty` gets the filter text (PrimeNG `p-dataview`). The data view moves to its own file in `@star-ng/ui/data-display`.
 
 #### Date and time pickers
 

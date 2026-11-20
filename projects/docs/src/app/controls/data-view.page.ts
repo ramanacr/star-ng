@@ -121,7 +121,7 @@ interface Product {
         heading="Sort field, filter, paginator options and loading"
         source="data-view/options"
         [script]="optionsScript"
-        note="sortField and sortOrder (1 or -1) sort the items. filter(text) keeps the items whose filterBy fields contain the text (case and accents ignored) and goes back to the first page. paginatorPosition puts the paginator at the top, the bottom or both; rowsPerPageOptions, pageLinks, currentPageReportTemplate, showJumpToPageDropdown, showFirstLastIcon and showPageLinks go to the paginator; alwaysShowPaginator shows it on one page too. loading shows an indicator and sets aria-busy (starLoading replaces it). In lazy mode, items is the current page, totalRecords the count, and lazyLoad asks for a page."
+        note="sortField and sortOrder (1 or -1) sort the items. filter(text) keeps the items whose filterBy fields contain the text (case and accents ignored) and goes back to the first page. paginatorPosition puts the paginator at the top, the bottom or both (paginatorAriaLabel names the navigation, so each paginator on a page has its own name); rowsPerPageOptions, pageLinks, currentPageReportTemplate, showJumpToPageDropdown, showFirstLastIcon and showPageLinks go to the paginator; alwaysShowPaginator shows it on one page too. loading shows an indicator and sets aria-busy (starLoading replaces it). In lazy mode, items is the current page, totalRecords the count, and lazyLoad asks for a page."
       >
         <star-data-view
           #catalog
@@ -129,7 +129,8 @@ interface Product {
           paginator
           [rows]="3"
           [rowsPerPageOptions]="[3, 6]"
-          paginatorPosition="both"
+          paginatorPosition="top"
+          paginatorAriaLabel="Catalog pages"
           sortField="price"
           [sortOrder]="priceOrder()"
           filterBy="name"
