@@ -192,18 +192,26 @@
 }
 .star-pivot-config__panel {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  // Two equal columns that may shrink below their content: a long field or area name wraps
+  // instead of pushing the other column out of the panel.
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--star-space-3);
   padding: var(--star-space-3);
   border: 1px solid var(--star-border);
   border-radius: var(--star-radius-lg);
   background: var(--star-surface);
 }
-.star-pivot-config__area--fields {
+.star-pivot-config__area {
+  min-inline-size: 0;
+}
+// The unused fields and the values (a value field also has its aggregate select) use the full width.
+.star-pivot-config__area--fields,
+.star-pivot-config__area--values {
   grid-column: 1 / -1;
 }
 .star-pivot-config__title {
   display: block;
+  overflow-wrap: anywhere;
   margin-block-end: var(--star-space-1);
   color: var(--star-text-muted);
   font: var(--star-type-label);
@@ -221,6 +229,7 @@
 }
 .star-pivot-config__field {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--star-space-1);
   min-inline-size: 0;
@@ -248,6 +257,7 @@
   white-space: nowrap;
 }
 .star-pivot-config__aggregate {
+  min-inline-size: 0;
   max-inline-size: 6.5rem;
   block-size: 1.75rem;
   border: 1px solid var(--star-border-strong);
