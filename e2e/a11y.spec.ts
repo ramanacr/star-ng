@@ -1838,6 +1838,12 @@ const STATES: readonly State[] = [
       const live = example(page, 'Find, counts, full screen and shortcuts');
       await live.getByRole('textbox', { name: 'Release notes' }).click();
       await page.keyboard.press('Control+H');
+      // Type only when the find field has the focus, or the keys go into the content.
+      await expect(
+        live
+          .getByRole('search', { name: 'Find and replace' })
+          .getByRole('searchbox', { name: 'Find' }),
+      ).toBeFocused();
       await page.keyboard.type('plan');
       await expect(live.getByRole('status')).toHaveText('1 of 3');
     },
