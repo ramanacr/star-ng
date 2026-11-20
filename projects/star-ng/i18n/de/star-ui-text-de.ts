@@ -309,6 +309,10 @@ export const STAR_UI_TEXT_DE: StarUiText = {
   editorEmbed: 'Einbetten',
   editorEmbedAddress: 'Video- oder Seitenadresse',
   editorEmbedNotAllowed: 'Diese Adresse steht nicht auf der Liste der erlaubten Einbettungen.',
+  editorSource: 'HTML-Quelltext',
+  editorSourceChanged:
+    'Ein Teil des Markups ist nicht erlaubt: Er wurde entfernt oder in aktuelles Markup geändert.',
+  editorSourceUnclosed: (name) => `Das Element <${name}> ist nicht geschlossen.`,
   chartPoints: (title) => `${title}: Datenpunkte`,
   chartPointsHint: 'Pfeiltasten wechseln zwischen Punkten und Reihen. Eingabe wählt einen Punkt.',
   chartPointLabel: (series, label, value) => `${series}, ${label}: ${value}`,

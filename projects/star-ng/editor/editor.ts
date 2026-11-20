@@ -78,6 +78,7 @@ import {
   starEditorSanitize,
   StarEditorSanitizeConfig,
 } from './editor-sanitize';
+import { starEditorFormatHtml, starEditorReadSource } from './editor-source';
 import {
   STAR_EDITOR_BUTTONS,
   STAR_EDITOR_DEFAULT_TOOLBAR,
@@ -305,6 +306,14 @@ export class StarEditor implements FormValueControl<string> {
   protected readonly linkNewTab = signal(false);
   /** The open color panel. */
   protected readonly colorPanel = signal<Panel | null>(null);
+  /** The HTML source view: on, its text, and what the last read found. */
+  protected readonly sourceMode = signal(false);
+  protected readonly sourceText = signal('');
+  protected readonly sourceChanged = signal(false);
+  protected readonly sourceUnclosed = signal<string | null>(null);
+  protected readonly sourceId = this.ids.getId('star-editor-source-');
+  protected readonly sourceStatusId = this.ids.getId('star-editor-source-status-');
+  private sourceTimer: ReturnType<typeof setTimeout> | null = null;
   /** The open image or embed panel, and the image it edits. */
   protected readonly mediaPanel = signal<'image' | 'embed' | null>(null);
   protected readonly imageInitial = signal<StarEditorImageValue | null>(null);
@@ -353,6 +362,9 @@ export class StarEditor implements FormValueControl<string> {
       },
     });
     // Toolbar groups that do not fit go into the "More actions" panel.
+    this.destroyRef.onDestroy(() => {
+      if (this.sourceTimer) clearTimeout(this.sourceTimer);
+    });
     afterNextRender(() => {
       const view = this.area().nativeElement.ownerDocument.defaultView;
       const toolbar = this.toolbarElement()?.nativeElement;
@@ -383,6 +395,7 @@ export class StarEditor implements FormValueControl<string> {
 
   /** `aria-pressed` of a toggle button, `null` for an action button. */
   protected pressed(cmd: StarEditorCommand): boolean | null {
+    if (cmd === 'source') return this.sourceMode();
     if (starEditorIsSelect(cmd) || !STAR_EDITOR_BUTTONS[cmd].toggle) return null;
     return this.isActive(cmd);
   }
@@ -395,8 +408,12 @@ export class StarEditor implements FormValueControl<string> {
     return null;
   }
 
-  /** Undo and redo are off when there is nothing to undo or redo. */
+  /**
+   * Undo and redo are off when there is nothing to undo or redo; in the source view only the
+   * source button works.
+   */
   protected unavailable(cmd: StarEditorCommand): boolean {
+    if (this.sourceMode()) return cmd !== 'source';
     return (cmd === 'undo' && !this.canUndo()) || (cmd === 'redo' && !this.canRedo());
   }
 
@@ -655,6 +672,11 @@ export class StarEditor implements FormValueControl<string> {
       }
       return;
     }
+    if (command === 'source') {
+      this.toggleSource();
+      return;
+    }
+    if (this.sourceMode()) return;
     if (command === 'undo' || command === 'redo') {
       this.travel(command === 'undo' ? -1 : 1);
       return;
@@ -785,6 +807,50 @@ export class StarEditor implements FormValueControl<string> {
     starEditorRestore(this.panelRange);
     this.panelRange = null;
     this.refreshState();
+  }
+
+  // ---- HTML source view ----
+
+  /** Switches between the editing area and the HTML source view. */
+  private toggleSource(): void {
+    const area = this.area().nativeElement;
+    if (!this.sourceMode()) {
+      this.linkOpen.set(false);
+      this.colorPanel.set(null);
+      this.mediaPanel.set(null);
+      this.selectImage(null);
+      this.sourceText.set(starEditorFormatHtml(this.clean(area.innerHTML), area.ownerDocument));
+      this.sourceChanged.set(false);
+      this.sourceUnclosed.set(null);
+      this.sourceMode.set(true);
+      return;
+    }
+    this.readSource();
+    this.sourceMode.set(false);
+    area.focus();
+    this.refreshState();
+  }
+
+  /** The source changed: read it back after a short pause in typing. */
+  protected onSourceInput(text: string): void {
+    this.sourceText.set(text);
+    if (this.sourceTimer) clearTimeout(this.sourceTimer);
+    this.sourceTimer = setTimeout(() => this.readSource(), 300);
+  }
+
+  /** Reads the source into the area and the value, sanitized. */
+  private readSource(): void {
+    if (this.sourceTimer) clearTimeout(this.sourceTimer);
+    this.sourceTimer = null;
+    const area = this.area().nativeElement;
+    const result = starEditorReadSource(this.sourceText(), area.ownerDocument, this.sanitize());
+    this.sourceChanged.set(result.changed);
+    this.sourceUnclosed.set(result.unclosed);
+    if (result.html === area.innerHTML) return;
+    area.innerHTML = result.html;
+    starEditorProtectEmbeds(area);
+    this.typing = false;
+    this.commit(true);
   }
 
   // ---- Images and embeds ----

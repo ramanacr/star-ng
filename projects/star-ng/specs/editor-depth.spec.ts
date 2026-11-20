@@ -50,7 +50,7 @@ describe('StarEditor toolbar', () => {
     const toolbar = el.querySelector('[role=toolbar]')!;
     expect(toolbar.getAttribute('aria-label')).toBe('Note formatting');
     expect(toolbar.getAttribute('aria-controls')).toBe(area.id);
-    expect(el.querySelectorAll('[role=separator]').length).toBe(6);
+    expect(el.querySelectorAll('[role=separator]').length).toBe(7);
     const controls = [...el.querySelectorAll<HTMLElement>('[data-editor-control]')];
     expect(controls.map((c) => c.getAttribute('aria-label'))).toEqual([
       'Undo',
@@ -81,6 +81,7 @@ describe('StarEditor toolbar', () => {
       'Embed',
       'Horizontal line',
       'Clear formatting',
+      'HTML source',
     ]);
     expect(controls.map((c) => c.tabIndex)).toEqual([0, ...controls.slice(1).map(() => -1)]);
     expect(controls[2].tagName).toBe('SELECT');

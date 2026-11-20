@@ -83,6 +83,24 @@ import { DOCS, DocsRow } from '../shared/docs';
       </docs-example>
 
       <docs-example
+        heading="HTML source view"
+        source="editor/source"
+        [script]="sourceScript"
+        note="The source button switches the area to the HTML of the value, one block per line, and back. A pause in typing (300 ms) reads the source back: the sanitizer runs, legacy tags (font, center, strike, align) become current markup, and the value changes. A message under the source names an element that is not closed, and says when markup was removed or changed. In the source view only the source button works."
+      >
+        <div class="docs-stack">
+          <star-editor
+            [(value)]="sourceValue"
+            [toolbar]="sourceToolbar"
+            ariaLabel="Release source"
+          />
+          <pre class="docs-output" role="group" aria-label="Value of the source editor">{{
+            sourceValue()
+          }}</pre>
+        </div>
+      </docs-example>
+
+      <docs-example
         heading="Own toolbar list"
         source="editor/own-toolbar"
         [script]="ownScript"
@@ -345,6 +363,17 @@ readonly embedRules: StarEditorSanitizeConfig = {
   ...STAR_EDITOR_SANITIZE_DEFAULTS,
   embedHosts: ['www.youtube-nocookie.com', 'player.vimeo.com'],
 };`;
+  protected readonly sourceValue = signal(
+    '<h2>Release 4.2</h2><p>The <b>new dashboard</b> ships today.</p><ul><li>Faster reports</li><li>Saved filters</li></ul>',
+  );
+  protected readonly sourceToolbar: readonly StarEditorToolbarItem[] = [
+    'formatBlock',
+    'bold',
+    'italic',
+    '|',
+    'source',
+  ];
+  protected readonly sourceScript = `readonly sourceToolbar: readonly StarEditorToolbarItem[] = ['formatBlock', 'bold', 'italic', '|', 'source'];`;
   protected readonly listToolbar: readonly StarEditorToolbarItem[] = [
     'insertUnorderedList',
     'insertOrderedList',

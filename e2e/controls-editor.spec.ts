@@ -144,3 +144,23 @@ test.describe('editor images', () => {
     await expect(area.locator('figure img')).toHaveAttribute('width', '200');
   });
 });
+
+test.describe('editor source view', () => {
+  test('edits the HTML source and reads it back sanitized', async ({ page }) => {
+    await openEditor(page);
+    const live = example(page, 'HTML source view');
+    const toggle = live.getByRole('button', { name: 'HTML source' });
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-pressed', 'true');
+    const source = live.getByRole('textbox', { name: 'HTML source' });
+    await expect(source).toHaveValue(/<h2>Release 4.2<\/h2>\n<p>/);
+    await source.fill('<h2>Release 4.3</h2>\n<center>Soon</center>\n<p><b>Bold</p>');
+    await expect(live.locator('pre')).toContainText(
+      '<h2>Release 4.3</h2><div class="star-text-center">Soon</div><p><b>Bold</b></p>',
+    );
+    await expect(live.getByText('The element <b> is not closed.')).toBeVisible();
+    await expect(source).toHaveAttribute('aria-invalid', 'true');
+    await toggle.click();
+    await expect(live.getByRole('textbox', { name: 'Release source' })).toContainText('Soon');
+  });
+});

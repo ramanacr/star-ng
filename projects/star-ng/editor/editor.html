@@ -6,7 +6,7 @@
       [attr.data-editor-key]="cmd"
       [attr.aria-label]="text.editorTextStyle"
       [attr.tabindex]="cmd === tabStop() ? 0 : -1"
-      [disabled]="locked()"
+      [disabled]="locked() || sourceMode()"
       (keydown)="onToolbarKeydown($event)"
       (focus)="onToolbarFocus(cmd)"
       (change)="exec('formatBlock', $any($event.target).value)"
@@ -24,7 +24,7 @@
       [attr.data-editor-key]="cmd"
       [attr.aria-label]="text.editorFontSize"
       [attr.tabindex]="cmd === tabStop() ? 0 : -1"
-      [disabled]="locked()"
+      [disabled]="locked() || sourceMode()"
       (keydown)="onToolbarKeydown($event)"
       (focus)="onToolbarFocus(cmd)"
       (change)="exec('fontSize', $any($event.target).value)"
@@ -158,6 +158,29 @@
     (dismissed)="closeMedia()"
   />
 }
+@if (sourceMode()) {
+  <div class="star-editor__source">
+    <textarea
+      class="star-editor__source-text"
+      spellcheck="false"
+      [id]="sourceId"
+      [attr.aria-label]="text.editorSource"
+      [attr.aria-invalid]="sourceUnclosed() ? 'true' : null"
+      [attr.aria-describedby]="sourceStatusId"
+      [style.min-height]="minHeight()"
+      [value]="sourceText()"
+      (input)="onSourceInput($any($event.target).value)"
+    ></textarea>
+    <div class="star-editor__source-status" [id]="sourceStatusId" aria-live="polite">
+      @if (sourceUnclosed(); as name) {
+        <span class="star-editor__panel-error">{{ text.editorSourceUnclosed(name) }}</span>
+      }
+      @if (sourceChanged()) {
+        <span class="star-editor__source-note">{{ text.editorSourceChanged }}</span>
+      }
+    </div>
+  </div>
+}
 <div
   #area
   class="star-editor__area"
@@ -173,6 +196,7 @@
   [attr.aria-disabled]="disabled() || null"
   [attr.data-placeholder]="placeholder()"
   [style.min-height]="minHeight()"
+  [hidden]="sourceMode()"
   (beforeinput)="onBeforeInput($event)"
   (input)="onInput()"
   (keydown)="onAreaKeydown($event)"

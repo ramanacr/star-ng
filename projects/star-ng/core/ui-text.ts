@@ -337,6 +337,11 @@ export interface StarUiText {
   readonly editorEmbed: string;
   readonly editorEmbedAddress: string;
   readonly editorEmbedNotAllowed: string;
+  /** The source view button and the name of its text field. */
+  readonly editorSource: string;
+  readonly editorSourceChanged: string;
+  /** Error of the source view: an element that is opened and never closed; `name` is the tag name. */
+  readonly editorSourceUnclosed: (name: string) => string;
   readonly chartPoints: (title: string) => string;
   readonly chartPointsHint: string;
   readonly chartPointLabel: (series: string, label: string, value: string) => string;
@@ -1106,6 +1111,9 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   editorEmbed: 'Embed',
   editorEmbedAddress: 'Video or page address',
   editorEmbedNotAllowed: 'This address is not on the list of allowed embeds.',
+  editorSource: 'HTML source',
+  editorSourceChanged: 'Some markup is not allowed: it was removed or changed to current markup.',
+  editorSourceUnclosed: (name) => `The element <${name}> is not closed.`,
   chartPoints: (title) => `${title}: data points`,
   chartPointsHint: 'Arrow keys move between the points and the series. Enter selects a point.',
   chartPointLabel: (series, label, value) => `${series}, ${label}: ${value}`,
@@ -1611,6 +1619,7 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   durationDays: ['count'],
   percentComplete: ['value'],
   dependsOn: ['label'],
+  editorSourceUnclosed: ['name'],
 };
 
 export const STAR_UI_TEXT = new InjectionToken<StarUiText>('STAR_UI_TEXT', {

@@ -1732,6 +1732,17 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'editor source view with an error',
+    path: 'controls/editor',
+    open: async (page) => {
+      await expect(page.locator('star-editor[ngh]')).toHaveCount(0, { timeout: 15_000 });
+      const live = example(page, 'HTML source view');
+      await live.getByRole('button', { name: 'HTML source' }).click();
+      await live.getByRole('textbox', { name: 'HTML source' }).fill('<p><b>Open</p>');
+      await expect(live.getByText('The element <b> is not closed.')).toBeVisible();
+    },
+  },
+  {
     name: 'editor link popover open',
     path: 'controls/editor',
     open: async (page) => {

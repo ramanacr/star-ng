@@ -310,6 +310,10 @@ export const STAR_UI_TEXT_ES: StarUiText = {
   editorEmbed: 'Insertar contenido',
   editorEmbedAddress: 'Dirección del vídeo o de la página',
   editorEmbedNotAllowed: 'Esta dirección no está en la lista de contenidos permitidos.',
+  editorSource: 'Código fuente HTML',
+  editorSourceChanged:
+    'Parte del marcado no está permitido: se ha quitado o cambiado a marcado actual.',
+  editorSourceUnclosed: (name) => `El elemento <${name}> no está cerrado.`,
   chartPoints: (title) => `${title}: puntos de datos`,
   chartPointsHint: 'Las flechas mueven entre los puntos y las series. Intro selecciona un punto.',
   chartPointLabel: (series, label, value) => `${series}, ${label}: ${value}`,
