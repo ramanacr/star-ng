@@ -14,7 +14,20 @@ describe('image editor preview base scale', () => {
     // The output is 3000 wide and the view 1500: the base needs the full 1000 source pixels,
     // not 500 that the resize then stretches.
     expect(starImagePreviewScale(SIZE, ops, 1500)).toBe(1);
-    expect(starImagePreviewScale(SIZE, ops, 600)).toBeCloseTo(0.6);
+    // A view of 600: 2x oversampling at most (0.2 view scale x 2), not the full 3x.
+    expect(starImagePreviewScale(SIZE, ops, 600)).toBeCloseTo(0.4);
+  });
+
+  it('bounds the oversampling to twice the view after a large enlargement', () => {
+    const small = { width: 200, height: 100 };
+    const ops: StarImageOperation[] = [{ type: 'resize', width: 2000, height: 1000 }];
+    const view = 800;
+    const scale = starImagePreviewScale(small, ops, view);
+    // The replayed preview is output x scale: at least the view (no blur from the base) and at
+    // most twice the view per side, so a 10x resize never builds a near full-size canvas.
+    expect(2000 * scale).toBeGreaterThanOrEqual(view);
+    expect(2000 * scale).toBeLessThanOrEqual(2 * view);
+    expect(1000 * scale).toBeLessThanOrEqual(2 * (view / 2));
   });
 
   it('counts the resize factor after a crop and a turn', () => {
