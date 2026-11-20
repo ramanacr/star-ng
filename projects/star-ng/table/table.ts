@@ -1536,7 +1536,9 @@ export class StarTable<T> extends StarTableInteraction<T> {
    */
   protected onBodyKeydown(event: KeyboardEvent): void {
     this.onUndoKey(event);
-    if (event.key !== 'Tab' || !this.virtualScroll() || event.defaultPrevented) return;
+    if (event.key !== 'Tab' || !this.virtualScroll() || event.defaultPrevented || this.cellMode()) {
+      return;
+    }
     const body = this.body()?.nativeElement;
     const index = this.itemOf(event.target as Element);
     if (!body || index < 0) return;
@@ -2479,6 +2481,9 @@ export class StarTable<T> extends StarTableInteraction<T> {
   /** F2 in a row opens its editors (`editMode="row"`). */
   protected onRowKey(row: T, event: KeyboardEvent): void {
     if (event.key !== 'F2' || !this.rowEditMode() || this.isRowInEdit(row)) return;
+    // In a grid, F2 on a lead cell enters (or leaves) its controls; on the actions cell it edits.
+    const lead = 'td[data-field^="$"]:not([data-field="$actions"])';
+    if (this.cellMode() && (event.target as Element).closest(lead)) return;
     event.preventDefault();
     this.initRowEdit(row);
   }

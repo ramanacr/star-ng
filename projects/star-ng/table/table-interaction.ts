@@ -1,6 +1,7 @@
 import { CdkContextMenuTrigger } from '@angular/cdk/menu';
 import { DOCUMENT } from '@angular/common';
 import {
+  afterEveryRender,
   afterNextRender,
   ApplicationRef,
   booleanAttribute,
@@ -87,11 +88,25 @@ const FALLBACK_PAGE_ROWS = 10;
 const OWN_KEYS =
   '.star-table__editor, input, select, textarea, [contenteditable]:not([contenteditable="false"]), [role="listbox"], [role="combobox"]';
 
-/** A body cell found from a DOM event: its row, its column and its element. */
+/** Focusable controls inside a lead or trail cell (selection, expander, reorder, row actions). */
+const CELL_CONTROLS = 'button, input, select, textarea, a[href], [tabindex]';
+/** Marks a control that cell navigation took out of the tab order. */
+const GRID_TAB_MARK = 'data-star-grid-tab';
+
+/**
+ * A body cell found from a DOM event: its row, its field and its element. `column` is `null` for a
+ * lead or trail cell (field `$reorder`, `$expander`, `$select` or `$actions`).
+ */
 interface CellTarget<T> {
   readonly row: T;
-  readonly column: StarColumn<T>;
+  readonly field: string;
+  readonly column: StarColumn<T> | null;
   readonly cell: HTMLElement;
+}
+
+/** The field of a lead or trail cell starts with `$`. */
+function isLeadField(field: string): boolean {
+  return field.startsWith('$');
 }
 
 /**
@@ -174,6 +189,8 @@ export abstract class StarTableInteraction<T> {
   protected abstract emitLazy(): void;
   protected abstract canHide(column: StarColumn<T>): boolean;
   protected abstract setColumnVisible(column: StarColumn<T>, visible: boolean): void;
+  abstract readonly reorderableRows: Signal<boolean>;
+  protected abstract readonly expandable: Signal<boolean>;
 
   // ---------------------------------------------------------------- inputs
 
@@ -202,7 +219,9 @@ export abstract class StarTableInteraction<T> {
    * PageDown move by the rows in view. Enter or F2 edits an editable cell (in row edit mode, the
    * row); Escape in the editor goes back to the cell. The keys reach the pinned columns, scroll a
    * column of `virtualColumns` and a row of `virtualScroll` into view first, and skip the rows that
-   * a merged cell covers. `undefined` (default) is automatic: on when a column is `editable` or
+   * a merged cell covers. The selection, expander, reorder and row action cells are grid cells:
+   * their controls leave the tab order, Space toggles the row check box, Enter or F2 goes into the
+   * controls and Escape or F2 back. `undefined` (default) is automatic: on when a column is `editable` or
    * `selectionMode` is `'cell'` or `'range'`, else the rows keep today's keys. Ignite UI grid keyboard navigation, AG Grid cell navigation.
    */
   readonly cellNavigation = input<boolean | undefined, boolean | string | undefined>(undefined, {
@@ -351,14 +370,60 @@ export abstract class StarTableInteraction<T> {
     // the nearest cell becomes active, and takes the focus when the grid had it.
     effect(() => {
       const rows = this.navRows();
-      const columns = this.visibleColumns();
+      const fields = this.navFields();
       const on = this.cellMode();
-      untracked(() => this.recoverActive(rows, columns, on));
+      untracked(() => this.recoverActive(rows, fields, on));
     });
     effect(() => {
       const trigger = this.menuTrigger();
       if (trigger) trigger.disabled = true;
     });
+    // Grid: the controls of the lead and trail cells (check boxes, radios, buttons, custom row
+    // actions) leave the tab order; their cell is the key stop.
+    afterEveryRender({ write: () => this.syncLeadControls() });
+  }
+
+  private syncLeadControls(): void {
+    const body = this.body()?.nativeElement;
+    if (!body) return;
+    const on = this.cellMode();
+    if (on) {
+      const cells = body.querySelectorAll<HTMLElement>(':scope > tr > td[data-field^="$"]');
+      for (const cell of Array.from(cells)) {
+        for (const control of Array.from(cell.querySelectorAll<HTMLElement>(CELL_CONTROLS))) {
+          if (control.getAttribute('tabindex') === '-1') continue;
+          control.setAttribute('tabindex', '-1');
+          control.setAttribute(GRID_TAB_MARK, '');
+        }
+      }
+      return;
+    }
+    for (const control of Array.from(body.querySelectorAll<HTMLElement>(`[${GRID_TAB_MARK}]`))) {
+      control.removeAttribute('tabindex');
+      control.removeAttribute(GRID_TAB_MARK);
+    }
+  }
+
+  /** Lead cells (before the data columns) that the keys reach, in display order. */
+  private readonly leadFields = computed(() => [
+    ...(this.reorderableRows() ? ['$reorder'] : []),
+    ...(this.expandable() ? ['$expander'] : []),
+    ...(this.rowSelectionMode() ? ['$select'] : []),
+  ]);
+
+  /** Trail cells (after the data columns): the row actions of row edit mode. */
+  private readonly trailFields = computed(() => (this.rowEditMode() ? ['$actions'] : []));
+
+  /** The fields that the keys move between: lead cells, visible columns, trail cells. */
+  private readonly navFields = computed(() => [
+    ...this.leadFields(),
+    ...this.visibleColumns().map((column) => column.field),
+    ...this.trailFields(),
+  ]);
+
+  /** A visible column by field (`undefined` for a lead or trail cell). */
+  private columnOf(field: string): StarColumn<T> | undefined {
+    return this.visibleColumns().find((column) => column.field === field);
   }
 
   /** Rows that the keys move between: the page rows that are not in a closed group. */
@@ -381,14 +446,20 @@ export abstract class StarTableInteraction<T> {
     () => {
       if (!this.cellMode()) return null;
       const rows = this.renderedRows().filter((row) => !this.isRowCollapsed(row));
-      const columns = this.renderedColumns();
+      const fields = [
+        ...this.leadFields(),
+        ...this.renderedColumns().map((column) => column.field),
+        ...this.trailFields(),
+      ];
       const active = this.active();
-      if (active && columns.some((column) => column.field === active.field)) {
+      if (active && fields.includes(active.field)) {
         const row = rows.find((item) => Object.is(this.trackKey(item), active.rowKey));
         if (row !== undefined) return { key: this.rowKeyText(row), field: active.field };
       }
-      return rows.length && columns.length
-        ? { key: this.rowKeyText(rows[0]), field: columns[0].field }
+      // The first data cell, else the first cell.
+      const first = this.renderedColumns()[0]?.field ?? fields[0];
+      return rows.length && first !== undefined
+        ? { key: this.rowKeyText(rows[0]), field: first }
         : null;
     },
   );
@@ -405,9 +476,9 @@ export abstract class StarTableInteraction<T> {
     );
   }
 
-  private isStop(row: T, column: StarColumn<T>): boolean {
+  private isStop(row: T, field: string): boolean {
     const stop = this.stopCell();
-    return !!stop && stop.field === column.field && stop.key === this.rowKeyText(row);
+    return !!stop && stop.field === field && stop.key === this.rowKeyText(row);
   }
 
   /** `tabindex` of a body cell: the roving tab stop of cell navigation, else none. */
@@ -416,13 +487,22 @@ export abstract class StarTableInteraction<T> {
     if (this.isEditing(row, column) || (this.isRowInEdit(row) && this.isEditable(row, column))) {
       return null;
     }
-    return this.isStop(row, column) ? 0 : -1;
+    return this.isStop(row, column.field) ? 0 : -1;
   }
 
   /** `tabindex` of the edit button of a cell with cell navigation (the button is the cell). */
   protected editTabIndex(row: T, column: StarColumn<T>): number | null {
     if (!this.cellMode()) return null;
-    return this.isStop(row, column) ? 0 : -1;
+    return this.isStop(row, column.field) ? 0 : -1;
+  }
+
+  /**
+   * `tabindex` of a lead or trail cell (`$reorder`, `$expander`, `$select`, `$actions`) with
+   * cell navigation: the cell is the key stop; its controls leave the tab order.
+   */
+  protected leadTabIndex(row: T, field: string): number | null {
+    if (!this.cellMode()) return null;
+    return this.isStop(row, field) ? 0 : -1;
   }
 
   /** The cell is in `cellSelection`. */
@@ -443,12 +523,12 @@ export abstract class StarTableInteraction<T> {
   protected onCellClick(event: MouseEvent): void {
     if (!this.cellSelectionMode() || !this.cellMode() || event.button !== 0) return;
     const target = this.cellOf(event.target);
-    if (!target || (event.target as Element).closest(OWN_KEYS)) return;
+    if (!target?.column || (event.target as Element).closest(OWN_KEYS)) return;
     const how = event.shiftKey ? 'extend' : event.ctrlKey || event.metaKey ? 'toggle' : 'only';
     this.selectCell(target.row, target.column, how);
     if (event.shiftKey) {
-      const element = this.cellElement(target.row, target.column);
-      this.extendTarget = { rowKey: this.trackKey(target.row), field: target.column.field };
+      const element = this.cellElement(target.row, target.field);
+      this.extendTarget = { rowKey: this.trackKey(target.row), field: target.field };
       if (element) this.focusElement(element);
       this.extendTarget = null;
     }
@@ -459,10 +539,10 @@ export abstract class StarTableInteraction<T> {
     const target = this.cellOf(event.target);
     if (!target) return;
     this.gridFocused = true;
-    this.setActive(target.row, target.column);
+    this.setActive(target.row, target.field);
     // Any focus of a cell (Tab in, a click, focusCell, navigateTo) sets the range anchor, unless
     // a Shift move or Shift + click stretches the range to this cell.
-    const cell = { rowKey: this.trackKey(target.row), field: target.column.field };
+    const cell = { rowKey: this.trackKey(target.row), field: target.field };
     const extend = this.extendTarget;
     this.extendTarget = null;
     if (!extend || !Object.is(extend.rowKey, cell.rowKey) || extend.field !== cell.field) {
@@ -474,45 +554,76 @@ export abstract class StarTableInteraction<T> {
     if (event.defaultPrevented || this.onCopyKey(event) || this.onMenuKey(event)) return;
     if (!this.cellMode() || event.altKey) return;
     const target = this.cellOf(event.target);
-    if (!target || (event.target as Element).closest(OWN_KEYS)) return;
-    const { row, column, cell } = target;
-    if (event.key === 'Enter' || event.key === 'F2') {
-      if (event.ctrlKey || event.metaKey || event.shiftKey) return;
-      if (!this.isEditable(row, column) || this.isRowInEdit(row)) return;
-      event.preventDefault();
-      if (this.rowEditMode()) this.initRowEdit(row);
-      else this.startEdit(row, column);
-      return;
-    }
-    if (event.key === ' ' && this.cellSelectionMode() && !event.ctrlKey && !event.metaKey) {
-      event.preventDefault();
-      this.selectCell(row, column, event.shiftKey ? 'extend' : 'only');
-      return;
+    if (!target) return;
+    const { row, column, cell, field } = target;
+    const plain = !event.ctrlKey && !event.metaKey && !event.shiftKey;
+    if (!column) {
+      // A lead or trail cell: Enter or F2 goes into its controls, Escape or F2 comes back.
+      if (event.target !== cell) {
+        if (plain && (event.key === 'Escape' || event.key === 'F2')) {
+          event.preventDefault();
+          this.focusElement(cell);
+        }
+        return;
+      }
+      if (plain && (event.key === 'Enter' || event.key === 'F2')) {
+        const control = cell.querySelector<HTMLElement>(CELL_CONTROLS);
+        if (control) {
+          event.preventDefault();
+          control.focus();
+        }
+        return;
+      }
+      if (plain && event.key === ' ' && field === '$select') {
+        event.preventDefault();
+        cell.querySelector<HTMLElement>('input:not([disabled])')?.click();
+        return;
+      }
+    } else {
+      if ((event.target as Element).closest(OWN_KEYS)) return;
+      if (event.key === 'Enter' || event.key === 'F2') {
+        if (!plain || !this.isEditable(row, column) || this.isRowInEdit(row)) return;
+        event.preventDefault();
+        if (this.rowEditMode()) this.initRowEdit(row);
+        else this.startEdit(row, column);
+        return;
+      }
+      // Space on a button or link of a custom cell template activates it.
+      const control = (event.target as Element).closest('button:not(.star-table__edit), a[href]');
+      if (event.key === ' ' && this.cellSelectionMode() && !event.ctrlKey && !event.metaKey) {
+        if (control && cell.contains(control)) return;
+        event.preventDefault();
+        this.selectCell(row, column, event.shiftKey ? 'extend' : 'only');
+        return;
+      }
     }
     const extend = event.shiftKey && this.cellSelectionMode() === 'range';
     if (event.shiftKey && !extend) return;
     const rows = this.navRows();
-    const columns = this.visibleColumns();
+    const fields = this.navFields();
     const from = {
       row: rows.findIndex((item) => Object.is(this.trackKey(item), this.trackKey(row))),
-      col: columns.indexOf(column),
+      col: fields.indexOf(field),
     };
     if (from.row < 0 || from.col < 0) return;
     const key = { key: starInlineKey(event, cell), ctrlKey: event.ctrlKey, metaKey: event.metaKey };
-    const next = cellNavigationTarget(key, from, rows.length, columns.length, this.pageSize());
+    const next = cellNavigationTarget(key, from, rows.length, fields.length, this.pageSize());
     if (!next) return;
     event.preventDefault();
-    const nextColumn = columns[next.col];
+    const nextField = fields[next.col];
+    const nextColumn = this.columnOf(nextField);
     // A move to the side (no vertical step) into a covered cell lands on the merged cell above.
     const step = Math.sign(next.row - from.row);
-    const index = uncoveredRow(next.row, step, rows.length, (r) =>
-      this.rowSpan(this.pageIndex().get(this.trackKey(rows[r])) ?? r, nextColumn),
-    );
-    const goal = { rowKey: this.trackKey(rows[index]), field: nextColumn.field };
+    const index = nextColumn
+      ? uncoveredRow(next.row, step, rows.length, (r) =>
+          this.rowSpan(this.pageIndex().get(this.trackKey(rows[r])) ?? r, nextColumn),
+        )
+      : next.row;
+    const goal = { rowKey: this.trackKey(rows[index]), field: nextField };
     if (extend) this.extendTarget = goal;
-    this.moveFocus(rows[index], nextColumn, true);
-    if (extend) this.selectCell(rows[index], nextColumn, 'extend');
-    else this.cellAnchor = goal;
+    this.moveFocus(rows[index], nextField, true);
+    if (extend && nextColumn) this.selectCell(rows[index], nextColumn, 'extend');
+    else if (!extend) this.cellAnchor = goal;
   }
 
   // ---------------------------------------------------------------- search
@@ -635,10 +746,10 @@ export abstract class StarTableInteraction<T> {
    */
   focusCell(rowKey: unknown, field: string): boolean {
     const row = this.withAdded().find((item) => Object.is(this.trackKey(item), rowKey));
-    const column = this.visibleColumns().find((item) => item.field === field);
-    if (!this.cellMode() || row === undefined || !column || this.isRowCollapsed(row)) return false;
+    const known = this.navFields().includes(field);
+    if (!this.cellMode() || row === undefined || !known || this.isRowCollapsed(row)) return false;
     this.showPageOf(row);
-    this.moveFocus(row, column);
+    this.moveFocus(row, field);
     return true;
   }
 
@@ -817,7 +928,7 @@ export abstract class StarTableInteraction<T> {
       const back =
         target.focus?.isConnected && target.focus instanceof HTMLElement
           ? target.focus
-          : ((target.column && this.cellElement(target.row, target.column)) ??
+          : ((target.column && this.cellElement(target.row, target.column.field)) ??
             this.activeElementCell() ??
             this.rowControlAt(target.index));
       if (back) this.focusElement(back);
@@ -829,8 +940,7 @@ export abstract class StarTableInteraction<T> {
     const active = this.active();
     const row =
       active && this.pageRows().find((item) => Object.is(this.trackKey(item), active.rowKey));
-    const column = active && this.visibleColumns().find((item) => item.field === active.field);
-    return row !== null && row !== undefined && column ? this.cellElement(row, column) : null;
+    return row !== null && row !== undefined && active ? this.cellElement(row, active.field) : null;
   }
 
   /**
@@ -988,7 +1098,7 @@ export abstract class StarTableInteraction<T> {
   protected onCellPaste(event: ClipboardEvent): void {
     if (!this.pasteEditable() || event.defaultPrevented) return;
     const target = this.cellOf(event.target);
-    if (!target || (event.target as Element).closest(OWN_KEYS)) return;
+    if (!target?.column || (event.target as Element).closest(OWN_KEYS)) return;
     const text = event.clipboardData?.getData('text/plain') ?? '';
     const lines = parseTsv(text);
     if (!lines.length) return;
@@ -1147,29 +1257,31 @@ export abstract class StarTableInteraction<T> {
     const tr = cell?.parentElement;
     if (!cell || !tr || tr.parentElement !== body) return null;
     const row = this.rowsByText().get(tr.dataset['row'] ?? '');
-    const column = this.visibleColumns().find((item) => item.field === cell.dataset['field']);
-    return row === undefined || !column ? null : { row, column, cell };
+    const field = cell.dataset['field'] ?? '';
+    const column = this.columnOf(field) ?? null;
+    if (row === undefined || (!column && !isLeadField(field))) return null;
+    return { row, field, column, cell };
   }
 
-  /** The focus target of a cell: its edit button, else the cell itself. */
-  protected cellElement(row: T, column: StarColumn<T>): HTMLElement | null {
+  /** The focus target of a cell (by field): its edit button, else the cell itself. */
+  protected cellElement(row: T, field: string): HTMLElement | null {
     const body = this.body()?.nativeElement;
     const cell = body?.querySelector<HTMLElement>(
-      `:scope > tr[data-row="${CSS.escape(this.rowKeyText(row))}"] > td[data-field="${CSS.escape(column.field)}"]`,
+      `:scope > tr[data-row="${CSS.escape(this.rowKeyText(row))}"] > td[data-field="${CSS.escape(field)}"]`,
     );
     if (!cell) return null;
     return cell.querySelector<HTMLElement>(':scope > .star-table__edit') ?? cell;
   }
 
-  private setActive(row: T, column: StarColumn<T>): void {
+  private setActive(row: T, field: string): void {
     const rowKey = this.trackKey(row);
     this.activePos = {
       row: this.navRows().findIndex((item) => Object.is(this.trackKey(item), rowKey)),
-      col: this.visibleColumns().indexOf(column),
+      col: this.navFields().indexOf(field),
     };
     const current = this.active();
-    if (current && Object.is(current.rowKey, rowKey) && current.field === column.field) return;
-    const next = { rowKey, field: column.field };
+    if (current && Object.is(current.rowKey, rowKey) && current.field === field) return;
+    const next = { rowKey, field };
     this.active.set(next);
     this.activeCellChange.emit(next);
   }
@@ -1186,28 +1298,28 @@ export abstract class StarTableInteraction<T> {
    * column (else the previous), or the cell of the same column in the next row (else the previous
    * row) becomes active; `null` when the grid is empty or cell navigation is off.
    */
-  private recoverActive(rows: readonly T[], columns: readonly StarColumn<T>[], on: boolean): void {
+  private recoverActive(rows: readonly T[], fields: readonly string[], on: boolean): void {
     const active = this.active();
     if (!active) return;
     if (!on) return this.clearActive();
     const row = rows.findIndex((item) => Object.is(this.trackKey(item), active.rowKey));
-    const col = columns.findIndex((column) => column.field === active.field);
+    const col = fields.indexOf(active.field);
     if (row >= 0 && col >= 0) {
       this.activePos = { row, col };
       return;
     }
-    if (!rows.length || !columns.length) return this.clearActive();
+    if (!rows.length || !fields.length) return this.clearActive();
     const pos = this.activePos ?? { row: 0, col: 0 };
     const nextRow = rows[row >= 0 ? row : Math.min(Math.max(pos.row, 0), rows.length - 1)];
-    const nextColumn = columns[col >= 0 ? col : Math.min(Math.max(pos.col, 0), columns.length - 1)];
-    this.setActive(nextRow, nextColumn);
+    const nextField = fields[col >= 0 ? col : Math.min(Math.max(pos.col, 0), fields.length - 1)];
+    this.setActive(nextRow, nextField);
     if (!this.gridFocused) return;
     afterNextRender(
       () => {
         const doc = this.interactionDocument;
         const focused = doc.activeElement;
         if (focused && focused !== doc.body && focused.isConnected) return;
-        const element = this.cellElement(nextRow, nextColumn);
+        const element = this.cellElement(nextRow, nextField);
         if (element) this.focusElement(element);
       },
       { injector: this.interactionInjector },
@@ -1226,10 +1338,11 @@ export abstract class StarTableInteraction<T> {
    * not rendered scroll into the window first; the focus follows after the render. `now` renders
    * at once (a key press: the next key must start from the new cell).
    */
-  protected moveFocus(row: T, column: StarColumn<T>, now = false): void {
-    this.setActive(row, column);
-    this.scrollColumnIntoWindow(column);
-    const element = this.cellElement(row, column);
+  protected moveFocus(row: T, field: string, now = false): void {
+    this.setActive(row, field);
+    const column = this.columnOf(field);
+    if (column) this.scrollColumnIntoWindow(column);
+    const element = this.cellElement(row, field);
     if (element) {
       this.focusElement(element);
       return;
@@ -1237,7 +1350,7 @@ export abstract class StarTableInteraction<T> {
     this.scrollRowIntoWindow(row);
     let tries = 0;
     const apply = () => {
-      const target = this.cellElement(row, column);
+      const target = this.cellElement(row, field);
       if (target) this.focusElement(target);
       // Rows of different heights can need a second render (the first one measures).
       else if (++tries < 2) afterNextRender(apply, { injector: this.interactionInjector });

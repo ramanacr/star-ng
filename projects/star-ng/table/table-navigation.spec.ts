@@ -318,6 +318,95 @@ describe('StarTable cell navigation', () => {
   });
 });
 
+@Component({
+  imports: [StarTable],
+  template: `<star-table
+    [value]="rows"
+    [columns]="columns"
+    dataKey="sku"
+    ariaLabel="Inventory with row controls"
+    selectionMode="multiple"
+    [(selection)]="selected"
+    reorderableRows
+    editMode="row"
+  />`,
+})
+class LeadHost {
+  readonly table = viewChild.required<StarTable<Item>>(StarTable);
+  readonly rows = ITEMS.slice(0, 4);
+  readonly selected = signal<readonly Item[]>([]);
+  readonly columns: StarColumn<Item>[] = [
+    { field: 'sku', header: 'SKU' },
+    { field: 'name', header: 'Name', editable: true },
+  ];
+}
+
+describe('StarTable grid with selection, reorder and row action cells', () => {
+  afterEach(() => document.body.replaceChildren());
+
+  async function setupLead() {
+    const fixture = TestBed.createComponent(LeadHost);
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+    document.body.append(el);
+    const td = (row: number, field: string) =>
+      el.querySelector<HTMLElement>(`tbody tr[data-row="SKU-${row}"] td[data-field="${field}"]`)!;
+    const press = async (key: string, init: KeyboardEventInit = {}) => {
+      document.activeElement!.dispatchEvent(
+        new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, ...init }),
+      );
+      await fixture.whenStable();
+    };
+    return { fixture, el, td, press, host: fixture.componentInstance };
+  }
+
+  it('has one tab stop: the controls of the lead and trail cells leave the tab order', async () => {
+    const { el } = await setupLead();
+    const tabbable = el.querySelectorAll(
+      'tbody button:not([tabindex="-1"]):not([disabled]), tbody input:not([tabindex="-1"]):not([disabled]), tbody [tabindex="0"]',
+    );
+    expect(tabbable.length).toBe(1);
+    expect(el.querySelector('table')!.getAttribute('aria-multiselectable')).toBe('true');
+  });
+
+  it('reaches the lead and trail cells with the arrow keys', async () => {
+    const { fixture, td, press, host } = await setupLead();
+    td(1, 'sku').focus();
+    await fixture.whenStable();
+    await press('ArrowLeft');
+    expect(document.activeElement).toBe(td(1, '$select'));
+    expect(host.table().activeCell()).toEqual({ rowKey: 'SKU-1', field: '$select' });
+    await press('ArrowLeft');
+    expect(document.activeElement).toBe(td(1, '$reorder'));
+    await press('End');
+    expect(document.activeElement).toBe(td(1, '$actions'));
+    await press('Home');
+    await press('ArrowDown');
+    expect(document.activeElement).toBe(td(2, '$reorder'));
+  });
+
+  it('toggles the row with Space and enters and leaves the cell controls with Enter, F2, Escape', async () => {
+    const { fixture, td, press, host } = await setupLead();
+    td(2, '$select').focus();
+    await fixture.whenStable();
+    await press(' ');
+    expect(host.selected().map((row) => row.sku)).toEqual(['SKU-2']);
+    await press('Enter');
+    const box = td(2, '$select').querySelector('input')!;
+    expect(document.activeElement).toBe(box);
+    // Keys in the control stay there; Escape goes back to the cell.
+    await press('ArrowRight');
+    expect(document.activeElement).toBe(box);
+    await press('Escape');
+    expect(document.activeElement).toBe(td(2, '$select'));
+    await press('ArrowLeft');
+    await press('F2');
+    expect(document.activeElement).toBe(td(2, '$reorder').querySelector('button'));
+    await press('F2');
+    expect(document.activeElement).toBe(td(2, '$reorder'));
+  });
+});
+
 type Metric = Record<string, number | string>;
 
 @Component({

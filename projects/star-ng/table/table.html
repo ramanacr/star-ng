@@ -83,7 +83,9 @@
 >
   <table
     [attr.role]="cellMode() ? 'grid' : null"
-    [attr.aria-multiselectable]="cellMode() && selectionMode() === 'range' ? true : null"
+    [attr.aria-multiselectable]="
+      cellMode() && (selectionMode() === 'range' || selectionMode() === 'multiple') ? true : null
+    "
     [attr.aria-colcount]="ariaColCount()"
     [attr.aria-label]="ariaLabel()"
     [attr.aria-busy]="loading() || null"
@@ -519,7 +521,11 @@
               (keydown)="onRowKey(row, $event); onSelectionKey(row, $event)"
             >
               @if (reorderableRows()) {
-                <td class="star-table__reorder">
+                <td
+                  class="star-table__reorder"
+                  [attr.data-field]="cellKeys() ? '$reorder' : null"
+                  [attr.tabindex]="leadTabIndex(row, '$reorder')"
+                >
                   <button
                     type="button"
                     class="star-table__toggle"
@@ -541,7 +547,11 @@
                 </td>
               }
               @if (expandable()) {
-                <td class="star-table__expander">
+                <td
+                  class="star-table__expander"
+                  [attr.data-field]="cellKeys() ? '$expander' : null"
+                  [attr.tabindex]="leadTabIndex(row, '$expander')"
+                >
                   <button
                     type="button"
                     class="star-table__toggle"
@@ -555,7 +565,11 @@
                 </td>
               }
               @if (selectionMode() === 'multiple') {
-                <td class="star-table__select">
+                <td
+                  class="star-table__select"
+                  [attr.data-field]="cellKeys() ? '$select' : null"
+                  [attr.tabindex]="leadTabIndex(row, '$select')"
+                >
                   <star-checkbox
                     #rowBox
                     [checked]="isSelected(row)"
@@ -566,7 +580,11 @@
                   />
                 </td>
               } @else if (selectionMode() === 'single') {
-                <td class="star-table__select">
+                <td
+                  class="star-table__select"
+                  [attr.data-field]="cellKeys() ? '$select' : null"
+                  [attr.tabindex]="leadTabIndex(row, '$select')"
+                >
                   <input
                     type="radio"
                     class="star-table__radio"
@@ -737,7 +755,12 @@
                 }
               }
               @if (rowEditMode()) {
-                <td class="star-table__row-actions" [attr.aria-colindex]="ariaColCount()">
+                <td
+                  class="star-table__row-actions"
+                  [attr.aria-colindex]="ariaColCount()"
+                  [attr.data-field]="cellKeys() ? '$actions' : null"
+                  [attr.tabindex]="leadTabIndex(row, '$actions')"
+                >
                   @if (isRowInEdit(row)) {
                     @if (rowEditActionsSlot(); as custom) {
                       <ng-container *ngTemplateOutlet="custom; context: rowActionsContext(row)" />

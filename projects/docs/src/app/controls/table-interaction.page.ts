@@ -281,16 +281,25 @@ function applyEdit(rows: readonly StockLine[], event: StarCellEditEvent<StockLin
       <p>
         Cell navigation follows the WAI-ARIA grid pattern: the table gets
         <code>role="grid"</code> and a roving <code>tabindex</code>, so Tab enters and leaves the
-        table in one step. The edit button of an editable cell takes the focus of its cell. A custom
-        cell template keeps its own focusable content; keep it to one control per cell. The keys
-        skip the rows that a merged cell (<code>rowGroupMode="rowspan"</code>) covers, and they move
-        between the rows of the page; Tab inside an editor keeps the edit behaviour.
+        table in one step. The edit button of an editable cell takes the focus of its cell. The
+        selection, expander, reorder and row action cells are grid cells too: their controls have
+        <code>tabindex="-1"</code>, Space on the selection cell toggles the row, Enter or F2 moves
+        the focus into the controls of the cell, and Escape or F2 brings it back (F2 on the row
+        action cell edits the row). Their <code>activeCell</code> field is <code>$select</code>,
+        <code>$expander</code>, <code>$reorder</code> or <code>$actions</code>. Give the buttons and
+        links of a custom cell template <code>tabindex="-1"</code>, so that the grid keeps one tab
+        stop; Space on them still activates them. The keys skip the rows that a merged cell
+        (<code>rowGroupMode="rowspan"</code>) covers, and they move between the rows of the page;
+        Tab inside an editor keeps the edit behaviour.
       </p>
       <p>
         The copied text is tab-separated values with a CR LF line end: a cell with a tab, a line
         break or a double quote is quoted and its quotes doubled, as spreadsheets write it. A cell
         copies its <code>exportValue</code>, else its display text. Paste parses the same format. In
-        a batch edit table the whole paste is one undo step.
+        a batch edit table the whole paste is one undo step. For a copy and paste round trip of a
+        formatted column (a price, a date), give it an <code>exportValue</code> with the raw value:
+        the display text of <code>format</code> does not parse in a number editor. A range copy
+        takes the selected cells of the current page.
       </p>
       <p>
         <code>searchText</code> does not filter: use <code>globalFilter</code> for that. The matches
@@ -410,7 +419,16 @@ wide.scrollToColumn('reorderAt');`;
     { name: 'PageUp / PageDown', description: 'Move up or down by the rows in view.' },
     { name: 'Enter / F2', description: 'On an editable cell: start the edit.' },
     { name: 'Escape', description: 'In a cell editor: cancel and go back to the cell.' },
-    { name: 'Space', description: 'With a cell selection mode: select the focused cell.' },
+    {
+      name: 'Space',
+      description:
+        'With a cell selection mode: select the focused cell. On a selection cell: toggle the row.',
+    },
+    {
+      name: 'Enter / F2, Escape',
+      description:
+        'On a selection, expander, reorder or row action cell: go into its controls, and back.',
+    },
     {
       name: 'Shift+Arrow keys',
       description: 'With selectionMode="range": stretch the range from the anchor cell.',
