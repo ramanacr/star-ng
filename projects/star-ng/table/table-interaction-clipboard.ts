@@ -18,7 +18,6 @@ export interface StarTableClipboardHost<T> {
   readonly document: Document;
   readonly text: () => StarUiText;
   readonly copyHeaders: () => boolean;
-  readonly pasteEditable: () => boolean;
   readonly beforePaste: OutputEmitterRef<StarTablePasteEvent<T>>;
   readonly cellEdit: () => OutputEmitterRef<StarCellEditEvent<T>>;
   readonly rowEditSave: () => OutputEmitterRef<StarRowEditSaveEvent<T>>;

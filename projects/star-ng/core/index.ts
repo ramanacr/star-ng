@@ -34,7 +34,23 @@ export * from './format';
 export { ɵstarIsContextMenuKey, ɵstarOpenContextMenu, ɵstarOptionalBoolean } from './grid-keys';
 // Grid sort, column width and edit helpers: shared by the table and the tree table only, not
 // public API.
-export * from './grid-columns';
+export {
+  ɵSTAR_MIN_COLUMN_WIDTH,
+  ɵstarAriaSort,
+  ɵstarClampColumnWidth,
+  ɵstarEditText,
+  ɵstarNextSort,
+  ɵstarResizeByKey,
+  ɵstarResizeMax,
+  ɵstarSameWidths,
+  ɵstarSortIcon,
+  ɵstarSortRank,
+  ɵstarSortRules,
+  ɵstarStartColumnResize,
+  ɵstarStickyOffsets,
+  ɵstarUnchangedEdit,
+  type ɵStarSortRule,
+} from './grid-columns';
 export * from './list-windowing';
 export * from './motion';
 export * from './options';

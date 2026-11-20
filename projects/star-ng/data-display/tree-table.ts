@@ -1140,7 +1140,7 @@ export class StarTreeTable {
     return ɵstarResizeMax(this.resizeNow(column));
   }
 
-  /** Sticky offsets of the frozen columns, by field (see `frozenOffset`). */
+  /** Sticky offsets of the frozen columns, by column (see `frozenOffset`). */
   private readonly frozenOffsets = computed(() => {
     const frozen = this.visibleColumns().filter((column) => column.frozen);
     const offsets = ɵstarStickyOffsets(frozen, this.headerWidths(), (column) =>
