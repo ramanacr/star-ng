@@ -6032,58 +6032,6 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
-  "StarHierarchicalChild": {
-    "kind": "component",
-    "selector": "star-hierarchical-child",
-    "entry": "@star-ng/ui/hierarchical-grid",
-    "description": "The child grid of one parent row and one island: the rows from the island `key` field, or loaded with `childData` (through `resource()`), with a loading row and an error row with retry. Internal part of `star-hierarchical-grid`.",
-    "inputs": [
-      {
-        "name": "parentRow",
-        "type": "unknown",
-        "default": null,
-        "required": true,
-        "description": ""
-      },
-      {
-        "name": "parentKey",
-        "type": "unknown",
-        "default": "null",
-        "required": false,
-        "description": "The key of the parent row in its grid (the cache key)."
-      },
-      {
-        "name": "parentLabel",
-        "type": "string",
-        "default": "''",
-        "required": false,
-        "description": ""
-      },
-      {
-        "name": "island",
-        "type": "IslandView",
-        "default": null,
-        "required": true,
-        "description": ""
-      },
-      {
-        "name": "level",
-        "type": "number",
-        "default": "2",
-        "required": false,
-        "description": ""
-      },
-      {
-        "name": "cache",
-        "type": "CacheNode",
-        "default": null,
-        "required": true,
-        "description": "The kept child grids of the parent grid."
-      }
-    ],
-    "models": [],
-    "outputs": []
-  },
   "StarHierarchicalGrid": {
     "kind": "component",
     "selector": "star-hierarchical-grid",
@@ -6172,122 +6120,6 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "A child grid was created."
       }
     ]
-  },
-  "StarHierarchicalLevel": {
-    "kind": "component",
-    "selector": "star-hierarchical-level",
-    "entry": "@star-ng/ui/hierarchical-grid",
-    "description": "One level of `star-hierarchical-grid`: a `star-table` whose expanded rows show the child grids of the islands. Internal part of `star-hierarchical-grid`.",
-    "inputs": [
-      {
-        "name": "rows",
-        "type": "readonly unknown[]",
-        "default": null,
-        "required": true,
-        "description": ""
-      },
-      {
-        "name": "columns",
-        "type": "readonly unknown[]",
-        "default": null,
-        "required": true,
-        "description": ""
-      },
-      {
-        "name": "dataKey",
-        "type": "unknown",
-        "default": "null",
-        "required": false,
-        "description": ""
-      },
-      {
-        "name": "ariaLabel",
-        "type": "string | null",
-        "default": "null",
-        "required": false,
-        "description": ""
-      },
-      {
-        "name": "level",
-        "type": "number",
-        "default": "1",
-        "required": false,
-        "description": "1 for the root grid."
-      },
-      {
-        "name": "island",
-        "type": "IslandView | null",
-        "default": "null",
-        "required": false,
-        "description": "The island of this level (`null` for the root)."
-      },
-      {
-        "name": "parentRow",
-        "type": "unknown",
-        "default": "null",
-        "required": false,
-        "description": "The parent row of a child grid."
-      },
-      {
-        "name": "childIslands",
-        "type": "readonly IslandView[]",
-        "default": "[]",
-        "required": false,
-        "description": ""
-      },
-      {
-        "name": "rowLabel",
-        "type": "((row: never) => string) | null",
-        "default": "null",
-        "required": false,
-        "description": ""
-      },
-      {
-        "name": "virtualScroll",
-        "type": "boolean",
-        "default": "false",
-        "required": false,
-        "description": ""
-      },
-      {
-        "name": "scrollHeight",
-        "type": "string | null",
-        "default": "null",
-        "required": false,
-        "description": ""
-      },
-      {
-        "name": "cache",
-        "type": "CacheNode",
-        "default": "newNode()",
-        "required": false,
-        "description": "The kept child grids of this grid."
-      }
-    ],
-    "models": [
-      {
-        "name": "expanded",
-        "type": "readonly unknown[]",
-        "default": "[]",
-        "required": false,
-        "description": "Expanded row keys. Two-way."
-      },
-      {
-        "name": "first",
-        "type": "number",
-        "default": "0",
-        "required": false,
-        "description": "First row of the page (paginator). Two-way."
-      },
-      {
-        "name": "selection",
-        "type": "readonly unknown[]",
-        "default": "[]",
-        "required": false,
-        "description": "Selected rows. Two-way."
-      }
-    ],
-    "outputs": []
   },
   "StarIconField": {
     "kind": "component",
@@ -10647,105 +10479,6 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "outputs": []
   },
-  "StarPivotConfigurator": {
-    "kind": "component",
-    "selector": "star-pivot-configurator",
-    "entry": "@star-ng/ui/pivot-grid",
-    "description": "The configurator of `star-pivot-grid`: the unused fields and the Rows, Columns, Values and Filters areas. Fields move by drag and drop (CDK) or with the move menu of each field (the keyboard way); a move is announced. Value fields have an aggregate select, dimension and filter fields a member filter. Internal part of `star-pivot-grid`.",
-    "inputs": [
-      {
-        "name": "config",
-        "type": "StarPivotConfig<T>",
-        "default": null,
-        "required": true,
-        "description": ""
-      },
-      {
-        "name": "fields",
-        "type": "readonly StarPivotField<T>[]",
-        "default": null,
-        "required": true,
-        "description": ""
-      },
-      {
-        "name": "data",
-        "type": "readonly T[]",
-        "default": null,
-        "required": true,
-        "description": ""
-      },
-      {
-        "name": "locale",
-        "type": "string | undefined",
-        "default": "undefined",
-        "required": false,
-        "description": ""
-      }
-    ],
-    "models": [],
-    "outputs": [
-      {
-        "name": "configChange",
-        "type": "StarPivotConfig<T>",
-        "default": null,
-        "required": false,
-        "description": ""
-      }
-    ]
-  },
-  "StarPivotFilterButton": {
-    "kind": "component",
-    "selector": "star-pivot-filter",
-    "entry": "@star-ng/ui/pivot-grid",
-    "description": "Member filter of one pivot field: a funnel button that opens a dialog with a search field and a check box per member (all members checked: no filter). A change applies at once. Internal part of `star-pivot-grid`.",
-    "inputs": [
-      {
-        "name": "field",
-        "type": "string",
-        "default": null,
-        "required": true,
-        "description": ""
-      },
-      {
-        "name": "label",
-        "type": "string",
-        "default": null,
-        "required": true,
-        "description": ""
-      },
-      {
-        "name": "members",
-        "type": "readonly StarPivotMember[]",
-        "default": null,
-        "required": true,
-        "description": ""
-      },
-      {
-        "name": "filter",
-        "type": "StarPivotFilter | undefined",
-        "default": "undefined",
-        "required": false,
-        "description": ""
-      },
-      {
-        "name": "locale",
-        "type": "string | undefined",
-        "default": "undefined",
-        "required": false,
-        "description": ""
-      }
-    ],
-    "models": [],
-    "outputs": [
-      {
-        "name": "filterChange",
-        "type": "StarPivotFilter | null",
-        "default": null,
-        "required": false,
-        "description": "The new filter of the field; `null`: no filter."
-      }
-    ]
-  },
   "StarPivotGrid": {
     "kind": "component",
     "selector": "star-pivot-grid",
@@ -11966,15 +11699,6 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       }
     ]
-  },
-  "StarSchedulerEditor": {
-    "kind": "component",
-    "selector": "star-scheduler-editor",
-    "entry": "@star-ng/ui/scheduler",
-    "description": "@internal The built-in event editor of `star-scheduler` (`editor` input), opened with `StarDialogService`. It edits a copy and returns it; the scheduler emits `editorSave`.",
-    "inputs": [],
-    "models": [],
-    "outputs": []
   },
   "StarSchedulerEventTemplate": {
     "kind": "directive",
@@ -16020,37 +15744,6 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Emits after the window closed (close button, Escape with `closeOnEscape`, or `visible`)."
       }
     ]
-  },
-  "StarWindowContainer": {
-    "kind": "component",
-    "selector": "star-window-container",
-    "entry": "@star-ng/ui/window",
-    "description": "@internal Host of a window opened from code: a `star-window` whose body is the component.",
-    "inputs": [
-      {
-        "name": "component",
-        "type": "Type<unknown>",
-        "default": null,
-        "required": true,
-        "description": ""
-      },
-      {
-        "name": "config",
-        "type": "StarWindowConfig",
-        "default": null,
-        "required": true,
-        "description": ""
-      },
-      {
-        "name": "contentInjector",
-        "type": "Injector",
-        "default": null,
-        "required": true,
-        "description": ""
-      }
-    ],
-    "models": [],
-    "outputs": []
   }
 };
 

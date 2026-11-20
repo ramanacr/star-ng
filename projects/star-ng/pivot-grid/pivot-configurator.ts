@@ -30,6 +30,8 @@ const AGGREGATES: readonly StarPivotAggregate[] = [
  * Filters areas. Fields move by drag and drop (CDK) or with the move menu of each field (the
  * keyboard way); a move is announced. Value fields have an aggregate select, dimension and filter
  * fields a member filter. Internal part of `star-pivot-grid`.
+ *
+ * @internal
  */
 @Component({
   selector: 'star-pivot-configurator',

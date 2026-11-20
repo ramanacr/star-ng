@@ -131,6 +131,8 @@ const BODY_FOCUS =
 /**
  * One level of `star-hierarchical-grid`: a `star-table` whose expanded rows show the child grids
  * of the islands. Internal part of `star-hierarchical-grid`.
+ *
+ * @internal
  */
 @Component({
   selector: 'star-hierarchical-level',
@@ -388,6 +390,8 @@ type ChildState =
  * The child grid of one parent row and one island: the rows from the island `key` field, or
  * loaded with `childData` (through `resource()`), with a loading row and an error row with retry.
  * Internal part of `star-hierarchical-grid`.
+ *
+ * @internal
  */
 @Component({
   selector: 'star-hierarchical-child',

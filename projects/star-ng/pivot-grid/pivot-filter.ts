@@ -19,6 +19,8 @@ import { StarPivotFilter, StarPivotMember, starPivotMemberKey as keyOf } from '.
  * Member filter of one pivot field: a funnel button that opens a dialog with a search field and a
  * check box per member (all members checked: no filter). A change applies at once. Internal part
  * of `star-pivot-grid`.
+ *
+ * @internal
  */
 @Component({
   selector: 'star-pivot-filter',
