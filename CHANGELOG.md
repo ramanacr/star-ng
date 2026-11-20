@@ -141,6 +141,7 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 
 ### Changed
 
+- Package check (`tools/check-package.mjs`): the size limits are now 2.5 MB for the tarball and 12 MB unpacked (files stay at 600), because the package grew with the new controls. They still catch a copied `node_modules` or coverage folder.
 - Table: the sticky header (`stickyHeader`) has `z-index: 2`, so pinned body cells scroll under it.
 - Table: a table with `frozen` columns now also keeps the selection, expander and reorder columns at the start while it scrolls sideways (before, they scrolled away under the frozen columns), and the last frozen column has a separator shadow.
 - Tabs: each tab button is now inside a wrapper element (`span.star-tabs__item`, which also holds the close button of a closable tab), and the tab list is inside `div.star-tabs__nav`. Styles or tests that select `.star-tabs__list > .star-tabs__tab` must use `.star-tabs__list .star-tabs__tab`.
