@@ -11,13 +11,7 @@ import {
   model,
   signal,
 } from '@angular/core';
-import {
-  STAR_UI_TEXT,
-  starInlineKey,
-  StarPart,
-  StarStyled,
-  ɵSTAR_PART_HOST,
-} from '@star-ng/ui/core';
+import { STAR_UI_TEXT, starInlineKey, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 
 /** One part of the time: a column of the panel. */
 type TimePart = 'hour' | 'minute' | 'second' | 'period';
@@ -100,7 +94,6 @@ function periodNames(locale?: string): readonly [string, string] {
   selector: 'star-time-columns',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-time__columns', '[class.star-time__columns--disabled]': 'disabled()' },
   template: `
@@ -108,7 +101,7 @@ function periodNames(locale?: string): readonly [string, string] {
       <!-- Each option is a button (Enter and Space choose it); the column handles the arrows. -->
       <!-- eslint-disable-next-line @angular-eslint/template/interactive-supports-focus -->
       <div
-        starPart="column"
+        data-star-part="column"
         class="star-time__column"
         role="listbox"
         [attr.aria-label]="column.label"
@@ -118,7 +111,7 @@ function periodNames(locale?: string): readonly [string, string] {
       >
         @for (cell of column.cells; track cell.value) {
           <button
-            starPart="cell"
+            data-star-part="cell"
             type="button"
             role="option"
             class="star-time__cell"

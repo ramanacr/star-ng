@@ -177,8 +177,8 @@ function groupAt(root: StarQueryGroup, path: string): StarQueryGroup | null {
       [ngTemplateOutletContext]="{ $implicit: value(), path: '', depth: 1 }"
     />
     @if (showMessage()) {
-      <p starPart="error" class="star-query__error" [id]="errorId">
-        <i starPart="errorIcon" class="ph-bold ph-warning-circle" aria-hidden="true"></i>
+      <p data-star-part="error" class="star-query__error" [id]="errorId">
+        <i data-star-part="errorIcon" class="ph-bold ph-warning-circle" aria-hidden="true"></i>
         {{ text.queryIncomplete }}
       </p>
     }
@@ -193,7 +193,7 @@ function groupAt(root: StarQueryGroup, path: string): StarQueryGroup | null {
         [attr.data-path]="path"
         [attr.aria-label]="group.operator === 'or' ? text.queryGroupAny : text.queryGroupAll"
       >
-        <div starPart="header" class="star-query__header">
+        <div data-star-part="header" class="star-query__header">
           <star-select-button
             size="sm"
             [options]="operators()"
@@ -240,7 +240,7 @@ function groupAt(root: StarQueryGroup, path: string): StarQueryGroup | null {
             />
           }
         </div>
-        <div starPart="rules" class="star-query__rules">
+        <div data-star-part="rules" class="star-query__rules">
           @for (item of group.rules; track $index; let i = $index) {
             @if (isGroup(item)) {
               <ng-container
@@ -254,7 +254,7 @@ function groupAt(root: StarQueryGroup, path: string): StarQueryGroup | null {
             } @else {
               @let field = fieldOf(item.field);
               <div
-                starPart="rule"
+                data-star-part="rule"
                 class="star-query__rule"
                 role="group"
                 [attr.tabindex]="disabled() ? null : 0"
@@ -288,7 +288,7 @@ function groupAt(root: StarQueryGroup, path: string): StarQueryGroup | null {
                     (valueChange)="setMode(path, i, $any($event))"
                   />
                 }
-                <div starPart="value" class="star-query__value">
+                <div data-star-part="value" class="star-query__value">
                   @switch (editorOf(item, field)) {
                     @case ('custom') {
                       <ng-container
@@ -403,7 +403,7 @@ function groupAt(root: StarQueryGroup, path: string): StarQueryGroup | null {
                     }
                     @default {
                       <input
-                        starPart="valueInput"
+                        data-star-part="valueInput"
                         starInput
                         size="sm"
                         [disabled]="disabled()"

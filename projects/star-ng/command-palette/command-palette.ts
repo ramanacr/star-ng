@@ -24,7 +24,6 @@ import {
   STAR_SLOT_HOST,
   STAR_UI_TEXT,
   StarEmptyContext,
-  StarPart,
   StarSlot,
   starSlot,
   StarStyled,
@@ -191,14 +190,14 @@ function matchesHotkey(event: KeyboardEvent, hotkey: Hotkey): boolean {
   selector: 'star-command-palette',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarPart, NgTemplateOutlet],
+  imports: [NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [{ provide: STAR_SLOT_HOST, useExisting: StarCommandPalette }],
   template: `
     <!-- Backdrop click only; keyboard users close with Escape (native cancel event). -->
     <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
     <dialog
-      starPart="dialog"
+      data-star-part="dialog"
       #dialog
       class="star-dialog star-dialog--modal star-command-palette"
       [attr.aria-label]="ariaLabel() ?? text.commandPalette"
@@ -206,14 +205,14 @@ function matchesHotkey(event: KeyboardEvent, hotkey: Hotkey): boolean {
       (close)="onNativeClose()"
       (click)="onDialogClick($event)"
     >
-      <div starPart="search" class="star-command-palette__search">
+      <div data-star-part="search" class="star-command-palette__search">
         <i
-          starPart="searchIcon"
+          data-star-part="searchIcon"
           class="ph-bold ph-magnifying-glass star-command-palette__search-icon"
           aria-hidden="true"
         ></i>
         <input
-          starPart="input"
+          data-star-part="input"
           #input
           class="star-command-palette__input"
           type="text"
@@ -232,7 +231,7 @@ function matchesHotkey(event: KeyboardEvent, hotkey: Hotkey): boolean {
         />
       </div>
       <div
-        starPart="list"
+        data-star-part="list"
         class="star-command-palette__list"
         [attr.role]="count() ? 'listbox' : null"
         [id]="listId"
@@ -241,14 +240,14 @@ function matchesHotkey(event: KeyboardEvent, hotkey: Hotkey): boolean {
       >
         @for (group of groups(); track group.key) {
           <div
-            starPart="group"
+            data-star-part="group"
             class="star-command-palette__group"
             role="group"
             [attr.aria-labelledby]="group.label ? listId + '-g-' + $index : null"
           >
             @if (group.label) {
               <div
-                starPart="heading"
+                data-star-part="heading"
                 class="star-command-palette__heading"
                 role="presentation"
                 [id]="listId + '-g-' + $index"
@@ -262,7 +261,7 @@ function matchesHotkey(event: KeyboardEvent, hotkey: Hotkey): boolean {
               <!-- The input keeps the focus; the pointer picks an option. -->
               <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
               <div
-                starPart="option"
+                data-star-part="option"
                 class="star-command-palette__option"
                 role="option"
                 [id]="item.id"
@@ -283,17 +282,17 @@ function matchesHotkey(event: KeyboardEvent, hotkey: Hotkey): boolean {
                 } @else {
                   @if (command.icon) {
                     <i
-                      starPart="icon"
+                      data-star-part="icon"
                       class="star-command-palette__icon"
                       [class]="command.icon"
                       aria-hidden="true"
                     ></i>
                   }
-                  <span starPart="label" class="star-command-palette__label">{{
+                  <span data-star-part="label" class="star-command-palette__label">{{
                     command.label
                   }}</span>
                   @if (command.shortcut) {
-                    <kbd starPart="shortcut" class="star-command-palette__shortcut">{{
+                    <kbd data-star-part="shortcut" class="star-command-palette__shortcut">{{
                       command.shortcut
                     }}</kbd>
                   }
@@ -303,7 +302,7 @@ function matchesHotkey(event: KeyboardEvent, hotkey: Hotkey): boolean {
           </div>
         }
         @if (loading()) {
-          <div starPart="message" class="star-command-palette__message" role="presentation">
+          <div data-star-part="message" class="star-command-palette__message" role="presentation">
             @if (loadingTemplate(); as template) {
               <ng-container *ngTemplateOutlet="template" />
             } @else {
@@ -311,7 +310,7 @@ function matchesHotkey(event: KeyboardEvent, hotkey: Hotkey): boolean {
             }
           </div>
         } @else if (!count()) {
-          <div starPart="message" class="star-command-palette__message" role="presentation">
+          <div data-star-part="message" class="star-command-palette__message" role="presentation">
             @if (emptyTemplate(); as template) {
               <ng-container *ngTemplateOutlet="template; context: { $implicit: query() }" />
             } @else {

@@ -11,13 +11,7 @@ import {
   viewChildren,
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
-import {
-  STAR_UI_TEXT,
-  starInlineKey,
-  StarPart,
-  StarStyled,
-  ɵSTAR_PART_HOST,
-} from '@star-ng/ui/core';
+import { STAR_UI_TEXT, starInlineKey, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/ui/field';
 
 /**
@@ -31,7 +25,6 @@ import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/
   selector: 'star-input-otp',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-otp',
@@ -44,7 +37,7 @@ import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/
   template: `
     @for (slot of slots(); track slot) {
       <input
-        starPart="box"
+        data-star-part="box"
         #box
         class="star-otp__box"
         maxlength="1"

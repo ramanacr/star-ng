@@ -15,7 +15,6 @@ import {
   readOption,
   starInlineKey,
   StarOptionKey,
-  StarPart,
   StarStyled,
   ɵSTAR_PART_HOST,
 } from '@star-ng/ui/core';
@@ -31,7 +30,6 @@ import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/
   selector: 'star-select-button',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-segmented',
@@ -46,7 +44,7 @@ import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/
   template: `
     @for (option of options(); track $index; let i = $index) {
       <button
-        starPart="item"
+        data-star-part="item"
         type="button"
         class="star-segmented__item"
         [attr.role]="multiple() ? null : 'radio'"
@@ -60,9 +58,9 @@ import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/
         (blur)="touch.emit()"
       >
         @if (iconOf(option); as icon) {
-          <i starPart="itemIcon" [class]="icon" aria-hidden="true"></i>
+          <i data-star-part="itemIcon" [class]="icon" aria-hidden="true"></i>
         }
-        <span starPart="itemText">{{ labelOf(option) }}</span>
+        <span data-star-part="itemText">{{ labelOf(option) }}</span>
       </button>
     }
   `,
@@ -175,12 +173,12 @@ export class StarSelectButton<TOption = unknown, TValue = TOption> implements Fo
   selector: 'star-toggle-button',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarPart],
+
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-toggle-btn-host' },
   template: `
     <button
-      starPart="item"
+      data-star-part="item"
       type="button"
       class="star-segmented__item star-toggle-btn"
       [class.star-segmented__item--on]="checked()"
@@ -191,9 +189,9 @@ export class StarSelectButton<TOption = unknown, TValue = TOption> implements Fo
       (blur)="touch.emit()"
     >
       @if (checked() ? onIcon() : offIcon(); as icon) {
-        <i starPart="itemIcon" [class]="icon" aria-hidden="true"></i>
+        <i data-star-part="itemIcon" [class]="icon" aria-hidden="true"></i>
       }
-      <span starPart="itemText">{{ checked() ? onLabel() : offLabel() }}</span>
+      <span data-star-part="itemText">{{ checked() ? onLabel() : offLabel() }}</span>
     </button>
   `,
 })

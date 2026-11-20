@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, forwardRef } from '@angular/core';
-import { StarPart, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
+import { StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 import { StarField } from './field';
 
 /**
@@ -20,25 +20,26 @@ import { StarField } from './field';
   selector: 'star-ifta-label',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [{ provide: StarField, useExisting: forwardRef(() => StarIftaLabel) }],
   host: { class: 'star-ifta' },
   template: `
-    <div starPart="box" class="star-ifta__box">
+    <div data-star-part="box" class="star-ifta__box">
       <!-- The label lets the pointer through (CSS), so a click reaches the control below it. -->
-      <label starPart="label" class="star-ifta__label" [id]="labelId" [attr.for]="labelFor()">
+      <label data-star-part="label" class="star-ifta__label" [id]="labelId" [attr.for]="labelFor()">
         {{ label() }}
         @if (isRequired()) {
-          <span starPart="required" class="star-field__required" aria-hidden="true">*</span>
+          <span data-star-part="required" class="star-field__required" aria-hidden="true">*</span>
         }
       </label>
       <ng-content />
     </div>
     @if (errorText(); as error) {
-      <p starPart="error" class="star-field__error" [id]="errorId" role="alert">{{ error }}</p>
+      <p data-star-part="error" class="star-field__error" [id]="errorId" role="alert">
+        {{ error }}
+      </p>
     } @else if (hint()) {
-      <p starPart="hint" class="star-field__hint" [id]="hintId">{{ hint() }}</p>
+      <p data-star-part="hint" class="star-field__hint" [id]="hintId">{{ hint() }}</p>
     }
   `,
 })

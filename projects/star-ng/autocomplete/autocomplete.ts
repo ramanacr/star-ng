@@ -261,27 +261,27 @@ export abstract class StarAutoCompleteBase<TOption, TValue> extends StarOptionLi
 }
 
 const TEMPLATE = `
-  <div starPart="control" #control class="star-select__control star-ac__control" cdkOverlayOrigin #origin="cdkOverlayOrigin">
-    <div starPart="main" class="star-ac__main">
+  <div data-star-part="control" #control class="star-select__control star-ac__control" cdkOverlayOrigin #origin="cdkOverlayOrigin">
+    <div data-star-part="main" class="star-ac__main">
       @if (isMultiple) {
         @for (chip of chips(); track $index) {
-          <span starPart="chip" class="star-chip star-chip--sm">
+          <span data-star-part="chip" class="star-chip star-chip--sm">
             {{ chip.label }}
             @if (interactive()) {
-              <button starPart="remove"
+              <button data-star-part="remove"
                 type="button"
                 class="star-chip__remove"
                 tabindex="-1"
                 [attr.aria-label]="text.removeItem(chip.label)"
                 (click)="removeChip($index)"
               >
-                <i starPart="removeIcon" class="ph-bold ph-x" aria-hidden="true"></i>
+                <i data-star-part="removeIcon" class="ph-bold ph-x" aria-hidden="true"></i>
               </button>
             }
           </span>
         }
       }
-      <input starPart="input"
+      <input data-star-part="input"
         #trigger
         type="text"
         class="star-ac__input"
@@ -308,15 +308,15 @@ const TEMPLATE = `
       />
     </div>
     @if (loading()) {
-      <i starPart="caret" class="ph-bold ph-spinner-gap star-spin star-select__caret" aria-hidden="true"></i>
+      <i data-star-part="caret" class="ph-bold ph-spinner-gap star-spin star-select__caret" aria-hidden="true"></i>
     }
     @if (showClear() && hasValue() && interactive()) {
-      <button starPart="iconBtn" type="button" class="star-select__icon-btn" [attr.aria-label]="text.clear" (click)="clear()">
-        <i starPart="xIcon" class="ph-bold ph-x" aria-hidden="true"></i>
+      <button data-star-part="iconBtn" type="button" class="star-select__icon-btn" [attr.aria-label]="text.clear" (click)="clear()">
+        <i data-star-part="xIcon" class="ph-bold ph-x" aria-hidden="true"></i>
       </button>
     }
     @if (dropdown()) {
-      <button starPart="iconBtn"
+      <button data-star-part="iconBtn"
         type="button"
         class="star-select__icon-btn"
         tabindex="-1"
@@ -324,7 +324,7 @@ const TEMPLATE = `
         [disabled]="!interactive()"
         (click)="showAllOptions()"
       >
-        <i starPart="caretDownIcon" class="ph-bold ph-caret-down" aria-hidden="true"></i>
+        <i data-star-part="caretDownIcon" class="ph-bold ph-caret-down" aria-hidden="true"></i>
       </button>
     }
   </div>
@@ -354,7 +354,7 @@ const TEMPLATE = `
       @if (headerSlot(); as header) {
         <ng-container *ngTemplateOutlet="header" />
       }
-      <ul starPart="listbox"
+      <ul data-star-part="listbox"
         class="star-listbox"
         role="listbox"
         [id]="listId"
@@ -367,16 +367,16 @@ const TEMPLATE = `
         (scroll)="onListScroll($event)"
       >
         @if (loadingRow(); as loader) {
-          <li starPart="empty" class="star-listbox__empty" role="presentation">
+          <li data-star-part="empty" class="star-listbox__empty" role="presentation">
             <ng-container *ngTemplateOutlet="loader" />
           </li>
         }
         @if (virtualWindow().before) {
-          <li starPart="spacer" class="star-listbox__spacer" role="presentation" [style.height.px]="virtualWindow().before"></li>
+          <li data-star-part="spacer" class="star-listbox__spacer" role="presentation" [style.height.px]="virtualWindow().before"></li>
         }
         @for (row of renderedRows(); track row.key) {
           @if (row.kind === 'group') {
-            <li starPart="group" class="star-listbox__group" role="presentation" [id]="row.id">
+            <li data-star-part="group" class="star-listbox__group" role="presentation" [id]="row.id">
               @if (groupSlot(); as custom) {
                 <ng-container *ngTemplateOutlet="custom; context: groupContext(row.label)" />
               } @else {
@@ -388,7 +388,7 @@ const TEMPLATE = `
           @let i = row.index;
           <!-- Keyboard is handled on the combobox via aria-activedescendant (WAI-ARIA combobox pattern). -->
           <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
-          <li starPart="option"
+          <li data-star-part="option"
             class="star-listbox__option"
             role="option"
             [id]="optionId(i)"
@@ -402,22 +402,22 @@ const TEMPLATE = `
             (click)="onOptionClick(option, i)"
             (mousemove)="onOptionHover(i)"
           >
-            <span starPart="label" class="star-listbox__label">
+            <span data-star-part="label" class="star-listbox__label">
               @if (option === undefined) {
-                <span starPart="skeleton" class="star-skeleton star-listbox__skeleton" aria-hidden="true"></span>
+                <span data-star-part="skeleton" class="star-skeleton star-listbox__skeleton" aria-hidden="true"></span>
                 <span class="star-sr-only">{{ text.loading }}</span>
               } @else if (optionTemplate(); as custom) {
                 <ng-container *ngTemplateOutlet="custom.template; context: optionContext(option, i)" />
               } @else {
                 @let parts = highlight(labelOf(option));
-                {{ parts[0] }}<mark starPart="match" class="star-ac__match">{{ parts[1] }}</mark>{{ parts[2] }}
+                {{ parts[0] }}<mark data-star-part="match" class="star-ac__match">{{ parts[1] }}</mark>{{ parts[2] }}
               }
             </span>
           </li>
           }
         } @empty {
           @if (!loadingRow() && customRow() === null) {
-            <li starPart="empty" class="star-listbox__empty" role="presentation">
+            <li data-star-part="empty" class="star-listbox__empty" role="presentation">
               @if (emptySlot(); as custom) {
                 <ng-container *ngTemplateOutlet="custom; context: emptyContext()" />
               } @else {
@@ -427,12 +427,12 @@ const TEMPLATE = `
           }
         }
         @if (virtualWindow().after) {
-          <li starPart="spacer" class="star-listbox__spacer" role="presentation" [style.height.px]="virtualWindow().after"></li>
+          <li data-star-part="spacer" class="star-listbox__spacer" role="presentation" [style.height.px]="virtualWindow().after"></li>
         }
         @if (customRow(); as custom) {
           <!-- Keyboard is handled on the combobox via aria-activedescendant (WAI-ARIA combobox pattern). -->
           <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
-          <li starPart="option"
+          <li data-star-part="option"
             class="star-listbox__option star-listbox__option--add"
             role="option"
             [id]="addRowId"
@@ -441,8 +441,8 @@ const TEMPLATE = `
             (click)="addCustom(custom)"
             (mousemove)="onOptionHover(visibleOptions().length)"
           >
-            <i starPart="optionIcon" class="ph-bold ph-plus" aria-hidden="true"></i>
-            <span starPart="label" class="star-listbox__label">{{ text.addCustomValue(custom) }}</span>
+            <i data-star-part="optionIcon" class="ph-bold ph-plus" aria-hidden="true"></i>
+            <span data-star-part="label" class="star-listbox__label">{{ text.addCustomValue(custom) }}</span>
           </li>
         }
       </ul>

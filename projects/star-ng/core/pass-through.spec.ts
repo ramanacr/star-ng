@@ -17,10 +17,12 @@ import {
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   host: { class: 'star-demo' },
-  template: `<div class="star-demo__header" starPart="header"><span starPart="title">T</span></div>
-    <button type="button" starPart="close" aria-label="Close" [id]="closeId">x</button>
+  template: `<div class="star-demo__header" data-star-part="header">
+      <span starPart="title">T</span>
+    </div>
+    <button type="button" data-star-part="close" aria-label="Close" [id]="closeId">x</button>
     @if (more()) {
-      <p starPart="more">More</p>
+      <p data-star-part="more">More</p>
     }
     <ng-content />`,
 })

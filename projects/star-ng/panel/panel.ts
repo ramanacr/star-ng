@@ -7,7 +7,7 @@ import {
   input,
   model,
 } from '@angular/core';
-import { STAR_UI_TEXT, StarPart, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
+import { STAR_UI_TEXT, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 
 /**
  * Panel (PrimeNG `p-panel`): titled box with header actions and an optional collapse toggle.
@@ -17,20 +17,19 @@ import { STAR_UI_TEXT, StarPart, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/u
   selector: 'star-panel',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-panel-box',
     '[class.star-panel-box--collapsed]': 'collapsed()',
   },
   template: `
-    <header starPart="header" class="star-panel-box__header">
-      <h3 starPart="title" class="star-panel-box__title" [id]="titleId">{{ header() }}</h3>
-      <div starPart="actions" class="star-panel-box__actions">
+    <header data-star-part="header" class="star-panel-box__header">
+      <h3 data-star-part="title" class="star-panel-box__title" [id]="titleId">{{ header() }}</h3>
+      <div data-star-part="actions" class="star-panel-box__actions">
         <ng-content select="[starPanelActions]" />
         @if (toggleable()) {
           <button
-            starPart="toggle"
+            data-star-part="toggle"
             type="button"
             class="star-btn star-btn--ghost star-btn--icon star-panel-box__toggle"
             [attr.aria-expanded]="!collapsed()"
@@ -40,21 +39,21 @@ import { STAR_UI_TEXT, StarPart, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/u
             "
             (click)="collapsed.set(!collapsed())"
           >
-            <i starPart="toggleIcon" class="ph-bold ph-caret-down" aria-hidden="true"></i>
+            <i data-star-part="toggleIcon" class="ph-bold ph-caret-down" aria-hidden="true"></i>
           </button>
         }
       </div>
     </header>
     <div
-      starPart="region"
+      data-star-part="region"
       class="star-accordion__region"
       role="region"
       [id]="contentId"
       [attr.aria-labelledby]="titleId"
       [attr.inert]="collapsed() ? '' : null"
     >
-      <div starPart="inner" class="star-accordion__inner">
-        <div starPart="body" class="star-panel-box__body"><ng-content /></div>
+      <div data-star-part="inner" class="star-accordion__inner">
+        <div data-star-part="body" class="star-panel-box__body"><ng-content /></div>
       </div>
     </div>
     <ng-content select="[starPanelFooter]" />
@@ -80,19 +79,19 @@ export class StarPanel {
   selector: 'star-fieldset',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarPart],
+
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-fieldset-host' },
   template: `
     <fieldset
-      starPart="fieldset"
+      data-star-part="fieldset"
       class="star-fieldset"
       [class.star-fieldset--collapsed]="collapsed()"
     >
-      <legend starPart="legend" class="star-fieldset__legend">
+      <legend data-star-part="legend" class="star-fieldset__legend">
         @if (toggleable()) {
           <button
-            starPart="toggle"
+            data-star-part="toggle"
             type="button"
             class="star-fieldset__toggle"
             [attr.aria-expanded]="!collapsed()"
@@ -100,7 +99,7 @@ export class StarPanel {
             (click)="collapsed.set(!collapsed())"
           >
             <i
-              starPart="caret"
+              data-star-part="caret"
               class="ph-bold ph-caret-down star-accordion__caret"
               aria-hidden="true"
             ></i>
@@ -111,13 +110,13 @@ export class StarPanel {
         }
       </legend>
       <div
-        starPart="region"
+        data-star-part="region"
         class="star-accordion__region"
         [id]="contentId"
         [attr.inert]="collapsed() ? '' : null"
       >
-        <div starPart="inner" class="star-accordion__inner">
-          <div starPart="body" class="star-fieldset__body"><ng-content /></div>
+        <div data-star-part="inner" class="star-accordion__inner">
+          <div data-star-part="body" class="star-fieldset__body"><ng-content /></div>
         </div>
       </div>
     </fieldset>

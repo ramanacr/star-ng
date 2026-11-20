@@ -17,7 +17,6 @@ import {
 import {
   injectStarControlDefaults,
   StarInputVariant,
-  StarPart,
   StarStyled,
   ɵSTAR_PART_HOST,
 } from '@star-ng/ui/core';
@@ -45,7 +44,6 @@ export interface StarFieldStateLike {
   selector: 'star-field',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-field', '[class.star-field--invalid]': 'errorText()' },
   template: `
@@ -54,7 +52,7 @@ export interface StarFieldStateLike {
            users reach the control itself with Tab, so the label needs no key handler. -->
       <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
       <label
-        starPart="label"
+        data-star-part="label"
         class="star-field__label"
         [id]="labelId"
         [attr.for]="labelFor()"
@@ -62,15 +60,17 @@ export interface StarFieldStateLike {
       >
         {{ label() }}
         @if (isRequired()) {
-          <span starPart="required" class="star-field__required" aria-hidden="true">*</span>
+          <span data-star-part="required" class="star-field__required" aria-hidden="true">*</span>
         }
       </label>
     }
     <ng-content />
     @if (errorText(); as error) {
-      <p starPart="error" class="star-field__error" [id]="errorId" role="alert">{{ error }}</p>
+      <p data-star-part="error" class="star-field__error" [id]="errorId" role="alert">
+        {{ error }}
+      </p>
     } @else if (hint()) {
-      <p starPart="hint" class="star-field__hint" [id]="hintId">{{ hint() }}</p>
+      <p data-star-part="hint" class="star-field__hint" [id]="hintId">{{ hint() }}</p>
     }
   `,
 })

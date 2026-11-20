@@ -10,7 +10,7 @@ import {
   output,
   signal,
 } from '@angular/core';
-import { STAR_UI_TEXT, StarPart, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
+import { STAR_UI_TEXT, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 
 export type StarMessageSeverity = 'success' | 'info' | 'warn' | 'error';
 
@@ -29,7 +29,6 @@ const ICONS: Record<StarMessageSeverity, string> = {
   selector: 'star-message',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '[class]': "'star-message star-message--' + severity() + ' star-message--' + variant()",
@@ -37,17 +36,22 @@ const ICONS: Record<StarMessageSeverity, string> = {
     '[hidden]': '!visible()',
   },
   template: `
-    <i starPart="icon" class="star-message__icon" [class]="iconClass()" aria-hidden="true"></i>
-    <div starPart="text" class="star-message__text"><ng-content /></div>
+    <i
+      data-star-part="icon"
+      class="star-message__icon"
+      [class]="iconClass()"
+      aria-hidden="true"
+    ></i>
+    <div data-star-part="text" class="star-message__text"><ng-content /></div>
     @if (closable()) {
       <button
-        starPart="close"
+        data-star-part="close"
         type="button"
         class="star-message__close"
         [attr.aria-label]="text.close"
         (click)="close()"
       >
-        <i starPart="closeIcon" class="ph-bold ph-x" aria-hidden="true"></i>
+        <i data-star-part="closeIcon" class="ph-bold ph-x" aria-hidden="true"></i>
       </button>
     }
   `,

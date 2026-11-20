@@ -29,7 +29,6 @@ import {
   injectStarControlDefaults,
   STAR_UI_TEXT,
   StarAnnouncer,
-  StarPart,
   starPrefersReducedMotion,
   StarStyled,
   ɵSTAR_PART_HOST,
@@ -256,17 +255,17 @@ const classColor = (index: number, count: number) =>
   selector: 'star-map',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarPart, NgTemplateOutlet],
+  imports: [NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-map',
     '[class.star-map--table]': 'showTable()',
   },
   template: `
-    <div starPart="bar" class="star-map__bar">
-      <div starPart="zoom" class="star-map__zoom">
+    <div data-star-part="bar" class="star-map__bar">
+      <div data-star-part="zoom" class="star-map__zoom">
         <button
-          starPart="zoomInButton"
+          data-star-part="zoomInButton"
           type="button"
           class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
           [attr.aria-label]="text.zoomIn"
@@ -274,10 +273,10 @@ const classColor = (index: number, count: number) =>
           [disabled]="view().zoom >= maxZoom()"
           (click)="zoomBy(1)"
         >
-          <i starPart="zoomInIcon" class="ph-bold ph-plus" aria-hidden="true"></i>
+          <i data-star-part="zoomInIcon" class="ph-bold ph-plus" aria-hidden="true"></i>
         </button>
         <button
-          starPart="zoomOutButton"
+          data-star-part="zoomOutButton"
           type="button"
           class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
           [attr.aria-label]="text.zoomOut"
@@ -285,28 +284,28 @@ const classColor = (index: number, count: number) =>
           [disabled]="view().zoom <= minZoom()"
           (click)="zoomBy(-1)"
         >
-          <i starPart="zoomOutIcon" class="ph-bold ph-minus" aria-hidden="true"></i>
+          <i data-star-part="zoomOutIcon" class="ph-bold ph-minus" aria-hidden="true"></i>
         </button>
         <button
-          starPart="mapResetViewButton"
+          data-star-part="mapResetViewButton"
           type="button"
           class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
           [attr.aria-label]="text.mapResetView"
           [attr.title]="text.mapResetView"
           (click)="resetView()"
         >
-          <i starPart="mapResetViewIcon" class="ph-bold ph-crosshair" aria-hidden="true"></i>
+          <i data-star-part="mapResetViewIcon" class="ph-bold ph-crosshair" aria-hidden="true"></i>
         </button>
       </div>
       <button
-        starPart="barButton"
+        data-star-part="barButton"
         type="button"
         class="star-btn star-btn--ghost star-btn--sm"
         [attr.aria-pressed]="showTable()"
         (click)="showTable.set(!showTable())"
       >
         <i
-          starPart="barIcon"
+          data-star-part="barIcon"
           class="ph-bold"
           [class.ph-table]="!showTable()"
           [class.ph-map-trifold]="showTable()"
@@ -318,7 +317,7 @@ const classColor = (index: number, count: number) =>
 
     <!-- The keys come from the focused feature (roving tab index) or the empty map. -->
     <div
-      starPart="viewport"
+      data-star-part="viewport"
       #area
       class="star-map__viewport"
       [class.star-map__viewport--panning]="panning()"
@@ -336,7 +335,7 @@ const classColor = (index: number, count: number) =>
       (wheel)="onWheel($event)"
     >
       <svg
-        starPart="svg"
+        data-star-part="svg"
         class="star-map__svg"
         role="none"
         [attr.viewBox]="'0 0 ' + viewport().width + ' ' + viewport().height"
@@ -344,7 +343,7 @@ const classColor = (index: number, count: number) =>
       >
         @if (tiles().length) {
           <g
-            starPart="tiles"
+            data-star-part="tiles"
             class="star-map__tiles"
             [attr.opacity]="tileLayer()?.opacity ?? 1"
             aria-hidden="true"
@@ -364,7 +363,7 @@ const classColor = (index: number, count: number) =>
         <g [attr.transform]="transform()">
           @for (item of shapeItems(); track item.key) {
             <path
-              starPart="shape"
+              data-star-part="shape"
               class="star-map__shape"
               [class.star-map__shape--line]="item.shape?.kind === 'line'"
               [class.star-map__shape--point]="item.shape?.kind === 'point'"
@@ -388,7 +387,7 @@ const classColor = (index: number, count: number) =>
         </g>
         @for (bubble of bubbleItems(); track bubble.item.key) {
           <circle
-            starPart="bubble"
+            data-star-part="bubble"
             class="star-map__bubble"
             [attr.cx]="bubble.x"
             [attr.cy]="bubble.y"
@@ -409,7 +408,7 @@ const classColor = (index: number, count: number) =>
 
       @for (marker of markerItems(); track marker.item.key) {
         <div
-          starPart="marker"
+          data-star-part="marker"
           class="star-map__marker"
           role="button"
           [attr.data-map-key]="marker.item.key"
@@ -431,14 +430,14 @@ const classColor = (index: number, count: number) =>
               "
             />
           } @else {
-            <i starPart="pin" class="ph-fill ph-map-pin star-map__pin" aria-hidden="true"></i>
+            <i data-star-part="pin" class="ph-fill ph-map-pin star-map__pin" aria-hidden="true"></i>
           }
         </div>
       }
 
       @if (tooltip(); as tip) {
         <div
-          starPart="tooltip"
+          data-star-part="tooltip"
           class="star-map__tooltip"
           aria-hidden="true"
           [style.left.px]="tip.x"
@@ -458,7 +457,7 @@ const classColor = (index: number, count: number) =>
       }
 
       @if (tileLayer(); as tile) {
-        <div starPart="attribution" class="star-map__attribution" dir="auto">
+        <div data-star-part="attribution" class="star-map__attribution" dir="auto">
           {{ tile.attribution }}
         </div>
       }
@@ -466,22 +465,22 @@ const classColor = (index: number, count: number) =>
     <p class="star-sr-only" [id]="hintId">{{ text.mapHint }}</p>
 
     @for (legend of legends(); track legend.id) {
-      <div starPart="legend" class="star-map__legend">
+      <div data-star-part="legend" class="star-map__legend">
         <span
-          starPart="legendTitle"
+          data-star-part="legendTitle"
           class="star-map__legend-title"
           [id]="hintId + '-' + legend.id"
           >{{ legend.title }}</span
         >
         <ul
-          starPart="legendList"
+          data-star-part="legendList"
           class="star-map__legend-list"
           [attr.aria-labelledby]="hintId + '-' + legend.id"
         >
           @for (entry of legend.entries; track $index) {
-            <li starPart="legendItem" class="star-map__legend-item">
+            <li data-star-part="legendItem" class="star-map__legend-item">
               <span
-                starPart="swatch"
+                data-star-part="swatch"
                 class="star-map__swatch"
                 [style.background]="entry.color"
                 aria-hidden="true"
@@ -493,25 +492,27 @@ const classColor = (index: number, count: number) =>
       </div>
     }
 
-    <table starPart="table" class="star-map__table" [class.star-sr-only]="!showTable()">
+    <table data-star-part="table" class="star-map__table" [class.star-sr-only]="!showTable()">
       <caption class="star-sr-only">
         {{
           ariaLabel() ?? text.map
         }}
       </caption>
-      <thead starPart="tableThead">
-        <tr starPart="tableHeadRow">
-          <th starPart="mapFeatureHeaderCell" scope="col">{{ text.mapFeature }}</th>
-          <th starPart="mapLayerHeaderCell" scope="col">{{ text.mapLayer }}</th>
-          <th starPart="chartValueHeaderCell" scope="col">{{ text.chartValue }}</th>
+      <thead data-star-part="tableThead">
+        <tr data-star-part="tableHeadRow">
+          <th data-star-part="mapFeatureHeaderCell" scope="col">{{ text.mapFeature }}</th>
+          <th data-star-part="mapLayerHeaderCell" scope="col">{{ text.mapLayer }}</th>
+          <th data-star-part="chartValueHeaderCell" scope="col">{{ text.chartValue }}</th>
         </tr>
       </thead>
-      <tbody starPart="tableTbody">
+      <tbody data-star-part="tableTbody">
         @for (item of ordered(); track item.key) {
-          <tr starPart="tableBodyRow">
-            <th starPart="tableBodyHeaderCell" scope="row">{{ item.label }}</th>
-            <td starPart="tableCell" class="star-map__table-cell">{{ layerTitle(item.layer) }}</td>
-            <td starPart="tableCell" class="star-map__table-cell">
+          <tr data-star-part="tableBodyRow">
+            <th data-star-part="tableBodyHeaderCell" scope="row">{{ item.label }}</th>
+            <td data-star-part="tableCell" class="star-map__table-cell">
+              {{ layerTitle(item.layer) }}
+            </td>
+            <td data-star-part="tableCell" class="star-map__table-cell">
               {{ item.value === null ? text.missingData : format(item.value) }}
             </td>
           </tr>

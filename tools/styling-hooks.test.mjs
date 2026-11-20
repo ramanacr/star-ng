@@ -3,7 +3,8 @@
 // 1. Every public control (a component with a `star-*` element selector, without `@internal`)
 //    has the host directive `StarStyled` (inputs `pt` and `unstyled`) and provides
 //    `ɵSTAR_PART_HOST` in `viewProviders`.
-// 2. Every element of every library template has a part name (`starPart="..."`), so a new
+// 2. Every element of every library template has a part name (the static attribute
+//    `data-star-part="..."`, or `starPart="..."` on the top element of an `ng-template`), so a new
 //    element cannot miss its hook. Left out: other controls (a tag with a dash), `ng-*` tags, line
 //    breaks, and the inner nodes of an `<svg>` without a StarNG class (icon paths, gradients).
 import { parseTemplate } from '@angular/compiler';
@@ -93,11 +94,19 @@ const SVG_SKIP = new Set([
   'foreignobject',
 ]);
 const VOID = new Set(['input', 'img', 'br', 'hr', 'col', 'source', 'track', 'wbr', 'area']);
+/**
+ * Elements without a part on purpose, for speed (one element per data point): the invisible
+ * pointer targets of a chart, and the rows and cells of the chart data table (the part `table`
+ * styles them with descendant classes). A 5,000-point chart has 30,000 such elements.
+ */
+const NO_PART = /class="[^"]*\bstar-chart__hit\b/;
+const NO_PART_INSIDE = /class="[^"]*\bstar-chart__table\b/;
 
-/** Start tags of a template without `starPart`. */
+/** Start tags of a template without a part name. */
 function unnamedElements(template) {
   const missing = [];
   const stack = [];
+  let quietAt = -1;
   const tag = /<\/?([a-zA-Z][\w-]*)((?:[^>"']|"[^"]*"|'[^']*')*)>/g;
   const clean = template.replace(/<!--[\s\S]*?-->/g, '').replace(/\{\{[\s\S]*?\}\}/g, '');
   for (const [whole, name, attrs] of clean.matchAll(tag)) {
@@ -105,16 +114,23 @@ function unnamedElements(template) {
     if (whole.startsWith('</')) {
       const at = stack.lastIndexOf(lower);
       if (at >= 0) stack.length = at;
+      if (quietAt >= stack.length) quietAt = -1;
       continue;
     }
     const selfClosing = attrs.trimEnd().endsWith('/');
     const inSvg = stack.includes('svg');
-    if (!selfClosing && !VOID.has(lower)) stack.push(lower);
+    const quiet = quietAt >= 0;
+    if (!selfClosing && !VOID.has(lower)) {
+      if (!quiet && NO_PART_INSIDE.test(attrs)) quietAt = stack.length;
+      stack.push(lower);
+    }
+    if (quiet || NO_PART.test(attrs)) continue;
     if (name.includes('-') || lower.startsWith('ng') || lower === 'br' || lower === 'wbr') continue;
     if (inSvg && (SVG_SKIP.has(lower) || !/class="[^"]*\bstar-/.test(attrs))) continue;
     // Visually hidden text is not a part: a class could show it or hide it from screen readers.
     if (/class="[^"]*\bstar-sr-only\b/.test(attrs)) continue;
-    if (!/\bstarPart=/.test(attrs)) missing.push(`<${name}${attrs.slice(0, 60)}`);
+    if (!/(^|\s)(starPart|data-star-part)=/.test(attrs))
+      missing.push(`<${name}${attrs.slice(0, 60)}`);
   }
   return missing;
 }
@@ -131,11 +147,12 @@ function partsOf(template) {
       const kind = node.constructor.name;
       if (kind === 'Element') {
         const attrs = Object.fromEntries(node.attributes.map((item) => [item.name, item.value]));
-        if (attrs.starPart) {
+        const partName = attrs.starPart ?? attrs['data-star-part'];
+        if (partName) {
           const classes = (attrs.class ?? '')
             .split(/\s+/)
             .filter((item) => item.startsWith('star-'));
-          parts.push({ name: attrs.starPart, classes, path, tag: node.name });
+          parts.push({ name: partName, classes, path, tag: node.name });
         }
         visit(node.children, path);
       } else if (kind === 'IfBlock' || kind === 'SwitchBlock') {
@@ -219,9 +236,11 @@ test('part names are unique in each control template', () => {
 
 test('visually hidden text is not a part', () => {
   const found = all.flatMap((item) =>
-    [...item.template.matchAll(/<[^>]*\bstarPart="([^"]+)"[^>]*class="[^"]*\bstar-sr-only\b/g)].map(
-      ([, name]) => `${item.name}: ${name}`,
-    ),
+    [
+      ...item.template.matchAll(
+        /<[^>]*(?:\bstarPart|data-star-part)="([^"]+)"[^>]*class="[^"]*\bstar-sr-only\b/g,
+      ),
+    ].map(([, name]) => `${item.name}: ${name}`),
   );
   assert.deepEqual(found, []);
 });

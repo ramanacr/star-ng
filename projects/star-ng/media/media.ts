@@ -20,7 +20,6 @@ import {
   STAR_UI_TEXT,
   starInlineKey,
   starIsRtl,
-  StarPart,
   starPrefersReducedMotion,
   StarStyled,
   ɵSTAR_PART_HOST,
@@ -53,7 +52,7 @@ export class StarCarouselItem<T = unknown> {
   selector: 'star-carousel',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarPart, NgTemplateOutlet],
+  imports: [NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-carousel',
@@ -67,17 +66,17 @@ export class StarCarouselItem<T = unknown> {
     '(focusout)': 'hovering.set(false)',
   },
   template: `
-    <div starPart="controls" class="star-carousel__controls">
+    <div data-star-part="controls" class="star-carousel__controls">
       @if (autoplay()) {
         <button
-          starPart="iconBtn"
+          data-star-part="iconBtn"
           type="button"
           class="star-select__icon-btn"
           [attr.aria-label]="playing() ? text.pauseSlides : text.playSlides"
           (click)="playing.set(!playing())"
         >
           <i
-            starPart="iconBtnIcon"
+            data-star-part="iconBtnIcon"
             class="ph-bold"
             [class.ph-pause]="playing()"
             [class.ph-play]="!playing()"
@@ -86,7 +85,7 @@ export class StarCarouselItem<T = unknown> {
         </button>
       }
       <button
-        starPart="iconBtn"
+        data-star-part="iconBtn"
         type="button"
         class="star-select__icon-btn"
         [attr.aria-label]="text.previousSlides"
@@ -94,13 +93,13 @@ export class StarCarouselItem<T = unknown> {
         (click)="goTo(page() - 1)"
       >
         <i
-          starPart="caretLeftIcon"
+          data-star-part="caretLeftIcon"
           class="ph-bold ph-caret-left star-icon-mirror"
           aria-hidden="true"
         ></i>
       </button>
       <button
-        starPart="iconBtn"
+        data-star-part="iconBtn"
         type="button"
         class="star-select__icon-btn"
         [attr.aria-label]="text.nextSlides"
@@ -108,14 +107,14 @@ export class StarCarouselItem<T = unknown> {
         (click)="goTo(page() + 1)"
       >
         <i
-          starPart="caretRightIcon"
+          data-star-part="caretRightIcon"
           class="ph-bold ph-caret-right star-icon-mirror"
           aria-hidden="true"
         ></i>
       </button>
     </div>
     <div
-      starPart="track"
+      data-star-part="track"
       #track
       class="star-carousel__track"
       role="group"
@@ -126,7 +125,7 @@ export class StarCarouselItem<T = unknown> {
     >
       @for (item of items(); track $index; let i = $index) {
         <div
-          starPart="slide"
+          data-star-part="slide"
           class="star-carousel__slide"
           role="group"
           aria-roledescription="slide"
@@ -141,10 +140,10 @@ export class StarCarouselItem<T = unknown> {
       }
     </div>
     @if (pages() > 1) {
-      <div starPart="dots" class="star-carousel__dots">
+      <div data-star-part="dots" class="star-carousel__dots">
         @for (dot of dots(); track dot) {
           <button
-            starPart="dot"
+            data-star-part="dot"
             type="button"
             class="star-carousel__dot"
             [class.star-carousel__dot--on]="dot === page()"
@@ -239,7 +238,6 @@ export interface StarGalleryImage {
   selector: 'star-galleria',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-galleria',
@@ -250,59 +248,64 @@ export interface StarGalleryImage {
   template: `
     @if (current(); as image) {
       <figure
-        starPart="stage"
+        data-star-part="stage"
         class="star-galleria__stage"
         tabindex="0"
         (keydown)="onKeydown($event)"
       >
-        <img starPart="stageImage" [src]="image.src" [alt]="image.alt" loading="lazy" />
+        <img data-star-part="stageImage" [src]="image.src" [alt]="image.alt" loading="lazy" />
         @if (image.caption) {
-          <figcaption starPart="caption" class="star-galleria__caption">
+          <figcaption data-star-part="caption" class="star-galleria__caption">
             {{ image.caption }}
           </figcaption>
         }
         <button
-          starPart="nav"
+          data-star-part="nav"
           type="button"
           class="star-galleria__nav star-galleria__nav--prev"
           [attr.aria-label]="text.previousImage"
           (click)="step(-1)"
         >
           <i
-            starPart="caretLeftIcon"
+            data-star-part="caretLeftIcon"
             class="ph-bold ph-caret-left star-icon-mirror"
             aria-hidden="true"
           ></i>
         </button>
         <button
-          starPart="nav"
+          data-star-part="nav"
           type="button"
           class="star-galleria__nav star-galleria__nav--next"
           [attr.aria-label]="text.nextImage"
           (click)="step(1)"
         >
           <i
-            starPart="caretRightIcon"
+            data-star-part="caretRightIcon"
             class="ph-bold ph-caret-right star-icon-mirror"
             aria-hidden="true"
           ></i>
         </button>
-        <span starPart="count" class="star-galleria__count" aria-live="polite"
+        <span data-star-part="count" class="star-galleria__count" aria-live="polite"
           >{{ activeIndex() + 1 }} / {{ images().length }}</span
         >
       </figure>
     }
-    <div starPart="thumbs" class="star-galleria__thumbs">
+    <div data-star-part="thumbs" class="star-galleria__thumbs">
       @for (image of images(); track $index; let i = $index) {
         <button
-          starPart="thumb"
+          data-star-part="thumb"
           type="button"
           class="star-galleria__thumb"
           [attr.aria-current]="i === activeIndex() || null"
           [attr.aria-label]="text.showImage(image.alt)"
           (click)="activeIndex.set(i)"
         >
-          <img starPart="thumbImage" [src]="image.thumbnail ?? image.src" alt="" loading="lazy" />
+          <img
+            data-star-part="thumbImage"
+            [src]="image.thumbnail ?? image.src"
+            alt=""
+            loading="lazy"
+          />
         </button>
       }
     </div>
@@ -342,33 +345,33 @@ export class StarGalleria {
   selector: 'star-image',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarPart, StarDialog],
+  imports: [StarDialog],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-image' },
   template: `
     @if (preview()) {
       <button
-        starPart="trigger"
+        data-star-part="trigger"
         type="button"
         class="star-image__trigger"
         [attr.aria-label]="text.previewImage(alt())"
         (click)="open.set(true)"
       >
         <img
-          starPart="triggerImage"
+          data-star-part="triggerImage"
           [src]="src()"
           [alt]="alt()"
           [attr.width]="width()"
           loading="lazy"
         />
-        <span starPart="hint" class="star-image__hint" aria-hidden="true"
-          ><i starPart="hintIcon" class="ph-bold ph-magnifying-glass-plus"></i
+        <span data-star-part="hint" class="star-image__hint" aria-hidden="true"
+          ><i data-star-part="hintIcon" class="ph-bold ph-magnifying-glass-plus"></i
         ></span>
       </button>
       <star-dialog [(visible)]="open" [header]="alt()" size="xl" dismissableMask>
-        <div starPart="zoomBar" class="star-image__zoom-bar">
+        <div data-star-part="zoomBar" class="star-image__zoom-bar">
           <button
-            starPart="iconBtn"
+            data-star-part="iconBtn"
             type="button"
             class="star-select__icon-btn"
             [attr.aria-label]="text.zoomOut"
@@ -376,14 +379,14 @@ export class StarGalleria {
             (click)="zoom.set(zoom() - 0.25)"
           >
             <i
-              starPart="magnifyingGlassMinusIcon"
+              data-star-part="magnifyingGlassMinusIcon"
               class="ph-bold ph-magnifying-glass-minus"
               aria-hidden="true"
             ></i>
           </button>
-          <span starPart="zoomBarText" aria-live="polite">{{ zoom() * 100 }}%</span>
+          <span data-star-part="zoomBarText" aria-live="polite">{{ zoom() * 100 }}%</span>
           <button
-            starPart="iconBtn"
+            data-star-part="iconBtn"
             type="button"
             class="star-select__icon-btn"
             [attr.aria-label]="text.zoomIn"
@@ -391,7 +394,7 @@ export class StarGalleria {
             (click)="zoom.set(zoom() + 0.25)"
           >
             <i
-              starPart="magnifyingGlassPlusIcon"
+              data-star-part="magnifyingGlassPlusIcon"
               class="ph-bold ph-magnifying-glass-plus"
               aria-hidden="true"
             ></i>
@@ -399,14 +402,14 @@ export class StarGalleria {
         </div>
         <!-- Focusable, so the arrow keys scroll a zoomed image. -->
         <div
-          starPart="stage"
+          data-star-part="stage"
           class="star-image__stage"
           role="group"
           tabindex="0"
           [attr.aria-label]="alt()"
         >
           <img
-            starPart="stageImage"
+            data-star-part="stageImage"
             [src]="src()"
             [alt]="alt()"
             [style.transform]="'scale(' + zoom() + ')'"
@@ -414,7 +417,13 @@ export class StarGalleria {
         </div>
       </star-dialog>
     } @else {
-      <img starPart="image" [src]="src()" [alt]="alt()" [attr.width]="width()" loading="lazy" />
+      <img
+        data-star-part="image"
+        [src]="src()"
+        [alt]="alt()"
+        [attr.width]="width()"
+        loading="lazy"
+      />
     }
   `,
 })

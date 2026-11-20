@@ -209,10 +209,10 @@ function readApi() {
   return Object.fromEntries(Object.entries(api).sort(([a], [b]) => a.localeCompare(b)));
 }
 
-/** The part names of a control template (`starPart="header"`), in order, with `root` first. */
+/** The part names of a control template (`data-star-part="header"`, `starPart="panel"`), in order, `root` first. */
 function partsOf(template) {
   const parts = ['root'];
-  for (const [, name] of template.matchAll(/\bstarPart="'?([a-z][\w-]*)'?"/g)) {
+  for (const [, name] of template.matchAll(/(?:\bstarPart|data-star-part)="'?([a-z][\w-]*)'?"/g)) {
     if (!parts.includes(name)) parts.push(name);
   }
   return parts;

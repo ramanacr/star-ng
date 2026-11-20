@@ -37,12 +37,11 @@ import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/
   selector: 'star-knob',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-knob', '[class.star-knob--disabled]': 'disabled()' },
   template: `
     <svg
-      starPart="svg"
+      data-star-part="svg"
       viewBox="0 0 100 100"
       [attr.width]="size()"
       [attr.height]="size()"
@@ -62,9 +61,9 @@ import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/
       (pointermove)="$event.buttons === 1 && onPointer($event)"
       (blur)="touch.emit()"
     >
-      <path starPart="track" class="star-knob__track" [attr.d]="arc(1)" />
-      <path starPart="value" class="star-knob__value" [attr.d]="arc(ratio())" />
-      <text starPart="text" class="star-knob__text" x="50" y="57" text-anchor="middle">
+      <path data-star-part="track" class="star-knob__track" [attr.d]="arc(1)" />
+      <path data-star-part="value" class="star-knob__value" [attr.d]="arc(ratio())" />
+      <text data-star-part="text" class="star-knob__text" x="50" y="57" text-anchor="middle">
         {{ text() }}
       </text>
     </svg>
@@ -301,7 +300,7 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
   host: { class: 'star-color', '[class.star-color--open]': 'open()' },
   template: `
     <div
-      starPart="swatches"
+      data-star-part="swatches"
       class="star-color__swatches"
       role="radiogroup"
       [attr.aria-label]="labelledBy() ? null : (ariaLabel() ?? text.colorLabel)"
@@ -310,7 +309,7 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
     >
       @for (swatch of shownSwatches(); track swatch) {
         <button
-          starPart="swatch"
+          data-star-part="swatch"
           type="button"
           role="radio"
           class="star-color__swatch"
@@ -323,7 +322,7 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
       }
     </div>
     <button
-      starPart="custom"
+      data-star-part="custom"
       #custom
       type="button"
       class="star-color__custom"
@@ -339,7 +338,7 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
     ></button>
     @if (canEyeDrop()) {
       <button
-        starPart="eyedropper"
+        data-star-part="eyedropper"
         type="button"
         class="star-btn star-btn--ghost star-btn--icon star-btn--sm star-color__eyedropper"
         [attr.aria-label]="text.eyeDropper"
@@ -347,11 +346,11 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
         [disabled]="disabled()"
         (click)="pickFromScreen()"
       >
-        <i starPart="eyedropperIcon" class="ph-bold ph-eyedropper" aria-hidden="true"></i>
+        <i data-star-part="eyedropperIcon" class="ph-bold ph-eyedropper" aria-hidden="true"></i>
       </button>
     }
     <input
-      starPart="hex"
+      data-star-part="hex"
       class="star-input star-input--sm star-color__hex"
       [value]="value()"
       [disabled]="disabled()"
@@ -381,7 +380,7 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
         (keydown)="onPanelKeydown($event)"
       >
         <div
-          starPart="area"
+          data-star-part="area"
           #area
           class="star-color__area"
           role="slider"
@@ -397,7 +396,7 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
           (pointermove)="$event.buttons === 1 && onAreaPointer($event, false)"
         >
           <span
-            starPart="thumb"
+            data-star-part="thumb"
             class="star-color__thumb"
             [style.inset-inline-start.%]="hsv().s"
             [style.top.%]="100 - hsv().v"
@@ -405,7 +404,7 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
           ></span>
         </div>
         <div
-          starPart="hue"
+          data-star-part="hue"
           class="star-color__hue"
           role="slider"
           tabindex="0"
@@ -421,22 +420,22 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
           (pointermove)="$event.buttons === 1 && onHuePointer($event, false)"
         >
           <span
-            starPart="thumb"
+            data-star-part="thumb"
             class="star-color__thumb"
             [style.inset-inline-start.%]="(hsv().h / 359) * 100"
             [style.background]="hueColor()"
           ></span>
         </div>
-        <div starPart="bar" class="star-color__bar">
+        <div data-star-part="bar" class="star-color__bar">
           <span
-            starPart="preview"
+            data-star-part="preview"
             class="star-color__preview"
             [style.background]="value()"
             aria-hidden="true"
           ></span>
-          <span starPart="code" class="star-color__code">{{ value() }}</span>
+          <span data-star-part="code" class="star-color__code">{{ value() }}</span>
           <button
-            starPart="barButton"
+            data-star-part="barButton"
             type="button"
             class="star-btn star-btn--primary star-btn--sm"
             (click)="closePanel()"

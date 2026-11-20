@@ -13,7 +13,7 @@ import {
   untracked,
   viewChild,
 } from '@angular/core';
-import { STAR_UI_TEXT, StarPart, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
+import { STAR_UI_TEXT, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 import { StarMarkdownLite } from './markdown-lite.component';
 
 /** State of one response of `star-ai-prompt`. */
@@ -50,13 +50,13 @@ export interface StarAiPromptOutput {
   selector: 'star-ai-prompt',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarPart, StarMarkdownLite],
+  imports: [StarMarkdownLite],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-ai-prompt' },
   template: `
-    <div starPart="panel" class="star-ai-prompt__panel">
+    <div data-star-part="panel" class="star-ai-prompt__panel">
       <textarea
-        starPart="field"
+        data-star-part="field"
         #field
         class="star-input star-ai-prompt__field"
         rows="3"
@@ -69,19 +69,19 @@ export interface StarAiPromptOutput {
         (input)="prompt.set(field.value)"
         (keydown)="onKeydown($event)"
       ></textarea>
-      <p starPart="hint" class="star-ai-prompt__hint" [id]="hintId">
+      <p data-star-part="hint" class="star-ai-prompt__hint" [id]="hintId">
         {{ text.aiPromptShortcutHint }}
       </p>
       @if (suggestions().length) {
         <div
-          starPart="chips"
+          data-star-part="chips"
           class="star-ai-prompt__chips"
           role="group"
           [attr.aria-label]="text.promptSuggestions"
         >
           @for (suggestion of suggestions(); track $index) {
             <button
-              starPart="chip"
+              data-star-part="chip"
               type="button"
               class="star-chip star-ai-prompt__chip"
               [disabled]="disabled()"
@@ -92,76 +92,96 @@ export interface StarAiPromptOutput {
           }
         </div>
       }
-      <div starPart="bar" class="star-ai-prompt__bar">
+      <div data-star-part="bar" class="star-ai-prompt__bar">
         <button
-          starPart="barButton"
+          data-star-part="barButton"
           type="button"
           class="star-btn star-btn--primary star-btn--sm"
           [disabled]="disabled() || !prompt().trim()"
           (click)="request()"
         >
-          <i starPart="barIcon" class="ph-bold ph-sparkle" aria-hidden="true"></i
+          <i data-star-part="barIcon" class="ph-bold ph-sparkle" aria-hidden="true"></i
           >{{ text.generate }}
         </button>
       </div>
     </div>
     @if (outputs().length) {
-      <ul starPart="outputs" class="star-ai-prompt__outputs" [attr.aria-label]="text.aiResponses">
+      <ul
+        data-star-part="outputs"
+        class="star-ai-prompt__outputs"
+        [attr.aria-label]="text.aiResponses"
+      >
         @for (output of outputs(); track output.id) {
           @let streaming = output.status === 'streaming';
-          <li starPart="output" class="star-ai-prompt__output" [attr.aria-busy]="streaming || null">
-            <p starPart="prompt" class="star-ai-prompt__prompt">
-              <i starPart="promptIcon" class="ph-bold ph-chat-text" aria-hidden="true"></i
+          <li
+            data-star-part="output"
+            class="star-ai-prompt__output"
+            [attr.aria-busy]="streaming || null"
+          >
+            <p data-star-part="prompt" class="star-ai-prompt__prompt">
+              <i data-star-part="promptIcon" class="ph-bold ph-chat-text" aria-hidden="true"></i
               >{{ output.prompt }}
             </p>
             @if (output.text) {
               <star-markdown-lite class="star-ai-prompt__text" [text]="output.text" />
             }
             @if (output.status === 'error') {
-              <p starPart="error" class="star-ai-prompt__error">
-                <i starPart="errorIcon" class="ph-bold ph-warning-circle" aria-hidden="true"></i
+              <p data-star-part="error" class="star-ai-prompt__error">
+                <i
+                  data-star-part="errorIcon"
+                  class="ph-bold ph-warning-circle"
+                  aria-hidden="true"
+                ></i
                 >{{ text.aiResponseFailed }}
               </p>
             }
-            <div starPart="actions" class="star-ai-prompt__actions">
+            <div data-star-part="actions" class="star-ai-prompt__actions">
               @if (streaming) {
-                <span starPart="generating" class="star-ai-prompt__generating">
+                <span data-star-part="generating" class="star-ai-prompt__generating">
                   <i
-                    starPart="generatingIcon"
+                    data-star-part="generatingIcon"
                     class="ph-bold ph-spinner-gap star-spin"
                     aria-hidden="true"
                   ></i
                   >{{ text.aiGenerating }}
                 </span>
                 <button
-                  starPart="actionsButton"
+                  data-star-part="actionsButton"
                   type="button"
                   class="star-btn star-btn--ghost star-btn--sm"
                   (click)="stop.emit(output)"
                 >
-                  <i starPart="actionsIcon" class="ph-bold ph-stop-circle" aria-hidden="true"></i
+                  <i
+                    data-star-part="actionsIcon"
+                    class="ph-bold ph-stop-circle"
+                    aria-hidden="true"
+                  ></i
                   >{{ text.stop }}
                 </button>
               } @else {
                 @if (output.text) {
                   <button
-                    starPart="copyButton"
+                    data-star-part="copyButton"
                     type="button"
                     class="star-btn star-btn--ghost star-btn--sm"
                     (click)="copy(output)"
                   >
-                    <i starPart="copyIcon" class="ph-bold ph-copy" aria-hidden="true"></i
+                    <i data-star-part="copyIcon" class="ph-bold ph-copy" aria-hidden="true"></i
                     >{{ text.copy }}
                   </button>
                 }
                 <button
-                  starPart="retryButton"
+                  data-star-part="retryButton"
                   type="button"
                   class="star-btn star-btn--ghost star-btn--sm"
                   [disabled]="disabled()"
                   (click)="retry.emit(output)"
                 >
-                  <i starPart="retryIcon" class="ph-bold ph-arrow-clockwise" aria-hidden="true"></i
+                  <i
+                    data-star-part="retryIcon"
+                    class="ph-bold ph-arrow-clockwise"
+                    aria-hidden="true"
+                  ></i
                   >{{ text.retry }}
                 </button>
               }

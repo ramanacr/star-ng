@@ -1,5 +1,5 @@
 import { booleanAttribute, ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { StarPart, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
+import { StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 import { StarDialogBase } from '@star-ng/ui/dialog';
 
 /**
@@ -19,13 +19,12 @@ import { StarDialogBase } from '@star-ng/ui/dialog';
   selector: 'star-drawer',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <!-- Backdrop click only; keyboard users close with Escape (native cancel event). -->
     <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events -->
     <dialog
-      starPart="drawer"
+      data-star-part="drawer"
       #dialog
       class="star-drawer"
       [class]="'star-drawer star-drawer--' + position()"
@@ -40,29 +39,31 @@ import { StarDialogBase } from '@star-ng/ui/dialog';
       (close)="onNativeClose()"
       (click)="onDialogClick($event)"
     >
-      <div starPart="surface" class="star-dialog__surface">
+      <div data-star-part="surface" class="star-dialog__surface">
         @if (showHeader()) {
-          <header starPart="header" class="star-dialog__header">
-            <div starPart="heading" class="star-dialog__heading">
+          <header data-star-part="header" class="star-dialog__header">
+            <div data-star-part="heading" class="star-dialog__heading">
               @if (header()) {
-                <h2 starPart="title" class="star-dialog__title" [id]="headerId">{{ header() }}</h2>
+                <h2 data-star-part="title" class="star-dialog__title" [id]="headerId">
+                  {{ header() }}
+                </h2>
               }
               <ng-content select="[starDialogHeader]" />
             </div>
             @if (closable()) {
               <button
-                starPart="close"
+                data-star-part="close"
                 type="button"
                 class="star-btn star-btn--ghost star-btn--icon star-dialog__close"
                 [attr.aria-label]="text.close"
                 (click)="close()"
               >
-                <i starPart="closeIcon" class="ph-bold ph-x" aria-hidden="true"></i>
+                <i data-star-part="closeIcon" class="ph-bold ph-x" aria-hidden="true"></i>
               </button>
             }
           </header>
         }
-        <div starPart="body" class="star-dialog__body"><ng-content /></div>
+        <div data-star-part="body" class="star-dialog__body"><ng-content /></div>
         <ng-content select="[starDialogFooter]" />
       </div>
     </dialog>

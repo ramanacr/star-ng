@@ -9,7 +9,7 @@ import {
   input,
   output,
 } from '@angular/core';
-import { STAR_UI_TEXT, StarPart, StarStyled, StarUiText, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
+import { STAR_UI_TEXT, StarStyled, StarUiText, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 import { STAR_EDITOR_PALETTE } from './editor-format';
 
 /** Names of the palette colors, in the order of the palette. */
@@ -44,7 +44,6 @@ function hexOf(value: string): string {
   selector: 'star-editor-color',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-editor__panel star-editor__color',
@@ -53,9 +52,9 @@ function hexOf(value: string): string {
     '(keydown.escape)': 'onEscape($event)',
   },
   template: `
-    <div starPart="swatches" class="star-editor__swatches">
+    <div data-star-part="swatches" class="star-editor__swatches">
       <button
-        starPart="swatchesButton"
+        data-star-part="swatchesButton"
         type="button"
         class="star-btn star-btn--ghost star-btn--sm"
         [attr.aria-pressed]="value() === ''"
@@ -65,7 +64,7 @@ function hexOf(value: string): string {
       </button>
       @for (swatch of swatches(); track swatch.value) {
         <button
-          starPart="swatch"
+          data-star-part="swatch"
           type="button"
           class="star-editor__swatch"
           [style.background]="swatch.value"
@@ -76,10 +75,10 @@ function hexOf(value: string): string {
         ></button>
       }
     </div>
-    <label starPart="colorCustom" class="star-editor__color-custom">
+    <label data-star-part="colorCustom" class="star-editor__color-custom">
       {{ text.customColor }}
       <input
-        starPart="colorCustomInput"
+        data-star-part="colorCustomInput"
         #custom
         type="color"
         [value]="hex()"
@@ -87,7 +86,7 @@ function hexOf(value: string): string {
       />
     </label>
     <button
-      starPart="button"
+      data-star-part="button"
       type="button"
       class="star-btn star-btn--ghost star-btn--sm"
       (click)="dismissed.emit()"

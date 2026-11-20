@@ -135,11 +135,11 @@ interface Grab {
     '[style.--star-kanban-columns]': 'gridColumns()',
   },
   template: `
-    <div starPart="board" class="star-kanban__board" cdkDropListGroup>
+    <div data-star-part="board" class="star-kanban__board" cdkDropListGroup>
       @if (lanes().length) {
         @for (column of columns(); track column.key) {
           <div
-            starPart="head"
+            data-star-part="head"
             class="star-kanban__head"
             [class.star-kanban__head--collapsed]="isCollapsed(column)"
           >
@@ -152,13 +152,18 @@ interface Grab {
       }
       @for (row of rows(); track row.lane?.key ?? '') {
         @if (row.lane) {
-          <div starPart="laneTitle" class="star-kanban__lane-title" role="heading" aria-level="3">
+          <div
+            data-star-part="laneTitle"
+            class="star-kanban__lane-title"
+            role="heading"
+            aria-level="3"
+          >
             {{ row.lane.title }}
           </div>
         }
         @for (cell of row.cells; track cell.id) {
           <section
-            starPart="column"
+            data-star-part="column"
             class="star-kanban__column"
             role="group"
             [attr.aria-label]="cellLabel(cell)"
@@ -174,7 +179,7 @@ interface Grab {
             }
             @if (!isCollapsed(cell.column)) {
               <div
-                starPart="list"
+                data-star-part="list"
                 class="star-kanban__list"
                 role="list"
                 cdkDropList
@@ -186,7 +191,7 @@ interface Grab {
               >
                 @for (item of cell.items; track keyOf(item); let i = $index) {
                   <div
-                    starPart="card"
+                    data-star-part="card"
                     class="star-kanban__card"
                     role="listitem"
                     cdkDrag
@@ -236,14 +241,14 @@ interface Grab {
             }"
           />
         } @else {
-          <span starPart="title" class="star-kanban__title">{{ column.title }}</span>
-          <span starPart="count" class="star-kanban__count" aria-hidden="true">
+          <span data-star-part="title" class="star-kanban__title">{{ column.title }}</span>
+          <span data-star-part="count" class="star-kanban__count" aria-hidden="true">
             {{ column.limit ? countOf(column.key) + ' / ' + column.limit : countOf(column.key) }}
           </span>
         }
         @if (collapsible()) {
           <button
-            starPart="collapse"
+            data-star-part="collapse"
             type="button"
             class="star-kanban__collapse"
             [attr.aria-expanded]="!isCollapsed(column)"
@@ -253,7 +258,7 @@ interface Grab {
             (click)="toggleColumn(column.key)"
           >
             <i
-              starPart="collapseIcon"
+              data-star-part="collapseIcon"
               [class]="
                 isCollapsed(column)
                   ? 'ph-bold ph-arrows-out-line-horizontal'

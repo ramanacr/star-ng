@@ -9,7 +9,7 @@ import {
   model,
   output,
 } from '@angular/core';
-import { STAR_UI_TEXT, StarPart, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
+import { STAR_UI_TEXT, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 import { StarSelect } from '@star-ng/ui/select';
 
 export interface StarPageEvent {
@@ -31,23 +31,23 @@ export interface StarPageEvent {
   selector: 'star-paginator',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarPart, StarSelect],
+  imports: [StarSelect],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-paginator' },
   template: `
     @if (showCurrentPageReport()) {
-      <span starPart="report" class="star-paginator__report" aria-live="polite">{{
+      <span data-star-part="report" class="star-paginator__report" aria-live="polite">{{
         report()
       }}</span>
     }
     <nav
-      starPart="pages"
+      data-star-part="pages"
       class="star-paginator__pages"
       [attr.aria-label]="ariaLabel() ?? text.pagination"
     >
       @if (showFirstLast()) {
         <button
-          starPart="btn"
+          data-star-part="btn"
           type="button"
           class="star-paginator__btn"
           [disabled]="isFirst()"
@@ -55,14 +55,14 @@ export interface StarPageEvent {
           (click)="goTo(0)"
         >
           <i
-            starPart="caretDoubleLeftIcon"
+            data-star-part="caretDoubleLeftIcon"
             class="ph-bold ph-caret-double-left star-icon-mirror"
             aria-hidden="true"
           ></i>
         </button>
       }
       <button
-        starPart="btn"
+        data-star-part="btn"
         type="button"
         class="star-paginator__btn"
         [disabled]="isFirst()"
@@ -70,14 +70,14 @@ export interface StarPageEvent {
         (click)="goTo(page() - 1)"
       >
         <i
-          starPart="caretLeftIcon"
+          data-star-part="caretLeftIcon"
           class="ph-bold ph-caret-left star-icon-mirror"
           aria-hidden="true"
         ></i>
       </button>
       @for (link of links(); track link) {
         <button
-          starPart="btn"
+          data-star-part="btn"
           type="button"
           class="star-paginator__btn star-paginator__page"
           [class.star-paginator__page--active]="link === page()"
@@ -89,7 +89,7 @@ export interface StarPageEvent {
         </button>
       }
       <button
-        starPart="btn"
+        data-star-part="btn"
         type="button"
         class="star-paginator__btn"
         [disabled]="isLast()"
@@ -97,14 +97,14 @@ export interface StarPageEvent {
         (click)="goTo(page() + 1)"
       >
         <i
-          starPart="caretRightIcon"
+          data-star-part="caretRightIcon"
           class="ph-bold ph-caret-right star-icon-mirror"
           aria-hidden="true"
         ></i>
       </button>
       @if (showFirstLast()) {
         <button
-          starPart="btn"
+          data-star-part="btn"
           type="button"
           class="star-paginator__btn"
           [disabled]="isLast()"
@@ -112,7 +112,7 @@ export interface StarPageEvent {
           (click)="goTo(pageCount() - 1)"
         >
           <i
-            starPart="caretDoubleRightIcon"
+            data-star-part="caretDoubleRightIcon"
             class="ph-bold ph-caret-double-right star-icon-mirror"
             aria-hidden="true"
           ></i>
@@ -120,8 +120,8 @@ export interface StarPageEvent {
       }
     </nav>
     @if (rowsPerPageOptions().length) {
-      <span starPart="rows" class="star-paginator__rows">
-        <span starPart="rowsText" [id]="rowsLabelId">{{ text.rowsPerPage }}</span>
+      <span data-star-part="rows" class="star-paginator__rows">
+        <span data-star-part="rowsText" [id]="rowsLabelId">{{ text.rowsPerPage }}</span>
         <star-select
           class="star-paginator__select"
           size="sm"

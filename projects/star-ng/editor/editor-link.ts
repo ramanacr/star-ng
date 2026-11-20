@@ -12,7 +12,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { STAR_UI_TEXT, StarPart, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
+import { STAR_UI_TEXT, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 
 /** What the link popover gives back. */
 export interface StarEditorLinkValue {
@@ -59,7 +59,6 @@ export function starEditorSetLink(anchor: HTMLAnchorElement, value: StarEditorLi
   selector: 'star-editor-link',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-editor__link',
@@ -70,12 +69,17 @@ export function starEditorSetLink(anchor: HTMLAnchorElement, value: StarEditorLi
   template: `
     <!-- novalidate and type="text": the browser check of type="url" refuses a host name
       without a scheme and a path on the site, which the editor accepts. -->
-    <form starPart="linkForm" class="star-editor__link-form" novalidate (submit)="submit($event)">
-      <label starPart="linkLabel" class="star-editor__link-label" [for]="inputId">{{
+    <form
+      data-star-part="linkForm"
+      class="star-editor__link-form"
+      novalidate
+      (submit)="submit($event)"
+    >
+      <label data-star-part="linkLabel" class="star-editor__link-label" [for]="inputId">{{
         text.editorLinkPrompt
       }}</label>
       <input
-        starPart="input"
+        data-star-part="input"
         #address
         class="star-input star-input--sm"
         type="text"
@@ -88,13 +92,13 @@ export function starEditorSetLink(anchor: HTMLAnchorElement, value: StarEditorLi
         (input)="url.set(address.value); error.set(false)"
       />
       @if (error()) {
-        <span starPart="linkError" class="star-editor__link-error" [id]="errorId">{{
+        <span data-star-part="linkError" class="star-editor__link-error" [id]="errorId">{{
           text.editorLinkInvalid
         }}</span>
       }
-      <label starPart="linkCheck" class="star-editor__link-check">
+      <label data-star-part="linkCheck" class="star-editor__link-check">
         <input
-          starPart="linkCheckInput"
+          data-star-part="linkCheckInput"
           type="checkbox"
           [checked]="newTab()"
           (change)="newTab.set(box.checked)"
@@ -102,9 +106,9 @@ export function starEditorSetLink(anchor: HTMLAnchorElement, value: StarEditorLi
         />
         {{ text.editorLinkNewTab }}
       </label>
-      <div starPart="linkActions" class="star-editor__link-actions">
+      <div data-star-part="linkActions" class="star-editor__link-actions">
         <button
-          starPart="applyButton"
+          data-star-part="applyButton"
           type="submit"
           class="star-btn star-btn--primary star-btn--sm"
         >
@@ -112,7 +116,7 @@ export function starEditorSetLink(anchor: HTMLAnchorElement, value: StarEditorLi
         </button>
         @if (editing()) {
           <button
-            starPart="editorLinkRemoveButton"
+            data-star-part="editorLinkRemoveButton"
             type="button"
             class="star-btn star-btn--ghost star-btn--sm"
             (click)="remove.emit()"
@@ -121,7 +125,7 @@ export function starEditorSetLink(anchor: HTMLAnchorElement, value: StarEditorLi
           </button>
         }
         <button
-          starPart="cancelButton"
+          data-star-part="cancelButton"
           type="button"
           class="star-btn star-btn--ghost star-btn--sm"
           (click)="dismissed.emit()"

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { STAR_UI_TEXT, StarPart, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
+import { STAR_UI_TEXT, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 import { STAR_BOTTOM_SHEET_DATA, StarBottomSheetRef } from './bottom-sheet-ref';
 
 /** One entry of an action sheet. */
@@ -23,15 +23,14 @@ export interface StarActionSheetItem<T = unknown> {
   selector: 'star-action-sheet',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-action-sheet' },
   template: `
-    <ul starPart="list" class="star-action-sheet__list" role="list">
+    <ul data-star-part="list" class="star-action-sheet__list" role="list">
       @for (action of actions; track $index) {
-        <li starPart="listItem">
+        <li data-star-part="listItem">
           <button
-            starPart="item"
+            data-star-part="item"
             type="button"
             class="star-action-sheet__item"
             [class.star-action-sheet__item--danger]="action.danger"
@@ -40,19 +39,19 @@ export interface StarActionSheetItem<T = unknown> {
           >
             @if (action.icon) {
               <i
-                starPart="icon"
+                data-star-part="icon"
                 class="star-action-sheet__icon"
                 [class]="action.icon"
                 aria-hidden="true"
               ></i>
             }
-            <span starPart="itemText">{{ action.label }}</span>
+            <span data-star-part="itemText">{{ action.label }}</span>
           </button>
         </li>
       }
     </ul>
     <button
-      starPart="item"
+      data-star-part="item"
       type="button"
       class="star-action-sheet__item star-action-sheet__cancel"
       (click)="ref.dismiss()"

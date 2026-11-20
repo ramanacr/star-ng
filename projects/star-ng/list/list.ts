@@ -71,14 +71,14 @@ export class StarListSubheader {}
     <ng-template #body>
       <ng-content select="[starListItemStart]" />
       <span starPart="text" class="star-list__text">
-        <span starPart="title" class="star-list__title"><ng-content /></span>
+        <span data-star-part="title" class="star-list__title"><ng-content /></span>
         <ng-content select="[starListItemSubtitle]" />
       </span>
     </ng-template>
     @switch (kind()) {
       @case ('router') {
         <a
-          starPart="main"
+          data-star-part="main"
           #focusable
           class="star-list__main"
           [routerLink]="routerLink()"
@@ -94,7 +94,7 @@ export class StarListSubheader {}
       }
       @case ('href') {
         <a
-          starPart="main"
+          data-star-part="main"
           #focusable
           class="star-list__main"
           [class.star-list__main--active]="active()"
@@ -109,7 +109,7 @@ export class StarListSubheader {}
       }
       @case ('button') {
         <button
-          starPart="main"
+          data-star-part="main"
           #focusable
           type="button"
           class="star-list__main"
@@ -123,7 +123,11 @@ export class StarListSubheader {}
         </button>
       }
       @default {
-        <div starPart="main" class="star-list__main" [attr.aria-disabled]="disabled() || null">
+        <div
+          data-star-part="main"
+          class="star-list__main"
+          [attr.aria-disabled]="disabled() || null"
+        >
           <ng-container *ngTemplateOutlet="body" />
         </div>
       }
@@ -208,7 +212,7 @@ export class StarListItem {
   selector: 'star-list',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarPart, NgTemplateOutlet],
+  imports: [NgTemplateOutlet],
   providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarList) }],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
@@ -224,7 +228,7 @@ export class StarListItem {
     <ng-content />
     @if (!hasItems()) {
       @if (emptySlot(); as custom) {
-        <div starPart="empty" class="star-list__empty">
+        <div data-star-part="empty" class="star-list__empty">
           <ng-container *ngTemplateOutlet="custom; context: { $implicit: '' }" />
         </div>
       }

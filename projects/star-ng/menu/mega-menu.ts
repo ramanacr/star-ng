@@ -36,11 +36,11 @@ import { STAR_MENU_POSITIONS, StarMenuInDialog, StarMenuItem } from './menu';
   // CDK resolves the menu of an item by DI, so every `cdkMenuItem` is written in place:
   // a shared `ng-template` for the items would be outside the menu.
   template: `
-    <div starPart="bar" class="star-menubar__bar" cdkMenuBar [attr.aria-label]="ariaLabel()">
+    <div data-star-part="bar" class="star-menubar__bar" cdkMenuBar [attr.aria-label]="ariaLabel()">
       @for (item of items(); track $index) {
         @if (item.items?.length) {
           <button
-            starPart="item"
+            data-star-part="item"
             type="button"
             class="star-menubar__item"
             cdkMenuItem
@@ -50,18 +50,18 @@ import { STAR_MENU_POSITIONS, StarMenuInDialog, StarMenuItem } from './menu';
             [cdkMenuItemDisabled]="!!item.disabled"
           >
             @if (item.icon) {
-              <i starPart="itemIcon" [class]="item.icon" aria-hidden="true"></i>
+              <i data-star-part="itemIcon" [class]="item.icon" aria-hidden="true"></i>
             }
             {{ item.label }}
             <i
-              starPart="caret"
+              data-star-part="caret"
               class="ph-bold ph-caret-down star-menubar__caret"
               aria-hidden="true"
             ></i>
           </button>
         } @else if (item.routerLink) {
           <a
-            starPart="item"
+            data-star-part="item"
             class="star-menubar__item"
             cdkMenuItem
             [routerLink]="item.routerLink"
@@ -69,13 +69,13 @@ import { STAR_MENU_POSITIONS, StarMenuInDialog, StarMenuItem } from './menu';
             (cdkMenuItemTriggered)="run(item)"
           >
             @if (item.icon) {
-              <i starPart="itemIcon" [class]="item.icon" aria-hidden="true"></i>
+              <i data-star-part="itemIcon" [class]="item.icon" aria-hidden="true"></i>
             }
             {{ item.label }}
           </a>
         } @else {
           <button
-            starPart="item"
+            data-star-part="item"
             type="button"
             class="star-menubar__item"
             cdkMenuItem
@@ -83,7 +83,7 @@ import { STAR_MENU_POSITIONS, StarMenuInDialog, StarMenuItem } from './menu';
             (cdkMenuItemTriggered)="run(item)"
           >
             @if (item.icon) {
-              <i starPart="itemIcon" [class]="item.icon" aria-hidden="true"></i>
+              <i data-star-part="itemIcon" [class]="item.icon" aria-hidden="true"></i>
             }
             {{ item.label }}
           </button>
@@ -95,22 +95,26 @@ import { STAR_MENU_POSITIONS, StarMenuInDialog, StarMenuItem } from './menu';
       <div starPart="panel" class="star-menu star-mega-menu__panel" cdkMenu>
         @for (column of columns; track $index; let c = $index) {
           <div
-            starPart="column"
+            data-star-part="column"
             class="star-mega-menu__column"
             cdkMenuGroup
             [attr.aria-labelledby]="column.label ? panelId + '-' + c : null"
           >
             @if (column.label) {
-              <div starPart="heading" class="star-mega-menu__heading" [id]="panelId + '-' + c">
+              <div
+                data-star-part="heading"
+                class="star-mega-menu__heading"
+                [id]="panelId + '-' + c"
+              >
                 {{ column.label }}
               </div>
             }
             @for (entry of column.items ?? []; track $index) {
               @if (entry.separator) {
-                <div starPart="separator" class="star-menu__separator" role="separator"></div>
+                <div data-star-part="separator" class="star-menu__separator" role="separator"></div>
               } @else if (entry.routerLink) {
                 <a
-                  starPart="item"
+                  data-star-part="item"
                   class="star-menu__item"
                   cdkMenuItem
                   [routerLink]="entry.routerLink"
@@ -119,17 +123,17 @@ import { STAR_MENU_POSITIONS, StarMenuInDialog, StarMenuItem } from './menu';
                 >
                   @if (entry.icon) {
                     <i
-                      starPart="icon"
+                      data-star-part="icon"
                       class="star-menu__icon"
                       [class]="entry.icon"
                       aria-hidden="true"
                     ></i>
                   }
-                  <span starPart="label" class="star-menu__label">{{ entry.label }}</span>
+                  <span data-star-part="label" class="star-menu__label">{{ entry.label }}</span>
                 </a>
               } @else if (entry.url) {
                 <a
-                  starPart="item"
+                  data-star-part="item"
                   class="star-menu__item"
                   cdkMenuItem
                   [href]="entry.url"
@@ -138,17 +142,17 @@ import { STAR_MENU_POSITIONS, StarMenuInDialog, StarMenuItem } from './menu';
                 >
                   @if (entry.icon) {
                     <i
-                      starPart="icon"
+                      data-star-part="icon"
                       class="star-menu__icon"
                       [class]="entry.icon"
                       aria-hidden="true"
                     ></i>
                   }
-                  <span starPart="label" class="star-menu__label">{{ entry.label }}</span>
+                  <span data-star-part="label" class="star-menu__label">{{ entry.label }}</span>
                 </a>
               } @else {
                 <button
-                  starPart="item"
+                  data-star-part="item"
                   type="button"
                   class="star-menu__item"
                   cdkMenuItem
@@ -158,13 +162,13 @@ import { STAR_MENU_POSITIONS, StarMenuInDialog, StarMenuItem } from './menu';
                 >
                   @if (entry.icon) {
                     <i
-                      starPart="icon"
+                      data-star-part="icon"
                       class="star-menu__icon"
                       [class]="entry.icon"
                       aria-hidden="true"
                     ></i>
                   }
-                  <span starPart="label" class="star-menu__label">{{ entry.label }}</span>
+                  <span data-star-part="label" class="star-menu__label">{{ entry.label }}</span>
                 </button>
               }
             }

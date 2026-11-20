@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { StarButton } from '@star-ng/ui/button';
 import { StarCheckbox } from '@star-ng/ui/checkbox';
-import { STAR_UI_TEXT, StarPart } from '@star-ng/ui/core';
+import { STAR_UI_TEXT } from '@star-ng/ui/core';
 import { addDays, StarDatePicker, startOfDay } from '@star-ng/ui/date-picker';
 import { STAR_DIALOG_DATA, StarDialogRef } from '@star-ng/ui/dialog';
 import { StarField, StarInput } from '@star-ng/ui/field';
@@ -39,14 +39,14 @@ export type StarSchedulerEditorResult =
  */
 @Component({
   selector: 'star-scheduler-editor',
-  imports: [StarPart, StarButton, StarCheckbox, StarDatePicker, StarField, StarInput, StarSelect],
+  imports: [StarButton, StarCheckbox, StarDatePicker, StarField, StarInput, StarSelect],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-scheduler-editor' },
   template: `
-    <form starPart="form" class="star-scheduler-editor__form" (submit)="save($event)">
+    <form data-star-part="form" class="star-scheduler-editor__form" (submit)="save($event)">
       <star-field [label]="text.title">
         <input
-          starPart="formInput"
+          data-star-part="formInput"
           starInput
           required
           data-autofocus
@@ -85,7 +85,7 @@ export type StarSchedulerEditorResult =
           />
         </star-field>
       }
-      <div starPart="footer" class="star-dialog__footer star-dialog__footer--inline">
+      <div data-star-part="footer" class="star-dialog__footer star-dialog__footer--inline">
         @if (data.canDelete) {
           <star-button variant="danger" (pressed)="ref.close({ action: 'delete' })">
             {{ text.deleteEvent }}

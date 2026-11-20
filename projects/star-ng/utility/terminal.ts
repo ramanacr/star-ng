@@ -11,7 +11,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { STAR_UI_TEXT, StarPart, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
+import { STAR_UI_TEXT, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 
 export interface StarTerminalEntry {
   readonly command: string;
@@ -36,12 +36,11 @@ export type StarTerminalHandler = (command: string) => string | Promise<string>;
   selector: 'star-terminal',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-terminal', '(click)': 'focus()' },
   template: `
     <div
-      starPart="log"
+      data-star-part="log"
       #log
       class="star-terminal__log"
       role="log"
@@ -49,28 +48,30 @@ export type StarTerminalHandler = (command: string) => string | Promise<string>;
       [attr.aria-label]="ariaLabel()"
     >
       @if (welcome()) {
-        <p starPart="welcome" class="star-terminal__welcome">{{ welcome() }}</p>
+        <p data-star-part="welcome" class="star-terminal__welcome">{{ welcome() }}</p>
       }
       @for (entry of entries(); track $index) {
-        <p starPart="command" class="star-terminal__command">
-          <span starPart="prompt" class="star-terminal__prompt" aria-hidden="true">{{
+        <p data-star-part="command" class="star-terminal__command">
+          <span data-star-part="prompt" class="star-terminal__prompt" aria-hidden="true">{{
             prompt()
           }}</span>
           {{ entry.command }}
         </p>
         @if (entry.response !== null) {
           <pre
-            starPart="response"
+            data-star-part="response"
             class="star-terminal__response"
             [class.star-terminal__response--error]="entry.error"
             >{{ entry.response }}</pre>
         }
       }
     </div>
-    <div starPart="line" class="star-terminal__line">
-      <label starPart="prompt" class="star-terminal__prompt" [for]="inputId">{{ prompt() }}</label>
+    <div data-star-part="line" class="star-terminal__line">
+      <label data-star-part="prompt" class="star-terminal__prompt" [for]="inputId">{{
+        prompt()
+      }}</label>
       <input
-        starPart="input"
+        data-star-part="input"
         #input
         type="text"
         class="star-terminal__input"

@@ -16,7 +16,7 @@ import {
   Type,
   viewChild,
 } from '@angular/core';
-import { STAR_UI_TEXT, StarPart, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
+import { STAR_UI_TEXT, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 import { StarActionSheet, StarActionSheetItem } from './action-sheet';
 import {
   STAR_BOTTOM_SHEET_DATA,
@@ -33,14 +33,14 @@ const FOCUSABLE =
   selector: 'star-bottom-sheet-container',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarPart, NgComponentOutlet, NgTemplateOutlet],
+  imports: [NgComponentOutlet, NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @let c = config();
     <!-- Backdrop click only; keyboard users close with Escape. -->
     <!-- eslint-disable-next-line @angular-eslint/template/interactive-supports-focus -->
     <dialog
-      starPart="bottomSheet"
+      data-star-part="bottomSheet"
       #dialog
       class="star-bottom-sheet"
       [class]="panelClass()"
@@ -52,9 +52,9 @@ const FOCUSABLE =
       (click)="onClick($event)"
       (keydown.escape)="onEscape()"
     >
-      <div starPart="surface" class="star-bottom-sheet__surface">
-        <div starPart="handle" class="star-bottom-sheet__handle" aria-hidden="true"></div>
-        <div starPart="body" class="star-bottom-sheet__body">
+      <div data-star-part="surface" class="star-bottom-sheet__surface">
+        <div data-star-part="handle" class="star-bottom-sheet__handle" aria-hidden="true"></div>
+        <div data-star-part="body" class="star-bottom-sheet__body">
           @if (content(); as content) {
             @if (isTemplate(content)) {
               <ng-container

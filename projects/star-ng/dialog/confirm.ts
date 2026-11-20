@@ -18,7 +18,6 @@ import { StarButton, StarButtonVariant } from '@star-ng/ui/button';
 import {
   STAR_SLOT_HOST,
   STAR_UI_TEXT,
-  StarPart,
   StarSlot,
   starSlot,
   StarStyled,
@@ -133,7 +132,7 @@ export class StarConfirmService {
   selector: 'star-confirm-host',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarPart, StarDialog, StarButton, StarPopover, NgTemplateOutlet],
+  imports: [StarDialog, StarButton, StarPopover, NgTemplateOutlet],
   providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarConfirmHost) }],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -156,22 +155,26 @@ export class StarConfirmService {
         <!-- Catches Tab from the buttons inside; it is not a control itself. -->
         <!-- eslint-disable-next-line @angular-eslint/template/interactive-supports-focus -->
         <div
-          starPart="confirmPopup"
+          data-star-part="confirmPopup"
           class="star-confirm-popup"
           (keydown.tab)="cycleTab($event)"
           (keydown.shift.tab)="cycleTab($event)"
         >
-          <div starPart="confirm" class="star-confirm star-confirm--popup">
+          <div data-star-part="confirm" class="star-confirm star-confirm--popup">
             @if (popup.icon) {
-              <span starPart="icon" class="star-confirm__icon" aria-hidden="true"
-                ><i starPart="iconIcon" class="star-confirm__icon-icon" [class]="popup.icon"></i
+              <span data-star-part="icon" class="star-confirm__icon" aria-hidden="true"
+                ><i
+                  data-star-part="iconIcon"
+                  class="star-confirm__icon-icon"
+                  [class]="popup.icon"
+                ></i
               ></span>
             }
-            <div starPart="message" class="star-confirm__message" [id]="popupMessageId">
+            <div data-star-part="message" class="star-confirm__message" [id]="popupMessageId">
               <ng-container *ngTemplateOutlet="message; context: { $implicit: popup }" />
             </div>
           </div>
-          <div starPart="actions" class="star-confirm__actions">
+          <div data-star-part="actions" class="star-confirm__actions">
             @if (popup.rejectVisible !== false) {
               <star-button
                 size="sm"
@@ -203,19 +206,23 @@ export class StarConfirmService {
       (visibleChange)="!$event && confirm.settle(false)"
     >
       @if (request) {
-        <div starPart="confirm" class="star-confirm">
+        <div data-star-part="confirm" class="star-confirm">
           @if (request.icon) {
-            <span starPart="icon" class="star-confirm__icon" aria-hidden="true"
-              ><i starPart="iconIcon" class="star-confirm__icon-icon" [class]="request.icon"></i
+            <span data-star-part="icon" class="star-confirm__icon" aria-hidden="true"
+              ><i
+                data-star-part="iconIcon"
+                class="star-confirm__icon-icon"
+                [class]="request.icon"
+              ></i
             ></span>
           }
-          <div starPart="message" class="star-confirm__message">
+          <div data-star-part="message" class="star-confirm__message">
             <ng-container *ngTemplateOutlet="message; context: { $implicit: request }" />
           </div>
         </div>
       }
       @if (request) {
-        <div starPart="footer" starDialogFooter class="star-dialog__footer">
+        <div data-star-part="footer" starDialogFooter class="star-dialog__footer">
           @if (request.rejectVisible !== false) {
             <star-button
               variant="ghost"

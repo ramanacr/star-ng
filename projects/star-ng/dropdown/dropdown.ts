@@ -83,7 +83,6 @@ class DropdownOption implements Highlightable {
   selector: 'star-dropdown-item',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '[id]': 'id',
@@ -98,9 +97,13 @@ class DropdownOption implements Highlightable {
   },
   template: `
     @if (!divider()) {
-      <span starPart="label" class="star-listbox__label"><ng-content /></span>
+      <span data-star-part="label" class="star-listbox__label"><ng-content /></span>
       @if (selected()) {
-        <i starPart="check" class="ph-bold ph-check star-listbox__check" aria-hidden="true"></i>
+        <i
+          data-star-part="check"
+          class="ph-bold ph-check star-listbox__check"
+          aria-hidden="true"
+        ></i>
       }
     }
   `,
@@ -183,7 +186,7 @@ export class StarDropdownItem {
     <ng-template #panel>
       <div starPart="panel" class="star-panel star-dropdown">
         <div
-          starPart="listbox"
+          data-star-part="listbox"
           class="star-listbox"
           role="listbox"
           tabindex="0"

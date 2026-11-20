@@ -216,7 +216,7 @@ const normalizeAngle = (angle: number) => {
     <!-- The keys come from the focused tool button (roving tab index). -->
     <!-- eslint-disable-next-line @angular-eslint/template/interactive-supports-focus -->
     <div
-      starPart="toolbar"
+      data-star-part="toolbar"
       class="star-image-editor__toolbar"
       role="toolbar"
       [attr.aria-label]="text.imageTools"
@@ -225,10 +225,14 @@ const normalizeAngle = (angle: number) => {
     >
       @for (item of toolbar(); track item.id; let i = $index) {
         @if (item.group) {
-          <span starPart="separator" class="star-image-editor__separator" role="separator"></span>
+          <span
+            data-star-part="separator"
+            class="star-image-editor__separator"
+            role="separator"
+          ></span>
         }
         <button
-          starPart="tool"
+          data-star-part="tool"
           type="button"
           class="star-btn star-btn--ghost star-btn--sm star-btn--icon star-image-editor__tool"
           [attr.data-tool]="item.id"
@@ -240,7 +244,7 @@ const normalizeAngle = (angle: number) => {
           (focus)="toolbarFocus.set(i)"
           (click)="run(item)"
         >
-          <i starPart="toolIcon" class="ph-bold {{ item.icon }}" aria-hidden="true"></i>
+          <i data-star-part="toolIcon" class="ph-bold {{ item.icon }}" aria-hidden="true"></i>
         </button>
       }
     </div>
@@ -248,20 +252,20 @@ const normalizeAngle = (angle: number) => {
     @switch (tool()) {
       @case ('crop') {
         <div
-          starPart="panel"
+          data-star-part="panel"
           class="star-image-editor__panel"
           role="group"
           [attr.aria-label]="text.imageCrop"
         >
           <div
-            starPart="choices"
+            data-star-part="choices"
             class="star-image-editor__choices"
             role="group"
             [attr.aria-label]="text.imageAspectRatio"
           >
             @for (choice of aspectRatios(); track $index) {
               <button
-                starPart="choicesButton"
+                data-star-part="choicesButton"
                 type="button"
                 class="star-btn star-btn--ghost star-btn--sm"
                 [attr.aria-pressed]="choice.ratio === cropRatio()"
@@ -276,7 +280,7 @@ const normalizeAngle = (angle: number) => {
       }
       @case ('rotate') {
         <div
-          starPart="panel"
+          data-star-part="panel"
           class="star-image-editor__panel"
           role="group"
           [attr.aria-label]="text.imageRotate"
@@ -295,15 +299,15 @@ const normalizeAngle = (angle: number) => {
       }
       @case ('resize') {
         <div
-          starPart="panel"
+          data-star-part="panel"
           class="star-image-editor__panel"
           role="group"
           [attr.aria-label]="text.imageResize"
         >
-          <label starPart="number" class="star-image-editor__number">
-            <span starPart="imageWidthText">{{ text.imageWidth }}</span>
+          <label data-star-part="number" class="star-image-editor__number">
+            <span data-star-part="imageWidthText">{{ text.imageWidth }}</span>
             <input
-              starPart="input"
+              data-star-part="input"
               type="number"
               class="star-input star-input--sm"
               min="1"
@@ -312,10 +316,10 @@ const normalizeAngle = (angle: number) => {
               (input)="setResize('width', $event)"
             />
           </label>
-          <label starPart="number" class="star-image-editor__number">
-            <span starPart="imageHeightText">{{ text.imageHeight }}</span>
+          <label data-star-part="number" class="star-image-editor__number">
+            <span data-star-part="imageHeightText">{{ text.imageHeight }}</span>
             <input
-              starPart="input"
+              data-star-part="input"
               type="number"
               class="star-input star-input--sm"
               min="1"
@@ -325,7 +329,7 @@ const normalizeAngle = (angle: number) => {
             />
           </label>
           <button
-            starPart="panelButton"
+            data-star-part="panelButton"
             type="button"
             class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
             [attr.aria-label]="text.imageKeepRatio"
@@ -334,7 +338,7 @@ const normalizeAngle = (angle: number) => {
             (click)="keepRatio.set(!keepRatio())"
           >
             <i
-              starPart="panelIcon"
+              data-star-part="panelIcon"
               class="ph-bold"
               [class.ph-lock-simple]="keepRatio()"
               [class.ph-lock-simple-open]="!keepRatio()"
@@ -346,15 +350,15 @@ const normalizeAngle = (angle: number) => {
       }
       @case ('adjust') {
         <div
-          starPart="panel"
+          data-star-part="panel"
           class="star-image-editor__panel"
           role="group"
           [attr.aria-label]="text.imageAdjust"
         >
           @for (slider of adjustSliders(); track slider.name) {
-            <div starPart="adjust" class="star-image-editor__adjust">
+            <div data-star-part="adjust" class="star-image-editor__adjust">
               <span
-                starPart="adjustLabel"
+                data-star-part="adjustLabel"
                 class="star-image-editor__adjust-label"
                 aria-hidden="true"
                 >{{ slider.label }}</span
@@ -376,20 +380,20 @@ const normalizeAngle = (angle: number) => {
       }
       @case ('annotate') {
         <div
-          starPart="panel"
+          data-star-part="panel"
           class="star-image-editor__panel star-image-editor__panel--annotate"
           role="group"
           [attr.aria-label]="text.imageAnnotate"
         >
           <div
-            starPart="choices"
+            data-star-part="choices"
             class="star-image-editor__choices"
             role="group"
             [attr.aria-label]="text.imageShape"
           >
             @for (entry of kinds; track entry.kind) {
               <button
-                starPart="choicesButton"
+                data-star-part="choicesButton"
                 type="button"
                 class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
                 [attr.aria-label]="kindLabel(entry.kind)"
@@ -397,19 +401,23 @@ const normalizeAngle = (angle: number) => {
                 [attr.aria-pressed]="kind() === entry.kind"
                 (click)="kind.set(entry.kind)"
               >
-                <i starPart="choicesIcon" class="ph-bold {{ entry.icon }}" aria-hidden="true"></i>
+                <i
+                  data-star-part="choicesIcon"
+                  class="ph-bold {{ entry.icon }}"
+                  aria-hidden="true"
+                ></i>
               </button>
             }
           </div>
           <div
-            starPart="choices"
+            data-star-part="choices"
             class="star-image-editor__choices"
             role="group"
             [attr.aria-label]="text.colorLabel"
           >
             @for (color of colors(); track $index; let i = $index) {
               <button
-                starPart="swatch"
+                data-star-part="swatch"
                 type="button"
                 class="star-image-editor__swatch"
                 [style.background]="color"
@@ -430,7 +438,7 @@ const normalizeAngle = (angle: number) => {
           />
           @if (kind() === 'text') {
             <input
-              starPart="text"
+              data-star-part="text"
               type="text"
               class="star-input star-input--sm star-image-editor__text"
               [attr.aria-label]="text.imageAnnotationText"
@@ -440,22 +448,25 @@ const normalizeAngle = (angle: number) => {
             />
           }
           <button
-            starPart="add"
+            data-star-part="add"
             type="button"
             class="star-btn star-btn--secondary star-btn--sm star-image-editor__add"
             [disabled]="!canAddAnnotation()"
             (click)="addAnnotation()"
           >
-            <i starPart="addIcon" class="ph-bold ph-plus" aria-hidden="true"></i
+            <i data-star-part="addIcon" class="ph-bold ph-plus" aria-hidden="true"></i
             >{{ text.imageAddAnnotation }}
           </button>
-          <div starPart="annotations" class="star-image-editor__annotations">
-            <span starPart="listLabel" class="star-image-editor__list-label" [id]="listLabelId">{{
-              text.imageAnnotations
-            }}</span>
+          <div data-star-part="annotations" class="star-image-editor__annotations">
+            <span
+              data-star-part="listLabel"
+              class="star-image-editor__list-label"
+              [id]="listLabelId"
+              >{{ text.imageAnnotations }}</span
+            >
             @if (annotations().length) {
               <div
-                starPart="list"
+                data-star-part="list"
                 class="star-image-editor__list"
                 role="listbox"
                 tabindex="0"
@@ -466,7 +477,7 @@ const normalizeAngle = (angle: number) => {
                 @for (entry of annotations(); track entry.index) {
                   <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
                   <div
-                    starPart="option"
+                    data-star-part="option"
                     class="star-image-editor__option"
                     role="option"
                     [id]="listLabelId + '-' + entry.index"
@@ -474,7 +485,7 @@ const normalizeAngle = (angle: number) => {
                     (click)="selected.set(entry.index)"
                   >
                     <span
-                      starPart="dot"
+                      data-star-part="dot"
                       class="star-image-editor__dot"
                       [style.background]="entry.color"
                       aria-hidden="true"
@@ -484,24 +495,24 @@ const normalizeAngle = (angle: number) => {
                 }
               </div>
               <button
-                starPart="annotationsButton"
+                data-star-part="annotationsButton"
                 type="button"
                 class="star-btn star-btn--ghost star-btn--sm"
                 [disabled]="selected() === null"
                 (click)="deleteSelected()"
               >
-                <i starPart="annotationsIcon" class="ph-bold ph-trash" aria-hidden="true"></i
+                <i data-star-part="annotationsIcon" class="ph-bold ph-trash" aria-hidden="true"></i
                 >{{ text.imageDeleteAnnotation }}
               </button>
             } @else {
-              <p starPart="emptyList" class="star-image-editor__empty-list">
+              <p data-star-part="emptyList" class="star-image-editor__empty-list">
                 {{ text.imageAnnotationsEmpty }}
               </p>
             }
           </div>
-          <p starPart="hint" class="star-image-editor__hint">{{ text.imageAnnotateHint }}</p>
+          <p data-star-part="hint" class="star-image-editor__hint">{{ text.imageAnnotateHint }}</p>
           <button
-            starPart="panelButton"
+            data-star-part="panelButton"
             type="button"
             class="star-btn star-btn--ghost star-btn--sm"
             (click)="closeTool()"
@@ -515,7 +526,7 @@ const normalizeAngle = (angle: number) => {
     <ng-template #actions>
       <span starPart="actions" class="star-image-editor__actions">
         <button
-          starPart="applyButton"
+          data-star-part="applyButton"
           type="button"
           class="star-btn star-btn--primary star-btn--sm"
           (click)="applyTool()"
@@ -523,7 +534,7 @@ const normalizeAngle = (angle: number) => {
           {{ text.apply }}
         </button>
         <button
-          starPart="cancelButton"
+          data-star-part="cancelButton"
           type="button"
           class="star-btn star-btn--ghost star-btn--sm"
           (click)="closeTool()"
@@ -534,7 +545,7 @@ const normalizeAngle = (angle: number) => {
     </ng-template>
 
     <div
-      starPart="stage"
+      data-star-part="stage"
       #stage
       class="star-image-editor__stage"
       [class.star-image-editor__stage--fit]="zoom() === 'fit'"
@@ -542,13 +553,13 @@ const normalizeAngle = (angle: number) => {
       [attr.tabindex]="zoom() === 'actual' ? 0 : null"
     >
       <div
-        starPart="frame"
+        data-star-part="frame"
         class="star-image-editor__frame"
         [style.width.px]="view().width"
         [style.height.px]="view().height"
       >
         <canvas
-          starPart="canvas"
+          data-star-part="canvas"
           #canvas
           class="star-image-editor__canvas"
           role="img"
@@ -562,7 +573,7 @@ const normalizeAngle = (angle: number) => {
         ></canvas>
         @if (tool() === 'crop' && cropRect(); as rect) {
           <div
-            starPart="crop"
+            data-star-part="crop"
             class="star-image-editor__crop"
             role="group"
             tabindex="0"
@@ -580,7 +591,7 @@ const normalizeAngle = (angle: number) => {
           >
             @for (handle of handles; track handle) {
               <span
-                starPart="cropIcon"
+                data-star-part="cropIcon"
                 class="star-image-editor__handle star-image-editor__handle--{{ handle }}"
                 aria-hidden="true"
                 (pointerdown)="onCropDown($event, handle)"
@@ -590,7 +601,7 @@ const normalizeAngle = (angle: number) => {
         }
         @if (tool() === 'annotate' && selectedBox(); as box) {
           <div
-            starPart="selection"
+            data-star-part="selection"
             class="star-image-editor__selection"
             aria-hidden="true"
             [style.left.%]="pct(box.x, 'width')"

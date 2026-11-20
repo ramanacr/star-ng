@@ -108,10 +108,10 @@ const DROP_LISTS = new Map<string, { options(): readonly unknown[] }>();
       <ng-container *ngTemplateOutlet="header" />
     }
     @if (filter() || checkbox()) {
-      <div starPart="filter" class="star-panel__filter">
+      <div data-star-part="filter" class="star-panel__filter">
         @if (checkbox()) {
           <button
-            starPart="toggleAll"
+            data-star-part="toggleAll"
             type="button"
             class="star-panel__toggle-all"
             role="checkbox"
@@ -120,24 +120,27 @@ const DROP_LISTS = new Map<string, { options(): readonly unknown[] }>();
             [disabled]="disabled()"
             (click)="toggleAll()"
           >
-            <span starPart="box" class="star-check__box" aria-hidden="true">
+            <span data-star-part="box" class="star-check__box" aria-hidden="true">
               @if (allState() === 'mixed') {
-                <i starPart="minusIcon" class="ph-bold ph-minus"></i>
+                <i data-star-part="minusIcon" class="ph-bold ph-minus"></i>
               } @else if (allState() === true) {
-                <i starPart="checkIcon" class="star-listbox__check-icon ph-bold ph-check"></i>
+                <i data-star-part="checkIcon" class="star-listbox__check-icon ph-bold ph-check"></i>
               }
             </span>
           </button>
           @if (!filter()) {
-            <span starPart="toggleLabel" class="star-panel__toggle-label" aria-hidden="true">{{
-              text.selectAll
-            }}</span>
+            <span
+              data-star-part="toggleLabel"
+              class="star-panel__toggle-label"
+              aria-hidden="true"
+              >{{ text.selectAll }}</span
+            >
           }
         }
         @if (filter()) {
-          <i starPart="filterIcon" class="ph-bold ph-magnifying-glass" aria-hidden="true"></i>
+          <i data-star-part="filterIcon" class="ph-bold ph-magnifying-glass" aria-hidden="true"></i>
           <input
-            starPart="input"
+            data-star-part="input"
             #filterInput
             type="search"
             class="star-input star-input--sm"
@@ -178,7 +181,12 @@ const DROP_LISTS = new Map<string, { options(): readonly unknown[] }>();
       >
         <ng-container *cdkVirtualFor="let row of layout().rows; trackBy: trackRow">
           @if (row.kind === 'group') {
-            <div starPart="group" class="star-listbox__group" role="presentation" [id]="row.id">
+            <div
+              data-star-part="group"
+              class="star-listbox__group"
+              role="presentation"
+              [id]="row.id"
+            >
               @if (groupSlot(); as custom) {
                 <ng-container *ngTemplateOutlet="custom; context: groupContext(row.label)" />
               } @else {
@@ -192,7 +200,7 @@ const DROP_LISTS = new Map<string, { options(): readonly unknown[] }>();
             <!-- Keyboard is handled on the listbox via aria-activedescendant. -->
             <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
             <div
-              starPart="option"
+              data-star-part="option"
               class="star-listbox__option"
               role="option"
               [id]="listId + '-' + i"
@@ -209,16 +217,19 @@ const DROP_LISTS = new Map<string, { options(): readonly unknown[] }>();
               (dblclick)="onOptionDblClick(option, $event)"
             >
               @if (isMulti()) {
-                <span starPart="box" class="star-check__box" aria-hidden="true">
+                <span data-star-part="box" class="star-check__box" aria-hidden="true">
                   @if (isSelected(option)) {
-                    <i starPart="checkIcon" class="star-listbox__check-icon ph-bold ph-check"></i>
+                    <i
+                      data-star-part="checkIcon"
+                      class="star-listbox__check-icon ph-bold ph-check"
+                    ></i>
                   }
                 </span>
               }
-              <span starPart="label" class="star-listbox__label">
+              <span data-star-part="label" class="star-listbox__label">
                 @if (option === undefined) {
                   <span
-                    starPart="skeleton"
+                    data-star-part="skeleton"
                     class="star-skeleton star-listbox__skeleton"
                     aria-hidden="true"
                   ></span>
@@ -241,7 +252,7 @@ const DROP_LISTS = new Map<string, { options(): readonly unknown[] }>();
     } @else if (dragdrop()) {
       <!-- Drag and drop: the list is a CDK drop list and each option a drag item. No group headings. -->
       <ul
-        starPart="listbox"
+        data-star-part="listbox"
         #list
         cdkDropList
         class="star-listbox star-listbox--dragdrop"
@@ -268,7 +279,7 @@ const DROP_LISTS = new Map<string, { options(): readonly unknown[] }>();
           <!-- Keyboard is handled on the listbox via aria-activedescendant; Alt + Arrow keys move. -->
           <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
           <li
-            starPart="option"
+            data-star-part="option"
             cdkDrag
             class="star-listbox__option"
             role="option"
@@ -285,7 +296,7 @@ const DROP_LISTS = new Map<string, { options(): readonly unknown[] }>();
             (dblclick)="onOptionDblClick(option, $event)"
           >
             <i
-              starPart="grip"
+              data-star-part="grip"
               class="ph-bold ph-dots-six-vertical star-listbox__grip"
               aria-hidden="true"
             ></i>
@@ -299,7 +310,7 @@ const DROP_LISTS = new Map<string, { options(): readonly unknown[] }>();
       <p class="star-sr-only" aria-live="polite">{{ announcement() }}</p>
     } @else {
       <ul
-        starPart="listbox"
+        data-star-part="listbox"
         #list
         class="star-listbox"
         role="listbox"
@@ -319,7 +330,12 @@ const DROP_LISTS = new Map<string, { options(): readonly unknown[] }>();
       >
         @for (option of visible(); track $index; let i = $index) {
           @if (groupHeading(i); as heading) {
-            <li starPart="group" class="star-listbox__group" role="presentation" [id]="groupId(i)">
+            <li
+              data-star-part="group"
+              class="star-listbox__group"
+              role="presentation"
+              [id]="groupId(i)"
+            >
               @if (groupSlot(); as custom) {
                 <ng-container *ngTemplateOutlet="custom; context: groupContext(heading)" />
               } @else {
@@ -330,7 +346,7 @@ const DROP_LISTS = new Map<string, { options(): readonly unknown[] }>();
           <!-- Keyboard is handled on the listbox via aria-activedescendant. -->
           <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
           <li
-            starPart="option"
+            data-star-part="option"
             class="star-listbox__option"
             role="option"
             [id]="listId + '-' + i"
@@ -355,14 +371,14 @@ const DROP_LISTS = new Map<string, { options(): readonly unknown[] }>();
       @if (isMulti()) {
         <span starPart="box" class="star-check__box" aria-hidden="true">
           @if (isSelected(option)) {
-            <i starPart="checkIcon" class="star-listbox__check-icon ph-bold ph-check"></i>
+            <i data-star-part="checkIcon" class="star-listbox__check-icon ph-bold ph-check"></i>
           }
         </span>
       }
       <span starPart="label" class="star-listbox__label">
         @if (option === undefined) {
           <span
-            starPart="skeleton"
+            data-star-part="skeleton"
             class="star-skeleton star-listbox__skeleton"
             aria-hidden="true"
           ></span>
@@ -381,7 +397,7 @@ const DROP_LISTS = new Map<string, { options(): readonly unknown[] }>();
     </ng-template>
     <!-- Outside the listbox: a listbox may contain options and groups only. -->
     @if (!visible().length) {
-      <div starPart="empty" class="star-listbox__empty" role="presentation">
+      <div data-star-part="empty" class="star-listbox__empty" role="presentation">
         @if (emptySlot(); as custom) {
           <ng-container *ngTemplateOutlet="custom; context: emptyContext()" />
         } @else {

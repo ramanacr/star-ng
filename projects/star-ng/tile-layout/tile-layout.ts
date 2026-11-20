@@ -24,7 +24,6 @@ import {
   STAR_UI_TEXT,
   starInlineKey,
   starIsRtl,
-  StarPart,
   StarStyled,
   ɵSTAR_PART_HOST,
 } from '@star-ng/ui/core';
@@ -79,7 +78,6 @@ const clamp = (value: number, min: number, max: number): number =>
 @Component({
   selector: 'star-tile-layout',
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }, CdkDropList],
   host: {
@@ -93,7 +91,9 @@ const clamp = (value: number, min: number, max: number): number =>
     '[style.--star-tile-gap]': 'gap()',
   },
   template: `
-    <div starPart="grid" class="star-tile-layout__grid" role="presentation"><ng-content /></div>
+    <div data-star-part="grid" class="star-tile-layout__grid" role="presentation">
+      <ng-content />
+    </div>
     <p class="star-sr-only" [id]="hintId">{{ hintText() }}</p>
     <p class="star-sr-only" aria-live="polite">{{ announcement() }}</p>
   `,
@@ -268,7 +268,7 @@ export class StarTileLayout {
 @Component({
   selector: 'star-tile',
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarPart],
+
   changeDetection: ChangeDetectionStrategy.OnPush,
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }, CdkDrag],
   host: {
@@ -285,13 +285,13 @@ export class StarTileLayout {
     '(keydown)': 'onKeydown($event)',
   },
   template: `
-    <div starPart="header" class="star-tile__header" [id]="headerId">
+    <div data-star-part="header" class="star-tile__header" [id]="headerId">
       <ng-content select="[starTileHeader]" />
     </div>
-    <div starPart="body" class="star-tile__body"><ng-content /></div>
+    <div data-star-part="body" class="star-tile__body"><ng-content /></div>
     @if (layout.resizable()) {
       <span
-        starPart="resize"
+        data-star-part="resize"
         class="star-tile__resize"
         aria-hidden="true"
         (pointerdown)="onResizeStart($event)"

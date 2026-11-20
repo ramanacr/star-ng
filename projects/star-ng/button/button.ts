@@ -6,7 +6,7 @@ import {
   input,
   output,
 } from '@angular/core';
-import { StarPart, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
+import { StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 
 export type StarButtonVariant =
   'primary' | 'secondary' | 'ghost' | 'danger' | 'ghost-danger' | 'success' | 'warning';
@@ -23,12 +23,11 @@ export type StarButtonSize = 'sm' | 'md' | 'lg';
   selector: 'star-button',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '[class.star-button--full]': 'fullWidth()' },
   template: `
     <button
-      starPart="button"
+      data-star-part="button"
       [type]="type()"
       [class]="classes()"
       [disabled]="disabled() || loading()"
@@ -37,15 +36,19 @@ export type StarButtonSize = 'sm' | 'md' | 'lg';
       (click)="onClick($event)"
     >
       @if (loading()) {
-        <i starPart="loadingIcon" class="ph-bold ph-spinner-gap star-spin" aria-hidden="true"></i>
+        <i
+          data-star-part="loadingIcon"
+          class="ph-bold ph-spinner-gap star-spin"
+          aria-hidden="true"
+        ></i>
       } @else if (leadingIcon()) {
-        <i starPart="leadingIcon" [class]="leadingIcon()" aria-hidden="true"></i>
+        <i data-star-part="leadingIcon" [class]="leadingIcon()" aria-hidden="true"></i>
       }
       @if (!iconOnly()) {
-        <span starPart="text"><ng-content /></span>
+        <span data-star-part="text"><ng-content /></span>
       }
       @if (trailingIcon() && !loading()) {
-        <i starPart="trailingIcon" [class]="trailingIcon()" aria-hidden="true"></i>
+        <i data-star-part="trailingIcon" [class]="trailingIcon()" aria-hidden="true"></i>
       }
     </button>
   `,

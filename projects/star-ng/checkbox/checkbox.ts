@@ -12,7 +12,7 @@ import {
   viewChild,
 } from '@angular/core';
 import type { FormCheckboxControl } from '@angular/forms/signals';
-import { StarPart, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
+import { StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 import { injectStarFieldLink, starJoinIds } from '@star-ng/ui/field';
 
 /**
@@ -26,7 +26,6 @@ import { injectStarFieldLink, starJoinIds } from '@star-ng/ui/field';
   selector: 'star-checkbox',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-check',
@@ -34,9 +33,9 @@ import { injectStarFieldLink, starJoinIds } from '@star-ng/ui/field';
     '[class.star-check--invalid]': 'showInvalid()',
   },
   template: `
-    <label starPart="label" class="star-check__label">
+    <label data-star-part="label" class="star-check__label">
       <input
-        starPart="input"
+        data-star-part="input"
         #box
         type="checkbox"
         class="star-check__input"
@@ -53,14 +52,14 @@ import { injectStarFieldLink, starJoinIds } from '@star-ng/ui/field';
         (change)="onChange(box)"
         (blur)="touch.emit()"
       />
-      <span starPart="box" class="star-check__box" aria-hidden="true">
+      <span data-star-part="box" class="star-check__box" aria-hidden="true">
         @if (indeterminate()) {
-          <i starPart="boxIcon" class="ph-bold ph-minus"></i>
+          <i data-star-part="boxIcon" class="ph-bold ph-minus"></i>
         } @else if (checked()) {
-          <i starPart="boxIcon" class="ph-bold ph-check"></i>
+          <i data-star-part="boxIcon" class="ph-bold ph-check"></i>
         }
       </span>
-      <span starPart="text" class="star-check__text"><ng-content /></span>
+      <span data-star-part="text" class="star-check__text"><ng-content /></span>
     </label>
   `,
 })

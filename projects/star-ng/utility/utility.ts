@@ -18,7 +18,6 @@ import {
 import {
   STAR_UI_TEXT,
   starIsRtl,
-  StarPart,
   starPrefersReducedMotion,
   StarStyled,
   ɵSTAR_PART_HOST,
@@ -45,18 +44,17 @@ import { StarSpinner } from '@star-ng/ui/spinner';
   selector: 'star-splitter',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '[class]': "'star-splitter star-splitter--' + layout()",
     '[style.--star-split]': "size() + '%'",
   },
   template: `
-    <div starPart="pane" class="star-splitter__pane">
+    <div data-star-part="pane" class="star-splitter__pane">
       <ng-content select="[starSplitterStart]" />
     </div>
     <div
-      starPart="gutter"
+      data-star-part="gutter"
       class="star-splitter__gutter"
       role="separator"
       tabindex="0"
@@ -68,9 +66,11 @@ import { StarSpinner } from '@star-ng/ui/spinner';
       (pointerdown)="startDrag($event)"
       (keydown)="onKeydown($event)"
     >
-      <span starPart="handle" class="star-splitter__handle" aria-hidden="true"></span>
+      <span data-star-part="handle" class="star-splitter__handle" aria-hidden="true"></span>
     </div>
-    <div starPart="pane" class="star-splitter__pane"><ng-content select="[starSplitterEnd]" /></div>
+    <div data-star-part="pane" class="star-splitter__pane">
+      <ng-content select="[starSplitterEnd]" />
+    </div>
   `,
 })
 export class StarSplitter {
@@ -142,7 +142,7 @@ export class StarSplitter {
   selector: 'star-speed-dial',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarPart],
+
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '[class]': "'star-speed-dial star-speed-dial--' + direction()",
@@ -154,7 +154,7 @@ export class StarSplitter {
   },
   template: `
     <button
-      starPart="fab"
+      data-star-part="fab"
       #fab
       type="button"
       class="star-speed-dial__fab"
@@ -164,19 +164,19 @@ export class StarSplitter {
       [attr.aria-label]="ariaLabel() ?? text.actions"
       (click)="toggle(list)"
     >
-      <i starPart="fabIcon" [class]="icon()" aria-hidden="true"></i>
+      <i data-star-part="fabIcon" [class]="icon()" aria-hidden="true"></i>
     </button>
     <ul
-      starPart="list"
+      data-star-part="list"
       #list
       class="star-speed-dial__list"
       [id]="listId"
       [attr.inert]="open() ? null : ''"
     >
       @for (item of items(); track $index; let i = $index) {
-        <li starPart="listItem" [style.--star-i]="i">
+        <li data-star-part="listItem" [style.--star-i]="i">
           <button
-            starPart="action"
+            data-star-part="action"
             type="button"
             class="star-speed-dial__action"
             [class.star-speed-dial__action--active]="i === activeIndex()"
@@ -187,7 +187,7 @@ export class StarSplitter {
             (click)="run(item); close(true, fab)"
           >
             <i
-              starPart="actionIcon"
+              data-star-part="actionIcon"
               [class]="item.icon ?? 'ph-bold ph-circle'"
               aria-hidden="true"
             ></i>
@@ -296,16 +296,16 @@ export class StarSpeedDial {
   selector: 'star-dock',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarPart],
+
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '[class]': "'star-dock star-dock--' + position()" },
   template: `
-    <nav starPart="nav" [attr.aria-label]="ariaLabel() ?? text.dock">
-      <ul starPart="list" class="star-dock__list">
+    <nav data-star-part="nav" [attr.aria-label]="ariaLabel() ?? text.dock">
+      <ul data-star-part="list" class="star-dock__list">
         @for (item of items(); track $index) {
-          <li starPart="listItem">
+          <li data-star-part="listItem">
             <button
-              starPart="item"
+              data-star-part="item"
               type="button"
               class="star-dock__item"
               [attr.aria-label]="item.label"
@@ -314,7 +314,7 @@ export class StarSpeedDial {
               (click)="item.command?.(item); itemClick.emit(item)"
             >
               <i
-                starPart="itemIcon"
+                data-star-part="itemIcon"
                 [class]="item.icon ?? 'ph-bold ph-app-window'"
                 aria-hidden="true"
               ></i>
@@ -345,19 +345,19 @@ export class StarDock {
   selector: 'star-scroll-top',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarPart],
+
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-scroll-top', '[class.star-scroll-top--visible]': 'visible()' },
   template: `
     <button
-      starPart="btn"
+      data-star-part="btn"
       type="button"
       class="star-scroll-top__btn"
       [attr.aria-label]="text.scrollToTop"
       [attr.tabindex]="visible() ? 0 : -1"
       (click)="toTop()"
     >
-      <i starPart="btnIcon" class="ph-bold ph-arrow-up" aria-hidden="true"></i>
+      <i data-star-part="btnIcon" class="ph-bold ph-arrow-up" aria-hidden="true"></i>
     </button>
   `,
 })
@@ -402,18 +402,22 @@ export class StarScrollTop {
   selector: 'star-block-ui',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarPart, StarSpinner],
+  imports: [StarSpinner],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-block-ui', '[attr.aria-busy]': 'blocked() || null' },
   template: `
-    <div starPart="content" class="star-block-ui__content" [attr.inert]="blocked() ? '' : null">
+    <div
+      data-star-part="content"
+      class="star-block-ui__content"
+      [attr.inert]="blocked() ? '' : null"
+    >
       <ng-content />
     </div>
     @if (blocked()) {
-      <div starPart="mask" class="star-block-ui__mask">
+      <div data-star-part="mask" class="star-block-ui__mask">
         <star-spinner size="2rem" [ariaLabel]="message()" />
         @if (message()) {
-          <span starPart="message" class="star-block-ui__message">{{ message() }}</span>
+          <span data-star-part="message" class="star-block-ui__message">{{ message() }}</span>
         }
       </div>
     }
@@ -442,14 +446,14 @@ export interface StarMeterItem {
   selector: 'star-meter-group',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarPart],
+
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-meter-group', role: 'group', '[attr.aria-label]': 'ariaLabel()' },
   template: `
-    <div starPart="bar" class="star-meter-group__bar">
+    <div data-star-part="bar" class="star-meter-group__bar">
       @for (item of items(); track item.label; let i = $index) {
         <span
-          starPart="part"
+          data-star-part="part"
           class="star-meter-group__part"
           role="meter"
           [attr.aria-label]="item.label"
@@ -464,12 +468,18 @@ export interface StarMeterItem {
         ></span>
       }
     </div>
-    <ul starPart="legend" class="star-meter-group__legend" aria-hidden="true">
+    <ul data-star-part="legend" class="star-meter-group__legend" aria-hidden="true">
       @for (item of items(); track item.label; let i = $index) {
-        <li starPart="legendItem">
-          <span starPart="swatch" class="star-chart__swatch" [style.background]="color(i)"></span>
+        <li data-star-part="legendItem">
+          <span
+            data-star-part="swatch"
+            class="star-chart__swatch"
+            [style.background]="color(i)"
+          ></span>
           {{ item.label }}
-          <strong starPart="legendText">{{ item.value }}{{ unit() ? ' ' + unit() : '' }}</strong>
+          <strong data-star-part="legendText"
+            >{{ item.value }}{{ unit() ? ' ' + unit() : '' }}</strong
+          >
         </li>
       }
     </ul>

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { STAR_UI_TEXT, StarPart, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
+import { STAR_UI_TEXT, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 
 export interface StarBreadcrumbItem {
   readonly label: string;
@@ -21,60 +21,60 @@ export interface StarBreadcrumbItem {
   selector: 'star-breadcrumb',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarPart, RouterLink],
+  imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <nav
-      starPart="breadcrumb"
+      data-star-part="breadcrumb"
       class="star-breadcrumb"
       [attr.aria-label]="ariaLabel() ?? text.breadcrumb"
     >
-      <ol starPart="list" class="star-breadcrumb__list">
+      <ol data-star-part="list" class="star-breadcrumb__list">
         @for (item of all(); track $index; let last = $last) {
-          <li starPart="item" class="star-breadcrumb__item">
+          <li data-star-part="item" class="star-breadcrumb__item">
             @if (last) {
-              <span starPart="current" class="star-breadcrumb__current" aria-current="page">
+              <span data-star-part="current" class="star-breadcrumb__current" aria-current="page">
                 @if (item.icon) {
-                  <i starPart="currentIcon" [class]="item.icon" aria-hidden="true"></i>
+                  <i data-star-part="currentIcon" [class]="item.icon" aria-hidden="true"></i>
                 }
                 {{ item.label }}
               </span>
             } @else {
               @if (item.routerLink) {
                 <a
-                  starPart="link"
+                  data-star-part="link"
                   class="star-breadcrumb__link"
                   [routerLink]="item.routerLink"
                   [attr.aria-label]="item.icon && $first && home() ? item.label : null"
                 >
                   @if (item.icon) {
-                    <i starPart="linkIcon" [class]="item.icon" aria-hidden="true"></i>
+                    <i data-star-part="linkIcon" [class]="item.icon" aria-hidden="true"></i>
                   }
                   @if (!(item.icon && $first && home())) {
                     {{ item.label }}
                   }
                 </a>
               } @else if (item.url) {
-                <a starPart="link" class="star-breadcrumb__link" [href]="item.url">{{
+                <a data-star-part="link" class="star-breadcrumb__link" [href]="item.url">{{
                   item.label
                 }}</a>
               } @else if (item.command) {
                 <button
-                  starPart="link"
+                  data-star-part="link"
                   type="button"
                   class="star-breadcrumb__link"
                   (click)="item.command()"
                 >
                   @if (item.icon) {
-                    <i starPart="linkIcon" [class]="item.icon" aria-hidden="true"></i>
+                    <i data-star-part="linkIcon" [class]="item.icon" aria-hidden="true"></i>
                   }
                   {{ item.label }}
                 </button>
               } @else {
-                <span starPart="itemText">{{ item.label }}</span>
+                <span data-star-part="itemText">{{ item.label }}</span>
               }
               <i
-                starPart="sep"
+                data-star-part="sep"
                 class="ph-bold ph-caret-right star-breadcrumb__sep star-icon-mirror"
                 aria-hidden="true"
               ></i>

@@ -23,7 +23,6 @@ import {
   STAR_UI_TEXT,
   starInlineKey,
   starIsRtl,
-  StarPart,
   StarStyled,
   ɵSTAR_PART_HOST,
 } from '@star-ng/ui/core';
@@ -96,7 +95,7 @@ interface Position {
   selector: 'star-pivot-grid',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarPart, StarPivotConfigurator],
+  imports: [StarPivotConfigurator],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-pivot',
@@ -117,26 +116,30 @@ interface Position {
         (configChange)="config.set($event)"
       />
     }
-    <div starPart="main" class="star-pivot__main">
+    <div data-star-part="main" class="star-pivot__main">
       @if (expandableAny()) {
-        <div starPart="tools" class="star-pivot__tools">
+        <div data-star-part="tools" class="star-pivot__tools">
           <button
-            starPart="expandAllButton"
+            data-star-part="expandAllButton"
             type="button"
             class="star-btn star-btn--ghost star-btn--sm"
             (click)="expandAll()"
           >
-            <i starPart="expandAllIcon" class="ph-bold ph-arrows-out-simple" aria-hidden="true"></i>
+            <i
+              data-star-part="expandAllIcon"
+              class="ph-bold ph-arrows-out-simple"
+              aria-hidden="true"
+            ></i>
             {{ text.expandAll }}
           </button>
           <button
-            starPart="collapseAllButton"
+            data-star-part="collapseAllButton"
             type="button"
             class="star-btn star-btn--ghost star-btn--sm"
             (click)="collapseAll()"
           >
             <i
-              starPart="collapseAllIcon"
+              data-star-part="collapseAllIcon"
               class="ph-bold ph-arrows-in-simple"
               aria-hidden="true"
             ></i>
@@ -145,14 +148,14 @@ interface Position {
         </div>
       }
       <div
-        starPart="scroller"
+        data-star-part="scroller"
         #scroller
         class="star-pivot__scroller"
         [style.max-height]="height()"
         (scroll)="onScroll()"
       >
         <table
-          starPart="table"
+          data-star-part="table"
           class="star-pivot__table"
           role="grid"
           aria-readonly="true"
@@ -162,40 +165,44 @@ interface Position {
           [attr.aria-colcount]="result().columns.length + 1"
           [style.width.px]="tableWidth()"
         >
-          <colgroup starPart="tableColumns">
+          <colgroup data-star-part="tableColumns">
             <col
-              starPart="tableColumn"
+              data-star-part="tableColumn"
               class="star-pivot__table-column"
               [style.width.px]="rowHeaderWidth()"
             />
             @if (columnWindow().before) {
               <col
-                starPart="tableColumn"
+                data-star-part="tableColumn"
                 class="star-pivot__table-column"
                 [style.width.px]="columnWindow().before"
               />
             }
             @for (c of renderedColumns(); track c) {
               <col
-                starPart="tableColumn"
+                data-star-part="tableColumn"
                 class="star-pivot__table-column"
                 [style.width.px]="columnWidth()"
               />
             }
             @if (columnWindow().after) {
               <col
-                starPart="tableColumn"
+                data-star-part="tableColumn"
                 class="star-pivot__table-column"
                 [style.width.px]="columnWindow().after"
               />
             }
           </colgroup>
-          <thead starPart="tableThead">
+          <thead data-star-part="tableThead">
             @for (cells of clippedHeaders(); track $index; let h = $index) {
-              <tr starPart="headerRow" class="star-pivot__header-row" [attr.aria-rowindex]="h + 1">
+              <tr
+                data-star-part="headerRow"
+                class="star-pivot__header-row"
+                [attr.aria-rowindex]="h + 1"
+              >
                 @if (h === 0) {
                   <th
-                    starPart="corner"
+                    data-star-part="corner"
                     class="star-pivot__corner"
                     scope="col"
                     [attr.rowspan]="headerCount() > 1 ? headerCount() : null"
@@ -207,7 +214,7 @@ interface Position {
                   </th>
                   @if (columnWindow().before) {
                     <th
-                      starPart="spacer"
+                      data-star-part="spacer"
                       class="star-pivot__spacer"
                       aria-hidden="true"
                       [attr.rowspan]="headerCount() > 1 ? headerCount() : null"
@@ -218,7 +225,7 @@ interface Position {
                   @let cell = item.cell;
                   @let pos = cell.row - headerCount() + ':' + cell.column;
                   <th
-                    starPart="head"
+                    data-star-part="head"
                     scope="col"
                     class="star-pivot__head"
                     [class]="'star-pivot__head--' + cell.kind"
@@ -231,26 +238,28 @@ interface Position {
                     [attr.data-pos]="pos"
                     [attr.tabindex]="tabIndex(pos)"
                   >
-                    <span starPart="headContent" class="star-pivot__head-content">
+                    <span data-star-part="headContent" class="star-pivot__head-content">
                       @if (cell.expandable) {
                         <span
-                          starPart="toggle"
+                          data-star-part="toggle"
                           class="star-pivot__toggle"
                           [class.star-pivot__toggle--open]="cell.expanded"
                           aria-hidden="true"
                           ><i
-                            starPart="caretRightIcon"
+                            data-star-part="caretRightIcon"
                             class="star-pivot__caret-right-icon ph-bold ph-caret-right star-icon-mirror"
                           ></i
                         ></span>
                       }
-                      <span starPart="text" class="star-pivot__text">{{ headerLabel(cell) }}</span>
+                      <span data-star-part="text" class="star-pivot__text">{{
+                        headerLabel(cell)
+                      }}</span>
                     </span>
                   </th>
                 }
                 @if (h === 0 && columnWindow().after) {
                   <th
-                    starPart="spacer"
+                    data-star-part="spacer"
                     class="star-pivot__spacer"
                     aria-hidden="true"
                     [attr.rowspan]="headerCount() > 1 ? headerCount() : null"
@@ -259,11 +268,11 @@ interface Position {
               </tr>
             }
           </thead>
-          <tbody starPart="tableTbody">
+          <tbody data-star-part="tableTbody">
             @if (rowWindow().before) {
-              <tr starPart="spacerRow" class="star-pivot__spacer-row" aria-hidden="true">
+              <tr data-star-part="spacerRow" class="star-pivot__spacer-row" aria-hidden="true">
                 <td
-                  starPart="spacerRowCell"
+                  data-star-part="spacerRowCell"
                   class="star-pivot__spacer-row-cell"
                   [attr.colspan]="renderedSpan()"
                   [style.height.px]="rowWindow().before"
@@ -273,14 +282,14 @@ interface Position {
             @for (r of renderedRows(); track result().rows[r].key) {
               @let row = result().rows[r];
               <tr
-                starPart="row"
+                data-star-part="row"
                 class="star-pivot__row"
                 [class.star-pivot__row--total]="row.kind === 'total'"
                 [class.star-pivot__row--parent]="row.expandable"
                 [attr.aria-rowindex]="headerCount() + r + 1"
               >
                 <th
-                  starPart="rowHead"
+                  data-star-part="rowHead"
                   scope="row"
                   role="rowheader"
                   class="star-pivot__row-head"
@@ -289,35 +298,35 @@ interface Position {
                   [attr.data-pos]="r + ':-1'"
                   [attr.tabindex]="tabIndex(r + ':-1')"
                 >
-                  <span starPart="headContent" class="star-pivot__head-content">
+                  <span data-star-part="headContent" class="star-pivot__head-content">
                     @if (row.expandable) {
                       <span
-                        starPart="toggle"
+                        data-star-part="toggle"
                         class="star-pivot__toggle"
                         [class.star-pivot__toggle--open]="row.expanded"
                         aria-hidden="true"
                         ><i
-                          starPart="caretRightIcon"
+                          data-star-part="caretRightIcon"
                           class="star-pivot__caret-right-icon ph-bold ph-caret-right star-icon-mirror"
                         ></i
                       ></span>
                     } @else if (row.kind === 'member') {
                       <span
-                        starPart="toggleSpace"
+                        data-star-part="toggleSpace"
                         class="star-pivot__toggle-space"
                         aria-hidden="true"
                       ></span>
                     }
-                    <span starPart="text" class="star-pivot__text">{{ rowLabel(row) }}</span>
+                    <span data-star-part="text" class="star-pivot__text">{{ rowLabel(row) }}</span>
                   </span>
                 </th>
                 @if (columnWindow().before) {
-                  <td starPart="spacer" class="star-pivot__spacer" aria-hidden="true"></td>
+                  <td data-star-part="spacer" class="star-pivot__spacer" aria-hidden="true"></td>
                 }
                 @for (c of renderedColumns(); track c) {
                   @let pos = r + ':' + c;
                   <td
-                    starPart="cell"
+                    data-star-part="cell"
                     class="star-pivot__cell"
                     [class.star-pivot__cell--total]="result().columns[c].kind !== 'member'"
                     [attr.aria-colindex]="c + 2"
@@ -328,14 +337,14 @@ interface Position {
                   </td>
                 }
                 @if (columnWindow().after) {
-                  <td starPart="spacer" class="star-pivot__spacer" aria-hidden="true"></td>
+                  <td data-star-part="spacer" class="star-pivot__spacer" aria-hidden="true"></td>
                 }
               </tr>
             }
             @if (rowWindow().after) {
-              <tr starPart="spacerRow" class="star-pivot__spacer-row" aria-hidden="true">
+              <tr data-star-part="spacerRow" class="star-pivot__spacer-row" aria-hidden="true">
                 <td
-                  starPart="spacerRowCell"
+                  data-star-part="spacerRowCell"
                   class="star-pivot__spacer-row-cell"
                   [attr.colspan]="renderedSpan()"
                   [style.height.px]="rowWindow().after"

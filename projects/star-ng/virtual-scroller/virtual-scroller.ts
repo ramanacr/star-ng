@@ -25,7 +25,6 @@ import {
 import {
   STAR_SLOT_HOST,
   STAR_UI_TEXT,
-  StarPart,
   starSlot,
   StarSlot,
   StarStyled,
@@ -101,7 +100,6 @@ export class StarVirtualItemTemplate<T = unknown> extends StarSlot<StarVirtualIt
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   imports: [
-    StarPart,
     NgTemplateOutlet,
     CdkVirtualScrollViewport,
     CdkFixedSizeVirtualScroll,
@@ -118,7 +116,7 @@ export class StarVirtualItemTemplate<T = unknown> extends StarSlot<StarVirtualIt
   template: `
     @if (items().length === 0) {
       <div
-        starPart="empty"
+        data-star-part="empty"
         class="star-scroller__empty"
         [style.height]="orientation() === 'horizontal' ? scrollHeight() : null"
       >
@@ -149,7 +147,7 @@ export class StarVirtualItemTemplate<T = unknown> extends StarSlot<StarVirtualIt
         [attr.aria-label]="ariaLabel()"
       >
         <div
-          starPart="item"
+          data-star-part="item"
           *cdkVirtualFor="
             let item of items();
             let i = index;
@@ -186,7 +184,7 @@ export class StarVirtualItemTemplate<T = unknown> extends StarSlot<StarVirtualIt
         </div>
       </cdk-virtual-scroll-viewport>
       @if (loading()) {
-        <div starPart="loading" class="star-scroller__loading">
+        <div data-star-part="loading" class="star-scroller__loading">
           @if (loadingSlot(); as custom) {
             <ng-container *ngTemplateOutlet="custom" />
           } @else {

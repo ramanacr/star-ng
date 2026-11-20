@@ -89,7 +89,7 @@ const LINK = '.star-app-sidebar__link';
         (focusin)="onFocusin($event)"
       >
         <ng-content select="star-app-sidebar-header" />
-        <div starPart="body" class="star-app-sidebar__body"><ng-content /></div>
+        <div data-star-part="body" class="star-app-sidebar__body"><ng-content /></div>
         <ng-content select="star-app-sidebar-footer" />
       </nav>
     </ng-template>
@@ -266,17 +266,16 @@ export class StarAppSidebarFooter {}
   selector: 'star-app-sidebar-section',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-app-sidebar__section' },
   template: `
     @if (heading()) {
-      <div starPart="heading" class="star-app-sidebar__heading" [id]="headingId">
+      <div data-star-part="heading" class="star-app-sidebar__heading" [id]="headingId">
         {{ heading() }}
       </div>
     }
     <div
-      starPart="items"
+      data-star-part="items"
       class="star-app-sidebar__items"
       role="group"
       [attr.aria-labelledby]="heading() ? headingId : null"
@@ -343,7 +342,7 @@ export class StarAppSidebarSection {
     </ng-template>
     @if (hasChildren()) {
       <button
-        starPart="link"
+        data-star-part="link"
         type="button"
         class="star-app-sidebar__link"
         [attr.aria-expanded]="expanded()"
@@ -357,7 +356,7 @@ export class StarAppSidebarSection {
       </button>
     } @else if (routerLink() !== null) {
       <a
-        starPart="link"
+        data-star-part="link"
         class="star-app-sidebar__link"
         [routerLink]="routerLink()"
         routerLinkActive="star-app-sidebar__link--active"
@@ -372,7 +371,7 @@ export class StarAppSidebarSection {
       </a>
     } @else if (href() !== null) {
       <a
-        starPart="link"
+        data-star-part="link"
         class="star-app-sidebar__link"
         [class.star-app-sidebar__link--active]="active()"
         [attr.href]="href()"
@@ -386,7 +385,7 @@ export class StarAppSidebarSection {
       </a>
     } @else {
       <button
-        starPart="link"
+        data-star-part="link"
         type="button"
         class="star-app-sidebar__link"
         [class.star-app-sidebar__link--active]="active()"
@@ -400,7 +399,7 @@ export class StarAppSidebarSection {
       </button>
     }
     <div
-      starPart="group"
+      data-star-part="group"
       class="star-app-sidebar__group"
       role="group"
       [id]="groupId"

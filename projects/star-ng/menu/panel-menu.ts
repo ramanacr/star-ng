@@ -32,7 +32,7 @@ import { StarMenuItem } from './menu';
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-panel-menu' },
   template: `
-    <nav starPart="nav" [attr.aria-label]="ariaLabel()">
+    <nav data-star-part="nav" [attr.aria-label]="ariaLabel()">
       <ng-container *ngTemplateOutlet="list; context: { $implicit: items(), path: '', level: 0 }" />
     </nav>
 
@@ -45,11 +45,11 @@ import { StarMenuItem } from './menu';
         @for (item of entries; track $index; let i = $index) {
           @let key = path ? path + '.' + i : '' + i;
           @if (item.separator) {
-            <li starPart="separator" class="star-panel-menu__separator" role="separator"></li>
+            <li data-star-part="separator" class="star-panel-menu__separator" role="separator"></li>
           } @else if (item.items?.length) {
-            <li starPart="listItem">
+            <li data-star-part="listItem">
               <button
-                starPart="item"
+                data-star-part="item"
                 type="button"
                 class="star-panel-menu__item star-panel-menu__item--parent"
                 [class.star-panel-menu__item--root]="level === 0"
@@ -61,21 +61,21 @@ import { StarMenuItem } from './menu';
               >
                 @if (item.icon) {
                   <i
-                    starPart="icon"
+                    data-star-part="icon"
                     class="star-panel-menu__icon"
                     [class]="item.icon"
                     aria-hidden="true"
                   ></i>
                 }
-                <span starPart="label" class="star-panel-menu__label">{{ item.label }}</span>
+                <span data-star-part="label" class="star-panel-menu__label">{{ item.label }}</span>
                 <i
-                  starPart="caret"
+                  data-star-part="caret"
                   class="ph-bold ph-caret-down star-panel-menu__caret"
                   aria-hidden="true"
                 ></i>
               </button>
               @if (isOpen(key)) {
-                <div starPart="listSection" [id]="regionId(key)">
+                <div data-star-part="listSection" [id]="regionId(key)">
                   <ng-container
                     *ngTemplateOutlet="
                       list;
@@ -86,9 +86,9 @@ import { StarMenuItem } from './menu';
               }
             </li>
           } @else if (item.routerLink) {
-            <li starPart="listItem">
+            <li data-star-part="listItem">
               <a
-                starPart="item"
+                data-star-part="item"
                 class="star-panel-menu__item"
                 routerLinkActive="star-panel-menu__item--active"
                 ariaCurrentWhenActive="page"
@@ -101,9 +101,9 @@ import { StarMenuItem } from './menu';
               </a>
             </li>
           } @else if (item.url) {
-            <li starPart="listItem">
+            <li data-star-part="listItem">
               <a
-                starPart="item"
+                data-star-part="item"
                 class="star-panel-menu__item"
                 [style.--star-level]="level"
                 [attr.href]="item.disabled ? null : item.url"
@@ -114,9 +114,9 @@ import { StarMenuItem } from './menu';
               </a>
             </li>
           } @else {
-            <li starPart="listItem">
+            <li data-star-part="listItem">
               <button
-                starPart="item"
+                data-star-part="item"
                 type="button"
                 class="star-panel-menu__item"
                 [class.star-panel-menu__item--danger]="item.danger"

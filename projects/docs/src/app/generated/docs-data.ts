@@ -3087,7 +3087,6 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "crosshair",
       "ringLabel",
       "axis",
-      "hit",
       "tipTitle",
       "tipRow",
       "tipRowText",
@@ -3099,16 +3098,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "dot",
       "points",
       "target",
-      "table",
-      "tableThead",
-      "tableHeadRow",
-      "tableHeaderCell",
-      "chartShareHeaderCell",
-      "chartTotalHeaderCell",
-      "tableTbody",
-      "tableBodyRow",
-      "tableBodyHeaderCell",
-      "tableCell"
+      "table"
     ]
   },
   "StarChartTooltip": {
@@ -13655,7 +13645,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "directive",
     "selector": "[starPart]",
     "entry": "@star-ng/ui/core",
-    "description": "Names an element of a control template as a part: `<div starPart=\"header\">` (a static attribute, not a binding). It sets `data-star-part=\"header\"`. The classes, styles and safe attributes of `pt.header` and the unstyled mode come from the control (`StarStyled`); while the control has no pass-through, a part costs only its name.",
+    "description": "Names the top element of portal content of a control (an overlay panel in an `ng-template`) as a part: `<div starPart=\"panel\">` (a static attribute). It sets `data-star-part=\"panel\"` and lets the control find the panel wherever it renders. Every other element of a template carries the static attribute `data-star-part` only, with no directive. The classes, styles and safe attributes of `pt` and the unstyled mode come from the control (`StarStyled`).",
     "inputs": [],
     "models": [],
     "outputs": []

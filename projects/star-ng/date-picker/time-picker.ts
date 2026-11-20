@@ -60,14 +60,14 @@ const PANEL_POSITIONS: ConnectedPosition[] = [
   },
   template: `
     <div
-      starPart="control"
+      data-star-part="control"
       #control
       class="star-date__control"
       cdkOverlayOrigin
       #origin="cdkOverlayOrigin"
     >
       <input
-        starPart="input"
+        data-star-part="input"
         #input
         type="time"
         class="star-date__input star-time__input"
@@ -89,7 +89,7 @@ const PANEL_POSITIONS: ConnectedPosition[] = [
         (blur)="touch.emit()"
       />
       <button
-        starPart="toggle"
+        data-star-part="toggle"
         #toggle
         type="button"
         class="star-date__toggle"
@@ -100,7 +100,7 @@ const PANEL_POSITIONS: ConnectedPosition[] = [
         [attr.aria-controls]="open() ? panelId : null"
         (click)="togglePanel(toggle)"
       >
-        <i starPart="toggleIcon" class="ph-bold ph-clock" aria-hidden="true"></i>
+        <i data-star-part="toggleIcon" class="ph-bold ph-clock" aria-hidden="true"></i>
       </button>
     </div>
 
@@ -134,9 +134,9 @@ const PANEL_POSITIONS: ConnectedPosition[] = [
           [showSeconds]="showSeconds()"
           [hourFormat]="hourFormat()"
         />
-        <div starPart="bar" class="star-time__bar">
+        <div data-star-part="bar" class="star-time__bar">
           <button
-            starPart="barButton"
+            data-star-part="barButton"
             type="button"
             class="star-btn star-btn--primary star-btn--sm"
             (click)="closePanel()"

@@ -48,12 +48,12 @@ import { starInlineKey, StarPart, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/
       }
     </ng-template>
     @if (disabled()) {
-      <button starPart="item" #focusable type="button" class="star-bottom-nav__item" disabled>
+      <button data-star-part="item" #focusable type="button" class="star-bottom-nav__item" disabled>
         <ng-container *ngTemplateOutlet="body" />
       </button>
     } @else if (routerLink() !== null) {
       <a
-        starPart="item"
+        data-star-part="item"
         #focusable
         class="star-bottom-nav__item"
         [routerLink]="routerLink()"
@@ -69,7 +69,7 @@ import { starInlineKey, StarPart, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/
       </a>
     } @else if (href() !== null) {
       <a
-        starPart="item"
+        data-star-part="item"
         #focusable
         class="star-bottom-nav__item"
         [class.star-bottom-nav__item--active]="active()"
@@ -83,7 +83,7 @@ import { starInlineKey, StarPart, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/
       </a>
     } @else {
       <button
-        starPart="item"
+        data-star-part="item"
         #focusable
         type="button"
         class="star-bottom-nav__item"
@@ -157,15 +157,14 @@ export class StarBottomNavItem {
   selector: 'star-bottom-nav',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-bottom-nav',
     '[class.star-bottom-nav--fixed]': 'fixed()',
   },
   template: `
-    <nav starPart="nav" class="star-bottom-nav__nav" [attr.aria-label]="ariaLabel()">
-      <div starPart="list" class="star-bottom-nav__list" role="list"><ng-content /></div>
+    <nav data-star-part="nav" class="star-bottom-nav__nav" [attr.aria-label]="ariaLabel()">
+      <div data-star-part="list" class="star-bottom-nav__list" role="list"><ng-content /></div>
     </nav>
   `,
 })

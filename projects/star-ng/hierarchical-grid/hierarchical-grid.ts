@@ -460,27 +460,27 @@ type ChildState =
  */
 @Component({
   selector: 'star-hierarchical-child',
-  imports: [StarPart, StarSpinner, StarHierarchicalLevel],
+  imports: [StarSpinner, StarHierarchicalLevel],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-hierarchical__child' },
   template: `
     @switch (state().kind) {
       @case ('loading') {
-        <div starPart="status" class="star-hierarchical__status" role="status" tabindex="-1">
+        <div data-star-part="status" class="star-hierarchical__status" role="status" tabindex="-1">
           <star-spinner size="1rem" />
-          <span starPart="statusText">{{ text.loading }}</span>
+          <span data-star-part="statusText">{{ text.loading }}</span>
         </div>
       }
       @case ('error') {
         <div
-          starPart="status"
+          data-star-part="status"
           class="star-hierarchical__status star-hierarchical__status--error"
           role="alert"
         >
-          <i starPart="statusIcon" class="ph-bold ph-warning-circle" aria-hidden="true"></i>
-          <span starPart="statusText">{{ text.hierarchicalLoadError }}</span>
+          <i data-star-part="statusIcon" class="ph-bold ph-warning-circle" aria-hidden="true"></i>
+          <span data-star-part="statusText">{{ text.hierarchicalLoadError }}</span>
           <button
-            starPart="statusButton"
+            data-star-part="statusButton"
             type="button"
             class="star-btn star-btn--secondary star-btn--sm"
             (click)="retry()"

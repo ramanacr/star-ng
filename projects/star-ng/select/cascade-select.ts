@@ -24,7 +24,6 @@ import {
   STAR_UI_TEXT,
   StarDirectionService,
   StarOptionKey,
-  StarPart,
   StarSlot,
   starSlot,
   StarStyled,
@@ -71,7 +70,7 @@ interface CascadeItem<TOption> extends StarMenuItem {
   selector: 'star-cascade-select',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarPart, CdkMenuTrigger, NgTemplateOutlet, StarMenu, StarMenuInDialog],
+  imports: [CdkMenuTrigger, NgTemplateOutlet, StarMenu, StarMenuInDialog],
   providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarCascadeSelect) }],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
@@ -81,9 +80,9 @@ interface CascadeItem<TOption> extends StarMenuItem {
     '[class.star-select--sm]': "size() === 'sm'",
   },
   template: `
-    <div starPart="control" class="star-select__control">
+    <div data-star-part="control" class="star-select__control">
       <button
-        starPart="trigger"
+        data-star-part="trigger"
         #trigger="cdkMenuTriggerFor"
         #button
         type="button"
@@ -100,25 +99,29 @@ interface CascadeItem<TOption> extends StarMenuItem {
         (cdkMenuClosed)="touch.emit()"
       >
         @if (selected(); as leaf) {
-          <span starPart="value" class="star-select__value">{{ display(leaf) }}</span>
+          <span data-star-part="value" class="star-select__value">{{ display(leaf) }}</span>
         } @else {
-          <span starPart="placeholder" class="star-select__placeholder">{{
+          <span data-star-part="placeholder" class="star-select__placeholder">{{
             placeholder() ?? text.selectPlaceholder
           }}</span>
         }
       </button>
       @if (showClear() && selected() && !disabled() && !readonly()) {
         <button
-          starPart="iconBtn"
+          data-star-part="iconBtn"
           type="button"
           class="star-select__icon-btn"
           [attr.aria-label]="text.clear"
           (click)="clear()"
         >
-          <i starPart="iconBtnIcon" class="ph-bold ph-x" aria-hidden="true"></i>
+          <i data-star-part="iconBtnIcon" class="ph-bold ph-x" aria-hidden="true"></i>
         </button>
       }
-      <i starPart="caret" class="ph-bold ph-caret-down star-select__caret" aria-hidden="true"></i>
+      <i
+        data-star-part="caret"
+        class="ph-bold ph-caret-down star-select__caret"
+        aria-hidden="true"
+      ></i>
     </div>
     <star-menu
       #menu

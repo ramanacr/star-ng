@@ -18,7 +18,6 @@ import {
 } from '@angular/core';
 import {
   STAR_UI_TEXT,
-  StarPart,
   starPrefersReducedMotion,
   StarStyled,
   ɵSTAR_PART_HOST,
@@ -51,30 +50,30 @@ export class StarInplaceContent {
   selector: 'star-inplace',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarPart, NgTemplateOutlet],
+  imports: [NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-inplace', '(keydown.escape)': 'onEscape($event)' },
   template: `
     @if (active()) {
-      <span starPart="content" class="star-inplace__content">
+      <span data-star-part="content" class="star-inplace__content">
         @if (content(); as edit) {
           <ng-container *ngTemplateOutlet="edit.template" />
         }
         @if (closable()) {
           <button
-            starPart="iconBtn"
+            data-star-part="iconBtn"
             type="button"
             class="star-select__icon-btn"
             [attr.aria-label]="text.close"
             (click)="deactivate()"
           >
-            <i starPart="iconBtnIcon" class="ph-bold ph-check" aria-hidden="true"></i>
+            <i data-star-part="iconBtnIcon" class="ph-bold ph-check" aria-hidden="true"></i>
           </button>
         }
       </span>
     } @else {
       <button
-        starPart="display"
+        data-star-part="display"
         type="button"
         class="star-inplace__display"
         [disabled]="disabled()"
@@ -88,7 +87,7 @@ export class StarInplaceContent {
           <ng-container *ngTemplateOutlet="view.template" />
         }
         <i
-          starPart="icon"
+          data-star-part="icon"
           class="ph-bold ph-pencil-simple star-inplace__icon"
           aria-hidden="true"
         ></i>
@@ -196,15 +195,14 @@ export class StarFocusTrap {}
   selector: 'star-float-label',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-float' },
   template: `
     <!-- The control is projected into the label, so the label wraps it at run time. -->
     <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
-    <label starPart="wrap" class="star-float__wrap">
+    <label data-star-part="wrap" class="star-float__wrap">
       <ng-content />
-      <span starPart="label" class="star-float__label">{{ label() }}</span>
+      <span data-star-part="label" class="star-float__label">{{ label() }}</span>
     </label>
   `,
 })
@@ -299,22 +297,22 @@ export class StarAnimateOnScroll {
   selector: 'star-image-compare',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarPart],
+
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-compare', '[style.--star-compare.%]': 'value()' },
   template: `
-    <img starPart="image" class="star-compare__image" [src]="rightSrc()" [alt]="rightAlt()" />
+    <img data-star-part="image" class="star-compare__image" [src]="rightSrc()" [alt]="rightAlt()" />
     <img
-      starPart="image"
+      data-star-part="image"
       class="star-compare__image star-compare__image--left"
       [src]="leftSrc()"
       [alt]="leftAlt()"
     />
-    <span starPart="divider" class="star-compare__divider" aria-hidden="true">
-      <i starPart="dividerIcon" class="ph-bold ph-arrows-horizontal"></i>
+    <span data-star-part="divider" class="star-compare__divider" aria-hidden="true">
+      <i data-star-part="dividerIcon" class="ph-bold ph-arrows-horizontal"></i>
     </span>
     <input
-      starPart="range"
+      data-star-part="range"
       type="range"
       class="star-compare__range"
       min="0"

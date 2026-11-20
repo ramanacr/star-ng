@@ -8,7 +8,7 @@ import {
   model,
   output,
 } from '@angular/core';
-import { STAR_UI_TEXT, StarPart, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
+import { STAR_UI_TEXT, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 
 export type StarBannerSeverity = 'info' | 'success' | 'warn' | 'danger';
 
@@ -38,7 +38,6 @@ const ICONS: Record<StarBannerSeverity, string> = {
   selector: 'star-banner',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '[class]': "'star-banner star-banner--' + severity()",
@@ -47,22 +46,27 @@ const ICONS: Record<StarBannerSeverity, string> = {
   },
   template: `
     @if (open()) {
-      <div starPart="inner" class="star-banner__inner">
+      <div data-star-part="inner" class="star-banner__inner">
         @if (iconClass(); as iconClass) {
-          <i starPart="icon" class="star-banner__icon" [class]="iconClass" aria-hidden="true"></i>
+          <i
+            data-star-part="icon"
+            class="star-banner__icon"
+            [class]="iconClass"
+            aria-hidden="true"
+          ></i>
         }
-        <div starPart="text" class="star-banner__text"><ng-content /></div>
-        <div starPart="actions" class="star-banner__actions">
+        <div data-star-part="text" class="star-banner__text"><ng-content /></div>
+        <div data-star-part="actions" class="star-banner__actions">
           <ng-content select="[starBannerActions]" />
           @if (dismissible()) {
             <button
-              starPart="dismiss"
+              data-star-part="dismiss"
               type="button"
               class="star-btn star-btn--ghost star-btn--icon star-banner__dismiss"
               [attr.aria-label]="text.dismiss"
               (click)="dismiss()"
             >
-              <i starPart="dismissIcon" class="ph-bold ph-x" aria-hidden="true"></i>
+              <i data-star-part="dismissIcon" class="ph-bold ph-x" aria-hidden="true"></i>
             </button>
           }
         </div>

@@ -20,7 +20,6 @@ import {
   STAR_SLOT_HOST,
   STAR_UI_TEXT,
   starBreakpointValue,
-  StarPart,
   StarSlot,
   starSlot,
   StarStyled,
@@ -222,7 +221,7 @@ const ICONS: Record<StarToastSeverity, string> = {
   selector: 'star-toast',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarPart, NgTemplateOutlet],
+  imports: [NgTemplateOutlet],
   providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarToast) }],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
@@ -237,7 +236,7 @@ const ICONS: Record<StarToastSeverity, string> = {
   template: `
     @for (message of visible(); track message.id) {
       <div
-        starPart="toast"
+        data-star-part="toast"
         class="star-toast"
         [class]="'star-toast star-toast--' + message.severity"
         [attr.role]="message.severity === 'error' ? 'alert' : 'status'"
@@ -247,29 +246,29 @@ const ICONS: Record<StarToastSeverity, string> = {
         (focusout)="toasts.resume(message.id)"
       >
         <i
-          starPart="icon"
+          data-star-part="icon"
           class="star-toast__icon"
           [class]="icon(message.severity)"
           aria-hidden="true"
         ></i>
-        <div starPart="copy" class="star-toast__copy">
+        <div data-star-part="copy" class="star-toast__copy">
           @if (messageSlot(); as slot) {
             <ng-container *ngTemplateOutlet="slot; context: messageContext(message)" />
           } @else {
-            <p starPart="summary" class="star-toast__summary">{{ message.summary }}</p>
+            <p data-star-part="summary" class="star-toast__summary">{{ message.summary }}</p>
             @if (message.detail) {
-              <p starPart="detail" class="star-toast__detail">{{ message.detail }}</p>
+              <p data-star-part="detail" class="star-toast__detail">{{ message.detail }}</p>
             }
           }
         </div>
         <button
-          starPart="close"
+          data-star-part="close"
           type="button"
           class="star-toast__close"
           [attr.aria-label]="text.close"
           (click)="toasts.remove(message.id)"
         >
-          <i starPart="closeIcon" class="ph-bold ph-x" aria-hidden="true"></i>
+          <i data-star-part="closeIcon" class="ph-bold ph-x" aria-hidden="true"></i>
         </button>
       </div>
     }

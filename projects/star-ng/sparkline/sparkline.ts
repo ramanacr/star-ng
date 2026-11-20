@@ -12,7 +12,6 @@ import {
   STAR_UI_TEXT,
   StarDirectionService,
   starIsRtl,
-  StarPart,
   StarStyled,
   ɵSTAR_PART_HOST,
 } from '@star-ng/ui/core';
@@ -55,7 +54,6 @@ const toLength = (value: string | number) => (typeof value === 'number' ? `${val
   selector: 'star-sparkline',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     role: 'img',
@@ -65,7 +63,7 @@ const toLength = (value: string | number) => (typeof value === 'number' ? `${val
   },
   template: `
     <svg
-      starPart="svg"
+      data-star-part="svg"
       class="star-sparkline__svg"
       [attr.viewBox]="viewBox"
       preserveAspectRatio="none"
@@ -78,7 +76,7 @@ const toLength = (value: string | number) => (typeof value === 'number' ? `${val
     >
       @if (referenceY(); as y) {
         <line
-          starPart="reference"
+          data-star-part="reference"
           class="star-sparkline__reference"
           x1="0"
           [attr.x2]="viewWidth"
@@ -89,7 +87,7 @@ const toLength = (value: string | number) => (typeof value === 'number' ? `${val
       @if (bars(); as list) {
         @for (bar of list; track $index) {
           <rect
-            starPart="bar"
+            data-star-part="bar"
             class="star-sparkline__bar"
             [class.star-sparkline__bar--negative]="bar.negative"
             [class.star-sparkline__bar--marked]="marked().has($index)"
@@ -101,9 +99,9 @@ const toLength = (value: string | number) => (typeof value === 'number' ? `${val
         }
       } @else if (line()) {
         @if (type() === 'area') {
-          <path starPart="area" class="star-sparkline__area" [attr.d]="area()" />
+          <path data-star-part="area" class="star-sparkline__area" [attr.d]="area()" />
         }
-        <path starPart="line" class="star-sparkline__line" [attr.d]="line()" />
+        <path data-star-part="line" class="star-sparkline__line" [attr.d]="line()" />
         @for (marker of markers(); track marker.kind) {
           <path
             [attr.class]="'star-sparkline__marker star-sparkline__marker--' + marker.kind"

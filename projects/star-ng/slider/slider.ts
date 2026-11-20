@@ -12,7 +12,7 @@ import {
   viewChild,
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
-import { STAR_UI_TEXT, StarPart, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
+import { STAR_UI_TEXT, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 import { injectStarFieldLink, starJoinIds } from '@star-ng/ui/field';
 
 /**
@@ -24,12 +24,11 @@ import { injectStarFieldLink, starJoinIds } from '@star-ng/ui/field';
   selector: 'star-slider',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-slider', '[class.star-slider--disabled]': 'disabled()' },
   template: `
     <input
-      starPart="input"
+      data-star-part="input"
       #range
       type="range"
       class="star-slider__input"
@@ -47,7 +46,7 @@ import { injectStarFieldLink, starJoinIds } from '@star-ng/ui/field';
       (blur)="touch.emit()"
     />
     @if (showValue()) {
-      <output starPart="value" class="star-slider__value" [attr.for]="inputId()">{{
+      <output data-star-part="value" class="star-slider__value" [attr.for]="inputId()">{{
         valueText()
       }}</output>
     }
@@ -88,18 +87,18 @@ export class StarSlider implements FormValueControl<number> {
   selector: 'star-range-slider',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarPart],
+
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-slider star-slider--range', '[class.star-slider--disabled]': 'disabled()' },
   template: `
     <div
-      starPart="track"
+      data-star-part="track"
       class="star-slider__track"
       [style.--star-from]="lowPercent() + '%'"
       [style.--star-to]="highPercent() + '%'"
     >
       <input
-        starPart="input"
+        data-star-part="input"
         #low
         type="range"
         class="star-slider__input"
@@ -115,7 +114,7 @@ export class StarSlider implements FormValueControl<number> {
         (blur)="touch.emit()"
       />
       <input
-        starPart="input"
+        data-star-part="input"
         #high
         type="range"
         class="star-slider__input"
@@ -132,7 +131,7 @@ export class StarSlider implements FormValueControl<number> {
       />
     </div>
     @if (showValue()) {
-      <output starPart="value" class="star-slider__value"
+      <output data-star-part="value" class="star-slider__value"
         >{{ format()(value()[0]) }} – {{ format()(value()[1]) }}</output
       >
     }

@@ -227,16 +227,16 @@ function cssEscape(value: string): string {
   },
   template: `
     <div
-      starPart="ribbon"
+      data-star-part="ribbon"
       class="star-ribbon"
       [class.star-ribbon--collapsed]="collapsed()"
       [class.star-ribbon--peek]="collapsed() && peek()"
       [class.star-ribbon--keytips]="!!keyTipLevel()"
     >
-      <div starPart="header" class="star-ribbon__header">
+      <div data-star-part="header" class="star-ribbon__header">
         @if (backstage(); as stage) {
           <button
-            starPart="file"
+            data-star-part="file"
             type="button"
             class="star-ribbon__file"
             data-keytip="file"
@@ -250,7 +250,7 @@ function cssEscape(value: string): string {
           </button>
         }
         <div
-          starPart="tabs"
+          data-star-part="tabs"
           class="star-ribbon__tabs"
           role="tablist"
           [attr.aria-label]="ariaLabel() ?? text.ribbon"
@@ -258,7 +258,7 @@ function cssEscape(value: string): string {
         >
           @for (tab of tabs(); track tab.key(); let i = $index) {
             <button
-              starPart="tab"
+              data-star-part="tab"
               type="button"
               role="tab"
               class="star-ribbon__tab"
@@ -278,7 +278,7 @@ function cssEscape(value: string): string {
           }
         </div>
         <button
-          starPart="collapse"
+          data-star-part="collapse"
           type="button"
           class="star-ribbon__collapse"
           [attr.aria-label]="collapsed() ? text.ribbonExpand : text.ribbonCollapse"
@@ -287,7 +287,7 @@ function cssEscape(value: string): string {
           (click)="toggleCollapsed()"
         >
           <i
-            starPart="collapseIcon"
+            data-star-part="collapseIcon"
             class="ph-bold"
             [class.ph-caret-up]="!collapsed()"
             [class.ph-caret-down]="collapsed()"
@@ -299,7 +299,7 @@ function cssEscape(value: string): string {
 
       @if (backstageOpen() && backstage(); as stage) {
         <div
-          starPart="backstage"
+          data-star-part="backstage"
           class="star-ribbon__backstage"
           role="region"
           [id]="id + '-backstage'"
@@ -310,7 +310,7 @@ function cssEscape(value: string): string {
       }
 
       <div
-        starPart="panel"
+        data-star-part="panel"
         #panel
         class="star-ribbon__panel"
         role="tabpanel"
@@ -320,14 +320,14 @@ function cssEscape(value: string): string {
       >
         @for (group of activeGroups(); track group; let g = $index) {
           <div
-            starPart="ribbonGroup"
+            data-star-part="ribbonGroup"
             class="star-ribbon-group"
             [class.star-ribbon-group--small]="mode(g) === 'small'"
             [class.star-ribbon-group--collapsed]="mode(g) === 'collapsed'"
             [class.star-ribbon-group--open]="mode(g) === 'collapsed' && openGroup() === g"
           >
             <button
-              starPart="overflow"
+              data-star-part="overflow"
               type="button"
               class="star-ribbon-group__overflow"
               [attr.tabindex]="mode(g) === 'collapsed' ? 0 : -1"
@@ -337,17 +337,21 @@ function cssEscape(value: string): string {
               (click)="toggleGroup(g)"
             >
               <i
-                starPart="overflowIcon"
+                data-star-part="overflowIcon"
                 class="star-ribbon-group__overflow-icon"
                 [class]="group.icon() ?? 'ph-bold ph-squares-four'"
                 aria-hidden="true"
               ></i>
-              <span starPart="overflowText">{{ group.label() }}</span>
-              <i starPart="overflowCaretIcon" class="ph-bold ph-caret-down" aria-hidden="true"></i>
+              <span data-star-part="overflowText">{{ group.label() }}</span>
+              <i
+                data-star-part="overflowCaretIcon"
+                class="ph-bold ph-caret-down"
+                aria-hidden="true"
+              ></i>
               <ng-container *ngTemplateOutlet="tip; context: { $implicit: 'group:' + g }" />
             </button>
             <div
-              starPart="items"
+              data-star-part="items"
               class="star-ribbon-group__items"
               role="toolbar"
               [id]="id + '-group-' + g"
@@ -360,13 +364,13 @@ function cssEscape(value: string): string {
                 />
               }
             </div>
-            <div starPart="footer" class="star-ribbon-group__footer">
-              <span starPart="label" class="star-ribbon-group__label" aria-hidden="true">{{
+            <div data-star-part="footer" class="star-ribbon-group__footer">
+              <span data-star-part="label" class="star-ribbon-group__label" aria-hidden="true">{{
                 group.label()
               }}</span>
               @if (group.dialogLauncher(); as launcher) {
                 <button
-                  starPart="launcher"
+                  data-star-part="launcher"
                   type="button"
                   class="star-ribbon-group__launcher"
                   [attr.aria-label]="text.ribbonGroupOptions(group.label())"
@@ -375,7 +379,7 @@ function cssEscape(value: string): string {
                   (click)="emit({ id: launcher }, g)"
                 >
                   <i
-                    starPart="launcherIcon"
+                    data-star-part="launcherIcon"
                     class="ph-bold ph-arrow-square-down-right star-icon-mirror"
                     aria-hidden="true"
                   ></i>
@@ -416,7 +420,7 @@ function cssEscape(value: string): string {
             [class.star-ribbon-split--large]="item.size === 'large'"
           >
             <button
-              starPart="ribbonItem"
+              data-star-part="ribbonItem"
               type="button"
               class="star-ribbon-item"
               [class.star-ribbon-item--large]="item.size === 'large'"
@@ -430,7 +434,7 @@ function cssEscape(value: string): string {
               <ng-container *ngTemplateOutlet="face; context: { $implicit: item }" />
             </button>
             <button
-              starPart="toggle"
+              data-star-part="toggle"
               type="button"
               class="star-ribbon-split__toggle"
               [disabled]="item.disabled"
@@ -439,7 +443,7 @@ function cssEscape(value: string): string {
               [attr.tabindex]="isStop(g, item.id + splitMenu) ? 0 : -1"
               [starMenuTrigger]="splitMenuRef"
             >
-              <i starPart="toggleIcon" class="ph-bold ph-caret-down" aria-hidden="true"></i>
+              <i data-star-part="toggleIcon" class="ph-bold ph-caret-down" aria-hidden="true"></i>
             </button>
             <star-menu
               #splitMenuRef
@@ -463,7 +467,7 @@ function cssEscape(value: string): string {
           >
             <ng-container *ngTemplateOutlet="face; context: { $implicit: item }" />
             <i
-              starPart="caret"
+              data-star-part="caret"
               class="ph-bold ph-caret-down star-ribbon-item__caret"
               aria-hidden="true"
             ></i>

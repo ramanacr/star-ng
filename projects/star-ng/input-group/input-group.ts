@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
-import { StarPart, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
+import { StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 
 /**
  * Icon inside a text input (PrimeNG `p-iconfield` + `p-inputicon`). The icon is decoration
@@ -15,14 +15,13 @@ import { StarPart, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
   selector: 'star-icon-field',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-icon-field',
     '[class.star-icon-field--end]': "iconPosition() === 'end'",
   },
   template: `
-    <i starPart="icon" [class]="icon() + ' star-icon-field__icon'" aria-hidden="true"></i>
+    <i data-star-part="icon" [class]="icon() + ' star-icon-field__icon'" aria-hidden="true"></i>
     <ng-content />
   `,
 })

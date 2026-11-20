@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
-import { StarPart, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
+import { StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 import { starParseMarkdownLite } from './markdown-lite';
 
 /**
@@ -14,30 +14,33 @@ import { starParseMarkdownLite } from './markdown-lite';
   selector: 'star-markdown-lite',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-md' },
   template: `
     @for (block of blocks(); track $index) {
       @if (block.kind === 'code') {
         <pre
-          starPart="pre"
+          data-star-part="pre"
           class="star-md__pre"
-        ><code starPart="preCode" [attr.data-language]="block.language || null">{{ block.text }}</code></pre>
+        ><code data-star-part="preCode" [attr.data-language]="block.language || null">{{ block.text }}</code></pre>
       } @else {
-        <p starPart="p" class="star-md__p">
+        <p data-star-part="p" class="star-md__p">
           @for (line of block.lines; track $index; let last = $last) {
             @for (part of line; track $index) {
               @if (part.kind === 'strong') {
-                <strong starPart="pText">{{ part.text }}</strong>
+                <strong data-star-part="pText">{{ part.text }}</strong>
               } @else if (part.kind === 'em') {
-                <em starPart="pText">{{ part.text }}</em>
+                <em data-star-part="pText">{{ part.text }}</em>
               } @else if (part.kind === 'code') {
-                <code starPart="code" class="star-md__code">{{ part.text }}</code>
+                <code data-star-part="code" class="star-md__code">{{ part.text }}</code>
               } @else if (part.kind === 'link') {
-                <a starPart="pLink" [href]="part.href" target="_blank" rel="noopener noreferrer">{{
-                  part.text
-                }}</a>
+                <a
+                  data-star-part="pLink"
+                  [href]="part.href"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >{{ part.text }}</a
+                >
               } @else {
                 <ng-container>{{ part.text }}</ng-container>
               }

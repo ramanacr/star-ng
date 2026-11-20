@@ -5,6 +5,7 @@
 import {
   booleanAttribute,
   computed,
+  DestroyRef,
   Directive,
   effect,
   ElementRef,
@@ -104,9 +105,9 @@ interface PartState {
  * viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
  * ```
  *
- * Fast path: while no pass-through exists for the control and it is not unstyled, the parts only
- * carry their name. The first `pt` (or the unstyled mode) switches the parts of the control on,
- * once; parts created after that switch themselves on.
+ * Fast path: while no pass-through exists for the control and it is not unstyled, the parts are
+ * only static `data-star-part` attributes. The first `pt` (or the unstyled mode) switches the parts
+ * of the control on, once; a `MutationObserver` then finds the parts that the control creates.
  */
 @Directive({
   selector: '[starStyled]',
@@ -149,6 +150,12 @@ export class StarStyled {
   private readonly active = computed(() => !!this.merged() || this.isUnstyled());
   /** The part elements that the pass-through or the unstyled mode touched. Empty on the fast path. */
   private readonly parts = new Map<Element, PartState>();
+  /**
+   * The roots of the portal content of the control (overlay panels, `starPart` on the top element
+   * of an `ng-template`): they can render outside the control element.
+   */
+  private readonly portals = new Set<Element>();
+  private observer: MutationObserver | null = null;
   private switchedOn = false;
 
   constructor() {
@@ -166,26 +173,69 @@ export class StarStyled {
         }
       });
     });
+    inject(DestroyRef).onDestroy(() => this.observer?.disconnect());
   }
 
-  /** A new part element. Tracked only after the control has switched its parts on. @internal */
-  attach(element: Element, name: string): void {
-    if (!this.switchedOn && !untracked(this.active)) return;
-    if (!this.switchedOn) this.switchOn();
-    const state = this.track(element, name);
-    this.apply(element, state, untracked(this.merged)?.[name] ?? null, untracked(this.isUnstyled));
+  /** A portal root (`starPart` directive). Tracked at once after the switch. @internal */
+  attach(element: Element): void {
+    this.portals.add(element);
+    if (this.switchedOn) this.adopt(element);
+    else if (untracked(this.active)) this.switchOn();
   }
 
-  /** Tracks the root and the parts of this control that exist now (not those of nested controls). */
+  /** A portal root that goes away. @internal */
+  detach(element: Element): void {
+    this.portals.delete(element);
+    this.parts.delete(element);
+  }
+
+  /**
+   * Switches the parts on: tracks the root and every part of this control that exists now (not
+   * those of nested controls), then watches the control and its portals for new parts. The parts
+   * are static `data-star-part` attributes, so the fast path has no per-element cost.
+   */
   private switchOn(): void {
     this.switchedOn = true;
     this.track(this.host, 'root');
-    for (const element of Array.from(this.host.querySelectorAll('[data-star-part]'))) {
-      const name = element.getAttribute('data-star-part')!;
-      if (name === 'root') continue;
-      const owner = element.parentElement?.closest('[data-star-part="root"]');
-      if (owner === this.host) this.track(element, name);
+    if (typeof MutationObserver !== 'undefined') {
+      this.observer = new MutationObserver((records) => {
+        for (const record of records) {
+          for (const node of Array.from(record.addedNodes)) {
+            if (node.nodeType === 1) this.adopt(node as Element);
+          }
+        }
+      });
+      this.observer.observe(this.host, { childList: true, subtree: true });
     }
+    this.adopt(this.host);
+    for (const portal of this.portals) this.adopt(portal);
+  }
+
+  /** Tracks `element` and the parts below it that belong to this control, and applies to them. */
+  private adopt(element: Element): void {
+    if (this.portals.has(element) && element !== this.host && this.observer) {
+      this.observer.observe(element, { childList: true, subtree: true });
+    }
+    const candidates = [element, ...Array.from(element.querySelectorAll('[data-star-part]'))];
+    const merged = untracked(this.merged);
+    const unstyled = untracked(this.isUnstyled);
+    for (const item of candidates) {
+      const name = item.getAttribute('data-star-part');
+      if (!name || item === this.host || !this.owns(item)) continue;
+      const state = this.track(item, name);
+      this.apply(item, state, merged?.[name] ?? null, unstyled);
+    }
+  }
+
+  /** `true` when the part belongs to this control (not to a control nested in it). */
+  private owns(element: Element): boolean {
+    if (element.getAttribute('data-star-part') === 'root') return false;
+    if (this.portals.has(element)) return true;
+    for (let node = element.parentElement; node; node = node.parentElement) {
+      if (node === this.host || this.portals.has(node)) return true;
+      if (node.getAttribute('data-star-part') === 'root') return false;
+    }
+    return false;
   }
 
   private track(element: Element, name: string): PartState {
@@ -248,10 +298,11 @@ export class StarStyled {
 }
 
 /**
- * Names an element of a control template as a part: `<div starPart="header">` (a static
- * attribute, not a binding). It sets `data-star-part="header"`. The classes, styles and safe
- * attributes of `pt.header` and the unstyled mode come from the control (`StarStyled`); while
- * the control has no pass-through, a part costs only its name.
+ * Names the top element of portal content of a control (an overlay panel in an `ng-template`) as
+ * a part: `<div starPart="panel">` (a static attribute). It sets `data-star-part="panel"` and lets
+ * the control find the panel wherever it renders. Every other element of a template carries the
+ * static attribute `data-star-part` only, with no directive. The classes, styles and safe
+ * attributes of `pt` and the unstyled mode come from the control (`StarStyled`).
  */
 @Directive({ selector: '[starPart]' })
 export class StarPart {
@@ -259,6 +310,9 @@ export class StarPart {
     const name = inject(new HostAttributeToken('starPart'));
     const element = inject(ElementRef).nativeElement as Element;
     inject(Renderer2).setAttribute(element, 'data-star-part', name);
-    inject(ɵSTAR_PART_HOST, { optional: true })?.attach(element, name);
+    const host = inject(ɵSTAR_PART_HOST, { optional: true });
+    if (!host) return;
+    host.attach(element);
+    inject(DestroyRef).onDestroy(() => host.detach(element));
   }
 }

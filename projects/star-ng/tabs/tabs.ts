@@ -30,7 +30,6 @@ import {
   STAR_UI_TEXT,
   starInlineKey,
   starIsRtl,
-  StarPart,
   StarStyled,
   ɵSTAR_PART_HOST,
 } from '@star-ng/ui/core';
@@ -181,7 +180,7 @@ export class StarTab {
   selector: 'star-tabs',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarPart, CdkDropList, CdkDrag, NgTemplateOutlet],
+  imports: [CdkDropList, CdkDrag, NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-tabs',
@@ -193,11 +192,11 @@ export class StarTab {
     '[class.star-tabs--align-stretch]': "alignment() === 'stretch'",
   },
   template: `
-    <div starPart="nav" class="star-tabs__nav">
+    <div data-star-part="nav" class="star-tabs__nav">
       @if (scrollable()) {
         <!-- Pointer helpers only: the keyboard reaches every tab with the arrow keys. -->
         <button
-          starPart="scroll"
+          data-star-part="scroll"
           type="button"
           class="star-tabs__scroll star-tabs__scroll--start"
           tabindex="-1"
@@ -206,7 +205,7 @@ export class StarTab {
           (click)="scrollPage(-1)"
         >
           <i
-            starPart="scrollStartIcon"
+            data-star-part="scrollStartIcon"
             class="ph-bold"
             [class.ph-caret-left]="!vertical()"
             [class.ph-caret-up]="vertical()"
@@ -215,7 +214,7 @@ export class StarTab {
         </button>
       }
       <div
-        starPart="list"
+        data-star-part="list"
         #list
         class="star-tabs__list"
         role="tablist"
@@ -232,14 +231,14 @@ export class StarTab {
         @for (tab of tabs(); track tab.value(); let i = $index) {
           <!-- A plain wrapper: the tab list owns the tab through it. It is the drag item. -->
           <span
-            starPart="item"
+            data-star-part="item"
             class="star-tabs__item"
             [class.star-tabs__item--closable]="tab.closable()"
             cdkDrag
             [cdkDragDisabled]="!reorderable() || tab.disabled()"
           >
             <button
-              starPart="tab"
+              data-star-part="tab"
               #tabButton
               type="button"
               role="tab"
@@ -264,13 +263,15 @@ export class StarTab {
                 />
               } @else {
                 @if (tab.icon(); as icon) {
-                  <i starPart="tabIcon" [class]="icon" aria-hidden="true"></i>
+                  <i data-star-part="tabIcon" [class]="icon" aria-hidden="true"></i>
                 }
-                <span starPart="tabText">{{ tab.label() }}</span>
+                <span data-star-part="tabText">{{ tab.label() }}</span>
                 @if (tab.badge() !== null) {
-                  <span starPart="badge" class="star-badge star-badge--secondary star-badge--sm">{{
-                    tab.badge()
-                  }}</span>
+                  <span
+                    data-star-part="badge"
+                    class="star-badge star-badge--secondary star-badge--sm"
+                    >{{ tab.badge() }}</span
+                  >
                 }
               }
             </button>
@@ -280,7 +281,7 @@ export class StarTab {
               closes the focused tab, and the tab describes the key (aria-keyshortcuts).
             -->
               <button
-                starPart="close"
+                data-star-part="close"
                 type="button"
                 class="star-tabs__close"
                 tabindex="-1"
@@ -290,7 +291,7 @@ export class StarTab {
                 [disabled]="tab.disabled()"
                 (click)="close(tab, i, false)"
               >
-                <i starPart="closeIcon" class="ph-bold ph-x" aria-hidden="true"></i>
+                <i data-star-part="closeIcon" class="ph-bold ph-x" aria-hidden="true"></i>
               </button>
             }
           </span>
@@ -303,7 +304,7 @@ export class StarTab {
           hidden until it has the focus.
         -->
         <button
-          starPart="closeSelected"
+          data-star-part="closeSelected"
           type="button"
           class="star-tabs__close-selected"
           (click)="close(current, tabs().indexOf(current), false)"
@@ -320,7 +321,7 @@ export class StarTab {
       }
       @if (scrollable()) {
         <button
-          starPart="scroll"
+          data-star-part="scroll"
           type="button"
           class="star-tabs__scroll star-tabs__scroll--end"
           tabindex="-1"
@@ -329,7 +330,7 @@ export class StarTab {
           (click)="scrollPage(1)"
         >
           <i
-            starPart="scrollEndIcon"
+            data-star-part="scrollEndIcon"
             class="ph-bold"
             [class.ph-caret-right]="!vertical()"
             [class.ph-caret-down]="vertical()"
