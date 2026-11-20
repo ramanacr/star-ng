@@ -42,7 +42,7 @@ function focusFirst(host: ElementRef<HTMLElement>): void {
   },
   template: `
     <form
-      data-star-part="panelForm"
+      data-star-part="formPanel"
       class="star-editor__panel-form"
       novalidate
       (submit)="submit($event)"
@@ -70,7 +70,7 @@ function focusFirst(host: ElementRef<HTMLElement>): void {
         />
       </label>
       @if (sourceError()) {
-        <span data-star-part="panelError" class="star-editor__panel-error" [id]="sourceErrorId">{{
+        <span data-star-part="errorText" class="star-editor__panel-error" [id]="sourceErrorId">{{
           busy() ? text.editorImageUploading : text.editorImageInvalid
         }}</span>
       }
@@ -89,11 +89,11 @@ function focusFirst(host: ElementRef<HTMLElement>): void {
         />
       </label>
       @if (altError()) {
-        <span data-star-part="panelError" class="star-editor__panel-error" [id]="altErrorId">{{
+        <span data-star-part="errorText" class="star-editor__panel-error" [id]="altErrorId">{{
           text.editorAltRequired
         }}</span>
       }
-      <label data-star-part="linkCheck" class="star-editor__link-check">
+      <label data-star-part="newTabLabel" class="star-editor__link-check">
         <input
           data-star-part="linkCheckInput"
           type="checkbox"
@@ -125,7 +125,7 @@ function focusFirst(host: ElementRef<HTMLElement>): void {
           (input)="width.set(+$any($event.target).value || null)"
         />
       </label>
-      <div data-star-part="linkActions" class="star-editor__link-actions">
+      <div data-star-part="actionList" class="star-editor__link-actions">
         <button
           data-star-part="applyButton"
           type="submit"
@@ -240,7 +240,7 @@ export class StarEditorImage {
   },
   template: `
     <form
-      data-star-part="panelForm"
+      data-star-part="formPanel"
       class="star-editor__panel-form"
       novalidate
       (submit)="submit($event)"
@@ -259,7 +259,7 @@ export class StarEditorImage {
         />
       </label>
       @if (urlError()) {
-        <span data-star-part="panelError" class="star-editor__panel-error" [id]="urlErrorId">{{
+        <span data-star-part="errorText" class="star-editor__panel-error" [id]="urlErrorId">{{
           text.editorEmbedNotAllowed
         }}</span>
       }
@@ -276,11 +276,11 @@ export class StarEditorImage {
         />
       </label>
       @if (titleError()) {
-        <span data-star-part="panelError" class="star-editor__panel-error" [id]="titleErrorId">{{
+        <span data-star-part="errorText" class="star-editor__panel-error" [id]="titleErrorId">{{
           text.valueRequired
         }}</span>
       }
-      <div data-star-part="linkActions" class="star-editor__link-actions">
+      <div data-star-part="actionList" class="star-editor__link-actions">
         <button
           data-star-part="applyButton"
           type="submit"

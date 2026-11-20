@@ -27,7 +27,7 @@ export type StarButtonSize = 'sm' | 'md' | 'lg';
   host: { '[class.star-button--full]': 'fullWidth()' },
   template: `
     <button
-      data-star-part="button"
+      data-star-part="nativeButton"
       [type]="type()"
       [class]="classes()"
       [disabled]="disabled() || loading()"

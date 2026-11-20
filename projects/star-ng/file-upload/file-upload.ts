@@ -193,10 +193,10 @@ export function fileMatchesAccept(file: File, accept: string): boolean {
                 ></i>
               }
               <span data-star-part="main" class="star-upload__main">
-                <span data-star-part="name" class="star-upload__name">{{ file.name }}</span>
+                <span data-star-part="nameText" class="star-upload__name">{{ file.name }}</span>
                 @if (status?.state === 'uploading') {
                   <span
-                    data-star-part="progress"
+                    data-star-part="progressPanel"
                     class="star-upload__progress"
                     role="progressbar"
                     aria-valuemin="0"
@@ -205,13 +205,13 @@ export function fileMatchesAccept(file: File, accept: string): boolean {
                     [attr.aria-label]="text.uploadingFile(file.name)"
                   >
                     <span
-                      data-star-part="progressBar"
+                      data-star-part="progressTrack"
                       class="star-upload__progress-bar"
                       [style.width.%]="percent(status)"
                     ></span>
                   </span>
                 } @else if (status?.state === 'error' && status?.message) {
-                  <span data-star-part="message" class="star-upload__message">{{
+                  <span data-star-part="messageText" class="star-upload__message">{{
                     status?.message
                   }}</span>
                 } @else if (status?.state === 'done') {
@@ -225,7 +225,7 @@ export function fileMatchesAccept(file: File, accept: string): boolean {
               }
               @if (canReorder()) {
                 <button
-                  data-star-part="iconBtn"
+                  data-star-part="clearButton"
                   type="button"
                   class="star-select__icon-btn"
                   [disabled]="first"
@@ -235,7 +235,7 @@ export function fileMatchesAccept(file: File, accept: string): boolean {
                   <i data-star-part="moveIcon" class="ph-bold ph-arrow-up" aria-hidden="true"></i>
                 </button>
                 <button
-                  data-star-part="iconBtn"
+                  data-star-part="clearButton"
                   type="button"
                   class="star-select__icon-btn"
                   [disabled]="last"
@@ -247,7 +247,7 @@ export function fileMatchesAccept(file: File, accept: string): boolean {
               }
               @if (!disabled() && !readonly()) {
                 <button
-                  data-star-part="iconBtn"
+                  data-star-part="clearButton"
                   type="button"
                   class="star-select__icon-btn"
                   [attr.aria-label]="text.removeItem(file.name)"

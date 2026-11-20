@@ -34,13 +34,13 @@ const PICKER_COLS = 10;
   },
   template: `
     <form
-      data-star-part="panelForm"
+      data-star-part="formPanel"
       class="star-editor__panel-form"
       novalidate
       (submit)="submit($event)"
     >
       <div
-        data-star-part="tablePicker"
+        data-star-part="tablePickerPanel"
         class="star-editor__table-picker"
         aria-hidden="true"
         (mouseleave)="hover.set(null)"
@@ -60,7 +60,7 @@ const PICKER_COLS = 10;
             ></button>
           }
         }
-        <span data-star-part="tablePickerSize" class="star-editor__table-picker-size"
+        <span data-star-part="tableSizeText" class="star-editor__table-picker-size"
           >{{ hover()?.[0] ?? rows() }} × {{ hover()?.[1] ?? cols() }}</span
         >
       </div>
@@ -88,7 +88,7 @@ const PICKER_COLS = 10;
           (input)="cols.set(clamp($any($event.target).value, 20))"
         />
       </label>
-      <label data-star-part="linkCheck" class="star-editor__link-check">
+      <label data-star-part="newTabLabel" class="star-editor__link-check">
         <input
           data-star-part="linkCheckInput"
           type="checkbox"
@@ -97,7 +97,7 @@ const PICKER_COLS = 10;
         />
         {{ text.editorHeaderRow }}
       </label>
-      <div data-star-part="linkActions" class="star-editor__link-actions">
+      <div data-star-part="actionList" class="star-editor__link-actions">
         <button
           data-star-part="applyButton"
           type="submit"
@@ -172,7 +172,7 @@ export class StarEditorTableInsert {
   },
   template: `
     <form
-      data-star-part="panelForm"
+      data-star-part="formPanel"
       class="star-editor__panel-form"
       novalidate
       (submit)="submit($event)"
@@ -213,7 +213,7 @@ export class StarEditorTableInsert {
           </option>
         </select>
       </label>
-      <div data-star-part="linkActions" class="star-editor__link-actions">
+      <div data-star-part="actionList" class="star-editor__link-actions">
         <button
           data-star-part="applyButton"
           type="submit"

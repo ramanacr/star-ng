@@ -111,7 +111,7 @@ const DROP_LISTS = new Map<string, { options(): readonly unknown[] }>();
       <div data-star-part="filter" class="star-panel__filter">
         @if (checkbox()) {
           <button
-            data-star-part="toggleAll"
+            data-star-part="toggleAllButton"
             type="button"
             class="star-panel__toggle-all"
             role="checkbox"
@@ -249,7 +249,7 @@ const DROP_LISTS = new Map<string, { options(): readonly unknown[] }>();
     } @else if (dragdrop()) {
       <!-- Drag and drop: the list is a CDK drop list and each option a drag item. No group headings. -->
       <ul
-        data-star-part="listbox"
+        data-star-part="optionList"
         #list
         cdkDropList
         class="star-listbox star-listbox--dragdrop"
@@ -307,7 +307,7 @@ const DROP_LISTS = new Map<string, { options(): readonly unknown[] }>();
       <p class="star-sr-only" aria-live="polite">{{ announcement() }}</p>
     } @else {
       <ul
-        data-star-part="listbox"
+        data-star-part="optionList"
         #list
         class="star-listbox"
         role="listbox"

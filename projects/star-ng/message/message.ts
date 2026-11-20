@@ -45,7 +45,7 @@ const ICONS: Record<StarMessageSeverity, string> = {
     <div data-star-part="text" class="star-message__text"><ng-content /></div>
     @if (closable()) {
       <button
-        data-star-part="close"
+        data-star-part="closeButton"
         type="button"
         class="star-message__close"
         [attr.aria-label]="text.close"

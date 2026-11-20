@@ -200,7 +200,7 @@ function emitChange<P>(
     '(focusout)': 'onFocusOut($event)',
   },
   template: `
-    <div data-star-part="diagram" class="star-diagram" [style.--star-diagram-height]="height()">
+    <div data-star-part="surface" class="star-diagram" [style.--star-diagram-height]="height()">
       <div
         data-star-part="toolbar"
         class="star-diagram__toolbar"
@@ -329,13 +329,13 @@ function emitChange<P>(
                   [attr.data-edge-id]="edge.id"
                 >
                   <path
-                    data-star-part="edgeHit"
+                    data-star-part="edgeHandle"
                     class="star-diagram__edge-hit"
                     data-export="skip"
                     [attr.d]="edge.d"
                   />
                   <path
-                    data-star-part="edgeLine"
+                    data-star-part="edgeItem"
                     class="star-diagram__edge-line"
                     [attr.d]="edge.d"
                     [attr.marker-end]="edge.end"
@@ -356,7 +356,7 @@ function emitChange<P>(
               }
               @if (connectLine(); as line) {
                 <path
-                  data-star-part="edgeLine"
+                  data-star-part="edgeItem"
                   class="star-diagram__edge-line star-diagram__edge-line--draft"
                   data-export="skip"
                   [attr.d]="line"
@@ -488,7 +488,7 @@ function emitChange<P>(
         <p data-star-part="edgesLabel" [id]="id + '-edges'">{{ text.diagramConnections }}</p>
         <ul data-star-part="edgeList" [attr.aria-labelledby]="id + '-edges'">
           @for (edge of edgeList(); track edge.id) {
-            <li data-star-part="edgeItem">{{ edge.text }}</li>
+            <li data-star-part="connectionItem">{{ edge.text }}</li>
           }
         </ul>
       </div>

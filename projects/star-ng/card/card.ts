@@ -24,7 +24,7 @@ import { StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
       <header data-star-part="header" class="star-card-cmp__header">
         <div data-star-part="heading">
           @if (header()) {
-            <h3 data-star-part="title" class="star-card-cmp__title">{{ header() }}</h3>
+            <h3 data-star-part="titleText" class="star-card-cmp__title">{{ header() }}</h3>
           }
           @if (subheader()) {
             <p data-star-part="subtitle" class="star-card-cmp__subtitle">{{ subheader() }}</p>

@@ -278,7 +278,7 @@ const MOVE_KEYS: Readonly<Record<string, TreeMoveDirection>> = {
       </li>
       @if (item.node.loading && !loadingIcon() && isExpanded(item.node)) {
         <li
-          starPart="loading"
+          starPart="loadingItem"
           class="star-tree__loading"
           role="presentation"
           [style.--star-tree-level]="item.level"
@@ -1150,17 +1150,17 @@ const POSITIONS: ConnectedPosition[] = [
       </button>
       @if (showClear() && value().length && !disabled()) {
         <button
-          data-star-part="iconBtn"
+          data-star-part="clearButton"
           type="button"
           class="star-select__icon-btn"
           [attr.aria-label]="text.clear"
           (click)="value.set([])"
         >
-          <i data-star-part="iconBtnIcon" class="ph-bold ph-x" aria-hidden="true"></i>
+          <i data-star-part="clearIcon" class="ph-bold ph-x" aria-hidden="true"></i>
         </button>
       }
       <i
-        data-star-part="caret"
+        data-star-part="expandIcon"
         class="ph-bold ph-caret-down star-select__caret"
         aria-hidden="true"
       ></i>

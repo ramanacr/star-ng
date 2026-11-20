@@ -80,7 +80,7 @@ function modulePath(modules: readonly (readonly boolean[])[]): string {
         <path data-star-part="modules" class="star-qr-code__modules" [attr.d]="path()" />
         @if (imageBox(); as box) {
           <rect
-            data-star-part="imageBackdrop"
+            data-star-part="logoPanel"
             class="star-qr-code__image-backdrop"
             [attr.x]="box.x - 0.5"
             [attr.y]="box.y - 0.5"
@@ -88,7 +88,7 @@ function modulePath(modules: readonly (readonly boolean[])[]): string {
             [attr.height]="box.size + 1"
           />
           <image
-            data-star-part="image"
+            data-star-part="logo"
             class="star-qr-code__image"
             [attr.href]="image()"
             [attr.x]="box.x"

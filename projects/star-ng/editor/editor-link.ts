@@ -70,7 +70,7 @@ export function starEditorSetLink(anchor: HTMLAnchorElement, value: StarEditorLi
     <!-- novalidate and type="text": the browser check of type="url" refuses a host name
       without a scheme and a path on the site, which the editor accepts. -->
     <form
-      data-star-part="linkForm"
+      data-star-part="formPanel"
       class="star-editor__link-form"
       novalidate
       (submit)="submit($event)"
@@ -92,11 +92,11 @@ export function starEditorSetLink(anchor: HTMLAnchorElement, value: StarEditorLi
         (input)="url.set(address.value); error.set(false)"
       />
       @if (error()) {
-        <span data-star-part="linkError" class="star-editor__link-error" [id]="errorId">{{
+        <span data-star-part="errorText" class="star-editor__link-error" [id]="errorId">{{
           text.editorLinkInvalid
         }}</span>
       }
-      <label data-star-part="linkCheck" class="star-editor__link-check">
+      <label data-star-part="newTabLabel" class="star-editor__link-check">
         <input
           data-star-part="linkCheckInput"
           type="checkbox"
@@ -106,7 +106,7 @@ export function starEditorSetLink(anchor: HTMLAnchorElement, value: StarEditorLi
         />
         {{ text.editorLinkNewTab }}
       </label>
-      <div data-star-part="linkActions" class="star-editor__link-actions">
+      <div data-star-part="actionList" class="star-editor__link-actions">
         <button
           data-star-part="applyButton"
           type="submit"

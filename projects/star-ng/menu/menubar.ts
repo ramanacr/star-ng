@@ -60,7 +60,7 @@ import {
             }
             {{ item.label }}
             <i
-              data-star-part="caret"
+              data-star-part="submenuIcon"
               class="ph-bold ph-caret-down star-menubar__caret"
               aria-hidden="true"
             ></i>
@@ -97,7 +97,7 @@ import {
         }
       }
     </div>
-    <span data-star-part="end" class="star-menubar__end"
+    <span data-star-part="endPanel" class="star-menubar__end"
       ><ng-content select="[starMenubarEnd]"
     /></span>
     <star-menu #submenu (itemClick)="itemClick.emit($event)" />

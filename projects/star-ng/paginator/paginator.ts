@@ -47,7 +47,7 @@ export interface StarPageEvent {
     >
       @if (showFirstLast()) {
         <button
-          data-star-part="btn"
+          data-star-part="pageButton"
           type="button"
           class="star-paginator__btn"
           [disabled]="isFirst()"
@@ -62,7 +62,7 @@ export interface StarPageEvent {
         </button>
       }
       <button
-        data-star-part="btn"
+        data-star-part="pageButton"
         type="button"
         class="star-paginator__btn"
         [disabled]="isFirst()"
@@ -77,7 +77,7 @@ export interface StarPageEvent {
       </button>
       @for (link of links(); track link) {
         <button
-          data-star-part="btn"
+          data-star-part="pageNumberButton"
           type="button"
           class="star-paginator__btn star-paginator__page"
           [class.star-paginator__page--active]="link === page()"
@@ -89,7 +89,7 @@ export interface StarPageEvent {
         </button>
       }
       <button
-        data-star-part="btn"
+        data-star-part="pageButton"
         type="button"
         class="star-paginator__btn"
         [disabled]="isLast()"
@@ -104,7 +104,7 @@ export interface StarPageEvent {
       </button>
       @if (showFirstLast()) {
         <button
-          data-star-part="btn"
+          data-star-part="pageButton"
           type="button"
           class="star-paginator__btn"
           [disabled]="isLast()"

@@ -69,14 +69,14 @@ export class StarCarouselItem<T = unknown> {
     <div data-star-part="controls" class="star-carousel__controls">
       @if (autoplay()) {
         <button
-          data-star-part="iconBtn"
+          data-star-part="controlButton"
           type="button"
           class="star-select__icon-btn"
           [attr.aria-label]="playing() ? text.pauseSlides : text.playSlides"
           (click)="playing.set(!playing())"
         >
           <i
-            data-star-part="iconBtnIcon"
+            data-star-part="controlIcon"
             class="ph-bold"
             [class.ph-pause]="playing()"
             [class.ph-play]="!playing()"
@@ -85,7 +85,7 @@ export class StarCarouselItem<T = unknown> {
         </button>
       }
       <button
-        data-star-part="iconBtn"
+        data-star-part="controlButton"
         type="button"
         class="star-select__icon-btn"
         [attr.aria-label]="text.previousSlides"
@@ -99,7 +99,7 @@ export class StarCarouselItem<T = unknown> {
         ></i>
       </button>
       <button
-        data-star-part="iconBtn"
+        data-star-part="controlButton"
         type="button"
         class="star-select__icon-btn"
         [attr.aria-label]="text.nextSlides"
@@ -140,7 +140,7 @@ export class StarCarouselItem<T = unknown> {
       }
     </div>
     @if (pages() > 1) {
-      <div data-star-part="dots" class="star-carousel__dots">
+      <div data-star-part="indicatorList" class="star-carousel__dots">
         @for (dot of dots(); track dot) {
           <button
             data-star-part="dot"
@@ -369,9 +369,9 @@ export class StarGalleria {
         ></span>
       </button>
       <star-dialog [(visible)]="open" [header]="alt()" size="xl" dismissableMask>
-        <div data-star-part="zoomBar" class="star-image__zoom-bar">
+        <div data-star-part="zoomPanel" class="star-image__zoom-bar">
           <button
-            data-star-part="iconBtn"
+            data-star-part="controlButton"
             type="button"
             class="star-select__icon-btn"
             [attr.aria-label]="text.zoomOut"
@@ -386,7 +386,7 @@ export class StarGalleria {
           </button>
           <span data-star-part="zoomBarText" aria-live="polite">{{ zoom() * 100 }}%</span>
           <button
-            data-star-part="iconBtn"
+            data-star-part="controlButton"
             type="button"
             class="star-select__icon-btn"
             [attr.aria-label]="text.zoomIn"
@@ -418,7 +418,7 @@ export class StarGalleria {
       </star-dialog>
     } @else {
       <img
-        data-star-part="image"
+        data-star-part="picture"
         [src]="src()"
         [alt]="alt()"
         [attr.width]="width()"

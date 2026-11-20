@@ -149,7 +149,7 @@ export class StarTimelineContent {
     <ol data-star-part="list" class="star-timeline__list" [attr.aria-label]="ariaLabel()">
       @for (event of events(); track $index; let i = $index) {
         <li
-          data-star-part="event"
+          data-star-part="eventItem"
           class="star-timeline__event"
           [class]="'star-timeline__event star-timeline__event--' + (event.severity ?? 'primary')"
         >
@@ -172,9 +172,11 @@ export class StarTimelineContent {
                   >{{ dateText(event.date) }}</time
                 >
               }
-              <p data-star-part="title" class="star-timeline__title">{{ event.title }}</p>
+              <p data-star-part="titleText" class="star-timeline__title">{{ event.title }}</p>
               @if (event.description) {
-                <p data-star-part="desc" class="star-timeline__desc">{{ event.description }}</p>
+                <p data-star-part="description" class="star-timeline__desc">
+                  {{ event.description }}
+                </p>
               }
             }
           </div>
@@ -218,7 +220,7 @@ export class StarTimeline {
   host: { class: 'star-chip' },
   template: `
     @if (image()) {
-      <img data-star-part="image" class="star-chip__image" [src]="image()" alt="" />
+      <img data-star-part="picture" class="star-chip__image" [src]="image()" alt="" />
     } @else if (icon()) {
       <i data-star-part="icon" [class]="icon()" aria-hidden="true"></i>
     }

@@ -69,7 +69,7 @@ import { StarMenuItem } from './menu';
                 }
                 <span data-star-part="label" class="star-panel-menu__label">{{ item.label }}</span>
                 <i
-                  data-star-part="caret"
+                  data-star-part="expandIcon"
                   class="ph-bold ph-caret-down star-panel-menu__caret"
                   aria-hidden="true"
                 ></i>

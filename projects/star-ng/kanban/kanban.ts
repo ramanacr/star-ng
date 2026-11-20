@@ -153,7 +153,7 @@ interface Grab {
       @for (row of rows(); track row.lane?.key ?? '') {
         @if (row.lane) {
           <div
-            data-star-part="laneTitle"
+            data-star-part="laneLabel"
             class="star-kanban__lane-title"
             role="heading"
             aria-level="3"
@@ -241,7 +241,7 @@ interface Grab {
             }"
           />
         } @else {
-          <span data-star-part="title" class="star-kanban__title">{{ column.title }}</span>
+          <span data-star-part="titleText" class="star-kanban__title">{{ column.title }}</span>
           <span data-star-part="count" class="star-kanban__count" aria-hidden="true">
             {{ column.limit ? countOf(column.key) + ' / ' + column.limit : countOf(column.key) }}
           </span>

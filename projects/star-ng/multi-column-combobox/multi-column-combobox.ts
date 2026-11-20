@@ -145,18 +145,18 @@ const ROW_GUESS = 40;
       />
       @if (showClear() && selectedOption() !== undefined && interactive()) {
         <button
-          data-star-part="iconBtn"
+          data-star-part="clearButton"
           type="button"
           class="star-select__icon-btn"
           [attr.aria-label]="text.clear"
           (click)="clear()"
         >
-          <i data-star-part="iconBtnIcon" class="ph-bold ph-x" aria-hidden="true"></i>
+          <i data-star-part="clearIcon" class="ph-bold ph-x" aria-hidden="true"></i>
         </button>
       }
       @if (loading()) {
         <i
-          data-star-part="caret"
+          data-star-part="dropdownIcon"
           class="ph-bold ph-spinner-gap star-spin star-select__caret"
           role="img"
           [attr.aria-label]="text.loading"
@@ -164,7 +164,7 @@ const ROW_GUESS = 40;
       } @else {
         <!-- The field opens the list by keys; the caret is a pointer shortcut. -->
         <i
-          data-star-part="caret"
+          data-star-part="dropdownIcon"
           class="ph-bold ph-caret-down star-select__caret star-mcc__caret"
           aria-hidden="true"
           (mousedown)="$event.preventDefault()"

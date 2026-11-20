@@ -133,8 +133,8 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "heading",
       "header",
       "headerIcon",
-      "title",
-      "caret",
+      "titleText",
+      "expandIcon",
       "region",
       "inner",
       "body"
@@ -340,7 +340,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "promptIcon",
       "error",
       "errorIcon",
-      "actions",
+      "actionList",
       "generating",
       "generatingIcon",
       "actionsButton",
@@ -431,9 +431,9 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "parts": [
       "root",
       "bar",
-      "start",
-      "title",
-      "end"
+      "startPanel",
+      "titleText",
+      "endPanel"
     ]
   },
   "StarAppSidebar": {
@@ -670,7 +670,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "icon",
       "label",
       "badge",
-      "chevron",
+      "expandIcon",
       "link",
       "group"
     ]
@@ -1620,7 +1620,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "outputs": [],
     "parts": [
       "root",
-      "image",
+      "picture",
       "text",
       "icon"
     ]
@@ -1815,8 +1815,8 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "inner",
       "icon",
       "text",
-      "actions",
-      "dismiss",
+      "actionList",
+      "dismissButton",
       "dismissIcon"
     ]
   },
@@ -1947,7 +1947,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "root",
       "content",
       "mask",
-      "message"
+      "messageText"
     ]
   },
   "StarBottomNav": {
@@ -2147,7 +2147,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "outputs": [],
     "parts": [
       "root",
-      "bottomSheet",
+      "sheet",
       "surface",
       "handle",
       "body"
@@ -2201,7 +2201,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "outputs": [],
     "parts": [
       "root",
-      "breadcrumb",
+      "trail",
       "list",
       "item",
       "current",
@@ -2209,7 +2209,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "link",
       "linkIcon",
       "itemText",
-      "sep"
+      "separator"
     ]
   },
   "StarButton": {
@@ -2317,7 +2317,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "parts": [
       "root",
-      "button",
+      "nativeButton",
       "loadingIcon",
       "leadingIcon",
       "text",
@@ -2545,8 +2545,8 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "header",
       "nav",
       "previousIcon",
-      "title",
-      "titleBtn",
+      "monthHeader",
+      "titleButton",
       "titleText",
       "nextIcon",
       "months",
@@ -2607,7 +2607,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "root",
       "header",
       "heading",
-      "title",
+      "titleText",
       "subtitle",
       "body"
     ]
@@ -2668,13 +2668,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "parts": [
       "root",
       "controls",
-      "iconBtn",
-      "iconBtnIcon",
+      "controlButton",
+      "controlIcon",
       "previousIcon",
       "nextIcon",
       "track",
       "slide",
-      "dots",
+      "indicatorList",
       "dot"
     ]
   },
@@ -2885,9 +2885,9 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "trigger",
       "value",
       "placeholder",
-      "iconBtn",
-      "iconBtnIcon",
-      "caret"
+      "clearButton",
+      "clearIcon",
+      "dropdownIcon"
     ]
   },
   "StarCellTemplate": {
@@ -3064,14 +3064,14 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "root",
       "figure",
       "head",
-      "title",
+      "titleText",
       "headButton",
       "headIcon",
       "body",
       "legend",
       "legendRow",
       "legendItem",
-      "swatchShape",
+      "swatchIcon",
       "mark",
       "swatch",
       "frame",
@@ -3087,10 +3087,10 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "crosshair",
       "ringLabel",
       "axis",
-      "tipTitle",
+      "tipHeader",
       "tipRow",
       "valueText",
-      "axisTitle",
+      "axisLabel",
       "baseline",
       "bar",
       "area",
@@ -3223,26 +3223,26 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "parts": [
       "root",
       "scroll",
-      "loading",
+      "loadingPanel",
       "loadingIcon",
       "day",
       "dayText",
-      "message",
+      "messageText",
       "avatar",
       "photo",
       "body",
       "author",
       "bubble",
       "meta",
-      "time",
+      "timeText",
       "status",
       "empty",
       "typing",
-      "dots",
+      "typingIcon",
       "dotItem",
       "composer",
       "input",
-      "send",
+      "sendButton",
       "sendIcon"
     ]
   },
@@ -3438,7 +3438,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "parts": [
       "root",
-      "image",
+      "picture",
       "icon",
       "text",
       "remove",
@@ -3536,13 +3536,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "swatches",
       "swatch",
       "custom",
-      "eyedropper",
-      "eyeDropperIcon",
+      "pickButton",
+      "pickIcon",
       "hex",
       "panel",
       "area",
       "thumb",
-      "hue",
+      "hueTrack",
       "bar",
       "preview",
       "code",
@@ -3667,8 +3667,8 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "parts": [
       "root",
-      "dialog",
-      "search",
+      "surface",
+      "searchPanel",
       "searchIcon",
       "input",
       "list",
@@ -3678,7 +3678,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "icon",
       "label",
       "shortcut",
-      "message"
+      "messageText"
     ]
   },
   "StarCommandTemplate": {
@@ -3717,12 +3717,12 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "outputs": [],
     "parts": [
       "root",
-      "confirmPopup",
+      "popupPanel",
       "confirm",
       "icon",
       "severityIcon",
-      "message",
-      "actions",
+      "messageText",
+      "actionList",
       "footer"
     ]
   },
@@ -5224,7 +5224,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "parts": [
       "root",
-      "diagram",
+      "surface",
       "toolbar",
       "tool",
       "toolIcon",
@@ -5236,8 +5236,8 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "content",
       "edges",
       "edge",
-      "edgeHit",
-      "edgeLine",
+      "edgeHandle",
+      "edgeItem",
       "edgeLabel",
       "nodes",
       "node",
@@ -5254,7 +5254,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "nodeItem",
       "edgesLabel",
       "edgeList",
-      "edgeItem"
+      "connectionItem"
     ]
   },
   "StarDiagramNodeTemplate": {
@@ -5514,17 +5514,17 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "parts": [
       "root",
-      "dialog",
+      "frame",
       "surface",
       "header",
       "heading",
-      "title",
+      "titleText",
       "controls",
       "move",
       "moveIcon",
-      "maximize",
+      "maximizeButton",
       "maximizeIcon",
-      "close",
+      "closeButton",
       "closeIcon",
       "body",
       "resize"
@@ -6047,13 +6047,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "fullScreenIcon",
       "downloadButton",
       "downloadIcon",
-      "search",
+      "searchPanel",
       "searchInput",
       "previousResultButton",
       "previousResultIcon",
       "nextResultButton",
       "nextResultIcon",
-      "searchStatus",
+      "searchStatusText",
       "body",
       "thumbs",
       "thumbList",
@@ -6064,8 +6064,8 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "error",
       "errorIcon",
       "stack",
-      "page",
-      "loading",
+      "pageItem",
+      "loadingItem",
       "skeleton"
     ]
   },
@@ -6328,12 +6328,12 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "parts": [
       "root",
-      "drawer",
+      "frame",
       "surface",
       "header",
       "heading",
-      "title",
-      "close",
+      "titleText",
+      "closeButton",
       "closeIcon",
       "body"
     ]
@@ -6483,7 +6483,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "parts": [
       "root",
       "label",
-      "check"
+      "checkIcon"
     ]
   },
   "StarDropdownTrigger": {
@@ -6720,10 +6720,10 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "root",
       "select",
       "selectOption",
-      "btn",
-      "btnIcon",
-      "btnSwatch",
-      "customToolbar",
+      "toolButton",
+      "toolIcon",
+      "swatchButton",
+      "customPanel",
       "toolbar",
       "separator",
       "group",
@@ -6735,15 +6735,15 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "findLabel",
       "input",
       "replaceLabel",
-      "linkCheck",
+      "newTabLabel",
       "newTabInput",
-      "findStatus",
-      "linkActions",
+      "findStatusText",
+      "actionList",
       "previousResultButton",
       "nextResultButton",
       "replaceButton",
       "closeButton",
-      "auditStatus",
+      "auditStatusText",
       "auditList",
       "auditItem",
       "issueText",
@@ -6752,17 +6752,17 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "panelButton",
       "source",
       "sourceText",
-      "sourceStatus",
-      "panelError",
-      "sourceNote",
+      "sourceStatusText",
+      "errorText",
+      "sourceNoteText",
       "area",
-      "imageFrame",
+      "imagePanel",
       "imageHandle",
       "footer",
       "count",
       "counter",
       "body",
-      "shortcutsTitle",
+      "shortcutTitleText",
       "shortcutList",
       "keymap",
       "shortcutRow",
@@ -6831,7 +6831,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "swatches",
       "swatchesButton",
       "swatch",
-      "colorCustom",
+      "customColorLabel",
       "colorCustomInput",
       "button"
     ]
@@ -6885,13 +6885,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "parts": [
       "root",
-      "panelForm",
+      "formPanel",
       "field",
       "addressLabel",
       "input",
-      "panelError",
+      "errorText",
       "titleText",
-      "linkActions",
+      "actionList",
       "applyButton",
       "cancelButton"
     ]
@@ -6959,19 +6959,19 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "parts": [
       "root",
-      "panelForm",
+      "formPanel",
       "field",
       "addressLabel",
       "input",
       "fileLabel",
       "fieldInput",
-      "panelError",
+      "errorText",
       "altLabel",
-      "linkCheck",
+      "newTabLabel",
       "linkCheckInput",
       "captionLabel",
       "imageWidthText",
-      "linkActions",
+      "actionList",
       "applyButton",
       "cancelButton"
     ]
@@ -7046,13 +7046,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "parts": [
       "root",
-      "linkForm",
+      "formPanel",
       "linkLabel",
       "input",
-      "linkError",
-      "linkCheck",
+      "errorText",
+      "newTabLabel",
       "linkCheckInput",
-      "linkActions",
+      "actionList",
       "applyButton",
       "removeButton",
       "cancelButton"
@@ -7100,17 +7100,17 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "parts": [
       "root",
-      "panelForm",
-      "tablePicker",
+      "formPanel",
+      "tablePickerPanel",
       "tablePickerCell",
-      "tablePickerSize",
+      "tableSizeText",
       "field",
       "rowsLabel",
       "input",
       "columnsText",
-      "linkCheck",
+      "newTabLabel",
       "linkCheckInput",
-      "linkActions",
+      "actionList",
       "applyButton",
       "cancelButton"
     ]
@@ -7164,14 +7164,14 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "parts": [
       "root",
-      "panelForm",
+      "formPanel",
       "field",
       "bordersLabel",
       "select",
       "bordersOption",
       "alignLabel",
       "alignOption",
-      "linkActions",
+      "actionList",
       "applyButton",
       "cancelButton"
     ]
@@ -7325,10 +7325,10 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "outputs": [],
     "parts": [
       "root",
-      "fieldset",
+      "frame",
       "legend",
       "toggle",
-      "caret",
+      "expandIcon",
       "region",
       "inner",
       "body"
@@ -7517,31 +7517,31 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "parts": [
       "root",
-      "fmRoot",
-      "fm",
+      "shell",
+      "frame",
       "bar",
-      "search",
+      "searchInput",
       "toolbar",
       "tool",
       "toolIcon",
       "toolText",
-      "upload",
+      "uploadPanel",
       "body",
       "tree",
       "content",
       "error",
       "errorText",
-      "name",
-      "nameIcon",
-      "rename",
       "nameText",
+      "nameIcon",
+      "renameInput",
+      "nameLabel",
       "icons",
       "icon",
-      "iconGlyph",
-      "iconName",
+      "tileIcon",
+      "tileLabel",
       "empty",
       "details",
-      "detailsTitle",
+      "detailsHeader",
       "detailsTitleIcon",
       "facts",
       "factLabel",
@@ -7715,12 +7715,12 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "fileIcon",
       "thumb",
       "main",
-      "name",
-      "progress",
-      "progressBar",
-      "message",
+      "nameText",
+      "progressPanel",
+      "progressTrack",
+      "messageText",
       "size",
-      "iconBtn",
+      "clearButton",
       "moveIcon",
       "removeIcon",
       "section",
@@ -7959,23 +7959,23 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "body",
       "toggle",
       "toggleIcon",
-      "name",
+      "nameText",
       "timeline",
       "scale",
       "tier",
       "tick",
       "svg",
-      "arrowHead",
+      "arrowIcon",
       "weekend",
       "stripe",
       "dependency",
       "bar",
-      "milestone",
+      "milestoneItem",
       "barTrack",
-      "barProgress",
+      "progressTrack",
       "handle",
       "progressHandle",
-      "today"
+      "todayItem"
     ]
   },
   "StarGaugeBase": {
@@ -8455,13 +8455,12 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "preview",
       "hint",
       "hintIcon",
-      "zoomBar",
-      "iconBtn",
+      "zoomPanel",
+      "controlButton",
       "zoomIcon",
       "zoomBarText",
       "stage",
-      "picture",
-      "image"
+      "picture"
     ]
   },
   "StarImageCompare": {
@@ -8534,7 +8533,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "outputs": [],
     "parts": [
       "root",
-      "image",
+      "picture",
       "divider",
       "dividerIcon",
       "range"
@@ -8645,7 +8644,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "annotationsIcon",
       "emptyList",
       "hint",
-      "actions",
+      "actionList",
       "applyButton",
       "cancelButton",
       "stage",
@@ -8713,8 +8712,8 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "parts": [
       "root",
       "content",
-      "iconBtn",
-      "iconBtnIcon",
+      "closeButton",
+      "closeIcon",
       "display",
       "icon"
     ]
@@ -9203,7 +9202,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "parts": [
       "root",
       "control",
-      "btn",
+      "stepButton",
       "stepIcon",
       "input"
     ]
@@ -9493,8 +9492,8 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "remove",
       "removeIcon",
       "input",
-      "iconBtn",
-      "iconBtnIcon",
+      "clearButton",
+      "clearIcon",
       "error"
     ]
   },
@@ -9637,12 +9636,12 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "root",
       "board",
       "head",
-      "laneTitle",
+      "laneLabel",
       "column",
       "list",
       "card",
       "header",
-      "title",
+      "titleText",
       "count",
       "collapse",
       "collapseIcon"
@@ -10275,7 +10274,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "parts": [
       "root",
       "filter",
-      "toggleAll",
+      "toggleAllButton",
       "box",
       "boxIcon",
       "selectedIcon",
@@ -10286,7 +10285,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "option",
       "label",
       "skeleton",
-      "listbox",
+      "optionList",
       "grip",
       "empty"
     ]
@@ -10369,7 +10368,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "parts": [
       "root",
       "text",
-      "title",
+      "titleText",
       "main"
     ]
   },
@@ -10558,7 +10557,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "tooltip",
       "attribution",
       "legend",
-      "legendTitle",
+      "legendLabel",
       "legendList",
       "legendItem",
       "swatch",
@@ -10623,10 +10622,10 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "outputs": [],
     "parts": [
       "root",
-      "pre",
+      "codePanel",
       "code",
-      "p",
-      "pText",
+      "paragraph",
+      "inlineText",
       "link"
     ]
   },
@@ -10682,7 +10681,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "bar",
       "item",
       "itemIcon",
-      "caret",
+      "submenuIcon",
       "panel",
       "column",
       "heading",
@@ -10865,10 +10864,10 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "parts": [
       "root",
-      "menu",
+      "itemList",
       "separator",
       "item",
-      "sub",
+      "submenuIcon",
       "icon",
       "label",
       "shortcut"
@@ -10926,8 +10925,8 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "bar",
       "item",
       "itemIcon",
-      "caret",
-      "end"
+      "submenuIcon",
+      "endPanel"
     ]
   },
   "StarMenuInDialog": {
@@ -11028,7 +11027,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "root",
       "icon",
       "text",
-      "close",
+      "closeButton",
       "closeIcon"
     ]
   },
@@ -11960,9 +11959,9 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "root",
       "control",
       "trigger",
-      "iconBtn",
-      "iconBtnIcon",
-      "caret",
+      "clearButton",
+      "clearIcon",
+      "dropdownIcon",
       "panel",
       "header",
       "head",
@@ -12802,12 +12801,12 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "chip",
       "remove",
       "removeIcon",
-      "iconBtn",
-      "iconBtnIcon",
-      "caret",
+      "clearButton",
+      "clearIcon",
+      "dropdownIcon",
       "panel",
       "filter",
-      "toggleAll",
+      "toggleAllButton",
       "box",
       "boxIcon",
       "selectedIcon",
@@ -13199,8 +13198,8 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "parts": [
       "root",
       "buttons",
-      "iconBtn",
-      "iconBtnIcon",
+      "moveButton",
+      "moveIcon",
       "list",
       "option",
       "grip"
@@ -13469,9 +13468,10 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "root",
       "report",
       "pages",
-      "btn",
+      "pageButton",
       "firstPageIcon",
       "previousPageIcon",
+      "pageNumberButton",
       "nextPageIcon",
       "lastPageIcon",
       "rows",
@@ -13528,8 +13528,8 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "parts": [
       "root",
       "header",
-      "title",
-      "actions",
+      "titleText",
+      "actionList",
       "toggle",
       "toggleIcon",
       "region",
@@ -13608,7 +13608,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "item",
       "icon",
       "label",
-      "caret",
+      "expandIcon",
       "region"
     ]
   },
@@ -13757,8 +13757,8 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "root",
       "control",
       "input",
-      "iconBtn",
-      "iconBtnIcon",
+      "revealButton",
+      "revealIcon",
       "feedback",
       "meter",
       "bar",
@@ -13839,7 +13839,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "option",
       "empty",
       "buttons",
-      "iconBtn",
+      "transferButton",
       "moveIcon",
       "moveAllIcon"
     ]
@@ -13958,14 +13958,14 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "collapseAllIcon",
       "scroller",
       "table",
-      "columns",
+      "columnList",
       "column",
       "columnHeader",
       "headerRow",
       "corner",
       "spacer",
       "head",
-      "headContent",
+      "headerPanel",
       "toggle",
       "expandIcon",
       "text",
@@ -13973,8 +13973,8 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "spacerRow",
       "spacerCell",
       "row",
-      "rowHead",
-      "toggleSpace",
+      "rowHeader",
+      "toggleCell",
       "cell"
     ]
   },
@@ -14055,7 +14055,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "parts": [
       "root",
-      "popover"
+      "surface"
     ]
   },
   "StarProgressBar": {
@@ -14211,8 +14211,8 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "svg",
       "background",
       "modules",
-      "imageBackdrop",
-      "image",
+      "logoPanel",
+      "logo",
       "error"
     ]
   },
@@ -14506,7 +14506,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "bar",
       "marker",
       "needle",
-      "needleBody",
+      "needleHandle",
       "hub"
     ]
   },
@@ -14833,7 +14833,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "parts": [
       "root",
-      "star",
+      "rateItem",
       "rateIcon"
     ]
   },
@@ -14915,7 +14915,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "parts": [
       "root",
-      "ribbon",
+      "surface",
       "header",
       "file",
       "tabs",
@@ -14924,23 +14924,23 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "collapseIcon",
       "backstage",
       "panel",
-      "ribbonGroup",
+      "groupPanel",
       "overflow",
       "overflowIcon",
       "overflowText",
-      "overflowCaretIcon",
+      "overflowToggleIcon",
       "items",
       "footer",
       "label",
       "launcher",
       "launcherIcon",
-      "ribbonButtons",
-      "ribbonCustom",
-      "ribbonSplit",
-      "ribbonItem",
+      "buttonList",
+      "customPanel",
+      "splitButton",
+      "commandItem",
       "toggle",
       "toggleIcon",
-      "caret",
+      "dropdownIcon",
       "icon",
       "keytip"
     ]
@@ -15463,7 +15463,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "button",
       "previousIcon",
       "nextIcon",
-      "title",
+      "titleText",
       "views",
       "grid",
       "row",
@@ -15474,25 +15474,25 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "dateText",
       "more",
       "agenda",
-      "agendaDay",
-      "agendaDate",
+      "agendaDayText",
+      "agendaDateText",
       "agendaList",
       "agendaItem",
-      "agendaTime",
+      "agendaTimeText",
       "empty",
       "scroll",
-      "resource",
+      "resourceLabel",
       "weekday",
-      "dayNumber",
-      "time",
+      "dayNumberText",
+      "timeText",
       "now",
-      "event",
-      "eventContent",
-      "eventTitle",
-      "eventTime",
-      "eventRepeat",
+      "eventItem",
+      "eventPanel",
+      "eventTitleText",
+      "eventTimeText",
+      "repeatIcon",
       "handle",
-      "moreTitle",
+      "moreTitleText",
       "moreList"
     ]
   },
@@ -15596,8 +15596,8 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "outputs": [],
     "parts": [
       "root",
-      "btn",
-      "btnIcon"
+      "topButton",
+      "topIcon"
     ]
   },
   "StarSelect": {
@@ -15995,9 +15995,9 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "trigger",
       "value",
       "placeholder",
-      "iconBtn",
-      "iconBtnIcon",
-      "caret",
+      "clearButton",
+      "clearIcon",
+      "dropdownIcon",
       "panel",
       "filter",
       "filterIcon",
@@ -16009,7 +16009,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "option",
       "label",
       "skeleton",
-      "check"
+      "checkIcon"
     ]
   },
   "StarSelectButton": {
@@ -16299,16 +16299,16 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "canvas",
       "bar",
       "modes",
-      "drawSignatureButton",
-      "drawSignatureIcon",
-      "typeSignatureButton",
-      "typeSignatureIcon",
+      "drawButton",
+      "drawIcon",
+      "typeButton",
+      "typeIcon",
       "typed",
-      "actions",
+      "actionList",
       "undoButton",
       "undoIcon",
-      "clearSignatureButton",
-      "clearSignatureIcon"
+      "clearButton",
+      "clearIcon"
     ]
   },
   "StarSkeleton": {
@@ -17052,10 +17052,10 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "redoButton",
       "redoIcon",
       "divider",
-      "editorBoldButton",
-      "editorBoldIcon",
-      "editorItalicButton",
-      "editorItalicIcon",
+      "boldButton",
+      "boldIcon",
+      "italicButton",
+      "italicIcon",
       "button",
       "icon",
       "select",
@@ -17065,7 +17065,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "decimals",
       "colorOption",
       "bar",
-      "name",
+      "addressText",
       "fx",
       "formula",
       "panel",
@@ -17073,15 +17073,15 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "grid",
       "row",
       "corner",
-      "colhead",
+      "columnHeader",
       "resizer",
       "body",
-      "rowhead",
+      "rowHeader",
       "gridCell",
       "editor",
       "selection",
       "fill",
-      "fillTarget",
+      "fillHandle",
       "tabs",
       "tab"
     ]
@@ -17206,7 +17206,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "numberIcon",
       "text",
       "label",
-      "desc",
+      "description",
       "line"
     ]
   },
@@ -18023,13 +18023,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "parts": [
       "root",
       "tools",
-      "columns",
+      "columnList",
       "columnsItem",
       "columnsText",
-      "columnsPin",
+      "columnPinButton",
       "toggle",
       "toggleIcon",
-      "columnsMove",
+      "columnMoveButton",
       "moveIcon",
       "scroll",
       "grid",
@@ -18038,31 +18038,31 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "reorder",
       "expander",
       "select",
-      "colSpacer",
-      "th",
+      "spacerCell",
+      "headerCell",
       "scrollHeaderCell",
       "sort",
       "sortIcon",
-      "sortRank",
+      "sortRankText",
       "resizer",
-      "rowActions",
+      "rowActionCell",
       "filters",
       "filtersCell",
       "filter",
-      "filterRange",
+      "rangePanel",
       "body",
       "scrollBodyRow",
-      "loading",
+      "loadingItem",
       "row",
       "rowCell",
       "spacer",
-      "spacerCell",
+      "fillerCell",
       "group",
       "groupHeaderCell",
-      "groupToggle",
+      "groupToggleButton",
       "groupToggleIcon",
-      "groupCount",
-      "groupFooter",
+      "groupCountText",
+      "groupFooterRow",
       "groupFooterCell",
       "expandIcon",
       "radio",
@@ -18070,7 +18070,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "editorOption",
       "error",
       "edit",
-      "editValue",
+      "editText",
       "editIcon",
       "saveIcon",
       "cancelIcon",
@@ -18179,7 +18179,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "root",
       "filterButton",
       "filterIcon",
-      "tableFilter",
+      "filterPanel",
       "operator",
       "matchAllOption",
       "matchAnyOption",
@@ -18438,9 +18438,9 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "tabIcon",
       "tabText",
       "badge",
-      "close",
+      "closeButton",
       "closeIcon",
-      "closeSelected",
+      "closeSelectedButton",
       "scrollEndIcon"
     ]
   },
@@ -18911,13 +18911,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "parts": [
       "root",
       "list",
-      "event",
+      "eventItem",
       "marker",
       "markerIcon",
       "body",
       "date",
-      "title",
-      "desc"
+      "titleText",
+      "description"
     ]
   },
   "StarTimelineContent": {
@@ -19170,12 +19170,12 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "parts": [
       "root",
-      "toast",
+      "surface",
       "icon",
-      "copy",
+      "copyButton",
       "summary",
       "detail",
-      "close",
+      "closeButton",
       "closeIcon"
     ]
   },
@@ -19765,7 +19765,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "boxIcon",
       "icon",
       "label",
-      "loading",
+      "loadingItem",
       "loadingIcon",
       "list",
       "empty",
@@ -19989,9 +19989,9 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "chip",
       "value",
       "placeholder",
-      "iconBtn",
-      "iconBtnIcon",
-      "caret",
+      "clearButton",
+      "clearIcon",
+      "expandIcon",
       "panel"
     ]
   },
@@ -20286,7 +20286,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "scrollHeaderCell",
       "sort",
       "sortIcon",
-      "sortRank",
+      "sortRankText",
       "move",
       "toggle",
       "moveIcon",
@@ -20300,7 +20300,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "emptyRow",
       "empty",
       "emptyIcon",
-      "loading",
+      "loadingItem",
       "loadingCell",
       "first",
       "firstIcon",
@@ -20428,7 +20428,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "root",
       "empty",
       "item",
-      "loading"
+      "loadingItem"
     ]
   },
   "StarWindow": {
@@ -20572,10 +20572,10 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "parts": [
       "root",
-      "window",
+      "surface",
       "titlebar",
-      "title",
-      "actions",
+      "titleText",
+      "actionList",
       "restoreButton",
       "restoreIcon",
       "closeButton",

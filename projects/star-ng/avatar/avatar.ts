@@ -37,7 +37,7 @@ export const STAR_AVATAR_GROUP = new InjectionToken<{ hides(avatar: StarAvatar):
   },
   template: `
     @if (image() && !failed()) {
-      <img data-star-part="image" [src]="image()" alt="" (error)="failed.set(true)" />
+      <img data-star-part="picture" [src]="image()" alt="" (error)="failed.set(true)" />
     } @else if (initials()) {
       <span data-star-part="text" aria-hidden="true">{{ initials() }}</span>
     } @else {

@@ -467,7 +467,7 @@ const classColor = (index: number, count: number) =>
     @for (legend of legends(); track legend.id) {
       <div data-star-part="legend" class="star-map__legend">
         <span
-          data-star-part="legendTitle"
+          data-star-part="legendLabel"
           class="star-map__legend-title"
           [id]="hintId + '-' + legend.id"
           >{{ legend.title }}</span

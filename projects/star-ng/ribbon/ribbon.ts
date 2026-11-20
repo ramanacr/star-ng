@@ -227,7 +227,7 @@ function cssEscape(value: string): string {
   },
   template: `
     <div
-      data-star-part="ribbon"
+      data-star-part="surface"
       class="star-ribbon"
       [class.star-ribbon--collapsed]="collapsed()"
       [class.star-ribbon--peek]="collapsed() && peek()"
@@ -320,7 +320,7 @@ function cssEscape(value: string): string {
       >
         @for (group of activeGroups(); track group; let g = $index) {
           <div
-            data-star-part="ribbonGroup"
+            data-star-part="groupPanel"
             class="star-ribbon-group"
             [class.star-ribbon-group--small]="mode(g) === 'small'"
             [class.star-ribbon-group--collapsed]="mode(g) === 'collapsed'"
@@ -344,7 +344,7 @@ function cssEscape(value: string): string {
               ></i>
               <span data-star-part="overflowText">{{ group.label() }}</span>
               <i
-                data-star-part="overflowCaretIcon"
+                data-star-part="overflowToggleIcon"
                 class="ph-bold ph-caret-down"
                 aria-hidden="true"
               ></i>
@@ -396,7 +396,7 @@ function cssEscape(value: string): string {
       @switch (item.type ?? 'button') {
         @case ('group') {
           <div
-            starPart="ribbonButtons"
+            starPart="buttonList"
             class="star-ribbon-buttons"
             role="group"
             [attr.aria-label]="item.label"
@@ -408,19 +408,19 @@ function cssEscape(value: string): string {
         }
         @case ('custom') {
           @if (group.templateFor(item.id); as template) {
-            <div starPart="ribbonCustom" class="star-ribbon-custom">
+            <div starPart="customPanel" class="star-ribbon-custom">
               <ng-container *ngTemplateOutlet="template; context: { $implicit: item }" />
             </div>
           }
         }
         @case ('split') {
           <div
-            starPart="ribbonSplit"
+            starPart="splitButton"
             class="star-ribbon-split"
             [class.star-ribbon-split--large]="item.size === 'large'"
           >
             <button
-              data-star-part="ribbonItem"
+              data-star-part="commandItem"
               type="button"
               class="star-ribbon-item"
               [class.star-ribbon-item--large]="item.size === 'large'"
@@ -454,7 +454,7 @@ function cssEscape(value: string): string {
         }
         @case ('dropdown') {
           <button
-            starPart="ribbonItem"
+            starPart="commandItem"
             type="button"
             class="star-ribbon-item star-ribbon-item--dropdown"
             [class.star-ribbon-item--large]="item.size === 'large'"
@@ -467,7 +467,7 @@ function cssEscape(value: string): string {
           >
             <ng-container *ngTemplateOutlet="face; context: { $implicit: item }" />
             <i
-              data-star-part="caret"
+              data-star-part="dropdownIcon"
               class="ph-bold ph-caret-down star-ribbon-item__caret"
               aria-hidden="true"
             ></i>
@@ -480,7 +480,7 @@ function cssEscape(value: string): string {
         }
         @default {
           <button
-            starPart="ribbonItem"
+            starPart="commandItem"
             type="button"
             class="star-ribbon-item"
             [class.star-ribbon-item--large]="item.size === 'large'"

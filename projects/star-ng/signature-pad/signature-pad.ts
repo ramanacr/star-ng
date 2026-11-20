@@ -185,25 +185,25 @@ const FALLBACK_SIZE = { width: 300, height: 150 };
       @if (allowTyped()) {
         <div data-star-part="modes" class="star-signature__modes">
           <button
-            data-star-part="drawSignatureButton"
+            data-star-part="drawButton"
             type="button"
             class="star-btn star-btn--ghost star-btn--sm"
             [attr.aria-pressed]="mode() === 'draw'"
             [disabled]="!interactive()"
             (click)="setMode('draw')"
           >
-            <i data-star-part="drawSignatureIcon" class="ph-bold ph-pen-nib" aria-hidden="true"></i
+            <i data-star-part="drawIcon" class="ph-bold ph-pen-nib" aria-hidden="true"></i
             >{{ text.drawSignature }}
           </button>
           <button
-            data-star-part="typeSignatureButton"
+            data-star-part="typeButton"
             type="button"
             class="star-btn star-btn--ghost star-btn--sm"
             [attr.aria-pressed]="mode() === 'type'"
             [disabled]="!interactive()"
             (click)="setMode('type')"
           >
-            <i data-star-part="typeSignatureIcon" class="ph-bold ph-keyboard" aria-hidden="true"></i
+            <i data-star-part="typeIcon" class="ph-bold ph-keyboard" aria-hidden="true"></i
             >{{ text.typeSignature }}
           </button>
         </div>
@@ -225,7 +225,7 @@ const FALLBACK_SIZE = { width: 300, height: 150 };
           (blur)="touch.emit()"
         />
       }
-      <div data-star-part="actions" class="star-signature__actions">
+      <div data-star-part="actionList" class="star-signature__actions">
         @if (mode() === 'draw') {
           <button
             data-star-part="undoButton"
@@ -243,14 +243,14 @@ const FALLBACK_SIZE = { width: 300, height: 150 };
           </button>
         }
         <button
-          data-star-part="clearSignatureButton"
+          data-star-part="clearButton"
           type="button"
           class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
           [attr.aria-label]="text.clearSignature"
           [disabled]="!interactive() || isEmpty()"
           (click)="clear()"
         >
-          <i data-star-part="clearSignatureIcon" class="ph-bold ph-eraser" aria-hidden="true"></i>
+          <i data-star-part="clearIcon" class="ph-bold ph-eraser" aria-hidden="true"></i>
         </button>
       </div>
     </div>

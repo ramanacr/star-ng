@@ -288,7 +288,7 @@ const LOADING_KEY = '\u0000loading';
                     {{ column.header }}
                     <i data-star-part="sortIcon" [class]="sortIcon(column)" aria-hidden="true"></i>
                     @if (sortRank(column); as rank) {
-                      <span data-star-part="sortRank" class="star-table__sort-rank">{{
+                      <span data-star-part="sortRankText" class="star-table__sort-rank">{{
                         rank
                       }}</span>
                     }
@@ -434,7 +434,7 @@ const LOADING_KEY = '\u0000loading';
         @let row = entry.row;
         @if (entry.loading) {
           <tr
-            starPart="loading"
+            starPart="loadingItem"
             class="star-tree-table__loading"
             [attr.aria-rowindex]="entry.aria"
             [attr.aria-level]="row.level + 1"

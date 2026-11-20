@@ -165,7 +165,7 @@ function plainText(text: string): string {
       (scroll)="onScroll()"
     >
       @if (loading()) {
-        <div data-star-part="loading" class="star-chat__loading">
+        <div data-star-part="loadingPanel" class="star-chat__loading">
           <i
             data-star-part="loadingIcon"
             class="ph-bold ph-spinner-gap star-spin"
@@ -187,7 +187,7 @@ function plainText(text: string): string {
         } @else {
           @let message = row.message;
           <div
-            data-star-part="message"
+            data-star-part="messageText"
             class="star-chat__message"
             [class.star-chat__message--own]="row.own"
             [class.star-chat__message--first]="row.first"
@@ -231,7 +231,7 @@ function plainText(text: string): string {
               @if (row.last || message.status) {
                 <div data-star-part="meta" class="star-chat__meta">
                   @if (row.last && row.time) {
-                    <time data-star-part="time" aria-hidden="true" [attr.datetime]="row.iso">{{
+                    <time data-star-part="timeText" aria-hidden="true" [attr.datetime]="row.iso">{{
                       row.time
                     }}</time>
                   }
@@ -265,7 +265,7 @@ function plainText(text: string): string {
     </div>
     @if (typingText(); as typingLine) {
       <div data-star-part="typing" class="star-chat__typing">
-        <span data-star-part="dots" class="star-chat__dots" aria-hidden="true"
+        <span data-star-part="typingIcon" class="star-chat__dots" aria-hidden="true"
           ><span data-star-part="dotItem"></span><span data-star-part="dotItem"></span
           ><span data-star-part="dotItem"></span
         ></span>
@@ -290,7 +290,7 @@ function plainText(text: string): string {
         (keydown)="onComposerKeydown($event)"
       ></textarea>
       <button
-        data-star-part="send"
+        data-star-part="sendButton"
         type="submit"
         class="star-btn star-btn--primary star-btn--icon star-chat__send"
         [attr.aria-label]="text.send"

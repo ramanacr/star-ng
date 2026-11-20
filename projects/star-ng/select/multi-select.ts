@@ -125,36 +125,36 @@ import { starSelectionChanging, StarSelectionChangingEvent } from './selection-c
       </div>
       @if (showClear() && selectedCount() && interactive()) {
         <button
-          data-star-part="iconBtn"
+          data-star-part="clearButton"
           type="button"
           class="star-select__icon-btn"
           [attr.aria-label]="text.clear"
           (click)="clear()"
         >
           @if (iconSlot('clear'); as icon) {
-            <span data-star-part="iconBtnIcon" aria-hidden="true"
+            <span data-star-part="clearIcon" aria-hidden="true"
               ><ng-container *ngTemplateOutlet="icon"
             /></span>
           } @else {
-            <i data-star-part="iconBtnIcon" class="ph-bold ph-x" aria-hidden="true"></i>
+            <i data-star-part="clearIcon" class="ph-bold ph-x" aria-hidden="true"></i>
           }
         </button>
       }
       @if (loading()) {
         <i
-          data-star-part="caret"
+          data-star-part="dropdownIcon"
           class="ph-bold ph-spinner-gap star-spin star-select__caret"
           role="img"
           [attr.aria-label]="text.loading"
         ></i>
       } @else {
         @if (iconSlot('dropdown'); as icon) {
-          <span data-star-part="caret" class="star-select__caret" aria-hidden="true"
+          <span data-star-part="dropdownIcon" class="star-select__caret" aria-hidden="true"
             ><ng-container *ngTemplateOutlet="icon"
           /></span>
         } @else {
           <i
-            data-star-part="caret"
+            data-star-part="dropdownIcon"
             class="ph-bold ph-caret-down star-select__caret"
             aria-hidden="true"
           ></i>
@@ -192,7 +192,7 @@ import { starSelectionChanging, StarSelectionChangingEvent } from './selection-c
           <div data-star-part="filter" class="star-panel__filter">
             @if (showToggleAll() && !selectionLimit()) {
               <button
-                data-star-part="toggleAll"
+                data-star-part="toggleAllButton"
                 type="button"
                 class="star-panel__toggle-all"
                 role="checkbox"

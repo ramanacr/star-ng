@@ -165,7 +165,7 @@ interface Position {
           [attr.aria-colcount]="result().columns.length + 1"
           [style.width.px]="tableWidth()"
         >
-          <colgroup data-star-part="columns">
+          <colgroup data-star-part="columnList">
             <col data-star-part="column" [style.width.px]="rowHeaderWidth()" />
             @if (columnWindow().before) {
               <col data-star-part="column" [style.width.px]="columnWindow().before" />
@@ -222,7 +222,7 @@ interface Position {
                     [attr.data-pos]="pos"
                     [attr.tabindex]="tabIndex(pos)"
                   >
-                    <span data-star-part="headContent" class="star-pivot__head-content">
+                    <span data-star-part="headerPanel" class="star-pivot__head-content">
                       @if (cell.expandable) {
                         <span
                           data-star-part="toggle"
@@ -272,7 +272,7 @@ interface Position {
                 [attr.aria-rowindex]="headerCount() + r + 1"
               >
                 <th
-                  data-star-part="rowHead"
+                  data-star-part="rowHeader"
                   scope="row"
                   role="rowheader"
                   class="star-pivot__row-head"
@@ -281,7 +281,7 @@ interface Position {
                   [attr.data-pos]="r + ':-1'"
                   [attr.tabindex]="tabIndex(r + ':-1')"
                 >
-                  <span data-star-part="headContent" class="star-pivot__head-content">
+                  <span data-star-part="headerPanel" class="star-pivot__head-content">
                     @if (row.expandable) {
                       <span
                         data-star-part="toggle"
@@ -295,7 +295,7 @@ interface Position {
                       ></span>
                     } @else if (row.kind === 'member') {
                       <span
-                        data-star-part="toggleSpace"
+                        data-star-part="toggleCell"
                         class="star-pivot__toggle-space"
                         aria-hidden="true"
                       ></span>

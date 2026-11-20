@@ -70,7 +70,7 @@ export function starPasswordRules(text: StarUiText, minLength = 12): readonly St
         (blur)="touch.emit()"
       />
       <button
-        data-star-part="iconBtn"
+        data-star-part="revealButton"
         type="button"
         class="star-select__icon-btn"
         [attr.aria-label]="masked() ? text.showPassword : text.hidePassword"
@@ -79,7 +79,7 @@ export function starPasswordRules(text: StarUiText, minLength = 12): readonly St
         (click)="masked.set(!masked())"
       >
         <i
-          data-star-part="iconBtnIcon"
+          data-star-part="revealIcon"
           class="ph-bold"
           [class.ph-eye]="masked()"
           [class.ph-eye-slash]="!masked()"

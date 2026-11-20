@@ -75,7 +75,7 @@ function hexOf(value: string): string {
         ></button>
       }
     </div>
-    <label data-star-part="colorCustom" class="star-editor__color-custom">
+    <label data-star-part="customColorLabel" class="star-editor__color-custom">
       {{ text.customColor }}
       <input
         data-star-part="colorCustomInput"

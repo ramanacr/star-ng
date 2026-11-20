@@ -198,9 +198,9 @@ const SORT_FIELDS: readonly StarFileSortField[] = ['name', 'size', 'modified', '
   },
   template: `
     <!-- The native copy event bubbles: it stops here, so only the copy output reaches the owner. -->
-    <div data-star-part="fmRoot" class="star-fm-root" (copy)="$event.stopPropagation()">
+    <div data-star-part="shell" class="star-fm-root" (copy)="$event.stopPropagation()">
       <div
-        data-star-part="fm"
+        data-star-part="frame"
         class="star-fm"
         role="region"
         [attr.aria-label]="ariaLabel() ?? text.fileManager"
@@ -213,7 +213,7 @@ const SORT_FIELDS: readonly StarFileSortField[] = ['name', 'size', 'modified', '
             [ariaLabel]="(ariaLabel() ?? text.fileManager) + ': ' + text.breadcrumb"
           />
           <input
-            data-star-part="search"
+            data-star-part="searchInput"
             type="search"
             class="star-input star-fm__search"
             [attr.aria-label]="text.search"
@@ -271,7 +271,7 @@ const SORT_FIELDS: readonly StarFileSortField[] = ['name', 'size', 'modified', '
         <star-menu #sortMenu [items]="sortItems()" />
 
         @if (uploadOpen()) {
-          <div data-star-part="upload" class="star-fm__upload">
+          <div data-star-part="uploadPanel" class="star-fm__upload">
             <star-file-upload multiple [(value)]="uploadFiles" (selected)="onUpload($event)" />
           </div>
         }
@@ -327,7 +327,7 @@ const SORT_FIELDS: readonly StarFileSortField[] = ['name', 'size', 'modified', '
               >
                 <ng-template starCell="name" [starCellOf]="visible()" let-row>
                   <span
-                    starPart="name"
+                    starPart="nameText"
                     class="star-fm__name"
                     draggable="true"
                     [attr.data-file-name]="row.id"
@@ -336,7 +336,7 @@ const SORT_FIELDS: readonly StarFileSortField[] = ['name', 'size', 'modified', '
                     <i data-star-part="nameIcon" [class]="iconOf(row)" aria-hidden="true"></i>
                     @if (renaming() === row.id) {
                       <input
-                        data-star-part="rename"
+                        data-star-part="renameInput"
                         class="star-input star-fm__rename"
                         [attr.aria-label]="text.rename"
                         [value]="row.name"
@@ -344,7 +344,7 @@ const SORT_FIELDS: readonly StarFileSortField[] = ['name', 'size', 'modified', '
                         (blur)="commitRename(row, $any($event.target).value)"
                       />
                     } @else {
-                      <span data-star-part="nameText">{{ row.name }}</span>
+                      <span data-star-part="nameLabel">{{ row.name }}</span>
                     }
                   </span>
                 </ng-template>
@@ -373,7 +373,7 @@ const SORT_FIELDS: readonly StarFileSortField[] = ['name', 'size', 'modified', '
                       (focus)="focusId.set(item.id)"
                     >
                       <i
-                        data-star-part="iconGlyph"
+                        data-star-part="tileIcon"
                         class="star-fm__icon-glyph"
                         [class]="iconOf(item)"
                         aria-hidden="true"
@@ -382,7 +382,7 @@ const SORT_FIELDS: readonly StarFileSortField[] = ['name', 'size', 'modified', '
                         presentational, so the field must not be inside one. -->
                       @if (renaming() === item.id) {
                         <input
-                          data-star-part="rename"
+                          data-star-part="renameInput"
                           class="star-input star-fm__rename"
                           [attr.aria-label]="text.rename"
                           [value]="item.name"
@@ -391,7 +391,7 @@ const SORT_FIELDS: readonly StarFileSortField[] = ['name', 'size', 'modified', '
                           (blur)="commitRename(item, $any($event.target).value)"
                         />
                       } @else {
-                        <span data-star-part="iconName" class="star-fm__icon-name">{{
+                        <span data-star-part="tileLabel" class="star-fm__icon-name">{{
                           item.name
                         }}</span>
                       }
@@ -412,7 +412,7 @@ const SORT_FIELDS: readonly StarFileSortField[] = ['name', 'size', 'modified', '
             >
               @if (selectedItems(); as chosen) {
                 @if (chosen.length === 1) {
-                  <h3 data-star-part="detailsTitle" class="star-fm__details-title">
+                  <h3 data-star-part="detailsHeader" class="star-fm__details-title">
                     <i
                       data-star-part="detailsTitleIcon"
                       [class]="iconOf(chosen[0])"

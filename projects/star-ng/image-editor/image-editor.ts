@@ -524,7 +524,7 @@ const normalizeAngle = (angle: number) => {
     }
 
     <ng-template #actions>
-      <span starPart="actions" class="star-image-editor__actions">
+      <span starPart="actionList" class="star-image-editor__actions">
         <button
           data-star-part="applyButton"
           type="button"

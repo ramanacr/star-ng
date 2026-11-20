@@ -58,9 +58,12 @@ const AGGREGATES: readonly StarPivotAggregate[] = [
           class="star-pivot-config__area"
           [class]="'star-pivot-config__area--' + list"
         >
-          <span data-star-part="title" class="star-pivot-config__title" [id]="id + '-' + list">{{
-            listLabel(list)
-          }}</span>
+          <span
+            data-star-part="titleText"
+            class="star-pivot-config__title"
+            [id]="id + '-' + list"
+            >{{ listLabel(list) }}</span
+          >
           <ul
             data-star-part="list"
             class="star-pivot-config__list"

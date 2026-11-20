@@ -334,7 +334,7 @@ export class StarAppSidebarSection {
       }
       @if (hasChildren()) {
         <i
-          starPart="chevron"
+          starPart="expandIcon"
           class="ph-bold ph-caret-right star-app-sidebar__chevron"
           aria-hidden="true"
         ></i>

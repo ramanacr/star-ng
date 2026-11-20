@@ -258,7 +258,12 @@ const TIME_VIEWS: ReadonlySet<StarSchedulerView> = new Set(['day', 'week', 'work
           ></i>
         </button>
       </div>
-      <h2 data-star-part="title" class="star-scheduler__title" [id]="titleId" aria-live="polite">
+      <h2
+        data-star-part="titleText"
+        class="star-scheduler__title"
+        [id]="titleId"
+        aria-live="polite"
+      >
         {{ rangeTitle() }}
       </h2>
       <div
@@ -353,15 +358,15 @@ const TIME_VIEWS: ReadonlySet<StarSchedulerView> = new Set(['day', 'week', 'work
           [attr.aria-labelledby]="titleId"
         >
           @for (group of agenda(); track group.day.getTime()) {
-            <div data-star-part="agendaDay" class="star-scheduler__agenda-day" role="listitem">
-              <h3 data-star-part="agendaDate" class="star-scheduler__agenda-date">
+            <div data-star-part="agendaDayText" class="star-scheduler__agenda-day" role="listitem">
+              <h3 data-star-part="agendaDateText" class="star-scheduler__agenda-date">
                 {{ dayLabel(group.day) }}
               </h3>
               <ul data-star-part="agendaList" class="star-scheduler__agenda-list">
                 @for (occurrence of group.occurrences; track occurrence.key) {
                   <li data-star-part="agendaItem" class="star-scheduler__agenda-item">
                     <span
-                      data-star-part="agendaTime"
+                      data-star-part="agendaTimeText"
                       class="star-scheduler__agenda-time"
                       aria-hidden="true"
                     >
@@ -419,7 +424,11 @@ const TIME_VIEWS: ReadonlySet<StarSchedulerView> = new Set(['day', 'week', 'work
             </div>
             @for (resource of resources(); track resource.id; let r = $index) {
               <div data-star-part="row" role="row" class="star-scheduler__row">
-                <div data-star-part="resource" role="rowheader" class="star-scheduler__resource">
+                <div
+                  data-star-part="resourceLabel"
+                  role="rowheader"
+                  class="star-scheduler__resource"
+                >
                   {{ resource.name }}
                 </div>
                 @for (slot of slots(); track slot; let c = $index) {
@@ -488,7 +497,7 @@ const TIME_VIEWS: ReadonlySet<StarSchedulerView> = new Set(['day', 'week', 'work
                     >{{ weekdayShort(day) }}</span
                   >
                   <span
-                    data-star-part="dayNumber"
+                    data-star-part="dayNumberText"
                     class="star-scheduler__day-number"
                     aria-hidden="true"
                     >{{ day.getDate() }}</span
@@ -499,7 +508,7 @@ const TIME_VIEWS: ReadonlySet<StarSchedulerView> = new Set(['day', 'week', 'work
             </div>
             <div data-star-part="row" role="row" class="star-scheduler__row">
               <div
-                data-star-part="time"
+                data-star-part="timeText"
                 role="rowheader"
                 class="star-scheduler__time star-scheduler__time--all-day"
               >
@@ -537,7 +546,7 @@ const TIME_VIEWS: ReadonlySet<StarSchedulerView> = new Set(['day', 'week', 'work
             @for (slot of slots(); track slot; let r = $index) {
               <div data-star-part="row" role="row" class="star-scheduler__row">
                 <div
-                  data-star-part="time"
+                  data-star-part="timeText"
                   role="rowheader"
                   class="star-scheduler__time"
                   [class.star-scheduler__time--hour]="slot % 60 === 0"
@@ -601,7 +610,7 @@ const TIME_VIEWS: ReadonlySet<StarSchedulerView> = new Set(['day', 'week', 'work
       let-inList="inList"
     >
       <button
-        starPart="event"
+        starPart="eventItem"
         type="button"
         class="star-scheduler__event"
         [class.star-scheduler__event--compact]="compact"
@@ -629,7 +638,7 @@ const TIME_VIEWS: ReadonlySet<StarSchedulerView> = new Set(['day', 'week', 'work
         <!-- Default content: the name is aria-label, which starts with the visible text. A custom
              template is the content of the name, followed by the full name for screen readers. -->
         @if (eventSlot(); as custom) {
-          <span data-star-part="eventContent" class="star-scheduler__event-content">
+          <span data-star-part="eventPanel" class="star-scheduler__event-content">
             <ng-container
               *ngTemplateOutlet="
                 custom;
@@ -645,17 +654,17 @@ const TIME_VIEWS: ReadonlySet<StarSchedulerView> = new Set(['day', 'week', 'work
         } @else {
           <!-- The trailing space keeps the visible text "Title 10:00 to 11:00" one phrase for the
                name check (axe label-content-name-mismatch joins the spans without a space). -->
-          <span data-star-part="eventTitle" class="star-scheduler__event-title">{{
+          <span data-star-part="eventTitleText" class="star-scheduler__event-title">{{
             occurrence.event.title + ' '
           }}</span>
           @if (!occurrence.event.allDay && !compact) {
-            <span data-star-part="eventTime" class="star-scheduler__event-time">{{
+            <span data-star-part="eventTimeText" class="star-scheduler__event-time">{{
               timeSpan(occurrence)
             }}</span>
           }
           @if (occurrence.recurring) {
             <i
-              data-star-part="eventRepeat"
+              data-star-part="repeatIcon"
               class="ph-bold ph-repeat star-scheduler__event-repeat"
               aria-hidden="true"
             ></i>
@@ -680,7 +689,7 @@ const TIME_VIEWS: ReadonlySet<StarSchedulerView> = new Set(['day', 'week', 'work
 
     <star-popover #morePopover [ariaLabel]="moreDay() ? dayLabel(moreDay()!) : null">
       @if (moreDay(); as day) {
-        <p data-star-part="moreTitle" class="star-scheduler__more-title" aria-hidden="true">
+        <p data-star-part="moreTitleText" class="star-scheduler__more-title" aria-hidden="true">
           {{ dayLabel(day) }}
         </p>
         <div data-star-part="moreList" class="star-scheduler__more-list">

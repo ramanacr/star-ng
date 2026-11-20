@@ -167,7 +167,9 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
       [attr.aria-describedby]="descriptionId"
     >
       <figcaption data-star-part="head" class="star-chart__head">
-        <span data-star-part="title" class="star-chart__title" [id]="titleId">{{ title() }}</span>
+        <span data-star-part="titleText" class="star-chart__title" [id]="titleId">{{
+          title()
+        }}</span>
         <button
           data-star-part="headButton"
           type="button"
@@ -207,7 +209,7 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                   >
                     @if (item.shape) {
                       <svg
-                        data-star-part="swatchShape"
+                        data-star-part="swatchIcon"
                         class="star-chart__swatch-shape"
                         viewBox="-6 -6 12 12"
                       >
@@ -236,7 +238,7 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                 <li data-star-part="legendRow">
                   @if (item.shape) {
                     <svg
-                      data-star-part="swatchShape"
+                      data-star-part="swatchIcon"
                       class="star-chart__swatch-shape"
                       viewBox="-6 -6 12 12"
                     >
@@ -421,7 +423,7 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                         *ngTemplateOutlet="custom.template; context: tooltipContext()"
                       />
                     } @else {
-                      <span data-star-part="tipTitle" class="star-chart__tip-title">{{
+                      <span data-star-part="tipHeader" class="star-chart__tip-title">{{
                         labels()[hover()!]
                       }}</span>
                       @for (s of drawn(); track s.slot) {
@@ -511,7 +513,7 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                           *ngTemplateOutlet="custom.template; context: tooltipContext()"
                         />
                       } @else {
-                        <span data-star-part="tipTitle" class="star-chart__tip-title">{{
+                        <span data-star-part="tipHeader" class="star-chart__tip-title">{{
                           sector.label.full
                         }}</span>
                         <span data-star-part="tipRow" class="star-chart__tip-row">
@@ -575,7 +577,7 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                   }
                   @if (categoryLabel()) {
                     <text
-                      data-star-part="axisTitle"
+                      data-star-part="axisLabel"
                       class="star-chart__axis-title"
                       [attr.x]="W - SP.right"
                       [attr.y]="H - 4"
@@ -586,7 +588,7 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                   }
                   @if (valueLabel()) {
                     <text
-                      data-star-part="axisTitle"
+                      data-star-part="axisLabel"
                       class="star-chart__axis-title"
                       x="4"
                       y="12"
@@ -631,12 +633,12 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                           *ngTemplateOutlet="custom.template; context: tooltipContext()"
                         />
                       } @else {
-                        <span data-star-part="tipTitle" class="star-chart__tip-title">{{
+                        <span data-star-part="tipHeader" class="star-chart__tip-title">{{
                           point.seriesLabel
                         }}</span>
                         <span data-star-part="tipRow" class="star-chart__tip-row">
                           <svg
-                            data-star-part="swatchShape"
+                            data-star-part="swatchIcon"
                             class="star-chart__swatch-shape"
                             viewBox="-6 -6 12 12"
                           >
@@ -691,7 +693,7 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                   }
                   @if (secondaryTitle()) {
                     <text
-                      data-star-part="axisTitle"
+                      data-star-part="axisLabel"
                       class="star-chart__axis-title"
                       [attr.x]="W - 4"
                       y="10"
@@ -823,7 +825,7 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                         *ngTemplateOutlet="custom.template; context: tooltipContext()"
                       />
                     } @else {
-                      <span data-star-part="tipTitle" class="star-chart__tip-title">{{
+                      <span data-star-part="tipHeader" class="star-chart__tip-title">{{
                         labels()[hover()!]
                       }}</span>
                       @for (s of drawn(); track s.slot; let si = $index) {

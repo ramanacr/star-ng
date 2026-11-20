@@ -94,7 +94,7 @@ export class StarStep {
             <span data-star-part="text" class="star-stepper__text">
               <span data-star-part="label" class="star-stepper__label">{{ step.label() }}</span>
               @if (step.description()) {
-                <span data-star-part="desc" class="star-stepper__desc">{{
+                <span data-star-part="description" class="star-stepper__desc">{{
                   step.description()
                 }}</span>
               }

@@ -197,7 +197,7 @@ function matchesHotkey(event: KeyboardEvent, hotkey: Hotkey): boolean {
     <!-- Backdrop click only; keyboard users close with Escape (native cancel event). -->
     <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
     <dialog
-      data-star-part="dialog"
+      data-star-part="surface"
       #dialog
       class="star-dialog star-dialog--modal star-command-palette"
       [attr.aria-label]="ariaLabel() ?? text.commandPalette"
@@ -205,7 +205,7 @@ function matchesHotkey(event: KeyboardEvent, hotkey: Hotkey): boolean {
       (close)="onNativeClose()"
       (click)="onDialogClick($event)"
     >
-      <div data-star-part="search" class="star-command-palette__search">
+      <div data-star-part="searchPanel" class="star-command-palette__search">
         <i
           data-star-part="searchIcon"
           class="ph-bold ph-magnifying-glass star-command-palette__search-icon"
@@ -302,7 +302,11 @@ function matchesHotkey(event: KeyboardEvent, hotkey: Hotkey): boolean {
           </div>
         }
         @if (loading()) {
-          <div data-star-part="message" class="star-command-palette__message" role="presentation">
+          <div
+            data-star-part="messageText"
+            class="star-command-palette__message"
+            role="presentation"
+          >
             @if (loadingTemplate(); as template) {
               <ng-container *ngTemplateOutlet="template" />
             } @else {
@@ -310,7 +314,11 @@ function matchesHotkey(event: KeyboardEvent, hotkey: Hotkey): boolean {
             }
           </div>
         } @else if (!count()) {
-          <div data-star-part="message" class="star-command-palette__message" role="presentation">
+          <div
+            data-star-part="messageText"
+            class="star-command-palette__message"
+            role="presentation"
+          >
             @if (emptyTemplate(); as template) {
               <ng-container *ngTemplateOutlet="template; context: { $implicit: query() }" />
             } @else {

@@ -27,6 +27,17 @@ function walk(dir, found = []) {
   return found;
 }
 
+/** A template constant exported by a file next to `file` (`date-picker.template.ts`). */
+function importedTemplate(file, name) {
+  for (const sibling of readdirSync(dirname(file))) {
+    if (!sibling.endsWith('.ts') || sibling.endsWith('.spec.ts')) continue;
+    const text = readFileSync(join(dirname(file), sibling), 'utf8');
+    const match = new RegExp('export const ' + name + ' = `([\\s\\S]*?)`;').exec(text);
+    if (match) return match[1];
+  }
+  return '';
+}
+
 /** The component decorators of a file: selector, config text, template text, JSDoc. */
 function components(file) {
   const text = readFileSync(file, 'utf8');
@@ -57,7 +68,9 @@ function components(file) {
       let template = '';
       const inline = property('template');
       if (inline && ts.isNoSubstitutionTemplateLiteral(inline)) template = inline.text;
-      else if (inline && ts.isIdentifier(inline)) template = constants.get(inline.text) ?? '';
+      else if (inline && ts.isIdentifier(inline)) {
+        template = constants.get(inline.text) ?? importedTemplate(file, inline.text);
+      }
       const url = property('templateUrl');
       if (url) template = readFileSync(join(dirname(file), url.getText().slice(1, -1)), 'utf8');
       const docs = ts
@@ -201,8 +214,10 @@ export function duplicateParts(template) {
       // Both names come from a StarNG class (`star-menubar__item`, `star-mega-menu__item`): one
       // kind of element, one part.
       if (sourceClass(a) && sourceClass(b)) continue;
-      // A homogeneous group (the buttons of a toolbar): the same tag and the same StarNG classes.
-      if (a.tag === b.tag && a.classes.join(' ') === b.classes.join(' ')) continue;
+      // A homogeneous group (the buttons of a toolbar, the cells of a column): the same StarNG
+      // classes without modifiers, and the same tag when there is no StarNG class.
+      const kind = (part) => part.classes.filter((item) => !item.includes('--')).join(' ');
+      if (kind(a) === kind(b) && (kind(a) || a.tag === b.tag)) continue;
       found.add(a.name);
     }
   }
@@ -228,27 +243,80 @@ const ROLES = new Set([
   'Thumb',
   'Handle',
 ]);
-/** Glyph words: a part is named after what it does, not after its icon. */
+/** Glyph words: a part is named after what it does, not after the shape of its icon. */
 const GLYPHS = new Set([
   'caret',
-  'arrow',
-  'arrows',
+  'chevron',
   'dots',
-  'x',
   'plus',
   'minus',
-  'check',
   'magnifying',
   'pencil',
   'star',
+  'eyedropper',
+]);
+/** Abbreviations: a part name uses whole words. */
+const ABBREVIATIONS = new Set([
+  'btn',
+  'btns',
+  'msg',
+  'img',
+  'desc',
+  'sep',
+  'sub',
+  'fm',
+  'col',
+  'hdr',
+  'colhead',
+  'rowhead',
+  'th',
+  'td',
+  'p',
+  'pre',
+  'thead',
+  'tbody',
+  'tfoot',
+  'num',
+  'val',
+  'opt',
+  'ctrl',
+  'src',
+  'el',
+]);
+
+/** The keys of `STAR_UI_TEXT`: a part is not named after a text. */
+const TEXT_KEYS = new Set(
+  [...readFileSync(join(lib, 'core/ui-text.ts'), 'utf8').matchAll(/^ {2}readonly (\w+)\??:/gm)].map(
+    ([, key]) => key,
+  ),
+);
+
+/** Words that name a control: a UI text key with one of them is the text of that control. */
+const CONTROL_WORDS = new Set([
+  'editor',
+  'spreadsheet',
+  'document',
+  'map',
+  'signature',
+  'diagram',
+  'chart',
+  'kanban',
+  'gantt',
+  'scheduler',
+  'pivot',
+  'ribbon',
+  'calendar',
 ]);
 
 const words = (name) => name.split(/(?=[A-Z])/);
+const lower = (word) => word.toLowerCase();
 
 /**
- * The part names of a template that break the naming rule (`<purpose><Role>`, camelCase, at most
- * three words): a role outside the list, a control prefix, a glyph name, a doubled suffix. A name
- * that comes from a StarNG class follows the class and is checked only for length and doubles.
+ * The part names of a template that break the naming rule, with the reasons. Every name is
+ * `<purpose><Role>` in camelCase with at most three words and a role from the list, or one
+ * structural word (listed in the guide "Styling hooks"). No name has an abbreviation, the control
+ * name, a glyph word (of the list or of its own icon class), a doubled word or role, or the name
+ * of a UI text.
  */
 export function badNames(template, block) {
   const found = new Set();
@@ -257,19 +325,52 @@ export function badNames(template, block) {
     const reasons = [];
     if (parts.length > 3) reasons.push('more than 3 words');
     for (let index = 1; index < parts.length; index++) {
-      if (parts[index] === parts[index - 1]) reasons.push('doubled word');
+      if (lower(parts[index]) === lower(parts[index - 1])) reasons.push('doubled word');
       if (index === parts.length - 1 && ROLES.has(parts[index]) && ROLES.has(parts[index - 1])) {
         if (parts[index - 1] !== 'Header') reasons.push('doubled role');
       }
     }
-    if (!sourceClass(part)) {
-      if (parts.length > 1 && !ROLES.has(parts.at(-1))) reasons.push('role not in the list');
-      if (block && parts.length > 1 && parts[0] === block) reasons.push('control prefix');
-      if (GLYPHS.has(parts[0])) reasons.push('glyph name');
+    if (parts.length > 1 && !ROLES.has(parts.at(-1))) reasons.push('role not in the list');
+    if (parts.some((word) => ABBREVIATIONS.has(lower(word)))) reasons.push('abbreviation');
+    if (
+      block &&
+      (part.name === block ||
+        (part.name.startsWith(block) && /^[A-Z]/.test(part.name.slice(block.length))))
+    ) {
+      reasons.push('control name');
+    }
+    // A shape word, or the full name of the element's own icon when it has several words
+    // (`magnifyingGlassPlusIcon`). A one-word icon that also says the purpose (`copyIcon` with
+    // `ph-copy`) is allowed.
+    const glyph = (part.glyph ?? '').replace(/^ph-/, '').split('-');
+    const glyphName =
+      glyph.length > 1
+        ? glyph.map((word, at) => (at ? word[0].toUpperCase() + word.slice(1) : word)).join('')
+        : '';
+    if (
+      parts.some((word) => GLYPHS.has(lower(word))) ||
+      (glyphName && part.name.startsWith(glyphName))
+    ) {
+      reasons.push('glyph name');
+    }
+    // The name is not the key of a UI text, and its purpose is not a UI text key that names a
+    // control (`editorBoldButton` from `text.editorBold`, `drawSignatureButton`). A purpose that
+    // only happens to match a key (`zoomInButton`, `firstPageIcon`) is fine.
+    const purpose = ROLES.has(parts.at(-1)) ? parts.slice(0, -1) : parts;
+    const purposeName = purpose.map((word, at) => (at ? word : lower(word))).join('');
+    const namesControl = purpose.some((word) => CONTROL_WORDS.has(lower(word)));
+    if (TEXT_KEYS.has(part.name) || (namesControl && TEXT_KEYS.has(purposeName))) {
+      reasons.push('UI text key');
     }
     if (reasons.length) found.add(`${part.name} (${[...new Set(reasons)].join(', ')})`);
   }
   return [...found];
+}
+
+/** The name of a control in camelCase, from its selector: `star-ribbon-group` gives `ribbonGroup`. */
+function controlName(selector) {
+  if (!/^star-[a-z0-9-]+$/.test(selector)) return '';
+  return selector.slice(5).replace(/-([a-z0-9])/g, (_, letter) => letter.toUpperCase());
 }
 
 /** The block of a control: the most frequent `star-<block>__` class of its template. */
@@ -314,9 +415,35 @@ test('part names are unique in each control template', () => {
 
 test('part names follow the naming rule', () => {
   const found = all.flatMap((item) =>
-    badNames(item.template, blockOf(item.template)).map((name) => `${item.name}: ${name}`),
+    badNames(item.template, controlName(item.selector)).map((name) => `${item.name}: ${name}`),
   );
   assert.deepEqual(found, []);
+});
+
+test('the guide lists every single-word part name', () => {
+  const guide = readFileSync(
+    join(root, 'projects/docs/src/app/guides/styling-hooks.guide.ts'),
+    'utf8',
+  );
+  const block = /<p class="docs-part-words">([\s\S]*?)<\/p>/.exec(guide)?.[1] ?? '';
+  const listed = new Set([...block.matchAll(/<code>([a-z]+)<\/code>/g)].map(([, word]) => word));
+  const used = new Set(
+    all.flatMap((item) =>
+      partsOf(item.template)
+        .map((part) => part.name)
+        .filter((name) => /^[a-z]+$/.test(name) && name !== 'root'),
+    ),
+  );
+  assert.deepEqual(
+    [...used].filter((word) => !listed.has(word)).sort(),
+    [],
+    'single-word part names missing from the guide "Styling hooks"',
+  );
+  assert.deepEqual(
+    [...listed].filter((word) => !used.has(word)).sort(),
+    [],
+    'words in the guide list that no template uses',
+  );
 });
 
 test('the naming check finds bad names', () => {
@@ -327,16 +454,18 @@ test('the naming check finds bad names', () => {
        <span data-star-part="moreCountTextText"></span>
        <button data-star-part="restoreButtonIcon"></button>
        <div data-star-part="rowSection"></div>
+       <button data-star-part="drawSignatureButton"></button>
        <button data-star-part="zoomInButton"></button>
        <div data-star-part="trigger" class="star-select__trigger"></div>`,
       'spreadsheet',
     ),
     [
-      'spreadsheetFewerDecimalsButton (more than 3 words, control prefix)',
+      'spreadsheetFewerDecimalsButton (more than 3 words, control name, UI text key)',
       'magnifyingGlassPlusIcon (more than 3 words, glyph name)',
       'moreCountTextText (more than 3 words, doubled word, doubled role)',
       'restoreButtonIcon (doubled role)',
       'rowSection (role not in the list)',
+      'drawSignatureButton (UI text key)',
     ],
   );
 });

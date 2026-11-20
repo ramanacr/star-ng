@@ -58,7 +58,7 @@ const POSITIONS: ConnectedPosition[] = [
   template: `
     <ng-template #panel>
       <div
-        starPart="popover"
+        starPart="surface"
         class="star-popover"
         tabindex="-1"
         [id]="panelId"

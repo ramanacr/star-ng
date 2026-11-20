@@ -10,7 +10,7 @@
       {{ text.columns }}
     </star-button>
     <star-popover #columnsPanel [ariaLabel]="text.columns">
-      <ul data-star-part="columns" class="star-table__columns">
+      <ul data-star-part="columnList" class="star-table__columns">
         @for (column of orderedColumns(); track column.field) {
           <li data-star-part="columnsItem">
             @if (columnToggle()) {
@@ -26,7 +26,7 @@
             }
             @if (pinnableColumns()) {
               @let side = sideOf(column);
-              <span data-star-part="columnsPin" class="star-table__columns-pin">
+              <span data-star-part="columnPinButton" class="star-table__columns-pin">
                 @for (action of pinActions; track action.side) {
                   <button
                     data-star-part="toggle"
@@ -44,7 +44,7 @@
               </span>
             }
             @if (reorderableColumns()) {
-              <span data-star-part="columnsMove" class="star-table__columns-move">
+              <span data-star-part="columnMoveButton" class="star-table__columns-move">
                 <button
                   data-star-part="toggle"
                   type="button"
@@ -160,7 +160,7 @@
           @for (cell of headerRow; track cell.key) {
             @if (rowIndex === 0 && cellHas(cell, columnWindow().first, 'first')) {
               <td
-                data-star-part="colSpacer"
+                data-star-part="spacerCell"
                 class="star-table__col-spacer"
                 aria-hidden="true"
                 [attr.rowspan]="headRowSpan()"
@@ -170,7 +170,7 @@
             }
             @if (cell.kind === 'group') {
               <th
-                data-star-part="th"
+                data-star-part="headerCell"
                 scope="colgroup"
                 class="star-table__th star-table__column-group"
                 [attr.colspan]="cell.columns.length"
@@ -222,7 +222,7 @@
                     <ng-container *ngTemplateOutlet="headerLabel; context: { $implicit: column }" />
                     <i data-star-part="sortIcon" [class]="sortIcon(column)" aria-hidden="true"></i>
                     @if (sortRank(column); as rank) {
-                      <span data-star-part="sortRank" class="star-table__sort-rank">{{
+                      <span data-star-part="sortRankText" class="star-table__sort-rank">{{
                         rank
                       }}</span>
                     }
@@ -266,7 +266,7 @@
             }
             @if (rowIndex === 0 && cellHas(cell, columnWindow().last, 'last')) {
               <td
-                data-star-part="colSpacer"
+                data-star-part="spacerCell"
                 class="star-table__col-spacer"
                 aria-hidden="true"
                 [attr.rowspan]="headRowSpan()"
@@ -277,7 +277,7 @@
           }
           @if (rowIndex === 0 && rowEditMode()) {
             <th
-              data-star-part="rowActions"
+              data-star-part="rowActionCell"
               class="star-table__row-actions"
               [attr.rowspan]="headRowSpan()"
               [attr.aria-colindex]="ariaColCount()"
@@ -306,7 +306,7 @@
           @for (column of renderedColumns(); track column.field) {
             @if (column === columnWindow().first) {
               <td
-                data-star-part="colSpacer"
+                data-star-part="spacerCell"
                 class="star-table__col-spacer"
                 aria-hidden="true"
                 [style.width.px]="columnWindow().before"
@@ -350,7 +350,7 @@
                   (valueChange)="setFilter(column.field, $event)"
                 />
               } @else if (column.filter === 'number' || column.filter === 'date') {
-                <span data-star-part="filterRange" class="star-table__filter-range">
+                <span data-star-part="rangePanel" class="star-table__filter-range">
                   <input
                     data-star-part="filter"
                     class="star-input star-input--sm star-table__filter"
@@ -374,7 +374,7 @@
             </td>
             @if (column === columnWindow().last) {
               <td
-                data-star-part="colSpacer"
+                data-star-part="spacerCell"
                 class="star-table__col-spacer"
                 aria-hidden="true"
                 [style.width.px]="columnWindow().after"
@@ -383,7 +383,7 @@
             }
           }
           @if (rowEditMode()) {
-            <td data-star-part="rowActions" class="star-table__row-actions"></td>
+            <td data-star-part="rowActionCell" class="star-table__row-actions"></td>
           }
         </tr>
       }
@@ -397,7 +397,7 @@
     >
       @if (loading() && loadingSlot(); as loader) {
         <tr data-star-part="scrollBodyRow">
-          <td data-star-part="loading" class="star-table__loading" [attr.colspan]="colspan()">
+          <td data-star-part="loadingItem" class="star-table__loading" [attr.colspan]="colspan()">
             <ng-container *ngTemplateOutlet="loader" />
           </td>
         </tr>
@@ -418,7 +418,7 @@
             @for (column of renderedColumns(); track column.field) {
               @if (column === columnWindow().first) {
                 <td
-                  data-star-part="colSpacer"
+                  data-star-part="spacerCell"
                   class="star-table__col-spacer"
                   aria-hidden="true"
                   [style.width.px]="columnWindow().before"
@@ -434,7 +434,7 @@
               </td>
               @if (column === columnWindow().last) {
                 <td
-                  data-star-part="colSpacer"
+                  data-star-part="spacerCell"
                   class="star-table__col-spacer"
                   aria-hidden="true"
                   [style.width.px]="columnWindow().after"
@@ -443,7 +443,7 @@
               }
             }
             @if (rowEditMode()) {
-              <td data-star-part="rowActions" class="star-table__row-actions"></td>
+              <td data-star-part="rowActionCell" class="star-table__row-actions"></td>
             }
           </tr>
         }
@@ -452,7 +452,7 @@
           @if (entry.kind === 'spacer') {
             <tr data-star-part="spacer" class="star-table__spacer" aria-hidden="true">
               <td
-                data-star-part="spacerCell"
+                data-star-part="fillerCell"
                 [attr.colspan]="colspan()"
                 [style.height.px]="entry.height"
               ></td>
@@ -467,7 +467,7 @@
             >
               <th data-star-part="groupHeaderCell" [attr.colspan]="colspan()" scope="colgroup">
                 <button
-                  data-star-part="groupToggle"
+                  data-star-part="groupToggleButton"
                   type="button"
                   class="star-table__group-toggle"
                   [attr.aria-expanded]="!isGroupCollapsed(group.label)"
@@ -487,7 +487,7 @@
                     />
                   } @else {
                     {{ group.label }}
-                    <span data-star-part="groupCount" class="star-table__group-count">{{
+                    <span data-star-part="groupCountText" class="star-table__group-count">{{
                       group.count
                     }}</span>
                   }
@@ -497,7 +497,7 @@
           } @else if (entry.kind === 'groupFooter') {
             @let summaries = groupSummaries().get(entry.label);
             <tr
-              data-star-part="groupFooter"
+              data-star-part="groupFooterRow"
               class="star-table__group-footer"
               [attr.aria-rowindex]="entry.aria"
               [attr.data-vi]="entry.item"
@@ -515,7 +515,7 @@
               @for (column of renderedColumns(); track column.field) {
                 @if (column === columnWindow().first) {
                   <td
-                    data-star-part="colSpacer"
+                    data-star-part="spacerCell"
                     class="star-table__col-spacer"
                     aria-hidden="true"
                     [style.width.px]="columnWindow().before"
@@ -537,7 +537,7 @@
                 </td>
                 @if (column === columnWindow().last) {
                   <td
-                    data-star-part="colSpacer"
+                    data-star-part="spacerCell"
                     class="star-table__col-spacer"
                     aria-hidden="true"
                     [style.width.px]="columnWindow().after"
@@ -546,7 +546,7 @@
                 }
               }
               @if (rowEditMode()) {
-                <td data-star-part="rowActions" class="star-table__row-actions"></td>
+                <td data-star-part="rowActionCell" class="star-table__row-actions"></td>
               }
             </tr>
           } @else {
@@ -671,7 +671,7 @@
               @for (column of renderedColumns(); track column.field; let firstCell = $first) {
                 @if (column === columnWindow().first) {
                   <td
-                    data-star-part="colSpacer"
+                    data-star-part="spacerCell"
                     class="star-table__col-spacer"
                     aria-hidden="true"
                     [style.width.px]="columnWindow().before"
@@ -811,7 +811,7 @@
                       >
                         <!-- The name is the action and the visible value (WCAG 2.5.3). -->
                         <span class="star-sr-only">{{ text.editCell(column.header) }}: </span>
-                        <span data-star-part="editValue" class="star-table__edit-value">
+                        <span data-star-part="editText" class="star-table__edit-value">
                           <ng-container
                             *ngTemplateOutlet="cell; context: { $implicit: row, column, index: i }"
                           />
@@ -837,7 +837,7 @@
                 }
                 @if (column === columnWindow().last) {
                   <td
-                    data-star-part="colSpacer"
+                    data-star-part="spacerCell"
                     class="star-table__col-spacer"
                     aria-hidden="true"
                     [style.width.px]="columnWindow().after"
@@ -847,7 +847,7 @@
               }
               @if (rowEditMode()) {
                 <td
-                  data-star-part="rowActions"
+                  data-star-part="rowActionCell"
                   class="star-table__row-actions"
                   [attr.aria-colindex]="ariaColCount()"
                   [attr.data-field]="cellKeys() ? '$actions' : null"
@@ -952,7 +952,7 @@
           @for (column of renderedColumns(); track column.field) {
             @if (column === columnWindow().first) {
               <td
-                data-star-part="colSpacer"
+                data-star-part="spacerCell"
                 class="star-table__col-spacer"
                 aria-hidden="true"
                 [style.width.px]="columnWindow().before"
@@ -974,7 +974,7 @@
             </td>
             @if (column === columnWindow().last) {
               <td
-                data-star-part="colSpacer"
+                data-star-part="spacerCell"
                 class="star-table__col-spacer"
                 aria-hidden="true"
                 [style.width.px]="columnWindow().after"
@@ -983,7 +983,7 @@
             }
           }
           @if (rowEditMode()) {
-            <td data-star-part="rowActions" class="star-table__row-actions"></td>
+            <td data-star-part="rowActionCell" class="star-table__row-actions"></td>
           }
         </tr>
       </tfoot>

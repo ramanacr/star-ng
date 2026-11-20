@@ -24,7 +24,7 @@ import { StarDialogBase } from '@star-ng/ui/dialog';
     <!-- Backdrop click only; keyboard users close with Escape (native cancel event). -->
     <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events -->
     <dialog
-      data-star-part="drawer"
+      data-star-part="frame"
       #dialog
       class="star-drawer"
       [class]="'star-drawer star-drawer--' + position()"
@@ -44,7 +44,7 @@ import { StarDialogBase } from '@star-ng/ui/dialog';
           <header data-star-part="header" class="star-dialog__header">
             <div data-star-part="heading" class="star-dialog__heading">
               @if (header()) {
-                <h2 data-star-part="title" class="star-dialog__title" [id]="headerId">
+                <h2 data-star-part="titleText" class="star-dialog__title" [id]="headerId">
                   {{ header() }}
                 </h2>
               }
@@ -52,7 +52,7 @@ import { StarDialogBase } from '@star-ng/ui/dialog';
             </div>
             @if (closable()) {
               <button
-                data-star-part="close"
+                data-star-part="closeButton"
                 type="button"
                 class="star-btn star-btn--ghost star-btn--icon star-dialog__close"
                 [attr.aria-label]="text.close"

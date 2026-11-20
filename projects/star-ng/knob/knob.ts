@@ -338,7 +338,7 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
     ></button>
     @if (canEyeDrop()) {
       <button
-        data-star-part="eyedropper"
+        data-star-part="pickButton"
         type="button"
         class="star-btn star-btn--ghost star-btn--icon star-btn--sm star-color__eyedropper"
         [attr.aria-label]="text.eyeDropper"
@@ -346,7 +346,7 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
         [disabled]="disabled()"
         (click)="pickFromScreen()"
       >
-        <i data-star-part="eyeDropperIcon" class="ph-bold ph-eyedropper" aria-hidden="true"></i>
+        <i data-star-part="pickIcon" class="ph-bold ph-eyedropper" aria-hidden="true"></i>
       </button>
     }
     <input
@@ -404,7 +404,7 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
           ></span>
         </div>
         <div
-          data-star-part="hue"
+          data-star-part="hueTrack"
           class="star-color__hue"
           role="slider"
           tabindex="0"

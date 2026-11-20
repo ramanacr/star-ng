@@ -117,36 +117,36 @@ import { starSelectionChanging, StarSelectionChangingEvent } from './selection-c
       }
       @if (showClear() && hasValue() && interactive()) {
         <button
-          data-star-part="iconBtn"
+          data-star-part="clearButton"
           type="button"
           class="star-select__icon-btn"
           [attr.aria-label]="text.clear"
           (click)="clear()"
         >
           @if (iconSlot('clear'); as icon) {
-            <span data-star-part="iconBtnIcon" aria-hidden="true"
+            <span data-star-part="clearIcon" aria-hidden="true"
               ><ng-container *ngTemplateOutlet="icon"
             /></span>
           } @else {
-            <i data-star-part="iconBtnIcon" class="ph-bold ph-x" aria-hidden="true"></i>
+            <i data-star-part="clearIcon" class="ph-bold ph-x" aria-hidden="true"></i>
           }
         </button>
       }
       @if (loading()) {
         <i
-          data-star-part="caret"
+          data-star-part="dropdownIcon"
           class="ph-bold ph-spinner-gap star-spin star-select__caret"
           role="img"
           [attr.aria-label]="text.loading"
         ></i>
       } @else {
         @if (iconSlot('dropdown'); as icon) {
-          <span data-star-part="caret" class="star-select__caret" aria-hidden="true"
+          <span data-star-part="dropdownIcon" class="star-select__caret" aria-hidden="true"
             ><ng-container *ngTemplateOutlet="icon"
           /></span>
         } @else {
           <i
-            data-star-part="caret"
+            data-star-part="dropdownIcon"
             class="ph-bold ph-caret-down star-select__caret"
             aria-hidden="true"
           ></i>
@@ -289,12 +289,12 @@ import { starSelectionChanging, StarSelectionChangingEvent } from './selection-c
                 </span>
                 @if (isSelected(option)) {
                   @if (iconSlot('check'); as icon) {
-                    <span data-star-part="check" class="star-listbox__check" aria-hidden="true"
+                    <span data-star-part="checkIcon" class="star-listbox__check" aria-hidden="true"
                       ><ng-container *ngTemplateOutlet="icon"
                     /></span>
                   } @else {
                     <i
-                      data-star-part="check"
+                      data-star-part="checkIcon"
                       class="ph-bold ph-check star-listbox__check"
                       aria-hidden="true"
                     ></i>

@@ -109,7 +109,7 @@ export class StarWindowStack {
     <!-- Keys and pointer presses from inside the window: Escape and bringing it to the front. -->
     <!-- eslint-disable-next-line @angular-eslint/template/interactive-supports-focus -->
     <dialog
-      data-star-part="window"
+      data-star-part="surface"
       #dialog
       class="star-window"
       [class.star-window--minimized]="state() === 'minimized'"
@@ -142,13 +142,15 @@ export class StarWindowStack {
         (dblclick)="onTitleDoubleClick($event)"
       >
         @if (header()) {
-          <h2 data-star-part="title" class="star-window__title" [id]="titleId">{{ header() }}</h2>
+          <h2 data-star-part="titleText" class="star-window__title" [id]="titleId">
+            {{ header() }}
+          </h2>
         } @else {
           <!-- Keeps the buttons at the inline end without a title. -->
-          <span data-star-part="title" class="star-window__title" aria-hidden="true"></span>
+          <span data-star-part="titleText" class="star-window__title" aria-hidden="true"></span>
         }
         <ng-content select="[starWindowHeader]" />
-        <div data-star-part="actions" class="star-window__actions">
+        <div data-star-part="actionList" class="star-window__actions">
           <!-- Stable toggles: the focused button stays when the state changes. A window that is
                minimized or maximized from code always shows its restore button, also when that
                action is off; after the restore the button goes, and the focus goes to the title bar. -->

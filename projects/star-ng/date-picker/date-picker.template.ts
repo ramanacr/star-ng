@@ -29,8 +29,8 @@ export const STAR_DATE_TEMPLATE = `
       (blur)="onInputBlur()"
     />
     @if (showClear() && hasValue() && interactive()) {
-      <button data-star-part="iconBtn" type="button" class="star-select__icon-btn" [attr.aria-label]="text.clear" (click)="onClearClick()">
-        <i data-star-part="iconBtnIcon" class="ph-bold ph-x" aria-hidden="true"></i>
+      <button data-star-part="clearButton" type="button" class="star-select__icon-btn" [attr.aria-label]="text.clear" (click)="onClearClick()">
+        <i data-star-part="clearIcon" class="ph-bold ph-x" aria-hidden="true"></i>
       </button>
     }
     <button data-star-part="toggle"
@@ -117,9 +117,9 @@ export const STAR_DATE_TEMPLATE = `
         (viewChange)="viewChange.emit($event)"
       />
       @if (timeEnabled()) {
-        <div data-star-part="time" class="star-date__time">
+        <div data-star-part="timeText" class="star-date__time">
           @for (field of timeFields(); track field.label) {
-            <div data-star-part="timeField" class="star-date__time-field" role="group" [attr.aria-label]="field.label">
+            <div data-star-part="timePanel" class="star-date__time-field" role="group" [attr.aria-label]="field.label">
               <span data-star-part="timeLabel" class="star-date__time-label" aria-hidden="true">{{ field.label }}</span>
               <star-time-columns
                 [value]="field.value || null"
@@ -136,14 +136,14 @@ export const STAR_DATE_TEMPLATE = `
             </div>
           }
         </div>
-        <div data-star-part="done" class="star-date__done">
+        <div data-star-part="footerPanel" class="star-date__done">
           <button data-star-part="doneButton" type="button" class="star-btn star-btn--primary star-btn--sm" (click)="closePanel()">{{ text.done }}</button>
         </div>
       }
       @if (showButtonBar()) {
         <div data-star-part="bar" class="star-date__bar">
           <button data-star-part="todayButton" type="button" class="star-btn star-btn--ghost star-btn--sm" (click)="today()">{{ text.today }}</button>
-          <button data-star-part="clearButton" type="button" class="star-btn star-btn--ghost star-btn--sm" (click)="onClearClick()">{{ text.clear }}</button>
+          <button data-star-part="footerClearButton" type="button" class="star-btn star-btn--ghost star-btn--sm" (click)="onClearClick()">{{ text.clear }}</button>
         </div>
       }
       <!-- The footer is last, below the button bar. PrimeNG \`#footer\` template. -->

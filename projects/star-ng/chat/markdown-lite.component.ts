@@ -20,17 +20,17 @@ import { starParseMarkdownLite } from './markdown-lite';
     @for (block of blocks(); track $index) {
       @if (block.kind === 'code') {
         <pre
-          data-star-part="pre"
+          data-star-part="codePanel"
           class="star-md__pre"
         ><code data-star-part="code" [attr.data-language]="block.language || null">{{ block.text }}</code></pre>
       } @else {
-        <p data-star-part="p" class="star-md__p">
+        <p data-star-part="paragraph" class="star-md__p">
           @for (line of block.lines; track $index; let last = $last) {
             @for (part of line; track $index) {
               @if (part.kind === 'strong') {
-                <strong data-star-part="pText">{{ part.text }}</strong>
+                <strong data-star-part="inlineText">{{ part.text }}</strong>
               } @else if (part.kind === 'em') {
-                <em data-star-part="pText">{{ part.text }}</em>
+                <em data-star-part="inlineText">{{ part.text }}</em>
               } @else if (part.kind === 'code') {
                 <code data-star-part="code" class="star-md__code">{{ part.text }}</code>
               } @else if (part.kind === 'link') {

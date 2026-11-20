@@ -135,7 +135,7 @@ export interface StarAiPromptOutput {
                 >{{ text.aiResponseFailed }}
               </p>
             }
-            <div data-star-part="actions" class="star-ai-prompt__actions">
+            <div data-star-part="actionList" class="star-ai-prompt__actions">
               @if (streaming) {
                 <span data-star-part="generating" class="star-ai-prompt__generating">
                   <i

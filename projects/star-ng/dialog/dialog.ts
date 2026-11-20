@@ -71,7 +71,7 @@ export type StarDialogPosition =
     <!-- Backdrop click only; keyboard users close with Escape (native cancel event). -->
     <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events -->
     <dialog
-      data-star-part="dialog"
+      data-star-part="frame"
       #dialog
       class="star-dialog"
       [class]="'star-dialog--' + size() + ' star-dialog--at-' + position()"
@@ -104,7 +104,7 @@ export type StarDialogPosition =
           >
             <div data-star-part="heading" class="star-dialog__heading">
               @if (header()) {
-                <h2 data-star-part="title" class="star-dialog__title" [id]="headerId">
+                <h2 data-star-part="titleText" class="star-dialog__title" [id]="headerId">
                   {{ header() }}
                 </h2>
               }
@@ -129,7 +129,7 @@ export type StarDialogPosition =
               }
               @if (maximizable()) {
                 <button
-                  data-star-part="maximize"
+                  data-star-part="maximizeButton"
                   type="button"
                   class="star-btn star-btn--ghost star-btn--icon star-dialog__maximize"
                   [attr.aria-label]="maximized() ? text.restore : text.maximize"
@@ -144,7 +144,7 @@ export type StarDialogPosition =
               }
               @if (closable()) {
                 <button
-                  data-star-part="close"
+                  data-star-part="closeButton"
                   type="button"
                   class="star-btn star-btn--ghost star-btn--icon star-dialog__close"
                   [attr.aria-label]="text.close"

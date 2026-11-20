@@ -134,7 +134,7 @@ export class StarMenuInDialog {
   template: `
     <ng-template #menu let-items>
       <!-- Items must be direct template children of cdkMenu: CDK resolves the menu by DI. -->
-      <div starPart="menu" class="star-menu" cdkMenu [attr.aria-label]="ariaLabel()">
+      <div starPart="itemList" class="star-menu" cdkMenu [attr.aria-label]="ariaLabel()">
         @for (item of items; track $index) {
           @if (item.separator) {
             <div data-star-part="separator" class="star-menu__separator" role="separator"></div>
@@ -150,7 +150,7 @@ export class StarMenuInDialog {
             >
               <ng-container *ngTemplateOutlet="content; context: { $implicit: item }" />
               <i
-                data-star-part="sub"
+                data-star-part="submenuIcon"
                 class="ph-bold ph-caret-right star-menu__sub star-icon-mirror"
                 aria-hidden="true"
               ></i>

@@ -48,7 +48,7 @@ import { injectStarFieldLink } from '@star-ng/ui/field';
     <div data-star-part="control" class="star-number__control">
       @if (showButtons()) {
         <button
-          data-star-part="btn"
+          data-star-part="stepButton"
           type="button"
           class="star-number__btn"
           tabindex="-1"
@@ -88,7 +88,7 @@ import { injectStarFieldLink } from '@star-ng/ui/field';
       />
       @if (showButtons()) {
         <button
-          data-star-part="btn"
+          data-star-part="stepButton"
           type="button"
           class="star-number__btn"
           tabindex="-1"

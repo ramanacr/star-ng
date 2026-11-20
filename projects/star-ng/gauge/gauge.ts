@@ -592,7 +592,11 @@ export class StarLinearGauge extends StarGaugeBase {
         }
         @default {
           <g data-star-part="needle" class="star-gauge__needle" [style.transform]="turn()">
-            <path data-star-part="needleBody" class="star-gauge__needle-body" [attr.d]="needle()" />
+            <path
+              data-star-part="needleHandle"
+              class="star-gauge__needle-body"
+              [attr.d]="needle()"
+            />
             <circle data-star-part="hub" class="star-gauge__hub" cx="100" cy="100" r="6" />
           </g>
         }

@@ -86,7 +86,7 @@ const MODE_TEXT: Readonly<Record<string, keyof StarUiText>> = {
       ></i>
     </button>
     <star-popover #panel [ariaLabel]="text.filterMenu(header())">
-      <div data-star-part="tableFilter" class="star-table-filter" cdkTrapFocus>
+      <div data-star-part="filterPanel" class="star-table-filter" cdkTrapFocus>
         @if (draft().length > 1) {
           <select
             data-star-part="operator"

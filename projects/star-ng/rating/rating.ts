@@ -37,7 +37,7 @@ import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/
   template: `
     @for (star of stars(); track star) {
       <label
-        data-star-part="star"
+        data-star-part="rateItem"
         class="star-rating__star"
         [class.star-rating__star--on]="star <= shown()"
         (mouseenter)="!readonly() && hover.set(star)"

@@ -54,7 +54,7 @@ import { STAR_MENU_POSITIONS, StarMenuInDialog, StarMenuItem } from './menu';
             }
             {{ item.label }}
             <i
-              data-star-part="caret"
+              data-star-part="submenuIcon"
               class="ph-bold ph-caret-down star-menubar__caret"
               aria-hidden="true"
             ></i>

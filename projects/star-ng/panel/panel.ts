@@ -24,8 +24,10 @@ import { STAR_UI_TEXT, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
   },
   template: `
     <header data-star-part="header" class="star-panel-box__header">
-      <h3 data-star-part="title" class="star-panel-box__title" [id]="titleId">{{ header() }}</h3>
-      <div data-star-part="actions" class="star-panel-box__actions">
+      <h3 data-star-part="titleText" class="star-panel-box__title" [id]="titleId">
+        {{ header() }}
+      </h3>
+      <div data-star-part="actionList" class="star-panel-box__actions">
         <ng-content select="[starPanelActions]" />
         @if (toggleable()) {
           <button
@@ -84,7 +86,7 @@ export class StarPanel {
   host: { class: 'star-fieldset-host' },
   template: `
     <fieldset
-      data-star-part="fieldset"
+      data-star-part="frame"
       class="star-fieldset"
       [class.star-fieldset--collapsed]="collapsed()"
     >
@@ -99,7 +101,7 @@ export class StarPanel {
             (click)="collapsed.set(!collapsed())"
           >
             <i
-              data-star-part="caret"
+              data-star-part="expandIcon"
               class="ph-bold ph-caret-down star-accordion__caret"
               aria-hidden="true"
             ></i>

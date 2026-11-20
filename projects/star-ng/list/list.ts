@@ -71,7 +71,7 @@ export class StarListSubheader {}
     <ng-template #body>
       <ng-content select="[starListItemStart]" />
       <span starPart="text" class="star-list__text">
-        <span data-star-part="title" class="star-list__title"><ng-content /></span>
+        <span data-star-part="titleText" class="star-list__title"><ng-content /></span>
         <ng-content select="[starListItemSubtitle]" />
       </span>
     </ng-template>

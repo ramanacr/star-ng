@@ -115,10 +115,15 @@ export function isoWeek(date: Date): number {
           aria-hidden="true"
         ></i>
       </button>
-      <h2 data-star-part="title" class="star-calendar__title" [id]="titleId" aria-live="polite">
+      <h2
+        data-star-part="monthHeader"
+        class="star-calendar__title"
+        [id]="titleId"
+        aria-live="polite"
+      >
         @if (view() === 'day') {
           <button
-            data-star-part="titleBtn"
+            data-star-part="titleButton"
             type="button"
             class="star-calendar__title-btn"
             [attr.aria-label]="text.chooseMonth + ', ' + monthLabel()"
@@ -129,7 +134,7 @@ export function isoWeek(date: Date): number {
         }
         @if (view() !== 'year' && granularity() !== 'year') {
           <button
-            data-star-part="titleBtn"
+            data-star-part="titleButton"
             type="button"
             class="star-calendar__title-btn"
             [attr.aria-label]="text.chooseYear + ', ' + focused().getFullYear()"

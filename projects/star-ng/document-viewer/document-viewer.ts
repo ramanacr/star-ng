@@ -428,7 +428,7 @@ const WHEEL_STEP = 50;
     </star-toolbar>
     @if (searchOpen()) {
       <div
-        data-star-part="search"
+        data-star-part="searchPanel"
         class="star-document-viewer__search"
         role="search"
         [id]="searchId"
@@ -464,7 +464,7 @@ const WHEEL_STEP = 50;
           <i data-star-part="nextResultIcon" class="ph-bold ph-caret-down" aria-hidden="true"></i>
         </button>
         <!-- Not a live region: StarAnnouncer announces the result once. -->
-        <span data-star-part="searchStatus" class="star-document-viewer__search-status">{{
+        <span data-star-part="searchStatusText" class="star-document-viewer__search-status">{{
           searchStatus()
         }}</span>
       </div>
@@ -553,7 +553,7 @@ const WHEEL_STEP = 50;
             >
               @for (index of renderedPages(); track index) {
                 <div
-                  data-star-part="page"
+                  data-star-part="pageItem"
                   class="star-document-viewer__page"
                   [attr.role]="hasText() ? 'document' : 'img'"
                   [attr.aria-label]="text.documentPageOf(index + 1, pageCount())"
@@ -575,7 +575,7 @@ const WHEEL_STEP = 50;
             </div>
           }
           @case ('loading') {
-            <div data-star-part="loading" class="star-document-viewer__loading">
+            <div data-star-part="loadingItem" class="star-document-viewer__loading">
               <span
                 data-star-part="skeleton"
                 class="star-document-page__skeleton"

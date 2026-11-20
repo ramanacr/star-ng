@@ -205,28 +205,24 @@ const BACKGROUNDS: readonly StarCellBackground[] = [
             aria-hidden="true"
           ></span>
           <button
-            data-star-part="editorBoldButton"
+            data-star-part="boldButton"
             type="button"
             class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
             [attr.aria-label]="text.editorBold"
             [attr.aria-pressed]="!!activeFormat().bold"
             (click)="toggleStyle('bold')"
           >
-            <i data-star-part="editorBoldIcon" class="ph-bold ph-text-b" aria-hidden="true"></i>
+            <i data-star-part="boldIcon" class="ph-bold ph-text-b" aria-hidden="true"></i>
           </button>
           <button
-            data-star-part="editorItalicButton"
+            data-star-part="italicButton"
             type="button"
             class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
             [attr.aria-label]="text.editorItalic"
             [attr.aria-pressed]="!!activeFormat().italic"
             (click)="toggleStyle('italic')"
           >
-            <i
-              data-star-part="editorItalicIcon"
-              class="ph-bold ph-text-italic"
-              aria-hidden="true"
-            ></i>
+            <i data-star-part="italicIcon" class="ph-bold ph-text-italic" aria-hidden="true"></i>
           </button>
           @for (align of aligns; track align.value) {
             <button
@@ -314,7 +310,7 @@ const BACKGROUNDS: readonly StarCellBackground[] = [
     }
     @if (showFormulaBar()) {
       <div data-star-part="bar" class="star-spreadsheet__bar">
-        <span data-star-part="name" class="star-spreadsheet__name" aria-hidden="true">{{
+        <span data-star-part="addressText" class="star-spreadsheet__name" aria-hidden="true">{{
           activeAddress()
         }}</span>
         <span data-star-part="fx" class="star-spreadsheet__fx" aria-hidden="true">fx</span>
@@ -391,7 +387,7 @@ const BACKGROUNDS: readonly StarCellBackground[] = [
             ></div>
             @for (col of visibleColumns(); track col) {
               <div
-                data-star-part="colhead"
+                data-star-part="columnHeader"
                 class="star-spreadsheet__colhead"
                 role="columnheader"
                 [attr.aria-colindex]="col + 2"
@@ -431,7 +427,7 @@ const BACKGROUNDS: readonly StarCellBackground[] = [
                 [style.padding-left.px]="leadWidth()"
               >
                 <div
-                  data-star-part="rowhead"
+                  data-star-part="rowHeader"
                   class="star-spreadsheet__rowhead"
                   role="rowheader"
                   aria-colindex="1"
@@ -501,7 +497,7 @@ const BACKGROUNDS: readonly StarCellBackground[] = [
           </div>
           @if (fillTarget(); as target) {
             <div
-              data-star-part="fillTarget"
+              data-star-part="fillHandle"
               class="star-spreadsheet__fill-target"
               aria-hidden="true"
               [style.left.px]="rangeBox(target).left"

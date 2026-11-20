@@ -52,10 +52,10 @@ export class StarAccordionContent {
         @if (icon(); as icon) {
           <i data-star-part="headerIcon" [class]="icon" aria-hidden="true"></i>
         }
-        <span data-star-part="title" class="star-accordion__title">{{ header() }}</span>
+        <span data-star-part="titleText" class="star-accordion__title">{{ header() }}</span>
         <ng-content select="[starAccordionHeader]" />
         <i
-          data-star-part="caret"
+          data-star-part="expandIcon"
           class="ph-bold ph-caret-down star-accordion__caret"
           aria-hidden="true"
         ></i>

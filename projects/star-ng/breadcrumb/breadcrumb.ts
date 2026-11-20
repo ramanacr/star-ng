@@ -25,7 +25,7 @@ export interface StarBreadcrumbItem {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <nav
-      data-star-part="breadcrumb"
+      data-star-part="trail"
       class="star-breadcrumb"
       [attr.aria-label]="ariaLabel() ?? text.breadcrumb"
     >
@@ -74,7 +74,7 @@ export interface StarBreadcrumbItem {
                 <span data-star-part="itemText">{{ item.label }}</span>
               }
               <i
-                data-star-part="sep"
+                data-star-part="separator"
                 class="ph-bold ph-caret-right star-breadcrumb__sep star-icon-mirror"
                 aria-hidden="true"
               ></i>

@@ -281,7 +281,7 @@ export class StarTab {
               closes the focused tab, and the tab describes the key (aria-keyshortcuts).
             -->
               <button
-                data-star-part="close"
+                data-star-part="closeButton"
                 type="button"
                 class="star-tabs__close"
                 tabindex="-1"
@@ -304,7 +304,7 @@ export class StarTab {
           hidden until it has the focus.
         -->
         <button
-          data-star-part="closeSelected"
+          data-star-part="closeSelectedButton"
           type="button"
           class="star-tabs__close-selected"
           (click)="close(current, tabs().indexOf(current), false)"

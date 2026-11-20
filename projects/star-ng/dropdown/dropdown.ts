@@ -100,7 +100,7 @@ class DropdownOption implements Highlightable {
       <span data-star-part="label" class="star-listbox__label"><ng-content /></span>
       @if (selected()) {
         <i
-          data-star-part="check"
+          data-star-part="checkIcon"
           class="ph-bold ph-check star-listbox__check"
           aria-hidden="true"
         ></i>

@@ -61,13 +61,13 @@ export class StarInplaceContent {
         }
         @if (closable()) {
           <button
-            data-star-part="iconBtn"
+            data-star-part="closeButton"
             type="button"
             class="star-select__icon-btn"
             [attr.aria-label]="text.close"
             (click)="deactivate()"
           >
-            <i data-star-part="iconBtnIcon" class="ph-bold ph-check" aria-hidden="true"></i>
+            <i data-star-part="closeIcon" class="ph-bold ph-check" aria-hidden="true"></i>
           </button>
         }
       </span>
@@ -301,9 +301,14 @@ export class StarAnimateOnScroll {
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-compare', '[style.--star-compare.%]': 'value()' },
   template: `
-    <img data-star-part="image" class="star-compare__image" [src]="rightSrc()" [alt]="rightAlt()" />
     <img
-      data-star-part="image"
+      data-star-part="picture"
+      class="star-compare__image"
+      [src]="rightSrc()"
+      [alt]="rightAlt()"
+    />
+    <img
+      data-star-part="picture"
       class="star-compare__image star-compare__image--left"
       [src]="leftSrc()"
       [alt]="leftAlt()"

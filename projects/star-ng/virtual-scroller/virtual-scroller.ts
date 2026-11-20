@@ -184,7 +184,7 @@ export class StarVirtualItemTemplate<T = unknown> extends StarSlot<StarVirtualIt
         </div>
       </cdk-virtual-scroll-viewport>
       @if (loading()) {
-        <div data-star-part="loading" class="star-scroller__loading">
+        <div data-star-part="loadingItem" class="star-scroller__loading">
           @if (loadingSlot(); as custom) {
             <ng-container *ngTemplateOutlet="custom" />
           } @else {

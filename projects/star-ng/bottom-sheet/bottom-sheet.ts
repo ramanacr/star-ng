@@ -40,7 +40,7 @@ const FOCUSABLE =
     <!-- Backdrop click only; keyboard users close with Escape. -->
     <!-- eslint-disable-next-line @angular-eslint/template/interactive-supports-focus -->
     <dialog
-      data-star-part="bottomSheet"
+      data-star-part="sheet"
       #dialog
       class="star-bottom-sheet"
       [class]="panelClass()"

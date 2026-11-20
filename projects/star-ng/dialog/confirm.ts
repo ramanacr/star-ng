@@ -155,7 +155,7 @@ export class StarConfirmService {
         <!-- Catches Tab from the buttons inside; it is not a control itself. -->
         <!-- eslint-disable-next-line @angular-eslint/template/interactive-supports-focus -->
         <div
-          data-star-part="confirmPopup"
+          data-star-part="popupPanel"
           class="star-confirm-popup"
           (keydown.tab)="cycleTab($event)"
           (keydown.shift.tab)="cycleTab($event)"
@@ -166,11 +166,11 @@ export class StarConfirmService {
                 ><i data-star-part="severityIcon" [class]="popup.icon"></i
               ></span>
             }
-            <div data-star-part="message" class="star-confirm__message" [id]="popupMessageId">
+            <div data-star-part="messageText" class="star-confirm__message" [id]="popupMessageId">
               <ng-container *ngTemplateOutlet="message; context: { $implicit: popup }" />
             </div>
           </div>
-          <div data-star-part="actions" class="star-confirm__actions">
+          <div data-star-part="actionList" class="star-confirm__actions">
             @if (popup.rejectVisible !== false) {
               <star-button
                 size="sm"
@@ -208,7 +208,7 @@ export class StarConfirmService {
               ><i data-star-part="severityIcon" [class]="request.icon"></i
             ></span>
           }
-          <div data-star-part="message" class="star-confirm__message">
+          <div data-star-part="messageText" class="star-confirm__message">
             <ng-container *ngTemplateOutlet="message; context: { $implicit: request }" />
           </div>
         </div>

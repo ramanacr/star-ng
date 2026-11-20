@@ -193,14 +193,14 @@ export class StarDataView<T = unknown> {
     >
       @for (action of actions; track action.id) {
         <button
-          data-star-part="iconBtn"
+          data-star-part="moveButton"
           type="button"
           class="star-select__icon-btn star-order-list__btn"
           [attr.aria-label]="action.label"
           [disabled]="selected() < 0 || !canMove(action.id)"
           (click)="move(action.id)"
         >
-          <i data-star-part="iconBtnIcon" [class]="action.icon" aria-hidden="true"></i>
+          <i data-star-part="moveIcon" [class]="action.icon" aria-hidden="true"></i>
         </button>
       }
     </div>
@@ -388,7 +388,7 @@ export class StarOrderList<T = unknown> {
           [attr.aria-label]="text.transfer"
         >
           <button
-            data-star-part="iconBtn"
+            data-star-part="transferButton"
             type="button"
             class="star-select__icon-btn"
             [attr.aria-label]="text.moveSelectedToTarget"
@@ -402,7 +402,7 @@ export class StarOrderList<T = unknown> {
             ></i>
           </button>
           <button
-            data-star-part="iconBtn"
+            data-star-part="transferButton"
             type="button"
             class="star-select__icon-btn"
             [attr.aria-label]="text.moveAllToTarget"
@@ -416,7 +416,7 @@ export class StarOrderList<T = unknown> {
             ></i>
           </button>
           <button
-            data-star-part="iconBtn"
+            data-star-part="transferButton"
             type="button"
             class="star-select__icon-btn"
             [attr.aria-label]="text.moveSelectedToSource"
@@ -430,7 +430,7 @@ export class StarOrderList<T = unknown> {
             ></i>
           </button>
           <button
-            data-star-part="iconBtn"
+            data-star-part="transferButton"
             type="button"
             class="star-select__icon-btn"
             [attr.aria-label]="text.moveAllToSource"

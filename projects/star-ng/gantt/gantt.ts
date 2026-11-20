@@ -229,7 +229,9 @@ const key = (id: StarGanttId | null | undefined) =>
                       aria-hidden="true"
                     ></span>
                   }
-                  <span data-star-part="name" class="star-gantt__name">{{ row.task.name }}</span>
+                  <span data-star-part="nameText" class="star-gantt__name">{{
+                    row.task.name
+                  }}</span>
                 </div>
                 <div data-star-part="cell" role="gridcell" class="star-gantt__cell">
                   {{ shortDate(row.start) }}
@@ -292,7 +294,7 @@ const key = (id: StarGanttId | null | undefined) =>
                 orient="auto-start-reverse"
               >
                 <path
-                  data-star-part="arrowHead"
+                  data-star-part="arrowIcon"
                   d="M 0 0 L 8 4 L 0 8 z"
                   class="star-gantt__arrow-head"
                 />
@@ -341,7 +343,7 @@ const key = (id: StarGanttId | null | undefined) =>
               >
                 @if (bar.row.milestone) {
                   <path
-                    data-star-part="milestone"
+                    data-star-part="milestoneItem"
                     class="star-gantt__milestone"
                     [attr.d]="diamond(bar)"
                     (pointerdown)="onPointerDown($event, bar, 'move')"
@@ -358,7 +360,7 @@ const key = (id: StarGanttId | null | undefined) =>
                     (pointerdown)="onPointerDown($event, bar, 'move')"
                   />
                   <rect
-                    data-star-part="barProgress"
+                    data-star-part="progressTrack"
                     class="star-gantt__bar-progress"
                     [attr.x]="bar.x"
                     [attr.y]="bar.y"
@@ -388,7 +390,7 @@ const key = (id: StarGanttId | null | undefined) =>
             }
             @if (todayX() !== null) {
               <line
-                data-star-part="today"
+                data-star-part="todayItem"
                 class="star-gantt__today"
                 [attr.x1]="todayX()"
                 [attr.x2]="todayX()"

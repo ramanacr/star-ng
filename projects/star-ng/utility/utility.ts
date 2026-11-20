@@ -350,14 +350,14 @@ export class StarDock {
   host: { class: 'star-scroll-top', '[class.star-scroll-top--visible]': 'visible()' },
   template: `
     <button
-      data-star-part="btn"
+      data-star-part="topButton"
       type="button"
       class="star-scroll-top__btn"
       [attr.aria-label]="text.scrollToTop"
       [attr.tabindex]="visible() ? 0 : -1"
       (click)="toTop()"
     >
-      <i data-star-part="btnIcon" class="ph-bold ph-arrow-up" aria-hidden="true"></i>
+      <i data-star-part="topIcon" class="ph-bold ph-arrow-up" aria-hidden="true"></i>
     </button>
   `,
 })
@@ -417,7 +417,7 @@ export class StarScrollTop {
       <div data-star-part="mask" class="star-block-ui__mask">
         <star-spinner size="2rem" [ariaLabel]="message()" />
         @if (message()) {
-          <span data-star-part="message" class="star-block-ui__message">{{ message() }}</span>
+          <span data-star-part="messageText" class="star-block-ui__message">{{ message() }}</span>
         }
       </div>
     }

@@ -37,11 +37,11 @@ export type StarAppBarPosition = 'static' | 'sticky' | 'fixed';
       class="star-app-bar__bar"
       [attr.role]="landmark() ? 'banner' : 'none'"
     >
-      <div data-star-part="start" class="star-app-bar__start">
+      <div data-star-part="startPanel" class="star-app-bar__start">
         <ng-content select="[starAppBarStart]" />
       </div>
-      <div data-star-part="title" class="star-app-bar__title">{{ title() }}<ng-content /></div>
-      <div data-star-part="end" class="star-app-bar__end">
+      <div data-star-part="titleText" class="star-app-bar__title">{{ title() }}<ng-content /></div>
+      <div data-star-part="endPanel" class="star-app-bar__end">
         <ng-content select="[starAppBarEnd]" />
       </div>
     </header>

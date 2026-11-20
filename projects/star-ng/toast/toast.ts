@@ -236,7 +236,7 @@ const ICONS: Record<StarToastSeverity, string> = {
   template: `
     @for (message of visible(); track message.id) {
       <div
-        data-star-part="toast"
+        data-star-part="surface"
         class="star-toast"
         [class]="'star-toast star-toast--' + message.severity"
         [attr.role]="message.severity === 'error' ? 'alert' : 'status'"
@@ -251,7 +251,7 @@ const ICONS: Record<StarToastSeverity, string> = {
           [class]="icon(message.severity)"
           aria-hidden="true"
         ></i>
-        <div data-star-part="copy" class="star-toast__copy">
+        <div data-star-part="copyButton" class="star-toast__copy">
           @if (messageSlot(); as slot) {
             <ng-container *ngTemplateOutlet="slot; context: messageContext(message)" />
           } @else {
@@ -262,7 +262,7 @@ const ICONS: Record<StarToastSeverity, string> = {
           }
         </div>
         <button
-          data-star-part="close"
+          data-star-part="closeButton"
           type="button"
           class="star-toast__close"
           [attr.aria-label]="text.close"

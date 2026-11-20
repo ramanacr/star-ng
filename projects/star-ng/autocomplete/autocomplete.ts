@@ -308,15 +308,15 @@ const TEMPLATE = `
       />
     </div>
     @if (loading()) {
-      <i data-star-part="caret" class="ph-bold ph-spinner-gap star-spin star-select__caret" aria-hidden="true"></i>
+      <i data-star-part="loadingIcon" class="ph-bold ph-spinner-gap star-spin star-select__caret" aria-hidden="true"></i>
     }
     @if (showClear() && hasValue() && interactive()) {
-      <button data-star-part="iconBtn" type="button" class="star-select__icon-btn" [attr.aria-label]="text.clear" (click)="clear()">
+      <button data-star-part="clearButton" type="button" class="star-select__icon-btn" [attr.aria-label]="text.clear" (click)="clear()">
         <i data-star-part="clearIcon" class="ph-bold ph-x" aria-hidden="true"></i>
       </button>
     }
     @if (dropdown()) {
-      <button data-star-part="iconBtn"
+      <button data-star-part="clearButton"
         type="button"
         class="star-select__icon-btn"
         tabindex="-1"

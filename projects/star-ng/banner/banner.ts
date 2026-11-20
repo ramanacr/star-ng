@@ -56,11 +56,11 @@ const ICONS: Record<StarBannerSeverity, string> = {
           ></i>
         }
         <div data-star-part="text" class="star-banner__text"><ng-content /></div>
-        <div data-star-part="actions" class="star-banner__actions">
+        <div data-star-part="actionList" class="star-banner__actions">
           <ng-content select="[starBannerActions]" />
           @if (dismissible()) {
             <button
-              data-star-part="dismiss"
+              data-star-part="dismissButton"
               type="button"
               class="star-btn star-btn--ghost star-btn--icon star-banner__dismiss"
               [attr.aria-label]="text.dismiss"
