@@ -1351,7 +1351,7 @@ const STATES: readonly State[] = [
       const search = live.getByRole('searchbox', { name: 'Search in document' });
       await search.fill('revenue');
       await search.press('Enter');
-      await expect(live.locator('.star-document-viewer__search [role=status]')).toContainText(
+      await expect(live.locator('.star-document-viewer__search-status')).toContainText(
         'results on',
       );
     },
