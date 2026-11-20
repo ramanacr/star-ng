@@ -680,6 +680,13 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         load: () => import('./controls/table-edit.page').then((m) => m.TableEditPage),
       },
       {
+        label: 'Table interaction',
+        path: 'controls/table-interaction',
+        keywords:
+          'cell navigation grid keyboard range cell selection context menu copy paste clipboard tsv search highlight find next scroll to row focus cell',
+        load: () => import('./controls/table-interaction.page').then((m) => m.TableInteractionPage),
+      },
+      {
         label: 'Table columns',
         path: 'controls/table-columns',
         keywords: 'hide show reorder resize freeze frozen sticky saved state stateKey',

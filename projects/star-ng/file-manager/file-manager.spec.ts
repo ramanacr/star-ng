@@ -165,7 +165,7 @@ describe('StarFileManager', () => {
     tool('sort').click();
     await stable();
     const entry = [...document.querySelectorAll<HTMLElement>('[role="menuitem"]')].find(
-      (item) => item.textContent?.trim() === 'Descending',
+      (item) => item.textContent?.trim() === 'Sort descending',
     )!;
     entry.click();
     await stable();

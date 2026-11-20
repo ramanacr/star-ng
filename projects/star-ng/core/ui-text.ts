@@ -135,6 +135,22 @@ export interface StarUiText {
   readonly editsDiscarded: string;
   readonly rowAdded: string;
   readonly rowRemoved: string;
+  /** Table context menu: copy with the column headers. */
+  readonly copyWithHeaders: string;
+  /** Table context menu: sort the column ascending. */
+  readonly sortAscending: string;
+  /** Table context menu: sort the column descending. */
+  readonly sortDescending: string;
+  /** Table context menu: hide a column. */
+  readonly hideColumn: (column: string) => string;
+  /** Table context menu: download the rows as CSV. */
+  readonly exportCsv: string;
+  /** Table: announced when Ctrl+V left out cells with a value that is not valid. */
+  readonly skippedCells: (count: number) => string;
+  /** Table: announced after Ctrl+C (or Copy) put cells on the clipboard. */
+  readonly copiedCells: (count: number) => string;
+  /** Table: announced after Ctrl+V wrote cells. */
+  readonly pastedCells: (count: number) => string;
   readonly columns: string;
   readonly resizeColumn: (column: string) => string;
   readonly moveColumnEarlier: (column: string) => string;
@@ -569,8 +585,6 @@ export interface StarUiText {
   readonly create: string;
   readonly search: string;
   readonly sortBy: string;
-  readonly sortAscending: string;
-  readonly sortDescending: string;
   readonly fileViewDetails: string;
   readonly fileViewIcons: string;
   /** Column header of the file name. */
@@ -796,6 +810,17 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   editsDiscarded: 'Changes discarded.',
   rowAdded: 'Row added.',
   rowRemoved: 'Row deleted.',
+  copyWithHeaders: 'Copy with headers',
+  sortAscending: 'Sort ascending',
+  sortDescending: 'Sort descending',
+  hideColumn: (column) => `Hide ${column}`,
+  exportCsv: 'Export CSV',
+  skippedCells: (count) =>
+    count === 1
+      ? '1 cell not pasted: value not valid'
+      : `${count} cells not pasted: value not valid`,
+  copiedCells: (count) => (count === 1 ? 'Copied 1 cell' : `Copied ${count} cells`),
+  pastedCells: (count) => (count === 1 ? 'Pasted 1 cell' : `Pasted ${count} cells`),
   columns: 'Columns',
   resizeColumn: (column) => `Resize ${column}`,
   moveColumnEarlier: (column) => `Move ${column} earlier`,
@@ -1148,8 +1173,6 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   create: 'Create',
   search: 'Search',
   sortBy: 'Sort by',
-  sortAscending: 'Ascending',
-  sortDescending: 'Descending',
   fileViewDetails: 'Details view',
   fileViewIcons: 'Large icons',
   fileName: 'Name',
@@ -1272,6 +1295,10 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   pinColumnStart: ['column'],
   pinColumnEnd: ['column'],
   unpinColumn: ['column'],
+  hideColumn: ['column'],
+  skippedCells: ['count'],
+  copiedCells: ['count'],
+  pastedCells: ['count'],
   itemPosition: ['label', 'position', 'total'],
   treeMovedBefore: ['label', 'target'],
   treeMovedAfter: ['label', 'target'],

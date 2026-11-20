@@ -30,6 +30,9 @@ import {
   starIsRtl,
   StarSlot,
   starSlot,
+  ɵstarIsContextMenuKey,
+  ɵstarOpenContextMenu,
+  ɵstarOptionalBoolean,
 } from '@star-ng/ui/core';
 import { StarContextMenu, StarMenu, StarMenuItem } from '@star-ng/ui/menu';
 import { StarPaginator } from '@star-ng/ui/paginator';
@@ -601,7 +604,7 @@ export class StarTreeTable {
    * column is `editable`, off otherwise. `true` or `false` sets it.
    */
   readonly cellNavigation = input<boolean | undefined, boolean | string | undefined>(undefined, {
-    transform: (value) => (value === undefined ? undefined : booleanAttribute(value)),
+    transform: ɵstarOptionalBoolean,
   });
 
   // ---- columns ----
@@ -1336,17 +1339,7 @@ export class StarTreeTable {
   /** Shift+F10 or the context menu key: opens the menu at the row, as a right click does. */
   private openMenuFromKey(key: string): void {
     const row = this.rowElement(key);
-    if (!row) return;
-    const rect = row.getBoundingClientRect();
-    row.dispatchEvent(
-      new MouseEvent('contextmenu', {
-        bubbles: true,
-        cancelable: true,
-        button: 0,
-        clientX: starIsRtl(row) ? rect.right - 16 : rect.left + 16,
-        clientY: rect.bottom,
-      }),
-    );
+    if (row) ɵstarOpenContextMenu(row);
   }
 
   // ---------------------------------------------------------------- focus and scroll
@@ -1483,7 +1476,7 @@ export class StarTreeTable {
     const cell = pending === null ? this.focusCell() : pending.cell;
     const columns = this.visibleColumns();
 
-    if ((event.shiftKey && event.key === 'F10') || event.key === 'ContextMenu') {
+    if (ɵstarIsContextMenuKey(event)) {
       if (!this.contextMenu().length) return;
       event.preventDefault();
       this.openMenuFromKey(node.key);
