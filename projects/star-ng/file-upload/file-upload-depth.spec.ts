@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { StarHeaderTemplate, StarIconTemplate } from '@star-ng/ui/core';
-import { StarFileUpload, StarFileUploadEvent } from './file-upload';
+import { StarFileUpload, StarFileUploadHandlerEvent } from './file-upload';
 import { StarFileUploadTemplate } from './file-upload-slots';
 
 const pdf = (name: string) => new File(['data'], name, { type: 'application/pdf' });
@@ -44,7 +44,7 @@ class Host {
   readonly uploadButton = signal(false);
   readonly cancelButton = signal(false);
   readonly slots = signal(false);
-  readonly uploads: StarFileUploadEvent[] = [];
+  readonly uploads: StarFileUploadHandlerEvent[] = [];
   readonly events: string[] = [];
 }
 

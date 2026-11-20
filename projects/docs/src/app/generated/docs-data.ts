@@ -8108,7 +8108,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       },
       {
         "name": "uploadHandler",
-        "type": "StarFileUploadEvent",
+        "type": "StarFileUploadHandlerEvent",
         "default": null,
         "required": false,
         "description": "Emits the files to upload when the user presses Upload, or after the choice with `auto`. Upload them in your own service and report the state with `fileStatus`. PrimeNG `uploadHandler` (with `customUpload`)."

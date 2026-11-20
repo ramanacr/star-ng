@@ -34,7 +34,7 @@ import { injectStarFieldLink, starJoinIds } from '@star-ng/ui/field';
 import type { StarFileContext, StarFileUploadContext } from './file-upload-slots';
 
 /** Payload of `uploadHandler`: the files to upload. PrimeNG `FileUploadHandlerEvent`. */
-export interface StarFileUploadEvent {
+export interface StarFileUploadHandlerEvent {
   readonly files: readonly File[];
 }
 
@@ -460,7 +460,7 @@ export class StarFileUpload implements FormValueControl<readonly File[]> {
    * Upload them in your own service and report the state with `fileStatus`. PrimeNG
    * `uploadHandler` (with `customUpload`).
    */
-  readonly uploadHandler = output<StarFileUploadEvent>();
+  readonly uploadHandler = output<StarFileUploadHandlerEvent>();
   /** Emits after Cancel or `clear()` removed every file. PrimeNG `onClear`. */
   readonly cleared = output<void>();
   /** Emits a file that the user removed from the list. PrimeNG `onRemove`. */
