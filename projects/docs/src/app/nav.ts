@@ -66,6 +66,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         load: () => import('./guides/right-to-left.guide').then((m) => m.RightToLeftGuide),
       },
       {
+        label: 'Styling hooks',
+        path: 'guides/styling-hooks',
+        keywords: 'pass-through pt parts unstyled tailwind classes data-star-part cascade layers',
+        load: () => import('./guides/styling-hooks.guide').then((m) => m.StylingHooksGuide),
+      },
+      {
         label: 'Template slots',
         path: 'guides/template-slots',
         keywords: 'ng-template customize header footer empty loading group icon option node date',

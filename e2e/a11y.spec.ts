@@ -381,6 +381,20 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'unstyled select panel open',
+    path: 'guides/styling-hooks',
+    open: async (page) => {
+      // The page is prerendered: wait for hydration before the first key.
+      await expect(page.locator('docs-styling-hooks-guide[ngh]')).toHaveCount(0, {
+        timeout: 15_000,
+      });
+      await example(page, 'Unstyled select').getByRole('combobox', { name: 'Plain city' }).focus();
+      await page.keyboard.press('ArrowDown');
+      await expect(page.getByRole('listbox', { name: 'Plain city' })).toBeVisible();
+      await expect(page.locator('.star-panel[data-star-unstyled]')).toHaveCount(1);
+    },
+  },
+  {
     name: 'paginator rows per page open',
     path: 'controls/paginator',
     open: async (page) => {

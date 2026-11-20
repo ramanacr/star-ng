@@ -76,6 +76,7 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - `StarAnnouncer` (`@star-ng/ui/core`): screen-reader announcements through the CDK `LiveAnnouncer`, with de-duplication per source: `announce(message, politeness?, { source })` drops the same text from the same source within `STAR_ANNOUNCER_DEDUPE_MS`; a message without a source is always announced.
 - `StarClipboard` (`@star-ng/ui/core`): copies text with the async `navigator.clipboard` and falls back to the CDK `Clipboard`; does nothing on the server. `starCopy` directive (`@star-ng/ui/utility`): copies on click, emits `copied(success)` and announces it. UI texts `copied` and `copyFailed` (English, German, Spanish).
 - `StarFilterService` (`@star-ng/ui/core`): `register(name, fn, label)` adds a custom match mode for the table filters (PrimeNG `FilterService.register`).
+- Styling hooks for every control (PrimeNG pass-through `pt` and `unstyled`): each element of a control template has a part name (`data-star-part`, set by the `starPart` directive; the host is `root`), and each control has the inputs `pt` (classes, styles and the safe attributes `id`, `title`, `data-*`, `aria-*` per part; event handlers are refused) and `unstyled`, through the host directive `StarStyled`. `provideStarNg({ pt, unstyled })` sets them for all controls, keyed by tag name; the instance `pt` merges over it. The unstyled mode sets `data-star-unstyled` on the control and its parts, and one CSS rule turns the design tokens off there, so colors, borders, radius, shadows, fonts and token spacing fall back to the browser defaults while the layout stays; the focus ring stays visible. New types `StarPassThrough`, `StarPassThroughOptions`, `StarPassThroughClass` and `StarGlobalPassThrough`. The docs list the parts of each control in its API section and in the agent data, and the guide "Styling hooks" explains them.
 
 #### Date and time pickers
 
@@ -330,6 +331,7 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 
 ### Changed
 
+- Every control template element now has the attribute `data-star-part`. In a few templates the text of an element now starts or ends with a space in `textContent` (the rendered text is the same); compare the trimmed text in tests.
 - Table: the sticky header (`stickyHeader`) has `z-index: 2`, so pinned body cells scroll under it.
 - Table: a table with `frozen` columns now also keeps the selection, expander and reorder columns at the start while it scrolls sideways (before, they scrolled away under the frozen columns), and the last frozen column has a separator shadow.
 - Tabs: each tab button is now inside a wrapper element (`span.star-tabs__item`, which also holds the close button of a closable tab), and the tab list is inside `div.star-tabs__nav`. Styles or tests that select `.star-tabs__list > .star-tabs__tab` must use `.star-tabs__list .star-tabs__tab`.

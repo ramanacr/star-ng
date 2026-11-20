@@ -46,3 +46,51 @@ test.describe('configuration guide', () => {
     await expect(live.locator('star-select')).toHaveClass(/star-select--sm/);
   });
 });
+
+test.describe('styling hooks', () => {
+  test('pass-through and unstyled mode reach the parts', async ({ page }) => {
+    await openPage(page, '/guides/styling-hooks', 'Styling hooks');
+    await expect(page.locator('docs-styling-hooks-guide[ngh]')).toHaveCount(0, {
+      timeout: 15_000,
+    });
+    const select = example(page, 'Pass-through on a select').locator('star-select');
+    await expect(select).toHaveAttribute('data-star-part', 'root');
+    const trigger = select.locator('[data-star-part="trigger"]');
+    await expect(trigger).toHaveAttribute('data-test', 'city-trigger');
+    await expect(trigger).toHaveCSS('font-weight', '600');
+
+    const buttons = example(page, 'Unstyled button').locator('star-button');
+    await expect(buttons.nth(0)).not.toHaveAttribute('data-star-unstyled', /.*/);
+    await expect(buttons.nth(1)).toHaveAttribute('data-star-unstyled', '');
+    const styled = buttons.nth(0).locator('button');
+    const plain = buttons.nth(1).locator('button');
+    expect(await styled.evaluate((el) => getComputedStyle(el).boxShadow)).not.toBe('none');
+    expect(await plain.evaluate((el) => getComputedStyle(el).boxShadow)).toBe('none');
+    expect(await plain.evaluate((el) => getComputedStyle(el).borderRadius)).toBe('4px');
+    await plain.focus();
+    await page.keyboard.press('Shift+Tab');
+    await page.keyboard.press('Tab');
+    await expect(plain).toBeFocused();
+    expect(await plain.evaluate((el) => getComputedStyle(el).boxShadow)).not.toBe('none');
+    await page.keyboard.press('Enter');
+    await expect(example(page, 'Unstyled button').getByRole('status')).toHaveText(
+      'Pressed 1 times',
+    );
+  });
+
+  test('an unstyled select works with the keyboard', async ({ page }) => {
+    await openPage(page, '/guides/styling-hooks', 'Styling hooks');
+    await expect(page.locator('docs-styling-hooks-guide[ngh]')).toHaveCount(0, {
+      timeout: 15_000,
+    });
+    const combobox = example(page, 'Unstyled select').getByRole('combobox', { name: 'Plain city' });
+    await combobox.focus();
+    await page.keyboard.press('ArrowDown');
+    const listbox = page.getByRole('listbox', { name: 'Plain city' });
+    await expect(listbox).toBeVisible();
+    await expect(page.locator('.star-panel[data-star-unstyled]')).toHaveCount(1);
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('Enter');
+    await expect(combobox).toHaveText(/Vienna/);
+  });
+});
