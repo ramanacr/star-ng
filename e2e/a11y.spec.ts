@@ -1615,6 +1615,16 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'pick list after a keyboard move, with filters and reorder buttons',
+    path: 'controls/pick-list',
+    open: async (page) => {
+      const live = example(page, 'Filter, drag and drop and reorder');
+      await live.getByRole('option', { name: 'Oslo' }).focus();
+      await page.keyboard.press('Enter');
+      await expect(live.getByRole('listbox', { name: /Route/ }).getByRole('option')).toHaveCount(2);
+    },
+  },
+  {
     name: 'galleria full screen',
     path: 'controls/galleria',
     open: async (page) => {
