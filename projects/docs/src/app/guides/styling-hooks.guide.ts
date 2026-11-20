@@ -48,10 +48,14 @@ import { DOCS } from '../shared/docs';
         </li>
       </ol>
       <p>
-        <code>starPart</code> is a static attribute (<code>starPart="header"</code>), not a binding.
-        While a control has no pass-through and is not unstyled, a part costs only its name. The
-        first <code>pt</code> or the unstyled mode switches the parts of the control on; parts that
-        the control creates later switch on by themselves.
+        In a control template, a part is the static attribute <code>data-star-part</code>; only the
+        top element of portal content (an overlay panel in an <code>ng-template</code>) has the
+        <code>starPart</code> directive, so that the control finds it wherever it renders. While a
+        control has no pass-through and is not unstyled, a part costs only its attribute. The first
+        <code>pt</code> or the unstyled mode switches the parts of the control on, and a
+        <code>MutationObserver</code> finds the parts that the control creates after that. The
+        invisible pointer targets of a chart and the rows and cells of the chart data table have no
+        part (there is one of them per data point); style them through the part <code>table</code>.
       </p>
 
       <h2>Pass-through for one control</h2>
