@@ -334,6 +334,22 @@ describe('StarTable context menu', () => {
     expect(changes).toContainEqual({ rowKey: 'L-3', field: 'city' });
   });
 
+  it('opens the menu of another row while a menu is open', async () => {
+    const { host, cell, rightClick, items, labels, settle } = await setup((h) =>
+      h.menu.set((row) => [{ label: `Open ${row.id}` }]),
+    );
+    await rightClick(cell('L-1', 'item'));
+    expect(labels()).toEqual(['Open L-1']);
+    // The right click on row B closes the menu of row A first (outside click), then opens B.
+    await rightClick(cell('L-2', 'item'));
+    await settle();
+    expect(labels()).toEqual(['Open L-2']);
+    expect(host.menuRow()).toBe(LINES[1]);
+    items()[0].click();
+    await settle();
+    expect(host.chosen.map((event) => event.row.id)).toEqual(['L-2']);
+  });
+
   it('does not run the focus return after the table is destroyed', async () => {
     const { fixture, cell, rightClick, items } = await setup();
     await rightClick(cell('L-1', 'item'));

@@ -937,7 +937,8 @@ export abstract class StarTableInteraction<T> {
     const target = this.menuTarget;
     this.menuOpen.set(false);
     setTimeout(() => {
-      this.menuTarget = null;
+      // A right click on another row can open a new menu before this runs: keep its target.
+      if (this.menuTarget === target) this.menuTarget = null;
       if (this.interactionDestroyed) return;
       const doc = this.interactionDocument;
       const active = doc.activeElement;
