@@ -269,4 +269,44 @@ describe('StarTable context menu', () => {
     expect(await rightClick(row)).toBe(true);
     expect(labels()).toEqual(['Open order']);
   });
+
+  it('knows the column and runs the column items without cell navigation', async () => {
+    const { host, el, rightClick, items, labels, settle, copied } = await setup((h) => {
+      h.nav.set(false);
+      h.menu.set((row, column) => [{ label: `${row.id} ${column?.header ?? '-'}` }]);
+      h.defaults.set(['copy', 'sortAsc', 'pinStart', 'hideColumn']);
+    });
+    const qty = () =>
+      el.querySelector<HTMLElement>('tbody tr[data-row="L-1"] td[data-field="qty"]')!;
+    expect(el.querySelector('table')!.getAttribute('role')).toBeNull();
+    await rightClick(qty());
+    expect(labels()).toEqual([
+      'Copy',
+      'Sort ascending',
+      'Pin Quantity to start',
+      'Hide Quantity',
+      'L-1 Quantity',
+    ]);
+    items()[0].click();
+    await settle();
+    expect(copied).toEqual(['3']);
+    expect(host.chosen[0].column?.field).toBe('qty');
+    // The copy of the menu cell does not make it the active cell outside a grid.
+    expect(host.table().activeCell()).toBeNull();
+
+    await rightClick(qty());
+    items()[1].click();
+    await settle();
+    expect(host.sortField()).toBe('qty');
+    expect(host.sortOrder()).toBe(1);
+  });
+
+  it('does not run the focus return after the table is destroyed', async () => {
+    const { fixture, cell, rightClick, items } = await setup();
+    await rightClick(cell('L-1', 'item'));
+    items()[0].click();
+    fixture.destroy();
+    await new Promise((resolve) => setTimeout(resolve));
+    expect(document.activeElement).toBe(document.body);
+  });
 });

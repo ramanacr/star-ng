@@ -5,6 +5,7 @@ import {
   ApplicationRef,
   booleanAttribute,
   computed,
+  DestroyRef,
   Directive,
   effect,
   ElementRef,
@@ -111,6 +112,8 @@ export abstract class StarTableInteraction<T> {
   private readonly interactionDocument = inject(DOCUMENT);
   private readonly clipboard = inject(StarClipboard);
   private readonly interactionApp = inject(ApplicationRef);
+  /** The table is destroyed: a pending timeout does nothing. */
+  private interactionDestroyed = false;
 
   // ---------------------------------------------------------------- table parts
 
@@ -324,7 +327,16 @@ export abstract class StarTableInteraction<T> {
     () => !!this.contextMenu() || this.contextMenuDefaults().length > 0,
   );
 
+  /**
+   * Body rows and cells carry `data-row` / `data-field`: with cell navigation, a context menu (to
+   * know the column) or paste.
+   */
+  protected readonly cellKeys = computed(
+    () => this.cellMode() || this.hasContextMenu() || this.pasteEditable(),
+  );
+
   constructor() {
+    inject(DestroyRef).onDestroy(() => (this.interactionDestroyed = true));
     effect(() => {
       const trigger = this.menuTrigger();
       if (trigger) trigger.disabled = true;
@@ -763,6 +775,8 @@ export abstract class StarTableInteraction<T> {
     const target = this.menuTarget;
     this.menuOpen.set(false);
     setTimeout(() => {
+      this.menuTarget = null;
+      if (this.interactionDestroyed) return;
       const doc = this.interactionDocument;
       const active = doc.activeElement;
       if (!target || (active && active !== doc.body && active.isConnected)) return;
@@ -793,11 +807,8 @@ export abstract class StarTableInteraction<T> {
       column,
       side: column ? this.sideOf(column) : null,
       canHide: !!column && this.canHide(column),
-      copy: (headers) => {
-        // Without a selection the copy takes the cell of the menu.
-        if (column) this.setActive(row, column);
-        void this.copyToClipboard({ headers });
-      },
+      // Without a selection the copy takes the cell of the menu.
+      copy: (headers) => void this.copyCells(headers, column ? { row, column } : null),
       pin: (side) => column && this.pinColumn(column.field, side),
       sort: (order) => column && this.sortColumn(column.field, order),
       hide: () => column && this.setColumnVisible(column, false),
@@ -831,13 +842,21 @@ export abstract class StarTableInteraction<T> {
    * cells (0: nothing to copy, or the browser refused). AG Grid `copySelectedRangeToClipboard`,
    * Ignite UI `clipboardOptions`.
    */
-  async copyToClipboard(options: StarTableCopyOptions = {}): Promise<number> {
-    const block = this.copyBlock();
+  copyToClipboard(options: StarTableCopyOptions = {}): Promise<number> {
+    return this.copyCells(options.headers, null);
+  }
+
+  /** Copies (see `copyToClipboard`); `cell` replaces the active cell as the last choice. */
+  private async copyCells(
+    headers: boolean | undefined,
+    cell: { readonly row: T; readonly column: StarColumn<T> } | null,
+  ): Promise<number> {
+    const block = this.copyBlock(cell);
     if (!block) return 0;
     const lines = block.rows.map((row) =>
       block.columns.map((column) => (block.has(row, column) ? this.copyText(row, column) : '')),
     );
-    if (options.headers ?? this.copyHeaders()) {
+    if (headers ?? this.copyHeaders()) {
       lines.unshift(block.columns.map((column) => column.header));
     }
     const done = await this.clipboard.copy(toTsv(lines));
@@ -846,7 +865,7 @@ export abstract class StarTableInteraction<T> {
   }
 
   /** The rows, columns and cells that a copy takes (see `copyToClipboard`), or `null`. */
-  private copyBlock(): {
+  private copyBlock(cell: { readonly row: T; readonly column: StarColumn<T> } | null = null): {
     readonly rows: readonly T[];
     readonly columns: readonly StarColumn<T>[];
     readonly has: (row: T, column: StarColumn<T>) => boolean;
@@ -875,6 +894,7 @@ export abstract class StarTableInteraction<T> {
         return { rows, columns, has: () => true, count: rows.length * columns.length };
       }
     }
+    if (cell) return { rows: [cell.row], columns: [cell.column], has: () => true, count: 1 };
     const active = this.active();
     const row =
       active && this.navRows().find((item) => Object.is(this.trackKey(item), active.rowKey));
