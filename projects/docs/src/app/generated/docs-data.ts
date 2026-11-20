@@ -7991,7 +7991,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "playButton",
       "playIcon",
       "thumbsPanel",
-      "thumbnailNavButton",
+      "thumbnailNavigatorButton",
       "thumbnailList",
       "thumbnailButton",
       "thumbnail",
