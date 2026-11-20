@@ -788,6 +788,22 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "false",
         "required": false,
         "description": "On blur, text that is no option label clears the text and the value (PrimeNG `forceSelection`). Default `false`: the text goes back to the label of the value."
+      },
+      {
+        "name": "pt",
+        "type": "StarPassThrough | null",
+        "default": "null",
+        "required": false,
+        "description": "Classes, styles and attributes per part of the control (PrimeNG `pt`), for example `{ root: { class: 'w-full' }, panel: { class: 'shadow-lg' } }`. Merges over the global `provideStarNg({ pt })`. The parts are listed in the API section of each control.",
+        "inheritedFrom": "StarStyled"
+      },
+      {
+        "name": "unstyled",
+        "type": "boolean | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "`true` removes the visual styles of the control (colors, borders, radius, shadows, fonts and token spacing) and keeps the layout that it needs to work. Unset: `provideStarNg({ unstyled })`.",
+        "inheritedFrom": "StarStyled"
       }
     ],
     "models": [
@@ -878,6 +894,9 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "required": false,
         "description": "Fires before the value changes by a user action. Call `cancel()` on the event to keep the old value. Ignite UI combo `selectionChanging`."
       }
+    ],
+    "parts": [
+      "root"
     ]
   },
   "StarAutoCompleteBase": {
@@ -2231,6 +2250,22 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "false",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "pt",
+        "type": "StarPassThrough | null",
+        "default": "null",
+        "required": false,
+        "description": "Classes, styles and attributes per part of the control (PrimeNG `pt`), for example `{ root: { class: 'w-full' }, panel: { class: 'shadow-lg' } }`. Merges over the global `provideStarNg({ pt })`. The parts are listed in the API section of each control.",
+        "inheritedFrom": "StarStyled"
+      },
+      {
+        "name": "unstyled",
+        "type": "boolean | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "`true` removes the visual styles of the control (colors, borders, radius, shadows, fonts and token spacing) and keeps the layout that it needs to work. Unset: `provideStarNg({ unstyled })`.",
+        "inheritedFrom": "StarStyled"
       }
     ],
     "models": [
@@ -2257,6 +2292,16 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "required": false,
         "description": "The user chose a leaf."
       }
+    ],
+    "parts": [
+      "root",
+      "control",
+      "trigger",
+      "value",
+      "placeholder",
+      "iconBtn",
+      "icon",
+      "caret"
     ]
   },
   "StarCellTemplate": {
@@ -8092,6 +8137,22 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "false",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "pt",
+        "type": "StarPassThrough | null",
+        "default": "null",
+        "required": false,
+        "description": "Classes, styles and attributes per part of the control (PrimeNG `pt`), for example `{ root: { class: 'w-full' }, panel: { class: 'shadow-lg' } }`. Merges over the global `provideStarNg({ pt })`. The parts are listed in the API section of each control.",
+        "inheritedFrom": "StarStyled"
+      },
+      {
+        "name": "unstyled",
+        "type": "boolean | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "`true` removes the visual styles of the control (colors, borders, radius, shadows, fonts and token spacing) and keeps the layout that it needs to work. Unset: `provideStarNg({ unstyled })`.",
+        "inheritedFrom": "StarStyled"
       }
     ],
     "models": [
@@ -8139,6 +8200,23 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "required": false,
         "description": "Fires before the value changes by a user action. Call `cancel()` on the event to keep the old value. Ignite UI `selectionChanging`."
       }
+    ],
+    "parts": [
+      "root",
+      "filter",
+      "toggleAll",
+      "box",
+      "icon",
+      "toggleLabel",
+      "input",
+      "group",
+      "option",
+      "label",
+      "skeleton",
+      "srText",
+      "listbox",
+      "grip",
+      "empty"
     ]
   },
   "StarListItem": {
@@ -8485,10 +8563,34 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": true,
         "description": "The directive that owns the panel."
+      },
+      {
+        "name": "pt",
+        "type": "StarPassThrough | null",
+        "default": "null",
+        "required": false,
+        "description": "Classes, styles and attributes per part of the control (PrimeNG `pt`), for example `{ root: { class: 'w-full' }, panel: { class: 'shadow-lg' } }`. Merges over the global `provideStarNg({ pt })`. The parts are listed in the API section of each control.",
+        "inheritedFrom": "StarStyled"
+      },
+      {
+        "name": "unstyled",
+        "type": "boolean | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "`true` removes the visual styles of the control (colors, borders, radius, shadows, fonts and token spacing) and keeps the layout that it needs to work. Unset: `provideStarNg({ unstyled })`.",
+        "inheritedFrom": "StarStyled"
       }
     ],
     "models": [],
-    "outputs": []
+    "outputs": [],
+    "parts": [
+      "root",
+      "panel",
+      "list",
+      "option",
+      "label",
+      "empty"
+    ]
   },
   "StarMenu": {
     "kind": "component",
@@ -9053,6 +9155,22 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "null",
         "required": false,
         "description": "Text or pattern that ends a chip while typing, for example `','` or `/[,;]/` (PrimeNG `separator`). Typed or pasted text is split there; each part becomes a chip as with `addOnBlur`."
+      },
+      {
+        "name": "pt",
+        "type": "StarPassThrough | null",
+        "default": "null",
+        "required": false,
+        "description": "Classes, styles and attributes per part of the control (PrimeNG `pt`), for example `{ root: { class: 'w-full' }, panel: { class: 'shadow-lg' } }`. Merges over the global `provideStarNg({ pt })`. The parts are listed in the API section of each control.",
+        "inheritedFrom": "StarStyled"
+      },
+      {
+        "name": "unstyled",
+        "type": "boolean | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "`true` removes the visual styles of the control (colors, borders, radius, shadows, fonts and token spacing) and keeps the layout that it needs to work. Unset: `provideStarNg({ unstyled })`.",
+        "inheritedFrom": "StarStyled"
       }
     ],
     "models": [
@@ -9143,6 +9261,9 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "required": false,
         "description": "Fires before the value changes by a user action. Call `cancel()` on the event to keep the old value. Ignite UI combo `selectionChanging`."
       }
+    ],
+    "parts": [
+      "root"
     ]
   },
   "StarMultiColumnCombobox": {
@@ -9451,6 +9572,22 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "'20rem'",
         "required": false,
         "description": "Minimum width of the panel (CSS length or pixels). The panel is at least as wide as the field."
+      },
+      {
+        "name": "pt",
+        "type": "StarPassThrough | null",
+        "default": "null",
+        "required": false,
+        "description": "Classes, styles and attributes per part of the control (PrimeNG `pt`), for example `{ root: { class: 'w-full' }, panel: { class: 'shadow-lg' } }`. Merges over the global `provideStarNg({ pt })`. The parts are listed in the API section of each control.",
+        "inheritedFrom": "StarStyled"
+      },
+      {
+        "name": "unstyled",
+        "type": "boolean | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "`true` removes the visual styles of the control (colors, borders, radius, shadows, fonts and token spacing) and keeps the layout that it needs to work. Unset: `provideStarNg({ unstyled })`.",
+        "inheritedFrom": "StarStyled"
       }
     ],
     "models": [
@@ -9503,6 +9640,25 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "With `lazy`: the options from `first` to `last` are needed for the filter text `filter`. PrimeNG `onLazyLoad`. Each range is asked for once per filter text; treat the event as idempotent. A range that failed to load is asked for again after `resetLazy()`, or when the owner sets new placeholders with a different array length.",
         "inheritedFrom": "StarOptionListBase"
       }
+    ],
+    "parts": [
+      "root",
+      "control",
+      "trigger",
+      "iconBtn",
+      "icon",
+      "caret",
+      "panel",
+      "header",
+      "head",
+      "list",
+      "empty",
+      "spacer",
+      "group",
+      "option",
+      "skeleton",
+      "srText",
+      "cell"
     ]
   },
   "StarMultiDatePicker": {
