@@ -43,9 +43,10 @@ export type StarSchedulerEditorResult =
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-scheduler-editor' },
   template: `
-    <form class="star-scheduler-editor__form" (submit)="save($event)">
+    <form data-star-part="formPanel" class="star-scheduler-editor__form" (submit)="save($event)">
       <star-field [label]="text.title">
         <input
+          data-star-part="formInput"
           starInput
           required
           data-autofocus
@@ -84,7 +85,7 @@ export type StarSchedulerEditorResult =
           />
         </star-field>
       }
-      <div class="star-dialog__footer star-dialog__footer--inline">
+      <div data-star-part="footer" class="star-dialog__footer star-dialog__footer--inline">
         @if (data.canDelete) {
           <star-button variant="danger" (pressed)="ref.close({ action: 'delete' })">
             {{ text.deleteEvent }}

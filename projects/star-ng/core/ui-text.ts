@@ -256,6 +256,8 @@ export interface StarUiText {
   readonly sliderMaximum: (label: string) => string;
   readonly colorLabel: string;
   readonly customColor: string;
+  /** Button of the color picker that picks a color from the screen (EyeDropper API). */
+  readonly eyeDropper: string;
   readonly hexValue: (label: string) => string;
   readonly colorArea: string;
   readonly colorAreaValue: (saturation: number, brightness: number) => string;
@@ -476,6 +478,15 @@ export interface StarUiText {
   /** Hint of a card. */
   readonly kanbanCardHint: string;
   readonly kanbanPickedUp: (card: string, column: string) => string;
+  // Drag and drop directives (`starDraggable`, `starDroppable`)
+  /** Description of a draggable element: how to move it with the keyboard. */
+  readonly dragHint: string;
+  readonly dragPickedUp: (label: string) => string;
+  readonly dragOver: (target: string) => string;
+  readonly dragDropped: (label: string, target: string) => string;
+  readonly dragCanceled: (label: string) => string;
+  /** No drop zone on the page accepts the item that the keyboard picked up. */
+  readonly dragNoTarget: string;
   readonly kanbanMoved: (column: string, position: number, total: number) => string;
   readonly kanbanDropped: (card: string, column: string, position: number, total: number) => string;
   readonly kanbanCanceled: (card: string, column: string) => string;
@@ -1107,6 +1118,7 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   sliderMaximum: (label) => `${label} maximum`.trim(),
   colorLabel: 'Color',
   customColor: 'Custom color',
+  eyeDropper: 'Pick a color from the screen',
   hexValue: (label) => `${label} hex value`,
   colorArea: 'Saturation and brightness',
   colorAreaValue: (saturation, brightness) =>
@@ -1316,6 +1328,13 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   kanbanCardHint:
     'Press Space to pick up the card. The arrow keys move it, Space drops it and Escape cancels.',
   kanbanPickedUp: (card, column) => `Picked up ${card} in ${column}`,
+  dragHint:
+    'Press Space to pick up. The arrow keys move between the drop zones, Space drops and Escape cancels.',
+  dragPickedUp: (label) => `Picked up ${label}`,
+  dragOver: (target) => `Over ${target}`,
+  dragDropped: (label, target) => `${label} dropped on ${target}`,
+  dragCanceled: (label) => `Drag cancelled. ${label} did not move`,
+  dragNoTarget: 'No drop zone accepts this item',
   kanbanMoved: (column, position, total) => `Moved to ${column}, position ${position} of ${total}`,
   kanbanDropped: (card, column, position, total) =>
     `${card} dropped in ${column}, position ${position} of ${total}`,
@@ -1704,6 +1723,10 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   kanbanColumnLabel: ['title', 'count'],
   kanbanColumnLimit: ['title', 'count', 'limit'],
   kanbanPickedUp: ['card', 'column'],
+  dragPickedUp: ['label'],
+  dragOver: ['target'],
+  dragDropped: ['label', 'target'],
+  dragCanceled: ['label'],
   kanbanMoved: ['column', 'position', 'total'],
   kanbanDropped: ['card', 'column', 'position', 'total'],
   kanbanCanceled: ['card', 'column'],

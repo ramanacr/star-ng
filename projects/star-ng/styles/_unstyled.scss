@@ -1,0 +1,174 @@
+// Unstyled mode (PrimeNG `unstyled`): `provideStarNg({ unstyled: true })` or the `unstyled` input
+// of a control sets `data-star-unstyled` on the control and on each of its parts (`starPart`).
+// The control rules read every color, border color, radius, shadow, font and token spacing from
+// the `--star-*` tokens. Here the tokens turn into the guaranteed-invalid value, so each property
+// that reads one falls back to its browser default (no color, no border, no radius, no shadow,
+// the inherited font). The layout rules (display, position, size, overflow, the hidden states)
+// do not read tokens, so they stay. One rule, no selector per control, no specificity war: the
+// classes of the application (pass-through `pt`) style the parts.
+//
+// Kept on purpose: the motion durations and the control height (layout), and the focus: the
+// accent and the focus rings become the text color, so the focus and the selected marks stay
+// visible.
+@use 'sass:list';
+
+$star-unstyled-tokens: (
+  'primary',
+  'primary-hover',
+  'primary-soft',
+  'primary-fill',
+  'primary-text',
+  'accent-soft',
+  'success',
+  'success-soft',
+  'warning',
+  'warning-soft',
+  'danger',
+  'danger-hover',
+  'danger-soft',
+  'on-tone',
+  'on-bright',
+  'on-scrim',
+  'surface',
+  'surface-muted',
+  'text',
+  'text-strong',
+  'text-muted',
+  'text-soft',
+  'border',
+  'border-strong',
+  'tooltip-surface',
+  'glass-surface',
+  'glass-surface-strong',
+  'glass-border',
+  'media-control',
+  'media-control-text',
+  'media-surface',
+  'scrim',
+  'scrim-modal',
+  'scrim-media',
+  'scrim-media-soft',
+  'scrim-media-strong',
+  'code-dark',
+  'code-light',
+  'shadow-xs',
+  'shadow-sm',
+  'shadow-md',
+  'shadow-lg',
+  'shadow-xl',
+  'shadow-card',
+  'shadow-float',
+  'shadow-modal',
+  'shadow-glow-primary',
+  'radius-xs',
+  'radius-sm',
+  'radius-md',
+  'radius-lg',
+  'radius-xl',
+  'radius-2xl',
+  'radius-3xl',
+  'radius-4xl',
+  'radius-pill',
+  'button-radius',
+  'input-radius',
+  'blur-xs',
+  'blur-sm',
+  'blur-md',
+  'blur-lg',
+  'blur-xl',
+  'blur-2xl',
+  'blur-3xl',
+  'font-sans',
+  'font-mono',
+  'type-display',
+  'type-title-lg',
+  'type-title',
+  'type-title-sm',
+  'type-body-lg',
+  'type-body',
+  'type-body-sm',
+  'type-label',
+  'type-eyebrow',
+  'type-code',
+  'button-font-weight',
+  'button-letter-spacing',
+  'button-text-transform',
+  'input-font-weight',
+  'label-font-weight',
+  'label-letter-spacing',
+  'label-text-transform',
+  'space-1',
+  'space-2',
+  'space-3',
+  'space-4',
+  'space-5',
+  'space-6',
+  'space-7',
+  'space-8',
+  'space-10',
+  'space-12',
+  'chart-1',
+  'chart-2',
+  'chart-3',
+  'chart-4',
+  'chart-5',
+  'chart-6',
+  'chart-7',
+  'chart-8'
+);
+
+// `:where()`: no specificity, so a token that the application sets on the control host itself
+// (`<star-select class="brand">`) wins there, and the copy below keeps it for the content inside.
+:where([data-star-unstyled]) {
+  @each $name in $star-unstyled-tokens {
+    --star-#{$name}: initial;
+  }
+  --star-accent: currentColor;
+  --star-focus-ring: 0 0 0 2px currentColor;
+  --star-focus-ring-primary: 0 0 0 2px currentColor;
+}
+
+// Custom properties inherit. Without the rules below, a styled control inside an unstyled one
+// (a styled button in an unstyled dialog) and the content of the application inside it would lose
+// the tokens too. `:root` keeps a copy of each theme value (`--star-theme-*`, after the overrides
+// of the application on `:root`), and the elements under an unstyled control that are not its
+// parts (application content, other controls that are not unstyled) get the theme values back.
+// `:where()` keeps this at zero specificity: a token that the application sets on such an element
+// wins.
+$star-restored-tokens: list.join(
+  $star-unstyled-tokens,
+  ('accent', 'focus-ring', 'focus-ring-primary')
+);
+
+:root {
+  @each $name in $star-restored-tokens {
+    --star-theme-#{$name}: var(--star-#{$name});
+  }
+}
+// The parent of an unstyled control takes a copy too, so a theme override on a section of the page
+// (`.brand { --star-primary: ... }`) reaches the content inside the control.
+:where(:not([data-star-unstyled]):has(> [data-star-part='root'][data-star-unstyled])) {
+  @each $name in $star-restored-tokens {
+    --star-theme-#{$name}: var(--star-#{$name});
+  }
+}
+
+// The unstyled control itself keeps a copy of its own token values. It is valid only for a token
+// that the application set on the host (the others are reset there), so the restore rule below
+// falls back to the copy of the parent for the rest.
+:where([data-star-part='root'][data-star-unstyled]) {
+  @each $name in $star-unstyled-tokens {
+    --star-host-#{$name}: var(--star-#{$name});
+  }
+}
+
+// The chart elements without a part (pointer targets, data-table rows and cells: one per data
+// point) belong to the control and stay unstyled.
+:where(
+  [data-star-unstyled] :not([data-star-part], .star-chart__hit, .star-chart__table *),
+  [data-star-unstyled] [data-star-part='root']:not([data-star-unstyled])
+) {
+  @each $name in $star-restored-tokens {
+    --star-#{$name}: var(--star-host-#{$name}, var(--star-theme-#{$name}));
+  }
+}

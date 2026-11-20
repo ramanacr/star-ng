@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
-import { STAR_UI_TEXT } from '@star-ng/ui/core';
+import { STAR_UI_TEXT, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 import { StarMenuItem } from '@star-ng/ui/menu';
 import { StarThemeMode, StarThemeService } from '@star-ng/ui/theme';
 import { StarSpeedDial } from '@star-ng/ui/utility';
@@ -30,6 +30,8 @@ const MODES: readonly { readonly mode: StarThemeMode; readonly icon: string }[] 
  */
 @Component({
   selector: 'star-theme-switch',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   imports: [StarSpeedDial],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-theme-switch' },

@@ -43,6 +43,16 @@ const keydown = (target: Element, init: KeyboardEventInit) => {
 };
 
 describe('StarEditor find and replace', () => {
+  it('moves the focus to the find field at once, so keys typed next go there', async () => {
+    const { el, area } = await setup();
+    area.focus();
+    keydown(area, { key: 'h', ctrlKey: true });
+    // No render wait: the next key that the user types must not reach the content.
+    const field = el.querySelector<HTMLInputElement>('[role=search] input[type=search]');
+    expect(field).not.toBeNull();
+    expect(document.activeElement).toBe(field);
+  });
+
   it('opens with Ctrl+F, counts and moves between matches, and closes with Escape', async () => {
     const { fixture, el, area } = await setup();
     area.focus();
@@ -130,9 +140,9 @@ describe('StarEditor counts, full screen, shortcuts and input rules', () => {
     await fixture.whenStable();
     const dialog = el.querySelector('dialog')!;
     expect(dialog.hasAttribute('open')).toBe(true);
-    expect(document.getElementById(dialog.getAttribute('aria-labelledby')!)!.textContent).toBe(
-      'Keyboard shortcuts',
-    );
+    expect(
+      document.getElementById(dialog.getAttribute('aria-labelledby')!)!.textContent?.trim(),
+    ).toBe('Keyboard shortcuts');
     expect(dialog.querySelectorAll('tbody tr').length).toBe(16);
     dialog.querySelector<HTMLButtonElement>('button')!.click();
     expect(dialog.hasAttribute('open')).toBe(false);

@@ -110,7 +110,11 @@ test.describe('chart', () => {
     // Present in the accessibility tree while it is visually hidden.
     await expect(table).toHaveClass(/star-sr-only/);
     await expect(table.getByRole('columnheader')).toHaveText(['Month', 'Received', 'Shipped']);
-    await expect(table.getByRole('row').nth(1)).toHaveText('Jan120110');
+    await expect
+      .poll(async () =>
+        ((await table.getByRole('row').nth(1).textContent()) ?? '').replace(/\s+/g, ''),
+      )
+      .toBe('Jan120110');
     await expect(table.getByRole('row')).toHaveCount(7);
 
     const toggle = live.getByRole('button', { name: 'Table' });
@@ -132,7 +136,11 @@ test.describe('chart', () => {
       name: 'Traffic by channel',
     });
     await expect(table.getByRole('columnheader')).toHaveText(['Category', 'Visits', 'Share']);
-    await expect(table.getByRole('row').last()).toHaveText('Other1,50013.4%');
+    await expect
+      .poll(async () =>
+        ((await table.getByRole('row').last().textContent()) ?? '').replace(/\s+/g, ''),
+      )
+      .toBe('Other1,50013.4%');
   });
 
   test('the table input starts with the table open', async ({ page }) => {
@@ -307,7 +315,11 @@ test.describe('chart', () => {
       'Total',
     ]);
     await expect(table.getByRole('row')).toHaveCount(7);
-    await expect(table.getByRole('row').nth(1)).toHaveText('Jan120804025265');
+    await expect
+      .poll(async () =>
+        ((await table.getByRole('row').nth(1).textContent()) ?? '').replace(/\s+/g, ''),
+      )
+      .toBe('Jan120804025265');
   });
 
   test('the percent input scales every stacked column to 100 and keeps the real values', async ({
@@ -327,7 +339,11 @@ test.describe('chart', () => {
     await live.locator('.star-chart__hit').nth(2).hover();
     await expect(live.locator('.star-chart__tip')).toContainText('Web: 170 (48.2%)');
     const table = live.getByRole('table', { name: 'Share of orders by channel' });
-    await expect(table.getByRole('row').nth(3)).toHaveText('Mar1701203528353');
+    await expect
+      .poll(async () =>
+        ((await table.getByRole('row').nth(3).textContent()) ?? '').replace(/\s+/g, ''),
+      )
+      .toBe('Mar1701203528353');
   });
 
   test('a radar chart draws one polygon per series with markers and a shared scale', async ({
@@ -366,7 +382,11 @@ test.describe('chart', () => {
       'Model C',
     ]);
     await expect(table.getByRole('row')).toHaveCount(7);
-    await expect(table.getByRole('row').nth(5)).toHaveText('Value for money569');
+    await expect
+      .poll(async () =>
+        ((await table.getByRole('row').nth(5).textContent()) ?? '').replace(/\s+/g, ''),
+      )
+      .toBe('Valueformoney569');
   });
 
   test('a polar area chart draws one sector per category and the table lists the values', async ({
@@ -394,7 +414,11 @@ test.describe('chart', () => {
     const table = live.getByRole('table', { name: 'Visits by weekday' });
     await expect(table.getByRole('columnheader')).toHaveText(['Weekday', 'Visits']);
     await expect(table.getByRole('row')).toHaveCount(8);
-    await expect(table.getByRole('row').nth(5)).toHaveText('Fri1,020');
+    await expect
+      .poll(async () =>
+        ((await table.getByRole('row').nth(5).textContent()) ?? '').replace(/\s+/g, ''),
+      )
+      .toBe('Fri1,020');
   });
 
   test('a scatter chart plots every point and the table lists x and y', async ({ page }) => {
@@ -426,8 +450,16 @@ test.describe('chart', () => {
     const table = live.getByRole('table', { name: 'Price against weight' });
     await expect(table.getByRole('columnheader')).toHaveText(['Series', 'Weight (kg)', 'Price']);
     await expect(table.getByRole('row')).toHaveCount(13);
-    await expect(table.getByRole('row').nth(4)).toHaveText('Backpacks1.479');
-    await expect(table.getByRole('row').nth(12)).toHaveText('Suitcases5.5215');
+    await expect
+      .poll(async () =>
+        ((await table.getByRole('row').nth(4).textContent()) ?? '').replace(/\s+/g, ''),
+      )
+      .toBe('Backpacks1.479');
+    await expect
+      .poll(async () =>
+        ((await table.getByRole('row').nth(12).textContent()) ?? '').replace(/\s+/g, ''),
+      )
+      .toBe('Suitcases5.5215');
   });
 
   const NEW_TYPES = [

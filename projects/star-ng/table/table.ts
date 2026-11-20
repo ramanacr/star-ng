@@ -40,10 +40,13 @@ import {
   StarFilterService,
   StarGroupContext,
   StarOptionKey,
+  StarPart,
   StarSlot,
   starSlot,
   starSlotMap,
+  StarStyled,
   ɵSTAR_MIN_COLUMN_WIDTH,
+  ɵSTAR_PART_HOST,
   ɵstarAriaSort,
   ɵstarClampColumnWidth,
   ɵstarEditText,
@@ -457,8 +460,11 @@ export class StarRowExpansionTemplate<T = unknown> {
  */
 @Component({
   selector: 'star-table',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarTable) }],
   imports: [
+    StarPart,
     NgTemplateOutlet,
     StarButton,
     StarCheckbox,

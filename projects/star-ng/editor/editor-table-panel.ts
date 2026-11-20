@@ -10,7 +10,7 @@ import {
   output,
   signal,
 } from '@angular/core';
-import { STAR_UI_TEXT } from '@star-ng/ui/core';
+import { STAR_UI_TEXT, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 import type { StarEditorTableAlign, StarEditorTableBorders } from './editor-table';
 
 /** Rows and columns of the pointer picker. */
@@ -23,6 +23,8 @@ const PICKER_COLS = 10;
  */
 @Component({
   selector: 'star-editor-table-insert',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-editor__panel',
@@ -31,11 +33,22 @@ const PICKER_COLS = 10;
     '(keydown.escape)': 'onEscape($event)',
   },
   template: `
-    <form class="star-editor__panel-form" novalidate (submit)="submit($event)">
-      <div class="star-editor__table-picker" aria-hidden="true" (mouseleave)="hover.set(null)">
+    <form
+      data-star-part="formPanel"
+      class="star-editor__panel-form"
+      novalidate
+      (submit)="submit($event)"
+    >
+      <div
+        data-star-part="tablePickerPanel"
+        class="star-editor__table-picker"
+        aria-hidden="true"
+        (mouseleave)="hover.set(null)"
+      >
         @for (r of pickerRows; track r) {
           @for (c of pickerCols; track c) {
             <button
+              data-star-part="tablePickerCell"
               type="button"
               tabindex="-1"
               class="star-editor__table-picker-cell"
@@ -47,13 +60,14 @@ const PICKER_COLS = 10;
             ></button>
           }
         }
-        <span class="star-editor__table-picker-size"
+        <span data-star-part="tableSizeText" class="star-editor__table-picker-size"
           >{{ hover()?.[0] ?? rows() }} × {{ hover()?.[1] ?? cols() }}</span
         >
       </div>
-      <label class="star-editor__field star-editor__field--narrow">
-        <span>{{ text.editorRows }}</span>
+      <label data-star-part="fieldLabel" class="star-editor__field star-editor__field--narrow">
+        <span data-star-part="rowsLabel">{{ text.editorRows }}</span>
         <input
+          data-star-part="input"
           class="star-input star-input--sm"
           type="number"
           min="1"
@@ -62,9 +76,10 @@ const PICKER_COLS = 10;
           (input)="rows.set(clamp($any($event.target).value, 50))"
         />
       </label>
-      <label class="star-editor__field star-editor__field--narrow">
-        <span>{{ text.columns }}</span>
+      <label data-star-part="fieldLabel" class="star-editor__field star-editor__field--narrow">
+        <span data-star-part="columnsText">{{ text.columns }}</span>
         <input
+          data-star-part="input"
           class="star-input star-input--sm"
           type="number"
           min="1"
@@ -73,19 +88,25 @@ const PICKER_COLS = 10;
           (input)="cols.set(clamp($any($event.target).value, 20))"
         />
       </label>
-      <label class="star-editor__link-check">
+      <label data-star-part="newTabLabel" class="star-editor__link-check">
         <input
+          data-star-part="linkCheckInput"
           type="checkbox"
           [checked]="header()"
           (change)="header.set($any($event.target).checked)"
         />
         {{ text.editorHeaderRow }}
       </label>
-      <div class="star-editor__link-actions">
-        <button type="submit" class="star-btn star-btn--primary star-btn--sm">
+      <div data-star-part="actionList" class="star-editor__link-actions">
+        <button
+          data-star-part="applyButton"
+          type="submit"
+          class="star-btn star-btn--primary star-btn--sm"
+        >
           {{ text.apply }}
         </button>
         <button
+          data-star-part="cancelButton"
           type="button"
           class="star-btn star-btn--ghost star-btn--sm"
           (click)="dismissed.emit()"
@@ -139,6 +160,9 @@ export class StarEditorTableInsert {
 /** The table properties panel of `star-editor` (internal): borders and alignment. */
 @Component({
   selector: 'star-editor-table-properties',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-editor__panel',
@@ -147,36 +171,58 @@ export class StarEditorTableInsert {
     '(keydown.escape)': 'onEscape($event)',
   },
   template: `
-    <form class="star-editor__panel-form" novalidate (submit)="submit($event)">
-      <label class="star-editor__field">
-        <span>{{ text.editorBorders }}</span>
-        <select class="star-editor__select" (change)="borders.set($any($event.target).value)">
-          <option value="all" [selected]="borders() === 'all'">{{ text.editorBordersAll }}</option>
-          <option value="rows" [selected]="borders() === 'rows'">
+    <form
+      data-star-part="formPanel"
+      class="star-editor__panel-form"
+      novalidate
+      (submit)="submit($event)"
+    >
+      <label data-star-part="fieldLabel" class="star-editor__field">
+        <span data-star-part="bordersLabel">{{ text.editorBorders }}</span>
+        <select
+          data-star-part="formatInput"
+          class="star-editor__select"
+          (change)="borders.set($any($event.target).value)"
+        >
+          <option data-star-part="bordersOption" value="all" [selected]="borders() === 'all'">
+            {{ text.editorBordersAll }}
+          </option>
+          <option data-star-part="bordersOption" value="rows" [selected]="borders() === 'rows'">
             {{ text.editorBordersRows }}
           </option>
-          <option value="none" [selected]="borders() === 'none'">
+          <option data-star-part="bordersOption" value="none" [selected]="borders() === 'none'">
             {{ text.editorBordersNone }}
           </option>
         </select>
       </label>
-      <label class="star-editor__field">
-        <span>{{ text.editorTableAlign }}</span>
-        <select class="star-editor__select" (change)="align.set($any($event.target).value)">
-          <option value="start" [selected]="align() === 'start'">
+      <label data-star-part="fieldLabel" class="star-editor__field">
+        <span data-star-part="alignLabel">{{ text.editorTableAlign }}</span>
+        <select
+          data-star-part="formatInput"
+          class="star-editor__select"
+          (change)="align.set($any($event.target).value)"
+        >
+          <option data-star-part="alignOption" value="start" [selected]="align() === 'start'">
             {{ text.editorAlignStart }}
           </option>
-          <option value="center" [selected]="align() === 'center'">
+          <option data-star-part="alignOption" value="center" [selected]="align() === 'center'">
             {{ text.editorAlignCenter }}
           </option>
-          <option value="end" [selected]="align() === 'end'">{{ text.editorAlignEnd }}</option>
+          <option data-star-part="alignOption" value="end" [selected]="align() === 'end'">
+            {{ text.editorAlignEnd }}
+          </option>
         </select>
       </label>
-      <div class="star-editor__link-actions">
-        <button type="submit" class="star-btn star-btn--primary star-btn--sm">
+      <div data-star-part="actionList" class="star-editor__link-actions">
+        <button
+          data-star-part="applyButton"
+          type="submit"
+          class="star-btn star-btn--primary star-btn--sm"
+        >
           {{ text.apply }}
         </button>
         <button
+          data-star-part="cancelButton"
           type="button"
           class="star-btn star-btn--ghost star-btn--sm"
           (click)="dismissed.emit()"

@@ -534,7 +534,7 @@ star-select.star-table__filter {
   }
   &:hover,
   &:focus-visible {
-    border-color: var(--star-border-strong, var(--star-border));
+    border-color: var(--star-border-strong, var(--star-border, currentColor));
     background: var(--star-surface);
 
     i {

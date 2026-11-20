@@ -22,7 +22,7 @@ import {
   untracked,
   viewChild,
 } from '@angular/core';
-import { STAR_UI_TEXT, StarAnnouncer } from '@star-ng/ui/core';
+import { STAR_UI_TEXT, StarAnnouncer, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 import { StarToolbar } from '@star-ng/ui/layout';
 import {
   STAR_DOCUMENT_RENDERER,
@@ -76,6 +76,8 @@ export interface StarDocumentSearchResult {
  */
 @Component({
   selector: 'star-document-page',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-document-page',
@@ -84,6 +86,7 @@ export interface StarDocumentSearchResult {
   },
   template: `
     <canvas
+      data-star-part="canvasPanel"
       #canvas
       class="star-document-page__canvas"
       aria-hidden="true"
@@ -92,12 +95,16 @@ export interface StarDocumentSearchResult {
       [style.transform]="'translate(-50%, -50%) rotate(' + rotation() + 'deg)'"
     ></canvas>
     @if (failed()) {
-      <span class="star-document-page__failed">
-        <i class="ph-bold ph-warning-circle" aria-hidden="true"></i>
+      <span data-star-part="errorText" class="star-document-page__failed">
+        <i data-star-part="failedIcon" class="ph-bold ph-warning-circle" aria-hidden="true"></i>
         {{ text.documentPageError }}
       </span>
     } @else if (!rendered()) {
-      <span class="star-document-page__skeleton" aria-hidden="true"></span>
+      <span
+        data-star-part="skeletonText"
+        class="star-document-page__skeleton"
+        aria-hidden="true"
+      ></span>
     }
   `,
 })
@@ -235,6 +242,8 @@ const WHEEL_STEP = 50;
  */
 @Component({
   selector: 'star-document-viewer',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   imports: [StarToolbar, StarDocumentPage, NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
@@ -246,33 +255,37 @@ const WHEEL_STEP = 50;
     <star-toolbar class="star-document-viewer__toolbar" [ariaLabel]="text.documentToolbar">
       <ng-container starToolbarStart>
         <button
+          data-star-part="toolButton"
           type="button"
           class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
           [attr.aria-label]="text.documentThumbnails"
           [attr.aria-pressed]="thumbnails()"
           (click)="thumbnails.set(!thumbnails())"
         >
-          <i class="ph-bold ph-sidebar-simple" aria-hidden="true"></i>
+          <i data-star-part="toolIcon" class="ph-bold ph-sidebar-simple" aria-hidden="true"></i>
         </button>
         <button
+          data-star-part="previousPageButton"
           type="button"
           class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
           [attr.aria-label]="text.previousPage"
           [disabled]="page() <= 1 || !pageCount()"
           (click)="goTo(page() - 1)"
         >
-          <i class="ph-bold ph-caret-up" aria-hidden="true"></i>
+          <i data-star-part="previousPageIcon" class="ph-bold ph-caret-up" aria-hidden="true"></i>
         </button>
         <button
+          data-star-part="nextPageButton"
           type="button"
           class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
           [attr.aria-label]="text.nextPage"
           [disabled]="page() >= pageCount()"
           (click)="goTo(page() + 1)"
         >
-          <i class="ph-bold ph-caret-down" aria-hidden="true"></i>
+          <i data-star-part="nextPageIcon" class="ph-bold ph-caret-down" aria-hidden="true"></i>
         </button>
         <input
+          data-star-part="pageInput"
           class="star-document-viewer__page-input"
           type="text"
           inputmode="numeric"
@@ -283,66 +296,84 @@ const WHEEL_STEP = 50;
           (change)="onPageInput($event)"
           (keydown.enter)="onPageInput($event)"
         />
-        <span class="star-document-viewer__count" [id]="countId">
+        <span data-star-part="countText" class="star-document-viewer__count" [id]="countId">
           {{ text.documentPageCount(pageCount()) }}
         </span>
       </ng-container>
       <ng-container starToolbarCenter>
         <button
+          data-star-part="zoomOutButton"
           type="button"
           class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
           [attr.aria-label]="text.zoomOut"
           (click)="zoomBy(-1)"
         >
-          <i class="ph-bold ph-magnifying-glass-minus" aria-hidden="true"></i>
+          <i
+            data-star-part="zoomOutIcon"
+            class="ph-bold ph-magnifying-glass-minus"
+            aria-hidden="true"
+          ></i>
         </button>
         <select
+          data-star-part="zoomInput"
           class="star-document-viewer__zoom"
           [attr.aria-label]="text.documentZoom"
           (change)="onZoomSelect($event)"
         >
-          <option value="fit-width" [selected]="zoom() === 'fit-width'">
+          <option data-star-part="zoomOption" value="fit-width" [selected]="zoom() === 'fit-width'">
             {{ text.documentFitWidth }}
           </option>
-          <option value="fit-page" [selected]="zoom() === 'fit-page'">
+          <option data-star-part="zoomOption" value="fit-page" [selected]="zoom() === 'fit-page'">
             {{ text.documentFitPage }}
           </option>
           @if (customZoom(); as custom) {
-            <option [value]="custom" selected>{{ percent(custom) }}</option>
+            <option data-star-part="zoomOption" [value]="custom" selected>
+              {{ percent(custom) }}
+            </option>
           }
           @for (step of zoomSteps; track step) {
-            <option [value]="step" [selected]="zoom() === step">{{ percent(step) }}</option>
+            <option data-star-part="zoomOption" [value]="step" [selected]="zoom() === step">
+              {{ percent(step) }}
+            </option>
           }
         </select>
         <button
+          data-star-part="zoomInButton"
           type="button"
           class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
           [attr.aria-label]="text.zoomIn"
           (click)="zoomBy(1)"
         >
-          <i class="ph-bold ph-magnifying-glass-plus" aria-hidden="true"></i>
+          <i
+            data-star-part="zoomInIcon"
+            class="ph-bold ph-magnifying-glass-plus"
+            aria-hidden="true"
+          ></i>
         </button>
         <button
+          data-star-part="toolButton"
           type="button"
           class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
           [attr.aria-label]="text.documentRotate"
           (click)="rotate()"
         >
-          <i class="ph-bold ph-arrow-clockwise" aria-hidden="true"></i>
+          <i data-star-part="toolIcon" class="ph-bold ph-arrow-clockwise" aria-hidden="true"></i>
         </button>
       </ng-container>
       <ng-container starToolbarEnd>
         <button
+          data-star-part="toolButton"
           type="button"
           class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
           [attr.aria-label]="text.documentSinglePage"
           [attr.aria-pressed]="mode() === 'single'"
           (click)="setMode(mode() === 'single' ? 'continuous' : 'single')"
         >
-          <i class="ph-bold ph-file" aria-hidden="true"></i>
+          <i data-star-part="toolIcon" class="ph-bold ph-file" aria-hidden="true"></i>
         </button>
         @if (hasText()) {
           <button
+            data-star-part="toolButton"
             type="button"
             class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
             [attr.aria-label]="text.documentSearch"
@@ -350,10 +381,11 @@ const WHEEL_STEP = 50;
             [attr.aria-controls]="searchId"
             (click)="searchOpen() ? closeSearch() : openSearch()"
           >
-            <i class="ph-bold ph-magnifying-glass" aria-hidden="true"></i>
+            <i data-star-part="toolIcon" class="ph-bold ph-magnifying-glass" aria-hidden="true"></i>
           </button>
         }
         <button
+          data-star-part="fullScreenButton"
           type="button"
           class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
           [attr.aria-label]="text.fullScreen"
@@ -361,35 +393,44 @@ const WHEEL_STEP = 50;
           (click)="toggleFullscreen()"
         >
           <i
+            data-star-part="fullScreenIcon"
             [class]="fullscreen() ? 'ph-bold ph-corners-in' : 'ph-bold ph-corners-out'"
             aria-hidden="true"
           ></i>
         </button>
         @if (showDownload()) {
           <button
+            data-star-part="downloadButton"
             type="button"
             class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
             [attr.aria-label]="text.download"
             (click)="download.emit()"
           >
-            <i class="ph-bold ph-download-simple" aria-hidden="true"></i>
+            <i data-star-part="saveIcon" class="ph-bold ph-download-simple" aria-hidden="true"></i>
           </button>
         }
         @if (showPrint()) {
           <button
+            data-star-part="toolButton"
             type="button"
             class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
             [attr.aria-label]="text.documentPrint"
             (click)="print.emit()"
           >
-            <i class="ph-bold ph-printer" aria-hidden="true"></i>
+            <i data-star-part="toolIcon" class="ph-bold ph-printer" aria-hidden="true"></i>
           </button>
         }
       </ng-container>
     </star-toolbar>
     @if (searchOpen()) {
-      <div class="star-document-viewer__search" role="search" [id]="searchId">
+      <div
+        data-star-part="searchPanel"
+        class="star-document-viewer__search"
+        role="search"
+        [id]="searchId"
+      >
         <input
+          data-star-part="searchInput"
           #searchInput
           class="star-document-viewer__search-input"
           type="search"
@@ -399,39 +440,53 @@ const WHEEL_STEP = 50;
           (keydown)="onSearchKeydown($event)"
         />
         <button
+          data-star-part="previousResultButton"
           type="button"
           class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
           [attr.aria-label]="text.previousResult"
           [disabled]="!results()?.length"
           (click)="jumpToResult(-1)"
         >
-          <i class="ph-bold ph-caret-up" aria-hidden="true"></i>
+          <i data-star-part="previousResultIcon" class="ph-bold ph-caret-up" aria-hidden="true"></i>
         </button>
         <button
+          data-star-part="nextResultButton"
           type="button"
           class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
           [attr.aria-label]="text.nextResult"
           [disabled]="!results()?.length"
           (click)="jumpToResult(1)"
         >
-          <i class="ph-bold ph-caret-down" aria-hidden="true"></i>
+          <i data-star-part="nextResultIcon" class="ph-bold ph-caret-down" aria-hidden="true"></i>
         </button>
         <!-- Not a live region: StarAnnouncer announces the result once. -->
-        <span class="star-document-viewer__search-status">{{ searchStatus() }}</span>
+        <span data-star-part="searchStatusText" class="star-document-viewer__search-status">{{
+          searchStatus()
+        }}</span>
       </div>
     }
-    <div class="star-document-viewer__body">
+    <div data-star-part="body" class="star-document-viewer__body">
       @if (thumbnails() && pageCount()) {
         <nav
+          data-star-part="thumbsPanel"
           #thumbs
           class="star-document-viewer__thumbs"
           [attr.aria-label]="text.documentThumbnails"
           (scroll)="onThumbsScroll()"
         >
-          <ul class="star-document-viewer__thumb-list" [style.height.px]="pageCount() * thumbSlot">
+          <ul
+            data-star-part="thumbList"
+            class="star-document-viewer__thumb-list"
+            [style.height.px]="pageCount() * thumbSlot"
+          >
             @for (index of allPages(); track index) {
-              <li class="star-document-viewer__thumb-item" [style.top.px]="index * thumbSlot">
+              <li
+                data-star-part="thumbItem"
+                class="star-document-viewer__thumb-item"
+                [style.top.px]="index * thumbSlot"
+              >
                 <button
+                  data-star-part="thumbnail"
                   type="button"
                   class="star-document-viewer__thumb"
                   [attr.aria-current]="index + 1 === page() ? 'page' : null"
@@ -446,7 +501,9 @@ const WHEEL_STEP = 50;
                       [rotation]="rotation()"
                     />
                   }
-                  <span class="star-document-viewer__thumb-label">{{ text.page(index + 1) }}</span>
+                  <span data-star-part="thumbLabel" class="star-document-viewer__thumb-label">{{
+                    text.page(index + 1)
+                  }}</span>
                 </button>
               </li>
             }
@@ -454,6 +511,7 @@ const WHEEL_STEP = 50;
         </nav>
       }
       <div
+        data-star-part="pagesPanel"
         #scroller
         class="star-document-viewer__pages"
         role="region"
@@ -466,26 +524,32 @@ const WHEEL_STEP = 50;
       >
         @switch (status()) {
           @case ('error') {
-            <div class="star-document-viewer__error" role="alert">
+            <div data-star-part="errorPanel" class="star-document-viewer__error" role="alert">
               @if (errorTpl(); as tpl) {
                 <ng-container
                   [ngTemplateOutlet]="tpl.template"
                   [ngTemplateOutletContext]="{ $implicit: error(), error: error() }"
                 />
               } @else {
-                <i class="ph-bold ph-warning-circle" aria-hidden="true"></i>
+                <i
+                  data-star-part="errorIcon"
+                  class="ph-bold ph-warning-circle"
+                  aria-hidden="true"
+                ></i>
                 {{ text.documentLoadError }}
               }
             </div>
           }
           @case ('ready') {
             <div
+              data-star-part="stackPanel"
               class="star-document-viewer__stack"
               [style.height.px]="contentHeight()"
               [style.min-width.px]="contentWidth()"
             >
               @for (index of renderedPages(); track index) {
                 <div
+                  data-star-part="pageItem"
                   class="star-document-viewer__page"
                   [attr.role]="hasText() ? 'document' : 'img'"
                   [attr.aria-label]="text.documentPageOf(index + 1, pageCount())"
@@ -507,8 +571,12 @@ const WHEEL_STEP = 50;
             </div>
           }
           @case ('loading') {
-            <div class="star-document-viewer__loading">
-              <span class="star-document-page__skeleton" aria-hidden="true"></span>
+            <div data-star-part="loadingItem" class="star-document-viewer__loading">
+              <span
+                data-star-part="skeletonText"
+                class="star-document-page__skeleton"
+                aria-hidden="true"
+              ></span>
               <span class="star-sr-only">{{ text.loading }}</span>
             </div>
           }

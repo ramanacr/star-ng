@@ -1,6 +1,6 @@
 <ng-content select="[starTableCaption]" />
 @if (columnToggle() || pinnableColumns()) {
-  <div class="star-table__tools">
+  <div data-star-part="toolsPanel" class="star-table__tools">
     <star-button
       size="sm"
       variant="secondary"
@@ -10,9 +10,9 @@
       {{ text.columns }}
     </star-button>
     <star-popover #columnsPanel [ariaLabel]="text.columns">
-      <ul class="star-table__columns">
+      <ul data-star-part="columnList" class="star-table__columns">
         @for (column of orderedColumns(); track column.field) {
-          <li>
+          <li data-star-part="columnItem">
             @if (columnToggle()) {
               <star-checkbox
                 [checked]="!isHidden(column)"
@@ -22,13 +22,14 @@
                 {{ column.header }}
               </star-checkbox>
             } @else {
-              <span>{{ column.header }}</span>
+              <span data-star-part="columnsText">{{ column.header }}</span>
             }
             @if (pinnableColumns()) {
               @let side = sideOf(column);
-              <span class="star-table__columns-pin">
+              <span data-star-part="columnPinButton" class="star-table__columns-pin">
                 @for (action of pinActions; track action.side) {
                   <button
+                    data-star-part="toggleButton"
                     type="button"
                     class="star-table__toggle"
                     [attr.data-pin]="moveKey(column, action.key)"
@@ -37,14 +38,15 @@
                     [attr.aria-disabled]="!action.side && !side ? 'true' : null"
                     (click)="pinFromPanel(column, action.side)"
                   >
-                    <i [class]="action.icon" aria-hidden="true"></i>
+                    <i data-star-part="toggleIcon" [class]="action.icon" aria-hidden="true"></i>
                   </button>
                 }
               </span>
             }
             @if (reorderableColumns()) {
-              <span class="star-table__columns-move">
+              <span data-star-part="columnMoveButton" class="star-table__columns-move">
                 <button
+                  data-star-part="toggleButton"
                   type="button"
                   class="star-table__toggle"
                   [disabled]="!canMoveBy(column, -1)"
@@ -52,9 +54,10 @@
                   [attr.aria-label]="text.moveColumnEarlier(column.header)"
                   (click)="moveColumnBy(column, -1)"
                 >
-                  <i class="ph-bold ph-arrow-up" aria-hidden="true"></i>
+                  <i data-star-part="moveIcon" class="ph-bold ph-arrow-up" aria-hidden="true"></i>
                 </button>
                 <button
+                  data-star-part="toggleButton"
                   type="button"
                   class="star-table__toggle"
                   [disabled]="!canMoveBy(column, 1)"
@@ -62,7 +65,7 @@
                   [attr.aria-label]="text.moveColumnLater(column.header)"
                   (click)="moveColumnBy(column, 1)"
                 >
-                  <i class="ph-bold ph-arrow-down" aria-hidden="true"></i>
+                  <i data-star-part="moveIcon" class="ph-bold ph-arrow-down" aria-hidden="true"></i>
                 </button>
               </span>
             }
@@ -73,6 +76,7 @@
   </div>
 }
 <div
+  data-star-part="scrollPanel"
   #scroller
   class="star-table__scroll"
   [attr.role]="scrollable() ? 'group' : null"
@@ -82,6 +86,7 @@
   (scroll)="onScroll($event)"
 >
   <table
+    data-star-part="grid"
     [attr.role]="cellMode() ? 'grid' : null"
     [attr.aria-multiselectable]="
       cellMode() && (selectionMode() === 'range' || selectionMode() === 'multiple') ? true : null
@@ -91,12 +96,16 @@
     [attr.aria-busy]="loading() || null"
     [attr.aria-rowcount]="ariaRowCount()"
   >
-    <thead>
+    <thead data-star-part="head">
       @for (headerRow of headerLayout(); track $index; let rowIndex = $index) {
-        <tr [attr.aria-rowindex]="virtualScroll() ? rowIndex + 1 : null">
+        <tr
+          data-star-part="scrollHeadRow"
+          [attr.aria-rowindex]="virtualScroll() ? rowIndex + 1 : null"
+        >
           @if (rowIndex === 0) {
             @if (reorderableRows()) {
               <th
+                data-star-part="reorderCell"
                 class="star-table__reorder"
                 [attr.rowspan]="headRowSpan()"
                 scope="col"
@@ -107,6 +116,7 @@
             }
             @if (expandable()) {
               <th
+                data-star-part="expanderCell"
                 class="star-table__expander"
                 [attr.rowspan]="headRowSpan()"
                 scope="col"
@@ -117,6 +127,7 @@
             }
             @if (selectionMode() === 'multiple') {
               <th
+                data-star-part="selectionCell"
                 class="star-table__select"
                 [attr.rowspan]="headRowSpan()"
                 scope="col"
@@ -136,6 +147,7 @@
               </th>
             } @else if (selectionMode() === 'single') {
               <th
+                data-star-part="selectionCell"
                 class="star-table__select"
                 [attr.rowspan]="headRowSpan()"
                 scope="col"
@@ -148,6 +160,7 @@
           @for (cell of headerRow; track cell.key) {
             @if (rowIndex === 0 && cellHas(cell, columnWindow().first, 'first')) {
               <td
+                data-star-part="spacerCell"
                 class="star-table__col-spacer"
                 aria-hidden="true"
                 [attr.rowspan]="headRowSpan()"
@@ -157,6 +170,7 @@
             }
             @if (cell.kind === 'group') {
               <th
+                data-star-part="headerCell"
                 scope="colgroup"
                 class="star-table__th star-table__column-group"
                 [attr.colspan]="cell.columns.length"
@@ -178,6 +192,7 @@
             } @else {
               @let column = cell.column;
               <th
+                data-star-part="scrollHeaderCell"
                 scope="col"
                 [attr.aria-colindex]="colIndex(column)"
                 [attr.rowspan]="cell.rowspan > 1 ? cell.rowspan : null"
@@ -198,15 +213,18 @@
               >
                 @if (column.sortable) {
                   <button
+                    data-star-part="sortButton"
                     type="button"
                     class="star-table__sort"
                     [attr.title]="multiSort() ? text.sortMultiHint : null"
                     (click)="sortBy(column, $event)"
                   >
                     <ng-container *ngTemplateOutlet="headerLabel; context: { $implicit: column }" />
-                    <i [class]="sortIcon(column)" aria-hidden="true"></i>
+                    <i data-star-part="sortIcon" [class]="sortIcon(column)" aria-hidden="true"></i>
                     @if (sortRank(column); as rank) {
-                      <span class="star-table__sort-rank">{{ rank }}</span>
+                      <span data-star-part="sortRankText" class="star-table__sort-rank">{{
+                        rank
+                      }}</span>
                     }
                   </button>
                 } @else {
@@ -231,6 +249,7 @@
                 }
                 @if (resizableColumns()) {
                   <span
+                    data-star-part="resizerText"
                     class="star-table__resizer"
                     role="separator"
                     aria-orientation="vertical"
@@ -247,6 +266,7 @@
             }
             @if (rowIndex === 0 && cellHas(cell, columnWindow().last, 'last')) {
               <td
+                data-star-part="spacerCell"
                 class="star-table__col-spacer"
                 aria-hidden="true"
                 [attr.rowspan]="headRowSpan()"
@@ -257,6 +277,7 @@
           }
           @if (rowIndex === 0 && rowEditMode()) {
             <th
+              data-star-part="rowActionCell"
               class="star-table__row-actions"
               [attr.rowspan]="headRowSpan()"
               [attr.aria-colindex]="ariaColCount()"
@@ -269,21 +290,23 @@
       }
       @if (hasColumnFilters()) {
         <tr
+          data-star-part="filtersRow"
           class="star-table__filters"
           [attr.aria-rowindex]="virtualScroll() ? headerLayout().length + 1 : null"
         >
           @if (reorderableRows()) {
-            <td class="star-table__reorder"></td>
+            <td data-star-part="reorderCell" class="star-table__reorder"></td>
           }
           @if (expandable()) {
-            <td class="star-table__expander"></td>
+            <td data-star-part="expanderCell" class="star-table__expander"></td>
           }
           @if (rowSelectionMode()) {
-            <td class="star-table__select"></td>
+            <td data-star-part="selectionCell" class="star-table__select"></td>
           }
           @for (column of renderedColumns(); track column.field) {
             @if (column === columnWindow().first) {
               <td
+                data-star-part="spacerCell"
                 class="star-table__col-spacer"
                 aria-hidden="true"
                 [style.width.px]="columnWindow().before"
@@ -291,6 +314,7 @@
               ></td>
             }
             <td
+              data-star-part="filtersCell"
               [starTablePin]="pinOf(column)"
               [attr.aria-colindex]="colIndex(column)"
               [attr.data-label]="column.filter ? column.header : null"
@@ -308,6 +332,7 @@
                 />
               } @else if (column.filter === 'text') {
                 <input
+                  data-star-part="filterInput"
                   type="search"
                   class="star-input star-input--sm star-table__filter"
                   [attr.aria-label]="text.filterBy(column.header)"
@@ -325,8 +350,9 @@
                   (valueChange)="setFilter(column.field, $event)"
                 />
               } @else if (column.filter === 'number' || column.filter === 'date') {
-                <span class="star-table__filter-range">
+                <span data-star-part="rangePanel" class="star-table__filter-range">
                   <input
+                    data-star-part="filterInput"
                     class="star-input star-input--sm star-table__filter"
                     [type]="column.filter"
                     [attr.aria-label]="text.filterMin(column.header)"
@@ -335,6 +361,7 @@
                     (input)="setBound(column, 'min', $any($event.target).value)"
                   />
                   <input
+                    data-star-part="filterInput"
                     class="star-input star-input--sm star-table__filter"
                     [type]="column.filter"
                     [attr.aria-label]="text.filterMax(column.header)"
@@ -347,6 +374,7 @@
             </td>
             @if (column === columnWindow().last) {
               <td
+                data-star-part="spacerCell"
                 class="star-table__col-spacer"
                 aria-hidden="true"
                 [style.width.px]="columnWindow().after"
@@ -355,49 +383,58 @@
             }
           }
           @if (rowEditMode()) {
-            <td class="star-table__row-actions"></td>
+            <td data-star-part="rowActionCell" class="star-table__row-actions"></td>
           }
         </tr>
       }
     </thead>
     <tbody
+      data-star-part="body"
       #body
       [starContextMenu]="rowMenu"
       (menuOpened)="onMenuOpened()"
       (menuClosed)="onMenuClosed()"
     >
       @if (loading() && loadingSlot(); as loader) {
-        <tr>
-          <td class="star-table__loading" [attr.colspan]="colspan()">
+        <tr data-star-part="scrollBodyRow">
+          <td data-star-part="loadingItem" class="star-table__loading" [attr.colspan]="colspan()">
             <ng-container *ngTemplateOutlet="loader" />
           </td>
         </tr>
       } @else if (loading()) {
         @for (row of skeletonRows(); track row) {
-          <tr class="star-table__row">
+          <tr data-star-part="row" class="star-table__row">
             @if (reorderableRows()) {
-              <td class="star-table__reorder"></td>
+              <td data-star-part="reorderCell" class="star-table__reorder"></td>
             }
             @if (expandable()) {
-              <td class="star-table__expander"></td>
+              <td data-star-part="expanderCell" class="star-table__expander"></td>
             }
             @if (rowSelectionMode()) {
-              <td class="star-table__select"><star-skeleton size="1.25rem" /></td>
+              <td data-star-part="selectionCell" class="star-table__select">
+                <star-skeleton size="1.25rem" />
+              </td>
             }
             @for (column of renderedColumns(); track column.field) {
               @if (column === columnWindow().first) {
                 <td
+                  data-star-part="spacerCell"
                   class="star-table__col-spacer"
                   aria-hidden="true"
                   [style.width.px]="columnWindow().before"
                   [style.min-width.px]="columnWindow().before"
                 ></td>
               }
-              <td [starTablePin]="pinOf(column)" [attr.aria-colindex]="colIndex(column)">
+              <td
+                data-star-part="rowCell"
+                [starTablePin]="pinOf(column)"
+                [attr.aria-colindex]="colIndex(column)"
+              >
                 <star-skeleton height="0.875rem" [width]="row % 2 ? '70%' : '90%'" />
               </td>
               @if (column === columnWindow().last) {
                 <td
+                  data-star-part="spacerCell"
                   class="star-table__col-spacer"
                   aria-hidden="true"
                   [style.width.px]="columnWindow().after"
@@ -406,31 +443,41 @@
               }
             }
             @if (rowEditMode()) {
-              <td class="star-table__row-actions"></td>
+              <td data-star-part="rowActionCell" class="star-table__row-actions"></td>
             }
           </tr>
         }
       } @else {
         @for (entry of bodyEntries(); track entry.key) {
           @if (entry.kind === 'spacer') {
-            <tr class="star-table__spacer" aria-hidden="true">
-              <td [attr.colspan]="colspan()" [style.height.px]="entry.height"></td>
+            <tr data-star-part="spacerRow" class="star-table__spacer" aria-hidden="true">
+              <td
+                data-star-part="fillerCell"
+                [attr.colspan]="colspan()"
+                [style.height.px]="entry.height"
+              ></td>
             </tr>
           } @else if (entry.kind === 'group') {
             @let group = entry;
             <tr
+              data-star-part="groupRow"
               class="star-table__group"
               [attr.aria-rowindex]="group.aria"
               [attr.data-vi]="group.item"
             >
-              <th [attr.colspan]="colspan()" scope="colgroup">
+              <th data-star-part="groupHeaderCell" [attr.colspan]="colspan()" scope="colgroup">
                 <button
+                  data-star-part="groupToggleButton"
                   type="button"
                   class="star-table__group-toggle"
                   [attr.aria-expanded]="!isGroupCollapsed(group.label)"
                   (click)="toggleGroup(group.label)"
                 >
-                  <i class="ph-bold ph-caret-down" aria-hidden="true"></i>
+                  <i
+                    data-star-part="groupToggleIcon"
+                    class="ph-bold ph-caret-down"
+                    aria-hidden="true"
+                  ></i>
                   @if (groupSlot(); as custom) {
                     <ng-container
                       *ngTemplateOutlet="
@@ -440,7 +487,9 @@
                     />
                   } @else {
                     {{ group.label }}
-                    <span class="star-table__group-count">{{ group.count }}</span>
+                    <span data-star-part="groupCountText" class="star-table__group-count">{{
+                      group.count
+                    }}</span>
                   }
                 </button>
               </th>
@@ -448,23 +497,25 @@
           } @else if (entry.kind === 'groupFooter') {
             @let summaries = groupSummaries().get(entry.label);
             <tr
+              data-star-part="groupFooterRow"
               class="star-table__group-footer"
               [attr.aria-rowindex]="entry.aria"
               [attr.data-vi]="entry.item"
               [hidden]="isGroupFooterHidden(entry.label)"
             >
               @if (reorderableRows()) {
-                <td class="star-table__reorder"></td>
+                <td data-star-part="reorderCell" class="star-table__reorder"></td>
               }
               @if (expandable()) {
-                <td class="star-table__expander"></td>
+                <td data-star-part="expanderCell" class="star-table__expander"></td>
               }
               @if (rowSelectionMode()) {
-                <td class="star-table__select"></td>
+                <td data-star-part="selectionCell" class="star-table__select"></td>
               }
               @for (column of renderedColumns(); track column.field) {
                 @if (column === columnWindow().first) {
                   <td
+                    data-star-part="spacerCell"
                     class="star-table__col-spacer"
                     aria-hidden="true"
                     [style.width.px]="columnWindow().before"
@@ -472,6 +523,7 @@
                   ></td>
                 }
                 <td
+                  data-star-part="groupFooterCell"
                   [class]="'star-table__cell--' + (column.align ?? 'start')"
                   [starTablePin]="pinOf(column)"
                   [attr.aria-colindex]="colIndex(column)"
@@ -485,6 +537,7 @@
                 </td>
                 @if (column === columnWindow().last) {
                   <td
+                    data-star-part="spacerCell"
                     class="star-table__col-spacer"
                     aria-hidden="true"
                     [style.width.px]="columnWindow().after"
@@ -493,13 +546,14 @@
                 }
               }
               @if (rowEditMode()) {
-                <td class="star-table__row-actions"></td>
+                <td data-star-part="rowActionCell" class="star-table__row-actions"></td>
               }
             </tr>
           } @else {
             @let row = entry.row;
             @let i = entry.index;
             <tr
+              data-star-part="row"
               [attr.aria-rowindex]="entry.aria"
               [attr.data-vi]="entry.item"
               [hidden]="isRowCollapsed(row)"
@@ -522,37 +576,46 @@
             >
               @if (reorderableRows()) {
                 <td
+                  data-star-part="reorderCell"
                   class="star-table__reorder"
                   [attr.data-field]="cellKeys() ? '$reorder' : null"
                   [attr.tabindex]="leadTabIndex(row, '$reorder')"
                 >
                   <button
+                    data-star-part="toggleButton"
                     type="button"
                     class="star-table__toggle"
                     [disabled]="!canMoveRow(row, -1)"
                     [attr.aria-label]="text.moveUp"
                     (click)="moveRow(row, -1)"
                   >
-                    <i class="ph-bold ph-arrow-up" aria-hidden="true"></i>
+                    <i data-star-part="moveIcon" class="ph-bold ph-arrow-up" aria-hidden="true"></i>
                   </button>
                   <button
+                    data-star-part="toggleButton"
                     type="button"
                     class="star-table__toggle"
                     [disabled]="!canMoveRow(row, 1)"
                     [attr.aria-label]="text.moveDown"
                     (click)="moveRow(row, 1)"
                   >
-                    <i class="ph-bold ph-arrow-down" aria-hidden="true"></i>
+                    <i
+                      data-star-part="moveIcon"
+                      class="ph-bold ph-arrow-down"
+                      aria-hidden="true"
+                    ></i>
                   </button>
                 </td>
               }
               @if (expandable()) {
                 <td
+                  data-star-part="expanderCell"
                   class="star-table__expander"
                   [attr.data-field]="cellKeys() ? '$expander' : null"
                   [attr.tabindex]="leadTabIndex(row, '$expander')"
                 >
                   <button
+                    data-star-part="toggleButton"
                     type="button"
                     class="star-table__toggle"
                     [attr.aria-expanded]="isExpanded(row)"
@@ -560,12 +623,17 @@
                     [attr.aria-label]="isExpanded(row) ? text.collapseRow : text.expandRow"
                     (click)="toggleExpansion(row)"
                   >
-                    <i class="ph-bold ph-caret-right" aria-hidden="true"></i>
+                    <i
+                      data-star-part="expandIcon"
+                      class="ph-bold ph-caret-right"
+                      aria-hidden="true"
+                    ></i>
                   </button>
                 </td>
               }
               @if (selectionMode() === 'multiple') {
                 <td
+                  data-star-part="selectionCell"
                   class="star-table__select"
                   [attr.data-field]="cellKeys() ? '$select' : null"
                   [attr.tabindex]="leadTabIndex(row, '$select')"
@@ -581,11 +649,13 @@
                 </td>
               } @else if (selectionMode() === 'single') {
                 <td
+                  data-star-part="selectionCell"
                   class="star-table__select"
                   [attr.data-field]="cellKeys() ? '$select' : null"
                   [attr.tabindex]="leadTabIndex(row, '$select')"
                 >
                   <input
+                    data-star-part="radioInput"
                     type="radio"
                     class="star-table__radio"
                     [name]="radioName"
@@ -601,6 +671,7 @@
               @for (column of renderedColumns(); track column.field; let firstCell = $first) {
                 @if (column === columnWindow().first) {
                   <td
+                    data-star-part="spacerCell"
                     class="star-table__col-spacer"
                     aria-hidden="true"
                     [style.width.px]="columnWindow().before"
@@ -610,6 +681,7 @@
                 @let span = rowSpan(i, column);
                 @if (span !== 0) {
                   <td
+                    data-star-part="rowCell"
                     [attr.rowspan]="span > 1 ? span : null"
                     [attr.aria-colindex]="colIndex(column)"
                     [class]="'star-table__cell--' + (column.align ?? 'start')"
@@ -632,6 +704,7 @@
                       @let rowError = editorError(row, column);
                       @if (column.editor === 'select') {
                         <select
+                          data-star-part="cellInput"
                           class="star-input star-input--sm star-table__editor"
                           [attr.data-row-editor]="rowKeyText(row)"
                           [attr.aria-label]="text.editCell(column.header)"
@@ -641,13 +714,18 @@
                           (keydown)="onRowEditorKey(row, $event)"
                         >
                           @for (choice of column.editOptions ?? []; track choice) {
-                            <option [value]="choice" [selected]="choice === draftText(row, column)">
+                            <option
+                              data-star-part="editorOption"
+                              [value]="choice"
+                              [selected]="choice === draftText(row, column)"
+                            >
                               {{ choice }}
                             </option>
                           }
                         </select>
                       } @else {
                         <input
+                          data-star-part="cellInput"
                           class="star-input star-input--sm star-table__editor"
                           type="text"
                           [attr.inputmode]="column.editor === 'number' ? 'decimal' : null"
@@ -662,9 +740,12 @@
                         />
                       }
                       @if (rowError) {
-                        <span class="star-table__error" [id]="errorId(i, column)">{{
-                          rowError
-                        }}</span>
+                        <span
+                          data-star-part="errorText"
+                          class="star-table__error"
+                          [id]="errorId(i, column)"
+                          >{{ rowError }}</span
+                        >
                       }
                     } @else if (isEditing(row, column)) {
                       @if (column.editor === 'select') {
@@ -683,6 +764,7 @@
                       } @else {
                         @let cellError = editorError(row, column);
                         <input
+                          data-star-part="cellInput"
                           class="star-input star-input--sm star-table__editor"
                           [type]="column.editor === 'number' ? 'number' : 'text'"
                           [attr.aria-label]="text.editCell(column.header)"
@@ -710,13 +792,17 @@
                           (keydown.escape)="cancelEdit($event, row, column)"
                         />
                         @if (cellError) {
-                          <span class="star-table__error" [id]="errorId(i, column)">{{
-                            cellError
-                          }}</span>
+                          <span
+                            data-star-part="errorText"
+                            class="star-table__error"
+                            [id]="errorId(i, column)"
+                            >{{ cellError }}</span
+                          >
                         }
                       }
                     } @else if (!rowEditMode() && isEditable(row, column)) {
                       <button
+                        data-star-part="editButton"
                         type="button"
                         class="star-table__edit"
                         [attr.data-edit]="editKey(row, column)"
@@ -725,7 +811,7 @@
                       >
                         <!-- The name is the action and the visible value (WCAG 2.5.3). -->
                         <span class="star-sr-only">{{ text.editCell(column.header) }}: </span>
-                        <span class="star-table__edit-value">
+                        <span data-star-part="editText" class="star-table__edit-value">
                           <ng-container
                             *ngTemplateOutlet="cell; context: { $implicit: row, column, index: i }"
                           />
@@ -733,7 +819,11 @@
                         @if (isChanged(row, column)) {
                           <span class="star-sr-only">, {{ text.cellChanged }}</span>
                         }
-                        <i class="ph-bold ph-pencil-simple" aria-hidden="true"></i>
+                        <i
+                          data-star-part="editIcon"
+                          class="ph-bold ph-pencil-simple"
+                          aria-hidden="true"
+                        ></i>
                       </button>
                     } @else {
                       <ng-container
@@ -747,6 +837,7 @@
                 }
                 @if (column === columnWindow().last) {
                   <td
+                    data-star-part="spacerCell"
                     class="star-table__col-spacer"
                     aria-hidden="true"
                     [style.width.px]="columnWindow().after"
@@ -756,6 +847,7 @@
               }
               @if (rowEditMode()) {
                 <td
+                  data-star-part="rowActionCell"
                   class="star-table__row-actions"
                   [attr.aria-colindex]="ariaColCount()"
                   [attr.data-field]="cellKeys() ? '$actions' : null"
@@ -766,6 +858,7 @@
                       <ng-container *ngTemplateOutlet="custom; context: rowActionsContext(row)" />
                     } @else {
                       <button
+                        data-star-part="toggleButton"
                         type="button"
                         class="star-table__toggle"
                         [attr.data-row-save]="rowKeyText(row)"
@@ -773,26 +866,36 @@
                         [attr.aria-disabled]="rowValid(row) ? null : 'true'"
                         (click)="saveRowEdit(row)"
                       >
-                        <i class="ph-bold ph-check" aria-hidden="true"></i>
+                        <i
+                          data-star-part="saveIcon"
+                          class="ph-bold ph-check"
+                          aria-hidden="true"
+                        ></i>
                       </button>
                       <button
+                        data-star-part="toggleButton"
                         type="button"
                         class="star-table__toggle"
                         [attr.aria-label]="text.cancel"
                         (click)="cancelRowEdit(row)"
                       >
-                        <i class="ph-bold ph-x" aria-hidden="true"></i>
+                        <i data-star-part="cancelIcon" class="ph-bold ph-x" aria-hidden="true"></i>
                       </button>
                     }
                   } @else if (!isDeleted(row)) {
                     <button
+                      data-star-part="toggleButton"
                       type="button"
                       class="star-table__toggle"
                       [attr.data-row-edit]="rowKeyText(row)"
                       [attr.aria-label]="text.editRow"
                       (click)="initRowEdit(row)"
                     >
-                      <i class="ph-bold ph-pencil-simple" aria-hidden="true"></i>
+                      <i
+                        data-star-part="editIcon"
+                        class="ph-bold ph-pencil-simple"
+                        aria-hidden="true"
+                      ></i>
                     </button>
                   }
                 </td>
@@ -801,12 +904,13 @@
             @if (expansionTemplate(); as detail) {
               @if (isExpanded(row) && !isRowCollapsed(row)) {
                 <tr
+                  data-star-part="expansionRow"
                   class="star-table__expansion"
                   [id]="detailId(i)"
                   [attr.aria-rowindex]="entry.aria === null ? null : entry.aria + 1"
                   [attr.data-vi]="entry.item"
                 >
-                  <td [attr.colspan]="colspan()">
+                  <td data-star-part="expansionCell" [attr.colspan]="colspan()">
                     <ng-container
                       *ngTemplateOutlet="detail; context: { $implicit: row, index: i }"
                     />
@@ -816,9 +920,9 @@
             }
           }
         } @empty {
-          <tr>
-            <td class="star-table__empty" [attr.colspan]="colspan()">
-              <i class="ph-bold ph-tray" aria-hidden="true"></i>
+          <tr data-star-part="scrollBodyRow">
+            <td data-star-part="emptyCell" class="star-table__empty" [attr.colspan]="colspan()">
+              <i data-star-part="emptyIcon" class="ph-bold ph-tray" aria-hidden="true"></i>
               @if (emptySlot(); as custom) {
                 <ng-container *ngTemplateOutlet="custom; context: { $implicit: globalFilter() }" />
               } @else {
@@ -830,23 +934,25 @@
       }
     </tbody>
     @if (hasFooter()) {
-      <tfoot>
+      <tfoot data-star-part="foot">
         <tr
+          data-star-part="footer"
           class="star-table__footer"
           [attr.aria-rowindex]="virtualScroll() ? ariaRowCount() : null"
         >
           @if (reorderableRows()) {
-            <td class="star-table__reorder"></td>
+            <td data-star-part="reorderCell" class="star-table__reorder"></td>
           }
           @if (expandable()) {
-            <td class="star-table__expander"></td>
+            <td data-star-part="expanderCell" class="star-table__expander"></td>
           }
           @if (rowSelectionMode()) {
-            <td class="star-table__select"></td>
+            <td data-star-part="selectionCell" class="star-table__select"></td>
           }
           @for (column of renderedColumns(); track column.field) {
             @if (column === columnWindow().first) {
               <td
+                data-star-part="spacerCell"
                 class="star-table__col-spacer"
                 aria-hidden="true"
                 [style.width.px]="columnWindow().before"
@@ -854,6 +960,7 @@
               ></td>
             }
             <td
+              data-star-part="footerCell"
               [class]="'star-table__cell--' + (column.align ?? 'start')"
               [starTablePin]="pinOf(column)"
               [attr.aria-colindex]="colIndex(column)"
@@ -867,6 +974,7 @@
             </td>
             @if (column === columnWindow().last) {
               <td
+                data-star-part="spacerCell"
                 class="star-table__col-spacer"
                 aria-hidden="true"
                 [style.width.px]="columnWindow().after"
@@ -875,7 +983,7 @@
             }
           }
           @if (rowEditMode()) {
-            <td class="star-table__row-actions"></td>
+            <td data-star-part="rowActionCell" class="star-table__row-actions"></td>
           }
         </tr>
       </tfoot>
@@ -891,7 +999,7 @@
 <ng-content select="[starTableSummary]" />
 <ng-template #summaryCell let-summary>
   @if (summary.label) {
-    <span class="star-table__summary-label">{{ summary.label }}</span>
+    <span starPart="summaryLabel" class="star-table__summary-label">{{ summary.label }}</span>
   }
   {{ summary.text }}
 </ng-template>
@@ -918,11 +1026,14 @@
   } @else if (searchText()) {
     @for (part of searchParts(row, column); track $index) {
       @if (part.match) {
-        <mark class="star-table__mark" [class.star-table__mark--active]="part.active">{{
-          part.text
-        }}</mark>
+        <mark
+          starPart="markText"
+          class="star-table__mark"
+          [class.star-table__mark--active]="part.active"
+          >{{ part.text }}</mark
+        >
       } @else {
-        <span>{{ part.text }}</span>
+        <span starPart="text">{{ part.text }}</span>
       }
     }
   } @else {

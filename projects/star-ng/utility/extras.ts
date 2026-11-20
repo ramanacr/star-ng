@@ -16,7 +16,12 @@ import {
   signal,
   TemplateRef,
 } from '@angular/core';
-import { STAR_UI_TEXT, starPrefersReducedMotion } from '@star-ng/ui/core';
+import {
+  STAR_UI_TEXT,
+  starPrefersReducedMotion,
+  StarStyled,
+  ɵSTAR_PART_HOST,
+} from '@star-ng/ui/core';
 
 /** Read view of `star-inplace`: `<ng-template starInplaceDisplay>…</ng-template>`. */
 @Directive({ selector: 'ng-template[starInplaceDisplay]' })
@@ -43,28 +48,32 @@ export class StarInplaceContent {
  */
 @Component({
   selector: 'star-inplace',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   imports: [NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-inplace', '(keydown.escape)': 'onEscape($event)' },
   template: `
     @if (active()) {
-      <span class="star-inplace__content">
+      <span data-star-part="content" class="star-inplace__content">
         @if (content(); as edit) {
           <ng-container *ngTemplateOutlet="edit.template" />
         }
         @if (closable()) {
           <button
+            data-star-part="closeButton"
             type="button"
             class="star-select__icon-btn"
             [attr.aria-label]="text.close"
             (click)="deactivate()"
           >
-            <i class="ph-bold ph-check" aria-hidden="true"></i>
+            <i data-star-part="closeIcon" class="ph-bold ph-check" aria-hidden="true"></i>
           </button>
         }
       </span>
     } @else {
       <button
+        data-star-part="displayButton"
         type="button"
         class="star-inplace__display"
         [disabled]="disabled()"
@@ -77,7 +86,11 @@ export class StarInplaceContent {
         @if (display(); as view) {
           <ng-container *ngTemplateOutlet="view.template" />
         }
-        <i class="ph-bold ph-pencil-simple star-inplace__icon" aria-hidden="true"></i>
+        <i
+          data-star-part="icon"
+          class="ph-bold ph-pencil-simple star-inplace__icon"
+          aria-hidden="true"
+        ></i>
       </button>
     }
   `,
@@ -131,6 +144,8 @@ export class StarInplace {
  */
 @Component({
   selector: 'star-scroll-panel',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-scroll-panel',
@@ -178,14 +193,16 @@ export class StarFocusTrap {}
  */
 @Component({
   selector: 'star-float-label',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-float' },
   template: `
     <!-- The control is projected into the label, so the label wraps it at run time. -->
     <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
-    <label class="star-float__wrap">
+    <label data-star-part="wrapLabel" class="star-float__wrap">
       <ng-content />
-      <span class="star-float__label">{{ label() }}</span>
+      <span data-star-part="label" class="star-float__label">{{ label() }}</span>
     </label>
   `,
 })
@@ -278,19 +295,29 @@ export class StarAnimateOnScroll {
  */
 @Component({
   selector: 'star-image-compare',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-compare', '[style.--star-compare.%]': 'value()' },
   template: `
-    <img class="star-compare__image" [src]="rightSrc()" [alt]="rightAlt()" />
     <img
+      data-star-part="picture"
+      class="star-compare__image"
+      [src]="rightSrc()"
+      [alt]="rightAlt()"
+    />
+    <img
+      data-star-part="picture"
       class="star-compare__image star-compare__image--left"
       [src]="leftSrc()"
       [alt]="leftAlt()"
     />
-    <span class="star-compare__divider" aria-hidden="true">
-      <i class="ph-bold ph-arrows-horizontal"></i>
+    <span data-star-part="divider" class="star-compare__divider" aria-hidden="true">
+      <i data-star-part="dividerIcon" class="ph-bold ph-arrows-horizontal"></i>
     </span>
     <input
+      data-star-part="rangeInput"
       type="range"
       class="star-compare__range"
       min="0"

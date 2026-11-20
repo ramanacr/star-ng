@@ -7,6 +7,7 @@ import {
   numberAttribute,
 } from '@angular/core';
 import type { StarOptionKey } from '@star-ng/ui/core';
+import { StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 import type { StarColumn } from '@star-ng/ui/table';
 import type { Observable } from 'rxjs';
 
@@ -40,6 +41,8 @@ export type StarRowIslandLoader<P = unknown, C = unknown> = (
  */
 @Component({
   selector: 'star-row-island',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { hidden: '' },
   template: '',

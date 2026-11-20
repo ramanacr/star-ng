@@ -10,7 +10,7 @@ import {
   inject,
   input,
 } from '@angular/core';
-import { StarSeverity } from '@star-ng/ui/core';
+import { StarSeverity, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 import { StarBadge } from './badge';
 
 /** Elements that take the focus with Tab. */
@@ -44,6 +44,8 @@ export type StarOverlayBadgePosition = 'top-end' | 'top-start' | 'bottom-end' | 
  */
 @Component({
   selector: 'star-overlay-badge',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   imports: [StarBadge],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '[class]': "'star-overlay-badge star-overlay-badge--' + position()" },

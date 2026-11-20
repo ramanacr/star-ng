@@ -23,7 +23,7 @@ import {
   viewChild,
   ViewContainerRef,
 } from '@angular/core';
-import { StarDirectionService } from '@star-ng/ui/core';
+import { StarDirectionService, StarPart, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 import { Subscription } from 'rxjs';
 
 const FOCUSABLE =
@@ -51,10 +51,14 @@ const POSITIONS: ConnectedPosition[] = [
  */
 @Component({
   selector: 'star-popover',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <ng-template #panel>
       <div
+        starPart="surface"
         class="star-popover"
         tabindex="-1"
         [id]="panelId"

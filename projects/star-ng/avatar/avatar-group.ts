@@ -7,7 +7,7 @@ import {
   inject,
   input,
 } from '@angular/core';
-import { STAR_UI_TEXT } from '@star-ng/ui/core';
+import { STAR_UI_TEXT, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 import { STAR_AVATAR_GROUP, StarAvatar } from './avatar';
 
 /**
@@ -25,6 +25,8 @@ import { STAR_AVATAR_GROUP, StarAvatar } from './avatar';
  */
 @Component({
   selector: 'star-avatar-group',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [{ provide: STAR_AVATAR_GROUP, useExisting: forwardRef(() => StarAvatarGroup) }],
   host: {
@@ -36,6 +38,7 @@ import { STAR_AVATAR_GROUP, StarAvatar } from './avatar';
     <ng-content />
     @if (overflow() > 0) {
       <span
+        data-star-part="moreItem"
         role="img"
         [class]="
           'star-avatar star-avatar--' +
@@ -45,7 +48,7 @@ import { STAR_AVATAR_GROUP, StarAvatar } from './avatar';
           ' star-avatar-group__more'
         "
         [attr.aria-label]="text.moreCount(overflow())"
-        ><span aria-hidden="true">+{{ overflow() }}</span></span
+        ><span data-star-part="moreText" aria-hidden="true">+{{ overflow() }}</span></span
       >
     }
   `,

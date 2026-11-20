@@ -27,6 +27,7 @@ export * from '@star-ng/ui/date-picker';
 export * from '@star-ng/ui/diagram';
 export * from '@star-ng/ui/dialog';
 export * from '@star-ng/ui/document-viewer';
+export * from '@star-ng/ui/drag-drop';
 export * from '@star-ng/ui/drawer';
 export * from '@star-ng/ui/dropdown';
 export * from '@star-ng/ui/editor';

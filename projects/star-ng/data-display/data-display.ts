@@ -22,8 +22,10 @@ import {
   STAR_UI_TEXT,
   StarEmptyContext,
   StarOptionKey,
-  StarSlot,
   starSlot,
+  StarSlot,
+  StarStyled,
+  ɵSTAR_PART_HOST,
 } from '@star-ng/ui/core';
 import { StarPaginator } from '@star-ng/ui/paginator';
 import { StarItemContext } from './data-display-slots';
@@ -63,6 +65,8 @@ export class StarDataViewItem<T = unknown> {
  */
 @Component({
   selector: 'star-data-view',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   imports: [NgTemplateOutlet, StarPaginator],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarDataView) }],
@@ -71,15 +75,17 @@ export class StarDataViewItem<T = unknown> {
     @if (headerSlot(); as header) {
       <ng-container *ngTemplateOutlet="header" />
     }
-    <div class="star-data-view__header">
+    <div data-star-part="header" class="star-data-view__header">
       <ng-content select="[starDataViewHeader]" />
       <div
+        data-star-part="segmentedPanel"
         class="star-segmented star-segmented--sm"
         role="radiogroup"
         [attr.aria-label]="text.layout"
       >
         @for (option of layouts; track option.id) {
           <button
+            data-star-part="item"
             type="button"
             role="radio"
             class="star-segmented__item"
@@ -88,14 +94,18 @@ export class StarDataViewItem<T = unknown> {
             [attr.aria-label]="option.label"
             (click)="layout.set(option.id)"
           >
-            <i [class]="option.icon" aria-hidden="true"></i>
+            <i data-star-part="itemIcon" [class]="option.icon" aria-hidden="true"></i>
           </button>
         }
       </div>
     </div>
-    <ul class="star-data-view__items" [class.star-data-view__items--grid]="layout() === 'grid'">
+    <ul
+      data-star-part="itemsList"
+      class="star-data-view__items"
+      [class.star-data-view__items--grid]="layout() === 'grid'"
+    >
       @for (item of pageItems(); track $index; let i = $index) {
-        <li class="star-data-view__item">
+        <li data-star-part="item" class="star-data-view__item">
           @if (itemTemplate(); as custom) {
             <ng-container
               *ngTemplateOutlet="
@@ -106,8 +116,8 @@ export class StarDataViewItem<T = unknown> {
           }
         </li>
       } @empty {
-        <li class="star-table__empty">
-          <i class="ph-bold ph-tray" aria-hidden="true"></i>
+        <li data-star-part="emptyItem" class="star-table__empty">
+          <i data-star-part="emptyIcon" class="ph-bold ph-tray" aria-hidden="true"></i>
           @if (emptySlot(); as custom) {
             <ng-container *ngTemplateOutlet="custom; context: emptyContext" />
           } @else {
@@ -168,25 +178,34 @@ export class StarDataView<T = unknown> {
  */
 @Component({
   selector: 'star-order-list',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   imports: [NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarOrderList) }],
   host: { class: 'star-order-list' },
   template: `
-    <div class="star-order-list__buttons" role="group" [attr.aria-label]="text.moveSelectedItem">
+    <div
+      data-star-part="buttonsPanel"
+      class="star-order-list__buttons"
+      role="group"
+      [attr.aria-label]="text.moveSelectedItem"
+    >
       @for (action of actions; track action.id) {
         <button
+          data-star-part="moveButton"
           type="button"
           class="star-select__icon-btn star-order-list__btn"
           [attr.aria-label]="action.label"
           [disabled]="selected() < 0 || !canMove(action.id)"
           (click)="move(action.id)"
         >
-          <i [class]="action.icon" aria-hidden="true"></i>
+          <i data-star-part="moveIcon" [class]="action.icon" aria-hidden="true"></i>
         </button>
       }
     </div>
     <ul
+      data-star-part="list"
       class="star-listbox star-order-list__list"
       role="listbox"
       [attr.aria-label]="ariaLabel()"
@@ -194,6 +213,7 @@ export class StarDataView<T = unknown> {
     >
       @for (item of value(); track $index; let i = $index) {
         <li
+          data-star-part="option"
           role="option"
           class="star-listbox__option"
           tabindex="0"
@@ -203,7 +223,11 @@ export class StarDataView<T = unknown> {
           (focus)="selected.set(i)"
           (keydown)="onKeydown($event, i)"
         >
-          <i class="ph-bold ph-dots-six-vertical star-order-list__grip" aria-hidden="true"></i>
+          <i
+            data-star-part="dragHandle"
+            class="ph-bold ph-dots-six-vertical star-order-list__grip"
+            aria-hidden="true"
+          ></i>
           @if (itemSlot(); as custom) {
             <ng-container *ngTemplateOutlet="custom; context: itemContext(item, i)" />
           } @else {
@@ -291,6 +315,8 @@ export class StarOrderList<T = unknown> {
  */
 @Component({
   selector: 'star-pick-list',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   imports: [NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarPickList) }],
@@ -298,17 +324,26 @@ export class StarOrderList<T = unknown> {
   template: `
     @for (side of sides; track side) {
       @let items = side === 'source' ? source() : target();
-      <section class="star-pick-list__side" [attr.aria-labelledby]="ids[side]">
-        <h3 class="star-pick-list__header" [id]="ids[side]">
+      <section
+        data-star-part="sidePanel"
+        class="star-pick-list__side"
+        [attr.aria-labelledby]="ids[side]"
+      >
+        <h3 data-star-part="header" class="star-pick-list__header" [id]="ids[side]">
           {{
             side === 'source'
               ? (sourceHeader() ?? text.pickListSource)
               : (targetHeader() ?? text.pickListTarget)
           }}
-          <span class="star-badge star-badge--secondary star-badge--sm">{{ items.length }}</span>
+          <span
+            data-star-part="badgeText"
+            class="star-badge star-badge--secondary star-badge--sm"
+            >{{ items.length }}</span
+          >
         </h3>
-        <div class="star-pick-list__box">
+        <div data-star-part="boxPanel" class="star-pick-list__box">
           <ul
+            data-star-part="list"
             class="star-listbox star-pick-list__list"
             role="listbox"
             aria-multiselectable="true"
@@ -316,6 +351,7 @@ export class StarOrderList<T = unknown> {
           >
             @for (item of items; track $index; let i = $index) {
               <li
+                data-star-part="option"
                 role="option"
                 class="star-listbox__option"
                 tabindex="0"
@@ -336,49 +372,78 @@ export class StarOrderList<T = unknown> {
           </ul>
           <!-- Outside the listbox: a listbox may contain options and groups only. -->
           @if (!items.length) {
-            <div class="star-listbox__empty star-pick-list__empty" role="presentation">
+            <div
+              data-star-part="emptyPanel"
+              class="star-listbox__empty star-pick-list__empty"
+              role="presentation"
+            >
               {{ text.emptyMessage }}
             </div>
           }
         </div>
       </section>
       @if (side === 'source') {
-        <div class="star-pick-list__buttons" role="group" [attr.aria-label]="text.transfer">
+        <div
+          data-star-part="buttonsPanel"
+          class="star-pick-list__buttons"
+          role="group"
+          [attr.aria-label]="text.transfer"
+        >
           <button
+            data-star-part="transferButton"
             type="button"
             class="star-select__icon-btn"
             [attr.aria-label]="text.moveSelectedToTarget"
             [disabled]="!picked('source').length"
             (click)="transfer('source', picked('source'))"
           >
-            <i class="ph-bold ph-caret-right star-icon-mirror" aria-hidden="true"></i>
+            <i
+              data-star-part="moveIcon"
+              class="ph-bold ph-caret-right star-icon-mirror"
+              aria-hidden="true"
+            ></i>
           </button>
           <button
+            data-star-part="transferButton"
             type="button"
             class="star-select__icon-btn"
             [attr.aria-label]="text.moveAllToTarget"
             [disabled]="!source().length"
             (click)="transfer('source', source())"
           >
-            <i class="ph-bold ph-caret-double-right star-icon-mirror" aria-hidden="true"></i>
+            <i
+              data-star-part="moveAllIcon"
+              class="ph-bold ph-caret-double-right star-icon-mirror"
+              aria-hidden="true"
+            ></i>
           </button>
           <button
+            data-star-part="transferButton"
             type="button"
             class="star-select__icon-btn"
             [attr.aria-label]="text.moveSelectedToSource"
             [disabled]="!picked('target').length"
             (click)="transfer('target', picked('target'))"
           >
-            <i class="ph-bold ph-caret-left star-icon-mirror" aria-hidden="true"></i>
+            <i
+              data-star-part="moveIcon"
+              class="ph-bold ph-caret-left star-icon-mirror"
+              aria-hidden="true"
+            ></i>
           </button>
           <button
+            data-star-part="transferButton"
             type="button"
             class="star-select__icon-btn"
             [attr.aria-label]="text.moveAllToSource"
             [disabled]="!target().length"
             (click)="transfer('target', target())"
           >
-            <i class="ph-bold ph-caret-double-left star-icon-mirror" aria-hidden="true"></i>
+            <i
+              data-star-part="moveAllIcon"
+              class="ph-bold ph-caret-double-left star-icon-mirror"
+              aria-hidden="true"
+            ></i>
           </button>
         </div>
       }

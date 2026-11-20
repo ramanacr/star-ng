@@ -74,7 +74,7 @@ describe('StarWindow', () => {
   it('is a dialog named by its title, with a focusable title bar and its buttons', async () => {
     const { root, dialog, titlebar, button } = await setup();
     const title = root.querySelector(`#${dialog.getAttribute('aria-labelledby')}`);
-    expect(title?.textContent).toBe('Notes');
+    expect(title?.textContent?.trim()).toBe('Notes');
     expect(title?.tagName).toBe('H2');
     expect(titlebar.tabIndex).toBe(0);
     expect(root.querySelector(`#${titlebar.getAttribute('aria-describedby')}`)?.textContent).toBe(
@@ -329,9 +329,9 @@ describe('StarWindow', () => {
   it('names the title bar group, and renders no empty heading without a header', async () => {
     const { root, dialog, titlebar } = await setup();
     expect(titlebar.getAttribute('role')).toBe('group');
-    expect(root.querySelector(`#${titlebar.getAttribute('aria-labelledby')}`)?.textContent).toBe(
-      'Notes',
-    );
+    expect(
+      root.querySelector(`#${titlebar.getAttribute('aria-labelledby')}`)?.textContent?.trim(),
+    ).toBe('Notes');
     const other = root.querySelectorAll('dialog')[1];
     const otherBar = other.querySelector('.star-window__titlebar')!;
     expect(other.querySelector('h2')).toBeNull();
@@ -368,7 +368,7 @@ describe('StarWindowService', () => {
     await TestBed.inject(ApplicationRef).whenStable();
     const dialog = document.body.querySelector<HTMLDialogElement>('star-window-container dialog')!;
     expect(dialog.querySelector('.opened')?.textContent).toBe('Order 1001');
-    expect(dialog.querySelector('h2')?.textContent).toBe('Order notes');
+    expect(dialog.querySelector('h2')?.textContent?.trim()).toBe('Order notes');
     ref.close('saved');
     await TestBed.inject(ApplicationRef).whenStable();
     expect(await ref.closed).toBe('saved');

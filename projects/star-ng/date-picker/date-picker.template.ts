@@ -3,8 +3,8 @@
  * `star-multi-date-picker` (see `StarDateInputBase`). Internal.
  */
 export const STAR_DATE_TEMPLATE = `
-  <div #control class="star-date__control" cdkOverlayOrigin #origin="cdkOverlayOrigin">
-    <input
+  <div data-star-part="controlPanel" #control class="star-date__control" cdkOverlayOrigin #origin="cdkOverlayOrigin">
+    <input data-star-part="input"
       #input
       type="text"
       class="star-date__input"
@@ -29,11 +29,11 @@ export const STAR_DATE_TEMPLATE = `
       (blur)="onInputBlur()"
     />
     @if (showClear() && hasValue() && interactive()) {
-      <button type="button" class="star-select__icon-btn" [attr.aria-label]="text.clear" (click)="onClearClick()">
-        <i class="ph-bold ph-x" aria-hidden="true"></i>
+      <button data-star-part="clearButton" type="button" class="star-select__icon-btn" [attr.aria-label]="text.clear" (click)="onClearClick()">
+        <i data-star-part="clearIcon" class="ph-bold ph-x" aria-hidden="true"></i>
       </button>
     }
-    <button
+    <button data-star-part="toggleButton"
       type="button"
       class="star-date__toggle"
       [disabled]="!interactive()"
@@ -43,7 +43,7 @@ export const STAR_DATE_TEMPLATE = `
       [attr.aria-controls]="open() ? panelId : null"
       (click)="togglePanel()"
     >
-      <i class="ph-bold ph-calendar-blank" aria-hidden="true"></i>
+      <i data-star-part="toggleIcon" class="ph-bold ph-calendar-blank" aria-hidden="true"></i>
     </button>
   </div>
 
@@ -67,7 +67,7 @@ export const STAR_DATE_TEMPLATE = `
        locks the page scroll while the sheet is open, as for star-dialog. -->
   @if (open() && sheet.active()) {
     <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
-    <dialog
+    <dialog data-star-part="sheetPanel"
       #sheetDialog
       class="star-date__sheet star-dialog--block-scroll"
       [attr.aria-label]="text.chooseDate"
@@ -79,7 +79,7 @@ export const STAR_DATE_TEMPLATE = `
   }
 
   <ng-template #panel>
-    <div
+    <div starPart="panel"
       class="star-panel star-date__panel"
       [class.star-date__panel--time]="timeEnabled()"
       [class.star-date__panel--months]="numberOfMonths() > 1"
@@ -117,10 +117,10 @@ export const STAR_DATE_TEMPLATE = `
         (viewChange)="viewChange.emit($event)"
       />
       @if (timeEnabled()) {
-        <div class="star-date__time">
+        <div data-star-part="timeText" class="star-date__time">
           @for (field of timeFields(); track field.label) {
-            <div class="star-date__time-field" role="group" [attr.aria-label]="field.label">
-              <span class="star-date__time-label" aria-hidden="true">{{ field.label }}</span>
+            <div data-star-part="timePanel" class="star-date__time-field" role="group" [attr.aria-label]="field.label">
+              <span data-star-part="timeLabel" class="star-date__time-label" aria-hidden="true">{{ field.label }}</span>
               <star-time-columns
                 [value]="field.value || null"
                 [min]="field.min"
@@ -136,14 +136,14 @@ export const STAR_DATE_TEMPLATE = `
             </div>
           }
         </div>
-        <div class="star-date__done">
-          <button type="button" class="star-btn star-btn--primary star-btn--sm" (click)="closePanel()">{{ text.done }}</button>
+        <div data-star-part="footerPanel" class="star-date__done">
+          <button data-star-part="doneButton" type="button" class="star-btn star-btn--primary star-btn--sm" (click)="closePanel()">{{ text.done }}</button>
         </div>
       }
       @if (showButtonBar()) {
-        <div class="star-date__bar">
-          <button type="button" class="star-btn star-btn--ghost star-btn--sm" (click)="today()">{{ text.today }}</button>
-          <button type="button" class="star-btn star-btn--ghost star-btn--sm" (click)="onClearClick()">{{ text.clear }}</button>
+        <div data-star-part="barPanel" class="star-date__bar">
+          <button data-star-part="todayButton" type="button" class="star-btn star-btn--ghost star-btn--sm" (click)="today()">{{ text.today }}</button>
+          <button data-star-part="footerClearButton" type="button" class="star-btn star-btn--ghost star-btn--sm" (click)="onClearClick()">{{ text.clear }}</button>
         </div>
       }
       <!-- The footer is last, below the button bar. PrimeNG \`#footer\` template. -->

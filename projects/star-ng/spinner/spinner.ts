@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
-import { STAR_UI_TEXT } from '@star-ng/ui/core';
+import { STAR_UI_TEXT, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 
 /**
  * Indeterminate progress spinner (PrimeNG `p-progressspinner`), SVG stroke in the primary color.
@@ -7,6 +7,8 @@ import { STAR_UI_TEXT } from '@star-ng/ui/core';
  */
 @Component({
   selector: 'star-spinner',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-spinner',
@@ -16,8 +18,9 @@ import { STAR_UI_TEXT } from '@star-ng/ui/core';
     '[style.height]': 'size()',
   },
   template: `
-    <svg viewBox="0 0 50 50" aria-hidden="true">
+    <svg data-star-part="graphic" viewBox="0 0 50 50" aria-hidden="true">
       <circle
+        data-star-part="track"
         class="star-spinner__track"
         cx="25"
         cy="25"
@@ -26,6 +29,7 @@ import { STAR_UI_TEXT } from '@star-ng/ui/core';
         [attr.stroke-width]="strokeWidth()"
       />
       <circle
+        data-star-part="arcItem"
         class="star-spinner__arc"
         cx="25"
         cy="25"

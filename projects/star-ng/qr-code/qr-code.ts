@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
-import { STAR_UI_TEXT } from '@star-ng/ui/core';
+import { STAR_UI_TEXT, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 import { qrEncode, StarQrErrorCorrection } from './qr-encoder';
 
 /** Light modules around the symbol (ISO/IEC 18004, clause 6.3.8). */
@@ -48,6 +48,8 @@ function modulePath(modules: readonly (readonly boolean[])[]): string {
  */
 @Component({
   selector: 'star-qr-code',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-qr-code',
@@ -60,6 +62,7 @@ function modulePath(modules: readonly (readonly boolean[])[]): string {
   template: `
     @if (code(); as symbol) {
       <svg
+        data-star-part="graphic"
         class="star-qr-code__svg"
         [attr.viewBox]="'0 0 ' + side() + ' ' + side()"
         [attr.width]="size()"
@@ -68,10 +71,16 @@ function modulePath(modules: readonly (readonly boolean[])[]): string {
         focusable="false"
         shape-rendering="crispEdges"
       >
-        <rect class="star-qr-code__background" [attr.width]="side()" [attr.height]="side()" />
-        <path class="star-qr-code__modules" [attr.d]="path()" />
+        <rect
+          data-star-part="backgroundItem"
+          class="star-qr-code__background"
+          [attr.width]="side()"
+          [attr.height]="side()"
+        />
+        <path data-star-part="modulesItem" class="star-qr-code__modules" [attr.d]="path()" />
         @if (imageBox(); as box) {
           <rect
+            data-star-part="logoPanel"
             class="star-qr-code__image-backdrop"
             [attr.x]="box.x - 0.5"
             [attr.y]="box.y - 0.5"
@@ -79,6 +88,7 @@ function modulePath(modules: readonly (readonly boolean[])[]): string {
             [attr.height]="box.size + 1"
           />
           <image
+            data-star-part="logoItem"
             class="star-qr-code__image"
             [attr.href]="image()"
             [attr.x]="box.x"
@@ -90,7 +100,7 @@ function modulePath(modules: readonly (readonly boolean[])[]): string {
         }
       </svg>
     } @else if (error()) {
-      <span class="star-qr-code__error">{{ error() }}</span>
+      <span data-star-part="errorText" class="star-qr-code__error">{{ error() }}</span>
     }
   `,
 })

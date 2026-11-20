@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { DOCS_API, DOCS_EXAMPLES, DocsApiMember } from '../generated/docs-data';
 import { DOCS_NAV } from '../nav';
 
@@ -120,6 +120,7 @@ export class DocsExample {
  */
 @Component({
   selector: 'docs-api',
+  imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'docs-api' },
   template: `
@@ -183,6 +184,15 @@ export class DocsExample {
               </tbody>
             </table>
           </div>
+        }
+        @if (item.entry.parts?.length) {
+          <p class="docs-api__parts">
+            Parts (keys of <code>pt</code>, attribute <code>data-star-part</code>, see
+            <a routerLink="/guides/styling-hooks">Styling hooks</a>):
+            @for (part of item.entry.parts; track part; let last = $last) {
+              <code>{{ part }}</code>{{ last ? '.' : ', ' }}
+            }
+          </p>
         }
       </section>
     }

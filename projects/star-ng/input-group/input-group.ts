@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 
 /**
  * Icon inside a text input (PrimeNG `p-iconfield` + `p-inputicon`). The icon is decoration
@@ -12,13 +13,15 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
  */
 @Component({
   selector: 'star-icon-field',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-icon-field',
     '[class.star-icon-field--end]': "iconPosition() === 'end'",
   },
   template: `
-    <i [class]="icon() + ' star-icon-field__icon'" aria-hidden="true"></i>
+    <i data-star-part="icon" [class]="icon() + ' star-icon-field__icon'" aria-hidden="true"></i>
     <ng-content />
   `,
 })
@@ -43,6 +46,8 @@ export class StarIconField {
  */
 @Component({
   selector: 'star-input-group',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-input-group', role: 'group', '[attr.aria-label]': 'ariaLabel()' },
   template: `<ng-content />`,
@@ -54,6 +59,8 @@ export class StarInputGroup {
 /** Text or icon add-on of `star-input-group`. */
 @Component({
   selector: 'star-input-group-addon',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-input-group__addon' },
   template: `<ng-content />`,

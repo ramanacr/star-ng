@@ -66,6 +66,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         load: () => import('./guides/right-to-left.guide').then((m) => m.RightToLeftGuide),
       },
       {
+        label: 'Styling hooks',
+        path: 'guides/styling-hooks',
+        keywords: 'pass-through pt parts unstyled tailwind classes data-star-part cascade layers',
+        load: () => import('./guides/styling-hooks.guide').then((m) => m.StylingHooksGuide),
+      },
+      {
         label: 'Template slots',
         path: 'guides/template-slots',
         keywords: 'ng-template customize header footer empty loading group icon option node date',
@@ -916,6 +922,13 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         path: 'controls/focus-trap',
         keywords: 'tab keyboard overlay cdk',
         load: () => import('./controls/focus-trap.page').then((m) => m.FocusTrapPage),
+      },
+      {
+        label: 'Drag and drop',
+        path: 'controls/drag-drop',
+        keywords:
+          'draggable droppable drop zone dnd move keyboard touch scope pDraggable pDroppable',
+        load: () => import('./controls/drag-drop.page').then((m) => m.DragDropPage),
       },
       {
         label: 'Ripple',

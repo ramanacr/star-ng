@@ -16,6 +16,7 @@ import {
   model,
   TemplateRef,
 } from '@angular/core';
+import { StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 
 /** Lazy panel body: `<ng-template starAccordionContent>` renders on first expand only. */
 @Directive({ selector: 'ng-template[starAccordionContent]' })
@@ -26,6 +27,8 @@ export class StarAccordionContent {
 /** One section of `star-accordion`. */
 @Component({
   selector: 'star-accordion-panel',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   imports: [NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
@@ -34,8 +37,9 @@ export class StarAccordionContent {
     '[class.star-accordion__panel--disabled]': 'disabled()',
   },
   template: `
-    <h3 class="star-accordion__heading">
+    <h3 data-star-part="headingPanel" class="star-accordion__heading">
       <button
+        data-star-part="header"
         type="button"
         class="star-accordion__header"
         [id]="headerId"
@@ -46,22 +50,27 @@ export class StarAccordionContent {
         (keydown)="accordion.onHeaderKeydown($event)"
       >
         @if (icon(); as icon) {
-          <i [class]="icon" aria-hidden="true"></i>
+          <i data-star-part="headerIcon" [class]="icon" aria-hidden="true"></i>
         }
-        <span class="star-accordion__title">{{ header() }}</span>
+        <span data-star-part="titleText" class="star-accordion__title">{{ header() }}</span>
         <ng-content select="[starAccordionHeader]" />
-        <i class="ph-bold ph-caret-down star-accordion__caret" aria-hidden="true"></i>
+        <i
+          data-star-part="expandIcon"
+          class="ph-bold ph-caret-down star-accordion__caret"
+          aria-hidden="true"
+        ></i>
       </button>
     </h3>
     <div
+      data-star-part="regionPanel"
       class="star-accordion__region"
       role="region"
       [id]="regionId"
       [attr.aria-labelledby]="headerId"
       [attr.inert]="expanded() ? null : ''"
     >
-      <div class="star-accordion__inner">
-        <div class="star-accordion__body">
+      <div data-star-part="innerPanel" class="star-accordion__inner">
+        <div data-star-part="body" class="star-accordion__body">
           @if (lazy(); as lazyContent) {
             @if (rendered()) {
               <ng-container *ngTemplateOutlet="lazyContent.template" />
@@ -106,6 +115,8 @@ export class StarAccordionPanel {
  */
 @Component({
   selector: 'star-accordion',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-accordion' },
   template: `<ng-content />`,

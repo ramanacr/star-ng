@@ -17,7 +17,15 @@ import {
   viewChild,
 } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-import { STAR_SLOT_HOST, StarSlot, starSlot, type StarEmptyContext } from '@star-ng/ui/core';
+import {
+  STAR_SLOT_HOST,
+  StarPart,
+  starSlot,
+  StarSlot,
+  StarStyled,
+  ɵSTAR_PART_HOST,
+  type StarEmptyContext,
+} from '@star-ng/ui/core';
 
 /**
  * How the items of `star-list` behave:
@@ -30,6 +38,8 @@ export type StarListMode = 'plain' | 'navigation' | 'action';
 /** Optional heading line between the items of `star-list`. Material `mat-subheader`. */
 @Component({
   selector: 'star-list-subheader',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-list__subheader' },
   template: `<ng-content />`,
@@ -46,7 +56,9 @@ export class StarListSubheader {}
  */
 @Component({
   selector: 'star-list-item',
-  imports: [NgTemplateOutlet, RouterLink, RouterLinkActive],
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [StarPart, NgTemplateOutlet, RouterLink, RouterLinkActive],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-list__item',
@@ -58,14 +70,15 @@ export class StarListSubheader {}
   template: `
     <ng-template #body>
       <ng-content select="[starListItemStart]" />
-      <span class="star-list__text">
-        <span class="star-list__title"><ng-content /></span>
+      <span starPart="text" class="star-list__text">
+        <span data-star-part="titleText" class="star-list__title"><ng-content /></span>
         <ng-content select="[starListItemSubtitle]" />
       </span>
     </ng-template>
     @switch (kind()) {
       @case ('router') {
         <a
+          data-star-part="mainItem"
           #focusable
           class="star-list__main"
           [routerLink]="routerLink()"
@@ -81,6 +94,7 @@ export class StarListSubheader {}
       }
       @case ('href') {
         <a
+          data-star-part="mainItem"
           #focusable
           class="star-list__main"
           [class.star-list__main--active]="active()"
@@ -95,6 +109,7 @@ export class StarListSubheader {}
       }
       @case ('button') {
         <button
+          data-star-part="mainButton"
           #focusable
           type="button"
           class="star-list__main"
@@ -108,7 +123,11 @@ export class StarListSubheader {}
         </button>
       }
       @default {
-        <div class="star-list__main" [attr.aria-disabled]="disabled() || null">
+        <div
+          data-star-part="mainPanel"
+          class="star-list__main"
+          [attr.aria-disabled]="disabled() || null"
+        >
           <ng-container *ngTemplateOutlet="body" />
         </div>
       }
@@ -191,6 +210,8 @@ export class StarListItem {
  */
 @Component({
   selector: 'star-list',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   imports: [NgTemplateOutlet],
   providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarList) }],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -207,7 +228,7 @@ export class StarListItem {
     <ng-content />
     @if (!hasItems()) {
       @if (emptySlot(); as custom) {
-        <div class="star-list__empty">
+        <div data-star-part="emptyPanel" class="star-list__empty">
           <ng-container *ngTemplateOutlet="custom; context: { $implicit: '' }" />
         </div>
       }

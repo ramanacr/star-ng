@@ -346,6 +346,55 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'color picker eye dropper button',
+    path: 'controls/color-picker',
+    open: async (page) => {
+      // The button shows only with the EyeDropper API: stub it, then load the page again.
+      await page.addInitScript(() => {
+        (window as unknown as { EyeDropper: unknown }).EyeDropper = class {
+          open() {
+            return Promise.resolve({ sRGBHex: '#16a34a' });
+          }
+        };
+      });
+      await page.reload();
+      const dropper = example(page, 'Basic').getByRole('button', {
+        name: 'Pick a color from the screen',
+      });
+      await expect(dropper).toBeVisible();
+      await dropper.focus();
+    },
+  },
+  {
+    name: 'drag and drop, item picked up with the keyboard over a zone',
+    path: 'controls/drag-drop',
+    open: async (page) => {
+      // The page is prerendered: wait for hydration before the first key.
+      await expect(page.locator('docs-drag-drop-page[ngh]')).toHaveCount(0, { timeout: 15_000 });
+      const live = example(page, 'Move orders between lists');
+      const order = live.locator('.star-draggable', { hasText: 'ORD-1042' });
+      await order.focus();
+      await page.keyboard.press('Space');
+      await page.keyboard.press('ArrowDown');
+      await expect(order).toHaveClass(/star-draggable--picked/);
+      await expect(live.locator('.star-droppable--over')).toHaveCount(1);
+    },
+  },
+  {
+    name: 'unstyled select panel open',
+    path: 'guides/styling-hooks',
+    open: async (page) => {
+      // The page is prerendered: wait for hydration before the first key.
+      await expect(page.locator('docs-styling-hooks-guide[ngh]')).toHaveCount(0, {
+        timeout: 15_000,
+      });
+      await example(page, 'Unstyled select').getByRole('combobox', { name: 'Plain city' }).focus();
+      await page.keyboard.press('ArrowDown');
+      await expect(page.getByRole('listbox', { name: 'Plain city' })).toBeVisible();
+      await expect(page.locator('.star-panel[data-star-unstyled]')).toHaveCount(1);
+    },
+  },
+  {
     name: 'paginator rows per page open',
     path: 'controls/paginator',
     open: async (page) => {
@@ -1789,6 +1838,12 @@ const STATES: readonly State[] = [
       const live = example(page, 'Find, counts, full screen and shortcuts');
       await live.getByRole('textbox', { name: 'Release notes' }).click();
       await page.keyboard.press('Control+H');
+      // Type only when the find field has the focus, or the keys go into the content.
+      await expect(
+        live
+          .getByRole('search', { name: 'Find and replace' })
+          .getByRole('searchbox', { name: 'Find' }),
+      ).toBeFocused();
       await page.keyboard.type('plan');
       await expect(live.getByRole('status')).toHaveText('1 of 3');
     },

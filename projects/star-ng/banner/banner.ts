@@ -8,7 +8,7 @@ import {
   model,
   output,
 } from '@angular/core';
-import { STAR_UI_TEXT } from '@star-ng/ui/core';
+import { STAR_UI_TEXT, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 
 export type StarBannerSeverity = 'info' | 'success' | 'warn' | 'danger';
 
@@ -36,6 +36,8 @@ const ICONS: Record<StarBannerSeverity, string> = {
  */
 @Component({
   selector: 'star-banner',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '[class]': "'star-banner star-banner--' + severity()",
@@ -44,21 +46,27 @@ const ICONS: Record<StarBannerSeverity, string> = {
   },
   template: `
     @if (open()) {
-      <div class="star-banner__inner">
+      <div data-star-part="innerPanel" class="star-banner__inner">
         @if (iconClass(); as iconClass) {
-          <i class="star-banner__icon" [class]="iconClass" aria-hidden="true"></i>
+          <i
+            data-star-part="icon"
+            class="star-banner__icon"
+            [class]="iconClass"
+            aria-hidden="true"
+          ></i>
         }
-        <div class="star-banner__text"><ng-content /></div>
-        <div class="star-banner__actions">
+        <div data-star-part="text" class="star-banner__text"><ng-content /></div>
+        <div data-star-part="actionList" class="star-banner__actions">
           <ng-content select="[starBannerActions]" />
           @if (dismissible()) {
             <button
+              data-star-part="dismissButton"
               type="button"
               class="star-btn star-btn--ghost star-btn--icon star-banner__dismiss"
               [attr.aria-label]="text.dismiss"
               (click)="dismiss()"
             >
-              <i class="ph-bold ph-x" aria-hidden="true"></i>
+              <i data-star-part="dismissIcon" class="ph-bold ph-x" aria-hidden="true"></i>
             </button>
           }
         </div>

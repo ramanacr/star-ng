@@ -24,6 +24,8 @@ import {
   starInlineKey,
   StarSlot,
   starSlot,
+  StarStyled,
+  ɵSTAR_PART_HOST,
 } from '@star-ng/ui/core';
 import { injectStarFieldLink, starJoinIds } from '@star-ng/ui/field';
 import { starParseIso } from './date-format';
@@ -84,6 +86,8 @@ export function isoWeek(date: Date): number {
  */
 @Component({
   selector: 'star-calendar',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   imports: [NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarCalendar) }],
@@ -97,18 +101,29 @@ export function isoWeek(date: Date): number {
     @if (headerSlot(); as header) {
       <ng-container *ngTemplateOutlet="header" />
     }
-    <div class="star-calendar__header">
+    <div data-star-part="header" class="star-calendar__header">
       <button
+        data-star-part="navigation"
         type="button"
         class="star-calendar__nav"
         [attr.aria-label]="view() === 'year' ? text.previousYears : text.previousMonth"
         (click)="page(-1)"
       >
-        <i class="ph-bold ph-caret-left star-icon-mirror" aria-hidden="true"></i>
+        <i
+          data-star-part="previousIcon"
+          class="ph-bold ph-caret-left star-icon-mirror"
+          aria-hidden="true"
+        ></i>
       </button>
-      <h2 class="star-calendar__title" [id]="titleId" aria-live="polite">
+      <h2
+        data-star-part="monthHeader"
+        class="star-calendar__title"
+        [id]="titleId"
+        aria-live="polite"
+      >
         @if (view() === 'day') {
           <button
+            data-star-part="titleButton"
             type="button"
             class="star-calendar__title-btn"
             [attr.aria-label]="text.chooseMonth + ', ' + monthLabel()"
@@ -119,6 +134,7 @@ export function isoWeek(date: Date): number {
         }
         @if (view() !== 'year' && granularity() !== 'year') {
           <button
+            data-star-part="titleButton"
             type="button"
             class="star-calendar__title-btn"
             [attr.aria-label]="text.chooseYear + ', ' + focused().getFullYear()"
@@ -127,26 +143,38 @@ export function isoWeek(date: Date): number {
             {{ focused().getFullYear() }}
           </button>
         } @else {
-          <span class="star-calendar__title-text">{{ years()[0] }} – {{ years()[11] }}</span>
+          <span data-star-part="titleText" class="star-calendar__title-text"
+            >{{ years()[0] }} – {{ years()[11] }}</span
+          >
         }
       </h2>
       <button
+        data-star-part="navigation"
         type="button"
         class="star-calendar__nav"
         [attr.aria-label]="view() === 'year' ? text.nextYears : text.nextMonth"
         (click)="page(1)"
       >
-        <i class="ph-bold ph-caret-right star-icon-mirror" aria-hidden="true"></i>
+        <i
+          data-star-part="nextIcon"
+          class="ph-bold ph-caret-right star-icon-mirror"
+          aria-hidden="true"
+        ></i>
       </button>
     </div>
 
     @switch (view()) {
       @case ('day') {
-        <div class="star-calendar__months" [class.star-calendar__months--many]="monthCount() > 1">
+        <div
+          data-star-part="monthsPanel"
+          class="star-calendar__months"
+          [class.star-calendar__months--many]="monthCount() > 1"
+        >
           @for (grid of grids(); track $index) {
             <!-- Grid keyboard is delegated from the focused day buttons (roving tabindex). -->
             <!-- eslint-disable-next-line @angular-eslint/template/interactive-supports-focus -->
             <table
+              data-star-part="grid"
               class="star-calendar__grid"
               role="grid"
               [attr.aria-labelledby]="monthCount() > 1 ? null : titleId"
@@ -154,35 +182,45 @@ export function isoWeek(date: Date): number {
               (keydown)="onDayKeydown($event)"
             >
               @if (monthCount() > 1) {
-                <caption class="star-calendar__caption">
+                <caption data-star-part="caption" class="star-calendar__caption">
                   {{
                     grid.label
                   }}
                 </caption>
               }
-              <thead>
-                <tr>
+              <thead data-star-part="head">
+                <tr data-star-part="weekShortRow">
                   @if (showWeek()) {
-                    <th scope="col" class="star-calendar__week" [attr.abbr]="text.weekNumber">
+                    <th
+                      data-star-part="weekCell"
+                      scope="col"
+                      class="star-calendar__week"
+                      [attr.abbr]="text.weekNumber"
+                    >
                       {{ text.weekShort }}
                     </th>
                   }
                   @for (day of weekdays(); track day.short) {
-                    <th scope="col" [attr.abbr]="day.long">{{ day.short }}</th>
+                    <th data-star-part="gridHeaderCell" scope="col" [attr.abbr]="day.long">
+                      {{ day.short }}
+                    </th>
                   }
                 </tr>
               </thead>
-              <tbody>
+              <tbody data-star-part="body">
                 @for (week of grid.weeks; track $index) {
-                  <tr>
+                  <tr data-star-part="gridBodyRow">
                     @if (showWeek()) {
-                      <th scope="row" class="star-calendar__week">{{ week.number }}</th>
+                      <th data-star-part="weekCell" scope="row" class="star-calendar__week">
+                        {{ week.number }}
+                      </th>
                     }
                     @for (cell of week.days; track cell.key) {
                       @if (cell.blank) {
-                        <td role="gridcell"></td>
+                        <td data-star-part="gridCell" role="gridcell"></td>
                       } @else {
                         <td
+                          data-star-part="gridCell"
                           role="gridcell"
                           [attr.aria-selected]="isSelected(cell.date)"
                           [class.star-calendar__cell--range]="inRange(cell.date)"
@@ -190,6 +228,7 @@ export function isoWeek(date: Date): number {
                           [class.star-calendar__cell--range-end]="isRangeEdge(cell.date, 'end')"
                         >
                           <button
+                            data-star-part="dayButton"
                             type="button"
                             class="star-calendar__day"
                             [attr.data-date]="cell.key"
@@ -239,6 +278,7 @@ export function isoWeek(date: Date): number {
       }
       @case ('month') {
         <div
+          data-star-part="pickerPanel"
           class="star-calendar__picker"
           role="group"
           [attr.aria-label]="text.chooseMonth"
@@ -246,6 +286,7 @@ export function isoWeek(date: Date): number {
         >
           @for (month of months(); track $index; let i = $index) {
             <button
+              data-star-part="pickButton"
               type="button"
               class="star-calendar__pick"
               [attr.data-pick]="i"
@@ -262,6 +303,7 @@ export function isoWeek(date: Date): number {
       }
       @case ('year') {
         <div
+          data-star-part="pickerPanel"
           class="star-calendar__picker"
           role="group"
           [attr.aria-label]="text.chooseYear"
@@ -269,6 +311,7 @@ export function isoWeek(date: Date): number {
         >
           @for (year of years(); track year) {
             <button
+              data-star-part="pickButton"
               type="button"
               class="star-calendar__pick"
               [attr.data-pick]="year"
