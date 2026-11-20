@@ -595,6 +595,13 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         load: () => import('./controls/tree-table.page').then((m) => m.TreeTablePage),
       },
       {
+        label: 'Hierarchical grid',
+        path: 'controls/hierarchical-grid',
+        keywords:
+          'master detail child grid nested rows expand row island lazy load customers orders',
+        load: () => import('./controls/hierarchical-grid.page').then((m) => m.HierarchicalGridPage),
+      },
+      {
         label: 'Data view',
         path: 'controls/data-view',
         keywords: 'dataview list grid layout cards paging items template',
@@ -623,6 +630,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         path: 'controls/spreadsheet',
         keywords: 'excel sheet cells formulas sum grid workbook csv tsv fill handle budget',
         load: () => import('./controls/spreadsheet.page').then((m) => m.SpreadsheetPage),
+      },
+      {
+        label: 'Pivot grid',
+        path: 'controls/pivot-grid',
+        keywords: 'pivot table olap cube crosstab aggregate sum subtotal grand total drill down',
+        load: () => import('./controls/pivot-grid.page').then((m) => m.PivotGridPage),
       },
       {
         label: 'File manager',

@@ -174,7 +174,7 @@ const BACKGROUNDS: readonly StarCellBackground[] = [
           <button
             type="button"
             class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
-            [attr.aria-label]="text.editorUndo"
+            [attr.aria-label]="text.undo"
             [disabled]="!canUndo()"
             (click)="undo()"
           >
@@ -183,7 +183,7 @@ const BACKGROUNDS: readonly StarCellBackground[] = [
           <button
             type="button"
             class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
-            [attr.aria-label]="text.editorRedo"
+            [attr.aria-label]="text.redo"
             [disabled]="!canRedo()"
             (click)="redo()"
           >
@@ -332,7 +332,7 @@ const BACKGROUNDS: readonly StarCellBackground[] = [
               role="gridcell"
               aria-colindex="1"
               data-corner
-              [attr.aria-label]="text.spreadsheetSelectAll"
+              [attr.aria-label]="text.selectAll"
             ></div>
             @for (col of visibleColumns(); track col) {
               <div
@@ -1081,10 +1081,16 @@ export class StarSpreadsheet {
       case 'Backspace':
         if (editable) this.clearSelection();
         return done();
-      case 'Escape':
+      case 'Escape': {
+        // Consume the key only when it clears something; otherwise it goes on, for example to
+        // close a modal dialog around the spreadsheet.
+        const cell = this.focusCell();
+        const changed = !!this.fillTarget() || cell.row !== anchor.row || cell.col !== anchor.col;
         if (this.fillTarget()) this.fillTarget.set(null);
         this.focusCell.set(anchor);
+        if (changed) done();
         return;
+      }
       case ' ':
         if (shift) {
           this.anchor.set({ row: anchor.row, col: 0 });

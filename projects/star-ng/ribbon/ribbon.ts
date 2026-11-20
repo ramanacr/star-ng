@@ -15,6 +15,7 @@ import {
   inject,
   Injector,
   input,
+  linkedSignal,
   model,
   output,
   PLATFORM_ID,
@@ -23,7 +24,7 @@ import {
   untracked,
   viewChild,
 } from '@angular/core';
-import { STAR_UI_TEXT, StarAnnouncer, starInlineKey } from '@star-ng/ui/core';
+import { STAR_UI_TEXT, StarAnnouncer, starInlineKey, ɵstarModalOutside } from '@star-ng/ui/core';
 import { StarMenu, StarMenuItem, StarMenuTrigger } from '@star-ng/ui/menu';
 import { StarTooltip } from '@star-ng/ui/tooltip';
 import {
@@ -508,14 +509,24 @@ export class StarRibbon {
   );
   protected readonly activeGroups = computed(() => this.tabs()[this.activeIndex()]?.groups() ?? []);
 
+  // The group state below belongs to the active tab: a new tab starts it again (linkedSignal).
   /** Mode of each group of the active tab (measured in the browser). */
-  private readonly modes = signal<readonly StarRibbonGroupMode[]>([]);
+  private readonly modes = linkedSignal<string | null, readonly StarRibbonGroupMode[]>({
+    source: this.activeKey,
+    computation: () => [],
+  });
   /** The collapsed group whose flyout is open. */
-  protected readonly openGroup = signal<number | null>(null);
+  protected readonly openGroup = linkedSignal<string | null, number | null>({
+    source: this.activeKey,
+    computation: () => null,
+  });
   /** The collapsed ribbon shows its panel for now. */
   protected readonly peek = signal(false);
   /** Roving tab stop of each group toolbar (focus key). */
-  private readonly stops = signal<ReadonlyMap<number, string>>(new Map());
+  private readonly stops = linkedSignal<string | null, ReadonlyMap<number, string>>({
+    source: this.activeKey,
+    computation: () => new Map(),
+  });
 
   protected readonly keyTipLevel = signal<KeyTipLevel | null>(null);
   private readonly keyTipGroup = signal<number | null>(null);
@@ -577,14 +588,6 @@ export class StarRibbon {
       this.activeKey();
       untracked(() => {
         if (this.browser) afterNextRender(() => this.refit(), { injector: this.injector });
-      });
-    });
-    effect(() => {
-      this.activeKey();
-      untracked(() => {
-        this.modes.set([]);
-        this.openGroup.set(null);
-        this.stops.set(new Map());
       });
     });
     if (this.browser) this.observe();
@@ -908,27 +911,9 @@ export class StarRibbon {
     this.hideKeyTips();
   }
 
-  /**
-   * True when a modal dialog outside the ribbon is open: a native modal `<dialog>` (`:modal`) or
-   * an element with `aria-modal="true"`.
-   */
+  /** True when a modal dialog outside the ribbon is open. */
   private modalOutside(): boolean {
-    const host = this.host.nativeElement;
-    const outside = (element: Element) => !element.contains(host);
-    // Only a connected element that shows counts (`checkVisibility()` where the browser has it).
-    const visible = (element: Element) => {
-      if (!element.isConnected || element.closest('[hidden], dialog:not([open])')) return false;
-      const check = (element as Element & { checkVisibility?: () => boolean }).checkVisibility;
-      return check ? check.call(element) : true;
-    };
-    let modals: Element[] = [];
-    try {
-      modals = [...this.doc.querySelectorAll(':modal')];
-    } catch {
-      // An engine without `:modal`: the aria-modal check below still works.
-    }
-    modals.push(...[...this.doc.querySelectorAll('[aria-modal="true"]')].filter(visible));
-    return modals.some(outside);
+    return ɵstarModalOutside(this.doc, this.host.nativeElement);
   }
 
   /** Hides the KeyTips. */

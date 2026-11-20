@@ -293,6 +293,14 @@ function applyEdit(rows: readonly StockLine[], event: StarCellEditEvent<StockLin
         Tab inside an editor keeps the edit behaviour.
       </p>
       <p>
+        The table takes the controls of the lead and trail cells out of the tab order after a change
+        of the rendered rows, the lead and trail cells or the rows in edit. A control that a custom
+        row action or lead template adds at another time (for example after a change of its own
+        state) keeps its tab stop until the next such change. Give these controls
+        <code>tabindex="-1"</code>
+        yourself, so that the grid always keeps one tab stop.
+      </p>
+      <p>
         The copied text is tab-separated values with a CR LF line end: a cell with a tab, a line
         break or a double quote is quoted and its quotes doubled, as spreadsheets write it. A cell
         copies its <code>exportValue</code>, else its display text. Paste parses the same format. In

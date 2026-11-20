@@ -769,7 +769,7 @@
                         type="button"
                         class="star-table__toggle"
                         [attr.data-row-save]="rowKeyText(row)"
-                        [attr.aria-label]="text.saveRow"
+                        [attr.aria-label]="text.save"
                         [attr.aria-disabled]="rowValid(row) ? null : 'true'"
                         (click)="saveRowEdit(row)"
                       >
@@ -778,7 +778,7 @@
                       <button
                         type="button"
                         class="star-table__toggle"
-                        [attr.aria-label]="text.cancelRowEdit"
+                        [attr.aria-label]="text.cancel"
                         (click)="cancelRowEdit(row)"
                       >
                         <i class="ph-bold ph-x" aria-hidden="true"></i>

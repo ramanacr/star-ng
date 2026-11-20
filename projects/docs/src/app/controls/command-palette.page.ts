@@ -67,7 +67,7 @@ import { DOCS, DocsRow } from '../shared/docs';
             (commandRun)="person.set($event.label)"
           >
             <ng-template starCommand let-command>
-              <i class="ph ph-user-circle" aria-hidden="true"></i>
+              <i class="ph-bold ph-user-circle" aria-hidden="true"></i>
               <span class="option">
                 <span>{{ command.label }}</span>
                 <small>{{ command.group }} · {{ command.keywords?.[0] }}</small>
@@ -95,32 +95,38 @@ export class CommandPalettePage {
   protected readonly person = signal('none');
 
   protected readonly commands: readonly StarCommand[] = [
-    { id: 'new-order', label: 'New order', group: 'Orders', icon: 'ph ph-plus', shortcut: 'Alt+N' },
-    { id: 'find-order', label: 'Find order', group: 'Orders', icon: 'ph ph-magnifying-glass' },
+    {
+      id: 'new-order',
+      label: 'New order',
+      group: 'Orders',
+      icon: 'ph-bold ph-plus',
+      shortcut: 'Alt+N',
+    },
+    { id: 'find-order', label: 'Find order', group: 'Orders', icon: 'ph-bold ph-magnifying-glass' },
     {
       id: 'export',
       label: 'Export orders',
       group: 'Orders',
-      icon: 'ph ph-download-simple',
+      icon: 'ph-bold ph-download-simple',
       keywords: ['csv', 'download'],
     },
     {
       id: 'archive',
       label: 'Archive orders',
       group: 'Orders',
-      icon: 'ph ph-archive',
+      icon: 'ph-bold ph-archive',
       disabled: true,
     },
-    { id: 'dashboard', label: 'Go to dashboard', group: 'Navigation', icon: 'ph ph-house' },
+    { id: 'dashboard', label: 'Go to dashboard', group: 'Navigation', icon: 'ph-bold ph-house' },
     {
       id: 'settings',
       label: 'Go to settings',
       group: 'Navigation',
-      icon: 'ph ph-gear',
+      icon: 'ph-bold ph-gear',
       keywords: ['preferences', 'options'],
     },
-    { id: 'cafe', label: 'Café locations', group: 'Navigation', icon: 'ph ph-map-pin' },
-    { id: 'theme', label: 'Switch theme', group: 'View', icon: 'ph ph-moon' },
+    { id: 'cafe', label: 'Café locations', group: 'Navigation', icon: 'ph-bold ph-map-pin' },
+    { id: 'theme', label: 'Switch theme', group: 'View', icon: 'ph-bold ph-moon' },
   ];
 
   protected readonly people: readonly StarCommand[] = [
@@ -133,15 +139,15 @@ export class CommandPalettePage {
   protected readonly basicScript = `readonly open = signal(false);
 readonly last = signal('none');
 readonly commands: readonly StarCommand[] = [
-  { id: 'new-order', label: 'New order', group: 'Orders', icon: 'ph ph-plus', shortcut: 'Alt+N' },
-  { id: 'find-order', label: 'Find order', group: 'Orders', icon: 'ph ph-magnifying-glass' },
-  { id: 'export', label: 'Export orders', group: 'Orders', icon: 'ph ph-download-simple', keywords: ['csv', 'download'] },
-  { id: 'archive', label: 'Archive orders', group: 'Orders', icon: 'ph ph-archive', disabled: true },
-  { id: 'dashboard', label: 'Go to dashboard', group: 'Navigation', icon: 'ph ph-house' },
-  { id: 'settings', label: 'Go to settings', group: 'Navigation', icon: 'ph ph-gear', keywords: ['preferences', 'options'] },
-  { id: 'cafe', label: 'Café locations', group: 'Navigation', icon: 'ph ph-map-pin' },
+  { id: 'new-order', label: 'New order', group: 'Orders', icon: 'ph-bold ph-plus', shortcut: 'Alt+N' },
+  { id: 'find-order', label: 'Find order', group: 'Orders', icon: 'ph-bold ph-magnifying-glass' },
+  { id: 'export', label: 'Export orders', group: 'Orders', icon: 'ph-bold ph-download-simple', keywords: ['csv', 'download'] },
+  { id: 'archive', label: 'Archive orders', group: 'Orders', icon: 'ph-bold ph-archive', disabled: true },
+  { id: 'dashboard', label: 'Go to dashboard', group: 'Navigation', icon: 'ph-bold ph-house' },
+  { id: 'settings', label: 'Go to settings', group: 'Navigation', icon: 'ph-bold ph-gear', keywords: ['preferences', 'options'] },
+  { id: 'cafe', label: 'Café locations', group: 'Navigation', icon: 'ph-bold ph-map-pin' },
   // run() is called after the palette closed.
-  { id: 'theme', label: 'Switch theme', group: 'View', icon: 'ph ph-moon', run: () => this.toggleTheme() },
+  { id: 'theme', label: 'Switch theme', group: 'View', icon: 'ph-bold ph-moon', run: () => this.toggleTheme() },
 ];`;
   protected readonly templatesScript = `readonly peopleOpen = signal(false);
 readonly person = signal('none');

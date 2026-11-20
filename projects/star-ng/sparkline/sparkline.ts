@@ -205,7 +205,7 @@ export class StarSparkline {
     const given = this.ariaLabel();
     if (given) return given;
     const stats = this.stats();
-    if (!stats) return this.text.sparklineNoData;
+    if (!stats) return this.text.missingData;
     if (this.type() === 'win-loss') {
       const finite = this.data().filter(Number.isFinite);
       return this.text.sparklineWinLoss(

@@ -118,10 +118,13 @@ class CloseHost {
   readonly names = signal(['One', 'Two', 'Three', 'Fixed']);
   readonly events: StarTabCloseEvent[] = [];
   keep = false;
+  /** The owner removes the tab later (for example after a confirm). */
+  defer = false;
   onClose(event: StarTabCloseEvent): void {
     this.events.push(event);
     if (this.keep) event.cancel();
-    else this.names.update((names) => names.filter((name) => name !== event.value));
+    else if (!this.defer)
+      this.names.update((names) => names.filter((name) => name !== event.value));
   }
 }
 
@@ -185,6 +188,62 @@ describe('StarTabs closable', () => {
     // Delete on a tab that is not closable does nothing.
     key(tabs[2], { key: 'Delete' });
     expect(host.events.length).toBe(2);
+  });
+
+  it('keeps the focus in the tabs when the last tab closes from the keyboard', async () => {
+    const fixture = TestBed.createComponent(CloseHost);
+    const host = fixture.componentInstance;
+    host.names.set(['Only']);
+    host.tab.set('Only');
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+    const tab = el.querySelector<HTMLElement>('[role=tab]')!;
+    tab.focus();
+    key(tab, { key: 'Delete' });
+    await fixture.whenStable();
+    expect(host.names()).toEqual([]);
+    const list = el.querySelector<HTMLElement>('[role=tablist]')!;
+    expect(document.activeElement).toBe(list);
+    expect(list.getAttribute('tabindex')).toBe('-1');
+  });
+
+  it('focuses the tab list also when the owner removes the last tab after a later render', async () => {
+    const fixture = TestBed.createComponent(CloseHost);
+    const host = fixture.componentInstance;
+    host.names.set(['Only']);
+    host.tab.set('Only');
+    host.defer = true;
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+    const tab = el.querySelector<HTMLElement>('[role=tab]')!;
+    tab.focus();
+    key(tab, { key: 'Delete' });
+    await fixture.whenStable();
+    expect(host.names()).toEqual(['Only']); // not removed yet
+    host.names.set([]);
+    await fixture.whenStable();
+    expect(document.activeElement).toBe(el.querySelector('[role=tablist]'));
+  });
+
+  it('does not take the focus back when it moved elsewhere before the late removal', async () => {
+    const fixture = TestBed.createComponent(CloseHost);
+    const host = fixture.componentInstance;
+    host.names.set(['Only']);
+    host.tab.set('Only');
+    host.defer = true;
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+    const tab = el.querySelector<HTMLElement>('[role=tab]')!;
+    tab.focus();
+    key(tab, { key: 'Delete' });
+    await fixture.whenStable();
+    const outside = document.createElement('button');
+    document.body.append(outside);
+    outside.focus();
+    host.names.set([]);
+    await fixture.whenStable();
+    expect(document.activeElement).toBe(outside);
+    outside.remove();
   });
 });
 

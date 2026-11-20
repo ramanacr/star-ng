@@ -169,6 +169,8 @@ function readApi() {
       if (!ts.isClassDeclaration(node) || !node.name) return;
       const decorator = decoratorOf(node);
       if (!decorator) return;
+      // An internal part of a control (not exported from its entry point) has no API entry.
+      if (/^@internal\b/m.test(jsDoc(node, source))) return;
       const members = node.members.map((member) => signalMember(member, source)).filter(Boolean);
       api[node.name.text] = {
         kind: decorator.kind,

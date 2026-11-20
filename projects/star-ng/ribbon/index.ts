@@ -1,2 +1,2 @@
 export * from './ribbon';
-export * from './ribbon-model';
+export type { StarKeyTipEntry, StarRibbonGroupMode, StarRibbonGroupWidths } from './ribbon-model';

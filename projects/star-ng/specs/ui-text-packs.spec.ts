@@ -20,13 +20,15 @@ const SAME_AS_ENGLISH: Record<string, readonly Name[]> = {
     'chartX',
     'chartY',
     'minute',
-    'fileName',
+    'name',
     'summaryMinimum',
     'summaryMaximum',
     // "Zoom" is the usual German UI word.
     'documentZoom',
     // A data point reads "series, category: value" in every language, a map feature "label: value".
     'chartPointLabel',
+    // "Q1" is the usual German quarter label.
+    'pivotQuarter',
     'mapFeatureValue',
   ],
   // "Color", "Editor" and "Total" are the Spanish words too. "X" and "Y" are axis names in every

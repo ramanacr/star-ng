@@ -3,12 +3,8 @@ import { TestBed } from '@angular/core/testing';
 import { FormGroup } from '@angular/forms';
 import { form, FormField, required } from '@angular/forms/signals';
 import { SignalFormControl } from '@angular/forms/signals/compat';
-import {
-  StarSignatureFormat,
-  StarSignaturePad,
-  starSignaturePath,
-  starSignatureSvg,
-} from '@star-ng/ui/signature-pad';
+import { StarSignatureFormat, StarSignaturePad } from '@star-ng/ui/signature-pad';
+import { starSignaturePath, starSignatureSvg } from './signature-pad';
 
 /** jsdom has no canvas: a 2D context that records the calls, and a fixed PNG export. */
 function fakeCanvas() {
@@ -199,6 +195,13 @@ describe('StarSignaturePad', () => {
     expect(button('Clear signature')?.disabled).toBe(true);
     expect(button('Undo')?.disabled).toBe(true);
     expect((canvas as HTMLElement).style.touchAction || 'none').toBe('none');
+  });
+
+  it('uses the bold icon weight, as the other controls do', async () => {
+    const { root } = await setup();
+    const icons = [...root.querySelectorAll('i[class*="ph-"]')];
+    expect(icons.length).toBeGreaterThan(0);
+    for (const icon of icons) expect(icon.classList.contains('ph-bold')).toBe(true);
   });
 
   it('turns pointer strokes into a PNG data URL and marks the area as signed', async () => {

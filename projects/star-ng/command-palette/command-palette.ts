@@ -26,6 +26,7 @@ import {
   StarEmptyContext,
   StarSlot,
   starSlot,
+  ɵstarModalOutside,
 } from '@star-ng/ui/core';
 
 /** One command of `star-command-palette`. */
@@ -43,7 +44,7 @@ export interface StarCommand {
   readonly keywords?: readonly string[];
   /** Shortcut shown at the end of the option, for example `Ctrl+S`. Only shown: it is not bound. */
   readonly shortcut?: string;
-  /** Icon classes, for example `ph ph-floppy-disk`. */
+  /** Icon classes, for example `ph-bold ph-floppy-disk`. */
   readonly icon?: string;
   /** Shown, but the keyboard skips it and it cannot run. */
   readonly disabled?: boolean;
@@ -200,7 +201,10 @@ function matchesHotkey(event: KeyboardEvent, hotkey: Hotkey): boolean {
       (click)="onDialogClick($event)"
     >
       <div class="star-command-palette__search">
-        <i class="ph ph-magnifying-glass star-command-palette__search-icon" aria-hidden="true"></i>
+        <i
+          class="ph-bold ph-magnifying-glass star-command-palette__search-icon"
+          aria-hidden="true"
+        ></i>
         <input
           #input
           class="star-command-palette__input"
@@ -508,6 +512,8 @@ export class StarCommandPalette {
     const value = this.hotkey();
     const hotkey = value ? parseHotkey(value) : null;
     if (!hotkey || event.defaultPrevented || !matchesHotkey(event, hotkey)) return;
+    // An app modal dialog is open: the shortcut must not open the palette over it.
+    if (ɵstarModalOutside(this.document, this.dialog().nativeElement)) return;
     // A one-key shortcut such as "/" must not fire while the user types in a field.
     if (!hotkey.ctrl && !hotkey.meta && !hotkey.mod && !hotkey.alt && this.isTyping(event)) return;
     event.preventDefault();
