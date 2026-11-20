@@ -184,6 +184,6 @@ test('the prerendered styling hooks guide has the pass-through and the unstyled 
   );
   expect(unstyled).not.toBeNull();
   expect(html).toMatch(
-    /data-star-part="trigger"[^>]*data-star-unstyled|data-star-unstyled[^>]*data-star-part="trigger"/,
+    /data-star-part="triggerPanel"[^>]*data-star-unstyled|data-star-unstyled[^>]*data-star-part="triggerPanel"/,
   );
 });

@@ -55,7 +55,7 @@ test.describe('styling hooks', () => {
     });
     const select = example(page, 'Pass-through on a select').locator('star-select');
     await expect(select).toHaveAttribute('data-star-part', 'root');
-    const trigger = select.locator('[data-star-part="trigger"]');
+    const trigger = select.locator('[data-star-part="triggerPanel"]');
     await expect(trigger).toHaveAttribute('data-test', 'city-trigger');
     await expect(trigger).toHaveCSS('font-weight', '600');
 

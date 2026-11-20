@@ -17,32 +17,26 @@ import { DOCS } from '../shared/docs';
       <h2>Parts</h2>
       <p>
         Each element of a control has a part name in the attribute <code>data-star-part</code>, for
-        example <code>trigger</code>, <code>panel</code> and <code>option</code> in the select. The
-        host element of the control is the part <code>root</code>. The API section of each control
-        page lists its parts. The part names are public API: they stay the same in later versions,
-        and a renamed part is a breaking change in the CHANGELOG. The StarNG classes stay on the
-        elements.
+        example <code>triggerPanel</code>, <code>panel</code> and <code>option</code> in the select.
+        The host element of the control is the part <code>root</code>. The API section of each
+        control page lists its parts. The part names are public API: they stay the same in later
+        versions, and a renamed part is a breaking change in the CHANGELOG. The StarNG classes stay
+        on the elements.
       </p>
       <h3>How the parts are named</h3>
       <ol>
         <li>
-          An element with a StarNG class takes the name of that class:
-          <code>star-select__trigger</code> gives <code>trigger</code>,
-          <code>star-panel</code> gives <code>panel</code>. Elements with the same class are one
-          part, for example all the <code>cell</code> elements of a table.
-        </li>
-        <li>
-          An element without such a class has a name of the form
-          <code>&lt;purpose&gt;&lt;Role&gt;</code> in camelCase, at most three words. The purpose
-          says what the element does; it never repeats the control name, never names the icon glyph
-          and never comes from a UI text. The role is one of <code>Button</code>, <code>Icon</code>,
-          <code>Label</code>, <code>Input</code>, <code>Option</code>, <code>List</code>,
-          <code>Item</code>, <code>Panel</code>, <code>Header</code>, <code>Cell</code>,
-          <code>Row</code>, <code>Text</code> (and <code>Root</code>, <code>Track</code>,
-          <code>Thumb</code>, <code>Handle</code> for the parts of a slider or a resizable element).
-          A role is not doubled (<code>restoreIcon</code>, not <code>restoreButtonIcon</code>). A
-          single word without a role is allowed for a structural element, for example
-          <code>head</code> and <code>body</code> of a table.
+          A name has the form <code>&lt;purpose&gt;&lt;Role&gt;</code> in camelCase, at most three
+          words, whatever StarNG class the element has. The purpose says what the element does; it
+          has no abbreviation, never repeats the control name, never names the icon glyph (not even
+          the word of its own <code>ph-*</code> class) and never comes from a UI text. The role is
+          one of <code>Button</code>, <code>Icon</code>, <code>Label</code>, <code>Input</code>,
+          <code>Option</code>, <code>List</code>, <code>Item</code>, <code>Panel</code>,
+          <code>Header</code>, <code>Cell</code>, <code>Row</code>, <code>Text</code> (and
+          <code>Root</code>, <code>Track</code>, <code>Thumb</code>, <code>Handle</code> for the
+          parts of a slider or a resizable element). A role is not doubled
+          (<code>restoreIcon</code>, not <code>restoreButtonIcon</code>). Only the structural words
+          listed below may stand alone.
         </li>
         <li>
           An icon takes the name of what it belongs to: <code>clearIcon</code>,
@@ -62,72 +56,21 @@ import { DOCS } from '../shared/docs';
       </ol>
       <h3>Single-word parts</h3>
       <p>
-        These parts have one word, without a role: the structural elements of the controls. Every
-        other name has the form <code>&lt;purpose&gt;&lt;Role&gt;</code>. A tools test keeps this
-        list equal to the names in the templates.
+        Only these structural words may be a part name on their own. Every other name has the form
+        <code>&lt;purpose&gt;&lt;Role&gt;</code>. The list is the reviewed allowlist of the tools
+        test, and the test checks that this page shows it.
       </p>
       <p class="docs-part-words">
-        <code>action</code>, <code>add</code>, <code>adjust</code>, <code>agenda</code>,
-        <code>aggregate</code>, <code>annotations</code>, <code>arc</code>, <code>area</code>,
-        <code>attribution</code>, <code>author</code>, <code>avatar</code>, <code>axis</code>,
-        <code>background</code>, <code>backstage</code>, <code>badge</code>, <code>bar</code>,
-        <code>baseline</code>, <code>board</code>, <code>body</code>, <code>box</code>,
-        <code>branch</code>, <code>bubble</code>, <code>button</code>, <code>buttons</code>,
-        <code>canvas</code>, <code>caption</code>, <code>card</code>, <code>cell</code>,
-        <code>children</code>, <code>chip</code>, <code>chips</code>, <code>choice</code>,
-        <code>choices</code>, <code>choose</code>, <code>code</code>, <code>collapse</code>,
-        <code>column</code>, <code>command</code>, <code>composer</code>, <code>confirm</code>,
-        <code>content</code>, <code>control</code>, <code>controls</code>, <code>corner</code>,
-        <code>count</code>, <code>counter</code>, <code>crop</code>, <code>crosshair</code>,
-        <code>current</code>, <code>custom</code>, <code>date</code>, <code>day</code>,
-        <code>decimals</code>, <code>dependency</code>, <code>description</code>,
-        <code>detail</code>, <code>details</code>, <code>display</code>, <code>divider</code>,
-        <code>dot</code>, <code>edge</code>, <code>edges</code>, <code>edit</code>,
-        <code>editor</code>, <code>empty</code>, <code>error</code>, <code>errors</code>,
-        <code>expander</code>, <code>expansion</code>, <code>fab</code>, <code>facts</code>,
-        <code>failed</code>, <code>feedback</code>, <code>field</code>, <code>figure</code>,
-        <code>file</code>, <code>fill</code>, <code>filter</code>, <code>filters</code>,
-        <code>first</code>, <code>foot</code>, <code>footer</code>, <code>form</code>,
-        <code>formula</code>, <code>frame</code>, <code>fx</code>, <code>generating</code>,
-        <code>grid</code>, <code>grip</code>, <code>group</code>, <code>gutter</code>,
-        <code>handle</code>, <code>handles</code>, <code>head</code>, <code>header</code>,
-        <code>heading</code>, <code>hex</code>, <code>hint</code>, <code>hub</code>,
-        <code>icon</code>, <code>icons</code>, <code>inner</code>, <code>input</code>,
-        <code>item</code>, <code>items</code>, <code>keymap</code>, <code>keytip</code>,
-        <code>label</code>, <code>launcher</code>, <code>lead</code>, <code>legend</code>,
-        <code>level</code>, <code>line</code>, <code>link</code>, <code>list</code>,
-        <code>listbox</code>, <code>log</code>, <code>logo</code>, <code>main</code>,
-        <code>mark</code>, <code>marker</code>, <code>marquee</code>, <code>mask</code>,
-        <code>match</code>, <code>meta</code>, <code>meter</code>, <code>modes</code>,
-        <code>modules</code>, <code>months</code>, <code>more</code>, <code>move</code>,
-        <code>muted</code>, <code>nav</code>, <code>needle</code>, <code>node</code>,
-        <code>nodes</code>, <code>now</code>, <code>number</code>, <code>operator</code>,
-        <code>option</code>, <code>output</code>, <code>outputs</code>, <code>overflow</code>,
-        <code>pages</code>, <code>pane</code>, <code>panel</code>, <code>panes</code>,
-        <code>paragraph</code>, <code>part</code>, <code>photo</code>, <code>pick</code>,
-        <code>picker</code>, <code>picture</code>, <code>pin</code>, <code>placeholder</code>,
-        <code>plot</code>, <code>points</code>, <code>port</code>, <code>preview</code>,
-        <code>prompt</code>, <code>radio</code>, <code>range</code>, <code>reference</code>,
-        <code>region</code>, <code>remove</code>, <code>reorder</code>, <code>report</code>,
-        <code>required</code>, <code>resize</code>, <code>resizer</code>, <code>response</code>,
-        <code>ring</code>, <code>row</code>, <code>rows</code>, <code>rule</code>,
-        <code>rules</code>, <code>scale</code>, <code>scroll</code>, <code>scroller</code>,
-        <code>section</code>, <code>segmented</code>, <code>select</code>, <code>selection</code>,
-        <code>separator</code>, <code>shape</code>, <code>sheet</code>, <code>shell</code>,
-        <code>shortcut</code>, <code>side</code>, <code>size</code>, <code>skeleton</code>,
-        <code>slice</code>, <code>slide</code>, <code>sort</code>, <code>source</code>,
-        <code>spacer</code>, <code>stack</code>, <code>stage</code>, <code>status</code>,
-        <code>stripe</code>, <code>subtitle</code>, <code>summary</code>, <code>surface</code>,
-        <code>svg</code>, <code>swatch</code>, <code>swatches</code>, <code>tab</code>,
-        <code>table</code>, <code>tabs</code>, <code>target</code>, <code>text</code>,
-        <code>thumb</code>, <code>thumbnail</code>, <code>thumbs</code>, <code>tick</code>,
-        <code>tier</code>, <code>tiles</code>, <code>timeline</code>, <code>tip</code>,
-        <code>titlebar</code>, <code>toggle</code>, <code>tool</code>, <code>toolbar</code>,
-        <code>tools</code>, <code>tooltip</code>, <code>total</code>, <code>track</code>,
-        <code>trail</code>, <code>tree</code>, <code>trigger</code>, <code>typed</code>,
-        <code>typing</code>, <code>value</code>, <code>viewport</code>, <code>views</code>,
-        <code>week</code>, <code>weekday</code>, <code>weekend</code>, <code>welcome</code>,
-        <code>wrap</code>, <code>zone</code>, <code>zoom</code>.
+        <code>root</code>, <code>header</code>, <code>body</code>, <code>footer</code>,
+        <code>head</code>, <code>foot</code>, <code>track</code>, <code>thumb</code>,
+        <code>thumbnail</code>, <code>handle</code>, <code>panel</code>, <code>label</code>,
+        <code>title</code>, <code>content</code>, <code>list</code>, <code>item</code>,
+        <code>row</code>, <code>cell</code>, <code>column</code>, <code>text</code>,
+        <code>icon</code>, <code>input</code>, <code>option</code>, <code>picture</code>,
+        <code>graphic</code>, <code>navigation</code>, <code>frame</code>, <code>surface</code>,
+        <code>shell</code>, <code>separator</code>, <code>divider</code>, <code>caption</code>,
+        <code>description</code>, <code>backdrop</code>, <code>grid</code>, <code>legend</code>,
+        <code>axis</code>, <code>viewport</code>, <code>plot</code>.
       </p>
       <p>
         In a control template, a part is the static attribute <code>data-star-part</code>; only the
@@ -163,7 +106,7 @@ import { DOCS } from '../shared/docs';
         heading="Pass-through on a select"
         source="styling-hooks/pt"
         [script]="ptScript"
-        note="The trigger and the panel get extra styles and a data attribute. Inspect the elements to see data-star-part and data-test."
+        note="The trigger panel and the dropdown panel get extra styles and a data attribute. Inspect the elements to see data-star-part and data-test."
       >
         <div class="docs-stack docs-stack--narrow">
           <star-select [options]="cities" [(value)]="city" ariaLabel="City" [pt]="selectPt" />
@@ -277,7 +220,7 @@ export class StylingHooksGuide {
   protected readonly count = signal(0);
   protected readonly plainCity = signal<string | null>('Porto');
   protected readonly plainSelectPt: StarPassThrough = {
-    trigger: { style: { padding: '0.375rem 0.5rem', border: '1px solid currentColor' } },
+    triggerPanel: { style: { padding: '0.375rem 0.5rem', border: '1px solid currentColor' } },
     panel: {
       style: { padding: '0.25rem', border: '1px solid currentColor', background: 'Canvas' },
     },
@@ -285,7 +228,7 @@ export class StylingHooksGuide {
   };
   protected readonly selectPt: StarPassThrough = {
     root: { style: { 'max-width': '16rem' } },
-    trigger: { style: { 'font-weight': '600' }, attrs: { 'data-test': 'city-trigger' } },
+    triggerPanel: { style: { 'font-weight': '600' }, attrs: { 'data-test': 'city-trigger' } },
     panel: { style: { 'border-radius': '0' } },
   };
   protected readonly buttonPt: StarPassThrough = {
@@ -302,7 +245,7 @@ export class StylingHooksGuide {
 
   protected readonly ptScript = `readonly selectPt: StarPassThrough = {
   root: { style: { 'max-width': '16rem' } },
-  trigger: { style: { 'font-weight': '600' }, attrs: { 'data-test': 'city-trigger' } },
+  triggerPanel: { style: { 'font-weight': '600' }, attrs: { 'data-test': 'city-trigger' } },
   panel: { style: { 'border-radius': '0' } },
 };`;
   protected readonly unstyledScript = `readonly buttonPt: StarPassThrough = {
@@ -317,7 +260,7 @@ export class StylingHooksGuide {
   },
 };`;
   protected readonly unstyledSelectScript = `readonly plainSelectPt: StarPassThrough = {
-  trigger: { style: { padding: '0.375rem 0.5rem', border: '1px solid currentColor' } },
+  triggerPanel: { style: { padding: '0.375rem 0.5rem', border: '1px solid currentColor' } },
   panel: { style: { padding: '0.25rem', border: '1px solid currentColor', background: 'Canvas' } },
   option: { style: { padding: '0.25rem 0.5rem' } },
 };`;
@@ -328,7 +271,7 @@ export class StylingHooksGuide {
   unstyled
   [pt]="{
     root: { class: 'relative w-64' },
-    trigger: { class: 'flex items-center rounded-md border border-slate-300 px-3 py-2' },
+    triggerPanel: { class: 'flex items-center rounded-md border border-slate-300 px-3 py-2' },
     panel: { class: 'rounded-md border border-slate-200 bg-white shadow-lg' },
     option: { class: 'px-3 py-2 aria-selected:bg-indigo-50' },
   }"
