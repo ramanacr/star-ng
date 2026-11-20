@@ -112,6 +112,39 @@ describe('StarOrderList depth', () => {
     expect(t.host.selection()).toEqual(['Build', 'Ship']);
   });
 
+  it('keeps a Shift range inside the shown items and does not toggle while disabled', async () => {
+    const t = await setup((h) => {
+      h.filter.set(true);
+      h.steps.set(['Pack', 'Build', 'Plan', 'Print']);
+    });
+    const input = t.el.querySelector<HTMLInputElement>('input[type=search]')!;
+    input.value = 'p';
+    input.dispatchEvent(new Event('input'));
+    await t.stable();
+    const shown = t.labels();
+    expect(shown).toEqual(['Pack', 'Plan', 'Print']);
+    t.options()[0].dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    t.options()[2].dispatchEvent(new MouseEvent('click', { bubbles: true, shiftKey: true }));
+    await t.stable();
+    // Build is hidden by the filter, so the range leaves it out.
+    expect(t.host.selection()).toEqual(shown);
+    t.host.disabled.set(true);
+    await t.stable();
+    t.options()[0].dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }));
+    await t.stable();
+    expect(t.host.selection()).toEqual(shown);
+  });
+
+  it('forgets a pointer press that ends without a click', async () => {
+    const t = await setup();
+    t.options()[1].dispatchEvent(new Event('pointerdown', { bubbles: true }));
+    t.options()[1].dispatchEvent(new Event('pointerup', { bubbles: true }));
+    t.options()[2].focus();
+    await t.stable();
+    expect(t.host.selection()).toEqual(['Test']);
+    t.options()[2].blur();
+  });
+
   it('moves every selected item and keeps their order', async () => {
     const t = await setup((h) => h.selection.set(['Ship', 'Build']));
     expect(t.options().map((o) => o.getAttribute('aria-selected'))).toEqual([

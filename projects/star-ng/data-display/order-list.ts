@@ -151,11 +151,12 @@ type Direction = 'top' | 'up' | 'down' | 'bottom';
               [class.star-listbox__option--selected]="isSelected(entry.item)"
               [class.star-order-list__option--dragging]="dragging() === entry.index"
               (pointerdown)="pointer = true"
+              (pointerup)="pointer = false"
               (click)="onClick($event, entry.index)"
               (focus)="onFocus(entry.index)"
               (keydown)="onKeydown($event, entry.index)"
               (dragstart)="onDragStart($event, entry.index)"
-              (dragend)="dragging.set(-1)"
+              (dragend)="dragging.set(-1); pointer = false"
               (drop)="$event.stopPropagation(); onDrop($event, entry.index)"
             >
               <i
@@ -319,6 +320,7 @@ export class StarOrderList<T = unknown> {
   }
 
   private toggle(index: number): void {
+    if (this.disabled()) return;
     const item = this.value()[index];
     const set = new Set(this.selection());
     if (set.has(item)) set.delete(item);
@@ -330,7 +332,12 @@ export class StarOrderList<T = unknown> {
   private selectRange(index: number): void {
     const from = this.anchor < 0 ? index : this.anchor;
     const [low, high] = from <= index ? [from, index] : [index, from];
-    this.setSelection(this.value().slice(low, high + 1));
+    // Only the items that the filter shows join the range.
+    this.setSelection(
+      this.visible()
+        .filter((entry) => entry.index >= low && entry.index <= high)
+        .map((entry) => entry.item),
+    );
   }
 
   protected onClick(event: MouseEvent, index: number): void {
