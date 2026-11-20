@@ -12,8 +12,10 @@ import type { StarUiText } from '@star-ng/ui/core';
  * and `justifyFull` align the block to the start, the center and the end of the line, or justify
  * it (logical: the start is on the right in right-to-left); `insertUnorderedList`,
  * `insertOrderedList` and `checklist` toggle lists; `indent` and `outdent` nest a list item or
- * indent a block; `horizontalRule` inserts a line; `removeFormat` clears inline formats and the
- * alignment. Alignment is stored as the classes `star-text-center`, `star-text-end` and
+ * indent a block; `image` opens the image panel (address or file, required alternative text or
+ * decorative, caption, width; with the image at the caret it edits it) and `embed` the embed
+ * panel (a video or page on the embed hosts of the allow-list); `horizontalRule` inserts a line;
+ * `removeFormat` clears inline formats and the alignment. Alignment is stored as the classes `star-text-center`, `star-text-end` and
  * `star-text-justify`, so the HTML needs the StarNG CSS where it is shown. `undo` and `redo` use
  * the history of the editor, which has every change.
  */
@@ -41,6 +43,8 @@ export type StarEditorCommand =
   | 'justifyRight'
   | 'justifyFull'
   | 'link'
+  | 'image'
+  | 'embed'
   | 'horizontalRule'
   | 'removeFormat'
   | 'undo'
@@ -104,6 +108,8 @@ export const STAR_EDITOR_FULL_TOOLBAR: readonly StarEditorToolbarItem[] = [
   'justifyFull',
   '|',
   'link',
+  'image',
+  'embed',
   'horizontalRule',
   'removeFormat',
 ];
@@ -143,6 +149,8 @@ export const STAR_EDITOR_BUTTONS: Readonly<
   justifyRight: { label: 'editorAlignEnd', icon: 'ph-bold ph-text-align-right', toggle: true },
   justifyFull: { label: 'editorJustify', icon: 'ph-bold ph-text-align-justify', toggle: true },
   link: { label: 'editorLink', icon: 'ph-bold ph-link', toggle: true },
+  image: { label: 'editorImage', icon: 'ph-bold ph-image', toggle: false },
+  embed: { label: 'editorEmbed', icon: 'ph-bold ph-film-strip', toggle: false },
   horizontalRule: { label: 'editorHorizontalRule', icon: 'ph-bold ph-minus', toggle: false },
   removeFormat: { label: 'editorClearFormatting', icon: 'ph-bold ph-text-t-slash', toggle: false },
   undo: { label: 'undo', icon: 'ph-bold ph-arrow-counter-clockwise', toggle: false },

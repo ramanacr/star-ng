@@ -5242,6 +5242,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "STAR_EDITOR_DEFAULT_TOOLBAR",
         "required": false,
         "description": "The toolbar: command names in order, with `'|'` between groups. Unknown names are left out. `STAR_EDITOR_FULL_TOOLBAR` has every command. PrimeNG toolbar formats (Quill `toolbar`)."
+      },
+      {
+        "name": "upload",
+        "type": "StarEditorUpload | null",
+        "default": "null",
+        "required": false,
+        "description": "Stores an image file that the user chose in the image panel and gives back its address. Without it, the file goes into the HTML as a `data:` address (large values)."
       }
     ],
     "models": [
@@ -5289,6 +5296,77 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       {
         "name": "pick",
         "type": "string",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "dismissed",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
+  "StarEditorEmbed": {
+    "kind": "component",
+    "selector": "star-editor-embed",
+    "entry": "@star-ng/ui/editor",
+    "description": "The embed panel of `star-editor` (internal): a video or page address and a title (required: the name of the frame). Only addresses whose player is on the embed hosts of the allow-list pass.",
+    "inputs": [
+      {
+        "name": "resolve",
+        "type": "(url: string) => string | null",
+        "default": null,
+        "required": true,
+        "description": "Turns the address into a player address on the allowed hosts, or `null`."
+      }
+    ],
+    "models": [],
+    "outputs": [
+      {
+        "name": "apply",
+        "type": "{ src: string; title: string }",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "dismissed",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
+  "StarEditorImage": {
+    "kind": "component",
+    "selector": "star-editor-image",
+    "entry": "@star-ng/ui/editor",
+    "description": "The image panel of `star-editor` (internal): an address or a file, the alternative text (required, or the image is marked decorative), a caption and a width. It sits under the toolbar like the link form; Escape closes it.",
+    "inputs": [
+      {
+        "name": "initial",
+        "type": "StarEditorImageValue | null",
+        "default": "null",
+        "required": false,
+        "description": "The image at the caret, or `null` for a new image."
+      },
+      {
+        "name": "upload",
+        "type": "StarEditorUpload | null",
+        "default": "null",
+        "required": false,
+        "description": "The owner's upload of a chosen file; without it, a file becomes a `data:` address."
+      }
+    ],
+    "models": [],
+    "outputs": [
+      {
+        "name": "apply",
+        "type": "StarEditorImageValue",
         "default": null,
         "required": false,
         "description": ""
@@ -15929,6 +16007,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "editor/basic": "<div class=\"docs-stack\">\n  <star-editor\n    [(value)]=\"note\"\n    ariaLabel=\"Delivery note\"\n    placeholder=\"Write the delivery note\"\n  />\n  <pre class=\"docs-output\" role=\"group\" aria-label=\"Value of the editor\">{{ note() }}</pre>\n</div>",
   "editor/full-toolbar": "<div class=\"docs-stack\">\n  <star-editor\n    [(value)]=\"report\"\n    [toolbar]=\"fullToolbar\"\n    ariaLabel=\"Product announcement\"\n  />\n  <pre class=\"docs-output\" role=\"group\" aria-label=\"Value of the full editor\">{{\n    report()\n  }}</pre>\n</div>",
   "editor/lists": "<div class=\"docs-stack\">\n  <star-editor [(value)]=\"plan\" [toolbar]=\"listToolbar\" ariaLabel=\"Launch plan\" />\n</div>",
+  "editor/media": "<div class=\"docs-stack\">\n  <star-editor\n    [(value)]=\"media\"\n    [toolbar]=\"mediaToolbar\"\n    [upload]=\"upload\"\n    [sanitize]=\"embedRules\"\n    ariaLabel=\"Release with images\"\n  />\n</div>",
   "editor/own-toolbar": "<div class=\"docs-stack\">\n  <star-editor [toolbar]=\"shortToolbar\" ariaLabel=\"Short comment\" minHeight=\"4rem\" />\n</div>",
   "editor/paste": "<div class=\"docs-stack\">\n  <star-editor ariaLabel=\"Pasted with formats\" minHeight=\"4rem\" />\n  <star-editor pasteAsText ariaLabel=\"Pasted as plain text\" minHeight=\"4rem\" />\n</div>",
   "editor/sanitize": "<div class=\"docs-stack\">\n  <star-editor [(value)]=\"unsafe\" ariaLabel=\"Sanitized content\" />\n  <pre class=\"docs-output\" aria-label=\"Value after sanitizing\">{{ unsafe() }}</pre>\n</div>",

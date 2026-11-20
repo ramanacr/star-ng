@@ -322,6 +322,21 @@ export interface StarUiText {
   readonly editorOutdent: string;
   readonly editorChecklist: string;
   readonly editorHorizontalRule: string;
+  readonly editorImage: string;
+  readonly editorImageAddress: string;
+  readonly editorImageFile: string;
+  readonly editorImageInvalid: string;
+  readonly editorImageUploading: string;
+  /** Field of the image panel: the alternative text of the image. */
+  readonly editorAltText: string;
+  readonly editorAltRequired: string;
+  readonly editorDecorative: string;
+  readonly editorCaption: string;
+  /** Name of the resize handle of a selected image (a slider of its width). */
+  readonly editorResizeImage: string;
+  readonly editorEmbed: string;
+  readonly editorEmbedAddress: string;
+  readonly editorEmbedNotAllowed: string;
   readonly chartPoints: (title: string) => string;
   readonly chartPointsHint: string;
   readonly chartPointLabel: (series: string, label: string, value: string) => string;
@@ -1078,6 +1093,19 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   editorOutdent: 'Decrease indent',
   editorChecklist: 'Checklist',
   editorHorizontalRule: 'Horizontal line',
+  editorImage: 'Image',
+  editorImageAddress: 'Image address (https://…)',
+  editorImageFile: 'Or choose an image file',
+  editorImageInvalid: 'Enter an image address (https://…) or choose an image file.',
+  editorImageUploading: 'Uploading the image…',
+  editorAltText: 'Alternative text',
+  editorAltRequired: 'Describe the image, or mark it as decorative.',
+  editorDecorative: 'Decorative image (no alternative text)',
+  editorCaption: 'Caption',
+  editorResizeImage: 'Image width',
+  editorEmbed: 'Embed',
+  editorEmbedAddress: 'Video or page address',
+  editorEmbedNotAllowed: 'This address is not on the list of allowed embeds.',
   chartPoints: (title) => `${title}: data points`,
   chartPointsHint: 'Arrow keys move between the points and the series. Enter selects a point.',
   chartPointLabel: (series, label, value) => `${series}, ${label}: ${value}`,

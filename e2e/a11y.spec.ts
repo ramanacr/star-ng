@@ -1717,6 +1717,21 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'editor image panel open',
+    path: 'controls/editor',
+    open: async (page) => {
+      await expect(page.locator('star-editor[ngh]')).toHaveCount(0, { timeout: 15_000 });
+      const live = example(page, 'Images and embeds');
+      await live.getByRole('textbox', { name: 'Release with images' }).locator('p').click();
+      await live.getByRole('button', { name: 'Image', exact: true }).click();
+      await live
+        .getByRole('group', { name: 'Image' })
+        .getByRole('button', { name: 'Apply' })
+        .click();
+      await expect(live.getByText('Describe the image, or mark it as decorative.')).toBeVisible();
+    },
+  },
+  {
     name: 'editor link popover open',
     path: 'controls/editor',
     open: async (page) => {

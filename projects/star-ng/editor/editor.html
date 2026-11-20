@@ -143,6 +143,21 @@
     (dismissed)="closePanel()"
   />
 }
+@if (mediaPanel() === 'image') {
+  <star-editor-image
+    [initial]="imageInitial()"
+    [upload]="upload()"
+    (apply)="applyImage($event)"
+    (dismissed)="closeMedia()"
+  />
+}
+@if (mediaPanel() === 'embed') {
+  <star-editor-embed
+    [resolve]="embedResolver"
+    (apply)="applyEmbed($event)"
+    (dismissed)="closeMedia()"
+  />
+}
 <div
   #area
   class="star-editor__area"
@@ -171,6 +186,31 @@
   (mouseup)="refreshState()"
   (blur)="touch.emit()"
 ></div>
+@if (imageFrame(); as frame) {
+  <div
+    class="star-editor__image-frame"
+    [style.top.px]="frame.top"
+    [style.left.px]="frame.left"
+    [style.width.px]="frame.width"
+    [style.height.px]="frame.height"
+  >
+    <span
+      class="star-editor__image-handle"
+      role="slider"
+      tabindex="0"
+      aria-orientation="horizontal"
+      [attr.aria-label]="text.editorResizeImage"
+      aria-valuemin="16"
+      [attr.aria-valuemax]="frame.max"
+      [attr.aria-valuenow]="frame.width"
+      (pointerdown)="onHandleDown($event)"
+      (pointermove)="onHandleMove($event)"
+      (pointerup)="onHandleUp()"
+      (pointercancel)="onHandleUp()"
+      (keydown)="onHandleKeydown($event)"
+    ></span>
+  </div>
+}
 @if (maxLength() !== undefined) {
   <div class="star-editor__footer">
     <span class="star-editor__counter" [id]="counterId">

@@ -48,6 +48,7 @@ import {
   starEditorToggleScript,
 } from './editor-format';
 import { StarEditorHistory, starEditorPathRange, starEditorSelectionPath } from './editor-history';
+import { StarEditorEmbed, StarEditorImage } from './editor-image';
 import {
   StarEditorLink,
   StarEditorLinkValue,
@@ -62,6 +63,15 @@ import {
   starEditorToggleCheck,
   starEditorToggleList,
 } from './editor-list';
+import {
+  starEditorEmbedUrl,
+  starEditorImageOf,
+  StarEditorImageValue,
+  starEditorProtectEmbeds,
+  starEditorPutEmbed,
+  starEditorPutImage,
+  StarEditorUpload,
+} from './editor-media';
 import { starEditorCleanPaste } from './editor-paste';
 import {
   STAR_EDITOR_SANITIZE_DEFAULTS,
@@ -133,7 +143,7 @@ type Panel = 'textColor' | 'highlight';
  */
 @Component({
   selector: 'star-editor',
-  imports: [StarEditorLink, StarEditorColor, NgTemplateOutlet],
+  imports: [StarEditorLink, StarEditorColor, StarEditorImage, StarEditorEmbed, NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-editor',
@@ -199,6 +209,11 @@ export class StarEditor implements FormValueControl<string> {
    * `STAR_EDITOR_FULL_TOOLBAR` has every command. PrimeNG toolbar formats (Quill `toolbar`).
    */
   readonly toolbar = input<readonly StarEditorToolbarItem[]>(STAR_EDITOR_DEFAULT_TOOLBAR);
+  /**
+   * Stores an image file that the user chose in the image panel and gives back its address.
+   * Without it, the file goes into the HTML as a `data:` address (large values).
+   */
+  readonly upload = input<StarEditorUpload | null>(null);
   readonly touch = output<void>();
 
   /** The `starEditorToolbar` template that replaces the toolbar. */
@@ -290,6 +305,21 @@ export class StarEditor implements FormValueControl<string> {
   protected readonly linkNewTab = signal(false);
   /** The open color panel. */
   protected readonly colorPanel = signal<Panel | null>(null);
+  /** The open image or embed panel, and the image it edits. */
+  protected readonly mediaPanel = signal<'image' | 'embed' | null>(null);
+  protected readonly imageInitial = signal<StarEditorImageValue | null>(null);
+  private editedImage: HTMLImageElement | null = null;
+  /** The selected image (a click, or a selection of just the image) and its frame. */
+  private readonly selectedImage = signal<HTMLImageElement | null>(null);
+  protected readonly imageFrame = signal<{
+    top: number;
+    left: number;
+    width: number;
+    height: number;
+    max: number;
+  } | null>(null);
+  protected readonly embedResolver = (url: string) =>
+    starEditorEmbedUrl(url, this.sanitize().embedHosts ?? []);
   /** The selection when the link popover opened, and the link at it. */
   private linkRange: Range | null = null;
   private linkAnchor: HTMLAnchorElement | null = null;
@@ -315,6 +345,8 @@ export class StarEditor implements FormValueControl<string> {
         area.innerHTML = this.clean(text ? starEditorTextToHtml(value) : value);
         this.lastWritten = value;
         this.length.set(starEditorPlainLength(area));
+        starEditorProtectEmbeds(area);
+        this.selectImage(null);
         this.history.reset({ html: area.innerHTML, selection: null });
         this.typing = false;
         this.updateHistoryState();
@@ -359,6 +391,7 @@ export class StarEditor implements FormValueControl<string> {
   protected expanded(cmd: StarEditorCommand): boolean | null {
     if (cmd === 'link') return this.linkOpen();
     if (cmd === 'textColor' || cmd === 'highlight') return this.colorPanel() === cmd;
+    if (cmd === 'image' || cmd === 'embed') return this.mediaPanel() === cmd;
     return null;
   }
 
@@ -375,6 +408,7 @@ export class StarEditor implements FormValueControl<string> {
   protected onInput(): void {
     this.commit(true);
     this.refreshState();
+    if (this.selectedImage()) this.placeFrame();
   }
 
   /** Stores the area in the model and, with `record`, in the history. */
@@ -539,6 +573,7 @@ export class StarEditor implements FormValueControl<string> {
    */
   protected onAreaKeydown(event: KeyboardEvent): void {
     if (this.locked()) return;
+    if (this.selectedImage() && !event.shiftKey && event.key !== 'Tab') this.selectImage(null);
     const mod = event.ctrlKey || event.metaKey;
     const key = event.key.toLowerCase();
     this.plainPaste = mod && event.shiftKey && key === 'v';
@@ -568,10 +603,18 @@ export class StarEditor implements FormValueControl<string> {
     }
   }
 
-  /** A click on the box of a checklist item checks it. */
+  /** A click on the box of a checklist item checks it; a click on an image selects it. */
   protected onAreaClick(event: MouseEvent): void {
     if (this.locked()) return;
     const item = event.target instanceof Element ? event.target : null;
+    if (item instanceof HTMLImageElement) {
+      const range = item.ownerDocument.createRange();
+      range.selectNode(item);
+      starEditorRestore(range);
+      this.selectImage(item);
+      return;
+    }
+    this.selectImage(null);
     if (
       item?.tagName !== 'LI' ||
       !item.parentElement?.classList.contains(STAR_EDITOR_CHECKLIST_CLASS)
@@ -614,6 +657,10 @@ export class StarEditor implements FormValueControl<string> {
     }
     if (command === 'undo' || command === 'redo') {
       this.travel(command === 'undo' ? -1 : 1);
+      return;
+    }
+    if (command === 'image' || command === 'embed') {
+      this.openMedia(command);
       return;
     }
     if ((command === 'textColor' || command === 'highlight') && value === undefined) {
@@ -723,6 +770,7 @@ export class StarEditor implements FormValueControl<string> {
   private openPanel(kind: Panel): void {
     this.panelRange = starEditorRange(this.area().nativeElement)?.cloneRange() ?? null;
     this.linkOpen.set(false);
+    this.mediaPanel.set(null);
     this.colorPanel.set(this.colorPanel() === kind ? null : kind);
   }
 
@@ -739,6 +787,156 @@ export class StarEditor implements FormValueControl<string> {
     this.refreshState();
   }
 
+  // ---- Images and embeds ----
+
+  private openMedia(kind: 'image' | 'embed'): void {
+    const area = this.area().nativeElement;
+    this.panelRange = starEditorRange(area)?.cloneRange() ?? null;
+    this.linkOpen.set(false);
+    this.colorPanel.set(null);
+    this.editedImage = kind === 'image' ? this.imageAt(this.panelRange) : null;
+    this.imageInitial.set(this.editedImage ? starEditorImageOf(this.editedImage) : null);
+    this.mediaPanel.set(this.mediaPanel() === kind ? null : kind);
+  }
+
+  /** The image that the range selects, or the selected image. */
+  private imageAt(range: Range | null): HTMLImageElement | null {
+    const selected = this.selectedImage();
+    if (selected && this.area().nativeElement.contains(selected)) return selected;
+    if (!range || range.startContainer !== range.endContainer) return null;
+    const node = range.startContainer.childNodes[range.startOffset];
+    return range.endOffset === range.startOffset + 1 && node instanceof HTMLImageElement
+      ? node
+      : null;
+  }
+
+  protected closeMedia(): void {
+    this.mediaPanel.set(null);
+    this.area().nativeElement.focus();
+    starEditorRestore(this.panelRange);
+    this.panelRange = null;
+  }
+
+  protected applyImage(value: StarEditorImageValue): void {
+    const area = this.area().nativeElement;
+    this.mediaPanel.set(null);
+    area.focus();
+    starEditorRestore(this.panelRange);
+    const range = starEditorRange(area) ?? this.endRange();
+    const existing = this.editedImage && area.contains(this.editedImage) ? this.editedImage : null;
+    const image = starEditorPutImage(area, range, value, existing);
+    this.panelRange = null;
+    this.onInput();
+    if (existing) this.selectImage(image);
+  }
+
+  protected applyEmbed(embed: { src: string; title: string }): void {
+    const area = this.area().nativeElement;
+    this.mediaPanel.set(null);
+    area.focus();
+    starEditorRestore(this.panelRange);
+    starEditorPutEmbed(area, starEditorRange(area) ?? this.endRange(), embed.src, embed.title);
+    this.panelRange = null;
+    this.onInput();
+  }
+
+  /** A caret at the end of the area. */
+  private endRange(): Range {
+    const area = this.area().nativeElement;
+    const range = area.ownerDocument.createRange();
+    range.selectNodeContents(area);
+    range.collapse(false);
+    return range;
+  }
+
+  private selectImage(image: HTMLImageElement | null): void {
+    this.selectedImage.set(image);
+    this.placeFrame();
+  }
+
+  /** Puts the resize frame over the selected image. */
+  private placeFrame(): void {
+    const image = this.selectedImage();
+    const area = this.area().nativeElement;
+    if (!image || !area.contains(image) || this.locked()) {
+      this.imageFrame.set(null);
+      return;
+    }
+    const host = this.host.nativeElement.getBoundingClientRect();
+    const box = image.getBoundingClientRect();
+    this.imageFrame.set({
+      top: box.top - host.top,
+      left: box.left - host.left,
+      width: Math.round(box.width || Number(image.getAttribute('width')) || image.width),
+      height: Math.round(box.height || image.height),
+      max: Math.max(16, area.clientWidth || 4000),
+    });
+  }
+
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+  private resizeStart: { x: number; width: number; rtl: boolean } | null = null;
+
+  /** Sets the width of the selected image, from 16 pixels to the width of the area. */
+  private resizeImage(width: number): void {
+    const image = this.selectedImage();
+    const frame = this.imageFrame();
+    if (!image || !frame) return;
+    image.setAttribute('width', String(Math.round(Math.max(16, Math.min(frame.max, width)))));
+    image.removeAttribute('height');
+    this.placeFrame();
+  }
+
+  protected onHandleDown(event: PointerEvent): void {
+    const image = this.selectedImage();
+    if (!image) return;
+    event.preventDefault();
+    (event.target as Element).setPointerCapture?.(event.pointerId);
+    const view = this.host.nativeElement.ownerDocument.defaultView;
+    const rtl = view?.getComputedStyle(this.host.nativeElement).direction === 'rtl';
+    this.resizeStart = { x: event.clientX, width: this.imageFrame()?.width ?? image.width, rtl };
+  }
+
+  protected onHandleMove(event: PointerEvent): void {
+    const start = this.resizeStart;
+    if (!start) return;
+    const delta = event.clientX - start.x;
+    this.resizeImage(start.width + (start.rtl ? -delta : delta));
+  }
+
+  protected onHandleUp(): void {
+    if (!this.resizeStart) return;
+    this.resizeStart = null;
+    this.commit(true);
+  }
+
+  /** The keyboard alternative of the handle: a slider of the image width. */
+  protected onHandleKeydown(event: KeyboardEvent): void {
+    const frame = this.imageFrame();
+    if (!frame) return;
+    const step = event.shiftKey ? 50 : 10;
+    const key = starInlineKey(event, this.host.nativeElement);
+    const width =
+      key === 'ArrowRight' || key === 'ArrowUp'
+        ? frame.width + step
+        : key === 'ArrowLeft' || key === 'ArrowDown'
+          ? frame.width - step
+          : key === 'Home'
+            ? 16
+            : key === 'End'
+              ? frame.max
+              : null;
+    if (width === null) {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        this.focus();
+      }
+      return;
+    }
+    event.preventDefault();
+    this.resizeImage(width);
+    this.commit(true);
+  }
+
   // ---- Link popover ----
 
   private anchorAt(range: Range | null): HTMLAnchorElement | null {
@@ -752,6 +950,7 @@ export class StarEditor implements FormValueControl<string> {
   private openLink(): void {
     const area = this.area().nativeElement;
     this.colorPanel.set(null);
+    this.mediaPanel.set(null);
     this.linkRange = starEditorRange(area)?.cloneRange() ?? null;
     this.linkAnchor = this.anchorAt(this.linkRange);
     this.linkUrl.set(this.linkAnchor?.getAttribute('href') ?? '');
@@ -903,6 +1102,9 @@ export class StarEditor implements FormValueControl<string> {
     this.fontSize.set(starEditorFontSizeAt(node, area));
     this.textColorAt.set(starEditorStyleAt(node, area, 'color'));
     this.highlightAt.set(starEditorStyleAt(node, area, 'background-color'));
+    // A selection of just an image (Shift and an arrow key) selects it.
+    const image = this.imageAt(range);
+    if (range && image !== this.selectedImage() && image) this.selectImage(image);
     this.active.set(on);
   }
 

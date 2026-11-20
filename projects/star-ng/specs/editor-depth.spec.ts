@@ -77,6 +77,8 @@ describe('StarEditor toolbar', () => {
       'Align to the end',
       'Justify',
       'Link',
+      'Image',
+      'Embed',
       'Horizontal line',
       'Clear formatting',
     ]);

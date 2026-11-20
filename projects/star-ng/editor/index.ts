@@ -1,5 +1,6 @@
 export * from './editor';
 export type { StarEditorLinkValue } from './editor-link';
+export type { StarEditorUpload } from './editor-media';
 export { STAR_EDITOR_SANITIZE_DEFAULTS } from './editor-sanitize';
 export type { StarEditorSanitizeConfig } from './editor-sanitize';
 export {

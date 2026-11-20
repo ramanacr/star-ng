@@ -6,6 +6,7 @@ import {
   StarEditorSanitizeConfig,
   StarEditorToolbarItem,
   StarEditorToolbarTemplate,
+  StarEditorUpload,
 } from '@star-ng/ui/editor';
 import { DOCS, DocsRow } from '../shared/docs';
 
@@ -61,6 +62,23 @@ import { DOCS, DocsRow } from '../shared/docs';
       >
         <div class="docs-stack">
           <star-editor [(value)]="plan" [toolbar]="listToolbar" ariaLabel="Launch plan" />
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="Images and embeds"
+        source="editor/media"
+        [script]="mediaScript"
+        note="The image button opens a panel: an image address or an image file, the alternative text (required, or check Decorative image), a caption (the image then goes in a figure with a figcaption) and a width. With an image selected, the button edits it. Click an image to select it: drag the handle at its corner to resize it, or Tab to the handle (a slider of the width) and use the arrow keys (Shift for bigger steps, Home and End). upload stores a chosen file and gives back its address; without it, the file goes into the HTML as a data: address. The embed button embeds a video or page whose player is on the embedHosts of the sanitize allow-list (empty by default, so no embeds); a known video page (YouTube, Vimeo) becomes its player. The frame needs a title and gets a sandbox."
+      >
+        <div class="docs-stack">
+          <star-editor
+            [(value)]="media"
+            [toolbar]="mediaToolbar"
+            [upload]="upload"
+            [sanitize]="embedRules"
+            ariaLabel="Release with images"
+          />
         </div>
       </docs-example>
 
@@ -253,7 +271,7 @@ import { DOCS, DocsRow } from '../shared/docs';
       </p>
       <p>
         The area is treated as empty when it has no text (the stored value is an empty string). A
-        value that has only an image or a divider is therefore stored as an empty string.
+        value that has only an image, an embed or a divider is therefore stored as an empty string.
       </p>
       <p>
         The link button opens a small form under the toolbar: an address field, "Open in a new tab",
@@ -302,6 +320,30 @@ export class EditorPage {
   ...STAR_EDITOR_SANITIZE_DEFAULTS,
   tags: STAR_EDITOR_SANITIZE_DEFAULTS.tags.filter((tag) => tag !== 'img' && tag !== 'figure'),
   protocols: ['https:'],
+};`;
+  protected readonly media = signal(
+    '<p>The release brings a new dashboard.</p><figure><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==" alt="Preview of the new dashboard" width="240"><figcaption>The new dashboard</figcaption></figure>',
+  );
+  protected readonly mediaToolbar: readonly StarEditorToolbarItem[] = [
+    'bold',
+    'italic',
+    '|',
+    'image',
+    'embed',
+    'link',
+  ];
+  /** A stand-in for a real upload: a local address of the file for this page. */
+  protected readonly upload: StarEditorUpload = async (file) => URL.createObjectURL(file);
+  protected readonly embedRules: StarEditorSanitizeConfig = {
+    ...STAR_EDITOR_SANITIZE_DEFAULTS,
+    embedHosts: ['www.youtube-nocookie.com', 'player.vimeo.com'],
+  };
+  protected readonly mediaScript = `readonly mediaToolbar: readonly StarEditorToolbarItem[] = ['bold', 'italic', '|', 'image', 'embed', 'link'];
+// Store the file (for example on your server) and give back its address.
+readonly upload: StarEditorUpload = async (file) => uploadToServer(file);
+readonly embedRules: StarEditorSanitizeConfig = {
+  ...STAR_EDITOR_SANITIZE_DEFAULTS,
+  embedHosts: ['www.youtube-nocookie.com', 'player.vimeo.com'],
 };`;
   protected readonly listToolbar: readonly StarEditorToolbarItem[] = [
     'insertUnorderedList',
@@ -387,6 +429,11 @@ readonly fullToolbar = STAR_EDITOR_FULL_TOOLBAR;`;
         'Nests the item under the item before it, or takes it out one level. When the item cannot move, Tab leaves the area as usual.',
     },
     { name: 'Ctrl+Enter in a checklist item', description: 'Checks or unchecks the item.' },
+    {
+      name: 'Arrow keys / Home / End on the image handle',
+      description:
+        'Changes the width of the selected image (Shift for steps of 50 pixels). Escape goes back to the text.',
+    },
     { name: 'Ctrl+Shift+V', description: 'In the area: pastes the clipboard as plain text.' },
     {
       name: 'Escape',

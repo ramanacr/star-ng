@@ -1,0 +1,297 @@
+import { _IdGenerator } from '@angular/cdk/a11y';
+import {
+  afterNextRender,
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  inject,
+  Injector,
+  input,
+  linkedSignal,
+  output,
+  signal,
+  viewChild,
+} from '@angular/core';
+import { STAR_UI_TEXT } from '@star-ng/ui/core';
+import { StarEditorImageValue, starEditorReadFile, StarEditorUpload } from './editor-media';
+import { starEditorUrlAllowed } from './editor-sanitize';
+
+const IMAGE_PROTOCOLS = ['http:', 'https:'];
+
+/** Focuses the first field of a panel after it renders. */
+function focusFirst(host: ElementRef<HTMLElement>): void {
+  const injector = inject(Injector);
+  afterNextRender(() => host.nativeElement.querySelector<HTMLElement>('input, button')?.focus(), {
+    injector,
+  });
+}
+
+/**
+ * The image panel of `star-editor` (internal): an address or a file, the alternative text
+ * (required, or the image is marked decorative), a caption and a width. It sits under the
+ * toolbar like the link form; Escape closes it.
+ */
+@Component({
+  selector: 'star-editor-image',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    class: 'star-editor__panel star-editor__image-panel',
+    role: 'group',
+    '[attr.aria-label]': 'text.editorImage',
+    '(keydown.escape)': 'onEscape($event)',
+  },
+  template: `
+    <form class="star-editor__panel-form" novalidate (submit)="submit($event)">
+      <label class="star-editor__field">
+        <span>{{ text.editorImageAddress }}</span>
+        <input
+          class="star-input star-input--sm"
+          type="text"
+          inputmode="url"
+          [value]="src().startsWith('data:') ? '' : src()"
+          [attr.aria-invalid]="sourceError() ? 'true' : null"
+          [attr.aria-describedby]="sourceError() ? sourceErrorId : null"
+          (input)="src.set($any($event.target).value); sourceError.set(false)"
+        />
+      </label>
+      <label class="star-editor__field">
+        <span>{{ text.editorImageFile }}</span>
+        <input type="file" accept="image/*" (change)="chooseFile($any($event.target).files)" />
+      </label>
+      @if (sourceError()) {
+        <span class="star-editor__panel-error" [id]="sourceErrorId">{{
+          busy() ? text.editorImageUploading : text.editorImageInvalid
+        }}</span>
+      }
+      <label class="star-editor__field">
+        <span>{{ text.editorAltText }}</span>
+        <input
+          #altField
+          class="star-input star-input--sm"
+          type="text"
+          [value]="alt()"
+          [disabled]="decorative()"
+          [attr.aria-invalid]="altError() ? 'true' : null"
+          [attr.aria-describedby]="altError() ? altErrorId : null"
+          (input)="alt.set(altField.value); altError.set(false)"
+        />
+      </label>
+      @if (altError()) {
+        <span class="star-editor__panel-error" [id]="altErrorId">{{ text.editorAltRequired }}</span>
+      }
+      <label class="star-editor__link-check">
+        <input
+          type="checkbox"
+          [checked]="decorative()"
+          (change)="decorative.set($any($event.target).checked); altError.set(false)"
+        />
+        {{ text.editorDecorative }}
+      </label>
+      <label class="star-editor__field">
+        <span>{{ text.editorCaption }}</span>
+        <input
+          class="star-input star-input--sm"
+          type="text"
+          [value]="caption()"
+          (input)="caption.set($any($event.target).value)"
+        />
+      </label>
+      <label class="star-editor__field star-editor__field--narrow">
+        <span>{{ text.imageWidth }}</span>
+        <input
+          class="star-input star-input--sm"
+          type="number"
+          min="16"
+          max="4000"
+          step="10"
+          [value]="width() ?? ''"
+          (input)="width.set(+$any($event.target).value || null)"
+        />
+      </label>
+      <div class="star-editor__link-actions">
+        <button type="submit" class="star-btn star-btn--primary star-btn--sm" [disabled]="busy()">
+          {{ text.apply }}
+        </button>
+        <button
+          type="button"
+          class="star-btn star-btn--ghost star-btn--sm"
+          (click)="dismissed.emit()"
+        >
+          {{ text.cancel }}
+        </button>
+      </div>
+    </form>
+  `,
+})
+export class StarEditorImage {
+  protected readonly text = inject(STAR_UI_TEXT);
+  private readonly ids = inject(_IdGenerator);
+  protected readonly sourceErrorId = this.ids.getId('star-editor-image-error-');
+  protected readonly altErrorId = this.ids.getId('star-editor-alt-error-');
+
+  /** The image at the caret, or `null` for a new image. */
+  readonly initial = input<StarEditorImageValue | null>(null);
+  /** The owner's upload of a chosen file; without it, a file becomes a `data:` address. */
+  readonly upload = input<StarEditorUpload | null>(null);
+  readonly apply = output<StarEditorImageValue>();
+  readonly dismissed = output<void>();
+
+  protected readonly src = linkedSignal(() => this.initial()?.src ?? '');
+  protected readonly alt = linkedSignal(() => this.initial()?.alt ?? '');
+  protected readonly decorative = linkedSignal(
+    () => !!this.initial() && this.initial()!.alt === '',
+  );
+  protected readonly caption = linkedSignal(() => this.initial()?.caption ?? '');
+  protected readonly width = linkedSignal(() => this.initial()?.width ?? null);
+  protected readonly sourceError = signal(false);
+  protected readonly altError = signal(false);
+  protected readonly busy = signal(false);
+  private readonly altField = viewChild.required<ElementRef<HTMLInputElement>>('altField');
+
+  constructor() {
+    focusFirst(inject(ElementRef));
+  }
+
+  protected async chooseFile(files: FileList | null): Promise<void> {
+    const file = files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      this.sourceError.set(true);
+      return;
+    }
+    this.busy.set(true);
+    try {
+      const upload = this.upload();
+      this.src.set(upload ? await upload(file) : await starEditorReadFile(file));
+      this.sourceError.set(false);
+    } catch {
+      this.sourceError.set(true);
+    } finally {
+      this.busy.set(false);
+    }
+  }
+
+  protected submit(event: Event): void {
+    event.preventDefault();
+    const src = this.src().trim();
+    const valid =
+      !!src &&
+      !/[\s<>"]/.test(src) &&
+      starEditorUrlAllowed(src, IMAGE_PROTOCOLS, true) &&
+      !/^javascript:/i.test(src);
+    this.sourceError.set(!valid);
+    const alt = this.decorative() ? '' : this.alt().trim();
+    this.altError.set(!this.decorative() && !alt);
+    if (!valid || this.altError()) {
+      if (this.altError()) this.altField().nativeElement.focus();
+      return;
+    }
+    this.apply.emit({ src, alt, caption: this.caption().trim(), width: this.width() });
+  }
+
+  protected onEscape(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.dismissed.emit();
+  }
+}
+
+/**
+ * The embed panel of `star-editor` (internal): a video or page address and a title (required:
+ * the name of the frame). Only addresses whose player is on the embed hosts of the allow-list
+ * pass.
+ */
+@Component({
+  selector: 'star-editor-embed',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    class: 'star-editor__panel',
+    role: 'group',
+    '[attr.aria-label]': 'text.editorEmbed',
+    '(keydown.escape)': 'onEscape($event)',
+  },
+  template: `
+    <form class="star-editor__panel-form" novalidate (submit)="submit($event)">
+      <label class="star-editor__field">
+        <span>{{ text.editorEmbedAddress }}</span>
+        <input
+          #address
+          class="star-input star-input--sm"
+          type="text"
+          inputmode="url"
+          [attr.aria-invalid]="urlError() ? 'true' : null"
+          [attr.aria-describedby]="urlError() ? urlErrorId : null"
+          (input)="urlError.set(false)"
+        />
+      </label>
+      @if (urlError()) {
+        <span class="star-editor__panel-error" [id]="urlErrorId">{{
+          text.editorEmbedNotAllowed
+        }}</span>
+      }
+      <label class="star-editor__field">
+        <span>{{ text.title }}</span>
+        <input
+          #name
+          class="star-input star-input--sm"
+          type="text"
+          [attr.aria-invalid]="titleError() ? 'true' : null"
+          [attr.aria-describedby]="titleError() ? titleErrorId : null"
+          (input)="titleError.set(false)"
+        />
+      </label>
+      @if (titleError()) {
+        <span class="star-editor__panel-error" [id]="titleErrorId">{{ text.valueRequired }}</span>
+      }
+      <div class="star-editor__link-actions">
+        <button type="submit" class="star-btn star-btn--primary star-btn--sm">
+          {{ text.apply }}
+        </button>
+        <button
+          type="button"
+          class="star-btn star-btn--ghost star-btn--sm"
+          (click)="dismissed.emit()"
+        >
+          {{ text.cancel }}
+        </button>
+      </div>
+    </form>
+  `,
+})
+export class StarEditorEmbed {
+  protected readonly text = inject(STAR_UI_TEXT);
+  private readonly ids = inject(_IdGenerator);
+  protected readonly urlErrorId = this.ids.getId('star-editor-embed-error-');
+  protected readonly titleErrorId = this.ids.getId('star-editor-embed-title-');
+
+  /** Turns the address into a player address on the allowed hosts, or `null`. */
+  readonly resolve = input.required<(url: string) => string | null>();
+  readonly apply = output<{ src: string; title: string }>();
+  readonly dismissed = output<void>();
+
+  protected readonly urlError = signal(false);
+  protected readonly titleError = signal(false);
+  private readonly address = viewChild.required<ElementRef<HTMLInputElement>>('address');
+  private readonly name = viewChild.required<ElementRef<HTMLInputElement>>('name');
+
+  constructor() {
+    focusFirst(inject(ElementRef));
+  }
+
+  protected submit(event: Event): void {
+    event.preventDefault();
+    const src = this.resolve()(this.address().nativeElement.value);
+    const title = this.name().nativeElement.value.trim();
+    this.urlError.set(!src);
+    this.titleError.set(!title);
+    if (!src) this.address().nativeElement.focus();
+    else if (!title) this.name().nativeElement.focus();
+    else this.apply.emit({ src, title });
+  }
+
+  protected onEscape(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.dismissed.emit();
+  }
+}

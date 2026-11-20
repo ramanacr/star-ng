@@ -76,7 +76,7 @@ test.describe('editor formatting', () => {
 });
 
 test.describe('editor paste and security', () => {
-  test('cleans a Word paste and pastes plain text with Ctrl+Shift+V', async ({ page }) => {
+  test('cleans a Word paste', async ({ page }) => {
     await openEditor(page);
     const live = example(page, 'Paste as plain text');
     const area = live.getByRole('textbox', { name: 'Pasted with formats' });
@@ -106,5 +106,41 @@ test.describe('editor paste and security', () => {
     await expect(area.locator('img')).toHaveCount(0);
     await expect(area.locator('a').first()).not.toHaveAttribute('href');
     await expect(area.locator('a').last()).toHaveAttribute('href', 'https://example.com/release');
+  });
+});
+
+test.describe('editor images', () => {
+  test('the image panel needs alternative text, and the handle resizes the image', async ({
+    page,
+  }) => {
+    await openEditor(page);
+    const live = example(page, 'Images and embeds');
+    const area = live.getByRole('textbox', { name: 'Release with images' });
+    await area.locator('p').click();
+    await live.getByRole('button', { name: 'Image', exact: true }).click();
+    const panel = live.getByRole('group', { name: 'Image' });
+    await expect(panel.getByRole('textbox', { name: 'Image address (https://…)' })).toBeFocused();
+    await panel
+      .getByRole('textbox', { name: 'Image address (https://…)' })
+      .fill('https://example.com/report.png');
+    await panel.getByRole('button', { name: 'Apply' }).click();
+    await expect(panel.getByText('Describe the image, or mark it as decorative.')).toBeVisible();
+    await expect(panel.getByRole('textbox', { name: 'Alternative text' })).toBeFocused();
+    await panel.getByRole('textbox', { name: 'Alternative text' }).fill('Monthly report');
+    await panel.getByRole('button', { name: 'Apply' }).click();
+    await expect(area.locator('img[alt="Monthly report"]')).toHaveCount(1);
+
+    await area.locator('figure img').click();
+    const handle = live.getByRole('slider', { name: 'Image width' });
+    await expect(handle).toHaveAttribute('aria-valuenow', '240');
+    await handle.focus();
+    await page.keyboard.press('Shift+ArrowRight');
+    await expect(area.locator('figure img')).toHaveAttribute('width', '290');
+    const box = (await handle.boundingBox())!;
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width / 2 - 90, box.y + box.height / 2);
+    await page.mouse.up();
+    await expect(area.locator('figure img')).toHaveAttribute('width', '200');
   });
 });
