@@ -1119,7 +1119,8 @@ export abstract class StarTableInteraction<T> {
       if (target === undefined || this.isRowInEdit(target)) return;
       line.forEach((value, j) => {
         const col = columns[left + j];
-        if (!col || !this.isEditable(target, col)) return;
+        // A cell with its editor open keeps the editor value.
+        if (!col || !this.isEditable(target, col) || this.isEditing(target, col)) return;
         const parsed = parseEditorText(col.editor, value);
         const previous = this.rawValue(target, col);
         cells.push({ row: target, field: col.field, column: col, value: parsed, previous });
@@ -1152,8 +1153,10 @@ export abstract class StarTableInteraction<T> {
       const draft = { ...group.row, ...values } as T;
       const valid = group.cells.filter((cell) => {
         const options = cell.column.editor === 'select' ? cell.column.editOptions : undefined;
+        // An empty value clears a choice that is not required (`required` reports it).
+        const empty = cell.value === '' || cell.value === null;
         const error =
-          (options && !options.includes(String(cell.value ?? ''))) ||
+          (options && !empty && !options.includes(String(cell.value))) ||
           starCellError(cell.column, cell.value, draft, this.text);
         if (error) skipped++;
         return !error;
@@ -1179,11 +1182,19 @@ export abstract class StarTableInteraction<T> {
           original: cell.previous,
         })),
       }));
-      this.batch.changeRows(rows);
-      return groups.reduce((sum, group) => sum + group.valid.length, 0);
+      // A cell that keeps its value (also its pending value) is not counted.
+      const changed = rows.filter((entry) =>
+        entry.cells.some((cell) => this.batchChanges(entry.row, cell)),
+      );
+      const count = rows.reduce(
+        (sum, entry) =>
+          sum + entry.cells.filter((cell) => this.batchChanges(entry.row, cell)).length,
+        0,
+      );
+      return changed.length && this.batch.changeRows(rows) ? count : 0;
     }
     for (const { row, valid } of groups) {
-      const changed = valid.filter((cell) => !sameEditValue(cell.value, cell.previous));
+      const changed = valid.filter(this.changedCell);
       count += changed.length;
       if (!changed.length) continue;
       if (this.rowEditMode()) {
@@ -1199,6 +1210,16 @@ export abstract class StarTableInteraction<T> {
       }
     }
     return count;
+  }
+
+  /** A pasted cell that differs from the cell value in the row. */
+  private readonly changedCell = (cell: StarTablePasteCell<T>) =>
+    !sameEditValue(cell.value, cell.previous);
+
+  /** A batch cell change that differs from the pending (or row) value of the cell. */
+  private batchChanges(row: T, cell: StarCellChange): boolean {
+    const pending = this.batch.pending(row, cell.field);
+    return !sameEditValue(cell.value, pending ? pending.value : cell.original);
   }
 
   // ---------------------------------------------------------------- cell selection

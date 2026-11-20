@@ -277,4 +277,46 @@ describe('StarTable clipboard', () => {
       { row: PARTS[0], changes: { stock: 8, bin: 'B' }, previous: { stock: 4, bin: 'A' } },
     ]);
   });
+
+  it('counts only changed cells in a batch paste', async () => {
+    const { host, focus, pasteText, said } = await setup((h) => h.batch.set(true));
+    await focus('P-2', 'stock');
+    // Stock 9 stays 9, the bin changes.
+    await pasteText('9	C');
+    expect(
+      host
+        .table()
+        .pendingChanges()
+        .updated.map((change) => change.changes),
+    ).toEqual([{ bin: 'C' }]);
+    expect(said()).toContain('Pasted 1 cell');
+    await pasteText('9	C');
+    expect(said()).toContain('Pasted 0 cells');
+  });
+
+  it('clears a choice that is not required with an empty value', async () => {
+    const { host, focus, pasteText } = await setup();
+    await focus('P-3', 'bin');
+    await pasteText('	');
+    expect(host.edits.map((edit) => `${edit.row.sku}.${edit.field}=${edit.value}`)).toEqual([
+      'P-3.bin=',
+    ]);
+  });
+
+  it('leaves out a cell whose editor is open', async () => {
+    const { host, el, fixture, cell, pasteText } = await setup();
+    el.querySelector<HTMLElement>(
+      'tr[data-row="P-1"] td[data-field="name"] .star-table__edit',
+    )!.click();
+    await fixture.whenStable();
+    const editor = el.querySelector<HTMLInputElement>('.star-table__editor')!;
+    expect(editor).not.toBeNull();
+    // A paste event on the SKU cell of the same row, while the editor keeps the focus.
+    const event = new Event('paste', { bubbles: true, cancelable: true });
+    Object.defineProperty(event, 'clipboardData', { value: { getData: () => 'x	Pasted	7' } });
+    cell('P-1', 'sku').dispatchEvent(event);
+    await fixture.whenStable();
+    expect(host.edits.map((edit) => edit.field)).toEqual(['stock']);
+    void pasteText;
+  });
 });
