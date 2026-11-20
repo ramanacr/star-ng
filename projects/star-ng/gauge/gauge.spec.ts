@@ -36,7 +36,7 @@ import {
       [endAngle]="-45"
       [arcWidth]="12"
       locale="en-US"
-      ariaLabelledby="heading"
+      ariaLabelledBy="heading"
     />
   `,
 })

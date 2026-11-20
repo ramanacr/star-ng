@@ -22,3 +22,13 @@ test('reducedMotion: "always" has no blanket rule, so spinners keep turning', ()
   assert.doesNotMatch(css, /\[class\*=['"]?star-/);
   assert.doesNotMatch(css, /data-star-motion=reduced\] \.star-spinner/);
 });
+
+test('the window layer follows the overlay base and has a floor above the app bar', () => {
+  const rule = css.match(/\.star-window \{[^}]*\}/)?.[0] ?? '';
+  const zIndex = rule.match(/z-index: ([^;]+);/)?.[1] ?? '';
+  // Floor: the app bar is z-index 20; the window stack order keeps the windows in order.
+  assert.match(zIndex, /^max\((calc\()?20 \+ var\(--star-window-order, 1\)\)?, min\(/);
+  // Cap one below the overlay container, which follows provideStarNg({ overlay: { zIndexBase } }).
+  assert.match(zIndex, /min\((calc\()?var\(--star-z-index-base, 1000\) - 1\)?, /);
+  assert.match(css, /\.star-app-bar \{[^}]*z-index: 20;/);
+});

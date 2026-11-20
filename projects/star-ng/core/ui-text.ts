@@ -68,6 +68,8 @@ export interface StarUiText {
   readonly rowsPerPage: string;
   readonly pageReport: (first: number, last: number, total: number) => string;
   readonly noData: string;
+  /** Short label of a missing value: a sparkline without values, the map legend entry of shapes without a value. */
+  readonly missingData: string;
   readonly selectRow: string;
   readonly selectAllRows: string;
   /** Name of a row check box or radio, with the row text: "Select row Order 1042". */
@@ -296,12 +298,8 @@ export interface StarUiText {
   readonly editorAlignStart: string;
   readonly editorAlignCenter: string;
   readonly editorAlignEnd: string;
-  readonly editorUndo: string;
-  readonly editorRedo: string;
   readonly editorLinkNewTab: string;
-  readonly editorLinkApply: string;
   readonly editorLinkRemove: string;
-  readonly editorLinkCancel: string;
   readonly editorLinkInvalid: string;
   readonly editorCharacterCount: (count: number, max: number) => string;
   readonly editorCharactersLeft: (count: number) => string;
@@ -413,8 +411,6 @@ export interface StarUiText {
   readonly sparklineTrendFlat: string;
   /** Label of a win-loss sparkline. */
   readonly sparklineWinLoss: (wins: number, losses: number) => string;
-  /** Label of a sparkline without a value. */
-  readonly sparklineNoData: string;
   // Barcode
   /** Error of a barcode whose value cannot be encoded; `type` is the symbology, for example "EAN-13". */
   readonly barcodeInvalid: (type: string) => string;
@@ -558,7 +554,6 @@ export interface StarUiText {
   readonly mapFeature: string;
   readonly mapLayer: string;
   readonly mapLegend: string;
-  readonly mapNoData: string;
   /** A class of the legend: its smallest and largest value, formatted. */
   readonly mapRange: (min: string, max: string) => string;
   /** Name of a feature with a value, and the default tooltip. */
@@ -570,8 +565,6 @@ export interface StarUiText {
   readonly spreadsheet: string;
   /** Keyboard hint of the grid. */
   readonly spreadsheetHint: string;
-  /** Name of the top-left header cell, which selects every cell. */
-  readonly spreadsheetSelectAll: string;
   readonly spreadsheetFormulaBar: string;
   readonly spreadsheetFormatting: string;
   readonly spreadsheetSheets: string;
@@ -624,7 +617,6 @@ export interface StarUiText {
   readonly documentThumbnails: string;
   readonly documentSinglePage: string;
   readonly documentFullScreen: string;
-  readonly documentDownload: string;
   readonly documentPrint: string;
   readonly documentSearch: string;
   readonly documentPreviousResult: string;
@@ -669,8 +661,6 @@ export interface StarUiText {
   readonly sortBy: string;
   readonly fileViewDetails: string;
   readonly fileViewIcons: string;
-  /** Column header of the file name. */
-  readonly fileName: string;
   readonly fileSize: string;
   readonly fileModified: string;
   readonly fileType: string;
@@ -828,6 +818,7 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   rowsPerPage: 'Rows per page',
   pageReport: (first, last, total) => `${first}–${last} of ${total}`,
   noData: 'No records found',
+  missingData: 'No data',
   selectRow: 'Select row',
   selectAllRows: 'Select all rows',
   selectRowOf: (label) => `Select row ${label}`,
@@ -1035,12 +1026,8 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   editorAlignStart: 'Align to the start',
   editorAlignCenter: 'Center',
   editorAlignEnd: 'Align to the end',
-  editorUndo: 'Undo',
-  editorRedo: 'Redo',
   editorLinkNewTab: 'Open in a new tab',
-  editorLinkApply: 'Apply',
   editorLinkRemove: 'Remove link',
-  editorLinkCancel: 'Cancel',
   editorLinkInvalid:
     'Enter a web address (https://…), an e-mail address (mailto:…) or a phone number (tel:…).',
   editorCharacterCount: (count, max) => `${count} of ${max} characters`,
@@ -1134,7 +1121,6 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   sparklineTrendFlat: 'No change',
   sparklineWinLoss: (wins, losses) =>
     `${wins} ${wins === 1 ? 'win' : 'wins'}, ${losses} ${losses === 1 ? 'loss' : 'losses'}`,
-  sparklineNoData: 'No data',
   barcodeInvalid: (type) => `The value cannot be encoded as ${type}.`,
   qrCodeLabel: (value) => `QR code: ${value}`,
   qrCodeTooLong: 'The value is too long for a QR code.',
@@ -1242,14 +1228,12 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   mapFeature: 'Feature',
   mapLayer: 'Layer',
   mapLegend: 'Legend',
-  mapNoData: 'No data',
   mapRange: (min, max) => `${min} to ${max}`,
   mapFeatureValue: (label, value) => `${label}: ${value}`,
   mapZoomLevel: (zoom) => `Zoom level ${zoom}`,
   spreadsheet: 'Spreadsheet',
   spreadsheetHint:
     'Type to replace the cell. F2 or Enter edits it. Shift and the arrow keys select a range. Alt, Shift and the arrow keys resize the column or the row.',
-  spreadsheetSelectAll: 'Select all',
   spreadsheetFormulaBar: 'Formula bar',
   spreadsheetFormatting: 'Formatting',
   spreadsheetSheets: 'Sheets',
@@ -1292,7 +1276,6 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   documentThumbnails: 'Page thumbnails',
   documentSinglePage: 'Single page',
   documentFullScreen: 'Full screen',
-  documentDownload: 'Download',
   documentPrint: 'Print',
   documentSearch: 'Search in document',
   documentPreviousResult: 'Previous result',
@@ -1328,7 +1311,6 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   sortBy: 'Sort by',
   fileViewDetails: 'Details view',
   fileViewIcons: 'Large icons',
-  fileName: 'Name',
   fileSize: 'Size',
   fileModified: 'Modified',
   fileType: 'Type',

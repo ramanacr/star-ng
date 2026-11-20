@@ -64,7 +64,18 @@ This file explains how to work on the StarNG repository: set up, run the checks,
 - **Entry points import each other by package name**, for example `@star-ng/ui/core`, never with a relative path across folders.
 - **Keep comments that name the PrimeNG equivalent of a control.** They help readers who know PrimeNG.
 - **Large templates.** Keep the template inline. When a component template grows past about 500 lines (for example `table/table.html`), put it in a `.html` file next to the component and use `templateUrl`; Prettier formats it with the `angular` parser.
+- **Input names.** A new control spells the label reference input `ariaLabelledBy` (as PrimeNG and the select family do). The dialog and the popover keep their released `ariaLabelledby`.
 - **Accessibility.** Use native elements first. Every action must work with the keyboard. Every control needs a visible focus.
+
+## Public API scope
+
+An entry point exports only what consumers use:
+
+1. Components, directives, pipes, services, injection tokens and provider functions (`provideStar*`).
+2. The types and interfaces of the public inputs, models and outputs.
+3. A pure helper only when a docs page or the CHANGELOG offers it to consumers as part of the control contract, for example `starApplyPatches` (diagram), `starKanbanApplyMove`, `starQueryToPredicate`, the RRULE functions, `starEvaluate` and `StarFormulaEngine`, `starProject`, `starEncodeBarcode`, `starEncodeQr`, `starFilterMatch` and the format helpers of `@star-ng/ui/core`.
+
+Every other helper is internal. Do not export it from `index.ts`, or, when another entry point needs it, export it with the `ɵ` prefix (for example `ɵstarLazyOptions`, `ɵstarDayKey`). Specs in the same folder import internal helpers with a relative path. Write explicit export lists for model files, not `export *`. A symbol that was in a released version stays: mark it `@deprecated` and name the replacement.
 
 ## Example data rules
 
@@ -73,7 +84,7 @@ Examples in the docs, tests and comments use neutral, fictional data: orders, in
 ## Add a control
 
 1. Create the folder `projects/star-ng/<name>/` with the component file `<name>.ts`.
-2. Add `index.ts` in the folder. It exports the public symbols, for example `export * from './<name>';`.
+2. Add `index.ts` in the folder. It exports the public symbols with named exports (see "Public API scope"). `export * from './<name>';` is only for a file that has nothing internal.
 3. Add `ng-package.json` in the folder. Copy it from another entry point, for example `projects/star-ng/button/ng-package.json`.
 4. Add the entry point to `projects/star-ng/src/public-api.ts`, in alphabetical order.
 5. Add the style partial `projects/star-ng/styles/controls/_<name>.scss`. Add `@use 'controls/<name>';` to `projects/star-ng/styles/star-ng.scss`.

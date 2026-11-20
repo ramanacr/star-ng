@@ -1,3 +1,4 @@
+import { StarFormulaError } from '@star-ng/ui/spreadsheet';
 import {
   starCellsFromRows,
   starCellText,
@@ -5,13 +6,12 @@ import {
   starFillCells,
   starFormatCellValue,
   starFormatDelimited,
-  StarFormulaError,
   starParseCellText,
   starParseDelimited,
   starSheetOffsets,
   starSheetWindow,
   starUsedRange,
-} from '@star-ng/ui/spreadsheet';
+} from './sheet-model';
 
 describe('cell text', () => {
   it('parses typed text into a formula, a number, a boolean or text', () => {

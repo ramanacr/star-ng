@@ -82,8 +82,8 @@ const WORKFLOW_EDGES: readonly StarDiagramEdge[] = [
             [(selection)]="selection"
             fitContent
             ariaLabel="Order workflow"
-            (nodesChange)="onNodes($event)"
-            (edgesChange)="onEdges($event)"
+            (nodesPatch)="onNodes($event)"
+            (edgesPatch)="onEdges($event)"
           />
           <p class="docs-output" role="status">{{ last() }}</p>
         </div>

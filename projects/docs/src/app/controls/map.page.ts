@@ -210,13 +210,13 @@ const CAPITALS: readonly Capital[] = [
         <div class="docs-stack">
           <star-map
             [layers]="choropleth"
-            [(selected)]="selected"
+            [(selection)]="selection"
             [(zoom)]="zoom"
             ariaLabel="Sales by region"
             (shapeClick)="clicked($event)"
           />
           <p class="docs-output" role="status">
-            Selected: {{ selected().join(', ') || '(none)' }}. Last click: {{ lastClick() }}. Zoom:
+            Selected: {{ selection().join(', ') || '(none)' }}. Last click: {{ lastClick() }}. Zoom:
             {{ zoom() === null ? 'fit' : zoom() }}.
           </p>
         </div>
@@ -226,12 +226,12 @@ const CAPITALS: readonly Capital[] = [
         heading="Markers, bubbles and a tooltip"
         source="map/markers"
         [script]="markersScript"
-        note="A marker layer with the starMapMarker slot, a bubble layer sized by visitors, a line (the river) and the starMapTooltip slot. This map uses the equirectangular projection and selects nothing (selection='none')."
+        note="A marker layer with the starMapMarker slot, a bubble layer sized by visitors, a line (the river) and the starMapTooltip slot. This map uses the equirectangular projection and selects nothing (selectionMode='none')."
       >
         <star-map
           [layers]="markerLayers"
           projection="equirectangular"
-          selection="none"
+          selectionMode="none"
           ariaLabel="Towns and visitors"
         >
           <ng-template starMapMarker let-town>
@@ -259,7 +259,7 @@ const CAPITALS: readonly Capital[] = [
             <input type="checkbox" [checked]="tilesOn()" (change)="tilesOn.set(!tilesOn())" />
             Load OpenStreetMap tiles (from tile.openstreetmap.org)
           </label>
-          <star-map [layers]="tileLayers()" selection="none" ariaLabel="Three capitals" />
+          <star-map [layers]="tileLayers()" selectionMode="none" ariaLabel="Three capitals" />
         </div>
       </docs-example>
 
@@ -305,7 +305,7 @@ const CAPITALS: readonly Capital[] = [
   `,
 })
 export class MapPage {
-  protected readonly selected = signal<readonly string[]>(['regions:eastvale']);
+  protected readonly selection = signal<readonly string[]>(['regions:eastvale']);
   protected readonly zoom = signal<number | null>(null);
   protected readonly lastClick = signal('(none)');
   protected readonly tilesOn = signal(false);
@@ -367,7 +367,7 @@ export class MapPage {
     this.lastClick.set(event.feature.label);
   }
 
-  protected readonly choroplethScript = `readonly selected = signal<readonly string[]>(['regions:eastvale']);
+  protected readonly choroplethScript = `readonly selection = signal<readonly string[]>(['regions:eastvale']);
 readonly zoom = signal<number | null>(null); // null: fit the data
 readonly choropleth: StarMapLayer[] = [
   {

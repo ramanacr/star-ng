@@ -457,9 +457,15 @@ describe('StarDocumentViewer', () => {
       { page: 6, count: 2 },
       { page: 11, count: 2 },
     ]);
-    expect(el.querySelector('.star-document-viewer__search [role=status]')!.textContent).toBe(
-      '6 results on 3 pages',
-    );
+    // One announcement through StarAnnouncer; the visible count is not a live region as well.
+    const status = el.querySelector('.star-document-viewer__search-status')!;
+    expect(status.textContent).toBe('6 results on 3 pages');
+    expect(status.getAttribute('role')).toBeNull();
+    expect(status.getAttribute('aria-live')).toBeNull();
+    expect(el.querySelector('.star-document-viewer__search [role=status]')).toBeNull();
+    expect(announce.mock.calls.filter(([text]) => text === '6 results on 3 pages')).toEqual([
+      ['6 results on 3 pages', 'polite'],
+    ]);
     key(field, 'Enter');
     expect(host.page()).toBe(6);
     key(field, 'Enter', { shiftKey: true });

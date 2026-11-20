@@ -6,7 +6,7 @@ import {
   starDocumentWindow,
   starDocumentZoomStep,
   starRotatedSize,
-} from '@star-ng/ui/document-viewer';
+} from './viewer-model';
 
 describe('document viewer model', () => {
   const a4 = { width: 595, height: 842 };
