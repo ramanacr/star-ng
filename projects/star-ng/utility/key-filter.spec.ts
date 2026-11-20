@@ -1,12 +1,8 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import {
-  StarKeyFilter,
-  starKeyFilterAllows,
-  starKeyFilterClean,
-  StarKeyFilterRule,
-} from '@star-ng/ui/utility';
+import { StarKeyFilter, StarKeyFilterRule } from '@star-ng/ui/utility';
+import { starKeyFilterAllows, starKeyFilterClean } from './key-filter';
 
 @Component({
   imports: [StarKeyFilter, ReactiveFormsModule],

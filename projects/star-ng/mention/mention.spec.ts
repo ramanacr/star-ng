@@ -2,13 +2,12 @@ import { Component, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { form, FormField } from '@angular/forms/signals';
 import {
-  starCaretCoordinates,
   StarMention,
   StarMentionItemTemplate,
   StarMentionSearchEvent,
   StarMentionSelectEvent,
-  starMentionsIn,
 } from '@star-ng/ui/mention';
+import { starCaretCoordinates, starMentionsIn } from './mention';
 
 interface User {
   id: number;

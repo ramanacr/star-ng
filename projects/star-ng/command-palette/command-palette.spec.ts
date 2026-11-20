@@ -1,12 +1,8 @@
 import { Component, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import {
-  StarCommand,
-  StarCommandPalette,
-  starCommandScore,
-  StarCommandTemplate,
-} from '@star-ng/ui/command-palette';
+import { StarCommand, StarCommandPalette, StarCommandTemplate } from '@star-ng/ui/command-palette';
 import { provideStarUiText, StarEmptyTemplate, StarLoadingTemplate } from '@star-ng/ui/core';
+import { starCommandScore } from './command-palette';
 
 function key(target: EventTarget, key: string, init: KeyboardEventInit = {}): KeyboardEvent {
   const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, ...init });

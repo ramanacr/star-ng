@@ -1,3 +1,15 @@
 export * from './rrule';
 export * from './scheduler';
-export * from './scheduler-model';
+export type {
+  StarDaySegment,
+  StarDaySpan,
+  StarPackedColumn,
+  StarSchedulerColor,
+  StarSchedulerEvent,
+  StarSchedulerId,
+  StarSchedulerOccurrence,
+  StarSchedulerRange,
+  StarSchedulerRangeOptions,
+  StarSchedulerResource,
+  StarSchedulerView,
+} from './scheduler-model';
