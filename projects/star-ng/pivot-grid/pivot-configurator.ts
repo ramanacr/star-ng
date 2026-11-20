@@ -1,0 +1,277 @@
+import { _IdGenerator } from '@angular/cdk/a11y';
+import { CdkDrag, CdkDragDrop, CdkDropList, CdkDropListGroup } from '@angular/cdk/drag-drop';
+import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
+import { STAR_UI_TEXT, StarAnnouncer } from '@star-ng/ui/core';
+import { StarMenu, StarMenuItem, StarMenuTrigger } from '@star-ng/ui/menu';
+import {
+  StarPivotAggregate,
+  StarPivotConfig,
+  StarPivotFilter,
+  StarPivotMember,
+  starPivotMembers,
+} from './engine';
+import { StarPivotFilterButton } from './pivot-filter';
+import { StarPivotArea, starPivotAreas, StarPivotField, starPivotMoveField } from './pivot-layout';
+
+/** A list of the configurator: the unused fields or an area. */
+type ListName = 'fields' | StarPivotArea;
+const LISTS: readonly ListName[] = ['fields', 'rows', 'columns', 'values', 'filters'];
+const AGGREGATES: readonly StarPivotAggregate[] = [
+  'sum',
+  'count',
+  'avg',
+  'min',
+  'max',
+  'distinctCount',
+];
+
+/**
+ * The configurator of `star-pivot-grid`: the unused fields and the Rows, Columns, Values and
+ * Filters areas. Fields move by drag and drop (CDK) or with the move menu of each field (the
+ * keyboard way); a move is announced. Value fields have an aggregate select, dimension and filter
+ * fields a member filter. Internal part of `star-pivot-grid`.
+ */
+@Component({
+  selector: 'star-pivot-configurator',
+  imports: [
+    CdkDrag,
+    CdkDropList,
+    CdkDropListGroup,
+    StarMenu,
+    StarMenuTrigger,
+    StarPivotFilterButton,
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { class: 'star-pivot-config' },
+  template: `
+    <section
+      class="star-pivot-config__panel"
+      [attr.aria-label]="text.pivotSettings"
+      cdkDropListGroup
+    >
+      @for (list of lists; track list) {
+        <div class="star-pivot-config__area" [class]="'star-pivot-config__area--' + list">
+          <span class="star-pivot-config__title" [id]="id + '-' + list">{{ listLabel(list) }}</span>
+          <ul
+            class="star-pivot-config__list"
+            cdkDropList
+            [cdkDropListData]="list"
+            [attr.aria-labelledby]="id + '-' + list"
+            [attr.data-pivot-area]="list"
+            (cdkDropListDropped)="onDrop($event)"
+          >
+            @for (name of fieldsIn(list); track name; let i = $index; let count = $count) {
+              <li
+                class="star-pivot-config__field"
+                cdkDrag
+                [cdkDragData]="name"
+                [attr.data-pivot-field]="name"
+              >
+                <i
+                  class="ph-bold ph-dots-six-vertical star-pivot-config__grip"
+                  aria-hidden="true"
+                ></i>
+                <span class="star-pivot-config__label">{{ labelOf(name) }}</span>
+                @if (list === 'values') {
+                  <select
+                    class="star-pivot-config__aggregate"
+                    [attr.aria-label]="text.pivotAggregate(labelOf(name))"
+                    (change)="setAggregate(name, $any($event.target).value)"
+                  >
+                    @for (aggregate of aggregates; track aggregate) {
+                      <option [value]="aggregate" [selected]="aggregateOf(name) === aggregate">
+                        {{ aggregateLabel(aggregate) }}
+                      </option>
+                    }
+                  </select>
+                }
+                @if (list === 'rows' || list === 'columns' || list === 'filters') {
+                  <star-pivot-filter
+                    [field]="name"
+                    [label]="labelOf(name)"
+                    [members]="membersOf(name)"
+                    [filter]="filterOf(name)"
+                    [locale]="locale()"
+                    (filterChange)="setFilter(name, $event)"
+                  />
+                }
+                <button
+                  type="button"
+                  class="star-pivot__icon-button"
+                  [starMenuTrigger]="menu"
+                  [attr.aria-label]="text.pivotMoveField(labelOf(name))"
+                  [attr.data-pivot-move]="name"
+                >
+                  <i class="ph-bold ph-dots-three" aria-hidden="true"></i>
+                </button>
+                <star-menu
+                  #menu
+                  [ariaLabel]="text.pivotMoveField(labelOf(name))"
+                  [items]="moveItems(name, list, i, count)"
+                />
+              </li>
+            } @empty {
+              <li class="star-pivot-config__empty">{{ text.pivotDropHere }}</li>
+            }
+          </ul>
+        </div>
+      }
+    </section>
+  `,
+})
+export class StarPivotConfigurator<T = unknown> {
+  protected readonly text = inject(STAR_UI_TEXT);
+  private readonly announcer = inject(StarAnnouncer);
+  protected readonly id = inject(_IdGenerator).getId('star-pivot-config-');
+  protected readonly lists = LISTS;
+  protected readonly aggregates = AGGREGATES;
+
+  readonly config = input.required<StarPivotConfig<T>>();
+  readonly fields = input.required<readonly StarPivotField<T>[]>();
+  readonly data = input.required<readonly T[]>();
+  readonly locale = input<string | undefined>(undefined);
+  readonly configChange = output<StarPivotConfig<T>>();
+
+  private readonly areas = computed(() => starPivotAreas(this.config()));
+  private readonly byName = computed(
+    () => new Map(this.fields().map((field) => [field.field, field] as const)),
+  );
+  /** Members per field, computed when a filter list needs them. */
+  private readonly members = computed(() => {
+    this.data();
+    this.locale();
+    return new Map<string, readonly StarPivotMember[]>();
+  });
+
+  protected fieldsIn(list: ListName): readonly string[] {
+    if (list !== 'fields') return this.areas()[list];
+    const areas = this.areas();
+    const used = new Set([...areas.rows, ...areas.columns, ...areas.values, ...areas.filters]);
+    return this.fields()
+      .map((field) => field.field)
+      .filter((field) => !used.has(field));
+  }
+
+  protected listLabel(list: ListName): string {
+    switch (list) {
+      case 'fields':
+        return this.text.pivotFields;
+      case 'rows':
+        return this.text.pivotRows;
+      case 'columns':
+        return this.text.columns;
+      case 'values':
+        return this.text.pivotValues;
+      default:
+        return this.text.pivotFilters;
+    }
+  }
+
+  protected labelOf(name: string): string {
+    return this.byName().get(name)?.label ?? name;
+  }
+
+  protected aggregateOf(name: string): StarPivotAggregate | null {
+    const aggregate = this.config().values.find((value) => value.field === name)?.aggregate;
+    return typeof aggregate === 'function' ? null : (aggregate ?? 'sum');
+  }
+
+  protected aggregateLabel(aggregate: StarPivotAggregate): string {
+    const text = this.text;
+    return {
+      sum: text.summarySum,
+      count: text.summaryCount,
+      avg: text.summaryAverage,
+      min: text.summaryMinimum,
+      max: text.summaryMaximum,
+      distinctCount: text.pivotDistinctCount,
+    }[aggregate];
+  }
+
+  protected membersOf(name: string): readonly StarPivotMember[] {
+    const cache = this.members();
+    let found = cache.get(name);
+    if (!found) {
+      const field = this.byName().get(name);
+      found = starPivotMembers(
+        this.data(),
+        { field: name, format: field?.format },
+        { locale: this.locale(), blankLabel: this.text.pivotBlank },
+      );
+      cache.set(name, found);
+    }
+    return found;
+  }
+
+  protected filterOf(name: string): StarPivotFilter | undefined {
+    return this.config().filters?.find((filter) => filter.field === name);
+  }
+
+  protected moveItems(name: string, list: ListName, index: number, count: number): StarMenuItem[] {
+    const items: StarMenuItem[] = [];
+    if (list !== 'fields') {
+      items.push(
+        {
+          label: this.text.moveUp,
+          icon: 'ph-bold ph-arrow-up',
+          disabled: index === 0,
+          command: () => this.move(name, list, index - 1),
+        },
+        {
+          label: this.text.moveDown,
+          icon: 'ph-bold ph-arrow-down',
+          disabled: index >= count - 1,
+          command: () => this.move(name, list, index + 1),
+        },
+        { separator: true },
+      );
+    }
+    for (const target of LISTS) {
+      if (target === list) continue;
+      items.push({
+        label: this.text.pivotMoveTo(this.listLabel(target)),
+        command: () => this.move(name, target),
+      });
+    }
+    return items;
+  }
+
+  /** Moves a field to a list (at `index`) and announces it. */
+  move(name: string, list: ListName, index?: number): void {
+    const field = this.byName().get(name) ?? { field: name };
+    const next = starPivotMoveField(this.config(), field, list === 'fields' ? null : list, index);
+    this.configChange.emit(next);
+    this.announcer.announce(this.text.pivotMoved(this.labelOf(name), this.listLabel(list)));
+  }
+
+  protected onDrop(event: CdkDragDrop<ListName, ListName, string>): void {
+    const name = event.item.data;
+    if (event.previousContainer === event.container && event.previousIndex === event.currentIndex) {
+      return;
+    }
+    this.move(name, event.container.data, event.currentIndex);
+  }
+
+  protected setAggregate(name: string, aggregate: StarPivotAggregate): void {
+    const config = this.config();
+    this.configChange.emit({
+      ...config,
+      values: config.values.map((value) =>
+        value.field === name ? { ...value, aggregate } : value,
+      ),
+    });
+  }
+
+  protected setFilter(name: string, filter: StarPivotFilter | null): void {
+    const config = this.config();
+    const filters = config.filters ?? [];
+    const area = this.areas().filters.includes(name);
+    const others = filters.filter((item) => item.field !== name);
+    const index = filters.findIndex((item) => item.field === name);
+    // A field of the Filters area keeps its chip (an entry without members).
+    const entry = filter ?? (area ? { field: name } : null);
+    const next = [...others];
+    if (entry) next.splice(index < 0 ? next.length : index, 0, entry);
+    this.configChange.emit({ ...config, filters: next });
+  }
+}

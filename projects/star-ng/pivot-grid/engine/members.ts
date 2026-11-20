@@ -23,9 +23,9 @@ export function isBlank(value: unknown): boolean {
 
 /**
  * A text key of a member value: equal values get equal keys, and values of different types do not
- * collide (`1` and `'1'`). Dates compare by time.
+ * collide (`1` and `'1'`). Dates compare by time. The filter lists use it.
  */
-export function memberKey(value: unknown): string {
+export function starPivotMemberKey(value: unknown): string {
   if (isBlank(value)) return '_';
   if (value instanceof Date) return `d:${value.getTime()}`;
   return `${typeof value === 'string' ? 's' : typeof value === 'number' ? 'n' : 'o'}:${String(value)}`;
@@ -196,3 +196,6 @@ export function starPivotMembers<T>(
     ),
   );
 }
+
+/** Short name inside the engine. */
+export const memberKey = starPivotMemberKey;

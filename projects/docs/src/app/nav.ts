@@ -625,6 +625,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         load: () => import('./controls/spreadsheet.page').then((m) => m.SpreadsheetPage),
       },
       {
+        label: 'Pivot grid',
+        path: 'controls/pivot-grid',
+        keywords: 'pivot table olap cube crosstab aggregate sum subtotal grand total drill down',
+        load: () => import('./controls/pivot-grid.page').then((m) => m.PivotGridPage),
+      },
+      {
         label: 'File manager',
         path: 'controls/file-manager',
         keywords: 'file explorer folders browser upload rename move copy tree details icons',

@@ -10390,6 +10390,194 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "outputs": []
   },
+  "StarPivotConfigurator": {
+    "kind": "component",
+    "selector": "star-pivot-configurator",
+    "entry": "@star-ng/ui/pivot-grid",
+    "description": "The configurator of `star-pivot-grid`: the unused fields and the Rows, Columns, Values and Filters areas. Fields move by drag and drop (CDK) or with the move menu of each field (the keyboard way); a move is announced. Value fields have an aggregate select, dimension and filter fields a member filter. Internal part of `star-pivot-grid`.",
+    "inputs": [
+      {
+        "name": "config",
+        "type": "StarPivotConfig<T>",
+        "default": null,
+        "required": true,
+        "description": ""
+      },
+      {
+        "name": "fields",
+        "type": "readonly StarPivotField<T>[]",
+        "default": null,
+        "required": true,
+        "description": ""
+      },
+      {
+        "name": "data",
+        "type": "readonly T[]",
+        "default": null,
+        "required": true,
+        "description": ""
+      },
+      {
+        "name": "locale",
+        "type": "string | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": [
+      {
+        "name": "configChange",
+        "type": "StarPivotConfig<T>",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
+  "StarPivotFilterButton": {
+    "kind": "component",
+    "selector": "star-pivot-filter",
+    "entry": "@star-ng/ui/pivot-grid",
+    "description": "Member filter of one pivot field: a funnel button that opens a dialog with a search field and a check box per member (all members checked: no filter). A change applies at once. Internal part of `star-pivot-grid`.",
+    "inputs": [
+      {
+        "name": "field",
+        "type": "string",
+        "default": null,
+        "required": true,
+        "description": ""
+      },
+      {
+        "name": "label",
+        "type": "string",
+        "default": null,
+        "required": true,
+        "description": ""
+      },
+      {
+        "name": "members",
+        "type": "readonly StarPivotMember[]",
+        "default": null,
+        "required": true,
+        "description": ""
+      },
+      {
+        "name": "filter",
+        "type": "StarPivotFilter | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "locale",
+        "type": "string | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": [
+      {
+        "name": "filterChange",
+        "type": "StarPivotFilter | null",
+        "default": null,
+        "required": false,
+        "description": "The new filter of the field; `null`: no filter."
+      }
+    ]
+  },
+  "StarPivotGrid": {
+    "kind": "component",
+    "selector": "star-pivot-grid",
+    "entry": "@star-ng/ui/pivot-grid",
+    "description": "Pivot table (Ignite UI `igx-pivot-grid`, Kendo `PivotGrid`, Syncfusion Pivot Table, DevExtreme `PivotGrid`, AG Grid pivot mode). It summarizes flat `data` with `config` (rows, columns, values, filters, totals; `starPivot` computes it): multi-level column headers, row labels with indentation and expand buttons, sticky headers, and rows and columns in a window for large results. `showConfigurator` adds a panel where fields move between Rows, Columns, Values and Filters by drag and drop or a move menu, with a member filter per field. `config` is two-way.",
+    "inputs": [
+      {
+        "name": "data",
+        "type": "readonly T[]",
+        "default": null,
+        "required": true,
+        "description": "The flat source records."
+      },
+      {
+        "name": "fields",
+        "type": "readonly StarPivotField<T>[]",
+        "default": "[]",
+        "required": false,
+        "description": "Fields that the configurator offers (default: the fields of `config`). A field keeps its label, date hierarchy, member format and default aggregate when it moves."
+      },
+      {
+        "name": "showConfigurator",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows the configurator panel."
+      },
+      {
+        "name": "locale",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "BCP 47 locale of the labels and numbers (default: `provideStarNg` locale, browser)."
+      },
+      {
+        "name": "height",
+        "type": "string | null",
+        "default": "'32rem'",
+        "required": false,
+        "description": "Maximum height of the table (CSS length); the headers stay in view while it scrolls."
+      },
+      {
+        "name": "rowHeight",
+        "type": "number",
+        "default": "36",
+        "required": false,
+        "description": "Height of each row in pixels (rows render in a window above 60 rows)."
+      },
+      {
+        "name": "columnWidth",
+        "type": "number",
+        "default": "120",
+        "required": false,
+        "description": "Width of each value column in pixels."
+      },
+      {
+        "name": "rowHeaderWidth",
+        "type": "number",
+        "default": "220",
+        "required": false,
+        "description": "Width of the row label column in pixels."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Name of the table (default: \"Pivot table\")."
+      }
+    ],
+    "models": [
+      {
+        "name": "config",
+        "type": "StarPivotConfig<T>",
+        "default": null,
+        "required": true,
+        "description": "Rows, columns, values, filters, totals and collapsed members. Two-way."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "cellClick",
+        "type": "StarPivotCellClickEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "A value cell was chosen (click or Enter): its paths, value and source records."
+      }
+    ]
+  },
   "StarPopover": {
     "kind": "component",
     "selector": "star-popover",
@@ -15829,6 +16017,9 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "pick-list/basic": "<div class=\"docs-stack\">\n  <star-pick-list [(source)]=\"available\" [(target)]=\"chosen\" />\n  <p class=\"docs-output\" role=\"status\">Chosen: {{ chosen().join(', ') || 'none' }}</p>\n</div>",
   "pick-list/item": "<div class=\"docs-stack\">\n  <star-pick-list [(source)]=\"people\" [(target)]=\"team\" optionLabel=\"name\">\n    <ng-template starItem [starItemOf]=\"people()\" let-member let-list=\"list\">\n      {{ member.name }}\n      @if (list === 'target') {\n        <small style=\"color: var(--star-text-muted)\">on the team</small>\n      }\n    </ng-template>\n  </star-pick-list>\n</div>",
   "pick-list/objects": "<div class=\"docs-stack\">\n  <star-pick-list\n    [(source)]=\"people\"\n    [(target)]=\"team\"\n    optionLabel=\"name\"\n    sourceHeader=\"Available people\"\n    targetHeader=\"Project team\"\n  />\n  <p class=\"docs-output\" role=\"status\">Team size: {{ team().length }}</p>\n</div>",
+  "pivot-grid/configurator": "<star-pivot-grid\n  [data]=\"sales\"\n  [(config)]=\"openConfig\"\n  [fields]=\"fields\"\n  showConfigurator\n  height=\"22rem\"\n  ariaLabel=\"Sales by product\"\n  locale=\"en-IE\"\n/>",
+  "pivot-grid/csv": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <button\n      type=\"button\"\n      class=\"star-btn star-btn--secondary star-btn--sm\"\n      (click)=\"showCsv()\"\n    >\n      Show CSV\n    </button>\n  </div>\n  <star-pivot-grid\n    #csvGrid\n    [data]=\"sales\"\n    [(config)]=\"csvConfig\"\n    height=\"16rem\"\n    ariaLabel=\"Units by product and region\"\n    locale=\"en-IE\"\n  />\n  <pre class=\"docs-output\">{{ csv() }}</pre>\n</div>",
+  "pivot-grid/sales": "<div class=\"docs-stack\">\n  <star-pivot-grid\n    [data]=\"sales\"\n    [(config)]=\"salesConfig\"\n    height=\"24rem\"\n    ariaLabel=\"Sales by region and quarter\"\n    locale=\"en-IE\"\n    (cellClick)=\"onCell($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">{{ drill() }}</p>\n</div>",
   "popover/basic": "<star-button\n  variant=\"secondary\"\n  leadingIcon=\"ph-bold ph-info\"\n  (pressed)=\"details.toggle($event)\"\n>\n  Details\n</star-button>\n<star-popover #details ariaLabel=\"Order details\">\n  <div class=\"docs-stack\">\n    <p class=\"docs-output\"><strong>ORD-1042</strong></p>\n    <p class=\"docs-output\">Orchard Supply, 12 items, ships on Friday.</p>\n    <star-button size=\"sm\" (pressed)=\"details.hide()\">Close</star-button>\n  </div>\n</star-popover>",
   "popover/field": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"rename.toggle($event)\">\n      Rename order\n    </star-button>\n  </div>\n  <star-popover\n    #rename\n    ariaLabel=\"Rename order\"\n    (shown)=\"renameState.set('open')\"\n    (hidden)=\"renameState.set('closed')\"\n  >\n    <star-field label=\"Order name\">\n      <input starInput value=\"Spring restock\" />\n    </star-field>\n  </star-popover>\n  <p class=\"docs-output\" role=\"status\">Popover: {{ renameState() }}</p>\n</div>",
   "popover/pinned": "<star-button variant=\"secondary\" (pressed)=\"pinned.toggle($event)\">Toggle tip</star-button>\n<star-popover #pinned ariaLabel=\"Tip\" [dismissable]=\"false\" [focusOnShow]=\"false\">\n  <p class=\"docs-output\">This tip stays open until you press the button again.</p>\n</star-popover>",

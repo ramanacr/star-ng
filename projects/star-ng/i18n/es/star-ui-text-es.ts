@@ -576,4 +576,24 @@ export const STAR_UI_TEXT_ES: StarUiText = {
   dependsOn: (label) => `Depende de ${label}`,
   ganttMoveHint:
     'Alt e Izquierda o Derecha mueven la tarea; Alt, Mayús e Izquierda o Derecha mueven su fin; Alt y Arriba o Abajo cambian su progreso.',
+  // Pivot grid
+  pivotGrid: 'Tabla dinámica',
+  pivotGrandTotal: 'Total general',
+  pivotTotalOf: (label) => `Total ${label}`,
+  pivotBlank: '(vacío)',
+  pivotFields: 'Campos',
+  pivotRows: 'Filas',
+  pivotValues: 'Valores',
+  pivotFilters: 'Filtros',
+  pivotSettings: 'Opciones de la tabla dinámica',
+  pivotDropHere: 'Suelte un campo aquí',
+  pivotMoveField: (label) => `Mover ${label}`,
+  pivotMoveTo: (area) => `Mover a ${area}`,
+  pivotMoved: (label, area) => `${label} movido a ${area}`,
+  pivotDistinctCount: 'Recuento de valores únicos',
+  pivotAggregate: (label) => `Cálculo de ${label}`,
+  pivotHint:
+    'Las flechas cambian de celda. Intro o Espacio expande o contrae un elemento. Intro en una celda de valor muestra sus registros.',
+  gridExpandAll: 'Expandir todo',
+  gridCollapseAll: 'Contraer todo',
 };

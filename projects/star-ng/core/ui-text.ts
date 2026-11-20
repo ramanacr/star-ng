@@ -694,6 +694,35 @@ export interface StarUiText {
   readonly dependsOn: (label: string) => string;
   /** Keyboard hint of a movable Gantt task row. */
   readonly ganttMoveHint: string;
+  // Pivot grid
+  /** Default name of `star-pivot-grid`. */
+  readonly pivotGrid: string;
+  readonly pivotGrandTotal: string;
+  /** Header of the subtotal column of a member. */
+  readonly pivotTotalOf: (label: string) => string;
+  /** Label of a member without a value. */
+  readonly pivotBlank: string;
+  /** Name of the field list of the pivot configurator. */
+  readonly pivotFields: string;
+  readonly pivotRows: string;
+  readonly pivotValues: string;
+  readonly pivotFilters: string;
+  /** Name of the pivot configurator panel. */
+  readonly pivotSettings: string;
+  /** Text of an empty area of the pivot configurator. */
+  readonly pivotDropHere: string;
+  /** Name of the move menu button of a field. */
+  readonly pivotMoveField: (label: string) => string;
+  /** A move menu item: `area` is Rows, Columns, Values, Filters or Fields. */
+  readonly pivotMoveTo: (area: string) => string;
+  readonly pivotMoved: (label: string, area: string) => string;
+  readonly pivotDistinctCount: string;
+  /** Name of the aggregate select of a value field. */
+  readonly pivotAggregate: (label: string) => string;
+  /** Keyboard hint of the pivot table. */
+  readonly pivotHint: string;
+  readonly gridExpandAll: string;
+  readonly gridCollapseAll: string;
 }
 
 export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
@@ -1259,6 +1288,26 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   dependsOn: (label) => `Depends on ${label}`,
   ganttMoveHint:
     'Alt and Left or Right move the task, Alt, Shift and Left or Right move its end, Alt and Up or Down change its progress.',
+  // Pivot grid
+  pivotGrid: 'Pivot table',
+  pivotGrandTotal: 'Grand total',
+  pivotTotalOf: (label) => `${label} total`,
+  pivotBlank: '(blank)',
+  pivotFields: 'Fields',
+  pivotRows: 'Rows',
+  pivotValues: 'Values',
+  pivotFilters: 'Filters',
+  pivotSettings: 'Pivot settings',
+  pivotDropHere: 'Drop a field here',
+  pivotMoveField: (label) => `Move ${label}`,
+  pivotMoveTo: (area) => `Move to ${area}`,
+  pivotMoved: (label, area) => `${label} moved to ${area}`,
+  pivotDistinctCount: 'Distinct count',
+  pivotAggregate: (label) => `Aggregate of ${label}`,
+  pivotHint:
+    'Arrow keys move between cells. Enter or Space expands or collapses a member. Enter on a value cell shows its records.',
+  gridExpandAll: 'Expand all',
+  gridCollapseAll: 'Collapse all',
 };
 
 /** Parameter names of the function entries, in call order (used for `{{ name }}` in translations). */
@@ -1383,6 +1432,11 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   durationDays: ['count'],
   percentComplete: ['value'],
   dependsOn: ['label'],
+  pivotTotalOf: ['label'],
+  pivotMoveField: ['label'],
+  pivotMoveTo: ['area'],
+  pivotMoved: ['label', 'area'],
+  pivotAggregate: ['label'],
 };
 
 export const STAR_UI_TEXT = new InjectionToken<StarUiText>('STAR_UI_TEXT', {
