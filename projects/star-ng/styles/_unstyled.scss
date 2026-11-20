@@ -157,7 +157,7 @@ $star-restored-tokens: list.join(
 // that the application set on the host (the others are reset there), so the restore rule below
 // falls back to the copy of the parent for the rest.
 :where([data-star-part='root'][data-star-unstyled]) {
-  @each $name in $star-restored-tokens {
+  @each $name in $star-unstyled-tokens {
     --star-host-#{$name}: var(--star-#{$name});
   }
 }

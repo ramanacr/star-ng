@@ -112,3 +112,11 @@ test('token overrides on the unstyled control itself reach the content inside it
   // ... and the restore rule prefers it over the copy of the parent.
   assert.match(css, /--star-primary: ?var\(--star-host-primary, ?var\(--star-theme-primary\)\)/);
 });
+
+test('the host copy leaves out the accent and the focus rings, which unstyled mode replaces', () => {
+  const css = sass.compile(join(styles, 'star-ng.scss'), { style: 'compressed' }).css;
+  const block =
+    /:where\(\[data-star-part=root\]\[data-star-unstyled\]\)\{([^}]*)\}/.exec(css)?.[1] ?? '';
+  assert.ok(block.includes('--star-host-primary'));
+  assert.ok(!/--star-host-(accent|focus-ring)/.test(block), block.slice(0, 200));
+});

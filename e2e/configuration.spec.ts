@@ -135,8 +135,19 @@ test('a token set on the unstyled control itself reaches the content inside it',
   expect(
     await nested.evaluate((el) => getComputedStyle(el).getPropertyValue('--star-primary').trim()),
   ).toBe('rgb(1, 2, 3)');
-  // A token that the host does not set comes from the theme around it.
-  expect(
-    await nested.evaluate((el) => getComputedStyle(el).getPropertyValue('--star-surface').trim()),
-  ).not.toBe('');
+  // A token that the host does not set comes from the theme around it, also the accent and the
+  // focus ring, which unstyled mode turns into the text color on the unstyled host.
+  for (const token of ['--star-surface', '--star-accent', '--star-focus-ring']) {
+    const theme = await page.evaluate(
+      (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim(),
+      token,
+    );
+    expect(theme).not.toBe('');
+    expect(
+      await nested.evaluate(
+        (el, name) => getComputedStyle(el).getPropertyValue(name).trim(),
+        token,
+      ),
+    ).toBe(theme);
+  }
 });
