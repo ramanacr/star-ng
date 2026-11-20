@@ -1,4 +1,5 @@
 import { booleanAttribute, ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { StarPart, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 
 /** How `star-app-bar` stays in the page. */
 export type StarAppBarPosition = 'static' | 'sticky' | 'fixed';
@@ -20,6 +21,9 @@ export type StarAppBarPosition = 'static' | 'sticky' | 'fixed';
  */
 @Component({
   selector: 'star-app-bar',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '[class]': "'star-app-bar star-app-bar--' + position()",
@@ -29,10 +33,12 @@ export type StarAppBarPosition = 'static' | 'sticky' | 'fixed';
     '[attr.title]': 'null',
   },
   template: `
-    <header class="star-app-bar__bar" [attr.role]="landmark() ? 'banner' : 'none'">
-      <div class="star-app-bar__start"><ng-content select="[starAppBarStart]" /></div>
-      <div class="star-app-bar__title">{{ title() }}<ng-content /></div>
-      <div class="star-app-bar__end"><ng-content select="[starAppBarEnd]" /></div>
+    <header starPart="bar" class="star-app-bar__bar" [attr.role]="landmark() ? 'banner' : 'none'">
+      <div starPart="start" class="star-app-bar__start">
+        <ng-content select="[starAppBarStart]" />
+      </div>
+      <div starPart="title" class="star-app-bar__title">{{ title() }}<ng-content /></div>
+      <div starPart="end" class="star-app-bar__end"><ng-content select="[starAppBarEnd]" /></div>
     </header>
   `,
 })

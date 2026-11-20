@@ -21,7 +21,13 @@ import {
   untracked,
 } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-import { STAR_UI_TEXT, starInlineKey } from '@star-ng/ui/core';
+import {
+  STAR_UI_TEXT,
+  starInlineKey,
+  StarPart,
+  StarStyled,
+  ɵSTAR_PART_HOST,
+} from '@star-ng/ui/core';
 import { StarDrawer } from '@star-ng/ui/drawer';
 import { StarTooltip } from '@star-ng/ui/tooltip';
 
@@ -62,7 +68,9 @@ const LINK = '.star-app-sidebar__link';
  */
 @Component({
   selector: 'star-app-sidebar',
-  imports: [NgTemplateOutlet, StarDrawer],
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [StarPart, NgTemplateOutlet, StarDrawer],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-app-sidebar',
@@ -74,13 +82,14 @@ const LINK = '.star-app-sidebar__link';
       <!-- The keys come from the links inside (roving focus); the nav itself is not focusable. -->
       <!-- eslint-disable-next-line @angular-eslint/template/interactive-supports-focus -->
       <nav
+        starPart="nav"
         class="star-app-sidebar__nav"
         [attr.aria-label]="label()"
         (keydown)="onKeydown($event)"
         (focusin)="onFocusin($event)"
       >
         <ng-content select="star-app-sidebar-header" />
-        <div class="star-app-sidebar__body"><ng-content /></div>
+        <div starPart="body" class="star-app-sidebar__body"><ng-content /></div>
         <ng-content select="star-app-sidebar-footer" />
       </nav>
     </ng-template>
@@ -230,6 +239,8 @@ export class StarAppSidebar {
 /** Top area of `star-app-sidebar`, for example the product name or logo. */
 @Component({
   selector: 'star-app-sidebar-header',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-app-sidebar__header' },
   template: `<ng-content />`,
@@ -239,6 +250,8 @@ export class StarAppSidebarHeader {}
 /** Bottom area of `star-app-sidebar`, for example the user or a collapse button. */
 @Component({
   selector: 'star-app-sidebar-footer',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-app-sidebar__footer' },
   template: `<ng-content />`,
@@ -251,13 +264,19 @@ export class StarAppSidebarFooter {}
  */
 @Component({
   selector: 'star-app-sidebar-section',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-app-sidebar__section' },
   template: `
     @if (heading()) {
-      <div class="star-app-sidebar__heading" [id]="headingId">{{ heading() }}</div>
+      <div starPart="heading" class="star-app-sidebar__heading" [id]="headingId">
+        {{ heading() }}
+      </div>
     }
     <div
+      starPart="items"
       class="star-app-sidebar__items"
       role="group"
       [attr.aria-labelledby]="heading() ? headingId : null"
@@ -280,7 +299,9 @@ export class StarAppSidebarSection {
  */
 @Component({
   selector: 'star-app-sidebar-item',
-  imports: [NgTemplateOutlet, RouterLink, RouterLinkActive, StarTooltip],
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [StarPart, NgTemplateOutlet, RouterLink, RouterLinkActive, StarTooltip],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-app-sidebar__item',
@@ -289,31 +310,40 @@ export class StarAppSidebarSection {
   template: `
     <ng-template #body>
       @if (icon(); as icon) {
-        <i class="star-app-sidebar__icon" [class]="icon" aria-hidden="true"></i>
+        <i starPart="icon" class="star-app-sidebar__icon" [class]="icon" aria-hidden="true"></i>
       } @else if (sidebar.iconOnly()) {
-        <span class="star-app-sidebar__icon star-app-sidebar__initial" aria-hidden="true">{{
-          label().charAt(0)
-        }}</span>
+        <span
+          starPart="icon"
+          class="star-app-sidebar__icon star-app-sidebar__initial"
+          aria-hidden="true"
+          >{{ label().charAt(0) }}</span
+        >
       }
-      <span class="star-app-sidebar__label">{{ label() }}</span>
+      <span starPart="label" class="star-app-sidebar__label">{{ label() }}</span>
       @if (badge() !== null) {
         <!-- The space keeps the label and the badge apart in the accessible name. -->
         {{ ' ' }}
         <span
+          starPart="badge"
           class="star-badge star-badge--danger star-badge--sm star-app-sidebar__badge"
           [attr.aria-hidden]="badgeLabel() ? 'true' : null"
           >{{ badge() }}</span
         >
         @if (badgeLabel()) {
-          <span class="star-sr-only">{{ badgeLabel() }}</span>
+          <span starPart="srText" class="star-sr-only">{{ badgeLabel() }}</span>
         }
       }
       @if (hasChildren()) {
-        <i class="ph-bold ph-caret-right star-app-sidebar__chevron" aria-hidden="true"></i>
+        <i
+          starPart="chevron"
+          class="ph-bold ph-caret-right star-app-sidebar__chevron"
+          aria-hidden="true"
+        ></i>
       }
     </ng-template>
     @if (hasChildren()) {
       <button
+        starPart="link"
         type="button"
         class="star-app-sidebar__link"
         [attr.aria-expanded]="expanded()"
@@ -327,6 +357,7 @@ export class StarAppSidebarSection {
       </button>
     } @else if (routerLink() !== null) {
       <a
+        starPart="link"
         class="star-app-sidebar__link"
         [routerLink]="routerLink()"
         routerLinkActive="star-app-sidebar__link--active"
@@ -341,6 +372,7 @@ export class StarAppSidebarSection {
       </a>
     } @else if (href() !== null) {
       <a
+        starPart="link"
         class="star-app-sidebar__link"
         [class.star-app-sidebar__link--active]="active()"
         [attr.href]="href()"
@@ -354,6 +386,7 @@ export class StarAppSidebarSection {
       </a>
     } @else {
       <button
+        starPart="link"
         type="button"
         class="star-app-sidebar__link"
         [class.star-app-sidebar__link--active]="active()"
@@ -367,6 +400,7 @@ export class StarAppSidebarSection {
       </button>
     }
     <div
+      starPart="group"
       class="star-app-sidebar__group"
       role="group"
       [id]="groupId"

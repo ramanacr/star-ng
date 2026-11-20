@@ -16,7 +16,13 @@ import {
   signal,
   TemplateRef,
 } from '@angular/core';
-import { STAR_UI_TEXT, starPrefersReducedMotion } from '@star-ng/ui/core';
+import {
+  STAR_UI_TEXT,
+  StarPart,
+  starPrefersReducedMotion,
+  StarStyled,
+  ɵSTAR_PART_HOST,
+} from '@star-ng/ui/core';
 
 /** Read view of `star-inplace`: `<ng-template starInplaceDisplay>…</ng-template>`. */
 @Directive({ selector: 'ng-template[starInplaceDisplay]' })
@@ -43,28 +49,32 @@ export class StarInplaceContent {
  */
 @Component({
   selector: 'star-inplace',
-  imports: [NgTemplateOutlet],
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [StarPart, NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-inplace', '(keydown.escape)': 'onEscape($event)' },
   template: `
     @if (active()) {
-      <span class="star-inplace__content">
+      <span starPart="content" class="star-inplace__content">
         @if (content(); as edit) {
           <ng-container *ngTemplateOutlet="edit.template" />
         }
         @if (closable()) {
           <button
+            starPart="iconBtn"
             type="button"
             class="star-select__icon-btn"
             [attr.aria-label]="text.close"
             (click)="deactivate()"
           >
-            <i class="ph-bold ph-check" aria-hidden="true"></i>
+            <i starPart="icon" class="ph-bold ph-check" aria-hidden="true"></i>
           </button>
         }
       </span>
     } @else {
       <button
+        starPart="display"
         type="button"
         class="star-inplace__display"
         [disabled]="disabled()"
@@ -72,12 +82,16 @@ export class StarInplaceContent {
       >
         <!-- The label is part of the name, so the visible value is too (WCAG 2.5.3). -->
         @if (ariaLabel(); as label) {
-          <span class="star-sr-only">{{ label }}: </span>
+          <span starPart="srText" class="star-sr-only">{{ label }}: </span>
         }
         @if (display(); as view) {
           <ng-container *ngTemplateOutlet="view.template" />
         }
-        <i class="ph-bold ph-pencil-simple star-inplace__icon" aria-hidden="true"></i>
+        <i
+          starPart="icon"
+          class="ph-bold ph-pencil-simple star-inplace__icon"
+          aria-hidden="true"
+        ></i>
       </button>
     }
   `,
@@ -131,6 +145,8 @@ export class StarInplace {
  */
 @Component({
   selector: 'star-scroll-panel',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-scroll-panel',
@@ -178,14 +194,17 @@ export class StarFocusTrap {}
  */
 @Component({
   selector: 'star-float-label',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-float' },
   template: `
     <!-- The control is projected into the label, so the label wraps it at run time. -->
     <!-- eslint-disable-next-line @angular-eslint/template/label-has-associated-control -->
-    <label class="star-float__wrap">
+    <label starPart="wrap" class="star-float__wrap">
       <ng-content />
-      <span class="star-float__label">{{ label() }}</span>
+      <span starPart="label" class="star-float__label">{{ label() }}</span>
     </label>
   `,
 })
@@ -278,19 +297,24 @@ export class StarAnimateOnScroll {
  */
 @Component({
   selector: 'star-image-compare',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-compare', '[style.--star-compare.%]': 'value()' },
   template: `
-    <img class="star-compare__image" [src]="rightSrc()" [alt]="rightAlt()" />
+    <img starPart="image" class="star-compare__image" [src]="rightSrc()" [alt]="rightAlt()" />
     <img
+      starPart="image"
       class="star-compare__image star-compare__image--left"
       [src]="leftSrc()"
       [alt]="leftAlt()"
     />
-    <span class="star-compare__divider" aria-hidden="true">
-      <i class="ph-bold ph-arrows-horizontal"></i>
+    <span starPart="divider" class="star-compare__divider" aria-hidden="true">
+      <i starPart="icon" class="ph-bold ph-arrows-horizontal"></i>
     </span>
     <input
+      starPart="range"
       type="range"
       class="star-compare__range"
       min="0"

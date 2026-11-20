@@ -15,7 +15,14 @@ import {
   output,
   signal,
 } from '@angular/core';
-import { STAR_UI_TEXT, starIsRtl, starPrefersReducedMotion } from '@star-ng/ui/core';
+import {
+  STAR_UI_TEXT,
+  starIsRtl,
+  StarPart,
+  starPrefersReducedMotion,
+  StarStyled,
+  ɵSTAR_PART_HOST,
+} from '@star-ng/ui/core';
 import { StarMenuItem } from '@star-ng/ui/menu';
 import { StarSpinner } from '@star-ng/ui/spinner';
 
@@ -36,14 +43,20 @@ import { StarSpinner } from '@star-ng/ui/spinner';
  */
 @Component({
   selector: 'star-splitter',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '[class]': "'star-splitter star-splitter--' + layout()",
     '[style.--star-split]': "size() + '%'",
   },
   template: `
-    <div class="star-splitter__pane"><ng-content select="[starSplitterStart]" /></div>
+    <div starPart="pane" class="star-splitter__pane">
+      <ng-content select="[starSplitterStart]" />
+    </div>
     <div
+      starPart="gutter"
       class="star-splitter__gutter"
       role="separator"
       tabindex="0"
@@ -55,9 +68,9 @@ import { StarSpinner } from '@star-ng/ui/spinner';
       (pointerdown)="startDrag($event)"
       (keydown)="onKeydown($event)"
     >
-      <span class="star-splitter__handle" aria-hidden="true"></span>
+      <span starPart="handle" class="star-splitter__handle" aria-hidden="true"></span>
     </div>
-    <div class="star-splitter__pane"><ng-content select="[starSplitterEnd]" /></div>
+    <div starPart="pane" class="star-splitter__pane"><ng-content select="[starSplitterEnd]" /></div>
   `,
 })
 export class StarSplitter {
@@ -127,6 +140,9 @@ export class StarSplitter {
  */
 @Component({
   selector: 'star-speed-dial',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '[class]': "'star-speed-dial star-speed-dial--' + direction()",
@@ -138,6 +154,7 @@ export class StarSplitter {
   },
   template: `
     <button
+      starPart="fab"
       #fab
       type="button"
       class="star-speed-dial__fab"
@@ -147,12 +164,19 @@ export class StarSplitter {
       [attr.aria-label]="ariaLabel() ?? text.actions"
       (click)="toggle(list)"
     >
-      <i [class]="icon()" aria-hidden="true"></i>
+      <i starPart="icon" [class]="icon()" aria-hidden="true"></i>
     </button>
-    <ul #list class="star-speed-dial__list" [id]="listId" [attr.inert]="open() ? null : ''">
+    <ul
+      starPart="list"
+      #list
+      class="star-speed-dial__list"
+      [id]="listId"
+      [attr.inert]="open() ? null : ''"
+    >
       @for (item of items(); track $index; let i = $index) {
-        <li [style.--star-i]="i">
+        <li starPart="item" [style.--star-i]="i">
           <button
+            starPart="action"
             type="button"
             class="star-speed-dial__action"
             [class.star-speed-dial__action--active]="i === activeIndex()"
@@ -162,7 +186,7 @@ export class StarSplitter {
             [disabled]="item.disabled"
             (click)="run(item); close(true, fab)"
           >
-            <i [class]="item.icon ?? 'ph-bold ph-circle'" aria-hidden="true"></i>
+            <i starPart="icon" [class]="item.icon ?? 'ph-bold ph-circle'" aria-hidden="true"></i>
           </button>
         </li>
       }
@@ -266,14 +290,18 @@ export class StarSpeedDial {
  */
 @Component({
   selector: 'star-dock',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '[class]': "'star-dock star-dock--' + position()" },
   template: `
-    <nav [attr.aria-label]="ariaLabel() ?? text.dock">
-      <ul class="star-dock__list">
+    <nav starPart="nav" [attr.aria-label]="ariaLabel() ?? text.dock">
+      <ul starPart="list" class="star-dock__list">
         @for (item of items(); track $index) {
-          <li>
+          <li starPart="item">
             <button
+              starPart="item"
               type="button"
               class="star-dock__item"
               [attr.aria-label]="item.label"
@@ -281,7 +309,11 @@ export class StarSpeedDial {
               [disabled]="item.disabled"
               (click)="item.command?.(item); itemClick.emit(item)"
             >
-              <i [class]="item.icon ?? 'ph-bold ph-app-window'" aria-hidden="true"></i>
+              <i
+                starPart="icon"
+                [class]="item.icon ?? 'ph-bold ph-app-window'"
+                aria-hidden="true"
+              ></i>
             </button>
           </li>
         }
@@ -307,17 +339,21 @@ export class StarDock {
  */
 @Component({
   selector: 'star-scroll-top',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-scroll-top', '[class.star-scroll-top--visible]': 'visible()' },
   template: `
     <button
+      starPart="btn"
       type="button"
       class="star-scroll-top__btn"
       [attr.aria-label]="text.scrollToTop"
       [attr.tabindex]="visible() ? 0 : -1"
       (click)="toTop()"
     >
-      <i class="ph-bold ph-arrow-up" aria-hidden="true"></i>
+      <i starPart="icon" class="ph-bold ph-arrow-up" aria-hidden="true"></i>
     </button>
   `,
 })
@@ -360,16 +396,20 @@ export class StarScrollTop {
  */
 @Component({
   selector: 'star-block-ui',
-  imports: [StarSpinner],
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [StarPart, StarSpinner],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-block-ui', '[attr.aria-busy]': 'blocked() || null' },
   template: `
-    <div class="star-block-ui__content" [attr.inert]="blocked() ? '' : null"><ng-content /></div>
+    <div starPart="content" class="star-block-ui__content" [attr.inert]="blocked() ? '' : null">
+      <ng-content />
+    </div>
     @if (blocked()) {
-      <div class="star-block-ui__mask">
+      <div starPart="mask" class="star-block-ui__mask">
         <star-spinner size="2rem" [ariaLabel]="message()" />
         @if (message()) {
-          <span class="star-block-ui__message">{{ message() }}</span>
+          <span starPart="message" class="star-block-ui__message">{{ message() }}</span>
         }
       </div>
     }
@@ -396,12 +436,16 @@ export interface StarMeterItem {
  */
 @Component({
   selector: 'star-meter-group',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-meter-group', role: 'group', '[attr.aria-label]': 'ariaLabel()' },
   template: `
-    <div class="star-meter-group__bar">
+    <div starPart="bar" class="star-meter-group__bar">
       @for (item of items(); track item.label; let i = $index) {
         <span
+          starPart="part"
           class="star-meter-group__part"
           role="meter"
           [attr.aria-label]="item.label"
@@ -416,11 +460,12 @@ export interface StarMeterItem {
         ></span>
       }
     </div>
-    <ul class="star-meter-group__legend" aria-hidden="true">
+    <ul starPart="legend" class="star-meter-group__legend" aria-hidden="true">
       @for (item of items(); track item.label; let i = $index) {
-        <li>
-          <span class="star-chart__swatch" [style.background]="color(i)"></span>
-          {{ item.label }} <strong>{{ item.value }}{{ unit() ? ' ' + unit() : '' }}</strong>
+        <li starPart="item">
+          <span starPart="swatch" class="star-chart__swatch" [style.background]="color(i)"></span>
+          {{ item.label }}
+          <strong starPart="text">{{ item.value }}{{ unit() ? ' ' + unit() : '' }}</strong>
         </li>
       }
     </ul>

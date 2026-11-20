@@ -24,7 +24,15 @@ import {
   untracked,
   viewChild,
 } from '@angular/core';
-import { STAR_UI_TEXT, StarAnnouncer, starInlineKey, ɵstarModalOutside } from '@star-ng/ui/core';
+import {
+  STAR_UI_TEXT,
+  StarAnnouncer,
+  starInlineKey,
+  StarPart,
+  StarStyled,
+  ɵSTAR_PART_HOST,
+  ɵstarModalOutside,
+} from '@star-ng/ui/core';
 import { StarMenu, StarMenuItem, StarMenuTrigger } from '@star-ng/ui/menu';
 import { StarTooltip } from '@star-ng/ui/tooltip';
 import {
@@ -114,6 +122,8 @@ export class StarRibbonItemTemplate {
  */
 @Component({
   selector: 'star-ribbon-group',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: '',
 })
@@ -137,6 +147,8 @@ export class StarRibbonGroup {
 /** A tab of the ribbon (Kendo `RibbonTab`, Syncfusion `e-ribbon-tab`). Holds `star-ribbon-group`s. */
 @Component({
   selector: 'star-ribbon-tab',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: '',
 })
@@ -155,6 +167,8 @@ export class StarRibbonTab {
  */
 @Component({
   selector: 'star-ribbon-backstage',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: '<ng-template #body><ng-content /></ng-template>',
 })
@@ -199,7 +213,9 @@ function cssEscape(value: string): string {
  */
 @Component({
   selector: 'star-ribbon',
-  imports: [NgTemplateOutlet, StarMenu, StarMenuTrigger, StarTooltip],
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [StarPart, NgTemplateOutlet, StarMenu, StarMenuTrigger, StarTooltip],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-ribbon-host',
@@ -211,14 +227,16 @@ function cssEscape(value: string): string {
   },
   template: `
     <div
+      starPart="ribbon"
       class="star-ribbon"
       [class.star-ribbon--collapsed]="collapsed()"
       [class.star-ribbon--peek]="collapsed() && peek()"
       [class.star-ribbon--keytips]="!!keyTipLevel()"
     >
-      <div class="star-ribbon__header">
+      <div starPart="header" class="star-ribbon__header">
         @if (backstage(); as stage) {
           <button
+            starPart="file"
             type="button"
             class="star-ribbon__file"
             data-keytip="file"
@@ -232,6 +250,7 @@ function cssEscape(value: string): string {
           </button>
         }
         <div
+          starPart="tabs"
           class="star-ribbon__tabs"
           role="tablist"
           [attr.aria-label]="ariaLabel() ?? text.ribbon"
@@ -239,6 +258,7 @@ function cssEscape(value: string): string {
         >
           @for (tab of tabs(); track tab.key(); let i = $index) {
             <button
+              starPart="tab"
               type="button"
               role="tab"
               class="star-ribbon__tab"
@@ -258,6 +278,7 @@ function cssEscape(value: string): string {
           }
         </div>
         <button
+          starPart="collapse"
           type="button"
           class="star-ribbon__collapse"
           [attr.aria-label]="collapsed() ? text.ribbonExpand : text.ribbonCollapse"
@@ -266,6 +287,7 @@ function cssEscape(value: string): string {
           (click)="toggleCollapsed()"
         >
           <i
+            starPart="icon"
             class="ph-bold"
             [class.ph-caret-up]="!collapsed()"
             [class.ph-caret-down]="collapsed()"
@@ -273,10 +295,11 @@ function cssEscape(value: string): string {
           ></i>
         </button>
       </div>
-      <p class="star-sr-only" [id]="id + '-hint'">{{ text.ribbonKeyTipsHint }}</p>
+      <p starPart="srText" class="star-sr-only" [id]="id + '-hint'">{{ text.ribbonKeyTipsHint }}</p>
 
       @if (backstageOpen() && backstage(); as stage) {
         <div
+          starPart="backstage"
           class="star-ribbon__backstage"
           role="region"
           [id]="id + '-backstage'"
@@ -287,6 +310,7 @@ function cssEscape(value: string): string {
       }
 
       <div
+        starPart="panel"
         #panel
         class="star-ribbon__panel"
         role="tabpanel"
@@ -296,12 +320,14 @@ function cssEscape(value: string): string {
       >
         @for (group of activeGroups(); track group; let g = $index) {
           <div
+            starPart="ribbonGroup"
             class="star-ribbon-group"
             [class.star-ribbon-group--small]="mode(g) === 'small'"
             [class.star-ribbon-group--collapsed]="mode(g) === 'collapsed'"
             [class.star-ribbon-group--open]="mode(g) === 'collapsed' && openGroup() === g"
           >
             <button
+              starPart="overflow"
               type="button"
               class="star-ribbon-group__overflow"
               [attr.tabindex]="mode(g) === 'collapsed' ? 0 : -1"
@@ -311,15 +337,17 @@ function cssEscape(value: string): string {
               (click)="toggleGroup(g)"
             >
               <i
+                starPart="overflowIcon"
                 class="star-ribbon-group__overflow-icon"
                 [class]="group.icon() ?? 'ph-bold ph-squares-four'"
                 aria-hidden="true"
               ></i>
-              <span>{{ group.label() }}</span>
-              <i class="ph-bold ph-caret-down" aria-hidden="true"></i>
+              <span starPart="text">{{ group.label() }}</span>
+              <i starPart="icon" class="ph-bold ph-caret-down" aria-hidden="true"></i>
               <ng-container *ngTemplateOutlet="tip; context: { $implicit: 'group:' + g }" />
             </button>
             <div
+              starPart="items"
               class="star-ribbon-group__items"
               role="toolbar"
               [id]="id + '-group-' + g"
@@ -332,10 +360,13 @@ function cssEscape(value: string): string {
                 />
               }
             </div>
-            <div class="star-ribbon-group__footer">
-              <span class="star-ribbon-group__label" aria-hidden="true">{{ group.label() }}</span>
+            <div starPart="footer" class="star-ribbon-group__footer">
+              <span starPart="label" class="star-ribbon-group__label" aria-hidden="true">{{
+                group.label()
+              }}</span>
               @if (group.dialogLauncher(); as launcher) {
                 <button
+                  starPart="launcher"
                   type="button"
                   class="star-ribbon-group__launcher"
                   [attr.aria-label]="text.ribbonGroupOptions(group.label())"
@@ -344,6 +375,7 @@ function cssEscape(value: string): string {
                   (click)="emit({ id: launcher }, g)"
                 >
                   <i
+                    starPart="icon"
                     class="ph-bold ph-arrow-square-down-right star-icon-mirror"
                     aria-hidden="true"
                   ></i>
@@ -359,7 +391,12 @@ function cssEscape(value: string): string {
     <ng-template #itemView let-item let-group="group" let-g="g">
       @switch (item.type ?? 'button') {
         @case ('group') {
-          <div class="star-ribbon-buttons" role="group" [attr.aria-label]="item.label">
+          <div
+            starPart="ribbonButtons"
+            class="star-ribbon-buttons"
+            role="group"
+            [attr.aria-label]="item.label"
+          >
             @for (child of item.items ?? []; track child.id) {
               <ng-container *ngTemplateOutlet="itemView; context: { $implicit: child, group, g }" />
             }
@@ -367,14 +404,19 @@ function cssEscape(value: string): string {
         }
         @case ('custom') {
           @if (group.templateFor(item.id); as template) {
-            <div class="star-ribbon-custom">
+            <div starPart="ribbonCustom" class="star-ribbon-custom">
               <ng-container *ngTemplateOutlet="template; context: { $implicit: item }" />
             </div>
           }
         }
         @case ('split') {
-          <div class="star-ribbon-split" [class.star-ribbon-split--large]="item.size === 'large'">
+          <div
+            starPart="ribbonSplit"
+            class="star-ribbon-split"
+            [class.star-ribbon-split--large]="item.size === 'large'"
+          >
             <button
+              starPart="ribbonItem"
               type="button"
               class="star-ribbon-item"
               [class.star-ribbon-item--large]="item.size === 'large'"
@@ -388,6 +430,7 @@ function cssEscape(value: string): string {
               <ng-container *ngTemplateOutlet="face; context: { $implicit: item }" />
             </button>
             <button
+              starPart="toggle"
               type="button"
               class="star-ribbon-split__toggle"
               [disabled]="item.disabled"
@@ -396,7 +439,7 @@ function cssEscape(value: string): string {
               [attr.tabindex]="isStop(g, item.id + splitMenu) ? 0 : -1"
               [starMenuTrigger]="splitMenuRef"
             >
-              <i class="ph-bold ph-caret-down" aria-hidden="true"></i>
+              <i starPart="icon" class="ph-bold ph-caret-down" aria-hidden="true"></i>
             </button>
             <star-menu
               #splitMenuRef
@@ -407,6 +450,7 @@ function cssEscape(value: string): string {
         }
         @case ('dropdown') {
           <button
+            starPart="ribbonItem"
             type="button"
             class="star-ribbon-item star-ribbon-item--dropdown"
             [class.star-ribbon-item--large]="item.size === 'large'"
@@ -418,7 +462,11 @@ function cssEscape(value: string): string {
             [starMenuTrigger]="dropdownRef"
           >
             <ng-container *ngTemplateOutlet="face; context: { $implicit: item }" />
-            <i class="ph-bold ph-caret-down star-ribbon-item__caret" aria-hidden="true"></i>
+            <i
+              starPart="caret"
+              class="ph-bold ph-caret-down star-ribbon-item__caret"
+              aria-hidden="true"
+            ></i>
           </button>
           <star-menu
             #dropdownRef
@@ -428,6 +476,7 @@ function cssEscape(value: string): string {
         }
         @default {
           <button
+            starPart="ribbonItem"
             type="button"
             class="star-ribbon-item"
             [class.star-ribbon-item--large]="item.size === 'large'"
@@ -448,15 +497,20 @@ function cssEscape(value: string): string {
 
     <ng-template #face let-item>
       @if (item.icon) {
-        <i class="star-ribbon-item__icon" [class]="item.icon" aria-hidden="true"></i>
+        <i
+          starPart="icon"
+          class="star-ribbon-item__icon"
+          [class]="item.icon"
+          aria-hidden="true"
+        ></i>
       }
-      <span class="star-ribbon-item__label">{{ item.label }}</span>
+      <span starPart="label" class="star-ribbon-item__label">{{ item.label }}</span>
       <ng-container *ngTemplateOutlet="tip; context: { $implicit: 'item:' + item.id }" />
     </ng-template>
 
     <ng-template #tip let-target>
       @if (tipOf(target); as letters) {
-        <span class="star-ribbon__keytip" aria-hidden="true">{{ letters }}</span>
+        <span starPart="keytip" class="star-ribbon__keytip" aria-hidden="true">{{ letters }}</span>
       }
     </ng-template>
   `,

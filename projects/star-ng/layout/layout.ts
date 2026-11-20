@@ -11,7 +11,14 @@ import {
   output,
   TemplateRef,
 } from '@angular/core';
-import { injectStarControlDefaults, STAR_UI_TEXT, starInlineKey } from '@star-ng/ui/core';
+import {
+  injectStarControlDefaults,
+  STAR_UI_TEXT,
+  starInlineKey,
+  StarPart,
+  StarStyled,
+  ɵSTAR_PART_HOST,
+} from '@star-ng/ui/core';
 
 /**
  * Divider (PrimeNG `p-divider`): horizontal or vertical rule with an optional label.
@@ -19,6 +26,9 @@ import { injectStarControlDefaults, STAR_UI_TEXT, starInlineKey } from '@star-ng
  */
 @Component({
   selector: 'star-divider',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     role: 'separator',
@@ -26,7 +36,7 @@ import { injectStarControlDefaults, STAR_UI_TEXT, starInlineKey } from '@star-ng
     '[class]':
       "'star-divider star-divider--' + layout() + ' star-divider--' + type() + ' star-divider--' + align()",
   },
-  template: `<span class="star-divider__content"><ng-content /></span>`,
+  template: `<span starPart="content" class="star-divider__content"><ng-content /></span>`,
 })
 export class StarDivider {
   readonly layout = input<'horizontal' | 'vertical'>('horizontal');
@@ -47,6 +57,9 @@ export class StarDivider {
  */
 @Component({
   selector: 'star-toolbar',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-toolbar',
@@ -56,11 +69,13 @@ export class StarDivider {
     '(focusin)': 'onFocusIn($event)',
   },
   template: `
-    <div class="star-toolbar__group"><ng-content select="[starToolbarStart]" /></div>
-    <div class="star-toolbar__group star-toolbar__group--center">
+    <div starPart="group" class="star-toolbar__group">
+      <ng-content select="[starToolbarStart]" />
+    </div>
+    <div starPart="group" class="star-toolbar__group star-toolbar__group--center">
       <ng-content select="[starToolbarCenter]" />
     </div>
-    <div class="star-toolbar__group star-toolbar__group--end">
+    <div starPart="group" class="star-toolbar__group star-toolbar__group--end">
       <ng-content select="[starToolbarEnd]" />
     </div>
   `,
@@ -125,37 +140,43 @@ export class StarTimelineContent {
  */
 @Component({
   selector: 'star-timeline',
-  imports: [NgTemplateOutlet],
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [StarPart, NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     '[class]': "'star-timeline star-timeline--' + layout() + ' star-timeline--' + align()",
   },
   template: `
-    <ol class="star-timeline__list" [attr.aria-label]="ariaLabel()">
+    <ol starPart="list" class="star-timeline__list" [attr.aria-label]="ariaLabel()">
       @for (event of events(); track $index; let i = $index) {
         <li
+          starPart="event"
           class="star-timeline__event"
           [class]="'star-timeline__event star-timeline__event--' + (event.severity ?? 'primary')"
         >
-          <span class="star-timeline__marker" aria-hidden="true">
+          <span starPart="marker" class="star-timeline__marker" aria-hidden="true">
             @if (event.icon) {
-              <i [class]="event.icon"></i>
+              <i starPart="icon" [class]="event.icon"></i>
             }
           </span>
-          <div class="star-timeline__body">
+          <div starPart="body" class="star-timeline__body">
             @if (content(); as custom) {
               <ng-container
                 *ngTemplateOutlet="custom.template; context: { $implicit: event, index: i }"
               />
             } @else {
               @if (event.date) {
-                <time class="star-timeline__date" [attr.datetime]="isoDate(event.date)">{{
-                  dateText(event.date)
-                }}</time>
+                <time
+                  starPart="date"
+                  class="star-timeline__date"
+                  [attr.datetime]="isoDate(event.date)"
+                  >{{ dateText(event.date) }}</time
+                >
               }
-              <p class="star-timeline__title">{{ event.title }}</p>
+              <p starPart="title" class="star-timeline__title">{{ event.title }}</p>
               @if (event.description) {
-                <p class="star-timeline__desc">{{ event.description }}</p>
+                <p starPart="desc" class="star-timeline__desc">{{ event.description }}</p>
               }
             }
           </div>
@@ -192,23 +213,27 @@ export class StarTimeline {
  */
 @Component({
   selector: 'star-chip',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-chip' },
   template: `
     @if (image()) {
-      <img class="star-chip__image" [src]="image()" alt="" />
+      <img starPart="image" class="star-chip__image" [src]="image()" alt="" />
     } @else if (icon()) {
-      <i [class]="icon()" aria-hidden="true"></i>
+      <i starPart="icon" [class]="icon()" aria-hidden="true"></i>
     }
-    <span>{{ label() }}<ng-content /></span>
+    <span starPart="text">{{ label() }}<ng-content /></span>
     @if (removable()) {
       <button
+        starPart="remove"
         type="button"
         class="star-chip__remove"
         [attr.aria-label]="text.removeItem(label())"
         (click)="removed.emit()"
       >
-        <i class="ph-bold ph-x" aria-hidden="true"></i>
+        <i starPart="icon" class="ph-bold ph-x" aria-hidden="true"></i>
       </button>
     }
   `,
