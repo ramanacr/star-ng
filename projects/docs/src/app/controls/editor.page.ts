@@ -1,7 +1,9 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import {
   STAR_EDITOR_FULL_TOOLBAR,
+  STAR_EDITOR_SANITIZE_DEFAULTS,
   StarEditor,
+  StarEditorSanitizeConfig,
   StarEditorToolbarItem,
   StarEditorToolbarTemplate,
 } from '@star-ng/ui/editor';
@@ -95,11 +97,29 @@ import { DOCS, DocsRow } from '../shared/docs';
       <docs-example
         heading="Paste as plain text"
         source="editor/paste"
-        note="By default, pasted HTML is sanitized before it goes in: no script, no style element or attribute, no event handler. With pasteAsText, a paste inserts only the plain text. Copy formatted text from another page and paste it in both editors."
+        note="By default, pasted HTML is cleaned and sanitized before it goes in. The cleanup (after the paste cleaner of Aurora RTE) keeps the structure of a copy from Microsoft Word, Google Docs or a web page (headings, paragraphs, lists, tables, links, bold, italic, underline, strikethrough, subscript, superscript) and drops its look: fonts, sizes, black text, white backgrounds, classes and Office markup. Word list paragraphs become real lists, with their levels. Ctrl+Shift+V pastes plain text once; with pasteAsText, every paste inserts only the plain text. Copy formatted text from another page and paste it in both editors."
       >
         <div class="docs-stack">
           <star-editor ariaLabel="Pasted with formats" minHeight="4rem" />
           <star-editor pasteAsText ariaLabel="Pasted as plain text" minHeight="4rem" />
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="Own sanitizer allow-list"
+        source="editor/allow-list"
+        [script]="allowListScript"
+        note="sanitize sets the allow-list: the elements that stay (other elements are unwrapped and keep their text), the attributes per element ('*' for every element), the URL protocols of links and images, and the hosts of embeds. Spread STAR_EDITOR_SANITIZE_DEFAULTS to start from the default list. This editor allows no images and only https: links. Script, style, SVG and form elements, event handlers and javascript:, vbscript: and data: addresses (except data: images) never pass, whatever the list says."
+      >
+        <div class="docs-stack">
+          <star-editor
+            [(value)]="strict"
+            [sanitize]="strictRules"
+            ariaLabel="Strict announcement"
+          />
+          <pre class="docs-output" role="group" aria-label="Value of the strict editor">{{
+            strict()
+          }}</pre>
         </div>
       </docs-example>
 
@@ -270,6 +290,19 @@ export class EditorPage {
   protected readonly plan = signal(
     '<ul class="star-checklist"><li data-checked="true">Write the release notes</li><li data-checked="false">Update the screenshots<ul class="star-checklist"><li data-checked="false">Dashboard</li><li data-checked="false">Reports</li></ul></li><li data-checked="false">Send the announcement</li></ul>',
   );
+  protected readonly strict = signal(
+    '<p>See the <a href="http://example.com/beta">beta notes</a> and the <a href="https://example.com/release">release notes</a>.</p><img src="https://example.com/logo.png" alt="Logo">',
+  );
+  protected readonly strictRules: StarEditorSanitizeConfig = {
+    ...STAR_EDITOR_SANITIZE_DEFAULTS,
+    tags: STAR_EDITOR_SANITIZE_DEFAULTS.tags.filter((tag) => tag !== 'img' && tag !== 'figure'),
+    protocols: ['https:'],
+  };
+  protected readonly allowListScript = `readonly strictRules: StarEditorSanitizeConfig = {
+  ...STAR_EDITOR_SANITIZE_DEFAULTS,
+  tags: STAR_EDITOR_SANITIZE_DEFAULTS.tags.filter((tag) => tag !== 'img' && tag !== 'figure'),
+  protocols: ['https:'],
+};`;
   protected readonly listToolbar: readonly StarEditorToolbarItem[] = [
     'insertUnorderedList',
     'insertOrderedList',
@@ -354,6 +387,7 @@ readonly fullToolbar = STAR_EDITOR_FULL_TOOLBAR;`;
         'Nests the item under the item before it, or takes it out one level. When the item cannot move, Tab leaves the area as usual.',
     },
     { name: 'Ctrl+Enter in a checklist item', description: 'Checks or unchecks the item.' },
+    { name: 'Ctrl+Shift+V', description: 'In the area: pastes the clipboard as plain text.' },
     {
       name: 'Escape',
       description:

@@ -5230,6 +5230,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Paste plain text only. Without it, pasted HTML is sanitized (no scripts, no style elements, no event handlers, only allowed styles) before it goes in. PrimeNG has no equivalent (Quill clipboard matchers)."
       },
       {
+        "name": "sanitize",
+        "type": "StarEditorSanitizeConfig",
+        "default": "STAR_EDITOR_SANITIZE_DEFAULTS",
+        "required": false,
+        "description": "The allow-list of the sanitizer: elements, attributes per element, URL protocols and the hosts of embeds. Spread `STAR_EDITOR_SANITIZE_DEFAULTS` to change it. Script, style, SVG and form elements, event handlers and `javascript:`, `vbscript:` and `data:` addresses (except `data:` images) never pass, whatever the list says. PrimeNG has no equivalent."
+      },
+      {
         "name": "toolbar",
         "type": "readonly StarEditorToolbarItem[]",
         "default": "STAR_EDITOR_DEFAULT_TOOLBAR",
@@ -15918,6 +15925,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "drawer/position": "<div class=\"docs-row\">\n  @for (item of positions; track item) {\n    <star-button variant=\"secondary\" (pressed)=\"openAt(item)\">{{ item }}</star-button>\n  }\n</div>\n<star-drawer\n  [(visible)]=\"positionOpen\"\n  [position]=\"position()\"\n  [drawerSize]=\"position() === 'top' || position() === 'bottom' ? '14rem' : '22rem'\"\n  [header]=\"'Drawer at the ' + position()\"\n>\n  <p>This drawer is pinned to the {{ position() }} edge.</p>\n</star-drawer>",
   "dropdown/basic": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button\n      variant=\"secondary\"\n      trailingIcon=\"ph-bold ph-caret-down\"\n      [starDropdownTrigger]=\"formats\"\n    >\n      Export as\n    </star-button>\n  </div>\n  <star-dropdown\n    #formats\n    ariaLabel=\"Export format\"\n    [(value)]=\"format\"\n    (selectionChange)=\"onSelect($event)\"\n  >\n    <star-dropdown-item header>Documents</star-dropdown-item>\n    <star-dropdown-item value=\"pdf\">PDF</star-dropdown-item>\n    <star-dropdown-item value=\"docx\" disabled>Word document</star-dropdown-item>\n    <star-dropdown-item divider />\n    <star-dropdown-item header>Data</star-dropdown-item>\n    <star-dropdown-item value=\"csv\">CSV</star-dropdown-item>\n    <star-dropdown-item value=\"xlsx\">Spreadsheet</star-dropdown-item>\n    <star-dropdown-item value=\"json\">JSON</star-dropdown-item>\n  </star-dropdown>\n  <p class=\"docs-output\" role=\"status\">Export format: {{ chosen() }}</p>\n</div>",
   "dropdown/keep-open": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" [starDropdownTrigger]=\"cities\">\n      Add a city\n    </star-button>\n  </div>\n  <star-dropdown\n    #cities\n    ariaLabel=\"Cities\"\n    [closeOnSelect]=\"false\"\n    (selectionChange)=\"added.set(added() + $event.label + ' ')\"\n  >\n    <star-dropdown-item value=\"berlin\">Berlin</star-dropdown-item>\n    <star-dropdown-item value=\"lisbon\">Lisbon</star-dropdown-item>\n    <star-dropdown-item value=\"oslo\">Oslo</star-dropdown-item>\n    <star-dropdown-item value=\"toronto\">Toronto</star-dropdown-item>\n  </star-dropdown>\n  <p class=\"docs-output\" role=\"status\">Added: {{ added() || 'none' }}</p>\n</div>",
+  "editor/allow-list": "<div class=\"docs-stack\">\n  <star-editor\n    [(value)]=\"strict\"\n    [sanitize]=\"strictRules\"\n    ariaLabel=\"Strict announcement\"\n  />\n  <pre class=\"docs-output\" role=\"group\" aria-label=\"Value of the strict editor\">{{\n    strict()\n  }}</pre>\n</div>",
   "editor/basic": "<div class=\"docs-stack\">\n  <star-editor\n    [(value)]=\"note\"\n    ariaLabel=\"Delivery note\"\n    placeholder=\"Write the delivery note\"\n  />\n  <pre class=\"docs-output\" role=\"group\" aria-label=\"Value of the editor\">{{ note() }}</pre>\n</div>",
   "editor/full-toolbar": "<div class=\"docs-stack\">\n  <star-editor\n    [(value)]=\"report\"\n    [toolbar]=\"fullToolbar\"\n    ariaLabel=\"Product announcement\"\n  />\n  <pre class=\"docs-output\" role=\"group\" aria-label=\"Value of the full editor\">{{\n    report()\n  }}</pre>\n</div>",
   "editor/lists": "<div class=\"docs-stack\">\n  <star-editor [(value)]=\"plan\" [toolbar]=\"listToolbar\" ariaLabel=\"Launch plan\" />\n</div>",

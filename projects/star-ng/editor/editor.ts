@@ -62,7 +62,12 @@ import {
   starEditorToggleCheck,
   starEditorToggleList,
 } from './editor-list';
-import { STAR_EDITOR_SANITIZE_DEFAULTS, starEditorSanitize } from './editor-sanitize';
+import { starEditorCleanPaste } from './editor-paste';
+import {
+  STAR_EDITOR_SANITIZE_DEFAULTS,
+  starEditorSanitize,
+  StarEditorSanitizeConfig,
+} from './editor-sanitize';
 import {
   STAR_EDITOR_BUTTONS,
   STAR_EDITOR_DEFAULT_TOOLBAR,
@@ -183,6 +188,13 @@ export class StarEditor implements FormValueControl<string> {
    */
   readonly pasteAsText = input(false, { transform: booleanAttribute });
   /**
+   * The allow-list of the sanitizer: elements, attributes per element, URL protocols and the
+   * hosts of embeds. Spread `STAR_EDITOR_SANITIZE_DEFAULTS` to change it. Script, style, SVG and
+   * form elements, event handlers and `javascript:`, `vbscript:` and `data:` addresses (except
+   * `data:` images) never pass, whatever the list says. PrimeNG has no equivalent.
+   */
+  readonly sanitize = input<StarEditorSanitizeConfig>(STAR_EDITOR_SANITIZE_DEFAULTS);
+  /**
    * The toolbar: command names in order, with `'|'` between groups. Unknown names are left out.
    * `STAR_EDITOR_FULL_TOOLBAR` has every command. PrimeNG toolbar formats (Quill `toolbar`).
    */
@@ -300,7 +312,7 @@ export class StarEditor implements FormValueControl<string> {
         const text = this.format() === 'text';
         if (value === this.lastWritten) return;
         const area = this.area().nativeElement;
-        area.innerHTML = this.sanitize(text ? starEditorTextToHtml(value) : value);
+        area.innerHTML = this.clean(text ? starEditorTextToHtml(value) : value);
         this.lastWritten = value;
         this.length.set(starEditorPlainLength(area));
         this.history.reset({ html: area.innerHTML, selection: null });
@@ -323,12 +335,8 @@ export class StarEditor implements FormValueControl<string> {
   private readonly destroyRef = inject(DestroyRef);
 
   /** The allow-list sanitizer, with the link target rules. */
-  private sanitize(html: string): string {
-    return starEditorSanitize(
-      html,
-      this.area().nativeElement.ownerDocument,
-      STAR_EDITOR_SANITIZE_DEFAULTS,
-    );
+  private clean(html: string): string {
+    return starEditorSanitize(html, this.area().nativeElement.ownerDocument, this.sanitize());
   }
 
   protected label(cmd: StarEditorCommand): string {
@@ -375,7 +383,7 @@ export class StarEditor implements FormValueControl<string> {
     const length = starEditorPlainLength(element);
     let value = '';
     if (length && element.textContent?.trim()) {
-      value = this.format() === 'text' ? starEditorText(element) : this.sanitize(element.innerHTML);
+      value = this.format() === 'text' ? starEditorText(element) : this.clean(element.innerHTML);
     }
     this.lastWritten = value;
     this.value.set(value);
@@ -422,10 +430,15 @@ export class StarEditor implements FormValueControl<string> {
    */
   protected onPaste(event: ClipboardEvent): void {
     const data = event.clipboardData;
+    const plain = this.plainPaste;
+    this.plainPaste = false;
     if (this.locked() || !data) return;
     event.preventDefault();
-    this.insertData(data);
+    this.insertData(data, plain);
   }
+
+  /** Ctrl+Shift+V was pressed: the paste that comes is plain text. */
+  private plainPaste = false;
 
   /** True while a drag that started inside this editor is under way (the browser moves its text). */
   protected dragFromInside = false;
@@ -452,8 +465,11 @@ export class StarEditor implements FormValueControl<string> {
     this.insertData(data);
   }
 
-  /** Inserts clipboard or drag data at the selection (see `onPaste`). */
-  private insertData(data: DataTransfer): void {
+  /**
+   * Inserts clipboard or drag data at the selection (see `onPaste`). HTML is cleaned (Word,
+   * Google Docs and web page markup) and sanitized; `plain` inserts only the text.
+   */
+  private insertData(data: DataTransfer, plain = false): void {
     const area = this.area().nativeElement;
     const range = starEditorRange(area);
     if (!range) return;
@@ -462,8 +478,8 @@ export class StarEditor implements FormValueControl<string> {
       max === undefined ? Infinity : Math.max(0, max - this.length() + range.toString().length);
     const html = data.getData('text/html');
     let clean = '';
-    if (html && !this.pasteAsText() && this.format() === 'html') {
-      clean = this.sanitize(html);
+    if (html && !plain && !this.pasteAsText() && this.format() === 'html') {
+      clean = this.clean(starEditorCleanPaste(html, area.ownerDocument));
       // A template is inert: its images do not load while the text is measured.
       const probe = area.ownerDocument.createElement('template');
       probe.innerHTML = clean;
@@ -516,7 +532,8 @@ export class StarEditor implements FormValueControl<string> {
   }
 
   /**
-   * Keys of the area: Ctrl+Z and Ctrl+Y (Ctrl+Shift+Z) use the history of the editor; Tab and
+   * Keys of the area: Ctrl+Shift+V makes the next paste plain text; Ctrl+Z and Ctrl+Y
+   * (Ctrl+Shift+Z) use the history of the editor; Tab and
    * Shift+Tab in a list item nest it and take it out (when it cannot move, Tab leaves the area as
    * usual); Ctrl+Enter checks a checklist item.
    */
@@ -524,6 +541,7 @@ export class StarEditor implements FormValueControl<string> {
     if (this.locked()) return;
     const mod = event.ctrlKey || event.metaKey;
     const key = event.key.toLowerCase();
+    this.plainPaste = mod && event.shiftKey && key === 'v';
     if (mod && !event.altKey && (key === 'z' || key === 'y')) {
       event.preventDefault();
       this.travel(key === 'y' || event.shiftKey ? 1 : -1);

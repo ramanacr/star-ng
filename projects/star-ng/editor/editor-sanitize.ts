@@ -171,7 +171,8 @@ const STYLES: Readonly<Record<string, (value: string) => boolean>> = {
     LENGTH({ px: 96, pt: 72, em: 6, rem: 6, '%': 400 })(value),
   'text-align': (value) => /^(left|right|center|justify|start|end)$/.test(value),
   'margin-inline-start': LENGTH({ em: 40, rem: 40 }),
-  width: (value) => value === 'auto' || LENGTH({ px: 4000, '%': 100, em: 200, rem: 200 })(value),
+  width: (value) =>
+    value === 'auto' || LENGTH({ px: 4000, pt: 3000, '%': 100, em: 200, rem: 200 })(value),
   height: (value) => value === 'auto' || LENGTH({ px: 4000, em: 200, rem: 200 })(value),
 };
 

@@ -74,3 +74,37 @@ test.describe('editor formatting', () => {
     await expect(more).toHaveAttribute('aria-expanded', 'false');
   });
 });
+
+test.describe('editor paste and security', () => {
+  test('cleans a Word paste and pastes plain text with Ctrl+Shift+V', async ({ page }) => {
+    await openEditor(page);
+    const live = example(page, 'Paste as plain text');
+    const area = live.getByRole('textbox', { name: 'Pasted with formats' });
+    await area.click();
+    const html = await area.evaluate((element) => {
+      const data = new DataTransfer();
+      data.setData(
+        'text/html',
+        '<p class="MsoListParagraphCxSpFirst" style="mso-list:l0 level1 lfo1"><span style="mso-list:Ignore">·<span>&nbsp;</span></span>Faster reports<o:p></o:p></p><p class="MsoListParagraphCxSpLast" style="mso-list:l0 level1 lfo1"><span style="mso-list:Ignore">·<span>&nbsp;</span></span><span style="font-family:Calibri;font-weight:bold">Saved filters</span></p>',
+      );
+      data.setData('text/plain', 'Faster reports\nSaved filters');
+      element.dispatchEvent(
+        new ClipboardEvent('paste', { clipboardData: data, bubbles: true, cancelable: true }),
+      );
+      return element.innerHTML;
+    });
+    expect(html).toContain('<li>Faster reports</li>');
+    expect(html).toContain('<b>Saved filters</b>');
+    expect(html).not.toMatch(/Mso|mso-|Calibri/);
+  });
+
+  test('the allow-list removes images and http links', async ({ page }) => {
+    await openEditor(page);
+    const area = example(page, 'Own sanitizer allow-list').getByRole('textbox', {
+      name: 'Strict announcement',
+    });
+    await expect(area.locator('img')).toHaveCount(0);
+    await expect(area.locator('a').first()).not.toHaveAttribute('href');
+    await expect(area.locator('a').last()).toHaveAttribute('href', 'https://example.com/release');
+  });
+});
