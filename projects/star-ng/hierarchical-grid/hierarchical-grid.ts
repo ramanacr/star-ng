@@ -1,6 +1,5 @@
 import { isPlatformBrowser } from '@angular/common';
 import {
-  afterRenderEffect,
   booleanAttribute,
   ChangeDetectionStrategy,
   Component,
@@ -168,15 +167,6 @@ export class StarHierarchicalLevel {
         if (island) this.grid.childCreated(this, island, table);
       });
     });
-    // Row levels and states for assistive technology: every body row of this table carries
-    // `aria-level`, a parent row `aria-expanded`.
-    afterRenderEffect({
-      write: () => {
-        this.expanded();
-        this.rows();
-        untracked(() => this.markRows());
-      },
-    });
   }
 
   protected labelOf(row: unknown): string {
@@ -190,20 +180,6 @@ export class StarHierarchicalLevel {
   private bodyRows(): HTMLTableRowElement[] {
     const body = this.host.querySelector('star-table')?.querySelector('tbody');
     return body ? Array.from(body.querySelectorAll<HTMLTableRowElement>(':scope > tr')) : [];
-  }
-
-  private markRows(): void {
-    const level = String(this.level());
-    for (const tr of this.bodyRows()) {
-      if (!tr.classList.contains('star-table__row')) continue;
-      if (tr.getAttribute('aria-level') !== level) tr.setAttribute('aria-level', level);
-      const toggle = tr.querySelector(':scope > td.star-table__expander button');
-      const expanded = toggle?.getAttribute('aria-expanded') ?? null;
-      if (expanded === null) tr.removeAttribute('aria-expanded');
-      else if (tr.getAttribute('aria-expanded') !== expanded) {
-        tr.setAttribute('aria-expanded', expanded);
-      }
-    }
   }
 
   protected onExpandedKeys(keys: readonly unknown[]): void {
@@ -417,8 +393,10 @@ export class StarHierarchicalChild {
  *
  * Keyboard (as Ignite UI): Alt+Arrow Down / Right expands the focused row, Alt+Arrow Up / Left
  * collapses it, Arrow Down on an expanded row (or Tab) goes into the first child grid, and
- * Ctrl+Arrow Up or Escape in a child grid goes back to its parent row. Rows carry `aria-level`
- * and, for a parent, `aria-expanded`; each grid has its own `aria-rowindex`.
+ * Ctrl+Arrow Up or Escape in a child grid goes back to its parent row. Each level is its own
+ * named grid ("Orders of Example Ltd.") in the detail row of its parent, with its own
+ * `aria-rowindex`; the expand button of a row carries `aria-expanded`. Rows do not carry
+ * `aria-level`: on a row it is valid only in a treegrid, and each level here is a grid.
  */
 @Component({
   selector: 'star-hierarchical-grid',

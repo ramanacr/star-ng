@@ -143,19 +143,22 @@ function childTables(el: HTMLElement, name: RegExp): HTMLTableElement[] {
 }
 
 describe('StarHierarchicalGrid', () => {
-  it('renders the collapsed root as a grid with aria-level 1 on every row', async () => {
+  it('renders the collapsed root as a named grid', async () => {
     const { el } = await setup();
     const table = rootTable(el);
     expect(table.getAttribute('role')).toBe('grid');
     expect(table.getAttribute('aria-label')).toBe('Customers');
     const rows = rowsOf(table);
     expect(rows).toHaveLength(2);
-    expect(rows.map((row) => row.getAttribute('aria-level'))).toEqual(['1', '1']);
-    expect(rows[0].getAttribute('aria-expanded')).toBe('false');
+    // aria-level and aria-expanded on a row are valid only in a treegrid (axe).
+    expect(rows[0].hasAttribute('aria-level')).toBe(false);
+    expect(
+      rows[0].querySelector('.star-table__expander button')!.getAttribute('aria-expanded'),
+    ).toBe('false');
     expect(el.querySelectorAll('table')).toHaveLength(1);
   });
 
-  it('expands a row into a child grid of its island, with level 2 rows', async () => {
+  it('expands a row into a child grid of its island', async () => {
     const { el, host, settle } = await setup();
     rowsOf(rootTable(el))[0]
       .querySelector<HTMLButtonElement>('.star-table__expander button')!
@@ -172,9 +175,12 @@ describe('StarHierarchicalGrid', () => {
       expect.stringContaining('ORD-1'),
       expect.stringContaining('ORD-2'),
     ]);
-    expect(rows.map((row) => row.getAttribute('aria-level'))).toEqual(['2', '2']);
     expect(rows[0].getAttribute('aria-rowindex')).toBeNull();
-    expect(rowsOf(rootTable(el))[0].getAttribute('aria-expanded')).toBe('true');
+    expect(
+      rowsOf(rootTable(el))[0]
+        .querySelector('.star-table__expander button')!
+        .getAttribute('aria-expanded'),
+    ).toBe('true');
     expect(host.created).toHaveLength(1);
     expect(host.created[0].parentRow).toBe(CUSTOMERS[0]);
     expect(host.created[0].island.label()).toBe('Orders');
@@ -225,7 +231,7 @@ describe('StarHierarchicalGrid', () => {
     host.pending[1].resolve([{ id: 1, item: 'Paper, A4', quantity: 3 }]);
     await settle();
     const [lines] = childTables(el, /^Lines of ORD-1$/);
-    expect(rowsOf(lines).map((row) => row.getAttribute('aria-level'))).toEqual(['3']);
+    expect(rowsOf(lines)).toHaveLength(1);
     expect(lines.textContent).toContain('Paper, A4');
   });
 

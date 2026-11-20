@@ -16,19 +16,15 @@ test.describe('hierarchical grid', () => {
     const live = example(page, 'Customers, orders and order lines');
     const root = live.getByRole('grid', { name: 'Customers', exact: true });
     const second = root.locator(':scope > tbody > tr.star-table__row').nth(1);
-    await expect(second).toHaveAttribute('aria-level', '1');
-    await expect(second).toHaveAttribute('aria-expanded', 'false');
+    const toggle = second.locator('.star-table__expander button');
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
     const name = second.locator('td[data-field="name"]');
     await name.click();
     await page.keyboard.press('Alt+ArrowDown');
-    await expect(second).toHaveAttribute('aria-expanded', 'true');
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
     await expect(name).toBeFocused();
     const orders = live.getByRole('grid', { name: 'Orders of Customer 02' });
     await expect(orders).toBeVisible();
-    await expect(orders.locator('tbody > tr.star-table__row').first()).toHaveAttribute(
-      'aria-level',
-      '2',
-    );
 
     // Arrow Down goes into the child grid, Alt+Arrow Down opens an order: its lines load.
     await page.keyboard.press('ArrowDown');
@@ -41,7 +37,7 @@ test.describe('hierarchical grid', () => {
     await page.keyboard.press('Control+ArrowUp');
     await expect(second.locator('[tabindex="0"]')).toBeFocused();
     await page.keyboard.press('Alt+ArrowUp');
-    await expect(second).toHaveAttribute('aria-expanded', 'false');
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
   });
 
   test('keeps a canceled row closed and retries a failed load', async ({ page }) => {
@@ -50,7 +46,10 @@ test.describe('hierarchical grid', () => {
     const root = live.getByRole('grid', { name: 'Customers with errors' });
     const rows = root.locator(':scope > tbody > tr.star-table__row');
     await rows.nth(2).getByRole('button', { name: 'Expand row' }).click();
-    await expect(rows.nth(2)).toHaveAttribute('aria-expanded', 'false');
+    await expect(rows.nth(2).getByRole('button', { name: 'Expand row' })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    );
 
     await rows.nth(0).getByRole('button', { name: 'Expand row' }).click();
     const orders = live.getByRole('grid', { name: 'Orders of Customer 01' });

@@ -29,9 +29,9 @@ test.describe('pivot grid', () => {
     await expect(south).toHaveAttribute('aria-expanded', 'false');
 
     await grid.locator('[tabindex="0"]').focus();
-    await expect(grid.getByRole('rowheader', { name: 'North' })).toBeFocused();
-    // Down past North's products to South, then Alt+Right expands it.
-    for (let i = 0; i < 5; i++) await page.keyboard.press('ArrowDown');
+    await expect(grid.getByRole('rowheader', { name: 'East' })).toBeFocused();
+    // Down past North and its four products to South, then Alt+Right expands it.
+    for (let i = 0; i < 6; i++) await page.keyboard.press('ArrowDown');
     await expect(south).toBeFocused();
     await page.keyboard.press('Alt+ArrowRight');
     await expect(south).toHaveAttribute('aria-expanded', 'true');
