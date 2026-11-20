@@ -355,7 +355,7 @@ const WHEEL_STEP = 50;
         <button
           type="button"
           class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
-          [attr.aria-label]="text.documentFullScreen"
+          [attr.aria-label]="text.fullScreen"
           [attr.aria-pressed]="fullscreen()"
           (click)="toggleFullscreen()"
         >
@@ -400,7 +400,7 @@ const WHEEL_STEP = 50;
         <button
           type="button"
           class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
-          [attr.aria-label]="text.documentPreviousResult"
+          [attr.aria-label]="text.previousResult"
           [disabled]="!results()?.length"
           (click)="jumpToResult(-1)"
         >
@@ -409,7 +409,7 @@ const WHEEL_STEP = 50;
         <button
           type="button"
           class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
-          [attr.aria-label]="text.documentNextResult"
+          [attr.aria-label]="text.nextResult"
           [disabled]="!results()?.length"
           (click)="jumpToResult(1)"
         >
@@ -676,7 +676,7 @@ export class StarDocumentViewer {
     if (this.searching()) return this.text.searching;
     const results = this.results();
     if (!results) return '';
-    if (!results.length) return this.text.documentNoResults;
+    if (!results.length) return this.text.noResults;
     const total = results.reduce((sum, r) => sum + r.count, 0);
     return this.text.documentSearchResults(total, results.length);
   });

@@ -1106,7 +1106,7 @@ export class StarEditor implements FormValueControl<string> {
     if (!this.findQuery()) return '';
     return this.matches.length
       ? this.text.editorMatchCount(this.matchIndex() + 1, this.matches.length)
-      : this.text.documentNoResults;
+      : this.text.noResults;
   }
 
   protected moveMatch(delta: 1 | -1): void {

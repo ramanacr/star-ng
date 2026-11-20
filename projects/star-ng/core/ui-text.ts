@@ -688,11 +688,12 @@ export interface StarUiText {
   readonly spreadsheetFewerDecimals: string;
   readonly spreadsheetBackground: string;
   readonly spreadsheetNoBackground: string;
-  readonly spreadsheetBackgroundAccent: string;
-  readonly spreadsheetBackgroundSuccess: string;
-  readonly spreadsheetBackgroundWarning: string;
-  readonly spreadsheetBackgroundDanger: string;
-  readonly spreadsheetBackgroundMuted: string;
+  /** Names of the theme palette colors (spreadsheet cell backgrounds, editor text colors). */
+  readonly colorBlue: string;
+  readonly colorGreen: string;
+  readonly colorAmber: string;
+  readonly colorRed: string;
+  readonly colorGrey: string;
   // Document viewer
   readonly documentToolbar: string;
   /** Name of the page area when the viewer has no `title`. */
@@ -709,13 +710,15 @@ export interface StarUiText {
   readonly documentRotate: string;
   readonly documentThumbnails: string;
   readonly documentSinglePage: string;
-  readonly documentFullScreen: string;
+  /** Full screen button (document viewer, editor). */
+  readonly fullScreen: string;
   readonly documentDownload: string;
   readonly documentPrint: string;
   readonly documentSearch: string;
-  readonly documentPreviousResult: string;
-  readonly documentNextResult: string;
-  readonly documentNoResults: string;
+  /** Search results: previous, next, none (document viewer, editor find). */
+  readonly previousResult: string;
+  readonly nextResult: string;
+  readonly noResults: string;
   readonly documentSearchResults: (count: number, pages: number) => string;
   readonly documentLoadError: string;
   /** Text of a page that could not be drawn. */
@@ -1446,11 +1449,11 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   spreadsheetFewerDecimals: 'Fewer decimal places',
   spreadsheetBackground: 'Cell background',
   spreadsheetNoBackground: 'No background',
-  spreadsheetBackgroundAccent: 'Blue',
-  spreadsheetBackgroundSuccess: 'Green',
-  spreadsheetBackgroundWarning: 'Amber',
-  spreadsheetBackgroundDanger: 'Red',
-  spreadsheetBackgroundMuted: 'Grey',
+  colorBlue: 'Blue',
+  colorGreen: 'Green',
+  colorAmber: 'Amber',
+  colorRed: 'Red',
+  colorGrey: 'Grey',
   documentToolbar: 'Document tools',
   documentDefaultTitle: 'Document',
   documentPageOf: (page, total) => `Page ${page} of ${total}`,
@@ -1462,13 +1465,13 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   documentRotate: 'Rotate clockwise',
   documentThumbnails: 'Page thumbnails',
   documentSinglePage: 'Single page',
-  documentFullScreen: 'Full screen',
+  fullScreen: 'Full screen',
   documentDownload: 'Download',
   documentPrint: 'Print',
   documentSearch: 'Search in document',
-  documentPreviousResult: 'Previous result',
-  documentNextResult: 'Next result',
-  documentNoResults: 'No results',
+  previousResult: 'Previous result',
+  nextResult: 'Next result',
+  noResults: 'No results',
   documentSearchResults: (count, pages) =>
     `${count} ${count === 1 ? 'result' : 'results'} on ${pages} ${pages === 1 ? 'page' : 'pages'}`,
   documentLoadError: 'The document could not be loaded.',

@@ -173,7 +173,7 @@ export const STAR_EDITOR_BUTTONS: Readonly<
   table: { label: 'editorTable', icon: 'ph-bold ph-table', toggle: false },
   source: { label: 'editorSource', icon: 'ph-bold ph-file-html', toggle: true },
   find: { label: 'editorFindReplace', icon: 'ph-bold ph-magnifying-glass', toggle: false },
-  fullScreen: { label: 'documentFullScreen', icon: 'ph-bold ph-arrows-out', toggle: true },
+  fullScreen: { label: 'fullScreen', icon: 'ph-bold ph-arrows-out', toggle: true },
   shortcuts: { label: 'editorShortcuts', icon: 'ph-bold ph-keyboard', toggle: false },
   accessibility: {
     label: 'editorAccessibility',

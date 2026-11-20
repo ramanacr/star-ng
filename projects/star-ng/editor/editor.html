@@ -220,7 +220,7 @@
         [disabled]="!matchTotal()"
         (click)="moveMatch(-1)"
       >
-        {{ text.documentPreviousResult }}
+        {{ text.previousResult }}
       </button>
       <button
         type="button"
@@ -228,7 +228,7 @@
         [disabled]="!matchTotal()"
         (click)="moveMatch(1)"
       >
-        {{ text.documentNextResult }}
+        {{ text.nextResult }}
       </button>
       @if (mode === 'replace') {
         <button

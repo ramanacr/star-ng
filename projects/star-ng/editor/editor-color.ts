@@ -14,11 +14,11 @@ import { STAR_EDITOR_PALETTE } from './editor-format';
 
 /** Names of the palette colors, in the order of the palette. */
 const NAMES: readonly (keyof StarUiText)[] = [
-  'spreadsheetBackgroundAccent',
-  'spreadsheetBackgroundSuccess',
-  'spreadsheetBackgroundWarning',
-  'spreadsheetBackgroundDanger',
-  'spreadsheetBackgroundMuted',
+  'colorBlue',
+  'colorGreen',
+  'colorAmber',
+  'colorRed',
+  'colorGrey',
 ];
 
 /** `#rrggbb` for the custom color field, from a stored value (a token gives black). */
