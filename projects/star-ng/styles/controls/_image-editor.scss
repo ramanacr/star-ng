@@ -289,3 +289,7 @@
   outline: 2px solid var(--star-accent);
   outline-offset: 1px;
 }
+// Fitted, the image is never larger than the stage: nothing to scroll.
+.star-image-editor__stage--fit {
+  overflow: hidden;
+}

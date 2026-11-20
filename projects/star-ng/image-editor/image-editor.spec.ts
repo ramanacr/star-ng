@@ -145,6 +145,22 @@ describe('StarImageEditor', () => {
     expect(description.textContent?.trim()).toBe('Image 400 × 200 pixels. No edits.');
   });
 
+  it('uses bold icons and a stage that does not scroll while the image is fitted', async () => {
+    const { root, tool, stable } = await setup();
+    // The docs and most apps load only the bold and fill weights of Phosphor.
+    const icons = [...root.querySelectorAll('.star-image-editor__toolbar i')];
+    expect(icons.length).toBeGreaterThan(0);
+    expect(icons.every((icon) => icon.classList.contains('ph-bold'))).toBe(true);
+    const stage = root.querySelector<HTMLElement>('.star-image-editor__stage')!;
+    expect(stage.classList).toContain('star-image-editor__stage--fit');
+    expect(stage.getAttribute('tabindex')).toBeNull();
+    tool('zoomActual').click();
+    await stable();
+    // At 100 % the stage scrolls, so it takes the focus.
+    expect(stage.classList).not.toContain('star-image-editor__stage--fit');
+    expect(stage.getAttribute('tabindex')).toBe('0');
+  });
+
   it('moves the focus through the toolbar with the arrow keys (one tab stop)', async () => {
     const { root, stable } = await setup();
     const buttons = [...root.querySelectorAll<HTMLButtonElement>('.star-image-editor__tool')];

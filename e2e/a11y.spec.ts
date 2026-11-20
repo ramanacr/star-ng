@@ -1165,7 +1165,10 @@ const STATES: readonly State[] = [
       await crop.click();
       await live.getByRole('button', { name: '4:3' }).click();
       const box = live.getByRole('group', { name: /^Crop area/ });
-      await box.focus();
+      // Focus without scrolling: a scrolled page puts the copy button of the import code under
+      // the sticky docs header, which axe reports as a small target (a docs layout effect).
+      await box.evaluate((element: HTMLElement) => element.focus({ preventScroll: true }));
+      await expect(box).toBeFocused();
       await page.keyboard.press('ArrowRight');
       await expect(box).toHaveAttribute('aria-label', /Crop area \d+ × \d+ pixels/);
     },

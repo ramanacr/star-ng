@@ -203,7 +203,7 @@ const normalizeAngle = (angle: number) => {
           (focus)="toolbarFocus.set(i)"
           (click)="run(item)"
         >
-          <i class="ph {{ item.icon }}" aria-hidden="true"></i>
+          <i class="ph-bold {{ item.icon }}" aria-hidden="true"></i>
         </button>
       }
     </div>
@@ -277,7 +277,7 @@ const normalizeAngle = (angle: number) => {
             (click)="keepRatio.set(!keepRatio())"
           >
             <i
-              class="ph"
+              class="ph-bold"
               [class.ph-lock-simple]="keepRatio()"
               [class.ph-lock-simple-open]="!keepRatio()"
               aria-hidden="true"
@@ -324,7 +324,7 @@ const normalizeAngle = (angle: number) => {
                 [attr.aria-pressed]="kind() === entry.kind"
                 (click)="kind.set(entry.kind)"
               >
-                <i class="ph {{ entry.icon }}" aria-hidden="true"></i>
+                <i class="ph-bold {{ entry.icon }}" aria-hidden="true"></i>
               </button>
             }
           </div>
@@ -365,7 +365,7 @@ const normalizeAngle = (angle: number) => {
             [disabled]="!canAddAnnotation()"
             (click)="addAnnotation()"
           >
-            <i class="ph ph-plus" aria-hidden="true"></i>{{ text.imageAddAnnotation }}
+            <i class="ph-bold ph-plus" aria-hidden="true"></i>{{ text.imageAddAnnotation }}
           </button>
           <div class="star-image-editor__annotations">
             <span class="star-image-editor__list-label" [id]="listLabelId">{{
@@ -404,7 +404,7 @@ const normalizeAngle = (angle: number) => {
                 [disabled]="selected() === null"
                 (click)="deleteSelected()"
               >
-                <i class="ph ph-trash" aria-hidden="true"></i>{{ text.imageDeleteAnnotation }}
+                <i class="ph-bold ph-trash" aria-hidden="true"></i>{{ text.imageDeleteAnnotation }}
               </button>
             } @else {
               <p class="star-image-editor__empty-list">{{ text.imageAnnotationsEmpty }}</p>
@@ -432,6 +432,7 @@ const normalizeAngle = (angle: number) => {
     <div
       #stage
       class="star-image-editor__stage"
+      [class.star-image-editor__stage--fit]="zoom() === 'fit'"
       [id]="stageId"
       [attr.tabindex]="zoom() === 'actual' ? 0 : null"
     >
@@ -1346,10 +1347,11 @@ export class StarImageEditor {
     const stage = this.stage()?.nativeElement;
     const view = this.doc.defaultView;
     if (!stage || !view || typeof view.ResizeObserver !== 'function') return;
-    const observer = new view.ResizeObserver(() => {
-      const rect = stage.getBoundingClientRect();
-      if (rect.width && rect.height) {
-        this.stageSize.set({ width: Math.floor(rect.width), height: Math.floor(rect.height) });
+    // The content box (without the padding), so a fitted image never makes the stage scroll.
+    const observer = new view.ResizeObserver((entries) => {
+      const box = entries[0]?.contentRect;
+      if (box?.width && box.height) {
+        this.stageSize.set({ width: Math.floor(box.width), height: Math.floor(box.height) });
       }
     });
     observer.observe(stage);
