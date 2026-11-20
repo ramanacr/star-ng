@@ -640,4 +640,28 @@ export const STAR_UI_TEXT_DE: StarUiText = {
   dependsOn: (label) => `Abhängig von ${label}`,
   ganttMoveHint:
     'Alt und Links oder Rechts verschieben den Vorgang, Alt, Umschalt und Links oder Rechts verschieben das Ende, Alt und Auf oder Ab ändern den Fortschritt.',
+  // Pivot grid
+  pivotGrid: 'Pivot-Tabelle',
+  pivotGrandTotal: 'Gesamtergebnis',
+  pivotTotalOf: (label) => `${label} Ergebnis`,
+  pivotBlank: '(leer)',
+  pivotFields: 'Felder',
+  pivotRows: 'Zeilen',
+  pivotValues: 'Werte',
+  pivotFilters: 'Filter',
+  pivotSettings: 'Pivot-Einstellungen',
+  pivotDropHere: 'Feld hierher ziehen',
+  pivotMoveField: (label) => `${label} verschieben`,
+  pivotMoveTo: (area) => `Nach ${area} verschieben`,
+  pivotMoved: (label, area) => `${label} nach ${area} verschoben`,
+  pivotDistinctCount: 'Anzahl eindeutiger Werte',
+  pivotAggregate: (label) => `Berechnung von ${label}`,
+  pivotHint:
+    'Pfeiltasten wechseln die Zelle. Eingabe oder Leertaste klappt ein Element auf oder zu. Eingabe auf einer Wertzelle zeigt ihre Datensätze.',
+  pivotQuarter: (quarter) => `Q${quarter}`,
+  expandAll: 'Alle aufklappen',
+  collapseAll: 'Alle zuklappen',
+  hierarchicalGrid: 'Hierarchisches Raster',
+  hierarchicalLoadError: 'Die Zeilen konnten nicht geladen werden.',
+  hierarchicalChildGrid: (label, parent) => `${label} von ${parent}`,
 };
