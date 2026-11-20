@@ -30,10 +30,43 @@
   align-items: center;
   gap: 0.25rem;
 }
-.star-panel-box__toggle i {
+.star-panel-box__toggle i,
+.star-panel-box__toggle .star-panel-box__icon,
+.star-panel-box__header-toggle i,
+.star-panel-box__header-toggle .star-panel-box__icon {
   transition: rotate var(--star-duration-base) $ease;
 }
-.star-panel-box--collapsed .star-panel-box__toggle i {
+.star-panel-box__icon {
+  display: inline-flex;
+}
+// `iconPos="start"`: the toggle button comes before the title.
+.star-panel-box--toggle-start .star-panel-box__header {
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+}
+// `toggler="header"`: the title is the toggle button, with the icon before the text.
+.star-panel-box__header-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: start;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: var(--star-focus-ring);
+    border-radius: var(--star-radius-sm);
+  }
+}
+.star-panel-box--collapsed .star-panel-box__toggle i,
+.star-panel-box--collapsed .star-panel-box__toggle .star-panel-box__icon,
+.star-panel-box--collapsed .star-panel-box__header-toggle i,
+.star-panel-box--collapsed .star-panel-box__header-toggle .star-panel-box__icon {
   rotate: -90deg;
 
   // A collapsed panel points toward the inline end: right in LTR, left in RTL.

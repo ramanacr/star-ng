@@ -13956,6 +13956,27 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
+        "name": "showHeader",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Shows the header (default `true`). Without it the region is named by `header`."
+      },
+      {
+        "name": "toggler",
+        "type": "'icon' | 'header'",
+        "default": "'icon'",
+        "required": false,
+        "description": "What toggles: `'icon'` (default, a button next to the actions) or `'header'` (the title is the button, with the icon before the text). PrimeNG `toggler`."
+      },
+      {
+        "name": "iconPos",
+        "type": "'start' | 'end'",
+        "default": "'end'",
+        "required": false,
+        "description": "Side of the toggle button in the header: `'end'` (default) or `'start'`. PrimeNG `iconPos`."
+      },
+      {
         "name": "pt",
         "type": "StarPassThrough | null",
         "default": "null",
@@ -13981,14 +14002,30 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       }
     ],
-    "outputs": [],
+    "outputs": [
+      {
+        "name": "beforeToggle",
+        "type": "StarPanelToggleEvent",
+        "default": null,
+        "required": false,
+        "description": "Emits before the panel opens or closes, with the state before the toggle. PrimeNG `onBeforeToggle`."
+      },
+      {
+        "name": "afterToggle",
+        "type": "StarPanelToggleEvent",
+        "default": null,
+        "required": false,
+        "description": "Emits after the panel opened or closed (after the render), with the new state. PrimeNG `onAfterToggle`."
+      }
+    ],
     "parts": [
       "root",
+      "toggleIcon",
       "header",
       "titleText",
+      "headerButton",
       "actionList",
       "toggleButton",
-      "toggleIcon",
       "regionPanel",
       "innerPanel",
       "body"
@@ -21806,6 +21843,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "panel-menu/single": "<star-panel-menu ariaLabel=\"Settings, single\" single [items]=\"sections\" />",
   "panel/basic": "<div class=\"docs-stack\">\n  <star-panel header=\"Order notes\" toggleable [(collapsed)]=\"collapsed\">\n    <star-button starPanelActions variant=\"ghost\" size=\"sm\" leadingIcon=\"ph-bold ph-plus\">\n      Add note\n    </star-button>\n    Ship with the next pallet. Call the front desk on arrival.\n  </star-panel>\n  <p class=\"docs-output\" role=\"status\">\n    The panel is {{ collapsed() ? 'collapsed' : 'open' }}.\n  </p>\n</div>",
   "panel/fieldset": "<div class=\"docs-stack\">\n  <star-fieldset legend=\"Contact person\" toggleable>\n    <star-field label=\"Name\">\n      <input starInput />\n    </star-field>\n    <star-field label=\"Email\">\n      <input starInput type=\"email\" placeholder=\"name@example.com\" />\n    </star-field>\n  </star-fieldset>\n</div>",
+  "panel/toggler": "<div class=\"docs-stack\">\n  <star-panel\n    header=\"Delivery address\"\n    toggleable\n    toggler=\"header\"\n    (beforeToggle)=\"toggleLog.set('before: ' + ($event.collapsed ? 'collapsed' : 'open'))\"\n    (afterToggle)=\"\n      toggleLog.set(toggleLog() + ', after: ' + ($event.collapsed ? 'collapsed' : 'open'))\n    \"\n  >\n    12 Harbor Road, Lakeside.\n  </star-panel>\n  <star-panel header=\"Invoice notes\" toggleable iconPos=\"start\">\n    Send the invoice at the end of the month.\n  </star-panel>\n  <p class=\"docs-output\" role=\"status\">{{ toggleLog() || 'No toggle yet' }}</p>\n</div>",
   "password/basic": "<div class=\"docs-stack\">\n  <star-field label=\"Password\">\n    <star-password [(value)]=\"current\" />\n  </star-field>\n</div>",
   "password/feedback": "<div class=\"docs-stack\">\n  <star-field label=\"New password\">\n    <star-password [(value)]=\"created\" feedback />\n  </star-field>\n</div>",
   "password/rules": "<div class=\"docs-stack\">\n  <star-field label=\"PIN phrase\">\n    <star-password [(value)]=\"phrase\" feedback [rules]=\"rules\" />\n  </star-field>\n</div>",
