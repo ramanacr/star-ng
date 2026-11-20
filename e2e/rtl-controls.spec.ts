@@ -403,15 +403,11 @@ test.describe('right-to-left controls', () => {
       await openPage(page, '/controls/cascade-select', 'Cascade select');
       const city = example(page, 'Country, state and city').getByRole('button', { name: 'City' });
       const germany = page.getByRole('menuitem', { name: 'Germany' });
-      // Enter before hydration has no handler yet: press it again until the list is open, and
-      // never when it is open already (Enter would choose).
-      await expect(async () => {
-        if (!(await germany.isVisible())) {
-          await city.focus();
-          await page.keyboard.press('Enter');
-        }
-        await expect(germany).toBeFocused({ timeout: 1000 });
-      }).toPass();
+      // Enter before hydration has no handler yet: wait until the hydration markers are gone.
+      await expect(page.locator('[ngh]')).toHaveCount(0, { timeout: 15_000 });
+      await city.focus();
+      await page.keyboard.press('Enter');
+      await expect(germany).toBeFocused();
       await page.keyboard.press('ArrowRight');
       await expect(germany).toBeFocused();
       await page.keyboard.press('ArrowLeft');
