@@ -53,6 +53,7 @@ export * from '@star-ng/ui/multi-column-combobox';
 export * from '@star-ng/ui/paginator';
 export * from '@star-ng/ui/panel';
 export * from '@star-ng/ui/password';
+export * from '@star-ng/ui/pivot-grid';
 export * from '@star-ng/ui/popover';
 export * from '@star-ng/ui/progress-bar';
 export * from '@star-ng/ui/qr-code';
