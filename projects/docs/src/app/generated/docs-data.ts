@@ -7809,14 +7809,14 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-galleria",
     "entry": "@star-ng/ui/media",
-    "description": "Image gallery (PrimeNG `p-galleria`): main image with caption, previous / next, Arrow keys, and a thumbnail strip (`aria-current` on the active one). `<star-galleria [images]=\"photos\" [(activeIndex)]=\"current\" />`",
+    "description": "Image gallery (PrimeNG `p-galleria`): main image with caption, previous and next buttons, Arrow keys, a thumbnail strip (`aria-current` on the active one), optional indicators, autoplay with a pause button and a full-screen mode in a modal dialog. `<star-galleria [images]=\"photos\" [(activeIndex)]=\"current\" />`",
     "inputs": [
       {
         "name": "images",
         "type": "readonly StarGalleryImage[]",
         "default": "[]",
         "required": false,
-        "description": "The images: `src`, `alt`, and optional `thumbnail` and `caption`."
+        "description": "The images: `src`, `alt`, and optional `thumbnail` and `caption`. PrimeNG `value`."
       },
       {
         "name": "ariaLabel",
@@ -7824,6 +7824,125 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "null",
         "required": false,
         "description": "Accessible name of the gallery region (default: the `galleryLabel` text)."
+      },
+      {
+        "name": "showItemNavigators",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "The previous and next buttons on the image (default `true`)."
+      },
+      {
+        "name": "showItemNavigatorsOnHover",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The previous and next buttons show only while the pointer or the focus is on the gallery."
+      },
+      {
+        "name": "circular",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "After the last image comes the first (default `true`); without it the buttons stop at the ends."
+      },
+      {
+        "name": "showThumbnails",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "The thumbnail strip (default `true`)."
+      },
+      {
+        "name": "thumbnailsPosition",
+        "type": "Position",
+        "default": "'bottom'",
+        "required": false,
+        "description": "Side of the thumbnails: `'bottom'` (default), `'top'`, `'left'` or `'right'` (logical)."
+      },
+      {
+        "name": "numVisible",
+        "type": "number | null",
+        "default": "null",
+        "required": false,
+        "description": "Number of thumbnails shown at once; the strip follows the image on show. Default: all."
+      },
+      {
+        "name": "responsiveOptions",
+        "type": "readonly StarGalleriaResponsiveOption[] | null",
+        "default": "null",
+        "required": false,
+        "description": "`numVisible` per window width (the entry with the smallest fitting `breakpoint` wins)."
+      },
+      {
+        "name": "showThumbnailNavigators",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Previous and next buttons at the ends of the thumbnail strip."
+      },
+      {
+        "name": "verticalThumbnailViewPortHeight",
+        "type": "string",
+        "default": "'20rem'",
+        "required": false,
+        "description": "CSS `max-height` of a `left` or `right` thumbnail strip (default `'20rem'`)."
+      },
+      {
+        "name": "showIndicators",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "A row of indicator buttons, one per image."
+      },
+      {
+        "name": "showIndicatorsOnItem",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The indicators lie on the image."
+      },
+      {
+        "name": "indicatorsPosition",
+        "type": "Position",
+        "default": "'bottom'",
+        "required": false,
+        "description": "Side of the indicators: `'bottom'` (default), `'top'`, `'left'` or `'right'`."
+      },
+      {
+        "name": "changeItemOnIndicatorHover",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Pointing at an indicator shows its image."
+      },
+      {
+        "name": "autoPlay",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows the next image every `transitionInterval` milliseconds, with a pause button. It pauses while the pointer or the focus is on the gallery and does not advance while motion is reduced."
+      },
+      {
+        "name": "transitionInterval",
+        "type": "number",
+        "default": "4000",
+        "required": false,
+        "description": "Time between two images of the autoplay, in milliseconds (default 4000)."
+      },
+      {
+        "name": "shouldStopAutoplayByClick",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "A click on a button, a thumbnail or an indicator stops the autoplay (default `true`)."
+      },
+      {
+        "name": "fullScreen",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Full-screen mode: the gallery shows in a modal dialog that fills the window while `visible` is true, and nothing shows in the page."
       },
       {
         "name": "pt",
@@ -7849,22 +7968,55 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "0",
         "required": false,
         "description": "Index of the image on show."
+      },
+      {
+        "name": "visible",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "With `fullScreen`: the dialog is open."
       }
     ],
     "outputs": [],
     "parts": [
       "root",
+      "bodyPanel",
+      "header",
+      "itemPanel",
       "stagePanel",
       "picture",
       "caption",
       "navigation",
-      "previousIcon",
-      "nextIcon",
       "countText",
+      "playButton",
+      "playIcon",
       "thumbsPanel",
+      "thumbnailNavButton",
+      "thumbnailList",
       "thumbnailButton",
-      "thumbnail"
+      "thumbnail",
+      "footer",
+      "indicatorList",
+      "indicatorButton",
+      "navigationIcon"
     ]
+  },
+  "StarGalleriaTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starGalleriaTemplate]",
+    "entry": "@star-ng/ui/media",
+    "description": "Replaces a part of `star-galleria`: `item` (the main image), `thumbnail`, `caption` or `indicator` (the content of an indicator button). PrimeNG `#item`, `#thumbnail`, `#caption` and `#indicator` templates. The context has the image (`let-image`), `index` and `active`. `<ng-template starGalleriaTemplate=\"caption\" let-image>{{ image.alt }}</ng-template>`",
+    "inputs": [
+      {
+        "name": "starGalleriaTemplate",
+        "type": "StarGalleriaTemplateName",
+        "default": null,
+        "required": true,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
   },
   "StarGantt": {
     "kind": "component",
@@ -21188,7 +21340,10 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "forms/signal": "<div class=\"docs-stack\">\n  <star-field label=\"Name\" [state]=\"profile.name()\">\n    <input starInput [formField]=\"profile.name\" />\n  </star-field>\n  <star-toggle-switch [formField]=\"profile.newsletter\">Newsletter</star-toggle-switch>\n  <p class=\"docs-output\" role=\"status\">\n    {{ profile().valid() ? 'Valid' : 'Not valid' }}: {{ model().name || '(no name)' }}\n  </p>\n</div>",
   "forms/two-way": "<star-checkbox [(checked)]=\"remember\">Remember this device</star-checkbox>\n<p class=\"docs-output\" role=\"status\">{{ remember() }}</p>",
   "galleria/basic": "<star-galleria\n  style=\"width: 100%; max-width: 40rem\"\n  [images]=\"images\"\n  ariaLabel=\"Site photos\"\n/>",
+  "galleria/full-screen": "<div class=\"docs-row\">\n  @for (image of images; track image.src; let i = $index) {\n    <button\n      type=\"button\"\n      class=\"star-btn star-btn--secondary star-btn--sm\"\n      (click)=\"openAt(i)\"\n    >\n      Open {{ image.alt }}\n    </button>\n  }\n</div>\n<star-galleria\n  [images]=\"images\"\n  [(activeIndex)]=\"fullIndex\"\n  [(visible)]=\"fullOpen\"\n  fullScreen\n  ariaLabel=\"Dock photos\"\n/>",
   "galleria/model": "<star-galleria\n  style=\"width: 100%; max-width: 40rem\"\n  [images]=\"images\"\n  [(activeIndex)]=\"active\"\n  ariaLabel=\"Linked photos\"\n/>\n<p class=\"docs-output\" role=\"status\">Active index: {{ active() }}</p>",
+  "galleria/options": "<star-galleria\n  style=\"width: 100%; max-width: 40rem\"\n  [images]=\"images\"\n  ariaLabel=\"Dock photos with indicators\"\n  thumbnailsPosition=\"right\"\n  [numVisible]=\"3\"\n  [responsiveOptions]=\"responsive\"\n  showThumbnailNavigators\n  showIndicators\n  showItemNavigatorsOnHover\n  autoPlay\n  [transitionInterval]=\"5000\"\n  [circular]=\"false\"\n/>",
+  "galleria/templates": "<star-galleria\n  style=\"width: 100%; max-width: 40rem\"\n  [images]=\"images\"\n  ariaLabel=\"Dock photos with captions\"\n  showIndicators\n>\n  <ng-template starGalleriaTemplate=\"caption\" let-image let-i=\"index\">\n    <strong>{{ i + 1 }}.</strong> {{ image.alt }}\n  </ng-template>\n  <ng-template starGalleriaTemplate=\"indicator\" let-i=\"index\">{{ i + 1 }}</ng-template>\n  <ng-template starFooter>\n    <p class=\"docs-output\">Photos of the north loading dock.</p>\n  </ng-template>\n</star-galleria>",
   "gantt/large": "<star-gantt [tasks]=\"large\" scale=\"month\" ariaLabel=\"Order batches\" readonly />",
   "gantt/launch": "<div class=\"docs-stack\">\n  <star-select-button\n    [options]=\"scales\"\n    optionLabel=\"label\"\n    optionValue=\"value\"\n    [allowEmpty]=\"false\"\n    size=\"sm\"\n    ariaLabel=\"Scale\"\n    [(value)]=\"scale\"\n  />\n  <star-gantt\n    [tasks]=\"tasks()\"\n    [(scale)]=\"scale\"\n    [(collapsed)]=\"collapsed\"\n    locale=\"en-GB\"\n    ariaLabel=\"Launch plan\"\n    (taskChange)=\"onChange($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">{{ log() }}</p>\n</div>",
   "gauge/interactive": "<div class=\"docs-stack\">\n  <star-field label=\"Volume\">\n    <star-linear-gauge interactive [step]=\"5\" [formField]=\"model.volume\" />\n  </star-field>\n  <star-radial-gauge pointer=\"bar\" [value]=\"settings().volume\" ariaLabel=\"Volume level\" />\n  <p>Volume: {{ settings().volume }}</p>\n</div>",

@@ -572,6 +572,42 @@ test.describe('galleria', () => {
     await gallery(page, 'Site photos').getByRole('button', { name: 'Next image' }).click();
     expect(errors).toEqual([]);
   });
+
+  test('full screen opens in a dialog at the chosen image and closes with Escape', async ({
+    page,
+  }) => {
+    await openPage(page, '/controls/galleria', 'Galleria');
+    const live = example(page, 'Full screen');
+    const opener = live.getByRole('button', { name: 'Open Loading dock 3' });
+    await opener.click();
+    const dialog = page.getByRole('dialog', { name: 'Dock photos' });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.locator('.star-galleria__stage img')).toHaveAttribute(
+      'alt',
+      'Loading dock 3',
+    );
+    await dialog.getByRole('button', { name: 'Next image' }).click();
+    await expect(dialog.locator('.star-galleria__count')).toHaveText('4 / 5');
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeHidden();
+    await expect(opener).toBeFocused();
+  });
+
+  test('indicators and a side strip of three thumbnails follow the image', async ({ page }) => {
+    await openPage(page, '/controls/galleria', 'Galleria');
+    const region = example(page, 'Thumbnails, indicators and autoplay').getByRole('region', {
+      name: 'Dock photos with indicators',
+    });
+    await region.getByRole('button', { name: 'Pause slides' }).click();
+    await expect(region.locator('.star-galleria__thumb')).toHaveCount(3);
+    await region.locator('.star-galleria__indicator').nth(4).click();
+    await expect(region.locator('.star-galleria__count')).toHaveText('5 / 5');
+    await expect(region.getByRole('button', { name: 'Next image' }).first()).toBeDisabled();
+    await expect(region.locator('.star-galleria__thumb').last()).toHaveAttribute(
+      'aria-current',
+      'true',
+    );
+  });
 });
 
 test.describe('image', () => {

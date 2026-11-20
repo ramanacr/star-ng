@@ -11,14 +11,12 @@ import {
   ElementRef,
   inject,
   input,
-  model,
   signal,
   TemplateRef,
   viewChild,
 } from '@angular/core';
 import {
   STAR_UI_TEXT,
-  starInlineKey,
   starIsRtl,
   starPrefersReducedMotion,
   StarStyled,
@@ -222,119 +220,7 @@ export class StarCarousel<T = unknown> {
 
 // ---------------------------------------------------------------- Galleria and image
 
-export interface StarGalleryImage {
-  readonly src: string;
-  readonly thumbnail?: string;
-  readonly alt: string;
-  readonly caption?: string;
-}
-
-/**
- * Image gallery (PrimeNG `p-galleria`): main image with caption, previous / next, Arrow keys,
- * and a thumbnail strip (`aria-current` on the active one).
- * `<star-galleria [images]="photos" [(activeIndex)]="current" />`
- */
-@Component({
-  selector: 'star-galleria',
-  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
-  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  host: {
-    class: 'star-galleria',
-    role: 'region',
-    'aria-roledescription': 'gallery',
-    '[attr.aria-label]': 'ariaLabel() ?? text.galleryLabel',
-  },
-  template: `
-    @if (current(); as image) {
-      <figure
-        data-star-part="stagePanel"
-        class="star-galleria__stage"
-        tabindex="0"
-        (keydown)="onKeydown($event)"
-      >
-        <img data-star-part="picture" [src]="image.src" [alt]="image.alt" loading="lazy" />
-        @if (image.caption) {
-          <figcaption data-star-part="caption" class="star-galleria__caption">
-            {{ image.caption }}
-          </figcaption>
-        }
-        <button
-          data-star-part="navigation"
-          type="button"
-          class="star-galleria__nav star-galleria__nav--prev"
-          [attr.aria-label]="text.previousImage"
-          (click)="step(-1)"
-        >
-          <i
-            data-star-part="previousIcon"
-            class="ph-bold ph-caret-left star-icon-mirror"
-            aria-hidden="true"
-          ></i>
-        </button>
-        <button
-          data-star-part="navigation"
-          type="button"
-          class="star-galleria__nav star-galleria__nav--next"
-          [attr.aria-label]="text.nextImage"
-          (click)="step(1)"
-        >
-          <i
-            data-star-part="nextIcon"
-            class="ph-bold ph-caret-right star-icon-mirror"
-            aria-hidden="true"
-          ></i>
-        </button>
-        <span data-star-part="countText" class="star-galleria__count" aria-live="polite"
-          >{{ activeIndex() + 1 }} / {{ images().length }}</span
-        >
-      </figure>
-    }
-    <div data-star-part="thumbsPanel" class="star-galleria__thumbs">
-      @for (image of images(); track $index; let i = $index) {
-        <button
-          data-star-part="thumbnailButton"
-          type="button"
-          class="star-galleria__thumb"
-          [attr.aria-current]="i === activeIndex() || null"
-          [attr.aria-label]="text.showImage(image.alt)"
-          (click)="activeIndex.set(i)"
-        >
-          <img
-            data-star-part="thumbnail"
-            [src]="image.thumbnail ?? image.src"
-            alt=""
-            loading="lazy"
-          />
-        </button>
-      }
-    </div>
-  `,
-})
-export class StarGalleria {
-  protected readonly text = inject(STAR_UI_TEXT);
-  /** The images: `src`, `alt`, and optional `thumbnail` and `caption`. */
-  readonly images = input<readonly StarGalleryImage[]>([]);
-  /** Index of the image on show. */
-  readonly activeIndex = model(0);
-  /** Accessible name of the gallery region (default: the `galleryLabel` text). */
-  readonly ariaLabel = input<string | null>(null);
-  protected readonly current = computed(() => this.images()[this.activeIndex()] ?? null);
-
-  step(delta: number): void {
-    const count = this.images().length;
-    if (count) this.activeIndex.set((this.activeIndex() + delta + count) % count);
-  }
-
-  protected onKeydown(event: KeyboardEvent): void {
-    // Arrow right is the next image in reading order: the left arrow in right-to-left.
-    const key = starInlineKey(event);
-    if (key === 'ArrowLeft' || key === 'ArrowRight') {
-      event.preventDefault();
-      this.step(key === 'ArrowLeft' ? -1 : 1);
-    }
-  }
-}
+export * from './galleria';
 
 /**
  * Image with preview (PrimeNG `p-image [preview]`): lazy-loaded thumbnail; click opens the

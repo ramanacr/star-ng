@@ -168,7 +168,16 @@ export type StarIconSlotName =
   | 'moveToTarget'
   | 'moveAllToTarget'
   | 'moveToSource'
-  | 'moveAllToSource';
+  | 'moveAllToSource'
+  | 'previous'
+  | 'next'
+  | 'previousThumbnail'
+  | 'nextThumbnail'
+  | 'preview'
+  | 'zoomIn'
+  | 'zoomOut'
+  | 'rotateLeft'
+  | 'rotateRight';
 
 /** Context of the icon slot. */
 export interface StarIconContext {

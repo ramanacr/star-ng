@@ -1615,6 +1615,16 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'galleria full screen',
+    path: 'controls/galleria',
+    open: async (page) => {
+      await example(page, 'Full screen')
+        .getByRole('button', { name: 'Open Loading dock 2' })
+        .click();
+      await expect(page.getByRole('dialog', { name: 'Dock photos' })).toBeVisible();
+    },
+  },
+  {
     name: 'image preview',
     path: 'controls/image',
     open: async (page) => {
