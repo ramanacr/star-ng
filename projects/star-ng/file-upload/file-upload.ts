@@ -22,6 +22,7 @@ import {
   STAR_SLOT_HOST,
   STAR_UI_TEXT,
   StarEmptyContext,
+  starFormatFileSize,
   StarSlot,
   starSlot,
 } from '@star-ng/ui/core';
@@ -42,21 +43,12 @@ export interface StarFileStatus {
   readonly message?: string;
 }
 
-/** Human-readable size with `Intl.NumberFormat` byte units (kB, MB). */
+/**
+ * Human-readable size with `Intl.NumberFormat` byte units (kB, MB).
+ * @deprecated Use `starFormatFileSize` from `@star-ng/ui/core` (same result, also for `null`).
+ */
 export function formatFileSize(bytes: number, locale?: string): string {
-  const units = ['byte', 'kilobyte', 'megabyte', 'gigabyte'] as const;
-  let value = bytes;
-  let unit = 0;
-  while (value >= 1024 && unit < units.length - 1) {
-    value /= 1024;
-    unit++;
-  }
-  return new Intl.NumberFormat(locale, {
-    style: 'unit',
-    unit: units[unit],
-    unitDisplay: 'short',
-    maximumFractionDigits: unit === 0 ? 0 : 1,
-  }).format(value);
+  return starFormatFileSize(bytes, locale);
 }
 
 /** Matches a file against an `accept` list such as `.pdf,image/*,application/msword`. */
@@ -310,7 +302,7 @@ export class StarFileUpload implements FormValueControl<readonly File[]> {
     const parts: string[] = [];
     if (this.accept()) parts.push(this.accept().split(',').join(', '));
     if (this.maxFileSize())
-      parts.push(this.text.fileMaxSize(formatFileSize(this.maxFileSize(), this.locale())));
+      parts.push(this.text.fileMaxSize(starFormatFileSize(this.maxFileSize(), this.locale())));
     if (this.fileLimit()) parts.push(this.text.fileUpTo(this.fileLimit()));
     return parts.join(' · ');
   });
@@ -370,7 +362,7 @@ export class StarFileUpload implements FormValueControl<readonly File[]> {
   }
 
   protected size(file: File): string {
-    return formatFileSize(file.size, this.locale());
+    return starFormatFileSize(file.size, this.locale());
   }
 
   protected rejectionText(item: StarRejectedFile): string {
@@ -380,7 +372,7 @@ export class StarFileUpload implements FormValueControl<readonly File[]> {
       case 'size':
         return this.text.fileTooLarge(
           item.file.name,
-          formatFileSize(this.maxFileSize(), this.locale()),
+          starFormatFileSize(this.maxFileSize(), this.locale()),
         );
       default:
         return this.text.fileLimitReached(this.fileLimit());
