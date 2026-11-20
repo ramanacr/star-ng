@@ -23,7 +23,7 @@ import {
   untracked,
   viewChild,
 } from '@angular/core';
-import { STAR_UI_TEXT, StarAnnouncer, starInlineKey } from '@star-ng/ui/core';
+import { STAR_UI_TEXT, StarAnnouncer, starInlineKey, ɵstarModalOutside } from '@star-ng/ui/core';
 import { StarMenu, StarMenuItem, StarMenuTrigger } from '@star-ng/ui/menu';
 import { StarTooltip } from '@star-ng/ui/tooltip';
 import {
@@ -908,27 +908,9 @@ export class StarRibbon {
     this.hideKeyTips();
   }
 
-  /**
-   * True when a modal dialog outside the ribbon is open: a native modal `<dialog>` (`:modal`) or
-   * an element with `aria-modal="true"`.
-   */
+  /** True when a modal dialog outside the ribbon is open. */
   private modalOutside(): boolean {
-    const host = this.host.nativeElement;
-    const outside = (element: Element) => !element.contains(host);
-    // Only a connected element that shows counts (`checkVisibility()` where the browser has it).
-    const visible = (element: Element) => {
-      if (!element.isConnected || element.closest('[hidden], dialog:not([open])')) return false;
-      const check = (element as Element & { checkVisibility?: () => boolean }).checkVisibility;
-      return check ? check.call(element) : true;
-    };
-    let modals: Element[] = [];
-    try {
-      modals = [...this.doc.querySelectorAll(':modal')];
-    } catch {
-      // An engine without `:modal`: the aria-modal check below still works.
-    }
-    modals.push(...[...this.doc.querySelectorAll('[aria-modal="true"]')].filter(visible));
-    return modals.some(outside);
+    return ɵstarModalOutside(this.doc, this.host.nativeElement);
   }
 
   /** Hides the KeyTips. */

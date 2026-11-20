@@ -118,6 +118,25 @@ describe('StarCommandPalette', () => {
     expect(fixture.componentInstance.open()).toBe(false);
   });
 
+  it('ignores the global shortcut while a modal dialog of the app is open', async () => {
+    const { fixture } = await setup();
+    const dialog = document.createElement('div');
+    dialog.setAttribute('role', 'dialog');
+    dialog.setAttribute('aria-modal', 'true');
+    document.body.appendChild(dialog);
+    try {
+      const event = key(dialog, 'k', { ctrlKey: true });
+      await fixture.whenStable();
+      expect(event.defaultPrevented).toBe(false);
+      expect(fixture.componentInstance.open()).toBe(false);
+    } finally {
+      dialog.remove();
+    }
+    key(document.body, 'k', { ctrlKey: true });
+    await fixture.whenStable();
+    expect(fixture.componentInstance.open()).toBe(true);
+  });
+
   it('takes another hotkey, ignores a one-key hotkey in a field, and can turn it off', async () => {
     const { fixture, root } = await setup();
     fixture.componentInstance.hotkey.set('/');
