@@ -3,7 +3,7 @@
  * replace, counts and input rules features of Aurora RTE (MIT, same owner,
  * https://github.com/ramanacr/aurora-rte, `find-replace.ts`, `counts.ts`, `markdown.ts`).
  */
-import { starEditorRestore, starEditorText } from './editor-dom';
+import { starEditorClosest, starEditorRestore, starEditorText } from './editor-dom';
 
 export interface StarEditorFindOptions {
   readonly matchCase: boolean;
@@ -128,6 +128,8 @@ const BLOCK_RULES: readonly [RegExp, string][] = [
 export function starEditorInputRule(area: HTMLElement, range: Range): boolean {
   if (!range.collapsed || range.startContainer.nodeType !== 3) return false;
   const node = range.startContainer as Text;
+  // Code keeps its text as typed: no rule inside code, pre or kbd.
+  if (starEditorClosest(node, area, ['CODE', 'PRE', 'KBD'])) return false;
   const doc = area.ownerDocument;
   const before = node.data.slice(0, range.startOffset);
   // Inline: **text** just before the caret.

@@ -80,6 +80,25 @@ describe('starEditorInputRule', () => {
     }
   });
 
+  it('never fires inside code, pre or kbd', () => {
+    for (const html of [
+      '<p><code>f(**kw**</code></p>',
+      '<pre>x = **a**</pre>',
+      '<p><kbd>**k**</kbd></p>',
+      '<pre># </pre>',
+      '<p><code>- </code></p>',
+    ]) {
+      const el = area(html);
+      const text = el.querySelector('code, pre, kbd')!.firstChild!;
+      const range = document.createRange();
+      range.setStart(text, text.textContent!.length);
+      range.collapse(true);
+      expect(starEditorInputRule(el, range), html).toBe(false);
+      expect(el.innerHTML).toBe(html);
+      el.remove();
+    }
+  });
+
   it('makes **text** bold and leaves other text alone', () => {
     const { el, range } = typedAt('<p>The **new**</p>');
     expect(starEditorInputRule(el, range)).toBe(true);

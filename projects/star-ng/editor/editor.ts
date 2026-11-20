@@ -581,7 +581,12 @@ export class StarEditor implements FormValueControl<string> {
   protected onInput(): void {
     const typed = this.typedNext;
     this.typedNext = null;
-    if (this.markdownShortcuts() && (typed === ' ' || typed === '*') && this.format() === 'html') {
+    if (
+      this.markdownShortcuts() &&
+      !this.sourceMode() &&
+      (typed === ' ' || typed === '*') &&
+      this.format() === 'html'
+    ) {
       const area = this.area().nativeElement;
       const range = starEditorRange(area);
       if (range && starEditorInputRule(area, range)) this.typingNext = false;

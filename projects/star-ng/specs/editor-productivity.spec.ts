@@ -185,3 +185,33 @@ describe('StarEditor accessibility check', () => {
     expect(panel.querySelector('[role=status]')!.textContent!.trim()).toBe('1 problem found.');
   });
 });
+
+@Component({
+  imports: [StarEditor],
+  template: `<star-editor
+    [(value)]="html"
+    [toolbar]="['source']"
+    markdownShortcuts
+    ariaLabel="Rules"
+  />`,
+})
+class RulesSourceHost {
+  readonly html = signal('<p>Start</p>');
+}
+
+describe('StarEditor input rules and the source view', () => {
+  it('does not apply input rules to text typed in the source view', async () => {
+    const fixture = TestBed.createComponent(RulesSourceHost);
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+    el.querySelector<HTMLButtonElement>('[aria-label="HTML source"]')!.click();
+    await fixture.whenStable();
+    const source = el.querySelector('textarea')!;
+    source.value = '<p># **kept** </p>';
+    source.dispatchEvent(new InputEvent('beforeinput', { inputType: 'insertText', data: ' ' }));
+    source.dispatchEvent(new Event('input', { bubbles: true }));
+    el.querySelector<HTMLButtonElement>('[aria-label="HTML source"]')!.click();
+    await fixture.whenStable();
+    expect(fixture.componentInstance.html()).toBe('<p># **kept** </p>');
+  });
+});
