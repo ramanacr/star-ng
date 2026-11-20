@@ -438,6 +438,13 @@ export const STAR_UI_TEXT_ES: StarUiText = {
   kanbanCardHint:
     'Pulse Espacio para tomar la tarjeta. Las flechas la mueven, Espacio la suelta y Escape cancela.',
   kanbanPickedUp: (card, column) => `${card} tomada en ${column}`,
+  dragHint:
+    'Pulse Espacio para tomar el elemento. Las flechas pasan de una zona de destino a otra, Espacio lo suelta y Escape cancela.',
+  dragPickedUp: (label) => `${label} tomado`,
+  dragOver: (target) => `Sobre ${target}`,
+  dragDropped: (label, target) => `${label} soltado en ${target}`,
+  dragCanceled: (label) => `Arrastre cancelado. ${label} no se movió`,
+  dragNoTarget: 'Ninguna zona de destino acepta este elemento',
   kanbanMoved: (column, position, total) => `Movida a ${column}, posición ${position} de ${total}`,
   kanbanDropped: (card, column, position, total) =>
     `${card} soltada en ${column}, posición ${position} de ${total}`,

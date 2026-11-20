@@ -437,6 +437,13 @@ export const STAR_UI_TEXT_DE: StarUiText = {
   kanbanCardHint:
     'Mit der Leertaste nehmen Sie die Karte auf. Die Pfeiltasten verschieben sie, die Leertaste legt sie ab, Escape bricht ab.',
   kanbanPickedUp: (card, column) => `${card} in ${column} aufgenommen`,
+  dragHint:
+    'Leertaste nimmt das Element auf. Die Pfeiltasten wechseln zwischen den Ablagezonen, die Leertaste legt ab und Escape bricht ab.',
+  dragPickedUp: (label) => `${label} aufgenommen`,
+  dragOver: (target) => `Über ${target}`,
+  dragDropped: (label, target) => `${label} auf ${target} abgelegt`,
+  dragCanceled: (label) => `Ziehen abgebrochen. ${label} wurde nicht verschoben`,
+  dragNoTarget: 'Keine Ablagezone nimmt dieses Element an',
   kanbanMoved: (column, position, total) =>
     `Nach ${column} verschoben, Position ${position} von ${total}`,
   kanbanDropped: (card, column, position, total) =>

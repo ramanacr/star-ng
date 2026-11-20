@@ -4869,6 +4869,80 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ]
   },
+  "StarDraggable": {
+    "kind": "directive",
+    "selector": "[starDraggable]",
+    "entry": "@star-ng/ui/drag-drop",
+    "description": "Makes an element draggable (PrimeNG `pDraggable`, Ignite `igxDrag`). The value is the data payload that the drop zone receives.",
+    "inputs": [
+      {
+        "name": "starDraggable",
+        "type": "T",
+        "default": "undefined as T",
+        "required": false,
+        "description": "The data payload of the drag."
+      },
+      {
+        "name": "dragScope",
+        "type": "StarDragScope",
+        "default": "DEFAULT_SCOPE",
+        "required": false,
+        "description": "The scope names. A drop zone accepts the drag when it shares a name (default `default`)."
+      },
+      {
+        "name": "dragEffect",
+        "type": "StarDragEffect",
+        "default": "'move'",
+        "required": false,
+        "description": "The operations allowed (`effectAllowed`, PrimeNG `dragEffect`). Default `move`."
+      },
+      {
+        "name": "dragHandle",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "A CSS selector: the drag starts only from a matching element inside the host (PrimeNG `dragHandle`)."
+      },
+      {
+        "name": "dragImage",
+        "type": "HTMLElement | null",
+        "default": "null",
+        "required": false,
+        "description": "The element that the browser shows under the pointer, and the touch copy. Default: the host."
+      },
+      {
+        "name": "dragLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "The name of the item in the announcements. Default: the text of the host."
+      },
+      {
+        "name": "dragDisabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": [
+      {
+        "name": "dragStart",
+        "type": "StarDragEvent<T>",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "dragEnd",
+        "type": "StarDragEndEvent<T>",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
   "StarDrawer": {
     "kind": "component",
     "selector": "star-drawer",
@@ -5159,6 +5233,73 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "models": [],
     "outputs": []
+  },
+  "StarDroppable": {
+    "kind": "directive",
+    "selector": "[starDroppable]",
+    "entry": "@star-ng/ui/drag-drop",
+    "description": "A drop zone (PrimeNG `pDroppable`, Ignite `igxDrop`). The value is the scope (one name or a list); the zone accepts a `starDraggable` that shares a name. While an accepted drag runs, the zone has the class `star-droppable--active`; while the drag is over it, `star-droppable--over`.",
+    "inputs": [
+      {
+        "name": "starDroppable",
+        "type": "StarDragScope",
+        "default": "DEFAULT_SCOPE",
+        "required": false,
+        "description": "The scope names that the zone accepts (default `default`)."
+      },
+      {
+        "name": "dropEffect",
+        "type": "StarDropEffect | null",
+        "default": "null",
+        "required": false,
+        "description": "The drop effect of the zone (`dropEffect`). `null` (default) uses the first operation that the draggable allows. An effect that the draggable does not allow refuses the drop."
+      },
+      {
+        "name": "dropLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "The name of the zone in the announcements. Default: `aria-label`, else the text of the host."
+      },
+      {
+        "name": "dropAccept",
+        "type": "((data: unknown, source: StarDraggable) => boolean) | null",
+        "default": "null",
+        "required": false,
+        "description": "An extra rule: return `false` to refuse a drag (PrimeNG `validateDrop`)."
+      },
+      {
+        "name": "dropDisabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": [
+      {
+        "name": "dragEnter",
+        "type": "StarDragZoneEvent",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "dragLeave",
+        "type": "StarDragZoneEvent",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "dropped",
+        "type": "StarDropEvent",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
   },
   "StarEditor": {
     "kind": "component",
@@ -16307,6 +16448,8 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "document-viewer/error": "<star-document-viewer\n  source=\"missing.pdf\"\n  [renderer]=\"errorRenderer\"\n  title=\"Missing file\"\n  height=\"12rem\"\n>\n  <ng-template starDocumentError let-error>\n    {{ $any(error).message }} Check the link and try again.\n  </ng-template>\n</star-document-viewer>",
   "document-viewer/images": "<star-document-viewer\n  [source]=\"images\"\n  [renderer]=\"imageRenderer\"\n  title=\"Warehouse scans\"\n  height=\"22rem\"\n  zoom=\"fit-page\"\n  mode=\"single\"\n  [showPrint]=\"false\"\n/>",
   "document-viewer/report": "<div class=\"docs-stack\">\n  <star-document-viewer\n    [source]=\"12\"\n    title=\"Quarterly report\"\n    height=\"28rem\"\n    [(page)]=\"page\"\n    [(thumbnails)]=\"thumbnails\"\n    (download)=\"action.set('download pressed: save the file here.')\"\n    (print)=\"action.set('print pressed: print the file here.')\"\n  />\n  <p class=\"docs-output\" role=\"status\">Page {{ page() }}. {{ action() }}</p>\n</div>",
+  "drag-drop/basic": "<div class=\"docs-stack\">\n  <div class=\"boards\">\n    <section\n      class=\"zone\"\n      starDroppable=\"orders\"\n      dropLabel=\"Open orders\"\n      aria-label=\"Open orders\"\n      (dropped)=\"move($event, 'open')\"\n    >\n      <p class=\"zone-title\">Open</p>\n      @for (order of open(); track order.id) {\n        <div\n          class=\"order\"\n          [starDraggable]=\"order\"\n          dragScope=\"orders\"\n          [dragLabel]=\"order.id\"\n        >\n          {{ order.id }}, {{ order.city }}\n        </div>\n      }\n    </section>\n    <section\n      class=\"zone\"\n      starDroppable=\"orders\"\n      dropLabel=\"Shipped orders\"\n      aria-label=\"Shipped orders\"\n      (dropped)=\"move($event, 'shipped')\"\n    >\n      <p class=\"zone-title\">Shipped</p>\n      @for (order of shipped(); track order.id) {\n        <div\n          class=\"order\"\n          [starDraggable]=\"order\"\n          dragScope=\"orders\"\n          [dragLabel]=\"order.id\"\n        >\n          {{ order.id }}, {{ order.city }}\n        </div>\n      }\n    </section>\n  </div>\n  <p class=\"docs-output\" role=\"status\">{{ last() }}</p>\n</div>",
+  "drag-drop/scopes": "<div class=\"boards\">\n  <section class=\"zone\" aria-label=\"Documents\">\n    <div\n      class=\"order handle\"\n      [starDraggable]=\"'INV-2031'\"\n      dragScope=\"invoices\"\n      dragEffect=\"copy\"\n      dragHandle=\".grip\"\n      dragLabel=\"Invoice INV-2031\"\n    >\n      <i class=\"ph-bold ph-dots-six-vertical grip\" aria-hidden=\"true\"></i>\n      Invoice INV-2031\n    </div>\n    <div class=\"order\" [starDraggable]=\"'ORD-1050'\" dragScope=\"drafts\">\n      Draft order ORD-1050\n    </div>\n  </section>\n  <section\n    class=\"zone\"\n    starDroppable=\"invoices\"\n    dropEffect=\"copy\"\n    dropLabel=\"Archive\"\n    aria-label=\"Archive\"\n    (dropped)=\"archive($event)\"\n  >\n    <p class=\"zone-title\">Archive</p>\n    @for (item of archived(); track $index) {\n      <span class=\"order\">{{ item }}</span>\n    }\n  </section>\n</div>",
   "drawer/basic": "<star-button leadingIcon=\"ph-bold ph-sidebar-simple\" (pressed)=\"basicOpen.set(true)\">\n  Open details\n</star-button>\n<star-drawer [(visible)]=\"basicOpen\" header=\"Order ORD-1042\" dismissableMask>\n  <div class=\"docs-stack\">\n    <p class=\"docs-output\">Orchard Supply, 12 items, ships on Friday.</p>\n    <star-field label=\"Internal note\">\n      <textarea starInput autoResize rows=\"3\"></textarea>\n    </star-field>\n  </div>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button variant=\"ghost\" (pressed)=\"basicOpen.set(false)\">Close</star-button>\n  </div>\n</star-drawer>",
   "drawer/modes": "<div class=\"docs-stack\">\n  <p class=\"docs-output\" role=\"status\">Last event: {{ modeEvent() }}</p>\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"floatOpen.set(true)\">Non-modal</star-button>\n    <star-button variant=\"secondary\" (pressed)=\"fullOpen.set(true)\"\n      >Full screen</star-button\n    >\n  </div>\n</div>\n<star-drawer\n  [(visible)]=\"floatOpen\"\n  header=\"Filters\"\n  position=\"end\"\n  drawerSize=\"20rem\"\n  [modal]=\"false\"\n  (shown)=\"modeEvent.set('non-modal shown')\"\n  (hidden)=\"modeEvent.set('non-modal hidden')\"\n>\n  <p>The page behind this drawer stays usable.</p>\n</star-drawer>\n<star-drawer\n  [(visible)]=\"fullOpen\"\n  header=\"Invoice INV-2041\"\n  position=\"bottom\"\n  fullScreen\n  dismissible\n  (shown)=\"modeEvent.set('full screen shown')\"\n  (hidden)=\"modeEvent.set('full screen hidden')\"\n>\n  <p>This drawer covers the window. Escape or the close button closes it.</p>\n</star-drawer>",
   "drawer/position": "<div class=\"docs-row\">\n  @for (item of positions; track item) {\n    <star-button variant=\"secondary\" (pressed)=\"openAt(item)\">{{ item }}</star-button>\n  }\n</div>\n<star-drawer\n  [(visible)]=\"positionOpen\"\n  [position]=\"position()\"\n  [drawerSize]=\"position() === 'top' || position() === 'bottom' ? '14rem' : '22rem'\"\n  [header]=\"'Drawer at the ' + position()\"\n>\n  <p>This drawer is pinned to the {{ position() }} edge.</p>\n</star-drawer>",

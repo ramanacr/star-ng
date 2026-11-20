@@ -918,6 +918,13 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         load: () => import('./controls/focus-trap.page').then((m) => m.FocusTrapPage),
       },
       {
+        label: 'Drag and drop',
+        path: 'controls/drag-drop',
+        keywords:
+          'draggable droppable drop zone dnd move keyboard touch scope pDraggable pDroppable',
+        load: () => import('./controls/drag-drop.page').then((m) => m.DragDropPage),
+      },
+      {
         label: 'Ripple',
         path: 'controls/ripple',
         keywords: 'ink press effect',

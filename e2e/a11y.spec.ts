@@ -366,6 +366,21 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'drag and drop, item picked up with the keyboard over a zone',
+    path: 'controls/drag-drop',
+    open: async (page) => {
+      // The page is prerendered: wait for hydration before the first key.
+      await expect(page.locator('docs-drag-drop-page[ngh]')).toHaveCount(0, { timeout: 15_000 });
+      const live = example(page, 'Move orders between lists');
+      const order = live.locator('.star-draggable', { hasText: 'ORD-1042' });
+      await order.focus();
+      await page.keyboard.press('Space');
+      await page.keyboard.press('ArrowDown');
+      await expect(order).toHaveClass(/star-draggable--picked/);
+      await expect(live.locator('.star-droppable--over')).toHaveCount(1);
+    },
+  },
+  {
     name: 'paginator rows per page open',
     path: 'controls/paginator',
     open: async (page) => {
