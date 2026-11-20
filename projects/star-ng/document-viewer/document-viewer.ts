@@ -224,6 +224,9 @@ const WHEEL_STEP = 50;
  * - The page area is a region named with `title`; each page is an image ("Page 3 of 12"), or a
  *   document with a visually hidden text layer when the renderer gives text. Page changes are
  *   announced. PageUp and PageDown change the page; Home and End go to the first and last page.
+ * - The renderer gets an `AbortSignal` for `load` and `renderPage` (see `StarDocumentRenderer`).
+ * - Known limit: the thumbnails sidebar renders a button per page (the canvases are lazy), so a
+ *   document of many thousand pages makes a long list.
  *
  * ```html
  * <star-document-viewer [source]="url" title="Invoice 1042" [(page)]="page" (download)="save()" />

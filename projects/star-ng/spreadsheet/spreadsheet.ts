@@ -149,7 +149,11 @@ const BACKGROUNDS: readonly StarCellBackground[] = [
  *   with its address, value and formula ("B3, 42, formula SUM of A1 to A5").
  * - The grid is always left to right, as in other spreadsheets; the toolbar and the sheet tabs
  *   follow the page direction.
- * - Not included: XLSX import and export, charts, merged cells, sorting and filtering.
+ * - Not included: XLSX import and export, charts, merged cells, sorting and filtering. Known
+ *   limits: empty function arguments, whole-column ranges (`A:A`) and `#N/A` are not parsed;
+ *   Control+arrow moves to the edge of the sheet, not to the edge of the data; a range reader is
+ *   found by a scan of all range formulas (fine for thousands of formulas, not tuned for more);
+ *   pasted tab-separated text with an unbalanced quote reads to the end of the text.
  *
  * ```html
  * <star-spreadsheet [(cells)]="budget" [rows]="50" [columns]="8" />
