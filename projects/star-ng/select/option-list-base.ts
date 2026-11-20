@@ -79,9 +79,10 @@ export class StarOptionTemplate<T = unknown> {
 
 /**
  * Transform of the `options` input: the array may hold `undefined` for options that a `lazy` list
- * has not loaded yet. The controls check for `undefined` where it matters.
+ * has not loaded yet. The controls check for `undefined` where it matters. Shared with the listbox
+ * entry point; not public API.
  */
-export function starLazyOptions<T>(options: readonly (T | undefined)[]): readonly T[] {
+export function ɵstarLazyOptions<T>(options: readonly (T | undefined)[]): readonly T[] {
   return options as readonly T[];
 }
 
@@ -145,7 +146,7 @@ export abstract class StarOptionListBase<TOption, TValue> {
    * loading row for it, and the keyboard skips it.
    */
   readonly options = input<readonly TOption[], readonly (TOption | undefined)[]>([], {
-    transform: starLazyOptions,
+    transform: ɵstarLazyOptions,
   });
   readonly optionLabel = input<StarOptionKey<TOption> | null>(null);
   /** Value stored in the form. Omit to store the whole option. */

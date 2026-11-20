@@ -35,8 +35,8 @@ const EDGES: StarDiagramEdge[] = [
       [gridSize]="20"
       [documentKey]="documentKey()"
       ariaLabel="Order workflow"
-      (nodesChange)="onNodes($event)"
-      (edgesChange)="onEdges($event)"
+      (nodesPatch)="onNodes($event)"
+      (edgesPatch)="onEdges($event)"
     >
       @if (custom()) {
         <ng-template starDiagramNode let-node>
@@ -402,8 +402,8 @@ describe('StarDiagram', () => {
     await stable();
     key(node('check'), 'Delete');
     await stable();
-    const sub1 = host.diagram().nodesChange.subscribe(() => order.push('nodes'));
-    const sub2 = host.diagram().edgesChange.subscribe(() => order.push('edges'));
+    const sub1 = host.diagram().nodesPatch.subscribe(() => order.push('nodes'));
+    const sub2 = host.diagram().edgesPatch.subscribe(() => order.push('edges'));
     host.diagram().undo();
     expect(order).toEqual(['nodes', 'edges']);
     sub1.unsubscribe();

@@ -22,6 +22,7 @@ import {
   STAR_SLOT_HOST,
   STAR_UI_TEXT,
   StarEmptyContext,
+  starFormatFileSize,
   StarSlot,
   starSlot,
 } from '@star-ng/ui/core';
@@ -42,7 +43,12 @@ export interface StarFileStatus {
   readonly message?: string;
 }
 
-/** Human-readable size with `Intl.NumberFormat` byte units (kB, MB). */
+/**
+ * Human-readable size with `Intl.NumberFormat` byte units (kB, MB).
+ * @deprecated Use `starFormatFileSize` from `@star-ng/ui/core` (also `null`, terabytes and a
+ * `digits` option); the controls use it. This function keeps its 0.3.1 behaviour: gigabytes are
+ * the largest unit and `NaN` formats as "NaN byte".
+ */
 export function formatFileSize(bytes: number, locale?: string): string {
   const units = ['byte', 'kilobyte', 'megabyte', 'gigabyte'] as const;
   let value = bytes;
@@ -310,7 +316,7 @@ export class StarFileUpload implements FormValueControl<readonly File[]> {
     const parts: string[] = [];
     if (this.accept()) parts.push(this.accept().split(',').join(', '));
     if (this.maxFileSize())
-      parts.push(this.text.fileMaxSize(formatFileSize(this.maxFileSize(), this.locale())));
+      parts.push(this.text.fileMaxSize(starFormatFileSize(this.maxFileSize(), this.locale())));
     if (this.fileLimit()) parts.push(this.text.fileUpTo(this.fileLimit()));
     return parts.join(' · ');
   });
@@ -370,7 +376,7 @@ export class StarFileUpload implements FormValueControl<readonly File[]> {
   }
 
   protected size(file: File): string {
-    return formatFileSize(file.size, this.locale());
+    return starFormatFileSize(file.size, this.locale());
   }
 
   protected rejectionText(item: StarRejectedFile): string {
@@ -380,7 +386,7 @@ export class StarFileUpload implements FormValueControl<readonly File[]> {
       case 'size':
         return this.text.fileTooLarge(
           item.file.name,
-          formatFileSize(this.maxFileSize(), this.locale()),
+          starFormatFileSize(this.maxFileSize(), this.locale()),
         );
       default:
         return this.text.fileLimitReached(this.fileLimit());

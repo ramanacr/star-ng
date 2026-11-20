@@ -1,3 +1,14 @@
 export * from './editor';
-export { starEditorSafeUrl, type StarEditorLinkValue } from './editor-link';
-export * from './editor-toolbar';
+export type { StarEditorLinkValue } from './editor-link';
+export {
+  STAR_EDITOR_DEFAULT_TOOLBAR,
+  STAR_EDITOR_FULL_TOOLBAR,
+  StarEditorToolbarTemplate,
+} from './editor-toolbar';
+export type {
+  StarEditorBlockFormat,
+  StarEditorButtonInfo,
+  StarEditorCommand,
+  StarEditorToolbarContext,
+  StarEditorToolbarItem,
+} from './editor-toolbar';

@@ -1,2 +1,3 @@
 export * from './barcode';
-export * from './barcode-encoder';
+export { starEncodeBarcode } from './barcode-encoder';
+export type { StarBarcodeEncoding, StarBarcodeType } from './barcode-encoder';

@@ -114,7 +114,7 @@ export abstract class StarGaugeBase implements FormValueControl<number> {
   /** Label for assistive technology. */
   readonly ariaLabel = input<string | null>(null);
   /** Id of the element that labels the gauge. */
-  readonly ariaLabelledby = input<string | null>(null);
+  readonly ariaLabelledBy = input<string | null>(null);
   readonly disabled = input(false, { transform: booleanAttribute });
   readonly readonly = input(false, { transform: booleanAttribute });
   /** Emits when an interactive gauge loses the focus. */
@@ -123,7 +123,7 @@ export abstract class StarGaugeBase implements FormValueControl<number> {
   /** The parent `star-field` when it labels the gauge: the host is not labelable. */
   private readonly field = injectStarFieldLink(null, () => this.focus());
   protected readonly labelledBy = computed(() =>
-    starFieldLabelledBy(this.field, this.ariaLabel(), this.ariaLabelledby()),
+    starFieldLabelledBy(this.field, this.ariaLabel(), this.ariaLabelledBy()),
   );
   protected readonly describedBy = computed(() => starJoinIds(this.field?.describedBy()));
 

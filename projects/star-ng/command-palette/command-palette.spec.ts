@@ -1,12 +1,8 @@
 import { Component, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import {
-  StarCommand,
-  StarCommandPalette,
-  starCommandScore,
-  StarCommandTemplate,
-} from '@star-ng/ui/command-palette';
+import { StarCommand, StarCommandPalette, StarCommandTemplate } from '@star-ng/ui/command-palette';
 import { provideStarUiText, StarEmptyTemplate, StarLoadingTemplate } from '@star-ng/ui/core';
+import { starCommandScore } from './command-palette';
 
 function key(target: EventTarget, key: string, init: KeyboardEventInit = {}): KeyboardEvent {
   const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, ...init });
@@ -120,6 +116,25 @@ describe('StarCommandPalette', () => {
     key(document.body, 'k');
     await fixture.whenStable();
     expect(fixture.componentInstance.open()).toBe(false);
+  });
+
+  it('ignores the global shortcut while a modal dialog of the app is open', async () => {
+    const { fixture } = await setup();
+    const dialog = document.createElement('div');
+    dialog.setAttribute('role', 'dialog');
+    dialog.setAttribute('aria-modal', 'true');
+    document.body.appendChild(dialog);
+    try {
+      const event = key(dialog, 'k', { ctrlKey: true });
+      await fixture.whenStable();
+      expect(event.defaultPrevented).toBe(false);
+      expect(fixture.componentInstance.open()).toBe(false);
+    } finally {
+      dialog.remove();
+    }
+    key(document.body, 'k', { ctrlKey: true });
+    await fixture.whenStable();
+    expect(fixture.componentInstance.open()).toBe(true);
   });
 
   it('takes another hotkey, ignores a one-key hotkey in a field, and can turn it off', async () => {

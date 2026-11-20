@@ -1,3 +1,3 @@
 export * from './document-renderer';
 export * from './document-viewer';
-export * from './viewer-model';
+export type { StarDocumentRotation, StarDocumentZoom } from './viewer-model';

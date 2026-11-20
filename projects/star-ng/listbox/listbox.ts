@@ -63,10 +63,10 @@ import {
 import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/ui/field';
 import {
   STAR_SELECT_DEFAULTS,
-  starLazyOptions,
   StarOptionTemplate,
   starSelectionChanging,
   StarSelectionChangingEvent,
+  ɵstarLazyOptions,
 } from '@star-ng/ui/select';
 import { StarListboxDropEvent, starListboxDropIndex } from './listbox-dragdrop';
 
@@ -385,7 +385,7 @@ export class StarListbox<TOption = unknown, TValue = TOption> implements FormVal
    * loading row for it, and the keyboard skips it.
    */
   readonly options = input<readonly TOption[], readonly (TOption | undefined)[]>([], {
-    transform: starLazyOptions,
+    transform: ɵstarLazyOptions,
   });
   readonly optionLabel = input<StarOptionKey<TOption> | null>(null);
   readonly optionValue = input<StarOptionKey<TOption> | null>(null);

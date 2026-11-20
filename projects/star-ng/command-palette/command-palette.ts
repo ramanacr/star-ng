@@ -26,6 +26,7 @@ import {
   StarEmptyContext,
   StarSlot,
   starSlot,
+  ɵstarModalOutside,
 } from '@star-ng/ui/core';
 
 /** One command of `star-command-palette`. */
@@ -508,6 +509,8 @@ export class StarCommandPalette {
     const value = this.hotkey();
     const hotkey = value ? parseHotkey(value) : null;
     if (!hotkey || event.defaultPrevented || !matchesHotkey(event, hotkey)) return;
+    // An app modal dialog is open: the shortcut must not open the palette over it.
+    if (ɵstarModalOutside(this.document, this.dialog().nativeElement)) return;
     // A one-key shortcut such as "/" must not fire while the user types in a field.
     if (!hotkey.ctrl && !hotkey.meta && !hotkey.mod && !hotkey.alt && this.isTyping(event)) return;
     event.preventDefault();

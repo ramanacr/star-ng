@@ -336,6 +336,26 @@ describe('StarFileManager', () => {
     expect(options()[3].getAttribute('aria-selected')).toBe('true');
   });
 
+  it('takes the rename field out of the option role in the icons view', async () => {
+    const { root, host, tool, stable } = await setup();
+    tool('view-icons').click();
+    host.selection.set(['notes']);
+    await stable();
+    const list = root.querySelector('[role="listbox"]')!;
+    const item = list.querySelector<HTMLElement>('[data-file-id="notes"]')!;
+    key(item, 'F2');
+    await stable();
+    const field = root.querySelector<HTMLInputElement>('.star-fm__rename')!;
+    // The children of an option are presentational: the field must not be inside one.
+    expect(field.closest('[role="option"]')).toBeNull();
+    expect(item.getAttribute('role')).toBe('group');
+    expect(item.getAttribute('aria-selected')).toBeNull();
+    key(field, 'Escape');
+    await stable();
+    expect(item.getAttribute('role')).toBe('option');
+    expect(item.getAttribute('aria-selected')).toBe('true');
+  });
+
   it('searches the folder and its subfolders', async () => {
     const { root, rows, stable } = await setup();
     const search = root.querySelector<HTMLInputElement>('input[type="search"]')!;

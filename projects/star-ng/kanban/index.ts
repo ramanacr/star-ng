@@ -1,2 +1,9 @@
 export * from './kanban';
-export * from './kanban-model';
+export { starKanbanApplyMove } from './kanban-model';
+export type {
+  StarKanbanAccessor,
+  StarKanbanColumn,
+  StarKanbanFields,
+  StarKanbanMove,
+  StarKanbanSwimlane,
+} from './kanban-model';

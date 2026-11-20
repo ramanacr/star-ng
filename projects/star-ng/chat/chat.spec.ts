@@ -7,11 +7,9 @@ import {
   StarChatAuthor,
   StarChatMessage,
   StarChatMessageTemplate,
-  starParseInline,
-  starParseMarkdownLite,
-  starSafeLink,
 } from '@star-ng/ui/chat';
 import { StarEmptyTemplate } from '@star-ng/ui/core';
+import { starParseInline, starParseMarkdownLite, starSafeLink } from './markdown-lite';
 
 const ANA: StarChatAuthor = { id: 'ana', name: 'Ana Silva' };
 const BOT: StarChatAuthor = { id: 'bot', name: 'Helper' };

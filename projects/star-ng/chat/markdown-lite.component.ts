@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
 import { starParseMarkdownLite } from './markdown-lite';
 
 /**
- * Renders text in the Markdown subset of `starParseMarkdownLite` (paragraphs, line breaks, bold,
+ * Renders text in a small Markdown subset (paragraphs, line breaks, bold,
  * italic, inline code, fenced code blocks and links). Everything is bound as text: raw HTML in the
  * source shows as text. Links open in a new tab with `rel="noopener noreferrer"`; only `http:`,
  * `https:` and `mailto:` addresses become links. `star-chat` and `star-ai-prompt` use it.

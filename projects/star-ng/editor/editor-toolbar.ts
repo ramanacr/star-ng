@@ -101,8 +101,8 @@ export const STAR_EDITOR_BUTTONS: Readonly<
   justifyRight: { label: 'editorAlignEnd', icon: 'ph-bold ph-text-align-right', toggle: true },
   link: { label: 'editorLink', icon: 'ph-bold ph-link', toggle: true },
   removeFormat: { label: 'editorClearFormatting', icon: 'ph-bold ph-text-t-slash', toggle: false },
-  undo: { label: 'editorUndo', icon: 'ph-bold ph-arrow-counter-clockwise', toggle: false },
-  redo: { label: 'editorRedo', icon: 'ph-bold ph-arrow-clockwise', toggle: false },
+  undo: { label: 'undo', icon: 'ph-bold ph-arrow-counter-clockwise', toggle: false },
+  redo: { label: 'redo', icon: 'ph-bold ph-arrow-clockwise', toggle: false },
 };
 
 /** Context of the `starEditorToolbar` template. */

@@ -218,7 +218,8 @@ const WHEEL_STEP = 50;
  *   thumbnails sidebar, continuous or single-page mode, full screen, and the `download` and
  *   `print` outputs (the owner decides what they do).
  * - Search (Control+F) when the renderer has `textContent`: result counts per page and jumps to
- *   the pages; highlighting is up to the renderer and not part of the shell.
+ *   the pages (the result count is announced once); highlighting is up to the renderer and not
+ *   part of the shell.
  * - Only the visible pages plus one on each side have a canvas, sized by `devicePixelRatio`;
  *   pages that leave the view free their canvas. Each page shows a skeleton until it is drawn.
  * - The page area is a region named with `title`; each page is an image ("Page 3 of 12"), or a
@@ -368,7 +369,7 @@ const WHEEL_STEP = 50;
           <button
             type="button"
             class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
-            [attr.aria-label]="text.documentDownload"
+            [attr.aria-label]="text.download"
             (click)="download.emit()"
           >
             <i class="ph-bold ph-download-simple" aria-hidden="true"></i>
@@ -415,7 +416,8 @@ const WHEEL_STEP = 50;
         >
           <i class="ph-bold ph-caret-down" aria-hidden="true"></i>
         </button>
-        <span class="star-document-viewer__search-status" role="status">{{ searchStatus() }}</span>
+        <!-- Not a live region: StarAnnouncer announces the result once. -->
+        <span class="star-document-viewer__search-status">{{ searchStatus() }}</span>
       </div>
     }
     <div class="star-document-viewer__body">

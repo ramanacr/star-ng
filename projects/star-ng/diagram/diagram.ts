@@ -65,8 +65,10 @@ export type StarDiagramChangeReason =
   'move' | 'resize' | 'connect' | 'delete' | 'label' | 'layout' | 'undo' | 'redo' | 'revert';
 
 /**
- * Payload of `nodesChange` and `edgesChange`: patches to apply to your list, for example with
+ * Payload of `nodesPatch` and `edgesPatch`: patches to apply to your list, for example with
  * `starApplyPatches`. Call `cancel()` to refuse them; the diagram then does not record them.
+ * The outputs do not end in `Change` because they carry patches, not the new arrays, so
+ * `[(nodes)]` two-way binding is not available.
  */
 export interface StarDiagramChange<P> {
   readonly patches: readonly P[];
@@ -169,15 +171,16 @@ function emitChange<P>(
  *   the handles; drag from a port to another node to connect; Delete removes.
  * - Pan with Space and drag or the middle mouse button; zoom with Control and the wheel, the
  *   buttons or the `zoom` model; fit to the content.
- * - The diagram never changes `nodes` or `edges`: it emits patches in `nodesChange` and
- *   `edgesChange`. Apply them (`starApplyPatches`) or call `cancel()`.
+ * - Contract: the diagram never changes `nodes` or `edges`: it emits patches in `nodesPatch`
+ *   and `edgesPatch` (not `nodesChange`, so there is no `[(nodes)]` two-way binding). Apply them
+ *   (`starApplyPatches`) or call `cancel()`.
  * - Undo and redo: the diagram records every change that no handler canceled, on the contract
  *   that the owner applied it. `undo()` (Control+Z) and `redo()` (Control+Y) emit the inverse or
  *   the same patches again, with the reason `undo` or `redo`.
  * - Keyboard: the nodes are a listbox with one tab stop. Arrow keys go to the nearest node,
  *   Alt+Arrow moves, Shift+Alt+Arrow resizes, Enter edits the label, Control+A selects all.
  *
- * `<star-diagram [nodes]="nodes()" [edges]="edges()" (nodesChange)="nodes.set(starApplyPatches(nodes(), $event.patches))" />`
+ * `<star-diagram [nodes]="nodes()" [edges]="edges()" (nodesPatch)="nodes.set(starApplyPatches(nodes(), $event.patches))" />`
  */
 @Component({
   selector: 'star-diagram',
@@ -480,9 +483,9 @@ export class StarDiagram {
   readonly ariaLabel = input<string | null>(null);
 
   /** Node patches: moves, resizes, labels, deletes, layouts, undo and redo. */
-  readonly nodesChange = output<StarDiagramChange<StarDiagramNodePatch>>();
+  readonly nodesPatch = output<StarDiagramChange<StarDiagramNodePatch>>();
   /** Edge patches: new connections, deletes, undo and redo. */
-  readonly edgesChange = output<StarDiagramChange<StarDiagramEdgePatch>>();
+  readonly edgesPatch = output<StarDiagramChange<StarDiagramEdgePatch>>();
 
   protected readonly customNode = computed(() =>
     this.ready() ? (this.nodeTemplate()?.template ?? null) : null,
@@ -747,8 +750,8 @@ export class StarDiagram {
     // Edges need their nodes: nodes that come (back) go first, edges of nodes that go go first.
     const nodesFirst = tx.nodes.some((patch) => patch.type === 'add');
     const steps = [
-      { emitter: this.edgesChange, patches: tx.edges },
-      { emitter: this.nodesChange, patches: tx.nodes },
+      { emitter: this.edgesPatch, patches: tx.edges },
+      { emitter: this.nodesPatch, patches: tx.nodes },
     ] as const;
     const [first, second] = nodesFirst ? [steps[1], steps[0]] : [steps[0], steps[1]];
     const emit = (
