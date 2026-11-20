@@ -6721,6 +6721,20 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": ""
+      },
+      {
+        "name": "textChange",
+        "type": "StarEditorTextChange",
+        "default": null,
+        "required": false,
+        "description": "Emits after the user changed the content (typing, a toolbar command, a paste, undo …) with the HTML and the plain text. A value that the owner writes does not emit. PrimeNG `onTextChange` (its `htmlValue` and `textValue`; the Quill `delta` and `source` have no equivalent)."
+      },
+      {
+        "name": "selectionChange",
+        "type": "StarEditorSelectionChange | null",
+        "default": null,
+        "required": false,
+        "description": "Emits when the selection in the area changes: its text offset, length and text, or `null` when the selection leaves the area. PrimeNG `onSelectionChange` (its `range`; `oldRange` is the previous event)."
       }
     ],
     "parts": [
@@ -20778,6 +20792,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "editor/accessibility": "<div class=\"docs-stack\">\n  <star-editor\n    [(value)]=\"audited\"\n    [toolbar]=\"auditToolbar\"\n    ariaLabel=\"Checked announcement\"\n  />\n</div>",
   "editor/allow-list": "<div class=\"docs-stack\">\n  <star-editor\n    [(value)]=\"strict\"\n    [sanitize]=\"strictRules\"\n    ariaLabel=\"Strict announcement\"\n  />\n  <pre class=\"docs-output\" role=\"group\" aria-label=\"Value of the strict editor\">{{\n    strict()\n  }}</pre>\n</div>",
   "editor/basic": "<div class=\"docs-stack\">\n  <star-editor\n    [(value)]=\"note\"\n    ariaLabel=\"Delivery note\"\n    placeholder=\"Write the delivery note\"\n  />\n  <pre class=\"docs-output\" role=\"group\" aria-label=\"Value of the editor\">{{ note() }}</pre>\n</div>",
+  "editor/events": "<div class=\"docs-stack\">\n  <star-editor\n    [(value)]=\"eventsNote\"\n    ariaLabel=\"Order note\"\n    (textChange)=\"lastText.set($event.text)\"\n    (selectionChange)=\"selection.set($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Text: {{ lastText() || '(no change yet)' }}. Selection:\n    {{\n      selection()\n        ? 'from ' + selection()!.index + ', ' + selection()!.length + ' characters'\n        : 'outside the editor'\n    }}.\n  </p>\n</div>",
   "editor/full-toolbar": "<div class=\"docs-stack\">\n  <star-editor\n    [(value)]=\"report\"\n    [toolbar]=\"fullToolbar\"\n    ariaLabel=\"Product announcement\"\n  />\n  <pre class=\"docs-output\" role=\"group\" aria-label=\"Value of the full editor\">{{\n    report()\n  }}</pre>\n</div>",
   "editor/lists": "<div class=\"docs-stack\">\n  <star-editor [(value)]=\"plan\" [toolbar]=\"listToolbar\" ariaLabel=\"Launch plan\" />\n</div>",
   "editor/media": "<div class=\"docs-stack\">\n  <star-editor\n    [(value)]=\"media\"\n    [toolbar]=\"mediaToolbar\"\n    [upload]=\"upload\"\n    [sanitize]=\"embedRules\"\n    ariaLabel=\"Release with images\"\n  />\n</div>",
