@@ -12,6 +12,7 @@ import {
   DestroyRef,
   ElementRef,
   inject,
+  Injector,
   input,
   model,
   numberAttribute,
@@ -44,6 +45,13 @@ import {
   starEditorToggleCode,
   starEditorUnwrap,
 } from './editor-dom';
+import {
+  starEditorCounts,
+  starEditorFind,
+  starEditorInputRule,
+  starEditorReplace,
+  starEditorReplaceAll,
+} from './editor-find';
 import {
   STAR_EDITOR_FONT_SIZES,
   starEditorClearFormat,
@@ -190,6 +198,7 @@ type Panel = 'textColor' | 'highlight';
     '[class.star-editor--disabled]': 'disabled()',
     '[class.star-editor--invalid]': 'invalid() && touched()',
     '[class.star-editor--over]': 'over()',
+    '[class.star-editor--full-screen]': 'fullScreen()',
   },
   templateUrl: './editor.html',
 })
@@ -250,6 +259,17 @@ export class StarEditor implements FormValueControl<string> {
    */
   readonly toolbar = input<readonly StarEditorToolbarItem[]>(STAR_EDITOR_DEFAULT_TOOLBAR);
   /**
+   * Shows the number of words and characters under the area. With `maxLength` the counter of the
+   * limit shows next to it. PrimeNG has no equivalent.
+   */
+  readonly showCount = input(false, { transform: booleanAttribute });
+  /**
+   * Markdown-style input rules: `# `, `## ` and `### ` at the start of a paragraph make headings,
+   * `> ` a quote, `- ` or `* ` a bulleted list, `1. ` a numbered list, `[] ` a checklist, and
+   * `**text**` bold text. Off by default. PrimeNG has no equivalent.
+   */
+  readonly markdownShortcuts = input(false, { transform: booleanAttribute });
+  /**
    * Stores an image file that the user chose in the image panel and gives back its address.
    * Without it, the file goes into the HTML as a `data:` address (large values).
    */
@@ -287,6 +307,25 @@ export class StarEditor implements FormValueControl<string> {
   );
   /** Characters of text now (see `maxLength`). */
   protected readonly length = signal(0);
+  /** Words and characters now (see `showCount`). */
+  protected readonly counts = signal({ words: 0, characters: 0 });
+  /** The editor fills the window. */
+  protected readonly fullScreen = signal(false);
+  /** Find and replace: the open panel, its fields and the matches. */
+  protected readonly findOpen = signal<'find' | 'replace' | null>(null);
+  protected readonly findQuery = signal('');
+  protected readonly replaceText = signal('');
+  protected readonly matchCase = signal(false);
+  protected readonly wholeWord = signal(false);
+  protected readonly matchIndex = signal(-1);
+  protected readonly matchTotal = signal(0);
+  protected readonly findStatus = signal('');
+  protected readonly findId = this.ids.getId('star-editor-find-');
+  protected readonly shortcutsId = this.ids.getId('star-editor-shortcuts-');
+  private matches: Range[] = [];
+  private readonly shortcutsDialog = viewChild<ElementRef<HTMLDialogElement>>('shortcutsDialog');
+  /** The text that the coming input event types. */
+  private typedNext: string | null = null;
   protected readonly over = computed(() => {
     const max = this.maxLength();
     return max !== undefined && this.length() > max;
@@ -442,6 +481,7 @@ export class StarEditor implements FormValueControl<string> {
         area.innerHTML = this.clean(text ? starEditorTextToHtml(value) : value);
         this.lastWritten = value;
         this.length.set(starEditorPlainLength(area));
+        if (this.showCount()) this.counts.set(starEditorCounts(area));
         starEditorProtectEmbeds(area);
         this.selectImage(null);
         this.history.reset({ html: area.innerHTML, selection: null });
@@ -452,6 +492,9 @@ export class StarEditor implements FormValueControl<string> {
     // Toolbar groups that do not fit go into the "More actions" panel.
     this.destroyRef.onDestroy(() => {
       if (this.sourceTimer) clearTimeout(this.sourceTimer);
+    });
+    this.destroyRef.onDestroy(() => {
+      if (this.findOpen()) this.paintMatches(true);
     });
     afterNextRender(() => {
       const view = this.area().nativeElement.ownerDocument.defaultView;
@@ -484,6 +527,7 @@ export class StarEditor implements FormValueControl<string> {
   /** `aria-pressed` of a toggle button, `null` for an action button. */
   protected pressed(cmd: StarEditorCommand): boolean | null {
     if (cmd === 'source') return this.sourceMode();
+    if (cmd === 'fullScreen') return this.fullScreen();
     if (starEditorIsSelect(cmd) || !STAR_EDITOR_BUTTONS[cmd].toggle) return null;
     return this.isActive(cmd);
   }
@@ -494,6 +538,7 @@ export class StarEditor implements FormValueControl<string> {
     if (cmd === 'textColor' || cmd === 'highlight') return this.colorPanel() === cmd;
     if (cmd === 'image' || cmd === 'embed') return this.mediaPanel() === cmd;
     if (cmd === 'table') return this.tablePanel() !== null;
+    if (cmd === 'find') return this.findOpen() !== null;
     return null;
   }
 
@@ -502,7 +547,7 @@ export class StarEditor implements FormValueControl<string> {
    * source button works.
    */
   protected unavailable(cmd: StarEditorCommand): boolean {
-    if (this.sourceMode()) return cmd !== 'source';
+    if (this.sourceMode()) return cmd !== 'source' && cmd !== 'fullScreen' && cmd !== 'shortcuts';
     return (cmd === 'undo' && !this.canUndo()) || (cmd === 'redo' && !this.canRedo());
   }
 
@@ -512,6 +557,13 @@ export class StarEditor implements FormValueControl<string> {
   }
 
   protected onInput(): void {
+    const typed = this.typedNext;
+    this.typedNext = null;
+    if (this.markdownShortcuts() && (typed === ' ' || typed === '*') && this.format() === 'html') {
+      const area = this.area().nativeElement;
+      const range = starEditorRange(area);
+      if (range && starEditorInputRule(area, range)) this.typingNext = false;
+    }
     this.commit(true);
     this.refreshState();
     if (this.selectedImage()) this.placeFrame();
@@ -528,6 +580,7 @@ export class StarEditor implements FormValueControl<string> {
     this.lastWritten = value;
     this.value.set(value);
     this.length.set(length);
+    if (this.showCount()) this.counts.set(starEditorCounts(element));
     if (record) {
       const now = Date.now();
       const merge = this.typingNext && this.typing && now - this.typedAt < TYPING_MERGE_MS;
@@ -662,6 +715,7 @@ export class StarEditor implements FormValueControl<string> {
       return;
     }
     this.typingNext = event.inputType === 'insertText';
+    this.typedNext = event.inputType === 'insertText' ? event.data : null;
     const max = this.maxLength();
     if (max === undefined || !event.inputType.startsWith('insert')) return;
     if (event.inputType === 'insertParagraph' || event.inputType === 'insertLineBreak') return;
@@ -683,6 +737,16 @@ export class StarEditor implements FormValueControl<string> {
     const mod = event.ctrlKey || event.metaKey;
     const key = event.key.toLowerCase();
     this.plainPaste = mod && event.shiftKey && key === 'v';
+    if (mod && !event.altKey && !event.shiftKey && (key === 'f' || key === 'h')) {
+      event.preventDefault();
+      this.openFind(key === 'h' ? 'replace' : 'find');
+      return;
+    }
+    if (event.key === 'Escape' && this.fullScreen()) {
+      event.preventDefault();
+      this.fullScreen.set(false);
+      return;
+    }
     if (mod && !event.altKey && (key === 'z' || key === 'y')) {
       event.preventDefault();
       this.travel(key === 'y' || event.shiftKey ? 1 : -1);
@@ -764,6 +828,18 @@ export class StarEditor implements FormValueControl<string> {
     }
     if (command === 'source') {
       this.toggleSource();
+      return;
+    }
+    if (command === 'fullScreen') {
+      this.fullScreen.set(!this.fullScreen());
+      return;
+    }
+    if (command === 'shortcuts') {
+      this.openShortcuts();
+      return;
+    }
+    if (command === 'find') {
+      this.openFind(this.findOpen() ? null : 'replace');
       return;
     }
     if (this.sourceMode()) return;
@@ -949,6 +1025,171 @@ export class StarEditor implements FormValueControl<string> {
     this.typing = false;
     this.commit(true);
   }
+
+  // ---- Find and replace ----
+
+  private findOptions() {
+    return { matchCase: this.matchCase(), wholeWord: this.wholeWord() };
+  }
+
+  /** Opens find (`'find'`) or find and replace (`'replace'`), or closes it (`null`). */
+  private openFind(mode: 'find' | 'replace' | null): void {
+    if (this.sourceMode() && mode) return;
+    if (!mode) {
+      this.closeFind();
+      return;
+    }
+    const range = starEditorRange(this.area().nativeElement);
+    const selected = range?.toString() ?? '';
+    if (selected && !selected.includes('\n') && selected.length < 100) this.findQuery.set(selected);
+    this.findOpen.set(mode);
+    this.runFind();
+    const injector = this.injector;
+    afterNextRender(
+      () => {
+        const field = this.host.nativeElement.querySelector<HTMLInputElement>(`#${this.findId}`);
+        field?.focus();
+        field?.select();
+      },
+      { injector },
+    );
+  }
+
+  private readonly injector = inject(Injector);
+
+  protected closeFind(): void {
+    this.findOpen.set(null);
+    this.paintMatches(true);
+    const area = this.area().nativeElement;
+    area.focus();
+    const current = this.matches[this.matchIndex()];
+    if (current && area.contains(current.startContainer)) starEditorRestore(current);
+  }
+
+  /** Finds the matches again (the query, an option or the text changed). */
+  protected runFind(): void {
+    const area = this.area().nativeElement;
+    this.matches = starEditorFind(area, this.findQuery(), this.findOptions());
+    this.matchTotal.set(this.matches.length);
+    this.matchIndex.set(this.matches.length ? 0 : -1);
+    this.findStatus.set(this.statusText());
+    this.paintMatches(false);
+  }
+
+  private statusText(): string {
+    if (!this.findQuery()) return '';
+    return this.matches.length
+      ? this.text.editorMatchCount(this.matchIndex() + 1, this.matches.length)
+      : this.text.documentNoResults;
+  }
+
+  protected moveMatch(delta: 1 | -1): void {
+    if (!this.matches.length) return;
+    this.matchIndex.set((this.matchIndex() + delta + this.matches.length) % this.matches.length);
+    this.findStatus.set(this.statusText());
+    this.paintMatches(false);
+  }
+
+  /** Marks the matches with the CSS Custom Highlight API, where the browser has it. */
+  private paintMatches(clear: boolean): void {
+    const view = this.area().nativeElement.ownerDocument.defaultView as
+      | (Window & {
+          CSS?: { highlights?: Map<string, unknown> };
+          Highlight?: new (...ranges: Range[]) => unknown;
+        })
+      | null;
+    const highlights = view?.CSS?.highlights;
+    const current = this.matches[this.matchIndex()];
+    if (!clear && current) {
+      const target = current.startContainer.parentElement;
+      target?.scrollIntoView?.({ block: 'nearest' });
+    }
+    if (!highlights || !view?.Highlight) return;
+    if (clear || !this.matches.length) {
+      highlights.delete('star-editor-match');
+      highlights.delete('star-editor-match-current');
+      return;
+    }
+    highlights.set('star-editor-match', new view.Highlight(...this.matches));
+    highlights.set('star-editor-match-current', new view.Highlight(current));
+  }
+
+  protected onFindKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      event.stopPropagation();
+      this.closeFind();
+    } else if (event.key === 'Enter' && (event.target as Element).id === this.findId) {
+      event.preventDefault();
+      this.moveMatch(event.shiftKey ? -1 : 1);
+    }
+  }
+
+  protected replaceCurrent(): void {
+    const current = this.matches[this.matchIndex()];
+    if (!current || this.locked()) return;
+    const index = this.matchIndex();
+    starEditorReplace(current, this.replaceText());
+    this.commit(true);
+    this.runFind();
+    if (this.matches.length) {
+      this.matchIndex.set(Math.min(index, this.matches.length - 1));
+      this.findStatus.set(this.statusText());
+      this.paintMatches(false);
+    }
+  }
+
+  protected replaceAll(): void {
+    if (this.locked() || !this.findQuery()) return;
+    const count = starEditorReplaceAll(
+      this.area().nativeElement,
+      this.findQuery(),
+      this.replaceText(),
+      this.findOptions(),
+    );
+    this.commit(true);
+    this.runFind();
+    this.findStatus.set(this.text.editorReplaced(count));
+  }
+
+  // ---- Keyboard shortcut help ----
+
+  private openShortcuts(): void {
+    const dialog = this.shortcutsDialog()?.nativeElement;
+    if (!dialog) return;
+    if (typeof dialog.showModal === 'function') dialog.showModal();
+    else dialog.setAttribute('open', '');
+  }
+
+  protected closeShortcuts(): void {
+    const dialog = this.shortcutsDialog()?.nativeElement;
+    if (typeof dialog?.close === 'function') dialog.close();
+    else dialog?.removeAttribute('open');
+    this.focus();
+  }
+
+  /** The rows of the shortcut help: keys and what they do. */
+  protected readonly shortcutRows = computed(() => {
+    const t = this.text;
+    return [
+      ['Ctrl+B', t.editorBold],
+      ['Ctrl+I', t.editorItalic],
+      ['Ctrl+U', t.editorUnderline],
+      ['Ctrl+Z', t.undo],
+      ['Ctrl+Y, Ctrl+Shift+Z', t.redo],
+      ['Ctrl+F', t.editorFind],
+      ['Ctrl+H', t.editorFindReplace],
+      ['Ctrl+Shift+V', t.editorPastePlain],
+      ['Tab', t.editorIndent],
+      ['Shift+Tab', t.editorOutdent],
+      ['Ctrl+Enter', t.editorCheckItem],
+      ['Tab, Shift+Tab', t.editorNextCell],
+      ['Shift+F10', t.editorTableMenu],
+      ['Alt+Shift+←, Alt+Shift+→', t.editorColumnWidth],
+      ['Escape', t.close],
+      ...(this.markdownShortcuts() ? [['#, ##, >, -, 1., [], **', t.editorMarkdownHint]] : []),
+    ] as const;
+  });
 
   // ---- Tables ----
 

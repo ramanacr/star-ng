@@ -522,3 +522,73 @@ ul.star-checklist {
   font: var(--star-type-body-sm);
   color: var(--star-text-muted);
 }
+// Find and replace: the matches (CSS Custom Highlight API) and the panel.
+::highlight(star-editor-match) {
+  background-color: var(--star-warning-soft);
+  color: var(--star-text);
+}
+::highlight(star-editor-match-current) {
+  background-color: var(--star-accent);
+  color: var(--star-surface);
+}
+.star-editor__find-status {
+  font: var(--star-type-body-sm);
+  color: var(--star-text-muted);
+}
+.star-editor__footer {
+  gap: 1rem;
+}
+// Full screen: the editor over the window; the area takes the free height.
+.star-editor--full-screen {
+  position: fixed;
+  z-index: calc(var(--star-z-index-base, 1000) + 10);
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  border-radius: 0;
+
+  .star-editor__area,
+  .star-editor__source {
+    flex: 1;
+    overflow: auto;
+  }
+}
+// Keyboard shortcut help.
+.star-editor__shortcuts {
+  max-width: min(36rem, calc(100vw - 2rem));
+  padding: 1.25rem;
+  border: 1px solid var(--star-border);
+  border-radius: var(--star-radius-lg);
+  background: var(--star-surface);
+  color: var(--star-text);
+  box-shadow: var(--star-shadow-xl);
+
+  &::backdrop {
+    background: var(--star-scrim-modal);
+  }
+}
+.star-editor__shortcuts-title {
+  margin: 0 0 0.75rem;
+  font: var(--star-type-title-sm);
+}
+.star-editor__shortcuts-table {
+  width: 100%;
+  margin-bottom: 1rem;
+  border-collapse: collapse;
+  font: var(--star-type-body);
+
+  th,
+  td {
+    padding: 0.25rem 0.5rem;
+    border-bottom: 1px solid var(--star-border);
+    text-align: start;
+    vertical-align: top;
+  }
+  th {
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  kbd {
+    font: var(--star-type-code);
+  }
+}

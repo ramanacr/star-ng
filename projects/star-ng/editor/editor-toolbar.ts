@@ -15,9 +15,11 @@ import type { StarUiText } from '@star-ng/ui/core';
  * indent a block; `image` opens the image panel (address or file, required alternative text or
  * decorative, caption, width; with the image at the caret it edits it) and `embed` the embed
  * panel (a video or page on the embed hosts of the allow-list); `horizontalRule` inserts a line;
- * `table` inserts a table (rows, columns, header row), or in a table opens its properties (borders,
- * alignment); `removeFormat` clears inline formats and the alignment; `source` switches to the HTML source
- * view and back. Alignment is stored as the classes `star-text-center`, `star-text-end` and
+ * `table` inserts a table (rows, columns, header row), or in a table opens its properties
+ * (borders, alignment); `removeFormat` clears inline formats and the alignment; `source`
+ * switches to the HTML source view and back; `find` opens find and replace (Ctrl+F, Ctrl+H);
+ * `fullScreen` shows the editor over the whole window (Escape leaves); `shortcuts` opens the
+ * keyboard shortcut help. Alignment is stored as the classes `star-text-center`, `star-text-end` and
  * `star-text-justify`, so the HTML needs the StarNG CSS where it is shown. `undo` and `redo` use
  * the history of the editor, which has every change.
  */
@@ -50,6 +52,9 @@ export type StarEditorCommand =
   | 'table'
   | 'horizontalRule'
   | 'source'
+  | 'find'
+  | 'fullScreen'
+  | 'shortcuts'
   | 'removeFormat'
   | 'undo'
   | 'redo';
@@ -118,7 +123,10 @@ export const STAR_EDITOR_FULL_TOOLBAR: readonly StarEditorToolbarItem[] = [
   'horizontalRule',
   'removeFormat',
   '|',
+  'find',
   'source',
+  'fullScreen',
+  'shortcuts',
 ];
 
 /** A toolbar button: its label in `STAR_UI_TEXT`, its icon, and whether it shows `aria-pressed`. */
@@ -160,6 +168,9 @@ export const STAR_EDITOR_BUTTONS: Readonly<
   embed: { label: 'editorEmbed', icon: 'ph-bold ph-film-strip', toggle: false },
   table: { label: 'editorTable', icon: 'ph-bold ph-table', toggle: false },
   source: { label: 'editorSource', icon: 'ph-bold ph-file-html', toggle: true },
+  find: { label: 'editorFindReplace', icon: 'ph-bold ph-magnifying-glass', toggle: false },
+  fullScreen: { label: 'documentFullScreen', icon: 'ph-bold ph-arrows-out', toggle: true },
+  shortcuts: { label: 'editorShortcuts', icon: 'ph-bold ph-keyboard', toggle: false },
   horizontalRule: { label: 'editorHorizontalRule', icon: 'ph-bold ph-minus', toggle: false },
   removeFormat: { label: 'editorClearFormatting', icon: 'ph-bold ph-text-t-slash', toggle: false },
   undo: { label: 'undo', icon: 'ph-bold ph-arrow-counter-clockwise', toggle: false },

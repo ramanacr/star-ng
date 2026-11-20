@@ -186,3 +186,40 @@ test.describe('editor tables', () => {
     await expect(page.getByRole('menu')).toHaveCount(0);
   });
 });
+
+test.describe('editor productivity', () => {
+  test('find and replace with Ctrl+H, counts and a Markdown heading', async ({ page }) => {
+    await openEditor(page);
+    const live = example(page, 'Find, counts, full screen and shortcuts');
+    const area = live.getByRole('textbox', { name: 'Release notes' });
+    await expect(live.locator('.star-editor__count')).toHaveText(/^\s*18 words, 94 characters\s*$/);
+    await area.click();
+    await page.keyboard.press('Control+H');
+    const panel = live.getByRole('search', { name: 'Find and replace' });
+    await expect(panel.getByRole('searchbox', { name: 'Find' })).toBeFocused();
+    await page.keyboard.type('plan');
+    await expect(panel.getByRole('status')).toHaveText('1 of 3');
+    await panel.getByRole('textbox', { name: 'Replace with' }).fill('tier');
+    await panel.getByRole('button', { name: 'Replace all' }).click();
+    await expect(panel.getByRole('status')).toHaveText('3 matches replaced');
+    await expect(area).not.toContainText('plan');
+    await panel.getByRole('searchbox', { name: 'Find' }).press('Escape');
+    await expect(panel).toHaveCount(0);
+
+    await area.locator('p').last().click();
+    await page.keyboard.press('End');
+    await page.keyboard.press('Enter');
+    await page.keyboard.type('## Next steps');
+    await expect(area.locator('h2')).toHaveText('Next steps');
+  });
+
+  test('the shortcut help is a modal dialog that Escape closes', async ({ page }) => {
+    await openEditor(page);
+    const live = example(page, 'Find, counts, full screen and shortcuts');
+    await live.getByRole('button', { name: 'Keyboard shortcuts' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Keyboard shortcuts' });
+    await expect(dialog).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeHidden();
+  });
+});

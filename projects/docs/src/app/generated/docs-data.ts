@@ -5244,6 +5244,20 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "The toolbar: command names in order, with `'|'` between groups. Unknown names are left out. `STAR_EDITOR_FULL_TOOLBAR` has every command. PrimeNG toolbar formats (Quill `toolbar`)."
       },
       {
+        "name": "showCount",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows the number of words and characters under the area. With `maxLength` the counter of the limit shows next to it. PrimeNG has no equivalent."
+      },
+      {
+        "name": "markdownShortcuts",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Markdown-style input rules: `# `, `## ` and `### ` at the start of a paragraph make headings, `> ` a quote, `- ` or `* ` a bulleted list, `1. ` a numbered list, `[] ` a checklist, and `**text**` bold text. Off by default. PrimeNG has no equivalent."
+      },
+      {
         "name": "upload",
         "type": "StarEditorUpload | null",
         "default": "null",
@@ -16066,6 +16080,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "editor/media": "<div class=\"docs-stack\">\n  <star-editor\n    [(value)]=\"media\"\n    [toolbar]=\"mediaToolbar\"\n    [upload]=\"upload\"\n    [sanitize]=\"embedRules\"\n    ariaLabel=\"Release with images\"\n  />\n</div>",
   "editor/own-toolbar": "<div class=\"docs-stack\">\n  <star-editor [toolbar]=\"shortToolbar\" ariaLabel=\"Short comment\" minHeight=\"4rem\" />\n</div>",
   "editor/paste": "<div class=\"docs-stack\">\n  <star-editor ariaLabel=\"Pasted with formats\" minHeight=\"4rem\" />\n  <star-editor pasteAsText ariaLabel=\"Pasted as plain text\" minHeight=\"4rem\" />\n</div>",
+  "editor/productivity": "a quote, - or * a bulleted list, 1. a numbered list, [] a checklist, and **text** bold text.\"\n     >\n       <div class=\"docs-stack\">\n         <star-editor\n           [(value)]=\"notes\"\n           [toolbar]=\"productivityToolbar\"\n           showCount\n           markdownShortcuts\n           ariaLabel=\"Release notes\"\n         />\n       </div>",
   "editor/sanitize": "<div class=\"docs-stack\">\n  <star-editor [(value)]=\"unsafe\" ariaLabel=\"Sanitized content\" />\n  <pre class=\"docs-output\" aria-label=\"Value after sanitizing\">{{ unsafe() }}</pre>\n</div>",
   "editor/size": "<div class=\"docs-stack\">\n  <star-editor\n    [(value)]=\"comment\"\n    ariaLabel=\"Order comment\"\n    placeholder=\"Add a comment\"\n    minHeight=\"4rem\"\n  />\n</div>",
   "editor/source": "<div class=\"docs-stack\">\n  <star-editor\n    [(value)]=\"sourceValue\"\n    [toolbar]=\"sourceToolbar\"\n    ariaLabel=\"Release source\"\n  />\n  <pre class=\"docs-output\" role=\"group\" aria-label=\"Value of the source editor\">{{\n    sourceValue()\n  }}</pre>\n</div>",

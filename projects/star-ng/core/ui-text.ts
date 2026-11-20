@@ -362,6 +362,25 @@ export interface StarUiText {
   readonly editorBordersRows: string;
   readonly editorBordersNone: string;
   readonly editorTableAlign: string;
+  readonly editorFindReplace: string;
+  readonly editorFind: string;
+  readonly editorReplaceWith: string;
+  readonly editorReplace: string;
+  readonly editorReplaceAll: string;
+  readonly editorMatchCase: string;
+  readonly editorWholeWord: string;
+  /** Status of the find panel: the current match and the number of matches. */
+  readonly editorMatchCount: (current: number, total: number) => string;
+  readonly editorReplaced: (count: number) => string;
+  readonly editorWordCount: (words: number, characters: number) => string;
+  readonly editorShortcuts: string;
+  readonly editorPastePlain: string;
+  readonly editorCheckItem: string;
+  readonly editorNextCell: string;
+  readonly editorTableMenu: string;
+  readonly editorColumnWidth: string;
+  /** Line of the shortcut help about the Markdown input rules. */
+  readonly editorMarkdownHint: string;
   readonly chartPoints: (title: string) => string;
   readonly chartPointsHint: string;
   readonly chartPointLabel: (series: string, label: string, value: string) => string;
@@ -1153,6 +1172,24 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   editorBordersRows: 'Lines between rows',
   editorBordersNone: 'No borders',
   editorTableAlign: 'Table alignment',
+  editorFindReplace: 'Find and replace',
+  editorFind: 'Find',
+  editorReplaceWith: 'Replace with',
+  editorReplace: 'Replace',
+  editorReplaceAll: 'Replace all',
+  editorMatchCase: 'Match case',
+  editorWholeWord: 'Whole words only',
+  editorMatchCount: (current, total) => `${current} of ${total}`,
+  editorReplaced: (count) => (count === 1 ? '1 match replaced' : `${count} matches replaced`),
+  editorWordCount: (words, characters) =>
+    `${words} ${words === 1 ? 'word' : 'words'}, ${characters} ${characters === 1 ? 'character' : 'characters'}`,
+  editorShortcuts: 'Keyboard shortcuts',
+  editorPastePlain: 'Paste as plain text',
+  editorCheckItem: 'Check or uncheck a checklist item',
+  editorNextCell: 'Next or previous table cell',
+  editorTableMenu: 'Table menu',
+  editorColumnWidth: 'Narrower or wider column',
+  editorMarkdownHint: 'Type # , ## , > , - , 1. or [] at the start of a paragraph, or **text**',
   chartPoints: (title) => `${title}: data points`,
   chartPointsHint: 'Arrow keys move between the points and the series. Enter selects a point.',
   chartPointLabel: (series, label, value) => `${series}, ${label}: ${value}`,
@@ -1659,6 +1696,9 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   percentComplete: ['value'],
   dependsOn: ['label'],
   editorSourceUnclosed: ['name'],
+  editorMatchCount: ['current', 'total'],
+  editorReplaced: ['count'],
+  editorWordCount: ['words', 'characters'],
 };
 
 export const STAR_UI_TEXT = new InjectionToken<StarUiText>('STAR_UI_TEXT', {

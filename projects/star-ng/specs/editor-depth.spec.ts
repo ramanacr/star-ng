@@ -82,7 +82,10 @@ describe('StarEditor toolbar', () => {
       'Table',
       'Horizontal line',
       'Clear formatting',
+      'Find and replace',
       'HTML source',
+      'Full screen',
+      'Keyboard shortcuts',
     ]);
     expect(controls.map((c) => c.tabIndex)).toEqual([0, ...controls.slice(1).map(() => -1)]);
     expect(controls[2].tagName).toBe('SELECT');

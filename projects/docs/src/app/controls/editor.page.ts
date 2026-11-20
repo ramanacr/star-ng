@@ -94,6 +94,23 @@ import { DOCS, DocsRow } from '../shared/docs';
       </docs-example>
 
       <docs-example
+        heading="Find, counts, full screen and shortcuts"
+        source="editor/productivity"
+        [script]="productivityScript"
+        note="Ctrl+F opens find and Ctrl+H find and replace (or the find button): match case and whole words only, Enter and Shift+Enter go to the next and the previous match, and the status says which match of how many. The matches show with the CSS Custom Highlight API where the browser has it. showCount shows the words and the characters under the area. The full screen button shows the editor over the whole window; Escape leaves. The keyboard button opens the list of shortcuts. markdownShortcuts turns on the input rules: # , ## and ### at the start of a paragraph make headings, > a quote, - or * a bulleted list, 1. a numbered list, [] a checklist, and **text** bold text."
+      >
+        <div class="docs-stack">
+          <star-editor
+            [(value)]="notes"
+            [toolbar]="productivityToolbar"
+            showCount
+            markdownShortcuts
+            ariaLabel="Release notes"
+          />
+        </div>
+      </docs-example>
+
+      <docs-example
         heading="HTML source view"
         source="editor/source"
         [script]="sourceScript"
@@ -313,6 +330,15 @@ import { DOCS, DocsRow } from '../shared/docs';
         <code>rel="noopener noreferrer"</code>.
       </p>
 
+      <h2>What the editor does not do</h2>
+      <p>
+        The editor has no real-time collaboration or presence, no track changes or comment threads,
+        and no document model or extension SDK.
+        <strong>Need collaboration or track changes?</strong> Use
+        <a href="https://github.com/ramanacr/aurora-rte">Aurora RTE</a>, the rich text editor that
+        many features of this editor come from.
+      </p>
+
       <h2>Technical notes</h2>
       <p>
         Bold, italic, underline, strikethrough and the text style use
@@ -395,6 +421,21 @@ readonly embedRules: StarEditorSanitizeConfig = {
     'table',
   ];
   protected readonly tablesScript = `readonly tableToolbar: readonly StarEditorToolbarItem[] = ['bold', 'italic', '|', 'table'];`;
+  protected readonly notes = signal(
+    '<p>The new plan ships today. The plan has faster reports and saved filters.</p><p>Try the plan for free.</p>',
+  );
+  protected readonly productivityToolbar: readonly StarEditorToolbarItem[] = [
+    'bold',
+    'italic',
+    '|',
+    'find',
+    'fullScreen',
+    'shortcuts',
+  ];
+  protected readonly productivityScript = `readonly productivityToolbar: readonly StarEditorToolbarItem[] = [
+  'bold', 'italic', '|', 'find', 'fullScreen', 'shortcuts',
+];
+// <star-editor [toolbar]="productivityToolbar" showCount markdownShortcuts />`;
   protected readonly listToolbar: readonly StarEditorToolbarItem[] = [
     'insertUnorderedList',
     'insertOrderedList',
@@ -496,6 +537,12 @@ readonly fullToolbar = STAR_EDITOR_FULL_TOOLBAR;`;
       name: 'Alt+Shift+Arrow Left / Right in a table cell',
       description: 'Makes the column of the cell narrower or wider (10 pixels).',
     },
+    {
+      name: 'Ctrl+F / Ctrl+H',
+      description:
+        'In the area: opens find, or find and replace. In the find field, Enter and Shift+Enter go to the next and the previous match; Escape closes and selects the match.',
+    },
+    { name: 'Escape in full screen', description: 'Leaves full screen.' },
     { name: 'Ctrl+Shift+V', description: 'In the area: pastes the clipboard as plain text.' },
     {
       name: 'Escape',

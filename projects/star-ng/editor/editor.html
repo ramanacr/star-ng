@@ -168,6 +168,92 @@
     (dismissed)="closeTablePanel()"
   />
 }
+@if (findOpen(); as mode) {
+  <div
+    class="star-editor__panel star-editor__find"
+    role="search"
+    [attr.aria-label]="mode === 'replace' ? text.editorFindReplace : text.editorFind"
+    (keydown)="onFindKeydown($event)"
+  >
+    <label class="star-editor__field">
+      <span>{{ text.editorFind }}</span>
+      <input
+        class="star-input star-input--sm"
+        type="search"
+        [id]="findId"
+        [value]="findQuery()"
+        (input)="findQuery.set($any($event.target).value); runFind()"
+      />
+    </label>
+    @if (mode === 'replace') {
+      <label class="star-editor__field">
+        <span>{{ text.editorReplaceWith }}</span>
+        <input
+          class="star-input star-input--sm"
+          type="text"
+          [value]="replaceText()"
+          (input)="replaceText.set($any($event.target).value)"
+        />
+      </label>
+    }
+    <label class="star-editor__link-check">
+      <input
+        type="checkbox"
+        [checked]="matchCase()"
+        (change)="matchCase.set($any($event.target).checked); runFind()"
+      />
+      {{ text.editorMatchCase }}
+    </label>
+    <label class="star-editor__link-check">
+      <input
+        type="checkbox"
+        [checked]="wholeWord()"
+        (change)="wholeWord.set($any($event.target).checked); runFind()"
+      />
+      {{ text.editorWholeWord }}
+    </label>
+    <span class="star-editor__find-status" role="status">{{ findStatus() }}</span>
+    <div class="star-editor__link-actions">
+      <button
+        type="button"
+        class="star-btn star-btn--ghost star-btn--sm"
+        [disabled]="!matchTotal()"
+        (click)="moveMatch(-1)"
+      >
+        {{ text.documentPreviousResult }}
+      </button>
+      <button
+        type="button"
+        class="star-btn star-btn--ghost star-btn--sm"
+        [disabled]="!matchTotal()"
+        (click)="moveMatch(1)"
+      >
+        {{ text.documentNextResult }}
+      </button>
+      @if (mode === 'replace') {
+        <button
+          type="button"
+          class="star-btn star-btn--ghost star-btn--sm"
+          [disabled]="!matchTotal() || locked()"
+          (click)="replaceCurrent()"
+        >
+          {{ text.editorReplace }}
+        </button>
+        <button
+          type="button"
+          class="star-btn star-btn--ghost star-btn--sm"
+          [disabled]="!matchTotal() || locked()"
+          (click)="replaceAll()"
+        >
+          {{ text.editorReplaceAll }}
+        </button>
+      }
+      <button type="button" class="star-btn star-btn--ghost star-btn--sm" (click)="closeFind()">
+        {{ text.close }}
+      </button>
+    </div>
+  </div>
+}
 @if (sourceMode()) {
   <div class="star-editor__source">
     <textarea
@@ -251,12 +337,44 @@
     ></span>
   </div>
 }
-@if (maxLength() !== undefined) {
+@if (maxLength() !== undefined || showCount()) {
   <div class="star-editor__footer">
-    <span class="star-editor__counter" [id]="counterId">
-      {{ text.editorCharacterCount(length(), maxLength()!) }}
-    </span>
+    @if (showCount()) {
+      <span class="star-editor__count">{{
+        text.editorWordCount(counts().words, counts().characters)
+      }}</span>
+    }
+    @if (maxLength() !== undefined) {
+      <span class="star-editor__counter" [id]="counterId">
+        {{ text.editorCharacterCount(length(), maxLength()!) }}
+      </span>
+    }
   </div>
-  <span class="star-sr-only" aria-live="polite">{{ limitMessage() }}</span>
+  @if (maxLength() !== undefined) {
+    <span class="star-sr-only" aria-live="polite">{{ limitMessage() }}</span>
+  }
 }
+<dialog
+  #shortcutsDialog
+  class="star-editor__shortcuts"
+  [attr.aria-labelledby]="shortcutsId"
+  (close)="focus()"
+>
+  <h2 class="star-editor__shortcuts-title" [id]="shortcutsId">{{ text.editorShortcuts }}</h2>
+  <table class="star-editor__shortcuts-table">
+    <tbody>
+      @for (row of shortcutRows(); track $index) {
+        <tr>
+          <th scope="row">
+            <kbd>{{ row[0] }}</kbd>
+          </th>
+          <td>{{ row[1] }}</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+  <button type="button" class="star-btn star-btn--primary star-btn--sm" (click)="closeShortcuts()">
+    {{ text.close }}
+  </button>
+</dialog>
 <star-menu #tableMenuRef [items]="tableMenu()" [ariaLabel]="text.actions" />

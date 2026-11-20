@@ -1754,6 +1754,18 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'editor find and replace open',
+    path: 'controls/editor',
+    open: async (page) => {
+      await expect(page.locator('star-editor[ngh]')).toHaveCount(0, { timeout: 15_000 });
+      const live = example(page, 'Find, counts, full screen and shortcuts');
+      await live.getByRole('textbox', { name: 'Release notes' }).click();
+      await page.keyboard.press('Control+H');
+      await page.keyboard.type('plan');
+      await expect(live.getByRole('status')).toHaveText('1 of 3');
+    },
+  },
+  {
     name: 'editor link popover open',
     path: 'controls/editor',
     open: async (page) => {
