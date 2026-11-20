@@ -22,7 +22,7 @@ import {
   viewChild,
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
-import { STAR_UI_TEXT } from '@star-ng/ui/core';
+import { STAR_UI_TEXT, StarPart, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/ui/field';
 
 /** One sampled point of a stroke, in CSS pixels of the drawing area. */
@@ -152,6 +152,9 @@ const FALLBACK_SIZE = { width: 300, height: 150 };
  */
 @Component({
   selector: 'star-signature-pad',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-signature',
@@ -166,8 +169,9 @@ const FALLBACK_SIZE = { width: 300, height: 150 };
     '[class.star-signature--invalid]': '(invalid() && touched()) || !!field?.errorText()',
   },
   template: `
-    <div class="star-signature__surface">
+    <div starPart="surface" class="star-signature__surface">
       <canvas
+        starPart="canvas"
         #canvas
         class="star-signature__canvas"
         role="img"
@@ -178,31 +182,36 @@ const FALLBACK_SIZE = { width: 300, height: 150 };
         (pointercancel)="onPointerUp($event)"
       ></canvas>
     </div>
-    <div class="star-signature__bar">
+    <div starPart="bar" class="star-signature__bar">
       @if (allowTyped()) {
-        <div class="star-signature__modes">
+        <div starPart="modes" class="star-signature__modes">
           <button
+            starPart="button"
             type="button"
             class="star-btn star-btn--ghost star-btn--sm"
             [attr.aria-pressed]="mode() === 'draw'"
             [disabled]="!interactive()"
             (click)="setMode('draw')"
           >
-            <i class="ph-bold ph-pen-nib" aria-hidden="true"></i>{{ text.drawSignature }}
+            <i starPart="icon" class="ph-bold ph-pen-nib" aria-hidden="true"></i
+            >{{ text.drawSignature }}
           </button>
           <button
+            starPart="button"
             type="button"
             class="star-btn star-btn--ghost star-btn--sm"
             [attr.aria-pressed]="mode() === 'type'"
             [disabled]="!interactive()"
             (click)="setMode('type')"
           >
-            <i class="ph-bold ph-keyboard" aria-hidden="true"></i>{{ text.typeSignature }}
+            <i starPart="icon" class="ph-bold ph-keyboard" aria-hidden="true"></i
+            >{{ text.typeSignature }}
           </button>
         </div>
       }
       @if (mode() === 'type') {
         <input
+          starPart="typed"
           #typedInput
           type="text"
           class="star-input star-input--sm star-signature__typed"
@@ -217,36 +226,38 @@ const FALLBACK_SIZE = { width: 300, height: 150 };
           (blur)="touch.emit()"
         />
       }
-      <div class="star-signature__actions">
+      <div starPart="actions" class="star-signature__actions">
         @if (mode() === 'draw') {
           <button
+            starPart="button"
             type="button"
             class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
             [attr.aria-label]="text.undo"
             [disabled]="!interactive() || !strokes().length"
             (click)="undo()"
           >
-            <i class="ph-bold ph-arrow-counter-clockwise" aria-hidden="true"></i>
+            <i starPart="icon" class="ph-bold ph-arrow-counter-clockwise" aria-hidden="true"></i>
           </button>
         }
         <button
+          starPart="button"
           type="button"
           class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
           [attr.aria-label]="text.clearSignature"
           [disabled]="!interactive() || isEmpty()"
           (click)="clear()"
         >
-          <i class="ph-bold ph-eraser" aria-hidden="true"></i>
+          <i starPart="icon" class="ph-bold ph-eraser" aria-hidden="true"></i>
         </button>
       </div>
     </div>
-    <p class="star-sr-only" [id]="hintId">
+    <p starPart="srText" class="star-sr-only" [id]="hintId">
       {{ text.signatureHint }}
       @if (allowTyped()) {
         {{ text.signatureTypedHint }}
       }
     </p>
-    <p class="star-sr-only" aria-live="polite">{{ status() }}</p>
+    <p starPart="srText" class="star-sr-only" aria-live="polite">{{ status() }}</p>
   `,
 })
 export class StarSignaturePad implements FormValueControl<string> {

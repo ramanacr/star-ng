@@ -23,8 +23,11 @@ import {
   STAR_UI_TEXT,
   StarEmptyContext,
   starFormatFileSize,
+  StarPart,
   StarSlot,
   starSlot,
+  StarStyled,
+  ɵSTAR_PART_HOST,
 } from '@star-ng/ui/core';
 import { injectStarFieldLink, starJoinIds } from '@star-ng/ui/field';
 import type { StarFileContext } from './file-upload-slots';
@@ -100,7 +103,9 @@ export function fileMatchesAccept(file: File, accept: string): boolean {
  */
 @Component({
   selector: 'star-file-upload',
-  imports: [NgTemplateOutlet],
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [StarPart, NgTemplateOutlet],
   providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarFileUpload) }],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
@@ -112,18 +117,24 @@ export function fileMatchesAccept(file: File, accept: string): boolean {
   },
   template: `
     <div
+      starPart="zone"
       class="star-upload__zone"
       (dragenter)="onDrag($event, true)"
       (dragover)="onDrag($event, true)"
       (dragleave)="onDrag($event, false)"
       (drop)="onDrop($event)"
     >
-      <i class="ph-bold ph-cloud-arrow-up star-upload__icon" aria-hidden="true"></i>
-      <p class="star-upload__lead">{{ text.dropFiles }}</p>
-      <label class="star-btn star-btn--secondary star-btn--sm star-upload__choose" [for]="inputId">
+      <i starPart="icon" class="ph-bold ph-cloud-arrow-up star-upload__icon" aria-hidden="true"></i>
+      <p starPart="lead" class="star-upload__lead">{{ text.dropFiles }}</p>
+      <label
+        starPart="choose"
+        class="star-btn star-btn--secondary star-btn--sm star-upload__choose"
+        [for]="inputId"
+      >
         {{ text.chooseFiles }}
       </label>
       <input
+        starPart="srText"
         #input
         type="file"
         class="star-sr-only"
@@ -136,15 +147,16 @@ export function fileMatchesAccept(file: File, accept: string): boolean {
         (blur)="touch.emit()"
       />
       @if (hint()) {
-        <p class="star-upload__hint" [id]="hintId">{{ hint() }}</p>
+        <p starPart="hint" class="star-upload__hint" [id]="hintId">{{ hint() }}</p>
       }
     </div>
 
     @if (value().length) {
-      <ul class="star-upload__list" [attr.aria-label]="text.chooseFiles">
+      <ul starPart="list" class="star-upload__list" [attr.aria-label]="text.chooseFiles">
         @for (file of value(); track file; let i = $index; let first = $first; let last = $last) {
           @let status = statusOf(file);
           <li
+            starPart="file"
             class="star-upload__file"
             [class.star-upload__file--error]="status?.state === 'error'"
             [class.star-upload__file--drop]="dropIndex() === i"
@@ -158,21 +170,31 @@ export function fileMatchesAccept(file: File, accept: string): boolean {
               <ng-container *ngTemplateOutlet="slot; context: fileContext(file, i, status)" />
             } @else {
               @if (status?.state === 'done') {
-                <i class="ph-fill ph-check-circle star-upload__state--done" aria-hidden="true"></i>
+                <i
+                  starPart="state"
+                  class="ph-fill ph-check-circle star-upload__state--done"
+                  aria-hidden="true"
+                ></i>
               } @else if (status?.state === 'error') {
                 <i
+                  starPart="state"
                   class="ph-fill ph-warning-circle star-upload__state--error"
                   aria-hidden="true"
                 ></i>
               } @else if (thumbnailOf(file); as thumbnail) {
-                <img class="star-upload__thumb" alt="" [src]="thumbnail" />
+                <img starPart="thumb" class="star-upload__thumb" alt="" [src]="thumbnail" />
               } @else {
-                <i class="ph-bold ph-file star-upload__file-icon" aria-hidden="true"></i>
+                <i
+                  starPart="fileIcon"
+                  class="ph-bold ph-file star-upload__file-icon"
+                  aria-hidden="true"
+                ></i>
               }
-              <span class="star-upload__main">
-                <span class="star-upload__name">{{ file.name }}</span>
+              <span starPart="main" class="star-upload__main">
+                <span starPart="name" class="star-upload__name">{{ file.name }}</span>
                 @if (status?.state === 'uploading') {
                   <span
+                    starPart="progress"
                     class="star-upload__progress"
                     role="progressbar"
                     aria-valuemin="0"
@@ -181,49 +203,53 @@ export function fileMatchesAccept(file: File, accept: string): boolean {
                     [attr.aria-label]="text.uploadingFile(file.name)"
                   >
                     <span
+                      starPart="progressBar"
                       class="star-upload__progress-bar"
                       [style.width.%]="percent(status)"
                     ></span>
                   </span>
                 } @else if (status?.state === 'error' && status?.message) {
-                  <span class="star-upload__message">{{ status?.message }}</span>
+                  <span starPart="message" class="star-upload__message">{{ status?.message }}</span>
                 } @else if (status?.state === 'done') {
-                  <span class="star-sr-only">{{ text.uploaded }}</span>
+                  <span starPart="srText" class="star-sr-only">{{ text.uploaded }}</span>
                 }
               </span>
               @if (status?.state === 'uploading') {
-                <span class="star-upload__size">{{ percent(status) }}%</span>
+                <span starPart="size" class="star-upload__size">{{ percent(status) }}%</span>
               } @else {
-                <span class="star-upload__size">{{ size(file) }}</span>
+                <span starPart="size" class="star-upload__size">{{ size(file) }}</span>
               }
               @if (canReorder()) {
                 <button
+                  starPart="iconBtn"
                   type="button"
                   class="star-select__icon-btn"
                   [disabled]="first"
                   [attr.aria-label]="text.moveUp + ': ' + file.name"
                   (click)="move(i, i - 1)"
                 >
-                  <i class="ph-bold ph-arrow-up" aria-hidden="true"></i>
+                  <i starPart="icon" class="ph-bold ph-arrow-up" aria-hidden="true"></i>
                 </button>
                 <button
+                  starPart="iconBtn"
                   type="button"
                   class="star-select__icon-btn"
                   [disabled]="last"
                   [attr.aria-label]="text.moveDown + ': ' + file.name"
                   (click)="move(i, i + 1)"
                 >
-                  <i class="ph-bold ph-arrow-down" aria-hidden="true"></i>
+                  <i starPart="icon" class="ph-bold ph-arrow-down" aria-hidden="true"></i>
                 </button>
               }
               @if (!disabled() && !readonly()) {
                 <button
+                  starPart="iconBtn"
                   type="button"
                   class="star-select__icon-btn"
                   [attr.aria-label]="text.removeItem(file.name)"
                   (click)="remove(file)"
                 >
-                  <i class="ph-bold ph-x" aria-hidden="true"></i>
+                  <i starPart="icon" class="ph-bold ph-x" aria-hidden="true"></i>
                 </button>
               }
             }
@@ -235,10 +261,10 @@ export function fileMatchesAccept(file: File, accept: string): boolean {
     }
 
     @if (rejected().length) {
-      <div role="alert">
-        <ul class="star-upload__errors">
+      <div starPart="section" role="alert">
+        <ul starPart="errors" class="star-upload__errors">
           @for (item of rejected(); track $index) {
-            <li>{{ rejectionText(item) }}</li>
+            <li starPart="item">{{ rejectionText(item) }}</li>
           }
         </ul>
       </div>

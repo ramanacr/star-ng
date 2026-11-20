@@ -18,7 +18,14 @@ import {
   viewChild,
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
-import { STAR_UI_TEXT, StarDirectionService, starIsRtl } from '@star-ng/ui/core';
+import {
+  STAR_UI_TEXT,
+  StarDirectionService,
+  starIsRtl,
+  StarPart,
+  StarStyled,
+  ɵSTAR_PART_HOST,
+} from '@star-ng/ui/core';
 import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/ui/field';
 
 /**
@@ -28,10 +35,14 @@ import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/
  */
 @Component({
   selector: 'star-knob',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-knob', '[class.star-knob--disabled]': 'disabled()' },
   template: `
     <svg
+      starPart="svg"
       viewBox="0 0 100 100"
       [attr.width]="size()"
       [attr.height]="size()"
@@ -51,9 +62,11 @@ import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/
       (pointermove)="$event.buttons === 1 && onPointer($event)"
       (blur)="touch.emit()"
     >
-      <path class="star-knob__track" [attr.d]="arc(1)" />
-      <path class="star-knob__value" [attr.d]="arc(ratio())" />
-      <text class="star-knob__text" x="50" y="57" text-anchor="middle">{{ text() }}</text>
+      <path starPart="track" class="star-knob__track" [attr.d]="arc(1)" />
+      <path starPart="value" class="star-knob__value" [attr.d]="arc(ratio())" />
+      <text starPart="text" class="star-knob__text" x="50" y="57" text-anchor="middle">
+        {{ text() }}
+      </text>
     </svg>
   `,
 })
@@ -281,11 +294,14 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
  */
 @Component({
   selector: 'star-color-picker',
-  imports: [CdkConnectedOverlay, CdkOverlayOrigin],
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [StarPart, CdkConnectedOverlay, CdkOverlayOrigin],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-color', '[class.star-color--open]': 'open()' },
   template: `
     <div
+      starPart="swatches"
       class="star-color__swatches"
       role="radiogroup"
       [attr.aria-label]="labelledBy() ? null : (ariaLabel() ?? text.colorLabel)"
@@ -294,6 +310,7 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
     >
       @for (swatch of shownSwatches(); track swatch) {
         <button
+          starPart="swatch"
           type="button"
           role="radio"
           class="star-color__swatch"
@@ -306,6 +323,7 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
       }
     </div>
     <button
+      starPart="custom"
       #custom
       type="button"
       class="star-color__custom"
@@ -321,6 +339,7 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
     ></button>
     @if (canEyeDrop()) {
       <button
+        starPart="eyedropper"
         type="button"
         class="star-btn star-btn--ghost star-btn--icon star-btn--sm star-color__eyedropper"
         [attr.aria-label]="text.eyeDropper"
@@ -328,10 +347,11 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
         [disabled]="disabled()"
         (click)="pickFromScreen()"
       >
-        <i class="ph-bold ph-eyedropper" aria-hidden="true"></i>
+        <i starPart="icon" class="ph-bold ph-eyedropper" aria-hidden="true"></i>
       </button>
     }
     <input
+      starPart="hex"
       class="star-input star-input--sm star-color__hex"
       [value]="value()"
       [disabled]="disabled()"
@@ -352,6 +372,7 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
       (overlayOutsideClick)="onOutsideClick($event)"
     >
       <div
+        starPart="panel"
         class="star-panel star-date__panel star-color__panel"
         role="dialog"
         [id]="panelId"
@@ -360,6 +381,7 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
         (keydown)="onPanelKeydown($event)"
       >
         <div
+          starPart="area"
           #area
           class="star-color__area"
           role="slider"
@@ -375,6 +397,7 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
           (pointermove)="$event.buttons === 1 && onAreaPointer($event, false)"
         >
           <span
+            starPart="thumb"
             class="star-color__thumb"
             [style.inset-inline-start.%]="hsv().s"
             [style.top.%]="100 - hsv().v"
@@ -382,6 +405,7 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
           ></span>
         </div>
         <div
+          starPart="hue"
           class="star-color__hue"
           role="slider"
           tabindex="0"
@@ -397,15 +421,22 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
           (pointermove)="$event.buttons === 1 && onHuePointer($event, false)"
         >
           <span
+            starPart="thumb"
             class="star-color__thumb"
             [style.inset-inline-start.%]="(hsv().h / 359) * 100"
             [style.background]="hueColor()"
           ></span>
         </div>
-        <div class="star-color__bar">
-          <span class="star-color__preview" [style.background]="value()" aria-hidden="true"></span>
-          <span class="star-color__code">{{ value() }}</span>
+        <div starPart="bar" class="star-color__bar">
+          <span
+            starPart="preview"
+            class="star-color__preview"
+            [style.background]="value()"
+            aria-hidden="true"
+          ></span>
+          <span starPart="code" class="star-color__code">{{ value() }}</span>
           <button
+            starPart="button"
             type="button"
             class="star-btn star-btn--primary star-btn--sm"
             (click)="closePanel()"

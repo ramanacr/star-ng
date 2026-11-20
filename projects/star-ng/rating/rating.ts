@@ -12,7 +12,7 @@ import {
   signal,
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
-import { STAR_UI_TEXT } from '@star-ng/ui/core';
+import { STAR_UI_TEXT, StarPart, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/ui/field';
 
 /**
@@ -22,6 +22,9 @@ import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/
  */
 @Component({
   selector: 'star-rating',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-rating',
@@ -35,11 +38,13 @@ import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/
   template: `
     @for (star of stars(); track star) {
       <label
+        starPart="star"
         class="star-rating__star"
         [class.star-rating__star--on]="star <= shown()"
         (mouseenter)="!readonly() && hover.set(star)"
       >
         <input
+          starPart="srText"
           type="radio"
           class="star-sr-only"
           [name]="groupName"
@@ -50,7 +55,7 @@ import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/
           (click)="choose(star)"
           (blur)="touch.emit()"
         />
-        <i class="ph-fill ph-star" aria-hidden="true"></i>
+        <i starPart="icon" class="ph-fill ph-star" aria-hidden="true"></i>
       </label>
     }
   `,

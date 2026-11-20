@@ -15,7 +15,14 @@ import {
   viewChild,
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
-import { injectStarControlDefaults, STAR_UI_TEXT, StarInputVariant } from '@star-ng/ui/core';
+import {
+  injectStarControlDefaults,
+  STAR_UI_TEXT,
+  StarInputVariant,
+  StarPart,
+  StarStyled,
+  ɵSTAR_PART_HOST,
+} from '@star-ng/ui/core';
 import { injectStarFieldLink } from '@star-ng/ui/field';
 
 /**
@@ -28,6 +35,9 @@ import { injectStarFieldLink } from '@star-ng/ui/field';
  */
 @Component({
   selector: 'star-input-number',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-number',
@@ -37,9 +47,10 @@ import { injectStarFieldLink } from '@star-ng/ui/field';
     '[class.star-number--filled]': "variant() === 'filled'",
   },
   template: `
-    <div class="star-number__control">
+    <div starPart="control" class="star-number__control">
       @if (showButtons()) {
         <button
+          starPart="btn"
           type="button"
           class="star-number__btn"
           tabindex="-1"
@@ -47,10 +58,11 @@ import { injectStarFieldLink } from '@star-ng/ui/field';
           [disabled]="!canStep(-1)"
           (click)="stepBy(-1)"
         >
-          <i class="ph-bold ph-minus" aria-hidden="true"></i>
+          <i starPart="icon" class="ph-bold ph-minus" aria-hidden="true"></i>
         </button>
       }
       <input
+        starPart="input"
         #input
         type="text"
         class="star-number__input"
@@ -78,6 +90,7 @@ import { injectStarFieldLink } from '@star-ng/ui/field';
       />
       @if (showButtons()) {
         <button
+          starPart="btn"
           type="button"
           class="star-number__btn"
           tabindex="-1"
@@ -85,7 +98,7 @@ import { injectStarFieldLink } from '@star-ng/ui/field';
           [disabled]="!canStep(1)"
           (click)="stepBy(1)"
         >
-          <i class="ph-bold ph-plus" aria-hidden="true"></i>
+          <i starPart="icon" class="ph-bold ph-plus" aria-hidden="true"></i>
         </button>
       }
     </div>

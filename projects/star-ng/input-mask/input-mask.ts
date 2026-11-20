@@ -12,6 +12,7 @@ import {
   viewChild,
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
+import { StarPart, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 import { injectStarFieldLink } from '@star-ng/ui/field';
 
 /** Mask slot tokens (PrimeNG `p-inputmask` syntax): `9` digit, `a` letter, `*` letter or digit. */
@@ -51,10 +52,14 @@ export function unmask(mask: string, masked: string, slotChar = '_'): string {
  */
 @Component({
   selector: 'star-input-mask',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-mask' },
   template: `
     <input
+      starPart="input"
       #input
       type="text"
       class="star-input star-mask__input"

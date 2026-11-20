@@ -27,8 +27,11 @@ import {
   STAR_SLOT_HOST,
   STAR_UI_TEXT,
   StarDirectionService,
+  StarPart,
   StarSlot,
   starSlot,
+  StarStyled,
+  ɵSTAR_PART_HOST,
 } from '@star-ng/ui/core';
 import { injectStarFieldLink, starJoinIds } from '@star-ng/ui/field';
 import {
@@ -567,7 +570,16 @@ export interface StarTimeField {
  */
 @Component({
   selector: 'star-date-picker',
-  imports: [CdkConnectedOverlay, CdkOverlayOrigin, NgTemplateOutlet, StarCalendar, StarTimeColumns],
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [
+    StarPart,
+    CdkConnectedOverlay,
+    CdkOverlayOrigin,
+    NgTemplateOutlet,
+    StarCalendar,
+    StarTimeColumns,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarDatePicker) }],
   host: STAR_DATE_HOST,
@@ -684,7 +696,16 @@ export class StarDatePicker<T extends Date | string = Date>
  */
 @Component({
   selector: 'star-date-range-picker',
-  imports: [CdkConnectedOverlay, CdkOverlayOrigin, NgTemplateOutlet, StarCalendar, StarTimeColumns],
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [
+    StarPart,
+    CdkConnectedOverlay,
+    CdkOverlayOrigin,
+    NgTemplateOutlet,
+    StarCalendar,
+    StarTimeColumns,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarDateRangePicker) }],
   host: { ...STAR_DATE_HOST, class: 'star-date star-date--range' },
@@ -849,7 +870,16 @@ export class StarDateRangePicker<T extends Date | string = Date>
  */
 @Component({
   selector: 'star-multi-date-picker',
-  imports: [CdkConnectedOverlay, CdkOverlayOrigin, NgTemplateOutlet, StarCalendar, StarTimeColumns],
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [
+    StarPart,
+    CdkConnectedOverlay,
+    CdkOverlayOrigin,
+    NgTemplateOutlet,
+    StarCalendar,
+    StarTimeColumns,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarMultiDatePicker) }],
   host: { ...STAR_DATE_HOST, class: 'star-date star-date--multiple' },

@@ -16,7 +16,14 @@ import {
   viewChild,
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
-import { injectStarControlDefaults, STAR_UI_TEXT, StarDirectionService } from '@star-ng/ui/core';
+import {
+  injectStarControlDefaults,
+  STAR_UI_TEXT,
+  StarDirectionService,
+  StarPart,
+  StarStyled,
+  ɵSTAR_PART_HOST,
+} from '@star-ng/ui/core';
 import { injectStarFieldLink, starJoinIds } from '@star-ng/ui/field';
 import { StarTimeColumns } from './time-columns';
 
@@ -40,7 +47,9 @@ const PANEL_POSITIONS: ConnectedPosition[] = [
  */
 @Component({
   selector: 'star-time-picker',
-  imports: [CdkConnectedOverlay, CdkOverlayOrigin, StarTimeColumns],
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [StarPart, CdkConnectedOverlay, CdkOverlayOrigin, StarTimeColumns],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-time star-date',
@@ -50,8 +59,15 @@ const PANEL_POSITIONS: ConnectedPosition[] = [
     '[class.star-date--sm]': "size() === 'sm'",
   },
   template: `
-    <div #control class="star-date__control" cdkOverlayOrigin #origin="cdkOverlayOrigin">
+    <div
+      starPart="control"
+      #control
+      class="star-date__control"
+      cdkOverlayOrigin
+      #origin="cdkOverlayOrigin"
+    >
       <input
+        starPart="input"
         #input
         type="time"
         class="star-date__input star-time__input"
@@ -73,6 +89,7 @@ const PANEL_POSITIONS: ConnectedPosition[] = [
         (blur)="touch.emit()"
       />
       <button
+        starPart="toggle"
         #toggle
         type="button"
         class="star-date__toggle"
@@ -83,7 +100,7 @@ const PANEL_POSITIONS: ConnectedPosition[] = [
         [attr.aria-controls]="open() ? panelId : null"
         (click)="togglePanel(toggle)"
       >
-        <i class="ph-bold ph-clock" aria-hidden="true"></i>
+        <i starPart="icon" class="ph-bold ph-clock" aria-hidden="true"></i>
       </button>
     </div>
 
@@ -100,6 +117,7 @@ const PANEL_POSITIONS: ConnectedPosition[] = [
       (overlayOutsideClick)="onOutsideClick($event)"
     >
       <div
+        starPart="panel"
         class="star-panel star-date__panel star-time__panel"
         role="dialog"
         [id]="panelId"
@@ -116,8 +134,9 @@ const PANEL_POSITIONS: ConnectedPosition[] = [
           [showSeconds]="showSeconds()"
           [hourFormat]="hourFormat()"
         />
-        <div class="star-time__bar">
+        <div starPart="bar" class="star-time__bar">
           <button
+            starPart="button"
             type="button"
             class="star-btn star-btn--primary star-btn--sm"
             (click)="closePanel()"
