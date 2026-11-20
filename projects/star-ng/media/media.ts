@@ -1,7 +1,5 @@
-import { _IdGenerator } from '@angular/cdk/a11y';
 import { DOCUMENT, NgTemplateOutlet } from '@angular/common';
 import {
-  booleanAttribute,
   ChangeDetectionStrategy,
   Component,
   computed,
@@ -22,7 +20,6 @@ import {
   StarStyled,
   ɵSTAR_PART_HOST,
 } from '@star-ng/ui/core';
-import { StarDialog } from '@star-ng/ui/dialog';
 
 // ---------------------------------------------------------------- Carousel
 
@@ -222,108 +219,4 @@ export class StarCarousel<T = unknown> {
 
 export * from './galleria';
 
-/**
- * Image with preview (PrimeNG `p-image [preview]`): lazy-loaded thumbnail; click opens the
- * full image in a modal `star-dialog` with zoom in / out.
- * `<star-image src="label.png" alt="Product label" width="160" preview />`
- */
-@Component({
-  selector: 'star-image',
-  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
-  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarDialog],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { class: 'star-image' },
-  template: `
-    @if (preview()) {
-      <button
-        data-star-part="triggerButton"
-        type="button"
-        class="star-image__trigger"
-        [attr.aria-label]="text.previewImage(alt())"
-        (click)="open.set(true)"
-      >
-        <img
-          data-star-part="previewPanel"
-          [src]="src()"
-          [alt]="alt()"
-          [attr.width]="width()"
-          loading="lazy"
-        />
-        <span data-star-part="hintPanel" class="star-image__hint" aria-hidden="true"
-          ><i data-star-part="hintIcon" class="ph-bold ph-magnifying-glass-plus"></i
-        ></span>
-      </button>
-      <star-dialog [(visible)]="open" [header]="alt()" size="xl" dismissableMask>
-        <div data-star-part="zoomPanel" class="star-image__zoom-bar">
-          <button
-            data-star-part="controlButton"
-            type="button"
-            class="star-select__icon-btn"
-            [attr.aria-label]="text.zoomOut"
-            [disabled]="zoom() <= 0.5"
-            (click)="zoom.set(zoom() - 0.25)"
-          >
-            <i
-              data-star-part="zoomIcon"
-              class="ph-bold ph-magnifying-glass-minus"
-              aria-hidden="true"
-            ></i>
-          </button>
-          <span data-star-part="zoomBarText" aria-live="polite">{{ zoom() * 100 }}%</span>
-          <button
-            data-star-part="controlButton"
-            type="button"
-            class="star-select__icon-btn"
-            [attr.aria-label]="text.zoomIn"
-            [disabled]="zoom() >= 3"
-            (click)="zoom.set(zoom() + 0.25)"
-          >
-            <i
-              data-star-part="zoomIcon"
-              class="ph-bold ph-magnifying-glass-plus"
-              aria-hidden="true"
-            ></i>
-          </button>
-        </div>
-        <!-- Focusable, so the arrow keys scroll a zoomed image. -->
-        <div
-          data-star-part="stagePanel"
-          class="star-image__stage"
-          role="group"
-          tabindex="0"
-          [attr.aria-label]="alt()"
-        >
-          <img
-            data-star-part="picture"
-            [src]="src()"
-            [alt]="alt()"
-            [style.transform]="'scale(' + zoom() + ')'"
-          />
-        </div>
-      </star-dialog>
-    } @else {
-      <img
-        data-star-part="picture"
-        [src]="src()"
-        [alt]="alt()"
-        [attr.width]="width()"
-        loading="lazy"
-      />
-    }
-  `,
-})
-export class StarImage {
-  protected readonly text = inject(STAR_UI_TEXT);
-  /** Image address. */
-  readonly src = input.required<string>();
-  /** Alternative text. It is also the title of the preview dialog. */
-  readonly alt = input.required<string>();
-  /** Width attribute of the thumbnail. */
-  readonly width = input<string | number | null>(null);
-  /** The image opens in a dialog with zoom buttons when the user activates it. */
-  readonly preview = input(false, { transform: booleanAttribute });
-  protected readonly open = signal(false);
-  protected readonly zoom = signal(1);
-  protected readonly id = inject(_IdGenerator).getId('star-image-');
-}
+export * from './image';

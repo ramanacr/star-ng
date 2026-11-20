@@ -8574,7 +8574,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-image",
     "entry": "@star-ng/ui/media",
-    "description": "Image with preview (PrimeNG `p-image [preview]`): lazy-loaded thumbnail; click opens the full image in a modal `star-dialog` with zoom in / out. `<star-image src=\"label.png\" alt=\"Product label\" width=\"160\" preview />`",
+    "description": "Image with preview (PrimeNG `p-image [preview]`): lazy-loaded thumbnail; click opens the full image (or `previewImageSrc`) in a modal `star-dialog` with zoom in and out and rotate left and right. `<star-image src=\"label.png\" alt=\"Product label\" width=\"160\" preview />`",
     "inputs": [
       {
         "name": "src",
@@ -8598,11 +8598,60 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Width attribute of the thumbnail."
       },
       {
+        "name": "height",
+        "type": "string | number | null",
+        "default": "null",
+        "required": false,
+        "description": "Height attribute of the thumbnail."
+      },
+      {
+        "name": "srcSet",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "`srcset` of the thumbnail (other sizes or densities of the image)."
+      },
+      {
+        "name": "sizes",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "`sizes` of the thumbnail, for `srcSet`."
+      },
+      {
+        "name": "loading",
+        "type": "'lazy' | 'eager'",
+        "default": "'lazy'",
+        "required": false,
+        "description": "`loading` of the thumbnail: `'lazy'` (default) or `'eager'`."
+      },
+      {
         "name": "preview",
         "type": "boolean",
         "default": "false",
         "required": false,
-        "description": "The image opens in a dialog with zoom buttons when the user activates it."
+        "description": "The image opens in a dialog with zoom and rotate buttons when the user activates it."
+      },
+      {
+        "name": "previewImageSrc",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Address of the image in the preview, for example a larger file (default: `src`)."
+      },
+      {
+        "name": "previewImageSrcSet",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "`srcset` of the image in the preview."
+      },
+      {
+        "name": "previewImageSizes",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "`sizes` of the image in the preview."
       },
       {
         "name": "pt",
@@ -8622,19 +8671,40 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ],
     "models": [],
-    "outputs": [],
+    "outputs": [
+      {
+        "name": "show",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "Emits when the preview opens. PrimeNG `onShow`."
+      },
+      {
+        "name": "hide",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "Emits when the preview closes. PrimeNG `onHide`."
+      },
+      {
+        "name": "imageError",
+        "type": "Event",
+        "default": null,
+        "required": false,
+        "description": "Emits the `error` event of the thumbnail when it cannot load. PrimeNG `onImageError`."
+      }
+    ],
     "parts": [
       "root",
+      "picture",
+      "controlIcon",
       "triggerButton",
-      "previewPanel",
       "hintPanel",
       "hintIcon",
       "zoomPanel",
       "controlButton",
-      "zoomIcon",
       "zoomBarText",
-      "stagePanel",
-      "picture"
+      "stagePanel"
     ]
   },
   "StarImageCompare": {
@@ -8828,6 +8898,23 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "cropIcon",
       "selectionPanel"
     ]
+  },
+  "StarImageTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starImageTemplate]",
+    "entry": "@star-ng/ui/media",
+    "description": "Replaces the picture of `star-image`: `image` (the thumbnail in the page) or `preview` (the picture in the preview dialog, with the zoom and the rotation in the context). PrimeNG `#image` and `#preview` templates. `<ng-template starImageTemplate=\"preview\" let-src let-transform=\"transform\">…</ng-template>`",
+    "inputs": [
+      {
+        "name": "starImageTemplate",
+        "type": "'image' | 'preview'",
+        "default": null,
+        "required": true,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
   },
   "StarInplace": {
     "kind": "component",
@@ -21362,6 +21449,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "image-editor/file": "<div class=\"docs-stack\">\n  <label class=\"docs-row\">\n    Image file\n    <input type=\"file\" accept=\"image/*\" (change)=\"openFile($event)\" />\n  </label>\n  <star-image-editor [src]=\"fileUrl()\" ariaLabel=\"File editor\" />\n</div>",
   "image/basic": "<star-image [src]=\"shelf\" alt=\"Shelf photo\" [width]=\"240\" />",
   "image/preview": "<star-image [src]=\"shelf\" alt=\"Shelf photo\" [width]=\"240\" preview />",
+  "image/sources": "<div class=\"docs-stack\">\n  <star-image\n    [src]=\"shelf\"\n    [previewImageSrc]=\"shelfLarge\"\n    alt=\"Shelf photo, large\"\n    [width]=\"240\"\n    [height]=\"135\"\n    preview\n    (show)=\"previewLog.set('Preview open')\"\n    (hide)=\"previewLog.set('Preview closed')\"\n  >\n    <ng-template starIcon=\"preview\"\n      ><i class=\"ph-bold ph-arrows-out\" aria-hidden=\"true\"></i\n    ></ng-template>\n  </star-image>\n  <p class=\"docs-output\" role=\"status\">{{ previewLog() || 'Preview not opened yet' }}</p>\n</div>",
   "inplace/active": "<div class=\"docs-stack\">\n  <star-inplace ariaLabel=\"Edit title\" [(active)]=\"editing\">\n    <ng-template starInplaceDisplay>{{ title() }}</ng-template>\n    <ng-template starInplaceContent>\n      <input\n        starInput\n        size=\"sm\"\n        aria-label=\"Title\"\n        [value]=\"title()\"\n        (input)=\"title.set($any($event.target).value)\"\n        (keydown.enter)=\"editing.set(false)\"\n      />\n    </ng-template>\n  </star-inplace>\n  <p class=\"docs-output\" role=\"status\">Editing: {{ editing() }}</p>\n  <star-inplace disabled ariaLabel=\"Locked value\">\n    <ng-template starInplaceDisplay>Locked value</ng-template>\n    <ng-template starInplaceContent>Not shown</ng-template>\n  </star-inplace>\n</div>",
   "inplace/basic": "<div class=\"docs-stack\">\n  <p class=\"docs-output\">\n    Requester:\n    <star-inplace ariaLabel=\"Edit requester\" closable>\n      <ng-template starInplaceDisplay>{{ name() }}</ng-template>\n      <ng-template starInplaceContent>\n        <input\n          starInput\n          size=\"sm\"\n          aria-label=\"Requester\"\n          [value]=\"name()\"\n          (input)=\"name.set($any($event.target).value)\"\n        />\n      </ng-template>\n    </star-inplace>\n  </p>\n</div>",
   "input-group/addons": "<div class=\"docs-stack\">\n  <star-field label=\"Website\">\n    <star-input-group>\n      <star-input-group-addon>https://</star-input-group-addon>\n      <input starInput placeholder=\"example.com\" />\n    </star-input-group>\n  </star-field>\n  <star-input-group ariaLabel=\"Weight\">\n    <input starInput inputmode=\"decimal\" aria-label=\"Weight\" placeholder=\"0.0\" />\n    <star-input-group-addon>kg</star-input-group-addon>\n  </star-input-group>\n</div>",

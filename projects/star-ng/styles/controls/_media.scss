@@ -311,6 +311,9 @@
     outline-offset: 2px;
   }
 }
+.star-image__icon {
+  display: inline-flex;
+}
 .star-image__hint {
   position: absolute;
   inset: 0;

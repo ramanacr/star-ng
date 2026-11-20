@@ -642,6 +642,22 @@ test.describe('image', () => {
     await expect(trigger).toBeFocused();
   });
 
+  test('rotates the larger preview image and reports show and hide', async ({ page }) => {
+    await openPage(page, '/controls/image', 'Image');
+    const live = example(page, 'Larger preview, sources and events');
+    await live.getByRole('button', { name: 'Preview: Shelf photo, large' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Shelf photo, large' });
+    await expect(dialog).toBeVisible();
+    await expect(live.getByRole('status')).toHaveText('Preview open');
+    await dialog.getByRole('button', { name: 'Rotate right' }).click();
+    await expect(dialog.getByRole('img', { name: 'Shelf photo, large' })).toHaveCSS(
+      'transform',
+      /matrix\([^,]+, 1, -1,/,
+    );
+    await page.keyboard.press('Escape');
+    await expect(live.getByRole('status')).toHaveText('Preview closed');
+  });
+
   test('zoom stops at 50% and 300%', async ({ page }) => {
     await openPage(page, '/controls/image', 'Image');
     const trigger = example(page, 'Preview').getByRole('button', { name: 'Preview: Shelf photo' });

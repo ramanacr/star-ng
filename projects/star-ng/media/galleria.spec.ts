@@ -133,7 +133,9 @@ describe('StarGalleria depth', () => {
     const thumbs = () =>
       [...t.el.querySelectorAll('.star-galleria__thumb')].map((b) => b.getAttribute('aria-label'));
     expect(thumbs()).toEqual(['Show Harbor', 'Show Bridge', 'Show Market']);
-    const navs = t.el.querySelectorAll<HTMLButtonElement>('[data-star-part=thumbnailNavigatorButton]');
+    const navs = t.el.querySelectorAll<HTMLButtonElement>(
+      '[data-star-part=thumbnailNavigatorButton]',
+    );
     expect(navs.length).toBe(2);
     navs[1].click();
     navs[1].click();
