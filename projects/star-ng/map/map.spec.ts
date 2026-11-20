@@ -240,9 +240,13 @@ describe('StarMap', () => {
     feature('East').focus();
     key(feature('East'), 'Enter');
     await stable();
-    expect(host.selected()).toEqual(['east']);
+    expect(host.selected()).toEqual(['regions:east']);
     expect(feature('East').getAttribute('aria-pressed')).toBe('true');
-    expect(host.shapes.at(-1)?.feature).toMatchObject({ key: 'east', label: 'East', value: 50 });
+    expect(host.shapes.at(-1)?.feature).toMatchObject({
+      key: 'regions:east',
+      label: 'East',
+      value: 50,
+    });
     key(feature('East'), ' ');
     await stable();
     expect(host.selected()).toEqual([]);
@@ -250,8 +254,50 @@ describe('StarMap', () => {
     const port = root.querySelector<HTMLElement>('.star-map__marker[aria-label="Port"]')!;
     port.click();
     await stable();
-    expect(host.markers.at(-1)?.feature.key).toBe('cities-0');
+    expect(host.markers.at(-1)?.feature.key).toBe('cities:0');
     expect(port.getAttribute('aria-pressed')).toBeNull();
+  });
+
+  it('keys shapes by layer, so two layers with the same GeoJSON ids stay apart', async () => {
+    const errors = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const warns = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const { root, host, stable } = await setup((h) =>
+      h.layers.set([
+        { type: 'shape', id: 'a', data: REGIONS, label: () => 'Region A' },
+        { type: 'shape', id: 'b', data: REGIONS, label: () => 'Region B' },
+      ]),
+    );
+    const keys = [...root.querySelectorAll('[data-map-key]')].map((e) =>
+      e.getAttribute('data-map-key'),
+    );
+    expect(keys).toHaveLength(6);
+    expect(new Set(keys).size).toBe(6);
+    expect(keys).toContain('a:north');
+    expect(keys).toContain('b:north');
+    const bNorth = root.querySelector<HTMLElement>('[data-map-key="b:north"]')!;
+    bNorth.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    await stable();
+    expect(host.selected()).toEqual(['b:north']);
+    expect(root.querySelector('[data-map-key="a:north"]')!.getAttribute('aria-pressed')).toBe(
+      'false',
+    );
+    expect(bNorth.getAttribute('aria-pressed')).toBe('true');
+    // The arrow keys visit all six features once: the focus does not stick to the first layer.
+    let current = root.querySelector<HTMLElement>('[data-map-key][tabindex="0"]')!;
+    current.focus();
+    key(current, 'Home');
+    await stable();
+    current = document.activeElement as HTMLElement;
+    const visited: string[] = [];
+    for (let i = 0; i < 6; i++) {
+      visited.push(current.getAttribute('data-map-key')!);
+      key(current, 'ArrowRight');
+      await stable();
+      current = document.activeElement as HTMLElement;
+    }
+    expect(new Set(visited).size).toBe(6);
+    const all = [...errors.mock.calls, ...warns.mock.calls].map((call) => String(call[0]));
+    expect(all.filter((message) => message.includes('NG0955'))).toEqual([]);
   });
 
   it('selects several shapes with selection="multiple" and none with "none"', async () => {
@@ -259,7 +305,7 @@ describe('StarMap', () => {
     feature('North').dispatchEvent(new MouseEvent('click', { bubbles: true }));
     feature('East').dispatchEvent(new MouseEvent('click', { bubbles: true }));
     await stable();
-    expect(host.selected()).toEqual(['north', 'east']);
+    expect(host.selected()).toEqual(['regions:north', 'regions:east']);
     host.mode.set('none');
     await stable();
     expect(feature('North').getAttribute('aria-pressed')).toBeNull();

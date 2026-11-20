@@ -67,7 +67,10 @@ export interface StarMapShapeLayer<P = any> {
   /** Name of the layer in the legend and the data table. Defaults to `id`. */
   readonly title?: string;
   readonly data: StarGeoJsonFeatureCollection<P>;
-  /** Key of a feature, for `selected`. Default: `feature.id`, else `<layer id>-<index>`. */
+  /**
+   * Key of a feature, for `selected`, the outputs and the focus. Default:
+   * `<layer id>:<feature.id>`, else `<layer id>:<index>`, so two layers never share a key.
+   */
   readonly key?: (feature: StarGeoJsonFeature<P>, index: number) => string;
   /** Accessible name of a feature. Default: `properties.name`, else the key. */
   readonly label?: (feature: StarGeoJsonFeature<P>) => string;
@@ -91,6 +94,7 @@ export interface StarMapMarkerLayer<T = any> {
   readonly data: readonly T[];
   readonly position: (item: T) => StarLonLat;
   readonly label: (item: T) => string;
+  /** Key of an item. Default: `<layer id>:<index>`. */
   readonly key?: (item: T, index: number) => string;
   readonly value?: (item: T) => number | null | undefined;
 }
@@ -104,6 +108,7 @@ export interface StarMapBubbleLayer<T = any> {
   readonly position: (item: T) => StarLonLat;
   readonly label: (item: T) => string;
   readonly value: (item: T) => number;
+  /** Key of an item. Default: `<layer id>:<index>`. */
   readonly key?: (item: T, index: number) => string;
   /** Smallest and largest radius in screen pixels. Default 4 and 24. */
   readonly minRadius?: number;
@@ -566,8 +571,7 @@ export class StarMap {
         shapes.forEach((shape, i) => {
           const feature = shape.feature;
           const key =
-            layer.key?.(feature, shape.index) ??
-            (feature.id !== undefined ? String(feature.id) : `${layer.id}-${shape.index}`);
+            layer.key?.(feature, shape.index) ?? `${layer.id}:${feature.id ?? shape.index}`;
           const props = (feature.properties ?? {}) as Record<string, unknown>;
           const label =
             layer.label?.(feature) ?? (typeof props['name'] === 'string' ? props['name'] : key);
@@ -610,7 +614,7 @@ export class StarMap {
           const raw = values[index];
           const value = typeof raw === 'number' && Number.isFinite(raw) ? raw : null;
           const label = layer.label(data);
-          const key = layer.key?.(data, index) ?? `${layer.id}-${index}`;
+          const key = layer.key?.(data, index) ?? `${layer.id}:${index}`;
           items.push({
             key,
             layer: layer.id,

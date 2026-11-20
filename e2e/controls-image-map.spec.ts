@@ -94,7 +94,7 @@ test.describe('map', () => {
     await openPage(page, '/controls/map', 'Map');
     const live = example(page, 'Choropleth with a legend');
     const status = live.getByRole('status');
-    await expect(status).toContainText('Selected: eastvale.');
+    await expect(status).toContainText('Selected: regions:eastvale.');
 
     // Tab enters the map at the first feature in reading order.
     await live.getByRole('button', { name: 'Table' }).focus();

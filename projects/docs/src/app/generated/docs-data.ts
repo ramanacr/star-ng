@@ -5709,7 +5709,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "string",
         "default": "''",
         "required": false,
-        "description": "The edited image as a PNG data URL after each edit; `''` while there is no edit."
+        "description": "The edited image as a PNG data URL, `''` while there is no edit. It is encoded asynchronously after each commit (operation, undo, redo, reset), once the edits settle."
       }
     ],
     "outputs": []

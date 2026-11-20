@@ -288,7 +288,7 @@ const CAPITALS: readonly Capital[] = [
   `,
 })
 export class MapPage {
-  protected readonly selected = signal<readonly string[]>(['eastvale']);
+  protected readonly selected = signal<readonly string[]>(['regions:eastvale']);
   protected readonly zoom = signal<number | null>(null);
   protected readonly lastClick = signal('(none)');
   protected readonly tilesOn = signal(false);
@@ -350,7 +350,7 @@ export class MapPage {
     this.lastClick.set(event.feature.label);
   }
 
-  protected readonly choroplethScript = `readonly selected = signal<readonly string[]>(['eastvale']);
+  protected readonly choroplethScript = `readonly selected = signal<readonly string[]>(['regions:eastvale']);
 readonly zoom = signal<number | null>(null); // null: fit the data
 readonly choropleth: StarMapLayer[] = [
   {
