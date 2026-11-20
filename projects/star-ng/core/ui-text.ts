@@ -534,6 +534,8 @@ export interface StarUiText {
   readonly documentNoResults: string;
   readonly documentSearchResults: (count: number, pages: number) => string;
   readonly documentLoadError: string;
+  /** Text of a page that could not be drawn. */
+  readonly documentPageError: string;
 }
 
 export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
@@ -977,6 +979,7 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   documentSearchResults: (count, pages) =>
     `${count} ${count === 1 ? 'result' : 'results'} on ${pages} ${pages === 1 ? 'page' : 'pages'}`,
   documentLoadError: 'The document could not be loaded.',
+  documentPageError: 'This page could not be shown.',
 };
 
 /** Parameter names of the function entries, in call order (used for `{{ name }}` in translations). */

@@ -455,4 +455,5 @@ export const STAR_UI_TEXT_ES: StarUiText = {
   documentSearchResults: (count, pages) =>
     `${count} ${forCount(count, 'resultado', 'resultados')} en ${pages} ${forCount(pages, 'página', 'páginas')}`,
   documentLoadError: 'No se pudo cargar el documento.',
+  documentPageError: 'No se pudo mostrar esta página.',
 };

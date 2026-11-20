@@ -208,6 +208,20 @@
   background-size: 200% 100%;
   animation: star-document-shimmer 1.4s ease-in-out infinite;
 }
+// A page whose draw failed twice: a message instead of a skeleton.
+.star-document-page__failed {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: var(--star-surface);
+  color: var(--star-danger);
+  font: var(--star-type-body-sm);
+  text-align: center;
+}
 @keyframes star-document-shimmer {
   from {
     background-position: 100% 0;

@@ -86,6 +86,199 @@ function key(target: Element, key: string, init: KeyboardEventInit = {}): Keyboa
   return event;
 }
 
+interface Deferred<T> {
+  readonly promise: Promise<T>;
+  resolve(value: T): void;
+  reject(error: unknown): void;
+}
+
+/** A promise with its resolve and reject functions. */
+function deferred<T>(): Deferred<T> {
+  let resolve!: (value: T) => void;
+  let reject!: (error: unknown) => void;
+  const promise = new Promise<T>((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+  return { promise, resolve, reject };
+}
+
+/** A renderer whose calls wait until the test settles them. */
+class ManualRenderer implements StarDocumentRenderer {
+  readonly loads: { source: unknown; signal?: AbortSignal; d: Deferred<StarDocumentInfo> }[] = [];
+  readonly draws: { index: number; signal?: AbortSignal; d: Deferred<void> }[] = [];
+  readonly texts: { index: number; d: Deferred<string> }[] = [];
+  disposed = 0;
+
+  load(source: unknown, signal?: AbortSignal): Promise<StarDocumentInfo> {
+    const d = deferred<StarDocumentInfo>();
+    this.loads.push({ source, signal, d });
+    return d.promise;
+  }
+
+  renderPage(
+    index: number,
+    _canvas: HTMLCanvasElement,
+    _scale: number,
+    signal?: AbortSignal,
+  ): Promise<void> {
+    const d = deferred<void>();
+    this.draws.push({ index, signal, d });
+    return d.promise;
+  }
+
+  textContent(index: number): Promise<string> {
+    const d = deferred<string>();
+    this.texts.push({ index, d });
+    return d.promise;
+  }
+
+  dispose(): void {
+    this.disposed++;
+  }
+}
+
+function info(pages: number): StarDocumentInfo {
+  return { pageCount: pages, pageSize: () => ({ width: 600, height: 800 }) };
+}
+
+/** Lets pending promise callbacks run, then waits for the render. */
+async function flush(fixture: { whenStable(): Promise<unknown> }): Promise<void> {
+  for (let i = 0; i < 10; i++) await Promise.resolve();
+  await fixture.whenStable();
+}
+
+describe('StarDocumentViewer review fixes', () => {
+  async function manual(prepare?: (host: Host) => void) {
+    TestBed.configureTestingModule({
+      providers: [
+        {
+          provide: StarAnnouncer,
+          useValue: { announce: vi.fn(() => Promise.resolve()), clear: vi.fn() },
+        },
+      ],
+    });
+    const fixture = TestBed.createComponent(Host);
+    const renderer = new ManualRenderer();
+    fixture.componentInstance.renderer = renderer;
+    prepare?.(fixture.componentInstance);
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+    return { fixture, renderer, host: fixture.componentInstance, el };
+  }
+
+  it('aborts a stale load and keeps the newest document when loads resolve out of order', async () => {
+    const { fixture, renderer, host, el } = await manual();
+    host.source.set('b.pdf');
+    await fixture.whenStable();
+    expect(renderer.loads.map((l) => l.source)).toEqual(['invoices.pdf', 'b.pdf']);
+    expect(renderer.loads[0].signal?.aborted).toBe(true);
+    expect(renderer.loads[1].signal?.aborted).toBe(false);
+    renderer.loads[1].d.resolve(info(3));
+    await flush(fixture);
+    renderer.loads[0].d.resolve(info(9));
+    await flush(fixture);
+    expect(el.querySelector('.star-document-viewer__count')!.textContent!.trim()).toBe('of 3');
+  });
+
+  it('disposes and resets when the source becomes null', async () => {
+    const { fixture, renderer, host, el } = await manual();
+    renderer.loads[0].d.resolve(info(4));
+    await flush(fixture);
+    expect(el.querySelectorAll('.star-document-viewer__page').length).toBeGreaterThan(0);
+    host.source.set(null);
+    await flush(fixture);
+    expect(renderer.disposed).toBe(1);
+    expect(renderer.loads[0].signal?.aborted).toBe(true);
+    expect(el.querySelectorAll('.star-document-viewer__page')).toHaveLength(0);
+    expect(el.querySelector('.star-document-viewer__count')!.textContent!.trim()).toBe('of 0');
+  });
+
+  it('drops text and search results of an older load', async () => {
+    const { fixture, renderer, host } = await manual();
+    renderer.loads[0].d.resolve(info(2));
+    await flush(fixture);
+    const searching = host.viewer().search('total');
+    await flush(fixture);
+    host.source.set('next.pdf');
+    await flush(fixture);
+    // The old text arrives after the new load started.
+    for (const t of renderer.texts) t.d.resolve('total total');
+    await flush(fixture);
+    expect(await searching).toEqual([]);
+    renderer.loads[1].d.resolve(info(2));
+    await flush(fixture);
+    const viewer = host.viewer() as unknown as {
+      texts(): ReadonlyMap<number, string>;
+      searching(): boolean;
+      results(): unknown;
+    };
+    expect(viewer.searching()).toBe(false);
+    expect(viewer.results()).toBeNull();
+    expect([...viewer.texts().values()]).not.toContain('total total');
+  });
+
+  it('serializes the draws of a page, aborts the older one, and shows a failed page', async () => {
+    const { fixture, renderer, host, el } = await manual((h) => h.zoom.set(1));
+    renderer.loads[0].d.resolve(info(1));
+    await flush(fixture);
+    expect(renderer.draws).toHaveLength(1);
+    host.zoom.set(2);
+    await flush(fixture);
+    // The second draw waits until the first one settles.
+    expect(renderer.draws).toHaveLength(1);
+    expect(renderer.draws[0].signal?.aborted).toBe(true);
+    renderer.draws[0].d.resolve();
+    await flush(fixture);
+    expect(renderer.draws).toHaveLength(2);
+    expect(el.querySelector('.star-document-page__skeleton')).not.toBeNull();
+    // The latest draw fails twice (one retry): an error, not a skeleton forever.
+    renderer.draws[1].d.reject(new Error('draw failed'));
+    await flush(fixture);
+    expect(renderer.draws).toHaveLength(3);
+    renderer.draws[2].d.reject(new Error('draw failed'));
+    await flush(fixture);
+    expect(el.querySelector('.star-document-page__skeleton')).toBeNull();
+    expect(el.querySelector('.star-document-page__failed')!.textContent).toContain(
+      'This page could not be shown.',
+    );
+  });
+
+  it('fits the largest page in continuous mode and the current page in single mode', async () => {
+    const width = vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(640);
+    const height = vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(500);
+    try {
+      const { fixture, renderer, host } = await manual((h) => h.zoom.set('fit-page'));
+      renderer.loads[0].d.resolve({
+        pageCount: 2,
+        pageSize: (i) => (i === 0 ? { width: 600, height: 800 } : { width: 600, height: 1600 }),
+      });
+      await flush(fixture);
+      expect(host.viewer().scale()).toBeCloseTo(468 / 1600);
+      host.mode.set('single');
+      await flush(fixture);
+      expect(host.viewer().scale()).toBeCloseTo(468 / 800);
+    } finally {
+      width.mockRestore();
+      height.mockRestore();
+    }
+  });
+
+  it('accumulates small Control+wheel deltas into one zoom step', async () => {
+    const { fixture, renderer, host, el } = await manual((h) => h.zoom.set(1));
+    renderer.loads[0].d.resolve(info(1));
+    await flush(fixture);
+    const region = el.querySelector('[role=region]')!;
+    const wheel = (deltaY: number) =>
+      region.dispatchEvent(new WheelEvent('wheel', { deltaY, ctrlKey: true, cancelable: true }));
+    wheel(-20);
+    wheel(-20);
+    expect(host.zoom()).toBe(1);
+    wheel(-20);
+    expect(host.zoom()).toBe(1.25);
+  });
+});
+
 describe('StarDocumentViewer', () => {
   let announce: ReturnType<typeof vi.fn>;
 

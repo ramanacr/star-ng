@@ -91,7 +91,12 @@ export interface StarDocumentSearchResult {
       [style.height.px]="cssSize().height"
       [style.transform]="'translate(-50%, -50%) rotate(' + rotation() + 'deg)'"
     ></canvas>
-    @if (!rendered()) {
+    @if (failed()) {
+      <span class="star-document-page__failed">
+        <i class="ph-bold ph-warning-circle" aria-hidden="true"></i>
+        {{ text.documentPageError }}
+      </span>
+    } @else if (!rendered()) {
       <span class="star-document-page__skeleton" aria-hidden="true"></span>
     }
   `,
@@ -110,8 +115,14 @@ export class StarDocumentPage {
 
   /** True once the renderer drew the page. */
   readonly rendered = signal(false);
+  /** True when the latest draw failed twice. */
+  readonly failed = signal(false);
+  protected readonly text = inject(STAR_UI_TEXT);
   private readonly canvas = viewChild.required<ElementRef<HTMLCanvasElement>>('canvas');
   private token = 0;
+  private controller: AbortController | null = null;
+  /** The draws of this page, one after the other. */
+  private queue: Promise<void> = Promise.resolve();
 
   protected readonly cssSize = computed(() => ({
     width: this.size().width * this.scale(),
@@ -126,35 +137,63 @@ export class StarDocumentPage {
       const size = this.size();
       const scale = this.scale();
       if (!this.browser) return;
-      untracked(() => void this.draw(renderer, index, size, scale));
+      untracked(() => this.draw(renderer, index, size, scale));
     });
     inject(DestroyRef).onDestroy(() => {
       // Cancel a pending draw and give the canvas memory back.
       this.token++;
+      this.controller?.abort();
       const canvas = this.canvas().nativeElement;
       canvas.width = 0;
       canvas.height = 0;
     });
   }
 
-  private async draw(
+  /**
+   * Starts a draw: aborts the older one and queues this one after it, so two draws never paint
+   * one canvas at the same time.
+   */
+  private draw(
+    renderer: StarDocumentRenderer,
+    index: number,
+    size: StarDocumentPageSize,
+    scale: number,
+  ): void {
+    const token = ++this.token;
+    this.controller?.abort();
+    const controller = new AbortController();
+    this.controller = controller;
+    this.rendered.set(false);
+    this.failed.set(false);
+    this.queue = this.queue.then(() =>
+      this.run(token, controller.signal, renderer, index, size, scale),
+    );
+  }
+
+  /** Draws once and retries once; after that the page shows that it failed. */
+  private async run(
+    token: number,
+    signal: AbortSignal,
     renderer: StarDocumentRenderer,
     index: number,
     size: StarDocumentPageSize,
     scale: number,
   ): Promise<void> {
-    const token = ++this.token;
-    const canvas = this.canvas().nativeElement;
     const pixels = scale * (this.document.defaultView?.devicePixelRatio || 1);
-    canvas.width = Math.max(1, Math.round(size.width * pixels));
-    canvas.height = Math.max(1, Math.round(size.height * pixels));
-    this.rendered.set(false);
-    try {
-      await renderer.renderPage(index, canvas, pixels);
-      if (token === this.token) this.rendered.set(true);
-    } catch {
-      // The page stays a skeleton; the document itself loaded.
+    for (let attempt = 0; attempt < 2; attempt++) {
+      if (token !== this.token || signal.aborted) return;
+      const canvas = this.canvas().nativeElement;
+      canvas.width = Math.max(1, Math.round(size.width * pixels));
+      canvas.height = Math.max(1, Math.round(size.height * pixels));
+      try {
+        await renderer.renderPage(index, canvas, pixels, signal);
+        if (token === this.token && !signal.aborted) this.rendered.set(true);
+        return;
+      } catch {
+        if (token !== this.token || signal.aborted) return;
+      }
     }
+    this.failed.set(true);
   }
 }
 
@@ -165,6 +204,8 @@ const GAP = 12;
 const THUMB_WIDTH = 120;
 const THUMB_HEIGHT = 156;
 const THUMB_SLOT = THUMB_HEIGHT + 36;
+/** Wheel movement (pixels) of one Control+wheel zoom step. */
+const WHEEL_STEP = 50;
 
 /**
  * Document viewer (PDF.js viewer, Syncfusion `ejs-pdfviewer`, Kendo UI `kendo-pdfviewer`,
@@ -542,6 +583,9 @@ export class StarDocumentViewer {
   private loadToken = 0;
   private searchToken = 0;
   private loadedWith: StarDocumentRenderer | null = null;
+  private loadController: AbortController | null = null;
+  /** Sum of the Control+wheel deltas since the last zoom step. */
+  private wheelSum = 0;
   /** Scroll position that the viewer set itself; its scroll event does not change the page. */
   private ownScroll: number | null = null;
 
@@ -557,21 +601,29 @@ export class StarDocumentViewer {
   });
   protected readonly allPages = computed(() => this.sizes().map((_, i) => i));
 
-  /** Scale factor of the pages. Fit width uses the widest page, fit page the current page. */
+  /**
+   * Scale factor of the pages. Fit width uses the widest page. Fit page uses the largest page
+   * (widest and tallest) in continuous mode, so the scale does not change while scrolling, and
+   * the current page in single-page mode.
+   */
   readonly scale = computed(() => {
     const sizes = this.sizes();
     if (!sizes.length) return 1;
     const rotation = this.rotation();
     const zoom = this.zoom();
     const view = { width: this.viewWidth(), height: this.viewHeight() };
-    let page = starRotatedSize(sizes[this.currentIndex()] ?? sizes[0], rotation);
-    if (zoom === 'fit-width') {
-      for (const size of sizes) {
-        const rotated = starRotatedSize(size, rotation);
-        if (rotated.width > page.width) page = rotated;
-      }
+    if (zoom === 'fit-page' && this.mode() === 'single') {
+      const current = starRotatedSize(sizes[this.currentIndex()] ?? sizes[0], rotation);
+      return starDocumentScale(zoom, current, view, PADDING);
     }
-    return starDocumentScale(zoom, page, view, PADDING);
+    let width = 0;
+    let height = 0;
+    for (const size of sizes) {
+      const rotated = starRotatedSize(size, rotation);
+      width = Math.max(width, rotated.width);
+      height = Math.max(height, rotated.height);
+    }
+    return starDocumentScale(zoom, { width, height }, view, PADDING);
   });
 
   private readonly currentIndex = computed(() =>
@@ -635,8 +687,11 @@ export class StarDocumentViewer {
     effect(() => {
       const source = this.source();
       const renderer = this.activeRenderer();
-      if (!this.browser || !renderer || source === null || source === undefined) return;
-      untracked(() => void this.load(renderer, source));
+      if (!this.browser) return;
+      untracked(() => {
+        if (!renderer || source === null || source === undefined) this.unload();
+        else void this.load(renderer, source);
+      });
     });
     // Text layer: fetch the text of the rendered pages once.
     effect(() => {
@@ -671,26 +726,48 @@ export class StarDocumentViewer {
         this.document.removeEventListener('fullscreenchange', onFullscreen);
       });
     });
-    inject(DestroyRef).onDestroy(() => {
-      this.loadToken++;
-      this.searchToken++;
-      this.loadedWith?.dispose();
-      this.loadedWith = null;
-    });
+    inject(DestroyRef).onDestroy(() => this.release());
   }
 
   // Loading ----------------------------------------------------------------------------------
 
-  private async load(renderer: StarDocumentRenderer, source: unknown): Promise<void> {
-    const token = ++this.loadToken;
+  /**
+   * Ends the current document: stale loads, texts and searches are dropped (tokens), the load
+   * signal is aborted and the renderer disposes its document.
+   */
+  private release(): void {
+    this.loadToken++;
+    this.searchToken++;
+    this.searching.set(false);
+    this.loadController?.abort();
+    this.loadController = null;
     this.loadedWith?.dispose();
+    this.loadedWith = null;
+  }
+
+  /** No source (null) or no renderer: dispose the document and show the empty state. */
+  private unload(): void {
+    if (!this.loadedWith && this.status() === 'idle') return;
+    this.release();
+    this.status.set('idle');
+    this.info.set(null);
+    this.error.set(null);
+    this.texts.set(new Map());
+    this.results.set(null);
+  }
+
+  private async load(renderer: StarDocumentRenderer, source: unknown): Promise<void> {
+    this.release();
+    const token = this.loadToken;
+    const controller = new AbortController();
+    this.loadController = controller;
     this.loadedWith = renderer;
     this.status.set('loading');
     this.info.set(null);
     this.texts.set(new Map());
     this.results.set(null);
     try {
-      const info = await renderer.load(source);
+      const info = await renderer.load(source, controller.signal);
       if (token !== this.loadToken) return;
       this.info.set(info);
       this.status.set('ready');
@@ -705,16 +782,19 @@ export class StarDocumentViewer {
     }
   }
 
-  private async textOf(index: number): Promise<string> {
+  /** The text of a page, cached per load. Resolves with null when a newer load started. */
+  private async textOf(index: number): Promise<string | null> {
     const cached = this.texts().get(index);
     if (cached !== undefined) return cached;
-    const renderer = this.activeRenderer();
+    const token = this.loadToken;
+    const renderer = this.loadedWith;
     let text = '';
     try {
       text = (await renderer?.textContent?.(index)) ?? '';
     } catch {
       text = '';
     }
+    if (token !== this.loadToken) return null;
     this.texts.update((map) => new Map(map).set(index, text));
     return text;
   }
@@ -819,10 +899,20 @@ export class StarDocumentViewer {
     return `${Math.round(scale * 100)}%`;
   }
 
+  /**
+   * Control+wheel zooms one step per 50 pixels of wheel movement: a mouse notch (about 100)
+   * is one step, and the many small deltas of a touchpad pinch add up instead of racing.
+   */
   protected onWheel(event: WheelEvent): void {
     if (!event.ctrlKey && !event.metaKey) return;
     event.preventDefault();
-    this.zoomBy(event.deltaY < 0 ? 1 : -1);
+    const delta = event.deltaMode === 1 ? event.deltaY * 16 : event.deltaY;
+    // A change of direction starts a new sum.
+    if (Math.sign(delta) !== Math.sign(this.wheelSum)) this.wheelSum = 0;
+    this.wheelSum += delta;
+    if (Math.abs(this.wheelSum) < WHEEL_STEP) return;
+    this.zoomBy(this.wheelSum < 0 ? 1 : -1);
+    this.wheelSum = 0;
   }
 
   // Thumbnails -------------------------------------------------------------------------------
@@ -863,9 +953,12 @@ export class StarDocumentViewer {
     }
     this.searching.set(true);
     const results: StarDocumentSearchResult[] = [];
+    const load = this.loadToken;
     for (let i = 0; i < this.pageCount(); i++) {
-      const count = starCountMatches(await this.textOf(i), query);
-      if (token !== this.searchToken) return results;
+      const text = await this.textOf(i);
+      // A newer search or a newer document: drop what this search found.
+      if (token !== this.searchToken || load !== this.loadToken || text === null) return [];
+      const count = starCountMatches(text, query);
       if (count) results.push({ page: i + 1, count });
     }
     this.searching.set(false);

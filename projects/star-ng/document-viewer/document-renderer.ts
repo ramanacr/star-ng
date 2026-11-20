@@ -26,18 +26,31 @@ export interface StarDocumentInfo {
  *   private doc: pdfjs.PDFDocumentProxy | null = null;
  *   private sizes: StarDocumentPageSize[] = [];
  *
- *   async load(source: unknown) {
- *     this.doc = await pdfjs.getDocument(source as string).promise;
- *     for (let i = 1; i <= this.doc.numPages; i++) {
- *       const { width, height } = (await this.doc.getPage(i)).getViewport({ scale: 1 });
- *       this.sizes.push({ width, height });
+ *   async load(source: unknown, signal?: AbortSignal) {
+ *     this.sizes = [];
+ *     const task = pdfjs.getDocument(source as string);
+ *     signal?.addEventListener('abort', () => void task.destroy());
+ *     const doc = await task.promise;
+ *     const sizes: StarDocumentPageSize[] = [];
+ *     for (let i = 1; i <= doc.numPages; i++) {
+ *       const { width, height } = (await doc.getPage(i)).getViewport({ scale: 1 });
+ *       sizes.push({ width, height });
  *     }
- *     return { pageCount: this.doc.numPages, pageSize: (i: number) => this.sizes[i] };
+ *     if (signal?.aborted) {
+ *       // A newer source replaced this one: free it and keep the state of the newer load.
+ *       void doc.destroy();
+ *       throw new DOMException('Aborted', 'AbortError');
+ *     }
+ *     this.doc = doc;
+ *     this.sizes = sizes;
+ *     return { pageCount: doc.numPages, pageSize: (i: number) => sizes[i] };
  *   }
- *   async renderPage(index: number, canvas: HTMLCanvasElement, scale: number) {
+ *   async renderPage(index: number, canvas: HTMLCanvasElement, scale: number, signal?: AbortSignal) {
  *     const page = await this.doc!.getPage(index + 1);
  *     const viewport = page.getViewport({ scale });
- *     await page.render({ canvasContext: canvas.getContext('2d')!, viewport }).promise;
+ *     const renderTask = page.render({ canvasContext: canvas.getContext('2d')!, viewport });
+ *     signal?.addEventListener('abort', () => renderTask.cancel());
+ *     await renderTask.promise;
  *   }
  *   async textContent(index: number) {
  *     const content = await (await this.doc!.getPage(index + 1)).getTextContent();
@@ -46,6 +59,7 @@ export interface StarDocumentInfo {
  *   dispose() {
  *     void this.doc?.destroy();
  *     this.doc = null;
+ *     this.sizes = [];
  *   }
  * }
  * ```
@@ -54,15 +68,30 @@ export interface StarDocumentInfo {
  * at `scale` (device pixels: the viewer multiplies by `devicePixelRatio`); draw the page
  * unrotated, the viewer rotates the canvas. Implement `textContent` to enable the search and the
  * text layer that screen readers read.
+ *
+ * Cancellation: the viewer passes an `AbortSignal`. It aborts the signal of `load` when the
+ * source changes, when the source becomes null and when the viewer is destroyed; it aborts the
+ * signal of `renderPage` when a newer draw of the same page starts and when the page leaves the
+ * view. After an abort, do not change the state of the renderer (a newer load owns it), free what
+ * the aborted call created, and reject or resolve; the viewer ignores the result. The viewer
+ * draws one page at a time per canvas: a newer draw of a page starts after the older one settled.
  */
 export interface StarDocumentRenderer {
   /** Reads the document. Reject to show the error state of the viewer. */
-  load(source: unknown): Promise<StarDocumentInfo>;
+  load(source: unknown, signal?: AbortSignal): Promise<StarDocumentInfo>;
   /** Draws page `index` into `canvas` at `scale` (1 = 100 %, device pixels included). */
-  renderPage(index: number, canvas: HTMLCanvasElement, scale: number): Promise<void>;
+  renderPage(
+    index: number,
+    canvas: HTMLCanvasElement,
+    scale: number,
+    signal?: AbortSignal,
+  ): Promise<void>;
   /** The text of page `index`, for the search and the screen-reader text layer. Optional. */
   textContent?(index: number): Promise<string>;
-  /** Frees the document. The viewer calls it when it loads another source and when destroyed. */
+  /**
+   * Frees the document. The viewer calls it before it loads another source, when the source
+   * becomes null and when it is destroyed.
+   */
   dispose(): void;
 }
 
