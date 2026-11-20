@@ -416,8 +416,10 @@ test.describe('table: sorting and filtering', () => {
     await total.getByRole('button', { name: 'Apply' }).click();
     await expect(live.getByRole('status')).toContainText('"operator":"or"');
 
-    // Escape closes without a change; Clear removes the filter.
+    // Escape closes without a change; Clear removes the filter. The popover moves the focus into
+    // the dialog after the next render: wait for it, so Escape does not reach the button.
     await active.click();
+    await expect(page.getByRole('dialog').locator(':focus')).toHaveCount(1);
     await page.keyboard.press('Escape');
     await expect(page.getByRole('dialog')).toHaveCount(0);
     await expect(active).toBeFocused();
