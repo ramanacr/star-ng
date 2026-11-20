@@ -346,6 +346,26 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'color picker eye dropper button',
+    path: 'controls/color-picker',
+    open: async (page) => {
+      // The button shows only with the EyeDropper API: stub it, then load the page again.
+      await page.addInitScript(() => {
+        (window as unknown as { EyeDropper: unknown }).EyeDropper = class {
+          open() {
+            return Promise.resolve({ sRGBHex: '#16a34a' });
+          }
+        };
+      });
+      await page.reload();
+      const dropper = example(page, 'Basic').getByRole('button', {
+        name: 'Pick a color from the screen',
+      });
+      await expect(dropper).toBeVisible();
+      await dropper.focus();
+    },
+  },
+  {
     name: 'paginator rows per page open',
     path: 'controls/paginator',
     open: async (page) => {

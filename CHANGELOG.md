@@ -61,6 +61,10 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 
 - Chat and AI prompt (`star-chat`, `star-ai-prompt`, `star-markdown-lite`, `StarChatMessageTemplate`, new entry `@star-ng/ui/chat`): a message list with own messages at the end, author groups, day separators, a composer (Enter sends, Shift+Enter adds a line, `send`), a typing indicator, `loadMore` at the top with a kept scroll position, in-place streaming with a polite announcement once a message from others is `sent`, and a Markdown subset rendered as text (bold, italic, code, code blocks, safe links with `rel="noopener noreferrer"`, no raw HTML); and a prompt panel with suggestion chips, `promptRequest`, responses with Copy, Retry (`retry`) and Stop (`stop`) while streaming. No network or model call (Kendo UI Chat and AIPrompt). UI texts `chatMessages`, `chatEmpty`, `message`, `send`, `messageFrom`, `newMessage`, `newMessages`, `messageSending`, `messageSent`, `messageNotSent`, `isTyping`, `areTyping`, `aiPrompt`, `aiPromptPlaceholder`, `promptSuggestions`, `generate`, `aiResponses`, `aiGenerating`, `aiResponseReady`, `aiResponseFailed`, `aiPromptShortcutHint`, `copy`, `copied`, `copyFailed`, `retry` and `stop` (English, German, Spanish).
 
+#### Color picker
+
+- Eye dropper button in `star-color-picker` (`@star-ng/ui/knob`): picks a color from the screen with the `EyeDropper` API of the browser; hidden when the browser has no such API (PrimeNG `p-inputcolor-eyedropper`). New output `changed` emits the color that the user chose. UI text `eyeDropper` (English, German, Spanish).
+
 #### Command palette
 
 - Command palette (`star-command-palette`, `StarCommandTemplate`, new entry `@star-ng/ui/command-palette`): a modal search over commands on a native `<dialog>`, opened with a global `hotkey` (default Control+K or Command+K), with ranked accent-insensitive filtering, groups, recent commands, `commandRun`, and the `starCommand`, `starEmpty` and `starLoading` slots (PrimeNG `p-commandmenu`). UI texts `commandPalette`, `commandPlaceholder` and `recentCommands` (English, German, Spanish).

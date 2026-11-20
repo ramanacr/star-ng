@@ -2687,6 +2687,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": ""
+      },
+      {
+        "name": "changed",
+        "type": "string",
+        "default": null,
+        "required": false,
+        "description": "The color that the user chose: a swatch, a typed hex value, the custom color panel or the eye dropper. A value that the application sets does not emit. PrimeNG `onChange`."
       }
     ]
   },

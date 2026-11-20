@@ -263,6 +263,9 @@ function hsvToHex({ h, s, v }: Hsv): string {
   return `#${channel(5)}${channel(3)}${channel(1)}`;
 }
 
+/** The constructor of the `EyeDropper` browser API (not in the TypeScript DOM types yet). */
+type StarEyeDropperType = new () => { open(): Promise<{ sRGBHex: string }> };
+
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
 /**
@@ -298,7 +301,7 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
           [attr.aria-checked]="swatch.toLowerCase() === value().toLowerCase()"
           [attr.aria-label]="swatch"
           [disabled]="disabled()"
-          (click)="value.set(swatch)"
+          (click)="commit(swatch)"
         ></button>
       }
     </div>
@@ -316,6 +319,18 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
       [disabled]="disabled()"
       (click)="togglePanel()"
     ></button>
+    @if (canEyeDrop()) {
+      <button
+        type="button"
+        class="star-btn star-btn--ghost star-btn--icon star-btn--sm star-color__eyedropper"
+        [attr.aria-label]="text.eyeDropper"
+        [attr.title]="text.eyeDropper"
+        [disabled]="disabled()"
+        (click)="pickFromScreen()"
+      >
+        <i class="ph-bold ph-eyedropper" aria-hidden="true"></i>
+      </button>
+    }
     <input
       class="star-input star-input--sm star-color__hex"
       [value]="value()"
@@ -426,6 +441,11 @@ export class StarColorPicker implements FormValueControl<string> {
   readonly ariaLabel = input<string | null>(null);
   readonly disabled = input(false, { transform: booleanAttribute });
   readonly touch = output<void>();
+  /**
+   * The color that the user chose: a swatch, a typed hex value, the custom color panel or the eye
+   * dropper. A value that the application sets does not emit. PrimeNG `onChange`.
+   */
+  readonly changed = output<string>();
   /** The parent `star-field` when it labels the swatch group (a group is not labelable). */
   protected readonly field = injectStarFieldLink(null, () => this.focus());
   protected readonly labelledBy = computed(() => starFieldLabelledBy(this.field, this.ariaLabel()));
@@ -443,6 +463,7 @@ export class StarColorPicker implements FormValueControl<string> {
   constructor() {
     // Browser only (this callback does not run on the server). One read, no theme-change watcher.
     afterNextRender(() => {
+      this.canEyeDrop.set(typeof this.eyeDropperType() === 'function');
       if (this.swatches() !== undefined) return;
       const found = readThemeSwatches(this.doc, this.host.nativeElement);
       if (found.length) this.themeSwatches.set(found);
@@ -450,6 +471,38 @@ export class StarColorPicker implements FormValueControl<string> {
   }
 
   private readonly themeSwatches = signal<readonly string[] | null>(null);
+  /**
+   * `true` in a browser with the `EyeDropper` API (PrimeNG `p-inputcolor-eyedropper`). Set after
+   * the first render, so the server and the first client render have no eye dropper button.
+   */
+  protected readonly canEyeDrop = signal(false);
+
+  private eyeDropperType(): StarEyeDropperType | undefined {
+    return (this.doc.defaultView as (Window & { EyeDropper?: StarEyeDropperType }) | null)
+      ?.EyeDropper;
+  }
+
+  /**
+   * Opens the eye dropper of the browser. The color that the user picks becomes the value; a
+   * cancel (Escape) keeps the value.
+   */
+  async pickFromScreen(): Promise<void> {
+    const EyeDropper = this.eyeDropperType();
+    if (this.disabled() || typeof EyeDropper !== 'function') return;
+    try {
+      const result = await new EyeDropper().open();
+      const hex = result?.sRGBHex?.toLowerCase() ?? '';
+      if (/^#[0-9a-f]{6}$/.test(hex)) this.commit(hex);
+    } catch {
+      // The user canceled the eye dropper: keep the value.
+    }
+  }
+
+  /** Sets the value that the user chose and emits `changed`. */
+  protected commit(hex: string): void {
+    this.value.set(hex);
+    this.changed.emit(hex);
+  }
   protected readonly shownSwatches = computed(
     () => this.swatches() ?? this.themeSwatches() ?? SWATCHES,
   );
@@ -588,7 +641,7 @@ export class StarColorPicker implements FormValueControl<string> {
   protected onHex(input: HTMLInputElement): void {
     const raw = input.value.trim();
     const hex = raw.startsWith('#') ? raw : `#${raw}`;
-    if (/^#[0-9a-f]{6}$/i.test(hex)) this.value.set(hex.toLowerCase());
+    if (/^#[0-9a-f]{6}$/i.test(hex)) this.commit(hex.toLowerCase());
     else input.value = this.value();
   }
 
@@ -620,6 +673,6 @@ export class StarColorPicker implements FormValueControl<string> {
       v: Math.round(clamp(change.v ?? current.v, 0, 100)),
     };
     this.hsv.set(next);
-    this.value.set(hsvToHex(next));
+    this.commit(hsvToHex(next));
   }
 }

@@ -226,6 +226,7 @@ export const STAR_UI_TEXT_DE: StarUiText = {
   sliderMaximum: (label) => `${label} Maximum`.trim(),
   colorLabel: 'Farbe',
   customColor: 'Eigene Farbe',
+  eyeDropper: 'Farbe vom Bildschirm aufnehmen',
   hexValue: (label) => `${label} Hex-Wert`,
   colorArea: 'Sättigung und Helligkeit',
   colorAreaValue: (saturation, brightness) =>

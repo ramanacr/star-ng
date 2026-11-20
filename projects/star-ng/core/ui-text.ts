@@ -256,6 +256,8 @@ export interface StarUiText {
   readonly sliderMaximum: (label: string) => string;
   readonly colorLabel: string;
   readonly customColor: string;
+  /** Button of the color picker that picks a color from the screen (EyeDropper API). */
+  readonly eyeDropper: string;
   readonly hexValue: (label: string) => string;
   readonly colorArea: string;
   readonly colorAreaValue: (saturation: number, brightness: number) => string;
@@ -1107,6 +1109,7 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   sliderMaximum: (label) => `${label} maximum`.trim(),
   colorLabel: 'Color',
   customColor: 'Custom color',
+  eyeDropper: 'Pick a color from the screen',
   hexValue: (label) => `${label} hex value`,
   colorArea: 'Saturation and brightness',
   colorAreaValue: (saturation, brightness) =>

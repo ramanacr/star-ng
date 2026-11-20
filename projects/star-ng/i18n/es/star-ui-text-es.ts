@@ -227,6 +227,7 @@ export const STAR_UI_TEXT_ES: StarUiText = {
   sliderMaximum: (label) => (label ? `${label}: máximo` : 'Máximo'),
   colorLabel: 'Color',
   customColor: 'Color personalizado',
+  eyeDropper: 'Tomar un color de la pantalla',
   hexValue: (label) => `Valor hexadecimal de ${label}`,
   colorArea: 'Saturación y brillo',
   colorAreaValue: (saturation, brightness) => `Saturación ${saturation} %, brillo ${brightness} %`,

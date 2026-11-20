@@ -596,6 +596,42 @@ test.describe('color picker', () => {
     await expect(tile).toBeFocused();
   });
 
+  test('the eye dropper button picks a color from the screen (stubbed EyeDropper)', async ({
+    page,
+  }) => {
+    await page.addInitScript(() => {
+      (window as unknown as { EyeDropper: unknown }).EyeDropper = class {
+        open() {
+          return Promise.resolve({ sRGBHex: '#16a34a' });
+        }
+      };
+    });
+    await openPage(page, '/controls/color-picker', 'Color picker');
+    const live = example(page, 'Basic');
+    const dropper = live.getByRole('button', { name: 'Pick a color from the screen' });
+    await expect(dropper).toBeVisible();
+    await dropper.focus();
+    await expect(dropper).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(live.locator('.docs-output')).toHaveText('Value: #16a34a');
+    await expect(live.getByRole('textbox', { name: 'Label color hex value' })).toHaveValue(
+      '#16a34a',
+    );
+  });
+
+  test('a browser without the EyeDropper API shows no eye dropper button', async ({ page }) => {
+    await page.addInitScript(() => {
+      delete (window as unknown as { EyeDropper?: unknown }).EyeDropper;
+    });
+    await openPage(page, '/controls/color-picker', 'Color picker');
+    await expect(
+      example(page, 'Basic').getByRole('button', { name: 'Custom color' }),
+    ).toBeVisible();
+    await expect(
+      example(page, 'Basic').getByRole('button', { name: 'Pick a color from the screen' }),
+    ).toHaveCount(0);
+  });
+
   test('the color panel uses the theme surface in the dark theme', async ({ page }) => {
     await page.emulateMedia({ colorScheme: 'dark' });
     await page.addInitScript(() => localStorage.setItem('star-theme', 'dark'));
