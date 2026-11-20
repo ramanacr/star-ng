@@ -96,9 +96,10 @@ export interface StarDocumentRenderer {
 }
 
 /**
- * Provides the renderer of `star-document-viewer`. Provide it in the `providers` of the component
- * that hosts the viewer (`useFactory` or `useClass`), so each viewer gets its own instance; the
- * `renderer` input of the viewer wins over the token.
+ * Provides the renderer of `star-document-viewer`. A renderer holds one document, so each viewer
+ * needs its own instance: provide it in the `providers` of the component that hosts the viewer
+ * (`useFactory` or `useClass`; one instance per host component), and give a second viewer in
+ * the same template its own renderer through the `renderer` input, which wins over the token.
  *
  * ```ts
  * providers: [{ provide: STAR_DOCUMENT_RENDERER, useFactory: () => new PdfJsRenderer() }]

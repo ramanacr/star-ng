@@ -12,7 +12,7 @@ import { ImagePagesRenderer, SampleReportRenderer } from '../shared/sample-rende
   selector: 'docs-document-viewer-page',
   imports: [DOCS, StarDocumentViewer, StarDocumentError],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  // Each viewer of this page that has no renderer input gets its own generated-report renderer.
+  // One renderer per providing component: only the first example uses it; the others pass their own.
   providers: [{ provide: STAR_DOCUMENT_RENDERER, useFactory: () => new SampleReportRenderer() }],
   template: `
     <docs-page
@@ -63,7 +63,12 @@ import { ImagePagesRenderer, SampleReportRenderer } from '../shared/sample-rende
         [script]="errorScript"
         note="When load() rejects, the page area shows an alert. ng-template[starDocumentError] replaces the default text; loadError reports the error."
       >
-        <star-document-viewer source="missing.pdf" title="Missing file" height="12rem">
+        <star-document-viewer
+          source="missing.pdf"
+          [renderer]="errorRenderer"
+          title="Missing file"
+          height="12rem"
+        >
           <ng-template starDocumentError let-error>
             {{ $any(error).message }} Check the link and try again.
           </ng-template>
@@ -95,8 +100,10 @@ export class DocumentViewerPage {
   protected readonly action = signal('');
   protected readonly images = sampleSet('Scan', 5, 800, 1100).map((image) => image.src);
   protected readonly imageRenderer = new ImagePagesRenderer();
+  // A renderer holds one document: every viewer needs its own instance.
+  protected readonly errorRenderer = new SampleReportRenderer();
 
-  protected readonly reportScript = `// The component (or a parent) provides the renderer; each viewer gets its own.
+  protected readonly reportScript = `// The component provides one renderer instance; it serves one viewer.
 providers: [{ provide: STAR_DOCUMENT_RENDERER, useFactory: () => new SampleReportRenderer() }]
 
 readonly page = signal(1);
@@ -132,7 +139,7 @@ export class ImagePagesRenderer implements StarDocumentRenderer {
   }
 }`;
   protected readonly errorScript = `// The renderer rejects: load('missing.pdf') throws an Error.
-<star-document-viewer source="missing.pdf" (loadError)="log($event)">
+<star-document-viewer source="missing.pdf" [renderer]="errorRenderer" (loadError)="log($event)">
   <ng-template starDocumentError let-error>{{ error.message }} Check the link and try again.</ng-template>
 </star-document-viewer>`;
   protected readonly pdfJsCode = `import { Component } from '@angular/core';
