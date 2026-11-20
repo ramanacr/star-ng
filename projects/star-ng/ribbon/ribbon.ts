@@ -644,7 +644,7 @@ export class StarRibbon {
       const view = this.doc.defaultView;
       let frame = 0;
       const observer =
-        panel && view && 'ResizeObserver' in view
+        panel && view && typeof view.ResizeObserver === 'function'
           ? new view.ResizeObserver(() => {
               view.cancelAnimationFrame(frame);
               frame = view.requestAnimationFrame(() => this.refit());

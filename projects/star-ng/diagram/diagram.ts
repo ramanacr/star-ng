@@ -659,7 +659,7 @@ export class StarDiagram {
       const view = this.doc.defaultView;
       if (canvas) this.measure(canvas);
       const observer =
-        canvas && view && 'ResizeObserver' in view
+        canvas && view && typeof view.ResizeObserver === 'function'
           ? new view.ResizeObserver(() => this.measure(canvas))
           : null;
       if (canvas) observer?.observe(canvas);
