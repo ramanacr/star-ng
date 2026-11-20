@@ -251,6 +251,20 @@ export class StarMenuTrigger {
     this.trigger.opened.pipe(takeUntilDestroyed()).subscribe(() => this.syncInnerButton(true));
     this.trigger.closed.pipe(takeUntilDestroyed()).subscribe(() => this.syncInnerButton(false));
     this.adaptWrapperHost();
+    this.wrapperRole();
+  }
+
+  /**
+   * CDK gives the host `role="button"` in its constructor. On a wrapper such as `<star-button>`
+   * the real button is inside, so the host becomes presentational at once: also in the
+   * server render and before hydration, where no after-render hook runs. A host inside a menu
+   * (no role from CDK) keeps its role.
+   */
+  private wrapperRole(): void {
+    const host = this.host.nativeElement;
+    const tag = host.tagName.toLowerCase();
+    if (tag === 'button' || tag === 'a' || host.getAttribute('role') !== 'button') return;
+    host.setAttribute('role', 'none');
   }
 
   /**

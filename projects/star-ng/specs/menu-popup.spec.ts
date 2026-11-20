@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, PLATFORM_ID } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { StarButton } from '@star-ng/ui/button';
 import {
   StarContextMenu,
   StarMenu,
@@ -45,6 +46,42 @@ describe('StarMenu', () => {
     await fixture.whenStable();
     expect(fixture.componentInstance.ran).toEqual(['edit']);
     expect(fixture.componentInstance.clicked).toEqual(['Edit']);
+  });
+});
+
+@Component({
+  imports: [StarButton, StarMenu, StarMenuTrigger],
+  template: `
+    <star-button id="wrapper" [starMenuTrigger]="menu">View</star-button>
+    <button type="button" id="native" [starMenuTrigger]="menu">Native</button>
+    <star-menu #menu [items]="[{ label: 'Zoom' }]" />
+  `,
+})
+class WrapperHost {}
+
+describe('StarMenuTrigger on a wrapper host', () => {
+  it('has one button role in the first render, also on the server', async () => {
+    // On the server no after-render hook runs: the host role must be right from the start.
+    TestBed.configureTestingModule({ providers: [{ provide: PLATFORM_ID, useValue: 'server' }] });
+    const fixture = TestBed.createComponent(WrapperHost);
+    // Change detection of the view only: no after-render hook runs, as on the server.
+    fixture.componentRef.changeDetectorRef.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    const wrapper = root.querySelector('#wrapper')!;
+    expect(wrapper.getAttribute('role')).toBe('none');
+    expect(wrapper.querySelector('button')).not.toBeNull();
+    // A native button keeps the role that CDK gives it.
+    expect(root.querySelector('#native')!.getAttribute('role')).toBe('button');
+  });
+
+  it('puts the popup state on the inner button after the render', async () => {
+    const fixture = TestBed.createComponent(WrapperHost);
+    await fixture.whenStable();
+    const wrapper = (fixture.nativeElement as HTMLElement).querySelector('#wrapper')!;
+    const inner = wrapper.querySelector('button')!;
+    expect(wrapper.getAttribute('role')).toBe('none');
+    expect(inner.getAttribute('aria-haspopup')).toBe('menu');
+    expect(inner.getAttribute('aria-expanded')).toBe('false');
   });
 });
 
