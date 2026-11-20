@@ -597,4 +597,7 @@ export const STAR_UI_TEXT_DE: StarUiText = {
     'Pfeiltasten wechseln die Zelle. Eingabe oder Leertaste klappt ein Element auf oder zu. Eingabe auf einer Wertzelle zeigt ihre Datensätze.',
   gridExpandAll: 'Alle aufklappen',
   gridCollapseAll: 'Alle zuklappen',
+  hierarchicalGrid: 'Hierarchisches Raster',
+  hierarchicalLoadError: 'Die Zeilen konnten nicht geladen werden.',
+  hierarchicalChildGrid: (label, parent) => `${label} von ${parent}`,
 };

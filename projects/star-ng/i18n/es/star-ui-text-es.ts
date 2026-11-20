@@ -596,4 +596,7 @@ export const STAR_UI_TEXT_ES: StarUiText = {
     'Las flechas cambian de celda. Intro o Espacio expande o contrae un elemento. Intro en una celda de valor muestra sus registros.',
   gridExpandAll: 'Expandir todo',
   gridCollapseAll: 'Contraer todo',
+  hierarchicalGrid: 'Cuadrícula jerárquica',
+  hierarchicalLoadError: 'No se pudieron cargar las filas.',
+  hierarchicalChildGrid: (label, parent) => `${label} de ${parent}`,
 };

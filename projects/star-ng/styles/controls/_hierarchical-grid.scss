@@ -1,0 +1,44 @@
+// Hierarchical grid (StarHierarchicalGrid): child grids inside the expanded rows of a star-table,
+// with a loading row and an error row.
+@use '../shared' as *;
+
+.star-hierarchical {
+  display: block;
+  min-inline-size: 0;
+}
+.star-hierarchical-level {
+  display: block;
+  min-inline-size: 0;
+}
+.star-hierarchical__children {
+  display: flex;
+  flex-direction: column;
+  gap: var(--star-space-3);
+  padding-block: var(--star-space-2);
+  padding-inline-start: var(--star-space-6);
+  border-inline-start: 2px solid var(--star-border-strong);
+}
+.star-hierarchical__child {
+  display: block;
+  min-inline-size: 0;
+}
+.star-hierarchical__status {
+  display: flex;
+  align-items: center;
+  gap: var(--star-space-2);
+  padding: var(--star-space-2) var(--star-space-3);
+  border: 1px solid var(--star-border);
+  border-radius: var(--star-radius-md);
+  background: var(--star-surface-muted);
+  color: var(--star-text-muted);
+  font: var(--star-type-body);
+}
+.star-hierarchical__status--error {
+  border-color: var(--star-danger);
+  background: var(--star-danger-soft);
+  color: var(--star-text);
+
+  i {
+    color: var(--star-danger);
+  }
+}

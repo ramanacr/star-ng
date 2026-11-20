@@ -595,6 +595,13 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         load: () => import('./controls/tree-table.page').then((m) => m.TreeTablePage),
       },
       {
+        label: 'Hierarchical grid',
+        path: 'controls/hierarchical-grid',
+        keywords:
+          'master detail child grid nested rows expand row island lazy load customers orders',
+        load: () => import('./controls/hierarchical-grid.page').then((m) => m.HierarchicalGridPage),
+      },
+      {
         label: 'Data view',
         path: 'controls/data-view',
         keywords: 'dataview list grid layout cards paging items template',

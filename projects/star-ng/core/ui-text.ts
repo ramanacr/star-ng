@@ -723,6 +723,13 @@ export interface StarUiText {
   readonly pivotHint: string;
   readonly gridExpandAll: string;
   readonly gridCollapseAll: string;
+  // Hierarchical grid
+  /** Default name of `star-hierarchical-grid`. */
+  readonly hierarchicalGrid: string;
+  /** Error row of a child grid whose rows did not load. */
+  readonly hierarchicalLoadError: string;
+  /** Name of a child grid: the island label and the label of the parent row. */
+  readonly hierarchicalChildGrid: (label: string, parent: string) => string;
 }
 
 export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
@@ -1308,6 +1315,9 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
     'Arrow keys move between cells. Enter or Space expands or collapses a member. Enter on a value cell shows its records.',
   gridExpandAll: 'Expand all',
   gridCollapseAll: 'Collapse all',
+  hierarchicalGrid: 'Hierarchical grid',
+  hierarchicalLoadError: 'The rows could not be loaded.',
+  hierarchicalChildGrid: (label, parent) => `${label} of ${parent}`,
 };
 
 /** Parameter names of the function entries, in call order (used for `{{ name }}` in translations). */
@@ -1437,6 +1447,7 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   pivotMoveTo: ['area'],
   pivotMoved: ['label', 'area'],
   pivotAggregate: ['label'],
+  hierarchicalChildGrid: ['label', 'parent'],
 };
 
 export const STAR_UI_TEXT = new InjectionToken<StarUiText>('STAR_UI_TEXT', {

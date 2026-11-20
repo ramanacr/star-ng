@@ -1304,6 +1304,21 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'hierarchical grid with an expanded child grid',
+    path: 'controls/hierarchical-grid',
+    open: async (page) => {
+      // The page is prerendered: wait for hydration before the first click.
+      await expect(page.locator('star-hierarchical-grid[ngh]')).toHaveCount(0, {
+        timeout: 15_000,
+      });
+      const live = example(page, 'Customers, orders and order lines');
+      const orders = live.getByRole('grid', { name: 'Orders of Customer 01' });
+      await expect(orders).toBeVisible();
+      await orders.getByRole('button', { name: 'Expand row' }).first().click();
+      await expect(live.getByRole('grid', { name: /^Order lines of ORD-/ })).toBeVisible();
+    },
+  },
+  {
     name: 'pivot grid with the configurator open and a filter popover',
     path: 'controls/pivot-grid',
     open: async (page) => {

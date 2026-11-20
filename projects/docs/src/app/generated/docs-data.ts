@@ -6032,6 +6032,228 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarHierarchicalChild": {
+    "kind": "component",
+    "selector": "star-hierarchical-child",
+    "entry": "@star-ng/ui/hierarchical-grid",
+    "description": "The child grid of one parent row and one island: the rows from the island `key` field, or loaded with `childData` (through `resource()`), with a loading row and an error row with retry. Internal part of `star-hierarchical-grid`.",
+    "inputs": [
+      {
+        "name": "parentRow",
+        "type": "unknown",
+        "default": null,
+        "required": true,
+        "description": ""
+      },
+      {
+        "name": "parentLabel",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "island",
+        "type": "IslandView",
+        "default": null,
+        "required": true,
+        "description": ""
+      },
+      {
+        "name": "level",
+        "type": "number",
+        "default": "2",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
+  "StarHierarchicalGrid": {
+    "kind": "component",
+    "selector": "star-hierarchical-grid",
+    "entry": "@star-ng/ui/hierarchical-grid",
+    "description": "Hierarchical grid (Ignite UI `igx-hierarchical-grid`, Kendo UI Grid hierarchy, Syncfusion hierarchy grid, DevExtreme master-detail, AG Grid master/detail, PrimeNG row expansion): a root `star-table` of `data` whose rows expand into child grids, one per `star-row-island`, and so on down the island layout. Every child grid is a `star-table` with cell navigation, configured from its island; `childGridCreated` gives each one to the owner (outputs, `focusCell`, exports). Child rows come from a field (`key`) or a loader (`childData`, with a loading row and an error row with retry). The root can render its rows in a window (`virtualScroll`, measured child heights in the browser; the server renders the collapsed root).",
+    "inputs": [
+      {
+        "name": "data",
+        "type": "readonly T[]",
+        "default": null,
+        "required": true,
+        "description": "The root rows."
+      },
+      {
+        "name": "columns",
+        "type": "readonly StarColumn<T>[]",
+        "default": null,
+        "required": true,
+        "description": "The columns of the root grid."
+      },
+      {
+        "name": "dataKey",
+        "type": "StarOptionKey<T> | null",
+        "default": "null",
+        "required": false,
+        "description": "Row key of the root rows (default: the row object); `expandedRows` holds these keys."
+      },
+      {
+        "name": "rowLabel",
+        "type": "((row: T) => string) | null",
+        "default": "null",
+        "required": false,
+        "description": "Text of a root row in the names of its child grids (default: the row key)."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Name of the root grid (default: \"Hierarchical grid\")."
+      },
+      {
+        "name": "virtualScroll",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Renders the root rows in a window; the heights of the open child grids are measured."
+      },
+      {
+        "name": "scrollHeight",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Height of the scroll area of the root grid, for example `'30rem'` (with `virtualScroll`)."
+      }
+    ],
+    "models": [
+      {
+        "name": "expandedRows",
+        "type": "readonly unknown[]",
+        "default": "[]",
+        "required": false,
+        "description": "Keys of the expanded root rows. Two-way."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "rowExpand",
+        "type": "StarHierarchicalRowEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "A row is about to expand: `cancel()` keeps it collapsed."
+      },
+      {
+        "name": "rowCollapse",
+        "type": "StarHierarchicalRowEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "A row is about to collapse: `cancel()` keeps it expanded."
+      },
+      {
+        "name": "childGridCreated",
+        "type": "StarChildGridCreatedEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "A child grid was created."
+      }
+    ]
+  },
+  "StarHierarchicalLevel": {
+    "kind": "component",
+    "selector": "star-hierarchical-level",
+    "entry": "@star-ng/ui/hierarchical-grid",
+    "description": "One level of `star-hierarchical-grid`: a `star-table` whose expanded rows show the child grids of the islands. Internal part of `star-hierarchical-grid`.",
+    "inputs": [
+      {
+        "name": "rows",
+        "type": "readonly unknown[]",
+        "default": null,
+        "required": true,
+        "description": ""
+      },
+      {
+        "name": "columns",
+        "type": "readonly unknown[]",
+        "default": null,
+        "required": true,
+        "description": ""
+      },
+      {
+        "name": "dataKey",
+        "type": "unknown",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "level",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "1 for the root grid."
+      },
+      {
+        "name": "island",
+        "type": "IslandView | null",
+        "default": "null",
+        "required": false,
+        "description": "The island of this level (`null` for the root)."
+      },
+      {
+        "name": "parentRow",
+        "type": "unknown",
+        "default": "null",
+        "required": false,
+        "description": "The parent row of a child grid."
+      },
+      {
+        "name": "childIslands",
+        "type": "readonly IslandView[]",
+        "default": "[]",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "rowLabel",
+        "type": "((row: never) => string) | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "virtualScroll",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "scrollHeight",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [
+      {
+        "name": "expanded",
+        "type": "readonly unknown[]",
+        "default": "[]",
+        "required": false,
+        "description": "Expanded row keys. Two-way."
+      }
+    ],
+    "outputs": []
+  },
   "StarIconField": {
     "kind": "component",
     "selector": "star-icon-field",
@@ -11450,6 +11672,93 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarRowIsland": {
+    "kind": "component",
+    "selector": "star-row-island",
+    "entry": "@star-ng/ui/hierarchical-grid",
+    "description": "One level of the layout of `star-hierarchical-grid` (Ignite UI `igx-row-island`, Kendo UI detail template with a child grid, AG Grid `detailCellRendererParams`, DevExtreme `masterDetail`). Each expanded parent row shows one child `star-table` per island, configured from the island: its columns (sorting, filtering and editing come from the `StarColumn` settings), paging and selection. Islands nest: a `star-row-island` inside another one is the next level.",
+    "inputs": [
+      {
+        "name": "key",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "The field of the parent row that holds the child rows."
+      },
+      {
+        "name": "childData",
+        "type": "StarRowIslandLoader<never, C> | null",
+        "default": "null",
+        "required": false,
+        "description": "Loads the child rows of a parent row (instead of `key`): an array, a promise or an observable."
+      },
+      {
+        "name": "columns",
+        "type": "readonly StarColumn<C>[]",
+        "default": null,
+        "required": true,
+        "description": ""
+      },
+      {
+        "name": "dataKey",
+        "type": "StarOptionKey<C> | null",
+        "default": "null",
+        "required": false,
+        "description": "Row key of the child rows (default: the row object)."
+      },
+      {
+        "name": "label",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "Name of the child grids, for example \"Orders\" (\"Orders of Example Ltd.\")."
+      },
+      {
+        "name": "rowLabel",
+        "type": "((row: C) => string) | null",
+        "default": "null",
+        "required": false,
+        "description": "Text of a parent row in the child grid name (default: the key of the row)."
+      },
+      {
+        "name": "paginator",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "rows",
+        "type": "number",
+        "default": "5",
+        "required": false,
+        "description": "Rows per page with `paginator`."
+      },
+      {
+        "name": "selectionMode",
+        "type": "'single' | 'multiple' | 'cell' | 'range' | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "editMode",
+        "type": "'cell' | 'row'",
+        "default": "'cell'",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "filterDisplay",
+        "type": "'row' | 'menu'",
+        "default": "'row'",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
   "StarScheduler": {
     "kind": "component",
     "selector": "star-scheduler",
@@ -15918,6 +16227,8 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "gauge/pointers": "<div class=\"docs-row\">\n  <star-radial-gauge [value]=\"62\" pointer=\"bar\" [arcWidth]=\"16\" ariaLabel=\"Disk use\" />\n  <star-radial-gauge\n    [value]=\"38\"\n    pointer=\"marker\"\n    [startAngle]=\"180\"\n    [endAngle]=\"0\"\n    [ticks]=\"{ major: 4, minor: 5 }\"\n    ariaLabel=\"Memory use\"\n  />\n</div>",
   "gauge/radial": "<div class=\"docs-stack\">\n  <star-radial-gauge\n    [value]=\"load()\"\n    [ranges]=\"zones\"\n    [labels]=\"{ style: 'unit', unit: 'percent' }\"\n    locale=\"en-US\"\n    ariaLabel=\"Server load\"\n  />\n  <div class=\"docs-row\">\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"change(-15)\">Less</star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"change(15)\">More</star-button>\n  </div>\n</div>",
   "getting-started/result": "<star-button leadingIcon=\"ph-bold ph-plus\">New order</star-button>",
+  "hierarchical-grid/customers": "<div class=\"docs-stack\">\n  <star-hierarchical-grid\n    [data]=\"customers\"\n    [columns]=\"customerColumns\"\n    dataKey=\"id\"\n    [rowLabel]=\"customerName\"\n    ariaLabel=\"Customers\"\n    [(expandedRows)]=\"expanded\"\n    (rowExpand)=\"onExpand($event)\"\n    (childGridCreated)=\"onChild($event)\"\n  >\n    <star-row-island\n      key=\"orders\"\n      label=\"Orders\"\n      dataKey=\"id\"\n      [columns]=\"orderColumns\"\n      [rowLabel]=\"orderId\"\n    >\n      <star-row-island\n        label=\"Order lines\"\n        dataKey=\"id\"\n        [childData]=\"loadLines\"\n        [columns]=\"lineColumns\"\n      />\n    </star-row-island>\n  </star-hierarchical-grid>\n  <p class=\"docs-output\" role=\"status\">{{ status() }}</p>\n</div>",
+  "hierarchical-grid/errors": "<star-hierarchical-grid\n  [data]=\"fewCustomers\"\n  [columns]=\"customerColumns\"\n  dataKey=\"id\"\n  [rowLabel]=\"customerName\"\n  ariaLabel=\"Customers with errors\"\n  (rowExpand)=\"blockThird($event)\"\n>\n  <star-row-island\n    key=\"orders\"\n    label=\"Orders\"\n    dataKey=\"id\"\n    [columns]=\"orderColumns\"\n    [rowLabel]=\"orderId\"\n  >\n    <star-row-island\n      label=\"Order lines\"\n      dataKey=\"id\"\n      [childData]=\"flakyLines\"\n      [columns]=\"lineColumns\"\n    />\n  </star-row-island>\n</star-hierarchical-grid>",
   "i18n/spinner": "<star-spinner />\n<docs-german-text />",
   "i18n/switch": "<div class=\"docs-stack\">\n  <star-select-button\n    [options]=\"languages\"\n    optionLabel=\"label\"\n    optionValue=\"id\"\n    [(value)]=\"language.choice\"\n    [allowEmpty]=\"false\"\n    ariaLabel=\"Language\"\n  />\n  <star-paginator [totalRecords]=\"95\" />\n  <star-field label=\"City\">\n    <star-select [options]=\"cities\" [(value)]=\"city\" filter ariaLabel=\"City\" />\n  </star-field>\n  <star-field label=\"Attachments\">\n    <star-file-upload multiple [maxFileSize]=\"1000000\" [fileLimit]=\"3\" />\n  </star-field>\n  <star-field label=\"New password\">\n    <star-password value=\"abc\" feedback />\n  </star-field>\n</div>",
   "ifta-label/basic": "<div class=\"docs-stack\">\n  <star-ifta-label label=\"Customer name\" hint=\"As on the invoice.\">\n    <input starInput placeholder=\"Avery Stone\" />\n  </star-ifta-label>\n  <star-ifta-label label=\"City\">\n    <star-select [options]=\"cities\" [(value)]=\"city\" />\n  </star-ifta-label>\n  <star-ifta-label label=\"Delivery date\">\n    <star-date-picker />\n  </star-ifta-label>\n  <star-ifta-label label=\"Quantity\">\n    <star-input-number [(value)]=\"quantity\" [min]=\"1\" />\n  </star-ifta-label>\n</div>",
