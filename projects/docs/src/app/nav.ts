@@ -619,6 +619,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         load: () => import('./controls/org-chart.page').then((m) => m.OrgChartPage),
       },
       {
+        label: 'Spreadsheet',
+        path: 'controls/spreadsheet',
+        keywords: 'excel sheet cells formulas sum grid workbook csv tsv fill handle budget',
+        load: () => import('./controls/spreadsheet.page').then((m) => m.SpreadsheetPage),
+      },
+      {
         label: 'File manager',
         path: 'controls/file-manager',
         keywords: 'file explorer folders browser upload rename move copy tree details icons',
@@ -777,6 +783,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         path: 'controls/editor',
         keywords: 'rich text wysiwyg html toolbar bold italic list link sanitize',
         load: () => import('./controls/editor.page').then((m) => m.EditorPage),
+      },
+      {
+        label: 'Document viewer',
+        path: 'controls/document-viewer',
+        keywords: 'pdf viewer pages zoom thumbnails search print download renderer pdf.js',
+        load: () => import('./controls/document-viewer.page').then((m) => m.DocumentViewerPage),
       },
       {
         label: 'Carousel',

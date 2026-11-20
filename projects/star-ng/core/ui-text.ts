@@ -467,6 +467,75 @@ export interface StarUiText {
   readonly newMessages: (count: number) => string;
   /** Visible hint under the prompt field of `star-ai-prompt`. */
   readonly aiPromptShortcutHint: string;
+  // Spreadsheet
+  /** Default name of the `star-spreadsheet` grid. */
+  readonly spreadsheet: string;
+  /** Keyboard hint of the grid. */
+  readonly spreadsheetHint: string;
+  /** Name of the top-left header cell, which selects every cell. */
+  readonly spreadsheetSelectAll: string;
+  readonly spreadsheetFormulaBar: string;
+  readonly spreadsheetFormatting: string;
+  readonly spreadsheetSheets: string;
+  /** The active cell: address, shown value and the formula as words (empty without one). */
+  readonly spreadsheetCellInfo: (address: string, value: string, formula: string) => string;
+  /** The value of an empty cell in `spreadsheetCellInfo`. */
+  readonly spreadsheetBlank: string;
+  /** A function call read as words: "SUM of A1 to A5". */
+  readonly spreadsheetFunction: (name: string, args: string) => string;
+  /** A range read as words: "A1 to A5". */
+  readonly spreadsheetRange: (from: string, to: string) => string;
+  readonly spreadsheetSelected: (range: string) => string;
+  readonly spreadsheetEditing: (address: string) => string;
+  readonly spreadsheetCleared: (range: string) => string;
+  readonly spreadsheetFilled: (range: string) => string;
+  readonly spreadsheetPasted: (range: string) => string;
+  /** Announcement of a keyboard column resize. */
+  readonly spreadsheetColumnWidth: (column: string, size: number) => string;
+  /** Announcement of a keyboard row resize. */
+  readonly spreadsheetRowHeight: (row: number, size: number) => string;
+  readonly spreadsheetNumberFormat: string;
+  readonly spreadsheetFormatGeneral: string;
+  readonly spreadsheetFormatNumber: string;
+  readonly spreadsheetFormatPercent: string;
+  readonly spreadsheetFormatCurrency: string;
+  readonly spreadsheetFormatDate: string;
+  readonly spreadsheetMoreDecimals: string;
+  readonly spreadsheetFewerDecimals: string;
+  readonly spreadsheetBackground: string;
+  readonly spreadsheetNoBackground: string;
+  readonly spreadsheetBackgroundAccent: string;
+  readonly spreadsheetBackgroundSuccess: string;
+  readonly spreadsheetBackgroundWarning: string;
+  readonly spreadsheetBackgroundDanger: string;
+  readonly spreadsheetBackgroundMuted: string;
+  // Document viewer
+  readonly documentToolbar: string;
+  /** Name of the page area when the viewer has no `title`. */
+  readonly documentDefaultTitle: string;
+  /** Name of a page, and the announcement of a page change. */
+  readonly documentPageOf: (page: number, total: number) => string;
+  /** Name of the page number field. */
+  readonly documentPageInput: string;
+  /** Text after the page number field: "of 12". */
+  readonly documentPageCount: (total: number) => string;
+  readonly documentZoom: string;
+  readonly documentFitWidth: string;
+  readonly documentFitPage: string;
+  readonly documentRotate: string;
+  readonly documentThumbnails: string;
+  readonly documentSinglePage: string;
+  readonly documentFullScreen: string;
+  readonly documentDownload: string;
+  readonly documentPrint: string;
+  readonly documentSearch: string;
+  readonly documentPreviousResult: string;
+  readonly documentNextResult: string;
+  readonly documentNoResults: string;
+  readonly documentSearchResults: (count: number, pages: number) => string;
+  readonly documentLoadError: string;
+  /** Text of a page that could not be drawn. */
+  readonly documentPageError: string;
   // Ribbon
   /** Name of the tab list of `star-ribbon`. */
   readonly ribbon: string;
@@ -999,6 +1068,62 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   stop: 'Stop',
   newMessages: (count) => `${count} new messages`,
   aiPromptShortcutHint: 'Press Control+Enter to send.',
+  spreadsheet: 'Spreadsheet',
+  spreadsheetHint:
+    'Type to replace the cell. F2 or Enter edits it. Shift and the arrow keys select a range. Alt, Shift and the arrow keys resize the column or the row.',
+  spreadsheetSelectAll: 'Select all',
+  spreadsheetFormulaBar: 'Formula bar',
+  spreadsheetFormatting: 'Formatting',
+  spreadsheetSheets: 'Sheets',
+  spreadsheetCellInfo: (address, value, formula) =>
+    formula ? `${address}, ${value}, formula ${formula}` : `${address}, ${value}`,
+  spreadsheetBlank: 'blank',
+  spreadsheetFunction: (name, args) => `${name} of ${args}`,
+  spreadsheetRange: (from, to) => `${from} to ${to}`,
+  spreadsheetSelected: (range) => `${range} selected`,
+  spreadsheetEditing: (address) => `Editing ${address}`,
+  spreadsheetCleared: (range) => `${range} cleared`,
+  spreadsheetFilled: (range) => `Filled ${range}`,
+  spreadsheetPasted: (range) => `Pasted into ${range}`,
+  spreadsheetColumnWidth: (column, size) => `Column ${column} width ${size} pixels`,
+  spreadsheetRowHeight: (row, size) => `Row ${row} height ${size} pixels`,
+  spreadsheetNumberFormat: 'Number format',
+  spreadsheetFormatGeneral: 'General',
+  spreadsheetFormatNumber: 'Number',
+  spreadsheetFormatPercent: 'Percent',
+  spreadsheetFormatCurrency: 'Currency',
+  spreadsheetFormatDate: 'Date',
+  spreadsheetMoreDecimals: 'More decimal places',
+  spreadsheetFewerDecimals: 'Fewer decimal places',
+  spreadsheetBackground: 'Cell background',
+  spreadsheetNoBackground: 'No background',
+  spreadsheetBackgroundAccent: 'Blue',
+  spreadsheetBackgroundSuccess: 'Green',
+  spreadsheetBackgroundWarning: 'Amber',
+  spreadsheetBackgroundDanger: 'Red',
+  spreadsheetBackgroundMuted: 'Grey',
+  documentToolbar: 'Document tools',
+  documentDefaultTitle: 'Document',
+  documentPageOf: (page, total) => `Page ${page} of ${total}`,
+  documentPageInput: 'Page number',
+  documentPageCount: (total) => `of ${total}`,
+  documentZoom: 'Zoom',
+  documentFitWidth: 'Fit width',
+  documentFitPage: 'Fit page',
+  documentRotate: 'Rotate clockwise',
+  documentThumbnails: 'Page thumbnails',
+  documentSinglePage: 'Single page',
+  documentFullScreen: 'Full screen',
+  documentDownload: 'Download',
+  documentPrint: 'Print',
+  documentSearch: 'Search in document',
+  documentPreviousResult: 'Previous result',
+  documentNextResult: 'Next result',
+  documentNoResults: 'No results',
+  documentSearchResults: (count, pages) =>
+    `${count} ${count === 1 ? 'result' : 'results'} on ${pages} ${pages === 1 ? 'page' : 'pages'}`,
+  documentLoadError: 'The document could not be loaded.',
+  documentPageError: 'This page could not be shown.',
   ribbon: 'Ribbon',
   ribbonFile: 'File',
   ribbonCollapse: 'Collapse the ribbon',
@@ -1198,6 +1323,19 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   isTyping: ['name'],
   areTyping: ['names'],
   newMessages: ['count'],
+  spreadsheetCellInfo: ['address', 'value', 'formula'],
+  spreadsheetFunction: ['name', 'args'],
+  spreadsheetRange: ['from', 'to'],
+  spreadsheetSelected: ['range'],
+  spreadsheetEditing: ['address'],
+  spreadsheetCleared: ['range'],
+  spreadsheetFilled: ['range'],
+  spreadsheetPasted: ['range'],
+  spreadsheetColumnWidth: ['column', 'size'],
+  spreadsheetRowHeight: ['row', 'size'],
+  documentPageOf: ['page', 'total'],
+  documentPageCount: ['total'],
+  documentSearchResults: ['count', 'pages'],
   ribbonGroupOptions: ['label'],
   ribbonSplitMenu: ['label'],
   fileDeleteConfirm: ['count'],

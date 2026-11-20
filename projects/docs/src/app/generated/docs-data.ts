@@ -4691,6 +4691,177 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ]
   },
+  "StarDocumentError": {
+    "kind": "directive",
+    "selector": "ng-template[starDocumentError]",
+    "entry": "@star-ng/ui/document-viewer",
+    "description": "Content of the error state. Context: the error (`let-error`).",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
+  "StarDocumentPage": {
+    "kind": "component",
+    "selector": "star-document-page",
+    "entry": "@star-ng/ui/document-viewer",
+    "description": "One page canvas (internal). It sizes the canvas to the page at the scale times `devicePixelRatio`, asks the renderer to draw it, shows a skeleton until then, and frees the canvas memory when it leaves the DOM.",
+    "inputs": [
+      {
+        "name": "renderer",
+        "type": "StarDocumentRenderer",
+        "default": null,
+        "required": true,
+        "description": ""
+      },
+      {
+        "name": "index",
+        "type": "number",
+        "default": null,
+        "required": true,
+        "description": "Zero-based page index."
+      },
+      {
+        "name": "size",
+        "type": "StarDocumentPageSize",
+        "default": null,
+        "required": true,
+        "description": "Page size at scale 1, not rotated."
+      },
+      {
+        "name": "scale",
+        "type": "number",
+        "default": null,
+        "required": true,
+        "description": ""
+      },
+      {
+        "name": "rotation",
+        "type": "number",
+        "default": "0",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
+  "StarDocumentViewer": {
+    "kind": "component",
+    "selector": "star-document-viewer",
+    "entry": "@star-ng/ui/document-viewer",
+    "description": "Document viewer (PDF.js viewer, Syncfusion `ejs-pdfviewer`, Kendo UI `kendo-pdfviewer`, DevExtreme has none, Ignite UI has none): a shell that shows the pages of any document through a `StarDocumentRenderer` (`STAR_DOCUMENT_RENDERER` or the `renderer` input). StarNG ships no PDF engine; see `StarDocumentRenderer` for a PDF.js adapter of a few lines.",
+    "inputs": [
+      {
+        "name": "source",
+        "type": "unknown",
+        "default": "null",
+        "required": false,
+        "description": "What the renderer loads: a URL, bytes, a Blob, or any value your renderer understands."
+      },
+      {
+        "name": "title",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "Title of the document: the name of the page area (default: the UI text `documentDefaultTitle`)."
+      },
+      {
+        "name": "renderer",
+        "type": "StarDocumentRenderer | null",
+        "default": "null",
+        "required": false,
+        "description": "Renderer of this viewer; wins over `STAR_DOCUMENT_RENDERER`."
+      },
+      {
+        "name": "height",
+        "type": "string",
+        "default": "'32rem'",
+        "required": false,
+        "description": "CSS height of the page area."
+      },
+      {
+        "name": "showDownload",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Shows the download button, which emits `download`."
+      },
+      {
+        "name": "showPrint",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Shows the print button, which emits `print`."
+      }
+    ],
+    "models": [
+      {
+        "name": "page",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "The page in view, one-based."
+      },
+      {
+        "name": "zoom",
+        "type": "StarDocumentZoom",
+        "default": "'fit-width'",
+        "required": false,
+        "description": "`fit-width` (default), `fit-page`, or a scale factor (1 = 100 %)."
+      },
+      {
+        "name": "rotation",
+        "type": "StarDocumentRotation",
+        "default": "0",
+        "required": false,
+        "description": "Clockwise rotation of all pages."
+      },
+      {
+        "name": "mode",
+        "type": "'continuous' | 'single'",
+        "default": "'continuous'",
+        "required": false,
+        "description": "`continuous`: all pages one below the other (default). `single`: one page at a time."
+      },
+      {
+        "name": "thumbnails",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows the thumbnails sidebar."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "loaded",
+        "type": "StarDocumentInfo",
+        "default": null,
+        "required": false,
+        "description": "The document loaded: page count and sizes."
+      },
+      {
+        "name": "loadError",
+        "type": "unknown",
+        "default": null,
+        "required": false,
+        "description": "The renderer could not load the source."
+      },
+      {
+        "name": "download",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "The download button was pressed; the owner downloads the file."
+      },
+      {
+        "name": "print",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "The print button was pressed; the owner prints."
+      }
+    ]
+  },
   "StarDrawer": {
     "kind": "component",
     "selector": "star-drawer",
@@ -12389,6 +12560,137 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "outputs": []
   },
+  "StarSpreadsheet": {
+    "kind": "component",
+    "selector": "star-spreadsheet",
+    "entry": "@star-ng/ui/spreadsheet",
+    "description": "Spreadsheet (Syncfusion `ejs-spreadsheet`, Kendo UI `kendo-spreadsheet`, DevExtreme has none (its DataGrid is not a spreadsheet), Ignite UI `igx-spreadsheet` (Angular wrapper of a licensed engine)): a grid of cells with column letters and row numbers, formulas with their own engine (`starEvaluate`, no `eval`), formats, clipboard, fill handle, undo and redo.",
+    "inputs": [
+      {
+        "name": "rows",
+        "type": "number",
+        "default": "100",
+        "required": false,
+        "description": "Number of rows (default 100)."
+      },
+      {
+        "name": "columns",
+        "type": "number",
+        "default": "26",
+        "required": false,
+        "description": "Number of columns (default 26, A to Z)."
+      },
+      {
+        "name": "sheetName",
+        "type": "string",
+        "default": "'Sheet1'",
+        "required": false,
+        "description": "Name of the sheet when `sheets` is empty (for references such as `Sheet1!A1`)."
+      },
+      {
+        "name": "defaultColumnWidth",
+        "type": "number",
+        "default": "96",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "defaultRowHeight",
+        "type": "number",
+        "default": "28",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "readonly",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "No editing: selection, copy and navigation only."
+      },
+      {
+        "name": "showToolbar",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Shows the formatting toolbar (default true; hidden when read-only)."
+      },
+      {
+        "name": "showFormulaBar",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Shows the formula bar with the address and the raw formula of the active cell."
+      },
+      {
+        "name": "height",
+        "type": "string",
+        "default": "'24rem'",
+        "required": false,
+        "description": "CSS height of the scrolling grid."
+      },
+      {
+        "name": "locale",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "BCP 47 locale of the number and date formats (default: `provideStarNg` locale, browser)."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Name of the grid (default: the UI text `spreadsheet`)."
+      }
+    ],
+    "models": [
+      {
+        "name": "cells",
+        "type": "StarSpreadsheetCells",
+        "default": "{}",
+        "required": false,
+        "description": "Cells of the sheet when `sheets` is empty. Two-way: each edit emits a new record."
+      },
+      {
+        "name": "sheets",
+        "type": "readonly StarSpreadsheetSheet[]",
+        "default": "[]",
+        "required": false,
+        "description": "Named sheets, shown as tabs. When it is not empty it replaces `cells` and `sheetName`."
+      },
+      {
+        "name": "activeSheet",
+        "type": "number",
+        "default": "0",
+        "required": false,
+        "description": "Index of the shown sheet in `sheets`."
+      },
+      {
+        "name": "columnWidths",
+        "type": "Readonly<Record<string, number>>",
+        "default": "{}",
+        "required": false,
+        "description": "Column widths in pixels by column letter, for example `{ A: 160 }`. Resizing writes it."
+      },
+      {
+        "name": "rowHeights",
+        "type": "Readonly<Record<string, number>>",
+        "default": "{}",
+        "required": false,
+        "description": "Row heights in pixels by row number, for example `{ '1': 36 }`. Resizing writes it."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "selectionChange",
+        "type": "StarSpreadsheetSelection",
+        "default": null,
+        "required": false,
+        "description": "Emits when the active cell or the selected range changes."
+      }
+    ]
+  },
   "StarStep": {
     "kind": "component",
     "selector": "star-step",
@@ -15196,6 +15498,9 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "divider/vertical": "<div class=\"docs-row\">\n  <span>Orders</span>\n  <star-divider layout=\"vertical\" />\n  <span>Invoices</span>\n  <star-divider layout=\"vertical\" type=\"dashed\" />\n  <span>Reports</span>\n</div>",
   "dock/basic": "<div class=\"docs-stack\">\n  <star-dock [items]=\"apps\" ariaLabel=\"Apps\" (itemClick)=\"last.set($event.label ?? '')\" />\n  <p class=\"docs-output\" role=\"status\">Opened: {{ last() }}</p>\n</div>",
   "dock/left": "<star-dock [items]=\"apps\" position=\"left\" ariaLabel=\"Apps on the left\" />",
+  "document-viewer/error": "<star-document-viewer\n  source=\"missing.pdf\"\n  [renderer]=\"errorRenderer\"\n  title=\"Missing file\"\n  height=\"12rem\"\n>\n  <ng-template starDocumentError let-error>\n    {{ $any(error).message }} Check the link and try again.\n  </ng-template>\n</star-document-viewer>",
+  "document-viewer/images": "<star-document-viewer\n  [source]=\"images\"\n  [renderer]=\"imageRenderer\"\n  title=\"Warehouse scans\"\n  height=\"22rem\"\n  zoom=\"fit-page\"\n  mode=\"single\"\n  [showPrint]=\"false\"\n/>",
+  "document-viewer/report": "<div class=\"docs-stack\">\n  <star-document-viewer\n    [source]=\"12\"\n    title=\"Quarterly report\"\n    height=\"28rem\"\n    [(page)]=\"page\"\n    [(thumbnails)]=\"thumbnails\"\n    (download)=\"action.set('download pressed: save the file here.')\"\n    (print)=\"action.set('print pressed: print the file here.')\"\n  />\n  <p class=\"docs-output\" role=\"status\">Page {{ page() }}. {{ action() }}</p>\n</div>",
   "drawer/basic": "<star-button leadingIcon=\"ph-bold ph-sidebar-simple\" (pressed)=\"basicOpen.set(true)\">\n  Open details\n</star-button>\n<star-drawer [(visible)]=\"basicOpen\" header=\"Order ORD-1042\" dismissableMask>\n  <div class=\"docs-stack\">\n    <p class=\"docs-output\">Orchard Supply, 12 items, ships on Friday.</p>\n    <star-field label=\"Internal note\">\n      <textarea starInput autoResize rows=\"3\"></textarea>\n    </star-field>\n  </div>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button variant=\"ghost\" (pressed)=\"basicOpen.set(false)\">Close</star-button>\n  </div>\n</star-drawer>",
   "drawer/modes": "<div class=\"docs-stack\">\n  <p class=\"docs-output\" role=\"status\">Last event: {{ modeEvent() }}</p>\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"floatOpen.set(true)\">Non-modal</star-button>\n    <star-button variant=\"secondary\" (pressed)=\"fullOpen.set(true)\"\n      >Full screen</star-button\n    >\n  </div>\n</div>\n<star-drawer\n  [(visible)]=\"floatOpen\"\n  header=\"Filters\"\n  position=\"end\"\n  drawerSize=\"20rem\"\n  [modal]=\"false\"\n  (shown)=\"modeEvent.set('non-modal shown')\"\n  (hidden)=\"modeEvent.set('non-modal hidden')\"\n>\n  <p>The page behind this drawer stays usable.</p>\n</star-drawer>\n<star-drawer\n  [(visible)]=\"fullOpen\"\n  header=\"Invoice INV-2041\"\n  position=\"bottom\"\n  fullScreen\n  dismissible\n  (shown)=\"modeEvent.set('full screen shown')\"\n  (hidden)=\"modeEvent.set('full screen hidden')\"\n>\n  <p>This drawer covers the window. Escape or the close button closes it.</p>\n</star-drawer>",
   "drawer/position": "<div class=\"docs-row\">\n  @for (item of positions; track item) {\n    <star-button variant=\"secondary\" (pressed)=\"openAt(item)\">{{ item }}</star-button>\n  }\n</div>\n<star-drawer\n  [(visible)]=\"positionOpen\"\n  [position]=\"position()\"\n  [drawerSize]=\"position() === 'top' || position() === 'bottom' ? '14rem' : '22rem'\"\n  [header]=\"'Drawer at the ' + position()\"\n>\n  <p>This drawer is pinned to the {{ position() }} edge.</p>\n</star-drawer>",
@@ -15416,6 +15721,9 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "split-button/variants": "<star-split-button label=\"Save\" variant=\"secondary\" size=\"sm\" [items]=\"orderOptions\" />\n<star-split-button label=\"Approve\" variant=\"success\" [items]=\"orderOptions\" />\n<star-split-button label=\"Remove\" variant=\"danger\" size=\"lg\" [items]=\"orderOptions\" />",
   "splitter/basic": "<star-splitter class=\"docs-splitter\" [(size)]=\"split\" ariaLabel=\"Resize the order panes\">\n  <div starSplitterStart>\n    <strong>Orders</strong>\n    <p class=\"docs-output\">Drag the gutter or use the arrow keys.</p>\n  </div>\n  <div starSplitterEnd>\n    <strong>Details</strong>\n    <p class=\"docs-output\" role=\"status\">First pane: {{ split() }}%</p>\n  </div>\n</star-splitter>",
   "splitter/vertical": "<star-splitter\n  class=\"docs-splitter\"\n  layout=\"vertical\"\n  [size]=\"40\"\n  [minSize]=\"25\"\n  ariaLabel=\"Resize the invoice panes\"\n>\n  <div starSplitterStart><strong>Invoices</strong></div>\n  <div starSplitterEnd><strong>Preview</strong></div>\n</star-splitter>",
+  "spreadsheet/budget": "<div class=\"docs-stack\">\n  <star-spreadsheet\n    [(cells)]=\"budget\"\n    [rows]=\"200\"\n    [columns]=\"12\"\n    [columnWidths]=\"{ A: 140 }\"\n    height=\"20rem\"\n    ariaLabel=\"Budget\"\n    locale=\"en-IE\"\n    (selectionChange)=\"onSelection($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">{{ status() }}</p>\n</div>",
+  "spreadsheet/csv": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <button\n      type=\"button\"\n      class=\"star-btn star-btn--secondary star-btn--sm\"\n      (click)=\"exportCsv()\"\n    >\n      Export CSV\n    </button>\n    <button\n      type=\"button\"\n      class=\"star-btn star-btn--secondary star-btn--sm\"\n      (click)=\"importCsv()\"\n    >\n      Import the CSV again\n    </button>\n  </div>\n  <star-spreadsheet\n    #csvSheet\n    [(cells)]=\"csvCells\"\n    [rows]=\"20\"\n    [columns]=\"6\"\n    height=\"12rem\"\n    ariaLabel=\"CSV data\"\n    [showToolbar]=\"false\"\n  />\n  <pre class=\"docs-output\">{{ csv() }}</pre>\n</div>",
+  "spreadsheet/sheets": "<star-spreadsheet\n  [(sheets)]=\"sheets\"\n  [(activeSheet)]=\"activeSheet\"\n  [rows]=\"20\"\n  [columns]=\"6\"\n  [columnWidths]=\"{ A: 140 }\"\n  height=\"14rem\"\n  ariaLabel=\"Cost summary\"\n  locale=\"en-IE\"\n  [showToolbar]=\"false\"\n/>",
   "stepper/basic": "<div class=\"docs-stack\">\n  <star-stepper [(value)]=\"step\" ariaLabel=\"Checkout steps\">\n    <star-step value=\"cart\" label=\"Cart\" description=\"Review items\" completed>\n      Three items in the cart.\n    </star-step>\n    <star-step value=\"address\" label=\"Address\" description=\"Where to ship\">\n      Enter the delivery address.\n    </star-step>\n    <star-step value=\"pay\" label=\"Payment\">Choose a way to pay.</star-step>\n  </star-stepper>\n  <p class=\"docs-output\" role=\"status\">Active step: {{ step() ?? 'cart' }}</p>\n</div>",
   "stepper/linear": "<div class=\"docs-stack\">\n  <star-stepper #wizard [(value)]=\"wizardStep\" linear ariaLabel=\"Account setup\">\n    <star-step value=\"name\" label=\"Name\" [completed]=\"name().trim().length > 0\">\n      <star-field label=\"Your name\">\n        <input starInput [value]=\"name()\" (input)=\"name.set($any($event.target).value)\" />\n      </star-field>\n    </star-step>\n    <star-step value=\"confirm\" label=\"Confirm\">\n      Welcome, {{ name() }}. Your account is ready.\n    </star-step>\n  </star-stepper>\n  <div class=\"docs-row\">\n    <star-button\n      variant=\"secondary\"\n      [disabled]=\"wizard.isFirst()\"\n      (pressed)=\"wizard.previous()\"\n    >\n      Back\n    </star-button>\n    <star-button [disabled]=\"wizard.isLast() || !name().trim()\" (pressed)=\"wizard.next()\">\n      Next\n    </star-button>\n  </div>\n</div>",
   "table-columns/frozen": "<docs-fill>\n  <star-table\n    [value]=\"orders.slice(0, 6)\"\n    [columns]=\"wideColumns\"\n    dataKey=\"id\"\n    ariaLabel=\"Wide orders\"\n  />\n</docs-fill>",

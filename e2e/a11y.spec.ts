@@ -1238,6 +1238,49 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'spreadsheet with a selected range',
+    path: 'controls/spreadsheet',
+    open: async (page) => {
+      // The page is prerendered: wait for hydration before the first key.
+      await expect(page.locator('star-spreadsheet[ngh]')).toHaveCount(0, { timeout: 15_000 });
+      const grid = example(page, 'Budget').getByRole('grid', { name: 'Budget' });
+      await grid.focus();
+      await page.keyboard.press('ArrowDown');
+      await page.keyboard.press('Shift+ArrowDown');
+      await page.keyboard.press('Shift+ArrowRight');
+      await expect(grid.locator('[role=gridcell][aria-selected=true]')).toHaveCount(4);
+    },
+  },
+  {
+    name: 'spreadsheet with a cell in edit mode',
+    path: 'controls/spreadsheet',
+    open: async (page) => {
+      await expect(page.locator('star-spreadsheet[ngh]')).toHaveCount(0, { timeout: 15_000 });
+      const grid = example(page, 'Budget').getByRole('grid', { name: 'Budget' });
+      await grid.focus();
+      await page.keyboard.press('ArrowDown');
+      await page.keyboard.press('F2');
+      await expect(grid.locator('.star-spreadsheet__editor')).toBeFocused();
+    },
+  },
+  {
+    name: 'document viewer with thumbnails and search open',
+    path: 'controls/document-viewer',
+    open: async (page) => {
+      // The page is prerendered: wait for hydration before the first click.
+      await expect(page.locator('star-document-viewer[ngh]')).toHaveCount(0, { timeout: 15_000 });
+      const live = example(page, 'Generated report');
+      await expect(live.getByRole('navigation', { name: 'Page thumbnails' })).toBeVisible();
+      await live.getByRole('button', { name: 'Search in document' }).click();
+      const search = live.getByRole('searchbox', { name: 'Search in document' });
+      await search.fill('revenue');
+      await search.press('Enter');
+      await expect(live.locator('.star-document-viewer__search [role=status]')).toContainText(
+        'results on',
+      );
+    },
+  },
+  {
     name: 'tree with a loading row',
     path: 'controls/tree',
     open: async (page) => {
