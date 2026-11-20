@@ -215,7 +215,7 @@ type Position = 'bottom' | 'top' | 'left' | 'right';
               <span
                 data-star-part="countText"
                 class="star-galleria__count"
-                [attr.aria-live]="autoPlay() && playing() ? 'off' : 'polite'"
+                [attr.aria-live]="autoPlay() && playing() && !hovering() ? 'off' : 'polite'"
                 >{{ activeIndex() + 1 }} / {{ images().length }}</span
               >
               @if (autoPlay()) {
@@ -408,7 +408,8 @@ export class StarGalleria {
    * Shows the next image every `transitionInterval` milliseconds, with a pause button. It pauses
    * while the pointer or the focus is on the gallery and does not advance while motion is reduced
    * or while a `fullScreen` gallery is closed. While it plays, the image counter is not a live
-   * region (WAI-ARIA carousel pattern); paused or stopped, it announces the position again.
+   * region (WAI-ARIA carousel pattern); paused (also by hover or focus) or stopped, it announces
+   * the position again.
    */
   readonly autoPlay = input(false, { transform: booleanAttribute });
   /** Time between two images of the autoplay, in milliseconds (default 4000). */

@@ -216,6 +216,13 @@ describe('StarGalleria depth', () => {
     const t = await setup((h) => h.autoPlay.set(true));
     const count = () => t.el.querySelector('.star-galleria__count')!.getAttribute('aria-live');
     expect(count()).toBe('off');
+    // Hover or focus pauses the autoplay: the counter speaks again.
+    t.el.querySelector('star-galleria')!.dispatchEvent(new Event('mouseenter'));
+    await t.stable();
+    expect(count()).toBe('polite');
+    t.el.querySelector('star-galleria')!.dispatchEvent(new Event('mouseleave'));
+    await t.stable();
+    expect(count()).toBe('off');
     t.el.querySelector<HTMLButtonElement>('.star-galleria__play')!.click();
     await t.stable();
     expect(count()).toBe('polite');

@@ -8361,7 +8361,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "boolean",
         "default": "false",
         "required": false,
-        "description": "Shows the next image every `transitionInterval` milliseconds, with a pause button. It pauses while the pointer or the focus is on the gallery and does not advance while motion is reduced or while a `fullScreen` gallery is closed. While it plays, the image counter is not a live region (WAI-ARIA carousel pattern); paused or stopped, it announces the position again."
+        "description": "Shows the next image every `transitionInterval` milliseconds, with a pause button. It pauses while the pointer or the focus is on the gallery and does not advance while motion is reduced or while a `fullScreen` gallery is closed. While it plays, the image counter is not a live region (WAI-ARIA carousel pattern); paused (also by hover or focus) or stopped, it announces the position again."
       },
       {
         "name": "transitionInterval",
