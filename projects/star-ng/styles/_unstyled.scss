@@ -117,7 +117,9 @@ $star-unstyled-tokens: (
   'chart-8'
 );
 
-[data-star-unstyled] {
+// `:where()`: no specificity, so a token that the application sets on the control host itself
+// (`<star-select class="brand">`) wins there, and the copy below keeps it for the content inside.
+:where([data-star-unstyled]) {
   @each $name in $star-unstyled-tokens {
     --star-#{$name}: initial;
   }
@@ -151,6 +153,15 @@ $star-restored-tokens: list.join(
   }
 }
 
+// The unstyled control itself keeps a copy of its own token values. It is valid only for a token
+// that the application set on the host (the others are reset there), so the restore rule below
+// falls back to the copy of the parent for the rest.
+:where([data-star-part='root'][data-star-unstyled]) {
+  @each $name in $star-restored-tokens {
+    --star-host-#{$name}: var(--star-#{$name});
+  }
+}
+
 // The chart elements without a part (pointer targets, data-table rows and cells: one per data
 // point) belong to the control and stay unstyled.
 :where(
@@ -158,6 +169,6 @@ $star-restored-tokens: list.join(
   [data-star-unstyled] [data-star-part='root']:not([data-star-unstyled])
 ) {
   @each $name in $star-restored-tokens {
-    --star-#{$name}: var(--star-theme-#{$name});
+    --star-#{$name}: var(--star-host-#{$name}, var(--star-theme-#{$name}));
   }
 }

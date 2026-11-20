@@ -119,3 +119,24 @@ test('unstyled mode does not reach a styled control or content inside an unstyle
     await output.evaluate((el) => getComputedStyle(el).getPropertyValue('--star-primary').trim()),
   ).not.toBe('');
 });
+
+test('a token set on the unstyled control itself reaches the content inside it', async ({
+  page,
+}) => {
+  await openPage(page, '/guides/styling-hooks', 'Styling hooks');
+  const live = example(page, 'Unstyled button');
+  // The row plays an unstyled control whose host sets a token, as `<star-card class="brand">`.
+  await live.locator('.docs-row').evaluate((row) => {
+    row.setAttribute('data-star-part', 'root');
+    row.setAttribute('data-star-unstyled', '');
+    (row as HTMLElement).style.setProperty('--star-primary', 'rgb(1, 2, 3)');
+  });
+  const nested = live.locator('star-button').nth(0);
+  expect(
+    await nested.evaluate((el) => getComputedStyle(el).getPropertyValue('--star-primary').trim()),
+  ).toBe('rgb(1, 2, 3)');
+  // A token that the host does not set comes from the theme around it.
+  expect(
+    await nested.evaluate((el) => getComputedStyle(el).getPropertyValue('--star-surface').trim()),
+  ).not.toBe('');
+});

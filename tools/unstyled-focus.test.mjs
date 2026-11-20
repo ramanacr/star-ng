@@ -99,3 +99,16 @@ test('the theme copy and the restore rule of unstyled mode', () => {
     /\[data-star-unstyled\] :not\(\[data-star-part\],\.star-chart__hit,\.star-chart__table \*\)/,
   );
 });
+
+test('token overrides on the unstyled control itself reach the content inside it', () => {
+  const css = sass.compile(join(styles, 'star-ng.scss'), { style: 'compressed' }).css;
+  // The reset has no specificity, so a class of the application on the control host wins there.
+  assert.match(css, /:where\(\[data-star-unstyled\]\)\{--star-primary: ?initial/);
+  // The host keeps a copy of its own value (valid only when the application set it there) ...
+  assert.match(
+    css,
+    /:where\(\[data-star-part=root\]\[data-star-unstyled\]\)\{--star-host-primary: ?var\(--star-primary\)/,
+  );
+  // ... and the restore rule prefers it over the copy of the parent.
+  assert.match(css, /--star-primary: ?var\(--star-host-primary, ?var\(--star-theme-primary\)\)/);
+});
