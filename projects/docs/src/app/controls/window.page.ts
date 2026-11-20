@@ -181,7 +181,7 @@ readonly ref = inject(StarWindowRef<string>);
     {
       name: '--star-window-z',
       description:
-        'Base z-index of the window stack (default: --star-z-index-base minus 100, so 900). The z-index stays one below the CDK overlay container (--star-z-index-base, default 1000, provideStarNg overlay.zIndexBase), so popups opened in a window stay on top.',
+        'Base z-index of the window stack (default: --star-z-index-base minus 100, so 900). The z-index stays one below the CDK overlay container (--star-z-index-base, default 1000, provideStarNg overlay.zIndexBase), so popups opened in a window stay on top. It never goes below the app bar: the floor is 20 plus the stack order (21 for one window).',
     },
     { name: '--star-surface-muted', description: 'Background of the title bar.' },
     { name: '--star-shadow-xl', description: 'Shadow of the window.' },

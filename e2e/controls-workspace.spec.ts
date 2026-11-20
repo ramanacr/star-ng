@@ -259,6 +259,18 @@ test.describe('window', () => {
     expect(onTop).toBe('High');
   });
 
+  test('stays above the app bar layer with a very low overlay zIndexBase', async ({ page }) => {
+    await openPage(page, '/controls/window', 'Window');
+    await page.evaluate(() =>
+      document.documentElement.style.setProperty('--star-z-index-base', '50'),
+    );
+    await example(page, 'Windows in the page').getByRole('button', { name: 'Open notes' }).click();
+    const notes = page.getByRole('dialog', { name: 'Notes' });
+    await expect(notes).toBeVisible();
+    // base 50 gives min(49, -50 + order); the floor keeps the window above the app bar (20).
+    expect(await notes.evaluate((element) => Number(getComputedStyle(element).zIndex))).toBe(21);
+  });
+
   test('stacks windows, maximizes and closes', async ({ page }) => {
     await openPage(page, '/controls/window', 'Window');
     const live = example(page, 'Windows in the page');
