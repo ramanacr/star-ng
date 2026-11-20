@@ -12,6 +12,7 @@ import {
   viewChild,
 } from '@angular/core';
 import type { FormCheckboxControl } from '@angular/forms/signals';
+import { StarPart, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 import { injectStarFieldLink, starJoinIds } from '@star-ng/ui/field';
 
 /**
@@ -22,6 +23,9 @@ import { injectStarFieldLink, starJoinIds } from '@star-ng/ui/field';
  */
 @Component({
   selector: 'star-toggle-switch',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-switch',
@@ -30,8 +34,9 @@ import { injectStarFieldLink, starJoinIds } from '@star-ng/ui/field';
     '[class.star-switch--sm]': "size() === 'sm'",
   },
   template: `
-    <label class="star-switch__label">
+    <label starPart="label" class="star-switch__label">
       <input
+        starPart="input"
         #box
         type="checkbox"
         role="switch"
@@ -47,11 +52,11 @@ import { injectStarFieldLink, starJoinIds } from '@star-ng/ui/field';
         (change)="onChange(box)"
         (blur)="touch.emit()"
       />
-      <span class="star-switch__track" aria-hidden="true"
-        ><span class="star-switch__thumb"></span
+      <span starPart="track" class="star-switch__track" aria-hidden="true"
+        ><span starPart="thumb" class="star-switch__thumb"></span
       ></span>
       @if (hasLabel()) {
-        <span class="star-switch__text"><ng-content /></span>
+        <span starPart="text" class="star-switch__text"><ng-content /></span>
       }
     </label>
   `,
