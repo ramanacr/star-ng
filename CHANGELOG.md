@@ -362,6 +362,7 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 
 ### Fixed
 
+- Editor: Control+F and Control+H focus the find field in the same key event, so the keys typed at once go into the field and not into the content.
 - Table: a Shift move into a lead cell no longer leaves a stale range target behind (internal state only).
 - Window: a window that is minimized or maximized from code while `minimizable` or `maximizable` is off now shows its restore button, so the user can bring it back. After the restore the button goes and the focus moves to the title bar.
 - Image editor: after an enlarging resize the preview was blurry, because the cached base was drawn at the view scale of the larger output and then stretched. The base scale now includes the resize enlargement (at most 2x the view per side, and never above the natural size); the export did not change.
