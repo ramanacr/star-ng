@@ -32,7 +32,10 @@ export interface StarPivotDimension<T = unknown> {
   readonly label?: string;
   /** Reads the member value of a record (default: `record[field]`). */
   readonly value?: (record: T) => unknown;
-  /** Member label (default: the value as text; a date in the locale). */
+  /**
+   * Member label (default: the value as text; a date in the locale). Not used by the levels of a
+   * date hierarchy: they show the year, the quarter (`quarterLabel`) and the short month name.
+   */
   readonly format?: (value: unknown) => string;
   /**
    * Splits a date field into levels: `true` is year > quarter > month, or a list of levels in
@@ -60,8 +63,13 @@ export interface StarPivotValue<T = unknown> {
 }
 
 /** Member filter of a field: the records whose value is in `include` (when set) and not in `exclude`. */
-export interface StarPivotFilter {
+export interface StarPivotFilter<T = unknown> {
   readonly field: string;
+  /**
+   * Reads the value of a record (default: the `value` accessor of a dimension or value with this
+   * field, else `record[field]`).
+   */
+  readonly value?: (record: T) => unknown;
   readonly include?: readonly unknown[];
   readonly exclude?: readonly unknown[];
 }
@@ -72,7 +80,7 @@ export interface StarPivotConfig<T = unknown> {
   readonly columns: readonly StarPivotDimension<T>[];
   readonly values: readonly StarPivotValue<T>[];
   /** Fields that filter the records. A field can filter and be on an axis at the same time. */
-  readonly filters?: readonly StarPivotFilter[];
+  readonly filters?: readonly StarPivotFilter<T>[];
   /** A grand total row at the end (default true). */
   readonly rowGrandTotals?: boolean;
   /** Parent rows show the subtotal of their children (default true). */
@@ -87,6 +95,14 @@ export interface StarPivotConfig<T = unknown> {
   readonly collapsedColumns?: readonly string[];
   /** Text of a cell without records (default empty). */
   readonly emptyText?: string;
+  /**
+   * IANA time zone of the date hierarchy buckets, for example `'UTC'` or `'Europe/Berlin'`.
+   * Default: the local time zone of the runtime. A server render (SSR) and the browser can be in
+   * different zones, so an instant near a month or quarter boundary can land in another bucket:
+   * set a zone when the data holds instants (timestamps, `Date`, date-time texts). A date-only
+   * text (`2025-03-31`) is a calendar date in every zone.
+   */
+  readonly timeZone?: string;
 }
 
 /** Options of `starPivot` that are not part of the config. */
@@ -95,6 +111,8 @@ export interface StarPivotOptions {
   readonly locale?: string;
   /** Label of a member without a value (default `(blank)`). */
   readonly blankLabel?: string;
+  /** Label of a quarter of a date hierarchy (default `Q1` … `Q4`). */
+  readonly quarterLabel?: (quarter: number) => string;
 }
 
 /** A row of the pivot result: a member (with its level) or the grand total. */

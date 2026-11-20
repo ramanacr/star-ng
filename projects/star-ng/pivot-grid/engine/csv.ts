@@ -11,8 +11,9 @@ export interface StarPivotCsvOptions {
   /** Cell text of a value; default: the plain value (`String`), empty for no value. */
   readonly format?: (value: unknown, column: StarPivotColumn) => string;
   /**
-   * Prefixes `'` to a text field that starts with `=`, `+`, `-` or `@`, so a spreadsheet does not
-   * run it as a formula (default true). Number cells are not changed.
+   * Prefixes `'` to a text field that starts with `=`, `+`, `-`, `@`, a tab or a carriage return,
+   * so a spreadsheet does not run it as a formula (default true). Number cells are never changed,
+   * also when `format` writes them as text (`-1,234.5`).
    */
   readonly escapeFormulas?: boolean;
   /** Field separator (default `,`). */
@@ -38,7 +39,7 @@ export function starPivotToCsv<T>(
   const delimiter = options.delimiter ?? ',';
   const escape = options.escapeFormulas ?? true;
   const text = (value: string): string =>
-    quote(escape && /^[=+\-@]/.test(value) ? `'${value}` : value, delimiter);
+    quote(escape && /^[=+\-@\t\r]/.test(value) ? `'${value}` : value, delimiter);
   const lines: string[] = [];
   const width = result.columns.length;
   result.headerRows.forEach((cells, index) => {
@@ -58,8 +59,12 @@ export function starPivotToCsv<T>(
     result.columns.forEach((column, c) => {
       const value = result.cells[r][c];
       if (value === null || value === undefined) fields.push('');
-      else if (options.format) fields.push(text(options.format(value, column)));
-      else if (typeof value === 'number') fields.push(quote(String(value), delimiter));
+      else if (typeof value === 'number') {
+        // A number is data, not a formula: no escape, also for a formatted negative number.
+        fields.push(
+          quote(options.format ? options.format(value, column) : String(value), delimiter),
+        );
+      } else if (options.format) fields.push(text(options.format(value, column)));
       else fields.push(text(String(value)));
     });
     lines.push(fields.join(delimiter));

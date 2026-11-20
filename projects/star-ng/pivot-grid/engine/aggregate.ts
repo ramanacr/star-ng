@@ -1,10 +1,11 @@
 import { isBlank, memberKey, readField } from './members';
 import type { StarPivotValue } from './types';
 
-/** A number from a number or a number text; `null` otherwise. */
+/** A number from a number or a plain decimal text; `null` otherwise. */
 function toNumber(value: unknown): number | null {
   if (typeof value === 'number') return Number.isFinite(value) ? value : null;
-  if (typeof value === 'string' && value.trim() !== '') {
+  // Only plain decimal texts: no hexadecimal, binary or exponent forms.
+  if (typeof value === 'string' && /^\s*[+-]?(\d+\.?\d*|\.\d+)\s*$/.test(value)) {
     const number = Number(value);
     return Number.isFinite(number) ? number : null;
   }

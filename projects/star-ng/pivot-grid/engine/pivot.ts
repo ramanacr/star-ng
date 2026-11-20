@@ -100,14 +100,20 @@ function sortAxis<T>(
       const sign = sort.order === 'desc' ? -1 : 1;
       const value = sort.by === 'value' ? values[sort.value ?? 0] : undefined;
       if (value) {
-        const totals = new Map<Node, number>();
+        const totals = new Map<Node, number | null>();
         for (const child of children) {
           const total = aggregateCell(value, data, child.records);
-          totals.set(child, typeof total === 'number' ? total : Number.NEGATIVE_INFINITY);
+          totals.set(child, typeof total === 'number' && !Number.isNaN(total) ? total : null);
         }
         children.sort((a, b) => {
           if (a.raw === null || b.raw === null) return compareMembers(a, b, locale);
-          const diff = totals.get(a)! - totals.get(b)!;
+          const left = totals.get(a)!;
+          const right = totals.get(b)!;
+          // A member without a numeric total comes last, in both orders (as a blank member).
+          if (left === null || right === null) {
+            return left === right ? compareMembers(a, b, locale) : left === null ? 1 : -1;
+          }
+          const diff = left - right;
           return diff ? sign * diff : compareMembers(a, b, locale);
         });
       } else {
@@ -130,7 +136,7 @@ function filteredIndexes<T>(data: readonly T[], config: StarPivotConfig<T>): num
     .filter((filter) => filter.include || filter.exclude?.length)
     .map((filter) => ({
       field: filter.field,
-      read: findReader(config, filter.field),
+      read: filter.value ?? findReader(config, filter.field),
       include: filter.include ? new Set(filter.include.map(memberKey)) : null,
       exclude: new Set((filter.exclude ?? []).map(memberKey)),
     }));
@@ -152,10 +158,10 @@ function filteredIndexes<T>(data: readonly T[], config: StarPivotConfig<T>): num
 
 /** The reader of a field: the `value` accessor of a dimension with that field, else the field. */
 function findReader<T>(config: StarPivotConfig<T>, field: string): (record: T) => unknown {
-  const dimension = [...config.rows, ...config.columns].find(
+  const source = [...config.rows, ...config.columns, ...config.values].find(
     (item) => item.field === field && item.value,
   );
-  return dimension?.value ?? ((record: T) => readField(record, field));
+  return source?.value ?? ((record: T) => readField(record, field));
 }
 
 /**
@@ -171,8 +177,9 @@ export function starPivot<T>(
   const locale = options.locale;
   const values = config.values;
   const indexes = filteredIndexes(data, config);
-  const rowAxis = buildAxis(data, indexes, axisLevels(config.rows, options));
-  const columnAxis = buildAxis(data, indexes, axisLevels(config.columns, options));
+  const levelOptions = { ...options, timeZone: config.timeZone };
+  const rowAxis = buildAxis(data, indexes, axisLevels(config.rows, levelOptions));
+  const columnAxis = buildAxis(data, indexes, axisLevels(config.columns, levelOptions));
   sortAxis(rowAxis, data, values, locale);
   sortAxis(columnAxis, data, values, locale);
 

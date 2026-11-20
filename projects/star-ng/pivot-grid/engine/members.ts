@@ -28,7 +28,31 @@ export function isBlank(value: unknown): boolean {
 export function starPivotMemberKey(value: unknown): string {
   if (isBlank(value)) return '_';
   if (value instanceof Date) return `d:${value.getTime()}`;
-  return `${typeof value === 'string' ? 's' : typeof value === 'number' ? 'n' : 'o'}:${String(value)}`;
+  switch (typeof value) {
+    case 'string':
+      return `s:${value}`;
+    case 'number':
+      return `n:${String(value)}`;
+    case 'boolean':
+      return `b:${value}`;
+    case 'object':
+    case 'function':
+      return `o:${objectId(value as object)}`;
+    default:
+      return `x:${String(value)}`;
+  }
+}
+
+/** A stable number per object, so different objects are different members. */
+const objectIds = new WeakMap<object, number>();
+let nextObjectId = 1;
+function objectId(value: object): number {
+  let id = objectIds.get(value);
+  if (id === undefined) {
+    id = nextObjectId++;
+    objectIds.set(value, id);
+  }
+  return id;
 }
 
 /**
@@ -36,7 +60,18 @@ export function starPivotMemberKey(value: unknown): string {
  * member values from the first level down, for example `starPivotPathKey(['North', 'Desk'])`.
  */
 export function starPivotPathKey(path: readonly unknown[]): string {
-  return JSON.stringify(path.map((value) => (value === undefined ? null : value)));
+  return JSON.stringify(
+    path.map((value) =>
+      value === undefined
+        ? null
+        : typeof value === 'number' && !Number.isFinite(value)
+          ? // JSON writes NaN and Infinity as null: keep them apart from a blank member.
+            { n: String(value) }
+          : typeof value === 'object' && value !== null && !(value instanceof Date)
+            ? { o: objectId(value) }
+            : value,
+    ),
+  );
 }
 
 /** A date from a `Date`, a timestamp or a date text; `null` when it is not a valid date. */
@@ -76,6 +111,36 @@ function monthName(month: number, locale: string | undefined): string {
   return names[month - 1];
 }
 
+/** Year and month of a date in a time zone (`undefined`: the runtime zone). */
+interface DateParts {
+  readonly year: number;
+  readonly month: number;
+}
+
+const zoneFormats = new Map<string, Intl.DateTimeFormat>();
+function partsOf(value: unknown, timeZone: string | undefined): DateParts | null {
+  // A date-only text is a calendar date in every zone.
+  if (typeof value === 'string') {
+    const iso = ISO_DATE.exec(value);
+    if (iso) return { year: +iso[1], month: +iso[2] };
+  }
+  const date = toDate(value);
+  if (!date) return null;
+  if (!timeZone) return { year: date.getFullYear(), month: date.getMonth() + 1 };
+  let format = zoneFormats.get(timeZone);
+  if (!format) {
+    format = new Intl.DateTimeFormat('en-US', { timeZone, year: 'numeric', month: 'numeric' });
+    zoneFormats.set(timeZone, format);
+  }
+  let year = 0;
+  let month = 0;
+  for (const part of format.formatToParts(date)) {
+    if (part.type === 'year') year = Number(part.value);
+    if (part.type === 'month') month = Number(part.value);
+  }
+  return { year, month };
+}
+
 /** One level of an axis, with its member reader. */
 export interface AxisLevel<T> extends StarPivotLevel {
   /** The member of a record: its sort value (`raw`) and its key. */
@@ -87,7 +152,7 @@ export interface AxisLevel<T> extends StarPivotLevel {
 /** The levels of the dimensions of one axis (a date hierarchy gives several levels). */
 export function axisLevels<T>(
   dimensions: readonly StarPivotDimension<T>[],
-  options: StarPivotOptions,
+  options: StarPivotOptions & { readonly timeZone?: string },
 ): AxisLevel<T>[] {
   const levels: AxisLevel<T>[] = [];
   const blank = options.blankLabel ?? '(blank)';
@@ -126,14 +191,14 @@ export function axisLevels<T>(
         dimension,
         labelOf: (raw) => (raw === null ? blank : datePartLabel(part, raw as number, options)),
         member: (record) => {
-          const date = toDate(read(record));
+          const date = partsOf(read(record), options.timeZone);
           if (!date) return { raw: null, key: '_' };
           const raw =
             part === 'year'
-              ? date.getFullYear()
+              ? date.year
               : part === 'quarter'
-                ? Math.floor(date.getMonth() / 3) + 1
-                : date.getMonth() + 1;
+                ? Math.floor((date.month - 1) / 3) + 1
+                : date.month;
           return { raw, key: `n:${raw}` };
         },
       });
@@ -144,7 +209,7 @@ export function axisLevels<T>(
 
 function datePartLabel(part: StarPivotDateLevel, raw: number, options: StarPivotOptions): string {
   if (part === 'year') return String(raw);
-  if (part === 'quarter') return `Q${raw}`;
+  if (part === 'quarter') return options.quarterLabel ? options.quarterLabel(raw) : `Q${raw}`;
   return monthName(raw, options.locale);
 }
 

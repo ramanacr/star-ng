@@ -402,6 +402,105 @@ describe('starPivot engine', () => {
     expect(starPivotFormatValue('x', { field: 'a' }, 'en')).toBe('x');
   });
 
+  it('buckets instants of a date hierarchy in the config time zone', () => {
+    // 23:30 UTC on 31 March is 1 April in Berlin (UTC+2 in summer time).
+    const data = [
+      { at: '2025-03-31T23:30:00Z', n: 1 },
+      { at: Date.UTC(2025, 5, 30, 23, 0), n: 2 },
+    ];
+    const config: StarPivotConfig = {
+      rows: [{ field: 'at', dateHierarchy: ['quarter', 'month'] }],
+      columns: [],
+      values: [{ field: 'n' }],
+      rowGrandTotals: false,
+    };
+    const utc = starPivot(data, { ...config, timeZone: 'UTC' }, { locale: 'en-US' });
+    expect(labels(utc)).toEqual(['member:Q1', '  member:Mar', 'member:Q2', '  member:Jun']);
+    const berlin = starPivot(data, { ...config, timeZone: 'Europe/Berlin' }, { locale: 'en-US' });
+    expect(labels(berlin)).toEqual(['member:Q2', '  member:Apr', 'member:Q3', '  member:Jul']);
+    // A date-only text is a calendar date in every zone.
+    const day = starPivot([{ at: '2025-03-31', n: 1 }], {
+      ...config,
+      timeZone: 'Pacific/Kiritimati',
+    });
+    expect(day.rows.map((row) => row.label)).toEqual(['Q1', expect.any(String)]);
+  });
+
+  it('labels quarters with the quarterLabel option', () => {
+    const result = starPivot(
+      SALES,
+      {
+        rows: [{ field: 'date', dateHierarchy: ['quarter'] }],
+        columns: [],
+        values: [{ field: 'n' }],
+      },
+      { quarterLabel: (quarter) => `T${quarter}` },
+    );
+    expect(result.rows.slice(0, 3).map((row) => row.label)).toEqual(['T1', 'T2', 'T3']);
+  });
+
+  it('keeps NaN, booleans and objects apart from blanks and from each other', () => {
+    const a = { id: 1 };
+    const b = { id: 2 };
+    const data = [
+      { k: NaN },
+      { k: null },
+      { k: true },
+      { k: 'true' },
+      { k: a },
+      { k: b },
+      { k: Infinity },
+    ];
+    const result = starPivot(data, {
+      rows: [{ field: 'k' }],
+      columns: [],
+      values: [{ field: 'k', aggregate: 'count' }],
+    });
+    const keys = result.rows.map((row) => row.key);
+    expect(new Set(keys).size).toBe(keys.length);
+    expect(result.rows).toHaveLength(8);
+  });
+
+  it('sorts members without a numeric total last, also in ascending value order', () => {
+    const data = [
+      { g: 'A', v: 5 },
+      { g: 'B', v: 'x' },
+      { g: 'C', v: 1 },
+    ];
+    const result = starPivot(data, {
+      rows: [{ field: 'g', sort: { by: 'value' } }],
+      columns: [],
+      values: [{ field: 'v' }],
+      rowGrandTotals: false,
+    });
+    expect(result.rows.map((row) => row.label)).toEqual(['C', 'A', 'B']);
+  });
+
+  it('reads only plain decimal texts as numbers', () => {
+    const data = ['0x10', '1e3', ' 7 ', '-2.5', '0b1'].map((v) => ({ g: 'A', v }));
+    const result = starPivot(data, {
+      rows: [{ field: 'g' }],
+      columns: [],
+      values: [{ field: 'v' }],
+      rowGrandTotals: false,
+    });
+    expect(result.cells).toEqual([[4.5]]);
+  });
+
+  it('filters through the value accessor of a filter or a value definition', () => {
+    const byFilter = starPivot(SALES, {
+      ...BY_REGION,
+      filters: [
+        {
+          field: 'size',
+          value: (sale: Sale) => (sale.amount > 100 ? 'big' : 'small'),
+          exclude: ['small'],
+        },
+      ],
+    });
+    expect(byFilter.cells.map((row) => row[0])).toEqual([200, 300, 500]);
+  });
+
   it('pivots 10,000 records in less than 500 ms', () => {
     const regions = ['North', 'South', 'East', 'West'];
     const products = Array.from({ length: 25 }, (_, i) => `Product ${i}`);
@@ -468,6 +567,31 @@ describe('starPivotToCsv', () => {
     expect(starPivotToCsv(risky, { ...names, escapeFormulas: false }).split('\r\n')[1]).toBe(
       '-x,-3',
     );
+  });
+
+  it('never escapes number cells, also when formatted as negative numbers', () => {
+    const negative = starPivot([{ g: 'A', n: -1234.5 }], {
+      rows: [{ field: 'g' }],
+      columns: [],
+      values: [{ field: 'n' }],
+      rowGrandTotals: false,
+    });
+    const csv = starPivotToCsv(negative, {
+      ...names,
+      format: (value) => new Intl.NumberFormat('en-US').format(value as number),
+    });
+    expect(csv.split('\r\n')[1]).toBe('A,"-1,234.5"');
+    expect(starPivotToCsv(negative, names).split('\r\n')[1]).toBe('A,-1234.5');
+  });
+
+  it('escapes text that starts with a tab or a carriage return', () => {
+    const risky = starPivot([{ name: '\t=1', n: 1 }], {
+      rows: [{ field: 'name' }],
+      columns: [],
+      values: [{ field: 'n' }],
+      rowGrandTotals: false,
+    });
+    expect(starPivotToCsv(risky, names).split('\r\n')[1]).toBe("'\t=1,1");
   });
 
   it('writes formatted values when asked', () => {
