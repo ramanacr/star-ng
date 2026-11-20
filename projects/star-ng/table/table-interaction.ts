@@ -307,8 +307,10 @@ export abstract class StarTableInteraction<T> {
     return cells;
   });
 
-  /** The fixed corner of a range: the cell of the last click, Space or plain move. */
+  /** The fixed corner of a range: the cell that last got the focus without Shift, or a click. */
   private cellAnchor: StarTableCellRef | null = null;
+  /** The cell that a Shift move or Shift + click focuses: its focus keeps the anchor. */
+  private extendTarget: StarTableCellRef | null = null;
 
   /** The CDK context menu trigger on the body. It stays disabled until a row prepares a menu. */
   private readonly menuTrigger = viewChild('body', { read: CdkContextMenuTrigger });
@@ -430,14 +432,25 @@ export abstract class StarTableInteraction<T> {
     this.selectCell(target.row, target.column, how);
     if (event.shiftKey) {
       const element = this.cellElement(target.row, target.column);
+      this.extendTarget = { rowKey: this.trackKey(target.row), field: target.column.field };
       if (element) this.focusElement(element);
+      this.extendTarget = null;
     }
   }
 
   protected onCellFocusIn(event: FocusEvent): void {
     if (!this.cellMode()) return;
     const target = this.cellOf(event.target);
-    if (target) this.setActive(target.row, target.column);
+    if (!target) return;
+    this.setActive(target.row, target.column);
+    // Any focus of a cell (Tab in, a click, focusCell, navigateTo) sets the range anchor, unless
+    // a Shift move or Shift + click stretches the range to this cell.
+    const cell = { rowKey: this.trackKey(target.row), field: target.column.field };
+    const extend = this.extendTarget;
+    this.extendTarget = null;
+    if (!extend || !Object.is(extend.rowKey, cell.rowKey) || extend.field !== cell.field) {
+      this.cellAnchor = cell;
+    }
   }
 
   protected onCellKeydown(event: KeyboardEvent): void {
@@ -473,13 +486,16 @@ export abstract class StarTableInteraction<T> {
     if (!next) return;
     event.preventDefault();
     const nextColumn = columns[next.col];
+    // A move to the side (no vertical step) into a covered cell lands on the merged cell above.
     const step = Math.sign(next.row - from.row);
-    const index = uncoveredRow(next.row, step || 1, rows.length, (r) =>
+    const index = uncoveredRow(next.row, step, rows.length, (r) =>
       this.rowSpan(this.pageIndex().get(this.trackKey(rows[r])) ?? r, nextColumn),
     );
+    const goal = { rowKey: this.trackKey(rows[index]), field: nextColumn.field };
+    if (extend) this.extendTarget = goal;
     this.moveFocus(rows[index], nextColumn, true);
     if (extend) this.selectCell(rows[index], nextColumn, 'extend');
-    else this.cellAnchor = { rowKey: this.trackKey(rows[index]), field: nextColumn.field };
+    else this.cellAnchor = goal;
   }
 
   // ---------------------------------------------------------------- search

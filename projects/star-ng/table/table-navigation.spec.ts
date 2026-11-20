@@ -222,6 +222,13 @@ describe('StarTable cell navigation', () => {
     expect(focused()).toBe('SKU-1|city');
   });
 
+  it('maps a move with no vertical step to the cell that covers the target', () => {
+    const spans = [3, 0, 0, 2, 0];
+    const spanAt = (row: number) => spans[row];
+    expect(uncoveredRow(2, 0, 5, spanAt)).toBe(0);
+    expect(uncoveredRow(4, 0, 5, spanAt)).toBe(3);
+  });
+
   it('skips the rows that a merged cell covers', async () => {
     const { el, cell, focused, press } = await setupNav((h) => h.merged.set(true));
     document.body.append(el);
@@ -235,6 +242,16 @@ describe('StarTable cell navigation', () => {
     await press('ArrowLeft');
     await press('ArrowDown');
     expect(focused()).toBe('SKU-2|stock');
+    // A move to the side into a covered cell lands on the merged cell above it.
+    await press('ArrowDown');
+    await press('ArrowRight');
+    expect(focused()).toBe('SKU-1|city');
+    await press('ArrowLeft');
+    await press('ArrowDown');
+    await press('ArrowDown');
+    await press('Home');
+    await press('End');
+    expect(focused()).toBe('SKU-1|city');
   });
 
   it('starts an edit with Enter or F2 and goes back to the cell with Escape', async () => {

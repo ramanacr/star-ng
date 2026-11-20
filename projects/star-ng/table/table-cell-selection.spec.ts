@@ -52,8 +52,10 @@ async function setup(change: (host: RangeHost) => void = () => undefined) {
     el.querySelector<HTMLElement>(`tbody tr[data-row="SKU-${row}"] td[data-field="${field}"]`)!;
   const click = async (row: number, field: string, init: MouseEventInit = {}) => {
     const target = cell(row, field);
-    target.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, ...init }));
-    target.focus();
+    // As in a browser: a mousedown that the table prevents does not move the focus.
+    const down = new MouseEvent('mousedown', { bubbles: true, cancelable: true, ...init });
+    target.dispatchEvent(down);
+    if (!down.defaultPrevented) target.focus();
     target.dispatchEvent(new MouseEvent('click', { bubbles: true, ...init }));
     await fixture.whenStable();
   };
@@ -141,6 +143,25 @@ describe('StarTable cell and range selection', () => {
     expect(selected()).toEqual([]);
     await press(' ');
     expect(selected()).toEqual(['SKU-4|stock']);
+  });
+
+  it('starts a range at the cell that got the focus (Tab in, focusCell)', async () => {
+    const { fixture, host, cell, press, selected } = await setup();
+    // Tab into the grid: the focus lands on a cell without a click or Space.
+    cell(1, 'sku').focus();
+    await fixture.whenStable();
+    await press('ArrowRight', { shiftKey: true });
+    await press('ArrowRight', { shiftKey: true });
+    expect(selected()).toEqual(['SKU-1|sku', 'SKU-1|name', 'SKU-1|stock']);
+
+    const table = fixture.debugElement.children[0].componentInstance as {
+      focusCell(key: unknown, field: string): boolean;
+    };
+    expect(table.focusCell('SKU-4', 'city')).toBe(true);
+    await fixture.whenStable();
+    await press('ArrowDown', { shiftKey: true });
+    expect(selected()).toEqual(['SKU-4|city', 'SKU-5|city']);
+    expect(host.cells()).toHaveLength(2);
   });
 
   it('shows the selection that the owner sets', async () => {
