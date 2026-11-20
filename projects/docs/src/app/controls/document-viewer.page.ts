@@ -74,7 +74,9 @@ import { ImagePagesRenderer, SampleReportRenderer } from '../shared/sample-rende
       <p>
         StarNG adds no PDF dependency. Install <code>pdfjs-dist</code> in your application, write a
         renderer of a few lines, and provide it. Page indexes of the renderer are zero-based; the
-        viewer sizes the canvas and rotates it.
+        viewer sizes the canvas and rotates it. The viewer passes an <code>AbortSignal</code> to
+        <code>load</code> and <code>renderPage</code>: when a newer source or a newer draw replaces
+        a call, cancel the PDF.js task and leave the state of the newer call alone.
       </p>
       <docs-code [code]="pdfJsCode" label="PDF.js renderer" />
 
@@ -104,18 +106,28 @@ readonly action = signal('');`;
 readonly imageRenderer = new ImagePagesRenderer();
 
 export class ImagePagesRenderer implements StarDocumentRenderer {
-  private images: HTMLImageElement[] = [];
-  async load(source: unknown) {
-    this.images = await Promise.all((source as string[]).map(loadImage));
+  private images: readonly HTMLImageElement[] = [];
+  private generation = 0;
+
+  async load(source: unknown, signal?: AbortSignal) {
+    const generation = ++this.generation;
+    const images = await Promise.all((source as string[]).map((url) => loadImage(url, signal)));
+    // A load that finishes after a newer one started must not replace its images.
+    if (signal?.aborted || generation !== this.generation) throw new DOMException('', 'AbortError');
+    this.images = images;
     return {
-      pageCount: this.images.length,
-      pageSize: (i: number) => ({ width: this.images[i].naturalWidth, height: this.images[i].naturalHeight }),
+      pageCount: images.length,
+      pageSize: (i: number) => ({ width: images[i].naturalWidth, height: images[i].naturalHeight }),
     };
   }
-  async renderPage(index: number, canvas: HTMLCanvasElement) {
-    canvas.getContext('2d')!.drawImage(this.images[index], 0, 0, canvas.width, canvas.height);
+  async renderPage(index: number, canvas: HTMLCanvasElement, _scale: number, signal?: AbortSignal) {
+    const context = canvas.getContext('2d')!;
+    if (signal?.aborted) return;
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    context.drawImage(this.images[index], 0, 0, canvas.width, canvas.height);
   }
   dispose() {
+    this.generation++;
     this.images = [];
   }
 }`;
@@ -138,20 +150,32 @@ export class PdfJsRenderer implements StarDocumentRenderer {
   private doc: pdfjs.PDFDocumentProxy | null = null;
   private sizes: StarDocumentPageSize[] = [];
 
-  async load(source: unknown) {
-    this.doc = await pdfjs.getDocument(source as string).promise;
+  async load(source: unknown, signal?: AbortSignal) {
     this.sizes = [];
-    for (let i = 1; i <= this.doc.numPages; i++) {
-      const { width, height } = (await this.doc.getPage(i)).getViewport({ scale: 1 });
-      this.sizes.push({ width, height });
+    const task = pdfjs.getDocument(source as string);
+    signal?.addEventListener('abort', () => void task.destroy());
+    const doc = await task.promise;
+    const sizes: StarDocumentPageSize[] = [];
+    for (let i = 1; i <= doc.numPages; i++) {
+      const { width, height } = (await doc.getPage(i)).getViewport({ scale: 1 });
+      sizes.push({ width, height });
     }
-    return { pageCount: this.doc.numPages, pageSize: (i: number) => this.sizes[i] };
+    if (signal?.aborted) {
+      // A newer source replaced this one: free it and leave the newer state alone.
+      void doc.destroy();
+      throw new DOMException('Aborted', 'AbortError');
+    }
+    this.doc = doc;
+    this.sizes = sizes;
+    return { pageCount: doc.numPages, pageSize: (i: number) => sizes[i] };
   }
 
-  async renderPage(index: number, canvas: HTMLCanvasElement, scale: number) {
+  async renderPage(index: number, canvas: HTMLCanvasElement, scale: number, signal?: AbortSignal) {
     const page = await this.doc!.getPage(index + 1);
     const viewport = page.getViewport({ scale });
-    await page.render({ canvasContext: canvas.getContext('2d')!, viewport }).promise;
+    const renderTask = page.render({ canvasContext: canvas.getContext('2d')!, viewport });
+    signal?.addEventListener('abort', () => renderTask.cancel());
+    await renderTask.promise;
   }
 
   async textContent(index: number) {
@@ -162,6 +186,7 @@ export class PdfJsRenderer implements StarDocumentRenderer {
   dispose() {
     void this.doc?.destroy();
     this.doc = null;
+    this.sizes = [];
   }
 }
 

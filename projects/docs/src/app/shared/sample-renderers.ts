@@ -35,22 +35,42 @@ function reportLines(index: number, count: number): string[] {
   ];
 }
 
-/** A generated report of `source` pages (a number; default 12). Page 4 is landscape. */
+/** The error that a renderer gives for a call that the viewer aborted. */
+function aborted(): Error {
+  return new DOMException('The load was replaced by a newer one.', 'AbortError');
+}
+
+/**
+ * A generated report of `source` pages (a number; default 12). Page 4 is landscape. A generation
+ * number guards the state: a call that belongs to an older load or an aborted signal does not
+ * change it.
+ */
 export class SampleReportRenderer implements StarDocumentRenderer {
   private count = 0;
+  private generation = 0;
 
-  async load(source: unknown): Promise<StarDocumentInfo> {
+  async load(source: unknown, signal?: AbortSignal): Promise<StarDocumentInfo> {
+    const generation = ++this.generation;
     if (source === 'missing.pdf') throw new Error('The file missing.pdf was not found.');
-    this.count = typeof source === 'number' ? source : 12;
+    const count = typeof source === 'number' ? source : 12;
+    // A real renderer would read the file here; check the signal after every await.
+    await Promise.resolve();
+    if (signal?.aborted || generation !== this.generation) throw aborted();
+    this.count = count;
     return {
-      pageCount: this.count,
+      pageCount: count,
       pageSize: (index) => (index === 3 ? A4_LANDSCAPE : A4),
     };
   }
 
-  async renderPage(index: number, canvas: HTMLCanvasElement, scale: number): Promise<void> {
+  async renderPage(
+    index: number,
+    canvas: HTMLCanvasElement,
+    scale: number,
+    signal?: AbortSignal,
+  ): Promise<void> {
     const context = canvas.getContext('2d');
-    if (!context) return;
+    if (!context || signal?.aborted || index >= this.count) return;
     const size = index === 3 ? A4_LANDSCAPE : A4;
     context.setTransform(scale, 0, 0, scale, 0, 0);
     // Paper is white in both themes, as a printed page.
@@ -80,47 +100,76 @@ export class SampleReportRenderer implements StarDocumentRenderer {
   }
 
   async textContent(index: number): Promise<string> {
-    return reportLines(index, this.count).join('\n');
+    return index < this.count ? reportLines(index, this.count).join('\n') : '';
   }
 
   dispose(): void {
+    this.generation++;
     this.count = 0;
   }
 }
 
-function loadImage(url: string): Promise<HTMLImageElement> {
+/** Loads one image; an abort stops the download and rejects. */
+function loadImage(url: string, signal?: AbortSignal): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
+    if (signal?.aborted) return reject(aborted());
     const image = new Image();
-    image.onload = () => resolve(image);
-    image.onerror = () => reject(new Error(`The image ${url.slice(0, 40)} did not load.`));
+    const stop = (): void => {
+      image.src = '';
+      reject(aborted());
+    };
+    signal?.addEventListener('abort', stop, { once: true });
+    image.onload = () => {
+      signal?.removeEventListener('abort', stop);
+      resolve(image);
+    };
+    image.onerror = () => {
+      signal?.removeEventListener('abort', stop);
+      reject(new Error(`The image ${url.slice(0, 40)} did not load.`));
+    };
     image.src = url;
   });
 }
 
 /** Shows a list of image URLs as pages (scans, slides). It has no text, so there is no search. */
 export class ImagePagesRenderer implements StarDocumentRenderer {
-  private images: HTMLImageElement[] = [];
+  private images: readonly HTMLImageElement[] = [];
+  private generation = 0;
 
-  async load(source: unknown): Promise<StarDocumentInfo> {
+  async load(source: unknown, signal?: AbortSignal): Promise<StarDocumentInfo> {
+    const generation = ++this.generation;
     const urls = Array.isArray(source) ? (source as string[]) : [];
-    this.images = await Promise.all(urls.map(loadImage));
+    const images = await Promise.all(urls.map((url) => loadImage(url, signal)));
+    // An older load that finishes late must not replace the images of a newer one.
+    if (signal?.aborted || generation !== this.generation) throw aborted();
+    this.images = images;
     return {
-      pageCount: this.images.length,
+      pageCount: images.length,
+      // The sizes come from the images of this load, not from a later one.
       pageSize: (index) => ({
-        width: this.images[index].naturalWidth || 640,
-        height: this.images[index].naturalHeight || 360,
+        width: images[index]?.naturalWidth || 640,
+        height: images[index]?.naturalHeight || 360,
       }),
     };
   }
 
-  async renderPage(index: number, canvas: HTMLCanvasElement): Promise<void> {
+  async renderPage(
+    index: number,
+    canvas: HTMLCanvasElement,
+    _scale: number,
+    signal?: AbortSignal,
+  ): Promise<void> {
     const image = this.images[index];
     const context = canvas.getContext('2d');
-    if (!image || !context) return;
+    if (!image || !context || signal?.aborted) return;
+    // Clear first: an image with transparent parts must not show an older draw below it.
+    context.setTransform(1, 0, 0, 1, 0, 0);
+    context.clearRect(0, 0, canvas.width, canvas.height);
     context.drawImage(image, 0, 0, canvas.width, canvas.height);
   }
 
   dispose(): void {
+    this.generation++;
     this.images = [];
   }
 }
