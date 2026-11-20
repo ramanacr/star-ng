@@ -109,9 +109,9 @@ star-select.star-table__filter {
   color: inherit;
 }
 .star-table__mark--active {
+  // An outline only: a bolder weight would widen the text and move the cell content.
   outline: 2px solid var(--star-warning);
   outline-offset: 1px;
-  font-weight: 600;
 }
 // The row of the open context menu (`contextMenuSelection`).
 .star-table__row--menu {

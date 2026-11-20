@@ -1,5 +1,5 @@
 import { LiveAnnouncer } from '@angular/cdk/a11y';
-import { Component, signal, viewChild } from '@angular/core';
+import { Component, PLATFORM_ID, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { StarCellTemplate, StarColumn, StarTable } from './table';
 import { countMatches, highlightParts } from './table-search';
@@ -40,7 +40,7 @@ const SITES: Site[] = Array.from({ length: 12 }, (_, i) => ({
 @Component({
   imports: [StarTable, StarCellTemplate],
   template: `<star-table
-    [value]="rows"
+    [value]="rows()"
     [columns]="columns"
     dataKey="code"
     ariaLabel="Sites"
@@ -50,7 +50,7 @@ const SITES: Site[] = Array.from({ length: 12 }, (_, i) => ({
     [(searchText)]="search"
   >
     @if (custom()) {
-      <ng-template starCell="city" [starCellOf]="rows" let-row let-highlight="highlight">
+      <ng-template starCell="city" [starCellOf]="rows()" let-row let-highlight="highlight">
         <em class="custom">
           @for (part of highlight(row.city); track $index) {
             @if (part.match) {
@@ -66,7 +66,7 @@ const SITES: Site[] = Array.from({ length: 12 }, (_, i) => ({
 })
 class SearchHost {
   readonly table = viewChild.required<StarTable<Site>>(StarTable);
-  readonly rows = SITES;
+  readonly rows = signal<readonly Site[]>(SITES);
   readonly paged = signal(false);
   readonly custom = signal(false);
   readonly first = signal(0);
@@ -159,5 +159,29 @@ describe('StarTable search highlight', () => {
     const hits = [...el.querySelectorAll('em.custom b.hit')].map((hit) => hit.textContent);
     expect(hits).toEqual(['Per', 'Per', 'Per']);
     expect(el.querySelector('em.custom')!.textContent).toBe('Oslo');
+  });
+
+  it('drops the active match when the data changes', async () => {
+    const { fixture, host } = await setup((h) => h.search.set('oslo'));
+    const table = host.table();
+    table.findNext();
+    table.findNext();
+    expect(table.searchMatches()).toEqual({ count: 3, active: 1 });
+    host.rows.set(SITES.slice(1));
+    await fixture.whenStable();
+    expect(table.searchMatches()).toEqual({ count: 2, active: -1 });
+  });
+});
+
+describe('StarTable scroll API on the server', () => {
+  it('does nothing and does not throw without a browser', async () => {
+    TestBed.configureTestingModule({ providers: [{ provide: PLATFORM_ID, useValue: 'server' }] });
+    const { host } = await setup((h) => h.search.set('lima'));
+    const table = host.table();
+    expect(table.scrollToRow('W-2')).toBe(false);
+    expect(table.scrollToColumn('city')).toBe(false);
+    expect(table.focusCell('W-2', 'city')).toBe(false);
+    expect(table.findNext()).toBe(4);
+    expect(table.searchMatches().active).toBe(0);
   });
 });

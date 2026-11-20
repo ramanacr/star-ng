@@ -1,5 +1,5 @@
 import { CdkContextMenuTrigger } from '@angular/cdk/menu';
-import { DOCUMENT } from '@angular/common';
+import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import {
   afterEveryRender,
   afterNextRender,
@@ -17,6 +17,7 @@ import {
   model,
   output,
   OutputEmitterRef,
+  PLATFORM_ID,
   Signal,
   signal,
   untracked,
@@ -129,6 +130,8 @@ export abstract class StarTableInteraction<T> {
   private readonly interactionDocument = inject(DOCUMENT);
   private readonly clipboard = inject(StarClipboard);
   private readonly interactionApp = inject(ApplicationRef);
+  /** The focus and scroll API needs a browser (`CSS.escape`, layout); on the server it does nothing. */
+  private readonly interactionBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   /** The table is destroyed: a pending timeout does nothing. */
   private interactionDestroyed = false;
 
@@ -628,8 +631,14 @@ export abstract class StarTableInteraction<T> {
 
   // ---------------------------------------------------------------- search
 
-  /** Index of the active match: none (-1) after each new search text. */
-  private readonly searchIndex = linkedSignal({ source: this.searchText, computation: () => -1 });
+  /**
+   * Index of the active match: none (-1) after each new search text and each change of the
+   * matches (new data, other columns), so the index never points to another match.
+   */
+  private readonly searchIndex = linkedSignal({
+    source: () => this.searchCells(),
+    computation: () => -1,
+  });
 
   /** The cells with matches, in display order (rows of all pages, visible columns). */
   private readonly searchCells = computed(() => {
@@ -694,7 +703,7 @@ export abstract class StarTableInteraction<T> {
     const next = current < 0 ? (step > 0 ? 0 : count - 1) : (current + step + count) % count;
     this.searchIndex.set(next);
     const cell = cells.find((item) => next >= item.start && next < item.start + item.count);
-    if (cell) {
+    if (cell && this.interactionBrowser) {
       this.scrollToRow(cell.rowKey);
       this.scrollToColumn(cell.field);
     }
@@ -708,7 +717,12 @@ export abstract class StarTableInteraction<T> {
   }
 
   private markedParts(text: string, row: T, column: StarColumn<T>): StarTableTextPart[] {
-    const cell = this.searchCells().byCell.get(`${this.rowKeyText(row)}\u0000${column.field}`);
+    return this.markedText(text, `${this.rowKeyText(row)}\u0000${column.field}`);
+  }
+
+  /** The marked parts of a text in the cell with the key `<row key text>\u0000<field>`. */
+  private markedText(text: string, key: string): StarTableTextPart[] {
+    const cell = this.searchCells().byCell.get(key);
     const active = this.searchMatches().active;
     const local = cell && active >= cell.start && active < cell.start + cell.count;
     return highlightParts(
@@ -728,8 +742,9 @@ export abstract class StarTableInteraction<T> {
     let highlight = this.highlighters.get(key);
     if (!highlight) {
       if (this.highlighters.size > 5000) this.highlighters.clear();
+      // The function keeps the key text only, not the row object.
       highlight = (text) =>
-        this.markedParts(text === null || text === undefined ? '' : String(text), row, column);
+        this.markedText(text === null || text === undefined ? '' : String(text), key);
       this.highlighters.set(key, highlight);
     }
     return highlight;
@@ -747,6 +762,7 @@ export abstract class StarTableInteraction<T> {
   focusCell(rowKey: unknown, field: string): boolean {
     const row = this.withAdded().find((item) => Object.is(this.trackKey(item), rowKey));
     const known = this.navFields().includes(field);
+    if (!this.interactionBrowser) return false;
     if (!this.cellMode() || row === undefined || !known || this.isRowCollapsed(row)) return false;
     this.showPageOf(row);
     this.moveFocus(row, field);
@@ -773,6 +789,7 @@ export abstract class StarTableInteraction<T> {
    * `ensureIndexVisible` / `ensureNodeVisible`.
    */
   scrollToRow(rowKeyOrIndex: unknown, options: StarScrollOptions = {}): boolean {
+    if (!this.interactionBrowser) return false;
     const rows = this.withAdded();
     let row = rows.find((item) => Object.is(this.trackKey(item), rowKeyOrIndex));
     if (row === undefined && typeof rowKeyOrIndex === 'number') row = rows[rowKeyOrIndex];
@@ -797,7 +814,7 @@ export abstract class StarTableInteraction<T> {
   scrollToColumn(field: string, options: StarScrollOptions = {}): boolean {
     const column = this.visibleColumns().find((item) => item.field === field);
     const scroller = this.scroller()?.nativeElement;
-    if (!column || !scroller) return false;
+    if (!column || !scroller || !this.interactionBrowser) return false;
     if (this.sideOf(column)) return true;
     const align = options.align ?? 'nearest';
     if (this.virtualColumns() && !this.renderedColumns().includes(column)) {
