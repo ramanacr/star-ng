@@ -188,7 +188,7 @@ const FALLBACK_SIZE = { width: 300, height: 150 };
             [disabled]="!interactive()"
             (click)="setMode('draw')"
           >
-            <i class="ph ph-pen-nib" aria-hidden="true"></i>{{ text.drawSignature }}
+            <i class="ph-bold ph-pen-nib" aria-hidden="true"></i>{{ text.drawSignature }}
           </button>
           <button
             type="button"
@@ -197,7 +197,7 @@ const FALLBACK_SIZE = { width: 300, height: 150 };
             [disabled]="!interactive()"
             (click)="setMode('type')"
           >
-            <i class="ph ph-keyboard" aria-hidden="true"></i>{{ text.typeSignature }}
+            <i class="ph-bold ph-keyboard" aria-hidden="true"></i>{{ text.typeSignature }}
           </button>
         </div>
       }
@@ -226,7 +226,7 @@ const FALLBACK_SIZE = { width: 300, height: 150 };
             [disabled]="!interactive() || !strokes().length"
             (click)="undo()"
           >
-            <i class="ph ph-arrow-counter-clockwise" aria-hidden="true"></i>
+            <i class="ph-bold ph-arrow-counter-clockwise" aria-hidden="true"></i>
           </button>
         }
         <button
@@ -236,7 +236,7 @@ const FALLBACK_SIZE = { width: 300, height: 150 };
           [disabled]="!interactive() || isEmpty()"
           (click)="clear()"
         >
-          <i class="ph ph-eraser" aria-hidden="true"></i>
+          <i class="ph-bold ph-eraser" aria-hidden="true"></i>
         </button>
       </div>
     </div>

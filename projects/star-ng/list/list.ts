@@ -178,7 +178,7 @@ export class StarListItem {
  * ```html
  * <star-list mode="navigation" ariaLabel="Projects">
  *   <star-list-item routerLink="/projects/apollo">
- *     <i starListItemStart class="ph ph-folder" aria-hidden="true"></i>
+ *     <i starListItemStart class="ph-bold ph-folder" aria-hidden="true"></i>
  *     Apollo
  *     <span starListItemSubtitle>12 open tasks</span>
  *   </star-list-item>

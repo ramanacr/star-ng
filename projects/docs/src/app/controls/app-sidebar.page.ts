@@ -63,28 +63,28 @@ import { DOCS, DocsRow } from '../shared/docs';
             <star-app-sidebar-section heading="Overview">
               <star-app-sidebar-item
                 label="Dashboard"
-                icon="ph ph-house"
+                icon="ph-bold ph-house"
                 [active]="current() === 'Dashboard'"
                 (activated)="current.set('Dashboard')"
               />
               <star-app-sidebar-item
                 label="Orders"
-                icon="ph ph-package"
+                icon="ph-bold ph-package"
                 badge="4"
                 badgeLabel="4 new"
                 [active]="current() === 'Orders'"
                 (activated)="current.set('Orders')"
               />
-              <star-app-sidebar-item label="Reports" icon="ph ph-chart-bar">
+              <star-app-sidebar-item label="Reports" icon="ph-bold ph-chart-bar">
                 <star-app-sidebar-item
                   label="Monthly"
-                  icon="ph ph-calendar"
+                  icon="ph-bold ph-calendar"
                   [active]="current() === 'Monthly'"
                   (activated)="current.set('Monthly')"
                 />
                 <star-app-sidebar-item
                   label="Yearly"
-                  icon="ph ph-calendar-blank"
+                  icon="ph-bold ph-calendar-blank"
                   [active]="current() === 'Yearly'"
                   (activated)="current.set('Yearly')"
                 />
@@ -93,7 +93,7 @@ import { DOCS, DocsRow } from '../shared/docs';
             <star-app-sidebar-section heading="Docs">
               <star-app-sidebar-item
                 label="This page"
-                icon="ph ph-book-open"
+                icon="ph-bold ph-book-open"
                 routerLink="/controls/app-sidebar"
               />
             </star-app-sidebar-section>
@@ -106,7 +106,9 @@ import { DOCS, DocsRow } from '../shared/docs';
                 (pressed)="collapsed.set(!collapsed())"
               >
                 <i
-                  [class]="collapsed() ? 'ph ph-sidebar-simple' : 'ph ph-caret-double-left'"
+                  [class]="
+                    collapsed() ? 'ph-bold ph-sidebar-simple' : 'ph-bold ph-caret-double-left'
+                  "
                   aria-hidden="true"
                 ></i>
               </star-button>
@@ -128,7 +130,7 @@ import { DOCS, DocsRow } from '../shared/docs';
         <div class="docs-stack">
           <div class="docs-row">
             <star-button variant="secondary" (pressed)="menuOpen.set(true)">
-              <i class="ph ph-list" aria-hidden="true"></i>
+              <i class="ph-bold ph-list" aria-hidden="true"></i>
               Menu
             </star-button>
           </div>
@@ -142,13 +144,13 @@ import { DOCS, DocsRow } from '../shared/docs';
             <star-app-sidebar-section heading="Catalog">
               <star-app-sidebar-item
                 label="Products"
-                icon="ph ph-cube"
+                icon="ph-bold ph-cube"
                 [active]="shopPage() === 'Products'"
                 (activated)="shopPage.set('Products')"
               />
               <star-app-sidebar-item
                 label="Customers"
-                icon="ph ph-users"
+                icon="ph-bold ph-users"
                 [active]="shopPage() === 'Customers'"
                 (activated)="shopPage.set('Customers')"
               />

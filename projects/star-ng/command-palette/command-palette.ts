@@ -43,7 +43,7 @@ export interface StarCommand {
   readonly keywords?: readonly string[];
   /** Shortcut shown at the end of the option, for example `Ctrl+S`. Only shown: it is not bound. */
   readonly shortcut?: string;
-  /** Icon classes, for example `ph ph-floppy-disk`. */
+  /** Icon classes, for example `ph-bold ph-floppy-disk`. */
   readonly icon?: string;
   /** Shown, but the keyboard skips it and it cannot run. */
   readonly disabled?: boolean;
@@ -200,7 +200,10 @@ function matchesHotkey(event: KeyboardEvent, hotkey: Hotkey): boolean {
       (click)="onDialogClick($event)"
     >
       <div class="star-command-palette__search">
-        <i class="ph ph-magnifying-glass star-command-palette__search-icon" aria-hidden="true"></i>
+        <i
+          class="ph-bold ph-magnifying-glass star-command-palette__search-icon"
+          aria-hidden="true"
+        ></i>
         <input
           #input
           class="star-command-palette__input"

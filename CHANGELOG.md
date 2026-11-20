@@ -178,6 +178,7 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 ### Fixed
 
 - Table: a Shift move into a lead cell no longer leaves a stale range target behind (internal state only).
+- Signature pad, AI prompt, app sidebar (submenu chevron) and command palette (search icon): the built-in icons used the regular Phosphor weight (`ph`), which the docs and most apps do not load, so they did not show. They now use the bold weight (`ph-bold`) like the other controls. The docs examples and JSDoc examples of the app sidebar, bottom navigation, command palette and list use `ph-bold` too.
 - A dialog or drawer with a `header` and `showHeader` false pointed `aria-labelledby` at a title that was not rendered; it now takes the header text as `aria-label`.
 - A non-modal dialog or drawer (native `show()`, not in the top layer) stacks above sticky page headers (`z-index: 999`, below the CDK overlay container), as a non-modal bottom sheet does.
 - Dialog: a close or a destroy in the middle of a pointer drag or resize stops the tracking; the dialog no longer reopens at the dragged position or emits `dragEnd` / `resizeEnd` after the close. Moves of another pointer are ignored.

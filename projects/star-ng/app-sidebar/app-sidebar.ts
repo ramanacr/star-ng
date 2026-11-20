@@ -52,8 +52,8 @@ const LINK = '.star-app-sidebar__link';
  * <star-app-sidebar mode="overlay" [(collapsed)]="collapsed" [(visible)]="menuOpen">
  *   <star-app-sidebar-header>Acme</star-app-sidebar-header>
  *   <star-app-sidebar-section heading="Sales">
- *     <star-app-sidebar-item label="Orders" icon="ph ph-package" routerLink="/orders" badge="4" />
- *     <star-app-sidebar-item label="Reports" icon="ph ph-chart-bar">
+ *     <star-app-sidebar-item label="Orders" icon="ph-bold ph-package" routerLink="/orders" badge="4" />
+ *     <star-app-sidebar-item label="Reports" icon="ph-bold ph-chart-bar">
  *       <star-app-sidebar-item label="Monthly" routerLink="/reports/monthly" />
  *     </star-app-sidebar-item>
  *   </star-app-sidebar-section>
@@ -309,7 +309,7 @@ export class StarAppSidebarSection {
         }
       }
       @if (hasChildren()) {
-        <i class="ph ph-caret-right star-app-sidebar__chevron" aria-hidden="true"></i>
+        <i class="ph-bold ph-caret-right star-app-sidebar__chevron" aria-hidden="true"></i>
       }
     </ng-template>
     @if (hasChildren()) {
@@ -385,7 +385,7 @@ export class StarAppSidebarItem {
 
   /** Text of the item. In the collapsed sidebar it is the tooltip and stays the accessible name. */
   readonly label = input.required<string>();
-  /** Icon classes, for example `ph ph-house`. Without one, the collapsed sidebar shows the first letter. */
+  /** Icon classes, for example `ph-bold ph-house`. Without one, the collapsed sidebar shows the first letter. */
   readonly icon = input<string | null>(null);
   /** Router link. `aria-current="page"` follows the active route. */
   readonly routerLink = input<string | readonly unknown[] | null>(null);
