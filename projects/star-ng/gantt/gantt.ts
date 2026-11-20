@@ -20,6 +20,9 @@ import {
   STAR_UI_TEXT,
   starInlineKey,
   starIsRtl,
+  StarPart,
+  StarStyled,
+  ɵSTAR_PART_HOST,
 } from '@star-ng/ui/core';
 import { addDays, localeFirstDay, startOfDay } from '@star-ng/ui/date-picker';
 import {
@@ -116,6 +119,9 @@ const key = (id: StarGanttId | null | undefined) =>
  */
 @Component({
   selector: 'star-gantt',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-gantt',
@@ -124,11 +130,12 @@ const key = (id: StarGanttId | null | undefined) =>
     '[style.--star-gantt-timeline-width.px]': 'timelineWidth()',
   },
   template: `
-    <div class="star-gantt__scroll" (scroll)="onScroll($event)">
-      <div class="star-gantt__panes">
+    <div starPart="scroll" class="star-gantt__scroll" (scroll)="onScroll($event)">
+      <div starPart="panes" class="star-gantt__panes">
         <!-- The keys of the focused row bubble to the tree grid (roving tabindex). -->
         <!-- eslint-disable-next-line @angular-eslint/template/interactive-supports-focus -->
         <div
+          starPart="grid"
           class="star-gantt__grid"
           role="treegrid"
           [attr.aria-label]="ariaLabel() ?? text.ganttTasks"
@@ -136,20 +143,38 @@ const key = (id: StarGanttId | null | undefined) =>
           aria-colcount="5"
           (keydown)="onKey($event)"
         >
-          <div class="star-gantt__row star-gantt__row--head" role="row" aria-rowindex="1">
-            <div role="columnheader" class="star-gantt__cell star-gantt__cell--name">
+          <div
+            starPart="row"
+            class="star-gantt__row star-gantt__row--head"
+            role="row"
+            aria-rowindex="1"
+          >
+            <div
+              starPart="cell"
+              role="columnheader"
+              class="star-gantt__cell star-gantt__cell--name"
+            >
               {{ text.name }}
             </div>
-            <div role="columnheader" class="star-gantt__cell">{{ text.start }}</div>
-            <div role="columnheader" class="star-gantt__cell">{{ text.end }}</div>
-            <div role="columnheader" class="star-gantt__cell star-gantt__cell--number">
+            <div starPart="cell" role="columnheader" class="star-gantt__cell">{{ text.start }}</div>
+            <div starPart="cell" role="columnheader" class="star-gantt__cell">{{ text.end }}</div>
+            <div
+              starPart="cell"
+              role="columnheader"
+              class="star-gantt__cell star-gantt__cell--number"
+            >
               {{ text.duration }}
             </div>
-            <div role="columnheader" class="star-gantt__cell star-gantt__cell--number">
+            <div
+              starPart="cell"
+              role="columnheader"
+              class="star-gantt__cell star-gantt__cell--number"
+            >
               {{ text.progress }}
             </div>
           </div>
           <div
+            starPart="body"
             class="star-gantt__body"
             role="rowgroup"
             [style.padding-block-start.px]="window().start * rowHeight()"
@@ -158,6 +183,7 @@ const key = (id: StarGanttId | null | undefined) =>
             @for (row of shownRows(); track row.task.id) {
               <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events -->
               <div
+                starPart="row"
                 class="star-gantt__row"
                 role="row"
                 [class.star-gantt__row--summary]="row.summary"
@@ -175,35 +201,48 @@ const key = (id: StarGanttId | null | undefined) =>
                 (focus)="activeIndex.set(row.index)"
               >
                 <div
+                  starPart="cell"
                   role="gridcell"
                   class="star-gantt__cell star-gantt__cell--name"
                   [style.--star-gantt-level]="row.level - 1"
                 >
                   @if (row.summary) {
                     <span
+                      starPart="toggle"
                       class="star-gantt__toggle"
                       aria-hidden="true"
                       (click)="toggle(row, $event)"
                     >
                       <i
+                        starPart="icon"
                         class="ph-bold star-icon-mirror"
                         [class.ph-caret-down]="row.expanded"
                         [class.ph-caret-right]="!row.expanded"
                       ></i>
                     </span>
                   } @else {
-                    <span class="star-gantt__toggle" aria-hidden="true"></span>
+                    <span starPart="toggle" class="star-gantt__toggle" aria-hidden="true"></span>
                   }
-                  <span class="star-gantt__name">{{ row.task.name }}</span>
+                  <span starPart="name" class="star-gantt__name">{{ row.task.name }}</span>
                 </div>
-                <div role="gridcell" class="star-gantt__cell">{{ shortDate(row.start) }}</div>
-                <div role="gridcell" class="star-gantt__cell">
+                <div starPart="cell" role="gridcell" class="star-gantt__cell">
+                  {{ shortDate(row.start) }}
+                </div>
+                <div starPart="cell" role="gridcell" class="star-gantt__cell">
                   {{ row.milestone ? shortDate(row.start) : shortDate(lastDay(row)) }}
                 </div>
-                <div role="gridcell" class="star-gantt__cell star-gantt__cell--number">
+                <div
+                  starPart="cell"
+                  role="gridcell"
+                  class="star-gantt__cell star-gantt__cell--number"
+                >
                   {{ text.durationDays(durationOf(row)) }}
                 </div>
-                <div role="gridcell" class="star-gantt__cell star-gantt__cell--number">
+                <div
+                  starPart="cell"
+                  role="gridcell"
+                  class="star-gantt__cell star-gantt__cell--number"
+                >
                   {{ row.milestone ? '' : row.progress + '%' }}
                 </div>
               </div>
@@ -211,12 +250,13 @@ const key = (id: StarGanttId | null | undefined) =>
           </div>
         </div>
 
-        <div class="star-gantt__timeline" aria-hidden="true">
-          <div class="star-gantt__scale">
+        <div starPart="timeline" class="star-gantt__timeline" aria-hidden="true">
+          <div starPart="scale" class="star-gantt__scale">
             @for (tier of [ticks().upper, ticks().lower]; track $index) {
-              <div class="star-gantt__tier">
+              <div starPart="tier" class="star-gantt__tier">
                 @for (tick of tier; track tick.x) {
                   <span
+                    starPart="tick"
                     class="star-gantt__tick"
                     [style.inset-inline-start.px]="tick.x"
                     [style.inline-size.px]="tick.width"
@@ -228,6 +268,7 @@ const key = (id: StarGanttId | null | undefined) =>
             }
           </div>
           <svg
+            starPart="svg"
             class="star-gantt__svg"
             [attr.width]="timelineWidth()"
             [attr.height]="rows().length * rowHeight()"
@@ -244,11 +285,12 @@ const key = (id: StarGanttId | null | undefined) =>
                 markerHeight="8"
                 orient="auto-start-reverse"
               >
-                <path d="M 0 0 L 8 4 L 0 8 z" class="star-gantt__arrow-head" />
+                <path starPart="arrowHead" d="M 0 0 L 8 4 L 0 8 z" class="star-gantt__arrow-head" />
               </marker>
             </defs>
             @for (weekend of weekends(); track weekend) {
               <rect
+                starPart="weekend"
                 class="star-gantt__weekend"
                 [attr.x]="weekend"
                 y="0"
@@ -259,6 +301,7 @@ const key = (id: StarGanttId | null | undefined) =>
             @for (row of shownRows(); track row.task.id) {
               @if (row.index % 2 === 1) {
                 <rect
+                  starPart="stripe"
                   class="star-gantt__stripe"
                   x="0"
                   [attr.y]="row.index * rowHeight()"
@@ -269,6 +312,7 @@ const key = (id: StarGanttId | null | undefined) =>
             }
             @for (path of dependencyPaths(); track path.key) {
               <path
+                starPart="dependency"
                 class="star-gantt__dependency"
                 [attr.d]="path.d"
                 [attr.marker-end]="'url(#' + markerId + ')'"
@@ -276,6 +320,7 @@ const key = (id: StarGanttId | null | undefined) =>
             }
             @for (bar of bars(); track bar.row.task.id) {
               <g
+                starPart="bar"
                 class="star-gantt__bar"
                 [class.star-gantt__bar--summary]="bar.row.summary"
                 [class.star-gantt__bar--milestone]="bar.row.milestone"
@@ -286,12 +331,14 @@ const key = (id: StarGanttId | null | undefined) =>
               >
                 @if (bar.row.milestone) {
                   <path
+                    starPart="milestone"
                     class="star-gantt__milestone"
                     [attr.d]="diamond(bar)"
                     (pointerdown)="onPointerDown($event, bar, 'move')"
                   />
                 } @else {
                   <rect
+                    starPart="barTrack"
                     class="star-gantt__bar-track"
                     [attr.x]="bar.x"
                     [attr.y]="bar.y"
@@ -301,6 +348,7 @@ const key = (id: StarGanttId | null | undefined) =>
                     (pointerdown)="onPointerDown($event, bar, 'move')"
                   />
                   <rect
+                    starPart="barProgress"
                     class="star-gantt__bar-progress"
                     [attr.x]="bar.x"
                     [attr.y]="bar.y"
@@ -310,6 +358,7 @@ const key = (id: StarGanttId | null | undefined) =>
                   />
                   @if (canChange(bar.row)) {
                     <rect
+                      starPart="handle"
                       class="star-gantt__handle"
                       [attr.x]="bar.x + bar.width - 5"
                       [attr.y]="bar.y"
@@ -318,6 +367,7 @@ const key = (id: StarGanttId | null | undefined) =>
                       (pointerdown)="onPointerDown($event, bar, 'end')"
                     />
                     <path
+                      starPart="progressHandle"
                       class="star-gantt__progress-handle"
                       [attr.d]="progressHandle(bar)"
                       (pointerdown)="onPointerDown($event, bar, 'progress')"
@@ -328,6 +378,7 @@ const key = (id: StarGanttId | null | undefined) =>
             }
             @if (todayX() !== null) {
               <line
+                starPart="today"
                 class="star-gantt__today"
                 [attr.x1]="todayX()"
                 [attr.x2]="todayX()"
@@ -339,8 +390,8 @@ const key = (id: StarGanttId | null | undefined) =>
         </div>
       </div>
     </div>
-    <p class="star-sr-only" [id]="hintId">{{ text.ganttMoveHint }}</p>
-    <p class="star-sr-only" aria-live="polite">{{ announcement() }}</p>
+    <p starPart="srText" class="star-sr-only" [id]="hintId">{{ text.ganttMoveHint }}</p>
+    <p starPart="srText" class="star-sr-only" aria-live="polite">{{ announcement() }}</p>
   `,
 })
 export class StarGantt {

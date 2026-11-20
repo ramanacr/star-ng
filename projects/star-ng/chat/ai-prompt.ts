@@ -13,7 +13,7 @@ import {
   untracked,
   viewChild,
 } from '@angular/core';
-import { STAR_UI_TEXT } from '@star-ng/ui/core';
+import { STAR_UI_TEXT, StarPart, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 import { StarMarkdownLite } from './markdown-lite.component';
 
 /** State of one response of `star-ai-prompt`. */
@@ -48,12 +48,15 @@ export interface StarAiPromptOutput {
  */
 @Component({
   selector: 'star-ai-prompt',
-  imports: [StarMarkdownLite],
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [StarPart, StarMarkdownLite],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-ai-prompt' },
   template: `
-    <div class="star-ai-prompt__panel">
+    <div starPart="panel" class="star-ai-prompt__panel">
       <textarea
+        starPart="field"
         #field
         class="star-input star-ai-prompt__field"
         rows="3"
@@ -66,11 +69,19 @@ export interface StarAiPromptOutput {
         (input)="prompt.set(field.value)"
         (keydown)="onKeydown($event)"
       ></textarea>
-      <p class="star-ai-prompt__hint" [id]="hintId">{{ text.aiPromptShortcutHint }}</p>
+      <p starPart="hint" class="star-ai-prompt__hint" [id]="hintId">
+        {{ text.aiPromptShortcutHint }}
+      </p>
       @if (suggestions().length) {
-        <div class="star-ai-prompt__chips" role="group" [attr.aria-label]="text.promptSuggestions">
+        <div
+          starPart="chips"
+          class="star-ai-prompt__chips"
+          role="group"
+          [attr.aria-label]="text.promptSuggestions"
+        >
           @for (suggestion of suggestions(); track $index) {
             <button
+              starPart="chip"
               type="button"
               class="star-chip star-ai-prompt__chip"
               [disabled]="disabled()"
@@ -81,64 +92,72 @@ export interface StarAiPromptOutput {
           }
         </div>
       }
-      <div class="star-ai-prompt__bar">
+      <div starPart="bar" class="star-ai-prompt__bar">
         <button
+          starPart="button"
           type="button"
           class="star-btn star-btn--primary star-btn--sm"
           [disabled]="disabled() || !prompt().trim()"
           (click)="request()"
         >
-          <i class="ph-bold ph-sparkle" aria-hidden="true"></i>{{ text.generate }}
+          <i starPart="icon" class="ph-bold ph-sparkle" aria-hidden="true"></i>{{ text.generate }}
         </button>
       </div>
     </div>
     @if (outputs().length) {
-      <ul class="star-ai-prompt__outputs" [attr.aria-label]="text.aiResponses">
+      <ul starPart="outputs" class="star-ai-prompt__outputs" [attr.aria-label]="text.aiResponses">
         @for (output of outputs(); track output.id) {
           @let streaming = output.status === 'streaming';
-          <li class="star-ai-prompt__output" [attr.aria-busy]="streaming || null">
-            <p class="star-ai-prompt__prompt">
-              <i class="ph-bold ph-chat-text" aria-hidden="true"></i>{{ output.prompt }}
+          <li starPart="output" class="star-ai-prompt__output" [attr.aria-busy]="streaming || null">
+            <p starPart="prompt" class="star-ai-prompt__prompt">
+              <i starPart="icon" class="ph-bold ph-chat-text" aria-hidden="true"></i
+              >{{ output.prompt }}
             </p>
             @if (output.text) {
               <star-markdown-lite class="star-ai-prompt__text" [text]="output.text" />
             }
             @if (output.status === 'error') {
-              <p class="star-ai-prompt__error">
-                <i class="ph-bold ph-warning-circle" aria-hidden="true"></i
+              <p starPart="error" class="star-ai-prompt__error">
+                <i starPart="icon" class="ph-bold ph-warning-circle" aria-hidden="true"></i
                 >{{ text.aiResponseFailed }}
               </p>
             }
-            <div class="star-ai-prompt__actions">
+            <div starPart="actions" class="star-ai-prompt__actions">
               @if (streaming) {
-                <span class="star-ai-prompt__generating">
-                  <i class="ph-bold ph-spinner-gap star-spin" aria-hidden="true"></i
+                <span starPart="generating" class="star-ai-prompt__generating">
+                  <i starPart="icon" class="ph-bold ph-spinner-gap star-spin" aria-hidden="true"></i
                   >{{ text.aiGenerating }}
                 </span>
                 <button
+                  starPart="button"
                   type="button"
                   class="star-btn star-btn--ghost star-btn--sm"
                   (click)="stop.emit(output)"
                 >
-                  <i class="ph-bold ph-stop-circle" aria-hidden="true"></i>{{ text.stop }}
+                  <i starPart="icon" class="ph-bold ph-stop-circle" aria-hidden="true"></i
+                  >{{ text.stop }}
                 </button>
               } @else {
                 @if (output.text) {
                   <button
+                    starPart="button"
                     type="button"
                     class="star-btn star-btn--ghost star-btn--sm"
                     (click)="copy(output)"
                   >
-                    <i class="ph-bold ph-copy" aria-hidden="true"></i>{{ text.copy }}
+                    <i starPart="icon" class="ph-bold ph-copy" aria-hidden="true"></i
+                    >{{ text.copy }}
                   </button>
                 }
                 <button
+                  starPart="button"
                   type="button"
                   class="star-btn star-btn--ghost star-btn--sm"
                   [disabled]="disabled()"
                   (click)="retry.emit(output)"
                 >
-                  <i class="ph-bold ph-arrow-clockwise" aria-hidden="true"></i>{{ text.retry }}
+                  <i starPart="icon" class="ph-bold ph-arrow-clockwise" aria-hidden="true"></i
+                  >{{ text.retry }}
                 </button>
               }
             </div>
@@ -146,7 +165,9 @@ export interface StarAiPromptOutput {
         }
       </ul>
     }
-    <p class="star-sr-only star-ai-prompt__live" aria-live="polite">{{ status() }}</p>
+    <p starPart="live" class="star-sr-only star-ai-prompt__live" aria-live="polite">
+      {{ status() }}
+    </p>
   `,
 })
 export class StarAiPrompt {

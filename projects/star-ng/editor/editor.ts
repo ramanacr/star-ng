@@ -24,7 +24,10 @@ import type { FormValueControl } from '@angular/forms/signals';
 import {
   STAR_UI_TEXT,
   starInlineKey,
+  StarPart,
+  StarStyled,
   StarUiText,
+  ɵSTAR_PART_HOST,
   ɵstarIsContextMenuKey,
   ɵstarOpenContextMenu,
 } from '@star-ng/ui/core';
@@ -182,7 +185,10 @@ type Panel = 'textColor' | 'highlight';
  */
 @Component({
   selector: 'star-editor',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   imports: [
+    StarPart,
     StarEditorTableInsert,
     StarEditorTableProperties,
     StarMenu,

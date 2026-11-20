@@ -21,8 +21,11 @@ import {
   STAR_SLOT_HOST,
   STAR_UI_TEXT,
   StarEmptyContext,
-  StarSlot,
+  StarPart,
   starSlot,
+  StarSlot,
+  StarStyled,
+  ɵSTAR_PART_HOST,
 } from '@star-ng/ui/core';
 import { StarMarkdownLite } from './markdown-lite.component';
 
@@ -145,12 +148,15 @@ function plainText(text: string): string {
  */
 @Component({
   selector: 'star-chat',
-  imports: [NgTemplateOutlet, StarMarkdownLite],
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [StarPart, NgTemplateOutlet, StarMarkdownLite],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [{ provide: STAR_SLOT_HOST, useExisting: StarChat }],
   host: { class: 'star-chat' },
   template: `
     <div
+      starPart="scroll"
       #scroller
       class="star-chat__scroll"
       role="region"
@@ -160,18 +166,20 @@ function plainText(text: string): string {
       (scroll)="onScroll()"
     >
       @if (loading()) {
-        <div class="star-chat__loading">
-          <i class="ph-bold ph-spinner-gap star-spin" aria-hidden="true"></i>{{ text.loading }}
+        <div starPart="loading" class="star-chat__loading">
+          <i starPart="icon" class="ph-bold ph-spinner-gap star-spin" aria-hidden="true"></i
+          >{{ text.loading }}
         </div>
       }
       @for (row of rows(); track row.key) {
         @if (row.kind === 'day') {
-          <div class="star-chat__day" role="separator" [attr.aria-label]="row.label">
-            <span aria-hidden="true">{{ row.label }}</span>
+          <div starPart="day" class="star-chat__day" role="separator" [attr.aria-label]="row.label">
+            <span starPart="text" aria-hidden="true">{{ row.label }}</span>
           </div>
         } @else {
           @let message = row.message;
           <div
+            starPart="message"
             class="star-chat__message"
             [class.star-chat__message--own]="row.own"
             [class.star-chat__message--first]="row.first"
@@ -179,22 +187,24 @@ function plainText(text: string): string {
             [class.star-chat__message--error]="message.status === 'error'"
           >
             @if (!row.own) {
-              <span class="star-chat__avatar" aria-hidden="true">
+              <span starPart="avatar" class="star-chat__avatar" aria-hidden="true">
                 @if (row.first) {
                   @if (message.author.avatar) {
-                    <img [src]="message.author.avatar" alt="" />
+                    <img starPart="image" [src]="message.author.avatar" alt="" />
                   } @else {
                     {{ initialsOf(message.author.name) }}
                   }
                 }
               </span>
             }
-            <div class="star-chat__body">
+            <div starPart="body" class="star-chat__body">
               @if (row.first && !row.own) {
-                <span class="star-chat__author" aria-hidden="true">{{ message.author.name }}</span>
+                <span starPart="author" class="star-chat__author" aria-hidden="true">{{
+                  message.author.name
+                }}</span>
               }
-              <div class="star-chat__bubble">
-                <span class="star-sr-only">{{
+              <div starPart="bubble" class="star-chat__bubble">
+                <span starPart="srText" class="star-sr-only">{{
                   row.time
                     ? text.messageFrom(message.author.name, row.time)
                     : message.author.name + ':'
@@ -211,12 +221,15 @@ function plainText(text: string): string {
                 }
               </div>
               @if (row.last || message.status) {
-                <div class="star-chat__meta">
+                <div starPart="meta" class="star-chat__meta">
                   @if (row.last && row.time) {
-                    <time aria-hidden="true" [attr.datetime]="row.iso">{{ row.time }}</time>
+                    <time starPart="time" aria-hidden="true" [attr.datetime]="row.iso">{{
+                      row.time
+                    }}</time>
                   }
                   @if (message.status) {
                     <i
+                      starPart="status"
                       class="star-chat__status ph"
                       role="img"
                       [class.ph-clock]="message.status === 'sending'"
@@ -232,7 +245,7 @@ function plainText(text: string): string {
         }
       } @empty {
         @if (!loading()) {
-          <div class="star-chat__empty">
+          <div starPart="empty" class="star-chat__empty">
             @if (emptyTemplate(); as template) {
               <ng-container *ngTemplateOutlet="template; context: { $implicit: '' }" />
             } @else {
@@ -243,15 +256,20 @@ function plainText(text: string): string {
       }
     </div>
     @if (typingText(); as typingLine) {
-      <div class="star-chat__typing">
-        <span class="star-chat__dots" aria-hidden="true"
-          ><span></span><span></span><span></span
+      <div starPart="typing" class="star-chat__typing">
+        <span starPart="dots" class="star-chat__dots" aria-hidden="true"
+          ><span starPart="text"></span><span starPart="text"></span><span starPart="text"></span
         ></span>
         {{ typingLine }}
       </div>
     }
-    <form class="star-chat__composer" (submit)="$event.preventDefault(); sendDraft()">
+    <form
+      starPart="composer"
+      class="star-chat__composer"
+      (submit)="$event.preventDefault(); sendDraft()"
+    >
       <textarea
+        starPart="input"
         #composer
         class="star-input star-chat__input"
         rows="1"
@@ -263,15 +281,18 @@ function plainText(text: string): string {
         (keydown)="onComposerKeydown($event)"
       ></textarea>
       <button
+        starPart="send"
         type="submit"
         class="star-btn star-btn--primary star-btn--icon star-chat__send"
         [attr.aria-label]="text.send"
         [disabled]="disabled() || !draft().trim()"
       >
-        <i class="ph-bold ph-paper-plane-right" aria-hidden="true"></i>
+        <i starPart="icon" class="ph-bold ph-paper-plane-right" aria-hidden="true"></i>
       </button>
     </form>
-    <p class="star-sr-only star-chat__live" aria-live="polite">{{ announcement() }}</p>
+    <p starPart="live" class="star-sr-only star-chat__live" aria-live="polite">
+      {{ announcement() }}
+    </p>
   `,
 })
 export class StarChat {

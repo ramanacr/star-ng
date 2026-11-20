@@ -130,9 +130,9 @@ describe('StarEditor counts, full screen, shortcuts and input rules', () => {
     await fixture.whenStable();
     const dialog = el.querySelector('dialog')!;
     expect(dialog.hasAttribute('open')).toBe(true);
-    expect(document.getElementById(dialog.getAttribute('aria-labelledby')!)!.textContent).toBe(
-      'Keyboard shortcuts',
-    );
+    expect(
+      document.getElementById(dialog.getAttribute('aria-labelledby')!)!.textContent?.trim(),
+    ).toBe('Keyboard shortcuts');
     expect(dialog.querySelectorAll('tbody tr').length).toBe(16);
     dialog.querySelector<HTMLButtonElement>('button')!.click();
     expect(dialog.hasAttribute('open')).toBe(false);

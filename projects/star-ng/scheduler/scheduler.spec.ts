@@ -640,7 +640,7 @@ describe('StarScheduler', () => {
       });
       const grid = scheduler.querySelector('[role="grid"]')!;
       expect(grid.querySelectorAll('[role="gridcell"]')).toHaveLength(42);
-      expect(scheduler.querySelector('h2')?.textContent).toBe('March 2026');
+      expect(scheduler.querySelector('h2')?.textContent?.trim()).toBe('March 2026');
       const more = button('+3 more');
       expect(more).toBeTruthy();
       expect(
@@ -694,7 +694,7 @@ describe('StarScheduler', () => {
       await stable();
       expect(host.view()).toBe('day');
       expect(button('Day').getAttribute('aria-pressed')).toBe('true');
-      expect(scheduler.querySelector('h2')?.textContent).toBe('Wednesday, 25 February 2026');
+      expect(scheduler.querySelector('h2')?.textContent?.trim()).toBe('Wednesday, 25 February 2026');
       button('Today').click();
       await stable();
       const today = new Date();
@@ -746,7 +746,7 @@ describe('StarScheduler', () => {
         h.view.set('agenda');
         h.events.set([]);
       });
-      expect(scheduler.querySelector('.star-scheduler__empty')?.textContent).toBe('No events');
+      expect(scheduler.querySelector('.star-scheduler__empty')?.textContent?.trim()).toBe('No events');
     });
   });
 

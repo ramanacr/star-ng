@@ -9,7 +9,7 @@ import {
   input,
   output,
 } from '@angular/core';
-import { STAR_UI_TEXT, StarUiText } from '@star-ng/ui/core';
+import { STAR_UI_TEXT, StarPart, StarStyled, StarUiText, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
 import { STAR_EDITOR_PALETTE } from './editor-format';
 
 /** Names of the palette colors, in the order of the palette. */
@@ -42,6 +42,9 @@ function hexOf(value: string): string {
  */
 @Component({
   selector: 'star-editor-color',
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [StarPart],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-editor__panel star-editor__color',
@@ -50,8 +53,9 @@ function hexOf(value: string): string {
     '(keydown.escape)': 'onEscape($event)',
   },
   template: `
-    <div class="star-editor__swatches">
+    <div starPart="swatches" class="star-editor__swatches">
       <button
+        starPart="button"
         type="button"
         class="star-btn star-btn--ghost star-btn--sm"
         [attr.aria-pressed]="value() === ''"
@@ -61,6 +65,7 @@ function hexOf(value: string): string {
       </button>
       @for (swatch of swatches(); track swatch.value) {
         <button
+          starPart="swatch"
           type="button"
           class="star-editor__swatch"
           [style.background]="swatch.value"
@@ -71,11 +76,22 @@ function hexOf(value: string): string {
         ></button>
       }
     </div>
-    <label class="star-editor__color-custom">
+    <label starPart="colorCustom" class="star-editor__color-custom">
       {{ text.customColor }}
-      <input #custom type="color" [value]="hex()" (change)="pick.emit(custom.value)" />
+      <input
+        starPart="input"
+        #custom
+        type="color"
+        [value]="hex()"
+        (change)="pick.emit(custom.value)"
+      />
     </label>
-    <button type="button" class="star-btn star-btn--ghost star-btn--sm" (click)="dismissed.emit()">
+    <button
+      starPart="button"
+      type="button"
+      class="star-btn star-btn--ghost star-btn--sm"
+      (click)="dismissed.emit()"
+    >
       {{ text.close }}
     </button>
   `,

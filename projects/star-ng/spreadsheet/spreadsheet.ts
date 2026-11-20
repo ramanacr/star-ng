@@ -25,6 +25,9 @@ import {
   StarAnnouncer,
   StarClipboard,
   starInlineKey,
+  StarPart,
+  StarStyled,
+  ɵSTAR_PART_HOST,
 } from '@star-ng/ui/core';
 import { StarToolbar } from '@star-ng/ui/layout';
 import {
@@ -161,7 +164,9 @@ const BACKGROUNDS: readonly StarCellBackground[] = [
  */
 @Component({
   selector: 'star-spreadsheet',
-  imports: [StarToolbar],
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [StarPart, StarToolbar],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-spreadsheet',
@@ -172,92 +177,115 @@ const BACKGROUNDS: readonly StarCellBackground[] = [
       <star-toolbar class="star-spreadsheet__toolbar" [ariaLabel]="text.spreadsheetFormatting">
         <ng-container starToolbarStart>
           <button
+            starPart="button"
             type="button"
             class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
             [attr.aria-label]="text.undo"
             [disabled]="!canUndo()"
             (click)="undo()"
           >
-            <i class="ph-bold ph-arrow-counter-clockwise" aria-hidden="true"></i>
+            <i starPart="icon" class="ph-bold ph-arrow-counter-clockwise" aria-hidden="true"></i>
           </button>
           <button
+            starPart="button"
             type="button"
             class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
             [attr.aria-label]="text.redo"
             [disabled]="!canRedo()"
             (click)="redo()"
           >
-            <i class="ph-bold ph-arrow-clockwise" aria-hidden="true"></i>
+            <i starPart="icon" class="ph-bold ph-arrow-clockwise" aria-hidden="true"></i>
           </button>
-          <span class="star-spreadsheet__divider" aria-hidden="true"></span>
+          <span starPart="divider" class="star-spreadsheet__divider" aria-hidden="true"></span>
           <button
+            starPart="button"
             type="button"
             class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
             [attr.aria-label]="text.editorBold"
             [attr.aria-pressed]="!!activeFormat().bold"
             (click)="toggleStyle('bold')"
           >
-            <i class="ph-bold ph-text-b" aria-hidden="true"></i>
+            <i starPart="icon" class="ph-bold ph-text-b" aria-hidden="true"></i>
           </button>
           <button
+            starPart="button"
             type="button"
             class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
             [attr.aria-label]="text.editorItalic"
             [attr.aria-pressed]="!!activeFormat().italic"
             (click)="toggleStyle('italic')"
           >
-            <i class="ph-bold ph-text-italic" aria-hidden="true"></i>
+            <i starPart="icon" class="ph-bold ph-text-italic" aria-hidden="true"></i>
           </button>
           @for (align of aligns; track align.value) {
             <button
+              starPart="button"
               type="button"
               class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
               [attr.aria-label]="align.label()"
               [attr.aria-pressed]="activeFormat().align === align.value"
               (click)="setAlign(align.value)"
             >
-              <i [class]="align.icon" aria-hidden="true"></i>
+              <i starPart="icon" [class]="align.icon" aria-hidden="true"></i>
             </button>
           }
-          <span class="star-spreadsheet__divider" aria-hidden="true"></span>
+          <span starPart="divider" class="star-spreadsheet__divider" aria-hidden="true"></span>
           <select
+            starPart="select"
             class="star-spreadsheet__select"
             [attr.aria-label]="text.spreadsheetNumberFormat"
             (change)="setNumberFormat($any($event.target).value)"
           >
             @for (type of formatTypes; track type) {
-              <option [value]="type" [selected]="(activeFormat().type ?? 'general') === type">
+              <option
+                starPart="option"
+                [value]="type"
+                [selected]="(activeFormat().type ?? 'general') === type"
+              >
                 {{ formatLabel(type) }}
               </option>
             }
           </select>
           <button
+            starPart="button"
             type="button"
             class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
             [attr.aria-label]="text.spreadsheetFewerDecimals"
             (click)="changeDecimals(-1)"
           >
-            <i class="ph-bold ph-arrow-left" aria-hidden="true"></i
-            ><span class="star-spreadsheet__decimals" data-glyph=".0" aria-hidden="true"></span>
+            <i starPart="icon" class="ph-bold ph-arrow-left" aria-hidden="true"></i
+            ><span
+              starPart="decimals"
+              class="star-spreadsheet__decimals"
+              data-glyph=".0"
+              aria-hidden="true"
+            ></span>
           </button>
           <button
+            starPart="button"
             type="button"
             class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
             [attr.aria-label]="text.spreadsheetMoreDecimals"
             (click)="changeDecimals(1)"
           >
-            <span class="star-spreadsheet__decimals" data-glyph=".00" aria-hidden="true"></span>
+            <span
+              starPart="decimals"
+              class="star-spreadsheet__decimals"
+              data-glyph=".00"
+              aria-hidden="true"
+            ></span>
           </button>
           <select
+            starPart="select"
             class="star-spreadsheet__select"
             [attr.aria-label]="text.spreadsheetBackground"
             (change)="setBackground($any($event.target).value)"
           >
-            <option value="" [selected]="!activeFormat().background">
+            <option starPart="option" value="" [selected]="!activeFormat().background">
               {{ text.spreadsheetNoBackground }}
             </option>
             @for (bg of backgrounds; track bg) {
-              <option [value]="bg" [selected]="activeFormat().background === bg">
+              <option starPart="option" [value]="bg" [selected]="activeFormat().background === bg">
                 {{ backgroundLabel(bg) }}
               </option>
             }
@@ -266,10 +294,13 @@ const BACKGROUNDS: readonly StarCellBackground[] = [
       </star-toolbar>
     }
     @if (showFormulaBar()) {
-      <div class="star-spreadsheet__bar">
-        <span class="star-spreadsheet__name" aria-hidden="true">{{ activeAddress() }}</span>
-        <span class="star-spreadsheet__fx" aria-hidden="true">fx</span>
+      <div starPart="bar" class="star-spreadsheet__bar">
+        <span starPart="name" class="star-spreadsheet__name" aria-hidden="true">{{
+          activeAddress()
+        }}</span>
+        <span starPart="fx" class="star-spreadsheet__fx" aria-hidden="true">fx</span>
         <input
+          starPart="formula"
           #bar
           class="star-spreadsheet__formula"
           type="text"
@@ -286,11 +317,13 @@ const BACKGROUNDS: readonly StarCellBackground[] = [
       </div>
     }
     <div
+      starPart="panel"
       class="star-spreadsheet__panel"
       [attr.role]="showTabs() ? 'tabpanel' : null"
       [attr.aria-labelledby]="showTabs() ? tabId(sheetIndex()) : null"
     >
       <div
+        starPart="viewport"
         #viewport
         class="star-spreadsheet__viewport"
         dir="ltr"
@@ -298,6 +331,7 @@ const BACKGROUNDS: readonly StarCellBackground[] = [
         (scroll)="onScroll()"
       >
         <div
+          starPart="grid"
           #grid
           class="star-spreadsheet__grid"
           role="grid"
@@ -321,6 +355,7 @@ const BACKGROUNDS: readonly StarCellBackground[] = [
           (paste)="onPaste($event)"
         >
           <div
+            starPart="row"
             class="star-spreadsheet__row star-spreadsheet__row--head"
             role="row"
             aria-rowindex="1"
@@ -328,6 +363,7 @@ const BACKGROUNDS: readonly StarCellBackground[] = [
             [style.padding-left.px]="leadWidth()"
           >
             <div
+              starPart="corner"
               class="star-spreadsheet__corner"
               role="gridcell"
               aria-colindex="1"
@@ -336,6 +372,7 @@ const BACKGROUNDS: readonly StarCellBackground[] = [
             ></div>
             @for (col of visibleColumns(); track col) {
               <div
+                starPart="colhead"
                 class="star-spreadsheet__colhead"
                 role="columnheader"
                 [attr.aria-colindex]="col + 2"
@@ -347,6 +384,7 @@ const BACKGROUNDS: readonly StarCellBackground[] = [
                 {{ columnName(col) }}
                 @if (!readonly()) {
                   <span
+                    starPart="resizer"
                     class="star-spreadsheet__resizer star-spreadsheet__resizer--col"
                     aria-hidden="true"
                     (pointerdown)="startResize($event, 'col', col)"
@@ -358,9 +396,10 @@ const BACKGROUNDS: readonly StarCellBackground[] = [
               </div>
             }
           </div>
-          <div class="star-spreadsheet__body" [style.padding-top.px]="topHeight()">
+          <div starPart="body" class="star-spreadsheet__body" [style.padding-top.px]="topHeight()">
             @for (row of visibleRows(); track row) {
               <div
+                starPart="row"
                 class="star-spreadsheet__row"
                 role="row"
                 [attr.aria-rowindex]="row + 2"
@@ -369,6 +408,7 @@ const BACKGROUNDS: readonly StarCellBackground[] = [
                 [style.padding-left.px]="leadWidth()"
               >
                 <div
+                  starPart="rowhead"
                   class="star-spreadsheet__rowhead"
                   role="rowheader"
                   aria-colindex="1"
@@ -380,6 +420,7 @@ const BACKGROUNDS: readonly StarCellBackground[] = [
                   {{ row + 1 }}
                   @if (!readonly()) {
                     <span
+                      starPart="resizer"
                       class="star-spreadsheet__resizer star-spreadsheet__resizer--row"
                       aria-hidden="true"
                       (pointerdown)="startResize($event, 'row', row)"
@@ -391,6 +432,7 @@ const BACKGROUNDS: readonly StarCellBackground[] = [
                 </div>
                 @for (col of visibleColumns(); track col) {
                   <div
+                    starPart="section"
                     role="gridcell"
                     [id]="cellId(row, col)"
                     [attr.aria-colindex]="col + 2"
@@ -401,6 +443,7 @@ const BACKGROUNDS: readonly StarCellBackground[] = [
                   >
                     @if (isEditingCell(row, col)) {
                       <input
+                        starPart="editor"
                         #editor
                         class="star-spreadsheet__editor"
                         type="text"
@@ -421,6 +464,7 @@ const BACKGROUNDS: readonly StarCellBackground[] = [
             }
           </div>
           <div
+            starPart="selection"
             class="star-spreadsheet__selection"
             aria-hidden="true"
             [style.left.px]="rangeBox(selection()).left"
@@ -429,11 +473,12 @@ const BACKGROUNDS: readonly StarCellBackground[] = [
             [style.height.px]="rangeBox(selection()).height"
           >
             @if (!readonly()) {
-              <span class="star-spreadsheet__fill" data-fill></span>
+              <span starPart="fill" class="star-spreadsheet__fill" data-fill></span>
             }
           </div>
           @if (fillTarget(); as target) {
             <div
+              starPart="fillTarget"
               class="star-spreadsheet__fill-target"
               aria-hidden="true"
               [style.left.px]="rangeBox(target).left"
@@ -446,9 +491,15 @@ const BACKGROUNDS: readonly StarCellBackground[] = [
       </div>
     </div>
     @if (showTabs()) {
-      <div class="star-spreadsheet__tabs" role="tablist" [attr.aria-label]="text.spreadsheetSheets">
+      <div
+        starPart="tabs"
+        class="star-spreadsheet__tabs"
+        role="tablist"
+        [attr.aria-label]="text.spreadsheetSheets"
+      >
         @for (sheet of sheetList(); track $index; let i = $index) {
           <button
+            starPart="tab"
             type="button"
             role="tab"
             class="star-spreadsheet__tab"
@@ -463,7 +514,7 @@ const BACKGROUNDS: readonly StarCellBackground[] = [
         }
       </div>
     }
-    <p class="star-sr-only" [id]="hintId">{{ text.spreadsheetHint }}</p>
+    <p starPart="srText" class="star-sr-only" [id]="hintId">{{ text.spreadsheetHint }}</p>
   `,
 })
 export class StarSpreadsheet {

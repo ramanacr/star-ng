@@ -18,7 +18,13 @@ import {
   signal,
   TemplateRef,
 } from '@angular/core';
-import { STAR_UI_TEXT, starInlineKey } from '@star-ng/ui/core';
+import {
+  STAR_UI_TEXT,
+  starInlineKey,
+  StarPart,
+  StarStyled,
+  ɵSTAR_PART_HOST,
+} from '@star-ng/ui/core';
 import {
   StarKanbanAccessor,
   StarKanbanColumn,
@@ -119,7 +125,9 @@ interface Grab {
  */
 @Component({
   selector: 'star-kanban',
-  imports: [CdkDropListGroup, CdkDropList, CdkDrag, NgTemplateOutlet],
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [StarPart, CdkDropListGroup, CdkDropList, CdkDrag, NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-kanban',
@@ -127,10 +135,14 @@ interface Grab {
     '[style.--star-kanban-columns]': 'gridColumns()',
   },
   template: `
-    <div class="star-kanban__board" cdkDropListGroup>
+    <div starPart="board" class="star-kanban__board" cdkDropListGroup>
       @if (lanes().length) {
         @for (column of columns(); track column.key) {
-          <div class="star-kanban__head" [class.star-kanban__head--collapsed]="isCollapsed(column)">
+          <div
+            starPart="head"
+            class="star-kanban__head"
+            [class.star-kanban__head--collapsed]="isCollapsed(column)"
+          >
             <ng-container
               [ngTemplateOutlet]="headTpl"
               [ngTemplateOutletContext]="{ $implicit: column }"
@@ -140,12 +152,13 @@ interface Grab {
       }
       @for (row of rows(); track row.lane?.key ?? '') {
         @if (row.lane) {
-          <div class="star-kanban__lane-title" role="heading" aria-level="3">
+          <div starPart="laneTitle" class="star-kanban__lane-title" role="heading" aria-level="3">
             {{ row.lane.title }}
           </div>
         }
         @for (cell of row.cells; track cell.id) {
           <section
+            starPart="column"
             class="star-kanban__column"
             role="group"
             [attr.aria-label]="cellLabel(cell)"
@@ -161,6 +174,7 @@ interface Grab {
             }
             @if (!isCollapsed(cell.column)) {
               <div
+                starPart="list"
                 class="star-kanban__list"
                 role="list"
                 cdkDropList
@@ -172,6 +186,7 @@ interface Grab {
               >
                 @for (item of cell.items; track keyOf(item); let i = $index) {
                   <div
+                    starPart="card"
                     class="star-kanban__card"
                     role="listitem"
                     cdkDrag
@@ -204,11 +219,11 @@ interface Grab {
         }
       }
     </div>
-    <p class="star-sr-only" [id]="hintId">{{ text.kanbanCardHint }}</p>
-    <p class="star-sr-only" aria-live="polite">{{ announcement() }}</p>
+    <p starPart="srText" class="star-sr-only" [id]="hintId">{{ text.kanbanCardHint }}</p>
+    <p starPart="srText" class="star-sr-only" aria-live="polite">{{ announcement() }}</p>
 
     <ng-template #headTpl let-column>
-      <div class="star-kanban__header">
+      <div starPart="header" class="star-kanban__header">
         @if (headerTpl(); as tpl) {
           <ng-container
             [ngTemplateOutlet]="tpl.template"
@@ -221,13 +236,14 @@ interface Grab {
             }"
           />
         } @else {
-          <span class="star-kanban__title">{{ column.title }}</span>
-          <span class="star-kanban__count" aria-hidden="true">
+          <span starPart="title" class="star-kanban__title">{{ column.title }}</span>
+          <span starPart="count" class="star-kanban__count" aria-hidden="true">
             {{ column.limit ? countOf(column.key) + ' / ' + column.limit : countOf(column.key) }}
           </span>
         }
         @if (collapsible()) {
           <button
+            starPart="collapse"
             type="button"
             class="star-kanban__collapse"
             [attr.aria-expanded]="!isCollapsed(column)"
@@ -237,6 +253,7 @@ interface Grab {
             (click)="toggleColumn(column.key)"
           >
             <i
+              starPart="icon"
               [class]="
                 isCollapsed(column)
                   ? 'ph-bold ph-arrows-out-line-horizontal'

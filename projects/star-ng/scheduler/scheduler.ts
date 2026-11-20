@@ -27,8 +27,11 @@ import {
   STAR_SLOT_HOST,
   STAR_UI_TEXT,
   starInlineKey,
-  StarSlot,
+  StarPart,
   starSlot,
+  StarSlot,
+  StarStyled,
+  ɵSTAR_PART_HOST,
 } from '@star-ng/ui/core';
 import { addDays, localeFirstDay, sameDay, startOfDay } from '@star-ng/ui/date-picker';
 import { StarDialogService } from '@star-ng/ui/dialog';
@@ -204,7 +207,9 @@ const TIME_VIEWS: ReadonlySet<StarSchedulerView> = new Set(['day', 'week', 'work
  */
 @Component({
   selector: 'star-scheduler',
-  imports: [NgTemplateOutlet, StarPopover],
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  imports: [StarPart, NgTemplateOutlet, StarPopover],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarScheduler) }],
   host: {
@@ -216,32 +221,42 @@ const TIME_VIEWS: ReadonlySet<StarSchedulerView> = new Set(['day', 'week', 'work
     '[style.--star-scheduler-slots]': 'slots().length',
   },
   template: `
-    <div class="star-scheduler__toolbar">
-      <div class="star-scheduler__nav">
-        <button type="button" class="star-scheduler__button" (click)="goToday()">
+    <div starPart="toolbar" class="star-scheduler__toolbar">
+      <div starPart="nav" class="star-scheduler__nav">
+        <button starPart="button" type="button" class="star-scheduler__button" (click)="goToday()">
           {{ text.today }}
         </button>
         <button
+          starPart="button"
           type="button"
           class="star-scheduler__button star-scheduler__button--icon"
           [attr.aria-label]="text.previousPeriod"
           (click)="page(-1)"
         >
-          <i class="ph-bold ph-caret-left star-icon-mirror" aria-hidden="true"></i>
+          <i starPart="icon" class="ph-bold ph-caret-left star-icon-mirror" aria-hidden="true"></i>
         </button>
         <button
+          starPart="button"
           type="button"
           class="star-scheduler__button star-scheduler__button--icon"
           [attr.aria-label]="text.nextPeriod"
           (click)="page(1)"
         >
-          <i class="ph-bold ph-caret-right star-icon-mirror" aria-hidden="true"></i>
+          <i starPart="icon" class="ph-bold ph-caret-right star-icon-mirror" aria-hidden="true"></i>
         </button>
       </div>
-      <h2 class="star-scheduler__title" [id]="titleId" aria-live="polite">{{ rangeTitle() }}</h2>
-      <div class="star-scheduler__views" role="group" [attr.aria-label]="text.schedulerView">
+      <h2 starPart="title" class="star-scheduler__title" [id]="titleId" aria-live="polite">
+        {{ rangeTitle() }}
+      </h2>
+      <div
+        starPart="views"
+        class="star-scheduler__views"
+        role="group"
+        [attr.aria-label]="text.schedulerView"
+      >
         @for (option of shownViews(); track option) {
           <button
+            starPart="button"
             type="button"
             class="star-scheduler__button"
             [class.star-scheduler__button--active]="option === view()"
@@ -259,24 +274,26 @@ const TIME_VIEWS: ReadonlySet<StarSchedulerView> = new Set(['day', 'week', 'work
         <!-- The keys of the focused cell bubble to the grid (roving tabindex). -->
         <!-- eslint-disable-next-line @angular-eslint/template/interactive-supports-focus -->
         <div
+          starPart="grid"
           class="star-scheduler__grid star-scheduler__grid--month"
           role="grid"
           [attr.aria-labelledby]="titleId"
           (keydown)="onGridKey($event)"
         >
-          <div role="row" class="star-scheduler__row">
+          <div starPart="row" role="row" class="star-scheduler__row">
             @for (day of days().slice(0, 7); track day.getTime()) {
-              <div role="columnheader" class="star-scheduler__head">
-                <span aria-hidden="true">{{ weekdayShort(day) }}</span>
-                <span class="star-sr-only">{{ weekdayLong(day) }}</span>
+              <div starPart="head" role="columnheader" class="star-scheduler__head">
+                <span starPart="text" aria-hidden="true">{{ weekdayShort(day) }}</span>
+                <span starPart="srText" class="star-sr-only">{{ weekdayLong(day) }}</span>
               </div>
             }
           </div>
           @for (week of weeks(); track $index; let r = $index) {
-            <div role="row" class="star-scheduler__row">
+            <div starPart="row" role="row" class="star-scheduler__row">
               @for (day of week; track day.getTime(); let c = $index) {
                 <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events -->
                 <div
+                  starPart="cell"
                   role="gridcell"
                   class="star-scheduler__cell star-scheduler__cell--day"
                   [class.star-scheduler__cell--outside]="day.getMonth() !== date().getMonth()"
@@ -286,9 +303,9 @@ const TIME_VIEWS: ReadonlySet<StarSchedulerView> = new Set(['day', 'week', 'work
                   (click)="onCellClick($event, r, c)"
                   (focus)="active.set([r, c])"
                 >
-                  <span class="star-scheduler__date">
-                    <span aria-hidden="true">{{ day.getDate() }}</span>
-                    <span class="star-sr-only">{{ dayLabel(day) }}</span>
+                  <span starPart="date" class="star-scheduler__date">
+                    <span starPart="text" aria-hidden="true">{{ day.getDate() }}</span>
+                    <span starPart="srText" class="star-sr-only">{{ dayLabel(day) }}</span>
                   </span>
                   @let cell = monthCell(day);
                   @for (occurrence of cell.shown; track occurrence.key) {
@@ -301,6 +318,7 @@ const TIME_VIEWS: ReadonlySet<StarSchedulerView> = new Set(['day', 'week', 'work
                   }
                   @if (cell.more) {
                     <button
+                      starPart="more"
                       type="button"
                       class="star-scheduler__more"
                       (click)="openMore($event, day)"
@@ -315,14 +333,25 @@ const TIME_VIEWS: ReadonlySet<StarSchedulerView> = new Set(['day', 'week', 'work
         </div>
       }
       @case ('agenda') {
-        <div class="star-scheduler__agenda" role="list" [attr.aria-labelledby]="titleId">
+        <div
+          starPart="agenda"
+          class="star-scheduler__agenda"
+          role="list"
+          [attr.aria-labelledby]="titleId"
+        >
           @for (group of agenda(); track group.day.getTime()) {
-            <div class="star-scheduler__agenda-day" role="listitem">
-              <h3 class="star-scheduler__agenda-date">{{ dayLabel(group.day) }}</h3>
-              <ul class="star-scheduler__agenda-list">
+            <div starPart="agendaDay" class="star-scheduler__agenda-day" role="listitem">
+              <h3 starPart="agendaDate" class="star-scheduler__agenda-date">
+                {{ dayLabel(group.day) }}
+              </h3>
+              <ul starPart="agendaList" class="star-scheduler__agenda-list">
                 @for (occurrence of group.occurrences; track occurrence.key) {
-                  <li class="star-scheduler__agenda-item">
-                    <span class="star-scheduler__agenda-time" aria-hidden="true">
+                  <li starPart="agendaItem" class="star-scheduler__agenda-item">
+                    <span
+                      starPart="agendaTime"
+                      class="star-scheduler__agenda-time"
+                      aria-hidden="true"
+                    >
                       {{ occurrence.event.allDay ? text.allDay : timeText(occurrence) }}
                     </span>
                     <ng-container
@@ -336,40 +365,54 @@ const TIME_VIEWS: ReadonlySet<StarSchedulerView> = new Set(['day', 'week', 'work
               </ul>
             </div>
           } @empty {
-            <p class="star-scheduler__empty" role="listitem">{{ text.noEvents }}</p>
+            <p starPart="empty" class="star-scheduler__empty" role="listitem">
+              {{ text.noEvents }}
+            </p>
           }
         </div>
       }
       @case ('timeline-day') {
-        <div class="star-scheduler__scroll" #scroll>
+        <div starPart="scroll" class="star-scheduler__scroll" #scroll>
           <!-- The keys of the focused cell bubble to the grid (roving tabindex). -->
           <!-- eslint-disable-next-line @angular-eslint/template/interactive-supports-focus -->
           <div
+            starPart="grid"
             class="star-scheduler__grid star-scheduler__grid--timeline"
             role="grid"
             [attr.aria-labelledby]="titleId"
             (keydown)="onGridKey($event)"
           >
-            <div role="row" class="star-scheduler__row">
-              <div role="columnheader" class="star-scheduler__head star-scheduler__corner">
+            <div starPart="row" role="row" class="star-scheduler__row">
+              <div
+                starPart="head"
+                role="columnheader"
+                class="star-scheduler__head star-scheduler__corner"
+              >
                 {{ text.resource }}
               </div>
               @for (slot of slots(); track slot; let c = $index) {
-                <div role="columnheader" class="star-scheduler__head star-scheduler__head--slot">
+                <div
+                  starPart="head"
+                  role="columnheader"
+                  class="star-scheduler__head star-scheduler__head--slot"
+                >
                   @if (slot % 60 === 0) {
                     {{ slotLabel(slot) }}
                   } @else {
-                    <span class="star-sr-only">{{ slotLabel(slot) }}</span>
+                    <span starPart="srText" class="star-sr-only">{{ slotLabel(slot) }}</span>
                   }
                 </div>
               }
             </div>
             @for (resource of resources(); track resource.id; let r = $index) {
-              <div role="row" class="star-scheduler__row">
-                <div role="rowheader" class="star-scheduler__resource">{{ resource.name }}</div>
+              <div starPart="row" role="row" class="star-scheduler__row">
+                <div starPart="resource" role="rowheader" class="star-scheduler__resource">
+                  {{ resource.name }}
+                </div>
                 @for (slot of slots(); track slot; let c = $index) {
                   <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events -->
                   <div
+                    starPart="cell"
                     role="gridcell"
                     class="star-scheduler__cell star-scheduler__cell--slot"
                     [class.star-scheduler__cell--off]="!isWorkSlot(slot)"
@@ -400,42 +443,56 @@ const TIME_VIEWS: ReadonlySet<StarSchedulerView> = new Set(['day', 'week', 'work
         </div>
       }
       @default {
-        <div class="star-scheduler__scroll" #scroll>
+        <div starPart="scroll" class="star-scheduler__scroll" #scroll>
           <!-- The keys of the focused cell bubble to the grid (roving tabindex). -->
           <!-- eslint-disable-next-line @angular-eslint/template/interactive-supports-focus -->
           <div
+            starPart="grid"
             class="star-scheduler__grid star-scheduler__grid--time"
             role="grid"
             [attr.aria-labelledby]="titleId"
             (keydown)="onGridKey($event)"
           >
-            <div role="row" class="star-scheduler__row">
-              <div role="columnheader" class="star-scheduler__head star-scheduler__corner">
-                <span class="star-sr-only">{{ text.time }}</span>
+            <div starPart="row" role="row" class="star-scheduler__row">
+              <div
+                starPart="head"
+                role="columnheader"
+                class="star-scheduler__head star-scheduler__corner"
+              >
+                <span starPart="srText" class="star-sr-only">{{ text.time }}</span>
               </div>
               @for (day of days(); track day.getTime()) {
                 <div
+                  starPart="head"
                   role="columnheader"
                   class="star-scheduler__head"
                   [class.star-scheduler__head--today]="isToday(day)"
                 >
-                  <span class="star-scheduler__weekday" aria-hidden="true">{{
+                  <span starPart="weekday" class="star-scheduler__weekday" aria-hidden="true">{{
                     weekdayShort(day)
                   }}</span>
-                  <span class="star-scheduler__day-number" aria-hidden="true">{{
-                    day.getDate()
-                  }}</span>
-                  <span class="star-sr-only">{{ dayLabel(day) }}</span>
+                  <span
+                    starPart="dayNumber"
+                    class="star-scheduler__day-number"
+                    aria-hidden="true"
+                    >{{ day.getDate() }}</span
+                  >
+                  <span starPart="srText" class="star-sr-only">{{ dayLabel(day) }}</span>
                 </div>
               }
             </div>
-            <div role="row" class="star-scheduler__row">
-              <div role="rowheader" class="star-scheduler__time star-scheduler__time--all-day">
+            <div starPart="row" role="row" class="star-scheduler__row">
+              <div
+                starPart="time"
+                role="rowheader"
+                class="star-scheduler__time star-scheduler__time--all-day"
+              >
                 {{ text.allDay }}
               </div>
               @for (day of days(); track day.getTime(); let c = $index) {
                 <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events -->
                 <div
+                  starPart="cell"
                   role="gridcell"
                   class="star-scheduler__cell star-scheduler__cell--all-day"
                   [style.--star-scheduler-col-z]="days().length - c"
@@ -462,8 +519,9 @@ const TIME_VIEWS: ReadonlySet<StarSchedulerView> = new Set(['day', 'week', 'work
               }
             </div>
             @for (slot of slots(); track slot; let r = $index) {
-              <div role="row" class="star-scheduler__row">
+              <div starPart="row" role="row" class="star-scheduler__row">
                 <div
+                  starPart="time"
                   role="rowheader"
                   class="star-scheduler__time"
                   [class.star-scheduler__time--hour]="slot % 60 === 0"
@@ -471,12 +529,13 @@ const TIME_VIEWS: ReadonlySet<StarSchedulerView> = new Set(['day', 'week', 'work
                   @if (slot % 60 === 0) {
                     {{ slotLabel(slot) }}
                   } @else {
-                    <span class="star-sr-only">{{ slotLabel(slot) }}</span>
+                    <span starPart="srText" class="star-sr-only">{{ slotLabel(slot) }}</span>
                   }
                 </div>
                 @for (day of days(); track day.getTime(); let c = $index) {
                   <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events -->
                   <div
+                    starPart="cell"
                     role="gridcell"
                     class="star-scheduler__cell star-scheduler__cell--slot"
                     [class.star-scheduler__cell--off]="!isWorkSlot(slot)"
@@ -488,6 +547,7 @@ const TIME_VIEWS: ReadonlySet<StarSchedulerView> = new Set(['day', 'week', 'work
                   >
                     @if (nowCell() === r + ':' + c) {
                       <span
+                        starPart="now"
                         class="star-scheduler__now"
                         role="img"
                         [attr.aria-label]="text.currentTime"
@@ -525,6 +585,7 @@ const TIME_VIEWS: ReadonlySet<StarSchedulerView> = new Set(['day', 'week', 'work
       let-inList="inList"
     >
       <button
+        starPart="event"
         type="button"
         class="star-scheduler__event"
         [class.star-scheduler__event--compact]="compact"
@@ -552,7 +613,7 @@ const TIME_VIEWS: ReadonlySet<StarSchedulerView> = new Set(['day', 'week', 'work
         <!-- Default content: the name is aria-label, which starts with the visible text. A custom
              template is the content of the name, followed by the full name for screen readers. -->
         @if (eventSlot(); as custom) {
-          <span class="star-scheduler__event-content">
+          <span starPart="eventContent" class="star-scheduler__event-content">
             <ng-container
               *ngTemplateOutlet="
                 custom;
@@ -564,25 +625,35 @@ const TIME_VIEWS: ReadonlySet<StarSchedulerView> = new Set(['day', 'week', 'work
               "
             />
           </span>
-          <span class="star-sr-only">{{ eventName(occurrence) }}</span>
+          <span starPart="srText" class="star-sr-only">{{ eventName(occurrence) }}</span>
         } @else {
           <!-- The trailing space keeps the visible text "Title 10:00 to 11:00" one phrase for the
                name check (axe label-content-name-mismatch joins the spans without a space). -->
-          <span class="star-scheduler__event-title">{{ occurrence.event.title + ' ' }}</span>
+          <span starPart="eventTitle" class="star-scheduler__event-title">{{
+            occurrence.event.title + ' '
+          }}</span>
           @if (!occurrence.event.allDay && !compact) {
-            <span class="star-scheduler__event-time">{{ timeSpan(occurrence) }}</span>
+            <span starPart="eventTime" class="star-scheduler__event-time">{{
+              timeSpan(occurrence)
+            }}</span>
           }
           @if (occurrence.recurring) {
-            <i class="ph-bold ph-repeat star-scheduler__event-repeat" aria-hidden="true"></i>
+            <i
+              starPart="eventRepeat"
+              class="ph-bold ph-repeat star-scheduler__event-repeat"
+              aria-hidden="true"
+            ></i>
           }
         }
         @if (style && canChange(occurrence) && !occurrence.event.allDay) {
           <span
+            starPart="handle"
             class="star-scheduler__handle star-scheduler__handle--start"
             aria-hidden="true"
             (pointerdown)="onPointerDown($event, occurrence, 'start')"
           ></span>
           <span
+            starPart="handle"
             class="star-scheduler__handle star-scheduler__handle--end"
             aria-hidden="true"
             (pointerdown)="onPointerDown($event, occurrence, 'end')"
@@ -593,8 +664,10 @@ const TIME_VIEWS: ReadonlySet<StarSchedulerView> = new Set(['day', 'week', 'work
 
     <star-popover #morePopover [ariaLabel]="moreDay() ? dayLabel(moreDay()!) : null">
       @if (moreDay(); as day) {
-        <p class="star-scheduler__more-title" aria-hidden="true">{{ dayLabel(day) }}</p>
-        <div class="star-scheduler__more-list">
+        <p starPart="moreTitle" class="star-scheduler__more-title" aria-hidden="true">
+          {{ dayLabel(day) }}
+        </p>
+        <div starPart="moreList" class="star-scheduler__more-list">
           @for (occurrence of dayOccurrences(day); track occurrence.key) {
             <ng-container
               *ngTemplateOutlet="
@@ -607,8 +680,8 @@ const TIME_VIEWS: ReadonlySet<StarSchedulerView> = new Set(['day', 'week', 'work
       }
     </star-popover>
 
-    <p class="star-sr-only" [id]="hintId">{{ text.eventMoveHint }}</p>
-    <p class="star-sr-only" aria-live="polite">{{ announcement() }}</p>
+    <p starPart="srText" class="star-sr-only" [id]="hintId">{{ text.eventMoveHint }}</p>
+    <p starPart="srText" class="star-sr-only" aria-live="polite">{{ announcement() }}</p>
   `,
 })
 export class StarScheduler {

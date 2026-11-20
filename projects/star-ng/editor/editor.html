@@ -1,6 +1,7 @@
 <ng-template #control let-cmd>
   @if (cmd === 'formatBlock') {
     <select
+      starPart="select"
       class="star-editor__select"
       data-editor-control
       [attr.data-editor-key]="cmd"
@@ -12,13 +13,14 @@
       (change)="exec('formatBlock', $any($event.target).value)"
     >
       @for (option of blockFormats; track option) {
-        <option [value]="option" [selected]="option === blockFormat()">
+        <option starPart="option" [value]="option" [selected]="option === blockFormat()">
           {{ option === 'p' ? text.editorParagraph : text.editorHeadingLevel(+option[1]) }}
         </option>
       }
     </select>
   } @else if (cmd === 'fontSize') {
     <select
+      starPart="select"
       class="star-editor__select"
       data-editor-control
       [attr.data-editor-key]="cmd"
@@ -30,13 +32,14 @@
       (change)="exec('fontSize', $any($event.target).value)"
     >
       @for (option of fontSizes; track option.key) {
-        <option [value]="option.key" [selected]="option.key === fontSize()">
+        <option starPart="option" [value]="option.key" [selected]="option.key === fontSize()">
           {{ text[option.label] }}
         </option>
       }
     </select>
   } @else {
     <button
+      starPart="btn"
       type="button"
       class="star-editor__btn"
       data-editor-control
@@ -52,9 +55,10 @@
       (mousedown)="$event.preventDefault()"
       (click)="exec(cmd)"
     >
-      <i [class]="icon(cmd)" aria-hidden="true"></i>
+      <i starPart="icon" [class]="icon(cmd)" aria-hidden="true"></i>
       @if (cmd === 'textColor' || cmd === 'highlight') {
         <span
+          starPart="btnSwatch"
           class="star-editor__btn-swatch"
           aria-hidden="true"
           [style.background]="(cmd === 'textColor' ? textColorAt() : highlightAt()) || null"
@@ -65,11 +69,12 @@
 </ng-template>
 
 @if (customToolbar(); as custom) {
-  <div class="star-editor__custom-toolbar">
+  <div starPart="customToolbar" class="star-editor__custom-toolbar">
     <ng-container *ngTemplateOutlet="custom.template; context: toolbarContext()" />
   </div>
 } @else {
   <div
+    starPart="toolbar"
     #toolbarElement
     class="star-toolbar star-editor__toolbar"
     [class.star-editor__toolbar--fit]="fitting()"
@@ -80,9 +85,14 @@
     @for (group of groups(); track $index; let index = $index) {
       @if (index < visibleCount()) {
         @if (index > 0) {
-          <span class="star-editor__separator" role="separator" aria-orientation="vertical"></span>
+          <span
+            starPart="separator"
+            class="star-editor__separator"
+            role="separator"
+            aria-orientation="vertical"
+          ></span>
         }
-        <div class="star-toolbar__group" [attr.data-editor-group]="index">
+        <div starPart="group" class="star-toolbar__group" [attr.data-editor-group]="index">
           @for (cmd of group; track cmd) {
             <ng-container *ngTemplateOutlet="control; context: { $implicit: cmd }" />
           }
@@ -90,9 +100,15 @@
       }
     }
     @if (visibleCount() < groups().length) {
-      <span class="star-editor__separator" role="separator" aria-orientation="vertical"></span>
-      <div class="star-editor__more">
+      <span
+        starPart="separator"
+        class="star-editor__separator"
+        role="separator"
+        aria-orientation="vertical"
+      ></span>
+      <div starPart="more" class="star-editor__more">
         <button
+          starPart="btn"
           type="button"
           class="star-editor__btn"
           data-editor-control
@@ -106,13 +122,13 @@
           (mousedown)="$event.preventDefault()"
           (click)="moreOpen.set(!moreOpen())"
         >
-          <i class="ph-bold ph-dots-three" aria-hidden="true"></i>
+          <i starPart="icon" class="ph-bold ph-dots-three" aria-hidden="true"></i>
         </button>
         @if (moreOpen()) {
-          <div class="star-editor__overflow" [id]="overflowId">
+          <div starPart="overflow" class="star-editor__overflow" [id]="overflowId">
             @for (group of groups(); track $index; let index = $index) {
               @if (index >= visibleCount()) {
-                <div class="star-toolbar__group">
+                <div starPart="group" class="star-toolbar__group">
                   @for (cmd of group; track cmd) {
                     <ng-container *ngTemplateOutlet="control; context: { $implicit: cmd }" />
                   }
@@ -171,14 +187,16 @@
 }
 @if (findOpen(); as mode) {
   <div
+    starPart="panel"
     class="star-editor__panel star-editor__find"
     role="search"
     [attr.aria-label]="mode === 'replace' ? text.editorFindReplace : text.editorFind"
     (keydown)="onFindKeydown($event)"
   >
-    <label class="star-editor__field">
-      <span>{{ text.editorFind }}</span>
+    <label starPart="field" class="star-editor__field">
+      <span starPart="text">{{ text.editorFind }}</span>
       <input
+        starPart="input"
         class="star-input star-input--sm"
         type="search"
         [id]="findId"
@@ -187,9 +205,10 @@
       />
     </label>
     @if (mode === 'replace') {
-      <label class="star-editor__field">
-        <span>{{ text.editorReplaceWith }}</span>
+      <label starPart="field" class="star-editor__field">
+        <span starPart="text">{{ text.editorReplaceWith }}</span>
         <input
+          starPart="input"
           class="star-input star-input--sm"
           type="text"
           [value]="replaceText()"
@@ -197,25 +216,30 @@
         />
       </label>
     }
-    <label class="star-editor__link-check">
+    <label starPart="linkCheck" class="star-editor__link-check">
       <input
+        starPart="input"
         type="checkbox"
         [checked]="matchCase()"
         (change)="matchCase.set($any($event.target).checked); runFind()"
       />
       {{ text.editorMatchCase }}
     </label>
-    <label class="star-editor__link-check">
+    <label starPart="linkCheck" class="star-editor__link-check">
       <input
+        starPart="input"
         type="checkbox"
         [checked]="wholeWord()"
         (change)="wholeWord.set($any($event.target).checked); runFind()"
       />
       {{ text.editorWholeWord }}
     </label>
-    <span class="star-editor__find-status" role="status">{{ findStatus() }}</span>
-    <div class="star-editor__link-actions">
+    <span starPart="findStatus" class="star-editor__find-status" role="status">{{
+      findStatus()
+    }}</span>
+    <div starPart="linkActions" class="star-editor__link-actions">
       <button
+        starPart="button"
         type="button"
         class="star-btn star-btn--ghost star-btn--sm"
         [disabled]="!matchTotal()"
@@ -224,6 +248,7 @@
         {{ text.previousResult }}
       </button>
       <button
+        starPart="button"
         type="button"
         class="star-btn star-btn--ghost star-btn--sm"
         [disabled]="!matchTotal()"
@@ -233,6 +258,7 @@
       </button>
       @if (mode === 'replace') {
         <button
+          starPart="button"
           type="button"
           class="star-btn star-btn--ghost star-btn--sm"
           [disabled]="!matchTotal() || locked()"
@@ -241,6 +267,7 @@
           {{ text.editorReplace }}
         </button>
         <button
+          starPart="button"
           type="button"
           class="star-btn star-btn--ghost star-btn--sm"
           [disabled]="!matchTotal() || locked()"
@@ -249,7 +276,12 @@
           {{ text.editorReplaceAll }}
         </button>
       }
-      <button type="button" class="star-btn star-btn--ghost star-btn--sm" (click)="closeFind()">
+      <button
+        starPart="button"
+        type="button"
+        class="star-btn star-btn--ghost star-btn--sm"
+        (click)="closeFind()"
+      >
         {{ text.close }}
       </button>
     </div>
@@ -257,20 +289,22 @@
 }
 @if (auditOpen()) {
   <div
+    starPart="panel"
     class="star-editor__panel star-editor__audit"
     role="group"
     [attr.aria-label]="text.editorAccessibility"
   >
-    <p class="star-editor__audit-status" role="status">
+    <p starPart="auditStatus" class="star-editor__audit-status" role="status">
       {{ text.editorIssueCount(issues().length) }}
     </p>
     @if (issues().length) {
-      <ul class="star-editor__audit-list">
+      <ul starPart="auditList" class="star-editor__audit-list">
         @for (issue of issues(); track $index) {
-          <li class="star-editor__audit-item">
-            <span>{{ issueText(issue) }}</span>
-            <span class="star-editor__link-actions">
+          <li starPart="auditItem" class="star-editor__audit-item">
+            <span starPart="text">{{ issueText(issue) }}</span>
+            <span starPart="linkActions" class="star-editor__link-actions">
               <button
+                starPart="button"
                 type="button"
                 class="star-btn star-btn--ghost star-btn--sm"
                 (click)="goToIssue(issue)"
@@ -278,6 +312,7 @@
                 {{ text.editorGoTo }}
               </button>
               <button
+                starPart="button"
                 type="button"
                 class="star-btn star-btn--ghost star-btn--sm"
                 [disabled]="locked()"
@@ -291,6 +326,7 @@
       </ul>
     }
     <button
+      starPart="button"
       type="button"
       class="star-btn star-btn--ghost star-btn--sm"
       (click)="auditOpen.set(false); focus()"
@@ -300,8 +336,9 @@
   </div>
 }
 @if (sourceMode()) {
-  <div class="star-editor__source">
+  <div starPart="source" class="star-editor__source">
     <textarea
+      starPart="sourceText"
       class="star-editor__source-text"
       spellcheck="false"
       [id]="sourceId"
@@ -312,17 +349,27 @@
       [value]="sourceText()"
       (input)="onSourceInput($any($event.target).value)"
     ></textarea>
-    <div class="star-editor__source-status" [id]="sourceStatusId" aria-live="polite">
+    <div
+      starPart="sourceStatus"
+      class="star-editor__source-status"
+      [id]="sourceStatusId"
+      aria-live="polite"
+    >
       @if (sourceUnclosed(); as name) {
-        <span class="star-editor__panel-error">{{ text.editorSourceUnclosed(name) }}</span>
+        <span starPart="panelError" class="star-editor__panel-error">{{
+          text.editorSourceUnclosed(name)
+        }}</span>
       }
       @if (sourceChanged()) {
-        <span class="star-editor__source-note">{{ text.editorSourceChanged }}</span>
+        <span starPart="sourceNote" class="star-editor__source-note">{{
+          text.editorSourceChanged
+        }}</span>
       }
     </div>
   </div>
 }
 <div
+  starPart="area"
   #area
   class="star-editor__area"
   role="textbox"
@@ -359,6 +406,7 @@
 ></div>
 @if (imageFrame(); as frame) {
   <div
+    starPart="imageFrame"
     class="star-editor__image-frame"
     [style.top.px]="frame.top"
     [style.left.px]="frame.left"
@@ -366,6 +414,7 @@
     [style.height.px]="frame.height"
   >
     <span
+      starPart="imageHandle"
       class="star-editor__image-handle"
       role="slider"
       tabindex="0"
@@ -383,42 +432,50 @@
   </div>
 }
 @if (maxLength() !== undefined || showCount()) {
-  <div class="star-editor__footer">
+  <div starPart="footer" class="star-editor__footer">
     @if (showCount()) {
-      <span class="star-editor__count">{{
+      <span starPart="count" class="star-editor__count">{{
         text.editorWordCount(counts().words, counts().characters)
       }}</span>
     }
     @if (maxLength() !== undefined) {
-      <span class="star-editor__counter" [id]="counterId">
+      <span starPart="counter" class="star-editor__counter" [id]="counterId">
         {{ text.editorCharacterCount(length(), maxLength()!) }}
       </span>
     }
   </div>
   @if (maxLength() !== undefined) {
-    <span class="star-sr-only" aria-live="polite">{{ limitMessage() }}</span>
+    <span starPart="srText" class="star-sr-only" aria-live="polite">{{ limitMessage() }}</span>
   }
 }
 <dialog
+  starPart="shortcuts"
   #shortcutsDialog
   class="star-editor__shortcuts"
   [attr.aria-labelledby]="shortcutsId"
   (close)="focus()"
 >
-  <h2 class="star-editor__shortcuts-title" [id]="shortcutsId">{{ text.editorShortcuts }}</h2>
-  <table class="star-editor__shortcuts-table">
-    <tbody>
+  <h2 starPart="shortcutsTitle" class="star-editor__shortcuts-title" [id]="shortcutsId">
+    {{ text.editorShortcuts }}
+  </h2>
+  <table starPart="shortcutsTable" class="star-editor__shortcuts-table">
+    <tbody starPart="tbody">
       @for (row of shortcutRows(); track $index) {
-        <tr>
-          <th scope="row">
-            <kbd>{{ row[0] }}</kbd>
+        <tr starPart="row">
+          <th starPart="headerCell" scope="row">
+            <kbd starPart="key">{{ row[0] }}</kbd>
           </th>
-          <td>{{ row[1] }}</td>
+          <td starPart="cell">{{ row[1] }}</td>
         </tr>
       }
     </tbody>
   </table>
-  <button type="button" class="star-btn star-btn--primary star-btn--sm" (click)="closeShortcuts()">
+  <button
+    starPart="button"
+    type="button"
+    class="star-btn star-btn--primary star-btn--sm"
+    (click)="closeShortcuts()"
+  >
     {{ text.close }}
   </button>
 </dialog>

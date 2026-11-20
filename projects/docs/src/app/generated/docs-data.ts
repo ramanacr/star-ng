@@ -280,6 +280,22 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "false",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "pt",
+        "type": "StarPassThrough | null",
+        "default": "null",
+        "required": false,
+        "description": "Classes, styles and attributes per part of the control (PrimeNG `pt`), for example `{ root: { class: 'w-full' }, panel: { class: 'shadow-lg' } }`. Merges over the global `provideStarNg({ pt })`. The parts are listed in the API section of each control.",
+        "inheritedFrom": "StarStyled"
+      },
+      {
+        "name": "unstyled",
+        "type": "boolean | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "`true` removes the visual styles of the control (colors, borders, radius, shadows, fonts and token spacing) and keeps the layout that it needs to work. Unset: `provideStarNg({ unstyled })`.",
+        "inheritedFrom": "StarStyled"
       }
     ],
     "models": [],
@@ -305,6 +321,24 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "required": false,
         "description": "Emits the streaming response the user wants to stop."
       }
+    ],
+    "parts": [
+      "root",
+      "panel",
+      "field",
+      "hint",
+      "chips",
+      "chip",
+      "bar",
+      "button",
+      "icon",
+      "outputs",
+      "output",
+      "prompt",
+      "error",
+      "actions",
+      "generating",
+      "live"
     ]
   },
   "StarAnimateOnScroll": {
@@ -3139,6 +3173,22 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "5 * 60 * 1000",
         "required": false,
         "description": "Longest pause in milliseconds between two messages of one author in one group."
+      },
+      {
+        "name": "pt",
+        "type": "StarPassThrough | null",
+        "default": "null",
+        "required": false,
+        "description": "Classes, styles and attributes per part of the control (PrimeNG `pt`), for example `{ root: { class: 'w-full' }, panel: { class: 'shadow-lg' } }`. Merges over the global `provideStarNg({ pt })`. The parts are listed in the API section of each control.",
+        "inheritedFrom": "StarStyled"
+      },
+      {
+        "name": "unstyled",
+        "type": "boolean | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "`true` removes the visual styles of the control (colors, borders, radius, shadows, fonts and token spacing) and keeps the layout that it needs to work. Unset: `provideStarNg({ unstyled })`.",
+        "inheritedFrom": "StarStyled"
       }
     ],
     "models": [],
@@ -3157,6 +3207,31 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "required": false,
         "description": "Emits when the user scrolled to the top: load older messages."
       }
+    ],
+    "parts": [
+      "root",
+      "scroll",
+      "loading",
+      "icon",
+      "day",
+      "text",
+      "message",
+      "avatar",
+      "image",
+      "body",
+      "author",
+      "bubble",
+      "srText",
+      "meta",
+      "time",
+      "status",
+      "empty",
+      "typing",
+      "dots",
+      "composer",
+      "input",
+      "send",
+      "live"
     ]
   },
   "StarChatMessageTemplate": {
@@ -5083,6 +5158,22 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "null",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "pt",
+        "type": "StarPassThrough | null",
+        "default": "null",
+        "required": false,
+        "description": "Classes, styles and attributes per part of the control (PrimeNG `pt`), for example `{ root: { class: 'w-full' }, panel: { class: 'shadow-lg' } }`. Merges over the global `provideStarNg({ pt })`. The parts are listed in the API section of each control.",
+        "inheritedFrom": "StarStyled"
+      },
+      {
+        "name": "unstyled",
+        "type": "boolean | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "`true` removes the visual styles of the control (colors, borders, radius, shadows, fonts and token spacing) and keeps the layout that it needs to work. Unset: `provideStarNg({ unstyled })`.",
+        "inheritedFrom": "StarStyled"
       }
     ],
     "models": [
@@ -5116,6 +5207,38 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "required": false,
         "description": "Edge patches: new connections, deletes, undo and redo."
       }
+    ],
+    "parts": [
+      "root",
+      "diagram",
+      "toolbar",
+      "tool",
+      "icon",
+      "zoom",
+      "canvas",
+      "svg",
+      "dot",
+      "grid",
+      "content",
+      "edges",
+      "edge",
+      "edgeHit",
+      "edgeLine",
+      "edgeLabel",
+      "nodes",
+      "node",
+      "shape",
+      "label",
+      "custom",
+      "handles",
+      "port",
+      "handle",
+      "marquee",
+      "editor",
+      "srText",
+      "text",
+      "list",
+      "item"
     ]
   },
   "StarDiagramNodeTemplate": {
@@ -5725,10 +5848,33 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "0",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "pt",
+        "type": "StarPassThrough | null",
+        "default": "null",
+        "required": false,
+        "description": "Classes, styles and attributes per part of the control (PrimeNG `pt`), for example `{ root: { class: 'w-full' }, panel: { class: 'shadow-lg' } }`. Merges over the global `provideStarNg({ pt })`. The parts are listed in the API section of each control.",
+        "inheritedFrom": "StarStyled"
+      },
+      {
+        "name": "unstyled",
+        "type": "boolean | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "`true` removes the visual styles of the control (colors, borders, radius, shadows, fonts and token spacing) and keeps the layout that it needs to work. Unset: `provideStarNg({ unstyled })`.",
+        "inheritedFrom": "StarStyled"
       }
     ],
     "models": [],
-    "outputs": []
+    "outputs": [],
+    "parts": [
+      "root",
+      "canvas",
+      "failed",
+      "icon",
+      "skeleton"
+    ]
   },
   "StarDocumentViewer": {
     "kind": "component",
@@ -5777,6 +5923,22 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "true",
         "required": false,
         "description": "Shows the print button, which emits `print`."
+      },
+      {
+        "name": "pt",
+        "type": "StarPassThrough | null",
+        "default": "null",
+        "required": false,
+        "description": "Classes, styles and attributes per part of the control (PrimeNG `pt`), for example `{ root: { class: 'w-full' }, panel: { class: 'shadow-lg' } }`. Merges over the global `provideStarNg({ pt })`. The parts are listed in the API section of each control.",
+        "inheritedFrom": "StarStyled"
+      },
+      {
+        "name": "unstyled",
+        "type": "boolean | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "`true` removes the visual styles of the control (colors, borders, radius, shadows, fonts and token spacing) and keeps the layout that it needs to work. Unset: `provideStarNg({ unstyled })`.",
+        "inheritedFrom": "StarStyled"
       }
     ],
     "models": [
@@ -5845,6 +6007,31 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "required": false,
         "description": "The print button was pressed; the owner prints."
       }
+    ],
+    "parts": [
+      "root",
+      "button",
+      "icon",
+      "pageInput",
+      "count",
+      "zoom",
+      "option",
+      "search",
+      "searchInput",
+      "searchStatus",
+      "body",
+      "thumbs",
+      "thumbList",
+      "thumbItem",
+      "thumb",
+      "thumbLabel",
+      "pages",
+      "error",
+      "stack",
+      "page",
+      "srText",
+      "loading",
+      "skeleton"
     ]
   },
   "StarDraggable": {
@@ -6458,6 +6645,22 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "null",
         "required": false,
         "description": "Stores an image file that the user chose in the image panel and gives back its address. Without it, the file goes into the HTML as a `data:` address (large values)."
+      },
+      {
+        "name": "pt",
+        "type": "StarPassThrough | null",
+        "default": "null",
+        "required": false,
+        "description": "Classes, styles and attributes per part of the control (PrimeNG `pt`), for example `{ root: { class: 'w-full' }, panel: { class: 'shadow-lg' } }`. Merges over the global `provideStarNg({ pt })`. The parts are listed in the API section of each control.",
+        "inheritedFrom": "StarStyled"
+      },
+      {
+        "name": "unstyled",
+        "type": "boolean | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "`true` removes the visual styles of the control (colors, borders, radius, shadows, fonts and token spacing) and keeps the layout that it needs to work. Unset: `provideStarNg({ unstyled })`.",
+        "inheritedFrom": "StarStyled"
       }
     ],
     "models": [
@@ -6477,6 +6680,51 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "required": false,
         "description": ""
       }
+    ],
+    "parts": [
+      "root",
+      "select",
+      "option",
+      "btn",
+      "icon",
+      "btnSwatch",
+      "customToolbar",
+      "toolbar",
+      "separator",
+      "group",
+      "more",
+      "overflow",
+      "panel",
+      "field",
+      "text",
+      "input",
+      "linkCheck",
+      "findStatus",
+      "linkActions",
+      "button",
+      "auditStatus",
+      "auditList",
+      "auditItem",
+      "source",
+      "sourceText",
+      "sourceStatus",
+      "panelError",
+      "sourceNote",
+      "area",
+      "imageFrame",
+      "imageHandle",
+      "footer",
+      "count",
+      "counter",
+      "srText",
+      "shortcuts",
+      "shortcutsTitle",
+      "shortcutsTable",
+      "tbody",
+      "row",
+      "headerCell",
+      "key",
+      "cell"
     ]
   },
   "StarEditorColor": {
@@ -6498,6 +6746,22 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "''",
         "required": false,
         "description": "The color at the caret, `''` for none."
+      },
+      {
+        "name": "pt",
+        "type": "StarPassThrough | null",
+        "default": "null",
+        "required": false,
+        "description": "Classes, styles and attributes per part of the control (PrimeNG `pt`), for example `{ root: { class: 'w-full' }, panel: { class: 'shadow-lg' } }`. Merges over the global `provideStarNg({ pt })`. The parts are listed in the API section of each control.",
+        "inheritedFrom": "StarStyled"
+      },
+      {
+        "name": "unstyled",
+        "type": "boolean | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "`true` removes the visual styles of the control (colors, borders, radius, shadows, fonts and token spacing) and keeps the layout that it needs to work. Unset: `provideStarNg({ unstyled })`.",
+        "inheritedFrom": "StarStyled"
       }
     ],
     "models": [],
@@ -6516,6 +6780,14 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "required": false,
         "description": ""
       }
+    ],
+    "parts": [
+      "root",
+      "swatches",
+      "button",
+      "swatch",
+      "colorCustom",
+      "input"
     ]
   },
   "StarEditorEmbed": {
@@ -6530,6 +6802,22 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": true,
         "description": "Turns the address into a player address on the allowed hosts, or `null`."
+      },
+      {
+        "name": "pt",
+        "type": "StarPassThrough | null",
+        "default": "null",
+        "required": false,
+        "description": "Classes, styles and attributes per part of the control (PrimeNG `pt`), for example `{ root: { class: 'w-full' }, panel: { class: 'shadow-lg' } }`. Merges over the global `provideStarNg({ pt })`. The parts are listed in the API section of each control.",
+        "inheritedFrom": "StarStyled"
+      },
+      {
+        "name": "unstyled",
+        "type": "boolean | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "`true` removes the visual styles of the control (colors, borders, radius, shadows, fonts and token spacing) and keeps the layout that it needs to work. Unset: `provideStarNg({ unstyled })`.",
+        "inheritedFrom": "StarStyled"
       }
     ],
     "models": [],
@@ -6548,6 +6836,16 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "required": false,
         "description": ""
       }
+    ],
+    "parts": [
+      "root",
+      "panelForm",
+      "field",
+      "text",
+      "input",
+      "panelError",
+      "linkActions",
+      "button"
     ]
   },
   "StarEditorImage": {
@@ -6576,6 +6874,22 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "['http:', 'https:']",
         "required": false,
         "description": "URL protocols of the allow-list (`sanitize` of the editor)."
+      },
+      {
+        "name": "pt",
+        "type": "StarPassThrough | null",
+        "default": "null",
+        "required": false,
+        "description": "Classes, styles and attributes per part of the control (PrimeNG `pt`), for example `{ root: { class: 'w-full' }, panel: { class: 'shadow-lg' } }`. Merges over the global `provideStarNg({ pt })`. The parts are listed in the API section of each control.",
+        "inheritedFrom": "StarStyled"
+      },
+      {
+        "name": "unstyled",
+        "type": "boolean | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "`true` removes the visual styles of the control (colors, borders, radius, shadows, fonts and token spacing) and keeps the layout that it needs to work. Unset: `provideStarNg({ unstyled })`.",
+        "inheritedFrom": "StarStyled"
       }
     ],
     "models": [],
@@ -6594,6 +6908,17 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "required": false,
         "description": ""
       }
+    ],
+    "parts": [
+      "root",
+      "panelForm",
+      "field",
+      "text",
+      "input",
+      "panelError",
+      "linkCheck",
+      "linkActions",
+      "button"
     ]
   },
   "StarEditorLink": {
@@ -6622,6 +6947,22 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "false",
         "required": false,
         "description": "True when the caret is in a link: the Remove button shows."
+      },
+      {
+        "name": "pt",
+        "type": "StarPassThrough | null",
+        "default": "null",
+        "required": false,
+        "description": "Classes, styles and attributes per part of the control (PrimeNG `pt`), for example `{ root: { class: 'w-full' }, panel: { class: 'shadow-lg' } }`. Merges over the global `provideStarNg({ pt })`. The parts are listed in the API section of each control.",
+        "inheritedFrom": "StarStyled"
+      },
+      {
+        "name": "unstyled",
+        "type": "boolean | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "`true` removes the visual styles of the control (colors, borders, radius, shadows, fonts and token spacing) and keeps the layout that it needs to work. Unset: `provideStarNg({ unstyled })`.",
+        "inheritedFrom": "StarStyled"
       }
     ],
     "models": [],
@@ -6647,6 +6988,16 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "required": false,
         "description": ""
       }
+    ],
+    "parts": [
+      "root",
+      "linkForm",
+      "linkLabel",
+      "input",
+      "linkError",
+      "linkCheck",
+      "linkActions",
+      "button"
     ]
   },
   "StarEditorTableInsert": {
@@ -6654,7 +7005,24 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "selector": "star-editor-table-insert",
     "entry": "@star-ng/ui/editor",
     "description": "The insert table panel of `star-editor` (internal): rows, columns and a header row, with a grid that a pointer can pick the size from (the fields are the keyboard way). Escape closes it.",
-    "inputs": [],
+    "inputs": [
+      {
+        "name": "pt",
+        "type": "StarPassThrough | null",
+        "default": "null",
+        "required": false,
+        "description": "Classes, styles and attributes per part of the control (PrimeNG `pt`), for example `{ root: { class: 'w-full' }, panel: { class: 'shadow-lg' } }`. Merges over the global `provideStarNg({ pt })`. The parts are listed in the API section of each control.",
+        "inheritedFrom": "StarStyled"
+      },
+      {
+        "name": "unstyled",
+        "type": "boolean | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "`true` removes the visual styles of the control (colors, borders, radius, shadows, fonts and token spacing) and keeps the layout that it needs to work. Unset: `provideStarNg({ unstyled })`.",
+        "inheritedFrom": "StarStyled"
+      }
+    ],
     "models": [],
     "outputs": [
       {
@@ -6671,6 +7039,19 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "required": false,
         "description": ""
       }
+    ],
+    "parts": [
+      "root",
+      "panelForm",
+      "tablePicker",
+      "tablePickerCell",
+      "tablePickerSize",
+      "field",
+      "text",
+      "input",
+      "linkCheck",
+      "linkActions",
+      "button"
     ]
   },
   "StarEditorTableProperties": {
@@ -6685,6 +7066,22 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "{ borders: 'all', align: 'start', }",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "pt",
+        "type": "StarPassThrough | null",
+        "default": "null",
+        "required": false,
+        "description": "Classes, styles and attributes per part of the control (PrimeNG `pt`), for example `{ root: { class: 'w-full' }, panel: { class: 'shadow-lg' } }`. Merges over the global `provideStarNg({ pt })`. The parts are listed in the API section of each control.",
+        "inheritedFrom": "StarStyled"
+      },
+      {
+        "name": "unstyled",
+        "type": "boolean | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "`true` removes the visual styles of the control (colors, borders, radius, shadows, fonts and token spacing) and keeps the layout that it needs to work. Unset: `provideStarNg({ unstyled })`.",
+        "inheritedFrom": "StarStyled"
       }
     ],
     "models": [],
@@ -6703,6 +7100,16 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "required": false,
         "description": ""
       }
+    ],
+    "parts": [
+      "root",
+      "panelForm",
+      "field",
+      "text",
+      "select",
+      "option",
+      "linkActions",
+      "button"
     ]
   },
   "StarEditorToolbarTemplate": {
@@ -6924,6 +7331,22 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "null",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "pt",
+        "type": "StarPassThrough | null",
+        "default": "null",
+        "required": false,
+        "description": "Classes, styles and attributes per part of the control (PrimeNG `pt`), for example `{ root: { class: 'w-full' }, panel: { class: 'shadow-lg' } }`. Merges over the global `provideStarNg({ pt })`. The parts are listed in the API section of each control.",
+        "inheritedFrom": "StarStyled"
+      },
+      {
+        "name": "unstyled",
+        "type": "boolean | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "`true` removes the visual styles of the control (colors, borders, radius, shadows, fonts and token spacing) and keeps the layout that it needs to work. Unset: `provideStarNg({ unstyled })`.",
+        "inheritedFrom": "StarStyled"
       }
     ],
     "models": [
@@ -7027,6 +7450,38 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "required": false,
         "description": ""
       }
+    ],
+    "parts": [
+      "root",
+      "fmRoot",
+      "fm",
+      "bar",
+      "search",
+      "toolbar",
+      "tool",
+      "icon",
+      "text",
+      "upload",
+      "body",
+      "tree",
+      "content",
+      "srText",
+      "error",
+      "name",
+      "rename",
+      "icons",
+      "iconGlyph",
+      "iconName",
+      "empty",
+      "details",
+      "detailsTitle",
+      "facts",
+      "term",
+      "description",
+      "muted",
+      "section",
+      "field",
+      "input"
     ]
   },
   "StarFileTemplate": {
@@ -7371,6 +7826,22 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "null",
         "required": false,
         "description": "Name of the tree grid. Default: \"Tasks\"."
+      },
+      {
+        "name": "pt",
+        "type": "StarPassThrough | null",
+        "default": "null",
+        "required": false,
+        "description": "Classes, styles and attributes per part of the control (PrimeNG `pt`), for example `{ root: { class: 'w-full' }, panel: { class: 'shadow-lg' } }`. Merges over the global `provideStarNg({ pt })`. The parts are listed in the API section of each control.",
+        "inheritedFrom": "StarStyled"
+      },
+      {
+        "name": "unstyled",
+        "type": "boolean | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "`true` removes the visual styles of the control (colors, borders, radius, shadows, fonts and token spacing) and keeps the layout that it needs to work. Unset: `provideStarNg({ unstyled })`.",
+        "inheritedFrom": "StarStyled"
       }
     ],
     "models": [
@@ -7404,6 +7875,35 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "required": false,
         "description": ""
       }
+    ],
+    "parts": [
+      "root",
+      "scroll",
+      "panes",
+      "grid",
+      "row",
+      "cell",
+      "body",
+      "toggle",
+      "icon",
+      "name",
+      "timeline",
+      "scale",
+      "tier",
+      "tick",
+      "svg",
+      "arrowHead",
+      "weekend",
+      "stripe",
+      "dependency",
+      "bar",
+      "milestone",
+      "barTrack",
+      "barProgress",
+      "handle",
+      "progressHandle",
+      "today",
+      "srText"
     ]
   },
   "StarGaugeBase": {
@@ -8012,6 +8512,22 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "100",
         "required": false,
         "description": "Most undo steps kept."
+      },
+      {
+        "name": "pt",
+        "type": "StarPassThrough | null",
+        "default": "null",
+        "required": false,
+        "description": "Classes, styles and attributes per part of the control (PrimeNG `pt`), for example `{ root: { class: 'w-full' }, panel: { class: 'shadow-lg' } }`. Merges over the global `provideStarNg({ pt })`. The parts are listed in the API section of each control.",
+        "inheritedFrom": "StarStyled"
+      },
+      {
+        "name": "unstyled",
+        "type": "boolean | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "`true` removes the visual styles of the control (colors, borders, radius, shadows, fonts and token spacing) and keeps the layout that it needs to work. Unset: `provideStarNg({ unstyled })`.",
+        "inheritedFrom": "StarStyled"
       }
     ],
     "models": [
@@ -8023,7 +8539,39 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "The edited image as a PNG data URL, `''` while there is no edit. It is encoded asynchronously after each commit (operation, undo, redo, reset), once the edits settle."
       }
     ],
-    "outputs": []
+    "outputs": [],
+    "parts": [
+      "root",
+      "toolbar",
+      "separator",
+      "tool",
+      "icon",
+      "panel",
+      "choices",
+      "button",
+      "number",
+      "text",
+      "input",
+      "adjust",
+      "adjustLabel",
+      "swatch",
+      "add",
+      "annotations",
+      "listLabel",
+      "list",
+      "option",
+      "dot",
+      "emptyList",
+      "hint",
+      "actions",
+      "stage",
+      "frame",
+      "canvas",
+      "crop",
+      "handle",
+      "selection",
+      "srText"
+    ]
   },
   "StarInplace": {
     "kind": "component",
@@ -8966,6 +9514,22 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "false",
         "required": false,
         "description": "Turns drag and drop and the keyboard moves off."
+      },
+      {
+        "name": "pt",
+        "type": "StarPassThrough | null",
+        "default": "null",
+        "required": false,
+        "description": "Classes, styles and attributes per part of the control (PrimeNG `pt`), for example `{ root: { class: 'w-full' }, panel: { class: 'shadow-lg' } }`. Merges over the global `provideStarNg({ pt })`. The parts are listed in the API section of each control.",
+        "inheritedFrom": "StarStyled"
+      },
+      {
+        "name": "unstyled",
+        "type": "boolean | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "`true` removes the visual styles of the control (colors, borders, radius, shadows, fonts and token spacing) and keeps the layout that it needs to work. Unset: `provideStarNg({ unstyled })`.",
+        "inheritedFrom": "StarStyled"
       }
     ],
     "models": [
@@ -8985,6 +9549,21 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "required": false,
         "description": "Emits each move of a card; the owner applies it to `items`."
       }
+    ],
+    "parts": [
+      "root",
+      "board",
+      "head",
+      "laneTitle",
+      "column",
+      "list",
+      "card",
+      "srText",
+      "header",
+      "title",
+      "count",
+      "collapse",
+      "icon"
     ]
   },
   "StarKanbanCard": {
@@ -9933,10 +10512,34 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "''",
         "required": false,
         "description": "The source text."
+      },
+      {
+        "name": "pt",
+        "type": "StarPassThrough | null",
+        "default": "null",
+        "required": false,
+        "description": "Classes, styles and attributes per part of the control (PrimeNG `pt`), for example `{ root: { class: 'w-full' }, panel: { class: 'shadow-lg' } }`. Merges over the global `provideStarNg({ pt })`. The parts are listed in the API section of each control.",
+        "inheritedFrom": "StarStyled"
+      },
+      {
+        "name": "unstyled",
+        "type": "boolean | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "`true` removes the visual styles of the control (colors, borders, radius, shadows, fonts and token spacing) and keeps the layout that it needs to work. Unset: `provideStarNg({ unstyled })`.",
+        "inheritedFrom": "StarStyled"
       }
     ],
     "models": [],
-    "outputs": []
+    "outputs": [],
+    "parts": [
+      "root",
+      "pre",
+      "code",
+      "p",
+      "text",
+      "link"
+    ]
   },
   "StarMegaMenu": {
     "kind": "component",
@@ -13561,6 +14164,22 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "false",
         "required": false,
         "description": "Set by Signal Forms (`[formField]`); the builder also counts as touched once the focus left it."
+      },
+      {
+        "name": "pt",
+        "type": "StarPassThrough | null",
+        "default": "null",
+        "required": false,
+        "description": "Classes, styles and attributes per part of the control (PrimeNG `pt`), for example `{ root: { class: 'w-full' }, panel: { class: 'shadow-lg' } }`. Merges over the global `provideStarNg({ pt })`. The parts are listed in the API section of each control.",
+        "inheritedFrom": "StarStyled"
+      },
+      {
+        "name": "unstyled",
+        "type": "boolean | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "`true` removes the visual styles of the control (colors, borders, radius, shadows, fonts and token spacing) and keeps the layout that it needs to work. Unset: `provideStarNg({ unstyled })`.",
+        "inheritedFrom": "StarStyled"
       }
     ],
     "models": [
@@ -13580,6 +14199,18 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "required": false,
         "description": "Emits when the focus leaves the builder (Signal Forms marks the field touched)."
       }
+    ],
+    "parts": [
+      "root",
+      "error",
+      "icon",
+      "srText",
+      "group",
+      "header",
+      "rules",
+      "rule",
+      "value",
+      "input"
     ]
   },
   "StarQueryValue": {
@@ -14661,6 +15292,22 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "null",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "pt",
+        "type": "StarPassThrough | null",
+        "default": "null",
+        "required": false,
+        "description": "Classes, styles and attributes per part of the control (PrimeNG `pt`), for example `{ root: { class: 'w-full' }, panel: { class: 'shadow-lg' } }`. Merges over the global `provideStarNg({ pt })`. The parts are listed in the API section of each control.",
+        "inheritedFrom": "StarStyled"
+      },
+      {
+        "name": "unstyled",
+        "type": "boolean | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "`true` removes the visual styles of the control (colors, borders, radius, shadows, fonts and token spacing) and keeps the layout that it needs to work. Unset: `provideStarNg({ unstyled })`.",
+        "inheritedFrom": "StarStyled"
       }
     ],
     "models": [
@@ -14715,6 +15362,44 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "required": false,
         "description": ""
       }
+    ],
+    "parts": [
+      "root",
+      "toolbar",
+      "nav",
+      "button",
+      "icon",
+      "title",
+      "views",
+      "grid",
+      "row",
+      "head",
+      "text",
+      "srText",
+      "cell",
+      "date",
+      "more",
+      "agenda",
+      "agendaDay",
+      "agendaDate",
+      "agendaList",
+      "agendaItem",
+      "agendaTime",
+      "empty",
+      "scroll",
+      "resource",
+      "weekday",
+      "dayNumber",
+      "time",
+      "now",
+      "event",
+      "eventContent",
+      "eventTitle",
+      "eventTime",
+      "eventRepeat",
+      "handle",
+      "moreTitle",
+      "moreList"
     ]
   },
   "StarSchedulerEventTemplate": {
@@ -16197,6 +16882,22 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "null",
         "required": false,
         "description": "Name of the grid (default: the UI text `spreadsheet`)."
+      },
+      {
+        "name": "pt",
+        "type": "StarPassThrough | null",
+        "default": "null",
+        "required": false,
+        "description": "Classes, styles and attributes per part of the control (PrimeNG `pt`), for example `{ root: { class: 'w-full' }, panel: { class: 'shadow-lg' } }`. Merges over the global `provideStarNg({ pt })`. The parts are listed in the API section of each control.",
+        "inheritedFrom": "StarStyled"
+      },
+      {
+        "name": "unstyled",
+        "type": "boolean | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "`true` removes the visual styles of the control (colors, borders, radius, shadows, fonts and token spacing) and keeps the layout that it needs to work. Unset: `provideStarNg({ unstyled })`.",
+        "inheritedFrom": "StarStyled"
       }
     ],
     "models": [
@@ -16244,6 +16945,36 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "required": false,
         "description": "Emits when the active cell or the selected range changes."
       }
+    ],
+    "parts": [
+      "root",
+      "button",
+      "icon",
+      "divider",
+      "select",
+      "option",
+      "decimals",
+      "bar",
+      "name",
+      "fx",
+      "formula",
+      "panel",
+      "viewport",
+      "grid",
+      "row",
+      "corner",
+      "colhead",
+      "resizer",
+      "body",
+      "rowhead",
+      "section",
+      "editor",
+      "selection",
+      "fill",
+      "fillTarget",
+      "tabs",
+      "tab",
+      "srText"
     ]
   },
   "StarStep": {
