@@ -69,7 +69,7 @@ export interface StarMapShapeLayer<P = any> {
   readonly title?: string;
   readonly data: StarGeoJsonFeatureCollection<P>;
   /**
-   * Key of a feature, for `selected`, the outputs and the focus. Default:
+   * Key of a feature, for `selection`, the outputs and the focus. Default:
    * `<layer id>:<feature.id>`, else `<layer id>:<index>`, so two layers never share a key.
    */
   readonly key?: (feature: StarGeoJsonFeature<P>, index: number) => string;
@@ -83,7 +83,7 @@ export interface StarMapShapeLayer<P = any> {
   readonly classes?: number;
   /** Shows the legend of the classes. Default: true when the layer has `value`. */
   readonly legend?: boolean;
-  /** Shapes of this layer can be selected (with `selection`). Default true. */
+  /** Shapes of this layer can be selected (see `selectionMode`). Default true. */
   readonly selectable?: boolean;
 }
 
@@ -229,8 +229,8 @@ const classColor = (index: number, count: number) =>
  * (with the required attribution). Web Mercator or equirectangular projection (`starProject`).
  *
  * Interaction: drag to pan, Control and the wheel or a pinch to zoom, the zoom buttons, and the
- * `zoom` and `center` models (`null`: fit the data). Shapes can be selected (`selected`,
- * `selection`); `shapeClick` and `markerClick` report clicks and Enter. Tooltip slot
+ * `zoom` and `center` models (`null`: fit the data). Shapes can be selected (`selection`,
+ * `selectionMode`); `shapeClick` and `markerClick` report clicks and Enter. Tooltip slot
  * `ng-template[starMapTooltip]`.
  *
  * Accessibility: the features are one tab stop; arrow keys move between them in reading order,
@@ -246,7 +246,7 @@ const classColor = (index: number, count: number) =>
  * of it.
  *
  * ```html
- * <star-map [layers]="layers" [(selected)]="selected" ariaLabel="Sales by region" />
+ * <star-map [layers]="layers" [(selection)]="selection" ariaLabel="Sales by region" />
  * ```
  */
 @Component({
@@ -507,9 +507,9 @@ export class StarMap {
   readonly minZoom = input(0, { transform: numberAttribute });
   readonly maxZoom = input(18, { transform: numberAttribute });
   /** Keys of the selected shapes. */
-  readonly selected = model<readonly string[]>([]);
+  readonly selection = model<readonly string[]>([]);
   /** `single` (default), `multiple` or `none`: how a click or Enter selects shapes. */
-  readonly selection = input<'none' | 'single' | 'multiple'>('single');
+  readonly selectionMode = input<'none' | 'single' | 'multiple'>('single');
   /** Start with the data table shown. */
   readonly table = input(false, { transform: booleanAttribute });
   /** Name of the map. Defaults to the `map` text. */
@@ -829,11 +829,11 @@ export class StarMap {
   // ---------- Helpers for the template ----------
 
   protected isSelected(key: string): boolean {
-    return this.selected().includes(key);
+    return this.selection().includes(key);
   }
 
   protected pressable(item: Item): boolean {
-    return item.selectable && this.selection() !== 'none';
+    return item.selectable && this.selectionMode() !== 'none';
   }
 
   protected layerTitle(id: string): string {
@@ -917,12 +917,12 @@ export class StarMap {
   private activate(item: Item, event: Event): void {
     this.activeKey.set(item.key);
     if (this.pressable(item)) {
-      const mode = this.selection();
+      const mode = this.selectionMode();
       const on = this.isSelected(item.key);
-      if (mode === 'single') this.selected.set(on ? [] : [item.key]);
+      if (mode === 'single') this.selection.set(on ? [] : [item.key]);
       else
-        this.selected.set(
-          on ? this.selected().filter((k) => k !== item.key) : [...this.selected(), item.key],
+        this.selection.set(
+          on ? this.selection().filter((k) => k !== item.key) : [...this.selection(), item.key],
         );
     }
     const payload = { feature: this.publicFeature(item), event };

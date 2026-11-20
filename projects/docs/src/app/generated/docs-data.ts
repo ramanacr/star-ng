@@ -7749,7 +7749,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
-        "name": "selection",
+        "name": "selectionMode",
         "type": "'none' | 'single' | 'multiple'",
         "default": "'single'",
         "required": false,
@@ -7800,7 +7800,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Longitude and latitude in the middle of the map. `null`: the middle of the data."
       },
       {
-        "name": "selected",
+        "name": "selection",
         "type": "readonly string[]",
         "default": "[]",
         "required": false,
@@ -15967,9 +15967,9 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "listbox/template": "<star-listbox\n  [options]=\"queues\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  [(value)]=\"templated\"\n  scrollHeight=\"12rem\"\n  ariaLabel=\"Queue with template\"\n>\n  <ng-template starOption [starOptionOf]=\"queues\" let-item let-selected=\"selected\">\n    <span>\n      {{ item.name }}\n      <small>{{ item.site }}</small>\n    </span>\n  </ng-template>\n</star-listbox>",
   "listbox/virtual": "<div class=\"docs-stack\">\n  <star-listbox\n    [options]=\"invoiceNumbers\"\n    [(value)]=\"invoice\"\n    virtualScroll\n    filter\n    scrollHeight=\"16rem\"\n    ariaLabel=\"Invoice number\"\n  />\n  <p class=\"docs-output\" role=\"status\">Invoice: {{ invoice() ?? 'none' }}</p>\n</div>",
   "listbox/virtual-groups": "<div class=\"docs-stack\">\n  <star-listbox\n    [options]=\"shipments\"\n    optionLabel=\"name\"\n    optionValue=\"id\"\n    optionGroup=\"region\"\n    optionDisabled=\"held\"\n    [(value)]=\"picked\"\n    multiple\n    virtualScroll\n    [virtualItemSize]=\"36\"\n    scrollHeight=\"16rem\"\n    ariaLabel=\"Shipments\"\n  >\n    <ng-template starOption [starOptionOf]=\"shipments\" let-item let-selected=\"selected\">\n      {{ item.name }}\n    </ng-template>\n  </star-listbox>\n  <p class=\"docs-output\" role=\"status\">Picked: {{ pickedCount() }}</p>\n</div>",
-  "map/choropleth": "<div class=\"docs-stack\">\n  <star-map\n    [layers]=\"choropleth\"\n    [(selected)]=\"selected\"\n    [(zoom)]=\"zoom\"\n    ariaLabel=\"Sales by region\"\n    (shapeClick)=\"clicked($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Selected: {{ selected().join(', ') || '(none)' }}. Last click: {{ lastClick() }}. Zoom:\n    {{ zoom() === null ? 'fit' : zoom() }}.\n  </p>\n</div>",
-  "map/markers": "<star-map\n  [layers]=\"markerLayers\"\n  projection=\"equirectangular\"\n  selection=\"none\"\n  ariaLabel=\"Towns and visitors\"\n>\n  <ng-template starMapMarker let-town>\n    <span class=\"town\"\n      ><i class=\"ph-fill ph-map-pin\" aria-hidden=\"true\"></i>{{ town.label }}</span\n    >\n  </ng-template>\n  <ng-template starMapTooltip let-feature>\n    <strong>{{ feature.label }}</strong>\n    @if (feature.value !== null) {\n      · {{ feature.value }} visitors\n    }\n  </ng-template>\n</star-map>",
-  "map/tiles": "<div class=\"docs-stack\">\n  <label class=\"docs-row\">\n    <input type=\"checkbox\" [checked]=\"tilesOn()\" (change)=\"tilesOn.set(!tilesOn())\" />\n    Load OpenStreetMap tiles (from tile.openstreetmap.org)\n  </label>\n  <star-map [layers]=\"tileLayers()\" selection=\"none\" ariaLabel=\"Three capitals\" />\n</div>",
+  "map/choropleth": "<div class=\"docs-stack\">\n  <star-map\n    [layers]=\"choropleth\"\n    [(selection)]=\"selection\"\n    [(zoom)]=\"zoom\"\n    ariaLabel=\"Sales by region\"\n    (shapeClick)=\"clicked($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Selected: {{ selection().join(', ') || '(none)' }}. Last click: {{ lastClick() }}. Zoom:\n    {{ zoom() === null ? 'fit' : zoom() }}.\n  </p>\n</div>",
+  "map/markers": "<star-map\n  [layers]=\"markerLayers\"\n  projection=\"equirectangular\"\n  selectionMode=\"none\"\n  ariaLabel=\"Towns and visitors\"\n>\n  <ng-template starMapMarker let-town>\n    <span class=\"town\"\n      ><i class=\"ph-fill ph-map-pin\" aria-hidden=\"true\"></i>{{ town.label }}</span\n    >\n  </ng-template>\n  <ng-template starMapTooltip let-feature>\n    <strong>{{ feature.label }}</strong>\n    @if (feature.value !== null) {\n      · {{ feature.value }} visitors\n    }\n  </ng-template>\n</star-map>",
+  "map/tiles": "<div class=\"docs-stack\">\n  <label class=\"docs-row\">\n    <input type=\"checkbox\" [checked]=\"tilesOn()\" (change)=\"tilesOn.set(!tilesOn())\" />\n    Load OpenStreetMap tiles (from tile.openstreetmap.org)\n  </label>\n  <star-map [layers]=\"tileLayers()\" selectionMode=\"none\" ariaLabel=\"Three capitals\" />\n</div>",
   "mega-menu/basic": "<div class=\"docs-stack\">\n  <star-mega-menu\n    ariaLabel=\"Catalogue\"\n    [items]=\"catalogue\"\n    (itemClick)=\"last.set($event.label ?? '')\"\n  />\n  <p class=\"docs-output\" role=\"status\">Last action: {{ last() }}</p>\n</div>",
   "mention/basic": "<div class=\"docs-stack\">\n  <textarea\n    class=\"star-input\"\n    aria-label=\"Comment\"\n    placeholder=\"Write a comment, type @ to mention someone\"\n    starMention\n    #comment=\"starMention\"\n    [suggestions]=\"people\"\n    optionLabel=\"name\"\n    (mentionSelect)=\"last.set($any($event.item).name)\"\n  ></textarea>\n  <p class=\"docs-output\" role=\"status\">\n    Last mention: {{ last() }}. In the text: {{ names(comment.mentions()) }}\n  </p>\n</div>",
   "mention/form": "<div class=\"docs-stack\">\n  <star-field label=\"Assign to\" hint=\"Type @ and a name\">\n    <input\n      starInput\n      [formField]=\"f.assignee\"\n      starMention\n      [suggestions]=\"people\"\n      optionLabel=\"name\"\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Model: {{ model().assignee || '(empty)' }}</p>\n</div>",
