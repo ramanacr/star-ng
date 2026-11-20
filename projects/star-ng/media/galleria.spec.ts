@@ -212,6 +212,37 @@ describe('StarGalleria depth', () => {
     expect(t.host.index()).toBe(3);
   });
 
+  it('turns the live counter off while autoplay runs and on when it is paused', async () => {
+    const t = await setup((h) => h.autoPlay.set(true));
+    const count = () => t.el.querySelector('.star-galleria__count')!.getAttribute('aria-live');
+    expect(count()).toBe('off');
+    t.el.querySelector<HTMLButtonElement>('.star-galleria__play')!.click();
+    await t.stable();
+    expect(count()).toBe('polite');
+    t.host.autoPlay.set(false);
+    await t.stable();
+    expect(count()).toBe('polite');
+  });
+
+  it('does not advance a closed full-screen gallery', async () => {
+    vi.useFakeTimers();
+    const t = await setup((h) => {
+      h.autoPlay.set(true);
+      h.fullScreen.set(true);
+    });
+    t.fixture.detectChanges();
+    vi.advanceTimersByTime(3000);
+    t.fixture.detectChanges();
+    expect(t.host.index()).toBe(0);
+  });
+
+  it('gives the indicator group no name of its own (the region has it)', async () => {
+    const t = await setup((h) => h.indicators.set(true));
+    expect(t.el.querySelector('.star-galleria__indicators')!.hasAttribute('aria-label')).toBe(
+      false,
+    );
+  });
+
   it('does not advance while motion is reduced', async () => {
     vi.useFakeTimers();
     document.documentElement.setAttribute('data-star-motion', 'reduced');

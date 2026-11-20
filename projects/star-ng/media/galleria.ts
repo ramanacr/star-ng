@@ -212,7 +212,10 @@ type Position = 'bottom' | 'top' | 'left' | 'right';
                   />
                 </button>
               }
-              <span data-star-part="countText" class="star-galleria__count" aria-live="polite"
+              <span
+                data-star-part="countText"
+                class="star-galleria__count"
+                [attr.aria-live]="autoPlay() && playing() ? 'off' : 'polite'"
                 >{{ activeIndex() + 1 }} / {{ images().length }}</span
               >
               @if (autoPlay()) {
@@ -332,7 +335,6 @@ type Position = 'bottom' | 'top' | 'left' | 'right';
         class="star-galleria__indicators"
         [class.star-galleria__indicators--on-item]="showIndicatorsOnItem()"
         role="group"
-        [attr.aria-label]="label()"
       >
         @for (image of images(); track $index; let i = $index) {
           <button
@@ -404,7 +406,9 @@ export class StarGalleria {
   readonly changeItemOnIndicatorHover = input(false, { transform: booleanAttribute });
   /**
    * Shows the next image every `transitionInterval` milliseconds, with a pause button. It pauses
-   * while the pointer or the focus is on the gallery and does not advance while motion is reduced.
+   * while the pointer or the focus is on the gallery and does not advance while motion is reduced
+   * or while a `fullScreen` gallery is closed. While it plays, the image counter is not a live
+   * region (WAI-ARIA carousel pattern); paused or stopped, it announces the position again.
    */
   readonly autoPlay = input(false, { transform: booleanAttribute });
   /** Time between two images of the autoplay, in milliseconds (default 4000). */
@@ -461,6 +465,8 @@ export class StarGalleria {
       const ms = Math.max(this.transitionInterval(), 500);
       const id = setInterval(() => {
         if (!this.playing() || this.hovering() || starPrefersReducedMotion(this.doc)) return;
+        // A closed full-screen gallery is not on the screen: keep its image.
+        if (this.fullScreen() && !this.visible()) return;
         if (!this.circular() && this.activeIndex() >= this.images().length - 1) {
           this.playing.set(false);
           return;
