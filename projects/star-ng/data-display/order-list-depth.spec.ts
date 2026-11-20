@@ -82,6 +82,56 @@ describe('StarOrderList depth', () => {
     expect(t.host.steps()).toEqual(['Ship', 'Plan', 'Test', 'Build']);
   });
 
+  it('selects several items: Ctrl or Cmd toggles, Shift selects a range, Space toggles', async () => {
+    const t = await setup();
+    const click = (i: number, init: MouseEventInit = {}) =>
+      t.options()[i].dispatchEvent(new MouseEvent('click', { bubbles: true, ...init }));
+    expect(t.el.querySelector('[role=listbox]')!.getAttribute('aria-multiselectable')).toBe('true');
+    click(0);
+    click(2, { ctrlKey: true });
+    await t.stable();
+    expect(t.host.selection()).toEqual(['Plan', 'Test']);
+    click(0, { metaKey: true });
+    await t.stable();
+    expect(t.host.selection()).toEqual(['Test']);
+    click(1);
+    click(3, { shiftKey: true });
+    await t.stable();
+    expect(t.host.selection()).toEqual(['Build', 'Test', 'Ship']);
+    click(0);
+    t.options()[0].dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'ArrowDown', shiftKey: true, bubbles: true }),
+    );
+    await t.stable();
+    expect(t.host.selection()).toEqual(['Plan', 'Build']);
+    t.options()[3].dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }));
+    await t.stable();
+    expect(t.host.selection()).toEqual(['Plan', 'Build', 'Ship']);
+    t.options()[0].dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }));
+    await t.stable();
+    expect(t.host.selection()).toEqual(['Build', 'Ship']);
+  });
+
+  it('moves every selected item and keeps their order', async () => {
+    const t = await setup((h) => h.selection.set(['Ship', 'Build']));
+    expect(t.options().map((o) => o.getAttribute('aria-selected'))).toEqual([
+      'false',
+      'true',
+      'false',
+      'true',
+    ]);
+    t.button('Move up').click();
+    await t.stable();
+    expect(t.host.steps()).toEqual(['Build', 'Plan', 'Ship', 'Test']);
+    expect(t.host.moves.at(-1)).toEqual({ items: ['Build', 'Ship'] });
+    expect(t.button('Move up').disabled).toBe(false);
+    t.button('Move to bottom').click();
+    await t.stable();
+    expect(t.host.steps()).toEqual(['Plan', 'Test', 'Build', 'Ship']);
+    expect(t.button('Move down').disabled).toBe(true);
+    expect(t.host.selection()).toEqual(['Ship', 'Build']);
+  });
+
   it('names the list by its header', async () => {
     const t = await setup((h) => h.header.set('Release steps'));
     const header = t.el.querySelector('.star-order-list__header')!;

@@ -258,6 +258,19 @@ test.describe('order list', () => {
 });
 
 test.describe('order list depth', () => {
+  test('selects a range with Shift and moves the selected items together', async ({ page }) => {
+    await openPage(page, '/controls/order-list', 'Order list');
+    const live = example(page, 'Several selected items');
+    const list = live.getByRole('listbox', { name: 'Batch order' });
+    await list.getByRole('option', { name: 'Pack' }).click();
+    await page.keyboard.press('Shift+ArrowDown');
+    await expect(live.getByRole('status')).toHaveText('Selected: Pack, Label');
+    await list.getByRole('option', { name: 'Load' }).click({ modifiers: ['ControlOrMeta'] });
+    await expect(live.getByRole('status')).toHaveText('Selected: Pack, Label, Load');
+    await live.getByRole('button', { name: 'Move to bottom' }).click();
+    await expect(list.getByRole('option')).toHaveText(['Weigh', 'Ship', 'Pack', 'Label', 'Load']);
+  });
+
   test('filters, names the list by its header and reorders by drag', async ({ page }) => {
     await openPage(page, '/controls/order-list', 'Order list');
     const live = example(page, 'Header, filter and drag and drop');

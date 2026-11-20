@@ -14002,7 +14002,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "readonly T[]",
         "default": "[]",
         "required": false,
-        "description": "The selected item, as a one-item array (or empty). The order list selects one item at a time. PrimeNG `selection` and `onSelectionChange` (`selectionChange`)."
+        "description": "The selected items, in list order. A click selects one item, Ctrl or Cmd and a click adds or removes one, Shift and a click or Shift and an arrow key select a range, Space adds or removes the focused item. Keyboard focus on an item selects it while at most one item is selected. The move buttons and Alt with the arrow keys move every selected item and keep their order. PrimeNG `selection` and `onSelectionChange` (`selectionChange`)."
       }
     ],
     "outputs": [
@@ -22279,6 +22279,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "order-list/basic": "<div class=\"docs-stack\">\n  <star-order-list [(value)]=\"steps\" ariaLabel=\"Release steps\" />\n  <p class=\"docs-output\" role=\"status\">Order: {{ steps().join(' > ') }}</p>\n</div>",
   "order-list/filter-drag": "<div class=\"docs-stack\">\n  <star-order-list\n    [(value)]=\"queue\"\n    [(selection)]=\"current\"\n    header=\"Delivery queue\"\n    filter\n    dragdrop\n    stripedRows\n    controlsPosition=\"end\"\n    scrollHeight=\"12rem\"\n    (reorder)=\"moved.set($event.items.join(', '))\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Selected: {{ current().join(', ') || 'none' }}. Last moved: {{ moved() || 'none' }}.\n  </p>\n</div>",
   "order-list/item": "<div class=\"docs-stack\">\n  <star-order-list [(value)]=\"playlist\" optionLabel=\"name\" ariaLabel=\"Task priorities\">\n    <ng-template\n      starItem\n      [starItemOf]=\"playlist()\"\n      let-task\n      let-i=\"index\"\n      let-on=\"selected\"\n    >\n      <strong>{{ i + 1 }}.</strong> {{ task.name }}\n      @if (on) {\n        <small style=\"color: var(--star-text-muted)\">(selected)</small>\n      }\n    </ng-template>\n  </star-order-list>\n</div>",
+  "order-list/multiple": "<div class=\"docs-stack\">\n  <star-order-list\n    [(value)]=\"batch\"\n    [(selection)]=\"batchSelection\"\n    ariaLabel=\"Batch order\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Selected: {{ batchSelection().join(', ') || 'none' }}\n  </p>\n</div>",
   "order-list/objects": "<div class=\"docs-stack\">\n  <star-order-list [(value)]=\"playlist\" optionLabel=\"name\" ariaLabel=\"Task playlist\" />\n  <p class=\"docs-output\" role=\"status\">Ids: {{ ids() }}</p>\n</div>",
   "org-chart/basic": "<div class=\"docs-stack\">\n  <star-org-chart ariaLabel=\"Company\" [value]=\"company\" [(collapsedKeys)]=\"closed\" />\n  <p class=\"docs-output\" role=\"status\">Collapsed: {{ closed().join(', ') || 'none' }}</p>\n</div>",
   "org-chart/selectable": "<div class=\"docs-stack\">\n  <star-org-chart\n    ariaLabel=\"Company, selectable\"\n    [value]=\"company\"\n    selectable\n    [(selectedKey)]=\"selected\"\n    (nodeSelect)=\"last.set($event.label)\"\n  />\n  <p class=\"docs-output\" role=\"status\">Selected: {{ selected() ?? 'none' }}</p>\n  <p class=\"docs-output\" role=\"status\">Last node: {{ last() }}</p>\n</div>",

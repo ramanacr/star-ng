@@ -36,6 +36,7 @@ import {
   StarListFilterEvent,
   StarListItemsEvent,
 } from './data-display-slots';
+import { ɵstarReorderPicked } from './pick-list';
 
 type Direction = 'top' | 'up' | 'down' | 'bottom';
 
@@ -83,7 +84,7 @@ type Direction = 'top' | 'up' | 'down' | 'bottom';
           type="button"
           class="star-select__icon-btn star-order-list__btn"
           [attr.aria-label]="action.label"
-          [disabled]="disabled() || selected() < 0 || !canMove(action.id)"
+          [disabled]="disabled() || !selection().length || !canMove(action.id)"
           (click)="move(action.id)"
         >
           @if (icons().get(action.slot); as icon) {
@@ -129,6 +130,7 @@ type Direction = 'top' | 'up' | 'down' | 'bottom';
           data-star-part="list"
           class="star-listbox star-order-list__list"
           role="listbox"
+          aria-multiselectable="true"
           [class.star-order-list__list--striped]="stripedRows()"
           [style.max-height]="scrollHeight()"
           [attr.aria-label]="ariaLabel()"
@@ -144,12 +146,13 @@ type Direction = 'top' | 'up' | 'down' | 'bottom';
               role="option"
               class="star-listbox__option"
               [attr.tabindex]="disabled() ? -1 : 0"
-              [attr.aria-selected]="selected() === entry.index"
+              [attr.aria-selected]="isSelected(entry.item)"
               [attr.draggable]="dragdrop() && !disabled() ? 'true' : null"
-              [class.star-listbox__option--selected]="selected() === entry.index"
+              [class.star-listbox__option--selected]="isSelected(entry.item)"
               [class.star-order-list__option--dragging]="dragging() === entry.index"
-              (click)="select(entry.index)"
-              (focus)="select(entry.index)"
+              (pointerdown)="pointer = true"
+              (click)="onClick($event, entry.index)"
+              (focus)="onFocus(entry.index)"
               (keydown)="onKeydown($event, entry.index)"
               (dragstart)="onDragStart($event, entry.index)"
               (dragend)="dragging.set(-1)"
@@ -201,7 +204,10 @@ export class StarOrderList<T = unknown> {
   /** Id of the element that names the list. Default: the header, when there is one. */
   readonly ariaLabelledBy = input<string | null>(null);
   /**
-   * The selected item, as a one-item array (or empty). The order list selects one item at a time.
+   * The selected items, in list order. A click selects one item, Ctrl or Cmd and a click adds or
+   * removes one, Shift and a click or Shift and an arrow key select a range, Space adds or removes
+   * the focused item. Keyboard focus on an item selects it while at most one item is selected.
+   * The move buttons and Alt with the arrow keys move every selected item and keep their order.
    * PrimeNG `selection` and `onSelectionChange` (`selectionChange`).
    */
   readonly selection = model<readonly T[]>([]);
@@ -242,17 +248,13 @@ export class StarOrderList<T = unknown> {
   protected readonly icons = starSlotMap<StarIconContext>(this.slots, this, 'icon');
   protected readonly iconContext: StarIconContext = {};
 
-  /** The index that the user selected last (the selection model may point elsewhere). */
-  private readonly picked = signal(-1);
-  /** Index of the selected item, `-1` when none. */
-  protected readonly selected = computed(() => {
-    const index = this.picked();
-    const items = this.value();
-    const chosen = this.selection();
-    if (!chosen.length) return -1;
-    if (index >= 0 && items[index] === chosen[0]) return index;
-    return items.indexOf(chosen[0]);
-  });
+  /** Start of a Shift range (an index in `value`). */
+  private anchor = -1;
+  /** The next focus comes from a pointer press (the click selects). */
+  protected pointer = false;
+  /** The next focus comes from Shift and an arrow key (the range is already set). */
+  private extending = false;
+  private readonly chosen = computed(() => new Set(this.selection()));
   protected readonly query = signal('');
   protected readonly dragging = signal(-1);
   protected readonly announcement = signal('');
@@ -295,14 +297,55 @@ export class StarOrderList<T = unknown> {
   }
 
   protected itemContext(item: T, index: number): StarItemContext<T> {
-    return { $implicit: item, index, selected: this.selected() === index };
+    return { $implicit: item, index, selected: this.isSelected(item) };
   }
 
-  protected select(index: number): void {
-    if (this.disabled()) return;
-    this.picked.set(index);
+  protected isSelected(item: T): boolean {
+    return this.chosen().has(item);
+  }
+
+  /** Sets the selection, in list order. */
+  private setSelection(items: Iterable<T>): void {
+    const set = new Set(items);
+    const next = this.value().filter((item) => set.has(item));
+    const current = this.selection();
+    if (next.length === current.length && next.every((item, i) => item === current[i])) return;
+    this.selection.set(next);
+  }
+
+  private selectOnly(index: number): void {
+    this.anchor = index;
+    this.setSelection([this.value()[index]]);
+  }
+
+  private toggle(index: number): void {
     const item = this.value()[index];
-    if (this.selection().length !== 1 || this.selection()[0] !== item) this.selection.set([item]);
+    const set = new Set(this.selection());
+    if (set.has(item)) set.delete(item);
+    else set.add(item);
+    this.anchor = index;
+    this.setSelection(set);
+  }
+
+  private selectRange(index: number): void {
+    const from = this.anchor < 0 ? index : this.anchor;
+    const [low, high] = from <= index ? [from, index] : [index, from];
+    this.setSelection(this.value().slice(low, high + 1));
+  }
+
+  protected onClick(event: MouseEvent, index: number): void {
+    this.pointer = false;
+    if (this.disabled()) return;
+    if (event.shiftKey) this.selectRange(index);
+    else if (event.ctrlKey || event.metaKey) this.toggle(index);
+    else this.selectOnly(index);
+  }
+
+  protected onFocus(index: number): void {
+    const skip = this.pointer || this.extending;
+    this.extending = false;
+    if (skip || this.disabled()) return;
+    if (this.selection().length <= 1) this.selectOnly(index);
   }
 
   protected setQuery(query: string): void {
@@ -310,26 +353,42 @@ export class StarOrderList<T = unknown> {
     this.listFilter.emit({ query, value: this.visible().map((entry) => entry.item) });
   }
 
+  /** The new order after a move of the selected items; `null` when nothing moves. */
+  private moved(direction: Direction): T[] | null {
+    const items = this.value();
+    const picked = items.filter((item) => this.chosen().has(item));
+    if (!picked.length) return null;
+    const next = ɵstarReorderPicked(items, picked, direction);
+    return next.some((item, i) => item !== items[i]) ? next : null;
+  }
+
   protected canMove(direction: Direction): boolean {
-    const i = this.selected();
-    return direction === 'top' || direction === 'up' ? i > 0 : i < this.value().length - 1;
+    return this.moved(direction) !== null;
   }
 
+  /** Moves every selected item up, down, to the top or to the bottom; their order stays. */
   move(direction: Direction): void {
-    const from = this.selected();
-    if (this.disabled() || from < 0 || !this.canMove(direction)) return;
-    const last = this.value().length - 1;
-    this.moveTo(from, { top: 0, up: from - 1, down: from + 1, bottom: last }[direction]);
+    if (this.disabled()) return;
+    const next = this.moved(direction);
+    if (!next) return;
+    const picked = next.filter((item) => this.chosen().has(item));
+    this.value.set(next);
+    const first = picked[0];
+    this.anchor = next.indexOf(first);
+    this.announcement.set(
+      this.text.itemPosition(this.labelOf(first), next.indexOf(first) + 1, next.length),
+    );
+    this.reorder.emit({ items: picked });
   }
 
-  /** Moves the item at `from` to the index `to` and selects it there. */
+  /** Moves the item at `from` to the index `to` and selects only it (drag and drop). */
   private moveTo(from: number, to: number): void {
     const items = [...this.value()];
     const [item] = items.splice(from, 1);
     items.splice(to, 0, item);
     this.value.set(items);
-    this.picked.set(to);
-    this.selection.set([item]);
+    this.anchor = to;
+    this.setSelection([item]);
     this.announcement.set(this.text.itemPosition(this.labelOf(item), to + 1, items.length));
     this.reorder.emit({ items: [item] });
   }
@@ -340,19 +399,33 @@ export class StarOrderList<T = unknown> {
     const focusAt = (position: number) =>
       queueMicrotask(() => (list.children[position] as HTMLElement | undefined)?.focus());
     const positions = this.visible().map((entry) => entry.index);
+    this.extending = false;
+    const item = this.value()[index];
     if (event.altKey && (event.key === 'ArrowUp' || event.key === 'ArrowDown')) {
       event.preventDefault();
-      this.select(index);
+      if (!this.isSelected(item)) this.selectOnly(index);
       this.move(event.key === 'ArrowUp' ? 'up' : 'down');
       focusAt(
         this.visible()
           .map((entry) => entry.index)
-          .indexOf(this.selected()),
+          .indexOf(this.value().indexOf(item)),
       );
     } else if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
       event.preventDefault();
       const at = positions.indexOf(index);
-      focusAt(Math.min(Math.max(at + (event.key === 'ArrowUp' ? -1 : 1), 0), positions.length - 1));
+      const next = Math.min(
+        Math.max(at + (event.key === 'ArrowUp' ? -1 : 1), 0),
+        positions.length - 1,
+      );
+      if (event.shiftKey) {
+        if (this.anchor < 0) this.anchor = index;
+        this.extending = true;
+        this.selectRange(positions[next]);
+      }
+      focusAt(next);
+    } else if (event.key === ' ') {
+      event.preventDefault();
+      this.toggle(index);
     }
   }
 
