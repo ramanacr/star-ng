@@ -196,13 +196,17 @@ function text(fn: (text: string) => StarFormulaValue): Fn {
 
 /** Rounds half away from zero, without binary artefacts (`ROUND(1.005, 2)` is 1.01). */
 function round(value: number, digits: number): number {
-  // Excel accepts digits far outside this range; beyond it the result does not change.
-  const d = Math.min(15, Math.max(-308, Math.trunc(digits)));
   const sign = value < 0 ? -1 : 1;
   const abs = Math.abs(value);
-  const text = String(abs);
-  if (text.includes('e')) return (sign * Math.round(abs * 10 ** d)) / 10 ** d;
-  const shifted = Math.round(Number(`${text}e${d}`));
+  // A double holds about 15 significant digits: more fraction digits than that, counted from
+  // the first significant digit of the value, cannot change it. The limit follows the size of
+  // the value, so ROUND(1E-20, 20) keeps 1E-20. Far negative digits round everything to 0.
+  const magnitude = abs > 0 ? Math.floor(Math.log10(abs)) : 0;
+  const d = Math.min(15 - magnitude, Math.max(-308, Math.trunc(digits)));
+  // Shift the decimal point in the text, not by multiplying, so no binary artefact appears
+  // (1.005 rounds to 1.01; 1E-20 stays 1E-20). Text like "1e-20" moves its exponent.
+  const [mantissa, exponent = '0'] = String(abs).split('e');
+  const shifted = Math.round(Number(`${mantissa}e${Number(exponent) + d}`));
   return sign * Number(`${shifted}e${-d}`);
 }
 

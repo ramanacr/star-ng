@@ -330,6 +330,10 @@ describe('starEvaluate: hardening', () => {
     expect(starEvaluate('=ROUND(1.5,400)')).toBe(1.5);
     expect(starEvaluate('=ROUND(123,-400)')).toBe(0);
     expect(starEvaluate('=ROUND(2.567,2.9)')).toBe(2.57);
+    // Tiny values keep their digits: the limit follows the size of the value.
+    expect(starEvaluate('=ROUND(1E-20,20)')).toBe(1e-20);
+    expect(starEvaluate('=ROUND(1.26E-20,21)')).toBe(1.3e-20);
+    expect(starEvaluate('=ROUND(1E-20,400)')).toBe(1e-20);
   });
 });
 

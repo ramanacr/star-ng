@@ -1556,7 +1556,9 @@ export class StarSpreadsheet {
   private cellExportText(row: number, col: number, formulas: boolean, escape = false): string {
     const address = starCellAddress(row, col);
     const cell = this.currentCells()[address];
-    const guard = (text: string): string => (escape && /^[=+\-@]/.test(text) ? `'${text}` : text);
+    // Text that starts like a formula gets an apostrophe; text that already starts with one gets
+    // another, so fromCsv reads the original text back.
+    const guard = (text: string): string => (escape && /^[=+\-@']/.test(text) ? `'${text}` : text);
     if (formulas) {
       if (cell?.formula) return cell.formula;
       const text = starCellText(cell);

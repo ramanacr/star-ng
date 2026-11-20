@@ -405,6 +405,18 @@ describe('StarSpreadsheet', () => {
     expect(host.cells()['D1']).toEqual({ formula: '=C1*2' });
   });
 
+  it('keeps text that starts with an apostrophe through a CSV round trip of values', async () => {
+    const { fixture, host } = await setup();
+    host.cells.set({ A1: { value: "'abc" }, B1: { value: 'plain' } });
+    await fixture.whenStable();
+    expect(host.sheet().toCsv()).toBe("''abc,plain");
+    host.sheet().fromCsv(host.sheet().toCsv());
+    await fixture.whenStable();
+    expect(host.cells()['A1']).toEqual({ value: "'abc" });
+    // Without escaping, the text is written as it is.
+    expect(host.sheet().toCsv({ escapeFormulas: false })).toBe("'abc,plain");
+  });
+
   it('resizes the column and the row of the active cell with Alt+Shift+arrows', async () => {
     const { grid, press, host } = await setup();
     grid.focus();
