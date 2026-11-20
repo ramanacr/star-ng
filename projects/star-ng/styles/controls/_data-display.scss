@@ -77,6 +77,7 @@
 
 // Data view
 .star-data-view {
+  position: relative;
   display: block;
 }
 .star-data-view__header {
@@ -95,6 +96,29 @@
 }
 .star-data-view__items--grid {
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 14rem), 1fr));
+}
+.star-data-view__loading {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border-radius: var(--star-radius-lg);
+  background: color-mix(in srgb, var(--star-surface) 70%, transparent);
+  color: var(--star-primary-text);
+  font-size: 1.5rem;
+}
+.star-data-view__pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+
+  star-paginator {
+    flex: 1;
+  }
+}
+.star-data-view__icon {
+  display: inline-flex;
 }
 .star-data-view__item {
   padding: 1rem;

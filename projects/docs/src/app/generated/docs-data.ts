@@ -3859,7 +3859,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-data-view",
     "entry": "@star-ng/ui/data-display",
-    "description": "Data view (PrimeNG `p-dataview`): items in a list or a responsive grid, layout switch, client pagination and an empty state. It does not sort: sort the items before you pass them in. You design each item with a template.",
+    "description": "Data view (PrimeNG `p-dataview`): items in a list or a responsive grid, layout switch, client or lazy pagination, an optional sort and filter, a loading state and an empty state. You design each item with a template.",
     "inputs": [
       {
         "name": "items",
@@ -3881,6 +3881,132 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "null",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "rowsPerPageOptions",
+        "type": "readonly number[]",
+        "default": "[]",
+        "required": false,
+        "description": "Rows-per-page choices of the paginator (default none). PrimeNG `rowsPerPageOptions`."
+      },
+      {
+        "name": "paginatorPosition",
+        "type": "'top' | 'bottom' | 'both'",
+        "default": "'bottom'",
+        "required": false,
+        "description": "Where the paginator goes: `'bottom'` (default), `'top'` or `'both'`."
+      },
+      {
+        "name": "alwaysShowPaginator",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows the paginator also when everything fits on one page. PrimeNG `alwaysShowPaginator`."
+      },
+      {
+        "name": "pageLinks",
+        "type": "number",
+        "default": "5",
+        "required": false,
+        "description": "Number of page links of the paginator (default 5). PrimeNG `pageLinks`."
+      },
+      {
+        "name": "showCurrentPageReport",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "The \"1–6 of 24\" report of the paginator (default `true`)."
+      },
+      {
+        "name": "currentPageReportTemplate",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Report text with placeholders; see `star-paginator`."
+      },
+      {
+        "name": "showJumpToPageDropdown",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "A select of every page in the paginator."
+      },
+      {
+        "name": "showFirstLastIcon",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "First and last page buttons in the paginator (default `true`)."
+      },
+      {
+        "name": "showPageLinks",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Page number buttons in the paginator (default `true`)."
+      },
+      {
+        "name": "lazy",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Lazy mode: `items` is the current page only, `totalRecords` the count of all items, and `lazyLoad` asks for a page (after a page change, a sort change and `filter()`)."
+      },
+      {
+        "name": "lazyLoadOnInit",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Emits `lazyLoad` for the first page at start (default `true`). PrimeNG `lazyLoadOnInit`."
+      },
+      {
+        "name": "totalRecords",
+        "type": "number",
+        "default": "0",
+        "required": false,
+        "description": "Count of all items in lazy mode. PrimeNG `totalRecords`."
+      },
+      {
+        "name": "loading",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows a loading indicator over the items and sets `aria-busy`."
+      },
+      {
+        "name": "loadingIcon",
+        "type": "string",
+        "default": "'ph-bold ph-spinner-gap star-spin'",
+        "required": false,
+        "description": "Icon classes of the loading indicator."
+      },
+      {
+        "name": "sortField",
+        "type": "StarOptionKey<T> | null",
+        "default": "null",
+        "required": false,
+        "description": "Field (or function) to sort the items by; `null` keeps the given order."
+      },
+      {
+        "name": "sortOrder",
+        "type": "1 | -1",
+        "default": "1",
+        "required": false,
+        "description": "`1` ascending (default), `-1` descending."
+      },
+      {
+        "name": "filterBy",
+        "type": "StarFilterBy<T>",
+        "default": "null",
+        "required": false,
+        "description": "Fields that `filter()` searches (one key or several). Default: the item itself as text."
+      },
+      {
+        "name": "filterLocale",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Locale of the case and accent folding of the filter."
       },
       {
         "name": "pt",
@@ -3922,7 +4048,22 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       }
     ],
-    "outputs": [],
+    "outputs": [
+      {
+        "name": "pageChange",
+        "type": "StarPageEvent",
+        "default": null,
+        "required": false,
+        "description": "Emits the page after a page change. PrimeNG `onPage`."
+      },
+      {
+        "name": "lazyLoad",
+        "type": "StarDataViewLazyLoadEvent",
+        "default": null,
+        "required": false,
+        "description": "Lazy mode: emits what the page needs. PrimeNG `onLazyLoad`."
+      }
+    ],
     "parts": [
       "root",
       "header",
@@ -3931,7 +4072,10 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "itemIcon",
       "itemsList",
       "emptyItem",
-      "emptyIcon"
+      "emptyIcon",
+      "loadingPanel",
+      "loadingIcon",
+      "pagerPanel"
     ]
   },
   "StarDataViewItem": {
@@ -21837,6 +21981,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "dark-mode/try": "<star-button variant=\"secondary\" (pressed)=\"theme.setMode('system')\">System</star-button>\n<star-button variant=\"secondary\" (pressed)=\"theme.setMode('light')\">Light</star-button>\n<star-button variant=\"secondary\" (pressed)=\"theme.setMode('dark')\">Dark</star-button>\n<p class=\"docs-output\" role=\"status\">\n  Choice: {{ theme.mode() }}. Theme in use: {{ theme.theme() }}.\n</p>",
   "data-view/empty": "<star-data-view [items]=\"[]\" emptyMessage=\"No products match this filter.\">\n  <ng-template starDataViewItem let-item>{{ item }}</ng-template>\n</star-data-view>",
   "data-view/layouts": "<div class=\"docs-stack\">\n  <star-data-view [items]=\"products\" [(layout)]=\"layout\">\n    <ng-template starDataViewItem [starDataViewItemOf]=\"products\" let-p let-mode=\"layout\">\n      <strong>{{ p.name }}</strong>\n      <div>{{ p.category }} · {{ '$' + p.price }}</div>\n      @if (mode === 'grid') {\n        <small>Grid card</small>\n      }\n    </ng-template>\n  </star-data-view>\n  <p class=\"docs-output\" role=\"status\">Layout: {{ layout() }}</p>\n</div>",
+  "data-view/options": "<star-data-view\n  #catalog\n  [items]=\"products\"\n  paginator\n  [rows]=\"3\"\n  [rowsPerPageOptions]=\"[3, 6]\"\n  paginatorPosition=\"both\"\n  sortField=\"price\"\n  [sortOrder]=\"priceOrder()\"\n  filterBy=\"name\"\n  [loading]=\"busy()\"\n>\n  <div starDataViewHeader class=\"docs-row\">\n    <label class=\"docs-row\">\n      Find\n      <input\n        class=\"star-input star-input--sm\"\n        type=\"search\"\n        (input)=\"catalog.filter($any($event.target).value)\"\n      />\n    </label>\n    <star-button\n      size=\"sm\"\n      variant=\"secondary\"\n      (click)=\"priceOrder.set(priceOrder() === 1 ? -1 : 1)\"\n    >\n      Price {{ priceOrder() === 1 ? 'low to high' : 'high to low' }}\n    </star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (click)=\"busy.set(!busy())\">\n      {{ busy() ? 'Stop loading' : 'Show loading' }}\n    </star-button>\n  </div>\n  <ng-template starDataViewItem [starDataViewItemOf]=\"products\" let-p>\n    <strong>{{ p.name }}</strong>\n    <div>{{ '$' + p.price }}</div>\n  </ng-template>\n</star-data-view>",
   "data-view/paging": "<div class=\"docs-stack\">\n  <star-data-view [items]=\"products\" paginator [rows]=\"4\" [(first)]=\"first\">\n    <ng-template starDataViewItem [starDataViewItemOf]=\"products\" let-p>\n      <strong>{{ p.name }}</strong>\n      <div>{{ p.category }} · {{ '$' + p.price }}</div>\n    </ng-template>\n  </star-data-view>\n  <p class=\"docs-output\" role=\"status\">First item on the page: {{ first() + 1 }}</p>\n</div>",
   "data-view/slots": "<div class=\"docs-stack\">\n  <star-data-view [items]=\"products.slice(0, 3)\">\n    <ng-template starHeader>\n      <p class=\"docs-output\">Today's picks</p>\n    </ng-template>\n    <ng-template starDataViewItem [starDataViewItemOf]=\"products\" let-p>\n      <strong>{{ p.name }}</strong>\n      <div>{{ '$' + p.price }}</div>\n    </ng-template>\n    <ng-template starFooter>\n      <p class=\"docs-output\">Prices include tax.</p>\n    </ng-template>\n  </star-data-view>\n  <star-data-view [items]=\"[]\">\n    <ng-template starDataViewItem let-item>{{ item }}</ng-template>\n    <ng-template starEmpty let-text>\n      <span style=\"color: var(--star-text-muted)\">Nothing to show yet.</span>\n    </ng-template>\n  </star-data-view>\n</div>",
   "data-view/sorting": "<star-data-view [items]=\"sorted()\">\n  <div starDataViewHeader>\n    <star-button size=\"sm\" variant=\"secondary\" (click)=\"sortBy.set('name')\">\n      Sort by name\n    </star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (click)=\"sortBy.set('price')\">\n      Sort by price\n    </star-button>\n  </div>\n  <ng-template starDataViewItem [starDataViewItemOf]=\"sorted()\" let-p>\n    <strong>{{ p.name }}</strong>\n    <div>{{ '$' + p.price }}</div>\n  </ng-template>\n</star-data-view>",

@@ -184,7 +184,9 @@ export type StarIconSlotName =
   | 'upload'
   | 'cancel'
   | 'first'
-  | 'last';
+  | 'last'
+  | 'list'
+  | 'grid';
 
 /** Context of the icon slot. */
 export interface StarIconContext {
