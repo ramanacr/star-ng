@@ -1,8 +1,7 @@
 import { Component, PLATFORM_ID, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { StarAnnouncer } from '@star-ng/ui/core';
-import { StarImageEditor } from '@star-ng/ui/image-editor';
-import { STAR_IMAGE_COLORS } from './image-editor';
+import { STAR_IMAGE_COLORS, StarImageEditor } from '@star-ng/ui/image-editor';
 import { starImageRender } from './image-editor-render';
 
 const PNG = 'data:image/png;base64,AAA';

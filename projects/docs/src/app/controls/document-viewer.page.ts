@@ -17,7 +17,7 @@ import { ImagePagesRenderer, SampleReportRenderer } from '../shared/sample-rende
   template: `
     <docs-page
       heading="Document viewer"
-      lead="A viewer shell for paged documents: page navigation, zoom, rotation, thumbnails, search, full screen, and download and print outputs. A renderer reads the document and draws the pages; StarNG ships no PDF engine: the recommended engine is PDF Viewer Native (pdfviewer-embed), and PDF.js or your own engine works as well. The PDF.js viewer, Syncfusion ejs-pdfviewer and Kendo UI PDFViewer are the equivalents; DevExtreme and Ignite UI have none."
+      lead="A viewer shell for paged documents: page navigation, zoom, rotation, thumbnails, search, full screen, and download and print outputs. A renderer reads the document and draws the pages; StarNG ships no PDF engine. PDF Viewer Native (pdfviewer-embed) becomes usable as the renderer once its headless API ships (ramanacr/pdf-viewer#185); until then use the PDF.js adapter below, or embed the complete PDF Viewer Native viewer in an iframe. The PDF.js viewer, Syncfusion ejs-pdfviewer and Kendo UI PDFViewer are the equivalents; DevExtreme and Ignite UI have none."
       importFrom="import { StarDocumentViewer, STAR_DOCUMENT_RENDERER } from '@star-ng/ui/document-viewer';"
     >
       <docs-example

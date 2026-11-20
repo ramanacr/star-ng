@@ -45,10 +45,24 @@ export interface StarFileStatus {
 
 /**
  * Human-readable size with `Intl.NumberFormat` byte units (kB, MB).
- * @deprecated Use `starFormatFileSize` from `@star-ng/ui/core` (same result, also for `null`).
+ * @deprecated Use `starFormatFileSize` from `@star-ng/ui/core` (also `null`, terabytes and a
+ * `digits` option); the controls use it. This function keeps its 0.3.1 behaviour: gigabytes are
+ * the largest unit and `NaN` formats as "NaN byte".
  */
 export function formatFileSize(bytes: number, locale?: string): string {
-  return starFormatFileSize(bytes, locale);
+  const units = ['byte', 'kilobyte', 'megabyte', 'gigabyte'] as const;
+  let value = bytes;
+  let unit = 0;
+  while (value >= 1024 && unit < units.length - 1) {
+    value /= 1024;
+    unit++;
+  }
+  return new Intl.NumberFormat(locale, {
+    style: 'unit',
+    unit: units[unit],
+    unitDisplay: 'short',
+    maximumFractionDigits: unit === 0 ? 0 : 1,
+  }).format(value);
 }
 
 /** Matches a file against an `accept` list such as `.pdf,image/*,application/msword`. */
