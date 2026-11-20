@@ -19,10 +19,39 @@ import { DOCS } from '../shared/docs';
         Each element of a control has a part name in the attribute <code>data-star-part</code>, for
         example <code>trigger</code>, <code>panel</code> and <code>option</code> in the select. The
         host element of the control is the part <code>root</code>. The API section of each control
-        page lists its parts. The names come from the StarNG classes of the elements (<code
-          >star-select__trigger</code
-        >
-        gives <code>trigger</code>), so they are stable. The StarNG classes stay on the elements.
+        page lists its parts. The part names are public API: they stay the same in later versions,
+        and a renamed part is a breaking change in the CHANGELOG. The StarNG classes stay on the
+        elements.
+      </p>
+      <h3>How the parts are named</h3>
+      <ol>
+        <li>
+          An element with a StarNG class takes the name of that class:
+          <code>star-select__trigger</code> gives <code>trigger</code>,
+          <code>star-panel</code> gives <code>panel</code>. Elements with the same class are one
+          part, for example all the <code>cell</code> elements of a table.
+        </li>
+        <li>
+          An element without such a class takes the name of the part around it plus its role:
+          <code>clearIcon</code> (the icon of the clear button), <code>filterIcon</code>,
+          <code>nodeList</code>. When one part has several of them, the UI text or the icon gives
+          the name: <code>zoomInButton</code>, <code>leadingIcon</code> and
+          <code>trailingIcon</code> of the button.
+        </li>
+        <li>
+          In one control, a name is used for one kind of element only. A tools test fails when a
+          name repeats for different elements.
+        </li>
+        <li>
+          Visually hidden text (<code>star-sr-only</code>) is not a part: a class could show it, or
+          hide it from screen readers.
+        </li>
+      </ol>
+      <p>
+        <code>starPart</code> is a static attribute (<code>starPart="header"</code>), not a binding.
+        While a control has no pass-through and is not unstyled, a part costs only its name. The
+        first <code>pt</code> or the unstyled mode switches the parts of the control on; parts that
+        the control creates later switch on by themselves.
       </p>
 
       <h2>Pass-through for one control</h2>
@@ -30,9 +59,11 @@ import { DOCS } from '../shared/docs';
         The input <code>pt</code> maps a part name to <code>class</code>, <code>style</code> and
         <code>attrs</code>. A class adds to the StarNG classes; <code>class</code> takes a string, a
         list or a map, as <code>[class]</code> does. <code>style</code> is a map, as
-        <code>[style]</code>. <code>attrs</code> accepts only <code>id</code>, <code>title</code>,
-        <code>data-*</code> and <code>aria-*</code>: an event handler (<code>on*</code>) or any
-        other attribute is ignored, with a warning in dev mode.
+        <code>[style]</code>. <code>attrs</code> accepts only <code>title</code>,
+        <code>data-*</code> and <code>aria-*</code>. An <code>id</code> (other elements of the
+        control refer to its ids), an event handler (<code>on*</code>) or any other attribute is
+        ignored, with a warning in dev mode. When the pass-through no longer sets an attribute, the
+        value of the template comes back.
       </p>
       <docs-example
         heading="Pass-through on a select"
@@ -56,7 +87,11 @@ import { DOCS } from '../shared/docs';
       <p>
         <code>provideStarNg(&#123; pt &#125;)</code> maps the tag name of a control to its
         pass-through. The <code>pt</code> input of an instance merges over it: the classes add up,
-        and a style or an attribute of the instance wins.
+        and a style or an attribute of the instance wins. The tooltip of the
+        <code>starTooltip</code> directive is the control <code>star-tooltip-panel</code>: it has no
+        <code>pt</code> input, so style it with the global key <code>'star-tooltip-panel'</code>.
+        The other directives (<code>starInput</code>, <code>starRipple</code> and so on) style your
+        own element: add your classes to it directly.
       </p>
       <docs-code [code]="global" label="Global pass-through" />
 
@@ -68,6 +103,19 @@ import { DOCS } from '../shared/docs';
         of its elements, sizes, overflow, the hidden states, the visually hidden texts and the
         keyboard behavior. The focus stays visible: the focus ring and the accent turn into the text
         color. Your classes (pass-through) then give the look.
+      </p>
+      <p>
+        The states that StarNG shows only with a color, a background or a shadow go away with the
+        look, and your classes must show them: the selected option of a list or select
+        (<code>[aria-selected=true]</code>), the selected day of a calendar, the checked swatch of
+        the color picker (<code>[aria-checked=true]</code>), the hover and active rows, and the
+        background of panels, menus, dialogs and popovers (they become transparent; the unstyled
+        select below sets <code>background: Canvas</code>). The marks that are icons, such as the
+        check of a selected option, stay.
+      </p>
+      <p>
+        A styled control inside an unstyled one (a button in an unstyled dialog) keeps its look, and
+        so does the content of your application inside it.
       </p>
       <docs-example
         heading="Unstyled button"
@@ -109,7 +157,9 @@ import { DOCS } from '../shared/docs';
         The control rules do not read tokens for the layout, so it stays. This needs one rule for
         all controls: no second selector per control, and no specificity war with your classes. A
         few sizes that the controls write as plain values (some paddings and font sizes) stay;
-        override them with a class.
+        override them with a class. <code>:root</code> keeps a copy of each theme value
+        (<code>--star-theme-*</code>), and the elements under an unstyled control that are not its
+        parts get the theme back.
       </p>
       <p>
         StarNG CSS is not in a cascade layer, so it keeps the cascade that your application has
