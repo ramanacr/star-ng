@@ -180,6 +180,8 @@ export const STAR_UI_TEXT_DE: StarUiText = {
   moveAllToSource: 'Alle in die Quelle verschieben',
   pickListSource: 'Verfügbar',
   pickListTarget: 'Ausgewählt',
+  itemsMoved: (count, list) =>
+    `${count} ${count === 1 ? 'Element' : 'Elemente'} nach ${list} verschoben`,
 
   chooseDate: 'Datum auswählen',
   chooseMonth: 'Monat auswählen',

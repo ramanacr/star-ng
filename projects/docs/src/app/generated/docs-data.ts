@@ -10313,6 +10313,15 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "emptyPanel"
     ]
   },
+  "StarListFilterTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starListFilter]",
+    "entry": "@star-ng/ui/data-display",
+    "description": "Replaces the filter field of `star-order-list` and `star-pick-list` (shown with `filter`): `<ng-template starListFilter let-query let-filter=\"filter\">…</ng-template>`. Call `filter(text)` from your own field. PrimeNG `#filter`, `#sourcefilter` and `#targetfilter` templates (use `list` to tell the two lists apart).",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
   "StarListItem": {
     "kind": "component",
     "selector": "star-list-item",
@@ -13177,7 +13186,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-order-list",
     "entry": "@star-ng/ui/data-display",
-    "description": "Order list (PrimeNG `p-orderlist`): reorder items with buttons or Alt + Arrow keys; the moved item keeps focus and a live region announces its new position. `<star-order-list [(value)]=\"priorities\" optionLabel=\"name\" ariaLabel=\"Queue order\" />`",
+    "description": "Order list (PrimeNG `p-orderlist`): reorder items with buttons, Alt + Arrow keys or (with `dragdrop`) the mouse; the moved item keeps focus and a live region announces its new position. `<star-order-list [(value)]=\"priorities\" optionLabel=\"name\" ariaLabel=\"Queue order\" />`",
     "inputs": [
       {
         "name": "optionLabel",
@@ -13192,6 +13201,97 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "null",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "ariaLabelledBy",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Id of the element that names the list. Default: the header, when there is one."
+      },
+      {
+        "name": "header",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Text of the header above the list. PrimeNG `header`. A `starHeader` slot replaces it."
+      },
+      {
+        "name": "filter",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows a filter field above the list. PrimeNG shows it when `filterBy` is set."
+      },
+      {
+        "name": "filterBy",
+        "type": "StarFilterBy<T>",
+        "default": "null",
+        "required": false,
+        "description": "The fields that the filter searches (one key or several); default: the label."
+      },
+      {
+        "name": "filterMatchMode",
+        "type": "StarFilterMatchMode",
+        "default": "'contains'",
+        "required": false,
+        "description": "How the filter text matches. PrimeNG `filterMatchMode`."
+      },
+      {
+        "name": "filterLocale",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Locale of the case and accent folding of the filter. PrimeNG `filterLocale`."
+      },
+      {
+        "name": "filterPlaceholder",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Placeholder of the filter field (default `STAR_UI_TEXT.filterPlaceholder`)."
+      },
+      {
+        "name": "ariaFilterLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Accessible name of the filter field (default `STAR_UI_TEXT.filterPlaceholder`)."
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Turns off the buttons, the keys, the filter and the drag."
+      },
+      {
+        "name": "stripedRows",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Every second item has a tinted background."
+      },
+      {
+        "name": "scrollHeight",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "CSS `max-height` of the list, for example `'20rem'` (default `16rem`)."
+      },
+      {
+        "name": "dragdrop",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Reorder by drag and drop with the mouse, next to the buttons and the keys."
+      },
+      {
+        "name": "controlsPosition",
+        "type": "'start' | 'end'",
+        "default": "'start'",
+        "required": false,
+        "description": "Side of the move buttons: `'start'` (default) or `'end'`. PrimeNG `controlsPosition`."
       },
       {
         "name": "pt",
@@ -13217,17 +13317,45 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "[]",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "selection",
+        "type": "readonly T[]",
+        "default": "[]",
+        "required": false,
+        "description": "The selected item, as a one-item array (or empty). The order list selects one item at a time. PrimeNG `selection` and `onSelectionChange` (`selectionChange`)."
       }
     ],
-    "outputs": [],
+    "outputs": [
+      {
+        "name": "reorder",
+        "type": "StarListItemsEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "Emits the moved item after each move. PrimeNG `onReorder`."
+      },
+      {
+        "name": "listFilter",
+        "type": "StarListFilterEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "Emits the filter text and the matching items. PrimeNG `onFilterEvent`."
+      }
+    ],
     "parts": [
       "root",
       "buttonsPanel",
       "moveButton",
       "moveIcon",
+      "boxPanel",
+      "header",
+      "filterPanel",
+      "filterInput",
+      "listPanel",
       "list",
       "option",
-      "dragHandle"
+      "dragHandle",
+      "emptyPanel"
     ]
   },
   "StarOrgChart": {
@@ -13798,7 +13926,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-pick-list",
     "entry": "@star-ng/ui/data-display",
-    "description": "Pick list (PrimeNG `p-picklist`): move items between a source and a target list. Double-click or Enter moves one item; buttons move the selection or everything. `<star-pick-list [(source)]=\"available\" [(target)]=\"assigned\" optionLabel=\"name\" sourceHeader=\"Available\" targetHeader=\"Assigned\" />`",
+    "description": "Pick list (PrimeNG `p-picklist`): move items between a source and a target list. Double-click or Enter moves one item; buttons move the selection or every shown item; with `dragdrop` the mouse drags items between the lists and inside a list. `<star-pick-list [(source)]=\"available\" [(target)]=\"assigned\" optionLabel=\"name\" sourceHeader=\"Available\" targetHeader=\"Assigned\" />`",
     "inputs": [
       {
         "name": "optionLabel",
@@ -13820,6 +13948,153 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "null",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "filter",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows a filter field above each list. PrimeNG shows them when `filterBy` is set."
+      },
+      {
+        "name": "showSourceFilter",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "With `filter`: shows the filter of the source list (default `true`)."
+      },
+      {
+        "name": "showTargetFilter",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "With `filter`: shows the filter of the target list (default `true`)."
+      },
+      {
+        "name": "filterBy",
+        "type": "StarFilterBy<T>",
+        "default": "null",
+        "required": false,
+        "description": "The fields that the filters search (one key or several); default: the label."
+      },
+      {
+        "name": "filterMatchMode",
+        "type": "StarFilterMatchMode",
+        "default": "'contains'",
+        "required": false,
+        "description": "How the filter text matches. PrimeNG `filterMatchMode`."
+      },
+      {
+        "name": "filterLocale",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Locale of the case and accent folding of the filters. PrimeNG `filterLocale`."
+      },
+      {
+        "name": "sourceFilterPlaceholder",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Placeholder of the source filter (default `STAR_UI_TEXT.filterPlaceholder`)."
+      },
+      {
+        "name": "targetFilterPlaceholder",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Placeholder of the target filter (default `STAR_UI_TEXT.filterPlaceholder`)."
+      },
+      {
+        "name": "ariaSourceFilterLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Accessible name of the source filter (default: its placeholder)."
+      },
+      {
+        "name": "ariaTargetFilterLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Accessible name of the target filter (default: its placeholder)."
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Turns off the lists, the buttons, the filters and the drag."
+      },
+      {
+        "name": "stripedRows",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Every second item has a tinted background."
+      },
+      {
+        "name": "scrollHeight",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "CSS `max-height` of the lists, for example `'20rem'` (default `16rem`)."
+      },
+      {
+        "name": "metaKeySelection",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "A click selects only the clicked item; Ctrl or Cmd and a click adds or removes it. Without it (default), each click adds or removes the item. Space always adds or removes."
+      },
+      {
+        "name": "keepSelection",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The moved items stay selected in the list they went to."
+      },
+      {
+        "name": "sourceOptionDisabled",
+        "type": "((item: T) => boolean) | null",
+        "default": "null",
+        "required": false,
+        "description": "Items of the source list that cannot be selected or moved."
+      },
+      {
+        "name": "targetOptionDisabled",
+        "type": "((item: T) => boolean) | null",
+        "default": "null",
+        "required": false,
+        "description": "Items of the target list that cannot be selected or moved."
+      },
+      {
+        "name": "showSourceControls",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Buttons that reorder the selected items of the source list (default `false`)."
+      },
+      {
+        "name": "showTargetControls",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Buttons that reorder the selected items of the target list (default `false`)."
+      },
+      {
+        "name": "dragdrop",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Move items with the mouse: between the lists and to another place in a list."
+      },
+      {
+        "name": "breakpoint",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Window width at or under which the lists stack (for example `'960px'`). Default: the style sheet stacks them under 640px."
       },
       {
         "name": "pt",
@@ -13854,21 +14129,106 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       }
     ],
-    "outputs": [],
+    "outputs": [
+      {
+        "name": "moveToTarget",
+        "type": "StarListItemsEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "Emits the items that moved from the source to the target (selected, double-click, drag)."
+      },
+      {
+        "name": "moveAllToTarget",
+        "type": "StarListItemsEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "Emits the items that \"Move all to target\" moved."
+      },
+      {
+        "name": "moveToSource",
+        "type": "StarListItemsEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "Emits the items that moved from the target to the source (selected, double-click, drag)."
+      },
+      {
+        "name": "moveAllToSource",
+        "type": "StarListItemsEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "Emits the items that \"Move all to source\" moved."
+      },
+      {
+        "name": "sourceReorder",
+        "type": "StarListItemsEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "Emits the items that moved inside the source list."
+      },
+      {
+        "name": "targetReorder",
+        "type": "StarListItemsEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "Emits the items that moved inside the target list."
+      },
+      {
+        "name": "sourceSelect",
+        "type": "StarListItemsEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "Emits the selected items of the source list when they change."
+      },
+      {
+        "name": "targetSelect",
+        "type": "StarListItemsEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "Emits the selected items of the target list when they change."
+      },
+      {
+        "name": "sourceFilter",
+        "type": "StarListFilterEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "Emits the filter text of the source list and its matching items."
+      },
+      {
+        "name": "targetFilter",
+        "type": "StarListFilterEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "Emits the filter text of the target list and its matching items."
+      }
+    ],
     "parts": [
       "root",
+      "moveIcon",
+      "moveAllIcon",
       "sidePanel",
       "header",
       "badgeText",
+      "filterPanel",
+      "filterInput",
+      "bodyPanel",
       "boxPanel",
       "list",
       "option",
       "emptyPanel",
       "buttonsPanel",
       "transferButton",
-      "moveIcon",
-      "moveAllIcon"
+      "reorderPanel",
+      "reorderButton"
     ]
+  },
+  "StarPickListHeaderTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starPickListHeader]",
+    "entry": "@star-ng/ui/data-display",
+    "description": "Replaces the header text of each list of `star-pick-list`: `<ng-template starPickListHeader let-list let-count=\"count\">…</ng-template>`. The header stays the name of its list. PrimeNG `#sourceheader` and `#targetheader` templates.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
   },
   "StarPivotGrid": {
     "kind": "component",
@@ -20923,6 +21283,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "multi-select/slots": "<star-multi-select\n  [options]=\"cities\"\n  optionLabel=\"name\"\n  optionValue=\"code\"\n  [(value)]=\"visited\"\n  display=\"chip\"\n  placeholder=\"Select cities\"\n  ariaLabel=\"Cities\"\n  filter\n>\n  <ng-template starHeader>\n    <p class=\"docs-output\">Cities with an office</p>\n  </ng-template>\n  <ng-template starEmpty let-text>No city matches {{ text }}.</ng-template>\n  <ng-template\n    starChip\n    [starChipOf]=\"cities\"\n    let-item\n    let-remove=\"remove\"\n    let-interactive=\"interactive\"\n  >\n    <span class=\"star-chip star-chip--sm\">\n      {{ item.code }}\n      @if (interactive) {\n        <button\n          type=\"button\"\n          class=\"star-chip__remove\"\n          tabindex=\"-1\"\n          [attr.aria-label]=\"'Remove ' + item.name\"\n          (click)=\"remove()\"\n        >\n          x\n        </button>\n      }\n    </span>\n  </ng-template>\n  <ng-template starFooter>\n    <p class=\"docs-output\">{{ cities.length }} cities</p>\n    <button\n      type=\"button\"\n      class=\"star-btn star-btn--sm star-btn--ghost\"\n      (click)=\"visited.set([])\"\n    >\n      Clear the choice\n    </button>\n  </ng-template>\n</star-multi-select>",
   "multi-select/template": "<star-multi-select\n  [options]=\"departments\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  [(value)]=\"templated\"\n  placeholder=\"Select departments\"\n  ariaLabel=\"Departments with template\"\n>\n  <ng-template starOption [starOptionOf]=\"departments\" let-item let-selected=\"selected\">\n    <span>\n      {{ item.name }}\n      <small>{{ item.site }}</small>\n    </span>\n  </ng-template>\n</star-multi-select>",
   "order-list/basic": "<div class=\"docs-stack\">\n  <star-order-list [(value)]=\"steps\" ariaLabel=\"Release steps\" />\n  <p class=\"docs-output\" role=\"status\">Order: {{ steps().join(' > ') }}</p>\n</div>",
+  "order-list/filter-drag": "<div class=\"docs-stack\">\n  <star-order-list\n    [(value)]=\"queue\"\n    [(selection)]=\"current\"\n    header=\"Delivery queue\"\n    filter\n    dragdrop\n    stripedRows\n    controlsPosition=\"end\"\n    scrollHeight=\"12rem\"\n    (reorder)=\"moved.set($event.items.join(', '))\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Selected: {{ current().join(', ') || 'none' }}. Last moved: {{ moved() || 'none' }}.\n  </p>\n</div>",
   "order-list/item": "<div class=\"docs-stack\">\n  <star-order-list [(value)]=\"playlist\" optionLabel=\"name\" ariaLabel=\"Task priorities\">\n    <ng-template\n      starItem\n      [starItemOf]=\"playlist()\"\n      let-task\n      let-i=\"index\"\n      let-on=\"selected\"\n    >\n      <strong>{{ i + 1 }}.</strong> {{ task.name }}\n      @if (on) {\n        <small style=\"color: var(--star-text-muted)\">(selected)</small>\n      }\n    </ng-template>\n  </star-order-list>\n</div>",
   "order-list/objects": "<div class=\"docs-stack\">\n  <star-order-list [(value)]=\"playlist\" optionLabel=\"name\" ariaLabel=\"Task playlist\" />\n  <p class=\"docs-output\" role=\"status\">Ids: {{ ids() }}</p>\n</div>",
   "org-chart/basic": "<div class=\"docs-stack\">\n  <star-org-chart ariaLabel=\"Company\" [value]=\"company\" [(collapsedKeys)]=\"closed\" />\n  <p class=\"docs-output\" role=\"status\">Collapsed: {{ closed().join(', ') || 'none' }}</p>\n</div>",
@@ -20940,8 +21301,10 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "password/feedback": "<div class=\"docs-stack\">\n  <star-field label=\"New password\">\n    <star-password [(value)]=\"created\" feedback />\n  </star-field>\n</div>",
   "password/rules": "<div class=\"docs-stack\">\n  <star-field label=\"PIN phrase\">\n    <star-password [(value)]=\"phrase\" feedback [rules]=\"rules\" />\n  </star-field>\n</div>",
   "pick-list/basic": "<div class=\"docs-stack\">\n  <star-pick-list [(source)]=\"available\" [(target)]=\"chosen\" />\n  <p class=\"docs-output\" role=\"status\">Chosen: {{ chosen().join(', ') || 'none' }}</p>\n</div>",
+  "pick-list/filter-drag": "<div class=\"docs-stack\">\n  <star-pick-list\n    [(source)]=\"cities\"\n    [(target)]=\"route\"\n    filter\n    filterMatchMode=\"startsWith\"\n    dragdrop\n    showTargetControls\n    stripedRows\n    sourceHeader=\"Cities\"\n    targetHeader=\"Route\"\n    sourceFilterPlaceholder=\"Find a city\"\n    targetFilterPlaceholder=\"Find a stop\"\n    (moveToTarget)=\"lastMove.set('to the route: ' + names($event))\"\n    (moveAllToTarget)=\"lastMove.set('all to the route: ' + names($event))\"\n    (moveToSource)=\"lastMove.set('back to the cities: ' + names($event))\"\n    (moveAllToSource)=\"lastMove.set('all back: ' + names($event))\"\n    (targetReorder)=\"lastMove.set('route reordered: ' + names($event))\"\n  />\n  <p class=\"docs-output\" role=\"status\">Last move: {{ lastMove() || 'none' }}</p>\n</div>",
   "pick-list/item": "<div class=\"docs-stack\">\n  <star-pick-list [(source)]=\"people\" [(target)]=\"team\" optionLabel=\"name\">\n    <ng-template starItem [starItemOf]=\"people()\" let-member let-list=\"list\">\n      {{ member.name }}\n      @if (list === 'target') {\n        <small style=\"color: var(--star-text-muted)\">on the team</small>\n      }\n    </ng-template>\n  </star-pick-list>\n</div>",
   "pick-list/objects": "<div class=\"docs-stack\">\n  <star-pick-list\n    [(source)]=\"people\"\n    [(target)]=\"team\"\n    optionLabel=\"name\"\n    sourceHeader=\"Available people\"\n    targetHeader=\"Project team\"\n  />\n  <p class=\"docs-output\" role=\"status\">Team size: {{ team().length }}</p>\n</div>",
+  "pick-list/slots": "<star-pick-list [(source)]=\"crates\" [(target)]=\"loaded\">\n  <ng-template starPickListHeader let-list let-count=\"count\">\n    {{ list === 'source' ? 'In the warehouse' : 'On the truck' }} ({{ count }} crates)\n  </ng-template>\n  <ng-template starEmpty let-list=\"list\">\n    {{ list === 'source' ? 'The warehouse is empty.' : 'Nothing loaded yet.' }}\n  </ng-template>\n</star-pick-list>",
   "pivot-grid/configurator": "<star-pivot-grid\n  [data]=\"sales\"\n  [(config)]=\"openConfig\"\n  [fields]=\"fields\"\n  showConfigurator\n  height=\"22rem\"\n  ariaLabel=\"Sales by product\"\n  locale=\"en-IE\"\n/>",
   "pivot-grid/csv": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <button\n      type=\"button\"\n      class=\"star-btn star-btn--secondary star-btn--sm\"\n      (click)=\"showCsv()\"\n    >\n      Show CSV\n    </button>\n  </div>\n  <star-pivot-grid\n    #csvGrid\n    [data]=\"sales\"\n    [(config)]=\"csvConfig\"\n    height=\"16rem\"\n    ariaLabel=\"Units by product and region\"\n    locale=\"en-IE\"\n  />\n  <pre class=\"docs-output\">{{ csv() }}</pre>\n</div>",
   "pivot-grid/sales": "<div class=\"docs-stack\">\n  <star-pivot-grid\n    [data]=\"sales\"\n    [(config)]=\"salesConfig\"\n    height=\"24rem\"\n    ariaLabel=\"Sales by region and quarter\"\n    locale=\"en-IE\"\n    (cellClick)=\"onCell($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">{{ drill() }}</p>\n</div>",

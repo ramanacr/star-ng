@@ -65,8 +65,43 @@ interface Task {
         </div>
       </docs-example>
 
+      <docs-example
+        heading="Header, filter and drag and drop"
+        source="order-list/filter-drag"
+        [script]="filterScript"
+        note="header names the list. filter shows a search field (filterBy, filterMatchMode, filterLocale). dragdrop lets the mouse drag an item to the place of another item; the buttons and Alt with the arrow keys do the same without a mouse. selection is a two-way model of the selected item. reorder emits the moved item. controlsPosition puts the buttons at the end; stripedRows and scrollHeight change the look."
+      >
+        <div class="docs-stack">
+          <star-order-list
+            [(value)]="queue"
+            [(selection)]="current"
+            header="Delivery queue"
+            filter
+            dragdrop
+            stripedRows
+            controlsPosition="end"
+            scrollHeight="12rem"
+            (reorder)="moved.set($event.items.join(', '))"
+          />
+          <p class="docs-output" role="status">
+            Selected: {{ current().join(', ') || 'none' }}. Last moved: {{ moved() || 'none' }}.
+          </p>
+        </div>
+      </docs-example>
+
+      <h2>Names in PrimeNG</h2>
+      <p>
+        The PrimeNG p-orderlist names that StarNG gives in another way: the filter shows with filter
+        (PrimeNG shows it when filterBy is set); onFilterEvent is listFilter; emptymessage and
+        emptyfiltermessage are the one starEmpty slot (its context has the filter text); listStyle,
+        style, buttonProps and the move...ButtonProps inputs are the pass-through pt; onFocus and
+        onBlur are the native focusin and focusout events. Not needed: tabindex and autoOptionFocus
+        (every item is a tab stop), trackBy and dataKey (items are compared by identity), responsive
+        and breakpoint (the list and its buttons stay side by side; they are narrow).
+      </p>
+
       <docs-api
-        [of]="['StarOrderList', 'StarItemTemplate']"
+        [of]="['StarOrderList', 'StarItemTemplate', 'StarListFilterTemplate']"
         [slots]="slots"
         [cssVars]="cssVars"
         [keyboard]="keyboard"
@@ -88,6 +123,18 @@ export class OrderListPage {
       .join(', '),
   );
 
+  protected readonly queue = signal<readonly string[]>([
+    'Order 1041',
+    'Order 1042',
+    'Order 1043',
+    'Order 1044',
+    'Order 1045',
+  ]);
+  protected readonly current = signal<readonly string[]>([]);
+  protected readonly moved = signal('');
+  protected readonly filterScript = `readonly queue = signal<readonly string[]>(['Order 1041', 'Order 1042', 'Order 1043', 'Order 1044', 'Order 1045']);
+readonly current = signal<readonly string[]>([]);
+readonly moved = signal('');`;
   protected readonly basicScript = `readonly steps = signal<readonly string[]>(['Plan', 'Build', 'Test', 'Release']);`;
   protected readonly objectsScript = `interface Task { id: number; name: string }
 readonly playlist = signal<readonly Task[]>([
@@ -104,6 +151,25 @@ readonly playlist = signal<readonly Task[]>([ /* as above */ ]);`;
       name: 'ng-template[starItem]',
       description:
         'Content child. Replaces the label of an item. The grip icon stays. The context has $implicit (the item), index (from 0) and selected. Set starItemOf to the items to type the item. Do not add focusable elements: every item is an option with its own keys.',
+    },
+    {
+      name: 'ng-template[starHeader]',
+      description: 'Content child. Replaces the header text. PrimeNG header template.',
+    },
+    {
+      name: 'ng-template[starListFilter]',
+      description:
+        'Content child, with filter. Replaces the filter field. The context has $implicit (the filter text), filter(text) and reset(). PrimeNG filter template.',
+    },
+    {
+      name: 'ng-template[starEmpty]',
+      description:
+        'Content child. Replaces the empty message. $implicit is the filter text. PrimeNG emptymessage and emptyfiltermessage.',
+    },
+    {
+      name: 'ng-template[starIcon]',
+      description:
+        'Content child. Replaces the icon of a button: moveTop, moveUp, moveDown or moveBottom. PrimeNG movetopicon and the other icon templates.',
     },
   ];
   protected readonly cssVars: readonly DocsRow[] = [

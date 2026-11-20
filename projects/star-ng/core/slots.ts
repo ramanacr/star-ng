@@ -101,6 +101,8 @@ export class StarFooterTemplate extends StarSlot<object> {
 export interface StarEmptyContext {
   /** Filter text, `''` when there is none. */
   readonly $implicit: string;
+  /** Only in `star-pick-list`: the empty list (`let-list="list"`). */
+  readonly list?: 'source' | 'target';
 }
 
 /** Content shown when there is nothing to list. PrimeNG `#empty` template. */
@@ -153,7 +155,20 @@ export class StarGroupTemplate extends StarSlot<StarGroupContext> {
 }
 
 /** Icons a control lets you replace. */
-export type StarIconSlotName = 'dropdown' | 'clear' | 'filter' | 'check' | 'toggle';
+export type StarIconSlotName =
+  | 'dropdown'
+  | 'clear'
+  | 'filter'
+  | 'check'
+  | 'toggle'
+  | 'moveUp'
+  | 'moveTop'
+  | 'moveDown'
+  | 'moveBottom'
+  | 'moveToTarget'
+  | 'moveAllToTarget'
+  | 'moveToSource'
+  | 'moveAllToSource';
 
 /** Context of the icon slot. */
 export interface StarIconContext {

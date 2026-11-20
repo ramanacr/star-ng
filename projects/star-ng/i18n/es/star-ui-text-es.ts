@@ -181,6 +181,8 @@ export const STAR_UI_TEXT_ES: StarUiText = {
   moveAllToSource: 'Mover todo al origen',
   pickListSource: 'Disponibles',
   pickListTarget: 'Seleccionados',
+  itemsMoved: (count, list) =>
+    `${count} ${count === 1 ? 'elemento movido' : 'elementos movidos'} a ${list}`,
 
   chooseDate: 'Elegir fecha',
   chooseMonth: 'Elegir mes',

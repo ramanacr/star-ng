@@ -208,6 +208,8 @@ export interface StarUiText {
   readonly moveAllToSource: string;
   readonly pickListSource: string;
   readonly pickListTarget: string;
+  /** Live message after a pick list move: the count and the name of the list it went to. */
+  readonly itemsMoved: (count: number, list: string) => string;
   // Dates
   readonly chooseDate: string;
   readonly chooseMonth: string;
@@ -1072,6 +1074,7 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   moveAllToSource: 'Move all to source',
   pickListSource: 'Available',
   pickListTarget: 'Selected',
+  itemsMoved: (count, list) => `${count} ${count === 1 ? 'item' : 'items'} moved to ${list}`,
 
   chooseDate: 'Choose date',
   chooseMonth: 'Choose month',
@@ -1686,6 +1689,7 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   copiedCells: ['count'],
   pastedCells: ['count'],
   itemPosition: ['label', 'position', 'total'],
+  itemsMoved: ['count', 'list'],
   treeMovedBefore: ['label', 'target'],
   treeMovedAfter: ['label', 'target'],
   treeMovedInside: ['label', 'target'],
