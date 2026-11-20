@@ -82,6 +82,10 @@
   (scroll)="onScroll($event)"
 >
   <table
+    [attr.role]="cellMode() ? 'grid' : null"
+    [attr.aria-multiselectable]="
+      cellMode() && (selectionMode() === 'range' || selectionMode() === 'multiple') ? true : null
+    "
     [attr.aria-colcount]="ariaColCount()"
     [attr.aria-label]="ariaLabel()"
     [attr.aria-busy]="loading() || null"
@@ -274,7 +278,7 @@
           @if (expandable()) {
             <td class="star-table__expander"></td>
           }
-          @if (selectionMode()) {
+          @if (rowSelectionMode()) {
             <td class="star-table__select"></td>
           }
           @for (column of renderedColumns(); track column.field) {
@@ -356,7 +360,12 @@
         </tr>
       }
     </thead>
-    <tbody #body>
+    <tbody
+      #body
+      [starContextMenu]="rowMenu"
+      (menuOpened)="onMenuOpened()"
+      (menuClosed)="onMenuClosed()"
+    >
       @if (loading() && loadingSlot(); as loader) {
         <tr>
           <td class="star-table__loading" [attr.colspan]="colspan()">
@@ -372,7 +381,7 @@
             @if (expandable()) {
               <td class="star-table__expander"></td>
             }
-            @if (selectionMode()) {
+            @if (rowSelectionMode()) {
               <td class="star-table__select"><star-skeleton size="1.25rem" /></td>
             }
             @for (column of renderedColumns(); track column.field) {
@@ -450,7 +459,7 @@
               @if (expandable()) {
                 <td class="star-table__expander"></td>
               }
-              @if (selectionMode()) {
+              @if (rowSelectionMode()) {
                 <td class="star-table__select"></td>
               }
               @for (column of renderedColumns(); track column.field) {
@@ -501,15 +510,22 @@
               [class.star-table__row--expanded]="expandable() && isExpanded(row)"
               [class.star-table__row--editing]="isRowInEdit(row)"
               [class.star-table__row--deleted]="isDeleted(row)"
-              [attr.aria-selected]="selectionMode() ? isSelected(row) : null"
+              [attr.aria-selected]="rowSelectionMode() ? isSelected(row) : null"
               [attr.tabindex]="rowTabIndex(row)"
-              [attr.data-select-key]="selectionMode() ? rowKeyText(row) : null"
+              [attr.data-select-key]="rowSelectionMode() ? rowKeyText(row) : null"
+              [attr.data-row]="cellKeys() ? rowKeyText(row) : null"
+              [class.star-table__row--menu]="isMenuRow(row)"
               (click)="onRowClick(row, $event)"
+              (contextmenu)="onRowContextMenu(row, $event)"
               (focusin)="onRowFocus(row)"
               (keydown)="onRowKey(row, $event); onSelectionKey(row, $event)"
             >
               @if (reorderableRows()) {
-                <td class="star-table__reorder">
+                <td
+                  class="star-table__reorder"
+                  [attr.data-field]="cellKeys() ? '$reorder' : null"
+                  [attr.tabindex]="leadTabIndex(row, '$reorder')"
+                >
                   <button
                     type="button"
                     class="star-table__toggle"
@@ -531,7 +547,11 @@
                 </td>
               }
               @if (expandable()) {
-                <td class="star-table__expander">
+                <td
+                  class="star-table__expander"
+                  [attr.data-field]="cellKeys() ? '$expander' : null"
+                  [attr.tabindex]="leadTabIndex(row, '$expander')"
+                >
                   <button
                     type="button"
                     class="star-table__toggle"
@@ -545,7 +565,11 @@
                 </td>
               }
               @if (selectionMode() === 'multiple') {
-                <td class="star-table__select">
+                <td
+                  class="star-table__select"
+                  [attr.data-field]="cellKeys() ? '$select' : null"
+                  [attr.tabindex]="leadTabIndex(row, '$select')"
+                >
                   <star-checkbox
                     #rowBox
                     [checked]="isSelected(row)"
@@ -556,7 +580,11 @@
                   />
                 </td>
               } @else if (selectionMode() === 'single') {
-                <td class="star-table__select">
+                <td
+                  class="star-table__select"
+                  [attr.data-field]="cellKeys() ? '$select' : null"
+                  [attr.tabindex]="leadTabIndex(row, '$select')"
+                >
                   <input
                     type="radio"
                     class="star-table__radio"
@@ -590,6 +618,12 @@
                     [attr.headers]="headerIds()?.headers?.get(column.field) ?? null"
                     [class.star-table__cell--changed]="isChanged(row, column)"
                     [attr.data-label]="column.header"
+                    [attr.data-field]="cellKeys() ? column.field : null"
+                    [attr.tabindex]="cellTabIndex(row, column)"
+                    [class.star-table__cell--selected]="isCellSelected(row, column)"
+                    [attr.aria-selected]="
+                      cellMode() && cellSelectionMode() ? isCellSelected(row, column) : null
+                    "
                   >
                     @if (firstCell && isDeleted(row)) {
                       <span class="star-sr-only">{{ text.rowDeleted }}: </span>
@@ -686,6 +720,7 @@
                         type="button"
                         class="star-table__edit"
                         [attr.data-edit]="editKey(row, column)"
+                        [attr.tabindex]="editTabIndex(row, column)"
                         (click)="startEdit(row, column)"
                       >
                         <!-- The name is the action and the visible value (WCAG 2.5.3). -->
@@ -720,7 +755,12 @@
                 }
               }
               @if (rowEditMode()) {
-                <td class="star-table__row-actions" [attr.aria-colindex]="ariaColCount()">
+                <td
+                  class="star-table__row-actions"
+                  [attr.aria-colindex]="ariaColCount()"
+                  [attr.data-field]="cellKeys() ? '$actions' : null"
+                  [attr.tabindex]="leadTabIndex(row, '$actions')"
+                >
                   @if (isRowInEdit(row)) {
                     @if (rowEditActionsSlot(); as custom) {
                       <ng-container *ngTemplateOutlet="custom; context: rowActionsContext(row)" />
@@ -801,7 +841,7 @@
           @if (expandable()) {
             <td class="star-table__expander"></td>
           }
-          @if (selectionMode()) {
+          @if (rowSelectionMode()) {
             <td class="star-table__select"></td>
           }
           @for (column of renderedColumns(); track column.field) {
@@ -842,6 +882,12 @@
     }
   </table>
 </div>
+<star-menu
+  #rowMenu
+  [items]="menuItems()"
+  [ariaLabel]="text.actions"
+  (itemClick)="onMenuItem($event)"
+/>
 <ng-content select="[starTableSummary]" />
 <ng-template #summaryCell let-summary>
   @if (summary.label) {
@@ -861,9 +907,24 @@
     <ng-container
       *ngTemplateOutlet="
         custom;
-        context: { $implicit: row, value: cellValue(row, column), index: i }
+        context: {
+          $implicit: row,
+          value: cellValue(row, column),
+          index: i,
+          highlight: highlighter(row, column),
+        }
       "
     />
+  } @else if (searchText()) {
+    @for (part of searchParts(row, column); track $index) {
+      @if (part.match) {
+        <mark class="star-table__mark" [class.star-table__mark--active]="part.active">{{
+          part.text
+        }}</mark>
+      } @else {
+        <span>{{ part.text }}</span>
+      }
+    }
   } @else {
     {{ cellText(row, column) }}
   }

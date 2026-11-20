@@ -45,6 +45,7 @@ import {
   starSlot,
   starSlotMap,
 } from '@star-ng/ui/core';
+import { StarContextMenu, StarMenu } from '@star-ng/ui/menu';
 import { StarPaginator } from '@star-ng/ui/paginator';
 import { StarPopover } from '@star-ng/ui/popover';
 import { StarMultiSelect, StarSelect } from '@star-ng/ui/select';
@@ -68,6 +69,7 @@ import {
 } from './table-column-window';
 import { STAR_TABLE_DEFAULTS } from './table-defaults';
 import {
+  parseEditorText,
   sameEditValue,
   StarBatchChanges,
   starCellError,
@@ -98,6 +100,7 @@ import {
   StarTableMatchMode,
 } from './table-filter';
 import { StarTableFilterMenu } from './table-filter-menu';
+import { StarTableInteraction } from './table-interaction';
 import {
   measureHeaderCells,
   NO_WIDTHS,
@@ -115,6 +118,7 @@ import {
   StarTablePinCell,
 } from './table-pinning';
 import { rowSpans } from './table-row-span';
+import type { StarTableTextPart } from './table-search';
 import {
   StarHeaderCheckboxToggleEvent,
   StarRowSelectEvent,
@@ -326,8 +330,6 @@ function isTextEntry(target: EventTarget | null): boolean {
   return target instanceof HTMLInputElement && TEXT_INPUTS.has(target.type);
 }
 
-/** A number in plain decimal syntax: optional sign, digits, optional decimal part and exponent. */
-const DECIMAL_NUMBER = /^[+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?$/i;
 /** Smallest width, in pixels, that the user can give a column. */
 const MIN_COLUMN_WIDTH = 48;
 /** `aria-valuemax` of a resize handle. The column width itself has no upper limit. */
@@ -381,6 +383,8 @@ export interface StarCellContext<T> {
   readonly $implicit: T;
   readonly value: unknown;
   readonly index: number;
+  /** The parts of a text with the `searchText` marks, for a template that shows them. */
+  readonly highlight: (text: unknown) => readonly StarTableTextPart[];
 }
 
 /** Custom cell: `<ng-template starCell="status" let-row let-value="value">…</ng-template>`. */
@@ -452,6 +456,8 @@ export class StarRowExpansionTemplate<T = unknown> {
     NgTemplateOutlet,
     StarButton,
     StarCheckbox,
+    StarContextMenu,
+    StarMenu,
     StarMultiSelect,
     StarPaginator,
     StarSelect,
@@ -484,7 +490,7 @@ export class StarRowExpansionTemplate<T = unknown> {
   },
   templateUrl: './table.html',
 })
-export class StarTable<T> {
+export class StarTable<T> extends StarTableInteraction<T> {
   protected readonly text = inject(STAR_UI_TEXT);
   /** Defaults from `provideStarTableDefaults`, then `provideStarNg`. */
   protected readonly defaults = injectStarControlDefaults(
@@ -600,12 +606,6 @@ export class StarTable<T> {
   /** Total rows on the server (lazy mode). */
   readonly totalRecords = input(0);
 
-  /**
-   * Row selection. It adds the selection column: a check box per row and a tri-state header check
-   * box (`'multiple'`, PrimeNG `p-tableCheckbox` / `p-tableHeaderCheckbox`), or a radio per row
-   * (`'single'`, PrimeNG `p-tableRadioButton`).
-   */
-  readonly selectionMode = input<'single' | 'multiple' | null>(null);
   /**
    * Selected rows. Two-way. Rows match by `dataKey`, so new row objects stay selected.
    *
@@ -824,12 +824,12 @@ export class StarTable<T> {
   readonly headerCheckboxToggle = output<StarHeaderCheckboxToggleEvent>();
 
   /** The cell in edit mode: `<row key>|<field>` text, or `null`. */
-  private readonly editing = signal<string | null>(null);
+  protected readonly editing = signal<string | null>(null);
   private readonly announcer = inject(StarAnnouncer);
   /** Editor values of the rows (or the cell) in edit. */
   private readonly drafts = new StarEditDrafts();
   /** Pending change set of `batchEdit`. */
-  private readonly batch = new StarEditBatch<T>((row) => this.trackKey(row));
+  protected readonly batch = new StarEditBatch<T>((row) => this.trackKey(row));
   /** New rows in row edit that the user did not save yet (without `batchEdit`). */
   private readonly newRows = signal<readonly { row: T; position: 'top' | 'bottom' }[]>([]);
   private readonly editingRowSet = computed(() => new Set(this.editingRowKeys()));
@@ -1111,7 +1111,7 @@ export class StarTable<T> {
   });
 
   /** Sorted rows with the new rows. */
-  private readonly withAdded = computed(() => {
+  protected readonly withAdded = computed(() => {
     const { top, bottom } = this.addedRows();
     const rows = this.sorted();
     return top.length || bottom.length ? [...top, ...rows, ...bottom] : rows;
@@ -1132,8 +1132,8 @@ export class StarTable<T> {
 
   private readonly scrollTop = signal(0);
   private readonly viewportHeight = signal(0);
-  private readonly scroller = viewChild<ElementRef<HTMLElement>>('scroller');
-  private readonly body = viewChild<ElementRef<HTMLElement>>('body');
+  protected readonly scroller = viewChild<ElementRef<HTMLElement>>('scroller');
+  protected readonly body = viewChild<ElementRef<HTMLElement>>('body');
   /** The choice editor of the cell in edit (one cell at a time). */
   private readonly selectEditor = viewChild('selectEditor', { read: StarSelect });
 
@@ -1209,7 +1209,7 @@ export class StarTable<T> {
   private readonly bodyOffset = signal(0);
 
   /** Items (group headings and rows) and their heights, with rows of different heights. */
-  private readonly layout = computed<VirtualLayout<T> | null>(() => {
+  protected readonly layout = computed<VirtualLayout<T> | null>(() => {
     if (!this.variableHeights() || this.loading()) return null;
     const rows = this.pageRows();
     const grouped = !!this.groupBy();
@@ -1536,7 +1536,9 @@ export class StarTable<T> {
    */
   protected onBodyKeydown(event: KeyboardEvent): void {
     this.onUndoKey(event);
-    if (event.key !== 'Tab' || !this.virtualScroll() || event.defaultPrevented) return;
+    if (event.key !== 'Tab' || !this.virtualScroll() || event.defaultPrevented || this.cellMode()) {
+      return;
+    }
     const body = this.body()?.nativeElement;
     const index = this.itemOf(event.target as Element);
     if (!body || index < 0) return;
@@ -1578,7 +1580,7 @@ export class StarTable<T> {
   }
 
   /** Scrolls an item of the virtual list to the middle of the view. */
-  private revealItem(index: number): void {
+  protected revealItem(index: number): void {
     const scroller = this.scroller()?.nativeElement;
     if (!scroller) return;
     const layout = this.layout();
@@ -1598,13 +1600,14 @@ export class StarTable<T> {
       this.renderedColumns().length +
       (this.columnWindow().first ? 1 : 0) +
       (this.columnWindow().last ? 1 : 0) +
-      (this.selectionMode() ? 1 : 0) +
+      (this.rowSelectionMode() ? 1 : 0) +
       (this.expandable() ? 1 : 0) +
       (this.reorderableRows() ? 1 : 0) +
       (this.rowEditMode() ? 1 : 0),
   );
 
   constructor() {
+    super();
     // Key mode: `selection` follows the keys and `value` (owner key changes, a lazy reload, an
     // edit that gives new row objects).
     effect(() => {
@@ -1814,7 +1817,7 @@ export class StarTable<T> {
   }
 
   /** Cell value in the row (`value`), without pending changes. */
-  private rawValue(row: T, column: StarColumn<T>): unknown {
+  protected rawValue(row: T, column: StarColumn<T>): unknown {
     return column.value
       ? column.value(row)
       : (row as Record<string, unknown> | null)?.[column.field];
@@ -2023,11 +2026,11 @@ export class StarTable<T> {
     );
   });
 
-  private readonly scrollLeft = signal(0);
-  private readonly viewportWidth = signal(0);
+  protected readonly scrollLeft = signal(0);
+  protected readonly viewportWidth = signal(0);
 
   /** Width in pixels of a column with `virtualColumns`. */
-  private columnPixels(column: StarColumn<T>): number {
+  protected columnPixels(column: StarColumn<T>): number {
     return (
       this.columnWidths()[column.field] ??
       cssPixels(column.width) ??
@@ -2062,7 +2065,7 @@ export class StarTable<T> {
     const lead =
       (this.reorderableRows() ? 1 : 0) +
       (this.expandable() ? 1 : 0) +
-      (this.selectionMode() ? 1 : 0);
+      (this.rowSelectionMode() ? 1 : 0);
     return new Map(this.visibleColumns().map((column, index) => [column.field, lead + index + 1]));
   });
 
@@ -2196,20 +2199,6 @@ export class StarTable<T> {
   }
 
   /**
-   * Value of an editor text: a number or `null` for the `'number'` editor, else the text. The
-   * number editor accepts only a finite number in plain decimal syntax (sign, digits, decimal
-   * part, exponent); other text ("Infinity", "0x10", "0b1", "1e999") gives `NaN`.
-   */
-  private parseEditor(column: StarColumn<T>, text: string): string | number | null {
-    if (column.editor !== 'number') return text;
-    const trimmed = text.trim();
-    if (trimmed === '') return null;
-    if (!DECIMAL_NUMBER.test(trimmed)) return Number.NaN;
-    const value = Number(trimmed);
-    return Number.isFinite(value) ? value : Number.NaN;
-  }
-
-  /**
    * The user typed in an editor: keep the raw text (what the editor shows) and the parsed value
    * (what validation and Save use), so its error shows at once. Text that is not a number (or
    * `validity.badInput`) gives `NaN`, which shows a message and blocks Save.
@@ -2220,7 +2209,9 @@ export class StarTable<T> {
     editor: HTMLInputElement | HTMLSelectElement,
   ): void {
     const key = this.trackKey(row);
-    const value = editor.validity?.badInput ? Number.NaN : this.parseEditor(column, editor.value);
+    const value = editor.validity?.badInput
+      ? Number.NaN
+      : parseEditorText(column.editor, editor.value);
     this.drafts.set(key, column.field, value);
     this.drafts.setText(key, column.field, editor.value);
   }
@@ -2309,7 +2300,7 @@ export class StarTable<T> {
     const previous = this.rawValue(row, column);
     // Text that is not a number: the browser gives '' (`validity.badInput`). The value is NaN,
     // which fails validation: the editor stays open with its message.
-    const value = badInput ? Number.NaN : this.parseEditor(column, text);
+    const value = badInput ? Number.NaN : parseEditorText(column.editor, text);
     const error = this.errorOf(row, column, value);
     if (error) {
       // A text or number editor stays open with its message; the value is not saved.
@@ -2348,7 +2339,7 @@ export class StarTable<T> {
     this.focusAfterRender(`[data-edit="${CSS.escape(key)}"]`);
   }
 
-  private announce(message: string): void {
+  protected announce(message: string): void {
     void this.announcer.announce(message, 'polite');
   }
 
@@ -2490,6 +2481,9 @@ export class StarTable<T> {
   /** F2 in a row opens its editors (`editMode="row"`). */
   protected onRowKey(row: T, event: KeyboardEvent): void {
     if (event.key !== 'F2' || !this.rowEditMode() || this.isRowInEdit(row)) return;
+    // In a grid, F2 on a lead cell enters (or leaves) its controls; on the actions cell it edits.
+    const lead = 'td[data-field^="$"]:not([data-field="$actions"])';
+    if (this.cellMode() && (event.target as Element).closest(lead)) return;
     event.preventDefault();
     this.initRowEdit(row);
   }
@@ -2932,7 +2926,7 @@ export class StarTable<T> {
 
   /** Selection logic (`table-selection.ts`). */
   private readonly select = new StarTableSelection<T>({
-    mode: this.selectionMode,
+    mode: this.rowSelectionMode,
     selection: this.selection,
     selectionKeys: this.selectionKeys,
     selectAll: this.selectAll,
@@ -2940,6 +2934,7 @@ export class StarTable<T> {
     pageOnly: this.selectionPageOnly,
     rowSelectable: this.rowSelectable,
     keyOf: (row) => this.trackKey(row),
+    gridCell: (tr) => (this.cellMode() ? tr.querySelector('td[data-field="$select"]') : null),
     rows: computed(() => (this.lazy() ? this.pageRows() : this.withAdded())),
     pageRows: this.pageRows,
     knownRows: this.value,
@@ -2950,6 +2945,10 @@ export class StarTable<T> {
   });
   protected readonly headerState = this.select.headerState;
   protected readonly headerEnabled = this.select.headerEnabled;
+  /** Rows in the DOM now (the virtual window with the focused row). */
+  protected readonly renderedRows = computed(() =>
+    this.bodyEntries().flatMap((entry) => (entry.kind === 'row' ? [entry.row] : [])),
+  );
   /** Key of the row that is the tab stop with `metaKeySelection` (default: the first row). */
   private readonly activeRow = signal<{ readonly key: unknown } | null>(null);
 
@@ -2981,8 +2980,8 @@ export class StarTable<T> {
    * rendered row (with virtual scroll, the first row of the window).
    */
   private readonly tabStop = computed<{ readonly key: unknown } | null>(() => {
-    if (!this.metaKeySelection() || !this.selectionMode()) return null;
-    const rows = this.bodyEntries().flatMap((entry) => (entry.kind === 'row' ? [entry.row] : []));
+    if (!this.metaKeySelection() || !this.rowSelectionMode() || this.cellMode()) return null;
+    const rows = this.renderedRows();
     const active = this.activeRow();
     if (active && rows.some((row) => Object.is(this.trackKey(row), active.key))) return active;
     return { key: rows.length ? this.trackKey(rows[0]) : undefined };
