@@ -398,3 +398,35 @@ describe('the keyboard hint', () => {
     expect(document.getElementById('star-drag-hint')!.textContent).toContain('Space');
   });
 });
+
+@Component({
+  imports: [StarDraggable, StarDroppable],
+  template: `
+    <div class="plain" starDraggable dragLabel="Plain">Plain</div>
+    <section starDroppable dropLabel="Zone">Zone</section>
+    @if (late()) {
+      <div class="late" starDraggable dragLabel="Late">Late</div>
+    }
+  `,
+})
+class NoDataHost {
+  readonly late = signal(false);
+}
+
+describe('focus after a keyboard drop without data', () => {
+  it('does not move the focus to another draggable without data', async () => {
+    vi.spyOn(TestBed.inject(StarAnnouncer), 'announce').mockResolvedValue();
+    const fixture = TestBed.createComponent(NoDataHost);
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+    const plain = el.querySelector<HTMLElement>('.plain')!;
+    plain.focus();
+    key(plain, ' ');
+    key(plain, 'ArrowDown');
+    key(plain, ' ');
+    fixture.componentInstance.late.set(true);
+    await fixture.whenStable();
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(document.activeElement).toBe(plain);
+  });
+});

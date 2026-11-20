@@ -386,7 +386,10 @@ export class StarDraggable<T = unknown> {
           return;
         }
         const label = this.label();
-        this.registry.keepFocus(this.data());
+        // The focus follows the data (`===`). An item without data (`starDraggable` written as
+        // a plain attribute gives an empty text) has nothing to follow.
+        const data = this.data() as unknown;
+        if (data !== undefined && data !== null && data !== '') this.registry.keepFocus(data);
         this.finish(true, event);
         // The item stayed in place: it keeps the focus, and nothing else takes it.
         afterNextRender(
