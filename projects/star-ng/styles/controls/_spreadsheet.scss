@@ -1,0 +1,294 @@
+// Spreadsheet (StarSpreadsheet): toolbar, formula bar, a windowed grid and sheet tabs.
+@use '../shared' as *;
+
+.star-spreadsheet {
+  display: flex;
+  flex-direction: column;
+  min-inline-size: 0;
+  border: 1px solid var(--star-border);
+  border-radius: var(--star-radius-lg);
+  background: var(--star-surface);
+  color: var(--star-text);
+  font: var(--star-type-body);
+  overflow: hidden;
+}
+.star-spreadsheet__toolbar {
+  border-block-end: 1px solid var(--star-border);
+  border-radius: 0;
+}
+.star-spreadsheet__divider {
+  align-self: stretch;
+  inline-size: 1px;
+  margin-inline: 0.25rem;
+  background: var(--star-border);
+}
+// The ".0" and ".00" glyphs are generated content, so the button name is only its label.
+.star-spreadsheet__decimals {
+  font: var(--star-type-label);
+
+  &::before {
+    content: attr(data-glyph);
+  }
+}
+.star-spreadsheet__select {
+  block-size: 2rem;
+  padding-inline: 0.5rem;
+  border: 1px solid var(--star-border-strong);
+  border-radius: var(--star-radius-sm);
+  background: var(--star-surface);
+  color: var(--star-text);
+  font: var(--star-type-body-sm);
+
+  &:focus-visible {
+    outline: 2px solid var(--star-accent);
+    outline-offset: 1px;
+  }
+}
+.star-spreadsheet__bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.5rem;
+  border-block-end: 1px solid var(--star-border);
+}
+.star-spreadsheet__name {
+  min-inline-size: 4rem;
+  padding-inline-end: 0.5rem;
+  border-inline-end: 1px solid var(--star-border);
+  font: var(--star-type-label);
+  color: var(--star-text-strong);
+}
+.star-spreadsheet__fx {
+  font: var(--star-type-code);
+  font-style: italic;
+  color: var(--star-text-muted);
+}
+.star-spreadsheet__formula {
+  flex: 1;
+  min-inline-size: 0;
+  block-size: 1.75rem;
+  padding-inline: 0.5rem;
+  border: 1px solid transparent;
+  border-radius: var(--star-radius-sm);
+  background: transparent;
+  color: var(--star-text);
+  font: var(--star-type-code);
+
+  &:focus-visible {
+    border-color: var(--star-accent);
+    outline: none;
+    box-shadow: var(--star-focus-ring);
+  }
+}
+.star-spreadsheet__panel {
+  min-block-size: 0;
+}
+// The grid is always left to right (columns A, B, C), as in other spreadsheets.
+.star-spreadsheet__viewport {
+  position: relative;
+  overflow: auto;
+  overscroll-behavior: contain;
+
+  &:has(.star-spreadsheet__grid:focus-visible) {
+    outline: 2px solid var(--star-accent);
+    outline-offset: -2px;
+  }
+}
+.star-spreadsheet__grid {
+  position: relative;
+  outline: none;
+  user-select: none;
+}
+.star-spreadsheet__row {
+  display: grid;
+  block-size: 28px;
+}
+.star-spreadsheet__row--head {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 3;
+  background: var(--star-surface-muted);
+}
+.star-spreadsheet__corner,
+.star-spreadsheet__colhead,
+.star-spreadsheet__rowhead {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-inline-end: 1px solid var(--star-border);
+  border-block-end: 1px solid var(--star-border);
+  background: var(--star-surface-muted);
+  font: var(--star-type-label);
+  color: var(--star-text-muted);
+  cursor: default;
+}
+.star-spreadsheet__corner {
+  position: sticky;
+  left: 0;
+  z-index: 4;
+  cursor: pointer;
+}
+.star-spreadsheet__rowhead {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+}
+.star-spreadsheet__colhead--selected,
+.star-spreadsheet__rowhead--selected {
+  background: var(--star-accent-soft);
+  color: var(--star-text-strong);
+}
+.star-spreadsheet__resizer {
+  position: absolute;
+  z-index: 1;
+  touch-action: none;
+}
+.star-spreadsheet__resizer--col {
+  inset-block: 0;
+  right: -3px;
+  inline-size: 6px;
+  cursor: col-resize;
+}
+.star-spreadsheet__resizer--row {
+  inset-inline: 0;
+  bottom: -3px;
+  block-size: 6px;
+  cursor: row-resize;
+}
+.star-spreadsheet__cell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-inline-size: 0;
+  padding-inline: 0.375rem;
+  overflow: hidden;
+  border-inline-end: 1px solid var(--star-border);
+  border-block-end: 1px solid var(--star-border);
+  background: var(--star-surface);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  cursor: cell;
+}
+.star-spreadsheet__cell--start {
+  justify-content: flex-start;
+}
+.star-spreadsheet__cell--center {
+  justify-content: center;
+}
+.star-spreadsheet__cell--end {
+  justify-content: flex-end;
+  font-variant-numeric: tabular-nums;
+}
+.star-spreadsheet__cell--bold {
+  font-weight: 700;
+}
+.star-spreadsheet__cell--italic {
+  font-style: italic;
+}
+.star-spreadsheet__cell--error {
+  color: var(--star-danger);
+}
+.star-spreadsheet__cell--bg-accent {
+  background: var(--star-accent-soft);
+}
+.star-spreadsheet__cell--bg-success {
+  background: var(--star-success-soft);
+}
+.star-spreadsheet__cell--bg-warning {
+  background: var(--star-warning-soft);
+}
+.star-spreadsheet__cell--bg-danger {
+  background: var(--star-danger-soft);
+}
+.star-spreadsheet__cell--bg-muted {
+  background: var(--star-surface-muted);
+}
+// A touch on a selected cell drags the selection; other cells keep panning the sheet.
+.star-spreadsheet__cell--selected {
+  touch-action: none;
+}
+// Selected cells get a tint over their own background; the active cell stays clear.
+.star-spreadsheet__cell--selected:not(.star-spreadsheet__cell--active)::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--star-accent);
+  opacity: 0.12;
+  pointer-events: none;
+}
+.star-spreadsheet__cell--active {
+  box-shadow: inset 0 0 0 2px var(--star-accent);
+}
+.star-spreadsheet__editor {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  padding-inline: 0.375rem;
+  border: 2px solid var(--star-accent);
+  background: var(--star-surface);
+  color: var(--star-text-strong);
+  font: inherit;
+  outline: none;
+  box-shadow: var(--star-focus-ring);
+}
+.star-spreadsheet__selection {
+  position: absolute;
+  z-index: 1;
+  border: 2px solid var(--star-accent);
+  pointer-events: none;
+}
+.star-spreadsheet__fill {
+  position: absolute;
+  right: -5px;
+  bottom: -5px;
+  inline-size: 8px;
+  block-size: 8px;
+  border: 1px solid var(--star-surface);
+  background: var(--star-accent);
+  cursor: crosshair;
+  pointer-events: auto;
+  touch-action: none;
+}
+.star-spreadsheet__fill-target {
+  position: absolute;
+  z-index: 1;
+  border: 2px dashed var(--star-accent);
+  pointer-events: none;
+}
+.star-spreadsheet__tabs {
+  display: flex;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  border-block-start: 1px solid var(--star-border);
+  background: var(--star-surface-muted);
+  overflow-x: auto;
+}
+.star-spreadsheet__tab {
+  padding: 0.25rem 0.75rem;
+  border: 1px solid transparent;
+  border-radius: var(--star-radius-sm);
+  background: transparent;
+  color: var(--star-text-muted);
+  font: var(--star-type-label);
+  cursor: pointer;
+  transition: background-color var(--star-duration-fast) $ease;
+
+  &:hover {
+    background: var(--star-surface);
+  }
+  &[aria-selected='true'] {
+    border-color: var(--star-border);
+    background: var(--star-surface);
+    color: var(--star-text-strong);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--star-accent);
+    outline-offset: 1px;
+  }
+}
+@include star-reduced-motion {
+  .star-spreadsheet__tab {
+    transition: none;
+  }
+}

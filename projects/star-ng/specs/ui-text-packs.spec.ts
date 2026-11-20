@@ -20,8 +20,11 @@ const SAME_AS_ENGLISH: Record<string, readonly Name[]> = {
     'chartX',
     'chartY',
     'minute',
+    'fileName',
     'summaryMinimum',
     'summaryMaximum',
+    // "Zoom" is the usual German UI word.
+    'documentZoom',
     // A data point reads "series, category: value" in every language.
     'chartPointLabel',
   ],
@@ -37,6 +40,9 @@ const SAME_AS_ENGLISH: Record<string, readonly Name[]> = {
     'queryFalse',
     'queryRuleSummary',
     'chartPointLabel',
+    // "General" is the Spanish name of the number format too; "Zoom" is the Spanish UI word.
+    'spreadsheetFormatGeneral',
+    'documentZoom',
   ],
 };
 
@@ -62,6 +68,19 @@ const TEXT_PARAMS: Record<string, readonly string[]> = {
   sparklineSummary: ['first', 'last', 'min', 'max', 'trend'],
   barcodeInvalid: ['type'],
   qrCodeLabel: ['value'],
+  spreadsheetCellInfo: ['address', 'value', 'formula'],
+  spreadsheetFunction: ['args'],
+  spreadsheetRange: ['from', 'to'],
+  spreadsheetSelected: ['range'],
+  spreadsheetEditing: ['address'],
+  spreadsheetCleared: ['range'],
+  spreadsheetFilled: ['range'],
+  spreadsheetPasted: ['range'],
+  diagramConnection: ['from', 'to'],
+  diagramConnected: ['from', 'to'],
+  timeRange: ['start', 'end'],
+  eventMoved: ['when'],
+  eventResized: ['when'],
 };
 const TEXT_NAMES = new Set(['label', 'column', 'name', 'alt']);
 

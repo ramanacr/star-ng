@@ -11,10 +11,11 @@ import { fileURLToPath } from 'node:url';
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const dir = resolve(process.argv[2] ?? join(root, 'dist/star-ng'));
 
-// Size limits. Measured on 0.1.0: tarball 0.5 MB, unpacked 2.9 MB, 215 files. The limits leave
-// room for growth but fail on a mistake such as a copied `node_modules` or a coverage folder.
-const MAX_TARBALL_BYTES = 1.5 * 1024 * 1024;
-const MAX_UNPACKED_BYTES = 8 * 1024 * 1024;
+// Size limits. Measured on 0.3.1 after the G waves: tarball 1.6 MB, unpacked 7.8 MB, 333 files. The
+// limits fail on a mistake such as a copied `node_modules` or a coverage folder; they do not stop
+// deliberate growth (new controls, with their source maps).
+const MAX_TARBALL_BYTES = 2.5 * 1024 * 1024;
+const MAX_UNPACKED_BYTES = 12 * 1024 * 1024;
 const MAX_FILES = 600;
 
 // Built from parts, so this file does not match its own patterns (same as check-names.mjs).
