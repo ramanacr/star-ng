@@ -18,6 +18,7 @@ import {
   OutputEmitterRef,
   Signal,
   signal,
+  untracked,
   viewChild,
   WritableSignal,
 } from '@angular/core';
@@ -101,6 +102,7 @@ interface CellTarget<T> {
 @Directive({
   host: {
     '(focusin)': 'onCellFocusIn($event)',
+    '(focusout)': 'onCellFocusOut($event)',
     '(keydown)': 'onCellKeydown($event)',
     '(mousedown)': 'onCellMouseDown($event)',
     '(click)': 'onCellClick($event)',
@@ -271,6 +273,10 @@ export abstract class StarTableInteraction<T> {
   // ---------------------------------------------------------------- state
 
   private readonly active = signal<StarTableCellRef | null>(null);
+  /** Position (row, column index) of the active cell, to find the nearest cell when it goes. */
+  private activePos: { row: number; col: number } | null = null;
+  /** A cell of the grid had the focus last (the focus has not moved out of the table since). */
+  private gridFocused = false;
   /**
    * The active cell: the cell that has the focus, or had it last (`{ rowKey, field }`), else
    * `null`. Signal. Ignite UI `navigation.activeNode`, AG Grid `getFocusedCell()`.
@@ -321,6 +327,8 @@ export abstract class StarTableInteraction<T> {
   /** The cell of the open menu, and the element that had the focus. */
   private menuTarget: {
     readonly row: T;
+    /** Index of the row in the page rows, for the focus return after a delete. */
+    readonly index: number;
     readonly column: StarColumn<T> | null;
     readonly focus: Element | null;
   } | null = null;
@@ -339,6 +347,14 @@ export abstract class StarTableInteraction<T> {
 
   constructor() {
     inject(DestroyRef).onDestroy(() => (this.interactionDestroyed = true));
+    // The active cell left the grid (a hidden column, a deleted or filtered row, a page change):
+    // the nearest cell becomes active, and takes the focus when the grid had it.
+    effect(() => {
+      const rows = this.navRows();
+      const columns = this.visibleColumns();
+      const on = this.cellMode();
+      untracked(() => this.recoverActive(rows, columns, on));
+    });
     effect(() => {
       const trigger = this.menuTrigger();
       if (trigger) trigger.disabled = true;
@@ -442,6 +458,7 @@ export abstract class StarTableInteraction<T> {
     if (!this.cellMode()) return;
     const target = this.cellOf(event.target);
     if (!target) return;
+    this.gridFocused = true;
     this.setActive(target.row, target.column);
     // Any focus of a cell (Tab in, a click, focusCell, navigateTo) sets the range anchor, unless
     // a Shift move or Shift + click stretches the range to this cell.
@@ -765,6 +782,7 @@ export abstract class StarTableInteraction<T> {
     const active = this.interactionDocument.activeElement;
     this.menuTarget = {
       row,
+      index: this.pageRows().indexOf(row),
       column,
       focus: this.body()?.nativeElement.contains(active) ? active : null,
     };
@@ -799,9 +817,35 @@ export abstract class StarTableInteraction<T> {
       const back =
         target.focus?.isConnected && target.focus instanceof HTMLElement
           ? target.focus
-          : target.column && this.cellElement(target.row, target.column);
+          : ((target.column && this.cellElement(target.row, target.column)) ??
+            this.activeElementCell() ??
+            this.rowControlAt(target.index));
       if (back) this.focusElement(back);
     });
+  }
+
+  /** The element of the active cell (after a recovery), or `null`. */
+  private activeElementCell(): HTMLElement | null {
+    const active = this.active();
+    const row =
+      active && this.pageRows().find((item) => Object.is(this.trackKey(item), active.rowKey));
+    const column = active && this.visibleColumns().find((item) => item.field === active.field);
+    return row !== null && row !== undefined && column ? this.cellElement(row, column) : null;
+  }
+
+  /**
+   * Without cell navigation, after a delete item: the first control of the row that is now at the
+   * place of the menu row (else the row before), so the focus does not drop to the page body.
+   */
+  private rowControlAt(index: number): HTMLElement | null {
+    const rows = this.body()?.nativeElement.querySelectorAll<HTMLElement>(
+      ':scope > tr.star-table__row:not([hidden])',
+    );
+    if (!rows?.length || index < 0) return null;
+    const row = rows[Math.min(index, rows.length - 1)];
+    return row.querySelector<HTMLElement>(
+      'button:not([disabled]), input:not([disabled]), a[href], [tabindex]',
+    );
   }
 
   /** Shift+F10 or the context menu key in a body row: opens the menu at the cell (or the row). */
@@ -1118,12 +1162,63 @@ export abstract class StarTableInteraction<T> {
   }
 
   private setActive(row: T, column: StarColumn<T>): void {
-    const current = this.active();
     const rowKey = this.trackKey(row);
+    this.activePos = {
+      row: this.navRows().findIndex((item) => Object.is(this.trackKey(item), rowKey)),
+      col: this.visibleColumns().indexOf(column),
+    };
+    const current = this.active();
     if (current && Object.is(current.rowKey, rowKey) && current.field === column.field) return;
     const next = { rowKey, field: column.field };
     this.active.set(next);
     this.activeCellChange.emit(next);
+  }
+
+  private clearActive(): void {
+    this.activePos = null;
+    if (this.active() === null) return;
+    this.active.set(null);
+    this.activeCellChange.emit(null);
+  }
+
+  /**
+   * When the active cell is no longer in the grid: the cell of the same row in the next visible
+   * column (else the previous), or the cell of the same column in the next row (else the previous
+   * row) becomes active; `null` when the grid is empty or cell navigation is off.
+   */
+  private recoverActive(rows: readonly T[], columns: readonly StarColumn<T>[], on: boolean): void {
+    const active = this.active();
+    if (!active) return;
+    if (!on) return this.clearActive();
+    const row = rows.findIndex((item) => Object.is(this.trackKey(item), active.rowKey));
+    const col = columns.findIndex((column) => column.field === active.field);
+    if (row >= 0 && col >= 0) {
+      this.activePos = { row, col };
+      return;
+    }
+    if (!rows.length || !columns.length) return this.clearActive();
+    const pos = this.activePos ?? { row: 0, col: 0 };
+    const nextRow = rows[row >= 0 ? row : Math.min(Math.max(pos.row, 0), rows.length - 1)];
+    const nextColumn = columns[col >= 0 ? col : Math.min(Math.max(pos.col, 0), columns.length - 1)];
+    this.setActive(nextRow, nextColumn);
+    if (!this.gridFocused) return;
+    afterNextRender(
+      () => {
+        const doc = this.interactionDocument;
+        const focused = doc.activeElement;
+        if (focused && focused !== doc.body && focused.isConnected) return;
+        const element = this.cellElement(nextRow, nextColumn);
+        if (element) this.focusElement(element);
+      },
+      { injector: this.interactionInjector },
+    );
+  }
+
+  /** The focus left the table: a later change of the grid does not take the focus back. */
+  protected onCellFocusOut(event: FocusEvent): void {
+    const next = event.relatedTarget as Node | null;
+    const host = (event.currentTarget as HTMLElement | null) ?? null;
+    if (next && host && !host.contains(next)) this.gridFocused = false;
   }
 
   /**

@@ -29,7 +29,7 @@ const OPEN: StarMenuItem = { label: 'Open order' };
 @Component({
   imports: [StarTable],
   template: `<star-table
-    [value]="rows"
+    [value]="rows()"
     [columns]="columns"
     dataKey="id"
     ariaLabel="Order lines"
@@ -47,7 +47,7 @@ const OPEN: StarMenuItem = { label: 'Open order' };
 })
 class MenuHost {
   readonly table = viewChild.required<StarTable<Line>>(StarTable);
-  readonly rows = LINES;
+  readonly rows = signal<readonly Line[]>(LINES);
   readonly nav = signal<boolean | undefined>(true);
   readonly grouped = signal(false);
   readonly menu = signal<StarTableMenuItems<Line> | null>([OPEN]);
@@ -299,6 +299,39 @@ describe('StarTable context menu', () => {
     await settle();
     expect(host.sortField()).toBe('qty');
     expect(host.sortOrder()).toBe(1);
+  });
+
+  it('moves the focus to the nearest cell after Hide column or a delete item', async () => {
+    const { host, cell, rightClick, items, settle } = await setup((h) => {
+      h.defaults.set(['hideColumn']);
+      h.menu.set((row) => [
+        {
+          label: 'Delete line',
+          command: () => h.rows.update((rows) => rows.filter((item) => item !== row)),
+        },
+      ]);
+    });
+    const table = host.table();
+    const changes: unknown[] = [];
+    table.activeCellChange.subscribe((cell) => changes.push(cell));
+    cell('L-2', 'qty').focus();
+    await rightClick(cell('L-2', 'qty'));
+    items()[0].click();
+    await settle();
+    await settle();
+    // Same row, the next visible column.
+    expect(host.hidden()).toEqual(['qty']);
+    expect(table.activeCell()).toEqual({ rowKey: 'L-2', field: 'city' });
+    expect(document.activeElement).toBe(cell('L-2', 'city'));
+
+    await rightClick(cell('L-2', 'city'));
+    items()[1].click();
+    await settle();
+    await settle();
+    // Same column, the next row.
+    expect(table.activeCell()).toEqual({ rowKey: 'L-3', field: 'city' });
+    expect(document.activeElement).toBe(cell('L-3', 'city'));
+    expect(changes).toContainEqual({ rowKey: 'L-3', field: 'city' });
   });
 
   it('does not run the focus return after the table is destroyed', async () => {

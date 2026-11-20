@@ -294,6 +294,23 @@ describe('StarTable cell navigation', () => {
     expect(el.querySelector('.star-table__editor')).toBeNull();
   });
 
+  it('moves the active cell when its cell goes, and gives null when the grid is empty', async () => {
+    const { fixture, el, cell, focused, host } = await setupNav();
+    document.body.append(el);
+    cell(30, 'name').focus();
+    await fixture.whenStable();
+    // The last row goes (a filter or a delete): the previous row, same column, keeps the focus.
+    host.rows.set(ITEMS.slice(0, 29));
+    await fixture.whenStable();
+    await fixture.whenStable();
+    expect(host.table().activeCell()).toEqual({ rowKey: 'SKU-29', field: 'name' });
+    expect(focused()).toBe('SKU-29|name');
+    host.rows.set([]);
+    await fixture.whenStable();
+    expect(host.table().activeCell()).toBeNull();
+    expect(host.changes.at(-1)).toBeNull();
+  });
+
   it('keeps the row keys when cell navigation is off', async () => {
     const { el } = await setupNav((h) => h.nav.set(false));
     expect(el.querySelector('tbody td[data-field]')).toBeNull();
