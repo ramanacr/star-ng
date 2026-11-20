@@ -467,6 +467,87 @@ export interface StarUiText {
   readonly newMessages: (count: number) => string;
   /** Visible hint under the prompt field of `star-ai-prompt`. */
   readonly aiPromptShortcutHint: string;
+  // Ribbon
+  /** Name of the tab list of `star-ribbon`. */
+  readonly ribbon: string;
+  /** Default label of the backstage (file) button of `star-ribbon`. */
+  readonly ribbonFile: string;
+  readonly ribbonCollapse: string;
+  readonly ribbonExpand: string;
+  /** Screen-reader hint of the ribbon tab list. */
+  readonly ribbonKeyTipsHint: string;
+  readonly ribbonKeyTipsShown: string;
+  /** Name of the dialog launcher button of a ribbon group. */
+  readonly ribbonGroupOptions: (label: string) => string;
+  /** Name of the menu part of a ribbon split button. */
+  readonly ribbonSplitMenu: (label: string) => string;
+  // File manager
+  /** Name of `star-file-manager`. */
+  readonly fileManager: string;
+  /** Name of the folder tree. */
+  readonly fileFolders: string;
+  readonly fileContent: string;
+  readonly fileToolbar: string;
+  readonly newFolder: string;
+  readonly upload: string;
+  readonly download: string;
+  readonly open: string;
+  readonly rename: string;
+  readonly delete: string;
+  readonly cut: string;
+  readonly paste: string;
+  readonly cancel: string;
+  readonly create: string;
+  readonly search: string;
+  readonly sortBy: string;
+  readonly sortAscending: string;
+  readonly sortDescending: string;
+  readonly fileViewDetails: string;
+  readonly fileViewIcons: string;
+  /** Column header of the file name. */
+  readonly fileName: string;
+  readonly fileSize: string;
+  readonly fileModified: string;
+  readonly fileType: string;
+  /** Type text of a folder. */
+  readonly fileFolderType: string;
+  readonly folderName: string;
+  readonly fileEmptyFolder: string;
+  readonly fileNoResults: string;
+  readonly fileDetailsPane: string;
+  readonly fileNoSelection: string;
+  readonly fileMoveNotAllowed: string;
+  readonly fileManagerHint: string;
+  /** Question of the delete confirmation of `star-file-manager`. */
+  readonly fileDeleteConfirm: (count: number) => string;
+  readonly fileItemsCut: (count: number) => string;
+  readonly fileItemsCopied: (count: number) => string;
+  /** Announcement after a move to the folder `name`. */
+  readonly fileItemsMoved: (count: number, name: string) => string;
+  readonly fileItemsCopiedTo: (count: number, name: string) => string;
+  /** Default name of the top folder of `star-file-manager`. */
+  readonly fileRoot: string;
+  // Diagram
+  /** Name of the canvas of `star-diagram`. */
+  readonly diagram: string;
+  readonly diagramHint: string;
+  readonly diagramNodes: string;
+  readonly diagramConnections: string;
+  readonly diagramEditLabel: string;
+  readonly zoomToFit: string;
+  readonly redo: string;
+  /** A connection in the list of connections. */
+  readonly diagramConnection: (from: string, to: string) => string;
+  readonly diagramConnected: (from: string, to: string) => string;
+  readonly diagramNodeMoved: (label: string, x: number, y: number) => string;
+  readonly diagramNodeResized: (label: string, width: number, height: number) => string;
+  readonly diagramDeleted: (count: number) => string;
+  readonly diagramZoom: (percent: number) => string;
+  // File manager errors
+  /** Error state of the file manager listing. */
+  readonly fileLoadError: string;
+  /** Announcement when a provider operation fails. */
+  readonly fileOperationError: string;
   // Scheduler
   /** Default name of `star-scheduler`. */
   readonly scheduler: string;
@@ -506,7 +587,6 @@ export interface StarUiText {
   readonly end: string;
   readonly resource: string;
   readonly save: string;
-  readonly cancel: string;
   readonly deleteEvent: string;
   /** Error of the editor when the end is not after the start. */
   readonly endBeforeStart: string;
@@ -919,6 +999,72 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   stop: 'Stop',
   newMessages: (count) => `${count} new messages`,
   aiPromptShortcutHint: 'Press Control+Enter to send.',
+  ribbon: 'Ribbon',
+  ribbonFile: 'File',
+  ribbonCollapse: 'Collapse the ribbon',
+  ribbonExpand: 'Expand the ribbon',
+  ribbonKeyTipsHint: 'Press Alt or F10 to show the key tips.',
+  ribbonKeyTipsShown: 'Key tips shown. Press a letter, or Escape to go back.',
+  ribbonGroupOptions: (label) => `${label} options`,
+  ribbonSplitMenu: (label) => `More ${label} options`,
+  fileManager: 'File manager',
+  fileFolders: 'Folders',
+  fileContent: 'Folder content',
+  fileToolbar: 'File actions',
+  newFolder: 'New folder',
+  upload: 'Upload',
+  download: 'Download',
+  open: 'Open',
+  rename: 'Rename',
+  delete: 'Delete',
+  cut: 'Cut',
+  paste: 'Paste',
+  cancel: 'Cancel',
+  create: 'Create',
+  search: 'Search',
+  sortBy: 'Sort by',
+  sortAscending: 'Ascending',
+  sortDescending: 'Descending',
+  fileViewDetails: 'Details view',
+  fileViewIcons: 'Large icons',
+  fileName: 'Name',
+  fileSize: 'Size',
+  fileModified: 'Modified',
+  fileType: 'Type',
+  fileFolderType: 'Folder',
+  folderName: 'Folder name',
+  fileEmptyFolder: 'This folder is empty.',
+  fileNoResults: 'No item matches the search.',
+  fileDetailsPane: 'Item details',
+  fileNoSelection: 'No item selected.',
+  fileMoveNotAllowed: 'A folder cannot go into itself.',
+  fileManagerHint:
+    'Press F2 to rename, Delete to delete, Control+X, Control+C and Control+V to move and copy, Shift+F10 for the menu.',
+  fileDeleteConfirm: (count) => `Delete ${count} ${count === 1 ? 'item' : 'items'}?`,
+  fileItemsCut: (count) =>
+    `${count} ${count === 1 ? 'item' : 'items'} cut. Press Control+V in the target folder.`,
+  fileItemsCopied: (count) =>
+    `${count} ${count === 1 ? 'item' : 'items'} copied. Press Control+V in the target folder.`,
+  fileItemsMoved: (count, name) => `${count} ${count === 1 ? 'item' : 'items'} moved to ${name}`,
+  fileItemsCopiedTo: (count, name) =>
+    `${count} ${count === 1 ? 'item' : 'items'} copied to ${name}`,
+  fileRoot: 'All files',
+  diagram: 'Diagram',
+  diagramHint:
+    'Arrow keys move between nodes. Alt and an arrow key moves the selection, Shift, Alt and an arrow key resizes it. Enter edits the label, Delete removes, Control+Z undoes.',
+  diagramNodes: 'Nodes',
+  diagramConnections: 'Connections',
+  diagramEditLabel: 'Node label',
+  zoomToFit: 'Fit to content',
+  redo: 'Redo',
+  diagramConnection: (from, to) => `${from} to ${to}`,
+  diagramConnected: (from, to) => `Connected ${from} to ${to}`,
+  diagramNodeMoved: (label, x, y) => `${label} moved to ${x}, ${y}`,
+  diagramNodeResized: (label, width, height) => `${label} resized to ${width} by ${height}`,
+  diagramDeleted: (count) => `${count} ${count === 1 ? 'item' : 'items'} deleted`,
+  diagramZoom: (percent) => `Zoom ${percent}%`,
+  fileLoadError: 'The folder could not be loaded.',
+  fileOperationError: 'The operation failed.',
   scheduler: 'Scheduler',
   schedulerView: 'View',
   viewDay: 'Day',
@@ -946,7 +1092,6 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   end: 'End',
   resource: 'Resource',
   save: 'Save',
-  cancel: 'Cancel',
   deleteEvent: 'Delete event',
   endBeforeStart: 'The end must be after the start.',
   readOnly: 'Read only',
@@ -1053,6 +1198,19 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   isTyping: ['name'],
   areTyping: ['names'],
   newMessages: ['count'],
+  ribbonGroupOptions: ['label'],
+  ribbonSplitMenu: ['label'],
+  fileDeleteConfirm: ['count'],
+  fileItemsCut: ['count'],
+  fileItemsCopied: ['count'],
+  fileItemsMoved: ['count', 'name'],
+  fileItemsCopiedTo: ['count', 'name'],
+  diagramConnection: ['from', 'to'],
+  diagramConnected: ['from', 'to'],
+  diagramNodeMoved: ['label', 'x', 'y'],
+  diagramNodeResized: ['label', 'width', 'height'],
+  diagramDeleted: ['count'],
+  diagramZoom: ['percent'],
   moreEvents: ['count'],
   timeRange: ['start', 'end'],
   eventMoved: ['label', 'when'],

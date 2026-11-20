@@ -20,6 +20,7 @@ const SAME_AS_ENGLISH: Record<string, readonly Name[]> = {
     'chartX',
     'chartY',
     'minute',
+    'fileName',
     'summaryMinimum',
     'summaryMaximum',
     // A data point reads "series, category: value" in every language.
@@ -62,6 +63,8 @@ const TEXT_PARAMS: Record<string, readonly string[]> = {
   sparklineSummary: ['first', 'last', 'min', 'max', 'trend'],
   barcodeInvalid: ['type'],
   qrCodeLabel: ['value'],
+  diagramConnection: ['from', 'to'],
+  diagramConnected: ['from', 'to'],
   timeRange: ['start', 'end'],
   eventMoved: ['when'],
   eventResized: ['when'],
