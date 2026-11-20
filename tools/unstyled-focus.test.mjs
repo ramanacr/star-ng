@@ -85,3 +85,17 @@ test('the check finds a focus rule with a reset token', () => {
     '.a:focus-visible: box-shadow: inset 0 0 0 1px var(--star-border), var(--star-focus-ring)',
   ]);
 });
+
+test('the theme copy and the restore rule of unstyled mode', () => {
+  const css = sass.compile(join(styles, 'star-ng.scss'), { style: 'compressed' }).css;
+  // A copy of the theme on the parent of each unstyled control keeps scoped theme overrides.
+  assert.match(
+    css,
+    /:where\(:not\(\[data-star-unstyled\]\):has\(>\[data-star-part=root\]\[data-star-unstyled\]\)\)\{--star-theme-primary: ?var\(--star-primary\)/,
+  );
+  // The chart elements without a part (one per data point) stay unstyled.
+  assert.match(
+    css,
+    /\[data-star-unstyled\] :not\(\[data-star-part\],\.star-chart__hit,\.star-chart__table \*\)/,
+  );
+});

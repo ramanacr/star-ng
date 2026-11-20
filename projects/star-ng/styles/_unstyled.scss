@@ -143,9 +143,18 @@ $star-restored-tokens: list.join(
     --star-theme-#{$name}: var(--star-#{$name});
   }
 }
+// The parent of an unstyled control takes a copy too, so a theme override on a section of the page
+// (`.brand { --star-primary: ... }`) reaches the content inside the control.
+:where(:not([data-star-unstyled]):has(> [data-star-part='root'][data-star-unstyled])) {
+  @each $name in $star-restored-tokens {
+    --star-theme-#{$name}: var(--star-#{$name});
+  }
+}
 
+// The chart elements without a part (pointer targets, data-table rows and cells: one per data
+// point) belong to the control and stay unstyled.
 :where(
-  [data-star-unstyled] :not([data-star-part]),
+  [data-star-unstyled] :not([data-star-part], .star-chart__hit, .star-chart__table *),
   [data-star-unstyled] [data-star-part='root']:not([data-star-unstyled])
 ) {
   @each $name in $star-restored-tokens {
