@@ -278,11 +278,15 @@ test.describe('window', () => {
     await live.getByRole('button', { name: 'Open order summary' }).click();
     const notes = page.getByRole('dialog', { name: 'Notes' });
     const summary = page.getByRole('dialog', { name: 'Order summary' });
+    await expect(notes).toBeVisible();
+    await expect(summary).toBeVisible();
     const z = (dialog: Locator) =>
       dialog.evaluate((element) => Number(getComputedStyle(element).zIndex));
-    expect(await z(summary)).toBeGreaterThan(await z(notes));
+    // The stack order is set after a render: poll it instead of one read.
+    const above = async (top: Locator, under: Locator) => (await z(top)) > (await z(under));
+    await expect.poll(() => above(summary, notes)).toBe(true);
     await notes.locator('.star-window__titlebar').click({ position: { x: 12, y: 8 } });
-    expect(await z(notes)).toBeGreaterThan(await z(summary));
+    await expect.poll(() => above(notes, summary)).toBe(true);
 
     await notes.getByRole('button', { name: 'Maximize' }).click();
     const viewport = page.viewportSize()!;

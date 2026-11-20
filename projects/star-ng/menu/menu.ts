@@ -6,13 +6,16 @@ import {
   booleanAttribute,
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   Directive,
   effect,
   ElementRef,
   inject,
+  Injector,
   input,
   output,
   PLATFORM_ID,
+  signal,
   TemplateRef,
   viewChild,
 } from '@angular/core';
@@ -224,6 +227,13 @@ export class StarMenu {
  */
 @Directive({
   selector: '[starMenuTrigger]',
+  host: {
+    // On a wrapper host the popup state lives on the inner button. These bindings run after the
+    // CDK ones, so the first render (also on the server) has no state on the host.
+    '[attr.aria-haspopup]': 'wrapper() ? null : trigger.menuTemplateRef ? "menu" : null',
+    '[attr.aria-expanded]':
+      'wrapper() ? null : trigger.menuTemplateRef == null ? null : trigger.isOpen()',
+  },
   hostDirectives: [
     {
       directive: CdkMenuTrigger,
@@ -235,8 +245,14 @@ export class StarMenuTrigger {
   /** Keeps the CDK direction (overlays and menus) in step with `<html dir>`. */
   private readonly directionSync = inject(StarDirectionService);
   readonly starMenuTrigger = input.required<StarMenu>();
-  private readonly trigger = inject(CdkMenuTrigger);
+  protected readonly trigger = inject(CdkMenuTrigger);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly injector = inject(Injector);
+  /**
+   * The host is a wrapper (a custom element such as `<star-button>`) with the real button inside:
+   * the host is presentational and the inner button has the popup state.
+   */
+  protected readonly wrapper = signal(this.host.nativeElement.tagName.includes('-'));
   private readonly browser = isPlatformBrowser(inject(PLATFORM_ID));
 
   constructor() {
@@ -248,9 +264,31 @@ export class StarMenuTrigger {
       this.trigger.menuData = { $implicit: menu.items() };
     });
     afterNextRender(() => this.syncInnerButton(false));
-    this.trigger.opened.pipe(takeUntilDestroyed()).subscribe(() => this.syncInnerButton(true));
-    this.trigger.closed.pipe(takeUntilDestroyed()).subscribe(() => this.syncInnerButton(false));
+    // The CDK host bindings write the new state in the render after the event: sync after it.
+    // A menu that closes while the trigger is destroyed registers no hook on the gone view.
+    let destroyed = false;
+    inject(DestroyRef).onDestroy(() => (destroyed = true));
+    const later = (open: boolean) => {
+      if (destroyed) return;
+      afterNextRender(() => this.syncInnerButton(open), { injector: this.injector });
+    };
+    this.trigger.opened.pipe(takeUntilDestroyed()).subscribe(() => later(true));
+    this.trigger.closed.pipe(takeUntilDestroyed()).subscribe(() => later(false));
     this.adaptWrapperHost();
+    this.wrapperRole();
+  }
+
+  /**
+   * CDK gives the host `role="button"` in its constructor. A wrapper (a custom element such as
+   * `<star-button>`) has the real button inside, so its host becomes presentational at once: also
+   * in the server render and before hydration, where no after-render hook runs. A plain element
+   * (`<div tabindex="0">`) keeps the button role, and so does a host inside a menu (no role
+   * from CDK).
+   */
+  private wrapperRole(): void {
+    const host = this.host.nativeElement;
+    if (!this.wrapper() || host.getAttribute('role') !== 'button') return;
+    host.setAttribute('role', 'none');
   }
 
   /**
@@ -265,10 +303,14 @@ export class StarMenuTrigger {
    */
   private adaptWrapperHost(): void {
     // Only a browser has a user to press a key; the server DOM does not allow the `focus` change.
-    if (!this.browser) return;
+    if (!this.browser || !this.wrapper()) return;
     const host = this.host.nativeElement;
-    if (host.matches('button, a')) return;
-    host.focus = (options?: FocusOptions) => host.querySelector('button')?.focus(options);
+    const own = host.focus.bind(host);
+    host.focus = (options?: FocusOptions) => {
+      const inner = host.querySelector('button');
+      if (inner) inner.focus(options);
+      else own(options);
+    };
     host.addEventListener(
       'keydown',
       (event) => {
@@ -288,10 +330,17 @@ export class StarMenuTrigger {
    */
   private syncInnerButton(open: boolean): void {
     const host = this.host.nativeElement;
-    if (host.matches('button, a')) return;
+    if (!this.wrapper()) return;
     const inner = host.querySelector('button');
-    if (!inner) return;
+    if (!inner) {
+      // A custom element without a button inside is the button itself: give the role back.
+      if (host.getAttribute('role') === 'none') host.setAttribute('role', 'button');
+      this.wrapper.set(false);
+      return;
+    }
     host.setAttribute('role', 'none');
+    host.removeAttribute('aria-haspopup');
+    host.removeAttribute('aria-expanded');
     inner.setAttribute('aria-haspopup', 'menu');
     inner.setAttribute('aria-expanded', String(open));
   }

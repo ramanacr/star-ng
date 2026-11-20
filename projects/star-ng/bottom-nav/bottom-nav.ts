@@ -98,7 +98,7 @@ export class StarBottomNavItem {
   readonly value = input<string | null>(null);
   /** Visible label, also the accessible name. */
   readonly label = input.required<string>();
-  /** Phosphor icon class, for example `ph ph-house`. */
+  /** Phosphor icon class, for example `ph-bold ph-house`. */
   readonly icon = input<string | null>(null);
   /** Short text on the icon, for example a count. A screen reader reads it after the label. */
   readonly badge = input<string | number | null>(null);
@@ -136,8 +136,8 @@ export class StarBottomNavItem {
  *
  * ```html
  * <star-bottom-nav [(value)]="section" ariaLabel="Sections">
- *   <star-bottom-nav-item value="orders" label="Orders" icon="ph ph-package" badge="3" />
- *   <star-bottom-nav-item value="cities" label="Cities" icon="ph ph-map-pin" />
+ *   <star-bottom-nav-item value="orders" label="Orders" icon="ph-bold ph-package" badge="3" />
+ *   <star-bottom-nav-item value="cities" label="Cities" icon="ph-bold ph-map-pin" />
  * </star-bottom-nav>
  * ```
  *

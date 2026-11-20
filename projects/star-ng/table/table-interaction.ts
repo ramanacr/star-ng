@@ -13,7 +13,6 @@ import {
   inject,
   Injector,
   input,
-  linkedSignal,
   model,
   output,
   OutputEmitterRef,
@@ -30,8 +29,6 @@ import {
   starIsRtl,
   starPrefersReducedMotion,
   StarUiText,
-  ɵstarIsContextMenuKey,
-  ɵstarOpenContextMenu,
   ɵstarOptionalBoolean,
 } from '@star-ng/ui/core';
 import type { StarMenuItem } from '@star-ng/ui/menu';
@@ -42,31 +39,21 @@ import type {
   StarSortOrder,
   StarSortState,
 } from './table';
-import {
-  parseTsv,
-  StarTableCopyOptions,
-  StarTablePasteCell,
-  StarTablePasteEvent,
-  toTsv,
-} from './table-clipboard';
+import type { StarTableCopyOptions, StarTablePasteEvent } from './table-clipboard';
 import { COLUMN_FALLBACK_VIEWPORT } from './table-column-window';
-import {
-  defaultMenuItems,
+import type {
   StarTableContextMenuEvent,
   StarTableMenuDefault,
   StarTableMenuItems,
 } from './table-context-menu';
-import {
-  parseEditorText,
-  sameEditValue,
-  StarCellChange,
-  starCellError,
-  StarEditBatch,
-  StarRowEditSaveEvent,
-} from './table-editing';
+import type { StarEditBatch, StarRowEditSaveEvent } from './table-editing';
+import { StarTableClipboardActions } from './table-interaction-clipboard';
+import { StarTableMenuState } from './table-interaction-menu';
+import { StarTableSearchState } from './table-interaction-search';
 import {
   cellNavigationTarget,
   columnScrollOffset,
+  OWN_KEYS,
   revealDelta,
   StarScrollAlign,
   StarScrollOptions,
@@ -74,20 +61,11 @@ import {
   uncoveredRow,
 } from './table-navigation';
 import type { StarHeaderWidths, StarPinSide } from './table-pinning';
-import {
-  countMatches,
-  highlightParts,
-  StarSearchCell,
-  StarTableSearchMatches,
-  StarTableTextPart,
-} from './table-search';
+import type { StarTableSearchMatches, StarTableTextPart } from './table-search';
 import type { VirtualLayout } from './virtual-heights';
 
 /** Rows of a PageUp / PageDown step when the view has no measured height yet. */
 const FALLBACK_PAGE_ROWS = 10;
-/** Controls inside a cell that keep their own keys (editors, fields, lists). */
-const OWN_KEYS =
-  '.star-table__editor, input, select, textarea, [contenteditable]:not([contenteditable="false"]), [role="listbox"], [role="combobox"]';
 
 /** Focusable controls inside a lead or trail cell (selection, expander, reorder, row actions). */
 const CELL_CONTROLS = 'button, input, select, textarea, a[href], [tabindex]';
@@ -132,7 +110,6 @@ export abstract class StarTableInteraction<T> {
   protected readonly interactionInjector = inject(Injector);
   private readonly interactionDocument = inject(DOCUMENT);
   private readonly interactionHost = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
-  private readonly clipboard = inject(StarClipboard);
   private readonly interactionApp = inject(ApplicationRef);
   /** The focus and scroll API needs a browser (`CSS.escape`, layout); on the server it does nothing. */
   private readonly interactionBrowser = isPlatformBrowser(inject(PLATFORM_ID));
@@ -229,8 +206,12 @@ export abstract class StarTableInteraction<T> {
    * column of `virtualColumns` and a row of `virtualScroll` into view first, and skip the rows that
    * a merged cell covers. The selection, expander, reorder and row action cells are grid cells:
    * their controls leave the tab order, Space toggles the row check box, Enter or F2 goes into the
-   * controls and Escape or F2 back. `undefined` (default) is automatic: on when a column is `editable` or
-   * `selectionMode` is `'cell'` or `'range'`, else the rows keep today's keys. Ignite UI grid keyboard navigation, AG Grid cell navigation.
+   * controls and Escape or F2 back. The table takes those controls out of the tab order after a
+   * change of the rendered rows, the lead and trail cells or the rows in edit; a control that a
+   * custom row action or lead template adds at another time keeps its tab stop until then, so
+   * give it `tabindex="-1"`. `undefined` (default) is automatic: on when a column is `editable`
+   * or `selectionMode` is `'cell'` or `'range'`, else the rows keep today's keys. Ignite UI grid
+   * keyboard navigation, AG Grid cell navigation.
    */
   readonly cellNavigation = input<boolean | undefined, boolean | string | undefined>(undefined, {
     transform: ɵstarOptionalBoolean,
@@ -347,22 +328,38 @@ export abstract class StarTableInteraction<T> {
 
   /** The CDK context menu trigger on the body. It stays disabled until a row prepares a menu. */
   private readonly menuTrigger = viewChild('body', { read: CdkContextMenuTrigger });
-  /** Items of the menu that opens now. */
-  protected readonly menuItems = signal<readonly StarMenuItem[]>([]);
-  /** The context menu is open. */
-  private readonly menuOpen = signal(false);
-  /** The cell of the open menu, and the element that had the focus. */
-  private menuTarget: {
-    readonly row: T;
-    /** Index of the row in the page rows, for the focus return after a delete. */
-    readonly index: number;
-    readonly column: StarColumn<T> | null;
-    readonly focus: Element | null;
-  } | null = null;
   /** The table has context menu items. */
   protected readonly hasContextMenu = computed(
     () => !!this.contextMenu() || this.contextMenuDefaults().length > 0,
   );
+  /** Context menu state (`table-interaction-menu.ts`). */
+  private readonly menu = new StarTableMenuState<T>({
+    document: this.interactionDocument,
+    trigger: () => this.menuTrigger(),
+    body: () => this.body()?.nativeElement,
+    text: () => this.text,
+    hasContextMenu: () => this.hasContextMenu(),
+    contextMenu: () => this.contextMenu(),
+    contextMenuDefaults: () => this.contextMenuDefaults(),
+    contextMenuSelection: this.contextMenuSelection,
+    contextMenuSelect: this.contextMenuSelect,
+    pageRows: () => this.pageRows(),
+    trackKey: (row) => this.trackKey(row),
+    columnAt: (node) => this.cellOf(node)?.column ?? null,
+    sideOf: (column) => this.sideOf(column),
+    canHide: (column) => this.canHide(column),
+    copy: (headers, cell) => void this.clipboardActions.copy(headers, cell),
+    pin: (field, side) => this.pinColumn(field, side),
+    sort: (field, order) => this.sortColumn(field, order),
+    hide: (column) => this.setColumnVisible(column, false),
+    exportCsv: () => this.exportCsv(),
+    destroyed: () => this.interactionDestroyed,
+    cellElement: (row, field) => this.cellElement(row, field),
+    activeCellElement: () => this.activeElementCell(),
+    focusElement: (element) => this.focusElement(element),
+  });
+  /** Items of the menu that opens now. */
+  protected readonly menuItems = this.menu.items;
 
   /**
    * Body rows and cells carry `data-row` / `data-field`: with cell navigation, a context menu (to
@@ -561,18 +558,24 @@ export abstract class StarTableInteraction<T> {
     this.setActive(target.row, target.field);
     // Any focus of a cell (Tab in, a click, focusCell, navigateTo) sets the range anchor, unless
     // a Shift move or Shift + click stretches the range to this cell.
-    // A lead or trail cell is never the corner of a range.
-    if (!target.column) return;
-    const cell = { rowKey: this.trackKey(target.row), field: target.field };
+    // A lead or trail cell is never the corner of a range. The Shift move target is used up by
+    // this focus in either case, so it never stays stale.
     const extend = this.extendTarget;
     this.extendTarget = null;
+    if (!target.column) return;
+    const cell = { rowKey: this.trackKey(target.row), field: target.field };
     if (!extend || !Object.is(extend.rowKey, cell.rowKey) || extend.field !== cell.field) {
       this.cellAnchor = cell;
     }
   }
 
   protected onCellKeydown(event: KeyboardEvent): void {
-    if (event.defaultPrevented || this.onCopyKey(event) || this.onMenuKey(event)) return;
+    if (
+      event.defaultPrevented ||
+      this.clipboardActions.onCopyKey(event) ||
+      this.menu.onMenuKey(event)
+    )
+      return;
     if (!this.cellMode() || event.altKey) return;
     const target = this.cellOf(event.target);
     if (!target) return;
@@ -655,52 +658,23 @@ export abstract class StarTableInteraction<T> {
 
   // ---------------------------------------------------------------- search
 
-  /**
-   * Index of the active match: none (-1) after each new search text and each change of the
-   * matches (new data, other columns), so the index never points to another match.
-   */
-  private readonly searchIndex = linkedSignal({
-    source: () => this.searchCells(),
-    computation: () => -1,
-  });
-
-  /** The cells with matches, in display order (rows of all pages, visible columns). */
-  private readonly searchCells = computed(() => {
-    const query = this.searchText();
-    const cells: StarSearchCell[] = [];
-    const byCell = new Map<string, StarSearchCell>();
-    let count = 0;
-    if (!query.trim()) return { cells, byCell, count };
-    const locale = this.filterLocale();
-    const columns = this.visibleColumns();
-    for (const row of this.withAdded()) {
-      if (this.isRowCollapsed(row)) continue;
-      for (const column of columns) {
-        const found = countMatches(this.cellText(row, column), query, locale);
-        if (!found) continue;
-        const cell = {
-          rowKey: this.trackKey(row),
-          field: column.field,
-          start: count,
-          count: found,
-        };
-        cells.push(cell);
-        byCell.set(`${this.rowKeyText(row)}\u0000${column.field}`, cell);
-        count += found;
-      }
-    }
-    return { cells, byCell, count };
+  /** Search state (`table-interaction-search.ts`). */
+  private readonly search = new StarTableSearchState<T>({
+    searchText: this.searchText,
+    filterLocale: () => this.filterLocale(),
+    columns: () => this.visibleColumns(),
+    rows: () => this.withAdded(),
+    isRowCollapsed: (row) => this.isRowCollapsed(row),
+    trackKey: (row) => this.trackKey(row),
+    rowKeyText: (row) => this.rowKeyText(row),
+    cellText: (row, column) => this.cellText(row, column),
   });
 
   /**
    * The matches of `searchText`: `count`, and `active`, the index of the active match (-1: none
    * yet). Signal. Ignite UI `findNext` result.
    */
-  readonly searchMatches: Signal<StarTableSearchMatches> = computed(() => {
-    const count = this.searchCells().count;
-    const active = this.searchIndex();
-    return { count, active: active < count ? active : -1 };
-  });
+  readonly searchMatches: Signal<StarTableSearchMatches> = this.search.matches;
 
   /** Makes the next match active (after the last: the first), scrolls to it, returns the count. */
   findNext(): number {
@@ -718,60 +692,24 @@ export abstract class StarTableInteraction<T> {
   }
 
   private stepSearch(step: 1 | -1): number {
-    const { count, cells } = this.searchCells();
-    if (!count) {
-      this.searchIndex.set(-1);
-      return 0;
-    }
-    const current = this.searchMatches().active;
-    const next = current < 0 ? (step > 0 ? 0 : count - 1) : (current + step + count) % count;
-    this.searchIndex.set(next);
-    const cell = cells.find((item) => next >= item.start && next < item.start + item.count);
+    const { count, active, cell } = this.search.step(step);
+    if (!count) return 0;
     if (cell && this.interactionBrowser) {
       this.scrollToRow(cell.rowKey);
       this.scrollToColumn(cell.field);
     }
-    this.announce(this.text.ofTotal(next + 1, count));
+    this.announce(this.text.ofTotal(active + 1, count));
     return count;
   }
 
   /** The parts of the display text of a cell, with the search marks. */
   protected searchParts(row: T, column: StarColumn<T>): readonly StarTableTextPart[] {
-    return this.markedParts(this.cellText(row, column), row, column);
+    return this.search.parts(row, column);
   }
-
-  private markedParts(text: string, row: T, column: StarColumn<T>): StarTableTextPart[] {
-    return this.markedText(text, `${this.rowKeyText(row)}\u0000${column.field}`);
-  }
-
-  /** The marked parts of a text in the cell with the key `<row key text>\u0000<field>`. */
-  private markedText(text: string, key: string): StarTableTextPart[] {
-    const cell = this.searchCells().byCell.get(key);
-    const active = this.searchMatches().active;
-    const local = cell && active >= cell.start && active < cell.start + cell.count;
-    return highlightParts(
-      text,
-      this.searchText(),
-      this.filterLocale(),
-      local ? active - cell.start : -1,
-    );
-  }
-
-  /** `highlight` functions of the cell template contexts, one per cell (a stable reference). */
-  private readonly highlighters = new Map<string, (text: unknown) => StarTableTextPart[]>();
 
   /** The `highlight(text)` function of a cell template context. */
   protected highlighter(row: T, column: StarColumn<T>): (text: unknown) => StarTableTextPart[] {
-    const key = `${this.rowKeyText(row)}\u0000${column.field}`;
-    let highlight = this.highlighters.get(key);
-    if (!highlight) {
-      if (this.highlighters.size > 5000) this.highlighters.clear();
-      // The function keeps the key text only, not the row object.
-      highlight = (text) =>
-        this.markedText(text === null || text === undefined ? '' : String(text), key);
-      this.highlighters.set(key, highlight);
-    }
-    return highlight;
+    return this.search.highlighter(row, column);
   }
 
   // ---------------------------------------------------------------- keyboard and scroll API
@@ -913,9 +851,7 @@ export abstract class StarTableInteraction<T> {
 
   /** The row of the open context menu (`contextMenuSelection`). */
   protected isMenuRow(row: T): boolean {
-    const selected = this.contextMenuSelection();
-    if (!this.menuOpen() || selected === null) return false;
-    return Object.is(this.trackKey(selected), this.trackKey(row));
+    return this.menu.isMenuRow(row);
   }
 
   /**
@@ -923,58 +859,21 @@ export abstract class StarTableInteraction<T> {
    * items for the cell and lets the trigger open. Without items the browser menu shows.
    */
   protected onRowContextMenu(row: T, event: MouseEvent): void {
-    const trigger = this.menuTrigger();
-    if (!trigger) return;
-    trigger.disabled = true;
-    if (!this.hasContextMenu() || (event.target as Element).closest(OWN_KEYS)) return;
-    const column = this.cellOf(event.target)?.column ?? null;
-    const items = this.menuItemsFor(row, column);
-    if (!items.length) return;
-    if (trigger.isOpen()) trigger.close();
-    const active = this.interactionDocument.activeElement;
-    this.menuTarget = {
-      row,
-      index: this.pageRows().indexOf(row),
-      column,
-      focus: this.body()?.nativeElement.contains(active) ? active : null,
-    };
-    this.contextMenuSelection.set(row);
-    this.menuItems.set(items);
-    trigger.menuData = { $implicit: items };
-    trigger.disabled = false;
+    this.menu.onRowContextMenu(row, event);
   }
 
   /** The menu opened: the trigger is disabled again, so other body parts keep the browser menu. */
   protected onMenuOpened(): void {
-    const trigger = this.menuTrigger();
-    if (trigger) trigger.disabled = true;
-    this.menuOpen.set(true);
+    this.menu.onOpened();
   }
 
   protected onMenuItem(item: StarMenuItem): void {
-    const target = this.menuTarget;
-    if (target) this.contextMenuSelect.emit({ row: target.row, column: target.column, item });
+    this.menu.onItem(item);
   }
 
   /** The menu closed: the focus goes back to the cell when it has nowhere else to be. */
   protected onMenuClosed(): void {
-    const target = this.menuTarget;
-    this.menuOpen.set(false);
-    setTimeout(() => {
-      // A right click on another row can open a new menu before this runs: keep its target.
-      if (this.menuTarget === target) this.menuTarget = null;
-      if (this.interactionDestroyed) return;
-      const doc = this.interactionDocument;
-      const active = doc.activeElement;
-      if (!target || (active && active !== doc.body && active.isConnected)) return;
-      const back =
-        target.focus?.isConnected && target.focus instanceof HTMLElement
-          ? target.focus
-          : ((target.column && this.cellElement(target.row, target.column.field)) ??
-            this.activeElementCell() ??
-            this.rowControlAt(target.index));
-      if (back) this.focusElement(back);
-    });
+    this.menu.onClosed();
   }
 
   /** The element of the active cell (after a recovery), or `null`. */
@@ -984,55 +883,6 @@ export abstract class StarTableInteraction<T> {
       active && this.pageRows().find((item) => Object.is(this.trackKey(item), active.rowKey));
     return row !== null && row !== undefined && active ? this.cellElement(row, active.field) : null;
   }
-
-  /**
-   * Without cell navigation, after a delete item: the first control of the row that is now at the
-   * place of the menu row (else the row before), so the focus does not drop to the page body.
-   */
-  private rowControlAt(index: number): HTMLElement | null {
-    const rows = this.body()?.nativeElement.querySelectorAll<HTMLElement>(
-      ':scope > tr.star-table__row:not([hidden])',
-    );
-    if (!rows?.length || index < 0) return null;
-    const row = rows[Math.min(index, rows.length - 1)];
-    return row.querySelector<HTMLElement>(
-      'button:not([disabled]), input:not([disabled]), a[href], [tabindex]',
-    );
-  }
-
-  /** Shift+F10 or the context menu key in a body row: opens the menu at the cell (or the row). */
-  private onMenuKey(event: KeyboardEvent): boolean {
-    if (!ɵstarIsContextMenuKey(event) || !this.hasContextMenu()) return false;
-    const target = event.target as Element;
-    const body = this.body()?.nativeElement;
-    const tr = target.closest?.('tr');
-    if (!body || !tr || tr.parentElement !== body || target.closest(OWN_KEYS)) return false;
-    event.preventDefault();
-    ɵstarOpenContextMenu(target.closest<HTMLElement>('td[data-field]') ?? (tr as HTMLElement));
-    return true;
-  }
-
-  /** Built-in items first, then the `contextMenu` items (a separator between the two). */
-  private menuItemsFor(row: T, column: StarColumn<T> | null): StarMenuItem[] {
-    const builtIn = defaultMenuItems(this.contextMenuDefaults(), {
-      text: this.text,
-      column,
-      side: column ? this.sideOf(column) : null,
-      canHide: !!column && this.canHide(column),
-      // Without a selection the copy takes the cell of the menu.
-      copy: (headers) => void this.copyCells(headers, column ? { row, column } : null),
-      pin: (side) => column && this.pinColumn(column.field, side),
-      sort: (order) => column && this.sortColumn(column.field, order),
-      hide: () => column && this.setColumnVisible(column, false),
-      exportCsv: () => this.exportCsv(),
-    });
-    const source = this.contextMenu();
-    const own = typeof source === 'function' ? source(row, column) : (source ?? []);
-    return builtIn.length && own.length
-      ? [...builtIn, { separator: true }, ...own]
-      : [...builtIn, ...own];
-  }
-
   /** Sorts by one column in one order (the context menu sort items). */
   private sortColumn(field: string, order: StarSortOrder): void {
     this.sortMeta.set(this.multiSort() ? [{ field, order }] : []);
@@ -1043,6 +893,39 @@ export abstract class StarTableInteraction<T> {
   }
 
   // ---------------------------------------------------------------- clipboard
+
+  /** Copy and paste (`table-interaction-clipboard.ts`). */
+  private readonly clipboardActions = new StarTableClipboardActions<T>({
+    clipboard: inject(StarClipboard),
+    document: this.interactionDocument,
+    text: () => this.text,
+    copyHeaders: () => this.copyHeaders(),
+    beforePaste: this.beforePaste,
+    cellEdit: () => this.cellEdit,
+    rowEditSave: () => this.rowEditSave,
+    body: () => this.body()?.nativeElement,
+    cellSelectionMode: () => this.cellSelectionMode(),
+    cellSelection: () => this.cellSelection(),
+    rowSelectionMode: () => this.rowSelectionMode(),
+    selection: () => this.selection(),
+    active: () => this.active(),
+    navRows: () => this.navRows(),
+    withAdded: () => this.withAdded(),
+    visibleColumns: () => this.visibleColumns(),
+    hasSelectedCells: (row) => this.selectedCells().has(this.trackKey(row)),
+    isCellSelected: (row, column) => this.isCellSelected(row, column),
+    isSelected: (row) => this.isSelected(row),
+    trackKey: (row) => this.trackKey(row),
+    cellText: (row, column) => this.cellText(row, column),
+    isRowInEdit: (row) => this.isRowInEdit(row),
+    isEditable: (row, column) => this.isEditable(row, column),
+    isEditing: (row, column) => this.isEditing(row, column),
+    rawValue: (row, column) => this.rawValue(row, column),
+    batchEdit: () => this.batchEdit(),
+    batch: () => this.batch,
+    rowEditMode: () => this.rowEditMode(),
+    announce: (message) => this.announce(message),
+  });
 
   /**
    * Copies cells to the clipboard as tab-separated text (TSV) and announces "Copied N cells". The
@@ -1055,85 +938,7 @@ export abstract class StarTableInteraction<T> {
    * Ignite UI `clipboardOptions`.
    */
   copyToClipboard(options: StarTableCopyOptions = {}): Promise<number> {
-    return this.copyCells(options.headers, null);
-  }
-
-  /** Copies (see `copyToClipboard`); `cell` replaces the active cell as the last choice. */
-  private async copyCells(
-    headers: boolean | undefined,
-    cell: { readonly row: T; readonly column: StarColumn<T> } | null,
-  ): Promise<number> {
-    const block = this.copyBlock(cell);
-    if (!block) return 0;
-    const lines = block.rows.map((row) =>
-      block.columns.map((column) => (block.has(row, column) ? this.copyText(row, column) : '')),
-    );
-    if (headers ?? this.copyHeaders()) {
-      lines.unshift(block.columns.map((column) => column.header));
-    }
-    const done = await this.clipboard.copy(toTsv(lines));
-    this.announce(done ? this.text.copiedCells(block.count) : this.text.copyFailed);
-    return done ? block.count : 0;
-  }
-
-  /** The rows, columns and cells that a copy takes (see `copyToClipboard`), or `null`. */
-  private copyBlock(cell: { readonly row: T; readonly column: StarColumn<T> } | null = null): {
-    readonly rows: readonly T[];
-    readonly columns: readonly StarColumn<T>[];
-    readonly has: (row: T, column: StarColumn<T>) => boolean;
-    readonly count: number;
-  } | null {
-    const columns = this.visibleColumns();
-    if (this.cellSelectionMode() && this.cellSelection().length) {
-      const rows = this.navRows();
-      const picked = this.selectedCells();
-      const rowIndexes = rows.flatMap((row, i) => (picked.has(this.trackKey(row)) ? [i] : []));
-      const fields = new Set(this.cellSelection().map((cell) => cell.field));
-      const colIndexes = columns.flatMap((column, i) => (fields.has(column.field) ? [i] : []));
-      if (rowIndexes.length && colIndexes.length) {
-        const blockRows = rows.slice(rowIndexes[0], rowIndexes[rowIndexes.length - 1] + 1);
-        const blockColumns = columns.slice(colIndexes[0], colIndexes[colIndexes.length - 1] + 1);
-        const has = (row: T, column: StarColumn<T>) => this.isCellSelected(row, column);
-        let count = 0;
-        for (const row of blockRows)
-          for (const column of blockColumns) if (has(row, column)) count++;
-        return { rows: blockRows, columns: blockColumns, has, count };
-      }
-    }
-    if (this.rowSelectionMode() && this.selection().length) {
-      const rows = this.withAdded().filter((row) => this.isSelected(row));
-      if (rows.length && columns.length) {
-        return { rows, columns, has: () => true, count: rows.length * columns.length };
-      }
-    }
-    if (cell) return { rows: [cell.row], columns: [cell.column], has: () => true, count: 1 };
-    const active = this.active();
-    const row =
-      active && this.navRows().find((item) => Object.is(this.trackKey(item), active.rowKey));
-    const column = active && columns.find((item) => item.field === active.field);
-    if (row === null || row === undefined || !column) return null;
-    return { rows: [row], columns: [column], has: () => true, count: 1 };
-  }
-
-  /** Clipboard text of a cell: `exportValue`, else the display text. */
-  private copyText(row: T, column: StarColumn<T>): string {
-    return column.exportValue ? String(column.exportValue(row) ?? '') : this.cellText(row, column);
-  }
-
-  /** Ctrl+C (Cmd+C) in the body: copies (see `copyToClipboard`). Returns true when handled. */
-  private onCopyKey(event: KeyboardEvent): boolean {
-    const ctrl = event.ctrlKey || event.metaKey;
-    if (!ctrl || event.altKey || event.shiftKey || event.key.toLowerCase() !== 'c') return false;
-    const target = event.target as Element;
-    const body = this.body()?.nativeElement;
-    if (!body?.contains(target) || target.closest(OWN_KEYS)) return false;
-    // Text that the user selected on the page: the browser copies it.
-    const selected = this.interactionDocument.getSelection?.();
-    if (selected && !selected.isCollapsed && selected.toString()) return false;
-    if (!this.copyBlock()) return false;
-    event.preventDefault();
-    void this.copyToClipboard();
-    return true;
+    return this.clipboardActions.copy(options.headers, null);
   }
 
   /** Ctrl+V (Cmd+V) on a cell with `pasteEditable`. */
@@ -1141,127 +946,7 @@ export abstract class StarTableInteraction<T> {
     if (!this.pasteEditable() || event.defaultPrevented) return;
     const target = this.cellOf(event.target);
     if (!target?.column || (event.target as Element).closest(OWN_KEYS)) return;
-    const text = event.clipboardData?.getData('text/plain') ?? '';
-    const lines = parseTsv(text);
-    if (!lines.length) return;
-    event.preventDefault();
-    this.pasteLines(target.row, target.column, text, lines);
-  }
-
-  /** Writes pasted lines into the editable cells from a cell to the right and down. */
-  private pasteLines(row: T, column: StarColumn<T>, text: string, lines: string[][]): void {
-    const rows = this.navRows();
-    const columns = this.visibleColumns();
-    const top = rows.findIndex((item) => Object.is(this.trackKey(item), this.trackKey(row)));
-    const left = columns.indexOf(column);
-    if (top < 0 || left < 0) return;
-    const cells: (StarTablePasteCell<T> & { readonly column: StarColumn<T> })[] = [];
-    lines.forEach((line, i) => {
-      const target = rows[top + i];
-      if (target === undefined || this.isRowInEdit(target)) return;
-      line.forEach((value, j) => {
-        const col = columns[left + j];
-        // A cell with its editor open keeps the editor value.
-        if (!col || !this.isEditable(target, col) || this.isEditing(target, col)) return;
-        const parsed = parseEditorText(col.editor, value);
-        const previous = this.rawValue(target, col);
-        cells.push({ row: target, field: col.field, column: col, value: parsed, previous });
-      });
-    });
-    if (!cells.length) return;
-    let canceled = false;
-    this.beforePaste.emit({
-      cells: cells.map(({ row: item, field, value, previous }) => ({
-        row: item,
-        field,
-        value,
-        previous,
-      })),
-      text,
-      cancel: () => (canceled = true),
-    });
-    if (canceled) return;
-    // Validate each cell with the pasted values of its row, so a rule can compare fields.
-    const byRow = new Map<unknown, { row: T; cells: typeof cells }>();
-    for (const cell of cells) {
-      const key = this.trackKey(cell.row);
-      const group = byRow.get(key) ?? { row: cell.row, cells: [] };
-      group.cells.push(cell);
-      byRow.set(key, group);
-    }
-    let skipped = 0;
-    const groups = [...byRow.values()].map((group) => {
-      const values = Object.fromEntries(group.cells.map((cell) => [cell.field, cell.value]));
-      const draft = { ...group.row, ...values } as T;
-      const valid = group.cells.filter((cell) => {
-        const options = cell.column.editor === 'select' ? cell.column.editOptions : undefined;
-        // An empty value clears a choice that is not required (`required` reports it).
-        const empty = cell.value === '' || cell.value === null;
-        const error =
-          (options && !empty && !options.includes(String(cell.value))) ||
-          starCellError(cell.column, cell.value, draft, this.text);
-        if (error) skipped++;
-        return !error;
-      });
-      return { row: group.row, valid };
-    });
-    const pasted = this.applyPaste(groups);
-    const message = this.text.pastedCells(pasted);
-    this.announce(skipped ? `${message}. ${this.text.skippedCells(skipped)}` : message);
-  }
-
-  /** Emits the edit events of a paste (or records a batch step). Returns the written cells. */
-  private applyPaste(
-    groups: readonly { readonly row: T; readonly valid: readonly StarTablePasteCell<T>[] }[],
-  ): number {
-    let count = 0;
-    if (this.batchEdit()) {
-      const rows = groups.map(({ row, valid }) => ({
-        row,
-        cells: valid.map((cell): StarCellChange => ({
-          field: cell.field,
-          value: cell.value,
-          original: cell.previous,
-        })),
-      }));
-      // A cell that keeps its value (also its pending value) is not counted.
-      const changed = rows.filter((entry) =>
-        entry.cells.some((cell) => this.batchChanges(entry.row, cell)),
-      );
-      const count = rows.reduce(
-        (sum, entry) =>
-          sum + entry.cells.filter((cell) => this.batchChanges(entry.row, cell)).length,
-        0,
-      );
-      return changed.length && this.batch.changeRows(rows) ? count : 0;
-    }
-    for (const { row, valid } of groups) {
-      const changed = valid.filter(this.changedCell);
-      count += changed.length;
-      if (!changed.length) continue;
-      if (this.rowEditMode()) {
-        this.rowEditSave.emit({
-          row,
-          changes: Object.fromEntries(changed.map((cell) => [cell.field, cell.value])),
-          previous: Object.fromEntries(changed.map((cell) => [cell.field, cell.previous])),
-        });
-        continue;
-      }
-      for (const cell of changed) {
-        this.cellEdit.emit({ row, field: cell.field, value: cell.value, previous: cell.previous });
-      }
-    }
-    return count;
-  }
-
-  /** A pasted cell that differs from the cell value in the row. */
-  private readonly changedCell = (cell: StarTablePasteCell<T>) =>
-    !sameEditValue(cell.value, cell.previous);
-
-  /** A batch cell change that differs from the pending (or row) value of the cell. */
-  private batchChanges(row: T, cell: StarCellChange): boolean {
-    const pending = this.batch.pending(row, cell.field);
-    return !sameEditValue(cell.value, pending ? pending.value : cell.original);
+    this.clipboardActions.onPaste(event, target.row, target.column);
   }
 
   // ---------------------------------------------------------------- cell selection

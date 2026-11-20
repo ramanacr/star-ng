@@ -28,20 +28,20 @@ interface Project {
         <star-list ariaLabel="Warehouses" divider>
           <star-list-subheader>Portugal</star-list-subheader>
           <star-list-item>
-            <i starListItemStart class="ph ph-warehouse" aria-hidden="true"></i>
+            <i starListItemStart class="ph-bold ph-warehouse" aria-hidden="true"></i>
             Lisbon
             <span starListItemSubtitle>Main warehouse</span>
             <span starListItemEnd>1,240 orders</span>
           </star-list-item>
           <star-list-item>
-            <i starListItemStart class="ph ph-warehouse" aria-hidden="true"></i>
+            <i starListItemStart class="ph-bold ph-warehouse" aria-hidden="true"></i>
             Porto
             <span starListItemSubtitle>Returns</span>
             <span starListItemEnd>310 orders</span>
           </star-list-item>
           <star-list-subheader>Spain</star-list-subheader>
           <star-list-item>
-            <i starListItemStart class="ph ph-warehouse" aria-hidden="true"></i>
+            <i starListItemStart class="ph-bold ph-warehouse" aria-hidden="true"></i>
             Valencia
             <span starListItemSubtitle>Cross-dock</span>
             <star-tag starListItemEnd severity="success" value="Open" />
@@ -56,17 +56,17 @@ interface Project {
       >
         <star-list mode="navigation" ariaLabel="Documentation">
           <star-list-item routerLink="/controls/list">
-            <i starListItemStart class="ph ph-list-bullets" aria-hidden="true"></i>
+            <i starListItemStart class="ph-bold ph-list-bullets" aria-hidden="true"></i>
             List
             <span starListItemSubtitle>This page</span>
           </star-list-item>
           <star-list-item routerLink="/controls/listbox">
-            <i starListItemStart class="ph ph-check-square" aria-hidden="true"></i>
+            <i starListItemStart class="ph-bold ph-check-square" aria-hidden="true"></i>
             Listbox
             <span starListItemSubtitle>For selection</span>
           </star-list-item>
           <star-list-item routerLink="/controls/virtual-scroller">
-            <i starListItemStart class="ph ph-rows" aria-hidden="true"></i>
+            <i starListItemStart class="ph-bold ph-rows" aria-hidden="true"></i>
             Virtual scroller
             <span starListItemSubtitle>For thousands of items</span>
           </star-list-item>

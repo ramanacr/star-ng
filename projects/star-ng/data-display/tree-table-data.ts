@@ -3,7 +3,7 @@
 // or signal state, so they are unit tested without layout. They never change the nodes they get:
 // a sort or a filter returns new arrays (and copies of the nodes whose children changed).
 // This file is internal and is not exported from the entry point.
-import { compareValues, matchesFilter } from '@star-ng/ui/core';
+import { compareValues, matchesFilter, type ɵStarSortRule } from '@star-ng/ui/core';
 
 // The check, lock and filter helpers live in the tree entry point and serve both controls.
 export { checkStates, filterTree, isLocked, toggleChecked } from '@star-ng/ui/tree';
@@ -22,10 +22,7 @@ export interface DataNode<N> {
 }
 
 /** One sort column (the shape of `StarSortState` from `@star-ng/ui/table`). */
-export interface SortRule {
-  readonly field: string | null;
-  readonly order: 1 | -1;
-}
+export type SortRule = ɵStarSortRule;
 
 /**
  * Sorts the siblings of every level by the sort rules, in priority order. A child stays under its

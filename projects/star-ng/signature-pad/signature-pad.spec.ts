@@ -201,6 +201,13 @@ describe('StarSignaturePad', () => {
     expect((canvas as HTMLElement).style.touchAction || 'none').toBe('none');
   });
 
+  it('uses the bold icon weight, as the other controls do', async () => {
+    const { root } = await setup();
+    const icons = [...root.querySelectorAll('i[class*="ph-"]')];
+    expect(icons.length).toBeGreaterThan(0);
+    for (const icon of icons) expect(icon.classList.contains('ph-bold')).toBe(true);
+  });
+
   it('turns pointer strokes into a PNG data URL and marks the area as signed', async () => {
     const { host, canvas, draw, button, calls } = await setup();
     await draw([

@@ -145,8 +145,10 @@ export class StarWindowStack {
         }
         <ng-content select="[starWindowHeader]" />
         <div class="star-window__actions">
-          <!-- Stable toggles: the focused button stays when the state changes. -->
-          @if (minimizable()) {
+          <!-- Stable toggles: the focused button stays when the state changes. A window that is
+               minimized or maximized from code always shows its restore button, also when that
+               action is off; after the restore the button goes, and the focus goes to the title bar. -->
+          @if (minimizable() || state() === 'minimized') {
             <button
               type="button"
               class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
@@ -159,7 +161,7 @@ export class StarWindowStack {
               ></i>
             </button>
           }
-          @if (maximizable()) {
+          @if (maximizable() || state() === 'maximized') {
             <button
               type="button"
               class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
@@ -225,7 +227,15 @@ export class StarWindow {
   readonly keepInViewport = input(true, { transform: booleanAttribute });
   /** Escape closes the window. Off by default: a non-modal window stays until the user closes it. */
   readonly closeOnEscape = input(false, { transform: booleanAttribute });
+  /**
+   * The title bar has a minimize button. A window that is minimized from code still shows its
+   * restore button when this is off.
+   */
   readonly minimizable = input(true, { transform: booleanAttribute });
+  /**
+   * The title bar has a maximize button (and a double click maximizes). A window that is maximized
+   * from code still shows its restore button when this is off.
+   */
   readonly maximizable = input(true, { transform: booleanAttribute });
   readonly closable = input(true, { transform: booleanAttribute });
   /** Smallest width in pixels. */

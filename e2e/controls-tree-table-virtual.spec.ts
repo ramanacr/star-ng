@@ -94,9 +94,18 @@ test.describe('windowed tree table', () => {
 
     // In the middle of the list: row 5,000 (0-based) is the row number 5,002 with the header.
     await scrollTo(scroller, 5000 * rowHeight);
-    const middle = await rows.evaluateAll((trs) =>
-      trs.map((tr) => [tr.getAttribute('data-key'), Number(tr.getAttribute('aria-rowindex'))]),
-    );
+    const rendered = () =>
+      rows.evaluateAll((trs) =>
+        trs.map((tr) => [tr.getAttribute('data-key'), Number(tr.getAttribute('aria-rowindex'))]),
+      );
+    // The window follows the scroll after a frame: wait until it shows the middle rows.
+    await expect
+      .poll(async () => {
+        const first = (await rendered())[0]?.[1] as number | undefined;
+        return first !== undefined && first > 4980 && first < 5010;
+      })
+      .toBe(true);
+    const middle = await rendered();
     expect(middle.length).toBeGreaterThan(5);
     expect(middle.length).toBeLessThan(60);
     // The rendered rows are consecutive and the numbers go up by one.

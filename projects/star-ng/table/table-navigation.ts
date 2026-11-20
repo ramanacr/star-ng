@@ -3,6 +3,10 @@
  * helpers, no DOM. Ignite UI grid keyboard navigation, AG Grid cell navigation.
  */
 
+/** Controls inside a cell that keep their own keys (editors, fields, lists). */
+export const OWN_KEYS =
+  '.star-table__editor, input, select, textarea, [contenteditable]:not([contenteditable="false"]), [role="listbox"], [role="combobox"]';
+
 /** A cell of the table: the row key (`dataKey` value, else the row object) and the column field. */
 export interface StarTableCellRef {
   readonly rowKey: unknown;

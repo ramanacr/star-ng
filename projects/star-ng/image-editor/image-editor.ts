@@ -48,6 +48,7 @@ import {
   starImageResizeCrop,
   StarImageSize,
 } from './image-editor-model';
+import { starImagePreviewScale } from './image-editor-preview';
 import { starImageRender, starImageRenderBase, starImageReplay } from './image-editor-render';
 
 /** A tool of `star-image-editor` that opens a panel. */
@@ -1508,7 +1509,6 @@ export class StarImageEditor {
     });
   }
 
-  /** Draws the preview on the view canvas, scaled by the device pixel ratio. Browser only. */
   /** Draws on the next animation frame; several changes in one frame draw once. */
   private scheduleDraw(): void {
     const view = this.doc.defaultView;
@@ -1539,7 +1539,8 @@ export class StarImageEditor {
     canvas.height = Math.max(1, Math.round(view.height * ratio));
     const context = canvas.getContext('2d');
     if (!context) return;
-    const scale = Math.min(1, canvas.width / size.width);
+    // The cached base is never smaller than the view needs, also after an enlarging resize.
+    const scale = starImagePreviewScale(this.naturalSize(), ops, canvas.width);
     const key = `${scale}|${starImageFilter(starImageAdjustmentsOf(ops))}`;
     if (this.baseCache?.key !== key) {
       const base = starImageRenderBase(this.doc, this.image, this.naturalSize(), ops, { scale });

@@ -32,6 +32,25 @@ export * from './filter-service';
 export * from './format';
 // Grid keys: shared by the table and the tree table only, not public API.
 export { ɵstarIsContextMenuKey, ɵstarOpenContextMenu, ɵstarOptionalBoolean } from './grid-keys';
+// Grid sort, column width and edit helpers: shared by the table and the tree table only, not
+// public API.
+export {
+  ɵSTAR_MIN_COLUMN_WIDTH,
+  ɵstarAriaSort,
+  ɵstarClampColumnWidth,
+  ɵstarEditText,
+  ɵstarNextSort,
+  ɵstarResizeByKey,
+  ɵstarResizeMax,
+  ɵstarSameWidths,
+  ɵstarSortIcon,
+  ɵstarSortRank,
+  ɵstarSortRules,
+  ɵstarStartColumnResize,
+  ɵstarStickyOffsets,
+  ɵstarUnchangedEdit,
+  type ɵStarSortRule,
+} from './grid-columns';
 export * from './list-windowing';
 // Modal check: shared by the ribbon and the command palette, not public API.
 export { ɵstarModalOutside } from './modal';

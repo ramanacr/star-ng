@@ -21,10 +21,15 @@ import { DOCS, DocsRow } from '../shared/docs';
         <div class="docs-bottom-nav-frame">
           <p class="docs-bottom-nav-view" role="status">{{ views[section() ?? 'orders'] }}</p>
           <star-bottom-nav [(value)]="section" ariaLabel="Sections">
-            <star-bottom-nav-item value="orders" label="Orders" icon="ph ph-package" badge="3" />
-            <star-bottom-nav-item value="cities" label="Cities" icon="ph ph-map-pin" />
-            <star-bottom-nav-item value="projects" label="Projects" icon="ph ph-folder" />
-            <star-bottom-nav-item value="settings" label="Settings" icon="ph ph-gear" />
+            <star-bottom-nav-item
+              value="orders"
+              label="Orders"
+              icon="ph-bold ph-package"
+              badge="3"
+            />
+            <star-bottom-nav-item value="cities" label="Cities" icon="ph-bold ph-map-pin" />
+            <star-bottom-nav-item value="projects" label="Projects" icon="ph-bold ph-folder" />
+            <star-bottom-nav-item value="settings" label="Settings" icon="ph-bold ph-gear" />
           </star-bottom-nav>
         </div>
       </docs-example>
@@ -38,17 +43,17 @@ import { DOCS, DocsRow } from '../shared/docs';
           <star-bottom-nav-item
             routerLink="/controls/list"
             label="List"
-            icon="ph ph-list-bullets"
+            icon="ph-bold ph-list-bullets"
           />
           <star-bottom-nav-item
             routerLink="/controls/bottom-nav"
             label="Bottom nav"
-            icon="ph ph-dots-three-outline"
+            icon="ph-bold ph-dots-three-outline"
           />
           <star-bottom-nav-item
             routerLink="/controls/app-bar"
             label="App bar"
-            icon="ph ph-browser"
+            icon="ph-bold ph-browser"
           />
         </star-bottom-nav>
       </docs-example>

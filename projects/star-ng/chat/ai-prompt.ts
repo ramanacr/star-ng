@@ -88,7 +88,7 @@ export interface StarAiPromptOutput {
           [disabled]="disabled() || !prompt().trim()"
           (click)="request()"
         >
-          <i class="ph ph-sparkle" aria-hidden="true"></i>{{ text.generate }}
+          <i class="ph-bold ph-sparkle" aria-hidden="true"></i>{{ text.generate }}
         </button>
       </div>
     </div>
@@ -98,14 +98,15 @@ export interface StarAiPromptOutput {
           @let streaming = output.status === 'streaming';
           <li class="star-ai-prompt__output" [attr.aria-busy]="streaming || null">
             <p class="star-ai-prompt__prompt">
-              <i class="ph ph-chat-text" aria-hidden="true"></i>{{ output.prompt }}
+              <i class="ph-bold ph-chat-text" aria-hidden="true"></i>{{ output.prompt }}
             </p>
             @if (output.text) {
               <star-markdown-lite class="star-ai-prompt__text" [text]="output.text" />
             }
             @if (output.status === 'error') {
               <p class="star-ai-prompt__error">
-                <i class="ph ph-warning-circle" aria-hidden="true"></i>{{ text.aiResponseFailed }}
+                <i class="ph-bold ph-warning-circle" aria-hidden="true"></i
+                >{{ text.aiResponseFailed }}
               </p>
             }
             <div class="star-ai-prompt__actions">
@@ -119,7 +120,7 @@ export interface StarAiPromptOutput {
                   class="star-btn star-btn--ghost star-btn--sm"
                   (click)="stop.emit(output)"
                 >
-                  <i class="ph ph-stop-circle" aria-hidden="true"></i>{{ text.stop }}
+                  <i class="ph-bold ph-stop-circle" aria-hidden="true"></i>{{ text.stop }}
                 </button>
               } @else {
                 @if (output.text) {
@@ -128,7 +129,7 @@ export interface StarAiPromptOutput {
                     class="star-btn star-btn--ghost star-btn--sm"
                     (click)="copy(output)"
                   >
-                    <i class="ph ph-copy" aria-hidden="true"></i>{{ text.copy }}
+                    <i class="ph-bold ph-copy" aria-hidden="true"></i>{{ text.copy }}
                   </button>
                 }
                 <button
@@ -137,7 +138,7 @@ export interface StarAiPromptOutput {
                   [disabled]="disabled()"
                   (click)="retry.emit(output)"
                 >
-                  <i class="ph ph-arrow-clockwise" aria-hidden="true"></i>{{ text.retry }}
+                  <i class="ph-bold ph-arrow-clockwise" aria-hidden="true"></i>{{ text.retry }}
                 </button>
               }
             </div>

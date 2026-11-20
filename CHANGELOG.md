@@ -255,6 +255,7 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - Table: search highlight (`searchText`, two-way, apart from `globalFilter`): `<mark>` around the matches, case- and accent-insensitive with `filterLocale`; `searchMatches` signal (count and active index), `findNext()`, `findPrevious()` with wrap and `clearSearch()` (Ignite UI names). The active match scrolls into view on any page and in virtual rows and columns. A cell template opts in with the new `highlight(text)` function of `StarCellContext`. Types `StarTableSearchMatches`, `StarTableTextPart`.
 - Table: keyboard and scroll API: `focusCell(rowKey, field)`, `navigateTo(rowIndex, field)`, `scrollToRow(rowKeyOrIndex, { align })` and `scrollToColumn(field, { align })` (`'nearest'`, `'start'`, `'center'`, `'end'`; `StarScrollOptions`, `StarScrollAlign`). They open the page of a client paginator, render virtual rows and columns first and scroll smoothly unless motion is reduced.
 - UI texts `copiedCells`, `pastedCells`, `skippedCells`, `copyWithHeaders`, `sortAscending`, `sortDescending`, `hideColumn` and `exportCsv` (English, German, Spanish).
+- Table: `StarTablePasteEvent` (the `beforePaste` payload) has `readonly canceled: boolean` next to `cancel()`, like the other cancelable events. Code that builds this object itself must add the member.
 
 #### Tabs
 
@@ -333,9 +334,16 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 ### Deprecated
 
 - `formatFileSize` (`@star-ng/ui/file-upload`): use `starFormatFileSize` from `@star-ng/ui/core` (or the `starFileSize` pipe). File upload uses the core helper now.
+- Table: the copy and paste, the body context menu and the search highlight of `StarTableInteraction` moved to focused internal helper files (`table-interaction-clipboard.ts`, `table-interaction-menu.ts`, `table-interaction-search.ts`); the public API and the behaviour do not change.
+- Table docs: the interaction page and the `cellNavigation` description say that a control which a custom row action or lead template adds without a row or edit change keeps its tab stop; give it `tabindex="-1"`.
 
 ### Fixed
 
+- Table: a Shift move into a lead cell no longer leaves a stale range target behind (internal state only).
+- Window: a window that is minimized or maximized from code while `minimizable` or `maximizable` is off now shows its restore button, so the user can bring it back. After the restore the button goes and the focus moves to the title bar.
+- Image editor: after an enlarging resize the preview was blurry, because the cached base was drawn at the view scale of the larger output and then stretched. The base scale now includes the resize enlargement (at most 2x the view per side, and never above the natural size); the export did not change.
+- Menu: `starMenuTrigger` on a wrapper (a custom element such as `<star-button>`) now gives the host `role="none"` already in the first render (also in the server render and before hydration), and the host carries no `aria-haspopup` / `aria-expanded` (the inner button has them), so assistive technology never meets a button around a button. A plain element such as `<div tabindex="0">` keeps its button role, and so does a custom element without a button inside.
+- Signature pad, AI prompt, app sidebar (submenu chevron) and command palette (search icon): the built-in icons used the regular Phosphor weight (`ph`), which the docs and most apps do not load, so they did not show. They now use the bold weight (`ph-bold`) like the other controls. The docs examples and JSDoc examples of the app sidebar, bottom navigation, command palette and list use `ph-bold` too.
 - A dialog or drawer with a `header` and `showHeader` false pointed `aria-labelledby` at a title that was not rendered; it now takes the header text as `aria-label`.
 - A non-modal dialog or drawer (native `show()`, not in the top layer) stacks above sticky page headers (`z-index: 999`, below the CDK overlay container), as a non-modal bottom sheet does.
 - Dialog: a close or a destroy in the middle of a pointer drag or resize stops the tracking; the dialog no longer reopens at the dragged position or emits `dragEnd` / `resizeEnd` after the close. Moves of another pointer are ignored.
