@@ -39,11 +39,22 @@ import {
   StarFilterMatchMode,
   StarFilterService,
   StarGroupContext,
-  starIsRtl,
   StarOptionKey,
   StarSlot,
   starSlot,
   starSlotMap,
+  ɵSTAR_MIN_COLUMN_WIDTH,
+  ɵstarAriaSort,
+  ɵstarClampColumnWidth,
+  ɵstarEditText,
+  ɵstarNextSort,
+  ɵstarResizeByKey,
+  ɵstarResizeMax,
+  ɵstarSortIcon,
+  ɵstarSortRank,
+  ɵstarSortRules,
+  ɵstarStartColumnResize,
+  ɵstarUnchangedEdit,
 } from '@star-ng/ui/core';
 import { StarContextMenu, StarMenu } from '@star-ng/ui/menu';
 import { StarPaginator } from '@star-ng/ui/paginator';
@@ -329,11 +340,6 @@ function isTextEntry(target: EventTarget | null): boolean {
   if (target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement) return true;
   return target instanceof HTMLInputElement && TEXT_INPUTS.has(target.type);
 }
-
-/** Smallest width, in pixels, that the user can give a column. */
-const MIN_COLUMN_WIDTH = 48;
-/** `aria-valuemax` of a resize handle. The column width itself has no upper limit. */
-const MAX_COLUMN_WIDTH_HINT = 2000;
 
 export type StarSortOrder = 1 | -1;
 
@@ -932,12 +938,9 @@ export class StarTable<T> extends StarTableInteraction<T> {
   });
 
   /** Sort columns in priority order. */
-  private readonly sorts = computed<readonly StarSortState[]>(() => {
-    const meta = this.sortMeta();
-    if (this.multiSort() && meta.length) return meta;
-    const field = this.sortField();
-    return field ? [{ field, order: this.sortOrder() }] : [];
-  });
+  private readonly sorts = computed<readonly StarSortState[]>(() =>
+    ɵstarSortRules(this.multiSort(), this.sortMeta(), this.sortField(), this.sortOrder()),
+  );
 
   private readonly sorted = computed(() => {
     let rows = this.filtered();
@@ -1963,7 +1966,7 @@ export class StarTable<T> extends StarTableInteraction<T> {
   protected readonly headerWidths = signal<StarHeaderWidths>(NO_WIDTHS);
   /** The scroll area has content outside its box, so it must take the focus to scroll by key. */
   protected readonly scrollable = signal(false);
-  protected readonly minColumnWidth = MIN_COLUMN_WIDTH;
+  protected readonly minColumnWidth = ɵSTAR_MIN_COLUMN_WIDTH;
 
   /** `aria-valuenow` of a resize handle: the width of the column in pixels. */
   protected resizeNow(column: StarColumn<T>): number | null {
@@ -1972,7 +1975,7 @@ export class StarTable<T> extends StarTableInteraction<T> {
   }
 
   protected resizeMax(column: StarColumn<T>): number {
-    return Math.max(MAX_COLUMN_WIDTH_HINT, this.resizeNow(column) ?? 0);
+    return ɵstarResizeMax(this.resizeNow(column));
   }
   /** Counts up when the table element changes size, so the pinned columns are measured again. */
   private readonly resized = signal(0);
@@ -2034,7 +2037,7 @@ export class StarTable<T> extends StarTableInteraction<T> {
     return (
       this.columnWidths()[column.field] ??
       cssPixels(column.width) ??
-      Math.max(MIN_COLUMN_WIDTH, this.virtualColumnWidth())
+      Math.max(ɵSTAR_MIN_COLUMN_WIDTH, this.virtualColumnWidth())
     );
   }
 
@@ -2120,44 +2123,22 @@ export class StarTable<T> extends StarTableInteraction<T> {
   }
 
   private setWidth(column: StarColumn<T>, width: number): void {
-    const next = Math.max(MIN_COLUMN_WIDTH, Math.round(width));
+    const next = ɵstarClampColumnWidth(width);
     this.columnWidths.update((widths) => ({ ...widths, [column.field]: next }));
   }
 
   protected startResize(column: StarColumn<T>, event: PointerEvent): void {
-    const handle = event.currentTarget as HTMLElement;
-    const header = handle.closest('th');
-    if (!header) return;
-    event.preventDefault();
-    event.stopPropagation();
-    this.resizing = true;
-    const direction = starIsRtl(header) ? -1 : 1;
-    const startWidth = header.offsetWidth;
-    const startX = event.clientX;
-    handle.setPointerCapture?.(event.pointerId);
-    const move = (moveEvent: PointerEvent) =>
-      this.setWidth(column, startWidth + direction * (moveEvent.clientX - startX));
-    const stop = () => {
-      this.resizing = false;
-      handle.removeEventListener('pointermove', move);
-      handle.removeEventListener('pointerup', stop);
-      handle.removeEventListener('pointercancel', stop);
-    };
-    handle.addEventListener('pointermove', move);
-    handle.addEventListener('pointerup', stop);
-    handle.addEventListener('pointercancel', stop);
+    const started = ɵstarStartColumnResize(
+      event,
+      (width) => this.setWidth(column, width),
+      () => (this.resizing = false),
+    );
+    if (started) this.resizing = true;
   }
 
   protected onResizeKey(column: StarColumn<T>, event: KeyboardEvent): void {
-    const step = event.key === 'ArrowRight' ? 16 : event.key === 'ArrowLeft' ? -16 : 0;
-    if (!step) return;
-    event.preventDefault();
-    const header = (event.currentTarget as HTMLElement).closest('th');
-    const direction = starIsRtl(header) ? -1 : 1;
-    this.setWidth(
-      column,
-      (this.columnWidths()[column.field] ?? header?.offsetWidth ?? 0) + direction * step,
-    );
+    const width = ɵstarResizeByKey(event, this.columnWidths()[column.field]);
+    if (width !== null) this.setWidth(column, width);
   }
 
   protected editKey(row: T, column: StarColumn<T>): string {
@@ -2194,8 +2175,7 @@ export class StarTable<T> extends StarTableInteraction<T> {
 
   /** Text in the editor: the raw value, so a formatted cell (date, currency) edits its data. */
   protected editText(row: T, column: StarColumn<T>): string {
-    const value = this.cellValue(row, column);
-    return value === null || value === undefined ? '' : String(value);
+    return ɵstarEditText(this.cellValue(row, column));
   }
 
   /**
@@ -2316,7 +2296,7 @@ export class StarTable<T> extends StarTableInteraction<T> {
       this.batch.change(row, [{ field: column.field, value, original: previous }]);
       return;
     }
-    if (Object.is(value, previous) || (value === '' && (previous ?? '') === '')) return;
+    if (ɵstarUnchangedEdit(value, previous)) return;
     this.cellEdit.emit({ row, field: column.field, value, previous });
   }
 
@@ -2878,50 +2858,32 @@ export class StarTable<T> extends StarTableInteraction<T> {
 
   /** Sorts by a column. With `multiSort`, `event.shiftKey` adds the column to the sort. */
   sortBy(column: StarColumn<T>, event?: MouseEvent | KeyboardEvent): void {
-    const current = this.sorts().find((sort) => sort.field === column.field);
-    const order: StarSortOrder = current ? (current.order === 1 ? -1 : 1) : 1;
-    if (this.multiSort() && event?.shiftKey) {
-      const sorts = this.sorts();
-      this.sortMeta.set(
-        current
-          ? sorts.map((sort) => (sort.field === column.field ? { ...sort, order } : sort))
-          : [...sorts, { field: column.field, order }],
-      );
-    } else {
-      this.sortMeta.set(this.multiSort() ? [{ field: column.field, order }] : []);
-    }
+    const { meta, first } = ɵstarNextSort(
+      this.sorts(),
+      column.field,
+      this.multiSort(),
+      !!event?.shiftKey,
+    );
+    this.sortMeta.set(meta);
     // `sortField` / `sortOrder` always hold the first sort column.
-    const first = this.multiSort() ? this.sortMeta()[0] : { field: column.field, order };
     this.sortField.set(first.field);
     this.sortOrder.set(first.order);
     this.first.set(0);
     this.emitLazy();
   }
 
-  private sortOf(column: StarColumn<T>): StarSortState | undefined {
-    return this.sorts().find((sort) => sort.field === column.field);
-  }
-
   /** `aria-sort` goes on one column only: the first sort column. */
   protected ariaSort(column: StarColumn<T>): string | null {
-    if (!column.sortable) return null;
-    const first = this.sorts()[0];
-    if (first?.field !== column.field) return 'none';
-    return first.order === 1 ? 'ascending' : 'descending';
+    return ɵstarAriaSort(column.sortable, this.sorts(), column.field);
   }
 
   protected sortIcon(column: StarColumn<T>): string {
-    const sort = this.sortOf(column);
-    if (!sort) return 'ph-bold ph-arrows-down-up star-table__sort-idle';
-    return sort.order === 1 ? 'ph-bold ph-sort-ascending' : 'ph-bold ph-sort-descending';
+    return ɵstarSortIcon(this.sorts(), column.field);
   }
 
   /** Position of a column in a sort by two or more columns, else `null`. */
   protected sortRank(column: StarColumn<T>): number | null {
-    const sorts = this.sorts();
-    if (sorts.length < 2) return null;
-    const index = sorts.findIndex((sort) => sort.field === column.field);
-    return index < 0 ? null : index + 1;
+    return ɵstarSortRank(this.sorts(), column.field);
   }
 
   /** Selection logic (`table-selection.ts`). */

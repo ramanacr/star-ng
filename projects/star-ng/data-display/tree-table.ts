@@ -27,12 +27,25 @@ import {
   STAR_UI_TEXT,
   StarEmptyContext,
   starInlineKey,
-  starIsRtl,
   StarSlot,
   starSlot,
+  ɵSTAR_MIN_COLUMN_WIDTH,
+  ɵstarAriaSort,
+  ɵstarClampColumnWidth,
+  ɵstarEditText,
   ɵstarIsContextMenuKey,
+  ɵstarNextSort,
   ɵstarOpenContextMenu,
   ɵstarOptionalBoolean,
+  ɵstarResizeByKey,
+  ɵstarResizeMax,
+  ɵstarSameWidths,
+  ɵstarSortIcon,
+  ɵstarSortRank,
+  ɵstarSortRules,
+  ɵstarStartColumnResize,
+  ɵstarStickyOffsets,
+  ɵstarUnchangedEdit,
 } from '@star-ng/ui/core';
 import { StarContextMenu, StarMenu, StarMenuItem } from '@star-ng/ui/menu';
 import { StarPaginator } from '@star-ng/ui/paginator';
@@ -149,12 +162,6 @@ const TREE_TABLE_ROW_HEIGHT = 53;
 const BUFFER_ROWS = 8;
 /** Height of the scroll area before it is measured (the first window of windowed rendering). */
 const FALLBACK_VIEWPORT = 600;
-/** Smallest width, in pixels, that the user can give a column. */
-const MIN_COLUMN_WIDTH = 48;
-/** `aria-valuemax` of a resize handle. The column width itself has no upper limit. */
-const MAX_COLUMN_WIDTH_HINT = 2000;
-/** Step of a resize with the arrow keys, in pixels. */
-const RESIZE_STEP = 16;
 /** Key suffix of the loading row of a node. */
 const LOADING_KEY = '\u0000loading';
 
@@ -703,12 +710,9 @@ export class StarTreeTable {
     );
   });
   /** Sort columns in priority order. */
-  private readonly sorts = computed<readonly StarSortState[]>(() => {
-    const meta = this.sortMeta();
-    if (this.multiSort() && meta.length) return meta;
-    const field = this.sortField();
-    return field ? [{ field, order: this.sortOrder() }] : [];
-  });
+  private readonly sorts = computed<readonly StarSortState[]>(() =>
+    ɵstarSortRules(this.multiSort(), this.sortMeta(), this.sortField(), this.sortOrder()),
+  );
   /** The filtered nodes, with the siblings of each level sorted. */
   protected readonly sortedNodes = computed(() => sortTree(this.filtered().nodes, this.sorts()));
   private readonly pageNodes = computed(() => {
@@ -852,7 +856,7 @@ export class StarTreeTable {
   private resizing = false;
   /** Rendered width in pixels of each header cell, by column `field` (resize and freeze only). */
   private readonly headerWidths = signal<Readonly<Record<string, number>>>({});
-  protected readonly minColumnWidth = MIN_COLUMN_WIDTH;
+  protected readonly minColumnWidth = ɵSTAR_MIN_COLUMN_WIDTH;
 
   // ---- edit and menu ----
   /** The cell in edit mode, or null. */
@@ -962,20 +966,14 @@ export class StarTreeTable {
 
   /** Sorts by a column. With `multiSort`, `event.shiftKey` adds the column to the sort. */
   sortBy(column: StarTreeTableColumn, event?: MouseEvent | KeyboardEvent): void {
-    const current = this.sorts().find((sort) => sort.field === column.field);
-    const order: StarSortOrder = current ? (current.order === 1 ? -1 : 1) : 1;
-    if (this.multiSort() && event?.shiftKey) {
-      const sorts = this.sorts();
-      this.sortMeta.set(
-        current
-          ? sorts.map((sort) => (sort.field === column.field ? { ...sort, order } : sort))
-          : [...sorts, { field: column.field, order }],
-      );
-    } else {
-      this.sortMeta.set(this.multiSort() ? [{ field: column.field, order }] : []);
-    }
+    const { meta, first } = ɵstarNextSort(
+      this.sorts(),
+      column.field,
+      this.multiSort(),
+      !!event?.shiftKey,
+    );
+    this.sortMeta.set(meta);
     // `sortField` / `sortOrder` always hold the first sort column.
-    const first = this.multiSort() ? this.sortMeta()[0] : { field: column.field, order };
     this.sortField.set(first.field);
     this.sortOrder.set(first.order);
     this.first.set(0);
@@ -983,24 +981,16 @@ export class StarTreeTable {
 
   /** `aria-sort` goes on one column only: the first sort column. */
   protected ariaSort(column: StarTreeTableColumn): string | null {
-    if (!column.sortable) return null;
-    const first = this.sorts()[0];
-    if (first?.field !== column.field) return 'none';
-    return first.order === 1 ? 'ascending' : 'descending';
+    return ɵstarAriaSort(column.sortable, this.sorts(), column.field);
   }
 
   protected sortIcon(column: StarTreeTableColumn): string {
-    const sort = this.sorts().find((item) => item.field === column.field);
-    if (!sort) return 'ph-bold ph-arrows-down-up star-table__sort-idle';
-    return sort.order === 1 ? 'ph-bold ph-sort-ascending' : 'ph-bold ph-sort-descending';
+    return ɵstarSortIcon(this.sorts(), column.field);
   }
 
   /** Position of a column in a sort by two or more columns, else `null`. */
   protected sortRank(column: StarTreeTableColumn): number | null {
-    const sorts = this.sorts();
-    if (sorts.length < 2) return null;
-    const index = sorts.findIndex((sort) => sort.field === column.field);
-    return index < 0 ? null : index + 1;
+    return ɵstarSortRank(this.sorts(), column.field);
   }
 
   // ---------------------------------------------------------------- filter
@@ -1147,8 +1137,17 @@ export class StarTreeTable {
   }
 
   protected resizeMax(column: StarTreeTableColumn): number {
-    return Math.max(MAX_COLUMN_WIDTH_HINT, this.resizeNow(column) ?? 0);
+    return ɵstarResizeMax(this.resizeNow(column));
   }
+
+  /** Sticky offsets of the frozen columns, by field (see `frozenOffset`). */
+  private readonly frozenOffsets = computed(() => {
+    const frozen = this.visibleColumns().filter((column) => column.frozen);
+    const offsets = ɵstarStickyOffsets(frozen, this.headerWidths(), (column) =>
+      this.widthOf(column),
+    );
+    return new Map(frozen.map((column, index) => [column, offsets[index]]));
+  });
 
   /**
    * Offset of a frozen column: the widths of the frozen columns before it. Uses the measured
@@ -1156,20 +1155,7 @@ export class StarTreeTable {
    */
   protected frozenOffset(column: StarTreeTableColumn): string | null {
     if (!column.frozen) return null;
-    const measured = this.headerWidths();
-    const before: string[] = [];
-    let pixels = 0;
-    let allMeasured = true;
-    for (const item of this.visibleColumns()) {
-      if (item === column) break;
-      if (!item.frozen) continue;
-      before.push(this.widthOf(item) ?? '0px');
-      const width = measured[item.field];
-      if (width) pixels += width;
-      else allMeasured = false;
-    }
-    if (!before.length) return '0px';
-    return allMeasured ? `${Math.round(pixels * 100) / 100}px` : `calc(${before.join(' + ')})`;
+    return this.frozenOffsets().get(column) ?? '0px';
   }
 
   /** Measures the header cells (for the resize handles and the frozen offsets). */
@@ -1184,55 +1170,26 @@ export class StarTreeTable {
       const field = cell.dataset['field'];
       if (field) widths[field] = cell.getBoundingClientRect().width;
     }
-    const current = untracked(this.headerWidths);
-    const same =
-      Object.keys(widths).length === Object.keys(current).length &&
-      Object.entries(widths).every(
-        ([field, width]) => Math.abs((current[field] ?? -1) - width) < 0.5,
-      );
-    if (!same) this.headerWidths.set(widths);
+    if (!ɵstarSameWidths(widths, untracked(this.headerWidths))) this.headerWidths.set(widths);
   }
 
   private setWidth(column: StarTreeTableColumn, width: number): void {
-    const next = Math.max(MIN_COLUMN_WIDTH, Math.round(width));
+    const next = ɵstarClampColumnWidth(width);
     this.columnWidths.update((widths) => ({ ...widths, [column.field]: next }));
   }
 
   protected startResize(column: StarTreeTableColumn, event: PointerEvent): void {
-    const handle = event.currentTarget as HTMLElement;
-    const header = handle.closest('th');
-    if (!header) return;
-    event.preventDefault();
-    event.stopPropagation();
-    this.resizing = true;
-    const direction = starIsRtl(header) ? -1 : 1;
-    const startWidth = header.offsetWidth;
-    const startX = event.clientX;
-    handle.setPointerCapture?.(event.pointerId);
-    const move = (moveEvent: PointerEvent) =>
-      this.setWidth(column, startWidth + direction * (moveEvent.clientX - startX));
-    const stop = () => {
-      this.resizing = false;
-      handle.removeEventListener('pointermove', move);
-      handle.removeEventListener('pointerup', stop);
-      handle.removeEventListener('pointercancel', stop);
-    };
-    handle.addEventListener('pointermove', move);
-    handle.addEventListener('pointerup', stop);
-    handle.addEventListener('pointercancel', stop);
+    const started = ɵstarStartColumnResize(
+      event,
+      (width) => this.setWidth(column, width),
+      () => (this.resizing = false),
+    );
+    if (started) this.resizing = true;
   }
 
   protected onResizeKey(column: StarTreeTableColumn, event: KeyboardEvent): void {
-    const step =
-      event.key === 'ArrowRight' ? RESIZE_STEP : event.key === 'ArrowLeft' ? -RESIZE_STEP : 0;
-    if (!step) return;
-    event.preventDefault();
-    const header = (event.currentTarget as HTMLElement).closest('th');
-    const direction = starIsRtl(header) ? -1 : 1;
-    this.setWidth(
-      column,
-      (this.columnWidths()[column.field] ?? header?.offsetWidth ?? 0) + direction * step,
-    );
+    const width = ɵstarResizeByKey(event, this.columnWidths()[column.field]);
+    if (width !== null) this.setWidth(column, width);
   }
 
   // ---------------------------------------------------------------- edit
@@ -1249,8 +1206,7 @@ export class StarTreeTable {
 
   /** Text in the editor: the raw data value. */
   protected editText(node: TreeTableNode, column: StarTreeTableColumn): string {
-    const value = node.data?.[column.field];
-    return value === null || value === undefined ? '' : String(value);
+    return ɵstarEditText(node.data?.[column.field]);
   }
 
   /** Opens the editor of a cell (when the column is editable for this node). */
@@ -1279,7 +1235,7 @@ export class StarTreeTable {
     const value = column.editor === 'number' ? (text.trim() === '' ? null : Number(text)) : text;
     this.closeEditor(node.key);
     if (typeof value === 'number' && Number.isNaN(value)) return;
-    if (Object.is(value, previous) || (value === '' && (previous ?? '') === '')) return;
+    if (ɵstarUnchangedEdit(value, previous)) return;
     this.cellEdit.emit({ node: this.original(node), field: column.field, value, previous });
   }
 

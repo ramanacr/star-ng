@@ -1,4 +1,5 @@
 import { Directive, input } from '@angular/core';
+import { ɵstarSameWidths, ɵstarStickyOffsets } from '@star-ng/ui/core';
 
 /**
  * Column pinning of `star-table`: the side of each column, the display order (start-pinned
@@ -86,19 +87,18 @@ export function pinPlacements<C extends { readonly field: string }>(
   for (const side of ['start', 'end'] as const) {
     const pinned = columns.filter((column) => sideOf(column) === side);
     if (side === 'end') pinned.reverse();
-    const start = side === 'start' ? base.start : base.end;
-    const parts: string[] = [];
-    let pixels = start;
-    let allMeasured = true;
+    const offsets = ɵstarStickyOffsets(
+      pinned,
+      measured,
+      declared,
+      side === 'start' ? base.start : base.end,
+    );
     pinned.forEach((column, index) => {
-      const offset = allMeasured
-        ? `${Math.round(pixels * 100) / 100}px`
-        : `calc(${(start > 0 ? [`${start}px`, ...parts] : parts).join(' + ')})`;
-      placements.set(column.field, { side, offset, edge: index === pinned.length - 1 });
-      parts.push(declared(column) ?? '0px');
-      const width = measured[column.field];
-      if (width) pixels += width;
-      else allMeasured = false;
+      placements.set(column.field, {
+        side,
+        offset: offsets[index],
+        edge: index === pinned.length - 1,
+      });
     });
   }
   return placements;
@@ -140,16 +140,8 @@ export function measureHeaderCells(host: HTMLElement): StarHeaderWidths {
   return { columns, lead, start, end: actions?.getBoundingClientRect().width ?? 0 };
 }
 
-/** Two width maps are the same within half a pixel. */
-export function sameWidths(
-  next: Readonly<Record<string, number>>,
-  current: Readonly<Record<string, number>>,
-): boolean {
-  return (
-    Object.keys(next).length === Object.keys(current).length &&
-    Object.entries(next).every(([field, width]) => Math.abs((current[field] ?? -1) - width) < 0.5)
-  );
-}
+/** Two width maps are the same within half a pixel (the grid helper in `@star-ng/ui/core`). */
+export const sameWidths = ɵstarSameWidths;
 
 /**
  * Makes a cell of a pinned column sticky: the side class, the offset and the separator shadow.
