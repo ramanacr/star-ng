@@ -4,6 +4,7 @@ import {
   STAR_EDITOR_FULL_TOOLBAR,
   STAR_EDITOR_SANITIZE_DEFAULTS,
   StarEditor,
+  StarEditorSanitizeConfig,
   StarEditorUpload,
 } from '@star-ng/ui/editor';
 
@@ -14,7 +15,7 @@ import {
       [(value)]="html"
       [toolbar]="toolbar"
       [upload]="upload()"
-      [sanitize]="rules"
+      [sanitize]="rules()"
       ariaLabel="Announcement"
     />
   `,
@@ -23,7 +24,10 @@ class Host {
   readonly html = signal('<p>Release notes</p>');
   readonly toolbar = STAR_EDITOR_FULL_TOOLBAR;
   readonly upload = signal<StarEditorUpload | null>(null);
-  readonly rules = { ...STAR_EDITOR_SANITIZE_DEFAULTS, embedHosts: ['player.vimeo.com'] };
+  readonly rules = signal<StarEditorSanitizeConfig>({
+    ...STAR_EDITOR_SANITIZE_DEFAULTS,
+    embedHosts: ['player.vimeo.com'],
+  });
 }
 
 async function setup(html?: string) {
@@ -89,6 +93,22 @@ describe('StarEditor images', () => {
     field('Decorative').click();
     form.dispatchEvent(new Event('submit', { cancelable: true }));
     expect(host.html()).toBe('<p>Release<img src="https://example.com/line.png" alt=""> notes</p>');
+  });
+
+  it('checks the image address against the protocols of the allow-list', async () => {
+    const { fixture, el, button, field, type, host } = await setup();
+    host.rules.update((rules) => ({ ...rules, protocols: ['https:'] }));
+    await fixture.whenStable();
+    button('Image').click();
+    await fixture.whenStable();
+    type(field('Image address'), 'http://example.com/a.png');
+    field('Decorative').click();
+    el.querySelector('star-editor-image form')!.dispatchEvent(
+      new Event('submit', { cancelable: true }),
+    );
+    await fixture.whenStable();
+    expect(field('Image address').getAttribute('aria-invalid')).toBe('true');
+    expect(host.html()).not.toContain('<img');
   });
 
   it('stores a chosen file with the upload hook', async () => {

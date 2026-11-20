@@ -29,6 +29,14 @@ describe('starEditorAudit', () => {
     expect(starEditorAudit(el)).toEqual([]);
   });
 
+  it('finds every skipped level in one check', () => {
+    const el = area('<h2>A</h2><h4>B</h4><h6>C</h6>');
+    expect(starEditorAudit(el).map((issue) => issue.detail)).toEqual([
+      [2, 4],
+      [3, 6],
+    ]);
+  });
+
   it('accepts a link with an image that has alternative text, and a first heading 2', () => {
     const el = area('<h2>Start</h2><p><a href="/x"><img src="a.png" alt="Home"></a></p>');
     expect(starEditorAudit(el)).toEqual([]);

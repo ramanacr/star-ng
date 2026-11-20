@@ -188,7 +188,7 @@ import { DOCS, DocsRow } from '../shared/docs';
         heading="Own sanitizer allow-list"
         source="editor/allow-list"
         [script]="allowListScript"
-        note="sanitize sets the allow-list: the elements that stay (other elements are unwrapped and keep their text), the attributes per element ('*' for every element), the URL protocols of links and images, and the hosts of embeds. Spread STAR_EDITOR_SANITIZE_DEFAULTS to start from the default list. This editor allows no images and only https: links. Script, style, SVG and form elements, event handlers and javascript:, vbscript: and data: addresses (except data: images) never pass, whatever the list says."
+        note="sanitize sets the allow-list: the elements that stay (other elements are unwrapped and keep their text), the attributes per element ('*' for every element), the URL protocols of links and images, and the hosts of embeds. Spread STAR_EDITOR_SANITIZE_DEFAULTS to start from the default list. Only the classes of the editor (star-text-*, star-checklist, star-editor-*) stay, plus the classes that classes lists. Every address attribute that the list allows (href, src, cite, srcset and others) needs an allowed protocol; a protocol-relative address (//host) counts as https:, and ping never stays. This editor allows no images and only https: links. Script, style, SVG and form elements, event handlers and javascript:, vbscript: and data: addresses (except data: images) never pass, whatever the list says."
       >
         <div class="docs-stack">
           <star-editor

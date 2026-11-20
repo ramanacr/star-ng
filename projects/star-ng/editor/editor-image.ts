@@ -16,8 +16,6 @@ import { STAR_UI_TEXT } from '@star-ng/ui/core';
 import { StarEditorImageValue, starEditorReadFile, StarEditorUpload } from './editor-media';
 import { starEditorUrlAllowed } from './editor-sanitize';
 
-const IMAGE_PROTOCOLS = ['http:', 'https:'];
-
 /** Focuses the first field of a panel after it renders. */
 function focusFirst(host: ElementRef<HTMLElement>): void {
   const injector = inject(Injector);
@@ -133,6 +131,8 @@ export class StarEditorImage {
   readonly initial = input<StarEditorImageValue | null>(null);
   /** The owner's upload of a chosen file; without it, a file becomes a `data:` address. */
   readonly upload = input<StarEditorUpload | null>(null);
+  /** URL protocols of the allow-list (`sanitize` of the editor). */
+  readonly protocols = input<readonly string[]>(['http:', 'https:']);
   readonly apply = output<StarEditorImageValue>();
   readonly dismissed = output<void>();
 
@@ -177,7 +177,7 @@ export class StarEditorImage {
     const valid =
       !!src &&
       !/[\s<>"]/.test(src) &&
-      starEditorUrlAllowed(src, IMAGE_PROTOCOLS, true) &&
+      starEditorUrlAllowed(src, this.protocols(), true) &&
       !/^javascript:/i.test(src);
     this.sourceError.set(!valid);
     const alt = this.decorative() ? '' : this.alt().trim();

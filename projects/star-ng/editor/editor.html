@@ -147,6 +147,7 @@
   <star-editor-image
     [initial]="imageInitial()"
     [upload]="upload()"
+    [protocols]="sanitize().protocols"
     (apply)="applyImage($event)"
     (dismissed)="closeMedia()"
   />

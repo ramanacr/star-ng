@@ -38,7 +38,12 @@ describe('starEditorFind', () => {
   it('replaces one match and all matches', () => {
     const el = area('<p>Plan A, plan B</p><ul><li>plan C</li></ul>');
     const [first] = starEditorFind(el, 'plan', ANY);
-    starEditorReplace(first, 'Tier');
+    const caret = starEditorReplace(first, 'Tier');
+    // The caret is after the new text.
+    const probe = document.createRange();
+    probe.setStart(el.querySelector('p')!.firstChild!, 0);
+    probe.setEnd(caret.startContainer, caret.startOffset);
+    expect(probe.toString()).toBe('Tier');
     expect(el.innerHTML).toBe('<p>Tier A, plan B</p><ul><li>plan C</li></ul>');
     expect(starEditorReplaceAll(el, 'plan', 'tier', { matchCase: true, wholeWord: true })).toBe(2);
     expect(el.innerHTML).toBe('<p>Tier A, tier B</p><ul><li>tier C</li></ul>');

@@ -5374,6 +5374,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "null",
         "required": false,
         "description": "The owner's upload of a chosen file; without it, a file becomes a `data:` address."
+      },
+      {
+        "name": "protocols",
+        "type": "readonly string[]",
+        "default": "['http:', 'https:']",
+        "required": false,
+        "description": "URL protocols of the allow-list (`sanitize` of the editor)."
       }
     ],
     "models": [],

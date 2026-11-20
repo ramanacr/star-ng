@@ -187,3 +187,58 @@ describe('starEditorUrlAllowed and starEditorSafeStyle', () => {
     expect(starEditorSafeStyle('font-size: 99999px')).toBe('');
   });
 });
+
+describe('starEditorSanitize: review round 1', () => {
+  it('keeps only the classes of the editor, and the classes that the owner lists', () => {
+    expect(clean('<p class="star-text-center cdk-overlay-container star-dialog">a</p>')).toBe(
+      '<p class="star-text-center">a</p>',
+    );
+    expect(clean('<table class="star-editor-table star-editor-table--rows"></table>')).toBe(
+      '<table class="star-editor-table star-editor-table--rows"></table>',
+    );
+    expect(
+      starEditorSanitize('<p class="note other">a</p>', document, {
+        ...STAR_EDITOR_SANITIZE_DEFAULTS,
+        classes: ['note'],
+      }),
+    ).toBe('<p class="note">a</p>');
+  });
+
+  it('allows width and height styles only on images, tables, cells, columns and frames', () => {
+    expect(clean('<a href="/x" style="width: 100%; height: 4000px; color: red">a</a>')).toBe(
+      '<a href="/x" style="color: red">a</a>',
+    );
+    expect(clean('<img src="a.png" alt="" style="width: 50%">')).toBe(
+      '<img src="a.png" alt="" style="width: 50%">',
+    );
+  });
+
+  it('checks every URL attribute that an owner allows, and never keeps ping', () => {
+    const config = {
+      ...STAR_EDITOR_SANITIZE_DEFAULTS,
+      attributes: {
+        ...STAR_EDITOR_SANITIZE_DEFAULTS.attributes,
+        q: ['cite'],
+        img: ['src', 'alt', 'srcset', 'longdesc'],
+        a: ['href', 'ping'],
+      },
+    };
+    expect(
+      starEditorSanitize(
+        '<q cite="javascript:alert(1)">a</q><q cite="https://example.com/s">b</q><img src="a.png" alt="" srcset="a.png 1x, javascript:alert(1) 2x" longdesc="vbscript:x"><a href="/a" ping="https://example.com/track">c</a>',
+        document,
+        config,
+      ),
+    ).toBe(
+      '<q>a</q><q cite="https://example.com/s">b</q><img src="a.png" alt=""><a href="/a">c</a>',
+    );
+  });
+
+  it('treats a protocol-relative address as https', () => {
+    const httpOnly = { ...STAR_EDITOR_SANITIZE_DEFAULTS, protocols: ['http:'] };
+    expect(starEditorSanitize('<a href="//example.com/a">a</a>', document, httpOnly)).toBe(
+      '<a>a</a>',
+    );
+    expect(clean('<a href="//example.com/a">a</a>')).toBe('<a href="//example.com/a">a</a>');
+  });
+});

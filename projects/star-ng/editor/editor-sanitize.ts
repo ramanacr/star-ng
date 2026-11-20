@@ -21,6 +21,11 @@ export interface StarEditorSanitizeConfig {
    * `'www.youtube-nocookie.com'`. Empty (the default): no `iframe`.
    */
   readonly embedHosts?: readonly string[];
+  /**
+   * Classes that stay besides the classes of the editor (`star-text-*`, `star-checklist`,
+   * `star-editor-*`). Other classes go, so the value cannot borrow the look of page overlays.
+   */
+  readonly classes?: readonly string[];
 }
 
 /** The default allow-list. Spread it to make an own one. */
@@ -186,11 +191,21 @@ const STYLES: Readonly<Record<string, (value: string) => boolean>> = {
   height: (value) => value === 'auto' || LENGTH({ px: 4000, em: 200, rem: 200 })(value),
 };
 
+/** Elements that may have a `width` and `height` style. */
+const SIZED = new Set(['img', 'table', 'td', 'th', 'col', 'iframe']);
+
+/** Classes of the editor, kept on every element. */
+const OWN_CLASS = /^star-(text-(center|end|justify)|checklist|editor-[a-z0-9-]+)$/;
+
+/** Attributes that hold an address (besides `href` and `src`), checked like `href`. */
+const URL_ATTRIBUTES = new Set(['cite', 'poster', 'background', 'action', 'data', 'longdesc']);
+
 /**
  * The declarations of a `style` attribute that the editor keeps (see `STYLES`), joined by `'; '`.
  * `!important` goes.
  */
-export function starEditorSafeStyle(style: string): string {
+export function starEditorSafeStyle(style: string, tag?: string): string {
+  const sized = !tag || SIZED.has(tag);
   const kept: string[] = [];
   for (const declaration of style.split(';')) {
     const colon = declaration.indexOf(':');
@@ -201,6 +216,7 @@ export function starEditorSafeStyle(style: string): string {
       .replace(/!\s*important/i, '')
       .trim()
       .toLowerCase();
+    if ((name === 'width' || name === 'height') && !sized) continue;
     if (Object.hasOwn(STYLES, name) && STYLES[name](value)) kept.push(`${name}: ${value}`);
   }
   return kept.join('; ');
@@ -219,6 +235,8 @@ export function starEditorUrlAllowed(
   // eslint-disable-next-line no-control-regex
   const bare = url.replace(/[\u0000- \u007f-\u009f]/g, '');
   const scheme = /^([a-z][a-z0-9+.-]*):/i.exec(bare)?.[1]?.toLowerCase();
+  // A protocol-relative address takes the protocol of the page: it needs https.
+  if (!scheme && bare.startsWith('//')) return protocols.includes('https:');
   if (!scheme) return !bare.startsWith('\\') && !/^\/\\/.test(bare);
   if (image && scheme === 'data') return DATA_IMAGE.test(bare);
   if (image && scheme === 'blob') return true;
@@ -331,18 +349,34 @@ function cleanAttributes(element: Element, tag: string, config: StarEditorSaniti
       !/^on/.test(lower) &&
       !lower.includes(':') &&
       lower !== 'srcdoc' &&
-      lower !== 'formaction';
+      lower !== 'formaction' &&
+      lower !== 'ping';
     if (keep && lower in ATTRIBUTE_VALUES) keep = ATTRIBUTE_VALUES[lower].test(value.trim());
     if (keep && (lower === 'href' || lower === 'src'))
       keep = starEditorUrlAllowed(value, config.protocols, lower === 'src' && tag === 'img');
+    if (keep && URL_ATTRIBUTES.has(lower))
+      keep = starEditorUrlAllowed(value, config.protocols, false);
+    if (keep && lower === 'srcset')
+      keep = value
+        .split(',')
+        .every((candidate) =>
+          starEditorUrlAllowed(candidate.trim().split(/\s+/)[0] ?? '', config.protocols, true),
+        );
     if (keep && lower === 'src' && tag === 'iframe')
       keep = allowedEmbed(value.trim(), config.embedHosts ?? []);
     if (!keep) {
       element.removeAttribute(name);
       continue;
     }
-    if (lower === 'style') {
-      const style = starEditorSafeStyle(value);
+    if (lower === 'class') {
+      const own = config.classes ?? [];
+      const classes = value
+        .split(/\s+/)
+        .filter((name) => name && (OWN_CLASS.test(name) || own.includes(name)));
+      if (classes.length) element.setAttribute(name, classes.join(' '));
+      else element.removeAttribute(name);
+    } else if (lower === 'style') {
+      const style = starEditorSafeStyle(value, tag);
       if (style) element.setAttribute(name, style);
       else element.removeAttribute(name);
     } else if (/[<>]/.test(value)) {

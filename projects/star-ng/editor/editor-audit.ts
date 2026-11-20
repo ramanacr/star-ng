@@ -91,7 +91,8 @@ export function starEditorAudit(area: HTMLElement): StarEditorIssue[] {
           },
         });
       }
-      level = current;
+      // After a skipped level, the next heading is compared with the level it should have had.
+      level = current > Math.max(level, 1) + 1 ? Math.max(level, 1) + 1 : current;
     } else if (tag === 'TABLE' && !element.querySelector('th')) {
       issues.push({
         kind: 'tableHeader',

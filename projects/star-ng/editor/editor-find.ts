@@ -78,11 +78,11 @@ export function starEditorReplace(range: Range, replacement: string): Range {
   const node = doc.createTextNode(replacement);
   range.deleteContents();
   range.insertNode(node);
-  node.parentNode?.normalize();
+  // A caret after the new text; it is a live range, so it stays right when the text merges.
   const result = doc.createRange();
-  // After normalize the node may be merged: select by the offset in its parent text.
-  result.setStart(range.startContainer, range.startOffset);
+  result.setStartAfter(node);
   result.collapse(true);
+  node.parentNode?.normalize();
   return result;
 }
 
