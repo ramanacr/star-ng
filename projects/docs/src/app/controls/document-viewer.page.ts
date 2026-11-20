@@ -17,7 +17,7 @@ import { ImagePagesRenderer, SampleReportRenderer } from '../shared/sample-rende
   template: `
     <docs-page
       heading="Document viewer"
-      lead="A viewer shell for paged documents: page navigation, zoom, rotation, thumbnails, search, full screen, and download and print outputs. A renderer reads the document and draws the pages; StarNG ships no PDF engine, so plug in PDF.js or your own. The PDF.js viewer, Syncfusion ejs-pdfviewer and Kendo UI PDFViewer are the equivalents; DevExtreme and Ignite UI have none."
+      lead="A viewer shell for paged documents: page navigation, zoom, rotation, thumbnails, search, full screen, and download and print outputs. A renderer reads the document and draws the pages; StarNG ships no PDF engine: the recommended engine is PDF Viewer Native (pdfviewer-embed), and PDF.js or your own engine works as well. The PDF.js viewer, Syncfusion ejs-pdfviewer and Kendo UI PDFViewer are the equivalents; DevExtreme and Ignite UI have none."
       importFrom="import { StarDocumentViewer, STAR_DOCUMENT_RENDERER } from '@star-ng/ui/document-viewer';"
     >
       <docs-example
@@ -75,7 +75,22 @@ import { ImagePagesRenderer, SampleReportRenderer } from '../shared/sample-rende
         </star-document-viewer>
       </docs-example>
 
-      <h2>Plug in PDF.js</h2>
+      <h2>Choose a PDF engine</h2>
+      <p>
+        The recommended engine is PDF Viewer Native (<code>pdfviewer-embed</code>,
+        <a href="https://github.com/ramanacr/pdf-viewer">github.com/ramanacr/pdf-viewer</a>). Its
+        web SDK offers a complete iframe viewer today; a <code>StarDocumentRenderer</code> adapter
+        becomes possible when its headless rendering API ships (<a
+          href="https://github.com/ramanacr/pdf-viewer/issues/185"
+          >issue #185</a
+        >).
+      </p>
+      <p>
+        An application that wants a complete ready-made viewer, with annotations and forms, can
+        embed <code>View.previewFile</code> of <code>pdfviewer-embed</code> directly instead of
+        <code>star-document-viewer</code>.
+      </p>
+      <h3>Interim alternative: PDF.js</h3>
       <p>
         StarNG adds no PDF dependency. Install <code>pdfjs-dist</code> in your application, write a
         renderer of a few lines, and provide it. Page indexes of the renderer are zero-based; the
@@ -83,7 +98,7 @@ import { ImagePagesRenderer, SampleReportRenderer } from '../shared/sample-rende
         <code>load</code> and <code>renderPage</code>: when a newer source or a newer draw replaces
         a call, cancel the PDF.js task and leave the state of the newer call alone.
       </p>
-      <docs-code [code]="pdfJsCode" label="PDF.js renderer" />
+      <docs-code [code]="pdfJsCode" label="PDF.js renderer (interim alternative)" />
 
       <docs-api
         [of]="['StarDocumentViewer', 'StarDocumentError']"
