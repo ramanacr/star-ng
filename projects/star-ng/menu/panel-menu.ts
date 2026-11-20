@@ -75,7 +75,7 @@ import { StarMenuItem } from './menu';
                 ></i>
               </button>
               @if (isOpen(key)) {
-                <div data-star-part="listSection" [id]="regionId(key)">
+                <div data-star-part="region" [id]="regionId(key)">
                   <ng-container
                     *ngTemplateOutlet="
                       list;

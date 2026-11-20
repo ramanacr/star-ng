@@ -22,7 +22,7 @@ import { starParseMarkdownLite } from './markdown-lite';
         <pre
           data-star-part="pre"
           class="star-md__pre"
-        ><code data-star-part="preCode" [attr.data-language]="block.language || null">{{ block.text }}</code></pre>
+        ><code data-star-part="code" [attr.data-language]="block.language || null">{{ block.text }}</code></pre>
       } @else {
         <p data-star-part="p" class="star-md__p">
           @for (line of block.lines; track $index; let last = $last) {
@@ -35,7 +35,7 @@ import { starParseMarkdownLite } from './markdown-lite';
                 <code data-star-part="code" class="star-md__code">{{ part.text }}</code>
               } @else if (part.kind === 'link') {
                 <a
-                  data-star-part="pLink"
+                  data-star-part="link"
                   [href]="part.href"
                   target="_blank"
                   rel="noopener noreferrer"

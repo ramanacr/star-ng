@@ -239,7 +239,7 @@ const TIME_VIEWS: ReadonlySet<StarSchedulerView> = new Set(['day', 'week', 'work
           (click)="page(-1)"
         >
           <i
-            data-star-part="caretLeftIcon"
+            data-star-part="previousIcon"
             class="ph-bold ph-caret-left star-icon-mirror"
             aria-hidden="true"
           ></i>
@@ -252,7 +252,7 @@ const TIME_VIEWS: ReadonlySet<StarSchedulerView> = new Set(['day', 'week', 'work
           (click)="page(1)"
         >
           <i
-            data-star-part="caretRightIcon"
+            data-star-part="nextIcon"
             class="ph-bold ph-caret-right star-icon-mirror"
             aria-hidden="true"
           ></i>

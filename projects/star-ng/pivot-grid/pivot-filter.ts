@@ -40,7 +40,7 @@ import { StarPivotFilter, StarPivotMember, starPivotMemberKey as keyOf } from '.
       (click)="open($event)"
     >
       <i
-        data-star-part="iconButtonIcon"
+        data-star-part="actionIcon"
         [class]="active() ? 'ph-fill ph-funnel' : 'ph-bold ph-funnel'"
         aria-hidden="true"
       ></i>

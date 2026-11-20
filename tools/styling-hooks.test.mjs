@@ -152,7 +152,10 @@ function partsOf(template) {
           const classes = (attrs.class ?? '')
             .split(/\s+/)
             .filter((item) => item.startsWith('star-'));
-          parts.push({ name: partName, classes, path, tag: node.name });
+          const glyph = (attrs.class ?? '')
+            .split(/\s+/)
+            .find((item) => /^ph-(?!bold$|fill$)/.test(item));
+          parts.push({ name: partName, classes, path, tag: node.name, glyph });
         }
         visit(node.children, path);
       } else if (kind === 'IfBlock' || kind === 'SwitchBlock') {
@@ -198,10 +201,85 @@ export function duplicateParts(template) {
       // Both names come from a StarNG class (`star-menubar__item`, `star-mega-menu__item`): one
       // kind of element, one part.
       if (sourceClass(a) && sourceClass(b)) continue;
+      // A homogeneous group (the buttons of a toolbar): the same tag and the same StarNG classes.
+      if (a.tag === b.tag && a.classes.join(' ') === b.classes.join(' ')) continue;
       found.add(a.name);
     }
   }
   return [...found];
+}
+
+/** The closed list of roles: the last word of a part name that does not come from a class. */
+const ROLES = new Set([
+  'Button',
+  'Icon',
+  'Label',
+  'Input',
+  'Option',
+  'List',
+  'Item',
+  'Panel',
+  'Header',
+  'Cell',
+  'Row',
+  'Text',
+  'Root',
+  'Track',
+  'Thumb',
+  'Handle',
+]);
+/** Glyph words: a part is named after what it does, not after its icon. */
+const GLYPHS = new Set([
+  'caret',
+  'arrow',
+  'arrows',
+  'dots',
+  'x',
+  'plus',
+  'minus',
+  'check',
+  'magnifying',
+  'pencil',
+  'star',
+]);
+
+const words = (name) => name.split(/(?=[A-Z])/);
+
+/**
+ * The part names of a template that break the naming rule (`<purpose><Role>`, camelCase, at most
+ * three words): a role outside the list, a control prefix, a glyph name, a doubled suffix. A name
+ * that comes from a StarNG class follows the class and is checked only for length and doubles.
+ */
+export function badNames(template, block) {
+  const found = new Set();
+  for (const part of partsOf(template)) {
+    const parts = words(part.name);
+    const reasons = [];
+    if (parts.length > 3) reasons.push('more than 3 words');
+    for (let index = 1; index < parts.length; index++) {
+      if (parts[index] === parts[index - 1]) reasons.push('doubled word');
+      if (index === parts.length - 1 && ROLES.has(parts[index]) && ROLES.has(parts[index - 1])) {
+        if (parts[index - 1] !== 'Header') reasons.push('doubled role');
+      }
+    }
+    if (!sourceClass(part)) {
+      if (parts.length > 1 && !ROLES.has(parts.at(-1))) reasons.push('role not in the list');
+      if (block && parts.length > 1 && parts[0] === block) reasons.push('control prefix');
+      if (GLYPHS.has(parts[0])) reasons.push('glyph name');
+    }
+    if (reasons.length) found.add(`${part.name} (${[...new Set(reasons)].join(', ')})`);
+  }
+  return [...found];
+}
+
+/** The block of a control: the most frequent `star-<block>__` class of its template. */
+function blockOf(template) {
+  const counts = {};
+  for (const [, block] of template.matchAll(/\bstar-([a-z0-9-]+)__/g)) {
+    counts[block] = (counts[block] ?? 0) + 1;
+  }
+  const block = Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0];
+  return block?.split('-')[0];
 }
 
 const all = walk(lib).flatMap((file) =>
@@ -234,6 +312,35 @@ test('part names are unique in each control template', () => {
   assert.deepEqual(found, []);
 });
 
+test('part names follow the naming rule', () => {
+  const found = all.flatMap((item) =>
+    badNames(item.template, blockOf(item.template)).map((name) => `${item.name}: ${name}`),
+  );
+  assert.deepEqual(found, []);
+});
+
+test('the naming check finds bad names', () => {
+  assert.deepEqual(
+    badNames(
+      `<button data-star-part="spreadsheetFewerDecimalsButton"></button>
+       <i data-star-part="magnifyingGlassPlusIcon" class="ph-bold ph-magnifying-glass-plus"></i>
+       <span data-star-part="moreCountTextText"></span>
+       <button data-star-part="restoreButtonIcon"></button>
+       <div data-star-part="rowSection"></div>
+       <button data-star-part="zoomInButton"></button>
+       <div data-star-part="trigger" class="star-select__trigger"></div>`,
+      'spreadsheet',
+    ),
+    [
+      'spreadsheetFewerDecimalsButton (more than 3 words, control prefix)',
+      'magnifyingGlassPlusIcon (more than 3 words, glyph name)',
+      'moreCountTextText (more than 3 words, doubled word, doubled role)',
+      'restoreButtonIcon (doubled role)',
+      'rowSection (role not in the list)',
+    ],
+  );
+});
+
 test('visually hidden text is not a part', () => {
   const found = all.flatMap((item) =>
     [
@@ -256,7 +363,7 @@ test('the duplicate check knows branches and shared classes', () => {
     ),
     [],
   );
-  assert.deepEqual(duplicateParts(`<i starPart="icon"></i><b><i starPart="icon"></i></b>`), [
+  assert.deepEqual(duplicateParts(`<i starPart="icon"></i><b><span starPart="icon"></span></b>`), [
     'icon',
   ]);
 });

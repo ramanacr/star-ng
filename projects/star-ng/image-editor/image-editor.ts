@@ -305,7 +305,7 @@ const normalizeAngle = (angle: number) => {
           [attr.aria-label]="text.imageResize"
         >
           <label data-star-part="number" class="star-image-editor__number">
-            <span data-star-part="imageWidthText">{{ text.imageWidth }}</span>
+            <span data-star-part="sizeLabel">{{ text.imageWidth }}</span>
             <input
               data-star-part="input"
               type="number"
@@ -317,7 +317,7 @@ const normalizeAngle = (angle: number) => {
             />
           </label>
           <label data-star-part="number" class="star-image-editor__number">
-            <span data-star-part="imageHeightText">{{ text.imageHeight }}</span>
+            <span data-star-part="sizeLabel">{{ text.imageHeight }}</span>
             <input
               data-star-part="input"
               type="number"

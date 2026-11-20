@@ -123,7 +123,7 @@ const AGGREGATES: readonly StarPivotAggregate[] = [
                   [attr.data-pivot-move]="name"
                 >
                   <i
-                    data-star-part="iconButtonIcon"
+                    data-star-part="actionIcon"
                     class="ph-bold ph-dots-three"
                     aria-hidden="true"
                   ></i>

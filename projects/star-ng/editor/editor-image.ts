@@ -48,7 +48,7 @@ function focusFirst(host: ElementRef<HTMLElement>): void {
       (submit)="submit($event)"
     >
       <label data-star-part="field" class="star-editor__field">
-        <span data-star-part="editorImageAddressText">{{ text.editorImageAddress }}</span>
+        <span data-star-part="addressLabel">{{ text.editorImageAddress }}</span>
         <input
           data-star-part="input"
           class="star-input star-input--sm"
@@ -61,7 +61,7 @@ function focusFirst(host: ElementRef<HTMLElement>): void {
         />
       </label>
       <label data-star-part="field" class="star-editor__field">
-        <span data-star-part="editorImageFileText">{{ text.editorImageFile }}</span>
+        <span data-star-part="fileLabel">{{ text.editorImageFile }}</span>
         <input
           data-star-part="fieldInput"
           type="file"
@@ -75,7 +75,7 @@ function focusFirst(host: ElementRef<HTMLElement>): void {
         }}</span>
       }
       <label data-star-part="field" class="star-editor__field">
-        <span data-star-part="editorAltTextText">{{ text.editorAltText }}</span>
+        <span data-star-part="altLabel">{{ text.editorAltText }}</span>
         <input
           data-star-part="input"
           #altField
@@ -103,7 +103,7 @@ function focusFirst(host: ElementRef<HTMLElement>): void {
         {{ text.editorDecorative }}
       </label>
       <label data-star-part="field" class="star-editor__field">
-        <span data-star-part="editorCaptionText">{{ text.editorCaption }}</span>
+        <span data-star-part="captionLabel">{{ text.editorCaption }}</span>
         <input
           data-star-part="input"
           class="star-input star-input--sm"
@@ -246,7 +246,7 @@ export class StarEditorImage {
       (submit)="submit($event)"
     >
       <label data-star-part="field" class="star-editor__field">
-        <span data-star-part="editorEmbedAddressText">{{ text.editorEmbedAddress }}</span>
+        <span data-star-part="addressLabel">{{ text.editorEmbedAddress }}</span>
         <input
           data-star-part="input"
           #address

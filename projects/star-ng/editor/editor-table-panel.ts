@@ -65,7 +65,7 @@ const PICKER_COLS = 10;
         >
       </div>
       <label data-star-part="field" class="star-editor__field star-editor__field--narrow">
-        <span data-star-part="editorRowsText">{{ text.editorRows }}</span>
+        <span data-star-part="rowsLabel">{{ text.editorRows }}</span>
         <input
           data-star-part="input"
           class="star-input star-input--sm"
@@ -178,57 +178,37 @@ export class StarEditorTableInsert {
       (submit)="submit($event)"
     >
       <label data-star-part="field" class="star-editor__field">
-        <span data-star-part="editorBordersText">{{ text.editorBorders }}</span>
+        <span data-star-part="bordersLabel">{{ text.editorBorders }}</span>
         <select
           data-star-part="select"
           class="star-editor__select"
           (change)="borders.set($any($event.target).value)"
         >
-          <option
-            data-star-part="editorBordersAllOption"
-            value="all"
-            [selected]="borders() === 'all'"
-          >
+          <option data-star-part="bordersOption" value="all" [selected]="borders() === 'all'">
             {{ text.editorBordersAll }}
           </option>
-          <option
-            data-star-part="editorBordersRowsOption"
-            value="rows"
-            [selected]="borders() === 'rows'"
-          >
+          <option data-star-part="bordersOption" value="rows" [selected]="borders() === 'rows'">
             {{ text.editorBordersRows }}
           </option>
-          <option
-            data-star-part="editorBordersNoneOption"
-            value="none"
-            [selected]="borders() === 'none'"
-          >
+          <option data-star-part="bordersOption" value="none" [selected]="borders() === 'none'">
             {{ text.editorBordersNone }}
           </option>
         </select>
       </label>
       <label data-star-part="field" class="star-editor__field">
-        <span data-star-part="editorTableAlignText">{{ text.editorTableAlign }}</span>
+        <span data-star-part="alignLabel">{{ text.editorTableAlign }}</span>
         <select
           data-star-part="select"
           class="star-editor__select"
           (change)="align.set($any($event.target).value)"
         >
-          <option
-            data-star-part="editorAlignStartOption"
-            value="start"
-            [selected]="align() === 'start'"
-          >
+          <option data-star-part="alignOption" value="start" [selected]="align() === 'start'">
             {{ text.editorAlignStart }}
           </option>
-          <option
-            data-star-part="editorAlignCenterOption"
-            value="center"
-            [selected]="align() === 'center'"
-          >
+          <option data-star-part="alignOption" value="center" [selected]="align() === 'center'">
             {{ text.editorAlignCenter }}
           </option>
-          <option data-star-part="editorAlignEndOption" value="end" [selected]="align() === 'end'">
+          <option data-star-part="alignOption" value="end" [selected]="align() === 'end'">
             {{ text.editorAlignEnd }}
           </option>
         </select>

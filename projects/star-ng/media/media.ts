@@ -93,7 +93,7 @@ export class StarCarouselItem<T = unknown> {
         (click)="goTo(page() - 1)"
       >
         <i
-          data-star-part="caretLeftIcon"
+          data-star-part="previousIcon"
           class="ph-bold ph-caret-left star-icon-mirror"
           aria-hidden="true"
         ></i>
@@ -107,7 +107,7 @@ export class StarCarouselItem<T = unknown> {
         (click)="goTo(page() + 1)"
       >
         <i
-          data-star-part="caretRightIcon"
+          data-star-part="nextIcon"
           class="ph-bold ph-caret-right star-icon-mirror"
           aria-hidden="true"
         ></i>
@@ -253,7 +253,7 @@ export interface StarGalleryImage {
         tabindex="0"
         (keydown)="onKeydown($event)"
       >
-        <img data-star-part="stageImage" [src]="image.src" [alt]="image.alt" loading="lazy" />
+        <img data-star-part="picture" [src]="image.src" [alt]="image.alt" loading="lazy" />
         @if (image.caption) {
           <figcaption data-star-part="caption" class="star-galleria__caption">
             {{ image.caption }}
@@ -267,7 +267,7 @@ export interface StarGalleryImage {
           (click)="step(-1)"
         >
           <i
-            data-star-part="caretLeftIcon"
+            data-star-part="previousIcon"
             class="ph-bold ph-caret-left star-icon-mirror"
             aria-hidden="true"
           ></i>
@@ -280,7 +280,7 @@ export interface StarGalleryImage {
           (click)="step(1)"
         >
           <i
-            data-star-part="caretRightIcon"
+            data-star-part="nextIcon"
             class="ph-bold ph-caret-right star-icon-mirror"
             aria-hidden="true"
           ></i>
@@ -301,7 +301,7 @@ export interface StarGalleryImage {
           (click)="activeIndex.set(i)"
         >
           <img
-            data-star-part="thumbImage"
+            data-star-part="thumbnail"
             [src]="image.thumbnail ?? image.src"
             alt=""
             loading="lazy"
@@ -358,7 +358,7 @@ export class StarGalleria {
         (click)="open.set(true)"
       >
         <img
-          data-star-part="triggerImage"
+          data-star-part="preview"
           [src]="src()"
           [alt]="alt()"
           [attr.width]="width()"
@@ -379,7 +379,7 @@ export class StarGalleria {
             (click)="zoom.set(zoom() - 0.25)"
           >
             <i
-              data-star-part="magnifyingGlassMinusIcon"
+              data-star-part="zoomIcon"
               class="ph-bold ph-magnifying-glass-minus"
               aria-hidden="true"
             ></i>
@@ -394,7 +394,7 @@ export class StarGalleria {
             (click)="zoom.set(zoom() + 0.25)"
           >
             <i
-              data-star-part="magnifyingGlassPlusIcon"
+              data-star-part="zoomIcon"
               class="ph-bold ph-magnifying-glass-plus"
               aria-hidden="true"
             ></i>
@@ -409,7 +409,7 @@ export class StarGalleria {
           [attr.aria-label]="alt()"
         >
           <img
-            data-star-part="stageImage"
+            data-star-part="picture"
             [src]="src()"
             [alt]="alt()"
             [style.transform]="'scale(' + zoom() + ')'"

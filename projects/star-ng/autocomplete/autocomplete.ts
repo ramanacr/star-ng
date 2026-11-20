@@ -312,7 +312,7 @@ const TEMPLATE = `
     }
     @if (showClear() && hasValue() && interactive()) {
       <button data-star-part="iconBtn" type="button" class="star-select__icon-btn" [attr.aria-label]="text.clear" (click)="clear()">
-        <i data-star-part="xIcon" class="ph-bold ph-x" aria-hidden="true"></i>
+        <i data-star-part="clearIcon" class="ph-bold ph-x" aria-hidden="true"></i>
       </button>
     }
     @if (dropdown()) {
@@ -324,7 +324,7 @@ const TEMPLATE = `
         [disabled]="!interactive()"
         (click)="showAllOptions()"
       >
-        <i data-star-part="caretDownIcon" class="ph-bold ph-caret-down" aria-hidden="true"></i>
+        <i data-star-part="dropdownIcon" class="ph-bold ph-caret-down" aria-hidden="true"></i>
       </button>
     }
   </div>

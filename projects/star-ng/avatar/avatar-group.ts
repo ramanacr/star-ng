@@ -38,8 +38,7 @@ import { STAR_AVATAR_GROUP, StarAvatar } from './avatar';
     <ng-content />
     @if (overflow() > 0) {
       <span
-        data-star-part="moreCountText"
-        class="star-avatar-group__more-count-text"
+        data-star-part="moreItem"
         role="img"
         [class]="
           'star-avatar star-avatar--' +
@@ -49,12 +48,7 @@ import { STAR_AVATAR_GROUP, StarAvatar } from './avatar';
           ' star-avatar-group__more'
         "
         [attr.aria-label]="text.moreCount(overflow())"
-        ><span
-          data-star-part="moreCountTextText"
-          class="star-avatar-group__more-count-text-text"
-          aria-hidden="true"
-          >+{{ overflow() }}</span
-        ></span
+        ><span data-star-part="moreText" aria-hidden="true">+{{ overflow() }}</span></span
       >
     }
   `,

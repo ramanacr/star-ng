@@ -232,11 +232,7 @@ export function fileMatchesAccept(file: File, accept: string): boolean {
                   [attr.aria-label]="text.moveUp + ': ' + file.name"
                   (click)="move(i, i - 1)"
                 >
-                  <i
-                    data-star-part="arrowUpIcon"
-                    class="ph-bold ph-arrow-up"
-                    aria-hidden="true"
-                  ></i>
+                  <i data-star-part="moveIcon" class="ph-bold ph-arrow-up" aria-hidden="true"></i>
                 </button>
                 <button
                   data-star-part="iconBtn"
@@ -246,11 +242,7 @@ export function fileMatchesAccept(file: File, accept: string): boolean {
                   [attr.aria-label]="text.moveDown + ': ' + file.name"
                   (click)="move(i, i + 1)"
                 >
-                  <i
-                    data-star-part="arrowDownIcon"
-                    class="ph-bold ph-arrow-down"
-                    aria-hidden="true"
-                  ></i>
+                  <i data-star-part="moveIcon" class="ph-bold ph-arrow-down" aria-hidden="true"></i>
                 </button>
               }
               @if (!disabled() && !readonly()) {
@@ -261,7 +253,7 @@ export function fileMatchesAccept(file: File, accept: string): boolean {
                   [attr.aria-label]="text.removeItem(file.name)"
                   (click)="remove(file)"
                 >
-                  <i data-star-part="xIcon" class="ph-bold ph-x" aria-hidden="true"></i>
+                  <i data-star-part="removeIcon" class="ph-bold ph-x" aria-hidden="true"></i>
                 </button>
               }
             }

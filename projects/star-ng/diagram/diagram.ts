@@ -215,7 +215,7 @@ function emitChange<P>(
           (click)="zoomOut()"
         >
           <i
-            data-star-part="magnifyingGlassMinusIcon"
+            data-star-part="toolIcon"
             class="ph-bold ph-magnifying-glass-minus"
             aria-hidden="true"
           ></i>
@@ -231,7 +231,7 @@ function emitChange<P>(
           (click)="zoomIn()"
         >
           <i
-            data-star-part="magnifyingGlassPlusIcon"
+            data-star-part="toolIcon"
             class="ph-bold ph-magnifying-glass-plus"
             aria-hidden="true"
           ></i>
@@ -243,7 +243,7 @@ function emitChange<P>(
           [attr.aria-label]="text.zoomToFit"
           (click)="fitToContent()"
         >
-          <i data-star-part="arrowsInIcon" class="ph-bold ph-arrows-in" aria-hidden="true"></i>
+          <i data-star-part="toolIcon" class="ph-bold ph-arrows-in" aria-hidden="true"></i>
         </button>
         @if (!readonly()) {
           <button
@@ -255,7 +255,7 @@ function emitChange<P>(
             (click)="undo()"
           >
             <i
-              data-star-part="arrowCounterClockwiseIcon"
+              data-star-part="toolIcon"
               class="ph-bold ph-arrow-counter-clockwise"
               aria-hidden="true"
             ></i>
@@ -268,11 +268,7 @@ function emitChange<P>(
             [attr.aria-disabled]="!canRedo() || null"
             (click)="redo()"
           >
-            <i
-              data-star-part="arrowClockwiseIcon"
-              class="ph-bold ph-arrow-clockwise"
-              aria-hidden="true"
-            ></i>
+            <i data-star-part="toolIcon" class="ph-bold ph-arrow-clockwise" aria-hidden="true"></i>
           </button>
         }
       </div>
@@ -483,13 +479,13 @@ function emitChange<P>(
       </div>
       <p class="star-sr-only" [id]="id + '-hint'">{{ text.diagramHint }}</p>
       <div class="star-sr-only">
-        <p data-star-part="nodeListTitle" [id]="id + '-nodes'">{{ text.diagramNodes }}</p>
+        <p data-star-part="nodesLabel" [id]="id + '-nodes'">{{ text.diagramNodes }}</p>
         <ul data-star-part="nodeList" [attr.aria-labelledby]="id + '-nodes'">
           @for (node of nodes(); track node.id) {
             <li data-star-part="nodeItem">{{ node.label }}</li>
           }
         </ul>
-        <p data-star-part="edgeListTitle" [id]="id + '-edges'">{{ text.diagramConnections }}</p>
+        <p data-star-part="edgesLabel" [id]="id + '-edges'">{{ text.diagramConnections }}</p>
         <ul data-star-part="edgeList" [attr.aria-labelledby]="id + '-edges'">
           @for (edge of edgeList(); track edge.id) {
             <li data-star-part="edgeItem">{{ edge.text }}</li>

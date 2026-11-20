@@ -53,7 +53,7 @@ import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/
           (click)="choose(star)"
           (blur)="touch.emit()"
         />
-        <i data-star-part="starIcon" class="ph-fill ph-star" aria-hidden="true"></i>
+        <i data-star-part="rateIcon" class="ph-fill ph-star" aria-hidden="true"></i>
       </label>
     }
   `,

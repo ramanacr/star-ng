@@ -197,7 +197,7 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
               [attr.aria-label]="text.chartLegend"
             >
               @for (item of legend(); track item.slot) {
-                <li data-star-part="legendEntry">
+                <li data-star-part="legendRow">
                   <button
                     data-star-part="legendItem"
                     type="button"
@@ -233,7 +233,7 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
           } @else {
             <ul data-star-part="legend" class="star-chart__legend" aria-hidden="true">
               @for (item of legend(); track item.label) {
-                <li data-star-part="legendEntry">
+                <li data-star-part="legendRow">
                   @if (item.shape) {
                     <svg
                       data-star-part="swatchShape"
@@ -432,7 +432,7 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                             [style.background]="color(s.slot)"
                           ></span>
                           {{ s.label }}:
-                          <strong data-star-part="tipRowText">{{ cell(s, hover()!) }}</strong>
+                          <strong data-star-part="valueText">{{ cell(s, hover()!) }}</strong>
                         </span>
                       }
                     }
@@ -521,7 +521,7 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                             [style.background]="color(0)"
                           ></span>
                           {{ valueName() }}:
-                          <strong data-star-part="tipRowText">{{ format(sector.value) }}</strong>
+                          <strong data-star-part="valueText">{{ format(sector.value) }}</strong>
                         </span>
                       }
                     </div>
@@ -648,18 +648,14 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                             />
                           </svg>
                           {{ xName() }}:
-                          <strong data-star-part="tipRowText" class="star-chart__tip-row-text">{{
-                            precise(point.x)
-                          }}</strong>
+                          <strong data-star-part="valueText">{{ precise(point.x) }}</strong>
                         </span>
                         <span
                           data-star-part="tipRow"
                           class="star-chart__tip-row star-chart__tip-indent"
                         >
                           {{ yName() }}:
-                          <strong data-star-part="tipRowText" class="star-chart__tip-row-text">{{
-                            precise(point.y)
-                          }}</strong>
+                          <strong data-star-part="valueText">{{ precise(point.y) }}</strong>
                         </span>
                       }
                     </div>
@@ -838,9 +834,7 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                             [style.background]="color(s.slot)"
                           ></span>
                           {{ s.label }}:
-                          <strong data-star-part="tipRowText" class="star-chart__tip-row-text">{{
-                            cell(s, hover()!)
-                          }}</strong>
+                          <strong data-star-part="valueText">{{ cell(s, hover()!) }}</strong>
                           @if (type() === 'stacked-bar' && percent()) {
                             ({{ share(stack()[hover()!]?.segments?.[si]) }}%)
                           }
@@ -852,7 +846,7 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                           class="star-chart__tip-row star-chart__tip-total"
                         >
                           {{ text.chartTotal }}:
-                          <strong data-star-part="tipRowText" class="star-chart__tip-row-text">{{
+                          <strong data-star-part="valueText">{{
                             format(stack()[hover()!]?.total ?? 0)
                           }}</strong>
                         </span>

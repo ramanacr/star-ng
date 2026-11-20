@@ -116,7 +116,7 @@ export function starEditorSetLink(anchor: HTMLAnchorElement, value: StarEditorLi
         </button>
         @if (editing()) {
           <button
-            data-star-part="editorLinkRemoveButton"
+            data-star-part="removeButton"
             type="button"
             class="star-btn star-btn--ghost star-btn--sm"
             (click)="remove.emit()"

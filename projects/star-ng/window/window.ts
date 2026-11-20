@@ -156,13 +156,12 @@ export class StarWindowStack {
             <button
               data-star-part="restoreButton"
               type="button"
-              class="star-window__restore-button star-btn star-btn--ghost star-btn--sm star-btn--icon"
+              class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
               [attr.aria-label]="state() === 'minimized' ? text.restore : text.minimize"
               (click)="toggleMinimized()"
             >
               <i
-                data-star-part="restoreButtonIcon"
-                class="star-window__restore-button-icon"
+                data-star-part="restoreIcon"
                 [class]="state() === 'minimized' ? 'ph-bold ph-copy-simple' : 'ph-bold ph-minus'"
                 aria-hidden="true"
               ></i>
@@ -172,13 +171,12 @@ export class StarWindowStack {
             <button
               data-star-part="restoreButton"
               type="button"
-              class="star-window__restore-button star-btn star-btn--ghost star-btn--sm star-btn--icon"
+              class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
               [attr.aria-label]="state() === 'maximized' ? text.restore : text.maximize"
               (click)="toggleMaximized()"
             >
               <i
-                data-star-part="restoreButtonIcon"
-                class="star-window__restore-button-icon"
+                data-star-part="restoreIcon"
                 [class]="state() === 'maximized' ? 'ph-bold ph-copy-simple' : 'ph-bold ph-square'"
                 aria-hidden="true"
               ></i>

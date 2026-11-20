@@ -95,11 +95,7 @@ import { starSelectionChanging, StarSelectionChangingEvent } from './selection-c
                       [attr.aria-label]="text.removeItem(labelOf(option))"
                       (click)="$event.stopPropagation(); remove(option)"
                     >
-                      <i
-                        data-star-part="xIcon"
-                        class="star-listbox__x-icon ph-bold ph-x"
-                        aria-hidden="true"
-                      ></i>
+                      <i data-star-part="removeIcon" class="ph-bold ph-x" aria-hidden="true"></i>
                     </button>
                   }
                 </span>
@@ -117,11 +113,7 @@ import { starSelectionChanging, StarSelectionChangingEvent } from './selection-c
                     [attr.aria-label]="text.removeItem(custom + '')"
                     (click)="$event.stopPropagation(); removeValue(custom)"
                   >
-                    <i
-                      data-star-part="xIcon"
-                      class="star-listbox__x-icon ph-bold ph-x"
-                      aria-hidden="true"
-                    ></i>
+                    <i data-star-part="removeIcon" class="ph-bold ph-x" aria-hidden="true"></i>
                   </button>
                 }
               </span>
@@ -211,12 +203,9 @@ import { starSelectionChanging, StarSelectionChangingEvent } from './selection-c
               >
                 <span data-star-part="box" class="star-check__box" aria-hidden="true">
                   @if (allState() === 'mixed') {
-                    <i data-star-part="minusIcon" class="ph-bold ph-minus"></i>
+                    <i data-star-part="boxIcon" class="ph-bold ph-minus"></i>
                   } @else if (allState() === true) {
-                    <i
-                      data-star-part="checkIcon"
-                      class="star-listbox__check-icon ph-bold ph-check"
-                    ></i>
+                    <i data-star-part="selectedIcon" class="ph-bold ph-check"></i>
                   }
                 </span>
               </button>
@@ -322,10 +311,7 @@ import { starSelectionChanging, StarSelectionChangingEvent } from './selection-c
                     @if (iconSlot('check'); as icon) {
                       <ng-container *ngTemplateOutlet="icon" />
                     } @else {
-                      <i
-                        data-star-part="checkIcon"
-                        class="star-listbox__check-icon ph-bold ph-check"
-                      ></i>
+                      <i data-star-part="selectedIcon" class="ph-bold ph-check"></i>
                     }
                   }
                 </span>

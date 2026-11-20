@@ -254,7 +254,6 @@ const BACKGROUNDS: readonly StarCellBackground[] = [
             @for (type of formatTypes; track type) {
               <option
                 data-star-part="selectOption"
-                class="star-spreadsheet__select-option"
                 [value]="type"
                 [selected]="(activeFormat().type ?? 'general') === type"
               >
@@ -263,17 +262,13 @@ const BACKGROUNDS: readonly StarCellBackground[] = [
             }
           </select>
           <button
-            data-star-part="spreadsheetFewerDecimalsButton"
+            data-star-part="toolButton"
             type="button"
             class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
             [attr.aria-label]="text.spreadsheetFewerDecimals"
             (click)="changeDecimals(-1)"
           >
-            <i
-              data-star-part="spreadsheetFewerDecimalsIcon"
-              class="ph-bold ph-arrow-left"
-              aria-hidden="true"
-            ></i
+            <i data-star-part="toolIcon" class="ph-bold ph-arrow-left" aria-hidden="true"></i
             ><span
               data-star-part="decimals"
               class="star-spreadsheet__decimals"
@@ -282,7 +277,7 @@ const BACKGROUNDS: readonly StarCellBackground[] = [
             ></span>
           </button>
           <button
-            data-star-part="spreadsheetMoreDecimalsButton"
+            data-star-part="toolButton"
             type="button"
             class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
             [attr.aria-label]="text.spreadsheetMoreDecimals"
@@ -301,17 +296,12 @@ const BACKGROUNDS: readonly StarCellBackground[] = [
             [attr.aria-label]="text.spreadsheetBackground"
             (change)="setBackground($any($event.target).value)"
           >
-            <option
-              data-star-part="spreadsheetNoBackgroundOption"
-              value=""
-              [selected]="!activeFormat().background"
-            >
+            <option data-star-part="colorOption" value="" [selected]="!activeFormat().background">
               {{ text.spreadsheetNoBackground }}
             </option>
             @for (bg of backgrounds; track bg) {
               <option
                 data-star-part="selectOption"
-                class="star-spreadsheet__select-option"
                 [value]="bg"
                 [selected]="activeFormat().background === bg"
               >
@@ -465,7 +455,7 @@ const BACKGROUNDS: readonly StarCellBackground[] = [
                 </div>
                 @for (col of visibleColumns(); track col) {
                   <div
-                    data-star-part="rowSection"
+                    data-star-part="gridCell"
                     role="gridcell"
                     [id]="cellId(row, col)"
                     [attr.aria-colindex]="col + 2"

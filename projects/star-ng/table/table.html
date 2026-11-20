@@ -54,11 +54,7 @@
                   [attr.aria-label]="text.moveColumnEarlier(column.header)"
                   (click)="moveColumnBy(column, -1)"
                 >
-                  <i
-                    data-star-part="arrowUpIcon"
-                    class="star-table__arrow-up-icon ph-bold ph-arrow-up"
-                    aria-hidden="true"
-                  ></i>
+                  <i data-star-part="moveIcon" class="ph-bold ph-arrow-up" aria-hidden="true"></i>
                 </button>
                 <button
                   data-star-part="toggle"
@@ -69,11 +65,7 @@
                   [attr.aria-label]="text.moveColumnLater(column.header)"
                   (click)="moveColumnBy(column, 1)"
                 >
-                  <i
-                    data-star-part="arrowDownIcon"
-                    class="star-table__arrow-down-icon ph-bold ph-arrow-down"
-                    aria-hidden="true"
-                  ></i>
+                  <i data-star-part="moveIcon" class="ph-bold ph-arrow-down" aria-hidden="true"></i>
                 </button>
               </span>
             }
@@ -94,7 +86,7 @@
   (scroll)="onScroll($event)"
 >
   <table
-    data-star-part="scrollTable"
+    data-star-part="grid"
     [attr.role]="cellMode() ? 'grid' : null"
     [attr.aria-multiselectable]="
       cellMode() && (selectionMode() === 'range' || selectionMode() === 'multiple') ? true : null
@@ -104,7 +96,7 @@
     [attr.aria-busy]="loading() || null"
     [attr.aria-rowcount]="ariaRowCount()"
   >
-    <thead data-star-part="scrollThead">
+    <thead data-star-part="head">
       @for (headerRow of headerLayout(); track $index; let rowIndex = $index) {
         <tr
           data-star-part="scrollHeadRow"
@@ -397,7 +389,7 @@
       }
     </thead>
     <tbody
-      data-star-part="scrollTbody"
+      data-star-part="body"
       #body
       [starContextMenu]="rowMenu"
       (menuOpened)="onMenuOpened()"
@@ -597,11 +589,7 @@
                     [attr.aria-label]="text.moveUp"
                     (click)="moveRow(row, -1)"
                   >
-                    <i
-                      data-star-part="arrowUpIcon"
-                      class="star-table__arrow-up-icon ph-bold ph-arrow-up"
-                      aria-hidden="true"
-                    ></i>
+                    <i data-star-part="moveIcon" class="ph-bold ph-arrow-up" aria-hidden="true"></i>
                   </button>
                   <button
                     data-star-part="toggle"
@@ -612,8 +600,8 @@
                     (click)="moveRow(row, 1)"
                   >
                     <i
-                      data-star-part="arrowDownIcon"
-                      class="star-table__arrow-down-icon ph-bold ph-arrow-down"
+                      data-star-part="moveIcon"
+                      class="ph-bold ph-arrow-down"
                       aria-hidden="true"
                     ></i>
                   </button>
@@ -636,7 +624,7 @@
                     (click)="toggleExpansion(row)"
                   >
                     <i
-                      data-star-part="caretRightIcon"
+                      data-star-part="expandIcon"
                       class="ph-bold ph-caret-right"
                       aria-hidden="true"
                     ></i>
@@ -879,7 +867,7 @@
                         (click)="saveRowEdit(row)"
                       >
                         <i
-                          data-star-part="checkIcon"
+                          data-star-part="saveIcon"
                           class="ph-bold ph-check"
                           aria-hidden="true"
                         ></i>
@@ -891,7 +879,7 @@
                         [attr.aria-label]="text.cancel"
                         (click)="cancelRowEdit(row)"
                       >
-                        <i data-star-part="xIcon" class="ph-bold ph-x" aria-hidden="true"></i>
+                        <i data-star-part="cancelIcon" class="ph-bold ph-x" aria-hidden="true"></i>
                       </button>
                     }
                   } @else if (!isDeleted(row)) {
@@ -904,7 +892,7 @@
                       (click)="initRowEdit(row)"
                     >
                       <i
-                        data-star-part="pencilSimpleIcon"
+                        data-star-part="editIcon"
                         class="ph-bold ph-pencil-simple"
                         aria-hidden="true"
                       ></i>
@@ -946,7 +934,7 @@
       }
     </tbody>
     @if (hasFooter()) {
-      <tfoot data-star-part="scrollTfoot">
+      <tfoot data-star-part="foot">
         <tr
           data-star-part="footer"
           class="star-table__footer"

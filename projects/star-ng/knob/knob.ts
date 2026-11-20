@@ -346,7 +346,7 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
         [disabled]="disabled()"
         (click)="pickFromScreen()"
       >
-        <i data-star-part="eyedropperIcon" class="ph-bold ph-eyedropper" aria-hidden="true"></i>
+        <i data-star-part="eyeDropperIcon" class="ph-bold ph-eyedropper" aria-hidden="true"></i>
       </button>
     }
     <input

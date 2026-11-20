@@ -55,7 +55,7 @@ export interface StarPageEvent {
           (click)="goTo(0)"
         >
           <i
-            data-star-part="caretDoubleLeftIcon"
+            data-star-part="firstPageIcon"
             class="ph-bold ph-caret-double-left star-icon-mirror"
             aria-hidden="true"
           ></i>
@@ -70,7 +70,7 @@ export interface StarPageEvent {
         (click)="goTo(page() - 1)"
       >
         <i
-          data-star-part="caretLeftIcon"
+          data-star-part="previousPageIcon"
           class="ph-bold ph-caret-left star-icon-mirror"
           aria-hidden="true"
         ></i>
@@ -97,7 +97,7 @@ export interface StarPageEvent {
         (click)="goTo(page() + 1)"
       >
         <i
-          data-star-part="caretRightIcon"
+          data-star-part="nextPageIcon"
           class="ph-bold ph-caret-right star-icon-mirror"
           aria-hidden="true"
         ></i>
@@ -112,7 +112,7 @@ export interface StarPageEvent {
           (click)="goTo(pageCount() - 1)"
         >
           <i
-            data-star-part="caretDoubleRightIcon"
+            data-star-part="lastPageIcon"
             class="ph-bold ph-caret-double-right star-icon-mirror"
             aria-hidden="true"
           ></i>

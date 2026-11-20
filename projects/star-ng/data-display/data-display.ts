@@ -396,7 +396,7 @@ export class StarOrderList<T = unknown> {
             (click)="transfer('source', picked('source'))"
           >
             <i
-              data-star-part="caretRightIcon"
+              data-star-part="moveIcon"
               class="ph-bold ph-caret-right star-icon-mirror"
               aria-hidden="true"
             ></i>
@@ -410,7 +410,7 @@ export class StarOrderList<T = unknown> {
             (click)="transfer('source', source())"
           >
             <i
-              data-star-part="caretDoubleRightIcon"
+              data-star-part="moveAllIcon"
               class="ph-bold ph-caret-double-right star-icon-mirror"
               aria-hidden="true"
             ></i>
@@ -424,7 +424,7 @@ export class StarOrderList<T = unknown> {
             (click)="transfer('target', picked('target'))"
           >
             <i
-              data-star-part="caretLeftIcon"
+              data-star-part="moveIcon"
               class="ph-bold ph-caret-left star-icon-mirror"
               aria-hidden="true"
             ></i>
@@ -438,7 +438,7 @@ export class StarOrderList<T = unknown> {
             (click)="transfer('target', target())"
           >
             <i
-              data-star-part="caretDoubleLeftIcon"
+              data-star-part="moveAllIcon"
               class="ph-bold ph-caret-double-left star-icon-mirror"
               aria-hidden="true"
             ></i>

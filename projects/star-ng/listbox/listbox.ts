@@ -122,9 +122,9 @@ const DROP_LISTS = new Map<string, { options(): readonly unknown[] }>();
           >
             <span data-star-part="box" class="star-check__box" aria-hidden="true">
               @if (allState() === 'mixed') {
-                <i data-star-part="minusIcon" class="ph-bold ph-minus"></i>
+                <i data-star-part="boxIcon" class="ph-bold ph-minus"></i>
               } @else if (allState() === true) {
-                <i data-star-part="checkIcon" class="star-listbox__check-icon ph-bold ph-check"></i>
+                <i data-star-part="selectedIcon" class="ph-bold ph-check"></i>
               }
             </span>
           </button>
@@ -219,10 +219,7 @@ const DROP_LISTS = new Map<string, { options(): readonly unknown[] }>();
               @if (isMulti()) {
                 <span data-star-part="box" class="star-check__box" aria-hidden="true">
                   @if (isSelected(option)) {
-                    <i
-                      data-star-part="checkIcon"
-                      class="star-listbox__check-icon ph-bold ph-check"
-                    ></i>
+                    <i data-star-part="selectedIcon" class="ph-bold ph-check"></i>
                   }
                 </span>
               }
@@ -371,7 +368,7 @@ const DROP_LISTS = new Map<string, { options(): readonly unknown[] }>();
       @if (isMulti()) {
         <span starPart="box" class="star-check__box" aria-hidden="true">
           @if (isSelected(option)) {
-            <i data-star-part="checkIcon" class="star-listbox__check-icon ph-bold ph-check"></i>
+            <i data-star-part="selectedIcon" class="ph-bold ph-check"></i>
           }
         </span>
       }

@@ -421,19 +421,19 @@ const SORT_FIELDS: readonly StarFileSortField[] = ['name', 'size', 'modified', '
                     {{ chosen[0].name }}
                   </h3>
                   <dl data-star-part="facts" class="star-fm__facts">
-                    <dt data-star-part="fileTypeTerm">{{ text.fileType }}</dt>
-                    <dd data-star-part="factsDescription" class="star-fm__facts-description">
+                    <dt data-star-part="factLabel">{{ text.fileType }}</dt>
+                    <dd data-star-part="factText">
                       {{ typeOf(chosen[0]) }}
                     </dd>
                     @if (!chosen[0].isFolder) {
-                      <dt data-star-part="fileSizeTerm">{{ text.fileSize }}</dt>
-                      <dd data-star-part="factsDescription" class="star-fm__facts-description">
+                      <dt data-star-part="factLabel">{{ text.fileSize }}</dt>
+                      <dd data-star-part="factText">
                         {{ chosen[0].size | starFileSize: locale() }}
                       </dd>
                     }
                     @if (chosen[0].modified !== undefined) {
-                      <dt data-star-part="fileModifiedTerm">{{ text.fileModified }}</dt>
-                      <dd data-star-part="factsDescription" class="star-fm__facts-description">
+                      <dt data-star-part="factLabel">{{ text.fileModified }}</dt>
+                      <dd data-star-part="factText">
                         {{ dateOf(chosen[0]) }}
                       </dd>
                     }
@@ -457,8 +457,8 @@ const SORT_FIELDS: readonly StarFileSortField[] = ['name', 'size', 'modified', '
         size="sm"
         [role]="'alertdialog'"
       >
-        <p data-star-part="fmRootText">{{ text.fileDeleteConfirm(pendingDelete().length) }}</p>
-        <div data-star-part="fmRootSection" class="star-fm__fm-root-section" starDialogFooter>
+        <p data-star-part="confirmText">{{ text.fileDeleteConfirm(pendingDelete().length) }}</p>
+        <div data-star-part="confirmPanel" starDialogFooter>
           <star-button variant="ghost" (pressed)="confirmOpen.set(false)">{{
             text.cancel
           }}</star-button>
@@ -478,7 +478,7 @@ const SORT_FIELDS: readonly StarFileSortField[] = ['name', 'size', 'modified', '
             (keydown.enter)="submitFolder()"
           />
         </label>
-        <div data-star-part="fmRootSection" class="star-fm__fm-root-section" starDialogFooter>
+        <div data-star-part="confirmPanel" starDialogFooter>
           <star-button variant="ghost" (pressed)="folderOpen.set(false)">{{
             text.cancel
           }}</star-button>

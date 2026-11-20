@@ -110,7 +110,7 @@ export function isoWeek(date: Date): number {
         (click)="page(-1)"
       >
         <i
-          data-star-part="caretLeftIcon"
+          data-star-part="previousIcon"
           class="ph-bold ph-caret-left star-icon-mirror"
           aria-hidden="true"
         ></i>
@@ -151,7 +151,7 @@ export function isoWeek(date: Date): number {
         (click)="page(1)"
       >
         <i
-          data-star-part="caretRightIcon"
+          data-star-part="nextIcon"
           class="ph-bold ph-caret-right star-icon-mirror"
           aria-hidden="true"
         ></i>
@@ -183,7 +183,7 @@ export function isoWeek(date: Date): number {
                   }}
                 </caption>
               }
-              <thead data-star-part="gridThead">
+              <thead data-star-part="head">
                 <tr data-star-part="weekShortRow">
                   @if (showWeek()) {
                     <th
@@ -202,7 +202,7 @@ export function isoWeek(date: Date): number {
                   }
                 </tr>
               </thead>
-              <tbody data-star-part="gridTbody">
+              <tbody data-star-part="body">
                 @for (week of grid.weeks; track $index) {
                   <tr data-star-part="gridBodyRow">
                     @if (showWeek()) {

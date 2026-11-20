@@ -255,18 +255,14 @@ const WHEEL_STEP = 50;
     <star-toolbar class="star-document-viewer__toolbar" [ariaLabel]="text.documentToolbar">
       <ng-container starToolbarStart>
         <button
-          data-star-part="documentThumbnailsButton"
+          data-star-part="toolButton"
           type="button"
           class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
           [attr.aria-label]="text.documentThumbnails"
           [attr.aria-pressed]="thumbnails()"
           (click)="thumbnails.set(!thumbnails())"
         >
-          <i
-            data-star-part="documentThumbnailsIcon"
-            class="ph-bold ph-sidebar-simple"
-            aria-hidden="true"
-          ></i>
+          <i data-star-part="toolIcon" class="ph-bold ph-sidebar-simple" aria-hidden="true"></i>
         </button>
         <button
           data-star-part="previousPageButton"
@@ -324,37 +320,19 @@ const WHEEL_STEP = 50;
           [attr.aria-label]="text.documentZoom"
           (change)="onZoomSelect($event)"
         >
-          <option
-            data-star-part="documentFitWidthOption"
-            value="fit-width"
-            [selected]="zoom() === 'fit-width'"
-          >
+          <option data-star-part="zoomOption" value="fit-width" [selected]="zoom() === 'fit-width'">
             {{ text.documentFitWidth }}
           </option>
-          <option
-            data-star-part="documentFitPageOption"
-            value="fit-page"
-            [selected]="zoom() === 'fit-page'"
-          >
+          <option data-star-part="zoomOption" value="fit-page" [selected]="zoom() === 'fit-page'">
             {{ text.documentFitPage }}
           </option>
           @if (customZoom(); as custom) {
-            <option
-              data-star-part="zoomOption"
-              class="star-document-viewer__zoom-option"
-              [value]="custom"
-              selected
-            >
+            <option data-star-part="zoomOption" [value]="custom" selected>
               {{ percent(custom) }}
             </option>
           }
           @for (step of zoomSteps; track step) {
-            <option
-              data-star-part="zoomOption"
-              class="star-document-viewer__zoom-option"
-              [value]="step"
-              [selected]="zoom() === step"
-            >
+            <option data-star-part="zoomOption" [value]="step" [selected]="zoom() === step">
               {{ percent(step) }}
             </option>
           }
@@ -373,33 +351,29 @@ const WHEEL_STEP = 50;
           ></i>
         </button>
         <button
-          data-star-part="documentRotateButton"
+          data-star-part="toolButton"
           type="button"
           class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
           [attr.aria-label]="text.documentRotate"
           (click)="rotate()"
         >
-          <i
-            data-star-part="documentRotateIcon"
-            class="ph-bold ph-arrow-clockwise"
-            aria-hidden="true"
-          ></i>
+          <i data-star-part="toolIcon" class="ph-bold ph-arrow-clockwise" aria-hidden="true"></i>
         </button>
       </ng-container>
       <ng-container starToolbarEnd>
         <button
-          data-star-part="documentSinglePageButton"
+          data-star-part="toolButton"
           type="button"
           class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
           [attr.aria-label]="text.documentSinglePage"
           [attr.aria-pressed]="mode() === 'single'"
           (click)="setMode(mode() === 'single' ? 'continuous' : 'single')"
         >
-          <i data-star-part="documentSinglePageIcon" class="ph-bold ph-file" aria-hidden="true"></i>
+          <i data-star-part="toolIcon" class="ph-bold ph-file" aria-hidden="true"></i>
         </button>
         @if (hasText()) {
           <button
-            data-star-part="documentSearchButton"
+            data-star-part="toolButton"
             type="button"
             class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
             [attr.aria-label]="text.documentSearch"
@@ -407,11 +381,7 @@ const WHEEL_STEP = 50;
             [attr.aria-controls]="searchId"
             (click)="searchOpen() ? closeSearch() : openSearch()"
           >
-            <i
-              data-star-part="documentSearchIcon"
-              class="ph-bold ph-magnifying-glass"
-              aria-hidden="true"
-            ></i>
+            <i data-star-part="toolIcon" class="ph-bold ph-magnifying-glass" aria-hidden="true"></i>
           </button>
         }
         <button
@@ -445,13 +415,13 @@ const WHEEL_STEP = 50;
         }
         @if (showPrint()) {
           <button
-            data-star-part="documentPrintButton"
+            data-star-part="toolButton"
             type="button"
             class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
             [attr.aria-label]="text.documentPrint"
             (click)="print.emit()"
           >
-            <i data-star-part="documentPrintIcon" class="ph-bold ph-printer" aria-hidden="true"></i>
+            <i data-star-part="toolIcon" class="ph-bold ph-printer" aria-hidden="true"></i>
           </button>
         }
       </ng-container>

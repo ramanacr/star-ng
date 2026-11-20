@@ -80,11 +80,7 @@ import { StarMenu, StarMenuItem, StarMenuTrigger } from '@star-ng/ui/menu';
         (menuOpened)="menuOpen.set(true)"
         (menuClosed)="menuOpen.set(false)"
       >
-        <i
-          data-star-part="dotsThreeVerticalIcon"
-          class="ph-bold ph-dots-three-vertical"
-          aria-hidden="true"
-        ></i>
+        <i data-star-part="moreIcon" class="ph-bold ph-dots-three-vertical" aria-hidden="true"></i>
       </button>
       <star-menu #menu [items]="overflowActions()" (itemClick)="actionClick.emit($event)" />
     }

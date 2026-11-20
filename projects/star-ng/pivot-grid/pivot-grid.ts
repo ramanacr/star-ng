@@ -165,35 +165,19 @@ interface Position {
           [attr.aria-colcount]="result().columns.length + 1"
           [style.width.px]="tableWidth()"
         >
-          <colgroup data-star-part="tableColumns">
-            <col
-              data-star-part="tableColumn"
-              class="star-pivot__table-column"
-              [style.width.px]="rowHeaderWidth()"
-            />
+          <colgroup data-star-part="columns">
+            <col data-star-part="column" [style.width.px]="rowHeaderWidth()" />
             @if (columnWindow().before) {
-              <col
-                data-star-part="tableColumn"
-                class="star-pivot__table-column"
-                [style.width.px]="columnWindow().before"
-              />
+              <col data-star-part="column" [style.width.px]="columnWindow().before" />
             }
             @for (c of renderedColumns(); track c) {
-              <col
-                data-star-part="tableColumn"
-                class="star-pivot__table-column"
-                [style.width.px]="columnWidth()"
-              />
+              <col data-star-part="column" [style.width.px]="columnWidth()" />
             }
             @if (columnWindow().after) {
-              <col
-                data-star-part="tableColumn"
-                class="star-pivot__table-column"
-                [style.width.px]="columnWindow().after"
-              />
+              <col data-star-part="column" [style.width.px]="columnWindow().after" />
             }
           </colgroup>
-          <thead data-star-part="tableThead">
+          <thead data-star-part="columnHeader">
             @for (cells of clippedHeaders(); track $index; let h = $index) {
               <tr
                 data-star-part="headerRow"
@@ -246,8 +230,8 @@ interface Position {
                           [class.star-pivot__toggle--open]="cell.expanded"
                           aria-hidden="true"
                           ><i
-                            data-star-part="caretRightIcon"
-                            class="star-pivot__caret-right-icon ph-bold ph-caret-right star-icon-mirror"
+                            data-star-part="expandIcon"
+                            class="ph-bold ph-caret-right star-icon-mirror"
                           ></i
                         ></span>
                       }
@@ -268,12 +252,11 @@ interface Position {
               </tr>
             }
           </thead>
-          <tbody data-star-part="tableTbody">
+          <tbody data-star-part="body">
             @if (rowWindow().before) {
               <tr data-star-part="spacerRow" class="star-pivot__spacer-row" aria-hidden="true">
                 <td
-                  data-star-part="spacerRowCell"
-                  class="star-pivot__spacer-row-cell"
+                  data-star-part="spacerCell"
                   [attr.colspan]="renderedSpan()"
                   [style.height.px]="rowWindow().before"
                 ></td>
@@ -306,8 +289,8 @@ interface Position {
                         [class.star-pivot__toggle--open]="row.expanded"
                         aria-hidden="true"
                         ><i
-                          data-star-part="caretRightIcon"
-                          class="star-pivot__caret-right-icon ph-bold ph-caret-right star-icon-mirror"
+                          data-star-part="expandIcon"
+                          class="ph-bold ph-caret-right star-icon-mirror"
                         ></i
                       ></span>
                     } @else if (row.kind === 'member') {
@@ -344,8 +327,7 @@ interface Position {
             @if (rowWindow().after) {
               <tr data-star-part="spacerRow" class="star-pivot__spacer-row" aria-hidden="true">
                 <td
-                  data-star-part="spacerRowCell"
-                  class="star-pivot__spacer-row-cell"
+                  data-star-part="spacerCell"
                   [attr.colspan]="renderedSpan()"
                   [style.height.px]="rowWindow().after"
                 ></td>

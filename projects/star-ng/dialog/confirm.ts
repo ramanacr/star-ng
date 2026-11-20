@@ -163,11 +163,7 @@ export class StarConfirmService {
           <div data-star-part="confirm" class="star-confirm star-confirm--popup">
             @if (popup.icon) {
               <span data-star-part="icon" class="star-confirm__icon" aria-hidden="true"
-                ><i
-                  data-star-part="iconIcon"
-                  class="star-confirm__icon-icon"
-                  [class]="popup.icon"
-                ></i
+                ><i data-star-part="severityIcon" [class]="popup.icon"></i
               ></span>
             }
             <div data-star-part="message" class="star-confirm__message" [id]="popupMessageId">
@@ -209,11 +205,7 @@ export class StarConfirmService {
         <div data-star-part="confirm" class="star-confirm">
           @if (request.icon) {
             <span data-star-part="icon" class="star-confirm__icon" aria-hidden="true"
-              ><i
-                data-star-part="iconIcon"
-                class="star-confirm__icon-icon"
-                [class]="request.icon"
-              ></i
+              ><i data-star-part="severityIcon" [class]="request.icon"></i
             ></span>
           }
           <div data-star-part="message" class="star-confirm__message">

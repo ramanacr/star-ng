@@ -198,7 +198,7 @@ function plainText(text: string): string {
               <span data-star-part="avatar" class="star-chat__avatar" aria-hidden="true">
                 @if (row.first) {
                   @if (message.author.avatar) {
-                    <img data-star-part="avatarImage" [src]="message.author.avatar" alt="" />
+                    <img data-star-part="photo" [src]="message.author.avatar" alt="" />
                   } @else {
                     {{ initialsOf(message.author.name) }}
                   }
@@ -231,7 +231,7 @@ function plainText(text: string): string {
               @if (row.last || message.status) {
                 <div data-star-part="meta" class="star-chat__meta">
                   @if (row.last && row.time) {
-                    <time data-star-part="metaTime" aria-hidden="true" [attr.datetime]="row.iso">{{
+                    <time data-star-part="time" aria-hidden="true" [attr.datetime]="row.iso">{{
                       row.time
                     }}</time>
                   }
@@ -266,9 +266,8 @@ function plainText(text: string): string {
     @if (typingText(); as typingLine) {
       <div data-star-part="typing" class="star-chat__typing">
         <span data-star-part="dots" class="star-chat__dots" aria-hidden="true"
-          ><span data-star-part="dotsText" class="star-chat__dots-text"></span
-          ><span data-star-part="dotsText" class="star-chat__dots-text"></span
-          ><span data-star-part="dotsText" class="star-chat__dots-text"></span
+          ><span data-star-part="dotItem"></span><span data-star-part="dotItem"></span
+          ><span data-star-part="dotItem"></span
         ></span>
         {{ typingLine }}
       </div>

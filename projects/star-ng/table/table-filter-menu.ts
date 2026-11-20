@@ -80,7 +80,7 @@ const MODE_TEXT: Readonly<Record<string, keyof StarUiText>> = {
       (click)="toggle($event)"
     >
       <i
-        data-star-part="filterButtonIcon"
+        data-star-part="filterIcon"
         [class]="active() ? 'ph-fill ph-funnel' : 'ph-bold ph-funnel'"
         aria-hidden="true"
       ></i>
@@ -114,8 +114,7 @@ const MODE_TEXT: Readonly<Record<string, keyof StarUiText>> = {
               >
                 @for (mode of modes(); track mode) {
                   <option
-                    data-star-part="inputOption"
-                    class="star-table-filter__input-option"
+                    data-star-part="valueOption"
                     [value]="mode"
                     [selected]="mode === rule.matchMode"
                   >
@@ -136,8 +135,7 @@ const MODE_TEXT: Readonly<Record<string, keyof StarUiText>> = {
                 </option>
                 @for (choice of choices(); track choice) {
                   <option
-                    data-star-part="inputOption"
-                    class="star-table-filter__input-option"
+                    data-star-part="valueOption"
                     [value]="choice"
                     [selected]="choice === rule.value"
                   >

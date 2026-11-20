@@ -250,13 +250,13 @@ const LOADING_KEY = '\u0000loading';
       (keydown)="onScrollerKeydown($event)"
     >
       <table
-        data-star-part="scrollTable"
+        data-star-part="grid"
         role="treegrid"
         [attr.aria-label]="ariaLabel()"
         [attr.aria-multiselectable]="multiselectable()"
         [attr.aria-rowcount]="windowed() ? ariaRowCountValue() : null"
       >
-        <thead data-star-part="scrollThead" #header>
+        <thead data-star-part="head" #header>
           <tr data-star-part="scrollRow" [attr.aria-rowindex]="windowed() ? 1 : null">
             @for (column of visibleColumns(); track column.field) {
               <th
@@ -307,7 +307,7 @@ const LOADING_KEY = '\u0000loading';
                       (click)="moveColumnBy(column, -1)"
                     >
                       <i
-                        data-star-part="caretLeftIcon"
+                        data-star-part="moveIcon"
                         class="ph-bold ph-caret-left"
                         aria-hidden="true"
                       ></i>
@@ -321,8 +321,8 @@ const LOADING_KEY = '\u0000loading';
                       (click)="moveColumnBy(column, 1)"
                     >
                       <i
-                        data-star-part="caretRightIcon"
-                        class="star-table__caret-right-icon ph-bold ph-caret-right"
+                        data-star-part="expandIcon"
+                        class="ph-bold ph-caret-right"
                         aria-hidden="true"
                       ></i>
                     </button>
@@ -375,15 +375,11 @@ const LOADING_KEY = '\u0000loading';
           }
         </thead>
         @if (contextMenu().length) {
-          <tbody
-            data-star-part="scrollTbody"
-            [starContextMenu]="rowMenu"
-            (menuClosed)="onMenuClosed()"
-          >
+          <tbody data-star-part="body" [starContextMenu]="rowMenu" (menuClosed)="onMenuClosed()">
             <ng-container *ngTemplateOutlet="body" />
           </tbody>
         } @else {
-          <tbody data-star-part="scrollTbody">
+          <tbody data-star-part="body">
             <ng-container *ngTemplateOutlet="body" />
           </tbody>
         }
@@ -413,7 +409,6 @@ const LOADING_KEY = '\u0000loading';
         <tr starPart="spacer" class="star-table__spacer" aria-hidden="true">
           <td
             data-star-part="spacerCell"
-            class="star-table__spacer-cell"
             [attr.colspan]="visibleColumns().length"
             [style.height.px]="window().before"
           ></td>
@@ -515,8 +510,8 @@ const LOADING_KEY = '\u0000loading';
                         (click)="userToggle(row.node)"
                       >
                         <i
-                          data-star-part="caretRightIcon"
-                          class="star-table__caret-right-icon ph-bold ph-caret-right"
+                          data-star-part="expandIcon"
+                          class="ph-bold ph-caret-right"
                           aria-hidden="true"
                         ></i>
                       </button>
@@ -580,7 +575,6 @@ const LOADING_KEY = '\u0000loading';
         <tr starPart="spacer" class="star-table__spacer" aria-hidden="true">
           <td
             data-star-part="spacerCell"
-            class="star-table__spacer-cell"
             [attr.colspan]="visibleColumns().length"
             [style.height.px]="window().after"
           ></td>

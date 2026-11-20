@@ -130,7 +130,7 @@
           (mousedown)="$event.preventDefault()"
           (click)="moreOpen.set(!moreOpen())"
         >
-          <i data-star-part="dotsThreeIcon" class="ph-bold ph-dots-three" aria-hidden="true"></i>
+          <i data-star-part="moreIcon" class="ph-bold ph-dots-three" aria-hidden="true"></i>
         </button>
         @if (moreOpen()) {
           <div data-star-part="overflow" class="star-editor__overflow" [id]="overflowId">
@@ -202,7 +202,7 @@
     (keydown)="onFindKeydown($event)"
   >
     <label data-star-part="field" class="star-editor__field">
-      <span data-star-part="editorFindText">{{ text.editorFind }}</span>
+      <span data-star-part="findLabel">{{ text.editorFind }}</span>
       <input
         data-star-part="input"
         class="star-input star-input--sm"
@@ -214,7 +214,7 @@
     </label>
     @if (mode === 'replace') {
       <label data-star-part="field" class="star-editor__field">
-        <span data-star-part="editorReplaceWithText">{{ text.editorReplaceWith }}</span>
+        <span data-star-part="replaceLabel">{{ text.editorReplaceWith }}</span>
         <input
           data-star-part="input"
           class="star-input star-input--sm"
@@ -226,8 +226,7 @@
     }
     <label data-star-part="linkCheck" class="star-editor__link-check">
       <input
-        data-star-part="linkCheckInput"
-        class="star-editor__link-check-input"
+        data-star-part="newTabInput"
         type="checkbox"
         [checked]="matchCase()"
         (change)="matchCase.set($any($event.target).checked); runFind()"
@@ -236,8 +235,7 @@
     </label>
     <label data-star-part="linkCheck" class="star-editor__link-check">
       <input
-        data-star-part="linkCheckInput"
-        class="star-editor__link-check-input"
+        data-star-part="newTabInput"
         type="checkbox"
         [checked]="wholeWord()"
         (change)="wholeWord.set($any($event.target).checked); runFind()"
@@ -268,7 +266,7 @@
       </button>
       @if (mode === 'replace') {
         <button
-          data-star-part="editorReplaceButton"
+          data-star-part="replaceButton"
           type="button"
           class="star-btn star-btn--ghost star-btn--sm"
           [disabled]="!matchTotal() || locked()"
@@ -277,7 +275,7 @@
           {{ text.editorReplace }}
         </button>
         <button
-          data-star-part="editorReplaceAllButton"
+          data-star-part="replaceButton"
           type="button"
           class="star-btn star-btn--ghost star-btn--sm"
           [disabled]="!matchTotal() || locked()"
@@ -311,10 +309,10 @@
       <ul data-star-part="auditList" class="star-editor__audit-list">
         @for (issue of issues(); track $index) {
           <li data-star-part="auditItem" class="star-editor__audit-item">
-            <span data-star-part="auditItemText">{{ issueText(issue) }}</span>
+            <span data-star-part="issueText">{{ issueText(issue) }}</span>
             <span data-star-part="linkActions" class="star-editor__link-actions">
               <button
-                data-star-part="editorGoToButton"
+                data-star-part="goToButton"
                 type="button"
                 class="star-btn star-btn--ghost star-btn--sm"
                 (click)="goToIssue(issue)"
@@ -322,7 +320,7 @@
                 {{ text.editorGoTo }}
               </button>
               <button
-                data-star-part="editorFixButton"
+                data-star-part="fixButton"
                 type="button"
                 class="star-btn star-btn--ghost star-btn--sm"
                 [disabled]="locked()"
@@ -459,7 +457,7 @@
   }
 }
 <dialog
-  data-star-part="shortcuts"
+  data-star-part="body"
   #shortcutsDialog
   class="star-editor__shortcuts"
   [attr.aria-labelledby]="shortcutsId"
@@ -468,14 +466,14 @@
   <h2 data-star-part="shortcutsTitle" class="star-editor__shortcuts-title" [id]="shortcutsId">
     {{ text.editorShortcuts }}
   </h2>
-  <table data-star-part="shortcutsTable" class="star-editor__shortcuts-table">
-    <tbody data-star-part="shortcutsTableTbody">
+  <table data-star-part="shortcutList" class="star-editor__shortcuts-table">
+    <tbody data-star-part="keymap">
       @for (row of shortcutRows(); track $index) {
-        <tr data-star-part="shortcutsTableRow">
-          <th data-star-part="shortcutsTableHeaderCell" scope="row">
-            <kbd data-star-part="shortcutsTableKey">{{ row[0] }}</kbd>
+        <tr data-star-part="shortcutRow">
+          <th data-star-part="shortcutHeader" scope="row">
+            <kbd data-star-part="keyText">{{ row[0] }}</kbd>
           </th>
-          <td data-star-part="shortcutsTableCell">{{ row[1] }}</td>
+          <td data-star-part="shortcutCell">{{ row[1] }}</td>
         </tr>
       }
     </tbody>
