@@ -257,7 +257,24 @@ export class StarHierarchicalLevel {
     afterNextRender(() => {
       const view = this.host.ownerDocument.defaultView;
       if (!view || typeof view.MutationObserver !== 'function') return;
-      const observer = new view.MutationObserver(() => this.linkDetails());
+      // Only row changes and aria-controls changes matter; the work runs once per microtask.
+      let queued = false;
+      const observer = new view.MutationObserver((records) => {
+        const relevant = records.some(
+          (record) =>
+            (record.type === 'attributes' && record.attributeName === 'aria-controls') ||
+            (record.type === 'childList' &&
+              [...Array.from(record.addedNodes), ...Array.from(record.removedNodes)].some(
+                (node) => node.nodeName === 'TR',
+              )),
+        );
+        if (!relevant || queued) return;
+        queued = true;
+        queueMicrotask(() => {
+          queued = false;
+          this.linkDetails();
+        });
+      });
       observer.observe(this.host, {
         childList: true,
         subtree: true,
@@ -651,7 +668,12 @@ export class StarHierarchicalGrid<T = unknown> {
   protected readonly text = inject(STAR_UI_TEXT);
   private readonly browser = isPlatformBrowser(inject(PLATFORM_ID));
 
-  /** The root rows. */
+  /**
+   * The root rows. A row object is the identity of its loaded child rows: when `data` (or a
+   * parent row of a child grid) comes again with new objects under the same keys, the open
+   * child grids of those rows load again. Keep the row objects (for example update them in
+   * place, or reuse unchanged ones), or use `key` islands, to avoid the reloads.
+   */
   readonly data = input.required<readonly T[]>();
   /** The columns of the root grid. */
   readonly columns = input.required<readonly StarColumn<T>[]>();

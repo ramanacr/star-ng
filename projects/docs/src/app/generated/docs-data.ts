@@ -6043,7 +6043,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "readonly T[]",
         "default": null,
         "required": true,
-        "description": "The root rows."
+        "description": "The root rows. A row object is the identity of its loaded child rows: when `data` (or a parent row of a child grid) comes again with new objects under the same keys, the open child grids of those rows load again. Keep the row objects (for example update them in place, or reuse unchanged ones), or use `key` islands, to avoid the reloads."
       },
       {
         "name": "columns",
