@@ -28,6 +28,11 @@ export interface StarChartExportOptions {
   readonly title: string;
   /** Background color; the default is the computed background of the chart surface. */
   readonly background?: string;
+  /**
+   * Changes the copy before it is written, after the paint is copied: for example a new
+   * `viewBox`. The width and height of the document come from the `viewBox` of the copy.
+   */
+  readonly prepare?: (copy: SVGSVGElement) => void;
 }
 
 /** Width and height of the view box of `svg` (read from the attribute). */
@@ -66,8 +71,9 @@ export function starChartSvgDocument(svg: SVGSVGElement, options: StarChartExpor
     if (style.length) target.setAttribute('style', style.join(';'));
   });
   for (const hit of copy.querySelectorAll('[data-export="skip"]')) hit.remove();
+  options.prepare?.(copy);
   copy.setAttribute('xmlns', SVG_NS);
-  const box = starChartViewBox(svg);
+  const box = starChartViewBox(copy);
   if (box) {
     copy.setAttribute('width', String(box.width));
     copy.setAttribute('height', String(box.height));

@@ -1,0 +1,197 @@
+// Diagram (StarDiagram): a toolbar and an SVG canvas. The canvas keeps left-to-right
+// coordinates on right-to-left pages; the toolbar follows the page direction.
+@use '../shared' as *;
+
+.star-diagram-host {
+  display: block;
+}
+.star-diagram {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--star-border);
+  border-radius: var(--star-radius-md);
+  background: var(--star-surface);
+  overflow: hidden;
+}
+.star-diagram__toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.125rem;
+  padding: 0.25rem 0.5rem;
+  border-bottom: 1px solid var(--star-border);
+  background: var(--star-surface-muted);
+}
+.star-diagram__tool {
+  display: inline-grid;
+  place-items: center;
+  inline-size: 2rem;
+  block-size: 2rem;
+  padding: 0;
+  border: 0;
+  border-radius: var(--star-radius-sm);
+  background: transparent;
+  color: var(--star-text);
+  cursor: pointer;
+
+  &:hover:not([aria-disabled='true']) {
+    background: var(--star-surface);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--star-accent);
+    outline-offset: -2px;
+  }
+  &[aria-disabled='true'] {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+}
+.star-diagram__zoom {
+  min-inline-size: 3.25rem;
+  color: var(--star-text-muted);
+  font: var(--star-type-body-sm);
+  text-align: center;
+}
+.star-diagram__canvas {
+  position: relative;
+  block-size: var(--star-diagram-height, 24rem);
+  background: var(--star-surface);
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+
+  &:focus-visible {
+    outline: 2px solid var(--star-accent);
+    outline-offset: -2px;
+  }
+}
+.star-diagram__canvas--pan {
+  cursor: grab;
+}
+.star-diagram__svg {
+  display: block;
+}
+.star-diagram__dot {
+  fill: var(--star-border-strong);
+}
+.star-diagram__shape {
+  fill: var(--star-surface);
+  stroke: var(--star-border-strong);
+  stroke-width: 1.5;
+}
+.star-diagram__node {
+  cursor: move;
+  outline: none;
+
+  &:focus-visible .star-diagram__shape {
+    stroke: var(--star-accent);
+    stroke-width: 3;
+  }
+}
+.star-diagram__node--selected .star-diagram__shape {
+  fill: var(--star-primary-soft);
+  stroke: var(--star-primary);
+  stroke-width: 2;
+}
+.star-diagram__node--target .star-diagram__shape {
+  stroke: var(--star-accent);
+  stroke-dasharray: 4 3;
+}
+.star-diagram__label {
+  fill: var(--star-text-strong);
+  font: var(--star-type-body-sm);
+  font-family: var(--star-font-sans);
+  text-anchor: middle;
+  dominant-baseline: central;
+  pointer-events: none;
+}
+.star-diagram__label--hidden {
+  display: none;
+}
+.star-diagram__custom {
+  display: grid;
+  place-items: center;
+  inline-size: 100%;
+  block-size: 100%;
+  color: var(--star-text-strong);
+  font: var(--star-type-body-sm);
+  pointer-events: none;
+}
+.star-diagram__edge-line {
+  fill: none;
+  stroke: var(--star-text-muted);
+  stroke-width: 1.5;
+}
+.star-diagram__edge-line--draft {
+  stroke: var(--star-accent);
+  stroke-dasharray: 5 4;
+}
+.star-diagram__edge-hit {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 12;
+  cursor: pointer;
+}
+.star-diagram__edge--selected .star-diagram__edge-line {
+  stroke: var(--star-primary);
+  stroke-width: 2.5;
+}
+.star-diagram__edge-label {
+  fill: var(--star-text);
+  font: var(--star-type-body-sm);
+  font-family: var(--star-font-sans);
+  text-anchor: middle;
+  paint-order: stroke;
+  stroke: var(--star-surface);
+  stroke-width: 4;
+}
+.star-diagram__arrow path {
+  fill: var(--star-text-muted);
+}
+.star-diagram__port {
+  fill: var(--star-surface);
+  stroke: var(--star-accent);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+  cursor: crosshair;
+}
+.star-diagram__handle {
+  fill: var(--star-surface);
+  stroke: var(--star-primary);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+.star-diagram__handle--n,
+.star-diagram__handle--s {
+  cursor: ns-resize;
+}
+.star-diagram__handle--e,
+.star-diagram__handle--w {
+  cursor: ew-resize;
+}
+.star-diagram__handle--ne,
+.star-diagram__handle--sw {
+  cursor: nesw-resize;
+}
+.star-diagram__handle--nw,
+.star-diagram__handle--se {
+  cursor: nwse-resize;
+}
+.star-diagram__marquee {
+  fill: var(--star-primary-soft);
+  fill-opacity: 0.5;
+  stroke: var(--star-primary);
+  stroke-dasharray: 4 3;
+  vector-effect: non-scaling-stroke;
+}
+.star-diagram__editor {
+  position: absolute;
+  z-index: 1;
+  block-size: 2rem;
+}
+
+@include star-reduced-motion {
+  .star-diagram__node,
+  .star-diagram__edge-line {
+    transition: none;
+  }
+}

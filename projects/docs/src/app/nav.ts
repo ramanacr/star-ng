@@ -285,6 +285,13 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         keywords: 'time hour minute clock timeonly',
         load: () => import('./controls/time-picker.page').then((m) => m.TimePickerPage),
       },
+      {
+        label: 'Scheduler',
+        path: 'controls/scheduler',
+        keywords:
+          'calendar events appointments booking week month agenda timeline rrule recurrence',
+        load: () => import('./controls/scheduler.page').then((m) => m.SchedulerPage),
+      },
     ],
   },
   {
@@ -337,6 +344,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         path: 'controls/command-palette',
         keywords: 'command menu cmdk search actions hotkey ctrl k spotlight quick open',
         load: () => import('./controls/command-palette.page').then((m) => m.CommandPalettePage),
+      },
+      {
+        label: 'Ribbon',
+        path: 'controls/ribbon',
+        keywords: 'ribbon toolbar tabs groups office keytips commands document editor',
+        load: () => import('./controls/ribbon.page').then((m) => m.RibbonPage),
       },
       {
         label: 'Chat and AI prompt',
@@ -611,6 +624,18 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         keywords: 'excel sheet cells formulas sum grid workbook csv tsv fill handle budget',
         load: () => import('./controls/spreadsheet.page').then((m) => m.SpreadsheetPage),
       },
+      {
+        label: 'File manager',
+        path: 'controls/file-manager',
+        keywords: 'file explorer folders browser upload rename move copy tree details icons',
+        load: () => import('./controls/file-manager.page').then((m) => m.FileManagerPage),
+      },
+      {
+        label: 'Gantt chart',
+        path: 'controls/gantt',
+        keywords: 'gantt project plan tasks timeline schedule dependencies milestone',
+        load: () => import('./controls/gantt.page').then((m) => m.GanttPage),
+      },
     ],
   },
   {
@@ -735,6 +760,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         path: 'controls/qr-code',
         keywords: 'qr 2d matrix barcode link url scan error correction logo svg',
         load: () => import('./controls/qr-code.page').then((m) => m.QrCodePage),
+      },
+      {
+        label: 'Diagram',
+        path: 'controls/diagram',
+        keywords: 'diagram flowchart workflow nodes connectors graph canvas svg layout editor',
+        load: () => import('./controls/diagram.page').then((m) => m.DiagramPage),
       },
     ],
   },

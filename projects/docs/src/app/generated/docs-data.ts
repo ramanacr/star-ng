@@ -4102,6 +4102,139 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarDiagram": {
+    "kind": "component",
+    "selector": "star-diagram",
+    "entry": "@star-ng/ui/diagram",
+    "description": "Diagram (Syncfusion `ejs-diagram`, DevExtreme `dxDiagram`; Kendo `Diagram`): nodes and connections on an SVG canvas.",
+    "inputs": [
+      {
+        "name": "nodes",
+        "type": "readonly StarDiagramNode[]",
+        "default": "[]",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "edges",
+        "type": "readonly StarDiagramEdge[]",
+        "default": "[]",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "minZoom",
+        "type": "number",
+        "default": "0.25",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "maxZoom",
+        "type": "number",
+        "default": "4",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "gridSize",
+        "type": "number",
+        "default": "20",
+        "required": false,
+        "description": "Grid of the snap and of the keyboard moves, in diagram units. 0: no snap."
+      },
+      {
+        "name": "showGrid",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "connectorRouting",
+        "type": "'straight' | 'orthogonal'",
+        "default": "'orthogonal'",
+        "required": false,
+        "description": "Routing of the connections that the user draws."
+      },
+      {
+        "name": "readonly",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "No changes: select, pan and zoom only."
+      },
+      {
+        "name": "fitContent",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Fits the content into the canvas after the first render (browser only)."
+      },
+      {
+        "name": "documentKey",
+        "type": "unknown",
+        "default": "undefined",
+        "required": false,
+        "description": "Identity of the document that `nodes` and `edges` show, for example its id. When it changes, the undo history is cleared, so that no patch of the old document applies to the new one. Without it, call `clearHistory()` after you load another document."
+      },
+      {
+        "name": "height",
+        "type": "string",
+        "default": "'24rem'",
+        "required": false,
+        "description": "Height of the canvas (a CSS length)."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [
+      {
+        "name": "selection",
+        "type": "readonly string[]",
+        "default": "[]",
+        "required": false,
+        "description": "Ids of the selected nodes."
+      },
+      {
+        "name": "zoom",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Zoom factor: 1 is 100 %."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "nodesChange",
+        "type": "StarDiagramChange<StarDiagramNodePatch>",
+        "default": null,
+        "required": false,
+        "description": "Node patches: moves, resizes, labels, deletes, layouts, undo and redo."
+      },
+      {
+        "name": "edgesChange",
+        "type": "StarDiagramChange<StarDiagramEdgePatch>",
+        "default": null,
+        "required": false,
+        "description": "Edge patches: new connections, deletes, undo and redo."
+      }
+    ]
+  },
+  "StarDiagramNodeTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starDiagramNode]",
+    "entry": "@star-ng/ui/diagram",
+    "description": "Custom node content: `<ng-template starDiagramNode let-node>…</ng-template>`. It renders in an SVG `foreignObject` in the browser; the server renders the plain label, and an export shows the plain label too.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
   "StarDialog": {
     "kind": "component",
     "selector": "star-dialog",
@@ -5285,6 +5418,172 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "outputs": []
   },
+  "StarFileManager": {
+    "kind": "component",
+    "selector": "star-file-manager",
+    "entry": "@star-ng/ui/file-manager",
+    "description": "File manager (Kendo `FileManager`, Syncfusion `ejs-filemanager`, DevExtreme `dxFileManager`): folder tree, breadcrumb, toolbar, search, a details table or large icons, and an optional details pane.",
+    "inputs": [
+      {
+        "name": "items",
+        "type": "readonly StarFileItem[]",
+        "default": "[]",
+        "required": false,
+        "description": "All files and folders. Not used when `provider` is set."
+      },
+      {
+        "name": "provider",
+        "type": "StarFileProvider | null",
+        "default": "null",
+        "required": false,
+        "description": "Lists folders on demand and runs the operations. See `StarFileProvider`."
+      },
+      {
+        "name": "detailsPane",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows a pane with the details of the selection."
+      },
+      {
+        "name": "confirmDelete",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Asks before `delete` is emitted. Default on."
+      },
+      {
+        "name": "locale",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Locale of sizes and dates. Default: the application locale."
+      },
+      {
+        "name": "rootLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Name of the top folder. Default: the `fileRoot` text."
+      },
+      {
+        "name": "height",
+        "type": "string",
+        "default": "'28rem'",
+        "required": false,
+        "description": "Height of the file manager (a CSS length)."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [
+      {
+        "name": "folder",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "The open folder (`null`: the top folder)."
+      },
+      {
+        "name": "selection",
+        "type": "readonly string[]",
+        "default": "[]",
+        "required": false,
+        "description": "Ids of the selected items of the open folder."
+      },
+      {
+        "name": "view",
+        "type": "StarFileView",
+        "default": "'details'",
+        "required": false,
+        "description": "`details` (table) or `large-icons` (grid)."
+      },
+      {
+        "name": "sortField",
+        "type": "StarFileSortField",
+        "default": "'name'",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "sortOrder",
+        "type": "1 | -1",
+        "default": "1",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "outputs": [
+      {
+        "name": "open",
+        "type": "StarFileOpenEvent",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "rename",
+        "type": "StarFileRenameEvent",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "delete",
+        "type": "StarFileItemsEvent",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "move",
+        "type": "StarFileTransferEvent",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "copy",
+        "type": "StarFileTransferEvent",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "createFolder",
+        "type": "StarFileCreateFolderEvent",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "upload",
+        "type": "StarFileUploadEvent",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "download",
+        "type": "StarFileItemsEvent",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "error",
+        "type": "StarFileErrorEvent",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
   "StarFileTemplate": {
     "kind": "directive",
     "selector": "ng-template[starFile]",
@@ -5484,6 +5783,95 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ],
     "outputs": []
+  },
+  "StarGantt": {
+    "kind": "component",
+    "selector": "star-gantt",
+    "entry": "@star-ng/ui/gantt",
+    "description": "Gantt chart (Kendo UI Gantt, Syncfusion Gantt, DevExtreme Gantt): a task tree grid on the start side and a timeline on the end side, in one scroll area, so both scroll together.",
+    "inputs": [
+      {
+        "name": "tasks",
+        "type": "readonly StarGanttTask[]",
+        "default": "[]",
+        "required": false,
+        "description": "The tasks. The Gantt never changes this array."
+      },
+      {
+        "name": "rowHeight",
+        "type": "number",
+        "default": "36",
+        "required": false,
+        "description": "Height of a row in pixels."
+      },
+      {
+        "name": "weekendDays",
+        "type": "readonly number[]",
+        "default": "[0, 6]",
+        "required": false,
+        "description": "Weekdays shaded as weekend (0 = Sunday), in the day and week scales."
+      },
+      {
+        "name": "firstDayOfWeek",
+        "type": "number | null",
+        "default": "null",
+        "required": false,
+        "description": "First day of the week (0 = Sunday). Default: from the locale."
+      },
+      {
+        "name": "locale",
+        "type": "string | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "Locale of dates and times. Default: `provideStarNg({ locale })`, else the browser."
+      },
+      {
+        "name": "readonly",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "No task moves, resizes or changes progress."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Name of the tree grid. Default: \"Tasks\"."
+      }
+    ],
+    "models": [
+      {
+        "name": "scale",
+        "type": "StarGanttScale",
+        "default": "'week'",
+        "required": false,
+        "description": "Unit of the time scale and of keyboard moves."
+      },
+      {
+        "name": "collapsed",
+        "type": "readonly StarGanttId[]",
+        "default": "[]",
+        "required": false,
+        "description": "Ids of the collapsed summary tasks."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "taskChange",
+        "type": "StarGanttTaskChange",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "taskSelect",
+        "type": "StarGanttTaskSelect",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
   },
   "StarGaugeBase": {
     "kind": "directive",
@@ -10653,6 +11041,184 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ]
   },
+  "StarRibbon": {
+    "kind": "component",
+    "selector": "star-ribbon",
+    "entry": "@star-ng/ui/ribbon",
+    "description": "Ribbon (Kendo `Ribbon`, Syncfusion `ejs-ribbon`; DevExtreme has no ribbon): tabs of command groups, as in office applications.",
+    "inputs": [
+      {
+        "name": "collapseGroups",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Groups get small and collapse when the ribbon is narrow. Default on."
+      },
+      {
+        "name": "globalKeyTips",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Alt and F10 show the KeyTips from anywhere on the page, not only while the focus is in the ribbon. Use it for the one main ribbon of an application."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Name of the tab list. Default: the `ribbon` text."
+      }
+    ],
+    "models": [
+      {
+        "name": "selectedTab",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Key of the selected tab. Default: the first tab."
+      },
+      {
+        "name": "collapsed",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Minimised ribbon: only the tab headers show (Kendo `collapsed`)."
+      },
+      {
+        "name": "backstageOpen",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The backstage view is open."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "command",
+        "type": "StarRibbonCommand",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
+  "StarRibbonBackstage": {
+    "kind": "component",
+    "selector": "star-ribbon-backstage",
+    "entry": "@star-ng/ui/ribbon",
+    "description": "Backstage (file) view of the ribbon (Syncfusion `RibbonBackstage`, the Kendo file menu): a button before the tabs opens it in place of the tab panel. Its content is projected.",
+    "inputs": [
+      {
+        "name": "label",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Label of the button. Default: the `ribbonFile` text (\"File\")."
+      },
+      {
+        "name": "keyTip",
+        "type": "string | null",
+        "default": "'F'",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
+  "StarRibbonGroup": {
+    "kind": "component",
+    "selector": "star-ribbon-group",
+    "entry": "@star-ng/ui/ribbon",
+    "description": "A group of a ribbon tab (Kendo `RibbonGroup`, Syncfusion `e-ribbon-group`): a label, its items and an optional dialog launcher. Write it inside `star-ribbon-tab`.",
+    "inputs": [
+      {
+        "name": "label",
+        "type": "string",
+        "default": null,
+        "required": true,
+        "description": ""
+      },
+      {
+        "name": "items",
+        "type": "readonly StarRibbonItem[]",
+        "default": "[]",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "dialogLauncher",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Command id of the dialog launcher button. Without it the group has no launcher."
+      },
+      {
+        "name": "icon",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Icon of the overflow button when the group is collapsed."
+      },
+      {
+        "name": "keyTip",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "KeyTip of the overflow button when the group is collapsed."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
+  "StarRibbonItemTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starRibbonItem]",
+    "entry": "@star-ng/ui/ribbon",
+    "description": "Custom item of a ribbon group: `<ng-template starRibbonItem=\"fontSize\" let-item>…</ng-template>` renders in place of the item with `id: 'fontSize'` and `type: 'custom'`. Its controls keep their own tab stops; the arrow keys of the group toolbar skip them.",
+    "inputs": [
+      {
+        "name": "starRibbonItem",
+        "type": "string",
+        "default": null,
+        "required": true,
+        "description": "Id of the custom item."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
+  "StarRibbonTab": {
+    "kind": "component",
+    "selector": "star-ribbon-tab",
+    "entry": "@star-ng/ui/ribbon",
+    "description": "A tab of the ribbon (Kendo `RibbonTab`, Syncfusion `e-ribbon-tab`). Holds `star-ribbon-group`s.",
+    "inputs": [
+      {
+        "name": "key",
+        "type": "string",
+        "default": null,
+        "required": true,
+        "description": "Unique key; the value of `selectedTab`."
+      },
+      {
+        "name": "label",
+        "type": "string",
+        "default": null,
+        "required": true,
+        "description": ""
+      },
+      {
+        "name": "keyTip",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "KeyTip letters. Without it the ribbon assigns one from the label."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
   "StarRipple": {
     "kind": "directive",
     "selector": "[starRipple]",
@@ -10693,6 +11259,197 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Optional: pass the table rows to type `let-row` in strict templates."
       }
     ],
+    "models": [],
+    "outputs": []
+  },
+  "StarScheduler": {
+    "kind": "component",
+    "selector": "star-scheduler",
+    "entry": "@star-ng/ui/scheduler",
+    "description": "Scheduler (Kendo UI Scheduler, Syncfusion Schedule, DevExtreme Scheduler; PrimeNG had the deprecated `p-fullcalendar`): events in a day, week, work-week, month, agenda or timeline view.",
+    "inputs": [
+      {
+        "name": "events",
+        "type": "readonly StarSchedulerEvent[]",
+        "default": "[]",
+        "required": false,
+        "description": "The events. The scheduler never changes this array."
+      },
+      {
+        "name": "resources",
+        "type": "readonly StarSchedulerResource[]",
+        "default": "[]",
+        "required": false,
+        "description": "Rows of the timeline view, options of the editor, and colours of their events. The timeline shows only the events whose `resourceId` is one of these resources."
+      },
+      {
+        "name": "views",
+        "type": "readonly StarSchedulerView[]",
+        "default": "ALL_VIEWS",
+        "required": false,
+        "description": "Views in the toolbar. `timeline-day` is offered only with `resources`, and it shows only the events of the listed resources (an event without a listed `resourceId` is not in it)."
+      },
+      {
+        "name": "slotMinutes",
+        "type": "number",
+        "default": "30",
+        "required": false,
+        "description": "Length of a slot in minutes; drags and keyboard moves snap to it."
+      },
+      {
+        "name": "workDayStart",
+        "type": "string",
+        "default": "'08:00'",
+        "required": false,
+        "description": "Start of the work day, `HH:mm`. Slots outside the work day are shaded."
+      },
+      {
+        "name": "workDayEnd",
+        "type": "string",
+        "default": "'17:00'",
+        "required": false,
+        "description": "End of the work day, `HH:mm`."
+      },
+      {
+        "name": "workWeekDays",
+        "type": "readonly number[]",
+        "default": "[1, 2, 3, 4, 5]",
+        "required": false,
+        "description": "Weekdays of the work-week view (0 = Sunday)."
+      },
+      {
+        "name": "firstDayOfWeek",
+        "type": "number | null",
+        "default": "null",
+        "required": false,
+        "description": "First day of the week (0 = Sunday). Default: from the locale."
+      },
+      {
+        "name": "agendaDays",
+        "type": "number",
+        "default": "7",
+        "required": false,
+        "description": "Days in the agenda view."
+      },
+      {
+        "name": "monthEventLimit",
+        "type": "number",
+        "default": "3",
+        "required": false,
+        "description": "Events per month cell, including the \"+N more\" button."
+      },
+      {
+        "name": "locale",
+        "type": "string | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "Locale of dates and times. Default: `provideStarNg({ locale })`, else the browser."
+      },
+      {
+        "name": "hourFormat",
+        "type": "'24' | '12'",
+        "default": "'24'",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "editor",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Opens the built-in editor dialog on a slot or event selection."
+      },
+      {
+        "name": "readonly",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "No event moves, resizes or edits."
+      },
+      {
+        "name": "showCurrentTime",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Shows the current-time line in the browser."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [
+      {
+        "name": "view",
+        "type": "StarSchedulerView",
+        "default": "'week'",
+        "required": false,
+        "description": "The shown view."
+      },
+      {
+        "name": "date",
+        "type": "Date",
+        "default": "startOfDay(new Date())",
+        "required": false,
+        "description": "Anchor date of the view: a day of the shown range."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "slotSelect",
+        "type": "StarSchedulerSlotSelect",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "eventSelect",
+        "type": "StarSchedulerEventSelect",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "eventChange",
+        "type": "StarSchedulerEventChange",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "editorSave",
+        "type": "StarSchedulerEditorSave",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "eventDelete",
+        "type": "StarSchedulerEventSelect",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
+  "StarSchedulerEditor": {
+    "kind": "component",
+    "selector": "star-scheduler-editor",
+    "entry": "@star-ng/ui/scheduler",
+    "description": "@internal The built-in event editor of `star-scheduler` (`editor` input), opened with `StarDialogService`. It edits a copy and returns it; the scheduler emits `editorSave`.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
+  "StarSchedulerEventTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starSchedulerEvent]",
+    "entry": "@star-ng/ui/scheduler",
+    "description": "Content of an event in `star-scheduler`. The content goes inside the event button, which keeps its accessible name, keyboard and drag behaviour: do not add focusable elements.",
+    "inputs": [],
     "models": [],
     "outputs": []
   },
@@ -14723,6 +15480,8 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "date-picker/time-range": "<div class=\"docs-stack\">\n  <star-date-range-picker\n    [(value)]=\"shift\"\n    locale=\"en-GB\"\n    showTime\n    [stepMinute]=\"15\"\n    ariaLabel=\"Shift\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Shift: {{ iso(shift()?.start) }} {{ clock(shift()?.start) }} to {{ iso(shift()?.end) }}\n    {{ clock(shift()?.end) }}\n  </p>\n</div>",
   "date-picker/touch": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"touchDate\"\n    locale=\"en-GB\"\n    touchUI\n    ariaLabel=\"Delivery date, touch\"\n  />\n  <star-date-picker\n    [(value)]=\"touchDate\"\n    locale=\"en-GB\"\n    breakpoint=\"640px\"\n    ariaLabel=\"Delivery date, small window\"\n  />\n  <p class=\"docs-output\" role=\"status\">Delivery: {{ iso(touchDate()) }}</p>\n</div>",
   "date-picker/views": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"reportMonth\"\n    view=\"month\"\n    locale=\"en-GB\"\n    ariaLabel=\"Report month\"\n  />\n  <star-date-picker\n    [(value)]=\"reportYear\"\n    view=\"year\"\n    locale=\"en-GB\"\n    ariaLabel=\"Report year\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Month: {{ iso(reportMonth()) }}, year: {{ iso(reportYear()) }}\n  </p>\n</div>",
+  "diagram/template": "<star-diagram\n  [nodes]=\"cards()\"\n  [edges]=\"cardEdges\"\n  readonly\n  [showGrid]=\"false\"\n  height=\"14rem\"\n  ariaLabel=\"Order stages\"\n>\n  <ng-template starDiagramNode let-node>\n    <span class=\"card\">\n      <strong>{{ node.label }}</strong>\n      <small>{{ counts[node.id] }} orders</small>\n    </span>\n  </ng-template>\n</star-diagram>",
+  "diagram/workflow": "<div class=\"docs-stack\">\n  <div class=\"actions\">\n    <star-button variant=\"secondary\" size=\"sm\" (pressed)=\"layoutTree()\"\n      >Tree layout</star-button\n    >\n    <star-button variant=\"secondary\" size=\"sm\" (pressed)=\"layoutGrid()\"\n      >Grid layout</star-button\n    >\n    <star-button variant=\"secondary\" size=\"sm\" (pressed)=\"download()\"\n      >Export SVG</star-button\n    >\n  </div>\n  <star-diagram\n    #workflow\n    [nodes]=\"nodes()\"\n    [edges]=\"edges()\"\n    [(selection)]=\"selection\"\n    fitContent\n    ariaLabel=\"Order workflow\"\n    (nodesChange)=\"onNodes($event)\"\n    (edgesChange)=\"onEdges($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">{{ last() }}</p>\n</div>",
   "dialog/basic": "<star-button (pressed)=\"basicOpen.set(true)\">Edit order</star-button>\n<star-dialog [(visible)]=\"basicOpen\" header=\"Edit order ORD-1042\">\n  <span starDialogHeader class=\"docs-output\">Last saved at 10:42</span>\n  <div class=\"docs-stack\">\n    <star-field label=\"Customer\">\n      <input starInput value=\"Orchard Supply\" />\n    </star-field>\n    <star-field label=\"Delivery note\" hint=\"The driver reads this note.\">\n      <textarea starInput rows=\"3\">Leave at the loading dock.</textarea>\n    </star-field>\n  </div>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button variant=\"ghost\" (pressed)=\"basicOpen.set(false)\">Cancel</star-button>\n    <star-button (pressed)=\"basicOpen.set(false)\">Save</star-button>\n  </div>\n</star-dialog>",
   "dialog/close-rules": "<div class=\"docs-row\">\n  <star-button variant=\"secondary\" (pressed)=\"maskOpen.set(true)\"\n    >Backdrop click</star-button\n  >\n  <star-button variant=\"secondary\" (pressed)=\"lockedOpen.set(true)\">Locked</star-button>\n  <star-button variant=\"secondary\" (pressed)=\"floatOpen.set(true)\">Non-modal</star-button>\n</div>\n<star-dialog [(visible)]=\"maskOpen\" header=\"Closes on a backdrop click\" dismissableMask>\n  <p>Click outside this window to close it.</p>\n</star-dialog>\n<star-dialog\n  [(visible)]=\"lockedOpen\"\n  header=\"Locked dialog\"\n  [closable]=\"false\"\n  [closeOnEscape]=\"false\"\n>\n  <p>This dialog has no close button and ignores Escape.</p>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button (pressed)=\"lockedOpen.set(false)\">Done</star-button>\n  </div>\n</star-dialog>\n<star-dialog [(visible)]=\"floatOpen\" header=\"Non-modal dialog\" [modal]=\"false\">\n  <p>The page behind this window stays usable.</p>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button (pressed)=\"floatOpen.set(false)\">Close</star-button>\n  </div>\n</star-dialog>",
   "dialog/drag": "<div class=\"docs-stack\">\n  <p class=\"docs-output\" role=\"status\">Last position: {{ dragNote() }}</p>\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"dragOpen.set(true)\">\n      Open movable dialog\n    </star-button>\n  </div>\n</div>\n<star-dialog\n  [(visible)]=\"dragOpen\"\n  header=\"Movable dialog\"\n  draggable\n  (dragEnd)=\"dragNote.set($event.x + ', ' + $event.y)\"\n>\n  <p>Drag the header, or focus the move button and press Alt with an arrow key.</p>\n</star-dialog>",
@@ -14761,6 +15520,8 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "field/states": "<div class=\"docs-stack\">\n  <star-field label=\"Promo code\" error=\"This code has expired.\">\n    <input starInput value=\"SPRING\" />\n  </star-field>\n  <star-field label=\"Account number\">\n    <input starInput value=\"100-204\" disabled />\n  </star-field>\n</div>",
   "field/textarea": "<div class=\"docs-stack\">\n  <star-field label=\"Notes\">\n    <textarea starInput autoResize placeholder=\"Add a note\"></textarea>\n  </star-field>\n</div>",
   "field/validation": "<div class=\"docs-stack\">\n  <star-field label=\"Email\" [state]=\"contact.email()\">\n    <input starInput type=\"email\" [formField]=\"contact.email\" />\n  </star-field>\n</div>",
+  "file-manager/project": "<div class=\"docs-stack\">\n  <star-file-manager\n    [items]=\"files()\"\n    [(folder)]=\"folder\"\n    detailsPane\n    (open)=\"onOpen($event)\"\n    (rename)=\"onRename($event)\"\n    (delete)=\"onDelete($event)\"\n    (move)=\"onMove($event)\"\n    (copy)=\"onCopy($event)\"\n    (createFolder)=\"onCreateFolder($event)\"\n    (upload)=\"onUpload($event)\"\n    (download)=\"onDownload($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">{{ log() }}</p>\n</div>",
+  "file-manager/provider": "<star-file-manager\n  [provider]=\"provider\"\n  view=\"large-icons\"\n  height=\"22rem\"\n  ariaLabel=\"Shared files\"\n/>",
   "file-upload/drop": "<div class=\"docs-stack\">\n  <star-file-upload [(value)]=\"dropped\" accept=\"image/*,.pdf\" multiple />\n</div>",
   "file-upload/limits": "<div class=\"docs-stack\">\n  <star-file-upload\n    [(value)]=\"limited\"\n    accept=\".pdf,image/*\"\n    [maxFileSize]=\"1000000\"\n    [fileLimit]=\"3\"\n    multiple\n    (rejectedChange)=\"rejected.set($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Added: {{ limited().length }}. Rejected in the last try: {{ rejected().length }}.\n  </p>\n</div>",
   "file-upload/modes": "<div class=\"docs-stack\">\n  <star-file-upload [(value)]=\"single\" />\n  <star-file-upload [(value)]=\"several\" multiple />\n  <p class=\"docs-output\" role=\"status\">\n    Single: {{ single().length }} file. Multiple: {{ several().length }} files.\n  </p>\n</div>",
@@ -14777,6 +15538,8 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "forms/two-way": "<star-checkbox [(checked)]=\"remember\">Remember this device</star-checkbox>\n<p class=\"docs-output\" role=\"status\">{{ remember() }}</p>",
   "galleria/basic": "<star-galleria\n  style=\"width: 100%; max-width: 40rem\"\n  [images]=\"images\"\n  ariaLabel=\"Site photos\"\n/>",
   "galleria/model": "<star-galleria\n  style=\"width: 100%; max-width: 40rem\"\n  [images]=\"images\"\n  [(activeIndex)]=\"active\"\n  ariaLabel=\"Linked photos\"\n/>\n<p class=\"docs-output\" role=\"status\">Active index: {{ active() }}</p>",
+  "gantt/large": "<star-gantt [tasks]=\"large\" scale=\"month\" ariaLabel=\"Order batches\" readonly />",
+  "gantt/launch": "<div class=\"docs-stack\">\n  <star-select-button\n    [options]=\"scales\"\n    optionLabel=\"label\"\n    optionValue=\"value\"\n    [allowEmpty]=\"false\"\n    size=\"sm\"\n    ariaLabel=\"Scale\"\n    [(value)]=\"scale\"\n  />\n  <star-gantt\n    [tasks]=\"tasks()\"\n    [(scale)]=\"scale\"\n    [(collapsed)]=\"collapsed\"\n    locale=\"en-GB\"\n    ariaLabel=\"Launch plan\"\n    (taskChange)=\"onChange($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">{{ log() }}</p>\n</div>",
   "gauge/interactive": "<div class=\"docs-stack\">\n  <star-field label=\"Volume\">\n    <star-linear-gauge interactive [step]=\"5\" [formField]=\"model.volume\" />\n  </star-field>\n  <star-radial-gauge pointer=\"bar\" [value]=\"settings().volume\" ariaLabel=\"Volume level\" />\n  <p>Volume: {{ settings().volume }}</p>\n</div>",
   "gauge/linear": "<div class=\"docs-stack\">\n  <star-linear-gauge\n    [value]=\"load()\"\n    [ranges]=\"zones\"\n    [ticks]=\"{ step: 25, minor: 5 }\"\n    ariaLabel=\"Server load\"\n  />\n  <star-linear-gauge\n    [value]=\"load()\"\n    pointer=\"marker\"\n    [ranges]=\"zones\"\n    ariaLabel=\"Server load, marker\"\n  />\n  <div class=\"docs-row\">\n    <star-linear-gauge\n      orientation=\"vertical\"\n      [value]=\"72\"\n      [max]=\"120\"\n      [ticks]=\"{ major: 6, minor: 2 }\"\n      ariaLabel=\"Response time\"\n    />\n    <star-linear-gauge\n      orientation=\"vertical\"\n      pointer=\"needle\"\n      [value]=\"18\"\n      [min]=\"-20\"\n      [max]=\"40\"\n      [ranges]=\"cold\"\n      ariaLabel=\"Room temperature\"\n    />\n  </div>\n</div>",
   "gauge/pointers": "<div class=\"docs-row\">\n  <star-radial-gauge [value]=\"62\" pointer=\"bar\" [arcWidth]=\"16\" ariaLabel=\"Disk use\" />\n  <star-radial-gauge\n    [value]=\"38\"\n    pointer=\"marker\"\n    [startAngle]=\"180\"\n    [endAngle]=\"0\"\n    [ticks]=\"{ major: 4, minor: 5 }\"\n    ariaLabel=\"Memory use\"\n  />\n</div>",
@@ -14901,8 +15664,15 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "rating/basic": "<star-rating [(value)]=\"score\" ariaLabel=\"Service rating\" />\n<p class=\"docs-output\" role=\"status\">Rating: {{ score() ?? 'none' }}</p>",
   "rating/count": "<star-rating [(value)]=\"detail\" [count]=\"10\" ariaLabel=\"Detailed rating\" />",
   "rating/states": "<star-rating [value]=\"4\" readonly ariaLabel=\"Average rating\" />\n<star-rating [value]=\"2\" disabled ariaLabel=\"Closed rating\" />",
+  "ribbon/collapsed": "<star-ribbon [(collapsed)]=\"collapsed\" (command)=\"run($event)\">\n  <star-ribbon-tab key=\"home\" label=\"Home\">\n    <star-ribbon-group label=\"Clipboard\" [items]=\"clipboard\" />\n  </star-ribbon-tab>\n  <star-ribbon-tab key=\"review\" label=\"Review\">\n    <star-ribbon-group label=\"Comments\" [items]=\"comments\" />\n  </star-ribbon-tab>\n</star-ribbon>",
+  "ribbon/editor": "<div class=\"docs-stack\">\n  <star-ribbon [(selectedTab)]=\"tab\" (command)=\"run($event)\">\n    <star-ribbon-backstage>\n      <p class=\"backstage\">Recent documents: Order summary, Project plan, Invoice notes.</p>\n    </star-ribbon-backstage>\n    <star-ribbon-tab key=\"home\" label=\"Home\" keyTip=\"H\">\n      <star-ribbon-group\n        label=\"Clipboard\"\n        icon=\"ph-bold ph-clipboard\"\n        [items]=\"clipboard\"\n        dialogLauncher=\"clipboard-options\"\n      />\n      <star-ribbon-group\n        label=\"Font\"\n        icon=\"ph-bold ph-text-aa\"\n        [items]=\"font()\"\n        dialogLauncher=\"font-options\"\n      >\n        <ng-template starRibbonItem=\"font-size\" let-item>\n          <select class=\"size\" [attr.aria-label]=\"item.label\" (change)=\"size($event)\">\n            <option>11</option>\n            <option>12</option>\n            <option>14</option>\n          </select>\n        </ng-template>\n      </star-ribbon-group>\n      <star-ribbon-group\n        label=\"Paragraph\"\n        icon=\"ph-bold ph-paragraph\"\n        [items]=\"paragraph()\"\n      />\n    </star-ribbon-tab>\n    <star-ribbon-tab key=\"insert\" label=\"Insert\">\n      <star-ribbon-group label=\"Tables\" icon=\"ph-bold ph-table\" [items]=\"tables\" />\n      <star-ribbon-group label=\"Media\" icon=\"ph-bold ph-image\" [items]=\"media\" />\n    </star-ribbon-tab>\n    <star-ribbon-tab key=\"review\" label=\"Review\">\n      <star-ribbon-group label=\"Comments\" icon=\"ph-bold ph-chat-text\" [items]=\"comments\" />\n    </star-ribbon-tab>\n  </star-ribbon>\n  <p class=\"docs-output\" role=\"status\">Last command: {{ last() }}</p>\n</div>",
+  "ribbon/narrow": "<div class=\"narrow\">\n  <star-ribbon (command)=\"run($event)\">\n    <star-ribbon-tab key=\"home\" label=\"Home\">\n      <star-ribbon-group\n        label=\"Clipboard\"\n        icon=\"ph-bold ph-clipboard\"\n        [items]=\"clipboard\"\n      />\n      <star-ribbon-group label=\"Font\" icon=\"ph-bold ph-text-aa\" [items]=\"font()\" />\n      <star-ribbon-group\n        label=\"Paragraph\"\n        icon=\"ph-bold ph-paragraph\"\n        [items]=\"paragraph()\"\n      />\n    </star-ribbon-tab>\n  </star-ribbon>\n</div>",
   "ripple/basic": "<button type=\"button\" class=\"star-btn star-btn--secondary star-btn--md\" starRipple>\n  Save\n</button>\n<button type=\"button\" class=\"star-btn star-btn--primary star-btn--md\" starRipple>\n  Submit order\n</button>",
   "rtl/island": "<div class=\"docs-stack\" dir=\"rtl\">\n  <star-breadcrumb [items]=\"trail\" ariaLabel=\"Island trail\" />\n  <star-tabs [(value)]=\"tab\" ariaLabel=\"Island tabs\">\n    <star-tab value=\"one\" label=\"One\">First panel</star-tab>\n    <star-tab value=\"two\" label=\"Two\">Second panel</star-tab>\n    <star-tab value=\"three\" label=\"Three\">Third panel</star-tab>\n  </star-tabs>\n  <star-select-button\n    [options]=\"['Day', 'Week', 'Month']\"\n    [(value)]=\"period\"\n    ariaLabel=\"Island period\"\n  />\n  <star-paginator [totalRecords]=\"60\" [rows]=\"10\" />\n</div>",
+  "scheduler/agenda": "<star-scheduler\n  [events]=\"agendaEvents\"\n  [resources]=\"rooms\"\n  locale=\"en-GB\"\n  view=\"agenda\"\n  [date]=\"march2\"\n  [views]=\"['agenda', 'week']\"\n  ariaLabel=\"Agenda\"\n>\n  <ng-template starSchedulerEvent let-occurrence>\n    <strong>{{ occurrence.event.title }}</strong>\n    <span class=\"event-room\">{{ roomName(occurrence.event.resourceId) }}</span>\n  </ng-template>\n</star-scheduler>",
+  "scheduler/month": "<star-scheduler\n  [events]=\"busyMonth\"\n  [resources]=\"rooms\"\n  locale=\"en-GB\"\n  view=\"month\"\n  [date]=\"march\"\n  [views]=\"['month', 'agenda']\"\n  ariaLabel=\"Month of March\"\n/>",
+  "scheduler/team": "<div class=\"docs-stack\">\n  <star-scheduler\n    [events]=\"events()\"\n    [resources]=\"rooms\"\n    locale=\"en-GB\"\n    [(view)]=\"view\"\n    [(date)]=\"date\"\n    workDayStart=\"08:00\"\n    workDayEnd=\"18:00\"\n    ariaLabel=\"Team calendar\"\n    (eventChange)=\"onChange($event)\"\n    (slotSelect)=\"onSlot($event)\"\n    (eventSelect)=\"onSelect($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">{{ log() }}</p>\n</div>",
+  "scheduler/timeline": "<star-scheduler\n  [events]=\"roomEvents()\"\n  [resources]=\"rooms\"\n  locale=\"en-GB\"\n  view=\"timeline-day\"\n  [date]=\"march3\"\n  [views]=\"['timeline-day', 'day']\"\n  editor\n  ariaLabel=\"Room bookings\"\n  (editorSave)=\"onSave($event)\"\n  (eventChange)=\"onRoomChange($event)\"\n  (eventDelete)=\"onDelete($event)\"\n/>",
   "scroll-panel/basic": "<star-scroll-panel class=\"docs-panel\" height=\"8rem\" ariaLabel=\"Order notes\">\n  <p class=\"docs-output\">\n    The order was placed on 2 November. The customer asked for delivery to the second\n    address. The warehouse packed the order on 3 November. The carrier picked it up on 4\n    November. The customer asked for a delivery window in the afternoon. The carrier\n    confirmed the window. The order stays open until the customer confirms receipt. All data\n    in this text is fictional.\n  </p>\n</star-scroll-panel>",
   "scroll-panel/max": "<star-scroll-panel class=\"docs-panel\" maxHeight=\"5rem\" ariaLabel=\"Short notes\">\n  <p class=\"docs-output\">Two short lines of text.<br />The panel does not scroll.</p>\n</star-scroll-panel>",
   "scroll-top/target": "<div class=\"docs-scroll-box\">\n  <div #scroller class=\"docs-scroll-box__list\" tabindex=\"0\" aria-label=\"Order list\">\n    @for (row of rows; track row) {\n      <p class=\"docs-output\">Order {{ row }}</p>\n    }\n  </div>\n  <star-scroll-top [target]=\"scroller\" [threshold]=\"100\" />\n</div>",

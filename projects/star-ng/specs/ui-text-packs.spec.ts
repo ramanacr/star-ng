@@ -20,6 +20,7 @@ const SAME_AS_ENGLISH: Record<string, readonly Name[]> = {
     'chartX',
     'chartY',
     'minute',
+    'fileName',
     'summaryMinimum',
     'summaryMaximum',
     // "Zoom" is the usual German UI word.
@@ -75,6 +76,11 @@ const TEXT_PARAMS: Record<string, readonly string[]> = {
   spreadsheetCleared: ['range'],
   spreadsheetFilled: ['range'],
   spreadsheetPasted: ['range'],
+  diagramConnection: ['from', 'to'],
+  diagramConnected: ['from', 'to'],
+  timeRange: ['start', 'end'],
+  eventMoved: ['when'],
+  eventResized: ['when'],
 };
 const TEXT_NAMES = new Set(['label', 'column', 'name', 'alt']);
 

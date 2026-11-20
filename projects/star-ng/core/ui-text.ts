@@ -536,6 +536,150 @@ export interface StarUiText {
   readonly documentLoadError: string;
   /** Text of a page that could not be drawn. */
   readonly documentPageError: string;
+  // Ribbon
+  /** Name of the tab list of `star-ribbon`. */
+  readonly ribbon: string;
+  /** Default label of the backstage (file) button of `star-ribbon`. */
+  readonly ribbonFile: string;
+  readonly ribbonCollapse: string;
+  readonly ribbonExpand: string;
+  /** Screen-reader hint of the ribbon tab list. */
+  readonly ribbonKeyTipsHint: string;
+  readonly ribbonKeyTipsShown: string;
+  /** Name of the dialog launcher button of a ribbon group. */
+  readonly ribbonGroupOptions: (label: string) => string;
+  /** Name of the menu part of a ribbon split button. */
+  readonly ribbonSplitMenu: (label: string) => string;
+  // File manager
+  /** Name of `star-file-manager`. */
+  readonly fileManager: string;
+  /** Name of the folder tree. */
+  readonly fileFolders: string;
+  readonly fileContent: string;
+  readonly fileToolbar: string;
+  readonly newFolder: string;
+  readonly upload: string;
+  readonly download: string;
+  readonly open: string;
+  readonly rename: string;
+  readonly delete: string;
+  readonly cut: string;
+  readonly paste: string;
+  readonly cancel: string;
+  readonly create: string;
+  readonly search: string;
+  readonly sortBy: string;
+  readonly sortAscending: string;
+  readonly sortDescending: string;
+  readonly fileViewDetails: string;
+  readonly fileViewIcons: string;
+  /** Column header of the file name. */
+  readonly fileName: string;
+  readonly fileSize: string;
+  readonly fileModified: string;
+  readonly fileType: string;
+  /** Type text of a folder. */
+  readonly fileFolderType: string;
+  readonly folderName: string;
+  readonly fileEmptyFolder: string;
+  readonly fileNoResults: string;
+  readonly fileDetailsPane: string;
+  readonly fileNoSelection: string;
+  readonly fileMoveNotAllowed: string;
+  readonly fileManagerHint: string;
+  /** Question of the delete confirmation of `star-file-manager`. */
+  readonly fileDeleteConfirm: (count: number) => string;
+  readonly fileItemsCut: (count: number) => string;
+  readonly fileItemsCopied: (count: number) => string;
+  /** Announcement after a move to the folder `name`. */
+  readonly fileItemsMoved: (count: number, name: string) => string;
+  readonly fileItemsCopiedTo: (count: number, name: string) => string;
+  /** Default name of the top folder of `star-file-manager`. */
+  readonly fileRoot: string;
+  // Diagram
+  /** Name of the canvas of `star-diagram`. */
+  readonly diagram: string;
+  readonly diagramHint: string;
+  readonly diagramNodes: string;
+  readonly diagramConnections: string;
+  readonly diagramEditLabel: string;
+  readonly zoomToFit: string;
+  readonly redo: string;
+  /** A connection in the list of connections. */
+  readonly diagramConnection: (from: string, to: string) => string;
+  readonly diagramConnected: (from: string, to: string) => string;
+  readonly diagramNodeMoved: (label: string, x: number, y: number) => string;
+  readonly diagramNodeResized: (label: string, width: number, height: number) => string;
+  readonly diagramDeleted: (count: number) => string;
+  readonly diagramZoom: (percent: number) => string;
+  // File manager errors
+  /** Error state of the file manager listing. */
+  readonly fileLoadError: string;
+  /** Announcement when a provider operation fails. */
+  readonly fileOperationError: string;
+  // Scheduler
+  /** Default name of `star-scheduler`. */
+  readonly scheduler: string;
+  /** Name of the group of view buttons. */
+  readonly schedulerView: string;
+  readonly viewDay: string;
+  readonly viewWeek: string;
+  readonly viewWorkWeek: string;
+  readonly viewMonth: string;
+  readonly viewAgenda: string;
+  readonly viewTimeline: string;
+  /** Pages one day, week or month back (scheduler toolbar). */
+  readonly previousPeriod: string;
+  readonly nextPeriod: string;
+  readonly allDay: string;
+  /** Button of a month cell with events that are not shown. */
+  readonly moreEvents: (count: number) => string;
+  readonly noEvents: string;
+  /** A time span in an accessible name: "10:00 to 11:00". */
+  readonly timeRange: (start: string, end: string) => string;
+  /** Marks an occurrence of a recurring event. */
+  readonly repeats: string;
+  /** Keyboard hint of a movable event or task bar. */
+  readonly eventMoveHint: string;
+  /** Live announcement after a keyboard move: `when` is the new time span. */
+  readonly eventMoved: (label: string, when: string) => string;
+  /** Live announcement after a keyboard resize. */
+  readonly eventResized: (label: string, when: string) => string;
+  /** Live announcement when the owner canceled a change. */
+  readonly changeCanceled: string;
+  readonly currentTime: string;
+  /** Header of the event editor. */
+  readonly newEvent: string;
+  readonly editEvent: string;
+  readonly title: string;
+  readonly start: string;
+  readonly end: string;
+  readonly resource: string;
+  readonly save: string;
+  readonly deleteEvent: string;
+  /** Error of the editor when the end is not after the start. */
+  readonly endBeforeStart: string;
+  /** Live announcement when a read-only event or task cannot move. */
+  readonly readOnly: string;
+  // Gantt
+  /** Default name of the task tree grid of `star-gantt`. */
+  readonly ganttTasks: string;
+  readonly name: string;
+  readonly duration: string;
+  readonly progress: string;
+  readonly durationDays: (count: number) => string;
+  readonly percentComplete: (value: number) => string;
+  readonly milestone: string;
+  readonly summaryTask: string;
+  /** Dependency types of a Gantt task: finish to start, start to start, and so on. */
+  readonly dependencyFS: string;
+  readonly dependencySS: string;
+  readonly dependencyFF: string;
+  readonly dependencySF: string;
+  /** Text summary of the dependencies of a task: `label` lists the tasks and their types. */
+  readonly dependsOn: (label: string) => string;
+  /** Keyboard hint of a movable Gantt task row. */
+  readonly ganttMoveHint: string;
 }
 
 export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
@@ -980,6 +1124,118 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
     `${count} ${count === 1 ? 'result' : 'results'} on ${pages} ${pages === 1 ? 'page' : 'pages'}`,
   documentLoadError: 'The document could not be loaded.',
   documentPageError: 'This page could not be shown.',
+  ribbon: 'Ribbon',
+  ribbonFile: 'File',
+  ribbonCollapse: 'Collapse the ribbon',
+  ribbonExpand: 'Expand the ribbon',
+  ribbonKeyTipsHint: 'Press Alt or F10 to show the key tips.',
+  ribbonKeyTipsShown: 'Key tips shown. Press a letter, or Escape to go back.',
+  ribbonGroupOptions: (label) => `${label} options`,
+  ribbonSplitMenu: (label) => `More ${label} options`,
+  fileManager: 'File manager',
+  fileFolders: 'Folders',
+  fileContent: 'Folder content',
+  fileToolbar: 'File actions',
+  newFolder: 'New folder',
+  upload: 'Upload',
+  download: 'Download',
+  open: 'Open',
+  rename: 'Rename',
+  delete: 'Delete',
+  cut: 'Cut',
+  paste: 'Paste',
+  cancel: 'Cancel',
+  create: 'Create',
+  search: 'Search',
+  sortBy: 'Sort by',
+  sortAscending: 'Ascending',
+  sortDescending: 'Descending',
+  fileViewDetails: 'Details view',
+  fileViewIcons: 'Large icons',
+  fileName: 'Name',
+  fileSize: 'Size',
+  fileModified: 'Modified',
+  fileType: 'Type',
+  fileFolderType: 'Folder',
+  folderName: 'Folder name',
+  fileEmptyFolder: 'This folder is empty.',
+  fileNoResults: 'No item matches the search.',
+  fileDetailsPane: 'Item details',
+  fileNoSelection: 'No item selected.',
+  fileMoveNotAllowed: 'A folder cannot go into itself.',
+  fileManagerHint:
+    'Press F2 to rename, Delete to delete, Control+X, Control+C and Control+V to move and copy, Shift+F10 for the menu.',
+  fileDeleteConfirm: (count) => `Delete ${count} ${count === 1 ? 'item' : 'items'}?`,
+  fileItemsCut: (count) =>
+    `${count} ${count === 1 ? 'item' : 'items'} cut. Press Control+V in the target folder.`,
+  fileItemsCopied: (count) =>
+    `${count} ${count === 1 ? 'item' : 'items'} copied. Press Control+V in the target folder.`,
+  fileItemsMoved: (count, name) => `${count} ${count === 1 ? 'item' : 'items'} moved to ${name}`,
+  fileItemsCopiedTo: (count, name) =>
+    `${count} ${count === 1 ? 'item' : 'items'} copied to ${name}`,
+  fileRoot: 'All files',
+  diagram: 'Diagram',
+  diagramHint:
+    'Arrow keys move between nodes. Alt and an arrow key moves the selection, Shift, Alt and an arrow key resizes it. Enter edits the label, Delete removes, Control+Z undoes.',
+  diagramNodes: 'Nodes',
+  diagramConnections: 'Connections',
+  diagramEditLabel: 'Node label',
+  zoomToFit: 'Fit to content',
+  redo: 'Redo',
+  diagramConnection: (from, to) => `${from} to ${to}`,
+  diagramConnected: (from, to) => `Connected ${from} to ${to}`,
+  diagramNodeMoved: (label, x, y) => `${label} moved to ${x}, ${y}`,
+  diagramNodeResized: (label, width, height) => `${label} resized to ${width} by ${height}`,
+  diagramDeleted: (count) => `${count} ${count === 1 ? 'item' : 'items'} deleted`,
+  diagramZoom: (percent) => `Zoom ${percent}%`,
+  fileLoadError: 'The folder could not be loaded.',
+  fileOperationError: 'The operation failed.',
+  scheduler: 'Scheduler',
+  schedulerView: 'View',
+  viewDay: 'Day',
+  viewWeek: 'Week',
+  viewWorkWeek: 'Work week',
+  viewMonth: 'Month',
+  viewAgenda: 'Agenda',
+  viewTimeline: 'Timeline',
+  previousPeriod: 'Previous',
+  nextPeriod: 'Next',
+  allDay: 'All day',
+  moreEvents: (count) => `+${count} more`,
+  noEvents: 'No events',
+  timeRange: (start, end) => `${start} to ${end}`,
+  repeats: 'Repeats',
+  eventMoveHint: 'Alt and the arrow keys move it, Alt, Shift and the arrow keys change its length.',
+  eventMoved: (label, when) => `${label} moved to ${when}`,
+  eventResized: (label, when) => `${label} now ${when}`,
+  changeCanceled: 'Change canceled',
+  currentTime: 'Current time',
+  newEvent: 'New event',
+  editEvent: 'Edit event',
+  title: 'Title',
+  start: 'Start',
+  end: 'End',
+  resource: 'Resource',
+  save: 'Save',
+  deleteEvent: 'Delete event',
+  endBeforeStart: 'The end must be after the start.',
+  readOnly: 'Read only',
+  // Gantt
+  ganttTasks: 'Tasks',
+  name: 'Name',
+  duration: 'Duration',
+  progress: 'Progress',
+  durationDays: (count) => `${count} ${count === 1 ? 'day' : 'days'}`,
+  percentComplete: (value) => `${value} percent`,
+  milestone: 'Milestone',
+  summaryTask: 'Summary task',
+  dependencyFS: 'Finish to start',
+  dependencySS: 'Start to start',
+  dependencyFF: 'Finish to finish',
+  dependencySF: 'Start to finish',
+  dependsOn: (label) => `Depends on ${label}`,
+  ganttMoveHint:
+    'Alt and Left or Right move the task, Alt, Shift and Left or Right move its end, Alt and Up or Down change its progress.',
 };
 
 /** Parameter names of the function entries, in call order (used for `{{ name }}` in translations). */
@@ -1080,6 +1336,26 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   documentPageOf: ['page', 'total'],
   documentPageCount: ['total'],
   documentSearchResults: ['count', 'pages'],
+  ribbonGroupOptions: ['label'],
+  ribbonSplitMenu: ['label'],
+  fileDeleteConfirm: ['count'],
+  fileItemsCut: ['count'],
+  fileItemsCopied: ['count'],
+  fileItemsMoved: ['count', 'name'],
+  fileItemsCopiedTo: ['count', 'name'],
+  diagramConnection: ['from', 'to'],
+  diagramConnected: ['from', 'to'],
+  diagramNodeMoved: ['label', 'x', 'y'],
+  diagramNodeResized: ['label', 'width', 'height'],
+  diagramDeleted: ['count'],
+  diagramZoom: ['percent'],
+  moreEvents: ['count'],
+  timeRange: ['start', 'end'],
+  eventMoved: ['label', 'when'],
+  eventResized: ['label', 'when'],
+  durationDays: ['count'],
+  percentComplete: ['value'],
+  dependsOn: ['label'],
 };
 
 export const STAR_UI_TEXT = new InjectionToken<StarUiText>('STAR_UI_TEXT', {
