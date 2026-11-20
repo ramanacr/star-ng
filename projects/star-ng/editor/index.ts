@@ -1,5 +1,5 @@
 export * from './editor';
-export { starEditorSafeUrl, type StarEditorLinkValue } from './editor-link';
+export type { StarEditorLinkValue } from './editor-link';
 export {
   STAR_EDITOR_DEFAULT_TOOLBAR,
   STAR_EDITOR_FULL_TOOLBAR,
