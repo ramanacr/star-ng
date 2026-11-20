@@ -152,12 +152,17 @@ export function starImageMapPoint(
 
 /** The box an annotation covers, in its own coordinates, with half the line width around it. */
 export function starImageAnnotationBounds(annotation: StarImageAnnotation): StarImageRect {
-  const xs = annotation.points.map((p) => p.x);
-  const ys = annotation.points.map((p) => p.y);
-  let left = Math.min(...xs);
-  let top = Math.min(...ys);
-  let right = Math.max(...xs);
-  let bottom = Math.max(...ys);
+  // A loop, not Math.min(...points): a long pen stroke would exceed the argument limit.
+  let left = Infinity;
+  let top = Infinity;
+  let right = -Infinity;
+  let bottom = -Infinity;
+  for (const { x, y } of annotation.points) {
+    if (x < left) left = x;
+    if (y < top) top = y;
+    if (x > right) right = x;
+    if (y > bottom) bottom = y;
+  }
   if (annotation.kind === 'text') {
     const size = annotation.fontSize ?? 16;
     right = left + Math.max(1, (annotation.text ?? '').length) * size * 0.6;
@@ -488,7 +493,8 @@ export function starImageHistoryPush(
   present: readonly StarImageOperation[],
   limit = 100,
 ): StarImageHistory {
-  return { past: [...state.past, state.present].slice(-limit), present, future: [] };
+  const past = limit > 0 ? [...state.past, state.present].slice(-limit) : [];
+  return { past, present, future: [] };
 }
 
 /** One step back; the same state when there is nothing to undo. */

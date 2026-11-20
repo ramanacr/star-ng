@@ -564,6 +564,10 @@ export class StarImageEditor {
   private readonly canvas = viewChild<ElementRef<HTMLCanvasElement>>('canvas');
 
   private image: HTMLImageElement | null = null;
+  /** The image that is loading, so its handlers can be removed. */
+  private loading: HTMLImageElement | null = null;
+  /** True once a source was set: a later source change clears `value`. */
+  private hadSource = false;
   /** Size of the source image; zero until it is loaded. */
   readonly naturalSize = signal<StarImageSize>({ width: 0, height: 0 });
   /** True once the source image is loaded and drawn. */
@@ -817,7 +821,10 @@ export class StarImageEditor {
       const src = this.src();
       untracked(() => this.load(src));
     });
-    afterNextRender(() => this.watchStage());
+    afterNextRender(() => {
+      this.watchStage();
+      this.watchRatio();
+    });
     // Browser only: afterRenderEffect does not run on the server.
     afterRenderEffect({
       write: () => {
@@ -833,6 +840,7 @@ export class StarImageEditor {
       if (this.frame !== null) this.doc.defaultView?.cancelAnimationFrame?.(this.frame);
       if (this.valueTimer !== null) clearTimeout(this.valueTimer);
       this.valueGeneration++;
+      this.stopLoading();
     });
   }
 
@@ -1228,13 +1236,14 @@ export class StarImageEditor {
   private resolvedColor(): string {
     const index = this.colorIndex();
     const color = this.colors()[index] ?? FALLBACK_COLORS[0];
-    const token = /^var\(\s*(--[\w-]+)\s*\)$/.exec(color)?.[1];
-    if (!token) return color;
+    // `var(--token)` or `var(--token, fallback)`: the canvas needs a concrete colour.
+    const match = /^var\(\s*(--[\w-]+)\s*(?:,\s*(.+?)\s*)?\)$/.exec(color);
+    if (!match) return color;
     const value = this.doc.defaultView
       ?.getComputedStyle?.(this.host)
-      .getPropertyValue(token)
+      .getPropertyValue(match[1])
       .trim();
-    return value || FALLBACK_COLORS[index % FALLBACK_COLORS.length];
+    return value || match[2] || FALLBACK_COLORS[index % FALLBACK_COLORS.length];
   }
 
   private newAnnotation(points: StarImagePoint[]): StarImageAnnotation {
@@ -1405,6 +1414,14 @@ export class StarImageEditor {
 
   private load(src: string | null): void {
     this.image = null;
+    this.stopLoading();
+    // A new image: the value of the old one does not belong to it.
+    if (this.valueTimer !== null) clearTimeout(this.valueTimer);
+    this.valueTimer = null;
+    this.valueGeneration++;
+    // (A value given with the first image is kept: it may come from a form.)
+    if (this.browser && this.hadSource && this.value()) this.value.set('');
+    this.hadSource ||= !!src;
     this.loaded.set(false);
     this.naturalSize.set({ width: 0, height: 0 });
     this.history.set(starImageHistoryStart());
@@ -1424,14 +1441,48 @@ export class StarImageEditor {
     const view = this.doc.defaultView;
     if (!view || typeof view.Image !== 'function') return;
     const image = new view.Image();
+    this.loading = image;
     image.onload = () => {
+      this.loading = null;
       if (this.src() !== src) return;
       this.image = image;
       this.baseCache = null;
       this.naturalSize.set({ width: image.naturalWidth, height: image.naturalHeight });
       this.loaded.set(true);
     };
+    image.onerror = () => {
+      this.loading = null;
+      if (this.src() !== src || !isDevMode()) return;
+      console.warn('star-image-editor: the image could not be loaded; the editor stays empty.');
+    };
     image.src = src;
+  }
+
+  /** Detaches the handlers of an image that is still loading. */
+  private stopLoading(): void {
+    if (!this.loading) return;
+    this.loading.onload = null;
+    this.loading.onerror = null;
+    this.loading = null;
+  }
+
+  /**
+   * Follows the device pixel ratio: a window moved to a screen with another ratio redraws the
+   * view sharp. A `resolution` media query changes when the ratio changes (browser only).
+   */
+  private watchRatio(): void {
+    const view = this.doc.defaultView;
+    if (!view || typeof view.matchMedia !== 'function') return;
+    let query: MediaQueryList | null = null;
+    const listen = () => {
+      query?.removeEventListener?.('change', onChange);
+      this.ratio.set(view.devicePixelRatio || 1);
+      query = view.matchMedia(`(resolution: ${view.devicePixelRatio || 1}dppx)`);
+      query.addEventListener?.('change', onChange);
+    };
+    const onChange = () => listen();
+    listen();
+    this.injector.get(DestroyRef).onDestroy(() => query?.removeEventListener?.('change', onChange));
   }
 
   private watchStage(): void {

@@ -194,6 +194,18 @@ describe('image editor history', () => {
     expect(starImageHistoryUndo(starImageHistoryStart())).toEqual(starImageHistoryStart());
   });
 
+  it('keeps no step with a limit of 0 (review M7)', () => {
+    const state = starImageHistoryPush(starImageHistoryStart(), [], 0);
+    expect(state.past.length).toBe(0);
+  });
+
+  it('measures a pen stroke of very many points (review M20)', async () => {
+    const { starImageAnnotationBounds } = await import('./image-editor-model');
+    const points = Array.from({ length: 200_000 }, (_, i) => ({ x: i % 500, y: i % 300 }));
+    const box = starImageAnnotationBounds({ kind: 'pen', points, color: '#000', strokeWidth: 2 });
+    expect(box).toEqual({ x: -1, y: -1, width: 501, height: 301 });
+  });
+
   it('keeps at most the given number of steps', () => {
     let state = starImageHistoryStart();
     for (let i = 0; i < 10; i++) state = starImageHistoryPush(state, [], 3);

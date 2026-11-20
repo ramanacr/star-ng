@@ -1,7 +1,7 @@
 import { Component, PLATFORM_ID, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { StarAnnouncer } from '@star-ng/ui/core';
-import { StarImageEditor, starImageRender } from '@star-ng/ui/image-editor';
+import { STAR_IMAGE_COLORS, StarImageEditor, starImageRender } from '@star-ng/ui/image-editor';
 
 const PNG = 'data:image/png;base64,AAA';
 
@@ -74,7 +74,7 @@ class FakeImage {
   }
   set src(value: string) {
     this.value = value;
-    queueMicrotask(() => this.onload?.());
+    queueMicrotask(() => (value.includes('broken') ? this.onerror?.() : this.onload?.()));
   }
 }
 
@@ -97,12 +97,18 @@ function key(target: Element, name: string, init: KeyboardEventInit = {}): Keybo
 
 @Component({
   imports: [StarImageEditor],
-  template: `<star-image-editor [src]="src()" [(value)]="value" imageAlt="Harbour photo" />`,
+  template: `<star-image-editor
+    [src]="src()"
+    [(value)]="value"
+    [colors]="colors()"
+    imageAlt="Harbour photo"
+  />`,
 })
 class Host {
   readonly editor = viewChild.required(StarImageEditor);
   readonly src = signal<string | null>(PNG);
   readonly value = signal('');
+  readonly colors = signal<readonly string[]>(STAR_IMAGE_COLORS);
 }
 
 /** Collects animation frames; run() calls every queued callback once. */
@@ -537,6 +543,64 @@ describe('StarImageEditor', () => {
     expect(editor.tool()).toBe('annotate');
     expect(editor.operations().length).toBe(1);
     expect(root.querySelectorAll('[role=option]').length).toBe(1);
+  });
+
+  it('clears the value when a new image comes (review M5)', async () => {
+    const { editor, stable, fixture } = await setup();
+    editor.rotate(90);
+    await vi.waitFor(() => expect(fixture.componentInstance.value()).not.toBe(''));
+    fixture.componentInstance.src.set('data:image/png;base64,BBB');
+    await stable();
+    expect(fixture.componentInstance.value()).toBe('');
+    expect(editor.operations()).toEqual([]);
+  });
+
+  it('warns in development mode when the image cannot be loaded (review M6)', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const { editor } = await setup({ src: 'data:image/png;base64,broken' });
+    await vi.waitFor(() =>
+      expect(warn).toHaveBeenCalledWith(expect.stringContaining('could not be loaded')),
+    );
+    expect(editor.loaded()).toBe(false);
+  });
+
+  it('uses the fallback of a var() colour without the token (review M8)', async () => {
+    const { root, editor, tool, button, stable, fixture } = await setup();
+    fixture.componentInstance.colors.set(['var(--brand-ink, #c00)']);
+    await stable();
+    tool('annotate').click();
+    await stable();
+    button('Add to the image').click();
+    await stable();
+    const op = editor.operations()[0];
+    expect(op.type === 'annotate' && op.annotation.color).toBe('#c00');
+    expect(root.querySelector('.star-image-editor__swatch')).not.toBeNull();
+  });
+
+  it('draws sharper when the window moves to a screen with another pixel ratio (review M9)', async () => {
+    const view = document.defaultView!;
+    const listeners: (() => void)[] = [];
+    const realMatchMedia = view.matchMedia;
+    view.matchMedia = ((query: string) => ({
+      matches: false,
+      media: query,
+      addEventListener: (_type: string, listener: () => void) => listeners.push(listener),
+      removeEventListener: () => undefined,
+    })) as unknown as typeof view.matchMedia;
+    onTestFinished(() => {
+      view.matchMedia = realMatchMedia;
+      Object.defineProperty(view, 'devicePixelRatio', { value: 1, configurable: true });
+    });
+    const { root, stable, frames } = await setup({ frames: true });
+    frames!.run();
+    const canvas = root.querySelector('canvas')!;
+    expect(canvas.width).toBe(400);
+    expect(listeners.length).toBeGreaterThan(0);
+    Object.defineProperty(view, 'devicePixelRatio', { value: 2, configurable: true });
+    listeners.splice(0).forEach((listener) => listener());
+    await stable();
+    frames!.run();
+    expect(canvas.width).toBe(800);
   });
 
   it('adds a text annotation only with a text', async () => {

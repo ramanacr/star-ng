@@ -204,10 +204,11 @@
 .star-image-editor__crop {
   position: absolute;
   box-sizing: border-box;
-  border: 2px solid #ffffff;
-  outline: 1px solid rgba(0, 0, 0, 0.6);
+  // The crop box sits on the photo: the media scrim tokens, which do not follow the theme.
+  border: 2px solid var(--star-on-scrim);
+  outline: 1px solid var(--star-scrim-media);
   // Dims the image outside the box.
-  box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.45);
+  box-shadow: 0 0 0 100vmax var(--star-scrim-media-soft);
   cursor: move;
   touch-action: none;
 
@@ -220,9 +221,9 @@
   position: absolute;
   inline-size: 0.875rem;
   block-size: 0.875rem;
-  border: 2px solid rgba(0, 0, 0, 0.6);
+  border: 2px solid var(--star-scrim-media);
   border-radius: 2px;
-  background: #ffffff;
+  background: var(--star-on-scrim);
   transform: translate(-50%, -50%);
 }
 .star-image-editor__handle--nw {
