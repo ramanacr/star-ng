@@ -160,6 +160,25 @@ describe('pass-through and unstyled', () => {
     expect(root.querySelector('[data-star-part=more]')!.classList).toContain('late-more');
   });
 
+  it('forgets the parts that leave the page (rows, closed panels)', async () => {
+    const { host, root, fixture, stable } = await setup();
+    host.pt.set({ more: { class: 'late-more' } });
+    await stable();
+    const debug = fixture.debugElement.query((node) => node.nativeElement === root);
+    const demo = debug.componentInstance as Demo;
+    const parts = (debug.injector.get(StarStyled) as unknown as { parts: Map<Element, unknown> })
+      .parts;
+    const size = parts.size;
+    for (let round = 0; round < 50; round++) {
+      demo.more.set(true);
+      await stable();
+      demo.more.set(false);
+      await stable();
+    }
+    await new Promise((resolve) => setTimeout(resolve));
+    expect(parts.size).toBeLessThanOrEqual(size + 1);
+  });
+
   it('restores the template value of an attribute when the pt removes its override', async () => {
     const { host, root, stable } = await setup();
     const close = root.querySelector<HTMLElement>('[data-star-part=close]')!;

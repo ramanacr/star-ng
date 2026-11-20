@@ -171,3 +171,19 @@ test.describe('saved text direction on the prerendered page', () => {
     expect(errors).toEqual([]);
   });
 });
+
+test('the prerendered styling hooks guide has the pass-through and the unstyled mode', async ({
+  request,
+}) => {
+  const html = await (await request.get('/guides/styling-hooks')).text();
+  // The select with a pass-through: its trigger has the data attribute of the pt.
+  expect(html).toContain('data-test="city-trigger"');
+  // The unstyled select: its trigger and control parts are marked in the server HTML too.
+  const unstyled = /<star-select[^>]*aria-label|<star-select[^>]*data-star-unstyled[^>]*>/.exec(
+    html,
+  );
+  expect(unstyled).not.toBeNull();
+  expect(html).toMatch(
+    /data-star-part="trigger"[^>]*data-star-unstyled|data-star-unstyled[^>]*data-star-part="trigger"/,
+  );
+});

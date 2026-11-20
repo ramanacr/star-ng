@@ -2,7 +2,9 @@
 // host directive `StarStyled` (inputs `pt` and `unstyled`); each visible element in its template
 // has `starPart="name"`, which sets `data-star-part` and applies the classes, styles and safe
 // attributes of that part.
+import { isPlatformBrowser } from '@angular/common';
 import {
+  AfterViewChecked,
   booleanAttribute,
   computed,
   DestroyRef,
@@ -14,6 +16,7 @@ import {
   InjectionToken,
   input,
   isDevMode,
+  PLATFORM_ID,
   Renderer2,
   RendererStyleFlags2,
   untracked,
@@ -113,7 +116,7 @@ interface PartState {
   selector: '[starStyled]',
   host: { 'data-star-part': 'root' },
 })
-export class StarStyled {
+export class StarStyled implements AfterViewChecked {
   private readonly config = inject(StarConfigService).config;
   private readonly renderer = inject(Renderer2);
   private readonly host = inject(ElementRef).nativeElement as Element;
@@ -157,6 +160,9 @@ export class StarStyled {
   private readonly portals = new Set<Element>();
   private observer: MutationObserver | null = null;
   private switchedOn = false;
+  /** A browser with `MutationObserver`; on the server the parts are adopted after each render. */
+  private readonly canObserve =
+    isPlatformBrowser(inject(PLATFORM_ID)) && typeof MutationObserver !== 'undefined';
 
   constructor() {
     // One effect per control. It does nothing while the fast path holds.
@@ -183,10 +189,38 @@ export class StarStyled {
     else if (untracked(this.active)) this.switchOn();
   }
 
-  /** A portal root that goes away. @internal */
+  /** A portal root that goes away: it is no longer tracked or watched. @internal */
   detach(element: Element): void {
     this.portals.delete(element);
+    this.forget(element);
+    if (this.observer) {
+      // A MutationObserver cannot stop watching one node: watch the host and the portals again.
+      this.observer.disconnect();
+      this.watch(this.host);
+      for (const portal of this.portals) this.watch(portal);
+    }
+  }
+
+  /**
+   * Without a `MutationObserver` (on the server), the parts that a render created are adopted
+   * after the render, so the server HTML has the pass-through and the unstyled mode of every part.
+   */
+  ngAfterViewChecked(): void {
+    if (!this.switchedOn || this.observer) return;
+    this.adopt(this.host);
+    for (const portal of this.portals) this.adopt(portal);
+  }
+
+  /** Stops tracking `element` and the parts below it (they left the page). */
+  private forget(element: Element): void {
     this.parts.delete(element);
+    for (const item of Array.from(element.querySelectorAll('[data-star-part]'))) {
+      this.parts.delete(item);
+    }
+  }
+
+  private watch(element: Element): void {
+    this.observer?.observe(element, { childList: true, subtree: true });
   }
 
   /**
@@ -197,15 +231,19 @@ export class StarStyled {
   private switchOn(): void {
     this.switchedOn = true;
     this.track(this.host, 'root');
-    if (typeof MutationObserver !== 'undefined') {
+    if (this.canObserve) {
       this.observer = new MutationObserver((records) => {
         for (const record of records) {
+          // Removed rows and closed panels leave the map, so it holds only parts on the page.
+          for (const node of Array.from(record.removedNodes)) {
+            if (node.nodeType === 1 && node !== this.host) this.forget(node as Element);
+          }
           for (const node of Array.from(record.addedNodes)) {
             if (node.nodeType === 1) this.adopt(node as Element);
           }
         }
       });
-      this.observer.observe(this.host, { childList: true, subtree: true });
+      this.watch(this.host);
     }
     this.adopt(this.host);
     for (const portal of this.portals) this.adopt(portal);
@@ -213,9 +251,7 @@ export class StarStyled {
 
   /** Tracks `element` and the parts below it that belong to this control, and applies to them. */
   private adopt(element: Element): void {
-    if (this.portals.has(element) && element !== this.host && this.observer) {
-      this.observer.observe(element, { childList: true, subtree: true });
-    }
+    if (this.portals.has(element) && element !== this.host) this.watch(element);
     const candidates = [element, ...Array.from(element.querySelectorAll('[data-star-part]'))];
     const merged = untracked(this.merged);
     const unstyled = untracked(this.isUnstyled);
