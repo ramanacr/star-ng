@@ -140,9 +140,12 @@ import { DOCS } from '../shared/docs';
         part (there is one of them per data point); style them through the part <code>table</code>.
       </p>
       <p>
-        Two limits. A template class that you also set through <code>pt</code> is removed when the
-        <code>pt</code> drops it. On the server the parts get their pass-through after each render,
-        so the HTML of a prerendered page has it too.
+        Limits: a template class that you also set through <code>pt</code> is removed when the
+        <code>pt</code> drops it, because the classes of the pass-through are not tracked apart from
+        the classes of the template. On the server the parts get their pass-through after each
+        render, so the HTML of a prerendered page has it too. After hydration, the value that the
+        browser restores when the <code>pt</code> drops an attribute or a style is the value in the
+        server HTML, which already had the pass-through; drop it on the server too, or keep it.
       </p>
 
       <h2>Pass-through for one control</h2>
@@ -335,7 +338,7 @@ export class StylingHooksGuide {
     provideStarNg({
       pt: {
         'star-select': { panel: { class: 'app-panel' } },
-        'star-button': { button: { attrs: { 'data-analytics': 'button' } } },
+        'star-button': { nativeButton: { attrs: { 'data-analytics': 'button' } } },
       },
     }),
   ],
