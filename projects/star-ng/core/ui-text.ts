@@ -381,6 +381,16 @@ export interface StarUiText {
   readonly editorColumnWidth: string;
   /** Line of the shortcut help about the Markdown input rules. */
   readonly editorMarkdownHint: string;
+  readonly editorAccessibility: string;
+  readonly editorIssueCount: (count: number) => string;
+  readonly editorIssueAlt: string;
+  readonly editorIssueEmptyLink: string;
+  /** A heading skips a level: `from` is the level before (0 at the start), `to` the level of the heading. */
+  readonly editorIssueHeading: (from: number, to: number) => string;
+  readonly editorIssueTableHeader: string;
+  readonly editorIssueContrast: (ratio: number) => string;
+  readonly editorGoTo: string;
+  readonly editorFix: string;
   readonly chartPoints: (title: string) => string;
   readonly chartPointsHint: string;
   readonly chartPointLabel: (series: string, label: string, value: string) => string;
@@ -1190,6 +1200,22 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   editorTableMenu: 'Table menu',
   editorColumnWidth: 'Narrower or wider column',
   editorMarkdownHint: 'Type # , ## , > , - , 1. or [] at the start of a paragraph, or **text**',
+  editorAccessibility: 'Accessibility check',
+  editorIssueCount: (count) =>
+    count === 0
+      ? 'No problems found.'
+      : count === 1
+        ? '1 problem found.'
+        : `${count} problems found.`,
+  editorIssueAlt: 'An image has no alternative text.',
+  editorIssueEmptyLink: 'A link has no text.',
+  editorIssueHeading: (from, to) =>
+    `Heading ${to} follows ${from ? `heading ${from}` : 'the start'}: a level is skipped.`,
+  editorIssueTableHeader: 'A table has no header cells.',
+  editorIssueContrast: (ratio) =>
+    `A text color has low contrast (${ratio}:1, at least 4.5:1 is needed).`,
+  editorGoTo: 'Go to',
+  editorFix: 'Fix',
   chartPoints: (title) => `${title}: data points`,
   chartPointsHint: 'Arrow keys move between the points and the series. Enter selects a point.',
   chartPointLabel: (series, label, value) => `${series}, ${label}: ${value}`,
@@ -1699,6 +1725,9 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   editorMatchCount: ['current', 'total'],
   editorReplaced: ['count'],
   editorWordCount: ['words', 'characters'],
+  editorIssueCount: ['count'],
+  editorIssueHeading: ['from', 'to'],
+  editorIssueContrast: ['ratio'],
 };
 
 export const STAR_UI_TEXT = new InjectionToken<StarUiText>('STAR_UI_TEXT', {

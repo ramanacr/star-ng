@@ -86,6 +86,7 @@ describe('StarEditor toolbar', () => {
       'HTML source',
       'Full screen',
       'Keyboard shortcuts',
+      'Accessibility check',
     ]);
     expect(controls.map((c) => c.tabIndex)).toEqual([0, ...controls.slice(1).map(() => -1)]);
     expect(controls[2].tagName).toBe('SELECT');

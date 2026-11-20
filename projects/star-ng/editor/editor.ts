@@ -30,6 +30,7 @@ import {
 } from '@star-ng/ui/core';
 import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/ui/field';
 import { StarContextMenu, StarMenu, StarMenuItem } from '@star-ng/ui/menu';
+import { starEditorAudit, StarEditorIssue } from './editor-audit';
 import { StarEditorColor } from './editor-color';
 import {
   starEditorAlign,
@@ -309,6 +310,9 @@ export class StarEditor implements FormValueControl<string> {
   protected readonly length = signal(0);
   /** Words and characters now (see `showCount`). */
   protected readonly counts = signal({ words: 0, characters: 0 });
+  /** The accessibility check: open, and the problems found. */
+  protected readonly auditOpen = signal(false);
+  protected readonly issues = signal<readonly StarEditorIssue[]>([]);
   /** The editor fills the window. */
   protected readonly fullScreen = signal(false);
   /** Find and replace: the open panel, its fields and the matches. */
@@ -539,6 +543,7 @@ export class StarEditor implements FormValueControl<string> {
     if (cmd === 'image' || cmd === 'embed') return this.mediaPanel() === cmd;
     if (cmd === 'table') return this.tablePanel() !== null;
     if (cmd === 'find') return this.findOpen() !== null;
+    if (cmd === 'accessibility') return this.auditOpen();
     return null;
   }
 
@@ -547,7 +552,10 @@ export class StarEditor implements FormValueControl<string> {
    * source button works.
    */
   protected unavailable(cmd: StarEditorCommand): boolean {
-    if (this.sourceMode()) return cmd !== 'source' && cmd !== 'fullScreen' && cmd !== 'shortcuts';
+    if (this.sourceMode())
+      return (
+        cmd !== 'source' && cmd !== 'fullScreen' && cmd !== 'shortcuts' && cmd !== 'accessibility'
+      );
     return (cmd === 'undo' && !this.canUndo()) || (cmd === 'redo' && !this.canRedo());
   }
 
@@ -567,6 +575,7 @@ export class StarEditor implements FormValueControl<string> {
     this.commit(true);
     this.refreshState();
     if (this.selectedImage()) this.placeFrame();
+    if (this.auditOpen()) this.issues.set(starEditorAudit(this.area().nativeElement));
   }
 
   /** Stores the area in the model and, with `record`, in the history. */
@@ -832,6 +841,11 @@ export class StarEditor implements FormValueControl<string> {
     }
     if (command === 'fullScreen') {
       this.fullScreen.set(!this.fullScreen());
+      return;
+    }
+    if (command === 'accessibility') {
+      this.auditOpen.set(!this.auditOpen());
+      if (this.auditOpen()) this.issues.set(starEditorAudit(area));
       return;
     }
     if (command === 'shortcuts') {
@@ -1150,6 +1164,47 @@ export class StarEditor implements FormValueControl<string> {
     this.commit(true);
     this.runFind();
     this.findStatus.set(this.text.editorReplaced(count));
+  }
+
+  // ---- Accessibility check ----
+
+  /** The text of a problem. */
+  protected issueText(issue: StarEditorIssue): string {
+    const t = this.text;
+    switch (issue.kind) {
+      case 'alt':
+        return t.editorIssueAlt;
+      case 'emptyLink':
+        return t.editorIssueEmptyLink;
+      case 'heading':
+        return t.editorIssueHeading(issue.detail[0], issue.detail[1]);
+      case 'tableHeader':
+        return t.editorIssueTableHeader;
+      default:
+        return t.editorIssueContrast(issue.detail[0]);
+    }
+  }
+
+  /** Selects the element of a problem in the area. */
+  protected goToIssue(issue: StarEditorIssue): void {
+    const area = this.area().nativeElement;
+    if (!area.contains(issue.element)) return;
+    area.focus();
+    const range = area.ownerDocument.createRange();
+    range.selectNode(issue.element);
+    starEditorRestore(range);
+    issue.element.scrollIntoView?.({ block: 'nearest' });
+    if (issue.element instanceof HTMLImageElement) this.selectImage(issue.element);
+    this.refreshState();
+  }
+
+  /** Repairs a problem, and checks again. */
+  protected fixIssue(issue: StarEditorIssue): void {
+    const area = this.area().nativeElement;
+    if (this.locked() || !area.contains(issue.element)) return;
+    issue.fix();
+    this.commit(true);
+    this.issues.set(starEditorAudit(area));
   }
 
   // ---- Keyboard shortcut help ----

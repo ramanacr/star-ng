@@ -223,3 +223,19 @@ test.describe('editor productivity', () => {
     await expect(dialog).toBeHidden();
   });
 });
+
+test.describe('editor accessibility check', () => {
+  test('lists the problems and fixes the heading level', async ({ page }) => {
+    await openEditor(page);
+    const live = example(page, 'Accessibility check');
+    await live.getByRole('button', { name: 'Accessibility check' }).click();
+    const panel = live.getByRole('group', { name: 'Accessibility check' });
+    await expect(panel.getByRole('status')).toHaveText('2 problems found.');
+    const heading = panel.getByRole('listitem').filter({ hasText: 'a level is skipped' });
+    await heading.getByRole('button', { name: 'Fix' }).click();
+    await expect(panel.getByRole('status')).toHaveText('1 problem found.');
+    await expect(
+      live.getByRole('textbox', { name: 'Checked announcement' }).locator('h2'),
+    ).toHaveText('Release 4.2');
+  });
+});

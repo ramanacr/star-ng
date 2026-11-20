@@ -19,7 +19,9 @@ import type { StarUiText } from '@star-ng/ui/core';
  * (borders, alignment); `removeFormat` clears inline formats and the alignment; `source`
  * switches to the HTML source view and back; `find` opens find and replace (Ctrl+F, Ctrl+H);
  * `fullScreen` shows the editor over the whole window (Escape leaves); `shortcuts` opens the
- * keyboard shortcut help. Alignment is stored as the classes `star-text-center`, `star-text-end` and
+ * keyboard shortcut help; `accessibility` checks the content (images without alternative text,
+ * links without text, skipped heading levels, tables without header cells, low contrast colors)
+ * with "Go to" and "Fix" for each problem. Alignment is stored as the classes `star-text-center`, `star-text-end` and
  * `star-text-justify`, so the HTML needs the StarNG CSS where it is shown. `undo` and `redo` use
  * the history of the editor, which has every change.
  */
@@ -55,6 +57,7 @@ export type StarEditorCommand =
   | 'find'
   | 'fullScreen'
   | 'shortcuts'
+  | 'accessibility'
   | 'removeFormat'
   | 'undo'
   | 'redo';
@@ -127,6 +130,7 @@ export const STAR_EDITOR_FULL_TOOLBAR: readonly StarEditorToolbarItem[] = [
   'source',
   'fullScreen',
   'shortcuts',
+  'accessibility',
 ];
 
 /** A toolbar button: its label in `STAR_UI_TEXT`, its icon, and whether it shows `aria-pressed`. */
@@ -171,6 +175,11 @@ export const STAR_EDITOR_BUTTONS: Readonly<
   find: { label: 'editorFindReplace', icon: 'ph-bold ph-magnifying-glass', toggle: false },
   fullScreen: { label: 'documentFullScreen', icon: 'ph-bold ph-arrows-out', toggle: true },
   shortcuts: { label: 'editorShortcuts', icon: 'ph-bold ph-keyboard', toggle: false },
+  accessibility: {
+    label: 'editorAccessibility',
+    icon: 'ph-bold ph-person-arms-spread',
+    toggle: false,
+  },
   horizontalRule: { label: 'editorHorizontalRule', icon: 'ph-bold ph-minus', toggle: false },
   removeFormat: { label: 'editorClearFormatting', icon: 'ph-bold ph-text-t-slash', toggle: false },
   undo: { label: 'undo', icon: 'ph-bold ph-arrow-counter-clockwise', toggle: false },

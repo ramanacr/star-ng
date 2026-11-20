@@ -254,6 +254,50 @@
     </div>
   </div>
 }
+@if (auditOpen()) {
+  <div
+    class="star-editor__panel star-editor__audit"
+    role="group"
+    [attr.aria-label]="text.editorAccessibility"
+  >
+    <p class="star-editor__audit-status" role="status">
+      {{ text.editorIssueCount(issues().length) }}
+    </p>
+    @if (issues().length) {
+      <ul class="star-editor__audit-list">
+        @for (issue of issues(); track $index) {
+          <li class="star-editor__audit-item">
+            <span>{{ issueText(issue) }}</span>
+            <span class="star-editor__link-actions">
+              <button
+                type="button"
+                class="star-btn star-btn--ghost star-btn--sm"
+                (click)="goToIssue(issue)"
+              >
+                {{ text.editorGoTo }}
+              </button>
+              <button
+                type="button"
+                class="star-btn star-btn--ghost star-btn--sm"
+                [disabled]="locked()"
+                (click)="fixIssue(issue)"
+              >
+                {{ text.editorFix }}
+              </button>
+            </span>
+          </li>
+        }
+      </ul>
+    }
+    <button
+      type="button"
+      class="star-btn star-btn--ghost star-btn--sm"
+      (click)="auditOpen.set(false); focus()"
+    >
+      {{ text.close }}
+    </button>
+  </div>
+}
 @if (sourceMode()) {
   <div class="star-editor__source">
     <textarea

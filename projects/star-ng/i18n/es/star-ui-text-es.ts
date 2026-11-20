@@ -352,6 +352,22 @@ export const STAR_UI_TEXT_ES: StarUiText = {
   editorTableMenu: 'Menú de la tabla',
   editorColumnWidth: 'Columna más estrecha o más ancha',
   editorMarkdownHint: 'Escriba # , ## , > , - , 1. o [] al inicio de un párrafo, o **texto**',
+  editorAccessibility: 'Comprobar la accesibilidad',
+  editorIssueCount: (count) =>
+    count === 0
+      ? 'No se encontraron problemas.'
+      : count === 1
+        ? 'Se encontró 1 problema.'
+        : `Se encontraron ${count} problemas.`,
+  editorIssueAlt: 'Una imagen no tiene texto alternativo.',
+  editorIssueEmptyLink: 'Un enlace no tiene texto.',
+  editorIssueHeading: (from, to) =>
+    `El título ${to} sigue a ${from ? `el título ${from}` : 'el inicio'}: falta un nivel.`,
+  editorIssueTableHeader: 'Una tabla no tiene celdas de encabezado.',
+  editorIssueContrast: (ratio) =>
+    `Un color de texto tiene poco contraste (${ratio}:1, se necesita al menos 4,5:1).`,
+  editorGoTo: 'Ir a',
+  editorFix: 'Corregir',
   chartPoints: (title) => `${title}: puntos de datos`,
   chartPointsHint: 'Las flechas mueven entre los puntos y las series. Intro selecciona un punto.',
   chartPointLabel: (series, label, value) => `${series}, ${label}: ${value}`,

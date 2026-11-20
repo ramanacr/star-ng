@@ -111,6 +111,21 @@ import { DOCS, DocsRow } from '../shared/docs';
       </docs-example>
 
       <docs-example
+        heading="Accessibility check"
+        source="editor/accessibility"
+        [script]="auditScript"
+        note='The accessibility button checks the content: images without alternative text, links without text, skipped heading levels (the content may start at heading 2), tables without header cells and custom text colors with a contrast under 4.5:1. Go to selects the element in the area. Fix repairs it: the image becomes decorative (alt=""; give it a real description with the image button), the empty link goes, the heading gets the right level, the first row becomes a header row, the low contrast color goes. The list updates while you edit.'
+      >
+        <div class="docs-stack">
+          <star-editor
+            [(value)]="audited"
+            [toolbar]="auditToolbar"
+            ariaLabel="Checked announcement"
+          />
+        </div>
+      </docs-example>
+
+      <docs-example
         heading="HTML source view"
         source="editor/source"
         [script]="sourceScript"
@@ -436,6 +451,16 @@ readonly embedRules: StarEditorSanitizeConfig = {
   'bold', 'italic', '|', 'find', 'fullScreen', 'shortcuts',
 ];
 // <star-editor [toolbar]="productivityToolbar" showCount markdownShortcuts />`;
+  protected readonly audited = signal(
+    '<h3>Release 4.2</h3><p>The new dashboard ships today.</p><table class="star-editor-table"><tbody><tr><td>Plan</td><td>Price</td></tr><tr><td>Basic</td><td>9</td></tr></tbody></table>',
+  );
+  protected readonly auditToolbar: readonly StarEditorToolbarItem[] = [
+    'formatBlock',
+    'textColor',
+    '|',
+    'accessibility',
+  ];
+  protected readonly auditScript = `readonly auditToolbar: readonly StarEditorToolbarItem[] = ['formatBlock', 'textColor', '|', 'accessibility'];`;
   protected readonly listToolbar: readonly StarEditorToolbarItem[] = [
     'insertUnorderedList',
     'insertOrderedList',

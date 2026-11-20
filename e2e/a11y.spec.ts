@@ -1766,6 +1766,16 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'editor accessibility check open',
+    path: 'controls/editor',
+    open: async (page) => {
+      await expect(page.locator('star-editor[ngh]')).toHaveCount(0, { timeout: 15_000 });
+      const live = example(page, 'Accessibility check');
+      await live.getByRole('button', { name: 'Accessibility check' }).click();
+      await expect(live.getByRole('status')).toHaveText('2 problems found.');
+    },
+  },
+  {
     name: 'editor link popover open',
     path: 'controls/editor',
     open: async (page) => {

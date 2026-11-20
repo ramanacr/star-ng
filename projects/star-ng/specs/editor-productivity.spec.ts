@@ -152,3 +152,36 @@ describe('StarEditor counts, full screen, shortcuts and input rules', () => {
     expect(host.html()).toBe('<p>The new plan and the old plan</p><h1>Plan details</h1>');
   });
 });
+
+@Component({
+  imports: [StarEditor],
+  template: `<star-editor [(value)]="html" [toolbar]="['accessibility']" ariaLabel="Checked" />`,
+})
+class AuditHost {
+  readonly html = signal('<h3>Plans</h3><p><img src="a.png"></p>');
+}
+
+describe('StarEditor accessibility check', () => {
+  it('lists the problems with Go to and Fix', async () => {
+    const fixture = TestBed.createComponent(AuditHost);
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+    el.querySelector<HTMLButtonElement>('[aria-label="Accessibility check"]')!.click();
+    await fixture.whenStable();
+    const panel = el.querySelector('[role=group][aria-label="Accessibility check"]')!;
+    expect(panel.querySelector('[role=status]')!.textContent!.trim()).toBe('2 problems found.');
+    const items = [...panel.querySelectorAll('li')];
+    expect(items.map((item) => item.querySelector('span')!.textContent!.trim())).toEqual([
+      'Heading 3 follows the start: a level is skipped.',
+      'An image has no alternative text.',
+    ]);
+    items[1].querySelectorAll('button')[0].click();
+    expect(
+      document.getSelection()!.getRangeAt(0).cloneContents().querySelector('img'),
+    ).toBeTruthy();
+    items[0].querySelectorAll('button')[1].click();
+    await fixture.whenStable();
+    expect(fixture.componentInstance.html()).toBe('<h2>Plans</h2><p><img src="a.png"></p>');
+    expect(panel.querySelector('[role=status]')!.textContent!.trim()).toBe('1 problem found.');
+  });
+});

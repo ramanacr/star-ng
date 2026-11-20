@@ -592,3 +592,29 @@ ul.star-checklist {
     font: var(--star-type-code);
   }
 }
+// Accessibility check.
+.star-editor__audit-status {
+  flex-basis: 100%;
+  margin: 0;
+  font: var(--star-type-label);
+  color: var(--star-text);
+}
+.star-editor__audit-list {
+  display: grid;
+  flex-basis: 100%;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.star-editor__audit-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.25rem 0.75rem;
+  padding: 0.25rem 0;
+  border-bottom: 1px solid var(--star-border);
+  font: var(--star-type-body);
+  color: var(--star-text);
+}

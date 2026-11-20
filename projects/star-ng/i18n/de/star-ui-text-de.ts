@@ -351,6 +351,22 @@ export const STAR_UI_TEXT_DE: StarUiText = {
   editorColumnWidth: 'Schmalere oder breitere Spalte',
   editorMarkdownHint:
     'Tippen Sie # , ## , > , - , 1. oder [] am Anfang eines Absatzes, oder **Text**',
+  editorAccessibility: 'Barrierefreiheit prüfen',
+  editorIssueCount: (count) =>
+    count === 0
+      ? 'Keine Probleme gefunden.'
+      : count === 1
+        ? '1 Problem gefunden.'
+        : `${count} Probleme gefunden.`,
+  editorIssueAlt: 'Ein Bild hat keinen Alternativtext.',
+  editorIssueEmptyLink: 'Ein Link hat keinen Text.',
+  editorIssueHeading: (from, to) =>
+    `Überschrift ${to} folgt auf ${from ? `Überschrift ${from}` : 'den Anfang'}: Eine Ebene fehlt.`,
+  editorIssueTableHeader: 'Eine Tabelle hat keine Kopfzellen.',
+  editorIssueContrast: (ratio) =>
+    `Eine Textfarbe hat zu wenig Kontrast (${ratio}:1, mindestens 4,5:1 ist nötig).`,
+  editorGoTo: 'Gehe zu',
+  editorFix: 'Beheben',
   chartPoints: (title) => `${title}: Datenpunkte`,
   chartPointsHint: 'Pfeiltasten wechseln zwischen Punkten und Reihen. Eingabe wählt einen Punkt.',
   chartPointLabel: (series, label, value) => `${series}, ${label}: ${value}`,
