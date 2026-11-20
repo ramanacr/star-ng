@@ -369,7 +369,7 @@ export class EditorPage {
   protected readonly comment = signal('');
   protected readonly saved = signal('<p>Leave the parcel at the <b>loading dock</b>.</p>');
   protected readonly unsafe = signal(
-    '<p onclick="alert(1)" style="color: #c62828; position: fixed">Order <b>ORD-1042</b> <script>alert(1)</script><a href="javascript:alert(1)">open</a></p>',
+    '<p onclick="alert(1)" style="color: var(--star-danger); position: fixed">Order <b>ORD-1042</b> <script>alert(1)</script><a href="javascript:alert(1)">open</a></p>',
   );
 
   protected readonly report = signal(
@@ -489,7 +489,7 @@ readonly fullToolbar = STAR_EDITOR_FULL_TOOLBAR;`;
   protected readonly sizeScript = `readonly comment = signal('');`;
   protected readonly statesScript = `readonly saved = signal('<p>Leave the parcel at the <b>loading dock</b>.</p>');`;
   protected readonly sanitizeScript = `readonly unsafe = signal(
-  '<p onclick="alert(1)" style="color: #c62828; position: fixed">Order <b>ORD-1042</b> <script>alert(1)</script><a href="javascript:alert(1)">open</a></p>',
+  '<p onclick="alert(1)" style="color: var(--star-danger); position: fixed">Order <b>ORD-1042</b> <script>alert(1)</script><a href="javascript:alert(1)">open</a></p>',
 );`;
 
   protected readonly slots: readonly DocsRow[] = [

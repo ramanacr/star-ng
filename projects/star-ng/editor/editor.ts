@@ -501,7 +501,19 @@ export class StarEditor implements FormValueControl<string> {
       if (this.findOpen()) this.paintMatches(true);
     });
     afterNextRender(() => {
-      const view = this.area().nativeElement.ownerDocument.defaultView;
+      const area = this.area().nativeElement;
+      // The frame of a selected image follows it when images load or the layout changes.
+      const replace = () => {
+        if (this.selectedImage()) this.placeFrame();
+      };
+      area.addEventListener('load', replace, true);
+      area.addEventListener('error', replace, true);
+      const view = area.ownerDocument.defaultView;
+      if (view && typeof view.ResizeObserver === 'function') {
+        const areaObserver = new view.ResizeObserver(replace);
+        areaObserver.observe(area);
+        this.destroyRef.onDestroy(() => areaObserver.disconnect());
+      }
       const toolbar = this.toolbarElement()?.nativeElement;
       if (!toolbar || !view || typeof view.ResizeObserver !== 'function') return;
       this.fitting.set(true);

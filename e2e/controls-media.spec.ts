@@ -303,7 +303,7 @@ test.describe('editor', () => {
     expect(shown).not.toContain('<script');
     expect(shown).not.toContain('onclick');
     // Only the allowed style (color) stays; position goes.
-    expect(shown).toContain('style="color: #c62828"');
+    expect(shown).toContain('style="color: var(--star-danger)"');
     expect(shown).not.toMatch(/href="javascript:/i);
     await expect(area.locator('a')).not.toHaveAttribute('href');
 

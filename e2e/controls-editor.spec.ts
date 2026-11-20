@@ -137,10 +137,11 @@ test.describe('editor images', () => {
     await page.keyboard.press('Shift+ArrowRight');
     await expect(area.locator('figure img')).toHaveAttribute('width', '290');
     await expect(handle).toHaveAttribute('aria-valuenow', '290');
+    await handle.scrollIntoViewIfNeeded();
     const box = (await handle.boundingBox())!;
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
     await page.mouse.down();
-    await page.mouse.move(box.x + box.width / 2 - 90, box.y + box.height / 2);
+    await page.mouse.move(box.x + box.width / 2 - 90, box.y + box.height / 2, { steps: 3 });
     await page.mouse.up();
     await expect(area.locator('figure img')).toHaveAttribute('width', '200');
   });
