@@ -6,10 +6,13 @@ import {
   booleanAttribute,
   ChangeDetectionStrategy,
   Component,
+  computed,
+  contentChildren,
   DestroyRef,
   Directive,
   effect,
   ElementRef,
+  forwardRef,
   inject,
   Injector,
   input,
@@ -21,11 +24,20 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
-import { StarButton, StarButtonSize, StarButtonVariant } from '@star-ng/ui/button';
 import {
+  StarButton,
+  StarButtonAppearance,
+  StarButtonSize,
+  StarButtonVariant,
+} from '@star-ng/ui/button';
+import {
+  STAR_SLOT_HOST,
   STAR_UI_TEXT,
   StarDirectionService,
+  StarIconContext,
   StarPart,
+  StarSlot,
+  starSlotMap,
   StarStyled,
   ɵSTAR_PART_HOST,
 } from '@star-ng/ui/core';
@@ -370,12 +382,22 @@ export class StarMenuTrigger {
 /**
  * Split button (PrimeNG `p-splitbutton`): a main action plus a menu of related actions.
  * `<star-split-button label="Send response" [items]="sendOptions" (pressed)="send()" />`
+ *
+ * Slots (content children): projected content goes after the label in the main button
+ * (PrimeNG `#content`); `starIcon="dropdown"` replaces the icon of the menu button.
+ *
+ * PrimeNG names that star-ng covers in another way: `model` = `items`, `severity` = `variant`
+ * (`plain` = `secondary`), `onClick` = `pressed`, `tooltip` and `tooltipOptions` = the
+ * `starTooltip` directive on the host, `menuStyle` and `menuStyleClass` = `pt`. Not applicable:
+ * `appendTo` (the menu is an overlay of the Angular CDK), `dir` (the direction of the page),
+ * `motionOptions` (the motion comes from the theme tokens and stops with reduced motion).
  */
 @Component({
   selector: 'star-split-button',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarButton, StarMenu, StarMenuTrigger],
+  imports: [StarButton, StarMenu, StarMenuTrigger, NgTemplateOutlet],
+  providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarSplitButton) }],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'star-split' },
   template: `
@@ -383,22 +405,38 @@ export class StarMenuTrigger {
       class="star-split__main"
       [variant]="variant()"
       [size]="size()"
-      [leadingIcon]="icon()"
-      [disabled]="disabled()"
+      [appearance]="appearance()"
+      [raised]="raised()"
+      [rounded]="rounded()"
+      [leadingIcon]="iconPos() === 'start' ? icon() : null"
+      [trailingIcon]="iconPos() === 'end' ? icon() : null"
+      [disabled]="disabled() || buttonDisabled()"
+      [tabindex]="tabindex()"
+      [autofocus]="autofocus()"
       (pressed)="pressed.emit($event)"
     >
-      {{ label() }}
+      {{ label() }} <ng-content />
     </star-button>
     <button
       data-star-part="toggleButton"
       type="button"
       class="star-btn star-split__toggle"
-      [class]="'star-btn star-split__toggle star-btn--' + variant() + ' star-btn--' + size()"
-      [disabled]="disabled()"
-      [attr.aria-label]="text.moreActions"
+      [class]="toggleClasses()"
+      [disabled]="disabled() || menuButtonDisabled()"
+      [attr.aria-label]="expandAriaLabel() ?? text.moreActions"
+      [attr.tabindex]="tabindex()"
       [starMenuTrigger]="menu"
+      (click)="dropdownClick.emit($event)"
+      (menuOpened)="menuShow.emit()"
+      (menuClosed)="menuHide.emit()"
     >
-      <i data-star-part="toggleIcon" class="ph-bold ph-caret-down" aria-hidden="true"></i>
+      @if (icons().get('dropdown'); as custom) {
+        <span data-star-part="toggleIcon" class="star-btn__icon" aria-hidden="true">
+          <ng-container *ngTemplateOutlet="custom; context: iconContext" />
+        </span>
+      } @else {
+        <i data-star-part="toggleIcon" [class]="dropdownIcon()" aria-hidden="true"></i>
+      }
     </button>
     <star-menu #menu [items]="items()" (itemClick)="itemClick.emit($event)" />
   `,
@@ -411,6 +449,49 @@ export class StarSplitButton {
   readonly variant = input<StarButtonVariant>('primary');
   readonly size = input<StarButtonSize>('md');
   readonly disabled = input(false, { transform: booleanAttribute });
+  /** Side of `icon` in the main button: `'start'` (default) or `'end'`. PrimeNG `iconPos`. */
+  readonly iconPos = input<'start' | 'end'>('start');
+  /** `'outlined'`, `'text'` or `'link'` draw both buttons without their fill. PrimeNG `outlined`, `text`. */
+  readonly appearance = input<StarButtonAppearance>('filled');
+  /** A shadow under both buttons. PrimeNG `raised`. */
+  readonly raised = input(false, { transform: booleanAttribute });
+  /** Fully round outer ends. PrimeNG `rounded`. */
+  readonly rounded = input(false, { transform: booleanAttribute });
+  /** Turns off only the main button. PrimeNG `buttonDisabled`. */
+  readonly buttonDisabled = input(false, { transform: booleanAttribute });
+  /** Turns off only the menu button. PrimeNG `menuButtonDisabled`. */
+  readonly menuButtonDisabled = input(false, { transform: booleanAttribute });
+  /** Icon classes of the menu button (default a caret). PrimeNG `dropdownIcon`. */
+  readonly dropdownIcon = input('ph-bold ph-caret-down');
+  /** Accessible name of the menu button (default `STAR_UI_TEXT.moreActions`). PrimeNG `expandAriaLabel`. */
+  readonly expandAriaLabel = input<string | null>(null);
+  /** `tabindex` of both buttons. */
+  readonly tabindex = input<number | null>(null);
+  /** Focuses the main button once, after the first render. PrimeNG `autofocus`. */
+  readonly autofocus = input(false, { transform: booleanAttribute });
   readonly pressed = output<MouseEvent>();
   readonly itemClick = output<StarMenuItem>();
+  /** Emits a click on the menu button. PrimeNG `onDropdownClick`. */
+  readonly dropdownClick = output<MouseEvent>();
+  /** Emits when the menu opens. PrimeNG `onMenuShow`. */
+  readonly menuShow = output<void>();
+  /** Emits when the menu closes. PrimeNG `onMenuHide`. */
+  readonly menuHide = output<void>();
+
+  private readonly slots = contentChildren(StarSlot, { descendants: true });
+  protected readonly icons = starSlotMap<StarIconContext>(this.slots, this, 'icon');
+  protected readonly iconContext: StarIconContext = {};
+  protected readonly toggleClasses = computed(() =>
+    [
+      'star-btn',
+      'star-split__toggle',
+      `star-btn--${this.variant()}`,
+      `star-btn--${this.size()}`,
+      this.appearance() !== 'filled' ? `star-btn--${this.appearance()}` : '',
+      this.raised() ? 'star-btn--raised' : '',
+      this.rounded() ? 'star-btn--rounded' : '',
+    ]
+      .filter(Boolean)
+      .join(' '),
+  );
 }

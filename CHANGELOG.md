@@ -257,6 +257,10 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 
 - Signature pad (`star-signature-pad`, new entry `@star-ng/ui/signature-pad`): pointer drawing (mouse, pen with pressure, touch) on a high-DPI canvas with quadratic smoothing, a PNG or SVG data URL value (`valueFormat`), `clear()` and `undo()`, `strokeColor`, `strokeWidth` and `backgroundColor` on screen (the ink follows the theme), `exportColor` (default black) and `exportBackground` for the stored value, `readonly`, `disabled`, `required` through the forms, and a typed-name mode for keyboard users (`allowTyped`), with live announcements (Kendo UI SignaturePad). UI texts `signaturePad`, `signatureArea`, `signatureAreaSigned`, `signatureHint`, `signatureTypedHint`, `clearSignature`, `undo`, `drawSignature`, `typeSignature`, `typeYourName`, `signatureCleared` and `strokeUndone` (English, German, Spanish).
 
+#### Split button
+
+- Split button: `appearance`, `raised`, `rounded`, `iconPos`, `buttonDisabled`, `menuButtonDisabled`, `dropdownIcon`, `expandAriaLabel`, `tabindex`, `autofocus`, the outputs `dropdownClick`, `menuShow` and `menuHide`, projected content after the label, and the `starIcon="dropdown"` slot (PrimeNG `p-splitbutton`).
+
 #### Sparkline
 
 - Sparkline (`star-sparkline`, new entry `@star-ng/ui/sparkline`): a tiny inline chart (`line`, `area`, `bar`, `win-loss`) for text and table cells, with `highlight` markers, `referenceLine`, `min`/`max`, a chart palette `color` slot and a summary label from `STAR_UI_TEXT` (`sparklineSummary`, `sparklineTrendUp`, `sparklineTrendDown`, `sparklineTrendFlat`, `sparklineWinLoss`, `missingData`, with German and Spanish texts) (Kendo UI `kendo-sparkline`).

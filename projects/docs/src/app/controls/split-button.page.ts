@@ -44,6 +44,47 @@ import { DOCS, DocsRow } from '../shared/docs';
         <star-split-button label="Place order" disabled [items]="orderOptions" />
       </docs-example>
 
+      <docs-example
+        heading="Appearance, parts and events"
+        source="split-button/appearance"
+        [script]="eventsScript"
+        note="appearance (outlined, text, link), raised and rounded style both buttons. iconPos puts the icon at the end of the label. buttonDisabled turns off only the main button and menuButtonDisabled only the menu button. expandAriaLabel names the menu button and dropdownIcon changes its icon (or starIcon with dropdown and a template). dropdownClick, menuShow and menuHide report the menu button and the menu."
+      >
+        <div class="docs-stack">
+          <div class="docs-row">
+            <star-split-button
+              label="Export"
+              icon="ph-bold ph-download-simple"
+              iconPos="end"
+              appearance="outlined"
+              expandAriaLabel="More export formats"
+              [items]="orderOptions"
+              (menuShow)="menuLog.set('menu open')"
+              (menuHide)="menuLog.set('menu closed')"
+            />
+            <star-split-button label="Archive" variant="secondary" raised [items]="orderOptions" />
+            <star-split-button
+              label="Publish"
+              buttonDisabled
+              dropdownIcon="ph-bold ph-dots-three"
+              expandAriaLabel="Publish options"
+              [items]="orderOptions"
+            />
+          </div>
+          <p class="docs-output" role="status">Menu: {{ menuLog() }}</p>
+        </div>
+      </docs-example>
+
+      <h2>Names in PrimeNG</h2>
+      <p>
+        The PrimeNG p-splitbutton names that StarNG gives in another way: model is items; severity
+        is variant (plain is secondary); onClick is pressed; outlined and text are appearance;
+        tooltip and tooltipOptions are the starTooltip directive on the host; menuStyle and
+        menuStyleClass are the pass-through pt. Not needed: appendTo (the menu is an overlay of the
+        Angular CDK), dir (the direction of the page) and motionOptions (the motion comes from the
+        theme tokens and stops with reduced motion).
+      </p>
+
       <docs-api
         [of]="['StarSplitButton']"
         [slots]="slots"
@@ -55,6 +96,9 @@ import { DOCS, DocsRow } from '../shared/docs';
 })
 export class SplitButtonPage {
   protected readonly last = signal('none');
+  protected readonly menuLog = signal('closed');
+  protected readonly eventsScript = `readonly menuLog = signal('closed');
+// orderOptions as in the first example`;
 
   protected readonly orderOptions: readonly StarMenuItem[] = [
     { label: 'Place and close order', icon: 'ph-bold ph-check-circle' },
@@ -72,8 +116,13 @@ readonly orderOptions: readonly StarMenuItem[] = [
 
   protected readonly slots: readonly DocsRow[] = [
     {
-      name: '(none)',
-      description: 'The label and the icon are inputs. The menu comes from items.',
+      name: '(default)',
+      description:
+        'Projected content goes after the label in the main button. PrimeNG content template.',
+    },
+    {
+      name: 'ng-template[starIcon]',
+      description: 'Content child. "dropdown" replaces the icon of the menu button.',
     },
   ];
   protected readonly cssVars: readonly DocsRow[] = [

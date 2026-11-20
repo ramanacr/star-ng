@@ -17489,6 +17489,76 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
+        "name": "iconPos",
+        "type": "'start' | 'end'",
+        "default": "'start'",
+        "required": false,
+        "description": "Side of `icon` in the main button: `'start'` (default) or `'end'`. PrimeNG `iconPos`."
+      },
+      {
+        "name": "appearance",
+        "type": "StarButtonAppearance",
+        "default": "'filled'",
+        "required": false,
+        "description": "`'outlined'`, `'text'` or `'link'` draw both buttons without their fill. PrimeNG `outlined`, `text`."
+      },
+      {
+        "name": "raised",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "A shadow under both buttons. PrimeNG `raised`."
+      },
+      {
+        "name": "rounded",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Fully round outer ends. PrimeNG `rounded`."
+      },
+      {
+        "name": "buttonDisabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Turns off only the main button. PrimeNG `buttonDisabled`."
+      },
+      {
+        "name": "menuButtonDisabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Turns off only the menu button. PrimeNG `menuButtonDisabled`."
+      },
+      {
+        "name": "dropdownIcon",
+        "type": "string",
+        "default": "'ph-bold ph-caret-down'",
+        "required": false,
+        "description": "Icon classes of the menu button (default a caret). PrimeNG `dropdownIcon`."
+      },
+      {
+        "name": "expandAriaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Accessible name of the menu button (default `STAR_UI_TEXT.moreActions`). PrimeNG `expandAriaLabel`."
+      },
+      {
+        "name": "tabindex",
+        "type": "number | null",
+        "default": "null",
+        "required": false,
+        "description": "`tabindex` of both buttons."
+      },
+      {
+        "name": "autofocus",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Focuses the main button once, after the first render. PrimeNG `autofocus`."
+      },
+      {
         "name": "pt",
         "type": "StarPassThrough | null",
         "default": "null",
@@ -17520,6 +17590,27 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": ""
+      },
+      {
+        "name": "dropdownClick",
+        "type": "MouseEvent",
+        "default": null,
+        "required": false,
+        "description": "Emits a click on the menu button. PrimeNG `onDropdownClick`."
+      },
+      {
+        "name": "menuShow",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "Emits when the menu opens. PrimeNG `onMenuShow`."
+      },
+      {
+        "name": "menuHide",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "Emits when the menu closes. PrimeNG `onMenuHide`."
       }
     ],
     "parts": [
@@ -21688,6 +21779,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "speed-dial/logical": "<div class=\"docs-row docs-dial-area docs-dial-area--center\">\n  <star-speed-dial [items]=\"actions\" direction=\"start\" ariaLabel=\"Actions at the start\" />\n  <star-speed-dial [items]=\"actions\" direction=\"end\" ariaLabel=\"Actions at the end\" />\n</div>",
   "spinner/label": "<star-spinner ariaLabel=\"Loading orders\" />",
   "spinner/sizes": "<star-spinner size=\"1.25rem\" [strokeWidth]=\"6\" />\n<star-spinner />\n<star-spinner size=\"4rem\" [strokeWidth]=\"3\" />",
+  "split-button/appearance": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-split-button\n      label=\"Export\"\n      icon=\"ph-bold ph-download-simple\"\n      iconPos=\"end\"\n      appearance=\"outlined\"\n      expandAriaLabel=\"More export formats\"\n      [items]=\"orderOptions\"\n      (menuShow)=\"menuLog.set('menu open')\"\n      (menuHide)=\"menuLog.set('menu closed')\"\n    />\n    <star-split-button label=\"Archive\" variant=\"secondary\" raised [items]=\"orderOptions\" />\n    <star-split-button\n      label=\"Publish\"\n      buttonDisabled\n      dropdownIcon=\"ph-bold ph-dots-three\"\n      expandAriaLabel=\"Publish options\"\n      [items]=\"orderOptions\"\n    />\n  </div>\n  <p class=\"docs-output\" role=\"status\">Menu: {{ menuLog() }}</p>\n</div>",
   "split-button/basic": "<div class=\"docs-stack\">\n  <star-split-button\n    label=\"Place order\"\n    icon=\"ph-bold ph-paper-plane-tilt\"\n    [items]=\"orderOptions\"\n    (pressed)=\"last.set('Place order')\"\n    (itemClick)=\"last.set($event.label ?? '')\"\n  />\n  <p class=\"docs-output\" role=\"status\">Last action: {{ last() }}</p>\n</div>",
   "split-button/disabled": "<star-split-button label=\"Place order\" disabled [items]=\"orderOptions\" />",
   "split-button/variants": "<star-split-button label=\"Save\" variant=\"secondary\" size=\"sm\" [items]=\"orderOptions\" />\n<star-split-button label=\"Approve\" variant=\"success\" [items]=\"orderOptions\" />\n<star-split-button label=\"Remove\" variant=\"danger\" size=\"lg\" [items]=\"orderOptions\" />",
