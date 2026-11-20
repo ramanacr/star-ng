@@ -1,3 +1,4 @@
+import { NgTemplateOutlet } from '@angular/common';
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideStarNg, StarConfigService } from './config';
@@ -215,5 +216,46 @@ describe('pass-through and unstyled', () => {
       style: { color: 'red', margin: '0' },
       attrs: { title: 'x' },
     });
+  });
+});
+
+@Component({
+  selector: 'star-portal-demo',
+  imports: [StarPart, NgTemplateOutlet],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
+  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
+  template: `
+    @if (more()) {
+      <p data-star-part="more">More</p>
+    }
+    @if (portal()) {
+      <ng-container *ngTemplateOutlet="panel" />
+    }
+    <ng-template #panel><div starPart="panel">Panel</div></ng-template>
+  `,
+})
+class PortalDemo {
+  readonly more = signal(false);
+  readonly portal = signal(true);
+}
+
+@Component({
+  imports: [PortalDemo],
+  template: `<star-portal-demo [pt]="{ more: { class: 'late-more' } }" />`,
+})
+class PortalHost {}
+
+describe('pass-through with portals', () => {
+  it('adopts the parts added in the same task in which a portal goes away', async () => {
+    const fixture = TestBed.createComponent(PortalHost);
+    await fixture.whenStable();
+    const demo = fixture.debugElement.children[0].componentInstance as PortalDemo;
+    demo.more.set(true);
+    demo.portal.set(false);
+    await fixture.whenStable();
+    await new Promise((resolve) => setTimeout(resolve));
+    const more = (fixture.nativeElement as HTMLElement).querySelector('[data-star-part=more]')!;
+    expect(more.classList).toContain('late-more');
   });
 });

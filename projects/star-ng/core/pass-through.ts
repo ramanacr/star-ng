@@ -211,6 +211,8 @@ export class StarStyled implements AfterViewChecked {
     this.forget(element);
     if (this.observer) {
       // A MutationObserver cannot stop watching one node: watch the host and the portals again.
+      // The records of this task go through the handler first, or the parts in them are lost.
+      this.handle(this.observer.takeRecords());
       this.observer.disconnect();
       this.watch(this.host);
       for (const portal of this.portals) this.watch(portal);
@@ -223,6 +225,19 @@ export class StarStyled implements AfterViewChecked {
    */
   ngAfterViewChecked(): void {
     this.adoptAll();
+  }
+
+  /** Tracks the parts that the records add and forgets the ones that they remove. */
+  private handle(records: readonly MutationRecord[]): void {
+    for (const record of records) {
+      // Removed rows and closed panels leave the map, so it holds only parts on the page.
+      for (const node of Array.from(record.removedNodes)) {
+        if (node.nodeType === 1 && node !== this.host) this.forget(node as Element);
+      }
+      for (const node of Array.from(record.addedNodes)) {
+        if (node.nodeType === 1) this.adopt(node as Element);
+      }
+    }
   }
 
   /** Stops tracking `element` and the parts below it (they left the page). */
@@ -246,17 +261,7 @@ export class StarStyled implements AfterViewChecked {
     this.switchedOn = true;
     this.track(this.host, 'root');
     if (this.canObserve) {
-      this.observer = new MutationObserver((records) => {
-        for (const record of records) {
-          // Removed rows and closed panels leave the map, so it holds only parts on the page.
-          for (const node of Array.from(record.removedNodes)) {
-            if (node.nodeType === 1 && node !== this.host) this.forget(node as Element);
-          }
-          for (const node of Array.from(record.addedNodes)) {
-            if (node.nodeType === 1) this.adopt(node as Element);
-          }
-        }
-      });
+      this.observer = new MutationObserver((records) => this.handle(records));
       this.watch(this.host);
     }
     this.adopt(this.host);
