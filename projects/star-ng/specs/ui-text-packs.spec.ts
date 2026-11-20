@@ -65,6 +65,9 @@ const TEXT_PARAMS: Record<string, readonly string[]> = {
   qrCodeLabel: ['value'],
   diagramConnection: ['from', 'to'],
   diagramConnected: ['from', 'to'],
+  timeRange: ['start', 'end'],
+  eventMoved: ['when'],
+  eventResized: ['when'],
 };
 const TEXT_NAMES = new Set(['label', 'column', 'name', 'alt']);
 
