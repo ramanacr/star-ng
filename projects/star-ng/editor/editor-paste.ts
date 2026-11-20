@@ -6,9 +6,7 @@
  * (fonts, sizes, black text, white backgrounds, classes, Office markup). The sanitizer runs
  * after it.
  */
-
-/** Classes of the editor that a paste from another editor keeps. */
-const OWN_CLASS = /^star-(text-center|text-end|text-justify|checklist|editor-[a-z-]+)$/;
+import { STAR_EDITOR_CONTENT_CLASSES } from './editor-sanitize';
 
 /** Colors of the source that are the default look, not a choice of the author. */
 const DEFAULT_COLOR =
@@ -137,7 +135,7 @@ function cleanElement(element: Element): void {
     if (kept.length) element.setAttribute('style', kept.join('; '));
     else element.removeAttribute('style');
   }
-  const classes = [...element.classList].filter((name) => OWN_CLASS.test(name));
+  const classes = [...element.classList].filter((name) => STAR_EDITOR_CONTENT_CLASSES.has(name));
   if (classes.length) element.setAttribute('class', classes.join(' '));
   else element.removeAttribute('class');
   const image = element.tagName === 'IMG';

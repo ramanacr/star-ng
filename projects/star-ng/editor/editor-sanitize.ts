@@ -22,8 +22,8 @@ export interface StarEditorSanitizeConfig {
    */
   readonly embedHosts?: readonly string[];
   /**
-   * Classes that stay besides the classes of the editor (`star-text-*`, `star-checklist`,
-   * `star-editor-*`). Other classes go, so the value cannot borrow the look of page overlays.
+   * Classes that stay besides the content classes of the editor (alignment, checklist, embed and
+   * table classes). Other classes go, so the value cannot borrow the look of page overlays.
    */
   readonly classes?: readonly string[];
 }
@@ -194,8 +194,22 @@ const STYLES: Readonly<Record<string, (value: string) => boolean>> = {
 /** Elements that may have a `width` and `height` style. */
 const SIZED = new Set(['img', 'table', 'td', 'th', 'col', 'iframe']);
 
-/** Classes of the editor, kept on every element. */
-const OWN_CLASS = /^star-(text-(center|end|justify)|checklist|editor-[a-z0-9-]+)$/;
+/**
+ * The content classes that the editor writes, kept on every element. Host and state classes of
+ * the control (`star-editor--full-screen` …) are not content and never stay.
+ */
+export const STAR_EDITOR_CONTENT_CLASSES: ReadonlySet<string> = new Set([
+  'star-text-center',
+  'star-text-end',
+  'star-text-justify',
+  'star-checklist',
+  'star-editor-embed',
+  'star-editor-table',
+  'star-editor-table--rows',
+  'star-editor-table--borderless',
+  'star-editor-table--center',
+  'star-editor-table--end',
+]);
 
 /** Attributes that hold an address (besides `href` and `src`), checked like `href`. */
 const URL_ATTRIBUTES = new Set(['cite', 'poster', 'background', 'action', 'data', 'longdesc']);
@@ -372,7 +386,7 @@ function cleanAttributes(element: Element, tag: string, config: StarEditorSaniti
       const own = config.classes ?? [];
       const classes = value
         .split(/\s+/)
-        .filter((name) => name && (OWN_CLASS.test(name) || own.includes(name)));
+        .filter((name) => name && (STAR_EDITOR_CONTENT_CLASSES.has(name) || own.includes(name)));
       if (classes.length) element.setAttribute(name, classes.join(' '));
       else element.removeAttribute(name);
     } else if (lower === 'style') {

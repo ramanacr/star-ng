@@ -242,3 +242,33 @@ describe('starEditorSanitize: review round 1', () => {
     expect(clean('<a href="//example.com/a">a</a>')).toBe('<a href="//example.com/a">a</a>');
   });
 });
+
+describe('starEditorSanitize: content classes only', () => {
+  it('strips host and state classes and keeps the content classes that the editor writes', () => {
+    for (const name of [
+      'star-editor',
+      'star-editor--full-screen',
+      'star-editor--over',
+      'star-editor--invalid',
+      'star-editor--disabled',
+      'star-editor__area',
+      'star-editor__toolbar',
+      'star-editor-anything',
+      'star-text-start',
+    ])
+      expect(clean(`<p class="${name}">a</p>`), name).toBe('<p>a</p>');
+    for (const name of [
+      'star-text-center',
+      'star-text-end',
+      'star-text-justify',
+      'star-checklist',
+      'star-editor-embed',
+      'star-editor-table',
+      'star-editor-table--rows',
+      'star-editor-table--borderless',
+      'star-editor-table--center',
+      'star-editor-table--end',
+    ])
+      expect(clean(`<div class="${name}">a</div>`), name).toBe(`<div class="${name}">a</div>`);
+  });
+});
