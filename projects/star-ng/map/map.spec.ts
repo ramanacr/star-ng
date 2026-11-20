@@ -326,6 +326,13 @@ describe('StarMap', () => {
     expect(plain.defaultPrevented).toBe(false);
   });
 
+  it('uses bold icons in the bar (the weight that apps load)', async () => {
+    const { root } = await setup();
+    const icons = [...root.querySelectorAll('.star-map__bar i')];
+    expect(icons.length).toBe(4);
+    expect(icons.every((icon) => icon.classList.contains('ph-bold'))).toBe(true);
+  });
+
   it('has a data table of every feature, shown with the table button', async () => {
     const { root, stable } = await setup();
     const table = root.querySelector('table')!;

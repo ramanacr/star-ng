@@ -255,7 +255,7 @@ const classColor = (index: number, count: number) =>
           [disabled]="view().zoom >= maxZoom()"
           (click)="zoomBy(1)"
         >
-          <i class="ph ph-plus" aria-hidden="true"></i>
+          <i class="ph-bold ph-plus" aria-hidden="true"></i>
         </button>
         <button
           type="button"
@@ -265,7 +265,7 @@ const classColor = (index: number, count: number) =>
           [disabled]="view().zoom <= minZoom()"
           (click)="zoomBy(-1)"
         >
-          <i class="ph ph-minus" aria-hidden="true"></i>
+          <i class="ph-bold ph-minus" aria-hidden="true"></i>
         </button>
         <button
           type="button"
@@ -274,7 +274,7 @@ const classColor = (index: number, count: number) =>
           [attr.title]="text.mapResetView"
           (click)="resetView()"
         >
-          <i class="ph ph-crosshair" aria-hidden="true"></i>
+          <i class="ph-bold ph-crosshair" aria-hidden="true"></i>
         </button>
       </div>
       <button
@@ -284,7 +284,7 @@ const classColor = (index: number, count: number) =>
         (click)="showTable.set(!showTable())"
       >
         <i
-          class="ph"
+          class="ph-bold"
           [class.ph-table]="!showTable()"
           [class.ph-map-trifold]="showTable()"
           aria-hidden="true"
