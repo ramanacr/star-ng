@@ -4048,7 +4048,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "boolean",
         "default": "false",
         "required": false,
-        "description": "Lazy mode: `items` is the current page only, `totalRecords` the count of all items, and `lazyLoad` asks for a page (after a page change, a sort change and `filter()`)."
+        "description": "Lazy mode: `items` is the current page only, `totalRecords` the count of all items, and `lazyLoad` asks for a page: at start (`lazyLoadOnInit`), after a page change, after `filter()`, and once after each change of `sortField` or `sortOrder` (then from the first page)."
       },
       {
         "name": "lazyLoadOnInit",
@@ -4083,7 +4083,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "StarOptionKey<T> | null",
         "default": "null",
         "required": false,
-        "description": "Field (or function) to sort the items by; `null` keeps the given order."
+        "description": "Field (or function) to sort the items by; `null` keeps the given order. A change of the sort goes back to the first page."
       },
       {
         "name": "sortOrder",

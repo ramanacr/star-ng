@@ -149,6 +149,42 @@ describe('StarDataView depth', () => {
     });
   });
 
+  it('asks again from the first page after a sort change in lazy mode, once per change', async () => {
+    const t = await setup((h) => {
+      h.lazy.set(true);
+      h.items.set(PRODUCTS.slice(0, 2));
+      h.sortField.set('name');
+    });
+    expect(t.host.loads.length).toBe(1);
+    t.el.querySelector<HTMLButtonElement>('[aria-label="Next page"]')!.click();
+    await t.stable();
+    expect(t.host.loads.length).toBe(2);
+    t.host.sortOrder.set(-1);
+    await t.stable();
+    expect(t.host.loads.length).toBe(3);
+    expect(t.host.loads.at(-1)).toEqual({
+      first: 0,
+      rows: 2,
+      sortField: 'name',
+      sortOrder: -1,
+      filter: '',
+    });
+    expect(t.host.first()).toBe(0);
+    t.host.sortField.set('price');
+    t.host.sortOrder.set(1);
+    await t.stable();
+    expect(t.host.loads.length).toBe(4);
+    expect(t.host.loads.at(-1)!.sortField).toBe('price');
+  });
+
+  it('goes back to the first page after a sort change in client mode', async () => {
+    const t = await setup((h) => h.first.set(2));
+    t.host.sortField.set('price');
+    await t.stable();
+    expect(t.host.first()).toBe(0);
+    expect(t.host.loads).toEqual([]);
+  });
+
   it('shows the loading state, with the slots', async () => {
     const t = await setup((h) => h.loading.set(true));
     const host = t.el.querySelector('star-data-view')!;

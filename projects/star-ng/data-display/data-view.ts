@@ -8,6 +8,7 @@ import {
   contentChild,
   contentChildren,
   Directive,
+  effect,
   forwardRef,
   inject,
   input,
@@ -16,6 +17,7 @@ import {
   output,
   signal,
   TemplateRef,
+  untracked,
 } from '@angular/core';
 import {
   compareValues,
@@ -252,7 +254,8 @@ export class StarDataView<T = unknown> {
   readonly showPageLinks = input(true, { transform: booleanAttribute });
   /**
    * Lazy mode: `items` is the current page only, `totalRecords` the count of all items, and
-   * `lazyLoad` asks for a page (after a page change, a sort change and `filter()`).
+   * `lazyLoad` asks for a page: at start (`lazyLoadOnInit`), after a page change, after `filter()`,
+   * and once after each change of `sortField` or `sortOrder` (then from the first page).
    */
   readonly lazy = input(false, { transform: booleanAttribute });
   /** Emits `lazyLoad` for the first page at start (default `true`). PrimeNG `lazyLoadOnInit`. */
@@ -263,7 +266,10 @@ export class StarDataView<T = unknown> {
   readonly loading = input(false, { transform: booleanAttribute });
   /** Icon classes of the loading indicator. */
   readonly loadingIcon = input('ph-bold ph-spinner-gap star-spin');
-  /** Field (or function) to sort the items by; `null` keeps the given order. */
+  /**
+   * Field (or function) to sort the items by; `null` keeps the given order. A change of the sort
+   * goes back to the first page.
+   */
   readonly sortField = input<StarOptionKey<T> | null>(null);
   /** `1` ascending (default), `-1` descending. */
   readonly sortOrder = input<1 | -1>(1);
@@ -333,9 +339,27 @@ export class StarDataView<T = unknown> {
     pageCount: Math.max(1, Math.ceil(this.recordCount() / Math.max(1, this.rows()))),
   }));
 
+  /** The sort of the last run of the sort effect (`undefined` before the first run). */
+  private lastSort: { field: StarOptionKey<T> | null; order: 1 | -1 } | undefined;
+  /** The first render is done: a lazy sort change may ask for data. */
+  private started = false;
+
   constructor() {
     afterNextRender(() => {
+      this.started = true;
       if (this.lazy() && this.lazyLoadOnInit()) this.emitLazy();
+    });
+    // A change of `sortField` or `sortOrder` goes back to the first page; in lazy mode it asks
+    // for that page once. The first run only records the initial sort (no request on init).
+    effect(() => {
+      const sort = { field: this.sortField(), order: this.sortOrder() };
+      untracked(() => {
+        const last = this.lastSort;
+        this.lastSort = sort;
+        if (!last || (last.field === sort.field && last.order === sort.order)) return;
+        this.first.set(0);
+        if (this.lazy() && this.started) this.emitLazy();
+      });
     });
   }
 
