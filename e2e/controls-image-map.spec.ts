@@ -106,13 +106,14 @@ test.describe('map', () => {
 
     const focused = () =>
       page.evaluate(() => document.activeElement?.getAttribute('aria-label') ?? '');
+    // The focus moves after the next render: wait for it before the next key.
     await page.keyboard.press('End');
-    expect(await focused()).not.toBe(first);
+    await expect.poll(focused).not.toBe(first);
     await page.keyboard.press('Home');
-    expect(await focused()).toBe(first);
+    await expect.poll(focused).toBe(first);
     await page.keyboard.press('ArrowRight');
+    await expect.poll(focused).not.toBe(first);
     const second = await focused();
-    expect(second).not.toBe(first);
     // Enter toggles the selection of the focused region (single selection).
     const wasPressed = await page.locator(':focus').getAttribute('aria-pressed');
     await page.keyboard.press('Enter');
