@@ -46,6 +46,7 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 
 #### Button
 
+- Button: `appearance` (`filled`, `outlined`, `text`, `link`), `raised`, `rounded`, `badge` and `badgeSeverity`, `label`, `loadingIcon`, `tabindex`, `autofocus`, and the `starIcon` slots `icon` and `loading` (PrimeNG `p-button`).
 - Button group (`star-button-group`, `@star-ng/ui/button`): joins adjacent buttons and split buttons into one bar (PrimeNG `p-buttongroup`).
 
 #### Chart

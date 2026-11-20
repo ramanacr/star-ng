@@ -1,5 +1,11 @@
 {
-  "button": ["StarButton", "StarButtonGroup", "StarButtonSize", "StarButtonVariant"],
+  "button": [
+    "StarButton",
+    "StarButtonAppearance",
+    "StarButtonGroup",
+    "StarButtonSize",
+    "StarButtonVariant"
+  ],
   "core": [
     "STAR_ANNOUNCER_DEDUPE_MS",
     "STAR_CLOCK_TICK",

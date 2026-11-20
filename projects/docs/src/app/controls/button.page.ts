@@ -57,6 +57,38 @@ import { DOCS, DocsRow } from '../shared/docs';
         </div>
       </docs-example>
 
+      <docs-example
+        heading="Appearance, badge and label"
+        source="button/appearance"
+        note="appearance draws the variant without its fill: outlined (border and text in the variant color), text (no border) or link (underlined). raised adds a shadow and rounded makes fully round ends. badge shows a small count after the text, in the badgeSeverity color; give the button an ariaLabel when the number needs words. label sets the text without content; with iconOnly it is the accessible name. loadingIcon changes the icon of the loading state, and starIcon with icon or loading replaces those icons with a template."
+      >
+        <div class="docs-row">
+          <star-button appearance="outlined">Outlined</star-button>
+          <star-button appearance="text" variant="secondary">Text</star-button>
+          <star-button appearance="link">Link</star-button>
+          <star-button variant="danger" appearance="outlined">Delete</star-button>
+          <star-button raised>Raised</star-button>
+          <star-button rounded variant="secondary">Rounded</star-button>
+          <star-button
+            variant="secondary"
+            label="Inbox"
+            [badge]="4"
+            badgeSeverity="info"
+            ariaLabel="Inbox, 4 new"
+          />
+          <star-button iconOnly leadingIcon="ph-bold ph-gear" label="Settings" variant="ghost" />
+        </div>
+      </docs-example>
+
+      <h2>Names in PrimeNG</h2>
+      <p>
+        The PrimeNG p-button names that StarNG gives in another way: severity is variant (plain is
+        secondary or ghost); outlined, text and link are appearance; icon and iconPos are
+        leadingIcon and trailingIcon; fluid is fullWidth; onClick is pressed; onFocus and onBlur are
+        the native focusin and focusout events of the host; style, styleClass and buttonProps are
+        the pass-through pt (part nativeButton); the content template is the projected content.
+      </p>
+
       <docs-api [of]="['StarButton']" [slots]="slots" [cssVars]="cssVars" [keyboard]="keyboard" />
     </docs-page>
   `,
@@ -78,6 +110,11 @@ save(): void {
 
   protected readonly slots: readonly DocsRow[] = [
     { name: '(default)', description: 'The button text. Not rendered when iconOnly is set.' },
+    {
+      name: 'ng-template[starIcon]',
+      description:
+        'Content child. "icon" replaces the leading icon, "loading" the loading icon. PrimeNG icon and loadingicon templates.',
+    },
   ];
   protected readonly cssVars: readonly DocsRow[] = [
     { name: '--star-primary-fill', description: 'Fill of the primary variant.' },

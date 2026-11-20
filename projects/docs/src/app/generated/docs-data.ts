@@ -2291,6 +2291,69 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
+        "name": "label",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Text of the button, before the projected content. With `iconOnly` it is the accessible name (when `ariaLabel` is not set). PrimeNG `label`."
+      },
+      {
+        "name": "loadingIcon",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Icon classes of the loading state (default: a turning spinner). PrimeNG `loadingIcon`."
+      },
+      {
+        "name": "appearance",
+        "type": "StarButtonAppearance",
+        "default": "'filled'",
+        "required": false,
+        "description": "`'outlined'`, `'text'` or `'link'` draw the variant without its fill. Default `'filled'`."
+      },
+      {
+        "name": "raised",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "A shadow under the button. PrimeNG `raised`."
+      },
+      {
+        "name": "rounded",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Fully round ends. PrimeNG `rounded`."
+      },
+      {
+        "name": "badge",
+        "type": "string | number | null",
+        "default": "null",
+        "required": false,
+        "description": "A small badge after the text, for example a count. Give the button an `ariaLabel` that says what the number means when the text alone does not. PrimeNG `badge`."
+      },
+      {
+        "name": "badgeSeverity",
+        "type": "StarSeverity",
+        "default": "'danger'",
+        "required": false,
+        "description": "Color of the badge. PrimeNG `badgeSeverity`."
+      },
+      {
+        "name": "tabindex",
+        "type": "number | null",
+        "default": "null",
+        "required": false,
+        "description": "`tabindex` of the inner button."
+      },
+      {
+        "name": "autofocus",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Focuses the button once, after the first render (browser only). PrimeNG `autofocus`."
+      },
+      {
         "name": "pt",
         "type": "StarPassThrough | null",
         "default": "null",
@@ -2323,7 +2386,8 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "loadingIcon",
       "leadingIcon",
       "text",
-      "trailingIcon"
+      "trailingIcon",
+      "badgeText"
     ]
   },
   "StarButtonGroup": {
@@ -21269,6 +21333,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "button-group/basic": "<div class=\"docs-stack\">\n  <star-button-group ariaLabel=\"Order actions\">\n    <star-button\n      variant=\"secondary\"\n      leadingIcon=\"ph-bold ph-floppy-disk\"\n      (pressed)=\"last.set('Save')\"\n    >\n      Save\n    </star-button>\n    <star-button\n      variant=\"secondary\"\n      leadingIcon=\"ph-bold ph-copy\"\n      (pressed)=\"last.set('Copy')\"\n    >\n      Copy\n    </star-button>\n    <star-button\n      variant=\"secondary\"\n      leadingIcon=\"ph-bold ph-trash\"\n      (pressed)=\"last.set('Delete')\"\n    >\n      Delete\n    </star-button>\n  </star-button-group>\n  <p class=\"docs-output\" role=\"status\">Last action: {{ last() }}</p>\n</div>",
   "button-group/icons": "<div class=\"docs-stack\">\n  <star-button-group ariaLabel=\"Text alignment\">\n    <star-button\n      variant=\"secondary\"\n      iconOnly\n      leadingIcon=\"ph-bold ph-text-align-left\"\n      ariaLabel=\"Align left\"\n    />\n    <star-button\n      variant=\"secondary\"\n      iconOnly\n      leadingIcon=\"ph-bold ph-text-align-center\"\n      ariaLabel=\"Align center\"\n    />\n    <star-button\n      variant=\"secondary\"\n      iconOnly\n      leadingIcon=\"ph-bold ph-text-align-right\"\n      ariaLabel=\"Align right\"\n    />\n  </star-button-group>\n  <star-button-group ariaLabel=\"Pages\">\n    <star-button variant=\"secondary\" size=\"sm\">Previous</star-button>\n    <star-button variant=\"secondary\" size=\"sm\">Next</star-button>\n  </star-button-group>\n</div>",
   "button-group/split": "<star-button-group ariaLabel=\"Invoice actions\">\n  <star-button variant=\"secondary\">Preview</star-button>\n  <star-split-button label=\"Send\" variant=\"secondary\" [items]=\"sendOptions\" />\n</star-button-group>",
+  "button/appearance": "<div class=\"docs-row\">\n  <star-button appearance=\"outlined\">Outlined</star-button>\n  <star-button appearance=\"text\" variant=\"secondary\">Text</star-button>\n  <star-button appearance=\"link\">Link</star-button>\n  <star-button variant=\"danger\" appearance=\"outlined\">Delete</star-button>\n  <star-button raised>Raised</star-button>\n  <star-button rounded variant=\"secondary\">Rounded</star-button>\n  <star-button\n    variant=\"secondary\"\n    label=\"Inbox\"\n    [badge]=\"4\"\n    badgeSeverity=\"info\"\n    ariaLabel=\"Inbox, 4 new\"\n  />\n  <star-button iconOnly leadingIcon=\"ph-bold ph-gear\" label=\"Settings\" variant=\"ghost\" />\n</div>",
   "button/full": "<div class=\"docs-stack\">\n  <star-button fullWidth>Continue</star-button>\n</div>",
   "button/icons": "<star-button leadingIcon=\"ph-bold ph-plus\">New order</star-button>\n<star-button variant=\"secondary\" trailingIcon=\"ph-bold ph-arrow-right star-icon-mirror\"\n  >Next</star-button\n>\n<star-button variant=\"ghost\" iconOnly leadingIcon=\"ph-bold ph-gear\" ariaLabel=\"Settings\" />",
   "button/sizes": "<star-button size=\"sm\">Small</star-button>\n<star-button size=\"md\">Medium</star-button>\n<star-button size=\"lg\">Large</star-button>",

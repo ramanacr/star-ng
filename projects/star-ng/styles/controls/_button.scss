@@ -126,6 +126,65 @@
   }
 }
 
+// Appearances (StarButton `appearance`): the variant color without its fill. `--star-btn-tone` is
+// the text and border color of each variant; success and warning are darkened for 4.5:1 text.
+.star-btn {
+  --star-btn-tone: var(--star-text-strong);
+}
+.star-btn--primary {
+  --star-btn-tone: var(--star-primary-text);
+}
+.star-btn--danger,
+.star-btn--ghost-danger {
+  --star-btn-tone: var(--star-danger);
+}
+.star-btn--success {
+  --star-btn-tone: color-mix(in srgb, var(--star-success) 55%, var(--star-text-strong));
+}
+.star-btn--warning {
+  --star-btn-tone: color-mix(in srgb, var(--star-warning) 45%, var(--star-text-strong));
+}
+.star-btn--outlined,
+.star-btn--text,
+.star-btn--link {
+  background: transparent;
+  color: var(--star-btn-tone);
+  box-shadow: none;
+
+  &:hover {
+    background: color-mix(in srgb, var(--star-btn-tone) 10%, transparent);
+  }
+}
+.star-btn--outlined {
+  border-color: currentColor;
+}
+.star-btn--text {
+  border-color: transparent;
+}
+.star-btn--link {
+  border-color: transparent;
+  padding-inline: 0.125rem;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+
+  &:hover {
+    background: transparent;
+    text-decoration-thickness: 2px;
+  }
+}
+.star-btn--raised {
+  box-shadow: var(--star-shadow-lg);
+}
+.star-btn--rounded {
+  border-radius: var(--star-radius-pill);
+}
+.star-btn__icon {
+  display: inline-flex;
+}
+.star-btn__badge {
+  margin-inline-start: 0.125rem;
+}
+
 @keyframes star-spin {
   to {
     transform: rotate(360deg);

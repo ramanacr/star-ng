@@ -177,7 +177,9 @@ export type StarIconSlotName =
   | 'zoomIn'
   | 'zoomOut'
   | 'rotateLeft'
-  | 'rotateRight';
+  | 'rotateRight'
+  | 'icon'
+  | 'loading';
 
 /** Context of the icon slot. */
 export interface StarIconContext {
