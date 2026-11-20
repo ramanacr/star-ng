@@ -94,7 +94,7 @@ describe('starEditorPutEmbed', () => {
       'Demo',
     );
     expect(el.innerHTML).toBe(
-      '<div class="star-editor-embed" contenteditable="false"><iframe src="https://player.vimeo.com/video/1" title="Demo" allowfullscreen=""></iframe></div><p><br></p>',
+      '<div class="star-editor-embed" contenteditable="false"><iframe src="https://player.vimeo.com/video/1" title="Demo" allowfullscreen="" sandbox="allow-scripts allow-popups allow-presentation" loading="lazy" referrerpolicy="no-referrer"></iframe></div><p><br></p>',
     );
   });
 });

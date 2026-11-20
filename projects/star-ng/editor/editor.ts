@@ -593,6 +593,7 @@ export class StarEditor implements FormValueControl<string> {
   /** Stores the area in the model and, with `record`, in the history. */
   private commit(record: boolean): void {
     const element = this.area().nativeElement;
+    starEditorProtectEmbeds(element);
     const length = starEditorPlainLength(element);
     let value = '';
     if (length && element.textContent?.trim()) {

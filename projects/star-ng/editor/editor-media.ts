@@ -3,6 +3,7 @@
  * RTE (MIT, same owner, https://github.com/ramanacr/aurora-rte, `embeds.ts`).
  */
 import { starEditorBlocks, starEditorRestore } from './editor-dom';
+import { STAR_EDITOR_FRAME_ATTRIBUTES } from './editor-sanitize';
 
 /** An image of the image panel. */
 export interface StarEditorImageValue {
@@ -172,8 +173,15 @@ export function starEditorPutEmbed(
   starEditorProtectEmbeds(area);
 }
 
-/** Embeds are one unit in the area: their content cannot be edited. */
+/**
+ * Embeds in the live area: each block is one unit (its content cannot be edited), and each frame
+ * has the sandbox, referrer and loading attributes of the sanitized value. The editor runs it on
+ * every HTML that enters the area (insert, undo, redo, source view, value).
+ */
 export function starEditorProtectEmbeds(area: HTMLElement): void {
   for (const block of area.querySelectorAll(`.${STAR_EDITOR_EMBED_CLASS}`))
     block.setAttribute('contenteditable', 'false');
+  for (const frame of area.querySelectorAll('iframe'))
+    for (const [name, value] of STAR_EDITOR_FRAME_ATTRIBUTES)
+      if (frame.getAttribute(name) !== value) frame.setAttribute(name, value);
 }

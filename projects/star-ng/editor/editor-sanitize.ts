@@ -93,6 +93,16 @@ export const STAR_EDITOR_SANITIZE_DEFAULTS: StarEditorSanitizeConfig = {
   embedHosts: [],
 };
 
+/**
+ * Attributes of every embed frame, in the value and in the live area: a sandbox without
+ * same-origin access or top navigation, no referrer, lazy loading.
+ */
+export const STAR_EDITOR_FRAME_ATTRIBUTES: readonly (readonly [string, string])[] = [
+  ['sandbox', 'allow-scripts allow-popups allow-presentation'],
+  ['loading', 'lazy'],
+  ['referrerpolicy', 'no-referrer'],
+];
+
 /** Elements that go with their content, even when an allow-list names them. */
 const DROP = new Set([
   'script',
@@ -373,9 +383,7 @@ function walk(parent: ParentNode, config: StarEditorSanitizeConfig, tags: Set<st
     if (embed) {
       // An embed shows another site: no content, a sandbox without same-origin access.
       element.replaceChildren();
-      element.setAttribute('sandbox', 'allow-scripts allow-popups allow-presentation');
-      element.setAttribute('loading', 'lazy');
-      element.setAttribute('referrerpolicy', 'no-referrer');
+      for (const [name, value] of STAR_EDITOR_FRAME_ATTRIBUTES) element.setAttribute(name, value);
       continue;
     }
     walk(element, config, tags);

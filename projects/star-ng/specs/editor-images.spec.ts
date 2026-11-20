@@ -160,4 +160,35 @@ describe('StarEditor embeds', () => {
       '<div class="star-editor-embed"><iframe src="https://player.vimeo.com/video/76979871" title="Product tour" allowfullscreen="" sandbox="allow-scripts allow-popups allow-presentation" loading="lazy" referrerpolicy="no-referrer"></iframe></div>',
     );
   });
+
+  it('keeps the live frame sandboxed after insert, undo, redo and a value from outside', async () => {
+    const { fixture, el, area, button, field, type, host } = await setup();
+    const sandboxed = () => {
+      const frame = area.querySelector('iframe')!;
+      expect(frame.getAttribute('sandbox')).toBe('allow-scripts allow-popups allow-presentation');
+      expect(frame.getAttribute('referrerpolicy')).toBe('no-referrer');
+      expect(frame.getAttribute('loading')).toBe('lazy');
+    };
+    const key = (init: KeyboardEventInit) =>
+      area.dispatchEvent(
+        new KeyboardEvent('keydown', { bubbles: true, cancelable: true, ...init }),
+      );
+    button('Embed').click();
+    await fixture.whenStable();
+    type(field('Video or page address'), 'https://vimeo.com/76979871');
+    type(field('Title'), 'Product tour');
+    el.querySelector('star-editor-embed form')!.dispatchEvent(
+      new Event('submit', { cancelable: true }),
+    );
+    sandboxed();
+    key({ key: 'z', ctrlKey: true });
+    expect(area.querySelector('iframe')).toBeNull();
+    key({ key: 'y', ctrlKey: true });
+    sandboxed();
+    host.html.set(
+      '<div class="star-editor-embed"><iframe src="https://player.vimeo.com/video/1" title="Tour"></iframe></div>',
+    );
+    await fixture.whenStable();
+    sandboxed();
+  });
 });
