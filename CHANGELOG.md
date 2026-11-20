@@ -350,6 +350,8 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - Dialog: a close or a destroy in the middle of a pointer drag or resize stops the tracking; the dialog no longer reopens at the dragged position or emits `dragEnd` / `resizeEnd` after the close. Moves of another pointer are ignored.
 - Dialog: `keepInViewport` clamps to the page area without the scrollbar (`documentElement.clientWidth` / `clientHeight`), and a remembered position and size (`rememberPosition`) come back inside the window on reopen.
 - Pivot grid: in a narrow configurator the area names ("Columns") were clipped and the fields ran out of the panel. The two area columns now shrink, a name wraps, and the Values area uses the full width.
+- Tabs: when the last tab that can take the focus closes from the keyboard or its close button, the focus moves to the tab list instead of the page body.
+- Mention: the result count ("2 results available", "No results found") goes to the shared live region (`StarAnnouncer`); the region inside the suggestion panel was created with its first text, so screen readers could miss it.
 
 ## [0.3.1] - 2026-11-18
 

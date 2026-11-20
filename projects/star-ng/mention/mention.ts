@@ -32,6 +32,7 @@ import {
 import {
   optionText,
   STAR_UI_TEXT,
+  StarAnnouncer,
   StarDirectionService,
   starFilterMatch,
   StarFilterMatchMode,
@@ -271,6 +272,7 @@ function plainLabel(label: string): string {
 })
 export class StarMention<T = unknown> {
   private readonly host = inject<ElementRef<HTMLTextAreaElement | HTMLInputElement>>(ElementRef);
+  private readonly uiText = inject(STAR_UI_TEXT);
   private readonly injector = inject(Injector);
   private readonly viewContainer = inject(ViewContainerRef);
   private readonly directionality = inject(Directionality);
@@ -306,6 +308,12 @@ export class StarMention<T = unknown> {
   readonly template = signal<TemplateRef<StarMentionItemContext<T>> | null>(null);
 
   private readonly context = signal<MentionContext | null>(null);
+  /** The text for screen readers while the list is open: the result count, or no results. */
+  private readonly status = computed(() => {
+    if (!this.isOpen() || this.loading()) return '';
+    const count = this.items().length;
+    return count ? this.uiText.resultsAvailable(count) : this.uiText.emptyFilterMessage;
+  });
   /** `true` while the suggestion panel shows. */
   readonly isOpen = computed(() => this.context() !== null);
   /** The text typed after the trigger, `''` while closed. */
@@ -351,6 +359,13 @@ export class StarMention<T = unknown> {
         const context = this.context();
         if (context && Array.isArray(source)) this.applyArray(source as readonly T[], context);
       });
+    });
+    // The result count goes to the shared live region: a region inside the panel is created with
+    // its first text, which screen readers can miss.
+    const announcer = inject(StarAnnouncer);
+    effect(() => {
+      const status = this.status();
+      if (status) untracked(() => void announcer.announce(status, 'polite'));
     });
     afterNextRender(() => this.refresh());
     inject(DestroyRef).onDestroy(() => {
@@ -703,7 +718,6 @@ export class StarMentionItemTemplate<T = unknown> {
           {{ mention.loading() ? text.loading : text.emptyFilterMessage }}
         </p>
       }
-      <p class="star-sr-only" aria-live="polite">{{ status() }}</p>
     </div>
   `,
 })
@@ -711,10 +725,4 @@ export class StarMentionPanel {
   protected readonly text = inject(STAR_UI_TEXT);
   /** The directive that owns the panel. */
   readonly owner = input.required<StarMention<unknown>>();
-  protected readonly status = computed(() => {
-    const mention = this.owner();
-    const count = mention.items().length;
-    if (mention.loading()) return '';
-    return count ? this.text.resultsAvailable(count) : this.text.emptyFilterMessage;
-  });
 }

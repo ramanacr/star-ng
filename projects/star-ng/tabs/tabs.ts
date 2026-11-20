@@ -207,6 +207,7 @@ export class StarTab {
         role="tablist"
         [attr.aria-orientation]="orientation()"
         [attr.aria-label]="ariaLabel()"
+        [attr.tabindex]="hasEnabledTab() ? null : -1"
         cdkDropList
         [cdkDropListOrientation]="orientation()"
         [cdkDropListLockAxis]="vertical() ? 'y' : 'x'"
@@ -406,6 +407,8 @@ export class StarTabs {
   });
   /** The hint of the Delete key, once for all closable tabs. */
   protected readonly closeHint = computed(() => this.tabs().some((tab) => tab.closable()));
+  /** False when no tab can take the focus: the tab list itself is then focusable from code. */
+  protected readonly hasEnabledTab = computed(() => this.tabs().some((tab) => !tab.disabled()));
 
   constructor() {
     let observer: ResizeObserver | null = null;
@@ -492,7 +495,14 @@ export class StarTabs {
     const wasSelected = tab.value() === this.selected();
     const moveFocus = fromKeyboard || fromCloseButton;
     const hadFocus = moveFocus || tab.value() === this.focusValue();
-    if (!neighbour || neighbour === tab) return;
+    if (!neighbour || neighbour === tab) {
+      // The last tab that can take the focus closed: keep the focus in the tabs (the tab list)
+      // instead of losing it to the page body.
+      if (moveFocus) {
+        afterNextRender(() => this.list().nativeElement.focus(), { injector: this.injector });
+      }
+      return;
+    }
     if (wasSelected) {
       this.value.set(neighbour.value());
       this.changed.emit(neighbour.value());

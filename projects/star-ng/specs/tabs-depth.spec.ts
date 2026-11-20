@@ -186,6 +186,23 @@ describe('StarTabs closable', () => {
     key(tabs[2], { key: 'Delete' });
     expect(host.events.length).toBe(2);
   });
+
+  it('keeps the focus in the tabs when the last tab closes from the keyboard', async () => {
+    const fixture = TestBed.createComponent(CloseHost);
+    const host = fixture.componentInstance;
+    host.names.set(['Only']);
+    host.tab.set('Only');
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+    const tab = el.querySelector<HTMLElement>('[role=tab]')!;
+    tab.focus();
+    key(tab, { key: 'Delete' });
+    await fixture.whenStable();
+    expect(host.names()).toEqual([]);
+    const list = el.querySelector<HTMLElement>('[role=tablist]')!;
+    expect(document.activeElement).toBe(list);
+    expect(list.getAttribute('tabindex')).toBe('-1');
+  });
 });
 
 describe('StarTabs close button for assistive technology', () => {
