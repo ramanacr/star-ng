@@ -79,6 +79,7 @@ describe('StarEditor toolbar', () => {
       'Link',
       'Image',
       'Embed',
+      'Table',
       'Horizontal line',
       'Clear formatting',
       'HTML source',

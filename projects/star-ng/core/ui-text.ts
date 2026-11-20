@@ -342,6 +342,26 @@ export interface StarUiText {
   readonly editorSourceChanged: string;
   /** Error of the source view: an element that is opened and never closed; `name` is the tag name. */
   readonly editorSourceUnclosed: (name: string) => string;
+  readonly editorTable: string;
+  /** Field of the insert table panel: the number of rows. */
+  readonly editorRows: string;
+  readonly editorHeaderRow: string;
+  readonly editorRowAbove: string;
+  readonly editorRowBelow: string;
+  readonly editorColumnBefore: string;
+  readonly editorColumnAfter: string;
+  readonly editorDeleteRow: string;
+  readonly editorDeleteColumn: string;
+  readonly editorDeleteTable: string;
+  readonly editorMergeNext: string;
+  readonly editorMergeBelow: string;
+  readonly editorSplitCell: string;
+  readonly editorTableProperties: string;
+  readonly editorBorders: string;
+  readonly editorBordersAll: string;
+  readonly editorBordersRows: string;
+  readonly editorBordersNone: string;
+  readonly editorTableAlign: string;
   readonly chartPoints: (title: string) => string;
   readonly chartPointsHint: string;
   readonly chartPointLabel: (series: string, label: string, value: string) => string;
@@ -1114,6 +1134,25 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   editorSource: 'HTML source',
   editorSourceChanged: 'Some markup is not allowed: it was removed or changed to current markup.',
   editorSourceUnclosed: (name) => `The element <${name}> is not closed.`,
+  editorTable: 'Table',
+  editorRows: 'Rows',
+  editorHeaderRow: 'Header row',
+  editorRowAbove: 'Insert row above',
+  editorRowBelow: 'Insert row below',
+  editorColumnBefore: 'Insert column before',
+  editorColumnAfter: 'Insert column after',
+  editorDeleteRow: 'Delete row',
+  editorDeleteColumn: 'Delete column',
+  editorDeleteTable: 'Delete table',
+  editorMergeNext: 'Merge with the next cell',
+  editorMergeBelow: 'Merge with the cell below',
+  editorSplitCell: 'Split cell',
+  editorTableProperties: 'Table properties',
+  editorBorders: 'Borders',
+  editorBordersAll: 'All borders',
+  editorBordersRows: 'Lines between rows',
+  editorBordersNone: 'No borders',
+  editorTableAlign: 'Table alignment',
   chartPoints: (title) => `${title}: data points`,
   chartPointsHint: 'Arrow keys move between the points and the series. Enter selects a point.',
   chartPointLabel: (series, label, value) => `${series}, ${label}: ${value}`,

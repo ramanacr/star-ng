@@ -1743,6 +1743,17 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'editor table with context menu',
+    path: 'controls/editor',
+    open: async (page) => {
+      await expect(page.locator('star-editor[ngh]')).toHaveCount(0, { timeout: 15_000 });
+      const live = example(page, 'Tables');
+      await live.getByRole('textbox', { name: 'Price table' }).locator('td').first().click();
+      await page.keyboard.press('Shift+F10');
+      await expect(page.getByRole('menu')).toBeVisible();
+    },
+  },
+  {
     name: 'editor link popover open',
     path: 'controls/editor',
     open: async (page) => {

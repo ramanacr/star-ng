@@ -5433,6 +5433,62 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ]
   },
+  "StarEditorTableInsert": {
+    "kind": "component",
+    "selector": "star-editor-table-insert",
+    "entry": "@star-ng/ui/editor",
+    "description": "The insert table panel of `star-editor` (internal): rows, columns and a header row, with a grid that a pointer can pick the size from (the fields are the keyboard way). Escape closes it.",
+    "inputs": [],
+    "models": [],
+    "outputs": [
+      {
+        "name": "apply",
+        "type": "{ rows: number; cols: number; header: boolean }",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "dismissed",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
+  "StarEditorTableProperties": {
+    "kind": "component",
+    "selector": "star-editor-table-properties",
+    "entry": "@star-ng/ui/editor",
+    "description": "The table properties panel of `star-editor` (internal): borders and alignment.",
+    "inputs": [
+      {
+        "name": "initial",
+        "type": "{ borders: StarEditorTableBorders; align: StarEditorTableAlign }",
+        "default": "{ borders: 'all', align: 'start', }",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": [
+      {
+        "name": "apply",
+        "type": "{ borders: StarEditorTableBorders; align: StarEditorTableAlign }",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "dismissed",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
   "StarEditorToolbarTemplate": {
     "kind": "directive",
     "selector": "ng-template[starEditorToolbar]",
@@ -16014,6 +16070,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "editor/size": "<div class=\"docs-stack\">\n  <star-editor\n    [(value)]=\"comment\"\n    ariaLabel=\"Order comment\"\n    placeholder=\"Add a comment\"\n    minHeight=\"4rem\"\n  />\n</div>",
   "editor/source": "<div class=\"docs-stack\">\n  <star-editor\n    [(value)]=\"sourceValue\"\n    [toolbar]=\"sourceToolbar\"\n    ariaLabel=\"Release source\"\n  />\n  <pre class=\"docs-output\" role=\"group\" aria-label=\"Value of the source editor\">{{\n    sourceValue()\n  }}</pre>\n</div>",
   "editor/states": "<div class=\"docs-stack\">\n  <star-editor [value]=\"saved()\" ariaLabel=\"Saved note\" readonly />\n  <star-editor [value]=\"saved()\" ariaLabel=\"Locked note\" disabled />\n</div>",
+  "editor/tables": "<div class=\"docs-stack\">\n  <star-editor [(value)]=\"tables\" [toolbar]=\"tableToolbar\" ariaLabel=\"Price table\" />\n</div>",
   "editor/text-limit": "<div class=\"docs-stack\">\n  <star-editor\n    [(value)]=\"summary\"\n    format=\"text\"\n    [maxLength]=\"120\"\n    ariaLabel=\"Delivery summary\"\n  />\n  <pre class=\"docs-output\" role=\"group\" aria-label=\"Value of the text editor\">{{\n    summary()\n  }}</pre>\n</div>",
   "editor/toolbar-slot": "<div class=\"docs-stack\">\n  <star-editor ariaLabel=\"Release note\" minHeight=\"4rem\">\n    <ng-template\n      starEditorToolbar\n      let-exec=\"exec\"\n      let-isActive=\"isActive\"\n      let-disabled=\"disabled\"\n    >\n      <div\n        class=\"star-toolbar star-editor__toolbar\"\n        role=\"toolbar\"\n        aria-label=\"Release note tools\"\n      >\n        <button\n          type=\"button\"\n          class=\"star-btn star-btn--ghost star-btn--sm\"\n          [attr.aria-pressed]=\"isActive('bold')\"\n          [disabled]=\"disabled\"\n          (mousedown)=\"$event.preventDefault()\"\n          (click)=\"exec('bold')\"\n        >\n          Bold\n        </button>\n        <button\n          type=\"button\"\n          class=\"star-btn star-btn--ghost star-btn--sm\"\n          [attr.aria-pressed]=\"isActive('code')\"\n          [disabled]=\"disabled\"\n          (mousedown)=\"$event.preventDefault()\"\n          (click)=\"exec('code')\"\n        >\n          Code\n        </button>\n      </div>\n    </ng-template>\n  </star-editor>\n</div>",
   "field/basic": "<div class=\"docs-stack\">\n  <star-field label=\"Full name\" hint=\"As shown on your account.\">\n    <input starInput placeholder=\"Avery Stone\" />\n  </star-field>\n</div>",

@@ -447,3 +447,78 @@ ul.star-checklist {
   font: var(--star-type-body-sm);
   color: var(--star-text-muted);
 }
+// Tables that the editor makes. Global classes keep the look where the HTML is shown.
+.star-editor-table {
+  width: 100%;
+  margin: 0.75rem 0;
+  border-collapse: collapse;
+  table-layout: fixed;
+
+  th,
+  td {
+    padding: 0.375rem 0.5rem;
+    border: 1px solid var(--star-border-strong);
+    vertical-align: top;
+    text-align: start;
+    overflow-wrap: anywhere;
+  }
+  th {
+    background: var(--star-surface-muted);
+    font-weight: 600;
+  }
+}
+.star-editor-table--rows {
+  th,
+  td {
+    border-inline: 0;
+  }
+}
+.star-editor-table--borderless {
+  th,
+  td {
+    border: 0;
+  }
+}
+// A table with column widths is as wide as its columns; alignment moves it.
+.star-editor-table:has(> colgroup col[style]) {
+  width: auto;
+}
+.star-editor-table--center {
+  margin-inline: auto;
+}
+.star-editor-table--end {
+  margin-inline-start: auto;
+}
+.star-editor__area--col-resize {
+  cursor: col-resize;
+}
+.star-editor__area td:focus-within,
+.star-editor__area th:focus-within {
+  outline: 2px solid var(--star-accent);
+  outline-offset: -2px;
+}
+// The size picker of the insert table panel.
+.star-editor__table-picker {
+  display: grid;
+  grid-template-columns: repeat(10, 1rem);
+  gap: 2px;
+  flex-basis: 100%;
+}
+.star-editor__table-picker-cell {
+  width: 1rem;
+  height: 1rem;
+  padding: 0;
+  border: 1px solid var(--star-border-strong);
+  border-radius: 2px;
+  background: var(--star-surface);
+  cursor: pointer;
+}
+.star-editor__table-picker-cell--on {
+  border-color: var(--star-accent);
+  background: var(--star-accent-soft);
+}
+.star-editor__table-picker-size {
+  grid-column: 1 / -1;
+  font: var(--star-type-body-sm);
+  color: var(--star-text-muted);
+}

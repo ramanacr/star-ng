@@ -165,3 +165,24 @@ test.describe('editor source view', () => {
     await expect(live.getByRole('textbox', { name: 'Release source' })).toContainText('Soon');
   });
 });
+
+test.describe('editor tables', () => {
+  test('Tab moves between cells and the context menu inserts a row', async ({ page }) => {
+    await openEditor(page);
+    const live = example(page, 'Tables');
+    const area = live.getByRole('textbox', { name: 'Price table' });
+    await area.locator('td', { hasText: 'Basic' }).click();
+    await page.keyboard.press('Tab');
+    await page.keyboard.type('12');
+    await expect(area.locator('tbody tr').first()).toContainText('12');
+    await page.keyboard.press('Shift+F10');
+    const menu = page.getByRole('menu');
+    await expect(menu.getByRole('menuitem', { name: 'Insert row above' })).toBeFocused();
+    await menu.getByRole('menuitem', { name: 'Insert row below' }).click();
+    await expect(area.locator('tbody tr')).toHaveCount(3);
+    await area.locator('th').first().click({ button: 'right' });
+    await expect(page.getByRole('menu')).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('menu')).toHaveCount(0);
+  });
+});

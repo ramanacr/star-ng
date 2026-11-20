@@ -1,4 +1,5 @@
 import { _IdGenerator } from '@angular/cdk/a11y';
+import { CdkContextMenuTrigger } from '@angular/cdk/menu';
 import { NgTemplateOutlet } from '@angular/common';
 import {
   afterNextRender,
@@ -19,8 +20,15 @@ import {
   viewChild,
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
-import { STAR_UI_TEXT, starInlineKey, StarUiText } from '@star-ng/ui/core';
+import {
+  STAR_UI_TEXT,
+  starInlineKey,
+  StarUiText,
+  ɵstarIsContextMenuKey,
+  ɵstarOpenContextMenu,
+} from '@star-ng/ui/core';
 import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/ui/field';
+import { StarContextMenu, StarMenu, StarMenuItem } from '@star-ng/ui/menu';
 import { StarEditorColor } from './editor-color';
 import {
   starEditorAlign,
@@ -79,6 +87,27 @@ import {
   StarEditorSanitizeConfig,
 } from './editor-sanitize';
 import { starEditorFormatHtml, starEditorReadSource } from './editor-source';
+import {
+  starEditorCellPlace,
+  starEditorColumnWidth,
+  starEditorDeleteColumn,
+  starEditorDeleteRow,
+  starEditorInsertColumn,
+  starEditorInsertRow,
+  starEditorMergeBelow,
+  starEditorMergeNext,
+  starEditorNewTable,
+  starEditorSetColumnWidth,
+  starEditorSetTableLook,
+  starEditorSiblingCell,
+  starEditorSplitCell,
+  StarEditorTableAlign,
+  StarEditorTableBorders,
+  starEditorTableGrid,
+  starEditorTableLook,
+  starEditorToggleHeaderRow,
+} from './editor-table';
+import { StarEditorTableInsert, StarEditorTableProperties } from './editor-table-panel';
 import {
   STAR_EDITOR_BUTTONS,
   STAR_EDITOR_DEFAULT_TOOLBAR,
@@ -144,7 +173,17 @@ type Panel = 'textColor' | 'highlight';
  */
 @Component({
   selector: 'star-editor',
-  imports: [StarEditorLink, StarEditorColor, StarEditorImage, StarEditorEmbed, NgTemplateOutlet],
+  imports: [
+    StarEditorTableInsert,
+    StarEditorTableProperties,
+    StarMenu,
+    StarContextMenu,
+    StarEditorLink,
+    StarEditorColor,
+    StarEditorImage,
+    StarEditorEmbed,
+    NgTemplateOutlet,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-editor',
@@ -316,6 +355,55 @@ export class StarEditor implements FormValueControl<string> {
   private sourceTimer: ReturnType<typeof setTimeout> | null = null;
   /** The open image or embed panel, and the image it edits. */
   protected readonly mediaPanel = signal<'image' | 'embed' | null>(null);
+  /** The open table panel, and the table its properties are for. */
+  protected readonly tablePanel = signal<'insert' | 'properties' | null>(null);
+  protected readonly tableLook = signal<{
+    borders: StarEditorTableBorders;
+    align: StarEditorTableAlign;
+  }>({ borders: 'all', align: 'start' });
+  private panelTable: HTMLTableElement | null = null;
+  /** The cell of the open table context menu. */
+  private menuCell: HTMLTableCellElement | null = null;
+  private readonly menuTrigger = viewChild('area', { read: CdkContextMenuTrigger });
+  /** Items of the table context menu. */
+  protected readonly tableMenu = computed<readonly StarMenuItem[]>(() => {
+    const t = this.text;
+    const item = (label: string, icon: string, run: (cell: HTMLTableCellElement) => unknown) => ({
+      label,
+      icon,
+      command: () => this.tableCommand(run),
+    });
+    return [
+      item(t.editorRowAbove, 'ph-bold ph-arrow-line-up', (c) => starEditorInsertRow(c, false)),
+      item(t.editorRowBelow, 'ph-bold ph-arrow-line-down', (c) => starEditorInsertRow(c, true)),
+      item(t.editorColumnBefore, 'ph-bold ph-arrow-line-left', (c) =>
+        starEditorInsertColumn(c, false),
+      ),
+      item(t.editorColumnAfter, 'ph-bold ph-arrow-line-right', (c) =>
+        starEditorInsertColumn(c, true),
+      ),
+      { separator: true },
+      item(t.editorMergeNext, 'ph-bold ph-arrows-merge', starEditorMergeNext),
+      item(t.editorMergeBelow, 'ph-bold ph-arrows-merge', starEditorMergeBelow),
+      item(t.editorSplitCell, 'ph-bold ph-square-split-horizontal', starEditorSplitCell),
+      item(t.editorHeaderRow, 'ph-bold ph-rows', (c) =>
+        starEditorToggleHeaderRow(c.closest('table')!),
+      ),
+      { separator: true },
+      {
+        label: t.editorTableProperties,
+        icon: 'ph-bold ph-sliders',
+        command: () => this.openTableProperties(this.menuCell?.closest('table') ?? null),
+      },
+      { separator: true },
+      item(t.editorDeleteRow, 'ph-bold ph-trash', starEditorDeleteRow),
+      item(t.editorDeleteColumn, 'ph-bold ph-trash', starEditorDeleteColumn),
+      {
+        ...item(t.editorDeleteTable, 'ph-bold ph-trash', (c) => c.closest('table')!.remove()),
+        danger: true,
+      },
+    ];
+  });
   protected readonly imageInitial = signal<StarEditorImageValue | null>(null);
   private editedImage: HTMLImageElement | null = null;
   /** The selected image (a click, or a selection of just the image) and its frame. */
@@ -405,6 +493,7 @@ export class StarEditor implements FormValueControl<string> {
     if (cmd === 'link') return this.linkOpen();
     if (cmd === 'textColor' || cmd === 'highlight') return this.colorPanel() === cmd;
     if (cmd === 'image' || cmd === 'embed') return this.mediaPanel() === cmd;
+    if (cmd === 'table') return this.tablePanel() !== null;
     return null;
   }
 
@@ -602,6 +691,7 @@ export class StarEditor implements FormValueControl<string> {
     const area = this.area().nativeElement;
     const range = starEditorRange(area);
     if (!range) return;
+    if (this.tableKey(event, range)) return;
     if (event.key === 'Tab' && !mod && !event.altKey) {
       const items = starEditorItems(area, range);
       if (items.length && starEditorIndentItems(area, range, items, event.shiftKey ? -1 : 1)) {
@@ -683,6 +773,12 @@ export class StarEditor implements FormValueControl<string> {
     }
     if (command === 'image' || command === 'embed') {
       this.openMedia(command);
+      return;
+    }
+    if (command === 'table') {
+      const table = this.cellAt(starEditorRange(area))?.closest('table') ?? null;
+      if (table) this.openTableProperties(table);
+      else this.openTableInsert();
       return;
     }
     if ((command === 'textColor' || command === 'highlight') && value === undefined) {
@@ -793,6 +889,7 @@ export class StarEditor implements FormValueControl<string> {
     this.panelRange = starEditorRange(this.area().nativeElement)?.cloneRange() ?? null;
     this.linkOpen.set(false);
     this.mediaPanel.set(null);
+    this.tablePanel.set(null);
     this.colorPanel.set(this.colorPanel() === kind ? null : kind);
   }
 
@@ -853,6 +950,228 @@ export class StarEditor implements FormValueControl<string> {
     this.commit(true);
   }
 
+  // ---- Tables ----
+
+  /** The table cell of the range in this area, or `null`. */
+  private cellAt(range: Range | null): HTMLTableCellElement | null {
+    if (!range) return null;
+    return starEditorClosest(range.startContainer, this.area().nativeElement, [
+      'TD',
+      'TH',
+    ]) as HTMLTableCellElement | null;
+  }
+
+  private closePanels(): void {
+    this.linkOpen.set(false);
+    this.colorPanel.set(null);
+    this.mediaPanel.set(null);
+    this.tablePanel.set(null);
+  }
+
+  private openTableInsert(): void {
+    this.panelRange = starEditorRange(this.area().nativeElement)?.cloneRange() ?? null;
+    const open = this.tablePanel() === 'insert';
+    this.closePanels();
+    if (!open) this.tablePanel.set('insert');
+  }
+
+  private openTableProperties(table: HTMLTableElement | null): void {
+    if (!table) return;
+    this.panelRange = starEditorRange(this.area().nativeElement)?.cloneRange() ?? null;
+    this.panelTable = table;
+    this.tableLook.set(starEditorTableLook(table));
+    this.closePanels();
+    this.tablePanel.set('properties');
+  }
+
+  protected closeTablePanel(): void {
+    this.tablePanel.set(null);
+    this.area().nativeElement.focus();
+    starEditorRestore(this.panelRange);
+    this.panelRange = null;
+  }
+
+  protected insertTable(size: { rows: number; cols: number; header: boolean }): void {
+    const area = this.area().nativeElement;
+    this.tablePanel.set(null);
+    area.focus();
+    starEditorRestore(this.panelRange);
+    this.panelRange = null;
+    const range = starEditorRange(area) ?? this.endRange();
+    const table = starEditorNewTable(area.ownerDocument, size.rows, size.cols, size.header);
+    let anchor: Element | null = starEditorBlocks(area, range).at(-1) ?? null;
+    while (anchor && anchor.parentElement !== area) anchor = anchor.parentElement;
+    if (anchor && !anchor.textContent?.trim() && !anchor.querySelector('img,iframe,table,hr'))
+      anchor.replaceWith(table);
+    else if (anchor) anchor.after(table);
+    else area.appendChild(table);
+    if (!table.nextElementSibling) {
+      const paragraph = area.ownerDocument.createElement('p');
+      paragraph.appendChild(area.ownerDocument.createElement('br'));
+      table.after(paragraph);
+    }
+    this.caretIn(table.rows[0].cells[0]);
+    this.onInput();
+  }
+
+  protected applyTableLook(look: {
+    borders: StarEditorTableBorders;
+    align: StarEditorTableAlign;
+  }): void {
+    this.tablePanel.set(null);
+    const table = this.panelTable;
+    this.area().nativeElement.focus();
+    starEditorRestore(this.panelRange);
+    this.panelRange = null;
+    if (table && this.area().nativeElement.contains(table)) {
+      starEditorSetTableLook(table, look);
+      this.onInput();
+    }
+  }
+
+  /** Puts the caret at the start of `cell` (its whole text selected). */
+  private caretIn(cell: HTMLTableCellElement): void {
+    const range = cell.ownerDocument.createRange();
+    range.selectNodeContents(cell);
+    if (!cell.textContent?.trim()) range.collapse(true);
+    starEditorRestore(range);
+  }
+
+  /** Runs a table command on the cell of the menu, and puts the caret back in the table. */
+  private tableCommand(run: (cell: HTMLTableCellElement) => unknown): void {
+    const cell = this.menuCell;
+    const area = this.area().nativeElement;
+    if (!cell || !area.contains(cell) || this.locked()) return;
+    const table = cell.closest('table')!;
+    const row = cell.parentElement as HTMLTableRowElement;
+    run(cell);
+    area.focus();
+    const target = area.contains(cell)
+      ? cell
+      : row.isConnected && row.cells[0]
+        ? row.cells[0]
+        : area.contains(table)
+          ? table.rows[0]?.cells[0]
+          : null;
+    if (target) this.caretIn(target);
+    this.onInput();
+  }
+
+  /** The table context menu works only on table cells; elsewhere the browser menu shows. */
+  protected onAreaPointerDown(event: PointerEvent): void {
+    const target = event.target instanceof Element ? event.target : null;
+    const cell = target?.closest('td, th');
+    const trigger = this.menuTrigger();
+    if (trigger)
+      trigger.disabled = this.locked() || !cell || !this.area().nativeElement.contains(cell);
+    if (cell) this.menuCell = cell as HTMLTableCellElement;
+    if (event.button === 0) this.startColumnResize(event);
+  }
+
+  protected onAreaContextMenu(event: MouseEvent): void {
+    const cell = (event.target as Element | null)?.closest?.('td, th');
+    const trigger = this.menuTrigger();
+    if (trigger) trigger.disabled = this.locked() || !cell;
+    if (cell) this.menuCell = cell as HTMLTableCellElement;
+  }
+
+  /** Keys in a table cell. True when the key was used. */
+  private tableKey(event: KeyboardEvent, range: Range): boolean {
+    const cell = this.cellAt(range);
+    const trigger = this.menuTrigger();
+    if (!cell) {
+      // Outside a table the browser menu shows.
+      if (trigger && ɵstarIsContextMenuKey(event)) trigger.disabled = true;
+      return false;
+    }
+    if (ɵstarIsContextMenuKey(event)) {
+      event.preventDefault();
+      this.menuCell = cell;
+      if (trigger) trigger.disabled = false;
+      ɵstarOpenContextMenu(cell);
+      return true;
+    }
+    if (event.key === 'Tab' && !event.ctrlKey && !event.altKey && !event.metaKey) {
+      const next = starEditorSiblingCell(cell, event.shiftKey ? -1 : 1);
+      // At the last cell (or the first, with Shift) Tab leaves the area as usual.
+      if (!next) return true;
+      event.preventDefault();
+      this.caretIn(next);
+      this.refreshState();
+      return true;
+    }
+    const key = starInlineKey(event, this.area().nativeElement);
+    if (event.altKey && event.shiftKey && (key === 'ArrowLeft' || key === 'ArrowRight')) {
+      event.preventDefault();
+      const table = cell.closest('table')!;
+      const col = starEditorCellPlace(starEditorTableGrid(table), cell).col;
+      const width = starEditorColumnWidth(table, col) || cell.offsetWidth || 120;
+      starEditorSetColumnWidth(table, col, width + (key === 'ArrowRight' ? 10 : -10));
+      this.onInput();
+      return true;
+    }
+    return false;
+  }
+
+  /** A drag that started on the end edge of a cell resizes its column. */
+  private columnDrag: {
+    table: HTMLTableElement;
+    col: number;
+    x: number;
+    width: number;
+    rtl: boolean;
+  } | null = null;
+
+  private startColumnResize(event: PointerEvent): void {
+    const cell = (event.target as Element | null)?.closest?.(
+      'td, th',
+    ) as HTMLTableCellElement | null;
+    if (!cell || this.locked()) return;
+    const box = cell.getBoundingClientRect();
+    const view = cell.ownerDocument.defaultView;
+    const rtl = view?.getComputedStyle(cell).direction === 'rtl';
+    const fromEnd = rtl ? event.clientX - box.left : box.right - event.clientX;
+    if (fromEnd < 0 || fromEnd > 5) return;
+    event.preventDefault();
+    const table = cell.closest('table')!;
+    const place = starEditorCellPlace(starEditorTableGrid(table), cell);
+    const col = place.col + Math.max(1, cell.colSpan) - 1;
+    this.columnDrag = {
+      table,
+      col,
+      x: event.clientX,
+      width: starEditorColumnWidth(table, col) || box.width / Math.max(1, cell.colSpan),
+      rtl,
+    };
+    this.area().nativeElement.setPointerCapture?.(event.pointerId);
+  }
+
+  protected onAreaPointerMove(event: PointerEvent): void {
+    const drag = this.columnDrag;
+    const area = this.area().nativeElement;
+    if (drag) {
+      const delta = event.clientX - drag.x;
+      starEditorSetColumnWidth(drag.table, drag.col, drag.width + (drag.rtl ? -delta : delta));
+      return;
+    }
+    // The resize cursor shows on the end edge of a cell.
+    const cell = (event.target as Element | null)?.closest?.('td, th');
+    let edge = false;
+    if (cell && !this.locked()) {
+      const box = cell.getBoundingClientRect();
+      const rtl = cell.ownerDocument.defaultView?.getComputedStyle(cell).direction === 'rtl';
+      const fromEnd = rtl ? event.clientX - box.left : box.right - event.clientX;
+      edge = fromEnd >= 0 && fromEnd <= 5;
+    }
+    area.classList.toggle('star-editor__area--col-resize', edge);
+  }
+
+  protected onAreaPointerUp(): void {
+    if (!this.columnDrag) return;
+    this.columnDrag = null;
+    this.onInput();
+  }
+
   // ---- Images and embeds ----
 
   private openMedia(kind: 'image' | 'embed'): void {
@@ -860,6 +1179,7 @@ export class StarEditor implements FormValueControl<string> {
     this.panelRange = starEditorRange(area)?.cloneRange() ?? null;
     this.linkOpen.set(false);
     this.colorPanel.set(null);
+    this.tablePanel.set(null);
     this.editedImage = kind === 'image' ? this.imageAt(this.panelRange) : null;
     this.imageInitial.set(this.editedImage ? starEditorImageOf(this.editedImage) : null);
     this.mediaPanel.set(this.mediaPanel() === kind ? null : kind);
@@ -1017,6 +1337,7 @@ export class StarEditor implements FormValueControl<string> {
     const area = this.area().nativeElement;
     this.colorPanel.set(null);
     this.mediaPanel.set(null);
+    this.tablePanel.set(null);
     this.linkRange = starEditorRange(area)?.cloneRange() ?? null;
     this.linkAnchor = this.anchorAt(this.linkRange);
     this.linkUrl.set(this.linkAnchor?.getAttribute('href') ?? '');

@@ -158,6 +158,16 @@
     (dismissed)="closeMedia()"
   />
 }
+@if (tablePanel() === 'insert') {
+  <star-editor-table-insert (apply)="insertTable($event)" (dismissed)="closeTablePanel()" />
+}
+@if (tablePanel() === 'properties') {
+  <star-editor-table-properties
+    [initial]="tableLook()"
+    (apply)="applyTableLook($event)"
+    (dismissed)="closeTablePanel()"
+  />
+}
 @if (sourceMode()) {
   <div class="star-editor__source">
     <textarea
@@ -197,6 +207,12 @@
   [attr.data-placeholder]="placeholder()"
   [style.min-height]="minHeight()"
   [hidden]="sourceMode()"
+  [starContextMenu]="tableMenuRef"
+  (contextmenu)="onAreaContextMenu($event)"
+  (pointerdown)="onAreaPointerDown($event)"
+  (pointermove)="onAreaPointerMove($event)"
+  (pointerup)="onAreaPointerUp()"
+  (pointercancel)="onAreaPointerUp()"
   (beforeinput)="onBeforeInput($event)"
   (input)="onInput()"
   (keydown)="onAreaKeydown($event)"
@@ -243,3 +259,4 @@
   </div>
   <span class="star-sr-only" aria-live="polite">{{ limitMessage() }}</span>
 }
+<star-menu #tableMenuRef [items]="tableMenu()" [ariaLabel]="text.actions" />

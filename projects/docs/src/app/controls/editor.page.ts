@@ -83,6 +83,17 @@ import { DOCS, DocsRow } from '../shared/docs';
       </docs-example>
 
       <docs-example
+        heading="Tables"
+        source="editor/tables"
+        [script]="tablesScript"
+        note="The table button inserts a table: rows, columns and a header row (a thead row of th scope=col cells), or pick the size from the grid with a pointer. In a table, the button opens the table properties: borders (all, lines between rows, none) and alignment. Tab and Shift+Tab move between cells (at the last cell Tab leaves the area). Right click a cell, or press Shift+F10 or the context menu key, for the table menu: insert rows and columns, merge with the next cell or the cell below, split a merged cell, toggle the header row, properties, and delete. Drag the end edge of a cell, or press Alt+Shift+Arrow Left or Right in a cell, to resize its column."
+      >
+        <div class="docs-stack">
+          <star-editor [(value)]="tables" [toolbar]="tableToolbar" ariaLabel="Price table" />
+        </div>
+      </docs-example>
+
+      <docs-example
         heading="HTML source view"
         source="editor/source"
         [script]="sourceScript"
@@ -374,6 +385,16 @@ readonly embedRules: StarEditorSanitizeConfig = {
     'source',
   ];
   protected readonly sourceScript = `readonly sourceToolbar: readonly StarEditorToolbarItem[] = ['formatBlock', 'bold', 'italic', '|', 'source'];`;
+  protected readonly tables = signal(
+    '<p>Plans of the new release:</p><table class="star-editor-table"><thead><tr><th scope="col">Plan</th><th scope="col">Reports</th><th scope="col">Price</th></tr></thead><tbody><tr><td>Basic</td><td>10</td><td>9</td></tr><tr><td>Team</td><td>Unlimited</td><td>29</td></tr></tbody></table>',
+  );
+  protected readonly tableToolbar: readonly StarEditorToolbarItem[] = [
+    'bold',
+    'italic',
+    '|',
+    'table',
+  ];
+  protected readonly tablesScript = `readonly tableToolbar: readonly StarEditorToolbarItem[] = ['bold', 'italic', '|', 'table'];`;
   protected readonly listToolbar: readonly StarEditorToolbarItem[] = [
     'insertUnorderedList',
     'insertOrderedList',
@@ -462,6 +483,18 @@ readonly fullToolbar = STAR_EDITOR_FULL_TOOLBAR;`;
       name: 'Arrow keys / Home / End on the image handle',
       description:
         'Changes the width of the selected image (Shift for steps of 50 pixels). Escape goes back to the text.',
+    },
+    {
+      name: 'Tab / Shift+Tab in a table cell',
+      description: 'Moves to the next or the previous cell. At the last cell Tab leaves the area.',
+    },
+    {
+      name: 'Shift+F10 / context menu key in a table cell',
+      description: 'Opens the table menu. Escape closes it and the focus goes back to the cell.',
+    },
+    {
+      name: 'Alt+Shift+Arrow Left / Right in a table cell',
+      description: 'Makes the column of the cell narrower or wider (10 pixels).',
     },
     { name: 'Ctrl+Shift+V', description: 'In the area: pastes the clipboard as plain text.' },
     {

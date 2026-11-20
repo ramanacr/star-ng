@@ -15,7 +15,8 @@ import type { StarUiText } from '@star-ng/ui/core';
  * indent a block; `image` opens the image panel (address or file, required alternative text or
  * decorative, caption, width; with the image at the caret it edits it) and `embed` the embed
  * panel (a video or page on the embed hosts of the allow-list); `horizontalRule` inserts a line;
- * `removeFormat` clears inline formats and the alignment; `source` switches to the HTML source
+ * `table` inserts a table (rows, columns, header row), or in a table opens its properties (borders,
+ * alignment); `removeFormat` clears inline formats and the alignment; `source` switches to the HTML source
  * view and back. Alignment is stored as the classes `star-text-center`, `star-text-end` and
  * `star-text-justify`, so the HTML needs the StarNG CSS where it is shown. `undo` and `redo` use
  * the history of the editor, which has every change.
@@ -46,6 +47,7 @@ export type StarEditorCommand =
   | 'link'
   | 'image'
   | 'embed'
+  | 'table'
   | 'horizontalRule'
   | 'source'
   | 'removeFormat'
@@ -112,6 +114,7 @@ export const STAR_EDITOR_FULL_TOOLBAR: readonly StarEditorToolbarItem[] = [
   'link',
   'image',
   'embed',
+  'table',
   'horizontalRule',
   'removeFormat',
   '|',
@@ -155,6 +158,7 @@ export const STAR_EDITOR_BUTTONS: Readonly<
   link: { label: 'editorLink', icon: 'ph-bold ph-link', toggle: true },
   image: { label: 'editorImage', icon: 'ph-bold ph-image', toggle: false },
   embed: { label: 'editorEmbed', icon: 'ph-bold ph-film-strip', toggle: false },
+  table: { label: 'editorTable', icon: 'ph-bold ph-table', toggle: false },
   source: { label: 'editorSource', icon: 'ph-bold ph-file-html', toggle: true },
   horizontalRule: { label: 'editorHorizontalRule', icon: 'ph-bold ph-minus', toggle: false },
   removeFormat: { label: 'editorClearFormatting', icon: 'ph-bold ph-text-t-slash', toggle: false },
