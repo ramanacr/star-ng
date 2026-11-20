@@ -348,6 +348,7 @@ test.describe('right-to-left controls', () => {
       await trigger.focus();
       await page.keyboard.press('Enter');
       await expect(popup(page).getByRole('menu')).toBeVisible();
+      await expect(popup(page).getByRole('menuitem').first()).toBeFocused();
       await page.keyboard.press('ArrowDown');
       await page.keyboard.press('ArrowDown');
       const layout = popup(page).getByRole('menuitem', { name: 'Layout' });
@@ -360,6 +361,8 @@ test.describe('right-to-left controls', () => {
       await page.keyboard.press('ArrowLeft');
       const single = popup(page).getByRole('menuitem', { name: 'Single column' });
       await expect(single).toBeFocused();
+      // The submenu is placed after it renders: wait until it is in view, then measure.
+      await expect(single).toBeInViewport();
       const parent = await settledBox(layout);
       const sub = await settledBox(single);
       expect(sub.x + sub.width).toBeLessThanOrEqual(parent.x + 4);
@@ -873,8 +876,13 @@ test.describe('right-to-left controls', () => {
       const trigger = example(page, 'Nested submenu').getByRole('button', { name: 'View' });
       await trigger.focus();
       await page.keyboard.press('Enter');
+      // Each key waits for the state of the one before (the menu opens and moves its focus after
+      // a render), so a fast key press never reaches the menu too early.
+      await expect(popup(page).getByRole('menu')).toBeVisible();
+      await expect(popup(page).getByRole('menuitem').first()).toBeFocused();
       await page.keyboard.press('ArrowDown');
       await page.keyboard.press('ArrowDown');
+      await expect(popup(page).getByRole('menuitem', { name: 'Layout' })).toBeFocused();
       await page.keyboard.press('ArrowLeft');
       await expect(popup(page).getByRole('menuitem', { name: 'Single column' })).toBeFocused();
     });
