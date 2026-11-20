@@ -237,6 +237,28 @@ test.describe('window', () => {
     ).toBeLessThan(1000);
   });
 
+  test('stays below a select panel with a low overlay zIndexBase', async ({ page }) => {
+    await openPage(page, '/controls/window', 'Window');
+    // What provideStarNg({ overlay: { zIndexBase: 500 } }) writes on <html>.
+    await page.evaluate(() =>
+      document.documentElement.style.setProperty('--star-z-index-base', '500'),
+    );
+    await example(page, 'Windows in the page').getByRole('button', { name: 'Open notes' }).click();
+    const notes = page.getByRole('dialog', { name: 'Notes' });
+    expect(
+      await notes.evaluate((element) => Number(getComputedStyle(element).zIndex)),
+    ).toBeLessThan(500);
+    await notes.getByRole('combobox', { name: 'Priority' }).click();
+    const option = page.getByRole('option', { name: 'High' });
+    await expect(option).toBeVisible();
+    const box = (await option.boundingBox())!;
+    const onTop = await page.evaluate(
+      ([x, y]) => document.elementFromPoint(x, y)?.closest('[role=option]')?.textContent?.trim(),
+      [box.x + box.width / 2, box.y + box.height / 2],
+    );
+    expect(onTop).toBe('High');
+  });
+
   test('stacks windows, maximizes and closes', async ({ page }) => {
     await openPage(page, '/controls/window', 'Window');
     const live = example(page, 'Windows in the page');

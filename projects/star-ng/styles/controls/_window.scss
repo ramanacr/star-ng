@@ -1,8 +1,9 @@
 // Window (StarWindow): a non-modal native <dialog> opened with show(). It is fixed in the
 // viewport; the window stack sets `--star-window-order` (1..n), so the last focused window is in
 // front. It is not in the top layer: like the non-modal bottom sheet it stays below the CDK
-// overlay container (z-index 1000), so a menu or a select panel opened in a window is on top.
-// `--star-window-z` is the base (default 900); the result is capped at 999.
+// overlay container (`--star-z-index-base`, default 1000, set by `provideStarNg`), so a menu or a
+// select panel opened in a window is on top for any base. `--star-window-z` is the base of the
+// stack (default: the overlay base minus 100); the result is capped one below the overlay base.
 @use '../shared' as *;
 
 .star-window {
@@ -10,7 +11,12 @@
   position: fixed;
   inset: auto;
   box-sizing: border-box;
-  z-index: min(999, calc(var(--star-window-z, 900) + var(--star-window-order, 0)));
+  z-index: min(
+    calc(var(--star-z-index-base, 1000) - 1),
+    calc(
+      var(--star-window-z, calc(var(--star-z-index-base, 1000) - 100)) + var(--star-window-order, 0)
+    )
+  );
   display: none;
   flex-direction: column;
   inline-size: var(--star-window-width);
