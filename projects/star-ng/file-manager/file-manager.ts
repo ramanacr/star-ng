@@ -565,7 +565,7 @@ export class StarFileManager {
     return [
       {
         field: 'name',
-        header: this.text.fileName,
+        header: this.text.name,
         sortable: true,
         value: (item) => folderRank(item) + item.name.toLocaleLowerCase(),
         format: (item) => item.name,
@@ -1088,7 +1088,7 @@ export class StarFileManager {
 
   protected readonly sortItems = computed<StarMenuItem[]>(() => {
     const labels: Record<StarFileSortField, string> = {
-      name: this.text.fileName,
+      name: this.text.name,
       size: this.text.fileSize,
       modified: this.text.fileModified,
       type: this.text.fileType,

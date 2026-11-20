@@ -20,7 +20,7 @@ const SAME_AS_ENGLISH: Record<string, readonly Name[]> = {
     'chartX',
     'chartY',
     'minute',
-    'fileName',
+    'name',
     'summaryMinimum',
     'summaryMaximum',
     // "Zoom" is the usual German UI word.

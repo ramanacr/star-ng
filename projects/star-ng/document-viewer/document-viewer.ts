@@ -369,7 +369,7 @@ const WHEEL_STEP = 50;
           <button
             type="button"
             class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
-            [attr.aria-label]="text.documentDownload"
+            [attr.aria-label]="text.download"
             (click)="download.emit()"
           >
             <i class="ph-bold ph-download-simple" aria-hidden="true"></i>

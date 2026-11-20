@@ -480,7 +480,7 @@ const classColor = (index: number, count: number) =>
           <tr>
             <th scope="row">{{ item.label }}</th>
             <td>{{ layerTitle(item.layer) }}</td>
-            <td>{{ item.value === null ? text.mapNoData : format(item.value) }}</td>
+            <td>{{ item.value === null ? text.missingData : format(item.value) }}</td>
           </tr>
         }
       </tbody>
@@ -759,7 +759,7 @@ export class StarMap {
         });
       }
       if (values.some((value) => value === null)) {
-        entries.push({ color: this.noData, text: this.text.mapNoData });
+        entries.push({ color: this.noData, text: this.text.missingData });
       }
       legends.push({
         id: layer.id,
