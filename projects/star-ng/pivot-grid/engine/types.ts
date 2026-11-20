@@ -99,8 +99,10 @@ export interface StarPivotConfig<T = unknown> {
    * IANA time zone of the date hierarchy buckets, for example `'UTC'` or `'Europe/Berlin'`.
    * Default: the local time zone of the runtime. A server render (SSR) and the browser can be in
    * different zones, so an instant near a month or quarter boundary can land in another bucket:
-   * set a zone when the data holds instants (timestamps, `Date`, date-time texts). A date-only
-   * text (`2025-03-31`) is a calendar date in every zone.
+   * set a zone when the data holds instants (timestamps, `Date`, texts with `Z` or an offset). A
+   * date-only text (`2025-03-31`) and a date-time text without an offset (`2025-03-31T23:30`) are
+   * wall times, the same in every zone. A zone that `Intl` does not know falls back to the runtime
+   * zone (with a warning in development mode).
    */
   readonly timeZone?: string;
 }

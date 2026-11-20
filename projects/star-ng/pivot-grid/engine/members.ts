@@ -6,6 +6,8 @@ import type {
   StarPivotOptions,
 } from './types';
 
+declare const ngDevMode: boolean | undefined;
+
 const DATE_LEVELS: readonly StarPivotDateLevel[] = ['year', 'quarter', 'month'];
 const ISO_DATE = /^(\d{4})-(\d{2})-(\d{2})$/;
 
@@ -117,21 +119,43 @@ interface DateParts {
   readonly month: number;
 }
 
-const zoneFormats = new Map<string, Intl.DateTimeFormat>();
+/**
+ * An ISO date or date-time text without `Z` or an offset: a wall time, the same in every zone.
+ * Year and month come from the text.
+ */
+const ISO_WALL_TIME = /^(\d{4})-(\d{2})-(\d{2})(?:[T ]\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?)?$/;
+
+/** The format of each zone; `null`: the zone is not valid (the runtime zone is used). */
+const zoneFormats = new Map<string, Intl.DateTimeFormat | null>();
+
+function zoneFormat(timeZone: string): Intl.DateTimeFormat | null {
+  let format = zoneFormats.get(timeZone);
+  if (format === undefined) {
+    try {
+      format = new Intl.DateTimeFormat('en-US', { timeZone, year: 'numeric', month: 'numeric' });
+    } catch {
+      format = null;
+      if (typeof ngDevMode === 'undefined' || ngDevMode) {
+        console.warn(
+          `star-pivot-grid: the time zone "${timeZone}" is not valid; the runtime zone is used.`,
+        );
+      }
+    }
+    zoneFormats.set(timeZone, format);
+  }
+  return format;
+}
+
 function partsOf(value: unknown, timeZone: string | undefined): DateParts | null {
-  // A date-only text is a calendar date in every zone.
+  // A date or date-time text without an offset is a wall time: the same in every zone.
   if (typeof value === 'string') {
-    const iso = ISO_DATE.exec(value);
-    if (iso) return { year: +iso[1], month: +iso[2] };
+    const wall = ISO_WALL_TIME.exec(value);
+    if (wall) return { year: +wall[1], month: +wall[2] };
   }
   const date = toDate(value);
   if (!date) return null;
-  if (!timeZone) return { year: date.getFullYear(), month: date.getMonth() + 1 };
-  let format = zoneFormats.get(timeZone);
-  if (!format) {
-    format = new Intl.DateTimeFormat('en-US', { timeZone, year: 'numeric', month: 'numeric' });
-    zoneFormats.set(timeZone, format);
-  }
+  const format = timeZone ? zoneFormat(timeZone) : null;
+  if (!format) return { year: date.getFullYear(), month: date.getMonth() + 1 };
   let year = 0;
   let month = 0;
   for (const part of format.formatToParts(date)) {

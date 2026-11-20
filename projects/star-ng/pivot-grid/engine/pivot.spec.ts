@@ -426,6 +426,47 @@ describe('starPivot engine', () => {
     expect(day.rows.map((row) => row.label)).toEqual(['Q1', expect.any(String)]);
   });
 
+  it('falls back to the runtime zone for an unknown time zone and warns once', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const config: StarPivotConfig = {
+      rows: [{ field: 'at', dateHierarchy: ['month'] }],
+      columns: [],
+      values: [{ field: 'n' }],
+      rowGrandTotals: false,
+      timeZone: 'Bogus/Zone',
+    };
+    const data = [{ at: new Date(2025, 4, 15, 12), n: 1 }];
+    expect(() => starPivot(data, config, { locale: 'en-US' })).not.toThrow();
+    expect(starPivot(data, config, { locale: 'en-US' }).rows.map((row) => row.label)).toEqual([
+      'May',
+    ]);
+    expect(warn.mock.calls.filter((call) => String(call[0]).includes('Bogus/Zone'))).toHaveLength(
+      1,
+    );
+    warn.mockRestore();
+  });
+
+  it('reads an ISO date-time text without an offset as wall time in every zone', () => {
+    const data = [
+      { at: '2025-03-31T23:30:00', n: 1 },
+      { at: '2025-06-30 23:59', n: 2 },
+    ];
+    for (const timeZone of [undefined, 'UTC', 'Pacific/Kiritimati', 'Pacific/Pago_Pago']) {
+      const result = starPivot(
+        data,
+        {
+          rows: [{ field: 'at', dateHierarchy: ['quarter', 'month'] }],
+          columns: [],
+          values: [{ field: 'n' }],
+          rowGrandTotals: false,
+          ...(timeZone ? { timeZone } : {}),
+        },
+        { locale: 'en-US' },
+      );
+      expect(labels(result)).toEqual(['member:Q1', '  member:Mar', 'member:Q2', '  member:Jun']);
+    }
+  });
+
   it('labels quarters with the quarterLabel option', () => {
     const result = starPivot(
       SALES,
