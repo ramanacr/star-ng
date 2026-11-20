@@ -1,10 +1,10 @@
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
-import { StarPageEvent, StarPaginator } from '@star-ng/ui/paginator';
+import { StarPageEvent, StarPaginator, StarPaginatorTemplate } from '@star-ng/ui/paginator';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
   selector: 'docs-paginator-page',
-  imports: [DOCS, StarPaginator],
+  imports: [DOCS, StarPaginator, StarPaginatorTemplate],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <docs-page
@@ -47,18 +47,68 @@ import { DOCS, DocsRow } from '../shared/docs';
         />
       </docs-example>
 
+      <docs-example
+        heading="Jump to a page and report text"
+        source="paginator/jump"
+        [script]="jumpScript"
+        note="showJumpToPageInput adds a number field (Enter or a change goes to the page) and showJumpToPageDropdown a select of every page. currentPageReportTemplate sets the report text with {currentPage}, {totalPages}, {first}, {last}, {rows} and {totalRecords}; the numbers use locale. showPageLinks hides the page buttons, and alwaysShow off hides the paginator when there is only one page. starPaginatorTemplate with start or end adds content at that side; it gets the page state."
+      >
+        <star-paginator
+          [totalRecords]="12000"
+          [(first)]="jumpFirst"
+          [rows]="20"
+          [rowsPerPageOptions]="[]"
+          [showPageLinks]="false"
+          showJumpToPageInput
+          currentPageReportTemplate="Page {currentPage} of {totalPages} ({totalRecords} orders)"
+          ariaLabel="Order pages"
+        >
+          <ng-template starPaginatorTemplate="end" let-state>
+            <span class="docs-output">Orders {{ state.first + 1 }} and on</span>
+          </ng-template>
+        </star-paginator>
+      </docs-example>
+
+      <h2>Names in PrimeNG</h2>
+      <p>
+        The PrimeNG p-paginator names that StarNG gives in another way: onPageChange is pageChange,
+        showFirstLastIcon is showFirstLast, templateLeft and templateRight are starPaginatorTemplate
+        with start and end, and the page link icon templates are starIcon with first, previous, next
+        and last. Not needed: appendTo and dropdownScrollHeight (the selects are star-select popups
+        in the top layer).
+      </p>
+
       <h2>Right-to-left</h2>
       <p>
         The first, previous, next and last arrows turn around in a right-to-left page, so they point
         the way the pages run. See the Right-to-left guide.
       </p>
 
-      <docs-api [of]="['StarPaginator']" [cssVars]="cssVars" [keyboard]="keyboard" />
+      <docs-api
+        [of]="['StarPaginator', 'StarPaginatorTemplate']"
+        [slots]="slots"
+        [cssVars]="cssVars"
+        [keyboard]="keyboard"
+      />
     </docs-page>
   `,
 })
 export class PaginatorPage {
   protected readonly first = signal(0);
+  protected readonly jumpFirst = signal(0);
+  protected readonly jumpScript = `readonly jumpFirst = signal(0);`;
+  protected readonly slots: readonly DocsRow[] = [
+    {
+      name: 'ng-template[starPaginatorTemplate]',
+      description:
+        'Content child. "start" or "end" adds content at that side. $implicit is the page state (first, rows, page, pageCount). PrimeNG templateLeft and templateRight.',
+    },
+    {
+      name: 'ng-template[starIcon]',
+      description:
+        'Content child. "first", "previous", "next" or "last" replaces the icon of that button. PrimeNG firstpagelinkicon and the other link icons.',
+    },
+  ];
   protected readonly rows = signal(10);
   protected readonly last = signal<StarPageEvent | null>(null);
   protected readonly shown = computed(

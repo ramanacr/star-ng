@@ -62,6 +62,7 @@ export const STAR_UI_TEXT_ES: StarUiText = {
   lastPage: 'Última página',
   page: (page) => `Página ${page}`,
   rowsPerPage: 'Filas por página',
+  goToPage: 'Ir a la página',
   pageReport: (first, last, total) => `${first}–${last} de ${total}`,
   noData: 'No se encontraron registros',
   missingData: 'Sin datos',

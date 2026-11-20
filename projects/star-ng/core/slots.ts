@@ -182,7 +182,9 @@ export type StarIconSlotName =
   | 'loading'
   | 'choose'
   | 'upload'
-  | 'cancel';
+  | 'cancel'
+  | 'first'
+  | 'last';
 
 /** Context of the icon slot. */
 export interface StarIconContext {

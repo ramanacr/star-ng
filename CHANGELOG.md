@@ -224,6 +224,10 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 
 - `THIRD_PARTY_NOTICES.md` (in the repository root and in the package): the MIT notice of Aurora RTE, from which parts of the editor are ported (each ported file names its source), the licence of the optional peer dependency `@phosphor-icons/web`, and the licences of the packages in the docs build. The README has a trademark and no-affiliation statement.
 
+#### Paginator
+
+- Paginator: `showJumpToPageInput` and `showJumpToPageDropdown` (`STAR_UI_TEXT.goToPage`, with German and Spanish texts), `currentPageReportTemplate` (placeholders `{currentPage}`, `{totalPages}`, `{first}`, `{last}`, `{rows}`, `{totalRecords}`), `locale` of the numbers, `showPageLinks`, `alwaysShow`, and the slots `starPaginatorTemplate` (`start`, `end`) and `starIcon` (`first`, `previous`, `next`, `last`) (PrimeNG `p-paginator`).
+
 #### Panel
 
 - Panel: `toggler` (`icon` or `header`: the title is the toggle button), `iconPos` (`start` or `end`), `showHeader`, the outputs `beforeToggle` and `afterToggle` (`{ collapsed }`), a public `toggle()`, and the slots `starHeader` and `starIcon="toggle"` (PrimeNG `p-panel`).

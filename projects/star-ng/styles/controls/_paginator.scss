@@ -48,6 +48,12 @@
     background: var(--star-primary-hover);
   }
 }
+.star-paginator__icon {
+  display: inline-flex;
+}
+.star-paginator__jump {
+  width: 4.5rem;
+}
 .star-paginator__rows {
   display: inline-flex;
   align-items: center;

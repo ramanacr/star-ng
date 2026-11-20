@@ -66,6 +66,8 @@ export interface StarUiText {
   readonly lastPage: string;
   readonly page: (page: number) => string;
   readonly rowsPerPage: string;
+  /** Label of the jump-to-page field and select of the paginator. */
+  readonly goToPage: string;
   readonly pageReport: (first: number, last: number, total: number) => string;
   readonly noData: string;
   /** Short label of a missing value: a sparkline without values, the map legend entry of shapes without a value. */
@@ -955,6 +957,7 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   page: (page) => `Page ${page}`,
   rowsPerPage: 'Rows per page',
   pageReport: (first, last, total) => `${first}–${last} of ${total}`,
+  goToPage: 'Go to page',
   noData: 'No records found',
   missingData: 'No data',
   selectRow: 'Select row',

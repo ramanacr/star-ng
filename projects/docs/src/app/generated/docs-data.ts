@@ -13969,7 +13969,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-paginator",
     "entry": "@star-ng/ui/paginator",
-    "description": "Paginator (PrimeNG `p-paginator`): `[(first)]` / `[(rows)]`, page links window, first / last buttons, a rows-per-page `star-select` and a \"1–10 of 240\" report.",
+    "description": "Paginator (PrimeNG `p-paginator`): `[(first)]` / `[(rows)]`, page links window, first / last buttons, a rows-per-page `star-select` and a \"1–10 of 240\" report, with an optional jump to a page (a select or a number field).",
     "inputs": [
       {
         "name": "totalRecords",
@@ -14012,6 +14012,48 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "null",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "alwaysShow",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Shows the paginator also when there is only one page (default `true`). PrimeNG `alwaysShow`."
+      },
+      {
+        "name": "showPageLinks",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "The page number buttons (default `true`). PrimeNG `showPageLinks`."
+      },
+      {
+        "name": "showJumpToPageDropdown",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "A select of every page next to the buttons. PrimeNG `showJumpToPageDropdown`."
+      },
+      {
+        "name": "showJumpToPageInput",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "A number field that goes to the typed page on Enter or change. PrimeNG `showJumpToPageInput`."
+      },
+      {
+        "name": "currentPageReportTemplate",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Text of the report with the placeholders `{currentPage}`, `{totalPages}`, `{first}`, `{last}`, `{rows}` and `{totalRecords}`, for example `'Page {currentPage} of {totalPages}'`. Default: `STAR_UI_TEXT.pageReport`. PrimeNG `currentPageReportTemplate`."
+      },
+      {
+        "name": "locale",
+        "type": "string | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "Locale of the numbers. Default: `locale` of `provideStarNg`, else the browser locale."
       },
       {
         "name": "pt",
@@ -14057,17 +14099,37 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "parts": [
       "root",
+      "pageIcon",
+      "startPanel",
       "reportText",
       "pagesPanel",
       "pageButton",
-      "firstPageIcon",
-      "previousPageIcon",
       "pageNumberButton",
-      "nextPageIcon",
-      "lastPageIcon",
+      "jumpPanel",
+      "jumpText",
+      "jumpLabel",
+      "jumpInput",
       "rowsPanel",
-      "rowsText"
+      "rowsText",
+      "endPanel"
     ]
+  },
+  "StarPaginatorTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starPaginatorTemplate]",
+    "entry": "@star-ng/ui/paginator",
+    "description": "Content at the start or the end of `star-paginator`: `<ng-template starPaginatorTemplate=\"start\" let-state>…</ng-template>`. The context is the current page state (`first`, `rows`, `page`, `pageCount`). PrimeNG `templateLeft` and `templateRight` (here logical: start and end).",
+    "inputs": [
+      {
+        "name": "starPaginatorTemplate",
+        "type": "'start' | 'end'",
+        "default": null,
+        "required": true,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
   },
   "StarPanel": {
     "kind": "component",
@@ -21974,6 +22036,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "overlay-badge/positions": "<div class=\"docs-row\">\n  <star-overlay-badge dot severity=\"success\" position=\"bottom-end\" ariaLabel=\"online\">\n    <star-avatar name=\"Jane Doe\" />\n  </star-overlay-badge>\n  <star-overlay-badge [value]=\"2\" position=\"top-start\" ariaLabel=\"new comments\">\n    <star-avatar name=\"Sam Lee\" shape=\"square\" />\n  </star-overlay-badge>\n  <star-overlay-badge [value]=\"5\" severity=\"warn\" position=\"bottom-start\" size=\"md\">\n    <star-avatar icon=\"ph-bold ph-folder\" />\n  </star-overlay-badge>\n</div>",
   "paginator/basic": "<div class=\"docs-stack\">\n  <star-paginator\n    ariaLabel=\"Pagination of the list\"\n    [totalRecords]=\"95\"\n    [(first)]=\"first\"\n    [(rows)]=\"rows\"\n    (pageChange)=\"last.set($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Showing {{ shown() }}. Last event: page {{ last() ? last()!.page + 1 : '-' }}.\n  </p>\n</div>",
   "paginator/compact": "<star-paginator\n  ariaLabel=\"Pagination of the compact list\"\n  [totalRecords]=\"60\"\n  [rowsPerPageOptions]=\"[]\"\n  [showCurrentPageReport]=\"false\"\n  [showFirstLast]=\"false\"\n  [pageLinkSize]=\"3\"\n/>",
+  "paginator/jump": "<star-paginator\n  [totalRecords]=\"12000\"\n  [(first)]=\"jumpFirst\"\n  [rows]=\"20\"\n  [rowsPerPageOptions]=\"[]\"\n  [showPageLinks]=\"false\"\n  showJumpToPageInput\n  currentPageReportTemplate=\"Page {currentPage} of {totalPages} ({totalRecords} orders)\"\n  ariaLabel=\"Order pages\"\n>\n  <ng-template starPaginatorTemplate=\"end\" let-state>\n    <span class=\"docs-output\">Orders {{ state.first + 1 }} and on</span>\n  </ng-template>\n</star-paginator>",
   "panel-menu/basic": "<div class=\"docs-stack\">\n  <star-panel-menu\n    ariaLabel=\"Settings\"\n    [items]=\"sections\"\n    [(expandedKeys)]=\"open\"\n    (itemClick)=\"last.set($event.label ?? '')\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Open: {{ open().join(', ') || 'none' }}. Last action: {{ last() }}\n  </p>\n</div>",
   "panel-menu/single": "<star-panel-menu ariaLabel=\"Settings, single\" single [items]=\"sections\" />",
   "panel/basic": "<div class=\"docs-stack\">\n  <star-panel header=\"Order notes\" toggleable [(collapsed)]=\"collapsed\">\n    <star-button starPanelActions variant=\"ghost\" size=\"sm\" leadingIcon=\"ph-bold ph-plus\">\n      Add note\n    </star-button>\n    Ship with the next pallet. Call the front desk on arrival.\n  </star-panel>\n  <p class=\"docs-output\" role=\"status\">\n    The panel is {{ collapsed() ? 'collapsed' : 'open' }}.\n  </p>\n</div>",
