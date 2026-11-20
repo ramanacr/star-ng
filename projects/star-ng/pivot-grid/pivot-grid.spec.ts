@@ -249,6 +249,12 @@ describe('StarPivotGrid', () => {
 
   it('renders rows and columns in a window for large results', () => {
     const { fixture, host, el } = setup();
+    // The view size is known before the large data comes (as after the first browser render), so
+    // the large result never renders in full (jsdom is slow with 12,000 cells).
+    const scroller = el.querySelector<HTMLElement>('.star-pivot__scroller')!;
+    Object.defineProperty(scroller, 'clientHeight', { configurable: true, value: 360 });
+    Object.defineProperty(scroller, 'clientWidth', { configurable: true, value: 800 });
+    scroller.dispatchEvent(new Event('scroll'));
     const many: Sale[] = [];
     for (let r = 0; r < 300; r++) {
       for (let c = 0; c < 40; c++) {
@@ -262,9 +268,6 @@ describe('StarPivotGrid', () => {
       values: [{ field: 'amount' }],
     });
     fixture.detectChanges();
-    const scroller = el.querySelector<HTMLElement>('.star-pivot__scroller')!;
-    Object.defineProperty(scroller, 'clientHeight', { configurable: true, value: 360 });
-    Object.defineProperty(scroller, 'clientWidth', { configurable: true, value: 800 });
     scroller.scrollTop = 3600;
     scroller.dispatchEvent(new Event('scroll'));
     fixture.detectChanges();
@@ -283,7 +286,7 @@ describe('StarPivotGrid', () => {
     fixture.detectChanges();
     TestBed.tick();
     expect(document.activeElement!.getAttribute('data-pos')).toBe('300:40');
-  });
+  }, 15_000);
 
   it('moves fields with the configurator move menu and announces it', () => {
     const { fixture, host, el } = setup();
