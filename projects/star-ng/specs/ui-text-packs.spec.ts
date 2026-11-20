@@ -25,8 +25,9 @@ const SAME_AS_ENGLISH: Record<string, readonly Name[]> = {
     'summaryMaximum',
     // "Zoom" is the usual German UI word.
     'documentZoom',
-    // A data point reads "series, category: value" in every language.
+    // A data point reads "series, category: value" in every language, a map feature "label: value".
     'chartPointLabel',
+    'mapFeatureValue',
   ],
   // "Color", "Editor" and "Total" are the Spanish words too. "X" and "Y" are axis names in every
   // language. "No" is the Spanish answer too. A rule summary and a data point only join their
@@ -40,6 +41,7 @@ const SAME_AS_ENGLISH: Record<string, readonly Name[]> = {
     'queryFalse',
     'queryRuleSummary',
     'chartPointLabel',
+    'mapFeatureValue',
     // "General" is the Spanish name of the number format too; "Zoom" is the Spanish UI word.
     'spreadsheetFormatGeneral',
     'documentZoom',
@@ -68,6 +70,12 @@ const TEXT_PARAMS: Record<string, readonly string[]> = {
   sparklineSummary: ['first', 'last', 'min', 'max', 'trend'],
   barcodeInvalid: ['type'],
   qrCodeLabel: ['value'],
+  imageDescription: ['edits'],
+  imageEditList: ['edits'],
+  imageApplied: ['tool'],
+  imageAnnotationItem: ['kind'],
+  mapRange: ['min', 'max'],
+  mapFeatureValue: ['value'],
   spreadsheetCellInfo: ['address', 'value', 'formula'],
   spreadsheetFunction: ['args'],
   spreadsheetRange: ['from', 'to'],

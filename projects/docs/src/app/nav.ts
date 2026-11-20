@@ -769,6 +769,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         load: () => import('./controls/qr-code.page').then((m) => m.QrCodePage),
       },
       {
+        label: 'Map',
+        path: 'controls/map',
+        keywords: 'geo geojson vector map choropleth regions markers bubbles tiles pan zoom legend',
+        load: () => import('./controls/map.page').then((m) => m.MapPage),
+      },
+      {
         label: 'Diagram',
         path: 'controls/diagram',
         keywords: 'diagram flowchart workflow nodes connectors graph canvas svg layout editor',
@@ -814,6 +820,12 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         path: 'controls/image',
         keywords: 'picture preview zoom lazy photo',
         load: () => import('./controls/image.page').then((m) => m.ImagePage),
+      },
+      {
+        label: 'Image editor',
+        path: 'controls/image-editor',
+        keywords: 'photo crop rotate flip resize brightness contrast filter annotate draw canvas',
+        load: () => import('./controls/image-editor.page').then((m) => m.ImageEditorPage),
       },
     ],
   },

@@ -1278,6 +1278,42 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'image editor with the crop tool active',
+    path: 'controls/image-editor',
+    open: async (page) => {
+      // The page is prerendered: wait for hydration before the first click.
+      await expect(page.locator('star-image-editor[ngh]')).toHaveCount(0, { timeout: 15_000 });
+      const live = example(page, 'Edit an image');
+      const crop = live.getByRole('button', { name: 'Crop', exact: true });
+      // The tools are enabled once the image is loaded.
+      await expect(crop).not.toHaveAttribute('aria-disabled', 'true');
+      await crop.click();
+      await live.getByRole('button', { name: '4:3' }).click();
+      const box = live.getByRole('group', { name: /^Crop area/ });
+      // Focus without scrolling: a scrolled page puts the copy button of the import code under
+      // the sticky docs header, which axe reports as a small target (a docs layout effect).
+      await box.evaluate((element: HTMLElement) => element.focus({ preventScroll: true }));
+      await expect(box).toBeFocused();
+      await page.keyboard.press('ArrowRight');
+      await expect(box).toHaveAttribute('aria-label', /Crop area \d+ × \d+ pixels/);
+    },
+  },
+  {
+    name: 'map with a selected shape, the focus in the map and the legend',
+    path: 'controls/map',
+    open: async (page) => {
+      // The page is prerendered: wait for hydration before the first key.
+      await expect(page.locator('star-map[ngh]')).toHaveCount(0, { timeout: 15_000 });
+      const live = example(page, 'Choropleth with a legend');
+      const region = live.getByRole('button', { name: 'Northmoor: 42' });
+      await region.focus();
+      await page.keyboard.press('Enter');
+      await expect(region).toHaveAttribute('aria-pressed', 'true');
+      await expect(live.locator('.star-map__viewport')).toHaveAttribute('role', 'application');
+      await expect(live.getByRole('list', { name: /^Legend/ })).toBeVisible();
+    },
+  },
+  {
     name: 'spreadsheet with a selected range',
     path: 'controls/spreadsheet',
     open: async (page) => {
