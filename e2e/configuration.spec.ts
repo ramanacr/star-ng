@@ -64,7 +64,9 @@ test.describe('styling hooks', () => {
     await expect(buttons.nth(1)).toHaveAttribute('data-star-unstyled', '');
     const styled = buttons.nth(0).locator('button');
     const plain = buttons.nth(1).locator('button');
-    expect(await styled.evaluate((el) => getComputedStyle(el).boxShadow)).not.toBe('none');
+    expect(await styled.evaluate((el) => getComputedStyle(el).backgroundColor)).not.toBe(
+      'rgba(0, 0, 0, 0)',
+    );
     expect(await plain.evaluate((el) => getComputedStyle(el).boxShadow)).toBe('none');
     expect(await plain.evaluate((el) => getComputedStyle(el).borderRadius)).toBe('4px');
     await plain.focus();
