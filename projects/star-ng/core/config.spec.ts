@@ -55,6 +55,16 @@ describe('provideStarNg', () => {
     expect(TestBed.inject(STAR_THEME_STORAGE_KEY)).toBe('star-theme');
   });
 
+  it('keeps a motion attribute and a z-index base that the application set itself', () => {
+    const root = document.documentElement;
+    root.setAttribute('data-star-motion', 'reduced');
+    root.style.setProperty('--star-z-index-base', '3000');
+    TestBed.inject(StarConfigService);
+    TestBed.tick();
+    expect(root.getAttribute('data-star-motion')).toBe('reduced');
+    expect(root.style.getPropertyValue('--star-z-index-base')).toBe('3000');
+  });
+
   it('sets the motion attribute and the z-index base on <html>, and follows update()', () => {
     TestBed.configureTestingModule({
       providers: [provideStarNg({ reducedMotion: 'always', overlay: { zIndexBase: 2000 } })],

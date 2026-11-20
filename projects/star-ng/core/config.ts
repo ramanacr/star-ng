@@ -128,17 +128,34 @@ export class StarConfigService {
   /** The configuration now. */
   readonly config = this.state.asReadonly();
 
+  /** What this service set on `<html>`: it removes only its own values. */
+  private motionSet = false;
+  private zIndexSet = false;
+
   constructor() {
+    // The controls with styling hooks inject this service too, so it can exist without
+    // `provideStarNg`: it must not remove a `data-star-motion` or a z-index base that the
+    // application set itself.
     effect(() => {
       const config = this.state();
       const root = this.document.documentElement;
-      if (config.reducedMotion === 'always') root.setAttribute('data-star-motion', 'reduced');
-      else root.removeAttribute('data-star-motion');
+      if (config.reducedMotion === 'always') {
+        root.setAttribute('data-star-motion', 'reduced');
+        this.motionSet = true;
+      } else if (this.motionSet) {
+        root.removeAttribute('data-star-motion');
+        this.motionSet = false;
+      }
       const base = config.overlay?.zIndexBase;
       const style = (root as HTMLElement).style;
       if (!style?.setProperty) return;
-      if (typeof base === 'number') style.setProperty('--star-z-index-base', String(base));
-      else style.removeProperty('--star-z-index-base');
+      if (typeof base === 'number') {
+        style.setProperty('--star-z-index-base', String(base));
+        this.zIndexSet = true;
+      } else if (this.zIndexSet) {
+        style.removeProperty('--star-z-index-base');
+        this.zIndexSet = false;
+      }
     });
   }
 

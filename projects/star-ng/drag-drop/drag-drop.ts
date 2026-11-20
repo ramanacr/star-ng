@@ -111,7 +111,7 @@ export class ɵStarDragRegistry {
       hint.className = 'star-sr-only';
       hint.hidden = true;
       hint.textContent = this.text.dragHint;
-      body.append(hint);
+      body.appendChild(hint);
     }
     return HINT_ID;
   }
