@@ -11,6 +11,7 @@ import {
   starMapTileUrl,
   starMapToScreen,
   starMapToWorld,
+  starMapUnion,
   starMapZoomAround,
   starProject,
   starUnproject,
@@ -116,6 +117,51 @@ describe('GeoJSON parsing', () => {
     expect(islands.bounds.minX).toBeCloseTo(minX, 6);
   });
 
+  it('drops a polygon whose outer ring is invalid, holes included (review M12)', () => {
+    const shapes = starMapParse(
+      {
+        type: 'FeatureCollection',
+        features: [
+          {
+            type: 'Feature',
+            properties: {},
+            geometry: {
+              type: 'Polygon',
+              coordinates: [
+                [
+                  [0, 0],
+                  [1, Number.NaN],
+                ],
+                square(3, 3, 2),
+              ],
+            },
+          },
+          {
+            type: 'Feature',
+            properties: {},
+            geometry: {
+              type: 'MultiPolygon',
+              coordinates: [
+                [
+                  [
+                    [0, 0],
+                    [1, 1],
+                  ],
+                  square(0.2, 0.2, 0.1),
+                ],
+                [square(10, 10, 2)],
+              ],
+            },
+          },
+        ],
+      },
+      'equirectangular',
+    );
+    expect(shapes.length).toBe(1);
+    expect(shapes[0].index).toBe(1);
+    expect(shapes[0].rings.length).toBe(1);
+  });
+
   it('ignores invalid coordinates', () => {
     const shapes = starMapParse(
       {
@@ -196,6 +242,30 @@ describe('map view maths', () => {
     expect(starMapBubbleRadius(100, 0, 100, 4, 24)).toBe(24);
     expect(starMapBubbleRadius(25, 0, 100, 4, 24)).toBe(14);
     expect(starMapBubbleRadius(5, 5, 5, 4, 24)).toBe(24);
+  });
+
+  it('places tiles on whole pixels without seams at a fractional zoom (review M15)', () => {
+    const tiles = starMapTiles({ center: [100.3, 77.7], zoom: 2.37 }, { width: 700, height: 500 });
+    for (const tile of tiles) {
+      expect(Number.isInteger(tile.left)).toBe(true);
+      expect(Number.isInteger(tile.width)).toBe(true);
+      const right = tiles.find((t) => t.y === tile.y && t.x === tile.x + 1);
+      if (right) expect(tile.left + tile.width).toBe(right.left);
+      const below = tiles.find((t) => t.x === tile.x && t.y === tile.y + 1);
+      if (below) expect(tile.top + tile.height).toBe(below.top);
+    }
+  });
+
+  it('handles very large value and bounds lists (review M20)', () => {
+    const values = Array.from({ length: 200_000 }, (_, i) => i);
+    expect(starMapClasses(values, 4).breaks).toEqual([0, 49999.75, 99999.5, 149999.25, 199999]);
+    const many = Array.from({ length: 200_000 }, (_, i) => ({
+      minX: i,
+      minY: 0,
+      maxX: i + 1,
+      maxY: 1,
+    }));
+    expect(starMapUnion(many)).toEqual({ minX: 0, minY: 0, maxX: 200_000, maxY: 1 });
   });
 
   it('lists the visible tiles only', () => {

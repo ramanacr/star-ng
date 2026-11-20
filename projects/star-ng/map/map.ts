@@ -44,6 +44,7 @@ import {
   starMapPath,
   StarMapPoint,
   StarMapProjection,
+  starMapRange,
   starMapReadingOrder,
   StarMapShape,
   StarMapSize,
@@ -236,6 +237,13 @@ const classColor = (index: number, count: number) =>
  * Enter or Space selects, Shift and the arrow keys pan, plus and minus zoom. Every feature has a
  * name from `label` (and its value). The map area has `role="application"` only while it has the
  * focus, with a keyboard hint. A data table lists every feature and value (`table` shows it).
+ * Without features, the plain arrow keys pan.
+ *
+ * Known limits: the label point of a shape is the area centroid of its largest polygon, which
+ * can lie outside a concave shape (a C or a crescent) or in a hole; a feature that crosses the
+ * antimeridian (±180°) is drawn as a band across the map (split it in the data); the focus
+ * outline of a shape is painted in document order, so a later neighbouring shape can cover part
+ * of it.
  *
  * ```html
  * <star-map [layers]="layers" [(selected)]="selected" ariaLabel="Sales by region" />
@@ -302,7 +310,7 @@ const classColor = (index: number, count: number) =>
     <div
       #area
       class="star-map__viewport"
-      [class.star-map__viewport--panning]="panning"
+      [class.star-map__viewport--panning]="panning()"
       [attr.role]="focused() ? 'application' : 'group'"
       [attr.aria-label]="ariaLabel() ?? text.map"
       [attr.aria-describedby]="hintId"
@@ -329,8 +337,8 @@ const classColor = (index: number, count: number) =>
                 [attr.href]="tile.href"
                 [attr.x]="tile.left"
                 [attr.y]="tile.top"
-                [attr.width]="tile.size"
-                [attr.height]="tile.size"
+                [attr.width]="tile.width"
+                [attr.height]="tile.height"
                 preserveAspectRatio="none"
               />
             }
@@ -530,7 +538,7 @@ export class StarMap {
   private readonly measured = signal<StarMapSize | null>(null);
   /** The view while an animation runs. */
   private readonly animated = signal<StarMapView | null>(null);
-  protected panning = false;
+  protected readonly panning = signal(false);
   private pointers = new Map<number, StarMapPoint>();
   private gesture: {
     view: StarMapView;
@@ -540,6 +548,8 @@ export class StarMap {
   } | null = null;
   private suppressClick = false;
   private frame: number | null = null;
+  /** Counts the zoom animations; a frame of an older one does nothing. */
+  private animation = 0;
 
   private readonly formatter = computed(
     () => new Intl.NumberFormat(this.locale(), this.valueFormat() ?? { maximumFractionDigits: 1 }),
@@ -605,8 +615,7 @@ export class StarMap {
         const known = values.filter(
           (v): v is number => typeof v === 'number' && Number.isFinite(v),
         );
-        const min = known.length ? Math.min(...known) : 0;
-        const max = known.length ? Math.max(...known) : 0;
+        const { min, max } = starMapRange(known);
         layer.data.forEach((data, index) => {
           const position = layer.position(data);
           if (!position || !Number.isFinite(position[0]) || !Number.isFinite(position[1])) return;
@@ -854,6 +863,20 @@ export class StarMap {
     this.center.set([round(lon, 6), round(lat, 6)]);
   }
 
+  /**
+   * Stops a running zoom animation where it is (the user took over with a drag, the wheel or a
+   * pan key), so its end does not overwrite the new view.
+   */
+  private stopAnimation(): void {
+    if (this.frame === null) return;
+    const current = this.view();
+    this.doc.defaultView?.cancelAnimationFrame?.(this.frame);
+    this.frame = null;
+    this.animation++;
+    this.animated.set(null);
+    this.setView(current);
+  }
+
   private animate(target: StarMapView, done: () => void): void {
     const view = this.doc.defaultView;
     if (!this.browser || !view?.requestAnimationFrame || starPrefersReducedMotion(this.doc)) {
@@ -862,9 +885,12 @@ export class StarMap {
     }
     if (this.frame !== null) view.cancelAnimationFrame(this.frame);
     const from = this.view();
+    // A later animation or stopAnimation() makes this one stale, even if its frame still runs.
+    const run = ++this.animation;
     let start: number | null = null;
     const duration = 200;
     const step = (now: number) => {
+      if (run !== this.animation) return;
       start ??= now;
       const t = Math.min(1, (now - start) / duration);
       const e = 1 - (1 - t) ** 3;
@@ -954,7 +980,8 @@ export class StarMap {
     const current = ordered.findIndex((item) => item.key === this.tabKey());
     const viewport = this.viewport();
     const k = 2 ** this.view().zoom;
-    if (event.shiftKey && event.key.startsWith('Arrow')) {
+    // Shift and an arrow pan; without features (the map itself is the tab stop) a plain arrow too.
+    if (event.key.startsWith('Arrow') && (event.shiftKey || !ordered.length)) {
       const step = { x: viewport.width / 8 / k, y: viewport.height / 8 / k };
       const delta: Record<string, [number, number]> = {
         ArrowLeft: [-step.x, 0],
@@ -964,6 +991,7 @@ export class StarMap {
       };
       const [dx, dy] = delta[event.key] ?? [0, 0];
       event.preventDefault();
+      this.stopAnimation();
       const view = this.view();
       this.setView({ zoom: view.zoom, center: [view.center[0] + dx, view.center[1] + dy] });
       return;
@@ -1030,6 +1058,7 @@ export class StarMap {
 
   protected onPointerDown(event: PointerEvent): void {
     if (event.button > 0) return;
+    this.stopAnimation();
     this.suppressClick = false;
     this.pointers.set(event.pointerId ?? 0, this.localPoint(event));
     this.startGesture();
@@ -1086,7 +1115,7 @@ export class StarMap {
     if (!this.gesture.moved && Math.hypot(dx, dy) < 4) return;
     if (!this.gesture.moved) {
       this.gesture = { ...this.gesture, moved: true };
-      this.panning = true;
+      this.panning.set(true);
       try {
         this.viewportRef()?.nativeElement.setPointerCapture?.(id);
       } catch {
@@ -1106,7 +1135,7 @@ export class StarMap {
       this.startGesture();
     } else {
       this.gesture = null;
-      this.panning = false;
+      this.panning.set(false);
     }
   }
 
@@ -1114,8 +1143,11 @@ export class StarMap {
     // Without Control the wheel scrolls the page. A trackpad pinch sends the wheel with Control.
     if (!event.ctrlKey) return;
     event.preventDefault();
+    this.stopAnimation();
     const view = this.view();
-    const zoom = this.clampZoom(view.zoom - event.deltaY * 0.01);
+    // Lines and pages scroll more per unit than pixels: 16 pixels a line, a viewport a page.
+    const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? this.viewport().height : 1;
+    const zoom = this.clampZoom(view.zoom - event.deltaY * unit * 0.01);
     if (zoom === view.zoom) return;
     this.setView(starMapZoomAround(view, this.localPoint(event), zoom, this.viewport()));
   }

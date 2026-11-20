@@ -270,6 +270,23 @@ const CAPITALS: readonly Capital[] = [
         offers public domain GeoJSON. The library loads no map data and no tiles by itself.
       </p>
 
+      <h2>Known limits</h2>
+      <ul>
+        <li>
+          The label point of a shape (tooltip, focus order, panning to the focused shape) is the
+          area centroid of its largest polygon. For a concave shape, such as a C or a crescent, or a
+          ring with a hole, it can lie outside the shape.
+        </li>
+        <li>
+          Features that cross the antimeridian (±180° longitude) are not split: they draw as a band
+          across the map. Split them in the data.
+        </li>
+        <li>
+          The focus outline of a shape is painted in document order, so a neighbouring shape that
+          comes later can cover part of it.
+        </li>
+      </ul>
+
       <h2>Accessibility</h2>
       <p>
         Every shape, marker and bubble has a name from its label and value. The features are one tab
@@ -408,6 +425,7 @@ readonly tileLayers = computed<StarMapLayer[]>(() => [
     },
     { name: 'Enter / Space', description: 'Selects the focused shape and reports the click.' },
     { name: 'Shift + arrow keys', description: 'Pan the map.' },
+    { name: 'Arrow keys (no features)', description: 'Pan the map.' },
     { name: '+ / -', description: 'Zoom in / out.' },
     { name: 'Escape', description: 'Hides the tooltip.' },
   ];

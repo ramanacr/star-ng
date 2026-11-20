@@ -982,7 +982,7 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
     'Draw on the image with a pointer, or choose a shape and press Add to the image. Delete removes the chosen annotation.',
   map: 'Map',
   mapHint:
-    'Arrow keys move between the features, Enter selects. Shift and arrow keys pan, plus and minus zoom.',
+    'Arrow keys move between the features, Enter selects. Shift and arrow keys pan, plus and minus zoom. Without features, the arrow keys pan.',
   mapResetView: 'Reset view',
   mapFeature: 'Feature',
   mapLayer: 'Layer',

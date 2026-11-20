@@ -115,7 +115,7 @@
 }
 .star-map__pin {
   display: block;
-  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
+  filter: drop-shadow(0 1px 1px var(--star-scrim-media-soft));
 }
 .star-map__tooltip {
   position: absolute;
@@ -125,7 +125,7 @@
   border: 1px solid var(--star-border);
   border-radius: var(--star-radius-sm);
   background: var(--star-surface);
-  box-shadow: var(--star-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.2));
+  box-shadow: var(--star-shadow-sm);
   color: var(--star-text-strong);
   font-size: 0.8125rem;
   white-space: nowrap;

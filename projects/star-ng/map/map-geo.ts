@@ -79,7 +79,11 @@ export interface StarMapShape<P = Record<string, unknown>> {
   /** Polygons: every ring (outer rings and holes); lines: each line; points: one ring per point. */
   readonly rings: readonly (readonly StarMapPoint[])[];
   readonly bounds: StarMapBounds;
-  /** A point for the label, the focus order, the tooltip and a marker: in the largest polygon. */
+  /**
+   * A point for the label, the focus order, the tooltip and a marker: the area centroid of the
+   * largest polygon. For a concave shape (a C or a crescent) or a ring with a hole it can lie
+   * outside the shape. No antimeridian handling: split features that cross ±180°.
+   */
   readonly centroid: StarMapPoint;
   readonly feature: StarGeoJsonFeature<P>;
 }
@@ -126,6 +130,18 @@ function ring(
 ): StarMapPoint[] {
   if (!Array.isArray(positions)) return [];
   return positions.filter(finite).map((p) => starProject([p[0], p[1]], projection));
+}
+
+/**
+ * The rings of one polygon. When the outer ring is not usable (fewer than 3 valid points) the
+ * whole polygon is dropped: its holes would otherwise be filled as areas.
+ */
+function polygonRings(
+  rings: readonly (readonly Position[])[] | undefined,
+  projection: StarMapProjection,
+): StarMapPoint[][] {
+  const projected = (rings ?? []).map((r) => ring(r, projection));
+  return projected[0] && projected[0].length >= 3 ? projected : [];
 }
 
 /** Signed area of a ring (shoelace formula); positive or negative by winding. */
@@ -177,12 +193,18 @@ export function starMapBoundsOf(points: readonly StarMapPoint[]): StarMapBounds 
 /** The bounds that hold every given bounds; `null` for an empty list. */
 export function starMapUnion(list: readonly StarMapBounds[]): StarMapBounds | null {
   if (!list.length) return null;
-  return {
-    minX: Math.min(...list.map((b) => b.minX)),
-    minY: Math.min(...list.map((b) => b.minY)),
-    maxX: Math.max(...list.map((b) => b.maxX)),
-    maxY: Math.max(...list.map((b) => b.maxY)),
-  };
+  // A loop, not Math.min(...list): a large layer would exceed the argument limit.
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+  for (const b of list) {
+    if (b.minX < minX) minX = b.minX;
+    if (b.minY < minY) minY = b.minY;
+    if (b.maxX > maxX) maxX = b.maxX;
+    if (b.maxY > maxY) maxY = b.maxY;
+  }
+  return { minX, minY, maxX, maxY };
 }
 
 /**
@@ -220,14 +242,14 @@ export function starMapParse<P>(
         break;
       case 'Polygon':
         kind = 'area';
-        rings = (geometry.coordinates ?? []).map((r) => ring(r, projection));
+        rings = polygonRings(geometry.coordinates, projection);
         outers = rings.slice(0, 1);
         break;
       case 'MultiPolygon':
         kind = 'area';
         for (const polygon of geometry.coordinates ?? []) {
-          const parts = (polygon ?? []).map((r) => ring(r, projection));
-          rings.push(...parts);
+          const parts = polygonRings(polygon, projection);
+          for (const part of parts) rings.push(part);
           if (parts[0]) outers.push(parts[0]);
         }
         break;
@@ -360,6 +382,18 @@ export function starMapReadingOrder(points: readonly StarMapPoint[], tolerance: 
   );
 }
 
+/** Smallest and largest of a list (a loop: no argument limit); 0 and 0 for an empty list. */
+export function starMapRange(values: readonly number[]): { min: number; max: number } {
+  if (!values.length) return { min: 0, max: 0 };
+  let min = Infinity;
+  let max = -Infinity;
+  for (const value of values) {
+    if (value < min) min = value;
+    if (value > max) max = value;
+  }
+  return { min, max };
+}
+
 /** Value classes of a choropleth: equal intervals between the smallest and the largest value. */
 export interface StarMapClasses {
   /** `count + 1` class limits, from the smallest to the largest value; empty without values. */
@@ -376,8 +410,7 @@ export function starMapClasses(
   const known = values.filter((v): v is number => typeof v === 'number' && Number.isFinite(v));
   const classes = Math.max(1, Math.round(count));
   if (!known.length) return { breaks: [], classOf: () => null };
-  const min = Math.min(...known);
-  const max = Math.max(...known);
+  const { min, max } = starMapRange(known);
   const step = (max - min) / classes;
   const breaks = Array.from({ length: classes + 1 }, (_, i) =>
     i === classes ? max : Math.round((min + step * i) * 1e9) / 1e9,
@@ -412,6 +445,10 @@ export interface StarMapTile {
   readonly y: number;
   readonly left: number;
   readonly top: number;
+  /** Width and height on whole pixels: the next tile starts where this one ends (no seam). */
+  readonly width: number;
+  readonly height: number;
+  /** The exact tile size at this zoom (fractional). */
   readonly size: number;
 }
 
@@ -434,7 +471,19 @@ export function starMapTiles(
   const tiles: StarMapTile[] = [];
   for (let y = first(top); y <= last(top, viewport.height); y++) {
     for (let x = first(left); x <= last(left, viewport.width); x++) {
-      tiles.push({ z, x, y, left: r2(left + x * size), top: r2(top + y * size), size: r2(size) });
+      // Round the edges, not the start and the size apart, so neighbours share an edge.
+      const x0 = Math.round(left + x * size);
+      const y0 = Math.round(top + y * size);
+      tiles.push({
+        z,
+        x,
+        y,
+        left: x0,
+        top: y0,
+        width: Math.round(left + (x + 1) * size) - x0,
+        height: Math.round(top + (y + 1) * size) - y0,
+        size: r2(size),
+      });
     }
   }
   return tiles;

@@ -434,6 +434,87 @@ describe('StarMap', () => {
     warn.mockRestore();
   });
 
+  it('shows the panning state only during a drag (review M10)', async () => {
+    const { root, feature, stable } = await setup();
+    const viewport = root.querySelector('.star-map__viewport')!;
+    pointer(feature('North'), 'pointerdown', 100, 100);
+    pointer(viewport, 'pointermove', 160, 100);
+    await stable();
+    expect(viewport.classList).toContain('star-map__viewport--panning');
+    pointer(viewport, 'pointerup', 160, 100);
+    await stable();
+    expect(viewport.classList).not.toContain('star-map__viewport--panning');
+  });
+
+  it('zooms the same with a wheel in line mode as in pixel mode (review M14)', async () => {
+    const { root, host, map, stable } = await setup();
+    const start = map.view().zoom;
+    const wheel = new WheelEvent('wheel', {
+      bubbles: true,
+      cancelable: true,
+      deltaY: -3,
+      deltaMode: WheelEvent.DOM_DELTA_LINE,
+      ctrlKey: true,
+      clientX: 400,
+      clientY: 225,
+    });
+    root.querySelector('.star-map__viewport')!.dispatchEvent(wheel);
+    await stable();
+    // 3 lines are 48 pixels: 0.48 zoom levels.
+    expect(host.zoom()).toBeCloseTo(start + 0.48, 3);
+  });
+
+  it('pans with the plain arrow keys when the map has no features (review M17)', async () => {
+    const { root, host, stable } = await setup((h) => h.layers.set([]));
+    const viewport = root.querySelector<HTMLElement>('.star-map__viewport')!;
+    expect(viewport.getAttribute('tabindex')).toBe('0');
+    expect(
+      root.querySelector(`#${viewport.getAttribute('aria-describedby')}`)?.textContent,
+    ).toContain('Without features, the arrow keys pan');
+    viewport.focus();
+    key(viewport, 'ArrowRight');
+    await stable();
+    expect(host.center()![0]).toBeGreaterThan(0);
+    key(viewport, 'ArrowDown');
+    await stable();
+    expect(host.center()![1]).toBeLessThan(0);
+  });
+
+  it('stops a zoom animation when the user pans (review M16)', async () => {
+    const view = document.defaultView!;
+    const realMatchMedia = view.matchMedia;
+    view.matchMedia = ((query: string) => ({
+      matches: false,
+      media: query,
+    })) as typeof view.matchMedia;
+    onTestFinished(() => {
+      view.matchMedia = realMatchMedia;
+    });
+    const frames: FrameRequestCallback[] = [];
+    vi.spyOn(view, 'requestAnimationFrame').mockImplementation((callback) => {
+      frames.push(callback);
+      return frames.length;
+    });
+    vi.spyOn(view, 'cancelAnimationFrame').mockImplementation(() => undefined);
+    const { root, host, map, feature, stable } = await setup(() => undefined, true);
+    const fitted = map.view().zoom;
+    root.querySelector<HTMLButtonElement>('button[aria-label="Zoom in"]')!.click();
+    const run = (time: number) => frames.splice(0).forEach((callback) => callback(time));
+    run(1000);
+    run(1100);
+    feature('North').focus();
+    key(feature('North'), 'ArrowRight', { shiftKey: true });
+    await stable();
+    const panned = host.zoom()!;
+    expect(panned).toBeGreaterThan(fitted);
+    expect(panned).toBeLessThan(fitted + 1);
+    run(2000);
+    await stable();
+    // The animation did not finish over the pan.
+    expect(host.zoom()).toBe(panned);
+    vi.restoreAllMocks();
+  });
+
   it('animates a button zoom only when motion is allowed', async () => {
     // CI browsers report reduced motion: stub the system setting to "no preference".
     const view = document.defaultView!;
