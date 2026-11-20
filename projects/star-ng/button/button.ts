@@ -23,7 +23,16 @@ import {
 } from '@star-ng/ui/core';
 
 export type StarButtonVariant =
-  'primary' | 'secondary' | 'ghost' | 'danger' | 'ghost-danger' | 'success' | 'warning';
+  | 'primary'
+  | 'secondary'
+  | 'ghost'
+  | 'danger'
+  | 'ghost-danger'
+  | 'success'
+  | 'warning'
+  | 'info'
+  | 'help'
+  | 'contrast';
 
 export type StarButtonSize = 'sm' | 'md' | 'lg';
 
@@ -44,7 +53,8 @@ export type StarButtonAppearance = 'filled' | 'outlined' | 'text' | 'link';
  * leading icon and `starIcon="loading"` the loading icon.
  *
  * PrimeNG names that star-ng covers in another way: `severity` = `variant` (`primary`,
- * `secondary`, `success`, `warning`, `danger`; `plain` = `secondary` or `ghost`), `icon` =
+ * `secondary`, `success`, `info`, `warning`, `help`, `danger`, `contrast`; `plain` = `secondary`
+ * or `ghost`), `icon` =
  * `leadingIcon`, `iconPos` = `leadingIcon` or `trailingIcon`, `fluid` = `fullWidth`, `onClick` =
  * `pressed`, `onFocus` and `onBlur` = the native `focusin` and `focusout` events of the host (they
  * bubble from the inner button), `style`, `styleClass` and `buttonProps` = `pt` (part

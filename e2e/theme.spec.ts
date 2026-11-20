@@ -101,7 +101,8 @@ test.describe('theme', () => {
 
 // Pages that show filled controls: text on a fill must reach WCAG AA (4.5:1) in both themes.
 const FILLED =
-  '.star-btn--primary, .star-btn--success, .star-btn--warning, .star-btn--danger, .star-badge, .star-tag, ' +
+  '.star-btn--primary, .star-btn--success, .star-btn--warning, .star-btn--danger, .star-btn--info, ' +
+  '.star-btn--help, .star-btn--contrast, .star-badge, .star-tag, ' +
   '.star-paginator__page--active, .star-stepper__item--done .star-stepper__number';
 const PAGES = [
   '/controls/button',

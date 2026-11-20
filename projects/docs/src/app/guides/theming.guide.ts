@@ -167,6 +167,10 @@ export class ThemingGuide {
       description: 'Status colors and their soft fills (tags, messages).',
     },
     {
+      name: '--star-help',
+      description: 'Fill of the help button variant (white or dark text at 4.5:1 or more).',
+    },
+    {
       name: '--star-surface, --star-surface-muted',
       description: 'Control and panel ground; page ground and filled inputs.',
     },

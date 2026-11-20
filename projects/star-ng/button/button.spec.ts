@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { StarIconTemplate, StarSeverity } from '@star-ng/ui/core';
-import { StarButton, StarButtonAppearance } from './button';
+import { StarButton, StarButtonAppearance, StarButtonVariant } from './button';
 
 @Component({
   imports: [StarButton, StarIconTemplate],
@@ -13,6 +13,7 @@ import { StarButton, StarButtonAppearance } from './button';
       [loading]="loading()"
       [loadingIcon]="loadingIcon()"
       [appearance]="appearance()"
+      [variant]="variant()"
       [raised]="raised()"
       [rounded]="rounded()"
       [badge]="badge()"
@@ -36,6 +37,7 @@ class Host {
   readonly loading = signal(false);
   readonly loadingIcon = signal<string | null>(null);
   readonly appearance = signal<StarButtonAppearance>('filled');
+  readonly variant = signal<StarButtonVariant>('primary');
   readonly raised = signal(false);
   readonly rounded = signal(false);
   readonly badge = signal<string | number | null>(null);
@@ -90,6 +92,15 @@ describe('StarButton depth', () => {
     t.host.appearance.set('filled');
     await t.stable();
     expect(t.button.className).not.toMatch(/--(link|text|outlined|filled)/);
+  });
+
+  it('has the info, help and contrast variants', async () => {
+    const t = await setup();
+    for (const variant of ['info', 'help', 'contrast'] as const) {
+      t.host.variant.set(variant);
+      await t.stable();
+      expect(t.button.className).toContain(`star-btn--${variant}`);
+    }
   });
 
   it('shows a badge with its severity', async () => {

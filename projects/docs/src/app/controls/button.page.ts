@@ -20,6 +20,9 @@ import { DOCS, DocsRow } from '../shared/docs';
         <star-button variant="warning">Hold</star-button>
         <star-button variant="danger">Delete</star-button>
         <star-button variant="ghost-danger">Remove</star-button>
+        <star-button variant="info">Details</star-button>
+        <star-button variant="help">Help</star-button>
+        <star-button variant="contrast">Publish</star-button>
       </docs-example>
 
       <docs-example heading="Sizes" source="button/sizes">

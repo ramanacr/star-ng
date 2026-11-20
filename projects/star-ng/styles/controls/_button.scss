@@ -109,6 +109,31 @@
     background: color-mix(in srgb, var(--star-warning) 85%, #fff);
   }
 }
+.star-btn--info {
+  background: var(--star-accent);
+  color: var(--star-on-tone);
+
+  &:hover {
+    background: color-mix(in srgb, var(--star-accent) 85%, var(--star-text-strong));
+  }
+}
+.star-btn--help {
+  background: var(--star-help);
+  color: var(--star-on-tone);
+
+  &:hover {
+    background: color-mix(in srgb, var(--star-help) 85%, var(--star-text-strong));
+  }
+}
+// The highest contrast: the strong text color as the fill, the surface as the text.
+.star-btn--contrast {
+  background: var(--star-text-strong);
+  color: var(--star-surface);
+
+  &:hover {
+    background: color-mix(in srgb, var(--star-text-strong) 85%, var(--star-surface));
+  }
+}
 .star-btn--icon {
   width: 2.25rem;
   height: 2.25rem;
@@ -143,6 +168,12 @@
 }
 .star-btn--warning {
   --star-btn-tone: color-mix(in srgb, var(--star-warning) 45%, var(--star-text-strong));
+}
+.star-btn--info {
+  --star-btn-tone: var(--star-accent);
+}
+.star-btn--help {
+  --star-btn-tone: var(--star-help);
 }
 .star-btn--outlined,
 .star-btn--text,
