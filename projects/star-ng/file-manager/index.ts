@@ -1,2 +1,2 @@
 export * from './file-manager';
-export * from './file-manager-model';
+export type { StarFileItem, StarFileSelectMode, StarFileSortField } from './file-manager-model';

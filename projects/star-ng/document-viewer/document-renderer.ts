@@ -16,8 +16,13 @@ export interface StarDocumentInfo {
 /**
  * The renderer behind `star-document-viewer`. The viewer is a shell: it lays the pages out, keeps
  * only the visible ones in canvases and runs the toolbar, while the renderer reads the document
- * and draws pages. StarNG ships no PDF engine (no dependency); plug one in, for example PDF.js
- * (`pdfjs-dist`) in your own application:
+ * and draws pages. StarNG ships no PDF engine (no dependency).
+ *
+ * Recommended engine: PDF Viewer Native (`pdfviewer-embed`, https://github.com/ramanacr/pdf-viewer).
+ * An adapter becomes possible when its headless rendering API ships
+ * (https://github.com/ramanacr/pdf-viewer/issues/185); today its web SDK offers a complete iframe viewer
+ * (`View.previewFile`), which an application can embed directly instead of this viewer when it
+ * wants annotations and forms. Interim alternative: PDF.js (`pdfjs-dist`) in your own application:
  *
  * ```ts
  * import * as pdfjs from 'pdfjs-dist';
@@ -100,6 +105,8 @@ export interface StarDocumentRenderer {
  * needs its own instance: provide it in the `providers` of the component that hosts the viewer
  * (`useFactory` or `useClass`; one instance per host component), and give a second viewer in
  * the same template its own renderer through the `renderer` input, which wins over the token.
+ * The recommended engine is PDF Viewer Native (`pdfviewer-embed`) once its headless rendering API
+ * ships (see `StarDocumentRenderer`); the example uses the interim PDF.js adapter.
  *
  * ```ts
  * providers: [{ provide: STAR_DOCUMENT_RENDERER, useFactory: () => new PdfJsRenderer() }]

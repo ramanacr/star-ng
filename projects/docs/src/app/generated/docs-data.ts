@@ -4211,14 +4211,14 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "outputs": [
       {
-        "name": "nodesChange",
+        "name": "nodesPatch",
         "type": "StarDiagramChange<StarDiagramNodePatch>",
         "default": null,
         "required": false,
         "description": "Node patches: moves, resizes, labels, deletes, layouts, undo and redo."
       },
       {
-        "name": "edgesChange",
+        "name": "edgesPatch",
         "type": "StarDiagramChange<StarDiagramEdgePatch>",
         "default": null,
         "required": false,
@@ -5950,7 +5950,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Label for assistive technology."
       },
       {
-        "name": "ariaLabelledby",
+        "name": "ariaLabelledBy",
         "type": "string | null",
         "default": "null",
         "required": false,
@@ -7331,7 +7331,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "inheritedFrom": "StarGaugeBase"
       },
       {
-        "name": "ariaLabelledby",
+        "name": "ariaLabelledBy",
         "type": "string | null",
         "default": "null",
         "required": false,
@@ -7749,7 +7749,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
-        "name": "selection",
+        "name": "selectionMode",
         "type": "'none' | 'single' | 'multiple'",
         "default": "'single'",
         "required": false,
@@ -7800,7 +7800,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Longitude and latitude in the middle of the map. `null`: the middle of the data."
       },
       {
-        "name": "selected",
+        "name": "selection",
         "type": "readonly string[]",
         "default": "[]",
         "required": false,
@@ -7846,7 +7846,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-markdown-lite",
     "entry": "@star-ng/ui/chat",
-    "description": "Renders text in the Markdown subset of `starParseMarkdownLite` (paragraphs, line breaks, bold, italic, inline code, fenced code blocks and links). Everything is bound as text: raw HTML in the source shows as text. Links open in a new tab with `rel=\"noopener noreferrer\"`; only `http:`, `https:` and `mailto:` addresses become links. `star-chat` and `star-ai-prompt` use it.",
+    "description": "Renders text in a small Markdown subset (paragraphs, line breaks, bold, italic, inline code, fenced code blocks and links). Everything is bound as text: raw HTML in the source shows as text. Links open in a new tab with `rel=\"noopener noreferrer\"`; only `http:`, `https:` and `mailto:` addresses become links. `star-chat` and `star-ai-prompt` use it.",
     "inputs": [
       {
         "name": "text",
@@ -10914,7 +10914,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "inheritedFrom": "StarGaugeBase"
       },
       {
-        "name": "ariaLabelledby",
+        "name": "ariaLabelledBy",
         "type": "string | null",
         "default": "null",
         "required": false,
@@ -15854,7 +15854,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "date-picker/touch": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"touchDate\"\n    locale=\"en-GB\"\n    touchUI\n    ariaLabel=\"Delivery date, touch\"\n  />\n  <star-date-picker\n    [(value)]=\"touchDate\"\n    locale=\"en-GB\"\n    breakpoint=\"640px\"\n    ariaLabel=\"Delivery date, small window\"\n  />\n  <p class=\"docs-output\" role=\"status\">Delivery: {{ iso(touchDate()) }}</p>\n</div>",
   "date-picker/views": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"reportMonth\"\n    view=\"month\"\n    locale=\"en-GB\"\n    ariaLabel=\"Report month\"\n  />\n  <star-date-picker\n    [(value)]=\"reportYear\"\n    view=\"year\"\n    locale=\"en-GB\"\n    ariaLabel=\"Report year\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Month: {{ iso(reportMonth()) }}, year: {{ iso(reportYear()) }}\n  </p>\n</div>",
   "diagram/template": "<star-diagram\n  [nodes]=\"cards()\"\n  [edges]=\"cardEdges\"\n  readonly\n  [showGrid]=\"false\"\n  height=\"14rem\"\n  ariaLabel=\"Order stages\"\n>\n  <ng-template starDiagramNode let-node>\n    <span class=\"card\">\n      <strong>{{ node.label }}</strong>\n      <small>{{ counts[node.id] }} orders</small>\n    </span>\n  </ng-template>\n</star-diagram>",
-  "diagram/workflow": "<div class=\"docs-stack\">\n  <div class=\"actions\">\n    <star-button variant=\"secondary\" size=\"sm\" (pressed)=\"layoutTree()\"\n      >Tree layout</star-button\n    >\n    <star-button variant=\"secondary\" size=\"sm\" (pressed)=\"layoutGrid()\"\n      >Grid layout</star-button\n    >\n    <star-button variant=\"secondary\" size=\"sm\" (pressed)=\"download()\"\n      >Export SVG</star-button\n    >\n  </div>\n  <star-diagram\n    #workflow\n    [nodes]=\"nodes()\"\n    [edges]=\"edges()\"\n    [(selection)]=\"selection\"\n    fitContent\n    ariaLabel=\"Order workflow\"\n    (nodesChange)=\"onNodes($event)\"\n    (edgesChange)=\"onEdges($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">{{ last() }}</p>\n</div>",
+  "diagram/workflow": "<div class=\"docs-stack\">\n  <div class=\"actions\">\n    <star-button variant=\"secondary\" size=\"sm\" (pressed)=\"layoutTree()\"\n      >Tree layout</star-button\n    >\n    <star-button variant=\"secondary\" size=\"sm\" (pressed)=\"layoutGrid()\"\n      >Grid layout</star-button\n    >\n    <star-button variant=\"secondary\" size=\"sm\" (pressed)=\"download()\"\n      >Export SVG</star-button\n    >\n  </div>\n  <star-diagram\n    #workflow\n    [nodes]=\"nodes()\"\n    [edges]=\"edges()\"\n    [(selection)]=\"selection\"\n    fitContent\n    ariaLabel=\"Order workflow\"\n    (nodesPatch)=\"onNodes($event)\"\n    (edgesPatch)=\"onEdges($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">{{ last() }}</p>\n</div>",
   "dialog/basic": "<star-button (pressed)=\"basicOpen.set(true)\">Edit order</star-button>\n<star-dialog [(visible)]=\"basicOpen\" header=\"Edit order ORD-1042\">\n  <span starDialogHeader class=\"docs-output\">Last saved at 10:42</span>\n  <div class=\"docs-stack\">\n    <star-field label=\"Customer\">\n      <input starInput value=\"Orchard Supply\" />\n    </star-field>\n    <star-field label=\"Delivery note\" hint=\"The driver reads this note.\">\n      <textarea starInput rows=\"3\">Leave at the loading dock.</textarea>\n    </star-field>\n  </div>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button variant=\"ghost\" (pressed)=\"basicOpen.set(false)\">Cancel</star-button>\n    <star-button (pressed)=\"basicOpen.set(false)\">Save</star-button>\n  </div>\n</star-dialog>",
   "dialog/close-rules": "<div class=\"docs-row\">\n  <star-button variant=\"secondary\" (pressed)=\"maskOpen.set(true)\"\n    >Backdrop click</star-button\n  >\n  <star-button variant=\"secondary\" (pressed)=\"lockedOpen.set(true)\">Locked</star-button>\n  <star-button variant=\"secondary\" (pressed)=\"floatOpen.set(true)\">Non-modal</star-button>\n</div>\n<star-dialog [(visible)]=\"maskOpen\" header=\"Closes on a backdrop click\" dismissableMask>\n  <p>Click outside this window to close it.</p>\n</star-dialog>\n<star-dialog\n  [(visible)]=\"lockedOpen\"\n  header=\"Locked dialog\"\n  [closable]=\"false\"\n  [closeOnEscape]=\"false\"\n>\n  <p>This dialog has no close button and ignores Escape.</p>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button (pressed)=\"lockedOpen.set(false)\">Done</star-button>\n  </div>\n</star-dialog>\n<star-dialog [(visible)]=\"floatOpen\" header=\"Non-modal dialog\" [modal]=\"false\">\n  <p>The page behind this window stays usable.</p>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button (pressed)=\"floatOpen.set(false)\">Close</star-button>\n  </div>\n</star-dialog>",
   "dialog/drag": "<div class=\"docs-stack\">\n  <p class=\"docs-output\" role=\"status\">Last position: {{ dragNote() }}</p>\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"dragOpen.set(true)\">\n      Open movable dialog\n    </star-button>\n  </div>\n</div>\n<star-dialog\n  [(visible)]=\"dragOpen\"\n  header=\"Movable dialog\"\n  draggable\n  (dragEnd)=\"dragNote.set($event.x + ', ' + $event.y)\"\n>\n  <p>Drag the header, or focus the move button and press Alt with an arrow key.</p>\n</star-dialog>",
@@ -15967,9 +15967,9 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "listbox/template": "<star-listbox\n  [options]=\"queues\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  [(value)]=\"templated\"\n  scrollHeight=\"12rem\"\n  ariaLabel=\"Queue with template\"\n>\n  <ng-template starOption [starOptionOf]=\"queues\" let-item let-selected=\"selected\">\n    <span>\n      {{ item.name }}\n      <small>{{ item.site }}</small>\n    </span>\n  </ng-template>\n</star-listbox>",
   "listbox/virtual": "<div class=\"docs-stack\">\n  <star-listbox\n    [options]=\"invoiceNumbers\"\n    [(value)]=\"invoice\"\n    virtualScroll\n    filter\n    scrollHeight=\"16rem\"\n    ariaLabel=\"Invoice number\"\n  />\n  <p class=\"docs-output\" role=\"status\">Invoice: {{ invoice() ?? 'none' }}</p>\n</div>",
   "listbox/virtual-groups": "<div class=\"docs-stack\">\n  <star-listbox\n    [options]=\"shipments\"\n    optionLabel=\"name\"\n    optionValue=\"id\"\n    optionGroup=\"region\"\n    optionDisabled=\"held\"\n    [(value)]=\"picked\"\n    multiple\n    virtualScroll\n    [virtualItemSize]=\"36\"\n    scrollHeight=\"16rem\"\n    ariaLabel=\"Shipments\"\n  >\n    <ng-template starOption [starOptionOf]=\"shipments\" let-item let-selected=\"selected\">\n      {{ item.name }}\n    </ng-template>\n  </star-listbox>\n  <p class=\"docs-output\" role=\"status\">Picked: {{ pickedCount() }}</p>\n</div>",
-  "map/choropleth": "<div class=\"docs-stack\">\n  <star-map\n    [layers]=\"choropleth\"\n    [(selected)]=\"selected\"\n    [(zoom)]=\"zoom\"\n    ariaLabel=\"Sales by region\"\n    (shapeClick)=\"clicked($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Selected: {{ selected().join(', ') || '(none)' }}. Last click: {{ lastClick() }}. Zoom:\n    {{ zoom() === null ? 'fit' : zoom() }}.\n  </p>\n</div>",
-  "map/markers": "<star-map\n  [layers]=\"markerLayers\"\n  projection=\"equirectangular\"\n  selection=\"none\"\n  ariaLabel=\"Towns and visitors\"\n>\n  <ng-template starMapMarker let-town>\n    <span class=\"town\"\n      ><i class=\"ph-fill ph-map-pin\" aria-hidden=\"true\"></i>{{ town.label }}</span\n    >\n  </ng-template>\n  <ng-template starMapTooltip let-feature>\n    <strong>{{ feature.label }}</strong>\n    @if (feature.value !== null) {\n      · {{ feature.value }} visitors\n    }\n  </ng-template>\n</star-map>",
-  "map/tiles": "<div class=\"docs-stack\">\n  <label class=\"docs-row\">\n    <input type=\"checkbox\" [checked]=\"tilesOn()\" (change)=\"tilesOn.set(!tilesOn())\" />\n    Load OpenStreetMap tiles (from tile.openstreetmap.org)\n  </label>\n  <star-map [layers]=\"tileLayers()\" selection=\"none\" ariaLabel=\"Three capitals\" />\n</div>",
+  "map/choropleth": "<div class=\"docs-stack\">\n  <star-map\n    [layers]=\"choropleth\"\n    [(selection)]=\"selection\"\n    [(zoom)]=\"zoom\"\n    ariaLabel=\"Sales by region\"\n    (shapeClick)=\"clicked($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Selected: {{ selection().join(', ') || '(none)' }}. Last click: {{ lastClick() }}. Zoom:\n    {{ zoom() === null ? 'fit' : zoom() }}.\n  </p>\n</div>",
+  "map/markers": "<star-map\n  [layers]=\"markerLayers\"\n  projection=\"equirectangular\"\n  selectionMode=\"none\"\n  ariaLabel=\"Towns and visitors\"\n>\n  <ng-template starMapMarker let-town>\n    <span class=\"town\"\n      ><i class=\"ph-fill ph-map-pin\" aria-hidden=\"true\"></i>{{ town.label }}</span\n    >\n  </ng-template>\n  <ng-template starMapTooltip let-feature>\n    <strong>{{ feature.label }}</strong>\n    @if (feature.value !== null) {\n      · {{ feature.value }} visitors\n    }\n  </ng-template>\n</star-map>",
+  "map/tiles": "<div class=\"docs-stack\">\n  <label class=\"docs-row\">\n    <input type=\"checkbox\" [checked]=\"tilesOn()\" (change)=\"tilesOn.set(!tilesOn())\" />\n    Load OpenStreetMap tiles (from tile.openstreetmap.org)\n  </label>\n  <star-map [layers]=\"tileLayers()\" selectionMode=\"none\" ariaLabel=\"Three capitals\" />\n</div>",
   "mega-menu/basic": "<div class=\"docs-stack\">\n  <star-mega-menu\n    ariaLabel=\"Catalogue\"\n    [items]=\"catalogue\"\n    (itemClick)=\"last.set($event.label ?? '')\"\n  />\n  <p class=\"docs-output\" role=\"status\">Last action: {{ last() }}</p>\n</div>",
   "mention/basic": "<div class=\"docs-stack\">\n  <textarea\n    class=\"star-input\"\n    aria-label=\"Comment\"\n    placeholder=\"Write a comment, type @ to mention someone\"\n    starMention\n    #comment=\"starMention\"\n    [suggestions]=\"people\"\n    optionLabel=\"name\"\n    (mentionSelect)=\"last.set($any($event.item).name)\"\n  ></textarea>\n  <p class=\"docs-output\" role=\"status\">\n    Last mention: {{ last() }}. In the text: {{ names(comment.mentions()) }}\n  </p>\n</div>",
   "mention/form": "<div class=\"docs-stack\">\n  <star-field label=\"Assign to\" hint=\"Type @ and a name\">\n    <input\n      starInput\n      [formField]=\"f.assignee\"\n      starMention\n      [suggestions]=\"people\"\n      optionLabel=\"name\"\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Model: {{ model().assignee || '(empty)' }}</p>\n</div>",

@@ -1,3 +1,11 @@
 export * from './chart';
 export * from './chart-export';
-export * from './chart-interaction';
+export { StarChartTooltip } from './chart-interaction';
+export type {
+  StarChartPointCursor,
+  StarChartPointInfo,
+  StarChartPointRows,
+  StarChartPointSelectEvent,
+  StarChartPointTarget,
+  StarChartTooltipContext,
+} from './chart-interaction';

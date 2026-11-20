@@ -340,7 +340,8 @@ send(files: readonly File[]): void {
     },
     {
       name: 'formatFileSize(bytes, locale?)',
-      description: 'Text such as "512 byte" or "1.5 kB" from a number of bytes.',
+      description:
+        'Deprecated: use starFormatFileSize from @star-ng/ui/core (or the starFileSize pipe). Text such as "512 byte" or "1.5 kB" from a number of bytes.',
     },
     {
       name: 'fileMatchesAccept(file, accept)',

@@ -1,18 +1,13 @@
 import {
-  starCellAddress,
-  starColumnIndex,
-  starColumnName,
   starEvaluate,
   StarFormulaContext,
   StarFormulaError,
-  starFormulaReferences,
   StarFormulaValue,
   starIsFormulaError,
-  starParseAddress,
-  starParseFormula,
-  starShiftFormula,
-  starTokenizeFormula,
 } from '@star-ng/ui/spreadsheet';
+import { starCellAddress, starColumnIndex, starColumnName, starParseAddress } from './address';
+import { starFormulaReferences, starParseFormula } from './parser';
+import { starShiftFormula, starTokenizeFormula } from './tokenizer';
 
 /** A context over a fixed map of `Sheet!A1` values. */
 function ctx(

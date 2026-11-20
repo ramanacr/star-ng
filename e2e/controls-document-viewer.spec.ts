@@ -52,7 +52,7 @@ test.describe('document viewer', () => {
     await expect(search).toBeFocused();
     await search.fill('toner');
     await search.press('Enter');
-    const status = live.locator('.star-document-viewer__search [role=status]');
+    const status = live.locator('.star-document-viewer__search-status');
     await expect(status).toHaveText(/\d+ results? on \d+ pages?/);
     await search.press('Enter');
     await expect(live.getByRole('textbox', { name: 'Page number' })).not.toHaveValue('1');

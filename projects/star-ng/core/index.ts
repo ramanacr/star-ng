@@ -52,6 +52,8 @@ export {
   type ɵStarSortRule,
 } from './grid-columns';
 export * from './list-windowing';
+// Modal check: shared by the ribbon and the command palette, not public API.
+export { ɵstarModalOutside } from './modal';
 export * from './motion';
 export * from './options';
 export * from './reactive-forms';

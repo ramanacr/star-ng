@@ -713,7 +713,7 @@ export class StarImageEditor {
       toggle('adjust', 'ph-sliders-horizontal', t.imageAdjust),
       toggle('annotate', 'ph-pencil-simple', t.imageAnnotate),
       action('undo', 'ph-arrow-u-up-left', t.undo, !this.canUndo(), true),
-      action('redo', 'ph-arrow-u-up-right', t.editorRedo, !this.canRedo()),
+      action('redo', 'ph-arrow-u-up-right', t.redo, !this.canRedo()),
       action('reset', 'ph-clock-counter-clockwise', t.imageReset, !this.operations().length),
       {
         ...action('zoomFit', 'ph-corners-in', t.imageZoomFit, none, true),

@@ -44,8 +44,9 @@ const CASCADE = 32;
 /**
  * Stacking order of the open windows of the application, back to front. `StarWindow` uses it; the
  * service also opens windows from code (`StarWindowService.open`). The orders are renumbered
- * 1..n on every change, so they stay small: the CSS adds them to `--star-window-z` (900) and caps
- * the result below the CDK overlay container (1000).
+ * 1..n on every change, so they stay small: the CSS adds them to `--star-window-z` (default: the
+ * overlay base `--star-z-index-base` minus 100) and caps the result one below the CDK overlay
+ * container, so it follows `provideStarNg({ overlay: { zIndexBase } })`.
  */
 @Service()
 export class StarWindowStack {

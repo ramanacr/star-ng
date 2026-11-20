@@ -1,2 +1,11 @@
 export * from './gantt';
-export * from './gantt-model';
+export type {
+  StarGanttBarEnds,
+  StarGanttDependency,
+  StarGanttDependencyType,
+  StarGanttId,
+  StarGanttRow,
+  StarGanttScale,
+  StarGanttTask,
+  StarGanttTick,
+} from './gantt-model';

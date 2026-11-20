@@ -85,10 +85,10 @@ const LAYERS: readonly StarMapLayer[] = [
   template: `
     <star-map
       [layers]="layers()"
-      [(selected)]="selected"
+      [(selection)]="selection"
       [(zoom)]="zoom"
       [(center)]="center"
-      [selection]="mode()"
+      [selectionMode]="mode()"
       [maxZoom]="10"
       ariaLabel="Sales map"
       (shapeClick)="shapes.push($event)"
@@ -108,7 +108,7 @@ const LAYERS: readonly StarMapLayer[] = [
 class Host {
   readonly map = viewChild.required(StarMap);
   readonly layers = signal<readonly StarMapLayer[]>(LAYERS);
-  readonly selected = signal<readonly string[]>([]);
+  readonly selection = signal<readonly string[]>([]);
   readonly zoom = signal<number | null>(null);
   readonly center = signal<StarLonLat | null>(null);
   readonly mode = signal<'none' | 'single' | 'multiple'>('single');
@@ -240,7 +240,7 @@ describe('StarMap', () => {
     feature('East').focus();
     key(feature('East'), 'Enter');
     await stable();
-    expect(host.selected()).toEqual(['regions:east']);
+    expect(host.selection()).toEqual(['regions:east']);
     expect(feature('East').getAttribute('aria-pressed')).toBe('true');
     expect(host.shapes.at(-1)?.feature).toMatchObject({
       key: 'regions:east',
@@ -249,7 +249,7 @@ describe('StarMap', () => {
     });
     key(feature('East'), ' ');
     await stable();
-    expect(host.selected()).toEqual([]);
+    expect(host.selection()).toEqual([]);
     // A marker reports a click but has no selection state.
     const port = root.querySelector<HTMLElement>('.star-map__marker[aria-label="Port"]')!;
     port.click();
@@ -277,7 +277,7 @@ describe('StarMap', () => {
     const bNorth = root.querySelector<HTMLElement>('[data-map-key="b:north"]')!;
     bNorth.dispatchEvent(new MouseEvent('click', { bubbles: true }));
     await stable();
-    expect(host.selected()).toEqual(['b:north']);
+    expect(host.selection()).toEqual(['b:north']);
     expect(root.querySelector('[data-map-key="a:north"]')!.getAttribute('aria-pressed')).toBe(
       'false',
     );
@@ -300,12 +300,12 @@ describe('StarMap', () => {
     expect(all.filter((message) => message.includes('NG0955'))).toEqual([]);
   });
 
-  it('selects several shapes with selection="multiple" and none with "none"', async () => {
+  it('selects several shapes with selectionMode="multiple" and none with "none"', async () => {
     const { host, feature, stable } = await setup((h) => h.mode.set('multiple'));
     feature('North').dispatchEvent(new MouseEvent('click', { bubbles: true }));
     feature('East').dispatchEvent(new MouseEvent('click', { bubbles: true }));
     await stable();
-    expect(host.selected()).toEqual(['regions:north', 'regions:east']);
+    expect(host.selection()).toEqual(['regions:north', 'regions:east']);
     host.mode.set('none');
     await stable();
     expect(feature('North').getAttribute('aria-pressed')).toBeNull();
@@ -353,7 +353,7 @@ describe('StarMap', () => {
     // The drag moved the map 40 pixels to the right: the centre moved west.
     expect(map.view().center[0]).toBeCloseTo(start.center[0] - 40 / 2 ** start.zoom, 6);
     // The click that ends a drag does not select.
-    expect(host.selected()).toEqual([]);
+    expect(host.selection()).toEqual([]);
 
     const wheel = new WheelEvent('wheel', {
       bubbles: true,
