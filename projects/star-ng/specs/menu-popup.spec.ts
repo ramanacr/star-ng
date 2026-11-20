@@ -1,4 +1,4 @@
-import { Component, PLATFORM_ID } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, PLATFORM_ID } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { StarButton } from '@star-ng/ui/button';
 import {
@@ -51,9 +51,12 @@ describe('StarMenu', () => {
 
 @Component({
   imports: [StarButton, StarMenu, StarMenuTrigger],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   template: `
     <star-button id="wrapper" [starMenuTrigger]="menu">View</star-button>
     <button type="button" id="native" [starMenuTrigger]="menu">Native</button>
+    <div id="div" tabindex="0" [starMenuTrigger]="menu">Div</div>
+    <x-tile id="empty" tabindex="0" [starMenuTrigger]="menu">Tile</x-tile>
     <star-menu #menu [items]="[{ label: 'Zoom' }]" />
   `,
 })
@@ -70,8 +73,12 @@ describe('StarMenuTrigger on a wrapper host', () => {
     const wrapper = root.querySelector('#wrapper')!;
     expect(wrapper.getAttribute('role')).toBe('none');
     expect(wrapper.querySelector('button')).not.toBeNull();
-    // A native button keeps the role that CDK gives it.
+    // A native button and a plain element keep the role that CDK gives them.
     expect(root.querySelector('#native')!.getAttribute('role')).toBe('button');
+    expect(root.querySelector('#div')!.getAttribute('role')).toBe('button');
+    // The popup state is not on a presentational host.
+    expect(wrapper.hasAttribute('aria-haspopup')).toBe(false);
+    expect(wrapper.hasAttribute('aria-expanded')).toBe(false);
   });
 
   it('puts the popup state on the inner button after the render', async () => {
@@ -82,6 +89,27 @@ describe('StarMenuTrigger on a wrapper host', () => {
     expect(wrapper.getAttribute('role')).toBe('none');
     expect(inner.getAttribute('aria-haspopup')).toBe('menu');
     expect(inner.getAttribute('aria-expanded')).toBe('false');
+    expect(wrapper.hasAttribute('aria-haspopup')).toBe(false);
+    expect(wrapper.hasAttribute('aria-expanded')).toBe(false);
+
+    inner.click();
+    await fixture.whenStable();
+    expect(inner.getAttribute('aria-expanded')).toBe('true');
+    expect(wrapper.hasAttribute('aria-expanded')).toBe(false);
+  });
+
+  it('keeps the button role of a host without an inner button', async () => {
+    const fixture = TestBed.createComponent(WrapperHost);
+    await fixture.whenStable();
+    const root = fixture.nativeElement as HTMLElement;
+    const div = root.querySelector('#div')!;
+    expect(div.getAttribute('role')).toBe('button');
+    expect(div.getAttribute('aria-haspopup')).toBe('menu');
+    // A custom element without a button inside gets its button role back after the render.
+    const empty = root.querySelector('#empty')!;
+    expect(empty.getAttribute('role')).toBe('button');
+    expect(empty.getAttribute('aria-haspopup')).toBe('menu');
+    expect(empty.getAttribute('aria-expanded')).toBe('false');
   });
 });
 
