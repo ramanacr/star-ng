@@ -676,6 +676,45 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'scheduler week view after a keyboard move',
+    path: 'controls/scheduler',
+    open: async (page) => {
+      const area = example(page, 'Team calendar');
+      const meeting = area.getByRole('button', { name: /^Team meeting, 10:00/ });
+      const moved = area.getByRole('button', { name: /^Team meeting, 10:30/ });
+      // Retry until the prerendered page is hydrated and the keys are handled.
+      await expect(async () => {
+        await meeting.focus();
+        await page.keyboard.press('Alt+ArrowDown');
+        await expect(moved).toBeFocused({ timeout: 1000 });
+      }).toPass();
+    },
+  },
+  {
+    name: 'scheduler month view with the list of a full day',
+    path: 'controls/scheduler',
+    open: async (page) => {
+      await example(page, 'Month view').getByRole('button', { name: '+4 more' }).click();
+      await expect(page.getByRole('dialog', { name: /18 March/ })).toBeVisible();
+    },
+  },
+  {
+    name: 'Gantt with dependencies, a summary collapsed by keyboard',
+    path: 'controls/gantt',
+    open: async (page) => {
+      const grid = example(page, 'Product launch plan').getByRole('treegrid', {
+        name: 'Launch plan',
+      });
+      const build = grid.getByRole('row', { name: /^Build, / });
+      await build.click();
+      await page.keyboard.press('ArrowLeft');
+      await expect(build).toHaveAttribute('aria-expanded', 'false');
+      await page.keyboard.press('ArrowUp');
+      await page.keyboard.press('Alt+ArrowRight');
+      await expect(grid.getByRole('row', { name: /^Design, 19 March/ })).toBeFocused();
+    },
+  },
+  {
     name: 'two windows, one minimized',
     path: 'controls/window',
     open: async (page) => {
@@ -993,6 +1032,52 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'table with columns pinned at both edges and the pin buttons',
+    path: 'controls/table-columns',
+    open: async (page) => {
+      const live = example(page, 'Pin to start and end');
+      await live.getByRole('button', { name: 'Columns' }).click();
+      await page.getByRole('button', { name: 'Pin Email to start' }).click();
+      await expect(live.locator('.star-table__cell--pinned-end').first()).toBeVisible();
+    },
+  },
+  {
+    name: 'table with column groups (two header levels)',
+    path: 'controls/table-layout',
+    open: async (page) => {
+      const live = example(page, 'Column groups');
+      await expect(live.locator('th.star-table__column-group').first()).toBeVisible();
+    },
+  },
+  {
+    name: 'table with a summary row and group summary rows',
+    path: 'controls/table-layout',
+    open: async (page) => {
+      const live = example(page, 'Summaries');
+      await expect(live.locator('.star-table__group-footer').first()).toBeVisible();
+      await expect(live.locator('tfoot .star-table__summary-label').first()).toBeVisible();
+    },
+  },
+  {
+    name: 'table with merged group cells (rowspan)',
+    path: 'controls/table-layout',
+    open: async (page) => {
+      const live = example(page, 'Merged group cells');
+      await expect(live.locator('td[rowspan]').first()).toBeVisible();
+    },
+  },
+  {
+    name: 'table with virtual columns scrolled sideways',
+    path: 'controls/table-layout',
+    open: async (page) => {
+      const live = example(page, 'Column virtualization');
+      await live.locator('.star-table__scroll').evaluate((viewport) => {
+        viewport.scrollLeft = 3000;
+      });
+      await expect(live.locator('thead .star-table__col-spacer').first()).toBeAttached();
+    },
+  },
+  {
     name: 'table with a filter select open',
     path: 'controls/table-sort-filter',
     open: async (page) => {
@@ -1186,6 +1271,49 @@ const STATES: readonly State[] = [
       await expect(region).toHaveAttribute('aria-pressed', 'true');
       await expect(live.locator('.star-map__viewport')).toHaveAttribute('role', 'application');
       await expect(live.getByRole('list', { name: /^Legend/ })).toBeVisible();
+    },
+  },
+  {
+    name: 'spreadsheet with a selected range',
+    path: 'controls/spreadsheet',
+    open: async (page) => {
+      // The page is prerendered: wait for hydration before the first key.
+      await expect(page.locator('star-spreadsheet[ngh]')).toHaveCount(0, { timeout: 15_000 });
+      const grid = example(page, 'Budget').getByRole('grid', { name: 'Budget' });
+      await grid.focus();
+      await page.keyboard.press('ArrowDown');
+      await page.keyboard.press('Shift+ArrowDown');
+      await page.keyboard.press('Shift+ArrowRight');
+      await expect(grid.locator('[role=gridcell][aria-selected=true]')).toHaveCount(4);
+    },
+  },
+  {
+    name: 'spreadsheet with a cell in edit mode',
+    path: 'controls/spreadsheet',
+    open: async (page) => {
+      await expect(page.locator('star-spreadsheet[ngh]')).toHaveCount(0, { timeout: 15_000 });
+      const grid = example(page, 'Budget').getByRole('grid', { name: 'Budget' });
+      await grid.focus();
+      await page.keyboard.press('ArrowDown');
+      await page.keyboard.press('F2');
+      await expect(grid.locator('.star-spreadsheet__editor')).toBeFocused();
+    },
+  },
+  {
+    name: 'document viewer with thumbnails and search open',
+    path: 'controls/document-viewer',
+    open: async (page) => {
+      // The page is prerendered: wait for hydration before the first click.
+      await expect(page.locator('star-document-viewer[ngh]')).toHaveCount(0, { timeout: 15_000 });
+      const live = example(page, 'Generated report');
+      await expect(live.getByRole('navigation', { name: 'Page thumbnails' })).toBeVisible();
+      await live.getByRole('button', { name: 'Search in document' }).click();
+      const search = live.getByRole('searchbox', { name: 'Search in document' });
+      await search.fill('revenue');
+      await search.press('Enter');
+      await expect(live.locator('.star-document-viewer__search [role=status]')).toContainText(
+        'results on',
+      );
     },
   },
   {
@@ -1584,6 +1712,68 @@ const STATES: readonly State[] = [
       const live = example(page, 'Vertical tabs');
       await live.getByRole('tab', { name: 'Billing' }).click();
       await expect(live.getByRole('tabpanel', { name: 'Billing' })).toBeVisible();
+    },
+  },
+  // Ribbon.
+  {
+    name: 'ribbon with KeyTips shown',
+    path: 'controls/ribbon',
+    open: async (page) => {
+      await expect(page.locator('star-ribbon[ngh]')).toHaveCount(0, { timeout: 15_000 });
+      const live = example(page, 'Document editor');
+      await live.getByRole('tab', { name: 'Home' }).focus();
+      await page.keyboard.press('F10');
+      await page.keyboard.press('h');
+      await expect(live.locator('.star-ribbon__keytip').first()).toBeVisible();
+    },
+  },
+  {
+    name: 'ribbon with a collapsed group open',
+    path: 'controls/ribbon',
+    open: async (page) => {
+      await expect(page.locator('star-ribbon[ngh]')).toHaveCount(0, { timeout: 15_000 });
+      const live = example(page, 'Narrow ribbon');
+      const overflow = live.locator('.star-ribbon-group--collapsed .star-ribbon-group__overflow');
+      await overflow.first().click();
+      await expect(overflow.first()).toHaveAttribute('aria-expanded', 'true');
+      await expect(live.locator('.star-ribbon-group--open [role="toolbar"]')).toBeVisible();
+    },
+  },
+  // File manager.
+  {
+    name: 'file manager details view with a context menu',
+    path: 'controls/file-manager',
+    open: async (page) => {
+      await expect(page.locator('star-file-manager[ngh]')).toHaveCount(0, { timeout: 15_000 });
+      const live = example(page, 'Project folder');
+      await live.getByRole('row', { name: /Budget\.csv/ }).click({ button: 'right' });
+      await expect(popup(page).getByRole('menu')).toBeVisible();
+    },
+  },
+  {
+    name: 'file manager large icons with a context menu',
+    path: 'controls/file-manager',
+    open: async (page) => {
+      await expect(page.locator('star-file-manager[ngh]')).toHaveCount(0, { timeout: 15_000 });
+      const live = example(page, 'Large icons and a provider');
+      await live.getByRole('option', { name: /Project Atlas/ }).dblclick();
+      await live.getByRole('option', { name: /Budget\.csv/ }).click({ button: 'right' });
+      await expect(popup(page).getByRole('menu')).toBeVisible();
+    },
+  },
+  // Diagram.
+  {
+    name: 'diagram with a selected node',
+    path: 'controls/diagram',
+    open: async (page) => {
+      await expect(page.locator('star-diagram[ngh]')).toHaveCount(0, { timeout: 15_000 });
+      const live = example(page, 'Order workflow');
+      const node = live.getByRole('option', { name: 'Pick items' });
+      await node.focus();
+      await page.keyboard.press('Space');
+      await page.keyboard.up('Space');
+      await expect(node).toHaveAttribute('aria-selected', 'true');
+      await expect(live.locator('.star-diagram__handle').first()).toBeVisible();
     },
   },
 ];

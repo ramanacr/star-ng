@@ -2699,6 +2699,23 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarColumnGroupHeaderTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starColumnGroupHeader]",
+    "entry": "@star-ng/ui/table",
+    "description": "Replaces the label of a column group header cell in `star-table`: `<ng-template starColumnGroupHeader let-group>…</ng-template>` for all groups, or `starColumnGroupHeader=\"Q1\"` for the group with that `header`. PrimeNG header group template, Ignite UI `igxHeader` of a column group.",
+    "inputs": [
+      {
+        "name": "starColumnGroupHeader",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "`header` of the group, or empty for every group."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
   "StarCommandPalette": {
     "kind": "component",
     "selector": "star-command-palette",
@@ -4085,6 +4102,139 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "models": [],
     "outputs": []
   },
+  "StarDiagram": {
+    "kind": "component",
+    "selector": "star-diagram",
+    "entry": "@star-ng/ui/diagram",
+    "description": "Diagram (Syncfusion `ejs-diagram`, DevExtreme `dxDiagram`; Kendo `Diagram`): nodes and connections on an SVG canvas.",
+    "inputs": [
+      {
+        "name": "nodes",
+        "type": "readonly StarDiagramNode[]",
+        "default": "[]",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "edges",
+        "type": "readonly StarDiagramEdge[]",
+        "default": "[]",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "minZoom",
+        "type": "number",
+        "default": "0.25",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "maxZoom",
+        "type": "number",
+        "default": "4",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "gridSize",
+        "type": "number",
+        "default": "20",
+        "required": false,
+        "description": "Grid of the snap and of the keyboard moves, in diagram units. 0: no snap."
+      },
+      {
+        "name": "showGrid",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "connectorRouting",
+        "type": "'straight' | 'orthogonal'",
+        "default": "'orthogonal'",
+        "required": false,
+        "description": "Routing of the connections that the user draws."
+      },
+      {
+        "name": "readonly",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "No changes: select, pan and zoom only."
+      },
+      {
+        "name": "fitContent",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Fits the content into the canvas after the first render (browser only)."
+      },
+      {
+        "name": "documentKey",
+        "type": "unknown",
+        "default": "undefined",
+        "required": false,
+        "description": "Identity of the document that `nodes` and `edges` show, for example its id. When it changes, the undo history is cleared, so that no patch of the old document applies to the new one. Without it, call `clearHistory()` after you load another document."
+      },
+      {
+        "name": "height",
+        "type": "string",
+        "default": "'24rem'",
+        "required": false,
+        "description": "Height of the canvas (a CSS length)."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [
+      {
+        "name": "selection",
+        "type": "readonly string[]",
+        "default": "[]",
+        "required": false,
+        "description": "Ids of the selected nodes."
+      },
+      {
+        "name": "zoom",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "Zoom factor: 1 is 100 %."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "nodesChange",
+        "type": "StarDiagramChange<StarDiagramNodePatch>",
+        "default": null,
+        "required": false,
+        "description": "Node patches: moves, resizes, labels, deletes, layouts, undo and redo."
+      },
+      {
+        "name": "edgesChange",
+        "type": "StarDiagramChange<StarDiagramEdgePatch>",
+        "default": null,
+        "required": false,
+        "description": "Edge patches: new connections, deletes, undo and redo."
+      }
+    ]
+  },
+  "StarDiagramNodeTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starDiagramNode]",
+    "entry": "@star-ng/ui/diagram",
+    "description": "Custom node content: `<ng-template starDiagramNode let-node>…</ng-template>`. It renders in an SVG `foreignObject` in the browser; the server renders the plain label, and an export shows the plain label too.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
   "StarDialog": {
     "kind": "component",
     "selector": "star-dialog",
@@ -4538,6 +4688,177 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": ""
+      }
+    ]
+  },
+  "StarDocumentError": {
+    "kind": "directive",
+    "selector": "ng-template[starDocumentError]",
+    "entry": "@star-ng/ui/document-viewer",
+    "description": "Content of the error state. Context: the error (`let-error`).",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
+  "StarDocumentPage": {
+    "kind": "component",
+    "selector": "star-document-page",
+    "entry": "@star-ng/ui/document-viewer",
+    "description": "One page canvas (internal). It sizes the canvas to the page at the scale times `devicePixelRatio`, asks the renderer to draw it, shows a skeleton until then, and frees the canvas memory when it leaves the DOM.",
+    "inputs": [
+      {
+        "name": "renderer",
+        "type": "StarDocumentRenderer",
+        "default": null,
+        "required": true,
+        "description": ""
+      },
+      {
+        "name": "index",
+        "type": "number",
+        "default": null,
+        "required": true,
+        "description": "Zero-based page index."
+      },
+      {
+        "name": "size",
+        "type": "StarDocumentPageSize",
+        "default": null,
+        "required": true,
+        "description": "Page size at scale 1, not rotated."
+      },
+      {
+        "name": "scale",
+        "type": "number",
+        "default": null,
+        "required": true,
+        "description": ""
+      },
+      {
+        "name": "rotation",
+        "type": "number",
+        "default": "0",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
+  "StarDocumentViewer": {
+    "kind": "component",
+    "selector": "star-document-viewer",
+    "entry": "@star-ng/ui/document-viewer",
+    "description": "Document viewer (PDF.js viewer, Syncfusion `ejs-pdfviewer`, Kendo UI `kendo-pdfviewer`, DevExtreme has none, Ignite UI has none): a shell that shows the pages of any document through a `StarDocumentRenderer` (`STAR_DOCUMENT_RENDERER` or the `renderer` input). StarNG ships no PDF engine; see `StarDocumentRenderer` for a PDF.js adapter of a few lines.",
+    "inputs": [
+      {
+        "name": "source",
+        "type": "unknown",
+        "default": "null",
+        "required": false,
+        "description": "What the renderer loads: a URL, bytes, a Blob, or any value your renderer understands."
+      },
+      {
+        "name": "title",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "Title of the document: the name of the page area (default: the UI text `documentDefaultTitle`)."
+      },
+      {
+        "name": "renderer",
+        "type": "StarDocumentRenderer | null",
+        "default": "null",
+        "required": false,
+        "description": "Renderer of this viewer; wins over `STAR_DOCUMENT_RENDERER`."
+      },
+      {
+        "name": "height",
+        "type": "string",
+        "default": "'32rem'",
+        "required": false,
+        "description": "CSS height of the page area."
+      },
+      {
+        "name": "showDownload",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Shows the download button, which emits `download`."
+      },
+      {
+        "name": "showPrint",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Shows the print button, which emits `print`."
+      }
+    ],
+    "models": [
+      {
+        "name": "page",
+        "type": "number",
+        "default": "1",
+        "required": false,
+        "description": "The page in view, one-based."
+      },
+      {
+        "name": "zoom",
+        "type": "StarDocumentZoom",
+        "default": "'fit-width'",
+        "required": false,
+        "description": "`fit-width` (default), `fit-page`, or a scale factor (1 = 100 %)."
+      },
+      {
+        "name": "rotation",
+        "type": "StarDocumentRotation",
+        "default": "0",
+        "required": false,
+        "description": "Clockwise rotation of all pages."
+      },
+      {
+        "name": "mode",
+        "type": "'continuous' | 'single'",
+        "default": "'continuous'",
+        "required": false,
+        "description": "`continuous`: all pages one below the other (default). `single`: one page at a time."
+      },
+      {
+        "name": "thumbnails",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows the thumbnails sidebar."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "loaded",
+        "type": "StarDocumentInfo",
+        "default": null,
+        "required": false,
+        "description": "The document loaded: page count and sizes."
+      },
+      {
+        "name": "loadError",
+        "type": "unknown",
+        "default": null,
+        "required": false,
+        "description": "The renderer could not load the source."
+      },
+      {
+        "name": "download",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "The download button was pressed; the owner downloads the file."
+      },
+      {
+        "name": "print",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "The print button was pressed; the owner prints."
       }
     ]
   },
@@ -5097,6 +5418,172 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "outputs": []
   },
+  "StarFileManager": {
+    "kind": "component",
+    "selector": "star-file-manager",
+    "entry": "@star-ng/ui/file-manager",
+    "description": "File manager (Kendo `FileManager`, Syncfusion `ejs-filemanager`, DevExtreme `dxFileManager`): folder tree, breadcrumb, toolbar, search, a details table or large icons, and an optional details pane.",
+    "inputs": [
+      {
+        "name": "items",
+        "type": "readonly StarFileItem[]",
+        "default": "[]",
+        "required": false,
+        "description": "All files and folders. Not used when `provider` is set."
+      },
+      {
+        "name": "provider",
+        "type": "StarFileProvider | null",
+        "default": "null",
+        "required": false,
+        "description": "Lists folders on demand and runs the operations. See `StarFileProvider`."
+      },
+      {
+        "name": "detailsPane",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows a pane with the details of the selection."
+      },
+      {
+        "name": "confirmDelete",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Asks before `delete` is emitted. Default on."
+      },
+      {
+        "name": "locale",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Locale of sizes and dates. Default: the application locale."
+      },
+      {
+        "name": "rootLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Name of the top folder. Default: the `fileRoot` text."
+      },
+      {
+        "name": "height",
+        "type": "string",
+        "default": "'28rem'",
+        "required": false,
+        "description": "Height of the file manager (a CSS length)."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [
+      {
+        "name": "folder",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "The open folder (`null`: the top folder)."
+      },
+      {
+        "name": "selection",
+        "type": "readonly string[]",
+        "default": "[]",
+        "required": false,
+        "description": "Ids of the selected items of the open folder."
+      },
+      {
+        "name": "view",
+        "type": "StarFileView",
+        "default": "'details'",
+        "required": false,
+        "description": "`details` (table) or `large-icons` (grid)."
+      },
+      {
+        "name": "sortField",
+        "type": "StarFileSortField",
+        "default": "'name'",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "sortOrder",
+        "type": "1 | -1",
+        "default": "1",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "outputs": [
+      {
+        "name": "open",
+        "type": "StarFileOpenEvent",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "rename",
+        "type": "StarFileRenameEvent",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "delete",
+        "type": "StarFileItemsEvent",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "move",
+        "type": "StarFileTransferEvent",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "copy",
+        "type": "StarFileTransferEvent",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "createFolder",
+        "type": "StarFileCreateFolderEvent",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "upload",
+        "type": "StarFileUploadEvent",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "download",
+        "type": "StarFileItemsEvent",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "error",
+        "type": "StarFileErrorEvent",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
   "StarFileTemplate": {
     "kind": "directive",
     "selector": "ng-template[starFile]",
@@ -5296,6 +5783,95 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ],
     "outputs": []
+  },
+  "StarGantt": {
+    "kind": "component",
+    "selector": "star-gantt",
+    "entry": "@star-ng/ui/gantt",
+    "description": "Gantt chart (Kendo UI Gantt, Syncfusion Gantt, DevExtreme Gantt): a task tree grid on the start side and a timeline on the end side, in one scroll area, so both scroll together.",
+    "inputs": [
+      {
+        "name": "tasks",
+        "type": "readonly StarGanttTask[]",
+        "default": "[]",
+        "required": false,
+        "description": "The tasks. The Gantt never changes this array."
+      },
+      {
+        "name": "rowHeight",
+        "type": "number",
+        "default": "36",
+        "required": false,
+        "description": "Height of a row in pixels."
+      },
+      {
+        "name": "weekendDays",
+        "type": "readonly number[]",
+        "default": "[0, 6]",
+        "required": false,
+        "description": "Weekdays shaded as weekend (0 = Sunday), in the day and week scales."
+      },
+      {
+        "name": "firstDayOfWeek",
+        "type": "number | null",
+        "default": "null",
+        "required": false,
+        "description": "First day of the week (0 = Sunday). Default: from the locale."
+      },
+      {
+        "name": "locale",
+        "type": "string | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "Locale of dates and times. Default: `provideStarNg({ locale })`, else the browser."
+      },
+      {
+        "name": "readonly",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "No task moves, resizes or changes progress."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Name of the tree grid. Default: \"Tasks\"."
+      }
+    ],
+    "models": [
+      {
+        "name": "scale",
+        "type": "StarGanttScale",
+        "default": "'week'",
+        "required": false,
+        "description": "Unit of the time scale and of keyboard moves."
+      },
+      {
+        "name": "collapsed",
+        "type": "readonly StarGanttId[]",
+        "default": "[]",
+        "required": false,
+        "description": "Ids of the collapsed summary tasks."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "taskChange",
+        "type": "StarGanttTaskChange",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "taskSelect",
+        "type": "StarGanttTaskSelect",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
   },
   "StarGaugeBase": {
     "kind": "directive",
@@ -10653,6 +11229,184 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ]
   },
+  "StarRibbon": {
+    "kind": "component",
+    "selector": "star-ribbon",
+    "entry": "@star-ng/ui/ribbon",
+    "description": "Ribbon (Kendo `Ribbon`, Syncfusion `ejs-ribbon`; DevExtreme has no ribbon): tabs of command groups, as in office applications.",
+    "inputs": [
+      {
+        "name": "collapseGroups",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Groups get small and collapse when the ribbon is narrow. Default on."
+      },
+      {
+        "name": "globalKeyTips",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Alt and F10 show the KeyTips from anywhere on the page, not only while the focus is in the ribbon. Use it for the one main ribbon of an application."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Name of the tab list. Default: the `ribbon` text."
+      }
+    ],
+    "models": [
+      {
+        "name": "selectedTab",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Key of the selected tab. Default: the first tab."
+      },
+      {
+        "name": "collapsed",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Minimised ribbon: only the tab headers show (Kendo `collapsed`)."
+      },
+      {
+        "name": "backstageOpen",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The backstage view is open."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "command",
+        "type": "StarRibbonCommand",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
+  "StarRibbonBackstage": {
+    "kind": "component",
+    "selector": "star-ribbon-backstage",
+    "entry": "@star-ng/ui/ribbon",
+    "description": "Backstage (file) view of the ribbon (Syncfusion `RibbonBackstage`, the Kendo file menu): a button before the tabs opens it in place of the tab panel. Its content is projected.",
+    "inputs": [
+      {
+        "name": "label",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Label of the button. Default: the `ribbonFile` text (\"File\")."
+      },
+      {
+        "name": "keyTip",
+        "type": "string | null",
+        "default": "'F'",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
+  "StarRibbonGroup": {
+    "kind": "component",
+    "selector": "star-ribbon-group",
+    "entry": "@star-ng/ui/ribbon",
+    "description": "A group of a ribbon tab (Kendo `RibbonGroup`, Syncfusion `e-ribbon-group`): a label, its items and an optional dialog launcher. Write it inside `star-ribbon-tab`.",
+    "inputs": [
+      {
+        "name": "label",
+        "type": "string",
+        "default": null,
+        "required": true,
+        "description": ""
+      },
+      {
+        "name": "items",
+        "type": "readonly StarRibbonItem[]",
+        "default": "[]",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "dialogLauncher",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Command id of the dialog launcher button. Without it the group has no launcher."
+      },
+      {
+        "name": "icon",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Icon of the overflow button when the group is collapsed."
+      },
+      {
+        "name": "keyTip",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "KeyTip of the overflow button when the group is collapsed."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
+  "StarRibbonItemTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starRibbonItem]",
+    "entry": "@star-ng/ui/ribbon",
+    "description": "Custom item of a ribbon group: `<ng-template starRibbonItem=\"fontSize\" let-item>…</ng-template>` renders in place of the item with `id: 'fontSize'` and `type: 'custom'`. Its controls keep their own tab stops; the arrow keys of the group toolbar skip them.",
+    "inputs": [
+      {
+        "name": "starRibbonItem",
+        "type": "string",
+        "default": null,
+        "required": true,
+        "description": "Id of the custom item."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
+  "StarRibbonTab": {
+    "kind": "component",
+    "selector": "star-ribbon-tab",
+    "entry": "@star-ng/ui/ribbon",
+    "description": "A tab of the ribbon (Kendo `RibbonTab`, Syncfusion `e-ribbon-tab`). Holds `star-ribbon-group`s.",
+    "inputs": [
+      {
+        "name": "key",
+        "type": "string",
+        "default": null,
+        "required": true,
+        "description": "Unique key; the value of `selectedTab`."
+      },
+      {
+        "name": "label",
+        "type": "string",
+        "default": null,
+        "required": true,
+        "description": ""
+      },
+      {
+        "name": "keyTip",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "KeyTip letters. Without it the ribbon assigns one from the label."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
   "StarRipple": {
     "kind": "directive",
     "selector": "[starRipple]",
@@ -10693,6 +11447,197 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Optional: pass the table rows to type `let-row` in strict templates."
       }
     ],
+    "models": [],
+    "outputs": []
+  },
+  "StarScheduler": {
+    "kind": "component",
+    "selector": "star-scheduler",
+    "entry": "@star-ng/ui/scheduler",
+    "description": "Scheduler (Kendo UI Scheduler, Syncfusion Schedule, DevExtreme Scheduler; PrimeNG had the deprecated `p-fullcalendar`): events in a day, week, work-week, month, agenda or timeline view.",
+    "inputs": [
+      {
+        "name": "events",
+        "type": "readonly StarSchedulerEvent[]",
+        "default": "[]",
+        "required": false,
+        "description": "The events. The scheduler never changes this array."
+      },
+      {
+        "name": "resources",
+        "type": "readonly StarSchedulerResource[]",
+        "default": "[]",
+        "required": false,
+        "description": "Rows of the timeline view, options of the editor, and colours of their events. The timeline shows only the events whose `resourceId` is one of these resources."
+      },
+      {
+        "name": "views",
+        "type": "readonly StarSchedulerView[]",
+        "default": "ALL_VIEWS",
+        "required": false,
+        "description": "Views in the toolbar. `timeline-day` is offered only with `resources`, and it shows only the events of the listed resources (an event without a listed `resourceId` is not in it)."
+      },
+      {
+        "name": "slotMinutes",
+        "type": "number",
+        "default": "30",
+        "required": false,
+        "description": "Length of a slot in minutes; drags and keyboard moves snap to it."
+      },
+      {
+        "name": "workDayStart",
+        "type": "string",
+        "default": "'08:00'",
+        "required": false,
+        "description": "Start of the work day, `HH:mm`. Slots outside the work day are shaded."
+      },
+      {
+        "name": "workDayEnd",
+        "type": "string",
+        "default": "'17:00'",
+        "required": false,
+        "description": "End of the work day, `HH:mm`."
+      },
+      {
+        "name": "workWeekDays",
+        "type": "readonly number[]",
+        "default": "[1, 2, 3, 4, 5]",
+        "required": false,
+        "description": "Weekdays of the work-week view (0 = Sunday)."
+      },
+      {
+        "name": "firstDayOfWeek",
+        "type": "number | null",
+        "default": "null",
+        "required": false,
+        "description": "First day of the week (0 = Sunday). Default: from the locale."
+      },
+      {
+        "name": "agendaDays",
+        "type": "number",
+        "default": "7",
+        "required": false,
+        "description": "Days in the agenda view."
+      },
+      {
+        "name": "monthEventLimit",
+        "type": "number",
+        "default": "3",
+        "required": false,
+        "description": "Events per month cell, including the \"+N more\" button."
+      },
+      {
+        "name": "locale",
+        "type": "string | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "Locale of dates and times. Default: `provideStarNg({ locale })`, else the browser."
+      },
+      {
+        "name": "hourFormat",
+        "type": "'24' | '12'",
+        "default": "'24'",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "editor",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Opens the built-in editor dialog on a slot or event selection."
+      },
+      {
+        "name": "readonly",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "No event moves, resizes or edits."
+      },
+      {
+        "name": "showCurrentTime",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Shows the current-time line in the browser."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [
+      {
+        "name": "view",
+        "type": "StarSchedulerView",
+        "default": "'week'",
+        "required": false,
+        "description": "The shown view."
+      },
+      {
+        "name": "date",
+        "type": "Date",
+        "default": "startOfDay(new Date())",
+        "required": false,
+        "description": "Anchor date of the view: a day of the shown range."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "slotSelect",
+        "type": "StarSchedulerSlotSelect",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "eventSelect",
+        "type": "StarSchedulerEventSelect",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "eventChange",
+        "type": "StarSchedulerEventChange",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "editorSave",
+        "type": "StarSchedulerEditorSave",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "eventDelete",
+        "type": "StarSchedulerEventSelect",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
+  "StarSchedulerEditor": {
+    "kind": "component",
+    "selector": "star-scheduler-editor",
+    "entry": "@star-ng/ui/scheduler",
+    "description": "@internal The built-in event editor of `star-scheduler` (`editor` input), opened with `StarDialogService`. It edits a copy and returns it; the scheduler emits `editorSave`.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
+  "StarSchedulerEventTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starSchedulerEvent]",
+    "entry": "@star-ng/ui/scheduler",
+    "description": "Content of an event in `star-scheduler`. The content goes inside the event button, which keeps its accessible name, keyboard and drag behaviour: do not add focusable elements.",
+    "inputs": [],
     "models": [],
     "outputs": []
   },
@@ -11803,6 +12748,137 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "outputs": []
   },
+  "StarSpreadsheet": {
+    "kind": "component",
+    "selector": "star-spreadsheet",
+    "entry": "@star-ng/ui/spreadsheet",
+    "description": "Spreadsheet (Syncfusion `ejs-spreadsheet`, Kendo UI `kendo-spreadsheet`, DevExtreme has none (its DataGrid is not a spreadsheet), Ignite UI `igx-spreadsheet` (Angular wrapper of a licensed engine)): a grid of cells with column letters and row numbers, formulas with their own engine (`starEvaluate`, no `eval`), formats, clipboard, fill handle, undo and redo.",
+    "inputs": [
+      {
+        "name": "rows",
+        "type": "number",
+        "default": "100",
+        "required": false,
+        "description": "Number of rows (default 100)."
+      },
+      {
+        "name": "columns",
+        "type": "number",
+        "default": "26",
+        "required": false,
+        "description": "Number of columns (default 26, A to Z)."
+      },
+      {
+        "name": "sheetName",
+        "type": "string",
+        "default": "'Sheet1'",
+        "required": false,
+        "description": "Name of the sheet when `sheets` is empty (for references such as `Sheet1!A1`)."
+      },
+      {
+        "name": "defaultColumnWidth",
+        "type": "number",
+        "default": "96",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "defaultRowHeight",
+        "type": "number",
+        "default": "28",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "readonly",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "No editing: selection, copy and navigation only."
+      },
+      {
+        "name": "showToolbar",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Shows the formatting toolbar (default true; hidden when read-only)."
+      },
+      {
+        "name": "showFormulaBar",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Shows the formula bar with the address and the raw formula of the active cell."
+      },
+      {
+        "name": "height",
+        "type": "string",
+        "default": "'24rem'",
+        "required": false,
+        "description": "CSS height of the scrolling grid."
+      },
+      {
+        "name": "locale",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "BCP 47 locale of the number and date formats (default: `provideStarNg` locale, browser)."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Name of the grid (default: the UI text `spreadsheet`)."
+      }
+    ],
+    "models": [
+      {
+        "name": "cells",
+        "type": "StarSpreadsheetCells",
+        "default": "{}",
+        "required": false,
+        "description": "Cells of the sheet when `sheets` is empty. Two-way: each edit emits a new record."
+      },
+      {
+        "name": "sheets",
+        "type": "readonly StarSpreadsheetSheet[]",
+        "default": "[]",
+        "required": false,
+        "description": "Named sheets, shown as tabs. When it is not empty it replaces `cells` and `sheetName`."
+      },
+      {
+        "name": "activeSheet",
+        "type": "number",
+        "default": "0",
+        "required": false,
+        "description": "Index of the shown sheet in `sheets`."
+      },
+      {
+        "name": "columnWidths",
+        "type": "Readonly<Record<string, number>>",
+        "default": "{}",
+        "required": false,
+        "description": "Column widths in pixels by column letter, for example `{ A: 160 }`. Resizing writes it."
+      },
+      {
+        "name": "rowHeights",
+        "type": "Readonly<Record<string, number>>",
+        "default": "{}",
+        "required": false,
+        "description": "Row heights in pixels by row number, for example `{ '1': 36 }`. Resizing writes it."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "selectionChange",
+        "type": "StarSpreadsheetSelection",
+        "default": null,
+        "required": false,
+        "description": "Emits when the active cell or the selected range changes."
+      }
+    ]
+  },
   "StarStep": {
     "kind": "component",
     "selector": "star-step",
@@ -12048,6 +13124,20 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Row heights with `virtualScroll`. `'auto'`: one fixed height, unless the table has row expansion, `groupBy` or the stacked layout, which need rows of different heights. `'variable'`: rows of different heights always, for cell text on more than one line. The table measures each rendered row and keeps the heights."
       },
       {
+        "name": "virtualColumns",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Renders only the columns in view (plus 2 on each side) for very wide tables: spacer cells keep the width of the other columns. Pinned columns are always rendered. Each column gets a fixed width: its resized width, else `width` in `px` or `rem`, else `virtualColumnWidth`. Works with `virtualScroll`; the cells have `aria-colindex` and the table `aria-colcount`, so assistive technology knows the full width. Ignite UI column virtualization, AG Grid column virtualisation."
+      },
+      {
+        "name": "virtualColumnWidth",
+        "type": "number",
+        "default": "160",
+        "required": false,
+        "description": "Width in pixels of a column without a `px` or `rem` width, with `virtualColumns`."
+      },
+      {
         "name": "ariaLabel",
         "type": "string | null",
         "default": "null",
@@ -12195,6 +13285,20 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "The user can change a column width: drag the header edge, or use the arrow keys on it."
       },
       {
+        "name": "pinnableColumns",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Pin buttons in the Columns panel: \"Pin to start\", \"Pin to end\" and \"Unpin\" for each column. Pinned columns move to their side; with `reorderableColumns` they move within their side."
+      },
+      {
+        "name": "columnGroups",
+        "type": "readonly StarColumnGroup[]",
+        "default": "[]",
+        "required": false,
+        "description": "Column groups: header cells that span the columns of a group, in extra header rows above the column headers (`{ header, children }`, children are column fields or nested groups). Columns of a group stay together: a moved column stays inside its group, a hidden column shrinks the group, and a group is pinned when all its columns are. Body cells name their group headers with `headers`. PrimeNG header column groups, Ignite UI `igx-column-group`, AG Grid `ColGroupDef`."
+      },
+      {
         "name": "multiSort",
         "type": "boolean",
         "default": "false",
@@ -12209,6 +13313,34 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Group heading of a row (property name or function). Rows with the same heading show together under it, in the order in which the headings first appear after sorting. With `virtualScroll`, the rows of a closed group take no space."
       },
       {
+        "name": "rowGroupMode",
+        "type": "'subheader' | 'rowspan'",
+        "default": "'subheader'",
+        "required": false,
+        "description": "How `groupBy` shows the groups (PrimeNG `rowGroupMode`). `'subheader'` (default): a heading row above each group, which closes the group. `'rowspan'`: no heading rows; the cells of the `groupBy` column (a property name) and of the columns with `mergeCells` merge over the rows with the same text (`rowspan`). Selection, keyboard and edit stay per row: a merged cell belongs to the first row of its run. With `virtualScroll` the table uses `'subheader'`."
+      },
+      {
+        "name": "groupSummary",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "With `groupBy`: a summary row below the rows of each group, with the column `summary` over all filtered rows of the group (in lazy mode, the loaded rows). On a page that ends inside a group the summary row shows at the end of the page. Ignite UI group summaries, PrimeNG `groupfooter`."
+      },
+      {
+        "name": "summaries",
+        "type": "Readonly<Record<string, unknown>> | null",
+        "default": "null",
+        "required": false,
+        "description": "Footer summary values by column `field` in lazy mode, where the table has one page only: the owner computes them on the server. The table formats them (`summaryFormat`, `locale`)."
+      },
+      {
+        "name": "locale",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Locale of the summary numbers and dates (default: the locale of the browser)."
+      },
+      {
         "name": "reorderableRows",
         "type": "boolean",
         "default": "false",
@@ -12220,7 +13352,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "string | null",
         "default": "null",
         "required": false,
-        "description": "Remembers sort, filters, column order, hidden columns, column widths, page size and closed groups in the browser under this key, and restores them on the next visit."
+        "description": "Remembers sort, filters, column order, hidden columns, column widths, pins, page size and closed groups in the browser under this key, and restores them on the next visit."
       },
       {
         "name": "stateStorage",
@@ -12330,6 +13462,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Column widths in pixels by `field`, set by the user. Two-way."
       },
       {
+        "name": "pinnedColumns",
+        "type": "StarColumnPins",
+        "default": "{}",
+        "required": false,
+        "description": "Runtime pins by column `field` (`'start'`, `'end'`, or `null` to unpin a column that the column definition pins). Wins over `pinned` / `frozen`. Two-way. Ignite UI `pinned`, AG Grid `applyColumnState({ pinned })`."
+      },
+      {
         "name": "sortMeta",
         "type": "readonly StarSortState[]",
         "default": "[]",
@@ -12352,6 +13491,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ],
     "outputs": [
+      {
+        "name": "columnPin",
+        "type": "StarColumnPinEvent",
+        "default": null,
+        "required": false,
+        "description": "The user (or `pinColumn()`) pinned or unpinned a column. AG Grid `columnPinned`."
+      },
       {
         "name": "rowClick",
         "type": "T",
@@ -12546,6 +13692,23 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "The new filter value; `null` removes the filter."
       }
     ]
+  },
+  "StarTablePinCell": {
+    "kind": "directive",
+    "selector": "[starTablePin]",
+    "entry": "@star-ng/ui/table",
+    "description": "Makes a cell of a pinned column sticky: the side class, the offset and the separator shadow. Internal part of `star-table`.",
+    "inputs": [
+      {
+        "name": "starTablePin",
+        "type": "StarPinPlacement | null | undefined",
+        "default": "null",
+        "required": false,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
   },
   "StarTabs": {
     "kind": "component",
@@ -14505,6 +15668,8 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "date-picker/time-range": "<div class=\"docs-stack\">\n  <star-date-range-picker\n    [(value)]=\"shift\"\n    locale=\"en-GB\"\n    showTime\n    [stepMinute]=\"15\"\n    ariaLabel=\"Shift\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Shift: {{ iso(shift()?.start) }} {{ clock(shift()?.start) }} to {{ iso(shift()?.end) }}\n    {{ clock(shift()?.end) }}\n  </p>\n</div>",
   "date-picker/touch": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"touchDate\"\n    locale=\"en-GB\"\n    touchUI\n    ariaLabel=\"Delivery date, touch\"\n  />\n  <star-date-picker\n    [(value)]=\"touchDate\"\n    locale=\"en-GB\"\n    breakpoint=\"640px\"\n    ariaLabel=\"Delivery date, small window\"\n  />\n  <p class=\"docs-output\" role=\"status\">Delivery: {{ iso(touchDate()) }}</p>\n</div>",
   "date-picker/views": "<div class=\"docs-stack\">\n  <star-date-picker\n    [(value)]=\"reportMonth\"\n    view=\"month\"\n    locale=\"en-GB\"\n    ariaLabel=\"Report month\"\n  />\n  <star-date-picker\n    [(value)]=\"reportYear\"\n    view=\"year\"\n    locale=\"en-GB\"\n    ariaLabel=\"Report year\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Month: {{ iso(reportMonth()) }}, year: {{ iso(reportYear()) }}\n  </p>\n</div>",
+  "diagram/template": "<star-diagram\n  [nodes]=\"cards()\"\n  [edges]=\"cardEdges\"\n  readonly\n  [showGrid]=\"false\"\n  height=\"14rem\"\n  ariaLabel=\"Order stages\"\n>\n  <ng-template starDiagramNode let-node>\n    <span class=\"card\">\n      <strong>{{ node.label }}</strong>\n      <small>{{ counts[node.id] }} orders</small>\n    </span>\n  </ng-template>\n</star-diagram>",
+  "diagram/workflow": "<div class=\"docs-stack\">\n  <div class=\"actions\">\n    <star-button variant=\"secondary\" size=\"sm\" (pressed)=\"layoutTree()\"\n      >Tree layout</star-button\n    >\n    <star-button variant=\"secondary\" size=\"sm\" (pressed)=\"layoutGrid()\"\n      >Grid layout</star-button\n    >\n    <star-button variant=\"secondary\" size=\"sm\" (pressed)=\"download()\"\n      >Export SVG</star-button\n    >\n  </div>\n  <star-diagram\n    #workflow\n    [nodes]=\"nodes()\"\n    [edges]=\"edges()\"\n    [(selection)]=\"selection\"\n    fitContent\n    ariaLabel=\"Order workflow\"\n    (nodesChange)=\"onNodes($event)\"\n    (edgesChange)=\"onEdges($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">{{ last() }}</p>\n</div>",
   "dialog/basic": "<star-button (pressed)=\"basicOpen.set(true)\">Edit order</star-button>\n<star-dialog [(visible)]=\"basicOpen\" header=\"Edit order ORD-1042\">\n  <span starDialogHeader class=\"docs-output\">Last saved at 10:42</span>\n  <div class=\"docs-stack\">\n    <star-field label=\"Customer\">\n      <input starInput value=\"Orchard Supply\" />\n    </star-field>\n    <star-field label=\"Delivery note\" hint=\"The driver reads this note.\">\n      <textarea starInput rows=\"3\">Leave at the loading dock.</textarea>\n    </star-field>\n  </div>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button variant=\"ghost\" (pressed)=\"basicOpen.set(false)\">Cancel</star-button>\n    <star-button (pressed)=\"basicOpen.set(false)\">Save</star-button>\n  </div>\n</star-dialog>",
   "dialog/close-rules": "<div class=\"docs-row\">\n  <star-button variant=\"secondary\" (pressed)=\"maskOpen.set(true)\"\n    >Backdrop click</star-button\n  >\n  <star-button variant=\"secondary\" (pressed)=\"lockedOpen.set(true)\">Locked</star-button>\n  <star-button variant=\"secondary\" (pressed)=\"floatOpen.set(true)\">Non-modal</star-button>\n</div>\n<star-dialog [(visible)]=\"maskOpen\" header=\"Closes on a backdrop click\" dismissableMask>\n  <p>Click outside this window to close it.</p>\n</star-dialog>\n<star-dialog\n  [(visible)]=\"lockedOpen\"\n  header=\"Locked dialog\"\n  [closable]=\"false\"\n  [closeOnEscape]=\"false\"\n>\n  <p>This dialog has no close button and ignores Escape.</p>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button (pressed)=\"lockedOpen.set(false)\">Done</star-button>\n  </div>\n</star-dialog>\n<star-dialog [(visible)]=\"floatOpen\" header=\"Non-modal dialog\" [modal]=\"false\">\n  <p>The page behind this window stays usable.</p>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button (pressed)=\"floatOpen.set(false)\">Close</star-button>\n  </div>\n</star-dialog>",
   "dialog/drag": "<div class=\"docs-stack\">\n  <p class=\"docs-output\" role=\"status\">Last position: {{ dragNote() }}</p>\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"dragOpen.set(true)\">\n      Open movable dialog\n    </star-button>\n  </div>\n</div>\n<star-dialog\n  [(visible)]=\"dragOpen\"\n  header=\"Movable dialog\"\n  draggable\n  (dragEnd)=\"dragNote.set($event.x + ', ' + $event.y)\"\n>\n  <p>Drag the header, or focus the move button and press Alt with an arrow key.</p>\n</star-dialog>",
@@ -14521,6 +15686,9 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "divider/vertical": "<div class=\"docs-row\">\n  <span>Orders</span>\n  <star-divider layout=\"vertical\" />\n  <span>Invoices</span>\n  <star-divider layout=\"vertical\" type=\"dashed\" />\n  <span>Reports</span>\n</div>",
   "dock/basic": "<div class=\"docs-stack\">\n  <star-dock [items]=\"apps\" ariaLabel=\"Apps\" (itemClick)=\"last.set($event.label ?? '')\" />\n  <p class=\"docs-output\" role=\"status\">Opened: {{ last() }}</p>\n</div>",
   "dock/left": "<star-dock [items]=\"apps\" position=\"left\" ariaLabel=\"Apps on the left\" />",
+  "document-viewer/error": "<star-document-viewer\n  source=\"missing.pdf\"\n  [renderer]=\"errorRenderer\"\n  title=\"Missing file\"\n  height=\"12rem\"\n>\n  <ng-template starDocumentError let-error>\n    {{ $any(error).message }} Check the link and try again.\n  </ng-template>\n</star-document-viewer>",
+  "document-viewer/images": "<star-document-viewer\n  [source]=\"images\"\n  [renderer]=\"imageRenderer\"\n  title=\"Warehouse scans\"\n  height=\"22rem\"\n  zoom=\"fit-page\"\n  mode=\"single\"\n  [showPrint]=\"false\"\n/>",
+  "document-viewer/report": "<div class=\"docs-stack\">\n  <star-document-viewer\n    [source]=\"12\"\n    title=\"Quarterly report\"\n    height=\"28rem\"\n    [(page)]=\"page\"\n    [(thumbnails)]=\"thumbnails\"\n    (download)=\"action.set('download pressed: save the file here.')\"\n    (print)=\"action.set('print pressed: print the file here.')\"\n  />\n  <p class=\"docs-output\" role=\"status\">Page {{ page() }}. {{ action() }}</p>\n</div>",
   "drawer/basic": "<star-button leadingIcon=\"ph-bold ph-sidebar-simple\" (pressed)=\"basicOpen.set(true)\">\n  Open details\n</star-button>\n<star-drawer [(visible)]=\"basicOpen\" header=\"Order ORD-1042\" dismissableMask>\n  <div class=\"docs-stack\">\n    <p class=\"docs-output\">Orchard Supply, 12 items, ships on Friday.</p>\n    <star-field label=\"Internal note\">\n      <textarea starInput autoResize rows=\"3\"></textarea>\n    </star-field>\n  </div>\n  <div starDialogFooter class=\"star-dialog__footer\">\n    <star-button variant=\"ghost\" (pressed)=\"basicOpen.set(false)\">Close</star-button>\n  </div>\n</star-drawer>",
   "drawer/modes": "<div class=\"docs-stack\">\n  <p class=\"docs-output\" role=\"status\">Last event: {{ modeEvent() }}</p>\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"floatOpen.set(true)\">Non-modal</star-button>\n    <star-button variant=\"secondary\" (pressed)=\"fullOpen.set(true)\"\n      >Full screen</star-button\n    >\n  </div>\n</div>\n<star-drawer\n  [(visible)]=\"floatOpen\"\n  header=\"Filters\"\n  position=\"end\"\n  drawerSize=\"20rem\"\n  [modal]=\"false\"\n  (shown)=\"modeEvent.set('non-modal shown')\"\n  (hidden)=\"modeEvent.set('non-modal hidden')\"\n>\n  <p>The page behind this drawer stays usable.</p>\n</star-drawer>\n<star-drawer\n  [(visible)]=\"fullOpen\"\n  header=\"Invoice INV-2041\"\n  position=\"bottom\"\n  fullScreen\n  dismissible\n  (shown)=\"modeEvent.set('full screen shown')\"\n  (hidden)=\"modeEvent.set('full screen hidden')\"\n>\n  <p>This drawer covers the window. Escape or the close button closes it.</p>\n</star-drawer>",
   "drawer/position": "<div class=\"docs-row\">\n  @for (item of positions; track item) {\n    <star-button variant=\"secondary\" (pressed)=\"openAt(item)\">{{ item }}</star-button>\n  }\n</div>\n<star-drawer\n  [(visible)]=\"positionOpen\"\n  [position]=\"position()\"\n  [drawerSize]=\"position() === 'top' || position() === 'bottom' ? '14rem' : '22rem'\"\n  [header]=\"'Drawer at the ' + position()\"\n>\n  <p>This drawer is pinned to the {{ position() }} edge.</p>\n</star-drawer>",
@@ -14540,6 +15708,8 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "field/states": "<div class=\"docs-stack\">\n  <star-field label=\"Promo code\" error=\"This code has expired.\">\n    <input starInput value=\"SPRING\" />\n  </star-field>\n  <star-field label=\"Account number\">\n    <input starInput value=\"100-204\" disabled />\n  </star-field>\n</div>",
   "field/textarea": "<div class=\"docs-stack\">\n  <star-field label=\"Notes\">\n    <textarea starInput autoResize placeholder=\"Add a note\"></textarea>\n  </star-field>\n</div>",
   "field/validation": "<div class=\"docs-stack\">\n  <star-field label=\"Email\" [state]=\"contact.email()\">\n    <input starInput type=\"email\" [formField]=\"contact.email\" />\n  </star-field>\n</div>",
+  "file-manager/project": "<div class=\"docs-stack\">\n  <star-file-manager\n    [items]=\"files()\"\n    [(folder)]=\"folder\"\n    detailsPane\n    (open)=\"onOpen($event)\"\n    (rename)=\"onRename($event)\"\n    (delete)=\"onDelete($event)\"\n    (move)=\"onMove($event)\"\n    (copy)=\"onCopy($event)\"\n    (createFolder)=\"onCreateFolder($event)\"\n    (upload)=\"onUpload($event)\"\n    (download)=\"onDownload($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">{{ log() }}</p>\n</div>",
+  "file-manager/provider": "<star-file-manager\n  [provider]=\"provider\"\n  view=\"large-icons\"\n  height=\"22rem\"\n  ariaLabel=\"Shared files\"\n/>",
   "file-upload/drop": "<div class=\"docs-stack\">\n  <star-file-upload [(value)]=\"dropped\" accept=\"image/*,.pdf\" multiple />\n</div>",
   "file-upload/limits": "<div class=\"docs-stack\">\n  <star-file-upload\n    [(value)]=\"limited\"\n    accept=\".pdf,image/*\"\n    [maxFileSize]=\"1000000\"\n    [fileLimit]=\"3\"\n    multiple\n    (rejectedChange)=\"rejected.set($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Added: {{ limited().length }}. Rejected in the last try: {{ rejected().length }}.\n  </p>\n</div>",
   "file-upload/modes": "<div class=\"docs-stack\">\n  <star-file-upload [(value)]=\"single\" />\n  <star-file-upload [(value)]=\"several\" multiple />\n  <p class=\"docs-output\" role=\"status\">\n    Single: {{ single().length }} file. Multiple: {{ several().length }} files.\n  </p>\n</div>",
@@ -14556,6 +15726,8 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "forms/two-way": "<star-checkbox [(checked)]=\"remember\">Remember this device</star-checkbox>\n<p class=\"docs-output\" role=\"status\">{{ remember() }}</p>",
   "galleria/basic": "<star-galleria\n  style=\"width: 100%; max-width: 40rem\"\n  [images]=\"images\"\n  ariaLabel=\"Site photos\"\n/>",
   "galleria/model": "<star-galleria\n  style=\"width: 100%; max-width: 40rem\"\n  [images]=\"images\"\n  [(activeIndex)]=\"active\"\n  ariaLabel=\"Linked photos\"\n/>\n<p class=\"docs-output\" role=\"status\">Active index: {{ active() }}</p>",
+  "gantt/large": "<star-gantt [tasks]=\"large\" scale=\"month\" ariaLabel=\"Order batches\" readonly />",
+  "gantt/launch": "<div class=\"docs-stack\">\n  <star-select-button\n    [options]=\"scales\"\n    optionLabel=\"label\"\n    optionValue=\"value\"\n    [allowEmpty]=\"false\"\n    size=\"sm\"\n    ariaLabel=\"Scale\"\n    [(value)]=\"scale\"\n  />\n  <star-gantt\n    [tasks]=\"tasks()\"\n    [(scale)]=\"scale\"\n    [(collapsed)]=\"collapsed\"\n    locale=\"en-GB\"\n    ariaLabel=\"Launch plan\"\n    (taskChange)=\"onChange($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">{{ log() }}</p>\n</div>",
   "gauge/interactive": "<div class=\"docs-stack\">\n  <star-field label=\"Volume\">\n    <star-linear-gauge interactive [step]=\"5\" [formField]=\"model.volume\" />\n  </star-field>\n  <star-radial-gauge pointer=\"bar\" [value]=\"settings().volume\" ariaLabel=\"Volume level\" />\n  <p>Volume: {{ settings().volume }}</p>\n</div>",
   "gauge/linear": "<div class=\"docs-stack\">\n  <star-linear-gauge\n    [value]=\"load()\"\n    [ranges]=\"zones\"\n    [ticks]=\"{ step: 25, minor: 5 }\"\n    ariaLabel=\"Server load\"\n  />\n  <star-linear-gauge\n    [value]=\"load()\"\n    pointer=\"marker\"\n    [ranges]=\"zones\"\n    ariaLabel=\"Server load, marker\"\n  />\n  <div class=\"docs-row\">\n    <star-linear-gauge\n      orientation=\"vertical\"\n      [value]=\"72\"\n      [max]=\"120\"\n      [ticks]=\"{ major: 6, minor: 2 }\"\n      ariaLabel=\"Response time\"\n    />\n    <star-linear-gauge\n      orientation=\"vertical\"\n      pointer=\"needle\"\n      [value]=\"18\"\n      [min]=\"-20\"\n      [max]=\"40\"\n      [ranges]=\"cold\"\n      ariaLabel=\"Room temperature\"\n    />\n  </div>\n</div>",
   "gauge/pointers": "<div class=\"docs-row\">\n  <star-radial-gauge [value]=\"62\" pointer=\"bar\" [arcWidth]=\"16\" ariaLabel=\"Disk use\" />\n  <star-radial-gauge\n    [value]=\"38\"\n    pointer=\"marker\"\n    [startAngle]=\"180\"\n    [endAngle]=\"0\"\n    [ticks]=\"{ major: 4, minor: 5 }\"\n    ariaLabel=\"Memory use\"\n  />\n</div>",
@@ -14685,8 +15857,15 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "rating/basic": "<star-rating [(value)]=\"score\" ariaLabel=\"Service rating\" />\n<p class=\"docs-output\" role=\"status\">Rating: {{ score() ?? 'none' }}</p>",
   "rating/count": "<star-rating [(value)]=\"detail\" [count]=\"10\" ariaLabel=\"Detailed rating\" />",
   "rating/states": "<star-rating [value]=\"4\" readonly ariaLabel=\"Average rating\" />\n<star-rating [value]=\"2\" disabled ariaLabel=\"Closed rating\" />",
+  "ribbon/collapsed": "<star-ribbon [(collapsed)]=\"collapsed\" (command)=\"run($event)\">\n  <star-ribbon-tab key=\"home\" label=\"Home\">\n    <star-ribbon-group label=\"Clipboard\" [items]=\"clipboard\" />\n  </star-ribbon-tab>\n  <star-ribbon-tab key=\"review\" label=\"Review\">\n    <star-ribbon-group label=\"Comments\" [items]=\"comments\" />\n  </star-ribbon-tab>\n</star-ribbon>",
+  "ribbon/editor": "<div class=\"docs-stack\">\n  <star-ribbon [(selectedTab)]=\"tab\" (command)=\"run($event)\">\n    <star-ribbon-backstage>\n      <p class=\"backstage\">Recent documents: Order summary, Project plan, Invoice notes.</p>\n    </star-ribbon-backstage>\n    <star-ribbon-tab key=\"home\" label=\"Home\" keyTip=\"H\">\n      <star-ribbon-group\n        label=\"Clipboard\"\n        icon=\"ph-bold ph-clipboard\"\n        [items]=\"clipboard\"\n        dialogLauncher=\"clipboard-options\"\n      />\n      <star-ribbon-group\n        label=\"Font\"\n        icon=\"ph-bold ph-text-aa\"\n        [items]=\"font()\"\n        dialogLauncher=\"font-options\"\n      >\n        <ng-template starRibbonItem=\"font-size\" let-item>\n          <select class=\"size\" [attr.aria-label]=\"item.label\" (change)=\"size($event)\">\n            <option>11</option>\n            <option>12</option>\n            <option>14</option>\n          </select>\n        </ng-template>\n      </star-ribbon-group>\n      <star-ribbon-group\n        label=\"Paragraph\"\n        icon=\"ph-bold ph-paragraph\"\n        [items]=\"paragraph()\"\n      />\n    </star-ribbon-tab>\n    <star-ribbon-tab key=\"insert\" label=\"Insert\">\n      <star-ribbon-group label=\"Tables\" icon=\"ph-bold ph-table\" [items]=\"tables\" />\n      <star-ribbon-group label=\"Media\" icon=\"ph-bold ph-image\" [items]=\"media\" />\n    </star-ribbon-tab>\n    <star-ribbon-tab key=\"review\" label=\"Review\">\n      <star-ribbon-group label=\"Comments\" icon=\"ph-bold ph-chat-text\" [items]=\"comments\" />\n    </star-ribbon-tab>\n  </star-ribbon>\n  <p class=\"docs-output\" role=\"status\">Last command: {{ last() }}</p>\n</div>",
+  "ribbon/narrow": "<div class=\"narrow\">\n  <star-ribbon (command)=\"run($event)\">\n    <star-ribbon-tab key=\"home\" label=\"Home\">\n      <star-ribbon-group\n        label=\"Clipboard\"\n        icon=\"ph-bold ph-clipboard\"\n        [items]=\"clipboard\"\n      />\n      <star-ribbon-group label=\"Font\" icon=\"ph-bold ph-text-aa\" [items]=\"font()\" />\n      <star-ribbon-group\n        label=\"Paragraph\"\n        icon=\"ph-bold ph-paragraph\"\n        [items]=\"paragraph()\"\n      />\n    </star-ribbon-tab>\n  </star-ribbon>\n</div>",
   "ripple/basic": "<button type=\"button\" class=\"star-btn star-btn--secondary star-btn--md\" starRipple>\n  Save\n</button>\n<button type=\"button\" class=\"star-btn star-btn--primary star-btn--md\" starRipple>\n  Submit order\n</button>",
   "rtl/island": "<div class=\"docs-stack\" dir=\"rtl\">\n  <star-breadcrumb [items]=\"trail\" ariaLabel=\"Island trail\" />\n  <star-tabs [(value)]=\"tab\" ariaLabel=\"Island tabs\">\n    <star-tab value=\"one\" label=\"One\">First panel</star-tab>\n    <star-tab value=\"two\" label=\"Two\">Second panel</star-tab>\n    <star-tab value=\"three\" label=\"Three\">Third panel</star-tab>\n  </star-tabs>\n  <star-select-button\n    [options]=\"['Day', 'Week', 'Month']\"\n    [(value)]=\"period\"\n    ariaLabel=\"Island period\"\n  />\n  <star-paginator [totalRecords]=\"60\" [rows]=\"10\" />\n</div>",
+  "scheduler/agenda": "<star-scheduler\n  [events]=\"agendaEvents\"\n  [resources]=\"rooms\"\n  locale=\"en-GB\"\n  view=\"agenda\"\n  [date]=\"march2\"\n  [views]=\"['agenda', 'week']\"\n  ariaLabel=\"Agenda\"\n>\n  <ng-template starSchedulerEvent let-occurrence>\n    <strong>{{ occurrence.event.title }}</strong>\n    <span class=\"event-room\">{{ roomName(occurrence.event.resourceId) }}</span>\n  </ng-template>\n</star-scheduler>",
+  "scheduler/month": "<star-scheduler\n  [events]=\"busyMonth\"\n  [resources]=\"rooms\"\n  locale=\"en-GB\"\n  view=\"month\"\n  [date]=\"march\"\n  [views]=\"['month', 'agenda']\"\n  ariaLabel=\"Month of March\"\n/>",
+  "scheduler/team": "<div class=\"docs-stack\">\n  <star-scheduler\n    [events]=\"events()\"\n    [resources]=\"rooms\"\n    locale=\"en-GB\"\n    [(view)]=\"view\"\n    [(date)]=\"date\"\n    workDayStart=\"08:00\"\n    workDayEnd=\"18:00\"\n    ariaLabel=\"Team calendar\"\n    (eventChange)=\"onChange($event)\"\n    (slotSelect)=\"onSlot($event)\"\n    (eventSelect)=\"onSelect($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">{{ log() }}</p>\n</div>",
+  "scheduler/timeline": "<star-scheduler\n  [events]=\"roomEvents()\"\n  [resources]=\"rooms\"\n  locale=\"en-GB\"\n  view=\"timeline-day\"\n  [date]=\"march3\"\n  [views]=\"['timeline-day', 'day']\"\n  editor\n  ariaLabel=\"Room bookings\"\n  (editorSave)=\"onSave($event)\"\n  (eventChange)=\"onRoomChange($event)\"\n  (eventDelete)=\"onDelete($event)\"\n/>",
   "scroll-panel/basic": "<star-scroll-panel class=\"docs-panel\" height=\"8rem\" ariaLabel=\"Order notes\">\n  <p class=\"docs-output\">\n    The order was placed on 2 November. The customer asked for delivery to the second\n    address. The warehouse packed the order on 3 November. The carrier picked it up on 4\n    November. The customer asked for a delivery window in the afternoon. The carrier\n    confirmed the window. The order stays open until the customer confirms receipt. All data\n    in this text is fictional.\n  </p>\n</star-scroll-panel>",
   "scroll-panel/max": "<star-scroll-panel class=\"docs-panel\" maxHeight=\"5rem\" ariaLabel=\"Short notes\">\n  <p class=\"docs-output\">Two short lines of text.<br />The panel does not scroll.</p>\n</star-scroll-panel>",
   "scroll-top/target": "<div class=\"docs-scroll-box\">\n  <div #scroller class=\"docs-scroll-box__list\" tabindex=\"0\" aria-label=\"Order list\">\n    @for (row of rows; track row) {\n      <p class=\"docs-output\">Order {{ row }}</p>\n    }\n  </div>\n  <star-scroll-top [target]=\"scroller\" [threshold]=\"100\" />\n</div>",
@@ -14735,10 +15914,14 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "split-button/variants": "<star-split-button label=\"Save\" variant=\"secondary\" size=\"sm\" [items]=\"orderOptions\" />\n<star-split-button label=\"Approve\" variant=\"success\" [items]=\"orderOptions\" />\n<star-split-button label=\"Remove\" variant=\"danger\" size=\"lg\" [items]=\"orderOptions\" />",
   "splitter/basic": "<star-splitter class=\"docs-splitter\" [(size)]=\"split\" ariaLabel=\"Resize the order panes\">\n  <div starSplitterStart>\n    <strong>Orders</strong>\n    <p class=\"docs-output\">Drag the gutter or use the arrow keys.</p>\n  </div>\n  <div starSplitterEnd>\n    <strong>Details</strong>\n    <p class=\"docs-output\" role=\"status\">First pane: {{ split() }}%</p>\n  </div>\n</star-splitter>",
   "splitter/vertical": "<star-splitter\n  class=\"docs-splitter\"\n  layout=\"vertical\"\n  [size]=\"40\"\n  [minSize]=\"25\"\n  ariaLabel=\"Resize the invoice panes\"\n>\n  <div starSplitterStart><strong>Invoices</strong></div>\n  <div starSplitterEnd><strong>Preview</strong></div>\n</star-splitter>",
+  "spreadsheet/budget": "<div class=\"docs-stack\">\n  <star-spreadsheet\n    [(cells)]=\"budget\"\n    [rows]=\"200\"\n    [columns]=\"12\"\n    [columnWidths]=\"{ A: 140 }\"\n    height=\"20rem\"\n    ariaLabel=\"Budget\"\n    locale=\"en-IE\"\n    (selectionChange)=\"onSelection($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">{{ status() }}</p>\n</div>",
+  "spreadsheet/csv": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <button\n      type=\"button\"\n      class=\"star-btn star-btn--secondary star-btn--sm\"\n      (click)=\"exportCsv()\"\n    >\n      Export CSV\n    </button>\n    <button\n      type=\"button\"\n      class=\"star-btn star-btn--secondary star-btn--sm\"\n      (click)=\"importCsv()\"\n    >\n      Import the CSV again\n    </button>\n  </div>\n  <star-spreadsheet\n    #csvSheet\n    [(cells)]=\"csvCells\"\n    [rows]=\"20\"\n    [columns]=\"6\"\n    height=\"12rem\"\n    ariaLabel=\"CSV data\"\n    [showToolbar]=\"false\"\n  />\n  <pre class=\"docs-output\">{{ csv() }}</pre>\n</div>",
+  "spreadsheet/sheets": "<star-spreadsheet\n  [(sheets)]=\"sheets\"\n  [(activeSheet)]=\"activeSheet\"\n  [rows]=\"20\"\n  [columns]=\"6\"\n  [columnWidths]=\"{ A: 140 }\"\n  height=\"14rem\"\n  ariaLabel=\"Cost summary\"\n  locale=\"en-IE\"\n  [showToolbar]=\"false\"\n/>",
   "stepper/basic": "<div class=\"docs-stack\">\n  <star-stepper [(value)]=\"step\" ariaLabel=\"Checkout steps\">\n    <star-step value=\"cart\" label=\"Cart\" description=\"Review items\" completed>\n      Three items in the cart.\n    </star-step>\n    <star-step value=\"address\" label=\"Address\" description=\"Where to ship\">\n      Enter the delivery address.\n    </star-step>\n    <star-step value=\"pay\" label=\"Payment\">Choose a way to pay.</star-step>\n  </star-stepper>\n  <p class=\"docs-output\" role=\"status\">Active step: {{ step() ?? 'cart' }}</p>\n</div>",
   "stepper/linear": "<div class=\"docs-stack\">\n  <star-stepper #wizard [(value)]=\"wizardStep\" linear ariaLabel=\"Account setup\">\n    <star-step value=\"name\" label=\"Name\" [completed]=\"name().trim().length > 0\">\n      <star-field label=\"Your name\">\n        <input starInput [value]=\"name()\" (input)=\"name.set($any($event.target).value)\" />\n      </star-field>\n    </star-step>\n    <star-step value=\"confirm\" label=\"Confirm\">\n      Welcome, {{ name() }}. Your account is ready.\n    </star-step>\n  </star-stepper>\n  <div class=\"docs-row\">\n    <star-button\n      variant=\"secondary\"\n      [disabled]=\"wizard.isFirst()\"\n      (pressed)=\"wizard.previous()\"\n    >\n      Back\n    </star-button>\n    <star-button [disabled]=\"wizard.isLast() || !name().trim()\" (pressed)=\"wizard.next()\">\n      Next\n    </star-button>\n  </div>\n</div>",
   "table-columns/frozen": "<docs-fill>\n  <star-table\n    [value]=\"orders.slice(0, 6)\"\n    [columns]=\"wideColumns\"\n    dataKey=\"id\"\n    ariaLabel=\"Wide orders\"\n  />\n</docs-fill>",
   "table-columns/panel": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with column panel\"\n      columnToggle\n      reorderableColumns\n      [(columnOrder)]=\"order\"\n      [(hiddenColumns)]=\"hidden\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">\n    Order: {{ order().join(', ') || 'default' }}. Hidden:\n    {{ hidden().join(', ') || 'none' }}.\n  </p>\n</div>",
+  "table-columns/pinned": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders.slice(0, 6)\"\n      [columns]=\"pinnedColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with pinned columns\"\n      selectionMode=\"multiple\"\n      pinnableColumns\n      reorderableColumns\n      [(pinnedColumns)]=\"pins\"\n      (columnPin)=\"lastPin.set($event.field + ' ' + ($event.side ?? 'unpinned'))\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">\n    Pins: {{ pinText() }}. Last change: {{ lastPin() || 'none' }}.\n  </p>\n</div>",
   "table-columns/resize": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with resizable columns\"\n      resizableColumns\n      [(columnWidths)]=\"widths\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Widths: {{ widthText() }}</p>\n</div>",
   "table-columns/state": "<div class=\"docs-stack\">\n  <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"saved.clearState()\">\n    Clear saved view\n  </star-button>\n  <docs-fill>\n    <star-table\n      #saved\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with saved view\"\n      columnToggle\n      resizableColumns\n      stateKey=\"docs-table-saved-view\"\n      stateStorage=\"session\"\n      paginator\n      [rows]=\"4\"\n    />\n  </docs-fill>\n</div>",
   "table-edit/add-delete": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button\n      size=\"sm\"\n      leadingIcon=\"ph-bold ph-plus\"\n      (pressed)=\"addTable.addRow(newOrder(), 'top')\"\n    >\n      Add order\n    </star-button>\n  </div>\n  <docs-fill>\n    <star-table\n      #addTable\n      [value]=\"list()\"\n      [columns]=\"addColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders to add and delete\"\n      editMode=\"row\"\n      (rowAdd)=\"addOrder($event)\"\n      (rowDelete)=\"deleteOrder($event)\"\n      (rowEditSave)=\"updateOrder($event)\"\n    >\n      <ng-template starCell=\"remove\" let-row [starCellOf]=\"list()\">\n        <button\n          type=\"button\"\n          class=\"star-table__toggle\"\n          [attr.aria-label]=\"'Delete ' + row.id\"\n          (click)=\"addTable.deleteRow(row)\"\n        >\n          <i class=\"ph-bold ph-trash\" aria-hidden=\"true\"></i>\n        </button>\n      </ng-template>\n    </star-table>\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">{{ addMessage() }}</p>\n</div>",
@@ -14751,11 +15934,15 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "table-export/print-long": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button\n      size=\"sm\"\n      variant=\"secondary\"\n      leadingIcon=\"ph-bold ph-printer\"\n      (pressed)=\"longTable.print()\"\n    >\n      Print invoices\n    </star-button>\n  </div>\n  <docs-fill>\n    <star-table\n      #longTable\n      ariaLabel=\"Invoices\"\n      [value]=\"invoices\"\n      [columns]=\"invoiceColumns\"\n      dataKey=\"id\"\n      selectionMode=\"multiple\"\n      [hiddenColumns]=\"['region']\"\n      paginator\n      [rows]=\"10\"\n    >\n      <ng-template starCell=\"open\" [starCellOf]=\"invoices\" let-row>\n        <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"opened.set(row.id)\">\n          Open\n        </star-button>\n      </ng-template>\n    </star-table>\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Opened: {{ opened() || 'none' }}</p>\n</div>",
   "table-export/print-wide": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button\n      size=\"sm\"\n      variant=\"secondary\"\n      leadingIcon=\"ph-bold ph-printer\"\n      (pressed)=\"wideTable.print()\"\n    >\n      Print wide table\n    </star-button>\n  </div>\n  <docs-fill>\n    <star-table\n      #wideTable\n      ariaLabel=\"Wide orders\"\n      [value]=\"wideRows\"\n      [columns]=\"wideColumns\"\n      dataKey=\"Order\"\n    />\n  </docs-fill>\n</div>",
   "table-export/text": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"show(preview.toCsv())\">\n      Comma separated\n    </star-button>\n    <star-button\n      size=\"sm\"\n      variant=\"secondary\"\n      (pressed)=\"show(preview.toCsv({ separator: ';' }))\"\n    >\n      Semicolon separated\n    </star-button>\n    <star-button\n      size=\"sm\"\n      variant=\"secondary\"\n      (pressed)=\"show(preview.toCsv({ rows: [orders[40]] }))\"\n    >\n      Rows from the options\n    </star-button>\n  </div>\n  <docs-fill>\n    <star-table\n      #preview\n      ariaLabel=\"Order preview\"\n      [value]=\"orders.slice(0, 3)\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n    />\n  </docs-fill>\n  <pre class=\"docs-output\" aria-label=\"CSV text\" tabindex=\"0\">{{ text() }}</pre>\n</div>",
+  "table-layout/column-groups": "<docs-fill>\n  <star-table\n    [value]=\"sales\"\n    [columns]=\"salesColumns\"\n    [columnGroups]=\"salesGroups\"\n    dataKey=\"id\"\n    ariaLabel=\"Sales by region and quarter\"\n    columnToggle\n    reorderableColumns\n  >\n    <ng-template starColumnGroupHeader=\"Q2\" let-group let-span=\"span\">\n      {{ group.header }}, {{ span }} months\n    </ng-template>\n  </star-table>\n</docs-fill>",
   "table-layout/expansion": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-toggle-switch [(checked)]=\"single\">One row open at a time</star-toggle-switch>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"detailed.expandAll()\">\n      Expand all\n    </star-button>\n    <star-button size=\"sm\" variant=\"secondary\" (pressed)=\"detailed.collapseAll()\">\n      Collapse all\n    </star-button>\n  </div>\n  <docs-fill>\n    <star-table\n      #detailed\n      [value]=\"orders\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders with detail\"\n      [rowExpandMode]=\"single() ? 'single' : 'multiple'\"\n      [(expandedKeys)]=\"expanded\"\n      paginator\n      [rows]=\"4\"\n    >\n      <ng-template starRowExpansion [starRowExpansionOf]=\"orders\" let-row>\n        <dl class=\"detail\">\n          <dt>Email</dt>\n          <dd>{{ row.email }}</dd>\n          <dt>Quantity</dt>\n          <dd>{{ row.quantity }} x {{ row.product }}</dd>\n        </dl>\n      </ng-template>\n    </star-table>\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Open: {{ expanded().join(', ') || 'none' }}</p>\n</div>",
   "table-layout/footer": "<docs-fill>\n  <star-table\n    [value]=\"orders.slice(0, 6)\"\n    [columns]=\"footerColumns\"\n    dataKey=\"id\"\n    ariaLabel=\"Orders with totals\"\n  />\n</docs-fill>",
   "table-layout/groups": "<div class=\"docs-stack\">\n  <star-toggle-switch [(checked)]=\"grouped\">Group by region</star-toggle-switch>\n  <docs-fill>\n    <star-table\n      [value]=\"orders.slice(0, 12)\"\n      [columns]=\"columns\"\n      dataKey=\"id\"\n      ariaLabel=\"Orders in groups\"\n      [groupBy]=\"grouped() ? 'region' : null\"\n      [(collapsedGroups)]=\"closed\"\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Closed: {{ closed().join(', ') || 'none' }}</p>\n</div>",
+  "table-layout/rowspan": "<docs-fill>\n  <star-table\n    [value]=\"sales\"\n    [columns]=\"rowSpanColumns\"\n    dataKey=\"id\"\n    ariaLabel=\"Sales with merged regions\"\n    groupBy=\"region\"\n    rowGroupMode=\"rowspan\"\n    selectionMode=\"multiple\"\n  />\n</docs-fill>",
   "table-layout/stack": "<div class=\"docs-stack docs-stack--narrow\">\n  <star-table\n    [value]=\"orders.slice(0, 3)\"\n    [columns]=\"columns\"\n    dataKey=\"id\"\n    ariaLabel=\"Orders stacked\"\n    responsiveLayout=\"stack\"\n  />\n</div>",
+  "table-layout/summaries": "<div class=\"docs-stack\">\n  <star-toggle-switch [(checked)]=\"summaryGroups\">Group by region</star-toggle-switch>\n  <docs-fill>\n    <star-table\n      [value]=\"sales\"\n      [columns]=\"summaryColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Sales with summaries\"\n      locale=\"en-US\"\n      [groupBy]=\"summaryGroups() ? 'region' : null\"\n      groupSummary\n    />\n  </docs-fill>\n</div>",
   "table-layout/virtual": "<docs-fill>\n  <star-table\n    [value]=\"log\"\n    [columns]=\"logColumns\"\n    dataKey=\"id\"\n    ariaLabel=\"Audit log\"\n    virtualScroll\n    [virtualRowHeight]=\"44\"\n    scrollHeight=\"20rem\"\n    stickyHeader\n    striped\n  />\n</docs-fill>",
+  "table-layout/virtual-columns": "<docs-fill>\n  <star-table\n    [value]=\"metrics\"\n    [columns]=\"metricColumns\"\n    dataKey=\"id\"\n    ariaLabel=\"Wide metrics\"\n    virtualColumns\n    virtualScroll\n    [virtualRowHeight]=\"44\"\n    scrollHeight=\"20rem\"\n    stickyHeader\n  />\n</docs-fill>",
   "table-layout/virtual-detail": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"tickets\"\n      [columns]=\"ticketColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Tickets with detail\"\n      selectionMode=\"multiple\"\n      [(selection)]=\"ticketSelection\"\n      [(expandedKeys)]=\"ticketsOpen\"\n      virtualScroll\n      [virtualRowHeight]=\"52\"\n      scrollHeight=\"24rem\"\n      stickyHeader\n    >\n      <ng-template starRowExpansion [starRowExpansionOf]=\"tickets\" let-row>\n        <ol class=\"history\">\n          @for (step of historyOf(row); track step) {\n            <li>{{ step }} by {{ row.owner }} in {{ row.city }}</li>\n          }\n        </ol>\n      </ng-template>\n    </star-table>\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">\n    Open: {{ ticketsOpen().length }}, selected: {{ ticketSelection().length }}\n  </p>\n</div>",
   "table-layout/virtual-groups": "<div class=\"docs-stack\">\n  <docs-fill>\n    <star-table\n      [value]=\"groupedTickets\"\n      [columns]=\"ticketColumns\"\n      dataKey=\"id\"\n      ariaLabel=\"Tickets by city\"\n      groupBy=\"city\"\n      [(collapsedGroups)]=\"closedCities\"\n      virtualScroll\n      [virtualRowHeight]=\"52\"\n      scrollHeight=\"24rem\"\n      stickyHeader\n    />\n  </docs-fill>\n  <p class=\"docs-output\" role=\"status\">Closed: {{ closedCities().join(', ') || 'none' }}</p>\n</div>",
   "table-layout/virtual-stack": "<docs-fill>\n  <star-table\n    [value]=\"stackedTickets\"\n    [columns]=\"ticketColumns\"\n    dataKey=\"id\"\n    ariaLabel=\"Tickets stacked\"\n    responsiveLayout=\"stack\"\n    virtualScroll\n    scrollHeight=\"24rem\"\n  />\n</docs-fill>",

@@ -487,7 +487,11 @@ code {
     star-paginator,
     star-chart,
     star-image-editor,
-    star-map
+    star-map,
+    star-spreadsheet,
+    star-document-viewer,
+    star-scheduler,
+    star-gantt
   ) {
   max-width: none;
 }
@@ -505,7 +509,11 @@ code {
     star-paginator,
     star-scroll-panel,
     star-image-editor,
-    star-map
+    star-map,
+    star-spreadsheet,
+    star-document-viewer,
+    star-scheduler,
+    star-gantt
   ) {
   flex: 1 1 100%;
   min-width: 0;

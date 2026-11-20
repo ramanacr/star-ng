@@ -177,4 +177,25 @@ describe('buildVirtualLayout', () => {
     expect(new Set(keys).size).toBe(keys.length);
     expect(layout.indexOfKey.get(layout.items[3].key)).toBe(3);
   });
+
+  it('adds a summary item after each open group with groupFooters', () => {
+    const layout = buildVirtualLayout(
+      rows,
+      options({
+        groupOf: (row) => row.region,
+        groupFooters: true,
+        isCollapsed: (label) => label === 'Europe',
+      }),
+    );
+    expect(layout.items.map((item) => (item.kind === 'row' ? item.key : item.kind))).toEqual([
+      'group',
+      'group',
+      3,
+      4,
+      5,
+      'groupFooter',
+    ]);
+    expect(layout.items[5]).toMatchObject({ label: 'Asia', aria: 5 });
+    expect(layout.bodyRows).toBe(6);
+  });
 });

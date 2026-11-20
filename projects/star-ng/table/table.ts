@@ -49,6 +49,23 @@ import { StarPaginator } from '@star-ng/ui/paginator';
 import { StarPopover } from '@star-ng/ui/popover';
 import { StarMultiSelect, StarSelect } from '@star-ng/ui/select';
 import { StarSkeleton } from '@star-ng/ui/skeleton';
+import {
+  clusterColumns,
+  groupPaths,
+  headerAssociations,
+  headerRows,
+  parentGroupOf,
+  StarColumnGroup,
+  StarColumnGroupHeaderContext,
+  StarHeaderCell,
+} from './table-column-groups';
+import {
+  COLUMN_FALLBACK_VIEWPORT,
+  columnWindow,
+  cssPixels,
+  sameWindow,
+  StarColumnWindow,
+} from './table-column-window';
 import { STAR_TABLE_DEFAULTS } from './table-defaults';
 import {
   sameEditValue,
@@ -82,6 +99,23 @@ import {
 } from './table-filter';
 import { StarTableFilterMenu } from './table-filter-menu';
 import {
+  measureHeaderCells,
+  NO_WIDTHS,
+  orderColumns,
+  PIN_ACTIONS,
+  pinPlacements,
+  pinSideOf,
+  sameHeaderWidths,
+  spanPlacement,
+  StarColumnPinEvent,
+  StarColumnPins,
+  StarHeaderWidths,
+  StarPinPlacement,
+  StarPinSide,
+  StarTablePinCell,
+} from './table-pinning';
+import { rowSpans } from './table-row-span';
+import {
   StarHeaderCheckboxToggleEvent,
   StarRowSelectEvent,
   StarTableSelection,
@@ -89,9 +123,16 @@ import {
 } from './table-selection';
 import type { StarHeaderCellContext, StarRowEditActionsContext } from './table-slots';
 import {
+  StarColumnSummary,
+  StarSummaryCell,
+  summaryCell,
+  suppliedSummaryCell,
+} from './table-summaries';
+import {
   anchorOf,
   anchorShift,
   buildVirtualLayout,
+  groupFooterKey,
   groupKey,
   HeightChange,
   variableRange,
@@ -153,11 +194,15 @@ export interface StarColumn<T> extends StarColumnRules<T> {
    * display text is not what the user sees. A number stays a number in Excel.
    */
   readonly exportValue?: (row: T) => string | number | null | undefined;
-  /**
-   * Keeps the column in view when the table scrolls sideways. Frozen columns come first.
-   * The table measures the frozen columns to position the next one, so `width` is optional.
-   */
+  /** Alias of `pinned: 'start'` (PrimeNG `frozen`). */
   readonly frozen?: boolean;
+  /**
+   * Keeps the column in view when the table scrolls sideways, at the inline start (first columns)
+   * or the inline end (last columns). The table measures the pinned columns to place the next one,
+   * so `width` is optional. The user can change it (`pinnableColumns`, `pinnedColumns`). PrimeNG
+   * `alignFrozen`, Ignite UI `pinned`, AG Grid `pinned: 'left' | 'right'`.
+   */
+  readonly pinned?: StarPinSide | null;
   /** `false`: the user cannot hide the column in the Columns panel. */
   readonly hideable?: boolean;
   /**
@@ -174,6 +219,21 @@ export interface StarColumn<T> extends StarColumnRules<T> {
    * an average. The table has a footer row when one column has a footer.
    */
   readonly footer?: string | ((rows: readonly T[]) => string);
+  /**
+   * Summary in the footer row (over all filtered rows) and, with `groupSummary`, in the summary
+   * row of each group: `'sum'`, `'avg'`, `'min'`, `'max'`, `'count'` (values that are not empty),
+   * or a function of the rows. A built-in summary shows its label ("Sum"). In the footer row,
+   * `footer` wins when a column has both; group summary rows always show the summary. In lazy mode
+   * the footer values come from the table `summaries`. Ignite UI `hasSummary`, AG Grid `aggFunc`.
+   */
+  readonly summary?: StarColumnSummary<T>;
+  /** `Intl.NumberFormat` options of a number summary, with the table `locale`. */
+  readonly summaryFormat?: Intl.NumberFormatOptions;
+  /**
+   * With `rowGroupMode="rowspan"`: a cell merges with the cells below it that have the same text
+   * (one cell with `rowspan`), within a group of `groupBy`. PrimeNG `rowGroupMode="rowspan"`.
+   */
+  readonly mergeCells?: boolean;
 }
 
 export interface StarCellEditEvent<T> {
@@ -213,7 +273,7 @@ const MEASURE_TOLERANCE = 0.1;
 const FOCUSABLE =
   'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])';
 
-/** One line of the table body: a spacer, a group heading, or a row with its detail row. */
+/** One line of the table body: a spacer, a group heading or summary, or a row with its detail. */
 type BodyEntry<T> =
   | { readonly kind: 'spacer'; readonly key: string; readonly height: number }
   | {
@@ -231,6 +291,13 @@ type BodyEntry<T> =
       readonly key: unknown;
       readonly row: T;
       readonly index: number;
+      readonly aria: number | null;
+      readonly item: number | null;
+    }
+  | {
+      readonly kind: 'groupFooter';
+      readonly key: string;
+      readonly label: string;
       readonly aria: number | null;
       readonly item: number | null;
     };
@@ -305,6 +372,7 @@ interface StarTableState {
   columnOrder?: readonly string[];
   hiddenColumns?: readonly string[];
   columnWidths?: Readonly<Record<string, number>>;
+  pinnedColumns?: StarColumnPins;
   rows?: number;
   collapsedGroups?: readonly string[];
 }
@@ -390,6 +458,7 @@ export class StarRowExpansionTemplate<T = unknown> {
     StarPopover,
     StarSkeleton,
     StarTableFilterMenu,
+    StarTablePinCell,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
@@ -399,677 +468,21 @@ export class StarRowExpansionTemplate<T = unknown> {
     '[class.star-table--sticky]': 'stickyHeader()',
     '[class.star-table--virtual]': 'virtualScroll()',
     '[class.star-table--variable]': 'variableHeights()',
+    '[class.star-table--virtual-columns]': 'virtualColumns()',
     '[class.star-table--stack]': "responsiveLayout() === 'stack'",
     '[style.--star-table-row-height.px]': 'virtualScroll() ? virtualRowHeight() : null',
+    // Pinned columns: the selection, expander and reorder columns stick at the start too, and
+    // the row actions column at the end.
+    '[class.star-table--pin-lead]': 'pinnedSides().start || pinnedSides().end',
+    '[class.star-table--pin-trail]': 'pinnedSides().end',
+    '[style.--star-table-lead-expander.px]': 'headerWidths().lead["expander"]',
+    '[style.--star-table-lead-select.px]': 'headerWidths().lead["select"]',
     // Virtual scroll: the focused row stays rendered, and Tab reaches rows out of the window.
     '(focusin)': 'onBodyFocusIn($event)',
     '(focusout)': 'onBodyFocusOut($event)',
     '(keydown)': 'onBodyKeydown($event)',
   },
-  template: `
-    <ng-content select="[starTableCaption]" />
-    @if (columnToggle()) {
-      <div class="star-table__tools">
-        <star-button
-          size="sm"
-          variant="secondary"
-          leadingIcon="ph-bold ph-columns"
-          (pressed)="columnsPanel.toggle($event)"
-        >
-          {{ text.columns }}
-        </star-button>
-        <star-popover #columnsPanel [ariaLabel]="text.columns">
-          <ul class="star-table__columns">
-            @for (
-              column of orderedColumns();
-              track column.field;
-              let first = $first;
-              let last = $last
-            ) {
-              <li>
-                <star-checkbox
-                  [checked]="!isHidden(column)"
-                  [disabled]="!canHide(column)"
-                  (checkedChange)="setColumnVisible(column, $event)"
-                >
-                  {{ column.header }}
-                </star-checkbox>
-                @if (reorderableColumns()) {
-                  <span class="star-table__columns-move">
-                    <button
-                      type="button"
-                      class="star-table__toggle"
-                      [disabled]="first"
-                      [attr.data-move]="moveKey(column, -1)"
-                      [attr.aria-label]="text.moveColumnEarlier(column.header)"
-                      (click)="moveColumnBy(column, -1)"
-                    >
-                      <i class="ph-bold ph-arrow-up" aria-hidden="true"></i>
-                    </button>
-                    <button
-                      type="button"
-                      class="star-table__toggle"
-                      [disabled]="last"
-                      [attr.data-move]="moveKey(column, 1)"
-                      [attr.aria-label]="text.moveColumnLater(column.header)"
-                      (click)="moveColumnBy(column, 1)"
-                    >
-                      <i class="ph-bold ph-arrow-down" aria-hidden="true"></i>
-                    </button>
-                  </span>
-                }
-              </li>
-            }
-          </ul>
-        </star-popover>
-      </div>
-    }
-    <div
-      #scroller
-      class="star-table__scroll"
-      [attr.role]="scrollable() ? 'group' : null"
-      [attr.aria-label]="scrollable() ? ariaLabel() : null"
-      [attr.tabindex]="scrollable() ? 0 : null"
-      [style.max-height]="scrollHeight()"
-      (scroll)="onScroll($event)"
-    >
-      <table
-        [attr.aria-label]="ariaLabel()"
-        [attr.aria-busy]="loading() || null"
-        [attr.aria-rowcount]="ariaRowCount()"
-      >
-        <thead>
-          <tr [attr.aria-rowindex]="virtualScroll() ? 1 : null">
-            @if (reorderableRows()) {
-              <th class="star-table__reorder" scope="col">
-                <span class="star-sr-only">{{ text.reorderRows }}</span>
-              </th>
-            }
-            @if (expandable()) {
-              <th class="star-table__expander" scope="col">
-                <span class="star-sr-only">{{ text.rowDetails }}</span>
-              </th>
-            }
-            @if (selectionMode() === 'multiple') {
-              <th class="star-table__select" scope="col">
-                <star-checkbox
-                  #allBox
-                  [checked]="headerState() === true"
-                  [indeterminate]="headerState() === 'mixed'"
-                  [ariaLabel]="
-                    selectionPageOnly() && paginator() ? text.selectPageRows : text.selectAllRows
-                  "
-                  [disabled]="!headerEnabled()"
-                  (click)="boxEvent = $event"
-                  (checkedChange)="togglePage($event, allBox)"
-                />
-              </th>
-            } @else if (selectionMode() === 'single') {
-              <th class="star-table__select" scope="col">
-                <span class="star-sr-only">{{ text.selectRow }}</span>
-              </th>
-            }
-            @for (column of visibleColumns(); track column.field) {
-              <th
-                scope="col"
-                [style.width]="widthOf(column)"
-                [style.min-width]="resizedWidth(column)"
-                [style.max-width]="resizedWidth(column)"
-                [style.inset-inline-start]="frozenOffset(column)"
-                [attr.data-field]="column.field"
-                [class]="'star-table__th star-table__cell--' + (column.align ?? 'start')"
-                [class.star-table__cell--frozen]="column.frozen"
-                [class.star-table__th--drop]="dropField() === column.field"
-                [attr.aria-sort]="ariaSort(column)"
-                [attr.draggable]="reorderableColumns() ? 'true' : null"
-                (dragstart)="onDragStart(column, $event)"
-                (dragover)="onDragOver(column, $event)"
-                (drop)="onDrop(column, $event)"
-                (dragend)="endDrag()"
-              >
-                @if (column.sortable) {
-                  <button
-                    type="button"
-                    class="star-table__sort"
-                    [attr.title]="multiSort() ? text.sortMultiHint : null"
-                    (click)="sortBy(column, $event)"
-                  >
-                    <ng-container *ngTemplateOutlet="headerLabel; context: { $implicit: column }" />
-                    <i [class]="sortIcon(column)" aria-hidden="true"></i>
-                    @if (sortRank(column); as rank) {
-                      <span class="star-table__sort-rank">{{ rank }}</span>
-                    }
-                  </button>
-                } @else {
-                  <ng-container *ngTemplateOutlet="headerLabel; context: { $implicit: column }" />
-                }
-                @if (column.filter && filterDisplay() === 'menu') {
-                  <star-table-filter-menu
-                    [header]="column.header"
-                    [type]="column.filter"
-                    [value]="filters()[column.field]"
-                    [matchModes]="column.filterMatchModes ?? []"
-                    [defaultMode]="column.filterMatchMode ?? null"
-                    [choices]="
-                      column.filter === 'select' || column.filter === 'multiselect'
-                        ? filterChoices(column)
-                        : []
-                    "
-                    [maxRules]="filterMaxRules()"
-                    [showApply]="showApplyButton()"
-                    (filterChange)="setFilter(column.field, $event ?? '')"
-                  />
-                }
-                @if (resizableColumns()) {
-                  <span
-                    class="star-table__resizer"
-                    role="separator"
-                    aria-orientation="vertical"
-                    tabindex="0"
-                    [attr.aria-label]="text.resizeColumn(column.header)"
-                    [attr.aria-valuenow]="resizeNow(column)"
-                    [attr.aria-valuemin]="minColumnWidth"
-                    [attr.aria-valuemax]="resizeMax(column)"
-                    (pointerdown)="startResize(column, $event)"
-                    (keydown)="onResizeKey(column, $event)"
-                  ></span>
-                }
-              </th>
-            }
-            @if (rowEditMode()) {
-              <th class="star-table__row-actions" scope="col">
-                <span class="star-sr-only">{{ text.rowActions }}</span>
-              </th>
-            }
-          </tr>
-          @if (hasColumnFilters()) {
-            <tr class="star-table__filters" [attr.aria-rowindex]="virtualScroll() ? 2 : null">
-              @if (reorderableRows()) {
-                <td class="star-table__reorder"></td>
-              }
-              @if (expandable()) {
-                <td class="star-table__expander"></td>
-              }
-              @if (selectionMode()) {
-                <td class="star-table__select"></td>
-              }
-              @for (column of visibleColumns(); track column.field) {
-                <td
-                  [class.star-table__cell--frozen]="column.frozen"
-                  [style.inset-inline-start]="frozenOffset(column)"
-                  [attr.data-label]="column.filter ? column.header : null"
-                >
-                  @if (column.filter === 'select') {
-                    <star-select
-                      class="star-table__filter"
-                      size="sm"
-                      showClear
-                      [options]="filterChoices(column)"
-                      [value]="filterValue(column.field) || null"
-                      [placeholder]="text.filterAll"
-                      [ariaLabel]="text.filterBy(column.header)"
-                      (valueChange)="setFilter(column.field, $event ?? '')"
-                    />
-                  } @else if (column.filter === 'text') {
-                    <input
-                      type="search"
-                      class="star-input star-input--sm star-table__filter"
-                      [attr.aria-label]="text.filterBy(column.header)"
-                      [value]="filterValue(column.field)"
-                      (input)="setFilter(column.field, $any($event.target).value)"
-                    />
-                  } @else if (column.filter === 'multiselect') {
-                    <star-multi-select
-                      class="star-table__filter"
-                      size="sm"
-                      [options]="filterChoices(column)"
-                      [value]="filterList(column.field)"
-                      [placeholder]="text.filterAll"
-                      [ariaLabel]="text.filterBy(column.header)"
-                      (valueChange)="setFilter(column.field, $event)"
-                    />
-                  } @else if (column.filter === 'number' || column.filter === 'date') {
-                    <span class="star-table__filter-range">
-                      <input
-                        class="star-input star-input--sm star-table__filter"
-                        [type]="column.filter"
-                        [attr.aria-label]="text.filterMin(column.header)"
-                        [attr.placeholder]="column.filter === 'number' ? text.filterMinShort : null"
-                        [value]="filterBound(column.field, 'min')"
-                        (input)="setBound(column, 'min', $any($event.target).value)"
-                      />
-                      <input
-                        class="star-input star-input--sm star-table__filter"
-                        [type]="column.filter"
-                        [attr.aria-label]="text.filterMax(column.header)"
-                        [attr.placeholder]="column.filter === 'number' ? text.filterMaxShort : null"
-                        [value]="filterBound(column.field, 'max')"
-                        (input)="setBound(column, 'max', $any($event.target).value)"
-                      />
-                    </span>
-                  }
-                </td>
-              }
-              @if (rowEditMode()) {
-                <td class="star-table__row-actions"></td>
-              }
-            </tr>
-          }
-        </thead>
-        <tbody #body>
-          @if (loading() && loadingSlot(); as loader) {
-            <tr>
-              <td class="star-table__loading" [attr.colspan]="colspan()">
-                <ng-container *ngTemplateOutlet="loader" />
-              </td>
-            </tr>
-          } @else if (loading()) {
-            @for (row of skeletonRows(); track row) {
-              <tr class="star-table__row">
-                @if (reorderableRows()) {
-                  <td class="star-table__reorder"></td>
-                }
-                @if (expandable()) {
-                  <td class="star-table__expander"></td>
-                }
-                @if (selectionMode()) {
-                  <td class="star-table__select"><star-skeleton size="1.25rem" /></td>
-                }
-                @for (column of visibleColumns(); track column.field) {
-                  <td><star-skeleton height="0.875rem" [width]="row % 2 ? '70%' : '90%'" /></td>
-                }
-                @if (rowEditMode()) {
-                  <td class="star-table__row-actions"></td>
-                }
-              </tr>
-            }
-          } @else {
-            @for (entry of bodyEntries(); track entry.key) {
-              @if (entry.kind === 'spacer') {
-                <tr class="star-table__spacer" aria-hidden="true">
-                  <td [attr.colspan]="colspan()" [style.height.px]="entry.height"></td>
-                </tr>
-              } @else if (entry.kind === 'group') {
-                @let group = entry;
-                <tr
-                  class="star-table__group"
-                  [attr.aria-rowindex]="group.aria"
-                  [attr.data-vi]="group.item"
-                >
-                  <th [attr.colspan]="colspan()" scope="colgroup">
-                    <button
-                      type="button"
-                      class="star-table__group-toggle"
-                      [attr.aria-expanded]="!isGroupCollapsed(group.label)"
-                      (click)="toggleGroup(group.label)"
-                    >
-                      <i class="ph-bold ph-caret-down" aria-hidden="true"></i>
-                      @if (groupSlot(); as custom) {
-                        <ng-container
-                          *ngTemplateOutlet="
-                            custom;
-                            context: { $implicit: group.label, count: group.count }
-                          "
-                        />
-                      } @else {
-                        {{ group.label }}
-                        <span class="star-table__group-count">{{ group.count }}</span>
-                      }
-                    </button>
-                  </th>
-                </tr>
-              } @else {
-                @let row = entry.row;
-                @let i = entry.index;
-                <tr
-                  [attr.aria-rowindex]="entry.aria"
-                  [attr.data-vi]="entry.item"
-                  [hidden]="isRowCollapsed(row)"
-                  class="star-table__row"
-                  [class.star-table__row--alt]="i % 2 === 1"
-                  [class.star-table__row--selected]="isSelected(row)"
-                  [class.star-table__row--clickable]="clickable()"
-                  [class.star-table__row--expanded]="expandable() && isExpanded(row)"
-                  [class.star-table__row--editing]="isRowInEdit(row)"
-                  [class.star-table__row--deleted]="isDeleted(row)"
-                  [attr.aria-selected]="selectionMode() ? isSelected(row) : null"
-                  [attr.tabindex]="rowTabIndex(row)"
-                  [attr.data-select-key]="selectionMode() ? rowKeyText(row) : null"
-                  (click)="onRowClick(row, $event)"
-                  (focusin)="onRowFocus(row)"
-                  (keydown)="onRowKey(row, $event); onSelectionKey(row, $event)"
-                >
-                  @if (reorderableRows()) {
-                    <td class="star-table__reorder">
-                      <button
-                        type="button"
-                        class="star-table__toggle"
-                        [disabled]="!canMoveRow(row, -1)"
-                        [attr.aria-label]="text.moveUp"
-                        (click)="moveRow(row, -1)"
-                      >
-                        <i class="ph-bold ph-arrow-up" aria-hidden="true"></i>
-                      </button>
-                      <button
-                        type="button"
-                        class="star-table__toggle"
-                        [disabled]="!canMoveRow(row, 1)"
-                        [attr.aria-label]="text.moveDown"
-                        (click)="moveRow(row, 1)"
-                      >
-                        <i class="ph-bold ph-arrow-down" aria-hidden="true"></i>
-                      </button>
-                    </td>
-                  }
-                  @if (expandable()) {
-                    <td class="star-table__expander">
-                      <button
-                        type="button"
-                        class="star-table__toggle"
-                        [attr.aria-expanded]="isExpanded(row)"
-                        [attr.aria-controls]="isExpanded(row) ? detailId(i) : null"
-                        [attr.aria-label]="isExpanded(row) ? text.collapseRow : text.expandRow"
-                        (click)="toggleExpansion(row)"
-                      >
-                        <i class="ph-bold ph-caret-right" aria-hidden="true"></i>
-                      </button>
-                    </td>
-                  }
-                  @if (selectionMode() === 'multiple') {
-                    <td class="star-table__select">
-                      <star-checkbox
-                        #rowBox
-                        [checked]="isSelected(row)"
-                        [disabled]="!canSelect(row)"
-                        [ariaLabel]="selectRowLabel(row)"
-                        (checkedChange)="toggleRow(row, rowBox)"
-                        (click)="$event.stopPropagation(); boxEvent = $event"
-                      />
-                    </td>
-                  } @else if (selectionMode() === 'single') {
-                    <td class="star-table__select">
-                      <input
-                        type="radio"
-                        class="star-table__radio"
-                        [name]="radioName"
-                        [checked]="isSelected(row)"
-                        [disabled]="!canSelect(row)"
-                        [attr.data-select-key]="rowKeyText(row)"
-                        [attr.aria-label]="selectRowLabel(row)"
-                        (change)="selectOnly(row, $event)"
-                        (click)="$event.stopPropagation()"
-                      />
-                    </td>
-                  }
-                  @for (column of visibleColumns(); track column.field; let firstCell = $first) {
-                    <td
-                      [class]="'star-table__cell--' + (column.align ?? 'start')"
-                      [class.star-table__cell--frozen]="column.frozen"
-                      [class.star-table__cell--changed]="isChanged(row, column)"
-                      [style.inset-inline-start]="frozenOffset(column)"
-                      [attr.data-label]="column.header"
-                    >
-                      @if (firstCell && isDeleted(row)) {
-                        <span class="star-sr-only">{{ text.rowDeleted }}: </span>
-                      }
-                      @if (isRowInEdit(row) && isEditable(row, column)) {
-                        @let rowError = editorError(row, column);
-                        @if (column.editor === 'select') {
-                          <select
-                            class="star-input star-input--sm star-table__editor"
-                            [attr.data-row-editor]="rowKeyText(row)"
-                            [attr.aria-label]="text.editCell(column.header)"
-                            [attr.aria-invalid]="rowError ? 'true' : null"
-                            [attr.aria-describedby]="rowError ? errorId(i, column) : null"
-                            (change)="setDraft(row, column, $any($event.target))"
-                            (keydown)="onRowEditorKey(row, $event)"
-                          >
-                            @for (choice of column.editOptions ?? []; track choice) {
-                              <option
-                                [value]="choice"
-                                [selected]="choice === draftText(row, column)"
-                              >
-                                {{ choice }}
-                              </option>
-                            }
-                          </select>
-                        } @else {
-                          <input
-                            class="star-input star-input--sm star-table__editor"
-                            type="text"
-                            [attr.inputmode]="column.editor === 'number' ? 'decimal' : null"
-                            [attr.data-row-editor]="rowKeyText(row)"
-                            [attr.aria-label]="text.editCell(column.header)"
-                            [attr.aria-invalid]="rowError ? 'true' : null"
-                            [attr.aria-describedby]="rowError ? errorId(i, column) : null"
-                            [attr.aria-required]="column.required || null"
-                            [value]="draftText(row, column)"
-                            (input)="setDraft(row, column, $any($event.target))"
-                            (keydown)="onRowEditorKey(row, $event)"
-                          />
-                        }
-                        @if (rowError) {
-                          <span class="star-table__error" [id]="errorId(i, column)">{{
-                            rowError
-                          }}</span>
-                        }
-                      } @else if (isEditing(row, column)) {
-                        @if (column.editor === 'select') {
-                          <!-- A choice commits at once; Escape or closing the list cancels. -->
-                          <star-select
-                            #selectEditor
-                            class="star-table__editor"
-                            size="sm"
-                            [options]="column.editOptions ?? []"
-                            [value]="cellText(row, column)"
-                            [ariaLabel]="text.editCell(column.header)"
-                            (valueChange)="commitEdit(row, column, $event ?? '')"
-                            (closed)="onEditorClosed(row, column)"
-                            (keydown.escape)="cancelEdit($event, row, column)"
-                          />
-                        } @else {
-                          @let cellError = editorError(row, column);
-                          <input
-                            class="star-input star-input--sm star-table__editor"
-                            [type]="column.editor === 'number' ? 'number' : 'text'"
-                            [attr.aria-label]="text.editCell(column.header)"
-                            [attr.aria-invalid]="cellError ? 'true' : null"
-                            [attr.aria-describedby]="cellError ? errorId(i, column) : null"
-                            [attr.aria-required]="column.required || null"
-                            [value]="editText(row, column)"
-                            (input)="setDraft(row, column, $any($event.target))"
-                            (blur)="
-                              commitEdit(
-                                row,
-                                column,
-                                $any($event.target).value,
-                                $any($event.target).validity?.badInput
-                              )
-                            "
-                            (keydown.enter)="
-                              commitEdit(
-                                row,
-                                column,
-                                $any($event.target).value,
-                                $any($event.target).validity?.badInput
-                              )
-                            "
-                            (keydown.escape)="cancelEdit($event, row, column)"
-                          />
-                          @if (cellError) {
-                            <span class="star-table__error" [id]="errorId(i, column)">{{
-                              cellError
-                            }}</span>
-                          }
-                        }
-                      } @else if (!rowEditMode() && isEditable(row, column)) {
-                        <button
-                          type="button"
-                          class="star-table__edit"
-                          [attr.data-edit]="editKey(row, column)"
-                          (click)="startEdit(row, column)"
-                        >
-                          <!-- The name is the action and the visible value (WCAG 2.5.3). -->
-                          <span class="star-sr-only">{{ text.editCell(column.header) }}: </span>
-                          <span class="star-table__edit-value">
-                            <ng-container
-                              *ngTemplateOutlet="
-                                cell;
-                                context: { $implicit: row, column, index: i }
-                              "
-                            />
-                          </span>
-                          @if (isChanged(row, column)) {
-                            <span class="star-sr-only">, {{ text.cellChanged }}</span>
-                          }
-                          <i class="ph-bold ph-pencil-simple" aria-hidden="true"></i>
-                        </button>
-                      } @else {
-                        <ng-container
-                          *ngTemplateOutlet="cell; context: { $implicit: row, column, index: i }"
-                        />
-                        @if (isChanged(row, column)) {
-                          <span class="star-sr-only">, {{ text.cellChanged }}</span>
-                        }
-                      }
-                    </td>
-                  }
-                  @if (rowEditMode()) {
-                    <td class="star-table__row-actions">
-                      @if (isRowInEdit(row)) {
-                        @if (rowEditActionsSlot(); as custom) {
-                          <ng-container
-                            *ngTemplateOutlet="custom; context: rowActionsContext(row)"
-                          />
-                        } @else {
-                          <button
-                            type="button"
-                            class="star-table__toggle"
-                            [attr.data-row-save]="rowKeyText(row)"
-                            [attr.aria-label]="text.saveRow"
-                            [attr.aria-disabled]="rowValid(row) ? null : 'true'"
-                            (click)="saveRowEdit(row)"
-                          >
-                            <i class="ph-bold ph-check" aria-hidden="true"></i>
-                          </button>
-                          <button
-                            type="button"
-                            class="star-table__toggle"
-                            [attr.aria-label]="text.cancelRowEdit"
-                            (click)="cancelRowEdit(row)"
-                          >
-                            <i class="ph-bold ph-x" aria-hidden="true"></i>
-                          </button>
-                        }
-                      } @else if (!isDeleted(row)) {
-                        <button
-                          type="button"
-                          class="star-table__toggle"
-                          [attr.data-row-edit]="rowKeyText(row)"
-                          [attr.aria-label]="text.editRow"
-                          (click)="initRowEdit(row)"
-                        >
-                          <i class="ph-bold ph-pencil-simple" aria-hidden="true"></i>
-                        </button>
-                      }
-                    </td>
-                  }
-                </tr>
-                @if (expansionTemplate(); as detail) {
-                  @if (isExpanded(row) && !isRowCollapsed(row)) {
-                    <tr
-                      class="star-table__expansion"
-                      [id]="detailId(i)"
-                      [attr.aria-rowindex]="entry.aria === null ? null : entry.aria + 1"
-                      [attr.data-vi]="entry.item"
-                    >
-                      <td [attr.colspan]="colspan()">
-                        <ng-container
-                          *ngTemplateOutlet="detail; context: { $implicit: row, index: i }"
-                        />
-                      </td>
-                    </tr>
-                  }
-                }
-              }
-            } @empty {
-              <tr>
-                <td class="star-table__empty" [attr.colspan]="colspan()">
-                  <i class="ph-bold ph-tray" aria-hidden="true"></i>
-                  @if (emptySlot(); as custom) {
-                    <ng-container
-                      *ngTemplateOutlet="custom; context: { $implicit: globalFilter() }"
-                    />
-                  } @else {
-                    {{ emptyMessage() ?? text.noData }}
-                  }
-                </td>
-              </tr>
-            }
-          }
-        </tbody>
-        @if (hasFooter()) {
-          <tfoot>
-            <tr
-              class="star-table__footer"
-              [attr.aria-rowindex]="virtualScroll() ? ariaRowCount() : null"
-            >
-              @if (reorderableRows()) {
-                <td class="star-table__reorder"></td>
-              }
-              @if (expandable()) {
-                <td class="star-table__expander"></td>
-              }
-              @if (selectionMode()) {
-                <td class="star-table__select"></td>
-              }
-              @for (column of visibleColumns(); track column.field) {
-                <td
-                  [class]="'star-table__cell--' + (column.align ?? 'start')"
-                  [attr.data-label]="footerText(column) ? column.header : null"
-                >
-                  {{ footerText(column) }}
-                </td>
-              }
-              @if (rowEditMode()) {
-                <td class="star-table__row-actions"></td>
-              }
-            </tr>
-          </tfoot>
-        }
-      </table>
-    </div>
-    <ng-content select="[starTableSummary]" />
-    <ng-template #headerLabel let-column>
-      @if (headerCellSlots().get(column.field); as custom) {
-        <ng-container *ngTemplateOutlet="custom; context: { $implicit: column }" />
-      } @else {
-        {{ column.header }}
-      }
-    </ng-template>
-    <ng-template #cell let-row let-column="column" let-i="index">
-      @if (cellTemplate(column.field); as custom) {
-        <ng-container
-          *ngTemplateOutlet="
-            custom;
-            context: { $implicit: row, value: cellValue(row, column), index: i }
-          "
-        />
-      } @else {
-        {{ cellText(row, column) }}
-      }
-    </ng-template>
-    @if (paginator()) {
-      <star-paginator
-        [ariaLabel]="ariaLabel() ? text.pagination + ': ' + ariaLabel() : null"
-        [totalRecords]="total()"
-        [(first)]="first"
-        [(rows)]="rows"
-        [rowsPerPageOptions]="rowsPerPageOptions()"
-        (pageChange)="emitLazy()"
-      />
-    }
-  `,
+  templateUrl: './table.html',
 })
 export class StarTable<T> {
   protected readonly text = inject(STAR_UI_TEXT);
@@ -1122,6 +535,17 @@ export class StarTable<T> {
    * table measures each rendered row and keeps the heights.
    */
   readonly virtualRowHeights = input<'auto' | 'variable'>('auto');
+  /**
+   * Renders only the columns in view (plus 2 on each side) for very wide tables: spacer cells keep
+   * the width of the other columns. Pinned columns are always rendered. Each column gets a fixed
+   * width: its resized width, else `width` in `px` or `rem`, else `virtualColumnWidth`. Works with
+   * `virtualScroll`; the cells have `aria-colindex` and the table `aria-colcount`, so assistive
+   * technology knows the full width. Ignite UI column virtualization, AG Grid column
+   * virtualisation.
+   */
+  readonly virtualColumns = input(false, { transform: booleanAttribute });
+  /** Width in pixels of a column without a `px` or `rem` width, with `virtualColumns`. */
+  readonly virtualColumnWidth = input(160);
   readonly ariaLabel = input<string | null>(null);
 
   readonly paginator = input(false, { transform: booleanAttribute });
@@ -1258,6 +682,28 @@ export class StarTable<T> {
   readonly hiddenColumns = model<readonly string[]>([]);
   /** Column widths in pixels by `field`, set by the user. Two-way. */
   readonly columnWidths = model<Readonly<Record<string, number>>>({});
+  /**
+   * Pin buttons in the Columns panel: "Pin to start", "Pin to end" and "Unpin" for each column.
+   * Pinned columns move to their side; with `reorderableColumns` they move within their side.
+   */
+  readonly pinnableColumns = input(false, { transform: booleanAttribute });
+  /**
+   * Runtime pins by column `field` (`'start'`, `'end'`, or `null` to unpin a column that the
+   * column definition pins). Wins over `pinned` / `frozen`. Two-way. Ignite UI `pinned`,
+   * AG Grid `applyColumnState({ pinned })`.
+   */
+  readonly pinnedColumns = model<StarColumnPins>({});
+  /** The user (or `pinColumn()`) pinned or unpinned a column. AG Grid `columnPinned`. */
+  readonly columnPin = output<StarColumnPinEvent>();
+  /**
+   * Column groups: header cells that span the columns of a group, in extra header rows above the
+   * column headers (`{ header, children }`, children are column fields or nested groups). Columns
+   * of a group stay together: a moved column stays inside its group, a hidden column shrinks the
+   * group, and a group is pinned when all its columns are. Body cells name their group headers
+   * with `headers`. PrimeNG header column groups, Ignite UI `igx-column-group`, AG Grid
+   * `ColGroupDef`.
+   */
+  readonly columnGroups = input<readonly StarColumnGroup[]>([]);
 
   /**
    * Sort by more than one column: Shift + click (or Shift + Enter) on a header adds it as the
@@ -1275,12 +721,34 @@ export class StarTable<T> {
   /** Headings of the closed groups. Two-way. */
   readonly collapsedGroups = model<readonly string[]>([]);
   /**
+   * How `groupBy` shows the groups (PrimeNG `rowGroupMode`). `'subheader'` (default): a heading
+   * row above each group, which closes the group. `'rowspan'`: no heading rows; the cells of the
+   * `groupBy` column (a property name) and of the columns with `mergeCells` merge over the rows
+   * with the same text (`rowspan`). Selection, keyboard and edit stay per row: a merged cell
+   * belongs to the first row of its run. With `virtualScroll` the table uses `'subheader'`.
+   */
+  readonly rowGroupMode = input<'subheader' | 'rowspan'>('subheader');
+  /**
+   * With `groupBy`: a summary row below the rows of each group, with the column `summary` over
+   * all filtered rows of the group (in lazy mode, the loaded rows). On a page that ends inside a
+   * group the summary row shows at the end of the page. Ignite UI group summaries, PrimeNG
+   * `groupfooter`.
+   */
+  readonly groupSummary = input(false, { transform: booleanAttribute });
+  /**
+   * Footer summary values by column `field` in lazy mode, where the table has one page only: the
+   * owner computes them on the server. The table formats them (`summaryFormat`, `locale`).
+   */
+  readonly summaries = input<Readonly<Record<string, unknown>> | null>(null);
+  /** Locale of the summary numbers and dates (default: the locale of the browser). */
+  readonly locale = input<string | null>(null);
+  /**
    * Adds "Move up" / "Move down" buttons to each row. The buttons work while the table shows
    * `value` in its own order (no sort, no filter, no groups).
    */
   readonly reorderableRows = input(false, { transform: booleanAttribute });
   /**
-   * Remembers sort, filters, column order, hidden columns, column widths, page size and
+   * Remembers sort, filters, column order, hidden columns, column widths, pins, page size and
    * closed groups in the browser under this key, and restores them on the next visit.
    */
   readonly stateKey = input<string | null>(null);
@@ -1395,17 +863,25 @@ export class StarTable<T> {
   protected readonly radioName = `star-table-${Math.random().toString(36).slice(2)}`;
   protected readonly clickable = computed(() => this.selectionMode() === 'single');
 
-  /** All columns in display order: frozen columns first, then `columnOrder`. */
+  /** Groups above each column field (`columnGroups`). */
+  private readonly groupPaths = computed(() => groupPaths(this.columnGroups()));
+
+  /**
+   * All columns in display order: start pins, then `columnOrder`, then end pins. The columns of a
+   * group stay together within each side.
+   */
   protected readonly orderedColumns = computed(() => {
-    const order = this.columnOrder();
-    const rank = (column: StarColumn<T>, index: number) => {
-      const position = order.indexOf(column.field);
-      return (column.frozen ? 0 : 1e6) + (position < 0 ? order.length + index : position);
-    };
-    return this.columns()
-      .map((column, index) => ({ column, rank: rank(column, index) }))
-      .sort((a, b) => a.rank - b.rank)
-      .map(({ column }) => column);
+    const pins = this.pinnedColumns();
+    const sideOf = (column: StarColumn<T>) => pinSideOf(column, pins);
+    const ordered = orderColumns(this.columns(), this.columnOrder(), sideOf);
+    const paths = this.groupPaths();
+    if (!paths.size) return ordered;
+    return (['start', null, 'end'] as const).flatMap((side) =>
+      clusterColumns(
+        ordered.filter((column) => sideOf(column) === side),
+        paths,
+      ),
+    );
   });
 
   protected readonly visibleColumns = computed(() => {
@@ -1492,10 +968,42 @@ export class StarTable<T> {
       .map(({ row }) => row);
   });
 
+  /** `rowGroupMode="rowspan"` is in effect (not with virtual scroll). */
+  private readonly rowSpanMode = computed(
+    () => this.rowGroupMode() === 'rowspan' && !this.virtualScroll(),
+  );
+
+  /** Row spans of the merged columns on the page, by field (`rowGroupMode="rowspan"`). */
+  private readonly rowSpanMap = computed(() => {
+    if (!this.rowSpanMode()) return null;
+    const groupBy = this.groupBy();
+    const columns = this.visibleColumns().filter(
+      (column) => column.mergeCells || (typeof groupBy === 'string' && column.field === groupBy),
+    );
+    if (!columns.length) return null;
+    const byField = new Map(columns.map((column) => [column.field, column]));
+    const expandable = this.expandable();
+    return rowSpans(
+      this.pageRows(),
+      columns.map((column) => column.field),
+      {
+        textOf: (row, field) => this.cellText(row, byField.get(field)!),
+        groupOf: groupBy ? (row) => this.groupOf(row) : null,
+        endsRun: (row) => expandable && this.isExpanded(row),
+        breaks: (row) => this.isRowInEdit(row) || this.isDeleted(row),
+      },
+    );
+  });
+
+  /** `rowspan` of a body cell: `0` when a merged cell above covers it. */
+  protected rowSpan(index: number, column: StarColumn<T>): number {
+    return this.rowSpanMap()?.get(column.field)?.[index] ?? 1;
+  }
+
   /** First row index of each group on the page, with the heading and the row count. */
   private readonly groupStarts = computed(() => {
     const starts = new Map<number, { label: string; count: number }>();
-    if (!this.groupBy()) return starts;
+    if (!this.groupBy() || this.rowSpanMode()) return starts;
     let current: { label: string; count: number } | null = null;
     this.pageRows().forEach((row, index) => {
       const label = this.groupOf(row);
@@ -1508,9 +1016,73 @@ export class StarTable<T> {
     return starts;
   });
 
-  protected readonly hasFooter = computed(() =>
-    this.visibleColumns().some((column) => column.footer !== undefined),
-  );
+  /**
+   * The footer row exists when a column has a `footer` text, or a column has a `summary` with a
+   * value to show. In lazy mode the values come from `summaries`: while the owner gives none
+   * (null, or every value undefined), the row would be empty, so it is not drawn.
+   */
+  protected readonly hasFooter = computed(() => {
+    const columns = this.visibleColumns();
+    if (columns.some((column) => column.footer !== undefined)) return true;
+    if (!columns.some((column) => column.summary)) return false;
+    if (!this.lazy()) return true;
+    for (const cell of this.footerSummaries().values()) if (cell) return true;
+    return false;
+  });
+
+  /** Summary rows below the groups (`groupBy` with `groupSummary`). */
+  private readonly groupFooters = computed(() => !!this.groupBy() && this.groupSummary());
+
+  /** Summary cell of a column over rows. */
+  private summaryOf(column: StarColumn<T>, rows: readonly T[]): StarSummaryCell | null {
+    return summaryCell(
+      column,
+      rows,
+      (row) => this.cellValue(row, column),
+      this.text,
+      this.locale(),
+    );
+  }
+
+  /** Footer summary cells by field (columns with `summary` and without `footer`). */
+  protected readonly footerSummaries = computed(() => {
+    const cells = new Map<string, StarSummaryCell | null>();
+    const columns = this.visibleColumns().filter(
+      (column) => column.summary && column.footer === undefined,
+    );
+    // No summary column: the footer does not read the rows.
+    if (!columns.length) return cells;
+    const lazy = this.lazy();
+    const supplied = this.summaries() ?? {};
+    const rows = lazy ? [] : this.sorted();
+    for (const column of columns) {
+      cells.set(
+        column.field,
+        lazy
+          ? suppliedSummaryCell(column, supplied[column.field], this.text, this.locale())
+          : this.summaryOf(column, rows),
+      );
+    }
+    return cells;
+  });
+
+  /** Summary cells of each group by group label, then by field (`groupSummary`). */
+  protected readonly groupSummaries = computed(() => {
+    const groups = new Map<string, Map<string, StarSummaryCell | null>>();
+    if (!this.groupFooters()) return groups;
+    const byGroup = new Map<string, T[]>();
+    for (const row of this.lazy() ? this.pageRows() : this.sorted()) {
+      const label = this.groupOf(row);
+      const rows = byGroup.get(label);
+      if (rows) rows.push(row);
+      else byGroup.set(label, [row]);
+    }
+    const columns = this.visibleColumns().filter((column) => column.summary);
+    for (const [label, rows] of byGroup) {
+      groups.set(label, new Map(columns.map((c) => [c.field, this.summaryOf(c, rows)])));
+    }
+    return groups;
+  });
 
   /** Rows can move while the table shows `value` in its own order. */
   private readonly rowOrderIsOwn = computed(
@@ -1578,8 +1150,39 @@ export class StarTable<T> {
         this.responsiveLayout() === 'stack'),
   );
 
-  /** Header rows: the column headings, and the filter row when there is one. */
-  private readonly headerRows = computed(() => (this.hasColumnFilters() ? 2 : 1));
+  /** Header rows: the group rows, the column headings, and the filter row when there is one. */
+  private readonly headerRows = computed(
+    () => this.headerLayout().length + (this.hasColumnFilters() ? 1 : 0),
+  );
+
+  /** Rows of header cells: group rows (`columnGroups`), then the column headers. */
+  protected readonly headerLayout = computed(() =>
+    headerRows(this.renderedColumns(), this.groupPaths()),
+  );
+  /** `rowspan` of the cells that span all header rows (selection, expander, actions). */
+  protected readonly headRowSpan = computed(() => {
+    const rows = this.headerLayout().length;
+    return rows > 1 ? rows : null;
+  });
+  /** Ids of the header cells and the `headers` of each body cell, with column groups only. */
+  protected readonly headerIds = computed(() =>
+    this.columnGroups().length ? headerAssociations(this.headerLayout(), this.radioName) : null,
+  );
+  protected readonly groupHeaderSlots = starSlotMap<StarColumnGroupHeaderContext>(
+    this.slots,
+    this,
+    'columnGroupHeader',
+  );
+
+  protected groupHeaderSlot(header: string) {
+    const slots = this.groupHeaderSlots();
+    return slots.get(header) ?? slots.get('') ?? null;
+  }
+
+  /** A group header cell is pinned when all its columns are pinned on one side. */
+  protected groupPinOf(columns: readonly StarColumn<T>[]): StarPinPlacement | null {
+    return spanPlacement(columns.map((column) => this.pinOf(column)));
+  }
 
   /** `aria-rowcount` with virtual scroll: header, body (headings, rows, detail rows) and footer. */
   protected readonly ariaRowCount = computed(() => {
@@ -1610,6 +1213,7 @@ export class StarTable<T> {
     if (!this.variableHeights() || this.loading()) return null;
     const rows = this.pageRows();
     const grouped = !!this.groupBy();
+    const footers = this.groupFooters();
     const collapsed = new Set(this.collapsedGroups());
     const expandable = this.expandable();
     const expanded = this.expandedSet();
@@ -1623,6 +1227,7 @@ export class StarTable<T> {
       }
       return buildVirtualLayout(rows, {
         groupOf: grouped ? (row) => this.groupOf(row) : null,
+        groupFooters: footers,
         isCollapsed: (label) => collapsed.has(label),
         isExpanded: (row) => expandable && expanded.has(this.trackKey(row)),
         keyOf: (row) => this.trackKey(row),
@@ -1633,7 +1238,7 @@ export class StarTable<T> {
 
   /** Measured height of an item, else the estimate (a row with its detail: two rows). */
   private estimateOf(item: VirtualItem<T>, estimate: number): number {
-    if (item.kind === 'group') return this.rowHeights.get(item.key) ?? estimate;
+    if (item.kind !== 'row') return this.rowHeights.get(item.key) ?? estimate;
     if (!item.expanded) return this.rowHeights.get(item.key) ?? estimate;
     return (
       this.expandedHeights.get(item.key) ?? (this.rowHeights.get(item.key) ?? estimate) + estimate
@@ -1688,6 +1293,7 @@ export class StarTable<T> {
   protected readonly bodyEntries = computed<readonly BodyEntry<T>[]>(() => {
     const rows = this.pageRows();
     if (!this.virtualScroll()) {
+      const footers = this.groupFooters();
       const entries: BodyEntry<T>[] = [];
       const starts = this.groupStarts();
       rows.forEach((row, index) => {
@@ -1702,6 +1308,12 @@ export class StarTable<T> {
           });
         }
         entries.push({ kind: 'row', key: this.trackKey(row), row, index, aria: null, item: null });
+        const label = footers ? this.groupOf(row) : null;
+        const next = rows[index + 1];
+        if (label !== null && (next === undefined || this.groupOf(next) !== label)) {
+          const key = groupFooterKey(label);
+          entries.push({ kind: 'groupFooter', key, label, aria: null, item: null });
+        }
       });
       return entries;
     }
@@ -1718,6 +1330,9 @@ export class StarTable<T> {
         (i) => {
           const item = layout.items[i];
           const aria = header + item.aria + 1;
+          if (item.kind === 'groupFooter') {
+            return { kind: 'groupFooter', key: item.key, label: item.label, aria, item: i };
+          }
           return item.kind === 'group'
             ? { kind: 'group', key: item.key, label: item.label, count: item.count, aria, item: i }
             : { kind: 'row', key: item.key, row: item.row, index: item.index, aria, item: i };
@@ -1787,8 +1402,13 @@ export class StarTable<T> {
   });
 
   protected onScroll(event: Event): void {
-    if (!this.virtualScroll()) return;
     const viewport = event.target as HTMLElement;
+    if (this.virtualColumns()) {
+      // Right-to-left scroll offsets run below zero.
+      this.scrollLeft.set(Math.abs(viewport.scrollLeft));
+      this.viewportWidth.set(viewport.clientWidth);
+    }
+    if (!this.virtualScroll()) return;
     this.scrollTop.set(viewport.scrollTop);
     this.viewportHeight.set(viewport.clientHeight);
   }
@@ -1975,7 +1595,9 @@ export class StarTable<T> {
   );
   protected readonly colspan = computed(
     () =>
-      this.visibleColumns().length +
+      this.renderedColumns().length +
+      (this.columnWindow().first ? 1 : 0) +
+      (this.columnWindow().last ? 1 : 0) +
       (this.selectionMode() ? 1 : 0) +
       (this.expandable() ? 1 : 0) +
       (this.reorderableRows() ? 1 : 0) +
@@ -2016,7 +1638,7 @@ export class StarTable<T> {
         firstFilter = false;
       });
     });
-    afterRenderEffect({ read: () => this.measureFrozen() });
+    afterRenderEffect({ read: () => this.measureHeader() });
     // Rows of different heights: measure the rendered rows after each render of the body.
     afterRenderEffect(() => {
       this.bodyEntries();
@@ -2049,6 +1671,11 @@ export class StarTable<T> {
             'star-table: virtualScroll needs scrollHeight. Without it the table does not scroll inside its own area, and rows after the first window are not rendered.',
           );
         }
+        if (this.rowGroupMode() === 'rowspan' && this.virtualScroll()) {
+          console.warn(
+            'star-table: rowGroupMode="rowspan" does not work with virtualScroll; the table shows group heading rows.',
+          );
+        }
         if (this.virtualRowHeights() === 'variable' && !this.virtualScroll()) {
           console.warn('star-table: virtualRowHeights has no effect without virtualScroll.');
         }
@@ -2070,6 +1697,7 @@ export class StarTable<T> {
         columnOrder: this.columnOrder(),
         hiddenColumns: this.hiddenColumns(),
         columnWidths: this.columnWidths(),
+        pinnedColumns: this.pinnedColumns(),
         rows: this.rows(),
         collapsedGroups: this.collapsedGroups(),
       };
@@ -2109,6 +1737,9 @@ export class StarTable<T> {
     if (state.columnWidths && typeof state.columnWidths === 'object') {
       this.columnWidths.set(state.columnWidths);
     }
+    if (state.pinnedColumns && typeof state.pinnedColumns === 'object') {
+      this.pinnedColumns.set(state.pinnedColumns);
+    }
     if (typeof state.rows === 'number' && state.rows > 0) this.rows.set(state.rows);
     if (Array.isArray(state.collapsedGroups)) this.collapsedGroups.set(state.collapsedGroups);
   }
@@ -2125,11 +1756,17 @@ export class StarTable<T> {
     return group === null || group === undefined ? '' : String(group);
   }
 
+  /** The summary row of a group is hidden: its group is closed (not in rowspan mode). */
+  protected isGroupFooterHidden(label: string): boolean {
+    return !this.rowSpanMode() && this.isGroupCollapsed(label);
+  }
+
   protected isGroupCollapsed(label: string): boolean {
     return this.collapsedGroups().includes(label);
   }
 
   protected isRowCollapsed(row: T): boolean {
+    if (this.rowSpanMode()) return false;
     return !!this.groupBy() && this.isGroupCollapsed(this.groupOf(row));
   }
 
@@ -2207,42 +1844,73 @@ export class StarTable<T> {
     );
   }
 
-  /** Moves a column to the place of another column. */
+  /**
+   * Moves a column to the place of another column. A pinned column moves within its side only,
+   * and a column of a group within its group: a move to a column of another side or group does
+   * nothing.
+   */
   moveColumn(field: string, targetField: string): void {
+    if (!this.canMoveTo(field, targetField)) return;
     const fields = this.orderedColumns().map((column) => column.field);
     const from = fields.indexOf(field);
     const to = fields.indexOf(targetField);
-    if (from < 0 || to < 0 || from === to) return;
     fields.splice(to, 0, ...fields.splice(from, 1));
     this.columnOrder.set(fields);
   }
 
+  /** A column can take the place of another column: both exist, and they have the same pin side. */
+  private canMoveTo(field: string, targetField: string): boolean {
+    const columns = this.orderedColumns();
+    const from = columns.find((column) => column.field === field);
+    const to = columns.find((column) => column.field === targetField);
+    const paths = this.groupPaths();
+    return (
+      !!from &&
+      !!to &&
+      from !== to &&
+      this.sideOf(from) === this.sideOf(to) &&
+      parentGroupOf(field, paths) === parentGroupOf(targetField, paths)
+    );
+  }
+
+  /** The neighbour column in the panel list, when the column can take its place. */
+  protected canMoveBy(column: StarColumn<T>, delta: 1 | -1): boolean {
+    const columns = this.orderedColumns();
+    const target = columns[columns.indexOf(column) + delta];
+    return !!target && this.canMoveTo(column.field, target.field);
+  }
+
   protected moveColumnBy(column: StarColumn<T>, delta: 1 | -1): void {
-    const fields = this.orderedColumns().map((item) => item.field);
-    const target = fields[fields.indexOf(column.field) + delta];
-    if (!target) return;
-    this.moveColumn(column.field, target);
+    const columns = this.orderedColumns();
+    const target = columns[columns.indexOf(column) + delta];
+    if (!target || !this.canMoveBy(column, delta)) return;
+    this.moveColumn(column.field, target.field);
     // The list in the Columns panel moves the button in the DOM, which drops the focus (and a
     // button at the end of the list becomes disabled). Keep the focus in the panel: on the same
     // button, or on the one for the other direction when that one is now disabled.
-    this.focusMoveButton(column, delta);
+    this.focusPanel([this.moveKey(column, delta), this.moveKey(column, delta === 1 ? -1 : 1)]);
   }
 
-  /** Identifies a move button of the Columns panel, for `focusMoveButton`. */
-  protected moveKey(column: StarColumn<T>, delta: 1 | -1): string {
-    return `${this.radioName}|${column.field}|${delta}`;
+  /** Identifies a move or pin button of the Columns panel, for `focusPanel`. */
+  protected moveKey(column: StarColumn<T>, action: 1 | -1 | string): string {
+    return `${this.radioName}|${column.field}|${action}`;
   }
 
-  private focusMoveButton(column: StarColumn<T>, delta: 1 | -1): void {
+  /** Focuses the first enabled panel button of `keys` after the next render. */
+  private focusPanel(keys: readonly string[]): void {
     afterNextRender(
       () => {
         // The panel is in the overlay container, not inside the table element.
-        const button = (step: 1 | -1) =>
-          this.document.querySelector<HTMLButtonElement>(
-            `[data-move="${CSS.escape(this.moveKey(column, step))}"]`,
+        for (const key of keys) {
+          const escaped = CSS.escape(key);
+          const button = this.document.querySelector<HTMLButtonElement>(
+            `[data-move="${escaped}"], [data-pin="${escaped}"]`,
           );
-        const same = button(delta);
-        (same && !same.disabled ? same : button(delta === 1 ? -1 : 1))?.focus();
+          if (button && !button.disabled) {
+            button.focus();
+            return;
+          }
+        }
       },
       { injector: this.injector },
     );
@@ -2260,7 +1928,7 @@ export class StarTable<T> {
 
   protected onDragOver(column: StarColumn<T>, event: DragEvent): void {
     const field = this.dragField();
-    if (!field || field === column.field) return;
+    if (!field || !this.canMoveTo(field, column.field)) return;
     event.preventDefault();
     this.dropField.set(column.field);
   }
@@ -2283,33 +1951,31 @@ export class StarTable<T> {
   }
 
   protected resizedWidth(column: StarColumn<T>): string | null {
+    if (this.virtualColumns()) return `${this.columnPixels(column)}px`;
     const width = this.columnWidths()[column.field];
     return width ? `${width}px` : null;
   }
 
-  /** Rendered width in pixels of each frozen header cell, by column `field`. */
-  private readonly frozenWidths = signal<Readonly<Record<string, number>>>({});
-  /** Rendered width in pixels of each header cell, by column `field` (resizable tables only). */
-  private readonly headerWidths = signal<Readonly<Record<string, number>>>({});
+  /** Rendered widths of the header cells (pinned or resizable tables only). */
+  protected readonly headerWidths = signal<StarHeaderWidths>(NO_WIDTHS);
   /** The scroll area has content outside its box, so it must take the focus to scroll by key. */
   protected readonly scrollable = signal(false);
   protected readonly minColumnWidth = MIN_COLUMN_WIDTH;
 
   /** `aria-valuenow` of a resize handle: the width of the column in pixels. */
   protected resizeNow(column: StarColumn<T>): number | null {
-    const width = this.columnWidths()[column.field] ?? this.headerWidths()[column.field];
+    const width = this.columnWidths()[column.field] ?? this.headerWidths().columns[column.field];
     return width === undefined ? null : Math.round(width);
   }
 
   protected resizeMax(column: StarColumn<T>): number {
     return Math.max(MAX_COLUMN_WIDTH_HINT, this.resizeNow(column) ?? 0);
   }
-  /** Counts up when the table element changes size, so the frozen columns are measured again. */
+  /** Counts up when the table element changes size, so the pinned columns are measured again. */
   private readonly resized = signal(0);
 
-  /** Measures the frozen header cells after a render that can change their width. */
-  private measureFrozen(): void {
-    const frozen = this.visibleColumns().filter((column) => column.frozen);
+  /** Measures the header cells after a render that can change their width. */
+  private measureHeader(): void {
     // Read what can change a width, so the effect runs again when it does.
     this.columnWidths();
     this.value();
@@ -2322,51 +1988,132 @@ export class StarTable<T> {
           scroller.scrollHeight > scroller.clientHeight + 1,
       );
     }
-    const resizable = this.resizableColumns();
-    if (!frozen.length && !resizable) return;
-    const widths: Record<string, number> = {};
-    const all: Record<string, number> = {};
-    for (const cell of this.host.nativeElement.querySelectorAll<HTMLElement>(
-      'thead th[data-field]',
-    )) {
-      const field = cell.dataset['field'];
-      if (!field) continue;
-      const width = cell.getBoundingClientRect().width;
-      all[field] = width;
-      if (frozen.some((column) => column.field === field)) widths[field] = width;
+    if (scroller && this.virtualColumns() && scroller.clientWidth) {
+      this.viewportWidth.set(scroller.clientWidth);
     }
-    const sameWidths = (
-      next: Readonly<Record<string, number>>,
-      current: Readonly<Record<string, number>>,
-    ) =>
-      Object.keys(next).length === Object.keys(current).length &&
-      Object.entries(next).every(
-        ([field, width]) => Math.abs((current[field] ?? -1) - width) < 0.5,
-      );
-    if (!sameWidths(widths, untracked(this.frozenWidths))) this.frozenWidths.set(widths);
-    if (resizable && !sameWidths(all, untracked(this.headerWidths))) this.headerWidths.set(all);
+    const sides = this.pinnedSides();
+    if (!sides.start && !sides.end && !this.resizableColumns() && !this.virtualColumns()) return;
+    const next = measureHeaderCells(this.host.nativeElement);
+    if (!sameHeaderWidths(next, untracked(this.headerWidths))) this.headerWidths.set(next);
   }
 
+  /** Pin side of a column. */
+  protected sideOf(column: StarColumn<T>): StarPinSide | null {
+    return pinSideOf(column, this.pinnedColumns());
+  }
+
+  /** The visible columns have start pins, end pins. */
+  protected readonly pinnedSides = computed(() => {
+    const columns = this.visibleColumns();
+    return {
+      start: columns.some((column) => this.sideOf(column) === 'start'),
+      end: columns.some((column) => this.sideOf(column) === 'end'),
+    };
+  });
+
+  /** Sticky placement of each pinned visible column, by field. */
+  private readonly pinPlacements = computed(() => {
+    const widths = this.headerWidths();
+    return pinPlacements(
+      this.visibleColumns(),
+      (column) => this.sideOf(column),
+      widths.columns,
+      (column) => this.widthOf(column),
+      widths,
+    );
+  });
+
+  private readonly scrollLeft = signal(0);
+  private readonly viewportWidth = signal(0);
+
+  /** Width in pixels of a column with `virtualColumns`. */
+  private columnPixels(column: StarColumn<T>): number {
+    return (
+      this.columnWidths()[column.field] ??
+      cssPixels(column.width) ??
+      Math.max(MIN_COLUMN_WIDTH, this.virtualColumnWidth())
+    );
+  }
+
+  /** The rendered columns and the spacers (`virtualColumns`); all visible columns without it. */
+  protected readonly columnWindow = computed<StarColumnWindow<StarColumn<T>>>(
+    () => {
+      const columns = this.visibleColumns();
+      if (!this.virtualColumns()) return { columns, first: null, last: null, before: 0, after: 0 };
+      const widths = this.headerWidths();
+      return columnWindow({
+        columns,
+        isPinned: (column) => !!this.sideOf(column),
+        widthOf: (column) => this.columnPixels(column),
+        scroll: this.scrollLeft(),
+        viewport: this.viewportWidth() || COLUMN_FALLBACK_VIEWPORT,
+        fixed: widths.start + widths.end,
+      });
+    },
+    // A scroll inside the same range keeps the window: nothing renders again.
+    { equal: sameWindow },
+  );
+
+  protected readonly renderedColumns = computed(() => this.columnWindow().columns);
+
+  /** Position of each visible column among all cells of a row, by field (`virtualColumns`). */
+  private readonly colIndexes = computed(() => {
+    if (!this.virtualColumns()) return null;
+    const lead =
+      (this.reorderableRows() ? 1 : 0) +
+      (this.expandable() ? 1 : 0) +
+      (this.selectionMode() ? 1 : 0);
+    return new Map(this.visibleColumns().map((column, index) => [column.field, lead + index + 1]));
+  });
+
+  /** `aria-colcount` with `virtualColumns`: all columns, rendered or not. */
+  protected readonly ariaColCount = computed(() => {
+    const indexes = this.colIndexes();
+    if (!indexes) return null;
+    const lead = this.colspan() - this.renderedColumns().length - (this.rowEditMode() ? 1 : 0);
+    const spacers = (this.columnWindow().first ? 1 : 0) + (this.columnWindow().last ? 1 : 0);
+    return lead - spacers + this.visibleColumns().length + (this.rowEditMode() ? 1 : 0);
+  });
+
+  protected colIndex(column: StarColumn<T>): number | null {
+    return this.colIndexes()?.get(column.field) ?? null;
+  }
+
+  /** The header cell holds `column` as its first (or last) column. */
+  protected cellHas(
+    cell: StarHeaderCell<StarColumn<T>>,
+    column: StarColumn<T> | null,
+    end: 'first' | 'last',
+  ): boolean {
+    if (!column) return false;
+    if (cell.kind === 'column') return cell.column === column;
+    return cell.columns[end === 'first' ? 0 : cell.columns.length - 1] === column;
+  }
+
+  protected pinOf(column: StarColumn<T>): StarPinPlacement | null {
+    return this.pinPlacements().get(column.field) ?? null;
+  }
+
+  protected readonly pinActions = PIN_ACTIONS;
+
   /**
-   * Offset of a frozen column: the widths of the frozen columns before it. Uses the measured
-   * widths; before the first measure (and where layout is not available) the declared widths.
+   * Pins a column to the inline start or end, or unpins it (`null`), and emits `columnPin`.
+   * Ignite UI `pinColumn` / `unpinColumn`, AG Grid `setColumnsPinned`.
    */
-  protected frozenOffset(column: StarColumn<T>): string | null {
-    if (!column.frozen) return null;
-    const measured = this.frozenWidths();
-    const before: string[] = [];
-    let pixels = 0;
-    let allMeasured = true;
-    for (const item of this.visibleColumns()) {
-      if (item === column) break;
-      if (!item.frozen) continue;
-      before.push(this.widthOf(item) ?? '0px');
-      const width = measured[item.field];
-      if (width) pixels += width;
-      else allMeasured = false;
-    }
-    if (!before.length) return '0px';
-    return allMeasured ? `${Math.round(pixels * 100) / 100}px` : `calc(${before.join(' + ')})`;
+  pinColumn(field: string, side: StarPinSide | null): void {
+    const column = this.columns().find((item) => item.field === field);
+    if (!column || this.sideOf(column) === side) return;
+    this.pinnedColumns.update((pins) => ({ ...pins, [field]: side }));
+    this.columnPin.emit({ field, side });
+  }
+
+  /** A pin button of the Columns panel. The list moves the item: keep the focus on the button. */
+  protected pinFromPanel(column: StarColumn<T>, side: StarPinSide | null): void {
+    const current = this.sideOf(column);
+    if (side === null && !current) return;
+    // A pressed pin button is a toggle: the second click unpins the column.
+    this.pinColumn(column.field, side !== null && side === current ? null : side);
+    this.focusPanel([this.moveKey(column, side ?? 'unpin')]);
   }
 
   private setWidth(column: StarColumn<T>, width: number): void {

@@ -1,0 +1,482 @@
+// Scheduler (StarScheduler): toolbar, time grid, month grid, timeline and agenda. Events take a
+// colour of the chart palette as a tinted surface with a coloured start border, so the text keeps
+// the contrast of the theme.
+@use '../shared' as *;
+
+.star-scheduler {
+  --star-scheduler-slot-height: 1.75rem;
+  --star-scheduler-slot-width: 3.5rem;
+  --star-scheduler-lane-height: 1.75rem;
+  --star-scheduler-time-width: 4rem;
+  --star-scheduler-resource-width: 9rem;
+  --star-scheduler-height: 36rem;
+  --star-scheduler-head-height: 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--star-space-3);
+  min-width: 0;
+  color: var(--star-text);
+  font: var(--star-type-body-sm);
+}
+
+.star-scheduler__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--star-space-2) var(--star-space-4);
+}
+.star-scheduler__nav,
+.star-scheduler__views {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--star-space-1);
+}
+.star-scheduler__views {
+  margin-inline-start: auto;
+}
+.star-scheduler__title {
+  margin: 0;
+  font: var(--star-type-title-sm);
+  color: var(--star-text-strong);
+}
+.star-scheduler__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-block-size: 2rem;
+  padding: 0.25rem 0.75rem;
+  border: 1px solid var(--star-border);
+  border-radius: var(--star-radius-sm);
+  background: var(--star-surface);
+  color: var(--star-text);
+  font: inherit;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--star-surface-muted);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--star-accent);
+    outline-offset: 1px;
+  }
+}
+.star-scheduler__button--icon {
+  inline-size: 2rem;
+  padding: 0;
+}
+.star-scheduler__button--active {
+  border-color: var(--star-accent);
+  background: var(--star-accent-soft);
+  color: var(--star-text-strong);
+  font-weight: 600;
+}
+
+.star-scheduler__scroll {
+  position: relative;
+  max-block-size: var(--star-scheduler-height);
+  overflow: auto;
+  border: 1px solid var(--star-border);
+  border-radius: var(--star-radius-md);
+  background: var(--star-surface);
+}
+
+.star-scheduler__grid {
+  display: grid;
+  min-inline-size: 100%;
+}
+.star-scheduler__grid--time {
+  grid-template-columns:
+    var(--star-scheduler-time-width)
+    repeat(var(--star-scheduler-days, 7), minmax(6rem, 1fr));
+}
+.star-scheduler__grid--timeline {
+  grid-template-columns:
+    var(--star-scheduler-resource-width)
+    repeat(var(--star-scheduler-slots, 48), var(--star-scheduler-slot-width));
+  inline-size: max-content;
+}
+.star-scheduler__grid--month {
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  border: 1px solid var(--star-border);
+  border-radius: var(--star-radius-md);
+  background: var(--star-surface);
+  overflow: hidden;
+}
+.star-scheduler__row {
+  display: contents;
+}
+
+.star-scheduler__head {
+  box-sizing: border-box;
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--star-space-1) var(--star-space-2);
+  border-block-end: 1px solid var(--star-border);
+  border-inline-start: 1px solid var(--star-border);
+  background: var(--star-surface);
+  color: var(--star-text-muted);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.star-scheduler__grid--month .star-scheduler__head {
+  position: static;
+}
+.star-scheduler__grid--time .star-scheduler__head {
+  block-size: var(--star-scheduler-head-height);
+}
+.star-scheduler__corner {
+  inset-inline-start: 0;
+  z-index: 21;
+}
+.star-scheduler__grid--timeline .star-scheduler__corner,
+.star-scheduler__resource {
+  position: sticky;
+  inset-inline-start: 0;
+}
+.star-scheduler__head--slot {
+  align-items: flex-start;
+  font-weight: 400;
+}
+.star-scheduler__head--today .star-scheduler__day-number {
+  border-radius: var(--star-radius-sm);
+  background: var(--star-accent-soft);
+  color: var(--star-text-strong);
+}
+.star-scheduler__day-number {
+  padding-inline: 0.375rem;
+  font: var(--star-type-body);
+  font-weight: 600;
+  color: var(--star-text-strong);
+}
+
+.star-scheduler__time {
+  position: relative;
+  padding-inline: var(--star-space-2);
+  color: var(--star-text-muted);
+  text-align: end;
+  font-size: 0.75rem;
+  line-height: 1;
+  transform: translateY(-0.4em);
+}
+// The all-day row stays under the day headers while the slots scroll.
+.star-scheduler__time--all-day {
+  position: sticky;
+  inset-block-start: var(--star-scheduler-head-height);
+  z-index: 19;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  border-block-end: 2px solid var(--star-border-strong);
+  background: var(--star-surface);
+  transform: none;
+}
+.star-scheduler__resource {
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  padding-inline: var(--star-space-3);
+  border-block-end: 1px solid var(--star-border);
+  background: var(--star-surface);
+  font-weight: 600;
+  color: var(--star-text-strong);
+}
+
+.star-scheduler__cell {
+  box-sizing: border-box;
+  position: relative;
+  min-inline-size: 0;
+  border-inline-start: 1px solid var(--star-border);
+  border-block-end: 1px solid var(--star-border);
+  outline: none;
+
+  &:focus-visible {
+    box-shadow: inset 0 0 0 2px var(--star-accent);
+  }
+}
+.star-scheduler__cell--slot {
+  block-size: var(--star-scheduler-slot-height);
+  border-block-end-style: dotted;
+}
+.star-scheduler__grid--time .star-scheduler__cell--slot:not(.star-scheduler__cell--hour) {
+  border-block-start: 0;
+}
+.star-scheduler__grid--timeline .star-scheduler__cell--slot {
+  block-size: auto;
+  min-block-size: calc(var(--star-scheduler-lanes, 1) * var(--star-scheduler-lane-height) + 0.5rem);
+  border-block-end-style: solid;
+}
+.star-scheduler__cell--off {
+  background: var(--star-surface-muted);
+}
+.star-scheduler__cell--all-day {
+  position: sticky;
+  inset-block-start: var(--star-scheduler-head-height);
+  // An earlier day is above a later one, so an event that spans days stays visible.
+  z-index: calc(10 + var(--star-scheduler-col-z, 0));
+  background: var(--star-surface);
+  min-block-size: calc(var(--star-scheduler-lanes, 1) * var(--star-scheduler-lane-height) + 0.5rem);
+  border-block-end: 2px solid var(--star-border-strong);
+}
+.star-scheduler__cell--day {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-block-size: 7rem;
+  padding: var(--star-space-1);
+}
+.star-scheduler__cell--outside {
+  background: var(--star-surface-muted);
+  color: var(--star-text-muted);
+}
+.star-scheduler__date {
+  align-self: flex-end;
+  padding-inline: 0.25rem;
+  font-weight: 600;
+}
+.star-scheduler__cell--today .star-scheduler__date {
+  border-radius: var(--star-radius-sm);
+  background: var(--star-accent-soft);
+  color: var(--star-text-strong);
+}
+
+.star-scheduler__event {
+  --star-scheduler-event-color: var(--star-accent);
+  box-sizing: border-box;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  min-inline-size: 0;
+  padding: 2px 6px;
+  overflow: hidden;
+  border: 0;
+  border-inline-start: 3px solid var(--star-scheduler-event-color);
+  border-radius: var(--star-radius-xs);
+  background: color-mix(in srgb, var(--star-scheduler-event-color) 18%, var(--star-surface));
+  color: var(--star-text-strong);
+  font: inherit;
+  font-size: 0.75rem;
+  line-height: 1.25;
+  text-align: start;
+  justify-content: flex-start;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+
+  &:hover {
+    background: color-mix(in srgb, var(--star-scheduler-event-color) 28%, var(--star-surface));
+  }
+  &:focus-visible {
+    z-index: 5;
+    outline: 2px solid var(--star-accent);
+    outline-offset: 1px;
+  }
+}
+.star-scheduler__event--short {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.375rem;
+  white-space: nowrap;
+
+  // The title keeps up to half the width; the time gives way first.
+  .star-scheduler__event-title {
+    flex: 0 0 auto;
+    max-inline-size: 50%;
+  }
+  .star-scheduler__event-time {
+    flex: 0 1 auto;
+    min-inline-size: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+.star-scheduler__event-content {
+  display: contents;
+}
+.star-scheduler__event--readonly {
+  cursor: pointer;
+}
+.star-scheduler__event--compact {
+  min-block-size: 24px;
+  flex-direction: row;
+  align-items: center;
+  inline-size: 100%;
+}
+// While an event is dragged, the pointer goes through every event to the slot below it.
+.star-scheduler--dragging .star-scheduler__event {
+  pointer-events: none;
+}
+.star-scheduler__event--dragging {
+  z-index: 6;
+  box-shadow: var(--star-shadow-md);
+  opacity: 0.9;
+}
+.star-scheduler__event-title {
+  max-inline-size: 100%;
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.star-scheduler__event-time {
+  color: var(--star-text);
+}
+.star-scheduler__event-repeat {
+  position: absolute;
+  inset-block-start: 3px;
+  inset-inline-end: 3px;
+}
+
+// Placed events: the custom properties come from the component.
+.star-scheduler__grid--time .star-scheduler__cell--slot .star-scheduler__event--placed {
+  position: absolute;
+  z-index: 1;
+  inset-block-start: calc(var(--star-scheduler-top, 0) * var(--star-scheduler-slot-height));
+  inset-inline-start: calc(
+    var(--star-scheduler-column, 0) / var(--star-scheduler-columns, 1) * 100% + 2px
+  );
+  inline-size: calc(100% / var(--star-scheduler-columns, 1) - 4px);
+  block-size: calc(var(--star-scheduler-length, 1) * var(--star-scheduler-slot-height) - 2px);
+  min-block-size: 24px;
+}
+.star-scheduler__cell--all-day .star-scheduler__event--placed {
+  position: absolute;
+  z-index: 1;
+  inset-block-start: calc(
+    var(--star-scheduler-lane, 0) * var(--star-scheduler-lane-height) + 0.25rem
+  );
+  inset-inline-start: 2px;
+  inline-size: calc(var(--star-scheduler-span, 1) * 100% - 4px);
+  block-size: calc(var(--star-scheduler-lane-height) - 2px);
+}
+.star-scheduler__grid--timeline .star-scheduler__event--placed {
+  position: absolute;
+  z-index: 1;
+  inset-block-start: calc(
+    var(--star-scheduler-lane, 0) * var(--star-scheduler-lane-height) + 0.25rem
+  );
+  inset-inline-start: calc(var(--star-scheduler-top, 0) * var(--star-scheduler-slot-width) + 1px);
+  inline-size: calc(var(--star-scheduler-length, 1) * var(--star-scheduler-slot-width) - 2px);
+  block-size: calc(var(--star-scheduler-lane-height) - 2px);
+}
+.star-scheduler__event--continues-before {
+  border-start-start-radius: 0;
+  border-end-start-radius: 0;
+}
+.star-scheduler__event--continues-after {
+  border-start-end-radius: 0;
+  border-end-end-radius: 0;
+}
+
+.star-scheduler__handle {
+  position: absolute;
+  inset-inline: 0;
+  block-size: 6px;
+  cursor: ns-resize;
+}
+.star-scheduler__handle--start {
+  inset-block-start: 0;
+}
+.star-scheduler__handle--end {
+  inset-block-end: 0;
+}
+.star-scheduler__grid--timeline .star-scheduler__handle {
+  inset-block: 0;
+  inset-inline: auto;
+  inline-size: 6px;
+  block-size: auto;
+  cursor: ew-resize;
+}
+.star-scheduler__grid--timeline .star-scheduler__handle--start {
+  inset-inline-start: 0;
+}
+.star-scheduler__grid--timeline .star-scheduler__handle--end {
+  inset-inline-end: 0;
+}
+
+.star-scheduler__now {
+  position: absolute;
+  z-index: 2;
+  inset-inline: 0;
+  inset-block-start: calc(var(--star-scheduler-now, 0) * 100%);
+  block-size: 2px;
+  background: var(--star-danger);
+  pointer-events: none;
+}
+
+.star-scheduler__more {
+  align-self: flex-start;
+  min-block-size: 24px;
+  padding: 0 4px;
+  border: 0;
+  border-radius: var(--star-radius-xs);
+  background: transparent;
+  color: var(--star-text-strong);
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--star-surface-muted);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--star-accent);
+  }
+}
+.star-scheduler__more-title {
+  margin: 0 0 var(--star-space-2);
+  font-weight: 600;
+  color: var(--star-text-strong);
+}
+.star-scheduler__more-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-inline-size: 12rem;
+}
+
+.star-scheduler__agenda {
+  display: flex;
+  flex-direction: column;
+  gap: var(--star-space-4);
+}
+.star-scheduler__agenda-date {
+  margin: 0 0 var(--star-space-2);
+  font: var(--star-type-body);
+  font-weight: 600;
+  color: var(--star-text-strong);
+}
+.star-scheduler__agenda-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--star-space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.star-scheduler__agenda-item {
+  display: grid;
+  grid-template-columns: 8rem minmax(0, 1fr);
+  align-items: center;
+  gap: var(--star-space-3);
+}
+.star-scheduler__agenda-time {
+  color: var(--star-text-muted);
+}
+.star-scheduler__empty {
+  margin: 0;
+  color: var(--star-text-muted);
+}
+
+.star-scheduler-editor__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--star-space-3);
+}
