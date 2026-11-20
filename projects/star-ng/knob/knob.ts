@@ -524,6 +524,8 @@ export class StarColorPicker implements FormValueControl<string> {
       const result = await new EyeDropper().open();
       const hex = result?.sRGBHex?.toLowerCase() ?? '';
       if (/^#[0-9a-f]{6}$/.test(hex)) this.commit(hex);
+      // A pick is a user interaction, like a blur: Signal Forms mark the field touched.
+      this.touch.emit();
     } catch {
       // The user canceled the eye dropper: keep the value.
     }

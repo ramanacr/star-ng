@@ -246,11 +246,16 @@ describe('Knob, color picker', () => {
   describe('eye dropper', () => {
     @Component({
       imports: [StarColorPicker],
-      template: `<star-color-picker [(value)]="color" (changed)="changes.push($event)" />`,
+      template: `<star-color-picker
+        [(value)]="color"
+        (changed)="changes.push($event)"
+        (touch)="touched = true"
+      />`,
     })
     class DropperHost {
       readonly color = signal('#4f46e5');
       readonly changes: string[] = [];
+      touched = false;
     }
 
     const win = window as unknown as { EyeDropper?: unknown };
@@ -282,6 +287,7 @@ describe('Knob, color picker', () => {
       expect(open).toHaveBeenCalledTimes(1);
       expect(fixture.componentInstance.color()).toBe('#16a34a');
       expect(fixture.componentInstance.changes).toEqual(['#16a34a']);
+      expect(fixture.componentInstance.touched).toBe(true);
     });
 
     it('keeps the value when the user cancels the eye dropper', async () => {
