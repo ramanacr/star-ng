@@ -208,11 +208,12 @@ export class StarStyled implements AfterViewChecked {
   /** A portal root that goes away: it is no longer tracked or watched. @internal */
   detach(element: Element): void {
     this.portals.delete(element);
+    // The records of this task go through the handler first, or the parts in them are lost; a
+    // record that added a part of this portal is then undone by `forget`.
+    if (this.observer) this.handle(this.observer.takeRecords());
     this.forget(element);
     if (this.observer) {
       // A MutationObserver cannot stop watching one node: watch the host and the portals again.
-      // The records of this task go through the handler first, or the parts in them are lost.
-      this.handle(this.observer.takeRecords());
       this.observer.disconnect();
       this.watch(this.host);
       for (const portal of this.portals) this.watch(portal);
