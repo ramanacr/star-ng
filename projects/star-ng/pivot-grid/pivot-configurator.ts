@@ -94,7 +94,7 @@ const AGGREGATES: readonly StarPivotAggregate[] = [
                   >
                     @for (aggregate of aggregates; track aggregate) {
                       <option
-                        starPart="option"
+                        starPart="aggregateOption"
                         [value]="aggregate"
                         [selected]="aggregateOf(name) === aggregate"
                       >
@@ -121,7 +121,7 @@ const AGGREGATES: readonly StarPivotAggregate[] = [
                   [attr.aria-label]="text.pivotMoveField(labelOf(name))"
                   [attr.data-pivot-move]="name"
                 >
-                  <i starPart="icon" class="ph-bold ph-dots-three" aria-hidden="true"></i>
+                  <i starPart="iconButtonIcon" class="ph-bold ph-dots-three" aria-hidden="true"></i>
                 </button>
                 <star-menu
                   #menu

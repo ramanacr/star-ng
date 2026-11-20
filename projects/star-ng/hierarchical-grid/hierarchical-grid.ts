@@ -468,7 +468,7 @@ type ChildState =
       @case ('loading') {
         <div starPart="status" class="star-hierarchical__status" role="status" tabindex="-1">
           <star-spinner size="1rem" />
-          <span starPart="text">{{ text.loading }}</span>
+          <span starPart="statusText">{{ text.loading }}</span>
         </div>
       }
       @case ('error') {
@@ -477,10 +477,10 @@ type ChildState =
           class="star-hierarchical__status star-hierarchical__status--error"
           role="alert"
         >
-          <i starPart="icon" class="ph-bold ph-warning-circle" aria-hidden="true"></i>
-          <span starPart="text">{{ text.hierarchicalLoadError }}</span>
+          <i starPart="statusIcon" class="ph-bold ph-warning-circle" aria-hidden="true"></i>
+          <span starPart="statusText">{{ text.hierarchicalLoadError }}</span>
           <button
-            starPart="button"
+            starPart="statusButton"
             type="button"
             class="star-btn star-btn--secondary star-btn--sm"
             (click)="retry()"

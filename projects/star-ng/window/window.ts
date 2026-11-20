@@ -155,14 +155,15 @@ export class StarWindowStack {
                action is off; after the restore the button goes, and the focus goes to the title bar. -->
           @if (minimizable() || state() === 'minimized') {
             <button
-              starPart="button"
+              starPart="restoreButton"
               type="button"
-              class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
+              class="star-window__restore-button star-btn star-btn--ghost star-btn--sm star-btn--icon"
               [attr.aria-label]="state() === 'minimized' ? text.restore : text.minimize"
               (click)="toggleMinimized()"
             >
               <i
-                starPart="icon"
+                starPart="restoreButtonIcon"
+                class="star-window__restore-button-icon"
                 [class]="state() === 'minimized' ? 'ph-bold ph-copy-simple' : 'ph-bold ph-minus'"
                 aria-hidden="true"
               ></i>
@@ -170,14 +171,15 @@ export class StarWindowStack {
           }
           @if (maximizable() || state() === 'maximized') {
             <button
-              starPart="button"
+              starPart="restoreButton"
               type="button"
-              class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
+              class="star-window__restore-button star-btn star-btn--ghost star-btn--sm star-btn--icon"
               [attr.aria-label]="state() === 'maximized' ? text.restore : text.maximize"
               (click)="toggleMaximized()"
             >
               <i
-                starPart="icon"
+                starPart="restoreButtonIcon"
+                class="star-window__restore-button-icon"
                 [class]="state() === 'maximized' ? 'ph-bold ph-copy-simple' : 'ph-bold ph-square'"
                 aria-hidden="true"
               ></i>
@@ -185,13 +187,13 @@ export class StarWindowStack {
           }
           @if (closable()) {
             <button
-              starPart="button"
+              starPart="closeButton"
               type="button"
               class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
               [attr.aria-label]="text.close"
               (click)="close()"
             >
-              <i starPart="icon" class="ph-bold ph-x" aria-hidden="true"></i>
+              <i starPart="closeIcon" class="ph-bold ph-x" aria-hidden="true"></i>
             </button>
           }
         </div>
@@ -208,7 +210,7 @@ export class StarWindowStack {
           (pointerdown)="onResizeStart($event)"
         ></span>
       }
-      <p starPart="srText" class="star-sr-only" [id]="hintId">{{ hint() }}</p>
+      <p class="star-sr-only" [id]="hintId">{{ hint() }}</p>
     </dialog>
   `,
 })

@@ -167,14 +167,14 @@ function plainText(text: string): string {
     >
       @if (loading()) {
         <div starPart="loading" class="star-chat__loading">
-          <i starPart="icon" class="ph-bold ph-spinner-gap star-spin" aria-hidden="true"></i
+          <i starPart="loadingIcon" class="ph-bold ph-spinner-gap star-spin" aria-hidden="true"></i
           >{{ text.loading }}
         </div>
       }
       @for (row of rows(); track row.key) {
         @if (row.kind === 'day') {
           <div starPart="day" class="star-chat__day" role="separator" [attr.aria-label]="row.label">
-            <span starPart="text" aria-hidden="true">{{ row.label }}</span>
+            <span starPart="dayText" aria-hidden="true">{{ row.label }}</span>
           </div>
         } @else {
           @let message = row.message;
@@ -190,7 +190,7 @@ function plainText(text: string): string {
               <span starPart="avatar" class="star-chat__avatar" aria-hidden="true">
                 @if (row.first) {
                   @if (message.author.avatar) {
-                    <img starPart="image" [src]="message.author.avatar" alt="" />
+                    <img starPart="avatarImage" [src]="message.author.avatar" alt="" />
                   } @else {
                     {{ initialsOf(message.author.name) }}
                   }
@@ -204,7 +204,7 @@ function plainText(text: string): string {
                 }}</span>
               }
               <div starPart="bubble" class="star-chat__bubble">
-                <span starPart="srText" class="star-sr-only">{{
+                <span class="star-sr-only">{{
                   row.time
                     ? text.messageFrom(message.author.name, row.time)
                     : message.author.name + ':'
@@ -223,7 +223,7 @@ function plainText(text: string): string {
               @if (row.last || message.status) {
                 <div starPart="meta" class="star-chat__meta">
                   @if (row.last && row.time) {
-                    <time starPart="time" aria-hidden="true" [attr.datetime]="row.iso">{{
+                    <time starPart="metaTime" aria-hidden="true" [attr.datetime]="row.iso">{{
                       row.time
                     }}</time>
                   }
@@ -258,7 +258,9 @@ function plainText(text: string): string {
     @if (typingText(); as typingLine) {
       <div starPart="typing" class="star-chat__typing">
         <span starPart="dots" class="star-chat__dots" aria-hidden="true"
-          ><span starPart="text"></span><span starPart="text"></span><span starPart="text"></span
+          ><span starPart="dotsText" class="star-chat__dots-text"></span
+          ><span starPart="dotsText" class="star-chat__dots-text"></span
+          ><span starPart="dotsText" class="star-chat__dots-text"></span
         ></span>
         {{ typingLine }}
       </div>
@@ -287,10 +289,10 @@ function plainText(text: string): string {
         [attr.aria-label]="text.send"
         [disabled]="disabled() || !draft().trim()"
       >
-        <i starPart="icon" class="ph-bold ph-paper-plane-right" aria-hidden="true"></i>
+        <i starPart="sendIcon" class="ph-bold ph-paper-plane-right" aria-hidden="true"></i>
       </button>
     </form>
-    <p starPart="live" class="star-sr-only star-chat__live" aria-live="polite">
+    <p class="star-sr-only star-chat__live" aria-live="polite">
       {{ announcement() }}
     </p>
   `,

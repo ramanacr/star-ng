@@ -186,25 +186,25 @@ const FALLBACK_SIZE = { width: 300, height: 150 };
       @if (allowTyped()) {
         <div starPart="modes" class="star-signature__modes">
           <button
-            starPart="button"
+            starPart="drawSignatureButton"
             type="button"
             class="star-btn star-btn--ghost star-btn--sm"
             [attr.aria-pressed]="mode() === 'draw'"
             [disabled]="!interactive()"
             (click)="setMode('draw')"
           >
-            <i starPart="icon" class="ph-bold ph-pen-nib" aria-hidden="true"></i
+            <i starPart="drawSignatureIcon" class="ph-bold ph-pen-nib" aria-hidden="true"></i
             >{{ text.drawSignature }}
           </button>
           <button
-            starPart="button"
+            starPart="typeSignatureButton"
             type="button"
             class="star-btn star-btn--ghost star-btn--sm"
             [attr.aria-pressed]="mode() === 'type'"
             [disabled]="!interactive()"
             (click)="setMode('type')"
           >
-            <i starPart="icon" class="ph-bold ph-keyboard" aria-hidden="true"></i
+            <i starPart="typeSignatureIcon" class="ph-bold ph-keyboard" aria-hidden="true"></i
             >{{ text.typeSignature }}
           </button>
         </div>
@@ -229,35 +229,39 @@ const FALLBACK_SIZE = { width: 300, height: 150 };
       <div starPart="actions" class="star-signature__actions">
         @if (mode() === 'draw') {
           <button
-            starPart="button"
+            starPart="undoButton"
             type="button"
             class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
             [attr.aria-label]="text.undo"
             [disabled]="!interactive() || !strokes().length"
             (click)="undo()"
           >
-            <i starPart="icon" class="ph-bold ph-arrow-counter-clockwise" aria-hidden="true"></i>
+            <i
+              starPart="undoIcon"
+              class="ph-bold ph-arrow-counter-clockwise"
+              aria-hidden="true"
+            ></i>
           </button>
         }
         <button
-          starPart="button"
+          starPart="clearSignatureButton"
           type="button"
           class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
           [attr.aria-label]="text.clearSignature"
           [disabled]="!interactive() || isEmpty()"
           (click)="clear()"
         >
-          <i starPart="icon" class="ph-bold ph-eraser" aria-hidden="true"></i>
+          <i starPart="clearSignatureIcon" class="ph-bold ph-eraser" aria-hidden="true"></i>
         </button>
       </div>
     </div>
-    <p starPart="srText" class="star-sr-only" [id]="hintId">
+    <p class="star-sr-only" [id]="hintId">
       {{ text.signatureHint }}
       @if (allowTyped()) {
         {{ text.signatureTypedHint }}
       }
     </p>
-    <p starPart="srText" class="star-sr-only" aria-live="polite">{{ status() }}</p>
+    <p class="star-sr-only" aria-live="polite">{{ status() }}</p>
   `,
 })
 export class StarSignaturePad implements FormValueControl<string> {

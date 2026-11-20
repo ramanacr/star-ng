@@ -58,7 +58,7 @@ import { injectStarFieldLink } from '@star-ng/ui/field';
           [disabled]="!canStep(-1)"
           (click)="stepBy(-1)"
         >
-          <i starPart="icon" class="ph-bold ph-minus" aria-hidden="true"></i>
+          <i starPart="minusIcon" class="ph-bold ph-minus" aria-hidden="true"></i>
         </button>
       }
       <input
@@ -98,7 +98,7 @@ import { injectStarFieldLink } from '@star-ng/ui/field';
           [disabled]="!canStep(1)"
           (click)="stepBy(1)"
         >
-          <i starPart="icon" class="ph-bold ph-plus" aria-hidden="true"></i>
+          <i starPart="plusIcon" class="ph-bold ph-plus" aria-hidden="true"></i>
         </button>
       }
     </div>

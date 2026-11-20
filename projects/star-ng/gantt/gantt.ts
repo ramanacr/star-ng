@@ -214,7 +214,7 @@ const key = (id: StarGanttId | null | undefined) =>
                       (click)="toggle(row, $event)"
                     >
                       <i
-                        starPart="icon"
+                        starPart="toggleIcon"
                         class="ph-bold star-icon-mirror"
                         [class.ph-caret-down]="row.expanded"
                         [class.ph-caret-right]="!row.expanded"
@@ -390,8 +390,8 @@ const key = (id: StarGanttId | null | undefined) =>
         </div>
       </div>
     </div>
-    <p starPart="srText" class="star-sr-only" [id]="hintId">{{ text.ganttMoveHint }}</p>
-    <p starPart="srText" class="star-sr-only" aria-live="polite">{{ announcement() }}</p>
+    <p class="star-sr-only" [id]="hintId">{{ text.ganttMoveHint }}</p>
+    <p class="star-sr-only" aria-live="polite">{{ announcement() }}</p>
   `,
 })
 export class StarGantt {

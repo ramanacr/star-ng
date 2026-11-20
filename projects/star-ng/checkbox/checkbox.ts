@@ -55,9 +55,9 @@ import { injectStarFieldLink, starJoinIds } from '@star-ng/ui/field';
       />
       <span starPart="box" class="star-check__box" aria-hidden="true">
         @if (indeterminate()) {
-          <i starPart="icon" class="ph-bold ph-minus"></i>
+          <i starPart="boxIcon" class="ph-bold ph-minus"></i>
         } @else if (checked()) {
-          <i starPart="icon" class="ph-bold ph-check"></i>
+          <i starPart="boxIcon" class="ph-bold ph-check"></i>
         }
       </span>
       <span starPart="text" class="star-check__text"><ng-content /></span>

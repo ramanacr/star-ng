@@ -170,14 +170,14 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
       <figcaption starPart="head" class="star-chart__head">
         <span starPart="title" class="star-chart__title" [id]="titleId">{{ title() }}</span>
         <button
-          starPart="button"
+          starPart="headButton"
           type="button"
           class="star-btn star-btn--ghost star-btn--sm"
           [attr.aria-pressed]="showTable()"
           (click)="showTable.set(!showTable())"
         >
           <i
-            starPart="icon"
+            starPart="headIcon"
             class="ph-bold"
             [class.ph-table]="!showTable()"
             [class.ph-chart-bar]="showTable()"
@@ -186,7 +186,7 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
           {{ showTable() ? text.chartView : text.tableView }}
         </button>
       </figcaption>
-      <p starPart="srText" class="star-sr-only" [id]="descriptionId">{{ description() }}</p>
+      <p class="star-sr-only" [id]="descriptionId">{{ description() }}</p>
 
       <div starPart="body" class="star-chart__body">
         @if (legend().length > 1 && !showTable()) {
@@ -198,7 +198,7 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
               [attr.aria-label]="text.chartLegend"
             >
               @for (item of legend(); track item.slot) {
-                <li starPart="item">
+                <li starPart="legendEntry">
                   <button
                     starPart="legendItem"
                     type="button"
@@ -234,7 +234,7 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
           } @else {
             <ul starPart="legend" class="star-chart__legend" aria-hidden="true">
               @for (item of legend(); track item.label) {
-                <li starPart="item">
+                <li starPart="legendEntry">
                   @if (item.shape) {
                     <svg
                       starPart="swatchShape"
@@ -318,7 +318,7 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                           [style.background]="slice.color"
                         ></span>
                         {{ slice.label }}:
-                        <strong starPart="text">{{ format(slice.value) }}</strong> ({{
+                        <strong starPart="tipText">{{ format(slice.value) }}</strong> ({{
                           slice.percent
                         }}%)
                       }
@@ -424,7 +424,8 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                             class="star-chart__swatch"
                             [style.background]="color(s.slot)"
                           ></span>
-                          {{ s.label }}: <strong starPart="text">{{ cell(s, hover()!) }}</strong>
+                          {{ s.label }}:
+                          <strong starPart="tipRowText">{{ cell(s, hover()!) }}</strong>
                         </span>
                       }
                     }
@@ -506,7 +507,7 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                             [style.background]="color(0)"
                           ></span>
                           {{ valueName() }}:
-                          <strong starPart="text">{{ format(sector.value) }}</strong>
+                          <strong starPart="tipRowText">{{ format(sector.value) }}</strong>
                         </span>
                       }
                     </div>
@@ -629,10 +630,16 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                               [style.--mark]="point.color"
                             />
                           </svg>
-                          {{ xName() }}: <strong starPart="text">{{ precise(point.x) }}</strong>
+                          {{ xName() }}:
+                          <strong starPart="tipRowText" class="star-chart__tip-row-text">{{
+                            precise(point.x)
+                          }}</strong>
                         </span>
                         <span starPart="tipRow" class="star-chart__tip-row star-chart__tip-indent">
-                          {{ yName() }}: <strong starPart="text">{{ precise(point.y) }}</strong>
+                          {{ yName() }}:
+                          <strong starPart="tipRowText" class="star-chart__tip-row-text">{{
+                            precise(point.y)
+                          }}</strong>
                         </span>
                       }
                     </div>
@@ -811,7 +818,10 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                             class="star-chart__swatch"
                             [style.background]="color(s.slot)"
                           ></span>
-                          {{ s.label }}: <strong starPart="text">{{ cell(s, hover()!) }}</strong>
+                          {{ s.label }}:
+                          <strong starPart="tipRowText" class="star-chart__tip-row-text">{{
+                            cell(s, hover()!)
+                          }}</strong>
                           @if (type() === 'stacked-bar' && percent()) {
                             ({{ share(stack()[hover()!]?.segments?.[si]) }}%)
                           }
@@ -820,7 +830,7 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                       @if (type() === 'stacked-bar') {
                         <span starPart="tipRow" class="star-chart__tip-row star-chart__tip-total">
                           {{ text.chartTotal }}:
-                          <strong starPart="text">{{
+                          <strong starPart="tipRowText" class="star-chart__tip-row-text">{{
                             format(stack()[hover()!]?.total ?? 0)
                           }}</strong>
                         </span>
@@ -861,75 +871,87 @@ function extentOf(values: readonly number[]): { min: number; max: number } {
                 ></span>
               }
             }
-            <span starPart="srText" class="star-sr-only" [id]="pointsHintId">{{
-              text.chartPointsHint
-            }}</span>
+            <span class="star-sr-only" [id]="pointsHintId">{{ text.chartPointsHint }}</span>
           </div>
         </div>
       </div>
 
       <table starPart="table" class="star-chart__table" [class.star-sr-only]="!showTable()">
-        <caption starPart="srText" class="star-sr-only">
+        <caption class="star-sr-only">
           {{
             title()
           }}
         </caption>
-        <thead starPart="thead">
-          <tr starPart="row">
-            <th starPart="headerCell" scope="col">
+        <thead starPart="tableThead">
+          <tr starPart="tableHeadRow">
+            <th starPart="tableHeaderCell" class="star-chart__table-header-cell" scope="col">
               {{ firstHeader() }}
             </th>
             @if (round()) {
-              <th starPart="headerCell" scope="col">{{ series()[0]?.label ?? text.chartValue }}</th>
-              <th starPart="headerCell" scope="col">{{ text.chartShare }}</th>
+              <th starPart="tableHeaderCell" class="star-chart__table-header-cell" scope="col">
+                {{ series()[0]?.label ?? text.chartValue }}
+              </th>
+              <th starPart="chartShareHeaderCell" scope="col">{{ text.chartShare }}</th>
             } @else if (kind() === 'polar') {
-              <th starPart="headerCell" scope="col">{{ valueName() }}</th>
+              <th starPart="tableHeaderCell" class="star-chart__table-header-cell" scope="col">
+                {{ valueName() }}
+              </th>
             } @else if (kind() === 'scatter') {
-              <th starPart="headerCell" scope="col">{{ xName() }}</th>
-              <th starPart="headerCell" scope="col">{{ yName() }}</th>
+              <th starPart="tableHeaderCell" class="star-chart__table-header-cell" scope="col">
+                {{ xName() }}
+              </th>
+              <th starPart="tableHeaderCell" class="star-chart__table-header-cell" scope="col">
+                {{ yName() }}
+              </th>
             } @else {
               @for (s of series(); track s.label) {
-                <th starPart="headerCell" scope="col">{{ s.label }}</th>
+                <th starPart="tableHeaderCell" class="star-chart__table-header-cell" scope="col">
+                  {{ s.label }}
+                </th>
               }
               @if (type() === 'stacked-bar') {
-                <th starPart="headerCell" scope="col">{{ text.chartTotal }}</th>
+                <th starPart="chartTotalHeaderCell" scope="col">{{ text.chartTotal }}</th>
               }
             }
           </tr>
         </thead>
-        <tbody starPart="tbody">
+        <tbody starPart="tableTbody">
           @if (round()) {
             @for (slice of slices(); track slice.label) {
-              <tr starPart="row">
-                <th starPart="headerCell" scope="row">{{ slice.label }}</th>
-                <td starPart="cell">{{ format(slice.value) }}</td>
-                <td starPart="cell">{{ slice.percent }}%</td>
+              <tr starPart="tableBodyRow">
+                <th starPart="tableBodyHeaderCell" scope="row">{{ slice.label }}</th>
+                <td starPart="tableCell" class="star-chart__table-cell">
+                  {{ format(slice.value) }}
+                </td>
+                <td starPart="tableCell" class="star-chart__table-cell">{{ slice.percent }}%</td>
               </tr>
             }
           } @else if (kind() === 'polar') {
             @for (label of labels(); track $index; let i = $index) {
-              <tr starPart="row">
-                <th starPart="headerCell" scope="row">{{ label }}</th>
-                <td starPart="cell">{{ cell(numeric()[0], i) }}</td>
+              <tr starPart="tableBodyRow">
+                <th starPart="tableBodyHeaderCell" scope="row">{{ label }}</th>
+                <td starPart="tableCell">{{ cell(numeric()[0], i) }}</td>
               </tr>
             }
           } @else if (kind() === 'scatter') {
             @for (row of scatterRows(); track $index) {
-              <tr starPart="row">
-                <th starPart="headerCell" scope="row">{{ row.series }}</th>
-                <td starPart="cell">{{ precise(row.x) }}</td>
-                <td starPart="cell">{{ precise(row.y) }}</td>
+              <tr starPart="tableBodyRow">
+                <th starPart="tableBodyHeaderCell" scope="row">{{ row.series }}</th>
+                <td starPart="tableCell" class="star-chart__table-cell">{{ precise(row.x) }}</td>
+                <td starPart="tableCell" class="star-chart__table-cell">{{ precise(row.y) }}</td>
               </tr>
             }
           } @else {
             @for (label of labels(); track $index; let i = $index) {
-              <tr starPart="row">
-                <th starPart="headerCell" scope="row">{{ label }}</th>
+              <tr starPart="tableBodyRow">
+                <th starPart="tableBodyHeaderCell" scope="row">{{ label }}</th>
                 @for (s of numeric(); track s.label) {
-                  <td starPart="cell">{{ cell(s, i) }}</td>
+                  <td starPart="tableCell" class="star-chart__table-cell">{{ cell(s, i) }}</td>
                 }
                 @if (type() === 'stacked-bar') {
-                  <td starPart="cell">{{ format(tableStack()[i]?.total ?? 0) }}</td>
+                  <td starPart="tableCell" class="star-chart__table-cell">
+                    {{ format(tableStack()[i]?.total ?? 0) }}
+                  </td>
                 }
               </tr>
             }

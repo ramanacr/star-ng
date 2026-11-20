@@ -77,7 +77,7 @@ export class StarCarouselItem<T = unknown> {
           (click)="playing.set(!playing())"
         >
           <i
-            starPart="icon"
+            starPart="iconBtnIcon"
             class="ph-bold"
             [class.ph-pause]="playing()"
             [class.ph-play]="!playing()"
@@ -93,7 +93,11 @@ export class StarCarouselItem<T = unknown> {
         [disabled]="page() === 0"
         (click)="goTo(page() - 1)"
       >
-        <i starPart="icon" class="ph-bold ph-caret-left star-icon-mirror" aria-hidden="true"></i>
+        <i
+          starPart="caretLeftIcon"
+          class="ph-bold ph-caret-left star-icon-mirror"
+          aria-hidden="true"
+        ></i>
       </button>
       <button
         starPart="iconBtn"
@@ -103,7 +107,11 @@ export class StarCarouselItem<T = unknown> {
         [disabled]="page() >= pages() - 1"
         (click)="goTo(page() + 1)"
       >
-        <i starPart="icon" class="ph-bold ph-caret-right star-icon-mirror" aria-hidden="true"></i>
+        <i
+          starPart="caretRightIcon"
+          class="ph-bold ph-caret-right star-icon-mirror"
+          aria-hidden="true"
+        ></i>
       </button>
     </div>
     <div
@@ -247,7 +255,7 @@ export interface StarGalleryImage {
         tabindex="0"
         (keydown)="onKeydown($event)"
       >
-        <img starPart="image" [src]="image.src" [alt]="image.alt" loading="lazy" />
+        <img starPart="stageImage" [src]="image.src" [alt]="image.alt" loading="lazy" />
         @if (image.caption) {
           <figcaption starPart="caption" class="star-galleria__caption">
             {{ image.caption }}
@@ -260,7 +268,11 @@ export interface StarGalleryImage {
           [attr.aria-label]="text.previousImage"
           (click)="step(-1)"
         >
-          <i starPart="icon" class="ph-bold ph-caret-left star-icon-mirror" aria-hidden="true"></i>
+          <i
+            starPart="caretLeftIcon"
+            class="ph-bold ph-caret-left star-icon-mirror"
+            aria-hidden="true"
+          ></i>
         </button>
         <button
           starPart="nav"
@@ -269,7 +281,11 @@ export interface StarGalleryImage {
           [attr.aria-label]="text.nextImage"
           (click)="step(1)"
         >
-          <i starPart="icon" class="ph-bold ph-caret-right star-icon-mirror" aria-hidden="true"></i>
+          <i
+            starPart="caretRightIcon"
+            class="ph-bold ph-caret-right star-icon-mirror"
+            aria-hidden="true"
+          ></i>
         </button>
         <span starPart="count" class="star-galleria__count" aria-live="polite"
           >{{ activeIndex() + 1 }} / {{ images().length }}</span
@@ -286,7 +302,7 @@ export interface StarGalleryImage {
           [attr.aria-label]="text.showImage(image.alt)"
           (click)="activeIndex.set(i)"
         >
-          <img starPart="image" [src]="image.thumbnail ?? image.src" alt="" loading="lazy" />
+          <img starPart="thumbImage" [src]="image.thumbnail ?? image.src" alt="" loading="lazy" />
         </button>
       }
     </div>
@@ -338,9 +354,15 @@ export class StarGalleria {
         [attr.aria-label]="text.previewImage(alt())"
         (click)="open.set(true)"
       >
-        <img starPart="image" [src]="src()" [alt]="alt()" [attr.width]="width()" loading="lazy" />
+        <img
+          starPart="triggerImage"
+          [src]="src()"
+          [alt]="alt()"
+          [attr.width]="width()"
+          loading="lazy"
+        />
         <span starPart="hint" class="star-image__hint" aria-hidden="true"
-          ><i starPart="icon" class="ph-bold ph-magnifying-glass-plus"></i
+          ><i starPart="hintIcon" class="ph-bold ph-magnifying-glass-plus"></i
         ></span>
       </button>
       <star-dialog [(visible)]="open" [header]="alt()" size="xl" dismissableMask>
@@ -353,9 +375,13 @@ export class StarGalleria {
             [disabled]="zoom() <= 0.5"
             (click)="zoom.set(zoom() - 0.25)"
           >
-            <i starPart="icon" class="ph-bold ph-magnifying-glass-minus" aria-hidden="true"></i>
+            <i
+              starPart="magnifyingGlassMinusIcon"
+              class="ph-bold ph-magnifying-glass-minus"
+              aria-hidden="true"
+            ></i>
           </button>
-          <span starPart="text" aria-live="polite">{{ zoom() * 100 }}%</span>
+          <span starPart="zoomBarText" aria-live="polite">{{ zoom() * 100 }}%</span>
           <button
             starPart="iconBtn"
             type="button"
@@ -364,7 +390,11 @@ export class StarGalleria {
             [disabled]="zoom() >= 3"
             (click)="zoom.set(zoom() + 0.25)"
           >
-            <i starPart="icon" class="ph-bold ph-magnifying-glass-plus" aria-hidden="true"></i>
+            <i
+              starPart="magnifyingGlassPlusIcon"
+              class="ph-bold ph-magnifying-glass-plus"
+              aria-hidden="true"
+            ></i>
           </button>
         </div>
         <!-- Focusable, so the arrow keys scroll a zoomed image. -->
@@ -376,7 +406,7 @@ export class StarGalleria {
           [attr.aria-label]="alt()"
         >
           <img
-            starPart="image"
+            starPart="stageImage"
             [src]="src()"
             [alt]="alt()"
             [style.transform]="'scale(' + zoom() + ')'"

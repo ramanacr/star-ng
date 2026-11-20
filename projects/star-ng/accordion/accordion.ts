@@ -50,7 +50,7 @@ export class StarAccordionContent {
         (keydown)="accordion.onHeaderKeydown($event)"
       >
         @if (icon(); as icon) {
-          <i starPart="icon" [class]="icon" aria-hidden="true"></i>
+          <i starPart="headerIcon" [class]="icon" aria-hidden="true"></i>
         }
         <span starPart="title" class="star-accordion__title">{{ header() }}</span>
         <ng-content select="[starAccordionHeader]" />

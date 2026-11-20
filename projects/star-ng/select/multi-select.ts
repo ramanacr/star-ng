@@ -80,7 +80,7 @@ import { starSelectionChanging, StarSelectionChangingEvent } from './selection-c
               @if (chipSlot(); as custom) {
                 <!-- The slot owns its buttons: a click on one must not toggle the panel. -->
                 <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
-                <span starPart="text" (click)="onChipSlotClick($event)">
+                <span starPart="chipsText" (click)="onChipSlotClick($event)">
                   <ng-container *ngTemplateOutlet="custom; context: chipContext(option)" />
                 </span>
               } @else {
@@ -95,7 +95,11 @@ import { starSelectionChanging, StarSelectionChangingEvent } from './selection-c
                       [attr.aria-label]="text.removeItem(labelOf(option))"
                       (click)="$event.stopPropagation(); remove(option)"
                     >
-                      <i starPart="icon" class="ph-bold ph-x" aria-hidden="true"></i>
+                      <i
+                        starPart="xIcon"
+                        class="star-listbox__x-icon ph-bold ph-x"
+                        aria-hidden="true"
+                      ></i>
                     </button>
                   }
                 </span>
@@ -113,7 +117,11 @@ import { starSelectionChanging, StarSelectionChangingEvent } from './selection-c
                     [attr.aria-label]="text.removeItem(custom + '')"
                     (click)="$event.stopPropagation(); removeValue(custom)"
                   >
-                    <i starPart="icon" class="ph-bold ph-x" aria-hidden="true"></i>
+                    <i
+                      starPart="xIcon"
+                      class="star-listbox__x-icon ph-bold ph-x"
+                      aria-hidden="true"
+                    ></i>
                   </button>
                 }
               </span>
@@ -132,11 +140,11 @@ import { starSelectionChanging, StarSelectionChangingEvent } from './selection-c
           (click)="clear()"
         >
           @if (iconSlot('clear'); as icon) {
-            <span starPart="text" aria-hidden="true"
+            <span starPart="iconBtnIcon" aria-hidden="true"
               ><ng-container *ngTemplateOutlet="icon"
             /></span>
           } @else {
-            <i starPart="icon" class="ph-bold ph-x" aria-hidden="true"></i>
+            <i starPart="iconBtnIcon" class="ph-bold ph-x" aria-hidden="true"></i>
           }
         </button>
       }
@@ -203,20 +211,20 @@ import { starSelectionChanging, StarSelectionChangingEvent } from './selection-c
               >
                 <span starPart="box" class="star-check__box" aria-hidden="true">
                   @if (allState() === 'mixed') {
-                    <i starPart="icon" class="ph-bold ph-minus"></i>
+                    <i starPart="minusIcon" class="ph-bold ph-minus"></i>
                   } @else if (allState() === true) {
-                    <i starPart="icon" class="ph-bold ph-check"></i>
+                    <i starPart="checkIcon" class="star-listbox__check-icon ph-bold ph-check"></i>
                   }
                 </span>
               </button>
             }
             @if (filter()) {
               @if (iconSlot('filter'); as icon) {
-                <span starPart="text" aria-hidden="true"
+                <span starPart="filterIcon" aria-hidden="true"
                   ><ng-container *ngTemplateOutlet="icon"
                 /></span>
               } @else {
-                <i starPart="icon" class="ph-bold ph-magnifying-glass" aria-hidden="true"></i>
+                <i starPart="filterIcon" class="ph-bold ph-magnifying-glass" aria-hidden="true"></i>
               }
               <input
                 starPart="input"
@@ -302,7 +310,7 @@ import { starSelectionChanging, StarSelectionChangingEvent } from './selection-c
                     @if (iconSlot('check'); as icon) {
                       <ng-container *ngTemplateOutlet="icon" />
                     } @else {
-                      <i starPart="icon" class="ph-bold ph-check"></i>
+                      <i starPart="checkIcon" class="star-listbox__check-icon ph-bold ph-check"></i>
                     }
                   }
                 </span>
@@ -313,7 +321,7 @@ import { starSelectionChanging, StarSelectionChangingEvent } from './selection-c
                       class="star-skeleton star-listbox__skeleton"
                       aria-hidden="true"
                     ></span>
-                    <span starPart="srText" class="star-sr-only">{{ text.loading }}</span>
+                    <span class="star-sr-only">{{ text.loading }}</span>
                   } @else if (optionTemplate(); as custom) {
                     <ng-container
                       *ngTemplateOutlet="custom.template; context: optionContext(option, i)"
@@ -356,7 +364,7 @@ import { starSelectionChanging, StarSelectionChangingEvent } from './selection-c
               (click)="addCustom(custom)"
               (mousemove)="onOptionHover(visibleOptions().length)"
             >
-              <i starPart="icon" class="ph-bold ph-plus" aria-hidden="true"></i>
+              <i starPart="optionIcon" class="ph-bold ph-plus" aria-hidden="true"></i>
               <span starPart="label" class="star-listbox__label">{{
                 text.addCustomValue(custom)
               }}</span>

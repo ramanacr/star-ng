@@ -55,7 +55,7 @@ export interface StarPageEvent {
           (click)="goTo(0)"
         >
           <i
-            starPart="icon"
+            starPart="caretDoubleLeftIcon"
             class="ph-bold ph-caret-double-left star-icon-mirror"
             aria-hidden="true"
           ></i>
@@ -69,7 +69,11 @@ export interface StarPageEvent {
         [attr.aria-label]="text.previousPage"
         (click)="goTo(page() - 1)"
       >
-        <i starPart="icon" class="ph-bold ph-caret-left star-icon-mirror" aria-hidden="true"></i>
+        <i
+          starPart="caretLeftIcon"
+          class="ph-bold ph-caret-left star-icon-mirror"
+          aria-hidden="true"
+        ></i>
       </button>
       @for (link of links(); track link) {
         <button
@@ -92,7 +96,11 @@ export interface StarPageEvent {
         [attr.aria-label]="text.nextPage"
         (click)="goTo(page() + 1)"
       >
-        <i starPart="icon" class="ph-bold ph-caret-right star-icon-mirror" aria-hidden="true"></i>
+        <i
+          starPart="caretRightIcon"
+          class="ph-bold ph-caret-right star-icon-mirror"
+          aria-hidden="true"
+        ></i>
       </button>
       @if (showFirstLast()) {
         <button
@@ -104,7 +112,7 @@ export interface StarPageEvent {
           (click)="goTo(pageCount() - 1)"
         >
           <i
-            starPart="icon"
+            starPart="caretDoubleRightIcon"
             class="ph-bold ph-caret-double-right star-icon-mirror"
             aria-hidden="true"
           ></i>
@@ -113,7 +121,7 @@ export interface StarPageEvent {
     </nav>
     @if (rowsPerPageOptions().length) {
       <span starPart="rows" class="star-paginator__rows">
-        <span starPart="text" [id]="rowsLabelId">{{ text.rowsPerPage }}</span>
+        <span starPart="rowsText" [id]="rowsLabelId">{{ text.rowsPerPage }}</span>
         <star-select
           class="star-paginator__select"
           size="sm"

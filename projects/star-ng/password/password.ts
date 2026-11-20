@@ -80,7 +80,7 @@ export function starPasswordRules(text: StarUiText, minLength = 12): readonly St
         (click)="masked.set(!masked())"
       >
         <i
-          starPart="icon"
+          starPart="iconBtnIcon"
           class="ph-bold"
           [class.ph-eye]="masked()"
           [class.ph-eye-slash]="!masked()"
@@ -106,18 +106,16 @@ export function starPasswordRules(text: StarUiText, minLength = 12): readonly St
         <ul starPart="rules" class="star-password__rules">
           @for (rule of activeRules(); track $index) {
             @let ok = rule.test(value());
-            <li starPart="item" [class.star-password__rule--ok]="ok">
+            <li starPart="rulesItem" [class.star-password__rule--ok]="ok">
               <i
-                starPart="icon"
+                starPart="rulesIcon"
                 class="ph-bold"
                 [class.ph-check-circle]="ok"
                 [class.ph-circle]="!ok"
                 aria-hidden="true"
               ></i>
               {{ rule.label
-              }}<span starPart="srText" class="star-sr-only">{{
-                ': ' + (ok ? text.ruleMet : text.ruleNotMet)
-              }}</span>
+              }}<span class="star-sr-only">{{ ': ' + (ok ? text.ruleMet : text.ruleNotMet) }}</span>
             </li>
           }
         </ul>

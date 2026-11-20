@@ -157,7 +157,7 @@ export class StarTimelineContent {
         >
           <span starPart="marker" class="star-timeline__marker" aria-hidden="true">
             @if (event.icon) {
-              <i starPart="icon" [class]="event.icon"></i>
+              <i starPart="markerIcon" [class]="event.icon"></i>
             }
           </span>
           <div starPart="body" class="star-timeline__body">
@@ -233,7 +233,7 @@ export class StarTimeline {
         [attr.aria-label]="text.removeItem(label())"
         (click)="removed.emit()"
       >
-        <i starPart="icon" class="ph-bold ph-x" aria-hidden="true"></i>
+        <i starPart="removeIcon" class="ph-bold ph-x" aria-hidden="true"></i>
       </button>
     }
   `,

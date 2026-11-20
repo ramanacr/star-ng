@@ -46,7 +46,7 @@ export type StarSchedulerEditorResult =
     <form starPart="form" class="star-scheduler-editor__form" (submit)="save($event)">
       <star-field [label]="text.title">
         <input
-          starPart="input"
+          starPart="formInput"
           starInput
           required
           data-autofocus

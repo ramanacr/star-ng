@@ -95,7 +95,7 @@ export class StarDataViewItem<T = unknown> {
             [attr.aria-label]="option.label"
             (click)="layout.set(option.id)"
           >
-            <i starPart="icon" [class]="option.icon" aria-hidden="true"></i>
+            <i starPart="itemIcon" [class]="option.icon" aria-hidden="true"></i>
           </button>
         }
       </div>
@@ -118,7 +118,7 @@ export class StarDataViewItem<T = unknown> {
         </li>
       } @empty {
         <li starPart="empty" class="star-table__empty">
-          <i starPart="icon" class="ph-bold ph-tray" aria-hidden="true"></i>
+          <i starPart="emptyIcon" class="ph-bold ph-tray" aria-hidden="true"></i>
           @if (emptySlot(); as custom) {
             <ng-container *ngTemplateOutlet="custom; context: emptyContext" />
           } @else {
@@ -201,7 +201,7 @@ export class StarDataView<T = unknown> {
           [disabled]="selected() < 0 || !canMove(action.id)"
           (click)="move(action.id)"
         >
-          <i starPart="icon" [class]="action.icon" aria-hidden="true"></i>
+          <i starPart="iconBtnIcon" [class]="action.icon" aria-hidden="true"></i>
         </button>
       }
     </div>
@@ -237,8 +237,8 @@ export class StarDataView<T = unknown> {
         </li>
       }
     </ul>
-    <p starPart="srText" class="star-sr-only" [id]="hintId">{{ text.orderListHint }}</p>
-    <p starPart="srText" class="star-sr-only" aria-live="polite">{{ announcement() }}</p>
+    <p class="star-sr-only" [id]="hintId">{{ text.orderListHint }}</p>
+    <p class="star-sr-only" aria-live="polite">{{ announcement() }}</p>
   `,
 })
 export class StarOrderList<T = unknown> {
@@ -393,7 +393,7 @@ export class StarOrderList<T = unknown> {
             (click)="transfer('source', picked('source'))"
           >
             <i
-              starPart="icon"
+              starPart="caretRightIcon"
               class="ph-bold ph-caret-right star-icon-mirror"
               aria-hidden="true"
             ></i>
@@ -407,7 +407,7 @@ export class StarOrderList<T = unknown> {
             (click)="transfer('source', source())"
           >
             <i
-              starPart="icon"
+              starPart="caretDoubleRightIcon"
               class="ph-bold ph-caret-double-right star-icon-mirror"
               aria-hidden="true"
             ></i>
@@ -421,7 +421,7 @@ export class StarOrderList<T = unknown> {
             (click)="transfer('target', picked('target'))"
           >
             <i
-              starPart="icon"
+              starPart="caretLeftIcon"
               class="ph-bold ph-caret-left star-icon-mirror"
               aria-hidden="true"
             ></i>
@@ -435,7 +435,7 @@ export class StarOrderList<T = unknown> {
             (click)="transfer('target', target())"
           >
             <i
-              starPart="icon"
+              starPart="caretDoubleLeftIcon"
               class="ph-bold ph-caret-double-left star-icon-mirror"
               aria-hidden="true"
             ></i>

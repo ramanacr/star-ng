@@ -6,6 +6,7 @@
 // 2. Every element of every library template has a part name (`starPart="..."`), so a new
 //    element cannot miss its hook. Left out: other controls (a tag with a dash), `ng-*` tags, line
 //    breaks, and the inner nodes of an `<svg>` without a StarNG class (icon paths, gradients).
+import { parseTemplate } from '@angular/compiler';
 import assert from 'node:assert/strict';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
@@ -111,9 +112,79 @@ function unnamedElements(template) {
     if (!selfClosing && !VOID.has(lower)) stack.push(lower);
     if (name.includes('-') || lower.startsWith('ng') || lower === 'br' || lower === 'wbr') continue;
     if (inSvg && (SVG_SKIP.has(lower) || !/class="[^"]*\bstar-/.test(attrs))) continue;
+    // Visually hidden text is not a part: a class could show it or hide it from screen readers.
+    if (/class="[^"]*\bstar-sr-only\b/.test(attrs)) continue;
     if (!/\bstarPart=/.test(attrs)) missing.push(`<${name}${attrs.slice(0, 60)}`);
   }
   return missing;
+}
+
+/**
+ * The parts of a template: name, the StarNG classes and the branch choices on the way to the
+ * element (`[block, branch]` of each `@if`, `@switch` and `@for`/`@empty` around it).
+ */
+function partsOf(template) {
+  const parts = [];
+  let blocks = 0;
+  const visit = (nodes, path) => {
+    for (const node of nodes ?? []) {
+      const kind = node.constructor.name;
+      if (kind === 'Element') {
+        const attrs = Object.fromEntries(node.attributes.map((item) => [item.name, item.value]));
+        if (attrs.starPart) {
+          const classes = (attrs.class ?? '')
+            .split(/\s+/)
+            .filter((item) => item.startsWith('star-'));
+          parts.push({ name: attrs.starPart, classes, path, tag: node.name });
+        }
+        visit(node.children, path);
+      } else if (kind === 'IfBlock' || kind === 'SwitchBlock') {
+        const id = blocks++;
+        (node.branches ?? node.groups ?? node.cases ?? []).forEach((branch, index) =>
+          visit(branch.children, [...path, [id, index]]),
+        );
+      } else if (kind === 'ForLoopBlock') {
+        const id = blocks++;
+        visit(node.children, [...path, [id, 0]]);
+        if (node.empty) visit(node.empty.children, [...path, [id, 1]]);
+      } else {
+        visit(node.children, path);
+      }
+    }
+  };
+  visit(parseTemplate(template, 'template.html', {}).nodes, []);
+  return parts;
+}
+
+/** `true` when two elements never show together (other branches of one `@if`, `@switch`, `@for`). */
+function exclusive(a, b) {
+  return a.path.some(([id, branch]) => b.path.some(([other, at]) => other === id && at !== branch));
+}
+
+/** The StarNG class that a part name comes from (`trigger` from `star-select__trigger`). */
+function sourceClass(part) {
+  const kebab = part.name.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
+  return part.classes.find((item) => item.endsWith(`__${kebab}`) || item === `star-${kebab}`);
+}
+
+/**
+ * Part names used twice in one template for elements that can show together, where the name does
+ * not come from a StarNG class of each element. Two cells with the class `star-table__cell` are
+ * one part; two different icons called `icon` are not.
+ */
+export function duplicateParts(template) {
+  const parts = partsOf(template);
+  const found = new Set();
+  for (const [index, a] of parts.entries()) {
+    for (const b of parts.slice(index + 1)) {
+      if (a.name !== b.name || exclusive(a, b)) continue;
+      // Both names come from a StarNG class (`star-menubar__item`, `star-mega-menu__item`): one
+      // kind of element, one part.
+      if (sourceClass(a) && sourceClass(b)) continue;
+      found.add(a.name);
+    }
+  }
+  return [...found];
 }
 
 const all = walk(lib).flatMap((file) =>
@@ -137,6 +208,38 @@ test('every element of a control template has a part name', () => {
     unnamedElements(item.template).map((element) => `${item.name}: ${element}`),
   );
   assert.deepEqual(missing, []);
+});
+
+test('part names are unique in each control template', () => {
+  const found = all.flatMap((item) =>
+    duplicateParts(item.template).map((name) => `${item.name} (${item.file}): ${name}`),
+  );
+  assert.deepEqual(found, []);
+});
+
+test('visually hidden text is not a part', () => {
+  const found = all.flatMap((item) =>
+    [...item.template.matchAll(/<[^>]*\bstarPart="([^"]+)"[^>]*class="[^"]*\bstar-sr-only\b/g)].map(
+      ([, name]) => `${item.name}: ${name}`,
+    ),
+  );
+  assert.deepEqual(found, []);
+});
+
+test('the duplicate check knows branches and shared classes', () => {
+  assert.deepEqual(
+    duplicateParts(`@if (a) { <i starPart="icon"></i> } @else { <span starPart="icon"></span> }`),
+    [],
+  );
+  assert.deepEqual(
+    duplicateParts(
+      `<td starPart="cell" class="star-t__cell"></td><td starPart="cell" class="star-t__cell"></td>`,
+    ),
+    [],
+  );
+  assert.deepEqual(duplicateParts(`<i starPart="icon"></i><b><i starPart="icon"></i></b>`), [
+    'icon',
+  ]);
 });
 
 test('the check finds an element without a part', () => {

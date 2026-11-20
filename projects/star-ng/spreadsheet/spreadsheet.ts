@@ -177,45 +177,49 @@ const BACKGROUNDS: readonly StarCellBackground[] = [
       <star-toolbar class="star-spreadsheet__toolbar" [ariaLabel]="text.spreadsheetFormatting">
         <ng-container starToolbarStart>
           <button
-            starPart="button"
+            starPart="undoButton"
             type="button"
             class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
             [attr.aria-label]="text.undo"
             [disabled]="!canUndo()"
             (click)="undo()"
           >
-            <i starPart="icon" class="ph-bold ph-arrow-counter-clockwise" aria-hidden="true"></i>
+            <i
+              starPart="undoIcon"
+              class="ph-bold ph-arrow-counter-clockwise"
+              aria-hidden="true"
+            ></i>
           </button>
           <button
-            starPart="button"
+            starPart="redoButton"
             type="button"
             class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
             [attr.aria-label]="text.redo"
             [disabled]="!canRedo()"
             (click)="redo()"
           >
-            <i starPart="icon" class="ph-bold ph-arrow-clockwise" aria-hidden="true"></i>
+            <i starPart="redoIcon" class="ph-bold ph-arrow-clockwise" aria-hidden="true"></i>
           </button>
           <span starPart="divider" class="star-spreadsheet__divider" aria-hidden="true"></span>
           <button
-            starPart="button"
+            starPart="editorBoldButton"
             type="button"
             class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
             [attr.aria-label]="text.editorBold"
             [attr.aria-pressed]="!!activeFormat().bold"
             (click)="toggleStyle('bold')"
           >
-            <i starPart="icon" class="ph-bold ph-text-b" aria-hidden="true"></i>
+            <i starPart="editorBoldIcon" class="ph-bold ph-text-b" aria-hidden="true"></i>
           </button>
           <button
-            starPart="button"
+            starPart="editorItalicButton"
             type="button"
             class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
             [attr.aria-label]="text.editorItalic"
             [attr.aria-pressed]="!!activeFormat().italic"
             (click)="toggleStyle('italic')"
           >
-            <i starPart="icon" class="ph-bold ph-text-italic" aria-hidden="true"></i>
+            <i starPart="editorItalicIcon" class="ph-bold ph-text-italic" aria-hidden="true"></i>
           </button>
           @for (align of aligns; track align.value) {
             <button
@@ -238,7 +242,8 @@ const BACKGROUNDS: readonly StarCellBackground[] = [
           >
             @for (type of formatTypes; track type) {
               <option
-                starPart="option"
+                starPart="selectOption"
+                class="star-spreadsheet__select-option"
                 [value]="type"
                 [selected]="(activeFormat().type ?? 'general') === type"
               >
@@ -247,13 +252,17 @@ const BACKGROUNDS: readonly StarCellBackground[] = [
             }
           </select>
           <button
-            starPart="button"
+            starPart="spreadsheetFewerDecimalsButton"
             type="button"
             class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
             [attr.aria-label]="text.spreadsheetFewerDecimals"
             (click)="changeDecimals(-1)"
           >
-            <i starPart="icon" class="ph-bold ph-arrow-left" aria-hidden="true"></i
+            <i
+              starPart="spreadsheetFewerDecimalsIcon"
+              class="ph-bold ph-arrow-left"
+              aria-hidden="true"
+            ></i
             ><span
               starPart="decimals"
               class="star-spreadsheet__decimals"
@@ -262,7 +271,7 @@ const BACKGROUNDS: readonly StarCellBackground[] = [
             ></span>
           </button>
           <button
-            starPart="button"
+            starPart="spreadsheetMoreDecimalsButton"
             type="button"
             class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
             [attr.aria-label]="text.spreadsheetMoreDecimals"
@@ -281,11 +290,20 @@ const BACKGROUNDS: readonly StarCellBackground[] = [
             [attr.aria-label]="text.spreadsheetBackground"
             (change)="setBackground($any($event.target).value)"
           >
-            <option starPart="option" value="" [selected]="!activeFormat().background">
+            <option
+              starPart="spreadsheetNoBackgroundOption"
+              value=""
+              [selected]="!activeFormat().background"
+            >
               {{ text.spreadsheetNoBackground }}
             </option>
             @for (bg of backgrounds; track bg) {
-              <option starPart="option" [value]="bg" [selected]="activeFormat().background === bg">
+              <option
+                starPart="selectOption"
+                class="star-spreadsheet__select-option"
+                [value]="bg"
+                [selected]="activeFormat().background === bg"
+              >
                 {{ backgroundLabel(bg) }}
               </option>
             }
@@ -432,7 +450,7 @@ const BACKGROUNDS: readonly StarCellBackground[] = [
                 </div>
                 @for (col of visibleColumns(); track col) {
                   <div
-                    starPart="section"
+                    starPart="rowSection"
                     role="gridcell"
                     [id]="cellId(row, col)"
                     [attr.aria-colindex]="col + 2"
@@ -514,7 +532,7 @@ const BACKGROUNDS: readonly StarCellBackground[] = [
         }
       </div>
     }
-    <p starPart="srText" class="star-sr-only" [id]="hintId">{{ text.spreadsheetHint }}</p>
+    <p class="star-sr-only" [id]="hintId">{{ text.spreadsheetHint }}</p>
   `,
 })
 export class StarSpreadsheet {

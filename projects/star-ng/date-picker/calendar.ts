@@ -110,7 +110,11 @@ export function isoWeek(date: Date): number {
         [attr.aria-label]="view() === 'year' ? text.previousYears : text.previousMonth"
         (click)="page(-1)"
       >
-        <i starPart="icon" class="ph-bold ph-caret-left star-icon-mirror" aria-hidden="true"></i>
+        <i
+          starPart="caretLeftIcon"
+          class="ph-bold ph-caret-left star-icon-mirror"
+          aria-hidden="true"
+        ></i>
       </button>
       <h2 starPart="title" class="star-calendar__title" [id]="titleId" aria-live="polite">
         @if (view() === 'day') {
@@ -147,7 +151,11 @@ export function isoWeek(date: Date): number {
         [attr.aria-label]="view() === 'year' ? text.nextYears : text.nextMonth"
         (click)="page(1)"
       >
-        <i starPart="icon" class="ph-bold ph-caret-right star-icon-mirror" aria-hidden="true"></i>
+        <i
+          starPart="caretRightIcon"
+          class="ph-bold ph-caret-right star-icon-mirror"
+          aria-hidden="true"
+        ></i>
       </button>
     </div>
 
@@ -176,8 +184,8 @@ export function isoWeek(date: Date): number {
                   }}
                 </caption>
               }
-              <thead starPart="thead">
-                <tr starPart="row">
+              <thead starPart="gridThead">
+                <tr starPart="weekShortRow">
                   @if (showWeek()) {
                     <th
                       starPart="week"
@@ -189,15 +197,15 @@ export function isoWeek(date: Date): number {
                     </th>
                   }
                   @for (day of weekdays(); track day.short) {
-                    <th starPart="headerCell" scope="col" [attr.abbr]="day.long">
+                    <th starPart="gridHeaderCell" scope="col" [attr.abbr]="day.long">
                       {{ day.short }}
                     </th>
                   }
                 </tr>
               </thead>
-              <tbody starPart="tbody">
+              <tbody starPart="gridTbody">
                 @for (week of grid.weeks; track $index) {
-                  <tr starPart="row">
+                  <tr starPart="gridBodyRow">
                     @if (showWeek()) {
                       <th starPart="week" scope="row" class="star-calendar__week">
                         {{ week.number }}
@@ -205,10 +213,10 @@ export function isoWeek(date: Date): number {
                     }
                     @for (cell of week.days; track cell.key) {
                       @if (cell.blank) {
-                        <td starPart="cell" role="gridcell"></td>
+                        <td starPart="gridCell" role="gridcell"></td>
                       } @else {
                         <td
-                          starPart="cell"
+                          starPart="gridCell"
                           role="gridcell"
                           [attr.aria-selected]="isSelected(cell.date)"
                           [class.star-calendar__cell--range]="inRange(cell.date)"

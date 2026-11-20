@@ -67,7 +67,11 @@ import { StarMenu, StarMenuItem, StarMenuTrigger } from '@star-ng/ui/menu';
         [tabIndex]="tabStop() === $index ? 0 : -1"
         (click)="run(action)"
       >
-        <i starPart="icon" [class]="action.icon || 'ph-bold ph-circle'" aria-hidden="true"></i>
+        <i
+          starPart="buttonIcon"
+          [class]="action.icon || 'ph-bold ph-circle'"
+          aria-hidden="true"
+        ></i>
       </button>
     }
     @if (overflowActions().length) {
@@ -82,7 +86,11 @@ import { StarMenu, StarMenuItem, StarMenuTrigger } from '@star-ng/ui/menu';
         (menuOpened)="menuOpen.set(true)"
         (menuClosed)="menuOpen.set(false)"
       >
-        <i starPart="icon" class="ph-bold ph-dots-three-vertical" aria-hidden="true"></i>
+        <i
+          starPart="dotsThreeVerticalIcon"
+          class="ph-bold ph-dots-three-vertical"
+          aria-hidden="true"
+        ></i>
       </button>
       <star-menu #menu [items]="overflowActions()" (itemClick)="actionClick.emit($event)" />
     }

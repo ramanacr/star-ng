@@ -266,7 +266,7 @@ const classColor = (index: number, count: number) =>
     <div starPart="bar" class="star-map__bar">
       <div starPart="zoom" class="star-map__zoom">
         <button
-          starPart="button"
+          starPart="zoomInButton"
           type="button"
           class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
           [attr.aria-label]="text.zoomIn"
@@ -274,10 +274,10 @@ const classColor = (index: number, count: number) =>
           [disabled]="view().zoom >= maxZoom()"
           (click)="zoomBy(1)"
         >
-          <i starPart="icon" class="ph-bold ph-plus" aria-hidden="true"></i>
+          <i starPart="zoomInIcon" class="ph-bold ph-plus" aria-hidden="true"></i>
         </button>
         <button
-          starPart="button"
+          starPart="zoomOutButton"
           type="button"
           class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
           [attr.aria-label]="text.zoomOut"
@@ -285,28 +285,28 @@ const classColor = (index: number, count: number) =>
           [disabled]="view().zoom <= minZoom()"
           (click)="zoomBy(-1)"
         >
-          <i starPart="icon" class="ph-bold ph-minus" aria-hidden="true"></i>
+          <i starPart="zoomOutIcon" class="ph-bold ph-minus" aria-hidden="true"></i>
         </button>
         <button
-          starPart="button"
+          starPart="mapResetViewButton"
           type="button"
           class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
           [attr.aria-label]="text.mapResetView"
           [attr.title]="text.mapResetView"
           (click)="resetView()"
         >
-          <i starPart="icon" class="ph-bold ph-crosshair" aria-hidden="true"></i>
+          <i starPart="mapResetViewIcon" class="ph-bold ph-crosshair" aria-hidden="true"></i>
         </button>
       </div>
       <button
-        starPart="button"
+        starPart="barButton"
         type="button"
         class="star-btn star-btn--ghost star-btn--sm"
         [attr.aria-pressed]="showTable()"
         (click)="showTable.set(!showTable())"
       >
         <i
-          starPart="icon"
+          starPart="barIcon"
           class="ph-bold"
           [class.ph-table]="!showTable()"
           [class.ph-map-trifold]="showTable()"
@@ -463,7 +463,7 @@ const classColor = (index: number, count: number) =>
         </div>
       }
     </div>
-    <p starPart="srText" class="star-sr-only" [id]="hintId">{{ text.mapHint }}</p>
+    <p class="star-sr-only" [id]="hintId">{{ text.mapHint }}</p>
 
     @for (legend of legends(); track legend.id) {
       <div starPart="legend" class="star-map__legend">
@@ -494,24 +494,24 @@ const classColor = (index: number, count: number) =>
     }
 
     <table starPart="table" class="star-map__table" [class.star-sr-only]="!showTable()">
-      <caption starPart="srText" class="star-sr-only">
+      <caption class="star-sr-only">
         {{
           ariaLabel() ?? text.map
         }}
       </caption>
-      <thead starPart="thead">
-        <tr starPart="row">
-          <th starPart="headerCell" scope="col">{{ text.mapFeature }}</th>
-          <th starPart="headerCell" scope="col">{{ text.mapLayer }}</th>
-          <th starPart="headerCell" scope="col">{{ text.chartValue }}</th>
+      <thead starPart="tableThead">
+        <tr starPart="tableHeadRow">
+          <th starPart="mapFeatureHeaderCell" scope="col">{{ text.mapFeature }}</th>
+          <th starPart="mapLayerHeaderCell" scope="col">{{ text.mapLayer }}</th>
+          <th starPart="chartValueHeaderCell" scope="col">{{ text.chartValue }}</th>
         </tr>
       </thead>
-      <tbody starPart="tbody">
+      <tbody starPart="tableTbody">
         @for (item of ordered(); track item.key) {
-          <tr starPart="row">
-            <th starPart="headerCell" scope="row">{{ item.label }}</th>
-            <td starPart="cell">{{ layerTitle(item.layer) }}</td>
-            <td starPart="cell">
+          <tr starPart="tableBodyRow">
+            <th starPart="tableBodyHeaderCell" scope="row">{{ item.label }}</th>
+            <td starPart="tableCell" class="star-map__table-cell">{{ layerTitle(item.layer) }}</td>
+            <td starPart="tableCell" class="star-map__table-cell">
               {{ item.value === null ? text.missingData : format(item.value) }}
             </td>
           </tr>

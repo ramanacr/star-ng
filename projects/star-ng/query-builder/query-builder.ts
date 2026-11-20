@@ -178,12 +178,12 @@ function groupAt(root: StarQueryGroup, path: string): StarQueryGroup | null {
     />
     @if (showMessage()) {
       <p starPart="error" class="star-query__error" [id]="errorId">
-        <i starPart="icon" class="ph-bold ph-warning-circle" aria-hidden="true"></i>
+        <i starPart="errorIcon" class="ph-bold ph-warning-circle" aria-hidden="true"></i>
         {{ text.queryIncomplete }}
       </p>
     }
-    <p starPart="srText" class="star-sr-only" [id]="hintId">{{ text.queryRuleHint }}</p>
-    <p starPart="srText" class="star-sr-only" aria-live="polite">{{ announcement() }}</p>
+    <p class="star-sr-only" [id]="hintId">{{ text.queryRuleHint }}</p>
+    <p class="star-sr-only" aria-live="polite">{{ announcement() }}</p>
 
     <ng-template #groupTpl let-group let-path="path" let-depth="depth">
       <div
@@ -403,7 +403,7 @@ function groupAt(root: StarQueryGroup, path: string): StarQueryGroup | null {
                     }
                     @default {
                       <input
-                        starPart="input"
+                        starPart="valueInput"
                         starInput
                         size="sm"
                         [disabled]="disabled()"

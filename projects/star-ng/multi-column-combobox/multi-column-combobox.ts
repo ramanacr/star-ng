@@ -151,7 +151,7 @@ const ROW_GUESS = 40;
           [attr.aria-label]="text.clear"
           (click)="clear()"
         >
-          <i starPart="icon" class="ph-bold ph-x" aria-hidden="true"></i>
+          <i starPart="iconBtnIcon" class="ph-bold ph-x" aria-hidden="true"></i>
         </button>
       }
       @if (loading()) {
@@ -263,7 +263,7 @@ const ROW_GUESS = 40;
                     class="star-skeleton star-listbox__skeleton"
                     aria-hidden="true"
                   ></span>
-                  <span starPart="srText" class="star-sr-only">{{ text.loading }}</span>
+                  <span class="star-sr-only">{{ text.loading }}</span>
                 } @else {
                   @for (column of columns(); track $index; let c = $index, last = $last) {
                     <span starPart="cell" class="star-mcc__cell">
@@ -279,7 +279,7 @@ const ROW_GUESS = 40;
                       }
                     </span>
                     @if (!last) {
-                      <span starPart="srText" class="star-sr-only">, </span>
+                      <span class="star-sr-only">, </span>
                     }
                   }
                 }

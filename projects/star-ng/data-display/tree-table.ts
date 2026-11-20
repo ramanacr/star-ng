@@ -223,7 +223,7 @@ const LOADING_KEY = '\u0000loading';
     }
     @if (filter()) {
       <div starPart="filter" class="star-panel__filter star-tree-table__search">
-        <i starPart="icon" class="ph-bold ph-magnifying-glass" aria-hidden="true"></i>
+        <i starPart="filterIcon" class="ph-bold ph-magnifying-glass" aria-hidden="true"></i>
         <input
           starPart="input"
           type="search"
@@ -250,17 +250,17 @@ const LOADING_KEY = '\u0000loading';
       (keydown)="onScrollerKeydown($event)"
     >
       <table
-        starPart="table"
+        starPart="scrollTable"
         role="treegrid"
         [attr.aria-label]="ariaLabel()"
         [attr.aria-multiselectable]="multiselectable()"
         [attr.aria-rowcount]="windowed() ? ariaRowCountValue() : null"
       >
-        <thead starPart="thead" #header>
-          <tr starPart="row" [attr.aria-rowindex]="windowed() ? 1 : null">
+        <thead starPart="scrollThead" #header>
+          <tr starPart="scrollRow" [attr.aria-rowindex]="windowed() ? 1 : null">
             @for (column of visibleColumns(); track column.field) {
               <th
-                starPart="headerCell"
+                starPart="scrollHeaderCell"
                 scope="col"
                 [style.width]="widthOf(column)"
                 [style.min-width]="resizedWidth(column)"
@@ -286,7 +286,7 @@ const LOADING_KEY = '\u0000loading';
                     (click)="sortBy(column, $event)"
                   >
                     {{ column.header }}
-                    <i starPart="icon" [class]="sortIcon(column)" aria-hidden="true"></i>
+                    <i starPart="sortIcon" [class]="sortIcon(column)" aria-hidden="true"></i>
                     @if (sortRank(column); as rank) {
                       <span starPart="sortRank" class="star-table__sort-rank">{{ rank }}</span>
                     }
@@ -304,7 +304,11 @@ const LOADING_KEY = '\u0000loading';
                       [attr.aria-label]="text.moveColumnEarlier(column.header)"
                       (click)="moveColumnBy(column, -1)"
                     >
-                      <i starPart="icon" class="ph-bold ph-caret-left" aria-hidden="true"></i>
+                      <i
+                        starPart="caretLeftIcon"
+                        class="ph-bold ph-caret-left"
+                        aria-hidden="true"
+                      ></i>
                     </button>
                     <button
                       starPart="toggle"
@@ -314,7 +318,11 @@ const LOADING_KEY = '\u0000loading';
                       [attr.aria-label]="text.moveColumnLater(column.header)"
                       (click)="moveColumnBy(column, 1)"
                     >
-                      <i starPart="icon" class="ph-bold ph-caret-right" aria-hidden="true"></i>
+                      <i
+                        starPart="caretRightIcon"
+                        class="star-table__caret-right-icon ph-bold ph-caret-right"
+                        aria-hidden="true"
+                      ></i>
                     </button>
                   </span>
                 }
@@ -344,7 +352,7 @@ const LOADING_KEY = '\u0000loading';
             >
               @for (column of visibleColumns(); track column.field) {
                 <td
-                  starPart="cell"
+                  starPart="filtersCell"
                   [class.star-table__cell--frozen]="column.frozen"
                   [style.inset-inline-start]="frozenOffset(column)"
                 >
@@ -365,11 +373,11 @@ const LOADING_KEY = '\u0000loading';
           }
         </thead>
         @if (contextMenu().length) {
-          <tbody starPart="tbody" [starContextMenu]="rowMenu" (menuClosed)="onMenuClosed()">
+          <tbody starPart="scrollTbody" [starContextMenu]="rowMenu" (menuClosed)="onMenuClosed()">
             <ng-container *ngTemplateOutlet="body" />
           </tbody>
         } @else {
-          <tbody starPart="tbody">
+          <tbody starPart="scrollTbody">
             <ng-container *ngTemplateOutlet="body" />
           </tbody>
         }
@@ -398,16 +406,17 @@ const LOADING_KEY = '\u0000loading';
       @if (window().before > 0) {
         <tr starPart="spacer" class="star-table__spacer" aria-hidden="true">
           <td
-            starPart="cell"
+            starPart="spacerCell"
+            class="star-table__spacer-cell"
             [attr.colspan]="visibleColumns().length"
             [style.height.px]="window().before"
           ></td>
         </tr>
       }
       @if (showEmpty()) {
-        <tr starPart="row" [attr.aria-rowindex]="windowed() ? headerRows() + 1 : null">
+        <tr starPart="emptyRow" [attr.aria-rowindex]="windowed() ? headerRows() + 1 : null">
           <td starPart="empty" class="star-table__empty" [attr.colspan]="visibleColumns().length">
-            <i starPart="icon" class="ph-bold ph-tray" aria-hidden="true"></i>
+            <i starPart="emptyIcon" class="ph-bold ph-tray" aria-hidden="true"></i>
             @if (emptySlot(); as custom) {
               <ng-container *ngTemplateOutlet="custom; context: emptyContext()" />
             } @else {
@@ -425,14 +434,18 @@ const LOADING_KEY = '\u0000loading';
             [attr.aria-rowindex]="entry.aria"
             [attr.aria-level]="row.level + 1"
           >
-            <td starPart="cell" [attr.colspan]="visibleColumns().length">
+            <td starPart="loadingCell" [attr.colspan]="visibleColumns().length">
               <span
                 starPart="first"
                 class="star-tree-table__first"
                 [style.--star-tree-level]="row.level"
               >
                 <span starPart="toggle" class="star-tree__toggle star-tree__toggle--leaf"></span>
-                <i starPart="icon" class="ph-bold ph-spinner-gap star-spin" aria-hidden="true"></i>
+                <i
+                  starPart="firstIcon"
+                  class="ph-bold ph-spinner-gap star-spin"
+                  aria-hidden="true"
+                ></i>
                 {{ text.loading }}
               </span>
             </td>
@@ -462,7 +475,7 @@ const LOADING_KEY = '\u0000loading';
               let ci = $index
             ) {
               <td
-                starPart="cell"
+                starPart="rowCell"
                 [class]="'star-table__cell--' + (column.align ?? 'start')"
                 [class.star-table__cell--frozen]="column.frozen"
                 [style.inset-inline-start]="frozenOffset(column)"
@@ -488,7 +501,11 @@ const LOADING_KEY = '\u0000loading';
                         "
                         (click)="userToggle(row.node)"
                       >
-                        <i starPart="icon" class="ph-bold ph-caret-right" aria-hidden="true"></i>
+                        <i
+                          starPart="caretRightIcon"
+                          class="star-table__caret-right-icon ph-bold ph-caret-right"
+                          aria-hidden="true"
+                        ></i>
                       </button>
                     } @else {
                       <span
@@ -510,9 +527,9 @@ const LOADING_KEY = '\u0000loading';
                         (click)="onCheckClick($event, row.node)"
                       >
                         @if (checkState(row.node.key) === 'mixed') {
-                          <i starPart="icon" class="ph-bold ph-minus" aria-hidden="true"></i>
+                          <i starPart="boxIcon" class="ph-bold ph-minus" aria-hidden="true"></i>
                         } @else if (checkState(row.node.key) === true) {
-                          <i starPart="icon" class="ph-bold ph-check" aria-hidden="true"></i>
+                          <i starPart="boxIcon" class="ph-bold ph-check" aria-hidden="true"></i>
                         }
                       </span>
                     }
@@ -541,7 +558,8 @@ const LOADING_KEY = '\u0000loading';
       @if (window().after > 0) {
         <tr starPart="spacer" class="star-table__spacer" aria-hidden="true">
           <td
-            starPart="cell"
+            starPart="spacerCell"
+            class="star-table__spacer-cell"
             [attr.colspan]="visibleColumns().length"
             [style.height.px]="window().after"
           ></td>

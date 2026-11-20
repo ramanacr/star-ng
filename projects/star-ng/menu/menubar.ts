@@ -57,7 +57,7 @@ import {
             [cdkMenuItemDisabled]="!!item.disabled"
           >
             @if (item.icon) {
-              <i starPart="icon" [class]="item.icon" aria-hidden="true"></i>
+              <i starPart="itemIcon" [class]="item.icon" aria-hidden="true"></i>
             }
             {{ item.label }}
             <i
@@ -77,7 +77,7 @@ import {
             (cdkMenuItemTriggered)="run(item)"
           >
             @if (item.icon) {
-              <i starPart="icon" [class]="item.icon" aria-hidden="true"></i>
+              <i starPart="itemIcon" [class]="item.icon" aria-hidden="true"></i>
             }
             {{ item.label }}
           </a>
@@ -91,7 +91,7 @@ import {
             (cdkMenuItemTriggered)="run(item)"
           >
             @if (item.icon) {
-              <i starPart="icon" [class]="item.icon" aria-hidden="true"></i>
+              <i starPart="itemIcon" [class]="item.icon" aria-hidden="true"></i>
             }
             {{ item.label }}
           </button>

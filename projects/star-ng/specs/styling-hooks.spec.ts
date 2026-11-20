@@ -5,8 +5,8 @@ import { Component, signal, Type } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { StarButton, StarButtonGroup } from '@star-ng/ui/button';
 import { StarCheckbox } from '@star-ng/ui/checkbox';
-import { StarDialog } from '@star-ng/ui/dialog';
 import { StarPassThrough } from '@star-ng/ui/core';
+import { StarDialog } from '@star-ng/ui/dialog';
 import { StarRadio, StarRadioGroup } from '@star-ng/ui/radio';
 import { StarMultiSelect, StarSelect } from '@star-ng/ui/select';
 import { StarToggleSwitch } from '@star-ng/ui/toggle-switch';
@@ -101,6 +101,8 @@ function unnamed(root: HTMLElement, host: HTMLElement): string[] {
   return (
     [...root.querySelectorAll<HTMLElement>('*')]
       .filter((element) => !element.closest('.projected'))
+      // Visually hidden text is not a part.
+      .filter((element) => !element.classList.contains('star-sr-only'))
       // A nested control with styling hooks names its own parts.
       .filter((element) => element.closest('[data-star-part=root]') === host || root !== host)
       .filter((element) => !element.hasAttribute('data-star-part'))

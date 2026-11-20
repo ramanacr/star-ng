@@ -269,7 +269,7 @@ const ICONS: Record<StarToastSeverity, string> = {
           [attr.aria-label]="text.close"
           (click)="toasts.remove(message.id)"
         >
-          <i starPart="icon" class="ph-bold ph-x" aria-hidden="true"></i>
+          <i starPart="closeIcon" class="ph-bold ph-x" aria-hidden="true"></i>
         </button>
       </div>
     }

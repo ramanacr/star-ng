@@ -347,7 +347,7 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
         [disabled]="disabled()"
         (click)="pickFromScreen()"
       >
-        <i starPart="icon" class="ph-bold ph-eyedropper" aria-hidden="true"></i>
+        <i starPart="eyedropperIcon" class="ph-bold ph-eyedropper" aria-hidden="true"></i>
       </button>
     }
     <input
@@ -436,7 +436,7 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
           ></span>
           <span starPart="code" class="star-color__code">{{ value() }}</span>
           <button
-            starPart="button"
+            starPart="barButton"
             type="button"
             class="star-btn star-btn--primary star-btn--sm"
             (click)="closePanel()"

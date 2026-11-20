@@ -87,7 +87,7 @@ export class StarStep {
           >
             <span starPart="number" class="star-stepper__number" aria-hidden="true">
               @if (step.completed() && !step.active()) {
-                <i starPart="icon" class="ph-bold ph-check"></i>
+                <i starPart="numberIcon" class="ph-bold ph-check"></i>
               } @else {
                 {{ i + 1 }}
               }
@@ -99,7 +99,7 @@ export class StarStep {
               }
             </span>
             @if (step.completed()) {
-              <span starPart="srText" class="star-sr-only">{{ text.stepCompleted }}</span>
+              <span class="star-sr-only">{{ text.stepCompleted }}</span>
             }
           </button>
           @if (!last) {

@@ -124,11 +124,11 @@ import { starSelectionChanging, StarSelectionChangingEvent } from './selection-c
           (click)="clear()"
         >
           @if (iconSlot('clear'); as icon) {
-            <span starPart="text" aria-hidden="true"
+            <span starPart="iconBtnIcon" aria-hidden="true"
               ><ng-container *ngTemplateOutlet="icon"
             /></span>
           } @else {
-            <i starPart="icon" class="ph-bold ph-x" aria-hidden="true"></i>
+            <i starPart="iconBtnIcon" class="ph-bold ph-x" aria-hidden="true"></i>
           }
         </button>
       }
@@ -183,11 +183,11 @@ import { starSelectionChanging, StarSelectionChangingEvent } from './selection-c
         @if (filter() && !editable()) {
           <div starPart="filter" class="star-panel__filter">
             @if (iconSlot('filter'); as icon) {
-              <span starPart="text" aria-hidden="true"
+              <span starPart="filterIcon" aria-hidden="true"
                 ><ng-container *ngTemplateOutlet="icon"
               /></span>
             } @else {
-              <i starPart="icon" class="ph-bold ph-magnifying-glass" aria-hidden="true"></i>
+              <i starPart="filterIcon" class="ph-bold ph-magnifying-glass" aria-hidden="true"></i>
             }
             <input
               starPart="input"
@@ -269,7 +269,7 @@ import { starSelectionChanging, StarSelectionChangingEvent } from './selection-c
                       class="star-skeleton star-listbox__skeleton"
                       aria-hidden="true"
                     ></span>
-                    <span starPart="srText" class="star-sr-only">{{ text.loading }}</span>
+                    <span class="star-sr-only">{{ text.loading }}</span>
                   } @else if (optionTemplate(); as custom) {
                     <ng-container
                       *ngTemplateOutlet="custom.template; context: optionContext(option, i)"

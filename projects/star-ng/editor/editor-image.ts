@@ -44,7 +44,7 @@ function focusFirst(host: ElementRef<HTMLElement>): void {
   template: `
     <form starPart="panelForm" class="star-editor__panel-form" novalidate (submit)="submit($event)">
       <label starPart="field" class="star-editor__field">
-        <span starPart="text">{{ text.editorImageAddress }}</span>
+        <span starPart="editorImageAddressText">{{ text.editorImageAddress }}</span>
         <input
           starPart="input"
           class="star-input star-input--sm"
@@ -57,9 +57,9 @@ function focusFirst(host: ElementRef<HTMLElement>): void {
         />
       </label>
       <label starPart="field" class="star-editor__field">
-        <span starPart="text">{{ text.editorImageFile }}</span>
+        <span starPart="editorImageFileText">{{ text.editorImageFile }}</span>
         <input
-          starPart="input"
+          starPart="fieldInput"
           type="file"
           accept="image/*"
           (change)="chooseFile($any($event.target).files)"
@@ -71,7 +71,7 @@ function focusFirst(host: ElementRef<HTMLElement>): void {
         }}</span>
       }
       <label starPart="field" class="star-editor__field">
-        <span starPart="text">{{ text.editorAltText }}</span>
+        <span starPart="editorAltTextText">{{ text.editorAltText }}</span>
         <input
           starPart="input"
           #altField
@@ -91,7 +91,7 @@ function focusFirst(host: ElementRef<HTMLElement>): void {
       }
       <label starPart="linkCheck" class="star-editor__link-check">
         <input
-          starPart="input"
+          starPart="linkCheckInput"
           type="checkbox"
           [checked]="decorative()"
           (change)="decorative.set($any($event.target).checked); altError.set(false)"
@@ -99,7 +99,7 @@ function focusFirst(host: ElementRef<HTMLElement>): void {
         {{ text.editorDecorative }}
       </label>
       <label starPart="field" class="star-editor__field">
-        <span starPart="text">{{ text.editorCaption }}</span>
+        <span starPart="editorCaptionText">{{ text.editorCaption }}</span>
         <input
           starPart="input"
           class="star-input star-input--sm"
@@ -109,7 +109,7 @@ function focusFirst(host: ElementRef<HTMLElement>): void {
         />
       </label>
       <label starPart="field" class="star-editor__field star-editor__field--narrow">
-        <span starPart="text">{{ text.imageWidth }}</span>
+        <span starPart="imageWidthText">{{ text.imageWidth }}</span>
         <input
           starPart="input"
           class="star-input star-input--sm"
@@ -123,7 +123,7 @@ function focusFirst(host: ElementRef<HTMLElement>): void {
       </label>
       <div starPart="linkActions" class="star-editor__link-actions">
         <button
-          starPart="button"
+          starPart="applyButton"
           type="submit"
           class="star-btn star-btn--primary star-btn--sm"
           [disabled]="busy()"
@@ -131,7 +131,7 @@ function focusFirst(host: ElementRef<HTMLElement>): void {
           {{ text.apply }}
         </button>
         <button
-          starPart="button"
+          starPart="cancelButton"
           type="button"
           class="star-btn star-btn--ghost star-btn--sm"
           (click)="dismissed.emit()"
@@ -237,7 +237,7 @@ export class StarEditorImage {
   template: `
     <form starPart="panelForm" class="star-editor__panel-form" novalidate (submit)="submit($event)">
       <label starPart="field" class="star-editor__field">
-        <span starPart="text">{{ text.editorEmbedAddress }}</span>
+        <span starPart="editorEmbedAddressText">{{ text.editorEmbedAddress }}</span>
         <input
           starPart="input"
           #address
@@ -255,7 +255,7 @@ export class StarEditorImage {
         }}</span>
       }
       <label starPart="field" class="star-editor__field">
-        <span starPart="text">{{ text.title }}</span>
+        <span starPart="titleText">{{ text.title }}</span>
         <input
           starPart="input"
           #name
@@ -272,11 +272,15 @@ export class StarEditorImage {
         }}</span>
       }
       <div starPart="linkActions" class="star-editor__link-actions">
-        <button starPart="button" type="submit" class="star-btn star-btn--primary star-btn--sm">
+        <button
+          starPart="applyButton"
+          type="submit"
+          class="star-btn star-btn--primary star-btn--sm"
+        >
           {{ text.apply }}
         </button>
         <button
-          starPart="button"
+          starPart="cancelButton"
           type="button"
           class="star-btn star-btn--ghost star-btn--sm"
           (click)="dismissed.emit()"

@@ -60,9 +60,9 @@ import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/
         (blur)="touch.emit()"
       >
         @if (iconOf(option); as icon) {
-          <i starPart="icon" [class]="icon" aria-hidden="true"></i>
+          <i starPart="itemIcon" [class]="icon" aria-hidden="true"></i>
         }
-        <span starPart="text">{{ labelOf(option) }}</span>
+        <span starPart="itemText">{{ labelOf(option) }}</span>
       </button>
     }
   `,
@@ -191,9 +191,9 @@ export class StarSelectButton<TOption = unknown, TValue = TOption> implements Fo
       (blur)="touch.emit()"
     >
       @if (checked() ? onIcon() : offIcon(); as icon) {
-        <i starPart="icon" [class]="icon" aria-hidden="true"></i>
+        <i starPart="itemIcon" [class]="icon" aria-hidden="true"></i>
       }
-      <span starPart="text">{{ checked() ? onLabel() : offLabel() }}</span>
+      <span starPart="itemText">{{ checked() ? onLabel() : offLabel() }}</span>
     </button>
   `,
 })

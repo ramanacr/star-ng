@@ -275,7 +275,7 @@ const TEMPLATE = `
                 [attr.aria-label]="text.removeItem(chip.label)"
                 (click)="removeChip($index)"
               >
-                <i starPart="icon" class="ph-bold ph-x" aria-hidden="true"></i>
+                <i starPart="removeIcon" class="ph-bold ph-x" aria-hidden="true"></i>
               </button>
             }
           </span>
@@ -312,7 +312,7 @@ const TEMPLATE = `
     }
     @if (showClear() && hasValue() && interactive()) {
       <button starPart="iconBtn" type="button" class="star-select__icon-btn" [attr.aria-label]="text.clear" (click)="clear()">
-        <i starPart="icon" class="ph-bold ph-x" aria-hidden="true"></i>
+        <i starPart="xIcon" class="ph-bold ph-x" aria-hidden="true"></i>
       </button>
     }
     @if (dropdown()) {
@@ -324,11 +324,11 @@ const TEMPLATE = `
         [disabled]="!interactive()"
         (click)="showAllOptions()"
       >
-        <i starPart="icon" class="ph-bold ph-caret-down" aria-hidden="true"></i>
+        <i starPart="caretDownIcon" class="ph-bold ph-caret-down" aria-hidden="true"></i>
       </button>
     }
   </div>
-  <span starPart="srText" class="star-sr-only" aria-live="polite">{{ liveText() }}</span>
+  <span class="star-sr-only" aria-live="polite">{{ liveText() }}</span>
 
   <ng-template
     cdkConnectedOverlay
@@ -405,7 +405,7 @@ const TEMPLATE = `
             <span starPart="label" class="star-listbox__label">
               @if (option === undefined) {
                 <span starPart="skeleton" class="star-skeleton star-listbox__skeleton" aria-hidden="true"></span>
-                <span starPart="srText" class="star-sr-only">{{ text.loading }}</span>
+                <span class="star-sr-only">{{ text.loading }}</span>
               } @else if (optionTemplate(); as custom) {
                 <ng-container *ngTemplateOutlet="custom.template; context: optionContext(option, i)" />
               } @else {
@@ -441,7 +441,7 @@ const TEMPLATE = `
             (click)="addCustom(custom)"
             (mousemove)="onOptionHover(visibleOptions().length)"
           >
-            <i starPart="icon" class="ph-bold ph-plus" aria-hidden="true"></i>
+            <i starPart="optionIcon" class="ph-bold ph-plus" aria-hidden="true"></i>
             <span starPart="label" class="star-listbox__label">{{ text.addCustomValue(custom) }}</span>
           </li>
         }

@@ -62,7 +62,7 @@ const ICONS: Record<StarBannerSeverity, string> = {
               [attr.aria-label]="text.dismiss"
               (click)="dismiss()"
             >
-              <i starPart="icon" class="ph-bold ph-x" aria-hidden="true"></i>
+              <i starPart="dismissIcon" class="ph-bold ph-x" aria-hidden="true"></i>
             </button>
           }
         </div>

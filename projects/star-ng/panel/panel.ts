@@ -40,7 +40,7 @@ import { STAR_UI_TEXT, StarPart, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/u
             "
             (click)="collapsed.set(!collapsed())"
           >
-            <i starPart="icon" class="ph-bold ph-caret-down" aria-hidden="true"></i>
+            <i starPart="toggleIcon" class="ph-bold ph-caret-down" aria-hidden="true"></i>
           </button>
         }
       </div>

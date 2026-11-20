@@ -94,13 +94,14 @@ export interface StarAiPromptOutput {
       }
       <div starPart="bar" class="star-ai-prompt__bar">
         <button
-          starPart="button"
+          starPart="barButton"
           type="button"
           class="star-btn star-btn--primary star-btn--sm"
           [disabled]="disabled() || !prompt().trim()"
           (click)="request()"
         >
-          <i starPart="icon" class="ph-bold ph-sparkle" aria-hidden="true"></i>{{ text.generate }}
+          <i starPart="barIcon" class="ph-bold ph-sparkle" aria-hidden="true"></i
+          >{{ text.generate }}
         </button>
       </div>
     </div>
@@ -110,7 +111,7 @@ export interface StarAiPromptOutput {
           @let streaming = output.status === 'streaming';
           <li starPart="output" class="star-ai-prompt__output" [attr.aria-busy]="streaming || null">
             <p starPart="prompt" class="star-ai-prompt__prompt">
-              <i starPart="icon" class="ph-bold ph-chat-text" aria-hidden="true"></i
+              <i starPart="promptIcon" class="ph-bold ph-chat-text" aria-hidden="true"></i
               >{{ output.prompt }}
             </p>
             @if (output.text) {
@@ -118,45 +119,49 @@ export interface StarAiPromptOutput {
             }
             @if (output.status === 'error') {
               <p starPart="error" class="star-ai-prompt__error">
-                <i starPart="icon" class="ph-bold ph-warning-circle" aria-hidden="true"></i
+                <i starPart="errorIcon" class="ph-bold ph-warning-circle" aria-hidden="true"></i
                 >{{ text.aiResponseFailed }}
               </p>
             }
             <div starPart="actions" class="star-ai-prompt__actions">
               @if (streaming) {
                 <span starPart="generating" class="star-ai-prompt__generating">
-                  <i starPart="icon" class="ph-bold ph-spinner-gap star-spin" aria-hidden="true"></i
+                  <i
+                    starPart="generatingIcon"
+                    class="ph-bold ph-spinner-gap star-spin"
+                    aria-hidden="true"
+                  ></i
                   >{{ text.aiGenerating }}
                 </span>
                 <button
-                  starPart="button"
+                  starPart="actionsButton"
                   type="button"
                   class="star-btn star-btn--ghost star-btn--sm"
                   (click)="stop.emit(output)"
                 >
-                  <i starPart="icon" class="ph-bold ph-stop-circle" aria-hidden="true"></i
+                  <i starPart="actionsIcon" class="ph-bold ph-stop-circle" aria-hidden="true"></i
                   >{{ text.stop }}
                 </button>
               } @else {
                 @if (output.text) {
                   <button
-                    starPart="button"
+                    starPart="copyButton"
                     type="button"
                     class="star-btn star-btn--ghost star-btn--sm"
                     (click)="copy(output)"
                   >
-                    <i starPart="icon" class="ph-bold ph-copy" aria-hidden="true"></i
+                    <i starPart="copyIcon" class="ph-bold ph-copy" aria-hidden="true"></i
                     >{{ text.copy }}
                   </button>
                 }
                 <button
-                  starPart="button"
+                  starPart="retryButton"
                   type="button"
                   class="star-btn star-btn--ghost star-btn--sm"
                   [disabled]="disabled()"
                   (click)="retry.emit(output)"
                 >
-                  <i starPart="icon" class="ph-bold ph-arrow-clockwise" aria-hidden="true"></i
+                  <i starPart="retryIcon" class="ph-bold ph-arrow-clockwise" aria-hidden="true"></i
                   >{{ text.retry }}
                 </button>
               }
@@ -165,7 +170,7 @@ export interface StarAiPromptOutput {
         }
       </ul>
     }
-    <p starPart="live" class="star-sr-only star-ai-prompt__live" aria-live="polite">
+    <p class="star-sr-only star-ai-prompt__live" aria-live="polite">
       {{ status() }}
     </p>
   `,

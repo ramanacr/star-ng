@@ -65,7 +65,7 @@ export type StarTagRejection = 'invalid' | 'duplicate' | 'limit';
                   [attr.aria-label]="text.removeItem(tag)"
                   (click)="$event.stopPropagation(); removeAt(i)"
                 >
-                  <i starPart="icon" class="ph-bold ph-x" aria-hidden="true"></i>
+                  <i starPart="removeIcon" class="ph-bold ph-x" aria-hidden="true"></i>
                 </button>
               }
             </li>
@@ -101,12 +101,12 @@ export type StarTagRejection = 'invalid' | 'duplicate' | 'limit';
           [attr.aria-label]="text.clear"
           (click)="$event.stopPropagation(); clear()"
         >
-          <i starPart="icon" class="ph-bold ph-x" aria-hidden="true"></i>
+          <i starPart="iconBtnIcon" class="ph-bold ph-x" aria-hidden="true"></i>
         </button>
       }
     </div>
-    <p starPart="srText" class="star-sr-only" [id]="hintId">{{ text.tagsHint }}</p>
-    <p starPart="srText" class="star-sr-only" aria-live="polite">{{ announcement() }}</p>
+    <p class="star-sr-only" [id]="hintId">{{ text.tagsHint }}</p>
+    <p class="star-sr-only" aria-live="polite">{{ announcement() }}</p>
     @if (rejectionText(); as message) {
       <p starPart="error" class="star-field__error star-tags__error" role="alert">{{ message }}</p>
     }

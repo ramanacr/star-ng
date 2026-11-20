@@ -37,15 +37,15 @@ export type StarButtonSize = 'sm' | 'md' | 'lg';
       (click)="onClick($event)"
     >
       @if (loading()) {
-        <i starPart="icon" class="ph-bold ph-spinner-gap star-spin" aria-hidden="true"></i>
+        <i starPart="loadingIcon" class="ph-bold ph-spinner-gap star-spin" aria-hidden="true"></i>
       } @else if (leadingIcon()) {
-        <i starPart="icon" [class]="leadingIcon()" aria-hidden="true"></i>
+        <i starPart="leadingIcon" [class]="leadingIcon()" aria-hidden="true"></i>
       }
       @if (!iconOnly()) {
         <span starPart="text"><ng-content /></span>
       }
       @if (trailingIcon() && !loading()) {
-        <i starPart="icon" [class]="trailingIcon()" aria-hidden="true"></i>
+        <i starPart="trailingIcon" [class]="trailingIcon()" aria-hidden="true"></i>
       }
     </button>
   `,

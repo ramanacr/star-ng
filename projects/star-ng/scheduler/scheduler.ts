@@ -233,7 +233,11 @@ const TIME_VIEWS: ReadonlySet<StarSchedulerView> = new Set(['day', 'week', 'work
           [attr.aria-label]="text.previousPeriod"
           (click)="page(-1)"
         >
-          <i starPart="icon" class="ph-bold ph-caret-left star-icon-mirror" aria-hidden="true"></i>
+          <i
+            starPart="caretLeftIcon"
+            class="ph-bold ph-caret-left star-icon-mirror"
+            aria-hidden="true"
+          ></i>
         </button>
         <button
           starPart="button"
@@ -242,7 +246,11 @@ const TIME_VIEWS: ReadonlySet<StarSchedulerView> = new Set(['day', 'week', 'work
           [attr.aria-label]="text.nextPeriod"
           (click)="page(1)"
         >
-          <i starPart="icon" class="ph-bold ph-caret-right star-icon-mirror" aria-hidden="true"></i>
+          <i
+            starPart="caretRightIcon"
+            class="ph-bold ph-caret-right star-icon-mirror"
+            aria-hidden="true"
+          ></i>
         </button>
       </div>
       <h2 starPart="title" class="star-scheduler__title" [id]="titleId" aria-live="polite">
@@ -283,8 +291,8 @@ const TIME_VIEWS: ReadonlySet<StarSchedulerView> = new Set(['day', 'week', 'work
           <div starPart="row" role="row" class="star-scheduler__row">
             @for (day of days().slice(0, 7); track day.getTime()) {
               <div starPart="head" role="columnheader" class="star-scheduler__head">
-                <span starPart="text" aria-hidden="true">{{ weekdayShort(day) }}</span>
-                <span starPart="srText" class="star-sr-only">{{ weekdayLong(day) }}</span>
+                <span starPart="headText" aria-hidden="true">{{ weekdayShort(day) }}</span>
+                <span class="star-sr-only">{{ weekdayLong(day) }}</span>
               </div>
             }
           </div>
@@ -304,8 +312,8 @@ const TIME_VIEWS: ReadonlySet<StarSchedulerView> = new Set(['day', 'week', 'work
                   (focus)="active.set([r, c])"
                 >
                   <span starPart="date" class="star-scheduler__date">
-                    <span starPart="text" aria-hidden="true">{{ day.getDate() }}</span>
-                    <span starPart="srText" class="star-sr-only">{{ dayLabel(day) }}</span>
+                    <span starPart="dateText" aria-hidden="true">{{ day.getDate() }}</span>
+                    <span class="star-sr-only">{{ dayLabel(day) }}</span>
                   </span>
                   @let cell = monthCell(day);
                   @for (occurrence of cell.shown; track occurrence.key) {
@@ -399,7 +407,7 @@ const TIME_VIEWS: ReadonlySet<StarSchedulerView> = new Set(['day', 'week', 'work
                   @if (slot % 60 === 0) {
                     {{ slotLabel(slot) }}
                   } @else {
-                    <span starPart="srText" class="star-sr-only">{{ slotLabel(slot) }}</span>
+                    <span class="star-sr-only">{{ slotLabel(slot) }}</span>
                   }
                 </div>
               }
@@ -459,7 +467,7 @@ const TIME_VIEWS: ReadonlySet<StarSchedulerView> = new Set(['day', 'week', 'work
                 role="columnheader"
                 class="star-scheduler__head star-scheduler__corner"
               >
-                <span starPart="srText" class="star-sr-only">{{ text.time }}</span>
+                <span class="star-sr-only">{{ text.time }}</span>
               </div>
               @for (day of days(); track day.getTime()) {
                 <div
@@ -477,7 +485,7 @@ const TIME_VIEWS: ReadonlySet<StarSchedulerView> = new Set(['day', 'week', 'work
                     aria-hidden="true"
                     >{{ day.getDate() }}</span
                   >
-                  <span starPart="srText" class="star-sr-only">{{ dayLabel(day) }}</span>
+                  <span class="star-sr-only">{{ dayLabel(day) }}</span>
                 </div>
               }
             </div>
@@ -529,7 +537,7 @@ const TIME_VIEWS: ReadonlySet<StarSchedulerView> = new Set(['day', 'week', 'work
                   @if (slot % 60 === 0) {
                     {{ slotLabel(slot) }}
                   } @else {
-                    <span starPart="srText" class="star-sr-only">{{ slotLabel(slot) }}</span>
+                    <span class="star-sr-only">{{ slotLabel(slot) }}</span>
                   }
                 </div>
                 @for (day of days(); track day.getTime(); let c = $index) {
@@ -625,7 +633,7 @@ const TIME_VIEWS: ReadonlySet<StarSchedulerView> = new Set(['day', 'week', 'work
               "
             />
           </span>
-          <span starPart="srText" class="star-sr-only">{{ eventName(occurrence) }}</span>
+          <span class="star-sr-only">{{ eventName(occurrence) }}</span>
         } @else {
           <!-- The trailing space keeps the visible text "Title 10:00 to 11:00" one phrase for the
                name check (axe label-content-name-mismatch joins the spans without a space). -->
@@ -680,8 +688,8 @@ const TIME_VIEWS: ReadonlySet<StarSchedulerView> = new Set(['day', 'week', 'work
       }
     </star-popover>
 
-    <p starPart="srText" class="star-sr-only" [id]="hintId">{{ text.eventMoveHint }}</p>
-    <p starPart="srText" class="star-sr-only" aria-live="polite">{{ announcement() }}</p>
+    <p class="star-sr-only" [id]="hintId">{{ text.eventMoveHint }}</p>
+    <p class="star-sr-only" aria-live="polite">{{ announcement() }}</p>
   `,
 })
 export class StarScheduler {

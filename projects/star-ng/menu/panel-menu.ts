@@ -47,7 +47,7 @@ import { StarMenuItem } from './menu';
           @if (item.separator) {
             <li starPart="separator" class="star-panel-menu__separator" role="separator"></li>
           } @else if (item.items?.length) {
-            <li starPart="item">
+            <li starPart="listItem">
               <button
                 starPart="item"
                 type="button"
@@ -75,7 +75,7 @@ import { StarMenuItem } from './menu';
                 ></i>
               </button>
               @if (isOpen(key)) {
-                <div starPart="section" [id]="regionId(key)">
+                <div starPart="listSection" [id]="regionId(key)">
                   <ng-container
                     *ngTemplateOutlet="
                       list;
@@ -86,7 +86,7 @@ import { StarMenuItem } from './menu';
               }
             </li>
           } @else if (item.routerLink) {
-            <li starPart="item">
+            <li starPart="listItem">
               <a
                 starPart="item"
                 class="star-panel-menu__item"
@@ -101,7 +101,7 @@ import { StarMenuItem } from './menu';
               </a>
             </li>
           } @else if (item.url) {
-            <li starPart="item">
+            <li starPart="listItem">
               <a
                 starPart="item"
                 class="star-panel-menu__item"
@@ -114,7 +114,7 @@ import { StarMenuItem } from './menu';
               </a>
             </li>
           } @else {
-            <li starPart="item">
+            <li starPart="listItem">
               <button
                 starPart="item"
                 type="button"

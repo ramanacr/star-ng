@@ -122,9 +122,9 @@ const DROP_LISTS = new Map<string, { options(): readonly unknown[] }>();
           >
             <span starPart="box" class="star-check__box" aria-hidden="true">
               @if (allState() === 'mixed') {
-                <i starPart="icon" class="ph-bold ph-minus"></i>
+                <i starPart="minusIcon" class="ph-bold ph-minus"></i>
               } @else if (allState() === true) {
-                <i starPart="icon" class="ph-bold ph-check"></i>
+                <i starPart="checkIcon" class="star-listbox__check-icon ph-bold ph-check"></i>
               }
             </span>
           </button>
@@ -135,7 +135,7 @@ const DROP_LISTS = new Map<string, { options(): readonly unknown[] }>();
           }
         }
         @if (filter()) {
-          <i starPart="icon" class="ph-bold ph-magnifying-glass" aria-hidden="true"></i>
+          <i starPart="filterIcon" class="ph-bold ph-magnifying-glass" aria-hidden="true"></i>
           <input
             starPart="input"
             #filterInput
@@ -211,7 +211,7 @@ const DROP_LISTS = new Map<string, { options(): readonly unknown[] }>();
               @if (isMulti()) {
                 <span starPart="box" class="star-check__box" aria-hidden="true">
                   @if (isSelected(option)) {
-                    <i starPart="icon" class="ph-bold ph-check"></i>
+                    <i starPart="checkIcon" class="star-listbox__check-icon ph-bold ph-check"></i>
                   }
                 </span>
               }
@@ -222,7 +222,7 @@ const DROP_LISTS = new Map<string, { options(): readonly unknown[] }>();
                     class="star-skeleton star-listbox__skeleton"
                     aria-hidden="true"
                   ></span>
-                  <span starPart="srText" class="star-sr-only">{{ text.loading }}</span>
+                  <span class="star-sr-only">{{ text.loading }}</span>
                 } @else if (optionTemplate(); as custom) {
                   <ng-container
                     *ngTemplateOutlet="
@@ -295,8 +295,8 @@ const DROP_LISTS = new Map<string, { options(): readonly unknown[] }>();
           </li>
         }
       </ul>
-      <p starPart="srText" class="star-sr-only" [id]="hintId">{{ text.orderListHint }}</p>
-      <p starPart="srText" class="star-sr-only" aria-live="polite">{{ announcement() }}</p>
+      <p class="star-sr-only" [id]="hintId">{{ text.orderListHint }}</p>
+      <p class="star-sr-only" aria-live="polite">{{ announcement() }}</p>
     } @else {
       <ul
         starPart="listbox"
@@ -355,7 +355,7 @@ const DROP_LISTS = new Map<string, { options(): readonly unknown[] }>();
       @if (isMulti()) {
         <span starPart="box" class="star-check__box" aria-hidden="true">
           @if (isSelected(option)) {
-            <i starPart="icon" class="ph-bold ph-check"></i>
+            <i starPart="checkIcon" class="star-listbox__check-icon ph-bold ph-check"></i>
           }
         </span>
       }
@@ -366,7 +366,7 @@ const DROP_LISTS = new Map<string, { options(): readonly unknown[] }>();
             class="star-skeleton star-listbox__skeleton"
             aria-hidden="true"
           ></span>
-          <span starPart="srText" class="star-sr-only">{{ text.loading }}</span>
+          <span class="star-sr-only">{{ text.loading }}</span>
         } @else if (optionTemplate(); as custom) {
           <ng-container
             *ngTemplateOutlet="

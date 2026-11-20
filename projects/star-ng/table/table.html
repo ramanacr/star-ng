@@ -12,7 +12,7 @@
     <star-popover #columnsPanel [ariaLabel]="text.columns">
       <ul starPart="columns" class="star-table__columns">
         @for (column of orderedColumns(); track column.field) {
-          <li starPart="item">
+          <li starPart="columnsItem">
             @if (columnToggle()) {
               <star-checkbox
                 [checked]="!isHidden(column)"
@@ -22,7 +22,7 @@
                 {{ column.header }}
               </star-checkbox>
             } @else {
-              <span starPart="text">{{ column.header }}</span>
+              <span starPart="columnsText">{{ column.header }}</span>
             }
             @if (pinnableColumns()) {
               @let side = sideOf(column);
@@ -38,7 +38,7 @@
                     [attr.aria-disabled]="!action.side && !side ? 'true' : null"
                     (click)="pinFromPanel(column, action.side)"
                   >
-                    <i starPart="icon" [class]="action.icon" aria-hidden="true"></i>
+                    <i starPart="toggleIcon" [class]="action.icon" aria-hidden="true"></i>
                   </button>
                 }
               </span>
@@ -54,7 +54,11 @@
                   [attr.aria-label]="text.moveColumnEarlier(column.header)"
                   (click)="moveColumnBy(column, -1)"
                 >
-                  <i starPart="icon" class="ph-bold ph-arrow-up" aria-hidden="true"></i>
+                  <i
+                    starPart="arrowUpIcon"
+                    class="star-table__arrow-up-icon ph-bold ph-arrow-up"
+                    aria-hidden="true"
+                  ></i>
                 </button>
                 <button
                   starPart="toggle"
@@ -65,7 +69,11 @@
                   [attr.aria-label]="text.moveColumnLater(column.header)"
                   (click)="moveColumnBy(column, 1)"
                 >
-                  <i starPart="icon" class="ph-bold ph-arrow-down" aria-hidden="true"></i>
+                  <i
+                    starPart="arrowDownIcon"
+                    class="star-table__arrow-down-icon ph-bold ph-arrow-down"
+                    aria-hidden="true"
+                  ></i>
                 </button>
               </span>
             }
@@ -86,7 +94,7 @@
   (scroll)="onScroll($event)"
 >
   <table
-    starPart="table"
+    starPart="scrollTable"
     [attr.role]="cellMode() ? 'grid' : null"
     [attr.aria-multiselectable]="
       cellMode() && (selectionMode() === 'range' || selectionMode() === 'multiple') ? true : null
@@ -96,9 +104,9 @@
     [attr.aria-busy]="loading() || null"
     [attr.aria-rowcount]="ariaRowCount()"
   >
-    <thead starPart="thead">
+    <thead starPart="scrollThead">
       @for (headerRow of headerLayout(); track $index; let rowIndex = $index) {
-        <tr starPart="row" [attr.aria-rowindex]="virtualScroll() ? rowIndex + 1 : null">
+        <tr starPart="scrollHeadRow" [attr.aria-rowindex]="virtualScroll() ? rowIndex + 1 : null">
           @if (rowIndex === 0) {
             @if (reorderableRows()) {
               <th
@@ -108,7 +116,7 @@
                 scope="col"
                 data-lead="reorder"
               >
-                <span starPart="srText" class="star-sr-only">{{ text.reorderRows }}</span>
+                <span class="star-sr-only">{{ text.reorderRows }}</span>
               </th>
             }
             @if (expandable()) {
@@ -119,7 +127,7 @@
                 scope="col"
                 data-lead="expander"
               >
-                <span starPart="srText" class="star-sr-only">{{ text.rowDetails }}</span>
+                <span class="star-sr-only">{{ text.rowDetails }}</span>
               </th>
             }
             @if (selectionMode() === 'multiple') {
@@ -150,7 +158,7 @@
                 scope="col"
                 data-lead="select"
               >
-                <span starPart="srText" class="star-sr-only">{{ text.selectRow }}</span>
+                <span class="star-sr-only">{{ text.selectRow }}</span>
               </th>
             }
           }
@@ -189,7 +197,7 @@
             } @else {
               @let column = cell.column;
               <th
-                starPart="headerCell"
+                starPart="scrollHeaderCell"
                 scope="col"
                 [attr.aria-colindex]="colIndex(column)"
                 [attr.rowspan]="cell.rowspan > 1 ? cell.rowspan : null"
@@ -217,7 +225,7 @@
                     (click)="sortBy(column, $event)"
                   >
                     <ng-container *ngTemplateOutlet="headerLabel; context: { $implicit: column }" />
-                    <i starPart="icon" [class]="sortIcon(column)" aria-hidden="true"></i>
+                    <i starPart="sortIcon" [class]="sortIcon(column)" aria-hidden="true"></i>
                     @if (sortRank(column); as rank) {
                       <span starPart="sortRank" class="star-table__sort-rank">{{ rank }}</span>
                     }
@@ -278,7 +286,7 @@
               [attr.aria-colindex]="ariaColCount()"
               scope="col"
             >
-              <span starPart="srText" class="star-sr-only">{{ text.rowActions }}</span>
+              <span class="star-sr-only">{{ text.rowActions }}</span>
             </th>
           }
         </tr>
@@ -309,7 +317,7 @@
               ></td>
             }
             <td
-              starPart="cell"
+              starPart="filtersCell"
               [starTablePin]="pinOf(column)"
               [attr.aria-colindex]="colIndex(column)"
               [attr.data-label]="column.filter ? column.header : null"
@@ -384,14 +392,14 @@
       }
     </thead>
     <tbody
-      starPart="tbody"
+      starPart="scrollTbody"
       #body
       [starContextMenu]="rowMenu"
       (menuOpened)="onMenuOpened()"
       (menuClosed)="onMenuClosed()"
     >
       @if (loading() && loadingSlot(); as loader) {
-        <tr starPart="row">
+        <tr starPart="scrollBodyRow">
           <td starPart="loading" class="star-table__loading" [attr.colspan]="colspan()">
             <ng-container *ngTemplateOutlet="loader" />
           </td>
@@ -419,7 +427,7 @@
                 ></td>
               }
               <td
-                starPart="cell"
+                starPart="rowCell"
                 [starTablePin]="pinOf(column)"
                 [attr.aria-colindex]="colIndex(column)"
               >
@@ -444,7 +452,11 @@
         @for (entry of bodyEntries(); track entry.key) {
           @if (entry.kind === 'spacer') {
             <tr starPart="spacer" class="star-table__spacer" aria-hidden="true">
-              <td starPart="cell" [attr.colspan]="colspan()" [style.height.px]="entry.height"></td>
+              <td
+                starPart="spacerCell"
+                [attr.colspan]="colspan()"
+                [style.height.px]="entry.height"
+              ></td>
             </tr>
           } @else if (entry.kind === 'group') {
             @let group = entry;
@@ -454,7 +466,7 @@
               [attr.aria-rowindex]="group.aria"
               [attr.data-vi]="group.item"
             >
-              <th starPart="headerCell" [attr.colspan]="colspan()" scope="colgroup">
+              <th starPart="groupHeaderCell" [attr.colspan]="colspan()" scope="colgroup">
                 <button
                   starPart="groupToggle"
                   type="button"
@@ -462,7 +474,11 @@
                   [attr.aria-expanded]="!isGroupCollapsed(group.label)"
                   (click)="toggleGroup(group.label)"
                 >
-                  <i starPart="icon" class="ph-bold ph-caret-down" aria-hidden="true"></i>
+                  <i
+                    starPart="groupToggleIcon"
+                    class="ph-bold ph-caret-down"
+                    aria-hidden="true"
+                  ></i>
                   @if (groupSlot(); as custom) {
                     <ng-container
                       *ngTemplateOutlet="
@@ -508,7 +524,7 @@
                   ></td>
                 }
                 <td
-                  starPart="cell"
+                  starPart="groupFooterCell"
                   [class]="'star-table__cell--' + (column.align ?? 'start')"
                   [starTablePin]="pinOf(column)"
                   [attr.aria-colindex]="colIndex(column)"
@@ -574,7 +590,11 @@
                     [attr.aria-label]="text.moveUp"
                     (click)="moveRow(row, -1)"
                   >
-                    <i starPart="icon" class="ph-bold ph-arrow-up" aria-hidden="true"></i>
+                    <i
+                      starPart="arrowUpIcon"
+                      class="star-table__arrow-up-icon ph-bold ph-arrow-up"
+                      aria-hidden="true"
+                    ></i>
                   </button>
                   <button
                     starPart="toggle"
@@ -584,7 +604,11 @@
                     [attr.aria-label]="text.moveDown"
                     (click)="moveRow(row, 1)"
                   >
-                    <i starPart="icon" class="ph-bold ph-arrow-down" aria-hidden="true"></i>
+                    <i
+                      starPart="arrowDownIcon"
+                      class="star-table__arrow-down-icon ph-bold ph-arrow-down"
+                      aria-hidden="true"
+                    ></i>
                   </button>
                 </td>
               }
@@ -604,7 +628,11 @@
                     [attr.aria-label]="isExpanded(row) ? text.collapseRow : text.expandRow"
                     (click)="toggleExpansion(row)"
                   >
-                    <i starPart="icon" class="ph-bold ph-caret-right" aria-hidden="true"></i>
+                    <i
+                      starPart="caretRightIcon"
+                      class="ph-bold ph-caret-right"
+                      aria-hidden="true"
+                    ></i>
                   </button>
                 </td>
               }
@@ -658,7 +686,7 @@
                 @let span = rowSpan(i, column);
                 @if (span !== 0) {
                   <td
-                    starPart="cell"
+                    starPart="rowCell"
                     [attr.rowspan]="span > 1 ? span : null"
                     [attr.aria-colindex]="colIndex(column)"
                     [class]="'star-table__cell--' + (column.align ?? 'start')"
@@ -675,7 +703,7 @@
                     "
                   >
                     @if (firstCell && isDeleted(row)) {
-                      <span starPart="srText" class="star-sr-only">{{ text.rowDeleted }}: </span>
+                      <span class="star-sr-only">{{ text.rowDeleted }}: </span>
                     }
                     @if (isRowInEdit(row) && isEditable(row, column)) {
                       @let rowError = editorError(row, column);
@@ -692,7 +720,7 @@
                         >
                           @for (choice of column.editOptions ?? []; track choice) {
                             <option
-                              starPart="option"
+                              starPart="editorOption"
                               [value]="choice"
                               [selected]="choice === draftText(row, column)"
                             >
@@ -787,27 +815,27 @@
                         (click)="startEdit(row, column)"
                       >
                         <!-- The name is the action and the visible value (WCAG 2.5.3). -->
-                        <span starPart="srText" class="star-sr-only"
-                          >{{ text.editCell(column.header) }}:
-                        </span>
+                        <span class="star-sr-only">{{ text.editCell(column.header) }}: </span>
                         <span starPart="editValue" class="star-table__edit-value">
                           <ng-container
                             *ngTemplateOutlet="cell; context: { $implicit: row, column, index: i }"
                           />
                         </span>
                         @if (isChanged(row, column)) {
-                          <span starPart="srText" class="star-sr-only"
-                            >, {{ text.cellChanged }}</span
-                          >
+                          <span class="star-sr-only">, {{ text.cellChanged }}</span>
                         }
-                        <i starPart="icon" class="ph-bold ph-pencil-simple" aria-hidden="true"></i>
+                        <i
+                          starPart="editIcon"
+                          class="ph-bold ph-pencil-simple"
+                          aria-hidden="true"
+                        ></i>
                       </button>
                     } @else {
                       <ng-container
                         *ngTemplateOutlet="cell; context: { $implicit: row, column, index: i }"
                       />
                       @if (isChanged(row, column)) {
-                        <span starPart="srText" class="star-sr-only">, {{ text.cellChanged }}</span>
+                        <span class="star-sr-only">, {{ text.cellChanged }}</span>
                       }
                     }
                   </td>
@@ -843,7 +871,7 @@
                         [attr.aria-disabled]="rowValid(row) ? null : 'true'"
                         (click)="saveRowEdit(row)"
                       >
-                        <i starPart="icon" class="ph-bold ph-check" aria-hidden="true"></i>
+                        <i starPart="checkIcon" class="ph-bold ph-check" aria-hidden="true"></i>
                       </button>
                       <button
                         starPart="toggle"
@@ -852,7 +880,7 @@
                         [attr.aria-label]="text.cancel"
                         (click)="cancelRowEdit(row)"
                       >
-                        <i starPart="icon" class="ph-bold ph-x" aria-hidden="true"></i>
+                        <i starPart="xIcon" class="ph-bold ph-x" aria-hidden="true"></i>
                       </button>
                     }
                   } @else if (!isDeleted(row)) {
@@ -864,7 +892,11 @@
                       [attr.aria-label]="text.editRow"
                       (click)="initRowEdit(row)"
                     >
-                      <i starPart="icon" class="ph-bold ph-pencil-simple" aria-hidden="true"></i>
+                      <i
+                        starPart="pencilSimpleIcon"
+                        class="ph-bold ph-pencil-simple"
+                        aria-hidden="true"
+                      ></i>
                     </button>
                   }
                 </td>
@@ -879,7 +911,7 @@
                   [attr.aria-rowindex]="entry.aria === null ? null : entry.aria + 1"
                   [attr.data-vi]="entry.item"
                 >
-                  <td starPart="cell" [attr.colspan]="colspan()">
+                  <td starPart="expansionCell" [attr.colspan]="colspan()">
                     <ng-container
                       *ngTemplateOutlet="detail; context: { $implicit: row, index: i }"
                     />
@@ -889,9 +921,9 @@
             }
           }
         } @empty {
-          <tr starPart="row">
+          <tr starPart="scrollBodyRow">
             <td starPart="empty" class="star-table__empty" [attr.colspan]="colspan()">
-              <i starPart="icon" class="ph-bold ph-tray" aria-hidden="true"></i>
+              <i starPart="emptyIcon" class="ph-bold ph-tray" aria-hidden="true"></i>
               @if (emptySlot(); as custom) {
                 <ng-container *ngTemplateOutlet="custom; context: { $implicit: globalFilter() }" />
               } @else {
@@ -903,7 +935,7 @@
       }
     </tbody>
     @if (hasFooter()) {
-      <tfoot starPart="tfoot">
+      <tfoot starPart="scrollTfoot">
         <tr
           starPart="footer"
           class="star-table__footer"
@@ -929,7 +961,7 @@
               ></td>
             }
             <td
-              starPart="cell"
+              starPart="footerCell"
               [class]="'star-table__cell--' + (column.align ?? 'start')"
               [starTablePin]="pinOf(column)"
               [attr.aria-colindex]="colIndex(column)"

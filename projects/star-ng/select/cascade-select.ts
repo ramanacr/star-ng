@@ -115,7 +115,7 @@ interface CascadeItem<TOption> extends StarMenuItem {
           [attr.aria-label]="text.clear"
           (click)="clear()"
         >
-          <i starPart="icon" class="ph-bold ph-x" aria-hidden="true"></i>
+          <i starPart="iconBtnIcon" class="ph-bold ph-x" aria-hidden="true"></i>
         </button>
       }
       <i starPart="caret" class="ph-bold ph-caret-down star-select__caret" aria-hidden="true"></i>

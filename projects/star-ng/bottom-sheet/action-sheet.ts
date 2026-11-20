@@ -29,7 +29,7 @@ export interface StarActionSheetItem<T = unknown> {
   template: `
     <ul starPart="list" class="star-action-sheet__list" role="list">
       @for (action of actions; track $index) {
-        <li starPart="item">
+        <li starPart="listItem">
           <button
             starPart="item"
             type="button"
@@ -46,7 +46,7 @@ export interface StarActionSheetItem<T = unknown> {
                 aria-hidden="true"
               ></i>
             }
-            <span starPart="text">{{ action.label }}</span>
+            <span starPart="itemText">{{ action.label }}</span>
           </button>
         </li>
       }

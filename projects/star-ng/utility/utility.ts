@@ -164,7 +164,7 @@ export class StarSplitter {
       [attr.aria-label]="ariaLabel() ?? text.actions"
       (click)="toggle(list)"
     >
-      <i starPart="icon" [class]="icon()" aria-hidden="true"></i>
+      <i starPart="fabIcon" [class]="icon()" aria-hidden="true"></i>
     </button>
     <ul
       starPart="list"
@@ -174,7 +174,7 @@ export class StarSplitter {
       [attr.inert]="open() ? null : ''"
     >
       @for (item of items(); track $index; let i = $index) {
-        <li starPart="item" [style.--star-i]="i">
+        <li starPart="listItem" [style.--star-i]="i">
           <button
             starPart="action"
             type="button"
@@ -186,7 +186,11 @@ export class StarSplitter {
             [disabled]="item.disabled"
             (click)="run(item); close(true, fab)"
           >
-            <i starPart="icon" [class]="item.icon ?? 'ph-bold ph-circle'" aria-hidden="true"></i>
+            <i
+              starPart="actionIcon"
+              [class]="item.icon ?? 'ph-bold ph-circle'"
+              aria-hidden="true"
+            ></i>
           </button>
         </li>
       }
@@ -299,7 +303,7 @@ export class StarSpeedDial {
     <nav starPart="nav" [attr.aria-label]="ariaLabel() ?? text.dock">
       <ul starPart="list" class="star-dock__list">
         @for (item of items(); track $index) {
-          <li starPart="item">
+          <li starPart="listItem">
             <button
               starPart="item"
               type="button"
@@ -310,7 +314,7 @@ export class StarSpeedDial {
               (click)="item.command?.(item); itemClick.emit(item)"
             >
               <i
-                starPart="icon"
+                starPart="itemIcon"
                 [class]="item.icon ?? 'ph-bold ph-app-window'"
                 aria-hidden="true"
               ></i>
@@ -353,7 +357,7 @@ export class StarDock {
       [attr.tabindex]="visible() ? 0 : -1"
       (click)="toTop()"
     >
-      <i starPart="icon" class="ph-bold ph-arrow-up" aria-hidden="true"></i>
+      <i starPart="btnIcon" class="ph-bold ph-arrow-up" aria-hidden="true"></i>
     </button>
   `,
 })
@@ -462,10 +466,10 @@ export interface StarMeterItem {
     </div>
     <ul starPart="legend" class="star-meter-group__legend" aria-hidden="true">
       @for (item of items(); track item.label; let i = $index) {
-        <li starPart="item">
+        <li starPart="legendItem">
           <span starPart="swatch" class="star-chart__swatch" [style.background]="color(i)"></span>
           {{ item.label }}
-          <strong starPart="text">{{ item.value }}{{ unit() ? ' ' + unit() : '' }}</strong>
+          <strong starPart="legendText">{{ item.value }}{{ unit() ? ' ' + unit() : '' }}</strong>
         </li>
       }
     </ul>

@@ -30,7 +30,7 @@ export const STAR_DATE_TEMPLATE = `
     />
     @if (showClear() && hasValue() && interactive()) {
       <button starPart="iconBtn" type="button" class="star-select__icon-btn" [attr.aria-label]="text.clear" (click)="onClearClick()">
-        <i starPart="icon" class="ph-bold ph-x" aria-hidden="true"></i>
+        <i starPart="iconBtnIcon" class="ph-bold ph-x" aria-hidden="true"></i>
       </button>
     }
     <button starPart="toggle"
@@ -43,7 +43,7 @@ export const STAR_DATE_TEMPLATE = `
       [attr.aria-controls]="open() ? panelId : null"
       (click)="togglePanel()"
     >
-      <i starPart="icon" class="ph-bold ph-calendar-blank" aria-hidden="true"></i>
+      <i starPart="toggleIcon" class="ph-bold ph-calendar-blank" aria-hidden="true"></i>
     </button>
   </div>
 
@@ -137,13 +137,13 @@ export const STAR_DATE_TEMPLATE = `
           }
         </div>
         <div starPart="done" class="star-date__done">
-          <button starPart="button" type="button" class="star-btn star-btn--primary star-btn--sm" (click)="closePanel()">{{ text.done }}</button>
+          <button starPart="doneButton" type="button" class="star-btn star-btn--primary star-btn--sm" (click)="closePanel()">{{ text.done }}</button>
         </div>
       }
       @if (showButtonBar()) {
         <div starPart="bar" class="star-date__bar">
-          <button starPart="button" type="button" class="star-btn star-btn--ghost star-btn--sm" (click)="today()">{{ text.today }}</button>
-          <button starPart="button" type="button" class="star-btn star-btn--ghost star-btn--sm" (click)="onClearClick()">{{ text.clear }}</button>
+          <button starPart="todayButton" type="button" class="star-btn star-btn--ghost star-btn--sm" (click)="today()">{{ text.today }}</button>
+          <button starPart="clearButton" type="button" class="star-btn star-btn--ghost star-btn--sm" (click)="onClearClick()">{{ text.clear }}</button>
         </div>
       }
       <!-- The footer is last, below the button bar. PrimeNG \`#footer\` template. -->

@@ -398,7 +398,7 @@ export class StarMenuTrigger {
       [attr.aria-label]="text.moreActions"
       [starMenuTrigger]="menu"
     >
-      <i starPart="icon" class="ph-bold ph-caret-down" aria-hidden="true"></i>
+      <i starPart="toggleIcon" class="ph-bold ph-caret-down" aria-hidden="true"></i>
     </button>
     <star-menu #menu [items]="items()" (itemClick)="itemClick.emit($event)" />
   `,

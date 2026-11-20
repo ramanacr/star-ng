@@ -220,7 +220,11 @@ function emitChange<P>(
           [attr.aria-label]="text.zoomOut"
           (click)="zoomOut()"
         >
-          <i starPart="icon" class="ph-bold ph-magnifying-glass-minus" aria-hidden="true"></i>
+          <i
+            starPart="magnifyingGlassMinusIcon"
+            class="ph-bold ph-magnifying-glass-minus"
+            aria-hidden="true"
+          ></i>
         </button>
         <output starPart="zoom" class="star-diagram__zoom" aria-live="off">{{ percent() }}%</output>
         <button
@@ -230,7 +234,11 @@ function emitChange<P>(
           [attr.aria-label]="text.zoomIn"
           (click)="zoomIn()"
         >
-          <i starPart="icon" class="ph-bold ph-magnifying-glass-plus" aria-hidden="true"></i>
+          <i
+            starPart="magnifyingGlassPlusIcon"
+            class="ph-bold ph-magnifying-glass-plus"
+            aria-hidden="true"
+          ></i>
         </button>
         <button
           starPart="tool"
@@ -239,7 +247,7 @@ function emitChange<P>(
           [attr.aria-label]="text.zoomToFit"
           (click)="fitToContent()"
         >
-          <i starPart="icon" class="ph-bold ph-arrows-in" aria-hidden="true"></i>
+          <i starPart="arrowsInIcon" class="ph-bold ph-arrows-in" aria-hidden="true"></i>
         </button>
         @if (!readonly()) {
           <button
@@ -250,7 +258,11 @@ function emitChange<P>(
             [attr.aria-disabled]="!canUndo() || null"
             (click)="undo()"
           >
-            <i starPart="icon" class="ph-bold ph-arrow-counter-clockwise" aria-hidden="true"></i>
+            <i
+              starPart="arrowCounterClockwiseIcon"
+              class="ph-bold ph-arrow-counter-clockwise"
+              aria-hidden="true"
+            ></i>
           </button>
           <button
             starPart="tool"
@@ -260,7 +272,11 @@ function emitChange<P>(
             [attr.aria-disabled]="!canRedo() || null"
             (click)="redo()"
           >
-            <i starPart="icon" class="ph-bold ph-arrow-clockwise" aria-hidden="true"></i>
+            <i
+              starPart="arrowClockwiseIcon"
+              class="ph-bold ph-arrow-clockwise"
+              aria-hidden="true"
+            ></i>
           </button>
         }
       </div>
@@ -465,18 +481,18 @@ function emitChange<P>(
           />
         }
       </div>
-      <p starPart="srText" class="star-sr-only" [id]="id + '-hint'">{{ text.diagramHint }}</p>
-      <div starPart="srText" class="star-sr-only">
-        <p starPart="text" [id]="id + '-nodes'">{{ text.diagramNodes }}</p>
-        <ul starPart="list" [attr.aria-labelledby]="id + '-nodes'">
+      <p class="star-sr-only" [id]="id + '-hint'">{{ text.diagramHint }}</p>
+      <div class="star-sr-only">
+        <p starPart="nodeListTitle" [id]="id + '-nodes'">{{ text.diagramNodes }}</p>
+        <ul starPart="nodeList" [attr.aria-labelledby]="id + '-nodes'">
           @for (node of nodes(); track node.id) {
-            <li starPart="item">{{ node.label }}</li>
+            <li starPart="nodeItem">{{ node.label }}</li>
           }
         </ul>
-        <p starPart="text" [id]="id + '-edges'">{{ text.diagramConnections }}</p>
-        <ul starPart="list" [attr.aria-labelledby]="id + '-edges'">
+        <p starPart="edgeListTitle" [id]="id + '-edges'">{{ text.diagramConnections }}</p>
+        <ul starPart="edgeList" [attr.aria-labelledby]="id + '-edges'">
           @for (edge of edgeList(); track edge.id) {
-            <li starPart="item">{{ edge.text }}</li>
+            <li starPart="edgeItem">{{ edge.text }}</li>
           }
         </ul>
       </div>

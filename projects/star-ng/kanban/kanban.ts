@@ -219,8 +219,8 @@ interface Grab {
         }
       }
     </div>
-    <p starPart="srText" class="star-sr-only" [id]="hintId">{{ text.kanbanCardHint }}</p>
-    <p starPart="srText" class="star-sr-only" aria-live="polite">{{ announcement() }}</p>
+    <p class="star-sr-only" [id]="hintId">{{ text.kanbanCardHint }}</p>
+    <p class="star-sr-only" aria-live="polite">{{ announcement() }}</p>
 
     <ng-template #headTpl let-column>
       <div starPart="header" class="star-kanban__header">
@@ -253,7 +253,7 @@ interface Grab {
             (click)="toggleColumn(column.key)"
           >
             <i
-              starPart="icon"
+              starPart="collapseIcon"
               [class]="
                 isCollapsed(column)
                   ? 'ph-bold ph-arrows-out-line-horizontal'

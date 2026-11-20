@@ -35,7 +35,7 @@ export interface StarBreadcrumbItem {
             @if (last) {
               <span starPart="current" class="star-breadcrumb__current" aria-current="page">
                 @if (item.icon) {
-                  <i starPart="icon" [class]="item.icon" aria-hidden="true"></i>
+                  <i starPart="currentIcon" [class]="item.icon" aria-hidden="true"></i>
                 }
                 {{ item.label }}
               </span>
@@ -48,7 +48,7 @@ export interface StarBreadcrumbItem {
                   [attr.aria-label]="item.icon && $first && home() ? item.label : null"
                 >
                   @if (item.icon) {
-                    <i starPart="icon" [class]="item.icon" aria-hidden="true"></i>
+                    <i starPart="linkIcon" [class]="item.icon" aria-hidden="true"></i>
                   }
                   @if (!(item.icon && $first && home())) {
                     {{ item.label }}
@@ -66,12 +66,12 @@ export interface StarBreadcrumbItem {
                   (click)="item.command()"
                 >
                   @if (item.icon) {
-                    <i starPart="icon" [class]="item.icon" aria-hidden="true"></i>
+                    <i starPart="linkIcon" [class]="item.icon" aria-hidden="true"></i>
                   }
                   {{ item.label }}
                 </button>
               } @else {
-                <span starPart="text">{{ item.label }}</span>
+                <span starPart="itemText">{{ item.label }}</span>
               }
               <i
                 starPart="sep"

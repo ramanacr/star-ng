@@ -240,7 +240,7 @@ const normalizeAngle = (angle: number) => {
           (focus)="toolbarFocus.set(i)"
           (click)="run(item)"
         >
-          <i starPart="icon" class="ph-bold {{ item.icon }}" aria-hidden="true"></i>
+          <i starPart="toolIcon" class="ph-bold {{ item.icon }}" aria-hidden="true"></i>
         </button>
       }
     </div>
@@ -261,7 +261,7 @@ const normalizeAngle = (angle: number) => {
           >
             @for (choice of aspectRatios(); track $index) {
               <button
-                starPart="button"
+                starPart="choicesButton"
                 type="button"
                 class="star-btn star-btn--ghost star-btn--sm"
                 [attr.aria-pressed]="choice.ratio === cropRatio()"
@@ -301,7 +301,7 @@ const normalizeAngle = (angle: number) => {
           [attr.aria-label]="text.imageResize"
         >
           <label starPart="number" class="star-image-editor__number">
-            <span starPart="text">{{ text.imageWidth }}</span>
+            <span starPart="imageWidthText">{{ text.imageWidth }}</span>
             <input
               starPart="input"
               type="number"
@@ -313,7 +313,7 @@ const normalizeAngle = (angle: number) => {
             />
           </label>
           <label starPart="number" class="star-image-editor__number">
-            <span starPart="text">{{ text.imageHeight }}</span>
+            <span starPart="imageHeightText">{{ text.imageHeight }}</span>
             <input
               starPart="input"
               type="number"
@@ -325,7 +325,7 @@ const normalizeAngle = (angle: number) => {
             />
           </label>
           <button
-            starPart="button"
+            starPart="panelButton"
             type="button"
             class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
             [attr.aria-label]="text.imageKeepRatio"
@@ -334,7 +334,7 @@ const normalizeAngle = (angle: number) => {
             (click)="keepRatio.set(!keepRatio())"
           >
             <i
-              starPart="icon"
+              starPart="panelIcon"
               class="ph-bold"
               [class.ph-lock-simple]="keepRatio()"
               [class.ph-lock-simple-open]="!keepRatio()"
@@ -389,7 +389,7 @@ const normalizeAngle = (angle: number) => {
           >
             @for (entry of kinds; track entry.kind) {
               <button
-                starPart="button"
+                starPart="choicesButton"
                 type="button"
                 class="star-btn star-btn--ghost star-btn--sm star-btn--icon"
                 [attr.aria-label]="kindLabel(entry.kind)"
@@ -397,7 +397,7 @@ const normalizeAngle = (angle: number) => {
                 [attr.aria-pressed]="kind() === entry.kind"
                 (click)="kind.set(entry.kind)"
               >
-                <i starPart="icon" class="ph-bold {{ entry.icon }}" aria-hidden="true"></i>
+                <i starPart="choicesIcon" class="ph-bold {{ entry.icon }}" aria-hidden="true"></i>
               </button>
             }
           </div>
@@ -446,7 +446,7 @@ const normalizeAngle = (angle: number) => {
             [disabled]="!canAddAnnotation()"
             (click)="addAnnotation()"
           >
-            <i starPart="icon" class="ph-bold ph-plus" aria-hidden="true"></i
+            <i starPart="addIcon" class="ph-bold ph-plus" aria-hidden="true"></i
             >{{ text.imageAddAnnotation }}
           </button>
           <div starPart="annotations" class="star-image-editor__annotations">
@@ -484,13 +484,13 @@ const normalizeAngle = (angle: number) => {
                 }
               </div>
               <button
-                starPart="button"
+                starPart="annotationsButton"
                 type="button"
                 class="star-btn star-btn--ghost star-btn--sm"
                 [disabled]="selected() === null"
                 (click)="deleteSelected()"
               >
-                <i starPart="icon" class="ph-bold ph-trash" aria-hidden="true"></i
+                <i starPart="annotationsIcon" class="ph-bold ph-trash" aria-hidden="true"></i
                 >{{ text.imageDeleteAnnotation }}
               </button>
             } @else {
@@ -501,7 +501,7 @@ const normalizeAngle = (angle: number) => {
           </div>
           <p starPart="hint" class="star-image-editor__hint">{{ text.imageAnnotateHint }}</p>
           <button
-            starPart="button"
+            starPart="panelButton"
             type="button"
             class="star-btn star-btn--ghost star-btn--sm"
             (click)="closeTool()"
@@ -515,7 +515,7 @@ const normalizeAngle = (angle: number) => {
     <ng-template #actions>
       <span starPart="actions" class="star-image-editor__actions">
         <button
-          starPart="button"
+          starPart="applyButton"
           type="button"
           class="star-btn star-btn--primary star-btn--sm"
           (click)="applyTool()"
@@ -523,7 +523,7 @@ const normalizeAngle = (angle: number) => {
           {{ text.apply }}
         </button>
         <button
-          starPart="button"
+          starPart="cancelButton"
           type="button"
           class="star-btn star-btn--ghost star-btn--sm"
           (click)="closeTool()"
@@ -580,7 +580,7 @@ const normalizeAngle = (angle: number) => {
           >
             @for (handle of handles; track handle) {
               <span
-                starPart="handle"
+                starPart="cropIcon"
                 class="star-image-editor__handle star-image-editor__handle--{{ handle }}"
                 aria-hidden="true"
                 (pointerdown)="onCropDown($event, handle)"
@@ -601,8 +601,8 @@ const normalizeAngle = (angle: number) => {
         }
       </div>
     </div>
-    <p starPart="srText" class="star-sr-only" [id]="descriptionId">{{ description() }}</p>
-    <p starPart="srText" class="star-sr-only" [id]="cropHintId">{{ text.imageCropHint }}</p>
+    <p class="star-sr-only" [id]="descriptionId">{{ description() }}</p>
+    <p class="star-sr-only" [id]="cropHintId">{{ text.imageCropHint }}</p>
   `,
 })
 export class StarImageEditor {

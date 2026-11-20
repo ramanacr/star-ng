@@ -287,7 +287,7 @@ function cssEscape(value: string): string {
           (click)="toggleCollapsed()"
         >
           <i
-            starPart="icon"
+            starPart="collapseIcon"
             class="ph-bold"
             [class.ph-caret-up]="!collapsed()"
             [class.ph-caret-down]="collapsed()"
@@ -295,7 +295,7 @@ function cssEscape(value: string): string {
           ></i>
         </button>
       </div>
-      <p starPart="srText" class="star-sr-only" [id]="id + '-hint'">{{ text.ribbonKeyTipsHint }}</p>
+      <p class="star-sr-only" [id]="id + '-hint'">{{ text.ribbonKeyTipsHint }}</p>
 
       @if (backstageOpen() && backstage(); as stage) {
         <div
@@ -342,8 +342,8 @@ function cssEscape(value: string): string {
                 [class]="group.icon() ?? 'ph-bold ph-squares-four'"
                 aria-hidden="true"
               ></i>
-              <span starPart="text">{{ group.label() }}</span>
-              <i starPart="icon" class="ph-bold ph-caret-down" aria-hidden="true"></i>
+              <span starPart="overflowText">{{ group.label() }}</span>
+              <i starPart="overflowCaretIcon" class="ph-bold ph-caret-down" aria-hidden="true"></i>
               <ng-container *ngTemplateOutlet="tip; context: { $implicit: 'group:' + g }" />
             </button>
             <div
@@ -375,7 +375,7 @@ function cssEscape(value: string): string {
                   (click)="emit({ id: launcher }, g)"
                 >
                   <i
-                    starPart="icon"
+                    starPart="launcherIcon"
                     class="ph-bold ph-arrow-square-down-right star-icon-mirror"
                     aria-hidden="true"
                   ></i>
@@ -439,7 +439,7 @@ function cssEscape(value: string): string {
               [attr.tabindex]="isStop(g, item.id + splitMenu) ? 0 : -1"
               [starMenuTrigger]="splitMenuRef"
             >
-              <i starPart="icon" class="ph-bold ph-caret-down" aria-hidden="true"></i>
+              <i starPart="toggleIcon" class="ph-bold ph-caret-down" aria-hidden="true"></i>
             </button>
             <star-menu
               #splitMenuRef

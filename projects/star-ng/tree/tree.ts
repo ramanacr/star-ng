@@ -177,7 +177,7 @@ const MOVE_KEYS: Readonly<Record<string, TreeMoveDirection>> = {
     }
     @if (filter()) {
       <div starPart="filter" class="star-panel__filter">
-        <i starPart="icon" class="ph-bold ph-magnifying-glass" aria-hidden="true"></i>
+        <i starPart="filterIcon" class="ph-bold ph-magnifying-glass" aria-hidden="true"></i>
         <input
           starPart="input"
           #filterInput
@@ -230,13 +230,13 @@ const MOVE_KEYS: Readonly<Record<string, TreeMoveDirection>> = {
             (click)="$event.stopPropagation(); onToggleClick(item.node, $event)"
           >
             @if (item.node.loading && loadingIcon()) {
-              <i starPart="icon" class="ph-bold ph-spinner-gap star-spin"></i>
+              <i starPart="toggleIcon" class="ph-bold ph-spinner-gap star-spin"></i>
             } @else if (toggleIcon(); as icon) {
               <ng-container
                 *ngTemplateOutlet="icon; context: { $implicit: isExpanded(item.node) }"
               />
             } @else {
-              <i starPart="icon" class="ph-bold ph-caret-right"></i>
+              <i starPart="toggleIcon" class="ph-bold ph-caret-right"></i>
             }
           </span>
         } @else {
@@ -254,9 +254,9 @@ const MOVE_KEYS: Readonly<Record<string, TreeMoveDirection>> = {
             [class.star-tree__check--on]="checkState(item.node) !== false"
           >
             @if (checkState(item.node) === 'mixed') {
-              <i starPart="icon" class="ph-bold ph-minus"></i>
+              <i starPart="boxIcon" class="ph-bold ph-minus"></i>
             } @else if (checkState(item.node) === true) {
-              <i starPart="icon" class="ph-bold ph-check"></i>
+              <i starPart="boxIcon" class="ph-bold ph-check"></i>
             }
           </span>
         }
@@ -288,7 +288,7 @@ const MOVE_KEYS: Readonly<Record<string, TreeMoveDirection>> = {
             class="star-tree__toggle star-tree__toggle--leaf"
             aria-hidden="true"
           ></span>
-          <i starPart="icon" class="ph-bold ph-spinner-gap star-spin" aria-hidden="true"></i>
+          <i starPart="loadingIcon" class="ph-bold ph-spinner-gap star-spin" aria-hidden="true"></i>
           {{ text.loading }}
         </li>
       }
@@ -370,9 +370,9 @@ const MOVE_KEYS: Readonly<Record<string, TreeMoveDirection>> = {
       (itemClick)="onMenuItem($event)"
     />
     @if (moveHintId(); as hintId) {
-      <p starPart="srText" class="star-sr-only" [id]="hintId">{{ text.treeMoveHint }}</p>
+      <p class="star-sr-only" [id]="hintId">{{ text.treeMoveHint }}</p>
     }
-    <p starPart="srText" class="star-sr-only" aria-live="polite">{{ announcement() }}</p>
+    <p class="star-sr-only" aria-live="polite">{{ announcement() }}</p>
     @if (footerSlot(); as footer) {
       <ng-container *ngTemplateOutlet="footer" />
     }
@@ -1152,7 +1152,7 @@ const POSITIONS: ConnectedPosition[] = [
           [attr.aria-label]="text.clear"
           (click)="value.set([])"
         >
-          <i starPart="icon" class="ph-bold ph-x" aria-hidden="true"></i>
+          <i starPart="iconBtnIcon" class="ph-bold ph-x" aria-hidden="true"></i>
         </button>
       }
       <i starPart="caret" class="ph-bold ph-caret-down star-select__caret" aria-hidden="true"></i>

@@ -100,7 +100,7 @@ export class StarOrgNodeTemplate<T = unknown> {
               (click)="toggle(node)"
             >
               <i
-                starPart="icon"
+                starPart="toggleIcon"
                 class="ph-bold"
                 [class.ph-caret-down]="isCollapsed(node)"
                 [class.ph-caret-up]="!isCollapsed(node)"

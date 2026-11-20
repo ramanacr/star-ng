@@ -320,7 +320,7 @@ function matchesHotkey(event: KeyboardEvent, hotkey: Hotkey): boolean {
           </div>
         }
       </div>
-      <p starPart="srText" class="star-sr-only" aria-live="polite">{{ status() }}</p>
+      <p class="star-sr-only" aria-live="polite">{{ status() }}</p>
     </dialog>
   `,
 })

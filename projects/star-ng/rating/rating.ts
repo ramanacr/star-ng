@@ -44,7 +44,6 @@ import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/
         (mouseenter)="!readonly() && hover.set(star)"
       >
         <input
-          starPart="srText"
           type="radio"
           class="star-sr-only"
           [name]="groupName"
@@ -55,7 +54,7 @@ import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/
           (click)="choose(star)"
           (blur)="touch.emit()"
         />
-        <i starPart="icon" class="ph-fill ph-star" aria-hidden="true"></i>
+        <i starPart="starIcon" class="ph-fill ph-star" aria-hidden="true"></i>
       </label>
     }
   `,

@@ -94,8 +94,8 @@ const clamp = (value: number, min: number, max: number): number =>
   },
   template: `
     <div starPart="grid" class="star-tile-layout__grid" role="presentation"><ng-content /></div>
-    <p starPart="srText" class="star-sr-only" [id]="hintId">{{ hintText() }}</p>
-    <p starPart="srText" class="star-sr-only" aria-live="polite">{{ announcement() }}</p>
+    <p class="star-sr-only" [id]="hintId">{{ hintText() }}</p>
+    <p class="star-sr-only" aria-live="polite">{{ announcement() }}</p>
   `,
 })
 export class StarTileLayout {

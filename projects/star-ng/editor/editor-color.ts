@@ -55,7 +55,7 @@ function hexOf(value: string): string {
   template: `
     <div starPart="swatches" class="star-editor__swatches">
       <button
-        starPart="button"
+        starPart="swatchesButton"
         type="button"
         class="star-btn star-btn--ghost star-btn--sm"
         [attr.aria-pressed]="value() === ''"
@@ -79,7 +79,7 @@ function hexOf(value: string): string {
     <label starPart="colorCustom" class="star-editor__color-custom">
       {{ text.customColor }}
       <input
-        starPart="input"
+        starPart="colorCustomInput"
         #custom
         type="color"
         [value]="hex()"

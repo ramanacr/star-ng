@@ -206,7 +206,7 @@ export class StarTab {
           (click)="scrollPage(-1)"
         >
           <i
-            starPart="icon"
+            starPart="scrollStartIcon"
             class="ph-bold"
             [class.ph-caret-left]="!vertical()"
             [class.ph-caret-up]="vertical()"
@@ -264,9 +264,9 @@ export class StarTab {
                 />
               } @else {
                 @if (tab.icon(); as icon) {
-                  <i starPart="icon" [class]="icon" aria-hidden="true"></i>
+                  <i starPart="tabIcon" [class]="icon" aria-hidden="true"></i>
                 }
-                <span starPart="text">{{ tab.label() }}</span>
+                <span starPart="tabText">{{ tab.label() }}</span>
                 @if (tab.badge() !== null) {
                   <span starPart="badge" class="star-badge star-badge--secondary star-badge--sm">{{
                     tab.badge()
@@ -290,7 +290,7 @@ export class StarTab {
                 [disabled]="tab.disabled()"
                 (click)="close(tab, i, false)"
               >
-                <i starPart="icon" class="ph-bold ph-x" aria-hidden="true"></i>
+                <i starPart="closeIcon" class="ph-bold ph-x" aria-hidden="true"></i>
               </button>
             }
           </span>
@@ -312,17 +312,11 @@ export class StarTab {
         </button>
       }
       @if (closeHint()) {
-        <span starPart="srText" class="star-sr-only" [id]="closeHintId">{{
-          text.tabCloseHint
-        }}</span>
+        <span class="star-sr-only" [id]="closeHintId">{{ text.tabCloseHint }}</span>
       }
       @if (reorderable()) {
-        <span starPart="srText" class="star-sr-only" [id]="reorderHintId">{{
-          text.tabReorderHint
-        }}</span>
-        <span starPart="live" class="star-sr-only star-tabs__live" aria-live="polite">{{
-          announcement()
-        }}</span>
+        <span class="star-sr-only" [id]="reorderHintId">{{ text.tabReorderHint }}</span>
+        <span class="star-sr-only star-tabs__live" aria-live="polite">{{ announcement() }}</span>
       }
       @if (scrollable()) {
         <button
@@ -335,7 +329,7 @@ export class StarTab {
           (click)="scrollPage(1)"
         >
           <i
-            starPart="icon"
+            starPart="scrollEndIcon"
             class="ph-bold"
             [class.ph-caret-right]="!vertical()"
             [class.ph-caret-down]="vertical()"

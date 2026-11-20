@@ -57,7 +57,7 @@ import { StarDialogBase } from '@star-ng/ui/dialog';
                 [attr.aria-label]="text.close"
                 (click)="close()"
               >
-                <i starPart="icon" class="ph-bold ph-x" aria-hidden="true"></i>
+                <i starPart="closeIcon" class="ph-bold ph-x" aria-hidden="true"></i>
               </button>
             }
           </header>

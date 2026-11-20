@@ -330,7 +330,7 @@ export class StarAppSidebarSection {
           >{{ badge() }}</span
         >
         @if (badgeLabel()) {
-          <span starPart="srText" class="star-sr-only">{{ badgeLabel() }}</span>
+          <span class="star-sr-only">{{ badgeLabel() }}</span>
         }
       }
       @if (hasChildren()) {

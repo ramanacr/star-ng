@@ -94,7 +94,7 @@ export function starEditorSetLink(anchor: HTMLAnchorElement, value: StarEditorLi
       }
       <label starPart="linkCheck" class="star-editor__link-check">
         <input
-          starPart="input"
+          starPart="linkCheckInput"
           type="checkbox"
           [checked]="newTab()"
           (change)="newTab.set(box.checked)"
@@ -103,12 +103,16 @@ export function starEditorSetLink(anchor: HTMLAnchorElement, value: StarEditorLi
         {{ text.editorLinkNewTab }}
       </label>
       <div starPart="linkActions" class="star-editor__link-actions">
-        <button starPart="button" type="submit" class="star-btn star-btn--primary star-btn--sm">
+        <button
+          starPart="applyButton"
+          type="submit"
+          class="star-btn star-btn--primary star-btn--sm"
+        >
           {{ text.apply }}
         </button>
         @if (editing()) {
           <button
-            starPart="button"
+            starPart="editorLinkRemoveButton"
             type="button"
             class="star-btn star-btn--ghost star-btn--sm"
             (click)="remove.emit()"
@@ -117,7 +121,7 @@ export function starEditorSetLink(anchor: HTMLAnchorElement, value: StarEditorLi
           </button>
         }
         <button
-          starPart="button"
+          starPart="cancelButton"
           type="button"
           class="star-btn star-btn--ghost star-btn--sm"
           (click)="dismissed.emit()"

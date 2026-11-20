@@ -50,7 +50,7 @@ import { STAR_MENU_POSITIONS, StarMenuInDialog, StarMenuItem } from './menu';
             [cdkMenuItemDisabled]="!!item.disabled"
           >
             @if (item.icon) {
-              <i starPart="icon" [class]="item.icon" aria-hidden="true"></i>
+              <i starPart="itemIcon" [class]="item.icon" aria-hidden="true"></i>
             }
             {{ item.label }}
             <i
@@ -69,7 +69,7 @@ import { STAR_MENU_POSITIONS, StarMenuInDialog, StarMenuItem } from './menu';
             (cdkMenuItemTriggered)="run(item)"
           >
             @if (item.icon) {
-              <i starPart="icon" [class]="item.icon" aria-hidden="true"></i>
+              <i starPart="itemIcon" [class]="item.icon" aria-hidden="true"></i>
             }
             {{ item.label }}
           </a>
@@ -83,7 +83,7 @@ import { STAR_MENU_POSITIONS, StarMenuInDialog, StarMenuItem } from './menu';
             (cdkMenuItemTriggered)="run(item)"
           >
             @if (item.icon) {
-              <i starPart="icon" [class]="item.icon" aria-hidden="true"></i>
+              <i starPart="itemIcon" [class]="item.icon" aria-hidden="true"></i>
             }
             {{ item.label }}
           </button>

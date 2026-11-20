@@ -134,7 +134,6 @@ export function fileMatchesAccept(file: File, accept: string): boolean {
         {{ text.chooseFiles }}
       </label>
       <input
-        starPart="srText"
         #input
         type="file"
         class="star-sr-only"
@@ -171,13 +170,13 @@ export function fileMatchesAccept(file: File, accept: string): boolean {
             } @else {
               @if (status?.state === 'done') {
                 <i
-                  starPart="state"
+                  starPart="fileIcon"
                   class="ph-fill ph-check-circle star-upload__state--done"
                   aria-hidden="true"
                 ></i>
               } @else if (status?.state === 'error') {
                 <i
-                  starPart="state"
+                  starPart="fileIcon"
                   class="ph-fill ph-warning-circle star-upload__state--error"
                   aria-hidden="true"
                 ></i>
@@ -211,7 +210,7 @@ export function fileMatchesAccept(file: File, accept: string): boolean {
                 } @else if (status?.state === 'error' && status?.message) {
                   <span starPart="message" class="star-upload__message">{{ status?.message }}</span>
                 } @else if (status?.state === 'done') {
-                  <span starPart="srText" class="star-sr-only">{{ text.uploaded }}</span>
+                  <span class="star-sr-only">{{ text.uploaded }}</span>
                 }
               </span>
               @if (status?.state === 'uploading') {
@@ -228,7 +227,7 @@ export function fileMatchesAccept(file: File, accept: string): boolean {
                   [attr.aria-label]="text.moveUp + ': ' + file.name"
                   (click)="move(i, i - 1)"
                 >
-                  <i starPart="icon" class="ph-bold ph-arrow-up" aria-hidden="true"></i>
+                  <i starPart="arrowUpIcon" class="ph-bold ph-arrow-up" aria-hidden="true"></i>
                 </button>
                 <button
                   starPart="iconBtn"
@@ -238,7 +237,7 @@ export function fileMatchesAccept(file: File, accept: string): boolean {
                   [attr.aria-label]="text.moveDown + ': ' + file.name"
                   (click)="move(i, i + 1)"
                 >
-                  <i starPart="icon" class="ph-bold ph-arrow-down" aria-hidden="true"></i>
+                  <i starPart="arrowDownIcon" class="ph-bold ph-arrow-down" aria-hidden="true"></i>
                 </button>
               }
               @if (!disabled() && !readonly()) {
@@ -249,7 +248,7 @@ export function fileMatchesAccept(file: File, accept: string): boolean {
                   [attr.aria-label]="text.removeItem(file.name)"
                   (click)="remove(file)"
                 >
-                  <i starPart="icon" class="ph-bold ph-x" aria-hidden="true"></i>
+                  <i starPart="xIcon" class="ph-bold ph-x" aria-hidden="true"></i>
                 </button>
               }
             }
@@ -264,7 +263,7 @@ export function fileMatchesAccept(file: File, accept: string): boolean {
       <div starPart="section" role="alert">
         <ul starPart="errors" class="star-upload__errors">
           @for (item of rejected(); track $index) {
-            <li starPart="item">{{ rejectionText(item) }}</li>
+            <li starPart="errorsItem">{{ rejectionText(item) }}</li>
           }
         </ul>
       </div>

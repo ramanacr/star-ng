@@ -68,7 +68,7 @@ export class StarInplaceContent {
             [attr.aria-label]="text.close"
             (click)="deactivate()"
           >
-            <i starPart="icon" class="ph-bold ph-check" aria-hidden="true"></i>
+            <i starPart="iconBtnIcon" class="ph-bold ph-check" aria-hidden="true"></i>
           </button>
         }
       </span>
@@ -82,7 +82,7 @@ export class StarInplaceContent {
       >
         <!-- The label is part of the name, so the visible value is too (WCAG 2.5.3). -->
         @if (ariaLabel(); as label) {
-          <span starPart="srText" class="star-sr-only">{{ label }}: </span>
+          <span class="star-sr-only">{{ label }}: </span>
         }
         @if (display(); as view) {
           <ng-container *ngTemplateOutlet="view.template" />
@@ -311,7 +311,7 @@ export class StarAnimateOnScroll {
       [alt]="leftAlt()"
     />
     <span starPart="divider" class="star-compare__divider" aria-hidden="true">
-      <i starPart="icon" class="ph-bold ph-arrows-horizontal"></i>
+      <i starPart="dividerIcon" class="ph-bold ph-arrows-horizontal"></i>
     </span>
     <input
       starPart="range"

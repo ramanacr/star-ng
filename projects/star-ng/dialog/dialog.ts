@@ -120,7 +120,11 @@ export type StarDialogPosition =
                   aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight"
                   (keydown)="onDragKey($event)"
                 >
-                  <i starPart="icon" class="ph-bold ph-arrows-out-cardinal" aria-hidden="true"></i>
+                  <i
+                    starPart="moveIcon"
+                    class="ph-bold ph-arrows-out-cardinal"
+                    aria-hidden="true"
+                  ></i>
                 </button>
               }
               @if (maximizable()) {
@@ -132,7 +136,7 @@ export type StarDialogPosition =
                   (click)="toggleMaximize()"
                 >
                   <i
-                    starPart="icon"
+                    starPart="maximizeIcon"
                     [class]="maximized() ? 'ph-bold ph-corners-in' : 'ph-bold ph-corners-out'"
                     aria-hidden="true"
                   ></i>
@@ -146,7 +150,7 @@ export type StarDialogPosition =
                   [attr.aria-label]="text.close"
                   (click)="close()"
                 >
-                  <i starPart="icon" class="ph-bold ph-x" aria-hidden="true"></i>
+                  <i starPart="closeIcon" class="ph-bold ph-x" aria-hidden="true"></i>
                 </button>
               }
             </div>

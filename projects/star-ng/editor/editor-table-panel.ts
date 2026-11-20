@@ -61,7 +61,7 @@ const PICKER_COLS = 10;
         >
       </div>
       <label starPart="field" class="star-editor__field star-editor__field--narrow">
-        <span starPart="text">{{ text.editorRows }}</span>
+        <span starPart="editorRowsText">{{ text.editorRows }}</span>
         <input
           starPart="input"
           class="star-input star-input--sm"
@@ -73,7 +73,7 @@ const PICKER_COLS = 10;
         />
       </label>
       <label starPart="field" class="star-editor__field star-editor__field--narrow">
-        <span starPart="text">{{ text.columns }}</span>
+        <span starPart="columnsText">{{ text.columns }}</span>
         <input
           starPart="input"
           class="star-input star-input--sm"
@@ -86,7 +86,7 @@ const PICKER_COLS = 10;
       </label>
       <label starPart="linkCheck" class="star-editor__link-check">
         <input
-          starPart="input"
+          starPart="linkCheckInput"
           type="checkbox"
           [checked]="header()"
           (change)="header.set($any($event.target).checked)"
@@ -94,11 +94,15 @@ const PICKER_COLS = 10;
         {{ text.editorHeaderRow }}
       </label>
       <div starPart="linkActions" class="star-editor__link-actions">
-        <button starPart="button" type="submit" class="star-btn star-btn--primary star-btn--sm">
+        <button
+          starPart="applyButton"
+          type="submit"
+          class="star-btn star-btn--primary star-btn--sm"
+        >
           {{ text.apply }}
         </button>
         <button
-          starPart="button"
+          starPart="cancelButton"
           type="button"
           class="star-btn star-btn--ghost star-btn--sm"
           (click)="dismissed.emit()"
@@ -165,47 +169,55 @@ export class StarEditorTableInsert {
   template: `
     <form starPart="panelForm" class="star-editor__panel-form" novalidate (submit)="submit($event)">
       <label starPart="field" class="star-editor__field">
-        <span starPart="text">{{ text.editorBorders }}</span>
+        <span starPart="editorBordersText">{{ text.editorBorders }}</span>
         <select
           starPart="select"
           class="star-editor__select"
           (change)="borders.set($any($event.target).value)"
         >
-          <option starPart="option" value="all" [selected]="borders() === 'all'">
+          <option starPart="editorBordersAllOption" value="all" [selected]="borders() === 'all'">
             {{ text.editorBordersAll }}
           </option>
-          <option starPart="option" value="rows" [selected]="borders() === 'rows'">
+          <option starPart="editorBordersRowsOption" value="rows" [selected]="borders() === 'rows'">
             {{ text.editorBordersRows }}
           </option>
-          <option starPart="option" value="none" [selected]="borders() === 'none'">
+          <option starPart="editorBordersNoneOption" value="none" [selected]="borders() === 'none'">
             {{ text.editorBordersNone }}
           </option>
         </select>
       </label>
       <label starPart="field" class="star-editor__field">
-        <span starPart="text">{{ text.editorTableAlign }}</span>
+        <span starPart="editorTableAlignText">{{ text.editorTableAlign }}</span>
         <select
           starPart="select"
           class="star-editor__select"
           (change)="align.set($any($event.target).value)"
         >
-          <option starPart="option" value="start" [selected]="align() === 'start'">
+          <option starPart="editorAlignStartOption" value="start" [selected]="align() === 'start'">
             {{ text.editorAlignStart }}
           </option>
-          <option starPart="option" value="center" [selected]="align() === 'center'">
+          <option
+            starPart="editorAlignCenterOption"
+            value="center"
+            [selected]="align() === 'center'"
+          >
             {{ text.editorAlignCenter }}
           </option>
-          <option starPart="option" value="end" [selected]="align() === 'end'">
+          <option starPart="editorAlignEndOption" value="end" [selected]="align() === 'end'">
             {{ text.editorAlignEnd }}
           </option>
         </select>
       </label>
       <div starPart="linkActions" class="star-editor__link-actions">
-        <button starPart="button" type="submit" class="star-btn star-btn--primary star-btn--sm">
+        <button
+          starPart="applyButton"
+          type="submit"
+          class="star-btn star-btn--primary star-btn--sm"
+        >
           {{ text.apply }}
         </button>
         <button
-          starPart="button"
+          starPart="cancelButton"
           type="button"
           class="star-btn star-btn--ghost star-btn--sm"
           (click)="dismissed.emit()"

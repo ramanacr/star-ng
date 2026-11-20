@@ -100,7 +100,7 @@ const PANEL_POSITIONS: ConnectedPosition[] = [
         [attr.aria-controls]="open() ? panelId : null"
         (click)="togglePanel(toggle)"
       >
-        <i starPart="icon" class="ph-bold ph-clock" aria-hidden="true"></i>
+        <i starPart="toggleIcon" class="ph-bold ph-clock" aria-hidden="true"></i>
       </button>
     </div>
 
@@ -136,7 +136,7 @@ const PANEL_POSITIONS: ConnectedPosition[] = [
         />
         <div starPart="bar" class="star-time__bar">
           <button
-            starPart="button"
+            starPart="barButton"
             type="button"
             class="star-btn star-btn--primary star-btn--sm"
             (click)="closePanel()"
