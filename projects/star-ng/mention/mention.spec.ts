@@ -1,6 +1,7 @@
 import { Component, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { form, FormField } from '@angular/forms/signals';
+import { StarAnnouncer } from '@star-ng/ui/core';
 import {
   StarMention,
   StarMentionItemTemplate,
@@ -99,6 +100,17 @@ describe('StarMention', () => {
     expect(options()[0].getAttribute('aria-selected')).toBe('true');
     // No combobox semantics on a text field: aria-expanded is not allowed there.
     expect(field.hasAttribute('aria-expanded')).toBe(false);
+  });
+
+  it('announces the result count through the shared live region, also on the first open', async () => {
+    const announce = vi.spyOn(TestBed.inject(StarAnnouncer), 'announce').mockResolvedValue();
+    const { type } = await setup();
+    await type('Hello @an');
+    expect(announce).toHaveBeenCalledWith('2 results available', 'polite');
+    // The panel has no own live region: it is created with its first text, which can be missed.
+    expect(document.querySelector('.star-mention__panel [aria-live]')).toBeNull();
+    await type('Hello @zz');
+    expect(announce).toHaveBeenLastCalledWith('No results found', 'polite');
   });
 
   it('needs the trigger at the start of a word', async () => {

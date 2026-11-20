@@ -143,7 +143,9 @@ export abstract class StarDateInputBase<TValue> {
    * `showSeconds`) with `showTime`. The text that the picker writes is a local date and time,
    * without a time zone. A value may be a `Date` or ISO text in both modes; the picker also reads
    * fractional seconds and a zone (`2026-11-22T13:30:15.123Z`, `...+01:00`), as server JSON often
-   * has them, and shows that instant in local time.
+   * has them, and shows that instant in local time. So a date-only value sent as UTC midnight
+   * (`2026-11-22T00:00:00Z`) shows the previous day west of UTC: send a date without a time
+   * (`2026-11-22`) for a calendar day.
    */
   readonly dataType = input<'date' | 'string'>('date');
   /**

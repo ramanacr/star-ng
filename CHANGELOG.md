@@ -216,7 +216,7 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 
 #### Signature pad
 
-- Signature pad (`star-signature-pad`, new entry `@star-ng/ui/signature-pad`): pointer drawing (mouse, pen with pressure, touch) on a high-DPI canvas with quadratic smoothing, a PNG or SVG data URL value (`valueFormat`), `clear()` and `undo()`, `strokeColor`, `strokeWidth` and `backgroundColor` on screen (the ink follows the theme), `exportColor` (default black) and `exportBackground` for the stored value, `readonly`, `disabled`, `required` through the forms, and a typed-name mode for keyboard users (`allowTyped`), with live announcements (Kendo UI SignaturePad). Helpers `starSignaturePath` and `starSignatureSvg`. UI texts `signaturePad`, `signatureArea`, `signatureAreaSigned`, `signatureHint`, `signatureTypedHint`, `clearSignature`, `undo`, `drawSignature`, `typeSignature`, `typeYourName`, `signatureCleared` and `strokeUndone` (English, German, Spanish).
+- Signature pad (`star-signature-pad`, new entry `@star-ng/ui/signature-pad`): pointer drawing (mouse, pen with pressure, touch) on a high-DPI canvas with quadratic smoothing, a PNG or SVG data URL value (`valueFormat`), `clear()` and `undo()`, `strokeColor`, `strokeWidth` and `backgroundColor` on screen (the ink follows the theme), `exportColor` (default black) and `exportBackground` for the stored value, `readonly`, `disabled`, `required` through the forms, and a typed-name mode for keyboard users (`allowTyped`), with live announcements (Kendo UI SignaturePad). UI texts `signaturePad`, `signatureArea`, `signatureAreaSigned`, `signatureHint`, `signatureTypedHint`, `clearSignature`, `undo`, `drawSignature`, `typeSignature`, `typeYourName`, `signatureCleared` and `strokeUndone` (English, German, Spanish).
 
 #### Sparkline
 
@@ -330,6 +330,7 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - Table: `selectionMode` moved to the base class `StarTableInteraction` and its type adds `'cell'` and `'range'`; the row selection modes work as before.
 - Editor: link targets in values set through the model are rewritten (security hardening). A link with `target="_blank"` gets `rel="noopener noreferrer"`, and `_self`, `_parent` and `_top` lose the `target`. Migration: a value read back from the editor can differ from the value written; compare or store the value that the editor gives back.
 - Internal refactors with no API change (shared helpers of the table, tree table and tree).
+- Table: the Apply button of the filter menu and the Save and Cancel buttons of row edit use the shared UI texts `apply`, `save` and `cancel` (no separate table keys).
 
 ### Deprecated
 
@@ -348,6 +349,9 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - A non-modal dialog or drawer (native `show()`, not in the top layer) stacks above sticky page headers (`z-index: 999`, below the CDK overlay container), as a non-modal bottom sheet does.
 - Dialog: a close or a destroy in the middle of a pointer drag or resize stops the tracking; the dialog no longer reopens at the dragged position or emits `dragEnd` / `resizeEnd` after the close. Moves of another pointer are ignored.
 - Dialog: `keepInViewport` clamps to the page area without the scrollbar (`documentElement.clientWidth` / `clientHeight`), and a remembered position and size (`rememberPosition`) come back inside the window on reopen.
+- Pivot grid: in a narrow configurator the area names ("Columns") were clipped and the fields ran out of the panel. The two area columns now shrink, a name wraps, and the Values area uses the full width.
+- Tabs: when the last tab that can take the focus closes from the keyboard or its close button, the focus moves to the tab list instead of the page body.
+- Mention: the result count ("2 results available", "No results found") goes to the shared live region (`StarAnnouncer`); the region inside the suggestion panel was created with its first text, so screen readers could miss it.
 
 ## [0.3.1] - 2026-11-18
 

@@ -92,7 +92,6 @@ export interface StarUiText {
   readonly filterRule: (index: number) => string;
   readonly addRule: string;
   readonly removeRule: (index: number) => string;
-  readonly applyFilter: string;
   readonly matchContains: string;
   readonly matchStartsWith: string;
   readonly matchEndsWith: string;
@@ -118,8 +117,6 @@ export interface StarUiText {
   readonly compareImages: string;
   readonly editCell: (column: string) => string;
   readonly editRow: string;
-  readonly saveRow: string;
-  readonly cancelRowEdit: string;
   readonly rowActions: string;
   readonly cellChanged: string;
   readonly rowDeleted: string;
@@ -876,7 +873,6 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   filterRule: (index) => `Rule ${index}`,
   addRule: 'Add rule',
   removeRule: (index) => `Remove rule ${index}`,
-  applyFilter: 'Apply',
   matchContains: 'Contains',
   matchStartsWith: 'Starts with',
   matchEndsWith: 'Ends with',
@@ -902,8 +898,6 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   compareImages: 'Compare images',
   editCell: (column) => `Edit ${column}`,
   editRow: 'Edit row',
-  saveRow: 'Save',
-  cancelRowEdit: 'Cancel',
   rowActions: 'Row actions',
   cellChanged: 'changed',
   rowDeleted: 'deleted',

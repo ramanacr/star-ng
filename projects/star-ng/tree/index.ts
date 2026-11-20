@@ -6,24 +6,25 @@ export type {
   StarTreeNodeDropEvent,
 } from './tree-dnd';
 export * from './tree-slots';
-// Pure helpers that other entry points reuse (the tree table). Not part of the control API.
+// Pure row helpers that other entry points reuse (the tree table). Not part of the control API.
 export {
-  checkStates,
-  filterTree,
   flattenVisible,
-  isLocked,
   navigationTarget,
   parentsOf,
   rowIndexOf,
   scrollOffsetToReveal,
   stillFocusable,
-  toggleChecked,
+} from './tree-model';
+export type { BranchLike, TreeFilterMode, TreeRow } from './tree-model';
+// Internal check, lock and filter helpers that the tree table reuses. Not part of the public API.
+export {
+  checkStates as ɵcheckStates,
+  filterTree as ɵfilterTree,
+  isLocked as ɵisLocked,
+  toggleChecked as ɵtoggleChecked,
 } from './tree-model';
 export type {
-  BranchLike,
-  CheckState,
-  LockableNode,
-  TreeFilterMode,
-  TreeFilterResult,
-  TreeRow,
+  CheckState as ɵCheckState,
+  LockableNode as ɵLockableNode,
+  TreeFilterResult as ɵTreeFilterResult,
 } from './tree-model';

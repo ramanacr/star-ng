@@ -77,6 +77,8 @@ An entry point exports only what consumers use:
 
 Every other helper is internal. Do not export it from `index.ts`, or, when another entry point needs it, export it with the `ɵ` prefix (for example `ɵstarLazyOptions`, `ɵstarDayKey`). Specs in the same folder import internal helpers with a relative path. Write explicit export lists for model files, not `export *`. A symbol that was in a released version stays: mark it `@deprecated` and name the replacement.
 
+Exception: the entry points that the docs shell loads at start (the `@star-ng/ui/*` imports of `projects/docs/src/app/app.ts` and the shell files, and the entry points they import, for example `core`, `utility`, `dialog`, `toast`, `theme-switch` and `theme`) re-export values in `index.ts` with `export *` only (`export type { ... }` is fine). A named value re-export there makes the docs build keep every file of the entry point in the initial bundle, which went over its budget before; with `export *`, every exported name of a re-exported file is public API. So in these entry points, an internal helper takes the `ɵ` prefix or goes into a file that `index.ts` does not re-export (for example `utility/key-filter-rules.ts`). `tools/barrels.test.mjs` derives the list from the shell imports, checks the syntax, and compares the public names with `tools/shell-public-api.json`; a new public name needs a deliberate update of that file (`UPDATE_SHELL_API=1 node --test tools/barrels.test.mjs`). Other entry points keep explicit export lists.
+
 ## Example data rules
 
 Examples in the docs, tests and comments use neutral, fictional data: orders, invoices, projects, cities. E-mail addresses and host names use `example.com`. Do not use real people, real companies or domain-specific words (for example medical words).
@@ -84,7 +86,7 @@ Examples in the docs, tests and comments use neutral, fictional data: orders, in
 ## Add a control
 
 1. Create the folder `projects/star-ng/<name>/` with the component file `<name>.ts`.
-2. Add `index.ts` in the folder. It exports the public symbols with named exports (see "Public API scope"). `export * from './<name>';` is only for a file that has nothing internal.
+2. Add `index.ts` in the folder. It exports the public symbols with named exports (see "Public API scope"). `export * from './<name>';` is only for a file that has nothing internal. An entry point that the docs shell loads at start uses `export *` only (see the exception in "Public API scope").
 3. Add `ng-package.json` in the folder. Copy it from another entry point, for example `projects/star-ng/button/ng-package.json`.
 4. Add the entry point to `projects/star-ng/src/public-api.ts`, in alphabetical order.
 5. Add the style partial `projects/star-ng/styles/controls/_<name>.scss`. Add `@use 'controls/<name>';` to `projects/star-ng/styles/star-ng.scss`.

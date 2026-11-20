@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { StarFilterService } from '@star-ng/ui/core';
+import { provideStarUiText, StarFilterService } from '@star-ng/ui/core';
 import { StarColumn, StarColumnFilters, StarTable } from './table';
 
 interface Invoice {
@@ -87,6 +87,15 @@ describe('StarTable filter menu', () => {
         .click();
     return { fixture, el, host, button, dialog, open, names, input, press, stable };
   }
+
+  it('labels the apply button with the generic apply text', async () => {
+    TestBed.configureTestingModule({ providers: [provideStarUiText({ apply: 'Run' })] });
+    const { open } = await setup();
+    const dialog = await open('customer');
+    const texts = [...dialog.querySelectorAll('button')].map((b) => b.textContent?.trim());
+    expect(texts).toContain('Run');
+    expect(texts).not.toContain('Apply');
+  });
 
   it('shows a filter button per filter column instead of the filter row', async () => {
     const { el, button } = await setup();

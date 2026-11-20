@@ -6,8 +6,17 @@
 import { compareValues, matchesFilter, type ɵStarSortRule } from '@star-ng/ui/core';
 
 // The check, lock and filter helpers live in the tree entry point and serve both controls.
-export { checkStates, filterTree, isLocked, toggleChecked } from '@star-ng/ui/tree';
-export type { CheckState, TreeFilterMode, TreeFilterResult } from '@star-ng/ui/tree';
+export {
+  ɵcheckStates as checkStates,
+  ɵfilterTree as filterTree,
+  ɵisLocked as isLocked,
+  ɵtoggleChecked as toggleChecked,
+} from '@star-ng/ui/tree';
+export type {
+  ɵCheckState as CheckState,
+  TreeFilterMode,
+  ɵTreeFilterResult as TreeFilterResult,
+} from '@star-ng/ui/tree';
 
 /** The part of a tree table node that the helpers read. `StarTreeTableNode` fits it. */
 export interface DataNode<N> {

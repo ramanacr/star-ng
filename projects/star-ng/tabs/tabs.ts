@@ -207,6 +207,7 @@ export class StarTab {
         role="tablist"
         [attr.aria-orientation]="orientation()"
         [attr.aria-label]="ariaLabel()"
+        [attr.tabindex]="hasEnabledTab() ? null : -1"
         cdkDropList
         [cdkDropListOrientation]="orientation()"
         [cdkDropListLockAxis]="vertical() ? 'y' : 'x'"
@@ -406,8 +407,26 @@ export class StarTabs {
   });
   /** The hint of the Delete key, once for all closable tabs. */
   protected readonly closeHint = computed(() => this.tabs().some((tab) => tab.closable()));
+  /** False when no tab can take the focus: the tab list itself is then focusable from code. */
+  protected readonly hasEnabledTab = computed(() => this.tabs().some((tab) => !tab.disabled()));
+  /** The last focusable tab, closed from the keyboard or its close button, until the owner removes it. */
+  private lastClosed: StarTab | null = null;
 
   constructor() {
+    // After the owner removed the last focusable tab (at once or in a later render), the focus
+    // moves to the tab list, unless the user moved it elsewhere in the meantime.
+    afterRenderEffect(() => {
+      const tabs = this.tabs();
+      const closed = this.lastClosed;
+      if (!closed || tabs.includes(closed)) return;
+      this.lastClosed = null;
+      if (this.hasEnabledTab()) return;
+      const list = this.list().nativeElement;
+      const active = list.ownerDocument.activeElement;
+      if (!active || active === list.ownerDocument.body || this.hostElement.contains(active)) {
+        list.focus();
+      }
+    });
     let observer: ResizeObserver | null = null;
     inject(DestroyRef).onDestroy(() => observer?.disconnect());
     afterRenderEffect(() => {
@@ -492,7 +511,12 @@ export class StarTabs {
     const wasSelected = tab.value() === this.selected();
     const moveFocus = fromKeyboard || fromCloseButton;
     const hadFocus = moveFocus || tab.value() === this.focusValue();
-    if (!neighbour || neighbour === tab) return;
+    if (!neighbour || neighbour === tab) {
+      // The last tab that can take the focus closed: keep the focus in the tabs (the tab list)
+      // instead of losing it to the page body.
+      if (moveFocus) this.lastClosed = tab;
+      return;
+    }
     if (wasSelected) {
       this.value.set(neighbour.value());
       this.changed.emit(neighbour.value());
