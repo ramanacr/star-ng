@@ -119,6 +119,44 @@ describe('StarWindow', () => {
     expect(fixture.componentInstance.states).toEqual(['minimized', 'maximized', 'normal']);
   });
 
+  it('shows a restore button for a state set from code while that action is disabled', async () => {
+    @Component({
+      imports: [StarWindow],
+      template: `
+        <star-window
+          [visible]="true"
+          header="Fixed"
+          [minimizable]="false"
+          [maximizable]="false"
+          [(state)]="state"
+        >
+          <p>Body</p>
+        </star-window>
+      `,
+    })
+    class FixedHost {
+      readonly state = signal<StarWindowState>('normal');
+    }
+    const fixture = TestBed.createComponent(FixedHost);
+    await fixture.whenStable();
+    const dialog = (fixture.nativeElement as HTMLElement).querySelector('dialog')!;
+    const labels = () =>
+      [...dialog.querySelectorAll('.star-window__actions button')].map((element) =>
+        element.getAttribute('aria-label'),
+      );
+    expect(labels()).toEqual(['Close']);
+
+    for (const state of ['minimized', 'maximized'] as const) {
+      fixture.componentInstance.state.set(state);
+      await fixture.whenStable();
+      expect(labels()).toEqual(['Restore', 'Close']);
+      dialog.querySelector<HTMLButtonElement>('button[aria-label="Restore"]')!.click();
+      await fixture.whenStable();
+      expect(fixture.componentInstance.state()).toBe('normal');
+      expect(labels()).toEqual(['Close']);
+    }
+  });
+
   it('moves with Alt and the arrow keys and resizes with Shift and the arrow keys', async () => {
     const { fixture, titlebar } = await setup();
     const host = fixture.componentInstance;

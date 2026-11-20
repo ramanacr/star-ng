@@ -178,6 +178,7 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 ### Fixed
 
 - Table: a Shift move into a lead cell no longer leaves a stale range target behind (internal state only).
+- Window: a window that is minimized or maximized from code while `minimizable` or `maximizable` is off now shows its restore button, so the user can bring it back. After the restore the button goes and the focus moves to the title bar.
 - Image editor: after an enlarging resize the preview was blurry, because the cached base was drawn at the view scale of the larger output and then stretched. The base scale now includes the resize enlargement (capped at the natural size); the export did not change.
 - Signature pad, AI prompt, app sidebar (submenu chevron) and command palette (search icon): the built-in icons used the regular Phosphor weight (`ph`), which the docs and most apps do not load, so they did not show. They now use the bold weight (`ph-bold`) like the other controls. The docs examples and JSDoc examples of the app sidebar, bottom navigation, command palette and list use `ph-bold` too.
 - A dialog or drawer with a `header` and `showHeader` false pointed `aria-labelledby` at a title that was not rendered; it now takes the header text as `aria-label`.
