@@ -1,7 +1,5 @@
-import { _IdGenerator } from '@angular/cdk/a11y';
 import { DOCUMENT } from '@angular/common';
 import {
-  afterNextRender,
   booleanAttribute,
   ChangeDetectionStrategy,
   Component,
@@ -9,7 +7,6 @@ import {
   DestroyRef,
   ElementRef,
   inject,
-  Injector,
   input,
   model,
   output,
@@ -129,164 +126,7 @@ export class StarSplitter {
 
 // ---------------------------------------------------------------- Speed dial and dock
 
-/**
- * Speed dial (PrimeNG `p-speeddial`): floating action button that opens a short list of
- * actions (up, down, left or right). `aria-expanded`, Escape closes, focus moves to the first action.
- * `<star-speed-dial [items]="quickActions" direction="up" ariaLabel="Quick actions" />`
- *
- * `left` and `right` are the physical sides of the screen, as in CSS. `start` and `end` follow the
- * writing direction (`start` is the left side in LTR and the right side in RTL). The arrow keys
- * move along the visual direction of the list.
- */
-@Component({
-  selector: 'star-speed-dial',
-  hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
-  viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  host: {
-    '[class]': "'star-speed-dial star-speed-dial--' + direction()",
-    '[class.star-speed-dial--open]': 'open()',
-    '[class.star-speed-dial--sm]': "size() === 'sm'",
-    '[class.star-speed-dial--static]': 'icon() !== defaultIcon',
-    '(keydown.escape)': 'close(true)',
-    '(keydown)': 'onArrow($event)',
-  },
-  template: `
-    <button
-      data-star-part="triggerButton"
-      #fab
-      type="button"
-      class="star-speed-dial__fab"
-      aria-haspopup="true"
-      [attr.aria-expanded]="open()"
-      [attr.aria-controls]="listId"
-      [attr.aria-label]="ariaLabel() ?? text.actions"
-      (click)="toggle(list)"
-    >
-      <i data-star-part="triggerIcon" [class]="icon()" aria-hidden="true"></i>
-    </button>
-    <ul
-      data-star-part="list"
-      #list
-      class="star-speed-dial__list"
-      [id]="listId"
-      [attr.inert]="open() ? null : ''"
-    >
-      @for (item of items(); track $index; let i = $index) {
-        <li data-star-part="listItem" [style.--star-i]="i">
-          <button
-            data-star-part="actionButton"
-            type="button"
-            class="star-speed-dial__action"
-            [class.star-speed-dial__action--active]="i === activeIndex()"
-            [attr.aria-pressed]="activeIndex() === null ? null : i === activeIndex()"
-            [attr.aria-label]="item.label"
-            [attr.title]="item.label"
-            [disabled]="item.disabled"
-            (click)="run(item); close(true, fab)"
-          >
-            <i
-              data-star-part="actionIcon"
-              [class]="item.icon ?? 'ph-bold ph-circle'"
-              aria-hidden="true"
-            ></i>
-          </button>
-        </li>
-      }
-    </ul>
-  `,
-})
-export class StarSpeedDial {
-  protected readonly text = inject(STAR_UI_TEXT);
-  protected readonly listId = inject(_IdGenerator).getId('star-speed-dial-');
-  private readonly injector = inject(Injector);
-  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
-  readonly items = input<readonly StarMenuItem[]>([]);
-  readonly direction = input<'up' | 'down' | 'left' | 'right' | 'start' | 'end'>('up');
-  readonly ariaLabel = input<string | null>(null);
-  /** Icon of the main button. With another icon than the default, the button does not turn. */
-  readonly icon = input('ph-bold ph-plus');
-  readonly size = input<'sm' | 'md'>('md');
-  /** Index of the item that is the current choice (a set of options, for example a theme). */
-  readonly activeIndex = input<number | null>(null);
-  readonly itemClick = output<StarMenuItem>();
-  protected readonly defaultIcon = 'ph-bold ph-plus';
-  protected readonly open = signal(false);
-
-  protected toggle(list: HTMLElement): void {
-    this.open.update((open) => !open);
-    // Focus after render: the list is inert until the view updates.
-    if (this.open()) {
-      afterNextRender(() => list.querySelector<HTMLButtonElement>('button')?.focus(), {
-        injector: this.injector,
-      });
-    }
-  }
-
-  close(restoreFocus = false, fab?: HTMLElement): void {
-    if (!this.open()) return;
-    this.open.set(false);
-    if (restoreFocus)
-      (fab ?? this.host.nativeElement.querySelector<HTMLElement>('.star-speed-dial__fab'))?.focus();
-  }
-
-  /**
-   * Arrow keys along the direction of the list move the focus between the actions (added
-   * to the source control, which only used Tab). Home and End go to the first and last action.
-   */
-  protected onArrow(event: KeyboardEvent): void {
-    if (!this.open()) return;
-    // The list runs toward a physical side: resolve start and end first.
-    const rtl = starIsRtl(this.host.nativeElement);
-    const direction = this.direction();
-    const side =
-      direction === 'start'
-        ? rtl
-          ? 'right'
-          : 'left'
-        : direction === 'end'
-          ? rtl
-            ? 'left'
-            : 'right'
-          : direction;
-    const forward = { up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight' }[
-      side
-    ];
-    const backward = { up: 'ArrowDown', down: 'ArrowUp', left: 'ArrowRight', right: 'ArrowLeft' }[
-      side
-    ];
-    if (
-      event.key !== forward &&
-      event.key !== backward &&
-      event.key !== 'Home' &&
-      event.key !== 'End'
-    )
-      return;
-    const actions = [
-      ...this.host.nativeElement.querySelectorAll<HTMLButtonElement>(
-        '.star-speed-dial__action:not(:disabled)',
-      ),
-    ];
-    if (!actions.length) return;
-    event.preventDefault();
-    const last = actions.length - 1;
-    const current = actions.indexOf(
-      this.host.nativeElement.ownerDocument.activeElement as HTMLButtonElement,
-    );
-    let next: number;
-    if (event.key === 'Home') next = 0;
-    else if (event.key === 'End') next = last;
-    else if (event.key === forward) next = current < 0 ? 0 : Math.min(last, current + 1);
-    else next = current < 0 ? last : Math.max(0, current - 1);
-    actions[next].focus();
-  }
-
-  protected run(item: StarMenuItem): void {
-    item.command?.(item);
-    this.itemClick.emit(item);
-  }
-}
+export * from './speed-dial';
 
 /**
  * Dock (PrimeNG `p-dock`): a bar of app shortcuts that magnify on hover and focus.

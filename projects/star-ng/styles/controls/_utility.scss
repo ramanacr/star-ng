@@ -165,7 +165,7 @@
     transition:
       opacity var(--star-duration-base) $ease,
       scale var(--star-duration-base) $ease;
-    transition-delay: calc(var(--star-i, 0) * 30ms);
+    transition-delay: calc(var(--star-i, 0) * var(--star-speed-dial-delay, 30ms));
   }
   .star-speed-dial--open & {
     pointer-events: auto;
@@ -194,6 +194,49 @@
   &:focus-visible {
     outline: 2px solid var(--star-accent);
   }
+}
+
+// Circular layouts: the list is a point at the center of the main button and each action sits
+// at its own offset (`translate`, set by the component).
+.star-speed-dial--circular .star-speed-dial__list {
+  inset: 50% auto auto 50%;
+  display: block;
+  width: 0;
+  height: 0;
+
+  li {
+    position: absolute;
+    top: -1.125rem;
+    left: -1.125rem;
+  }
+}
+.star-speed-dial--circular:not(.star-speed-dial--open) .star-speed-dial__list li {
+  translate: 0 0 !important;
+}
+.star-speed-dial__icon {
+  display: inline-flex;
+}
+// `mask`: a scrim behind the open actions. The speed dial comes above it.
+.star-speed-dial--masked {
+  z-index: calc(var(--star-z-index-base, 1000) - 2);
+}
+.star-speed-dial__mask {
+  position: fixed;
+  inset: 0;
+  background: var(--star-scrim-modal);
+}
+.star-speed-dial__fab,
+.star-speed-dial__list {
+  .star-speed-dial--masked & {
+    position: relative;
+  }
+}
+.star-speed-dial--masked .star-speed-dial__list {
+  position: absolute;
+}
+.star-speed-dial__fab:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 // Dock

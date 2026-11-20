@@ -17306,7 +17306,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-speed-dial",
     "entry": "@star-ng/ui/utility",
-    "description": "Speed dial (PrimeNG `p-speeddial`): floating action button that opens a short list of actions (up, down, left or right). `aria-expanded`, Escape closes, focus moves to the first action. `<star-speed-dial [items]=\"quickActions\" direction=\"up\" ariaLabel=\"Quick actions\" />`",
+    "description": "Speed dial (PrimeNG `p-speeddial`): floating action button that opens a short list of actions: in a line (up, down, left, right, start, end) or on a circle, a half circle or a quarter circle. `aria-expanded`, Escape closes, focus moves to the first action. `<star-speed-dial [items]=\"quickActions\" direction=\"up\" ariaLabel=\"Quick actions\" />`",
     "inputs": [
       {
         "name": "items",
@@ -17317,10 +17317,10 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       },
       {
         "name": "direction",
-        "type": "'up' | 'down' | 'left' | 'right' | 'start' | 'end'",
+        "type": "StarSpeedDialDirection",
         "default": "'up'",
         "required": false,
-        "description": ""
+        "description": "Where the actions go. `up-left`, `up-right`, `down-left`, `down-right`: for `quarter-circle`."
       },
       {
         "name": "ariaLabel",
@@ -17330,11 +17330,32 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
-        "name": "icon",
-        "type": "string",
-        "default": "'ph-bold ph-plus'",
+        "name": "ariaLabelledBy",
+        "type": "string | null",
+        "default": "null",
         "required": false,
-        "description": "Icon of the main button. With another icon than the default, the button does not turn."
+        "description": "Id of an element that names the main button (instead of `ariaLabel`)."
+      },
+      {
+        "name": "icon",
+        "type": "unknown",
+        "default": "DEFAULT_ICON",
+        "required": false,
+        "description": "Icon of the main button. With another icon than the default, the button does not turn. PrimeNG `showIcon`."
+      },
+      {
+        "name": "hideIcon",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Icon of the main button while the actions show (then the button does not turn). PrimeNG `hideIcon`."
+      },
+      {
+        "name": "rotateAnimation",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "The default icon turns while the actions show (default `true`). PrimeNG `rotateAnimation`."
       },
       {
         "name": "size",
@@ -17349,6 +17370,48 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "null",
         "required": false,
         "description": "Index of the item that is the current choice (a set of options, for example a theme)."
+      },
+      {
+        "name": "type",
+        "type": "StarSpeedDialType",
+        "default": "'linear'",
+        "required": false,
+        "description": "Layout of the actions (default `'linear'`). PrimeNG `type`."
+      },
+      {
+        "name": "radius",
+        "type": "number",
+        "default": "0",
+        "required": false,
+        "description": "Radius in pixels of a circular layout (default: 80). PrimeNG `radius`."
+      },
+      {
+        "name": "transitionDelay",
+        "type": "number",
+        "default": "30",
+        "required": false,
+        "description": "Delay in milliseconds between the actions when they appear (default 30)."
+      },
+      {
+        "name": "mask",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "A scrim behind the open actions; a click on it closes them. PrimeNG `mask`."
+      },
+      {
+        "name": "hideOnClickOutside",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "A click outside the speed dial closes it (default `true`). PrimeNG `hideOnClickOutside`."
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Turns off the main button."
       },
       {
         "name": "pt",
@@ -17367,7 +17430,15 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "inheritedFrom": "StarStyled"
       }
     ],
-    "models": [],
+    "models": [
+      {
+        "name": "visible",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The actions show. Two-way: `[(visible)]`. PrimeNG `visible` and `onVisibleChange`."
+      }
+    ],
     "outputs": [
       {
         "name": "itemClick",
@@ -17375,10 +17446,32 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": ""
+      },
+      {
+        "name": "pressed",
+        "type": "MouseEvent",
+        "default": null,
+        "required": false,
+        "description": "Emits a click on the main button. PrimeNG `onClick`."
+      },
+      {
+        "name": "show",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "Emits when the actions show. PrimeNG `onShow`."
+      },
+      {
+        "name": "hide",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "Emits when the actions hide. PrimeNG `onHide`."
       }
     ],
     "parts": [
       "root",
+      "maskPanel",
       "triggerButton",
       "triggerIcon",
       "list",
@@ -17386,6 +17479,23 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "actionButton",
       "actionIcon"
     ]
+  },
+  "StarSpeedDialTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starSpeedDialTemplate]",
+    "entry": "@star-ng/ui/utility",
+    "description": "Replaces content of `star-speed-dial`: `button` (the content of the main button) or `item` (the content of an action button). PrimeNG `#button` and `#item` templates. The buttons stay, with their names: put no focusable elements in the templates.",
+    "inputs": [
+      {
+        "name": "starSpeedDialTemplate",
+        "type": "'button' | 'item'",
+        "default": null,
+        "required": true,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
   },
   "StarSpinner": {
     "kind": "component",
@@ -21775,6 +21885,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "sparkline/types": "<div class=\"docs-stack\">\n  <span\n    >Line <star-sparkline [data]=\"sales\" [width]=\"120\" [height]=\"28\" ariaLabel=\"Line\"\n  /></span>\n  <span\n    >Area\n    <star-sparkline\n      type=\"area\"\n      [data]=\"sales\"\n      [color]=\"3\"\n      [width]=\"120\"\n      [height]=\"28\"\n      ariaLabel=\"Area\"\n  /></span>\n  <span\n    >Bar\n    <star-sparkline\n      type=\"bar\"\n      [data]=\"change\"\n      [color]=\"7\"\n      [width]=\"120\"\n      [height]=\"28\"\n      ariaLabel=\"Bar\"\n  /></span>\n  <span\n    >Win-loss <star-sparkline type=\"win-loss\" [data]=\"change\" [width]=\"120\" [height]=\"28\"\n  /></span>\n</div>",
   "speed-dial/basic": "<div class=\"docs-row docs-dial-area\">\n  <star-speed-dial\n    [items]=\"actions\"\n    direction=\"right\"\n    ariaLabel=\"Quick actions\"\n    (itemClick)=\"last.set($event.label ?? '')\"\n  />\n  <p class=\"docs-output\" role=\"status\">Last action: {{ last() }}</p>\n</div>",
   "speed-dial/choice": "<div class=\"docs-row docs-dial-area\">\n  <star-speed-dial\n    size=\"sm\"\n    direction=\"down\"\n    icon=\"ph-bold ph-sort-ascending\"\n    [items]=\"sortItems\"\n    [activeIndex]=\"sortIndex()\"\n    ariaLabel=\"Sort\"\n  />\n  <p class=\"docs-output\" role=\"status\">Sorted by: {{ sortItems[sortIndex()].label }}</p>\n</div>",
+  "speed-dial/circle": "<div class=\"docs-stack\">\n  <div class=\"docs-row docs-dial-area docs-dial-area--center\">\n    <star-speed-dial\n      [items]=\"actions\"\n      type=\"semi-circle\"\n      direction=\"up\"\n      [radius]=\"72\"\n      ariaLabel=\"Actions on a half circle\"\n      hideIcon=\"ph-bold ph-x\"\n      (show)=\"dialLog.set('open')\"\n      (hide)=\"dialLog.set('closed')\"\n    />\n    <star-speed-dial\n      [items]=\"actions\"\n      type=\"quarter-circle\"\n      direction=\"up-right\"\n      [radius]=\"72\"\n      mask\n      ariaLabel=\"Actions on a quarter circle\"\n    />\n  </div>\n  <p class=\"docs-output\" role=\"status\">Half circle: {{ dialLog() }}</p>\n</div>",
   "speed-dial/directions": "<div class=\"docs-row docs-dial-area docs-dial-area--wide\">\n  <star-speed-dial [items]=\"actions\" direction=\"up\" ariaLabel=\"Actions up\" />\n  <star-speed-dial [items]=\"actions\" direction=\"down\" ariaLabel=\"Actions down\" />\n  <star-speed-dial [items]=\"actions\" direction=\"left\" ariaLabel=\"Actions left\" />\n  <star-speed-dial [items]=\"actions\" direction=\"right\" ariaLabel=\"Actions right\" />\n</div>",
   "speed-dial/logical": "<div class=\"docs-row docs-dial-area docs-dial-area--center\">\n  <star-speed-dial [items]=\"actions\" direction=\"start\" ariaLabel=\"Actions at the start\" />\n  <star-speed-dial [items]=\"actions\" direction=\"end\" ariaLabel=\"Actions at the end\" />\n</div>",
   "spinner/label": "<star-spinner ariaLabel=\"Loading orders\" />",

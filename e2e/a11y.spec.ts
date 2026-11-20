@@ -1642,6 +1642,15 @@ const STATES: readonly State[] = [
     },
   },
   {
+    name: 'speed dial on a quarter circle with a mask',
+    path: 'controls/speed-dial',
+    open: async (page) => {
+      const live = example(page, 'Circle layouts, mask and events');
+      await live.getByRole('button', { name: 'Actions on a quarter circle' }).click();
+      await expect(live.locator('.star-speed-dial__mask')).toBeVisible();
+    },
+  },
+  {
     name: 'terminal with output',
     path: 'controls/terminal',
     open: async (page) => {

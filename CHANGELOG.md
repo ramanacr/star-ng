@@ -257,6 +257,10 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 
 - Signature pad (`star-signature-pad`, new entry `@star-ng/ui/signature-pad`): pointer drawing (mouse, pen with pressure, touch) on a high-DPI canvas with quadratic smoothing, a PNG or SVG data URL value (`valueFormat`), `clear()` and `undo()`, `strokeColor`, `strokeWidth` and `backgroundColor` on screen (the ink follows the theme), `exportColor` (default black) and `exportBackground` for the stored value, `readonly`, `disabled`, `required` through the forms, and a typed-name mode for keyboard users (`allowTyped`), with live announcements (Kendo UI SignaturePad). UI texts `signaturePad`, `signatureArea`, `signatureAreaSigned`, `signatureHint`, `signatureTypedHint`, `clearSignature`, `undo`, `drawSignature`, `typeSignature`, `typeYourName`, `signatureCleared` and `strokeUndone` (English, German, Spanish).
 
+#### Speed dial
+
+- Speed dial: `type` (`linear`, `circle`, `semi-circle`, `quarter-circle`, with the directions `up-left`, `up-right`, `down-left`, `down-right`) and `radius`, `mask`, `hideOnClickOutside`, a `visible` model with the outputs `show`, `hide` and `pressed`, `hideIcon`, `rotateAnimation`, `transitionDelay`, `disabled`, `ariaLabelledBy`, and the slots `starSpeedDialTemplate` (`button`, `item`) and `starIcon="icon"` (PrimeNG `p-speeddial`). The speed dial moves to its own file in `@star-ng/ui/utility`.
+
 #### Split button
 
 - Split button: `appearance`, `raised`, `rounded`, `iconPos`, `buttonDisabled`, `menuButtonDisabled`, `dropdownIcon`, `expandAriaLabel`, `tabindex`, `autofocus`, the outputs `dropdownClick`, `menuShow` and `menuHide`, projected content after the label, and the `starIcon="dropdown"` slot (PrimeNG `p-splitbutton`).
@@ -357,6 +361,7 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 
 ### Changed
 
+- Speed dial: a click outside closes the open actions (`hideOnClickOutside`, on by default, as in PrimeNG). Set it to `false` for the old behavior.
 - Every control template element now has the attribute `data-star-part`. In a few templates the text of an element now starts or ends with a space in `textContent` (the rendered text is the same); compare the trimmed text in tests.
 - Table: the sticky header (`stickyHeader`) has `z-index: 2`, so pinned body cells scroll under it.
 - Table: a table with `frozen` columns now also keeps the selection, expander and reorder columns at the start while it scrolls sideways (before, they scrolled away under the frozen columns), and the last frozen column has a separator shadow.

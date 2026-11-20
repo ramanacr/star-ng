@@ -170,6 +170,19 @@ test.describe('speed dial', () => {
       'true',
     );
   });
+
+  test('a half circle opens around the button and a click outside closes it', async ({ page }) => {
+    await openPage(page, '/controls/speed-dial', 'Speed dial');
+    const live = example(page, 'Circle layouts, mask and events');
+    const fab = live.getByRole('button', { name: 'Actions on a half circle' });
+    await fab.click();
+    await expect(live.getByRole('status')).toHaveText('Half circle: open');
+    const top = live.locator('.star-speed-dial--circular').first().locator('li').nth(1);
+    await expect(top).toHaveCSS('translate', '0px -72px');
+    await page.getByRole('heading', { level: 1 }).click();
+    await expect(fab).toHaveAttribute('aria-expanded', 'false');
+    await expect(live.getByRole('status')).toHaveText('Half circle: closed');
+  });
 });
 
 test.describe('dock', () => {
