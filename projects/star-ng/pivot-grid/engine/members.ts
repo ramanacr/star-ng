@@ -150,7 +150,13 @@ function partsOf(value: unknown, timeZone: string | undefined): DateParts | null
   // A date or date-time text without an offset is a wall time: the same in every zone.
   if (typeof value === 'string') {
     const wall = ISO_WALL_TIME.exec(value);
-    if (wall) return { year: +wall[1], month: +wall[2] };
+    if (wall) {
+      const month = +wall[2];
+      const day = +wall[3];
+      // Out of range (`2025-13-45`): not a date, as the Date parser says too.
+      if (month < 1 || month > 12 || day < 1 || day > 31) return null;
+      return { year: +wall[1], month };
+    }
   }
   const date = toDate(value);
   if (!date) return null;

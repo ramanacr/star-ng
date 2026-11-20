@@ -467,6 +467,25 @@ describe('starPivot engine', () => {
     }
   });
 
+  it('drops date texts with a month or day out of range as invalid (blank)', () => {
+    const data = ['2025-13-45T10:00', '2025-00-10', '2025-02-32 08:00', '2025-02-03T08:00'].map(
+      (at) => ({ at, n: 1 }),
+    );
+    const result = starPivot(
+      data,
+      {
+        rows: [{ field: 'at', dateHierarchy: ['month'] }],
+        columns: [],
+        values: [{ field: 'n' }],
+        rowGrandTotals: false,
+      },
+      { locale: 'en-US', blankLabel: '(blank)' },
+    );
+    expect(
+      result.rows.map((row) => `${row.label}:${result.cells[result.rows.indexOf(row)][0]}`),
+    ).toEqual(['Feb:1', '(blank):3']);
+  });
+
   it('labels quarters with the quarterLabel option', () => {
     const result = starPivot(
       SALES,
