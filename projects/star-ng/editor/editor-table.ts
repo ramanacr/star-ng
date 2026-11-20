@@ -158,41 +158,36 @@ function dropEmpty(table: HTMLTableElement): boolean {
   return true;
 }
 
-/** Inserts a column before or after the column of `cell`. Spanning cells grow. */
+/**
+ * Inserts a column before or after the column of `cell`. Each row gets one new cell at the
+ * logical column of the span-aware grid; only a cell that the new column cuts through (the new
+ * column is inside its column span) grows instead.
+ */
 export function starEditorInsertColumn(cell: HTMLTableCellElement, after: boolean): void {
   const table = cell.closest('table')!;
   const grid = starEditorTableGrid(table);
   const place = starEditorCellPlace(grid, cell);
-  const c = after ? place.col + Math.max(1, cell.colSpan) - 1 : place.col;
+  // The new column takes this logical index.
+  const target = after ? place.col + Math.max(1, cell.colSpan) : place.col;
   const doc = table.ownerDocument;
   const grown = new Set<HTMLTableCellElement>();
-  const added: [HTMLTableRowElement, HTMLTableCellElement][] = [];
   grid.forEach((row, r) => {
-    const slot = row[c];
-    if (!slot) return;
-    const spansOver = after ? slot.col + Math.max(1, slot.cell.colSpan) - 1 > c : slot.col < c;
-    if (spansOver) {
-      if (!grown.has(slot.cell)) {
-        slot.cell.colSpan = Math.max(1, slot.cell.colSpan) + 1;
-        grown.add(slot.cell);
-      }
-      return;
-    }
-    if (slot.row !== r && grown.has(slot.cell)) return;
-    if (slot.row !== r) {
-      // A cell from a row above covers this slot: it grows instead of a new cell.
-      if (!grown.has(slot.cell)) {
-        slot.cell.colSpan = Math.max(1, slot.cell.colSpan) + 1;
-        grown.add(slot.cell);
+    const inside = row[target];
+    if (inside && inside.col < target) {
+      // The new column cuts through this cell: it grows (once, for all its rows).
+      if (!grown.has(inside.cell)) {
+        inside.cell.colSpan = Math.max(1, inside.cell.colSpan) + 1;
+        grown.add(inside.cell);
       }
       return;
     }
     const tr = table.rows[r];
     const fresh = newCell(doc, isHeaderRow(tr));
-    added.push([tr, fresh]);
-    if (after) slot.cell.after(fresh);
-    else slot.cell.before(fresh);
+    // Before the first cell of this row (by the grid before the change) at or after the target.
+    const next = [...tr.cells].find((other) => starEditorCellPlace(grid, other).col >= target);
+    tr.insertBefore(fresh, next ?? null);
   });
+  const c = after ? target - 1 : target;
   const colgroup = table.querySelector(':scope > colgroup');
   if (colgroup) {
     const cols = colgroup.querySelectorAll('col');

@@ -86,6 +86,26 @@ describe('table commands', () => {
     expect(t.querySelectorAll('col').length).toBe(3);
   });
 
+  it('inserts a column beside a cell that spans rows with one new cell per row', () => {
+    const html =
+      '<table><tbody><tr><td rowspan="2">A</td><td>B</td></tr><tr><td>C</td></tr></tbody></table>';
+    const before = table(html);
+    starEditorInsertColumn(cell(before, 'A'), false);
+    expect(shape(before)).toBe('_AB|_AC');
+    expect(cell(before, 'A').colSpan).toBe(1);
+    const after = table(html);
+    starEditorInsertColumn(cell(after, 'A'), true);
+    expect(shape(after)).toBe('A_B|A_C');
+    expect(cell(after, 'A').colSpan).toBe(1);
+    const rowWidths = (t: HTMLTableElement) => starEditorTableGrid(t).map((row) => row.length);
+    expect(rowWidths(before)).toEqual([3, 3]);
+    expect(rowWidths(after)).toEqual([3, 3]);
+    // Beside a cell of the second row, under the spanning cell.
+    const under = table(html);
+    starEditorInsertColumn(cell(under, 'C'), false);
+    expect(shape(under)).toBe('A_B|A_C');
+  });
+
   it('merges with the next cell and the cell below, and splits again', () => {
     const t = table(
       '<table><tbody><tr><td>A</td><td>B</td></tr><tr><td>C</td><td>D</td></tr></tbody></table>',
