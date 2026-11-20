@@ -62,9 +62,12 @@ function fakeCanvas(options: { filter?: boolean; taint?: boolean } = {}) {
 
 /** An image that loads at once with a fixed size. */
 class FakeImage {
+  /** Size of the next images (a test may load a large photo). */
+  static size = { width: 400, height: 200 };
   onload: (() => void) | null = null;
-  naturalWidth = 400;
-  naturalHeight = 200;
+  onerror: (() => void) | null = null;
+  naturalWidth = FakeImage.size.width;
+  naturalHeight = FakeImage.size.height;
   private value = '';
   get src() {
     return this.value;
@@ -102,8 +105,25 @@ class Host {
   readonly value = signal('');
 }
 
-async function setup(options: { filter?: boolean; taint?: boolean; src?: string | null } = {}) {
+/** Collects animation frames; run() calls every queued callback once. */
+function stubFrames() {
+  const frames: FrameRequestCallback[] = [];
+  vi.spyOn(document.defaultView!, 'requestAnimationFrame').mockImplementation((callback) => {
+    frames.push(callback);
+    return frames.length;
+  });
+  vi.spyOn(document.defaultView!, 'cancelAnimationFrame').mockImplementation(() => undefined);
+  return {
+    pending: () => frames.length,
+    run: () => frames.splice(0).forEach((callback) => callback(performance.now())),
+  };
+}
+
+async function setup(
+  options: { filter?: boolean; taint?: boolean; src?: string | null; frames?: boolean } = {},
+) {
   const calls = fakeCanvas(options);
+  const frames = options.frames ? stubFrames() : null;
   vi.stubGlobal('Image', FakeImage);
   const announce = vi.fn(() => Promise.resolve());
   TestBed.configureTestingModule({
@@ -122,10 +142,11 @@ async function setup(options: { filter?: boolean; taint?: boolean; src?: string 
       (b) => b.getAttribute('aria-label') === name || b.textContent?.trim() === name,
     )!;
   const stable = () => fixture.whenStable();
-  return { fixture, root, editor, calls, announce, tool, button, stable };
+  return { fixture, root, editor, calls, announce, tool, button, stable, frames };
 }
 
 afterEach(() => {
+  FakeImage.size = { width: 400, height: 200 };
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
 });
@@ -294,6 +315,50 @@ describe('StarImageEditor', () => {
     });
   }
 
+  it('draws the preview once per frame, however many pointer moves come', async () => {
+    const { root, tool, stable, calls, frames } = await setup({ frames: true });
+    frames!.run();
+    tool('annotate').click();
+    await stable();
+    frames!.run();
+    const draws = () => calls.filter((call) => call.startsWith('clearRect(')).length;
+    const before = draws();
+    const canvas = root.querySelector('canvas')!;
+    pointer(canvas, 'pointerdown', 10, 10);
+    for (let i = 1; i <= 8; i++) pointer(canvas, 'pointermove', 10 + i * 5, 10 + i * 2);
+    await stable();
+    // Nothing is drawn during the change detection: one frame draws the latest state.
+    expect(draws()).toBe(before);
+    frames!.run();
+    expect(draws()).toBe(before + 1);
+  });
+
+  it('renders the preview at view resolution and exports at full size', async () => {
+    FakeImage.size = { width: 4000, height: 2000 };
+    const { editor, tool, stable, calls, frames } = await setup({ frames: true });
+    frames!.run();
+    tool('flipVertical').click();
+    await stable();
+    const from = calls.length;
+    frames!.run();
+    const drawn = calls.slice(from);
+    // The stage is not measured in jsdom (640 × 400): the view is 640 × 320 at a ratio of 1.
+    // The flip is replayed at view resolution (at full size it would be translate(0,2000)).
+    expect(drawn).toContain('translate(0,320)');
+    expect(drawn).toContain('drawImage([object HTMLCanvasElement],0,0,640,320)');
+    expect(drawn.some((call) => call.endsWith(',0,0,4000,2000)'))).toBe(false);
+    const widths: number[] = [];
+    vi.mocked(HTMLCanvasElement.prototype.toBlob).mockImplementation(function (
+      this: HTMLCanvasElement,
+      callback: BlobCallback,
+    ) {
+      widths.push(this.width);
+      callback(new Blob(['x']));
+    });
+    await editor.exportImage();
+    expect(widths).toEqual([4000]);
+  });
+
   it('rotates by a free angle from a labelled slider', async () => {
     const { root, editor, tool, button, stable } = await setup();
     tool('rotate').click();
@@ -352,7 +417,9 @@ describe('StarImageEditor', () => {
       },
     ]);
     expect(editor.description()).toContain('colors adjusted');
-    expect(calls).toContain('filter=brightness(1) contrast(1) saturate(1) grayscale(1) sepia(0)');
+    await vi.waitFor(() =>
+      expect(calls).toContain('filter=brightness(1) contrast(1) saturate(1) grayscale(1) sepia(0)'),
+    );
     expect(calls).not.toContain('getImageData');
   });
 

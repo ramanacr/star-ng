@@ -20,6 +20,52 @@ export interface StarImageRenderOptions {
   readonly background?: string | null;
   /** Use the pixel fallback for the colour adjustments even when `ctx.filter` exists. */
   readonly pixelFilter?: boolean;
+  /**
+   * Scale of the result (default 1, the natural size). The view uses the scale of the screen
+   * pixels, so a preview never replays the operations on a full-size photo.
+   */
+  readonly scale?: number;
+}
+
+/**
+ * The operations with their pixel coordinates scaled (crop, resize, annotation points, line
+ * width and font size). Turns, mirrors and colour adjustments do not depend on the scale.
+ */
+export function starImageScaleOps(
+  ops: readonly StarImageOperation[],
+  scale: number,
+): StarImageOperation[] {
+  if (scale === 1) return [...ops];
+  return ops.map((op): StarImageOperation => {
+    switch (op.type) {
+      case 'crop':
+        return {
+          type: 'crop',
+          rect: {
+            x: op.rect.x * scale,
+            y: op.rect.y * scale,
+            width: op.rect.width * scale,
+            height: op.rect.height * scale,
+          },
+        };
+      case 'resize':
+        return { type: 'resize', width: op.width * scale, height: op.height * scale };
+      case 'annotate': {
+        const a = op.annotation;
+        return {
+          type: 'annotate',
+          annotation: {
+            ...a,
+            points: a.points.map((p) => ({ x: p.x * scale, y: p.y * scale })),
+            strokeWidth: a.strokeWidth * scale,
+            ...(a.fontSize !== undefined ? { fontSize: a.fontSize * scale } : {}),
+          },
+        };
+      }
+      default:
+        return op;
+    }
+  });
 }
 
 /** True when the 2D context draws with `filter` (Safari before 18 has no `ctx.filter`). */
@@ -109,15 +155,23 @@ export function starImageDrawAnnotation(
   context.restore();
 }
 
-/** Draws the source with the adjustments of the list on a new canvas. */
-function base(
+/**
+ * The source with the colour adjustments of the list (the last `adjust` wins), on a new canvas
+ * of `size × scale`. The first step of `starImageRender`; the editor caches it for the view, so
+ * a drag or a slider replays only the geometry on top.
+ */
+export function starImageRenderBase(
   doc: Document,
   source: CanvasImageSource,
   size: StarImageSize,
   ops: readonly StarImageOperation[],
-  options: StarImageRenderOptions,
+  options: StarImageRenderOptions = {},
 ): HTMLCanvasElement | null {
-  const { canvas, context } = blank(doc, size);
+  const scale = options.scale ?? 1;
+  const { canvas, context } = blank(doc, {
+    width: size.width * scale,
+    height: size.height * scale,
+  });
   if (!context) return null;
   const adjustments = starImageAdjustmentsOf(ops);
   const neutral = starImageIsNeutral(adjustments);
@@ -151,11 +205,32 @@ export function starImageRender(
   ops: readonly StarImageOperation[],
   options: StarImageRenderOptions = {},
 ): HTMLCanvasElement | null {
-  let canvas = base(doc, source, size, ops, options);
-  if (!canvas) return null;
-  for (const op of ops) {
+  const start = starImageRenderBase(doc, source, size, ops, options);
+  return start ? starImageReplay(doc, start, ops, options) : null;
+}
+
+/**
+ * Replays the geometry and the annotations of `ops` (scaled by `options.scale`) on `start`, a
+ * canvas from `starImageRenderBase` with the same scale. `start` itself is never changed, so a
+ * cached base stays valid.
+ */
+export function starImageReplay(
+  doc: Document,
+  start: HTMLCanvasElement,
+  ops: readonly StarImageOperation[],
+  options: StarImageRenderOptions = {},
+): HTMLCanvasElement | null {
+  let canvas = start;
+  for (const op of starImageScaleOps(ops, options.scale ?? 1)) {
     if (op.type === 'adjust') continue;
     if (op.type === 'annotate') {
+      if (canvas === start) {
+        // Draw on a copy: the base may be cached by the caller.
+        const copy = blank(doc, { width: start.width, height: start.height });
+        if (!copy.context) return null;
+        copy.context.drawImage(start, 0, 0);
+        canvas = copy.canvas;
+      }
       const context = canvas.getContext('2d');
       if (context) starImageDrawAnnotation(context, op.annotation);
       continue;

@@ -248,3 +248,42 @@ describe('image editor source rule', () => {
     expect(starImageIsSafeSource('', base)).toBe(false);
   });
 });
+
+describe('image editor preview scale', () => {
+  it('scales the pixel coordinates of the operations, not turns or colours', async () => {
+    const { starImageScaleOps } = await import('./image-editor-render');
+    const ops: StarImageOperation[] = [
+      { type: 'crop', rect: { x: 10, y: 20, width: 100, height: 50 } },
+      { type: 'rotate', angle: 90 },
+      { type: 'resize', width: 40, height: 80 },
+      {
+        type: 'annotate',
+        annotation: {
+          kind: 'text',
+          points: [{ x: 4, y: 8 }],
+          color: '#000',
+          strokeWidth: 2,
+          text: 'A',
+          fontSize: 12,
+        },
+      },
+    ];
+    expect(starImageScaleOps(ops, 0.5)).toEqual([
+      { type: 'crop', rect: { x: 5, y: 10, width: 50, height: 25 } },
+      { type: 'rotate', angle: 90 },
+      { type: 'resize', width: 20, height: 40 },
+      {
+        type: 'annotate',
+        annotation: {
+          kind: 'text',
+          points: [{ x: 2, y: 4 }],
+          color: '#000',
+          strokeWidth: 1,
+          text: 'A',
+          fontSize: 6,
+        },
+      },
+    ]);
+    expect(starImageScaleOps(ops, 1)).toEqual(ops);
+  });
+});

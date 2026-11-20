@@ -32,6 +32,7 @@ import {
   starImageAspectCrop,
   starImageClampCrop,
   StarImageCropHandle,
+  starImageFilter,
   starImageFitScale,
   starImageHistoryPush,
   starImageHistoryRedo,
@@ -47,7 +48,7 @@ import {
   starImageResizeCrop,
   StarImageSize,
 } from './image-editor-model';
-import { starImageRender } from './image-editor-render';
+import { starImageRender, starImageRenderBase, starImageReplay } from './image-editor-render';
 
 /** A tool of `star-image-editor` that opens a panel. */
 export type StarImageTool = 'crop' | 'rotate' | 'resize' | 'adjust' | 'annotate';
@@ -581,6 +582,12 @@ export class StarImageEditor {
   protected readonly selected = signal<number | null>(null);
 
   private readonly stageSize = signal<StarImageSize | null>(null);
+  /** Device pixel ratio of the screen (browser only). */
+  private readonly ratio = signal(1);
+  /** The pending animation frame of the view. */
+  private frame: number | null = null;
+  /** The adjusted source at view resolution, kept while the scale and the colours stay. */
+  private baseCache: { readonly key: string; readonly canvas: HTMLCanvasElement } | null = null;
   protected readonly toolbarFocus = signal(0);
 
   /** The operation that the open panel shows before it is applied. */
@@ -792,7 +799,19 @@ export class StarImageEditor {
     });
     afterNextRender(() => this.watchStage());
     // Browser only: afterRenderEffect does not run on the server.
-    afterRenderEffect({ write: () => this.draw() });
+    afterRenderEffect({
+      write: () => {
+        // Track what the picture depends on; the drawing itself waits for the next frame.
+        this.previewOps();
+        this.view();
+        this.loaded();
+        this.ratio();
+        this.scheduleDraw();
+      },
+    });
+    inject(DestroyRef).onDestroy(() => {
+      if (this.frame !== null) this.doc.defaultView?.cancelAnimationFrame?.(this.frame);
+    });
   }
 
   // ---------- Public API ----------
@@ -1364,6 +1383,7 @@ export class StarImageEditor {
     image.onload = () => {
       if (this.src() !== src) return;
       this.image = image;
+      this.baseCache = null;
       this.naturalSize.set({ width: image.naturalWidth, height: image.naturalHeight });
       this.loaded.set(true);
     };
@@ -1373,6 +1393,7 @@ export class StarImageEditor {
   private watchStage(): void {
     const stage = this.stage()?.nativeElement;
     const view = this.doc.defaultView;
+    if (view) this.ratio.set(view.devicePixelRatio || 1);
     if (!stage || !view || typeof view.ResizeObserver !== 'function') return;
     // The content box (without the padding), so a fitted image never makes the stage scroll.
     const observer = new view.ResizeObserver((entries) => {
@@ -1393,17 +1414,46 @@ export class StarImageEditor {
   }
 
   /** Draws the preview on the view canvas, scaled by the device pixel ratio. Browser only. */
+  /** Draws on the next animation frame; several changes in one frame draw once. */
+  private scheduleDraw(): void {
+    const view = this.doc.defaultView;
+    if (typeof view?.requestAnimationFrame !== 'function') {
+      this.draw();
+      return;
+    }
+    if (this.frame !== null) return;
+    this.frame = view.requestAnimationFrame(() => {
+      this.frame = null;
+      this.draw();
+    });
+  }
+
+  /**
+   * Draws the preview on the view canvas at the resolution of the screen (CSS size times the
+   * device pixel ratio). The adjusted source is cached at that scale; a drag or a slider only
+   * replays the geometry on top. The export renders at the natural size instead.
+   */
   private draw(): void {
     const ops = this.previewOps();
     const view = this.view();
+    const size = this.previewSize();
     const canvas = this.canvas()?.nativeElement;
-    if (!canvas || !this.image || !this.loaded() || !view.width) return;
-    const ratio = this.doc.defaultView?.devicePixelRatio || 1;
+    if (!canvas || !this.image || !this.loaded() || !view.width || !size.width) return;
+    const ratio = this.ratio();
     canvas.width = Math.max(1, Math.round(view.width * ratio));
     canvas.height = Math.max(1, Math.round(view.height * ratio));
     const context = canvas.getContext('2d');
-    const result = starImageRender(this.doc, this.image, this.naturalSize(), ops);
-    if (!context || !result) return;
+    if (!context) return;
+    const scale = Math.min(1, canvas.width / size.width);
+    const key = `${scale}|${starImageFilter(starImageAdjustmentsOf(ops))}`;
+    if (this.baseCache?.key !== key) {
+      const base = starImageRenderBase(this.doc, this.image, this.naturalSize(), ops, { scale });
+      this.baseCache = base ? { key, canvas: base } : null;
+    }
+    const result = this.baseCache
+      ? starImageReplay(this.doc, this.baseCache.canvas, ops, { scale })
+      : null;
+    if (!result) return;
     context.clearRect(0, 0, canvas.width, canvas.height);
     context.imageSmoothingEnabled = true;
     context.drawImage(result, 0, 0, canvas.width, canvas.height);
