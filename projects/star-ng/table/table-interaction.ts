@@ -207,11 +207,11 @@ export abstract class StarTableInteraction<T> {
    * a merged cell covers. The selection, expander, reorder and row action cells are grid cells:
    * their controls leave the tab order, Space toggles the row check box, Enter or F2 goes into the
    * controls and Escape or F2 back. The table takes those controls out of the tab order after a
-   * change of the rendered rows, the lead and trail cells or the rows in edit; a control that a custom row action or lead template
-   * adds at another time keeps its tab stop until then, so give it `tabindex="-1"`. `undefined`
-   * (default) is automatic: on when a column is `editable` or `selectionMode` is `'cell'` or
-   * `'range'`, else the rows keep today's keys. Ignite UI grid keyboard navigation, AG Grid cell
-   * navigation.
+   * change of the rendered rows, the lead and trail cells or the rows in edit; a control that a
+   * custom row action or lead template adds at another time keeps its tab stop until then, so
+   * give it `tabindex="-1"`. `undefined` (default) is automatic: on when a column is `editable`
+   * or `selectionMode` is `'cell'` or `'range'`, else the rows keep today's keys. Ignite UI grid
+   * keyboard navigation, AG Grid cell navigation.
    */
   readonly cellNavigation = input<boolean | undefined, boolean | string | undefined>(undefined, {
     transform: ɵstarOptionalBoolean,
