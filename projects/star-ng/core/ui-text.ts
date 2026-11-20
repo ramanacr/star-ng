@@ -483,6 +483,88 @@ export interface StarUiText {
   readonly newMessages: (count: number) => string;
   /** Visible hint under the prompt field of `star-ai-prompt`. */
   readonly aiPromptShortcutHint: string;
+  // Image editor
+  /** Default name of the `star-image-editor` group. */
+  readonly imageEditor: string;
+  /** Name of the toolbar of `star-image-editor`. */
+  readonly imageTools: string;
+  /** Default name of the image (canvas) of `star-image-editor`. */
+  readonly imageCanvas: string;
+  readonly imageEmpty: string;
+  /** Text description of the image: its size and the list of edits. */
+  readonly imageDescription: (width: number, height: number, edits: string) => string;
+  readonly imageNoEdits: string;
+  readonly imageEditList: (edits: string) => string;
+  readonly imageEditCrop: (width: number, height: number) => string;
+  readonly imageEditRotate: (degrees: number) => string;
+  readonly imageEditFlipHorizontal: string;
+  readonly imageEditFlipVertical: string;
+  readonly imageEditResize: (width: number, height: number) => string;
+  readonly imageEditAdjust: string;
+  readonly imageEditAnnotations: (count: number) => string;
+  readonly imageCrop: string;
+  readonly imageRotate: string;
+  readonly imageRotateLeft: string;
+  readonly imageRotateRight: string;
+  readonly imageFlipHorizontal: string;
+  readonly imageFlipVertical: string;
+  readonly imageResize: string;
+  readonly imageAdjust: string;
+  readonly imageAnnotate: string;
+  readonly imageReset: string;
+  readonly imageResetDone: string;
+  readonly imageZoomFit: string;
+  readonly imageZoomActual: string;
+  /** Button that applies the settings of a tool panel. */
+  readonly apply: string;
+  readonly imageApplied: (tool: string) => string;
+  readonly imageAspectRatio: string;
+  readonly imageAspectFree: string;
+  /** Name of the crop box, and its announcement after a key. */
+  readonly imageCropArea: (width: number, height: number, x: number, y: number) => string;
+  readonly imageCropHint: string;
+  readonly imageAngle: string;
+  readonly imageWidth: string;
+  readonly imageHeight: string;
+  readonly imageKeepRatio: string;
+  readonly imageBrightness: string;
+  readonly imageContrast: string;
+  readonly imageSaturation: string;
+  readonly imageGrayscale: string;
+  readonly imageSepia: string;
+  readonly imageShape: string;
+  readonly imagePen: string;
+  readonly imageRectangle: string;
+  readonly imageEllipse: string;
+  readonly imageArrow: string;
+  readonly imageText: string;
+  readonly imageStrokeWidth: string;
+  readonly imageColor: (index: number) => string;
+  readonly imageAnnotationText: string;
+  readonly imageAddAnnotation: string;
+  readonly imageAnnotations: string;
+  readonly imageAnnotationsEmpty: string;
+  readonly imageAnnotationItem: (kind: string, index: number) => string;
+  readonly imageDeleteAnnotation: string;
+  readonly imageAnnotationDeleted: (label: string) => string;
+  readonly imageAnnotateHint: string;
+  // Map
+  /** Default name of `star-map`, and the button that shows the map again after the table. */
+  readonly map: string;
+  /** Keyboard hint of `star-map` (the description of the map). */
+  readonly mapHint: string;
+  readonly mapResetView: string;
+  /** Column header of the features in the data table of `star-map`. */
+  readonly mapFeature: string;
+  readonly mapLayer: string;
+  readonly mapLegend: string;
+  readonly mapNoData: string;
+  /** A class of the legend: its smallest and largest value, formatted. */
+  readonly mapRange: (min: string, max: string) => string;
+  /** Name of a feature with a value, and the default tooltip. */
+  readonly mapFeatureValue: (label: string, value: string) => string;
+  /** Announcement after a zoom with the keyboard or a button. */
+  readonly mapZoomLevel: (zoom: number) => string;
   // Spreadsheet
   /** Default name of the `star-spreadsheet` grid. */
   readonly spreadsheet: string;
@@ -1131,6 +1213,77 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   stop: 'Stop',
   newMessages: (count) => `${count} new messages`,
   aiPromptShortcutHint: 'Press Control+Enter to send.',
+  imageEditor: 'Image editor',
+  imageTools: 'Image tools',
+  imageCanvas: 'Edited image',
+  imageEmpty: 'No image loaded.',
+  imageDescription: (width, height, edits) => `Image ${width} × ${height} pixels. ${edits}`,
+  imageNoEdits: 'No edits.',
+  imageEditList: (edits) => `Edits: ${edits}.`,
+  imageEditCrop: (width, height) => `cropped to ${width} × ${height}`,
+  imageEditRotate: (degrees) => `rotated by ${degrees}°`,
+  imageEditFlipHorizontal: 'flipped horizontally',
+  imageEditFlipVertical: 'flipped vertically',
+  imageEditResize: (width, height) => `resized to ${width} × ${height}`,
+  imageEditAdjust: 'colors adjusted',
+  imageEditAnnotations: (count) => `${count} ${count === 1 ? 'annotation' : 'annotations'}`,
+  imageCrop: 'Crop',
+  imageRotate: 'Rotate by angle',
+  imageRotateLeft: 'Rotate left',
+  imageRotateRight: 'Rotate right',
+  imageFlipHorizontal: 'Flip horizontally',
+  imageFlipVertical: 'Flip vertically',
+  imageResize: 'Resize',
+  imageAdjust: 'Adjust colors',
+  imageAnnotate: 'Annotate',
+  imageReset: 'Reset all edits',
+  imageResetDone: 'All edits removed.',
+  imageZoomFit: 'Fit to view',
+  imageZoomActual: 'Actual size',
+  apply: 'Apply',
+  imageApplied: (tool) => `${tool} applied.`,
+  imageAspectRatio: 'Aspect ratio',
+  imageAspectFree: 'Free',
+  imageCropArea: (width, height, x, y) => `Crop area ${width} × ${height} pixels at ${x}, ${y}`,
+  imageCropHint:
+    'Arrow keys move the crop area. Shift and arrow keys resize it. Enter applies, Escape cancels.',
+  imageAngle: 'Angle',
+  imageWidth: 'Width',
+  imageHeight: 'Height',
+  imageKeepRatio: 'Keep aspect ratio',
+  imageBrightness: 'Brightness',
+  imageContrast: 'Contrast',
+  imageSaturation: 'Saturation',
+  imageGrayscale: 'Grayscale',
+  imageSepia: 'Sepia',
+  imageShape: 'Shape',
+  imagePen: 'Pen',
+  imageRectangle: 'Rectangle',
+  imageEllipse: 'Ellipse',
+  imageArrow: 'Arrow',
+  imageText: 'Text',
+  imageStrokeWidth: 'Line width',
+  imageColor: (index) => `Color ${index}`,
+  imageAnnotationText: 'Annotation text',
+  imageAddAnnotation: 'Add to the image',
+  imageAnnotations: 'Annotations',
+  imageAnnotationsEmpty: 'No annotations yet.',
+  imageAnnotationItem: (kind, index) => `${kind} ${index}`,
+  imageDeleteAnnotation: 'Delete annotation',
+  imageAnnotationDeleted: (label) => `${label} deleted.`,
+  imageAnnotateHint:
+    'Draw on the image with a pointer, or choose a shape and press Add to the image. Delete removes the chosen annotation.',
+  map: 'Map',
+  mapHint:
+    'Arrow keys move between the features, Enter selects. Shift and arrow keys pan, plus and minus zoom. Without features, the arrow keys pan.',
+  mapResetView: 'Reset view',
+  mapFeature: 'Feature',
+  mapLayer: 'Layer',
+  mapLegend: 'Legend',
+  mapNoData: 'No data',
+  mapRange: (min, max) => `${min} to ${max}`,
+  mapFeatureValue: (label, value) => `${label}: ${value}`,
+  mapZoomLevel: (zoom) => `Zoom level ${zoom}`,
   spreadsheet: 'Spreadsheet',
   spreadsheetHint:
     'Type to replace the cell. F2 or Enter edits it. Shift and the arrow keys select a range. Alt, Shift and the arrow keys resize the column or the row.',
@@ -1412,6 +1565,20 @@ export const STAR_UI_TEXT_PARAMS: { readonly [K in keyof StarUiText]?: readonly 
   isTyping: ['name'],
   areTyping: ['names'],
   newMessages: ['count'],
+  imageDescription: ['width', 'height', 'edits'],
+  imageEditList: ['edits'],
+  imageEditCrop: ['width', 'height'],
+  imageEditRotate: ['degrees'],
+  imageEditResize: ['width', 'height'],
+  imageEditAnnotations: ['count'],
+  imageApplied: ['tool'],
+  imageCropArea: ['width', 'height', 'x', 'y'],
+  imageColor: ['index'],
+  imageAnnotationItem: ['kind', 'index'],
+  imageAnnotationDeleted: ['label'],
+  mapRange: ['min', 'max'],
+  mapFeatureValue: ['label', 'value'],
+  mapZoomLevel: ['zoom'],
   spreadsheetCellInfo: ['address', 'value', 'formula'],
   spreadsheetFunction: ['name', 'args'],
   spreadsheetRange: ['from', 'to'],

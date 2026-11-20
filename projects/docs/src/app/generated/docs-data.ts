@@ -6319,6 +6319,66 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "outputs": []
   },
+  "StarImageEditor": {
+    "kind": "component",
+    "selector": "star-image-editor",
+    "entry": "@star-ng/ui/image-editor",
+    "description": "Image editor (Syncfusion `ejs-imageeditor`, Kendo UI ImageEditor; DevExtreme and Ignite UI have none): crop with free or fixed ratios, rotate by 90° or by any angle, flip, resize, colour adjustments (brightness, contrast, saturation, grayscale, sepia) and annotations (pen, rectangle, ellipse, arrow, text), with undo and redo.",
+    "inputs": [
+      {
+        "name": "src",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "The image to edit: a `data:image/` URL, a `blob:` URL (for example from a file input) or an address of the same origin. Any other address is not drawn (canvas taint rule)."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Name of the editor group. Defaults to the `imageEditor` text."
+      },
+      {
+        "name": "imageAlt",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Name of the image. Defaults to the `imageCanvas` text."
+      },
+      {
+        "name": "aspectRatios",
+        "type": "readonly StarImageAspectRatio[]",
+        "default": "STAR_IMAGE_ASPECT_RATIOS",
+        "required": false,
+        "description": "Ratios of the crop panel. A `null` ratio is free; an empty label shows the `imageAspectFree` text."
+      },
+      {
+        "name": "colors",
+        "type": "readonly string[]",
+        "default": "STAR_IMAGE_COLORS",
+        "required": false,
+        "description": "Annotation colours (CSS colours or `var()` of tokens). Defaults to `--star-chart-1…8`."
+      },
+      {
+        "name": "historyLimit",
+        "type": "number",
+        "default": "100",
+        "required": false,
+        "description": "Most undo steps kept."
+      }
+    ],
+    "models": [
+      {
+        "name": "value",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "The edited image as a PNG data URL, `''` while there is no edit. It is encoded asynchronously after each commit (operation, undo, redo, reset), once the edits settle."
+      }
+    ],
+    "outputs": []
+  },
   "StarInplace": {
     "kind": "component",
     "selector": "star-inplace",
@@ -7739,6 +7799,134 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "selector": "ng-template[starLoading]",
     "entry": "@star-ng/ui/core",
     "description": "Content shown while data loads. PrimeNG `#loader` template.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
+  "StarMap": {
+    "kind": "component",
+    "selector": "star-map",
+    "entry": "@star-ng/ui/map",
+    "description": "Map (DevExtreme `dxVectorMap`, Kendo UI Map, Ignite UI `igx-geographic-map`, Syncfusion `ejs-maps`): an SVG map of layers. A `shape` layer draws GeoJSON polygons (with holes and multi-polygons), lines and points, coloured by value classes with a legend (choropleth); a `marker` layer places markers (slot `ng-template[starMapMarker]`); a `bubble` layer sizes circles by value; an optional `tile` layer shows web map tiles from an address the owner gives (with the required attribution). Web Mercator or equirectangular projection (`starProject`).",
+    "inputs": [
+      {
+        "name": "layers",
+        "type": "readonly StarMapLayer[]",
+        "default": "[]",
+        "required": false,
+        "description": "The layers, drawn in order (a tile layer is always below)."
+      },
+      {
+        "name": "projection",
+        "type": "StarMapProjection",
+        "default": "'mercator'",
+        "required": false,
+        "description": "`mercator` (Web Mercator, default; needed for tiles) or `equirectangular`."
+      },
+      {
+        "name": "minZoom",
+        "type": "number",
+        "default": "0",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "maxZoom",
+        "type": "number",
+        "default": "18",
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "selection",
+        "type": "'none' | 'single' | 'multiple'",
+        "default": "'single'",
+        "required": false,
+        "description": "`single` (default), `multiple` or `none`: how a click or Enter selects shapes."
+      },
+      {
+        "name": "table",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Start with the data table shown."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Name of the map. Defaults to the `map` text."
+      },
+      {
+        "name": "locale",
+        "type": "string | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "BCP 47 locale of the values. Default: `locale` of `provideStarNg`, else the browser locale."
+      },
+      {
+        "name": "valueFormat",
+        "type": "Intl.NumberFormatOptions | null",
+        "default": "null",
+        "required": false,
+        "description": "`Intl.NumberFormat` options of the values (legend, names, table, tooltip)."
+      }
+    ],
+    "models": [
+      {
+        "name": "zoom",
+        "type": "number | null",
+        "default": "null",
+        "required": false,
+        "description": "Zoom level (the world is `256 × 2^zoom` pixels wide). `null`: fit the data."
+      },
+      {
+        "name": "center",
+        "type": "StarLonLat | null",
+        "default": "null",
+        "required": false,
+        "description": "Longitude and latitude in the middle of the map. `null`: the middle of the data."
+      },
+      {
+        "name": "selected",
+        "type": "readonly string[]",
+        "default": "[]",
+        "required": false,
+        "description": "Keys of the selected shapes."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "shapeClick",
+        "type": "StarMapFeatureEvent<StarGeoJsonFeature>",
+        "default": null,
+        "required": false,
+        "description": "A click, Enter or Space on a shape."
+      },
+      {
+        "name": "markerClick",
+        "type": "StarMapFeatureEvent",
+        "default": null,
+        "required": false,
+        "description": "A click, Enter or Space on a marker or a bubble."
+      }
+    ]
+  },
+  "StarMapMarker": {
+    "kind": "directive",
+    "selector": "ng-template[starMapMarker]",
+    "entry": "@star-ng/ui/map",
+    "description": "Template of a marker: `<ng-template starMapMarker let-feature>`.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
+  "StarMapTooltip": {
+    "kind": "directive",
+    "selector": "ng-template[starMapTooltip]",
+    "entry": "@star-ng/ui/map",
+    "description": "Template of the tooltip: `<ng-template starMapTooltip let-feature>`.",
     "inputs": [],
     "models": [],
     "outputs": []
@@ -15962,6 +16150,8 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "ifta-label/basic": "<div class=\"docs-stack\">\n  <star-ifta-label label=\"Customer name\" hint=\"As on the invoice.\">\n    <input starInput placeholder=\"Avery Stone\" />\n  </star-ifta-label>\n  <star-ifta-label label=\"City\">\n    <star-select [options]=\"cities\" [(value)]=\"city\" />\n  </star-ifta-label>\n  <star-ifta-label label=\"Delivery date\">\n    <star-date-picker />\n  </star-ifta-label>\n  <star-ifta-label label=\"Quantity\">\n    <star-input-number [(value)]=\"quantity\" [min]=\"1\" />\n  </star-ifta-label>\n</div>",
   "ifta-label/validation": "<div class=\"docs-stack\">\n  <star-ifta-label label=\"Order number\" [state]=\"order.number()\">\n    <input starInput [formField]=\"order.number\" />\n  </star-ifta-label>\n</div>",
   "image-compare/basic": "<div class=\"docs-stack\">\n  <star-image-compare\n    [leftSrc]=\"before\"\n    [rightSrc]=\"after\"\n    leftAlt=\"Before: grey shapes\"\n    rightAlt=\"After: colored shapes\"\n    ariaLabel=\"Compare before and after\"\n    [(value)]=\"position\"\n  />\n  <p class=\"docs-output\" role=\"status\">Divider at {{ position() }}%</p>\n</div>",
+  "image-editor/basic": "<div class=\"docs-stack\">\n  <star-image-editor\n    #editor\n    [src]=\"scene\"\n    [(value)]=\"edited\"\n    ariaLabel=\"Landscape editor\"\n    imageAlt=\"Landscape with hills, a lake and a house\"\n  />\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"exportPng()\">Export PNG</star-button>\n    <star-button variant=\"secondary\" (pressed)=\"exportJpeg()\">Export JPEG</star-button>\n  </div>\n  <p class=\"docs-output\" role=\"status\">{{ exported() }}</p>\n  @if (edited()) {\n    <img class=\"preview\" [src]=\"edited()\" alt=\"Preview of the edited image\" />\n  }\n  <p class=\"docs-output\">Value: {{ summary() }}</p>\n</div>",
+  "image-editor/file": "<div class=\"docs-stack\">\n  <label class=\"docs-row\">\n    Image file\n    <input type=\"file\" accept=\"image/*\" (change)=\"openFile($event)\" />\n  </label>\n  <star-image-editor [src]=\"fileUrl()\" ariaLabel=\"File editor\" />\n</div>",
   "image/basic": "<star-image [src]=\"shelf\" alt=\"Shelf photo\" [width]=\"240\" />",
   "image/preview": "<star-image [src]=\"shelf\" alt=\"Shelf photo\" [width]=\"240\" preview />",
   "inplace/active": "<div class=\"docs-stack\">\n  <star-inplace ariaLabel=\"Edit title\" [(active)]=\"editing\">\n    <ng-template starInplaceDisplay>{{ title() }}</ng-template>\n    <ng-template starInplaceContent>\n      <input\n        starInput\n        size=\"sm\"\n        aria-label=\"Title\"\n        [value]=\"title()\"\n        (input)=\"title.set($any($event.target).value)\"\n        (keydown.enter)=\"editing.set(false)\"\n      />\n    </ng-template>\n  </star-inplace>\n  <p class=\"docs-output\" role=\"status\">Editing: {{ editing() }}</p>\n  <star-inplace disabled ariaLabel=\"Locked value\">\n    <ng-template starInplaceDisplay>Locked value</ng-template>\n    <ng-template starInplaceContent>Not shown</ng-template>\n  </star-inplace>\n</div>",
@@ -16004,6 +16194,9 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "listbox/template": "<star-listbox\n  [options]=\"queues\"\n  optionLabel=\"name\"\n  optionValue=\"id\"\n  [(value)]=\"templated\"\n  scrollHeight=\"12rem\"\n  ariaLabel=\"Queue with template\"\n>\n  <ng-template starOption [starOptionOf]=\"queues\" let-item let-selected=\"selected\">\n    <span>\n      {{ item.name }}\n      <small>{{ item.site }}</small>\n    </span>\n  </ng-template>\n</star-listbox>",
   "listbox/virtual": "<div class=\"docs-stack\">\n  <star-listbox\n    [options]=\"invoiceNumbers\"\n    [(value)]=\"invoice\"\n    virtualScroll\n    filter\n    scrollHeight=\"16rem\"\n    ariaLabel=\"Invoice number\"\n  />\n  <p class=\"docs-output\" role=\"status\">Invoice: {{ invoice() ?? 'none' }}</p>\n</div>",
   "listbox/virtual-groups": "<div class=\"docs-stack\">\n  <star-listbox\n    [options]=\"shipments\"\n    optionLabel=\"name\"\n    optionValue=\"id\"\n    optionGroup=\"region\"\n    optionDisabled=\"held\"\n    [(value)]=\"picked\"\n    multiple\n    virtualScroll\n    [virtualItemSize]=\"36\"\n    scrollHeight=\"16rem\"\n    ariaLabel=\"Shipments\"\n  >\n    <ng-template starOption [starOptionOf]=\"shipments\" let-item let-selected=\"selected\">\n      {{ item.name }}\n    </ng-template>\n  </star-listbox>\n  <p class=\"docs-output\" role=\"status\">Picked: {{ pickedCount() }}</p>\n</div>",
+  "map/choropleth": "<div class=\"docs-stack\">\n  <star-map\n    [layers]=\"choropleth\"\n    [(selected)]=\"selected\"\n    [(zoom)]=\"zoom\"\n    ariaLabel=\"Sales by region\"\n    (shapeClick)=\"clicked($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Selected: {{ selected().join(', ') || '(none)' }}. Last click: {{ lastClick() }}. Zoom:\n    {{ zoom() === null ? 'fit' : zoom() }}.\n  </p>\n</div>",
+  "map/markers": "<star-map\n  [layers]=\"markerLayers\"\n  projection=\"equirectangular\"\n  selection=\"none\"\n  ariaLabel=\"Towns and visitors\"\n>\n  <ng-template starMapMarker let-town>\n    <span class=\"town\"\n      ><i class=\"ph-fill ph-map-pin\" aria-hidden=\"true\"></i>{{ town.label }}</span\n    >\n  </ng-template>\n  <ng-template starMapTooltip let-feature>\n    <strong>{{ feature.label }}</strong>\n    @if (feature.value !== null) {\n      · {{ feature.value }} visitors\n    }\n  </ng-template>\n</star-map>",
+  "map/tiles": "<div class=\"docs-stack\">\n  <label class=\"docs-row\">\n    <input type=\"checkbox\" [checked]=\"tilesOn()\" (change)=\"tilesOn.set(!tilesOn())\" />\n    Load OpenStreetMap tiles (from tile.openstreetmap.org)\n  </label>\n  <star-map [layers]=\"tileLayers()\" selection=\"none\" ariaLabel=\"Three capitals\" />\n</div>",
   "mega-menu/basic": "<div class=\"docs-stack\">\n  <star-mega-menu\n    ariaLabel=\"Catalogue\"\n    [items]=\"catalogue\"\n    (itemClick)=\"last.set($event.label ?? '')\"\n  />\n  <p class=\"docs-output\" role=\"status\">Last action: {{ last() }}</p>\n</div>",
   "mention/basic": "<div class=\"docs-stack\">\n  <textarea\n    class=\"star-input\"\n    aria-label=\"Comment\"\n    placeholder=\"Write a comment, type @ to mention someone\"\n    starMention\n    #comment=\"starMention\"\n    [suggestions]=\"people\"\n    optionLabel=\"name\"\n    (mentionSelect)=\"last.set($any($event.item).name)\"\n  ></textarea>\n  <p class=\"docs-output\" role=\"status\">\n    Last mention: {{ last() }}. In the text: {{ names(comment.mentions()) }}\n  </p>\n</div>",
   "mention/form": "<div class=\"docs-stack\">\n  <star-field label=\"Assign to\" hint=\"Type @ and a name\">\n    <input\n      starInput\n      [formField]=\"f.assignee\"\n      starMention\n      [suggestions]=\"people\"\n      optionLabel=\"name\"\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Model: {{ model().assignee || '(empty)' }}</p>\n</div>",
