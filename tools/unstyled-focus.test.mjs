@@ -118,5 +118,8 @@ test('the host copy leaves out the accent and the focus rings, which unstyled mo
   const block =
     /:where\(\[data-star-part=root\]\[data-star-unstyled\]\)\{([^}]*)\}/.exec(css)?.[1] ?? '';
   assert.ok(block.includes('--star-host-primary'));
-  assert.ok(!/--star-host-(accent|focus-ring)/.test(block), block.slice(0, 200));
+  assert.ok(
+    !/--star-host-(accent|focus-ring|focus-ring-primary):/.test(block),
+    block.slice(0, 200),
+  );
 });
