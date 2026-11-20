@@ -18,9 +18,16 @@ import {
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
   host: { class: 'star-demo' },
   template: `<div class="star-demo__header" starPart="header"><span starPart="title">T</span></div>
+    <button type="button" starPart="close" aria-label="Close" [id]="closeId">x</button>
+    @if (more()) {
+      <p starPart="more">More</p>
+    }
     <ng-content />`,
 })
-class Demo {}
+class Demo {
+  readonly closeId = 'demo-close';
+  readonly more = signal(false);
+}
 
 @Component({
   imports: [Demo],
@@ -128,8 +135,44 @@ describe('pass-through and unstyled', () => {
     expect(inner.classList).not.toContain('outer-title');
   });
 
-  it('allows only id, title, data-* and aria-* attributes', () => {
-    expect(ɵstarSafePassThroughAttr('id')).toBe(true);
+  it('without any pt only names the parts: no classes, styles or tracking', async () => {
+    const { root, header, fixture } = await setup();
+    const styled = fixture.debugElement
+      .query((node) => node.nativeElement === root)
+      .injector.get(StarStyled);
+    expect(header.getAttribute('data-star-part')).toBe('header');
+    expect(header.getAttribute('class')).toBe('star-demo__header');
+    expect(header.hasAttribute('style')).toBe(false);
+    expect((styled as unknown as { parts: Map<Element, unknown> }).parts.size).toBe(0);
+  });
+
+  it('applies a pt that is set later, also to parts created after it', async () => {
+    const { host, root, header, fixture, stable } = await setup();
+    host.pt.set({ header: { class: 'late' }, more: { class: 'late-more' } });
+    await stable();
+    expect(header.classList).toContain('late');
+    const demo = fixture.debugElement.query((node) => node.nativeElement === root)
+      .componentInstance as Demo;
+    demo.more.set(true);
+    await stable();
+    expect(root.querySelector('[data-star-part=more]')!.classList).toContain('late-more');
+  });
+
+  it('restores the template value of an attribute when the pt removes its override', async () => {
+    const { host, root, stable } = await setup();
+    const close = root.querySelector<HTMLElement>('[data-star-part=close]')!;
+    host.pt.set({ close: { attrs: { 'aria-label': 'Shut', id: 'other' } } });
+    await stable();
+    expect(close.getAttribute('aria-label')).toBe('Shut');
+    // `id` is not allowed: ids of a template are referenced by other elements.
+    expect(close.id).toBe('demo-close');
+    host.pt.set(null);
+    await stable();
+    expect(close.getAttribute('aria-label')).toBe('Close');
+  });
+
+  it('allows only title, data-* and aria-* attributes', () => {
+    expect(ɵstarSafePassThroughAttr('id')).toBe(false);
     expect(ɵstarSafePassThroughAttr('title')).toBe(true);
     expect(ɵstarSafePassThroughAttr('data-row')).toBe(true);
     expect(ɵstarSafePassThroughAttr('aria-label')).toBe(true);

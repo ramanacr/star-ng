@@ -5,17 +5,16 @@
 import {
   booleanAttribute,
   computed,
-  DestroyRef,
   Directive,
   effect,
   ElementRef,
+  HostAttributeToken,
   inject,
   InjectionToken,
   input,
   isDevMode,
-  OnInit,
   Renderer2,
-  Signal,
+  RendererStyleFlags2,
   untracked,
 } from '@angular/core';
 import { StarConfigService } from './config';
@@ -30,8 +29,9 @@ export interface StarPassThroughOptions {
   /** Inline styles, for example `{ 'max-width': '20rem' }` (like `[style]`). */
   readonly style?: Readonly<Record<string, string | number | null>>;
   /**
-   * Attributes. Only `id`, `title`, `data-*` and `aria-*` are applied; any other name (and every
-   * `on*` event handler) is ignored, with a warning in dev mode. `null` or `false` removes it.
+   * Attributes. Only `title`, `data-*` and `aria-*` are applied; any other name (`id`, every `on*`
+   * event handler) is ignored, with a warning in dev mode. `null` or `false` removes it. When the
+   * pass-through drops an attribute again, the value of the template comes back.
    */
   readonly attrs?: Readonly<Record<string, string | number | boolean | null>>;
 }
@@ -49,13 +49,15 @@ export type StarGlobalPassThrough = Readonly<Record<string, StarPassThrough | un
 export function ɵstarSafePassThroughAttr(name: string): boolean {
   const lower = name.toLowerCase();
   if (lower.startsWith('on') || lower.startsWith('data-star-')) return false;
-  return lower === 'id' || lower === 'title' || /^(data|aria)-[a-z0-9_.-]+$/.test(lower);
+  // `id` is refused: other elements of a control refer to its ids (`aria-controls`, labels).
+  return lower === 'title' || /^(data|aria)-[a-z0-9_.-]+$/.test(lower);
 }
 
-function classList(value: StarPassThroughClass | undefined): string[] {
+/** The class names of a pass-through `class`. @internal */
+export function ɵstarClassList(value: StarPassThroughClass | undefined): string[] {
   if (!value) return [];
   if (typeof value === 'string') return value.split(/\s+/).filter(Boolean);
-  if (Array.isArray(value)) return value.flatMap((item: string) => classList(item));
+  if (Array.isArray(value)) return value.flatMap((item: string) => ɵstarClassList(item));
   return Object.entries(value as Record<string, boolean>)
     .filter(([, on]) => on)
     .map(([name]) => name);
@@ -69,7 +71,7 @@ export function ɵstarMergePassThrough(
   if (!global && !instance) return null;
   if (!global || !instance) return (global ?? instance)!;
   return {
-    class: [...classList(global.class), ...classList(instance.class)],
+    class: [...ɵstarClassList(global.class), ...ɵstarClassList(instance.class)],
     style: global.style || instance.style ? { ...global.style, ...instance.style } : undefined,
     attrs: global.attrs || instance.attrs ? { ...global.attrs, ...instance.attrs } : undefined,
   };
@@ -82,6 +84,16 @@ export function ɵstarMergePassThrough(
  */
 export const ɵSTAR_PART_HOST = new InjectionToken<StarStyled>('STAR_PART_HOST');
 
+/** What the pass-through set on one part element, to undo it. */
+interface PartState {
+  readonly name: string;
+  classes: readonly string[];
+  /** Style properties set, with the inline value that the element had before. */
+  readonly styles: Map<string, string>;
+  /** Attributes set, with the value that the template had before (`null`: none). */
+  readonly attrs: Map<string, string | null>;
+}
+
 /**
  * Host directive of every control with styling hooks: the inputs `pt` and `unstyled`, the
  * `data-star-unstyled` attribute and the `root` part (the host element). The control name for
@@ -91,15 +103,14 @@ export const ɵSTAR_PART_HOST = new InjectionToken<StarStyled>('STAR_PART_HOST')
  * hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
  * viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
  * ```
+ *
+ * Fast path: while no pass-through exists for the control and it is not unstyled, the parts only
+ * carry their name. The first `pt` (or the unstyled mode) switches the parts of the control on,
+ * once; parts created after that switch themselves on.
  */
 @Directive({
   selector: '[starStyled]',
-  host: {
-    'data-star-part': 'root',
-    '[attr.data-star-unstyled]': 'isUnstyled() ? "" : null',
-    '[class]': 'rootOptions()?.class ?? null',
-    '[style]': 'rootOptions()?.style ?? null',
-  },
+  host: { 'data-star-part': 'root' },
 })
 export class StarStyled {
   private readonly config = inject(StarConfigService).config;
@@ -134,92 +145,120 @@ export class StarStyled {
     for (const name of names) result[name] = ɵstarMergePassThrough(global[name], instance[name]);
     return result as StarPassThrough;
   });
-  private readonly parts = new Map<string, Signal<StarPassThroughOptions | null>>();
-  protected readonly rootOptions = this.part('root');
-  /** The part elements with the attributes that this directive set on them. */
-  private readonly elements = new Map<Element, { name: string; applied: readonly string[] }>();
+  /** `true` once a pass-through or the unstyled mode applies to the control. */
+  private readonly active = computed(() => !!this.merged() || this.isUnstyled());
+  /** The part elements that the pass-through or the unstyled mode touched. Empty on the fast path. */
+  private readonly parts = new Map<Element, PartState>();
+  private switchedOn = false;
 
   constructor() {
-    this.elements.set(this.host, { name: 'root', applied: [] });
-    // One effect per control (not per part) applies the attributes of every part.
+    // One effect per control. It does nothing while the fast path holds.
     effect(() => {
+      const active = this.active();
       const merged = this.merged();
-      if (!merged && ![...this.elements.values()].some((entry) => entry.applied.length)) return;
-      for (const element of this.elements.keys()) this.applyAttrs(element);
+      const unstyled = this.isUnstyled();
+      if (!active && !this.switchedOn) return;
+      untracked(() => {
+        if (!this.switchedOn) this.switchOn();
+        for (const [element, state] of this.parts) {
+          if (element !== this.host && !element.isConnected) this.parts.delete(element);
+          else this.apply(element, state, merged?.[state.name] ?? null, unstyled);
+        }
+      });
     });
   }
 
-  /** The merged options of one part, as a signal. */
-  part(name: string): Signal<StarPassThroughOptions | null> {
-    let signal = this.parts.get(name);
-    if (!signal) {
-      signal = computed(() => this.merged()?.[name] ?? null);
-      this.parts.set(name, signal);
+  /** A new part element. Tracked only after the control has switched its parts on. @internal */
+  attach(element: Element, name: string): void {
+    if (!this.switchedOn && !untracked(this.active)) return;
+    if (!this.switchedOn) this.switchOn();
+    const state = this.track(element, name);
+    this.apply(element, state, untracked(this.merged)?.[name] ?? null, untracked(this.isUnstyled));
+  }
+
+  /** Tracks the root and the parts of this control that exist now (not those of nested controls). */
+  private switchOn(): void {
+    this.switchedOn = true;
+    this.track(this.host, 'root');
+    for (const element of Array.from(this.host.querySelectorAll('[data-star-part]'))) {
+      const name = element.getAttribute('data-star-part')!;
+      if (name === 'root') continue;
+      const owner = element.parentElement?.closest('[data-star-part="root"]');
+      if (owner === this.host) this.track(element, name);
     }
-    return signal;
   }
 
-  /** Adds a part element; its attributes follow the pass-through. @internal */
-  register(element: Element, name: string): void {
-    this.elements.set(element, { name, applied: [] });
-    untracked(() => this.applyAttrs(element));
-  }
-
-  /** Removes a part element. @internal */
-  unregister(element: Element): void {
-    this.elements.delete(element);
-  }
-
-  private applyAttrs(element: Element): void {
-    const entry = this.elements.get(element);
-    if (!entry) return;
-    const attrs = this.part(entry.name)()?.attrs ?? {};
-    for (const name of entry.applied) {
-      if (!(name in attrs)) this.renderer.removeAttribute(element, name);
+  private track(element: Element, name: string): PartState {
+    let state = this.parts.get(element);
+    if (!state) {
+      state = { name, classes: [], styles: new Map(), attrs: new Map() };
+      this.parts.set(element, state);
     }
-    const applied: string[] = [];
+    return state;
+  }
+
+  private apply(
+    element: Element,
+    state: PartState,
+    options: StarPassThroughOptions | null,
+    unstyled: boolean,
+  ): void {
+    const renderer = this.renderer;
+    if (unstyled) renderer.setAttribute(element, 'data-star-unstyled', '');
+    else renderer.removeAttribute(element, 'data-star-unstyled');
+
+    const classes = ɵstarClassList(options?.class);
+    for (const name of state.classes) {
+      if (!classes.includes(name)) renderer.removeClass(element, name);
+    }
+    for (const name of classes) renderer.addClass(element, name);
+    state.classes = classes;
+
+    const inline = (element as HTMLElement).style;
+    const styles = options?.style ?? {};
+    for (const [name, before] of state.styles) {
+      if (styles[name] !== undefined && styles[name] !== null) continue;
+      if (before) renderer.setStyle(element, name, before, RendererStyleFlags2.DashCase);
+      else renderer.removeStyle(element, name, RendererStyleFlags2.DashCase);
+      state.styles.delete(name);
+    }
+    for (const [name, value] of Object.entries(styles)) {
+      if (value === null || value === undefined) continue;
+      if (!state.styles.has(name)) state.styles.set(name, inline?.getPropertyValue?.(name) ?? '');
+      renderer.setStyle(element, name, String(value), RendererStyleFlags2.DashCase);
+    }
+
+    const attrs = options?.attrs ?? {};
+    for (const [name, before] of state.attrs) {
+      if (name in attrs) continue;
+      if (before === null) renderer.removeAttribute(element, name);
+      else renderer.setAttribute(element, name, before);
+      state.attrs.delete(name);
+    }
     for (const [name, value] of Object.entries(attrs)) {
       if (!ɵstarSafePassThroughAttr(name)) {
         if (isDevMode()) console.warn(`StarNG: pass-through attribute "${name}" is not allowed.`);
         continue;
       }
-      if (value === null || value === false) {
-        this.renderer.removeAttribute(element, name);
-      } else {
-        this.renderer.setAttribute(element, name, value === true ? '' : String(value));
-        applied.push(name);
-      }
+      if (!state.attrs.has(name)) state.attrs.set(name, element.getAttribute(name));
+      if (value === null || value === false) renderer.removeAttribute(element, name);
+      else renderer.setAttribute(element, name, value === true ? '' : String(value));
     }
-    entry.applied = applied;
   }
 }
 
 /**
- * Names an element of a control template as a part: `<div starPart="header">`. It sets
- * `data-star-part="header"`, the classes, styles and safe attributes of `pt.header`, and
- * `data-star-unstyled` when the control is unstyled. Outside a control it only sets the name.
+ * Names an element of a control template as a part: `<div starPart="header">` (a static
+ * attribute, not a binding). It sets `data-star-part="header"`. The classes, styles and safe
+ * attributes of `pt.header` and the unstyled mode come from the control (`StarStyled`); while
+ * the control has no pass-through, a part costs only its name.
  */
-@Directive({
-  selector: '[starPart]',
-  host: {
-    '[attr.data-star-part]': 'starPart()',
-    '[attr.data-star-unstyled]': 'host?.isUnstyled() ? "" : null',
-    '[class]': 'options()?.class ?? null',
-    '[style]': 'options()?.style ?? null',
-  },
-})
-export class StarPart implements OnInit {
-  protected readonly host = inject(ɵSTAR_PART_HOST, { optional: true });
-  private readonly element = inject(ElementRef).nativeElement as Element;
-  /** The part name, for example `header`. */
-  readonly starPart = input.required<string>();
-  protected readonly options = computed(() => this.host?.part(this.starPart())() ?? null);
-
+@Directive({ selector: '[starPart]' })
+export class StarPart {
   constructor() {
-    inject(DestroyRef).onDestroy(() => this.host?.unregister(this.element));
-  }
-
-  ngOnInit(): void {
-    this.host?.register(this.element, this.starPart());
+    const name = inject(new HostAttributeToken('starPart'));
+    const element = inject(ElementRef).nativeElement as Element;
+    inject(Renderer2).setAttribute(element, 'data-star-part', name);
+    inject(ɵSTAR_PART_HOST, { optional: true })?.attach(element, name);
   }
 }
