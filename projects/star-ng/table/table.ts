@@ -2934,6 +2934,7 @@ export class StarTable<T> extends StarTableInteraction<T> {
     pageOnly: this.selectionPageOnly,
     rowSelectable: this.rowSelectable,
     keyOf: (row) => this.trackKey(row),
+    gridCell: (tr) => (this.cellMode() ? tr.querySelector('td[data-field="$select"]') : null),
     rows: computed(() => (this.lazy() ? this.pageRows() : this.withAdded())),
     pageRows: this.pageRows,
     knownRows: this.value,

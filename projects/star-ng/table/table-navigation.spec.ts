@@ -405,6 +405,35 @@ describe('StarTable grid with selection, reorder and row action cells', () => {
     await press('F2');
     expect(document.activeElement).toBe(td(2, '$reorder'));
   });
+
+  it('keeps the focus on the selection cells with Shift + Arrow keys', async () => {
+    const { fixture, td, press, host } = await setupLead();
+    td(1, '$select').focus();
+    await fixture.whenStable();
+    await press(' ');
+    await press('ArrowDown', { shiftKey: true });
+    expect(document.activeElement).toBe(td(2, '$select'));
+    expect(host.selected().map((row) => row.sku)).toEqual(['SKU-1', 'SKU-2']);
+    await press('ArrowDown');
+    expect(document.activeElement).toBe(td(3, '$select'));
+  });
+
+  it('goes into the first enabled control of a cell, and leaves the key alone without one', async () => {
+    const { fixture, td, press } = await setupLead();
+    td(1, '$reorder').focus();
+    await fixture.whenStable();
+    // "Move up" of the first row is disabled.
+    await press('Enter');
+    expect(document.activeElement).toBe(td(1, '$reorder').querySelectorAll('button')[1]);
+    await press('Escape');
+    td(1, '$reorder')
+      .querySelectorAll('button')
+      .forEach((button) => button.setAttribute('aria-disabled', 'true'));
+    const enter = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true });
+    td(1, '$reorder').dispatchEvent(enter);
+    expect(enter.defaultPrevented).toBe(false);
+    expect(document.activeElement).toBe(td(1, '$reorder'));
+  });
 });
 
 type Metric = Record<string, number | string>;

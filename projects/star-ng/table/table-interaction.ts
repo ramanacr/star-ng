@@ -91,6 +91,9 @@ const OWN_KEYS =
 
 /** Focusable controls inside a lead or trail cell (selection, expander, reorder, row actions). */
 const CELL_CONTROLS = 'button, input, select, textarea, a[href], [tabindex]';
+/** The controls of a lead or trail cell that Enter or F2 can go into. */
+const ENABLED_CONTROLS =
+  ':is(button, input, select, textarea, a[href], [tabindex]):not([disabled]):not([aria-disabled="true"])';
 /** Marks a control that cell navigation took out of the tab order. */
 const GRID_TAB_MARK = 'data-star-grid-tab';
 
@@ -545,6 +548,8 @@ export abstract class StarTableInteraction<T> {
     this.setActive(target.row, target.field);
     // Any focus of a cell (Tab in, a click, focusCell, navigateTo) sets the range anchor, unless
     // a Shift move or Shift + click stretches the range to this cell.
+    // A lead or trail cell is never the corner of a range.
+    if (!target.column) return;
     const cell = { rowKey: this.trackKey(target.row), field: target.field };
     const extend = this.extendTarget;
     this.extendTarget = null;
@@ -570,7 +575,8 @@ export abstract class StarTableInteraction<T> {
         return;
       }
       if (plain && (event.key === 'Enter' || event.key === 'F2')) {
-        const control = cell.querySelector<HTMLElement>(CELL_CONTROLS);
+        // The first enabled control; without one the key keeps its default.
+        const control = cell.querySelector<HTMLElement>(ENABLED_CONTROLS);
         if (control) {
           event.preventDefault();
           control.focus();
@@ -625,8 +631,13 @@ export abstract class StarTableInteraction<T> {
     const goal = { rowKey: this.trackKey(rows[index]), field: nextField };
     if (extend) this.extendTarget = goal;
     this.moveFocus(rows[index], nextField, true);
-    if (extend && nextColumn) this.selectCell(rows[index], nextColumn, 'extend');
-    else if (!extend) this.cellAnchor = goal;
+    if (extend && nextColumn) {
+      // From a lead cell the range starts at the first data cell that the move reaches.
+      if (!column || !this.cellAnchor || isLeadField(this.cellAnchor.field)) this.cellAnchor = goal;
+      this.selectCell(rows[index], nextColumn, 'extend');
+    } else if (!extend && nextColumn) {
+      this.cellAnchor = goal;
+    }
   }
 
   // ---------------------------------------------------------------- search

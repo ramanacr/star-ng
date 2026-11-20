@@ -25,6 +25,7 @@ const STOCK: Stock[] = Array.from({ length: 6 }, (_, i) => ({
     dataKey="sku"
     ariaLabel="Stock"
     [selectionMode]="mode()"
+    [reorderableRows]="reorder()"
     [pinnedColumns]="pins()"
     [(cellSelection)]="cells"
   />`,
@@ -32,6 +33,7 @@ const STOCK: Stock[] = Array.from({ length: 6 }, (_, i) => ({
 class RangeHost {
   readonly rows = STOCK;
   readonly mode = signal<'cell' | 'range'>('range');
+  readonly reorder = signal(false);
   readonly pins = signal({});
   readonly cells = signal<readonly StarTableCellRef[]>([]);
   readonly columns: StarColumn<Stock>[] = [
@@ -143,6 +145,16 @@ describe('StarTable cell and range selection', () => {
     expect(selected()).toEqual([]);
     await press(' ');
     expect(selected()).toEqual(['SKU-4|stock']);
+  });
+
+  it('starts a range at the first data cell after a lead cell', async () => {
+    const { fixture, el, press, selected } = await setup((h) => h.reorder.set(true));
+    el.querySelector<HTMLElement>('tbody tr[data-row="SKU-2"] td[data-field="$reorder"]')!.focus();
+    await fixture.whenStable();
+    await press('ArrowRight', { shiftKey: true });
+    await press('ArrowRight', { shiftKey: true });
+    await press('ArrowDown', { shiftKey: true });
+    expect(selected()).toEqual(['SKU-2|sku', 'SKU-2|name', 'SKU-3|sku', 'SKU-3|name']);
   });
 
   it('starts a range at the cell that got the focus (Tab in, focusCell)', async () => {

@@ -35,6 +35,8 @@ export interface StarTableSelectionHost<T> {
   readonly rowSelectable: Signal<((row: T) => boolean) | null>;
   /** Row key (`dataKey`, else the row object). */
   readonly keyOf: (row: T) => unknown;
+  /** In a grid: the selection cell of a row, which takes the focus instead of its control. */
+  readonly gridCell?: (tr: HTMLElement) => HTMLElement | null;
   /**
    * The filter result in display order: the scope of the header check box with
    * `selectionPageOnly` off, and the rows of a range.
@@ -272,7 +274,8 @@ export class StarTableSelection<T> {
     }
     const row = next ? rowOf(next) : undefined;
     if (!next || row === undefined) return undefined;
-    const control = next.querySelector<HTMLElement>('td.star-table__select input');
+    const control =
+      this.host.gridCell?.(next) ?? next.querySelector<HTMLElement>('td.star-table__select input');
     (onRow ? next : (control ?? next)).focus();
     return row;
   }
