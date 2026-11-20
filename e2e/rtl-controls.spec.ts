@@ -402,16 +402,23 @@ test.describe('right-to-left controls', () => {
     }) => {
       await openPage(page, '/controls/cascade-select', 'Cascade select');
       const city = example(page, 'Country, state and city').getByRole('button', { name: 'City' });
-      await city.focus();
-      await page.keyboard.press('Enter');
       const germany = page.getByRole('menuitem', { name: 'Germany' });
-      await expect(germany).toBeFocused();
+      // Enter before hydration has no handler yet: press it again until the list is open, and
+      // never when it is open already (Enter would choose).
+      await expect(async () => {
+        if (!(await germany.isVisible())) {
+          await city.focus();
+          await page.keyboard.press('Enter');
+        }
+        await expect(germany).toBeFocused({ timeout: 1000 });
+      }).toPass();
       await page.keyboard.press('ArrowRight');
       await expect(germany).toBeFocused();
       await page.keyboard.press('ArrowLeft');
       const bavaria = page.getByRole('menuitem', { name: 'Bavaria' });
       await expect(bavaria).toBeFocused();
-      // The submenu opens to the left of its parent.
+      // The submenu opens to the left of its parent, once it is placed.
+      await expect(bavaria).toBeInViewport();
       const submenu = await settledBox(bavaria);
       expect(submenu.x + submenu.width).toBeLessThanOrEqual((await settledBox(germany)).x + 4);
       await page.keyboard.press('ArrowRight');
