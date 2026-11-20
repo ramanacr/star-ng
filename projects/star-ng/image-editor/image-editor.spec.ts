@@ -213,7 +213,11 @@ describe('StarImageEditor', () => {
     expect(editor.description()).toBe(
       'Image 200 × 400 pixels. Edits: rotated by 90°, flipped horizontally.',
     );
-    expect(fixture.componentInstance.value()).toBe('data:image/png;base64,EDITED');
+    // The value is encoded after the edits settle (asynchronously).
+    expect(fixture.componentInstance.value()).toBe('');
+    await vi.waitFor(() =>
+      expect(fixture.componentInstance.value()).toBe('data:image/png;base64,eA=='),
+    );
     const host = root.querySelector('star-image-editor')!;
     key(host, 'z', { ctrlKey: true });
     await stable();
@@ -228,8 +232,43 @@ describe('StarImageEditor', () => {
     await stable();
     expect(editor.operations()).toEqual([]);
     expect(editor.canUndo()).toBe(true);
-    expect(fixture.componentInstance.value()).toBe('');
+    await vi.waitFor(() => expect(fixture.componentInstance.value()).toBe(''));
     expect(announce).toHaveBeenLastCalledWith('All edits removed.');
+  });
+
+  it('encodes the value once after the edits settle, never during a drag', async () => {
+    const { root, editor, tool, stable, fixture } = await setup();
+    const toBlob = vi.mocked(HTMLCanvasElement.prototype.toBlob);
+    toBlob.mockClear();
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    try {
+      editor.rotate(90);
+      editor.flip('horizontal');
+      editor.undo();
+      // Nothing is encoded at once: the commit points are coalesced.
+      expect(toBlob).not.toHaveBeenCalled();
+      expect(fixture.componentInstance.value()).toBe('');
+      vi.advanceTimersByTime(500);
+    } finally {
+      vi.useRealTimers();
+    }
+    await vi.waitFor(() =>
+      expect(fixture.componentInstance.value()).toBe('data:image/png;base64,eA=='),
+    );
+    expect(toBlob).toHaveBeenCalledTimes(1);
+
+    // A drag (pointer moves) is no commit point: no encoding until the stroke ends.
+    tool('annotate').click();
+    await stable();
+    toBlob.mockClear();
+    const canvas = root.querySelector('canvas')!;
+    pointer(canvas, 'pointerdown', 10, 10);
+    for (let i = 1; i <= 5; i++) pointer(canvas, 'pointermove', 10 + i * 6, 10 + i * 3);
+    await stable();
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    expect(toBlob).not.toHaveBeenCalled();
+    pointer(canvas, 'pointerup', 40, 25);
+    await vi.waitFor(() => expect(toBlob).toHaveBeenCalledTimes(1));
   });
 
   it('crops with a fixed ratio and the keyboard, and announces the size', async () => {

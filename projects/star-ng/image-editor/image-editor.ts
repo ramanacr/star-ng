@@ -93,6 +93,19 @@ const FALLBACK_COLORS = [
   '#e34948',
 ];
 
+/** Milliseconds that `value` waits after the last edit before it is encoded. */
+export const STAR_IMAGE_VALUE_DELAY = 150;
+
+/** A blob as a base64 data URL, without `FileReader` (works in every engine and in tests). */
+async function starBlobToDataUrl(blob: Blob): Promise<string> {
+  const bytes = new Uint8Array(await blob.arrayBuffer());
+  let binary = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  }
+  return `data:${blob.type || 'image/png'};base64,${btoa(binary)}`;
+}
+
 /** View size before the stage is measured (and on the server). */
 const FALLBACK_STAGE: StarImageSize = { width: 640, height: 400 };
 
@@ -521,7 +534,10 @@ export class StarImageEditor {
    * address of the same origin. Any other address is not drawn (canvas taint rule).
    */
   readonly src = input<string | null>(null);
-  /** The edited image as a PNG data URL after each edit; `''` while there is no edit. */
+  /**
+   * The edited image as a PNG data URL, `''` while there is no edit. It is encoded
+   * asynchronously after each commit (operation, undo, redo, reset), once the edits settle.
+   */
   readonly value = model('');
   /** Name of the editor group. Defaults to the `imageEditor` text. */
   readonly ariaLabel = input<string | null>(null);
@@ -584,6 +600,10 @@ export class StarImageEditor {
   private readonly stageSize = signal<StarImageSize | null>(null);
   /** Device pixel ratio of the screen (browser only). */
   private readonly ratio = signal(1);
+  /** The pending encoding of `value`. */
+  private valueTimer: ReturnType<typeof setTimeout> | null = null;
+  /** Counts the scheduled encodings; only the latest one writes `value`. */
+  private valueGeneration = 0;
   /** The pending animation frame of the view. */
   private frame: number | null = null;
   /** The adjusted source at view resolution, kept while the scale and the colours stay. */
@@ -811,6 +831,8 @@ export class StarImageEditor {
     });
     inject(DestroyRef).onDestroy(() => {
       if (this.frame !== null) this.doc.defaultView?.cancelAnimationFrame?.(this.frame);
+      if (this.valueTimer !== null) clearTimeout(this.valueTimer);
+      this.valueGeneration++;
     });
   }
 
@@ -1354,9 +1376,31 @@ export class StarImageEditor {
 
   private afterChange(message?: string): void {
     if (message) void this.announcer.announce(message);
-    if (this.browser && this.loaded()) {
-      this.value.set(this.operations().length ? this.toDataUrl() : '');
+    this.scheduleValue();
+  }
+
+  /**
+   * Encodes `value` after the edits settle: only at commit points (an operation added, undo,
+   * redo, reset), coalesced over `STAR_IMAGE_VALUE_DELAY` milliseconds, asynchronously
+   * (`toBlob`), latest wins. A drag or a slider tick never encodes.
+   */
+  private scheduleValue(): void {
+    if (!this.browser || !this.loaded()) return;
+    if (this.valueTimer !== null) clearTimeout(this.valueTimer);
+    const generation = ++this.valueGeneration;
+    this.valueTimer = setTimeout(() => {
+      this.valueTimer = null;
+      void this.encodeValue(generation);
+    }, STAR_IMAGE_VALUE_DELAY);
+  }
+
+  private async encodeValue(generation: number): Promise<void> {
+    let value = '';
+    if (this.operations().length) {
+      const blob = await this.exportImage();
+      value = blob ? await starBlobToDataUrl(blob) : '';
     }
+    if (generation === this.valueGeneration) this.value.set(value);
   }
 
   private load(src: string | null): void {
