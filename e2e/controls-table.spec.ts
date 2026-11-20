@@ -1507,6 +1507,7 @@ test.describe('table: pages', () => {
     ['/controls/table-columns', 'Table columns'],
     ['/controls/table-layout', 'Table layout'],
     ['/controls/table-export', 'Table export'],
+    ['/controls/table-interaction', 'Table interaction'],
   ] as const) {
     test(`${path} opens without a console error and names every table`, async ({ page }) => {
       const errors = collectErrors(page);
@@ -1543,6 +1544,7 @@ test.describe('table: width', () => {
     ['/controls/table-columns', 'Table columns'],
     ['/controls/table-layout', 'Table layout'],
     ['/controls/table-export', 'Table export'],
+    ['/controls/table-interaction', 'Table interaction'],
     ['/controls/tree-table', 'Tree table'],
   ] as const) {
     test(`${path}: every table is as wide as the live area of its example`, async ({ page }) => {

@@ -136,7 +136,8 @@ test.describe('table interaction', () => {
     await live.getByRole('searchbox', { name: 'Find in stock' }).press('Enter');
     await expect(live.getByRole('status')).toHaveText('Matches: 10, active: 1');
     await expect(grid.locator('mark.star-table__mark--active')).toHaveText('Prague');
-    for (let i = 0; i < 2; i++) await live.getByRole('button', { name: 'Next' }).click();
+    for (let i = 0; i < 2; i++)
+      await live.getByRole('button', { name: 'Next', exact: true }).click();
     await expect(live.getByRole('status')).toHaveText('Matches: 10, active: 3');
     await expect(grid.locator('mark.star-table__mark--active')).toBeVisible();
     await expect(grid.locator('tbody tr').first()).toContainText('SKU-109');

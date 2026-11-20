@@ -1074,7 +1074,7 @@ const STATES: readonly State[] = [
     open: async (page) => {
       const live = example(page, 'Search highlight');
       await live.getByRole('searchbox', { name: 'Find in stock' }).fill('lisbon');
-      await live.getByRole('button', { name: 'Next' }).click();
+      await live.getByRole('button', { name: 'Next', exact: true }).click();
       await expect(live.locator('mark.star-table__mark--active')).toBeVisible();
     },
   },
