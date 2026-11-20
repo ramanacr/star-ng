@@ -23,8 +23,8 @@ import type { FormValueControl } from '@angular/forms/signals';
 import { STAR_SLOT_HOST, type StarEmptyContext } from '@star-ng/ui/core';
 import {
   StarOptionListBase,
-  starSelectionChanging,
   StarSelectionChangingEvent,
+  ɵstarSelectionChanging,
 } from '@star-ng/ui/select';
 
 export interface StarAutoCompleteSearch {
@@ -522,7 +522,7 @@ export class StarAutoComplete<TOption = unknown, TValue = TOption>
     const same =
       previous === next || (previous !== null && next !== null && this.equals(previous, next));
     if (same) return true;
-    if (!starSelectionChanging(this.selectionChanging, previous, next)) return false;
+    if (!ɵstarSelectionChanging(this.selectionChanging, previous, next)) return false;
     this.value.set(next);
     return true;
   }
@@ -753,7 +753,7 @@ export class StarMultiAutoComplete<TOption = unknown, TValue = TOption>
   private changeWith(update: (values: readonly TValue[]) => readonly TValue[]): boolean {
     const previous = this.value();
     const next = update(previous);
-    if (!starSelectionChanging(this.selectionChanging, previous, next)) return false;
+    if (!ɵstarSelectionChanging(this.selectionChanging, previous, next)) return false;
     this.value.set(next);
     return true;
   }

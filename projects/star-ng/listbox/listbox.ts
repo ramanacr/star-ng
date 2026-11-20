@@ -64,9 +64,9 @@ import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/
 import {
   STAR_SELECT_DEFAULTS,
   StarOptionTemplate,
-  starSelectionChanging,
   StarSelectionChangingEvent,
   ɵstarLazyOptions,
+  ɵstarSelectionChanging,
 } from '@star-ng/ui/select';
 import { StarListboxDropEvent, starListboxDropIndex } from './listbox-dragdrop';
 
@@ -809,7 +809,7 @@ export class StarListbox<TOption = unknown, TValue = TOption> implements FormVal
   private change(next: TValue | readonly TValue[] | null): boolean {
     const previous = this.value();
     if (Object.is(previous, next)) return true;
-    if (!starSelectionChanging(this.selectionChanging, previous, next)) return false;
+    if (!ɵstarSelectionChanging(this.selectionChanging, previous, next)) return false;
     this.value.set(next);
     return true;
   }

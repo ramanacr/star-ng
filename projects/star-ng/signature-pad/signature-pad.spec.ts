@@ -3,12 +3,8 @@ import { TestBed } from '@angular/core/testing';
 import { FormGroup } from '@angular/forms';
 import { form, FormField, required } from '@angular/forms/signals';
 import { SignalFormControl } from '@angular/forms/signals/compat';
-import {
-  StarSignatureFormat,
-  StarSignaturePad,
-  starSignaturePath,
-  starSignatureSvg,
-} from '@star-ng/ui/signature-pad';
+import { StarSignatureFormat, StarSignaturePad } from '@star-ng/ui/signature-pad';
+import { starSignaturePath, starSignatureSvg } from './signature-pad';
 
 /** jsdom has no canvas: a 2D context that records the calls, and a fixed PNG export. */
 function fakeCanvas() {

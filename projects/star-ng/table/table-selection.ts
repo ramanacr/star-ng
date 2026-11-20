@@ -1,5 +1,5 @@
 import { computed, ModelSignal, OutputEmitterRef, Signal } from '@angular/core';
-import { starSelectionChanging, StarSelectionChangingEvent } from '@star-ng/ui/select';
+import { StarSelectionChangingEvent, ɵstarSelectionChanging } from '@star-ng/ui/select';
 
 /**
  * Row selection of `star-table`: check box and radio column, header check box, meta-key and
@@ -321,7 +321,7 @@ export class StarTableSelection<T> {
     for (const row of added) objects.set(keyOf(row), row);
     const previous = this.rowsOfKeys();
     const next = after.flatMap((key) => (objects.has(key) ? [objects.get(key) as T] : []));
-    if (!starSelectionChanging(this.host.changing, previous, next)) return false;
+    if (!ɵstarSelectionChanging(this.host.changing, previous, next)) return false;
     this.host.selection.set(next);
     if (this.host.selectionKeys()) this.host.selectionKeys.set(after);
     if (perRow) {
