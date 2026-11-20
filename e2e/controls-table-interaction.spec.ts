@@ -147,7 +147,7 @@ test.describe('table interaction', () => {
 
   test('focuses and scrolls cells of a virtual table from code', async ({ page }) => {
     await openPage(page);
-    const live = example(page, 'Keyboard and scroll API');
+    const live = example(page, 'Keyboard and scroll methods');
     const grid = live.getByRole('grid', { name: 'Stock with the scroll API' });
     await live.getByRole('button', { name: 'Focus SKU-130 on hand' }).click();
     await expect(cell(grid, 'SKU-130', 'onHand')).toBeFocused();

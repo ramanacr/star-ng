@@ -229,7 +229,7 @@ function applyEdit(rows: readonly StockLine[], event: StarCellEditEvent<StockLin
       </docs-example>
 
       <docs-example
-        heading="Keyboard and scroll API"
+        heading="Keyboard and scroll methods"
         source="table-interaction/api"
         [script]="apiScript"
         note="focusCell(rowKey, field) and navigateTo(rowIndex, field) move the focus to a cell; scrollToRow(rowKeyOrIndex, { align }) and scrollToColumn(field, { align }) scroll without the focus. Rows of virtualScroll and columns of virtualColumns render first; the scroll is smooth unless the user asks for reduced motion."
