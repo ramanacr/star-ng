@@ -11,7 +11,7 @@ import {
   output,
   signal,
 } from '@angular/core';
-import { starBreakpointValue, starViewportWidth } from '@star-ng/ui/core';
+import { starBreakpointValue, starIsRtl, starViewportWidth } from '@star-ng/ui/core';
 import { StarDialogBase } from './dialog-base';
 import {
   arrowDelta,
@@ -374,8 +374,7 @@ export class StarDialog extends StarDialogBase {
   }
 
   private isRtl(): boolean {
-    const element = this.dialog().nativeElement;
-    return this.document.defaultView?.getComputedStyle(element).direction === 'rtl';
+    return starIsRtl(this.dialog().nativeElement);
   }
 
   private emitResizeEnd(): void {
