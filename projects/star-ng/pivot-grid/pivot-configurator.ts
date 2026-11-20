@@ -144,9 +144,8 @@ export class StarPivotConfigurator<T = unknown> {
     this.data();
     this.locale();
     this.fields();
-    this.config().rows;
-    this.config().columns;
-    this.config().values;
+    // Accessors of the dimensions and values change the lists too.
+    this.config();
     return new Map<string, readonly StarPivotMember[]>();
   });
 
