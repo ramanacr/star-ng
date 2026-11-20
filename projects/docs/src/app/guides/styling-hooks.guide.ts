@@ -60,6 +60,75 @@ import { DOCS } from '../shared/docs';
           hide it from screen readers.
         </li>
       </ol>
+      <h3>Single-word parts</h3>
+      <p>
+        These parts have one word, without a role: the structural elements of the controls. Every
+        other name has the form <code>&lt;purpose&gt;&lt;Role&gt;</code>. A tools test keeps this
+        list equal to the names in the templates.
+      </p>
+      <p class="docs-part-words">
+        <code>action</code>, <code>add</code>, <code>adjust</code>, <code>agenda</code>,
+        <code>aggregate</code>, <code>annotations</code>, <code>arc</code>, <code>area</code>,
+        <code>attribution</code>, <code>author</code>, <code>avatar</code>, <code>axis</code>,
+        <code>background</code>, <code>backstage</code>, <code>badge</code>, <code>bar</code>,
+        <code>baseline</code>, <code>board</code>, <code>body</code>, <code>box</code>,
+        <code>branch</code>, <code>bubble</code>, <code>button</code>, <code>buttons</code>,
+        <code>canvas</code>, <code>caption</code>, <code>card</code>, <code>cell</code>,
+        <code>children</code>, <code>chip</code>, <code>chips</code>, <code>choice</code>,
+        <code>choices</code>, <code>choose</code>, <code>code</code>, <code>collapse</code>,
+        <code>column</code>, <code>command</code>, <code>composer</code>, <code>confirm</code>,
+        <code>content</code>, <code>control</code>, <code>controls</code>, <code>corner</code>,
+        <code>count</code>, <code>counter</code>, <code>crop</code>, <code>crosshair</code>,
+        <code>current</code>, <code>custom</code>, <code>date</code>, <code>day</code>,
+        <code>decimals</code>, <code>dependency</code>, <code>description</code>,
+        <code>detail</code>, <code>details</code>, <code>display</code>, <code>divider</code>,
+        <code>dot</code>, <code>edge</code>, <code>edges</code>, <code>edit</code>,
+        <code>editor</code>, <code>empty</code>, <code>error</code>, <code>errors</code>,
+        <code>expander</code>, <code>expansion</code>, <code>fab</code>, <code>facts</code>,
+        <code>failed</code>, <code>feedback</code>, <code>field</code>, <code>figure</code>,
+        <code>file</code>, <code>fill</code>, <code>filter</code>, <code>filters</code>,
+        <code>first</code>, <code>foot</code>, <code>footer</code>, <code>form</code>,
+        <code>formula</code>, <code>frame</code>, <code>fx</code>, <code>generating</code>,
+        <code>grid</code>, <code>grip</code>, <code>group</code>, <code>gutter</code>,
+        <code>handle</code>, <code>handles</code>, <code>head</code>, <code>header</code>,
+        <code>heading</code>, <code>hex</code>, <code>hint</code>, <code>hub</code>,
+        <code>icon</code>, <code>icons</code>, <code>inner</code>, <code>input</code>,
+        <code>item</code>, <code>items</code>, <code>keymap</code>, <code>keytip</code>,
+        <code>label</code>, <code>launcher</code>, <code>lead</code>, <code>legend</code>,
+        <code>level</code>, <code>line</code>, <code>link</code>, <code>list</code>,
+        <code>listbox</code>, <code>log</code>, <code>logo</code>, <code>main</code>,
+        <code>mark</code>, <code>marker</code>, <code>marquee</code>, <code>mask</code>,
+        <code>match</code>, <code>meta</code>, <code>meter</code>, <code>modes</code>,
+        <code>modules</code>, <code>months</code>, <code>more</code>, <code>move</code>,
+        <code>muted</code>, <code>nav</code>, <code>needle</code>, <code>node</code>,
+        <code>nodes</code>, <code>now</code>, <code>number</code>, <code>operator</code>,
+        <code>option</code>, <code>output</code>, <code>outputs</code>, <code>overflow</code>,
+        <code>pages</code>, <code>pane</code>, <code>panel</code>, <code>panes</code>,
+        <code>paragraph</code>, <code>part</code>, <code>photo</code>, <code>pick</code>,
+        <code>picker</code>, <code>picture</code>, <code>pin</code>, <code>placeholder</code>,
+        <code>plot</code>, <code>points</code>, <code>port</code>, <code>preview</code>,
+        <code>prompt</code>, <code>radio</code>, <code>range</code>, <code>reference</code>,
+        <code>region</code>, <code>remove</code>, <code>reorder</code>, <code>report</code>,
+        <code>required</code>, <code>resize</code>, <code>resizer</code>, <code>response</code>,
+        <code>ring</code>, <code>row</code>, <code>rows</code>, <code>rule</code>,
+        <code>rules</code>, <code>scale</code>, <code>scroll</code>, <code>scroller</code>,
+        <code>section</code>, <code>segmented</code>, <code>select</code>, <code>selection</code>,
+        <code>separator</code>, <code>shape</code>, <code>sheet</code>, <code>shell</code>,
+        <code>shortcut</code>, <code>side</code>, <code>size</code>, <code>skeleton</code>,
+        <code>slice</code>, <code>slide</code>, <code>sort</code>, <code>source</code>,
+        <code>spacer</code>, <code>stack</code>, <code>stage</code>, <code>status</code>,
+        <code>stripe</code>, <code>subtitle</code>, <code>summary</code>, <code>surface</code>,
+        <code>svg</code>, <code>swatch</code>, <code>swatches</code>, <code>tab</code>,
+        <code>table</code>, <code>tabs</code>, <code>target</code>, <code>text</code>,
+        <code>thumb</code>, <code>thumbnail</code>, <code>thumbs</code>, <code>tick</code>,
+        <code>tier</code>, <code>tiles</code>, <code>timeline</code>, <code>tip</code>,
+        <code>titlebar</code>, <code>toggle</code>, <code>tool</code>, <code>toolbar</code>,
+        <code>tools</code>, <code>tooltip</code>, <code>total</code>, <code>track</code>,
+        <code>trail</code>, <code>tree</code>, <code>trigger</code>, <code>typed</code>,
+        <code>typing</code>, <code>value</code>, <code>viewport</code>, <code>views</code>,
+        <code>week</code>, <code>weekday</code>, <code>weekend</code>, <code>welcome</code>,
+        <code>wrap</code>, <code>zone</code>, <code>zoom</code>.
+      </p>
       <p>
         In a control template, a part is the static attribute <code>data-star-part</code>; only the
         top element of portal content (an overlay panel in an <code>ng-template</code>) has the
@@ -217,7 +286,7 @@ export class StylingHooksGuide {
     panel: { style: { 'border-radius': '0' } },
   };
   protected readonly buttonPt: StarPassThrough = {
-    button: {
+    nativeButton: {
       style: {
         padding: '0.5rem 1rem',
         border: '2px solid currentColor',
@@ -234,7 +303,7 @@ export class StylingHooksGuide {
   panel: { style: { 'border-radius': '0' } },
 };`;
   protected readonly unstyledScript = `readonly buttonPt: StarPassThrough = {
-  button: {
+  nativeButton: {
     style: {
       padding: '0.5rem 1rem',
       border: '2px solid currentColor',
