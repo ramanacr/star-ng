@@ -15,6 +15,7 @@ import {
 import { STAR_THEME_STORAGE_KEY } from '@star-ng/ui/theme';
 import { provideStarDirection } from './direction';
 import { StarFilterMatchMode } from './filter-match';
+import type { StarGlobalPassThrough } from './pass-through';
 import { provideStarUiText, StarUiText } from './ui-text';
 
 /** Look of the text inputs: a border on every side (`outlined`) or a filled surface (`filled`). */
@@ -91,6 +92,18 @@ export interface StarConfig {
   readonly direction?: boolean;
   /** `localStorage` key of the theme choice. Same as providing `STAR_THEME_STORAGE_KEY`. */
   readonly themeStorageKey?: string;
+  /**
+   * Classes, styles and safe attributes per part of each control (PrimeNG `pt`), keyed by the tag
+   * name of the control: `{ 'star-select': { panel: { class: 'shadow-lg' } } }`. The `pt` input
+   * of an instance merges over it. See the guide "Styling hooks".
+   */
+  readonly pt?: StarGlobalPassThrough;
+  /**
+   * `true` removes the visual styles (colors, borders, spacing, shapes) of the controls that have
+   * styling hooks and keeps the layout that they need to work (PrimeNG `unstyled`). The
+   * `unstyled` input of a control wins.
+   */
+  readonly unstyled?: boolean;
 }
 
 /**

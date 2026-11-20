@@ -147,6 +147,7 @@ export function buildAgentData({
       inputs: entry.inputs,
       models: entry.models,
       outputs: entry.outputs,
+      ...(entry.parts ? { parts: entry.parts } : {}),
     };
   });
 
@@ -229,6 +230,12 @@ function componentMarkdown(component) {
   lines.push(...memberTable('Inputs', component.inputs));
   lines.push(...memberTable('Two-way models', component.models));
   lines.push(...memberTable('Outputs', component.outputs));
+  if (component.parts) {
+    lines.push(
+      `Parts (keys of \`pt\`): ${component.parts.map((part) => `\`${part}\``).join(', ')}.`,
+      '',
+    );
+  }
   return lines;
 }
 

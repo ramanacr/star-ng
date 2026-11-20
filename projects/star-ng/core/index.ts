@@ -23,6 +23,8 @@ export * from './list-windowing';
 export * from './modal';
 export * from './motion';
 export * from './options';
+// Styling hooks: the `ɵ` helpers are internal.
+export * from './pass-through';
 export * from './reactive-forms';
 export * from './slots';
 export * from './ui-text';
