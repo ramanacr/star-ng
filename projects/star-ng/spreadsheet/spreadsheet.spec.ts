@@ -218,6 +218,19 @@ describe('StarSpreadsheet', () => {
     expect(announce).toHaveBeenLastCalledWith('A1 to B2 selected', 'polite');
   });
 
+  it('consumes Escape only when it collapses a range, so a modal dialog stays open', async () => {
+    const { grid, press, el } = await setup();
+    grid.focus();
+    await press('ArrowDown', { shiftKey: true });
+    expect(el.querySelectorAll('[role=gridcell][aria-selected=true]')).toHaveLength(2);
+    const first = await press('Escape');
+    expect(first.defaultPrevented).toBe(true);
+    expect(el.querySelectorAll('[role=gridcell][aria-selected=true]')).toHaveLength(1);
+    // Nothing to clear: the key goes on (for example to close the dialog).
+    const second = await press('Escape');
+    expect(second.defaultPrevented).toBe(false);
+  });
+
   it('clears the selection with Delete and undoes and redoes it', async () => {
     const { grid, press, host } = await setup();
     grid.focus();

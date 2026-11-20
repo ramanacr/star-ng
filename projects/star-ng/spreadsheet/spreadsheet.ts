@@ -1081,10 +1081,16 @@ export class StarSpreadsheet {
       case 'Backspace':
         if (editable) this.clearSelection();
         return done();
-      case 'Escape':
+      case 'Escape': {
+        // Consume the key only when it clears something; otherwise it goes on, for example to
+        // close a modal dialog around the spreadsheet.
+        const cell = this.focusCell();
+        const changed = !!this.fillTarget() || cell.row !== anchor.row || cell.col !== anchor.col;
         if (this.fillTarget()) this.fillTarget.set(null);
         this.focusCell.set(anchor);
+        if (changed) done();
         return;
+      }
       case ' ':
         if (shift) {
           this.anchor.set({ row: anchor.row, col: 0 });
