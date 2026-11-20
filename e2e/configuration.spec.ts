@@ -96,3 +96,26 @@ test.describe('styling hooks', () => {
     await expect(combobox).toHaveText(/Vienna/);
   });
 });
+
+test('unstyled mode does not reach a styled control or content inside an unstyled one', async ({
+  page,
+}) => {
+  await openPage(page, '/guides/styling-hooks', 'Styling hooks');
+  const live = example(page, 'Unstyled button');
+  // The row around the two buttons becomes part of an unstyled control, as the content of an
+  // unstyled dialog or card would be.
+  await live.locator('.docs-row').evaluate((row) => {
+    row.setAttribute('data-star-unstyled', '');
+    row.setAttribute('data-star-part', 'content');
+  });
+  const styled = live.locator('star-button').nth(0);
+  await expect(styled).not.toHaveAttribute('data-star-unstyled', /.*/);
+  expect(
+    await styled.locator('button').evaluate((el) => getComputedStyle(el).backgroundColor),
+  ).not.toBe('rgba(0, 0, 0, 0)');
+  const output = live.getByRole('status');
+  await output.evaluate((el) => el.parentElement!.setAttribute('data-star-unstyled', ''));
+  expect(
+    await output.evaluate((el) => getComputedStyle(el).getPropertyValue('--star-primary').trim()),
+  ).not.toBe('');
+});

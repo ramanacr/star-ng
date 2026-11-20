@@ -5,6 +5,7 @@ import { Component, signal, Type } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { StarButton, StarButtonGroup } from '@star-ng/ui/button';
 import { StarCheckbox } from '@star-ng/ui/checkbox';
+import { StarDialog } from '@star-ng/ui/dialog';
 import { StarPassThrough } from '@star-ng/ui/core';
 import { StarRadio, StarRadioGroup } from '@star-ng/ui/radio';
 import { StarMultiSelect, StarSelect } from '@star-ng/ui/select';
@@ -141,4 +142,34 @@ describe('styling hooks of the controls', () => {
       }
     });
   }
+});
+
+@Component({
+  imports: [StarDialog, StarButton],
+  template: `
+    <star-dialog [visible]="true" header="Edit order" unstyled>
+      <star-button id="nested">Save</star-button>
+      <p class="consumer">Text of the application</p>
+    </star-dialog>
+  `,
+})
+class NestedHost {}
+
+describe('unstyled mode does not reach nested styled controls', () => {
+  it('marks the parts of the unstyled dialog only, not a styled button or content inside it', async () => {
+    const fixture = TestBed.createComponent(NestedHost);
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+    const dialog = el.querySelector<HTMLElement>('star-dialog')!;
+    expect(dialog.hasAttribute('data-star-unstyled')).toBe(true);
+    expect(dialog.querySelector('dialog')!.hasAttribute('data-star-unstyled')).toBe(true);
+    const nested = el.querySelector<HTMLElement>('#nested')!;
+    expect(nested.getAttribute('data-star-part')).toBe('root');
+    expect(nested.hasAttribute('data-star-unstyled')).toBe(false);
+    expect(nested.querySelector('button')!.hasAttribute('data-star-unstyled')).toBe(false);
+    const consumer = el.querySelector<HTMLElement>('.consumer')!;
+    expect(consumer.hasAttribute('data-star-part')).toBe(false);
+    // The CSS gives back the theme tokens to these elements (`_unstyled.scss`):
+    // `[data-star-unstyled] :not([data-star-part])` and nested roots without the attribute.
+  });
 });
