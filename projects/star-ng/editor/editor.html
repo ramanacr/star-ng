@@ -1,0 +1,181 @@
+<ng-template #control let-cmd>
+  @if (cmd === 'formatBlock') {
+    <select
+      class="star-editor__select"
+      data-editor-control
+      [attr.data-editor-key]="cmd"
+      [attr.aria-label]="text.editorTextStyle"
+      [attr.tabindex]="cmd === tabStop() ? 0 : -1"
+      [disabled]="locked()"
+      (keydown)="onToolbarKeydown($event)"
+      (focus)="onToolbarFocus(cmd)"
+      (change)="exec('formatBlock', $any($event.target).value)"
+    >
+      @for (option of blockFormats; track option) {
+        <option [value]="option" [selected]="option === blockFormat()">
+          {{ option === 'p' ? text.editorParagraph : text.editorHeadingLevel(+option[1]) }}
+        </option>
+      }
+    </select>
+  } @else if (cmd === 'fontSize') {
+    <select
+      class="star-editor__select"
+      data-editor-control
+      [attr.data-editor-key]="cmd"
+      [attr.aria-label]="text.editorFontSize"
+      [attr.tabindex]="cmd === tabStop() ? 0 : -1"
+      [disabled]="locked()"
+      (keydown)="onToolbarKeydown($event)"
+      (focus)="onToolbarFocus(cmd)"
+      (change)="exec('fontSize', $any($event.target).value)"
+    >
+      @for (option of fontSizes; track option.key) {
+        <option [value]="option.key" [selected]="option.key === fontSize()">
+          {{ text[option.label] }}
+        </option>
+      }
+    </select>
+  } @else {
+    <button
+      type="button"
+      class="star-editor__btn"
+      data-editor-control
+      [attr.data-editor-key]="cmd"
+      [attr.aria-label]="label(cmd)"
+      [attr.aria-pressed]="pressed(cmd)"
+      [attr.aria-expanded]="expanded(cmd)"
+      [attr.tabindex]="cmd === tabStop() ? 0 : -1"
+      [disabled]="locked()"
+      [attr.aria-disabled]="unavailable(cmd) || null"
+      (keydown)="onToolbarKeydown($event)"
+      (focus)="onToolbarFocus(cmd)"
+      (mousedown)="$event.preventDefault()"
+      (click)="exec(cmd)"
+    >
+      <i [class]="icon(cmd)" aria-hidden="true"></i>
+      @if (cmd === 'textColor' || cmd === 'highlight') {
+        <span
+          class="star-editor__btn-swatch"
+          aria-hidden="true"
+          [style.background]="(cmd === 'textColor' ? textColorAt() : highlightAt()) || null"
+        ></span>
+      }
+    </button>
+  }
+</ng-template>
+
+@if (customToolbar(); as custom) {
+  <div class="star-editor__custom-toolbar">
+    <ng-container *ngTemplateOutlet="custom.template; context: toolbarContext()" />
+  </div>
+} @else {
+  <div
+    #toolbarElement
+    class="star-toolbar star-editor__toolbar"
+    [class.star-editor__toolbar--fit]="fitting()"
+    role="toolbar"
+    [attr.aria-label]="text.editorFormatting(ariaLabel() ?? text.editorLabel)"
+    [attr.aria-controls]="areaId"
+  >
+    @for (group of groups(); track $index; let index = $index) {
+      @if (index < visibleCount()) {
+        @if (index > 0) {
+          <span class="star-editor__separator" role="separator" aria-orientation="vertical"></span>
+        }
+        <div class="star-toolbar__group" [attr.data-editor-group]="index">
+          @for (cmd of group; track cmd) {
+            <ng-container *ngTemplateOutlet="control; context: { $implicit: cmd }" />
+          }
+        </div>
+      }
+    }
+    @if (visibleCount() < groups().length) {
+      <span class="star-editor__separator" role="separator" aria-orientation="vertical"></span>
+      <div class="star-editor__more">
+        <button
+          type="button"
+          class="star-editor__btn"
+          data-editor-control
+          data-editor-key="more"
+          [attr.aria-label]="text.moreActions"
+          [attr.aria-expanded]="moreOpen()"
+          [attr.aria-controls]="overflowId"
+          [attr.tabindex]="tabStop() === 'more' ? 0 : -1"
+          (keydown)="onToolbarKeydown($event)"
+          (focus)="onToolbarFocus('more')"
+          (mousedown)="$event.preventDefault()"
+          (click)="moreOpen.set(!moreOpen())"
+        >
+          <i class="ph-bold ph-dots-three" aria-hidden="true"></i>
+        </button>
+        @if (moreOpen()) {
+          <div class="star-editor__overflow" [id]="overflowId">
+            @for (group of groups(); track $index; let index = $index) {
+              @if (index >= visibleCount()) {
+                <div class="star-toolbar__group">
+                  @for (cmd of group; track cmd) {
+                    <ng-container *ngTemplateOutlet="control; context: { $implicit: cmd }" />
+                  }
+                </div>
+              }
+            }
+          </div>
+        }
+      </div>
+    }
+  </div>
+}
+@if (linkOpen()) {
+  <star-editor-link
+    [initialUrl]="linkUrl()"
+    [initialNewTab]="linkNewTab()"
+    [editing]="linkUrl() !== ''"
+    (apply)="applyLink($event)"
+    (remove)="removeLink()"
+    (dismissed)="closeLink()"
+  />
+}
+@if (colorPanel(); as kind) {
+  <star-editor-color
+    [kind]="kind"
+    [value]="kind === 'textColor' ? textColorAt() : highlightAt()"
+    (pick)="pickColor(kind, $event)"
+    (dismissed)="closePanel()"
+  />
+}
+<div
+  #area
+  class="star-editor__area"
+  role="textbox"
+  aria-multiline="true"
+  [id]="areaId"
+  [attr.tabindex]="disabled() ? -1 : 0"
+  [attr.contenteditable]="locked() ? 'false' : 'true'"
+  [attr.aria-label]="ariaLabel()"
+  [attr.aria-labelledby]="labelledBy()"
+  [attr.aria-describedby]="describedBy()"
+  [attr.aria-readonly]="readonly() || null"
+  [attr.aria-disabled]="disabled() || null"
+  [attr.data-placeholder]="placeholder()"
+  [style.min-height]="minHeight()"
+  (beforeinput)="onBeforeInput($event)"
+  (input)="onInput()"
+  (keydown)="onAreaKeydown($event)"
+  (click)="onAreaClick($event)"
+  (paste)="onPaste($event)"
+  (dragstart)="dragFromInside = true"
+  (dragend)="dragFromInside = false"
+  (drop)="onDrop($event)"
+  (focus)="refreshState()"
+  (keyup)="refreshState()"
+  (mouseup)="refreshState()"
+  (blur)="touch.emit()"
+></div>
+@if (maxLength() !== undefined) {
+  <div class="star-editor__footer">
+    <span class="star-editor__counter" [id]="counterId">
+      {{ text.editorCharacterCount(length(), maxLength()!) }}
+    </span>
+  </div>
+  <span class="star-sr-only" aria-live="polite">{{ limitMessage() }}</span>
+}

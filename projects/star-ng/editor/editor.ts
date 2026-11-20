@@ -1,40 +1,53 @@
 import { _IdGenerator } from '@angular/cdk/a11y';
 import { NgTemplateOutlet } from '@angular/common';
 import {
+  afterNextRender,
   afterRenderEffect,
   booleanAttribute,
   ChangeDetectionStrategy,
   Component,
   computed,
   contentChild,
+  DestroyRef,
   ElementRef,
   inject,
   input,
   model,
   numberAttribute,
   output,
-  SecurityContext,
   signal,
   viewChild,
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
-import { DomSanitizer } from '@angular/platform-browser';
-import { STAR_UI_TEXT, starInlineKey } from '@star-ng/ui/core';
+import { STAR_UI_TEXT, starInlineKey, StarUiText } from '@star-ng/ui/core';
 import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/ui/field';
+import { StarEditorColor } from './editor-color';
 import {
   starEditorAlign,
   starEditorAlignmentAt,
+  starEditorBlocks,
   starEditorClosest,
   starEditorPath,
   starEditorPlainLength,
   starEditorRange,
   starEditorRestore,
-  starEditorSafeLinks,
   starEditorText,
   starEditorTextToHtml,
   starEditorToggleCode,
   starEditorUnwrap,
 } from './editor-dom';
+import {
+  STAR_EDITOR_FONT_SIZES,
+  starEditorClearFormat,
+  StarEditorFontSize,
+  starEditorFontSizeAt,
+  starEditorIndentBlocks,
+  starEditorInsertRule,
+  starEditorSetStyle,
+  starEditorStyleAt,
+  starEditorToggleScript,
+} from './editor-format';
+import { StarEditorHistory, starEditorPathRange, starEditorSelectionPath } from './editor-history';
 import {
   StarEditorLink,
   StarEditorLinkValue,
@@ -42,11 +55,22 @@ import {
   starEditorSetLink,
 } from './editor-link';
 import {
+  STAR_EDITOR_CHECKLIST_CLASS,
+  starEditorIndentItems,
+  starEditorItems,
+  starEditorListAt,
+  starEditorToggleCheck,
+  starEditorToggleList,
+} from './editor-list';
+import { STAR_EDITOR_SANITIZE_DEFAULTS, starEditorSanitize } from './editor-sanitize';
+import {
   STAR_EDITOR_BUTTONS,
   STAR_EDITOR_DEFAULT_TOOLBAR,
   StarEditorBlockFormat,
   StarEditorCommand,
+  starEditorFit,
   starEditorGroups,
+  starEditorIsSelect,
   StarEditorToolbarContext,
   StarEditorToolbarItem,
   starEditorToolbarMove,
@@ -54,14 +78,7 @@ import {
 } from './editor-toolbar';
 
 /** Inline formats that `document.queryCommandState` reports. */
-const NATIVE_STATES = [
-  'bold',
-  'italic',
-  'underline',
-  'strikeThrough',
-  'insertUnorderedList',
-  'insertOrderedList',
-] as const;
+const NATIVE_STATES = ['bold', 'italic', 'underline', 'strikeThrough'] as const;
 
 /** Tag names that mean a format is on at the caret (the selection walk). */
 const FORMAT_TAGS: Readonly<Record<string, StarEditorCommand>> = {
@@ -73,29 +90,45 @@ const FORMAT_TAGS: Readonly<Record<string, StarEditorCommand>> = {
   S: 'strikeThrough',
   STRIKE: 'strikeThrough',
   DEL: 'strikeThrough',
+  SUB: 'subscript',
+  SUP: 'superscript',
   CODE: 'code',
   A: 'link',
   BLOCKQUOTE: 'blockquote',
-  UL: 'insertUnorderedList',
-  OL: 'insertOrderedList',
 };
+
+/** The font size select: steps and their labels. */
+const FONT_SIZES: readonly { key: StarEditorFontSize; label: keyof StarUiText }[] = [
+  { key: 'small', label: 'editorSizeSmall' },
+  { key: 'normal', label: 'editorSizeNormal' },
+  { key: 'large', label: 'editorSizeLarge' },
+  { key: 'larger', label: 'editorSizeLarger' },
+  { key: 'largest', label: 'editorSizeLargest' },
+];
+
+/** Typing within this time after the last typing is one undo step. */
+const TYPING_MERGE_MS = 1000;
+
+type Panel = 'textColor' | 'highlight';
 
 /**
  * Rich text field (PrimeNG `p-editor`, without Quill): a `contenteditable` area with a
- * formatting toolbar. Value is HTML, sanitized with Angular's `DomSanitizer` both when it is
+ * formatting toolbar. Value is HTML, sanitized with the allow-list of the editor both when it is
  * shown and when it is stored.
  *
  * The toolbar is a WAI-ARIA toolbar (one tab stop, arrow keys, `aria-pressed` for the formats at
- * the caret). `toolbar` chooses the commands and their groups (PrimeNG toolbar formats).
+ * the caret). `toolbar` chooses the commands and their groups (PrimeNG toolbar formats); groups
+ * that do not fit go into a "More actions" panel.
  *
- * Note: formatting uses `document.execCommand`, which browsers still support but no longer
- * develop. For complex documents use a dedicated editor library.
+ * Note: bold, italic, underline, strikethrough and the text style use `document.execCommand`,
+ * which browsers still support but no longer develop. The other commands change the DOM
+ * directly, and the editor keeps its own undo history for all of them.
  *
  * `<star-editor [formField]="form.response" ariaLabel="Response" />`
  */
 @Component({
   selector: 'star-editor',
-  imports: [StarEditorLink, NgTemplateOutlet],
+  imports: [StarEditorLink, StarEditorColor, NgTemplateOutlet],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'star-editor',
@@ -103,122 +136,14 @@ const FORMAT_TAGS: Readonly<Record<string, StarEditorCommand>> = {
     '[class.star-editor--invalid]': 'invalid() && touched()',
     '[class.star-editor--over]': 'over()',
   },
-  template: `
-    @if (customToolbar(); as custom) {
-      <div class="star-editor__custom-toolbar">
-        <ng-container *ngTemplateOutlet="custom.template; context: toolbarContext()" />
-      </div>
-    } @else {
-      <div
-        #toolbarElement
-        class="star-toolbar star-editor__toolbar"
-        role="toolbar"
-        [attr.aria-label]="text.editorFormatting(ariaLabel() ?? text.editorLabel)"
-        [attr.aria-controls]="areaId"
-      >
-        @for (group of groups(); track $index; let first = $first) {
-          @if (!first) {
-            <span
-              class="star-editor__separator"
-              role="separator"
-              aria-orientation="vertical"
-            ></span>
-          }
-          <div class="star-toolbar__group">
-            @for (cmd of group; track cmd) {
-              @if (cmd === 'formatBlock') {
-                <select
-                  class="star-editor__select"
-                  data-editor-control
-                  [attr.aria-label]="text.editorTextStyle"
-                  [attr.tabindex]="cmd === rovingCommand() ? 0 : -1"
-                  [disabled]="locked()"
-                  (keydown)="onToolbarKeydown($event)"
-                  (focus)="onToolbarFocus($event)"
-                  (change)="exec('formatBlock', $any($event.target).value)"
-                >
-                  @for (option of blockFormats; track option) {
-                    <option [value]="option" [selected]="option === blockFormat()">
-                      {{
-                        option === 'p' ? text.editorParagraph : text.editorHeadingLevel(+option[1])
-                      }}
-                    </option>
-                  }
-                </select>
-              } @else {
-                <button
-                  type="button"
-                  class="star-editor__btn"
-                  data-editor-control
-                  [attr.aria-label]="label(cmd)"
-                  [attr.aria-pressed]="pressed(cmd)"
-                  [attr.aria-expanded]="cmd === 'link' ? linkOpen() : null"
-                  [attr.tabindex]="cmd === rovingCommand() ? 0 : -1"
-                  [disabled]="locked()"
-                  (keydown)="onToolbarKeydown($event)"
-                  (focus)="onToolbarFocus($event)"
-                  (mousedown)="$event.preventDefault()"
-                  (click)="exec(cmd)"
-                >
-                  <i [class]="icon(cmd)" aria-hidden="true"></i>
-                </button>
-              }
-            }
-          </div>
-        }
-      </div>
-    }
-    @if (linkOpen()) {
-      <star-editor-link
-        [initialUrl]="linkUrl()"
-        [initialNewTab]="linkNewTab()"
-        [editing]="linkUrl() !== ''"
-        (apply)="applyLink($event)"
-        (remove)="removeLink()"
-        (dismissed)="closeLink()"
-      />
-    }
-    <div
-      #area
-      class="star-editor__area"
-      role="textbox"
-      aria-multiline="true"
-      [id]="areaId"
-      [attr.tabindex]="disabled() ? -1 : 0"
-      [attr.contenteditable]="locked() ? 'false' : 'true'"
-      [attr.aria-label]="ariaLabel()"
-      [attr.aria-labelledby]="labelledBy()"
-      [attr.aria-describedby]="describedBy()"
-      [attr.aria-readonly]="readonly() || null"
-      [attr.aria-disabled]="disabled() || null"
-      [attr.data-placeholder]="placeholder()"
-      [style.min-height]="minHeight()"
-      (beforeinput)="onBeforeInput($event)"
-      (input)="onInput()"
-      (paste)="onPaste($event)"
-      (dragstart)="dragFromInside = true"
-      (dragend)="dragFromInside = false"
-      (drop)="onDrop($event)"
-      (focus)="refreshState()"
-      (keyup)="refreshState()"
-      (mouseup)="refreshState()"
-      (blur)="touch.emit()"
-    ></div>
-    @if (maxLength() !== undefined) {
-      <div class="star-editor__footer">
-        <span class="star-editor__counter" [id]="counterId">
-          {{ text.editorCharacterCount(length(), maxLength()!) }}
-        </span>
-      </div>
-      <span class="star-sr-only" aria-live="polite">{{ limitMessage() }}</span>
-    }
-  `,
+  templateUrl: './editor.html',
 })
 export class StarEditor implements FormValueControl<string> {
   protected readonly text = inject(STAR_UI_TEXT);
-  private readonly sanitizer = inject(DomSanitizer);
-  protected readonly areaId = inject(_IdGenerator).getId('star-editor-area-');
-  protected readonly counterId = inject(_IdGenerator).getId('star-editor-counter-');
+  private readonly ids = inject(_IdGenerator);
+  protected readonly areaId = this.ids.getId('star-editor-area-');
+  protected readonly counterId = this.ids.getId('star-editor-counter-');
+  protected readonly overflowId = this.ids.getId('star-editor-more-');
 
   /**
    * The content: HTML (sanitized when the user edits it), or plain text with `format="text"`.
@@ -252,8 +177,8 @@ export class StarEditor implements FormValueControl<string> {
   readonly invalid = input(false, { transform: booleanAttribute });
   readonly touched = input(false, { transform: booleanAttribute });
   /**
-   * Paste plain text only. Without it, pasted HTML is sanitized (no scripts, no style elements
-   * or attributes, no event handlers) before it goes in. PrimeNG has no equivalent (Quill
+   * Paste plain text only. Without it, pasted HTML is sanitized (no scripts, no style elements,
+   * no event handlers, only allowed styles) before it goes in. PrimeNG has no equivalent (Quill
    * clipboard matchers).
    */
   readonly pasteAsText = input(false, { transform: booleanAttribute });
@@ -280,8 +205,8 @@ export class StarEditor implements FormValueControl<string> {
     };
   });
   protected readonly blockFormats: readonly StarEditorBlockFormat[] = ['p', 'h1', 'h2', 'h3'];
+  protected readonly fontSizes = FONT_SIZES;
   protected readonly groups = computed(() => starEditorGroups(this.toolbar()));
-  private readonly commands = computed(() => this.groups().flat());
   /** No edits: the toolbar is off and the area is not editable. */
   protected readonly locked = computed(() => this.disabled() || this.readonly());
 
@@ -311,19 +236,61 @@ export class StarEditor implements FormValueControl<string> {
   private readonly active = signal<ReadonlySet<StarEditorCommand>>(new Set());
   /** Text style of the block at the caret. */
   protected readonly blockFormat = signal<StarEditorBlockFormat>('p');
-  /** The toolbar control in the tab order (roving tabindex). */
-  private readonly rovingIndex = signal(0);
-  protected readonly rovingCommand = computed(
-    () => this.commands()[Math.min(this.rovingIndex(), this.commands().length - 1)],
-  );
+  /** Font size step at the caret. */
+  protected readonly fontSize = signal<StarEditorFontSize>('normal');
+  /** Text color and highlight at the caret (`''` for none). */
+  protected readonly textColorAt = signal('');
+  protected readonly highlightAt = signal('');
+  /** Undo and redo are possible. */
+  private readonly canUndo = signal(false);
+  private readonly canRedo = signal(false);
+
+  // ---- Toolbar overflow ----
+  /** Groups that show in the bar; the others are in the "More actions" panel. */
+  protected readonly visibleCount = signal(Infinity);
+  protected readonly moreOpen = signal(false);
+  /** The toolbar is measured (the browser has `ResizeObserver`). */
+  protected readonly fitting = signal(false);
+  /** Widths of the groups, measured while they show in the bar. */
+  private groupWidths: number[] = [];
+
+  /** The toolbar control in the tab order (roving tabindex): a command, or `'more'`. */
+  private readonly rovingKey = signal<string | null>(null);
+  /** The keys of the toolbar controls that show now, in order. */
+  private readonly shownKeys = computed(() => {
+    const groups = this.groups();
+    const count = Math.min(this.visibleCount(), groups.length);
+    const keys: string[] = groups.slice(0, count).flat();
+    if (count < groups.length) {
+      keys.push('more');
+      if (this.moreOpen()) keys.push(...groups.slice(count).flat());
+    }
+    return keys;
+  });
+  protected readonly tabStop = computed(() => {
+    const keys = this.shownKeys();
+    const key = this.rovingKey();
+    return key && keys.includes(key) ? key : keys[0];
+  });
 
   protected readonly linkOpen = signal(false);
   protected readonly linkUrl = signal('');
   protected readonly linkNewTab = signal(false);
+  /** The open color panel. */
+  protected readonly colorPanel = signal<Panel | null>(null);
   /** The selection when the link popover opened, and the link at it. */
   private linkRange: Range | null = null;
   private linkAnchor: HTMLAnchorElement | null = null;
+  /** The selection when a panel opened. */
+  private panelRange: Range | null = null;
   private lastWritten: string | null = null;
+
+  private readonly history = new StarEditorHistory();
+  /** The last change was typing, and when. */
+  private typing = false;
+  private typedAt = 0;
+  /** The input event that comes is typing (set in `beforeinput`). */
+  private typingNext = false;
 
   constructor() {
     // Write the model into the editable area only when it changed from outside.
@@ -336,30 +303,60 @@ export class StarEditor implements FormValueControl<string> {
         area.innerHTML = this.sanitize(text ? starEditorTextToHtml(value) : value);
         this.lastWritten = value;
         this.length.set(starEditorPlainLength(area));
+        this.history.reset({ html: area.innerHTML, selection: null });
+        this.typing = false;
+        this.updateHistoryState();
       },
+    });
+    // Toolbar groups that do not fit go into the "More actions" panel.
+    afterNextRender(() => {
+      const view = this.area().nativeElement.ownerDocument.defaultView;
+      const toolbar = this.toolbarElement()?.nativeElement;
+      if (!toolbar || !view || typeof view.ResizeObserver !== 'function') return;
+      this.fitting.set(true);
+      const observer = new view.ResizeObserver(() => this.fitToolbar());
+      observer.observe(toolbar);
+      this.destroyRef.onDestroy(() => observer.disconnect());
     });
   }
 
-  /** Angular's HTML sanitizer, then links that cannot reach back to this page. */
+  private readonly destroyRef = inject(DestroyRef);
+
+  /** The allow-list sanitizer, with the link target rules. */
   private sanitize(html: string): string {
-    const clean = this.sanitizer.sanitize(SecurityContext.HTML, html) ?? '';
-    return starEditorSafeLinks(clean, this.area().nativeElement.ownerDocument);
+    return starEditorSanitize(
+      html,
+      this.area().nativeElement.ownerDocument,
+      STAR_EDITOR_SANITIZE_DEFAULTS,
+    );
   }
 
   protected label(cmd: StarEditorCommand): string {
-    return cmd === 'formatBlock'
-      ? this.text.editorTextStyle
-      : (this.text[STAR_EDITOR_BUTTONS[cmd].label] as string);
+    if (cmd === 'formatBlock') return this.text.editorTextStyle;
+    if (cmd === 'fontSize') return this.text.editorFontSize;
+    return this.text[STAR_EDITOR_BUTTONS[cmd].label] as string;
   }
 
   protected icon(cmd: StarEditorCommand): string {
-    return cmd === 'formatBlock' ? '' : STAR_EDITOR_BUTTONS[cmd].icon;
+    return starEditorIsSelect(cmd) ? '' : STAR_EDITOR_BUTTONS[cmd].icon;
   }
 
   /** `aria-pressed` of a toggle button, `null` for an action button. */
   protected pressed(cmd: StarEditorCommand): boolean | null {
-    if (cmd === 'formatBlock' || !STAR_EDITOR_BUTTONS[cmd].toggle) return null;
+    if (starEditorIsSelect(cmd) || !STAR_EDITOR_BUTTONS[cmd].toggle) return null;
     return this.isActive(cmd);
+  }
+
+  /** `aria-expanded` of a button that opens a panel, else `null`. */
+  protected expanded(cmd: StarEditorCommand): boolean | null {
+    if (cmd === 'link') return this.linkOpen();
+    if (cmd === 'textColor' || cmd === 'highlight') return this.colorPanel() === cmd;
+    return null;
+  }
+
+  /** Undo and redo are off when there is nothing to undo or redo. */
+  protected unavailable(cmd: StarEditorCommand): boolean {
+    return (cmd === 'undo' && !this.canUndo()) || (cmd === 'redo' && !this.canRedo());
   }
 
   /** True when the format of `command` is on at the caret, for example `isActive('bold')`. */
@@ -368,6 +365,12 @@ export class StarEditor implements FormValueControl<string> {
   }
 
   protected onInput(): void {
+    this.commit(true);
+    this.refreshState();
+  }
+
+  /** Stores the area in the model and, with `record`, in the history. */
+  private commit(record: boolean): void {
     const element = this.area().nativeElement;
     const length = starEditorPlainLength(element);
     let value = '';
@@ -377,6 +380,39 @@ export class StarEditor implements FormValueControl<string> {
     this.lastWritten = value;
     this.value.set(value);
     this.length.set(length);
+    if (record) {
+      const now = Date.now();
+      const merge = this.typingNext && this.typing && now - this.typedAt < TYPING_MERGE_MS;
+      this.history.record(
+        {
+          html: element.innerHTML,
+          selection: starEditorSelectionPath(element, starEditorRange(element)),
+        },
+        merge,
+      );
+      this.typing = this.typingNext;
+      this.typedAt = now;
+      this.typingNext = false;
+      this.updateHistoryState();
+    }
+  }
+
+  private updateHistoryState(): void {
+    this.canUndo.set(this.history.canUndo);
+    this.canRedo.set(this.history.canRedo);
+  }
+
+  /** Undo (`-1`) or redo (`1`) with the history of the editor. */
+  private travel(direction: -1 | 1): void {
+    const state = direction < 0 ? this.history.undo() : this.history.redo();
+    if (!state) return;
+    const area = this.area().nativeElement;
+    area.innerHTML = state.html;
+    area.focus();
+    starEditorRestore(starEditorPathRange(area, state.selection));
+    this.typing = false;
+    this.commit(false);
+    this.updateHistoryState();
     this.refreshState();
   }
 
@@ -458,8 +494,18 @@ export class StarEditor implements FormValueControl<string> {
     this.onInput();
   }
 
-  /** Stops text input that would pass `maxLength`. Line breaks and deletions pass. */
+  /**
+   * Stops text input that would pass `maxLength`. Line breaks and deletions pass. The browser
+   * history steps (`historyUndo`, `historyRedo`, for example from the Edit menu) use the history
+   * of the editor.
+   */
   protected onBeforeInput(event: InputEvent): void {
+    if (event.inputType === 'historyUndo' || event.inputType === 'historyRedo') {
+      event.preventDefault();
+      this.travel(event.inputType === 'historyUndo' ? -1 : 1);
+      return;
+    }
+    this.typingNext = event.inputType === 'insertText';
     const max = this.maxLength();
     if (max === undefined || !event.inputType.startsWith('insert')) return;
     if (event.inputType === 'insertParagraph' || event.inputType === 'insertLineBreak') return;
@@ -470,15 +516,69 @@ export class StarEditor implements FormValueControl<string> {
   }
 
   /**
+   * Keys of the area: Ctrl+Z and Ctrl+Y (Ctrl+Shift+Z) use the history of the editor; Tab and
+   * Shift+Tab in a list item nest it and take it out (when it cannot move, Tab leaves the area as
+   * usual); Ctrl+Enter checks a checklist item.
+   */
+  protected onAreaKeydown(event: KeyboardEvent): void {
+    if (this.locked()) return;
+    const mod = event.ctrlKey || event.metaKey;
+    const key = event.key.toLowerCase();
+    if (mod && !event.altKey && (key === 'z' || key === 'y')) {
+      event.preventDefault();
+      this.travel(key === 'y' || event.shiftKey ? 1 : -1);
+      return;
+    }
+    const area = this.area().nativeElement;
+    const range = starEditorRange(area);
+    if (!range) return;
+    if (event.key === 'Tab' && !mod && !event.altKey) {
+      const items = starEditorItems(area, range);
+      if (items.length && starEditorIndentItems(area, range, items, event.shiftKey ? -1 : 1)) {
+        event.preventDefault();
+        this.onInput();
+      }
+      return;
+    }
+    if (event.key === 'Enter' && mod) {
+      const item = starEditorClosest(range.startContainer, area, ['LI']);
+      if (item?.parentElement?.classList.contains(STAR_EDITOR_CHECKLIST_CLASS)) {
+        event.preventDefault();
+        starEditorToggleCheck(item);
+        this.onInput();
+      }
+    }
+  }
+
+  /** A click on the box of a checklist item checks it. */
+  protected onAreaClick(event: MouseEvent): void {
+    if (this.locked()) return;
+    const item = event.target instanceof Element ? event.target : null;
+    if (
+      item?.tagName !== 'LI' ||
+      !item.parentElement?.classList.contains(STAR_EDITOR_CHECKLIST_CLASS)
+    )
+      return;
+    const box = item.getBoundingClientRect();
+    const rtl = item.ownerDocument.defaultView?.getComputedStyle(item).direction === 'rtl';
+    const fromStart = rtl ? box.right - event.clientX : event.clientX - box.left;
+    // The box is in the padding at the start of the item (see the editor styles).
+    if (fromStart > 28) return;
+    starEditorToggleCheck(item);
+    this.onInput();
+  }
+
+  /**
    * Runs a toolbar command on the selection, for example `exec('bold')` or
    * `exec('formatBlock', 'h2')`. `exec('link')` opens the link popover; `exec('link', url)` links
-   * the selection to a safe `url` at once. Nothing happens while the editor is disabled or
+   * the selection to a safe `url` at once. `exec('textColor')` and `exec('highlight')` open the
+   * color panel; with a value (a CSS color, `var(--star-…)`, or `''` for none) they set it.
+   * `exec('fontSize', 'large')` sets a size step. Nothing happens while the editor is disabled or
    * read-only.
    *
-   * Alignment is stored as the classes `star-text-center` and `star-text-end` (the sanitizer
-   * removes `style`): where the HTML is shown later, the StarNG CSS must be loaded. Inline code,
-   * alignment, and the fallbacks of link, paste and drop change the DOM directly, so the browser
-   * undo (`undo`, Ctrl+Z) does not include them.
+   * Alignment is stored as the classes `star-text-center`, `star-text-end` and
+   * `star-text-justify` (where the HTML is shown later, the StarNG CSS must be loaded). Colors,
+   * sizes and indentation are inline styles that the sanitizer keeps.
    */
   exec(command: StarEditorCommand, value?: string): void {
     if (this.locked()) return;
@@ -494,13 +594,21 @@ export class StarEditor implements FormValueControl<string> {
       }
       return;
     }
-    // The text style select keeps the focus, so a keyboard user can try the next style.
+    if (command === 'undo' || command === 'redo') {
+      this.travel(command === 'undo' ? -1 : 1);
+      return;
+    }
+    if ((command === 'textColor' || command === 'highlight') && value === undefined) {
+      this.openPanel(command);
+      return;
+    }
+    // The selects keep the focus, so a keyboard user can try the next option.
     const returnTo =
-      command === 'formatBlock' && area.ownerDocument.activeElement instanceof HTMLSelectElement
+      starEditorIsSelect(command) && area.ownerDocument.activeElement instanceof HTMLSelectElement
         ? area.ownerDocument.activeElement
         : null;
     // Focusing the area can move the caret: keep the selection that the command is for.
-    const saved = starEditorRange(area)?.cloneRange() ?? null;
+    const saved = (this.panelRange ?? starEditorRange(area))?.cloneRange() ?? null;
     area.focus();
     if (saved) starEditorRestore(saved);
     const range = starEditorRange(area);
@@ -519,20 +627,98 @@ export class StarEditor implements FormValueControl<string> {
       case 'code':
         if (range) starEditorToggleCode(area, range);
         break;
+      case 'subscript':
+      case 'superscript':
+        if (range) starEditorToggleScript(area, range, command === 'subscript' ? 'SUB' : 'SUP');
+        break;
+      case 'textColor':
+      case 'highlight':
+        if (range)
+          starEditorSetStyle(
+            area,
+            range,
+            command === 'textColor' ? 'color' : 'background-color',
+            value || null,
+          );
+        break;
+      case 'fontSize':
+        if (range)
+          starEditorSetStyle(
+            area,
+            range,
+            'font-size',
+            STAR_EDITOR_FONT_SIZES[(value ?? 'normal') as StarEditorFontSize] || null,
+          );
+        break;
+      case 'insertUnorderedList':
+      case 'insertOrderedList':
+      case 'checklist':
+        if (range)
+          starEditorToggleList(
+            area,
+            range,
+            command === 'checklist' ? 'checklist' : command === 'insertOrderedList' ? 'ol' : 'ul',
+          );
+        break;
+      case 'indent':
+      case 'outdent':
+        if (range) {
+          const delta = command === 'indent' ? 1 : -1;
+          const items = starEditorItems(area, range);
+          if (items.length) starEditorIndentItems(area, range, items, delta);
+          else starEditorIndentBlocks(starEditorBlocks(area, range), delta);
+        }
+        break;
+      case 'horizontalRule':
+        if (range) starEditorInsertRule(area, range);
+        break;
+      case 'removeFormat':
+        if (range) starEditorClearFormat(area, range);
+        break;
       case 'justifyLeft':
       case 'justifyCenter':
       case 'justifyRight':
+      case 'justifyFull':
         if (range) {
           const alignment =
-            command === 'justifyLeft' ? 'start' : command === 'justifyCenter' ? 'center' : 'end';
+            command === 'justifyLeft'
+              ? 'start'
+              : command === 'justifyCenter'
+                ? 'center'
+                : command === 'justifyRight'
+                  ? 'end'
+                  : 'justify';
           starEditorAlign(area, range, alignment);
         }
         break;
       default:
         run(command);
     }
+    this.panelRange = null;
     this.onInput();
+    if (this.moreOpen()) this.moreOpen.set(false);
     returnTo?.focus();
+  }
+
+  // ---- Panels ----
+
+  private openPanel(kind: Panel): void {
+    this.panelRange = starEditorRange(this.area().nativeElement)?.cloneRange() ?? null;
+    this.linkOpen.set(false);
+    this.colorPanel.set(this.colorPanel() === kind ? null : kind);
+  }
+
+  protected pickColor(kind: Panel, color: string): void {
+    this.colorPanel.set(null);
+    this.exec(kind, color);
+  }
+
+  protected closePanel(): void {
+    this.colorPanel.set(null);
+    this.area().nativeElement.focus();
+    starEditorRestore(this.panelRange);
+    this.panelRange = null;
+    this.refreshState();
   }
 
   // ---- Link popover ----
@@ -547,6 +733,7 @@ export class StarEditor implements FormValueControl<string> {
 
   private openLink(): void {
     const area = this.area().nativeElement;
+    this.colorPanel.set(null);
     this.linkRange = starEditorRange(area)?.cloneRange() ?? null;
     this.linkAnchor = this.anchorAt(this.linkRange);
     this.linkUrl.set(this.linkAnchor?.getAttribute('href') ?? '');
@@ -571,7 +758,7 @@ export class StarEditor implements FormValueControl<string> {
       starEditorSetLink(this.linkAnchor, link);
     } else if (range) {
       const before = new Set(area.querySelectorAll('a'));
-      // The browser command keeps the undo history and the formats of the text.
+      // The browser command keeps the formats of the text.
       const done = !range.collapsed && doc.execCommand?.('createLink', false, link.url);
       if (done) {
         for (const anchor of area.querySelectorAll('a'))
@@ -603,19 +790,22 @@ export class StarEditor implements FormValueControl<string> {
     this.onInput();
   }
 
-  // ---- Toolbar keyboard ----
+  // ---- Toolbar keyboard and overflow ----
 
   private controls(): HTMLElement[] {
     const toolbar = this.toolbarElement()?.nativeElement;
     return toolbar ? [...toolbar.querySelectorAll<HTMLElement>('[data-editor-control]')] : [];
   }
 
-  protected onToolbarFocus(event: FocusEvent): void {
-    const index = this.controls().indexOf(event.target as HTMLElement);
-    if (index >= 0) this.rovingIndex.set(index);
+  protected onToolbarFocus(key: string): void {
+    this.rovingKey.set(key);
   }
 
   protected onToolbarKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Escape' && this.moreOpen()) {
+      this.closeMore(event);
+      return;
+    }
     const controls = this.controls();
     const index = controls.indexOf(event.target as HTMLElement);
     if (index < 0) return;
@@ -630,13 +820,47 @@ export class StarEditor implements FormValueControl<string> {
     enabled[target].focus();
   }
 
+  private closeMore(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.moreOpen.set(false);
+    this.toolbarElement()
+      ?.nativeElement.querySelector<HTMLElement>('[data-editor-key=more]')
+      ?.focus();
+  }
+
+  /** Puts the groups that do not fit into the "More actions" panel. */
+  private fitToolbar(): void {
+    const toolbar = this.toolbarElement()?.nativeElement;
+    if (!toolbar) return;
+    for (const group of toolbar.querySelectorAll<HTMLElement>('[data-editor-group]'))
+      this.groupWidths[Number(group.dataset['editorGroup'])] = group.offsetWidth;
+    const widths = this.groups().map((_, index) => this.groupWidths[index] ?? 0);
+    const style = toolbar.ownerDocument.defaultView?.getComputedStyle(toolbar);
+    const padding = style
+      ? parseFloat(style.paddingInlineStart || '0') + parseFloat(style.paddingInlineEnd || '0')
+      : 0;
+    // A separator and its gaps between groups; the More button with its separator.
+    const count = starEditorFit(widths, toolbar.clientWidth - padding, 48, 13);
+    if (count !== this.visibleCount()) {
+      this.visibleCount.set(count >= widths.length ? Infinity : count);
+      if (count >= widths.length) this.moreOpen.set(false);
+    }
+  }
+
   /** Reads the formats at the caret: the selection walk, then the browser's command state. */
   protected refreshState(): void {
     const area = this.area().nativeElement;
     const on = new Set<StarEditorCommand>();
     const range = starEditorRange(area);
-    const path = starEditorPath(range?.startContainer ?? null, area);
+    const node = range?.startContainer ?? null;
+    const path = starEditorPath(node, area);
     for (const tag of path) if (FORMAT_TAGS[tag]) on.add(FORMAT_TAGS[tag]);
+    const list = starEditorListAt(node, area);
+    if (list)
+      on.add(
+        list === 'ol' ? 'insertOrderedList' : list === 'ul' ? 'insertUnorderedList' : 'checklist',
+      );
     const doc = area.ownerDocument;
     // The browser state is for the whole document: read it only for a selection in this area.
     for (const command of range ? NATIVE_STATES : []) {
@@ -646,16 +870,21 @@ export class StarEditor implements FormValueControl<string> {
         // Some commands have no state.
       }
     }
-    const alignment = starEditorAlignmentAt(range?.startContainer ?? null, area);
+    const alignment = starEditorAlignmentAt(node, area);
     on.add(
       alignment === 'start'
         ? 'justifyLeft'
         : alignment === 'center'
           ? 'justifyCenter'
-          : 'justifyRight',
+          : alignment === 'end'
+            ? 'justifyRight'
+            : 'justifyFull',
     );
     const heading = path.find((tag) => tag === 'H1' || tag === 'H2' || tag === 'H3');
     this.blockFormat.set(heading ? (heading.toLowerCase() as StarEditorBlockFormat) : 'p');
+    this.fontSize.set(starEditorFontSizeAt(node, area));
+    this.textColorAt.set(starEditorStyleAt(node, area, 'color'));
+    this.highlightAt.set(starEditorStyleAt(node, area, 'background-color'));
     this.active.set(on);
   }
 

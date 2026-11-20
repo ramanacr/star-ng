@@ -37,13 +37,28 @@ import { DOCS, DocsRow } from '../shared/docs';
         heading="Full toolbar"
         source="editor/full-toolbar"
         [script]="fullScript"
-        note="toolbar lists the commands in order; '|' starts a new group. STAR_EDITOR_FULL_TOOLBAR has every command: undo, redo, text style (paragraph, heading 1 to 3), bold, italic, underline, strikethrough, inline code, lists, quote, alignment to the start, the center and the end (logical: the start is on the right in right-to-left), link and clear formatting. Alignment is stored as the class star-text-center or star-text-end."
+        note="toolbar lists the commands in order; '|' starts a new group. STAR_EDITOR_FULL_TOOLBAR has every command: undo and redo, text style (paragraph, heading 1 to 3) and font size, bold, italic, underline, strikethrough, subscript, superscript, inline code, text color and highlight (palette colors from the theme tokens, no color, or a custom color), bulleted, numbered and checklist lists, decrease and increase indent, quote, alignment to the start, the center and the end and justify (logical: the start is on the right in right-to-left), link, horizontal line and clear formatting. Groups that do not fit in the width go into the More actions panel at the end of the toolbar."
       >
         <div class="docs-stack">
-          <star-editor [(value)]="report" [toolbar]="fullToolbar" ariaLabel="Shipping report" />
+          <star-editor
+            [(value)]="report"
+            [toolbar]="fullToolbar"
+            ariaLabel="Product announcement"
+          />
           <pre class="docs-output" role="group" aria-label="Value of the full editor">{{
             report()
           }}</pre>
+        </div>
+      </docs-example>
+
+      <docs-example
+        heading="Lists, checklists and nesting"
+        source="editor/lists"
+        [script]="listsScript"
+        note="The list buttons turn the selected paragraphs into items, change the kind of a list, or turn the items back into paragraphs. In a list item, Tab nests the item under the item before it and Shift+Tab takes it out one level; when the item cannot move, Tab leaves the area as usual. A checklist is a bulleted list with the class star-checklist and data-checked on each item: click the box or press Ctrl+Enter to check an item. Outside lists, the indent buttons indent the paragraph in steps."
+      >
+        <div class="docs-stack">
+          <star-editor [(value)]="plan" [toolbar]="listToolbar" ariaLabel="Launch plan" />
         </div>
       </docs-example>
 
@@ -164,7 +179,7 @@ import { DOCS, DocsRow } from '../shared/docs';
         heading="HTML that is sanitized"
         source="editor/sanitize"
         [script]="sanitizeScript"
-        note="This value has a script element, an event handler, a style attribute and a javascript: link. The area shows the sanitized HTML: no script, no handler, no style, and the link address starts with unsafe:. The value of the model is not changed until the user edits the area: then the model gets the sanitized HTML of the area. Type in the area and look at the value below."
+        note="This value has a script element, an event handler, a style that is not allowed (position) next to an allowed one (color) and a javascript: link. The area shows the sanitized HTML: no script, no handler, only the color, and the link has no address. The value of the model is not changed until the user edits the area: then the model gets the sanitized HTML of the area. Type in the area and look at the value below."
       >
         <div class="docs-stack">
           <star-editor [(value)]="unsafe" ariaLabel="Sanitized content" />
@@ -181,18 +196,23 @@ import { DOCS, DocsRow } from '../shared/docs';
 
       <h2>What the editor does with HTML</h2>
       <p>
-        The editor sanitizes HTML with the Angular <code>DomSanitizer</code>
-        (<code>SecurityContext.HTML</code>) in two places:
+        The editor sanitizes HTML with its own allow-list sanitizer (the rules of Aurora RTE) in two
+        places:
       </p>
       <ol>
         <li>
-          <strong>Value to area.</strong> When the value changes from outside, the editor sets the
-          <code>innerHTML</code> of the area to the sanitized value. The sanitizer removes script
-          elements (with their content) and other unsafe elements, event handler attributes such as
-          <code>onclick</code>, and <code>style</code> attributes. It does not remove an unsafe URL
-          such as <code>javascript:alert(1)</code>: it keeps the attribute and puts
-          <code>unsafe:</code> in front of the address, so the link does not run script. In
-          development mode, Angular writes a warning to the console when it changes something.
+          <strong>Value to area.</strong> When the value changes from outside, the editor parses the
+          value in an inert template (no script runs, no image loads), keeps only the allowed
+          elements and attributes and sets the result as the <code>innerHTML</code> of the area.
+          Script, style, iframe, object, SVG and form elements go with their content; unknown
+          elements are unwrapped (their text stays); event handler attributes such as
+          <code>onclick</code>, <code>id</code> and <code>name</code> go; a link or image address
+          needs an allowed protocol (<code>javascript:</code>, <code>vbscript:</code> and
+          <code>data:</code> never pass, except a <code>data:</code> image); only known style
+          properties with safe values stay (color, background color, font size, text alignment,
+          indentation, width and height). Legacy <code>&lt;font&gt;</code>,
+          <code>&lt;center&gt;</code>, <code>&lt;strike&gt;</code> and <code>align</code> become
+          current markup. A link that opens a new tab gets <code>rel="noopener noreferrer"</code>.
         </li>
         <li>
           <strong>Area to value.</strong> After each edit (typing, a toolbar command, or a paste)
@@ -206,9 +226,10 @@ import { DOCS, DocsRow } from '../shared/docs';
         The model value is not sanitized when your code sets it. It stays as you set it until the
         user edits the area. Sanitizing in the editor is a protection for the editing area. It is
         not a protection for the place where you use the value. Sanitize the HTML again on the
-        server before you store it, and use <code>[innerHTML]</code> (Angular sanitizes it) or a
-        sanitizer when you show the value in another page. Never mark the value as trusted without a
-        server check.
+        server before you store it, and use a sanitizer when you show the value in another page.
+        Note that <code>[innerHTML]</code> uses the Angular sanitizer, which removes every
+        <code>style</code> attribute (colors, sizes and indentation are then lost; alignment and
+        checklists are classes and stay). Never mark the value as trusted without a server check.
       </p>
       <p>
         The area is treated as empty when it has no text (the stored value is an empty string). A
@@ -227,9 +248,10 @@ import { DOCS, DocsRow } from '../shared/docs';
 
       <h2>Technical notes</h2>
       <p>
-        Formatting uses <code>document.execCommand</code>. Browsers still support it, but it is no
-        longer developed, and the HTML that it makes can differ between browsers. For complex
-        documents use a dedicated editor library.
+        Bold, italic, underline, strikethrough and the text style use
+        <code>document.execCommand</code>. Browsers still support it, but it is no longer developed,
+        and the HTML that it makes can differ between browsers. The other commands change the DOM
+        directly. The editor keeps its own undo history of every change.
       </p>
     </docs-page>
   `,
@@ -239,12 +261,27 @@ export class EditorPage {
   protected readonly comment = signal('');
   protected readonly saved = signal('<p>Leave the parcel at the <b>loading dock</b>.</p>');
   protected readonly unsafe = signal(
-    '<p onclick="alert(1)" style="color: red">Order <b>ORD-1042</b> <script>alert(1)</script><a href="javascript:alert(1)">open</a></p>',
+    '<p onclick="alert(1)" style="color: #c62828; position: fixed">Order <b>ORD-1042</b> <script>alert(1)</script><a href="javascript:alert(1)">open</a></p>',
   );
 
   protected readonly report = signal(
-    '<h2>Week 12</h2><p>All <b>orders</b> shipped. See <a href="https://example.com/orders">the list</a>.</p>',
+    '<h2>Release 4.2 is here</h2><p>The <b>new dashboard</b> ships today with <span style="color: var(--star-accent)">faster reports</span> and <span style="background-color: var(--star-warning-soft)">saved filters</span>. Read the <a href="https://example.com/release">release notes</a>.</p>',
   );
+  protected readonly plan = signal(
+    '<ul class="star-checklist"><li data-checked="true">Write the release notes</li><li data-checked="false">Update the screenshots<ul class="star-checklist"><li data-checked="false">Dashboard</li><li data-checked="false">Reports</li></ul></li><li data-checked="false">Send the announcement</li></ul>',
+  );
+  protected readonly listToolbar: readonly StarEditorToolbarItem[] = [
+    'insertUnorderedList',
+    'insertOrderedList',
+    'checklist',
+    '|',
+    'outdent',
+    'indent',
+  ];
+  protected readonly listsScript = `readonly plan = signal('<ul class="star-checklist"><li data-checked="true">Write the release notes</li>…</ul>');
+readonly listToolbar: readonly StarEditorToolbarItem[] = [
+  'insertUnorderedList', 'insertOrderedList', 'checklist', '|', 'outdent', 'indent',
+];`;
   protected readonly fullToolbar = STAR_EDITOR_FULL_TOOLBAR;
   protected readonly shortToolbar: readonly StarEditorToolbarItem[] = [
     'bold',
@@ -252,7 +289,7 @@ export class EditorPage {
     '|',
     'link',
   ];
-  protected readonly fullScript = `readonly report = signal('<h2>Week 12</h2><p>All <b>orders</b> shipped.</p>');
+  protected readonly fullScript = `readonly report = signal('<h2>Release 4.2 is here</h2><p>The <b>new dashboard</b> ships today.</p>');
 readonly fullToolbar = STAR_EDITOR_FULL_TOOLBAR;`;
   protected readonly ownScript = `readonly shortToolbar: readonly StarEditorToolbarItem[] = ['bold', 'italic', '|', 'link'];`;
   protected readonly summary = signal('Two boxes for Orchard Supply.\nDeliver before noon.');
@@ -261,7 +298,7 @@ readonly fullToolbar = STAR_EDITOR_FULL_TOOLBAR;`;
   protected readonly sizeScript = `readonly comment = signal('');`;
   protected readonly statesScript = `readonly saved = signal('<p>Leave the parcel at the <b>loading dock</b>.</p>');`;
   protected readonly sanitizeScript = `readonly unsafe = signal(
-  '<p onclick="alert(1)" style="color: red">Order <b>ORD-1042</b> <script>alert(1)</script><a href="javascript:alert(1)">open</a></p>',
+  '<p onclick="alert(1)" style="color: #c62828; position: fixed">Order <b>ORD-1042</b> <script>alert(1)</script><a href="javascript:alert(1)">open</a></p>',
 );`;
 
   protected readonly slots: readonly DocsRow[] = [
@@ -307,6 +344,20 @@ readonly fullToolbar = STAR_EDITOR_FULL_TOOLBAR;`;
       name: 'Ctrl+B / Ctrl+I / Ctrl+U',
       description: 'In the area: bold, italic and underline, from the browser.',
     },
-    { name: 'Ctrl+Z / Ctrl+Y', description: 'In the area: undo and redo, from the browser.' },
+    {
+      name: 'Ctrl+Z / Ctrl+Y (Ctrl+Shift+Z)',
+      description: 'In the area: undo and redo, with the history of the editor (every change).',
+    },
+    {
+      name: 'Tab / Shift+Tab in a list item',
+      description:
+        'Nests the item under the item before it, or takes it out one level. When the item cannot move, Tab leaves the area as usual.',
+    },
+    { name: 'Ctrl+Enter in a checklist item', description: 'Checks or unchecks the item.' },
+    {
+      name: 'Escape',
+      description:
+        'In the color panel or the More actions panel: closes it; the focus goes back to the text or to the More actions button.',
+    },
   ];
 }

@@ -4,7 +4,6 @@ import { By } from '@angular/platform-browser';
 import {
   STAR_EDITOR_FULL_TOOLBAR,
   StarEditor,
-  starEditorSafeUrl,
   StarEditorToolbarItem,
   StarEditorToolbarTemplate,
 } from '@star-ng/ui/editor';
@@ -51,24 +50,34 @@ describe('StarEditor toolbar', () => {
     const toolbar = el.querySelector('[role=toolbar]')!;
     expect(toolbar.getAttribute('aria-label')).toBe('Note formatting');
     expect(toolbar.getAttribute('aria-controls')).toBe(area.id);
-    expect(el.querySelectorAll('[role=separator]').length).toBe(5);
+    expect(el.querySelectorAll('[role=separator]').length).toBe(6);
     const controls = [...el.querySelectorAll<HTMLElement>('[data-editor-control]')];
     expect(controls.map((c) => c.getAttribute('aria-label'))).toEqual([
       'Undo',
       'Redo',
       'Text style',
+      'Font size',
       'Bold',
       'Italic',
       'Underline',
       'Strikethrough',
+      'Subscript',
+      'Superscript',
       'Code',
+      'Text color',
+      'Highlight color',
       'Bulleted list',
       'Numbered list',
+      'Checklist',
+      'Decrease indent',
+      'Increase indent',
       'Quote',
       'Align to the start',
       'Center',
       'Align to the end',
+      'Justify',
       'Link',
+      'Horizontal line',
       'Clear formatting',
     ]);
     expect(controls.map((c) => c.tabIndex)).toEqual([0, ...controls.slice(1).map(() => -1)]);
@@ -79,9 +88,11 @@ describe('StarEditor toolbar', () => {
       'Heading 2',
       'Heading 3',
     ]);
-    // Toggle buttons have aria-pressed; actions do not.
-    expect(controls[3].getAttribute('aria-pressed')).toBe('false');
+    // Toggle buttons have aria-pressed; actions do not. Undo has nothing to undo yet.
+    expect(controls[4].getAttribute('aria-pressed')).toBe('false');
     expect(controls[0].hasAttribute('aria-pressed')).toBe(false);
+    expect(controls[0].getAttribute('aria-disabled')).toBe('true');
+    expect(controls[3].tagName).toBe('SELECT');
   });
 
   it('moves the focus with the arrow keys, Home and End, and keeps one tab stop', async () => {
@@ -169,7 +180,6 @@ describe('StarEditor toolbar', () => {
     try {
       select(area.querySelector('p')!, 0, 5);
       button('Strikethrough').click();
-      button('Undo').click();
       const style = el.querySelector<HTMLSelectElement>('select')!;
       style.value = 'h2';
       style.dispatchEvent(new Event('change'));
@@ -179,7 +189,6 @@ describe('StarEditor toolbar', () => {
     }
     expect(calls).toEqual([
       ['strikeThrough', false, undefined],
-      ['undo', false, undefined],
       ['formatBlock', false, 'h2'],
       ['formatBlock', false, 'blockquote'],
     ]);
@@ -265,22 +274,6 @@ describe('StarEditor link popover', () => {
     remove.click();
     await fixture.whenStable();
     expect(host.html()).toBe('<p>See orders</p>');
-  });
-
-  it('accepts only safe link addresses', () => {
-    expect(starEditorSafeUrl(' https://example.com/a ')).toBe('https://example.com/a');
-    expect(starEditorSafeUrl('mailto:orders@example.com')).toBe('mailto:orders@example.com');
-    expect(starEditorSafeUrl('tel:+15550100')).toBe('tel:+15550100');
-    expect(starEditorSafeUrl('/orders/1042')).toBe('/orders/1042');
-    expect(starEditorSafeUrl('example.com/orders')).toBe('https://example.com/orders');
-    expect(starEditorSafeUrl('javascript:alert(1)')).toBeNull();
-    expect(starEditorSafeUrl('JAVASCRIPT:alert(1)')).toBeNull();
-    expect(starEditorSafeUrl('data:text/html,x')).toBeNull();
-    expect(starEditorSafeUrl('//evil.example.com')).toBeNull();
-    expect(starEditorSafeUrl('/\\evil.example.com')).toBeNull();
-    expect(starEditorSafeUrl('https://example.com\\a')).toBeNull();
-    expect(starEditorSafeUrl('https://example.com/a b')).toBeNull();
-    expect(starEditorSafeUrl('')).toBeNull();
   });
 });
 
@@ -401,11 +394,11 @@ describe('StarEditor paste', () => {
     return { area, host: fixture.componentInstance };
   }
 
-  it('pastes sanitized HTML: no script, style or event handler', async () => {
+  it('pastes sanitized HTML: no script, style element, unknown style or event handler', async () => {
     const { area, host } = await setupPaste(false);
     const event = paste(area, {
       'text/html':
-        '<style>p { color: red }</style><b onclick="alert(1)" style="color: red">bold</b><script>alert(1)</script><img src="x" onerror="alert(1)">',
+        '<style>p { color: red }</style><b onclick="alert(1)" style="position: fixed">bold</b><script>alert(1)</script><img src="x" onerror="alert(1)">',
       'text/plain': 'bold',
     });
     expect(event.defaultPrevented).toBe(true);

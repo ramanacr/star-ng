@@ -90,7 +90,7 @@ export function starEditorSetLink(anchor: HTMLAnchorElement, value: StarEditorLi
       </label>
       <div class="star-editor__link-actions">
         <button type="submit" class="star-btn star-btn--primary star-btn--sm">
-          {{ text.editorLinkApply }}
+          {{ text.apply }}
         </button>
         @if (editing()) {
           <button
@@ -106,7 +106,7 @@ export function starEditorSetLink(anchor: HTMLAnchorElement, value: StarEditorLi
           class="star-btn star-btn--ghost star-btn--sm"
           (click)="dismissed.emit()"
         >
-          {{ text.editorLinkCancel }}
+          {{ text.cancel }}
         </button>
       </div>
     </form>

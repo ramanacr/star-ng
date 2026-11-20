@@ -5157,7 +5157,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-editor",
     "entry": "@star-ng/ui/editor",
-    "description": "Rich text field (PrimeNG `p-editor`, without Quill): a `contenteditable` area with a formatting toolbar. Value is HTML, sanitized with Angular's `DomSanitizer` both when it is shown and when it is stored.",
+    "description": "Rich text field (PrimeNG `p-editor`, without Quill): a `contenteditable` area with a formatting toolbar. Value is HTML, sanitized with the allow-list of the editor both when it is shown and when it is stored.",
     "inputs": [
       {
         "name": "format",
@@ -5227,7 +5227,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "boolean",
         "default": "false",
         "required": false,
-        "description": "Paste plain text only. Without it, pasted HTML is sanitized (no scripts, no style elements or attributes, no event handlers) before it goes in. PrimeNG has no equivalent (Quill clipboard matchers)."
+        "description": "Paste plain text only. Without it, pasted HTML is sanitized (no scripts, no style elements, no event handlers, only allowed styles) before it goes in. PrimeNG has no equivalent (Quill clipboard matchers)."
       },
       {
         "name": "toolbar",
@@ -5249,6 +5249,45 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "outputs": [
       {
         "name": "touch",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": ""
+      }
+    ]
+  },
+  "StarEditorColor": {
+    "kind": "component",
+    "selector": "star-editor-color",
+    "entry": "@star-ng/ui/editor",
+    "description": "The color panel of `star-editor` (internal): palette swatches from the theme tokens, \"No color\", and a custom color field. It sits under the toolbar like the link form; Escape closes it and the editor gives the focus back to the text.",
+    "inputs": [
+      {
+        "name": "kind",
+        "type": "'textColor' | 'highlight'",
+        "default": "'textColor'",
+        "required": false,
+        "description": "`'textColor'` or `'highlight'`."
+      },
+      {
+        "name": "value",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "The color at the caret, `''` for none."
+      }
+    ],
+    "models": [],
+    "outputs": [
+      {
+        "name": "pick",
+        "type": "string",
+        "default": null,
+        "required": false,
+        "description": ""
+      },
+      {
+        "name": "dismissed",
         "type": "void",
         "default": null,
         "required": false,
@@ -15880,7 +15919,8 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "dropdown/basic": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button\n      variant=\"secondary\"\n      trailingIcon=\"ph-bold ph-caret-down\"\n      [starDropdownTrigger]=\"formats\"\n    >\n      Export as\n    </star-button>\n  </div>\n  <star-dropdown\n    #formats\n    ariaLabel=\"Export format\"\n    [(value)]=\"format\"\n    (selectionChange)=\"onSelect($event)\"\n  >\n    <star-dropdown-item header>Documents</star-dropdown-item>\n    <star-dropdown-item value=\"pdf\">PDF</star-dropdown-item>\n    <star-dropdown-item value=\"docx\" disabled>Word document</star-dropdown-item>\n    <star-dropdown-item divider />\n    <star-dropdown-item header>Data</star-dropdown-item>\n    <star-dropdown-item value=\"csv\">CSV</star-dropdown-item>\n    <star-dropdown-item value=\"xlsx\">Spreadsheet</star-dropdown-item>\n    <star-dropdown-item value=\"json\">JSON</star-dropdown-item>\n  </star-dropdown>\n  <p class=\"docs-output\" role=\"status\">Export format: {{ chosen() }}</p>\n</div>",
   "dropdown/keep-open": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" [starDropdownTrigger]=\"cities\">\n      Add a city\n    </star-button>\n  </div>\n  <star-dropdown\n    #cities\n    ariaLabel=\"Cities\"\n    [closeOnSelect]=\"false\"\n    (selectionChange)=\"added.set(added() + $event.label + ' ')\"\n  >\n    <star-dropdown-item value=\"berlin\">Berlin</star-dropdown-item>\n    <star-dropdown-item value=\"lisbon\">Lisbon</star-dropdown-item>\n    <star-dropdown-item value=\"oslo\">Oslo</star-dropdown-item>\n    <star-dropdown-item value=\"toronto\">Toronto</star-dropdown-item>\n  </star-dropdown>\n  <p class=\"docs-output\" role=\"status\">Added: {{ added() || 'none' }}</p>\n</div>",
   "editor/basic": "<div class=\"docs-stack\">\n  <star-editor\n    [(value)]=\"note\"\n    ariaLabel=\"Delivery note\"\n    placeholder=\"Write the delivery note\"\n  />\n  <pre class=\"docs-output\" role=\"group\" aria-label=\"Value of the editor\">{{ note() }}</pre>\n</div>",
-  "editor/full-toolbar": "<div class=\"docs-stack\">\n  <star-editor [(value)]=\"report\" [toolbar]=\"fullToolbar\" ariaLabel=\"Shipping report\" />\n  <pre class=\"docs-output\" role=\"group\" aria-label=\"Value of the full editor\">{{\n    report()\n  }}</pre>\n</div>",
+  "editor/full-toolbar": "<div class=\"docs-stack\">\n  <star-editor\n    [(value)]=\"report\"\n    [toolbar]=\"fullToolbar\"\n    ariaLabel=\"Product announcement\"\n  />\n  <pre class=\"docs-output\" role=\"group\" aria-label=\"Value of the full editor\">{{\n    report()\n  }}</pre>\n</div>",
+  "editor/lists": "<div class=\"docs-stack\">\n  <star-editor [(value)]=\"plan\" [toolbar]=\"listToolbar\" ariaLabel=\"Launch plan\" />\n</div>",
   "editor/own-toolbar": "<div class=\"docs-stack\">\n  <star-editor [toolbar]=\"shortToolbar\" ariaLabel=\"Short comment\" minHeight=\"4rem\" />\n</div>",
   "editor/paste": "<div class=\"docs-stack\">\n  <star-editor ariaLabel=\"Pasted with formats\" minHeight=\"4rem\" />\n  <star-editor pasteAsText ariaLabel=\"Pasted as plain text\" minHeight=\"4rem\" />\n</div>",
   "editor/sanitize": "<div class=\"docs-stack\">\n  <star-editor [(value)]=\"unsafe\" ariaLabel=\"Sanitized content\" />\n  <pre class=\"docs-output\" aria-label=\"Value after sanitizing\">{{ unsafe() }}</pre>\n</div>",

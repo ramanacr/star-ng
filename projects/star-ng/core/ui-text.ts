@@ -305,6 +305,23 @@ export interface StarUiText {
   readonly editorLinkInvalid: string;
   readonly editorCharacterCount: (count: number, max: number) => string;
   readonly editorCharactersLeft: (count: number) => string;
+  readonly editorSubscript: string;
+  readonly editorSuperscript: string;
+  readonly editorTextColor: string;
+  readonly editorHighlight: string;
+  /** Button of the color panel that removes the color. */
+  readonly editorNoColor: string;
+  readonly editorFontSize: string;
+  readonly editorSizeSmall: string;
+  readonly editorSizeNormal: string;
+  readonly editorSizeLarge: string;
+  readonly editorSizeLarger: string;
+  readonly editorSizeLargest: string;
+  readonly editorJustify: string;
+  readonly editorIndent: string;
+  readonly editorOutdent: string;
+  readonly editorChecklist: string;
+  readonly editorHorizontalRule: string;
   readonly chartPoints: (title: string) => string;
   readonly chartPointsHint: string;
   readonly chartPointLabel: (series: string, label: string, value: string) => string;
@@ -1045,6 +1062,22 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
     'Enter a web address (https://…), an e-mail address (mailto:…) or a phone number (tel:…).',
   editorCharacterCount: (count, max) => `${count} of ${max} characters`,
   editorCharactersLeft: (count) => (count === 1 ? '1 character left' : `${count} characters left`),
+  editorSubscript: 'Subscript',
+  editorSuperscript: 'Superscript',
+  editorTextColor: 'Text color',
+  editorHighlight: 'Highlight color',
+  editorNoColor: 'No color',
+  editorFontSize: 'Font size',
+  editorSizeSmall: 'Small',
+  editorSizeNormal: 'Normal',
+  editorSizeLarge: 'Large',
+  editorSizeLarger: 'Larger',
+  editorSizeLargest: 'Largest',
+  editorJustify: 'Justify',
+  editorIndent: 'Increase indent',
+  editorOutdent: 'Decrease indent',
+  editorChecklist: 'Checklist',
+  editorHorizontalRule: 'Horizontal line',
   chartPoints: (title) => `${title}: data points`,
   chartPointsHint: 'Arrow keys move between the points and the series. Enter selects a point.',
   chartPointLabel: (series, label, value) => `${series}, ${label}: ${value}`,

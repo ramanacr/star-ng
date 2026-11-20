@@ -1721,8 +1721,12 @@ const STATES: readonly State[] = [
     path: 'controls/editor',
     open: async (page) => {
       const live = example(page, 'Full toolbar');
-      await live.getByRole('textbox', { name: 'Shipping report' }).locator('a').click();
-      await live.getByRole('button', { name: 'Link' }).click();
+      await expect(page.locator('star-editor[ngh]')).toHaveCount(0, { timeout: 15_000 });
+      await live.getByRole('textbox', { name: 'Product announcement' }).locator('a').click();
+      const link = live.getByRole('button', { name: 'Link', exact: true });
+      if ((await link.count()) === 0)
+        await live.getByRole('button', { name: 'More actions' }).click();
+      await link.click();
       await expect(live.getByRole('button', { name: 'Remove link' })).toBeVisible();
     },
   },
