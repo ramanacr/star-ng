@@ -599,6 +599,8 @@ test.describe('drag and drop directives', () => {
     await expect(page.locator('.cdk-live-announcer-element')).toHaveText('Over Shipped orders');
     await page.keyboard.press('Space');
     await expect(shipped.locator('.star-draggable', { hasText: 'ORD-1042' })).toHaveCount(1);
+    // The owner re-creates the item in the other list; the focus follows it.
+    await expect(shipped.locator('.star-draggable', { hasText: 'ORD-1042' })).toBeFocused();
     await expect(live.getByRole('status')).toHaveText('ORD-1042 moved to Shipped');
     await expect(page.locator('.cdk-live-announcer-element')).toHaveText(
       'ORD-1042 dropped on Shipped orders',

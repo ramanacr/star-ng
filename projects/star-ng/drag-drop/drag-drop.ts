@@ -4,13 +4,16 @@
 // directives never move anything: the owner moves the data in `dropped`.
 import { DOCUMENT } from '@angular/common';
 import {
+  afterNextRender,
   booleanAttribute,
   computed,
   DestroyRef,
   Directive,
   ElementRef,
+  HostAttributeToken,
   inject,
   Injectable,
+  Injector,
   input,
   output,
   signal,
@@ -101,18 +104,41 @@ export class ɵStarDragRegistry {
   private readonly text = inject(STAR_UI_TEXT);
   readonly zones = new Set<StarDroppable>();
   readonly active = signal<ActiveDrag | null>(null);
+  /**
+   * The data of the item that a keyboard drop just moved. The owner often re-creates the item in
+   * the other list; the new `starDraggable` with the same data takes the focus.
+   */
+  private pending: { readonly data: unknown } | null = null;
+  private pendingTimer: ReturnType<typeof setTimeout> | undefined;
+
+  /** Remembers the data of a keyboard drop for a short time (one render). */
+  keepFocus(data: unknown): void {
+    this.pending = { data };
+    clearTimeout(this.pendingTimer);
+    this.pendingTimer = setTimeout(() => (this.pending = null), 1000);
+  }
+
+  /** `true` (once) when `data` is the item of the last keyboard drop. */
+  takeFocus(data: unknown): boolean {
+    if (!this.pending || this.pending.data !== data) return false;
+    this.pending = null;
+    clearTimeout(this.pendingTimer);
+    return true;
+  }
 
   /** The id of one hidden element with the keyboard hint, for `aria-describedby`. */
   hintId(): string {
     const body = this.doc.body;
-    if (body && !this.doc.getElementById(HINT_ID)) {
-      const hint = this.doc.createElement('span');
+    let hint = this.doc.getElementById(HINT_ID);
+    if (body && !hint) {
+      hint = this.doc.createElement('span');
       hint.id = HINT_ID;
       hint.className = 'star-sr-only';
       hint.hidden = true;
-      hint.textContent = this.text.dragHint;
       body.appendChild(hint);
     }
+    // Each new draggable reads the text again, so a changed language reaches the hint.
+    if (hint && hint.textContent !== this.text.dragHint) hint.textContent = this.text.dragHint;
     return HINT_ID;
   }
 
@@ -160,7 +186,7 @@ export class ɵStarDragRegistry {
     class: 'star-draggable',
     '[attr.draggable]': 'dragDisabled() ? "false" : "true"',
     '[attr.tabindex]': 'dragDisabled() ? null : 0',
-    '[attr.aria-describedby]': 'dragDisabled() ? null : hintId',
+    '[attr.aria-describedby]': 'dragDisabled() ? ownDescription : describedBy',
     '[class.star-draggable--dragging]': 'dragging()',
     '[class.star-draggable--picked]': 'picked()',
     '[class.star-draggable--disabled]': 'dragDisabled()',
@@ -177,6 +203,7 @@ export class StarDraggable<T = unknown> {
   private readonly announcer = inject(StarAnnouncer);
   private readonly text = inject(STAR_UI_TEXT);
   private readonly doc = inject(DOCUMENT);
+  private readonly injector = inject(Injector);
   /** The host element. */
   readonly element = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
 
@@ -197,7 +224,13 @@ export class StarDraggable<T = unknown> {
   readonly dragStart = output<StarDragEvent<T>>();
   readonly dragEnd = output<StarDragEndEvent<T>>();
 
-  protected readonly hintId = this.registry.hintId();
+  /** The `aria-describedby` that the application wrote on the element, kept before the hint. */
+  protected readonly ownDescription = inject(new HostAttributeToken('aria-describedby'), {
+    optional: true,
+  });
+  protected readonly describedBy = [this.ownDescription, this.registry.hintId()]
+    .filter(Boolean)
+    .join(' ');
   protected readonly dragging = computed(() => this.registry.active()?.source === this);
   protected readonly picked = computed(
     () => this.dragging() && this.registry.active()?.mode === 'keyboard',
@@ -211,6 +244,11 @@ export class StarDraggable<T = unknown> {
     inject(DestroyRef).onDestroy(() => {
       this.touch?.stop();
       if (this.dragging()) this.registry.active.set(null);
+    });
+    // After a keyboard drop the owner may re-create the item elsewhere: the new element gets the
+    // focus back, so the keyboard user stays on the item (WCAG 2.4.3).
+    afterNextRender(() => {
+      if (this.registry.takeFocus(this.data())) this.element.focus();
     });
   }
 
@@ -348,7 +386,15 @@ export class StarDraggable<T = unknown> {
           return;
         }
         const label = this.label();
+        this.registry.keepFocus(this.data());
         this.finish(true, event);
+        // The item stayed in place: it keeps the focus, and nothing else takes it.
+        afterNextRender(
+          () => {
+            if (this.element.isConnected) this.registry.takeFocus(this.data());
+          },
+          { injector: this.injector },
+        );
         this.say(this.text.dragDropped(label, zone.label()));
         return;
       }

@@ -329,3 +329,72 @@ describe('starDraggable and starDroppable', () => {
     });
   });
 });
+
+@Component({
+  imports: [StarDraggable, StarDroppable],
+  template: `
+    <ul class="from" starDroppable dropLabel="From" (dropped)="move($event, 'to')">
+      @for (item of from(); track item) {
+        <li [starDraggable]="item" [dragLabel]="item">{{ item }}</li>
+      }
+    </ul>
+    <ul class="to" starDroppable dropLabel="To" (dropped)="move($event, 'from')">
+      @for (item of to(); track item) {
+        <li [starDraggable]="item" [dragLabel]="item">{{ item }}</li>
+      }
+    </ul>
+  `,
+})
+class ListsHost {
+  readonly from = signal(['ORD-1', 'ORD-2']);
+  readonly to = signal<string[]>([]);
+  move(event: StarDropEvent, into: 'from' | 'to'): void {
+    const item = event.data as string;
+    const source = into === 'to' ? this.from : this.to;
+    const target = into === 'to' ? this.to : this.from;
+    // The handler of a zone gets the item of that zone: `into` names the other list.
+    if (!source().includes(item)) {
+      target.update((list) => list.filter((value) => value !== item));
+      source.update((list) => [...list, item]);
+    }
+  }
+}
+
+describe('focus after a keyboard drop', () => {
+  it('moves the focus to the new element of the moved item', async () => {
+    vi.spyOn(TestBed.inject(StarAnnouncer), 'announce').mockResolvedValue();
+    const fixture = TestBed.createComponent(ListsHost);
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+    const item = el.querySelector<HTMLElement>('.from li')!;
+    item.focus();
+    key(item, ' ');
+    key(item, 'ArrowDown');
+    key(item, 'ArrowDown');
+    key(item, ' ');
+    await fixture.whenStable();
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    const moved = el.querySelector<HTMLElement>('.to li')!;
+    expect(moved.textContent?.trim()).toBe('ORD-1');
+    expect(document.activeElement).toBe(moved);
+  });
+});
+
+@Component({
+  imports: [StarDraggable],
+  template: `<p id="own-note">Note</p>
+    <div starDraggable aria-describedby="own-note">Item</div>`,
+})
+class DescribedHost {}
+
+describe('the keyboard hint', () => {
+  it('keeps a description that the application set, and follows the UI text', async () => {
+    const fixture = TestBed.createComponent(DescribedHost);
+    await fixture.whenStable();
+    const item = (fixture.nativeElement as HTMLElement).querySelector('[starDraggable]')!;
+    const ids = item.getAttribute('aria-describedby')!.split(' ');
+    expect(ids[0]).toBe('own-note');
+    expect(ids).toContain('star-drag-hint');
+    expect(document.getElementById('star-drag-hint')!.textContent).toContain('Space');
+  });
+});
