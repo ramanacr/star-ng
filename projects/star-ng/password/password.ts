@@ -86,6 +86,7 @@ export function starPasswordRules(text: StarUiText, minLength = 12): readonly St
         [readOnly]="readonly()"
         [required]="required()"
         [attr.aria-label]="ariaLabel()"
+        [attr.aria-labelledby]="ariaLabelledBy()"
         [attr.aria-describedby]="describedBy()"
         [attr.aria-invalid]="showInvalid() || null"
         (input)="value.set(input.value)"
@@ -178,6 +179,8 @@ export class StarPassword implements FormValueControl<string> {
   readonly placeholder = input<string | null>(null);
   readonly autocomplete = input<string | null>(null);
   readonly ariaLabel = input<string | null>(null);
+  /** Id of the element that labels the control (`aria-labelledby`). PrimeNG `ariaLabelledBy`. */
+  readonly ariaLabelledBy = input<string | null>(null);
   readonly inputId = input(this.ids.getId('star-password-'));
 
   readonly disabled = input(false, { transform: booleanAttribute });

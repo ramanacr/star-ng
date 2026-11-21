@@ -140,6 +140,8 @@ export class StarInputTagTemplate extends StarSlot<StarInputTagContext> {
           [disabled]="disabled()"
           [readOnly]="readonly() || atLimit()"
           [attr.aria-label]="ariaLabel()"
+          [attr.aria-labelledby]="ariaLabelledBy()"
+          [attr.aria-required]="required() || null"
           [attr.aria-describedby]="describedBy()"
           [attr.aria-invalid]="(invalid() && touched()) || !!rejection() || null"
           (input)="onInput(input)"
@@ -195,6 +197,10 @@ export class StarInputTags implements FormValueControl<readonly string[]> {
   readonly addOnBlur = input(true, { transform: booleanAttribute });
   readonly showClear = input(false, { transform: booleanAttribute });
   readonly ariaLabel = input<string | null>(null);
+  /** Id of the element that labels the control (`aria-labelledby`). PrimeNG `ariaLabelledBy`. */
+  readonly ariaLabelledBy = input<string | null>(null);
+  /** At least one tag is needed (`aria-required`); also bound from Signal Forms `required()`. */
+  readonly required = input(false, { transform: booleanAttribute });
   readonly inputId = input(this.ids.getId('star-tags-'));
 
   readonly disabled = input(false, { transform: booleanAttribute });

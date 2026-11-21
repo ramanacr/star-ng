@@ -63,6 +63,7 @@ import { injectStarFieldLink, starJoinIds } from '@star-ng/ui/field';
         [attr.aria-invalid]="showInvalid() || null"
         [attr.aria-readonly]="readonly() || null"
         [attr.aria-label]="ariaLabel()"
+        [attr.aria-labelledby]="ariaLabelledBy()"
         [attr.aria-describedby]="describedBy()"
         (change)="onChange(box)"
         (blur)="touch.emit()"
@@ -93,6 +94,8 @@ export class StarCheckbox implements FormCheckboxControl {
   readonly name = input('');
   readonly inputId = input(inject(_IdGenerator).getId('star-checkbox-'));
   readonly ariaLabel = input<string | null>(null);
+  /** Id of the element that labels the control (`aria-labelledby`). PrimeNG `ariaLabelledBy`. */
+  readonly ariaLabelledBy = input<string | null>(null);
   readonly ariaDescribedBy = input<string | null>(null);
 
   /** Signal Forms touch notification. */
