@@ -12,7 +12,6 @@ import {
   input,
   output,
   signal,
-  untracked,
 } from '@angular/core';
 import {
   STAR_SLOT_HOST,
@@ -153,17 +152,20 @@ export class StarMessage {
 
   constructor() {
     // The timer starts when the first change detection has set the inputs (the first run of a
-    // component effect). A new `life` starts the timer again; a closed message has no timer.
-    // The cleanup clears the timer on a change and when the message is destroyed.
+    // component effect). The effect reads `life` and `visible`: a new `life` starts the timer
+    // again, and a close (by the user or by `close()`) runs the cleanup, which clears the timer.
+    // The cleanup also runs when the message is destroyed.
     effect((onCleanup) => {
       const life = this.life();
-      if (life <= 0 || !untracked(this.visible)) return;
+      if (life <= 0 || !this.visible()) return;
       const timer = setTimeout(() => this.close(), life);
       onCleanup(() => clearTimeout(timer));
     });
   }
 
+  /** Hides the message and emits `closed`. A message that is closed already does nothing. */
   close(): void {
+    if (!this.visible()) return;
     this.visible.set(false);
     this.closed.emit();
   }
