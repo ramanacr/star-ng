@@ -74,7 +74,9 @@
 .star-listbox__option--add {
   color: var(--star-primary-text);
 }
-.star-cascade--fluid {
+.star-cascade--fluid,
+.star-fluid .star-cascade,
+[data-star-fluid] .star-cascade {
   display: flex;
   width: 100%;
 }

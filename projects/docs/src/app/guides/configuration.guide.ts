@@ -174,6 +174,22 @@ export class DocsCompactSelect {
         bar has a <code>z-index</code> above 1000.
       </p>
 
+      <p>
+        PrimeNG has an overlay primitive (<code>p-overlay</code>, with its own z-index and append
+        options) under its popups. StarNG has none, on purpose: every popup is a native top-layer
+        popover or a modal dialog, so the stacking needs no extra element.
+      </p>
+
+      <h2>Fluid layout</h2>
+      <p>
+        Most StarNG form controls fill the width of their container already (PrimeNG needs
+        <code>p-fluid</code> or <code>fluid</code> for that). For the compact ones, put the
+        <code>starFluid</code> directive (from <code>@star-ng/ui/core</code>) on a container, for
+        example <code>&lt;form starFluid&gt;</code>, or set <code>fluid: true</code> in
+        <code>provideStarNg</code> for the whole application. The global setting is also the default
+        of the <code>fluid</code> input of the controls that have one (the cascade select).
+      </p>
+
       <h2>Copy to the clipboard</h2>
       <p>
         <code>StarClipboard</code> copies text with <code>navigator.clipboard</code> and falls back
@@ -281,6 +297,9 @@ export class DocsCompactSelect {
 
       <h2>Accessibility</h2>
       <p>
+        PrimeNG <code>p-motion</code> (enter and leave motion of an element) is covered by the
+        <code>starAnimateOnScroll</code> directive and the reduced-motion helper
+        <code>starPrefersReducedMotion</code>; both stop the motion for users who ask for less.
         <code>reducedMotion: 'always'</code> turns the StarNG transitions off for every user, as the
         <code>prefers-reduced-motion</code> setting does for one user. A filled input keeps the
         visible focus ring and the error border. The copy result and the key filter error reach
@@ -390,6 +409,11 @@ readonly files = [
       name: 'filterMatchMode',
       description:
         'Default filterMatchMode of the select family and the listbox: contains, startsWith, endsWith, equals or notContains.',
+    },
+    {
+      name: 'fluid',
+      description:
+        'true: form controls fill the width of their container (data-star-fluid on the html element), and the default of the fluid input. PrimeNG p-fluid. For one area, use the starFluid directive.',
     },
     {
       name: 'reducedMotion',

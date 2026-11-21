@@ -12,6 +12,7 @@ export * from './filter-match';
 // entry points only (table, query builder) and are not public API.
 export * from './filter-rules';
 export * from './filter-service';
+export * from './fluid';
 export * from './format';
 // Grid keys: shared by the table and the tree table only, not public API.
 export * from './grid-keys';

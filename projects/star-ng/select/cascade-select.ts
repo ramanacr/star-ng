@@ -241,8 +241,11 @@ export class StarCascadeSelect<
   readonly loading = input(false, { transform: booleanAttribute });
   /** Icon classes of the loading state. */
   readonly loadingIcon = input('ph-bold ph-spinner-gap star-spin');
-  /** The control fills the width of its container. PrimeNG `fluid`. */
-  readonly fluid = input(false, { transform: booleanAttribute });
+  /**
+   * The control fills the width of its container. Default: `fluid` of `provideStarNg`, else
+   * `false`; a `starFluid` container widens it too. PrimeNG `fluid`.
+   */
+  readonly fluid = input(this.defaults.fluid ?? false, { transform: booleanAttribute });
   /** `tabindex` of the trigger button. */
   readonly tabindex = input<number | null>(null);
   /** Focuses the trigger once, after the first render. PrimeNG `autofocus`. */

@@ -3033,7 +3033,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "boolean",
         "default": "false",
         "required": false,
-        "description": "The control fills the width of its container. PrimeNG `fluid`."
+        "description": "The control fills the width of its container. Default: `fluid` of `provideStarNg`, else `false`; a `starFluid` container widens it too. PrimeNG `fluid`."
       },
       {
         "name": "tabindex",
@@ -3745,6 +3745,108 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "removeButton",
       "removeIcon"
     ]
+  },
+  "StarChipsArea": {
+    "kind": "component",
+    "selector": "star-chips-area",
+    "entry": "@star-ng/ui/layout",
+    "description": "Chips area (Ignite UI `igx-chips-area`): a list of chips that the user reorders by drag and drop or with the keyboard, and removes.",
+    "inputs": [
+      {
+        "name": "optionLabel",
+        "type": "StarOptionKey<T> | null",
+        "default": "null",
+        "required": false,
+        "description": "Property (or function) with the text of an item. Default: the item as text."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Accessible name of the list."
+      },
+      {
+        "name": "removable",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows a remove button on each chip; Delete and Backspace remove the focused chip."
+      },
+      {
+        "name": "disabled",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "No moves, no removal, and the chips cannot take focus."
+      },
+      {
+        "name": "pt",
+        "type": "StarPassThrough | null",
+        "default": "null",
+        "required": false,
+        "description": "Classes, styles and attributes per part of the control (PrimeNG `pt`), for example `{ root: { class: 'w-full' }, panel: { class: 'shadow-lg' } }`. Merges over the global `provideStarNg({ pt })`. The parts are listed in the API section of each control.",
+        "inheritedFrom": "StarStyled"
+      },
+      {
+        "name": "unstyled",
+        "type": "boolean | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "`true` removes the visual styles of the control (colors, borders, radius, shadows, fonts and token spacing) and keeps the layout that it needs to work. Unset: `provideStarNg({ unstyled })`.",
+        "inheritedFrom": "StarStyled"
+      }
+    ],
+    "models": [
+      {
+        "name": "items",
+        "type": "readonly T[]",
+        "default": "[]",
+        "required": false,
+        "description": "The chips, in order. Two-way: a move or a removal sets a new array."
+      }
+    ],
+    "outputs": [
+      {
+        "name": "reorder",
+        "type": "StarChipsAreaReorderEvent<T>",
+        "default": null,
+        "required": false,
+        "description": "A chip moved (drag and drop or keyboard)."
+      },
+      {
+        "name": "removed",
+        "type": "T",
+        "default": null,
+        "required": false,
+        "description": "A chip was removed."
+      }
+    ],
+    "parts": [
+      "root",
+      "list",
+      "listItem",
+      "chipButton",
+      "removeButton",
+      "removeIcon"
+    ]
+  },
+  "StarChipsAreaItem": {
+    "kind": "directive",
+    "selector": "ng-template[starChipsAreaItem]",
+    "entry": "@star-ng/ui/layout",
+    "description": "Content of each chip of `star-chips-area`: `<ng-template starChipsAreaItem let-item>`. The chip button keeps its name; keep the item text in the template and add no focusable elements.",
+    "inputs": [
+      {
+        "name": "starChipsAreaItemOf",
+        "type": "readonly T[] | null",
+        "default": "null",
+        "required": false,
+        "description": "Optional: pass the items array to type `let-item` in strict templates."
+      }
+    ],
+    "models": [],
+    "outputs": []
   },
   "StarChipTemplate": {
     "kind": "directive",
@@ -8409,6 +8511,23 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "label"
     ]
   },
+  "StarFluid": {
+    "kind": "directive",
+    "selector": "[starFluid]",
+    "entry": "@star-ng/ui/core",
+    "description": "Makes the form controls inside an element fill its width (PrimeNG `p-fluid`): `<form starFluid>…</form>`. Most StarNG form controls fill their container already; this also widens the compact ones (for example `star-cascade-select`). `[starFluid]=\"false\"` turns it off. For the whole application, use `provideStarNg({ fluid: true })`.",
+    "inputs": [
+      {
+        "name": "starFluid",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Turns the fluid layout on (default) or off."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
   "StarFocusTrap": {
     "kind": "directive",
     "selector": "[starFocusTrap]",
@@ -9039,6 +9158,71 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "parts": [
       "root"
+    ]
+  },
+  "StarIcon": {
+    "kind": "component",
+    "selector": "star-icon",
+    "entry": "@star-ng/ui/icon",
+    "description": "Icon: a Phosphor icon class as a control, with a weight, a size and an accessible name. PrimeNG has icon classes (`pi pi-check`) and no icon component; Material `mat-icon`.",
+    "inputs": [
+      {
+        "name": "name",
+        "type": "string",
+        "default": null,
+        "required": true,
+        "description": "Phosphor icon name, for example `house` (the `ph-` prefix is optional)."
+      },
+      {
+        "name": "weight",
+        "type": "StarIconWeight",
+        "default": "'bold'",
+        "required": false,
+        "description": "Weight (default `bold`, as the StarNG controls use)."
+      },
+      {
+        "name": "size",
+        "type": "number | string | null",
+        "default": "null",
+        "required": false,
+        "description": "Size: a number is pixels, text is a CSS length (`'1.5rem'`). Default: the font size."
+      },
+      {
+        "name": "label",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Accessible name. Without it the icon is decorative."
+      },
+      {
+        "name": "mirror",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Mirrors the icon in a right-to-left page (arrows and other icons with a direction)."
+      },
+      {
+        "name": "pt",
+        "type": "StarPassThrough | null",
+        "default": "null",
+        "required": false,
+        "description": "Classes, styles and attributes per part of the control (PrimeNG `pt`), for example `{ root: { class: 'w-full' }, panel: { class: 'shadow-lg' } }`. Merges over the global `provideStarNg({ pt })`. The parts are listed in the API section of each control.",
+        "inheritedFrom": "StarStyled"
+      },
+      {
+        "name": "unstyled",
+        "type": "boolean | undefined",
+        "default": "undefined",
+        "required": false,
+        "description": "`true` removes the visual styles of the control (colors, borders, radius, shadows, fonts and token spacing) and keeps the layout that it needs to work. Unset: `provideStarNg({ unstyled })`.",
+        "inheritedFrom": "StarStyled"
+      }
+    ],
+    "models": [],
+    "outputs": [],
+    "parts": [
+      "root",
+      "glyphIcon"
     ]
   },
   "StarIconField": {
@@ -22687,6 +22871,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "checkbox/form": "<star-checkbox [formField]=\"terms.accept\">I accept the terms</star-checkbox>\n<p class=\"docs-output\" role=\"status\">Valid: {{ terms().valid() }}</p>",
   "checkbox/indeterminate": "<star-checkbox [(checked)]=\"all\" [(indeterminate)]=\"some\">All regions</star-checkbox>",
   "checkbox/states": "<star-checkbox [checked]=\"true\" disabled>Disabled</star-checkbox>\n<star-checkbox [checked]=\"true\" readonly>Read-only</star-checkbox>",
+  "chip/area": "<div class=\"docs-stack\">\n  <star-chips-area ariaLabel=\"Sort order\" [(items)]=\"sortOrder\" removable />\n  <p class=\"docs-output\" role=\"status\">Sort by: {{ sortOrder().join(', ') || 'none' }}</p>\n</div>",
   "chip/basic": "<star-chip label=\"Design\" />\n<star-chip label=\"Travel\" icon=\"ph-bold ph-airplane\" />\n<star-chip label=\"Team\">(4)</star-chip>",
   "chip/removable": "<div class=\"docs-row\">\n  @for (name of names(); track name) {\n    <star-chip [label]=\"name\" removable (removed)=\"remove(name)\" />\n  }\n</div>\n<p class=\"docs-output\" role=\"status\">{{ names().length }} chips left.</p>",
   "color-picker/basic": "<star-color-picker [(value)]=\"color\" ariaLabel=\"Label color\" />\n<p class=\"docs-output\" role=\"status\">Value: {{ color() }}</p>",
@@ -22814,6 +22999,8 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "hierarchical-grid/errors": "<star-hierarchical-grid\n  [data]=\"fewCustomers\"\n  [columns]=\"customerColumns\"\n  dataKey=\"id\"\n  [rowLabel]=\"customerName\"\n  ariaLabel=\"Customers with errors\"\n  (rowExpand)=\"blockThird($event)\"\n>\n  <star-row-island\n    key=\"orders\"\n    label=\"Orders\"\n    dataKey=\"id\"\n    [columns]=\"orderColumns\"\n    [rowLabel]=\"orderId\"\n  >\n    <star-row-island\n      label=\"Order lines\"\n      dataKey=\"id\"\n      [childData]=\"flakyLines\"\n      [columns]=\"lineColumns\"\n    />\n  </star-row-island>\n</star-hierarchical-grid>",
   "i18n/spinner": "<star-spinner />\n<docs-german-text />",
   "i18n/switch": "<div class=\"docs-stack\">\n  <star-select-button\n    [options]=\"languages\"\n    optionLabel=\"label\"\n    optionValue=\"id\"\n    [(value)]=\"language.choice\"\n    [allowEmpty]=\"false\"\n    ariaLabel=\"Language\"\n  />\n  <star-paginator [totalRecords]=\"95\" />\n  <star-field label=\"City\">\n    <star-select [options]=\"cities\" [(value)]=\"city\" filter ariaLabel=\"City\" />\n  </star-field>\n  <star-field label=\"Attachments\">\n    <star-file-upload multiple [maxFileSize]=\"1000000\" [fileLimit]=\"3\" />\n  </star-field>\n  <star-field label=\"New password\">\n    <star-password value=\"abc\" feedback />\n  </star-field>\n</div>",
+  "icon/decorative": "<p class=\"docs-output\">\n  <star-icon name=\"truck\" /> Shipped on 3 March &nbsp;\n  <star-icon name=\"check-circle\" weight=\"fill\" [size]=\"20\" /> Paid\n</p>",
+  "icon/named": "<p class=\"docs-output\">\n  <star-icon name=\"warning\" weight=\"fill\" size=\"1.5rem\" label=\"Warning\" />\n  <star-icon name=\"arrow-right\" size=\"1.5rem\" label=\"Next step\" mirror />\n</p>",
   "ifta-label/basic": "<div class=\"docs-stack\">\n  <star-ifta-label label=\"Customer name\" hint=\"As on the invoice.\">\n    <input starInput placeholder=\"Avery Stone\" />\n  </star-ifta-label>\n  <star-ifta-label label=\"City\">\n    <star-select [options]=\"cities\" [(value)]=\"city\" />\n  </star-ifta-label>\n  <star-ifta-label label=\"Delivery date\">\n    <star-date-picker />\n  </star-ifta-label>\n  <star-ifta-label label=\"Quantity\">\n    <star-input-number [(value)]=\"quantity\" [min]=\"1\" />\n  </star-ifta-label>\n</div>",
   "ifta-label/validation": "<div class=\"docs-stack\">\n  <star-ifta-label label=\"Order number\" [state]=\"order.number()\">\n    <input starInput [formField]=\"order.number\" />\n  </star-ifta-label>\n</div>",
   "image-compare/basic": "<div class=\"docs-stack\">\n  <star-image-compare\n    [leftSrc]=\"before\"\n    [rightSrc]=\"after\"\n    leftAlt=\"Before: grey shapes\"\n    rightAlt=\"After: colored shapes\"\n    ariaLabel=\"Compare before and after\"\n    [(value)]=\"position\"\n  />\n  <p class=\"docs-output\" role=\"status\">Divider at {{ position() }}%</p>\n</div>",

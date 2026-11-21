@@ -41,4 +41,30 @@ test.describe('wave N2 depth', () => {
     await page.keyboard.press('ArrowDown');
     await expect(menu.getByRole('menuitem', { name: 'New order' })).toBeFocused();
   });
+
+  test('chips area: arrow keys, Control+Shift moves, Delete removes', async ({ page }) => {
+    await openPage(page, '/controls/chip', 'Chip');
+    await hydrated(page);
+    const live = example(page, 'Chips area');
+    const list = live.getByRole('list', { name: 'Sort order' });
+    const status = live.getByRole('status');
+    const chip = (name: string) => list.getByRole('button', { name, exact: true });
+    await chip('Customer').focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(chip('Order date')).toBeFocused();
+    await page.keyboard.press('Control+Shift+ArrowRight');
+    await expect(status).toHaveText('Sort by: Customer, Total, Order date');
+    await expect(chip('Order date')).toBeFocused();
+    await page.keyboard.press('Delete');
+    await expect(status).toHaveText('Sort by: Customer, Total');
+    await expect(chip('Total')).toBeFocused();
+  });
+
+  test('icon: decorative and named icons', async ({ page }) => {
+    await openPage(page, '/controls/icon', 'Icon');
+    await hydrated(page);
+    const live = example(page, 'Icon with a name');
+    await expect(live.getByRole('img', { name: 'Warning' })).toBeVisible();
+    await expect(example(page, 'Decorative icons').getByRole('img')).toHaveCount(0);
+  });
 });
