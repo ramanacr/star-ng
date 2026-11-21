@@ -179,7 +179,9 @@ test.describe('autocomplete suggestionLoader', () => {
     const live = example(page, 'Loader function');
     const field = live.getByRole('combobox', { name: 'Colleague (loader)' });
     await field.fill('zz');
-    await expect(page.getByText('The search failed. Type again to retry.')).toBeVisible();
+    await expect(
+      page.getByRole('listbox', { name: 'Colleague (loader)' }).getByText('The search failed.'),
+    ).toBeVisible();
     await field.fill('');
     await field.pressSequentially('ma');
     const option = page.getByRole('option').first();
