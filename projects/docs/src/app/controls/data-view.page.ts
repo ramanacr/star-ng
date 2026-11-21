@@ -169,12 +169,11 @@ interface Product {
         onChangeLayout is layoutChange; onPage is pageChange; the list and grid templates are the
         one starDataViewItem template (it gets layout); emptymessage is starEmpty; paginatorleft and
         paginatorright are starPaginatorTemplate with start and end; paginatordropdownitem is
-        starPaginatorOption with rows; loadingicon, listicon and
-        gridicon are starIcon with loading, list and grid; paginatorStyleClass and gridStyleClass
-        are the pass-through pt. Not needed: trackBy (the items are tracked by index),
-        paginatorDropdownAppendTo and paginatorDropdownScrollHeight (the paginator selects are
-        popups in the top layer) and onSort (you set sortField and sortOrder, so you know the
-        change).
+        starPaginatorOption with rows; loadingicon, listicon and gridicon are starIcon with loading,
+        list and grid; paginatorStyleClass and gridStyleClass are the pass-through pt. Not needed:
+        trackBy (the items are tracked by index), paginatorDropdownAppendTo and
+        paginatorDropdownScrollHeight (the paginator selects are popups in the top layer) and onSort
+        (you set sortField and sortOrder, so you know the change).
       </p>
 
       <docs-api

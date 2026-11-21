@@ -75,8 +75,9 @@ import { DOCS, DocsRow } from '../shared/docs';
         showFirstLastIcon is showFirstLast, templateLeft and templateRight are starPaginatorTemplate
         with start and end, and the page link icon templates are starIcon with first, previous, next
         and last, dropdownItemTemplate and jumpToPageItemTemplate are starPaginatorOption with rows
-        and jump, and dropdownicon is starIcon with dropdown (the arrow of both selects). Not needed: appendTo and dropdownScrollHeight (the selects are star-select popups
-        in the top layer).
+        and jump, and dropdownicon is starIcon with dropdown (the arrow of both selects). Not
+        needed: appendTo and dropdownScrollHeight (the selects are star-select popups in the top
+        layer).
       </p>
 
       <h2>Right-to-left</h2>

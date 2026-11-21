@@ -186,13 +186,16 @@ export type StarIconSlotName =
   | 'first'
   | 'last'
   | 'list'
-  | 'grid';
+  | 'grid'
+  | 'submenu'
+  | 'group';
 
 /** Context of the icon slot. */
 export interface StarIconContext {
   /**
-   * Only for the `toggle` icon of the tree: `true` when the branch is open, `false` when it is
-   * closed (`let-expanded`). `undefined` for all other icons.
+   * For the `toggle` icon of the tree and the `submenu` icon of the panel menu: `true` when the
+   * branch or section is open, `false` when it is closed (`let-expanded`). `undefined` for all
+   * other icons.
    */
   readonly $implicit?: boolean;
 }

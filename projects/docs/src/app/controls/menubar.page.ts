@@ -44,7 +44,12 @@ import { DOCS, DocsRow } from '../shared/docs';
         <code>starMenubarStart</code> goes to the right end. See the Right-to-left guide.
       </p>
 
-      <docs-api [of]="['StarMenubar']" [slots]="slots" [cssVars]="cssVars" [keyboard]="keyboard" />
+      <docs-api
+        [of]="['StarMenubar', 'StarMenuTemplate']"
+        [slots]="slots"
+        [cssVars]="cssVars"
+        [keyboard]="keyboard"
+      />
     </docs-page>
   `,
 })
@@ -102,6 +107,15 @@ readonly nav: readonly StarMenuItem[] = [
 ];`;
 
   protected readonly slots: readonly DocsRow[] = [
+    {
+      name: 'ng-template[starMenuTemplate]',
+      description:
+        'Content child. "item" replaces the content of each item (icon, label, shortcut; let-level, let-hasSubmenu), "itemIcon" the icon of an item with an icon, "start" and "end" add content before and after the items. PrimeNG #item, #itemicon, #start and #end.',
+    },
+    {
+      name: 'ng-template[starIcon="submenu"]',
+      description: 'Content child. Replaces the submenu arrow. PrimeNG #submenuicon.',
+    },
     {
       name: '[starMenubarStart]',
       description: 'Content at the start of the bar, for example a logo.',

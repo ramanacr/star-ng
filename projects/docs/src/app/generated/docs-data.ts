@@ -2199,7 +2199,15 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       }
     ],
     "models": [],
-    "outputs": [],
+    "outputs": [
+      {
+        "name": "itemClick",
+        "type": "StarBreadcrumbItem",
+        "default": null,
+        "required": false,
+        "description": "Emits the item of a link or button that the user activated. PrimeNG `onItemClick`."
+      }
+    ],
     "parts": [
       "root",
       "trailPanel",
@@ -2213,6 +2221,23 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "itemText",
       "separator"
     ]
+  },
+  "StarBreadcrumbTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starBreadcrumbTemplate]",
+    "entry": "@star-ng/ui/breadcrumb",
+    "description": "Template slot of `star-breadcrumb`: - `item`: the content of each item (icon and label). The link, the button and `aria-current` stay. PrimeNG `#item`. - `separator`: the separator after each item but the last. It is decorative (`aria-hidden`). PrimeNG `#separator`.",
+    "inputs": [
+      {
+        "name": "starBreadcrumbTemplate",
+        "type": "'item' | 'separator'",
+        "default": null,
+        "required": true,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
   },
   "StarButton": {
     "kind": "component",
@@ -3005,28 +3030,35 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "void",
         "default": null,
         "required": false,
-        "description": "Emits right before `show`, after the menu opened (the CDK menu has no earlier hook). PrimeNG `onBeforeShow`."
+        "description": "Emits when the menu starts to open, before its overlay is created. PrimeNG `onBeforeShow`."
       },
       {
         "name": "show",
         "type": "void",
         "default": null,
         "required": false,
-        "description": "Emits when the menu opens. PrimeNG `onShow`."
+        "description": "Emits when the menu is open and in the page. PrimeNG `onShow`."
       },
       {
         "name": "beforeHide",
         "type": "void",
         "default": null,
         "required": false,
-        "description": "Emits right before `hide`, after the menu closed (the CDK menu has no earlier hook). PrimeNG `onBeforeHide`."
+        "description": "Emits when the menu starts to close, before its overlay is removed. PrimeNG `onBeforeHide`."
       },
       {
         "name": "hide",
         "type": "void",
         "default": null,
         "required": false,
-        "description": "Emits when the menu closes. PrimeNG `onHide`."
+        "description": "Emits when the menu is closed and removed. PrimeNG `onHide`."
+      },
+      {
+        "name": "groupChange",
+        "type": "StarCascadeGroupChangeEvent<TOption>",
+        "default": null,
+        "required": false,
+        "description": "Emits when a submenu opens: the parent option and its level. PrimeNG `onGroupChange`."
       },
       {
         "name": "cleared",
@@ -11391,14 +11423,16 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "parts": [
       "root",
+      "startPanel",
       "barPanel",
       "item",
-      "itemIcon",
       "submenuIcon",
+      "endPanel",
       "panel",
       "column",
       "headingPanel",
       "separator",
+      "itemIcon",
       "icon",
       "label"
     ]
@@ -11549,6 +11583,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
+        "name": "ariaLabelledBy",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Id of an element that names the menu, when there is no `ariaLabel`. PrimeNG `ariaLabelledBy`."
+      },
+      {
         "name": "pt",
         "type": "StarPassThrough | null",
         "default": "null",
@@ -11573,14 +11614,47 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": ""
+      },
+      {
+        "name": "show",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "Emits when the popup opens (not for an inline menu). PrimeNG `onShow`."
+      },
+      {
+        "name": "hide",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "Emits when the popup closes (not for an inline menu). PrimeNG `onHide`."
+      },
+      {
+        "name": "submenuShow",
+        "type": "StarMenuItem",
+        "default": null,
+        "required": false,
+        "description": "Emits the item whose submenu opened. In `star-menubar`, the bar item whose menu opened. The cascade select uses it for `groupChange`."
+      },
+      {
+        "name": "submenuHide",
+        "type": "StarMenuItem",
+        "default": null,
+        "required": false,
+        "description": "Emits the item whose submenu closed."
       }
     ],
     "parts": [
       "root",
+      "menuPanel",
+      "startPanel",
       "itemList",
       "separator",
+      "groupPanel",
+      "submenuHeader",
       "item",
       "submenuIcon",
+      "endPanel",
       "icon",
       "label",
       "shortcutText"
@@ -11607,6 +11681,20 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
+        "name": "ariaLabelledBy",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Id of an element that names the bar, when there is no `ariaLabel`. PrimeNG `ariaLabelledBy`."
+      },
+      {
+        "name": "autoDisplay",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Opens the menu of a bar item when the pointer moves onto it, without a click first. Without it, the first menu opens on a click and the next ones follow the pointer (CDK menu bar). PrimeNG `autoDisplay`."
+      },
+      {
         "name": "pt",
         "type": "StarPassThrough | null",
         "default": "null",
@@ -11631,15 +11719,30 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": ""
+      },
+      {
+        "name": "submenuShow",
+        "type": "StarMenuItem",
+        "default": null,
+        "required": false,
+        "description": "Emits the bar item (or submenu item) whose menu opened."
+      },
+      {
+        "name": "submenuHide",
+        "type": "StarMenuItem",
+        "default": null,
+        "required": false,
+        "description": "Emits the bar item (or submenu item) whose menu closed."
       }
     ],
     "parts": [
       "root",
+      "startPanel",
       "barPanel",
       "item",
-      "itemIcon",
       "submenuIcon",
-      "endPanel"
+      "endPanel",
+      "itemIcon"
     ]
   },
   "StarMenuInDialog": {
@@ -11648,6 +11751,40 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "entry": "@star-ng/ui/menu",
     "description": "",
     "inputs": [],
+    "models": [],
+    "outputs": []
+  },
+  "StarMenuLife": {
+    "kind": "directive",
+    "selector": "[starMenuLife]",
+    "entry": "@star-ng/ui/menu",
+    "description": "Reports to `star-menu` when one of its lists (the root popup or a submenu) is created and destroyed, because the CDK menu has no event for a submenu. Internal.",
+    "inputs": [
+      {
+        "name": "starMenuLife",
+        "type": "StarMenuItem | null",
+        "default": "null",
+        "required": false,
+        "description": "The item that opened this list, or `null` for the root list."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
+  "StarMenuTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starMenuTemplate]",
+    "entry": "@star-ng/ui/menu",
+    "description": "Template slot of the menus (`star-menu`, `star-menubar`, `star-mega-menu`, `star-panel-menu`): `<ng-template starMenuTemplate=\"item\" let-item let-level=\"level\">…</ng-template>`.",
+    "inputs": [
+      {
+        "name": "starMenuTemplate",
+        "type": "StarMenuSlotName",
+        "default": null,
+        "required": true,
+        "description": ""
+      }
+    ],
     "models": [],
     "outputs": []
   },
@@ -14363,6 +14500,23 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "endPanel"
     ]
   },
+  "StarPaginatorOption": {
+    "kind": "directive",
+    "selector": "ng-template[starPaginatorOption]",
+    "entry": "@star-ng/ui/paginator",
+    "description": "Option content of a select inside `star-paginator`: `<ng-template starPaginatorOption=\"rows\" let-rows>{{ rows }} per page</ng-template>`. `rows` is the rows-per-page select, `jump` the page select of `showJumpToPageDropdown`. PrimeNG `dropdownItemTemplate` and `jumpToPageItemTemplate`.",
+    "inputs": [
+      {
+        "name": "starPaginatorOption",
+        "type": "'rows' | 'jump'",
+        "default": null,
+        "required": true,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
   "StarPaginatorTemplate": {
     "kind": "directive",
     "selector": "ng-template[starPaginatorTemplate]",
@@ -14545,10 +14699,10 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "separator",
       "listItem",
       "item",
-      "icon",
-      "label",
       "expandIcon",
-      "regionPanel"
+      "regionPanel",
+      "label",
+      "icon"
     ]
   },
   "StarPart": {
@@ -22248,6 +22402,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "mention/basic": "<div class=\"docs-stack\">\n  <textarea\n    class=\"star-input\"\n    aria-label=\"Comment\"\n    placeholder=\"Write a comment, type @ to mention someone\"\n    starMention\n    #comment=\"starMention\"\n    [suggestions]=\"people\"\n    optionLabel=\"name\"\n    (mentionSelect)=\"last.set($any($event.item).name)\"\n  ></textarea>\n  <p class=\"docs-output\" role=\"status\">\n    Last mention: {{ last() }}. In the text: {{ names(comment.mentions()) }}\n  </p>\n</div>",
   "mention/form": "<div class=\"docs-stack\">\n  <star-field label=\"Assign to\" hint=\"Type @ and a name\">\n    <input\n      starInput\n      [formField]=\"f.assignee\"\n      starMention\n      [suggestions]=\"people\"\n      optionLabel=\"name\"\n    />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Model: {{ model().assignee || '(empty)' }}</p>\n</div>",
   "mention/triggers": "<div class=\"docs-stack\">\n  <textarea\n    class=\"star-input\"\n    aria-label=\"Message\"\n    placeholder=\"Type @ for people or # for topics\"\n    starMention\n    #message=\"starMention\"\n    [triggers]=\"['@', '#']\"\n    [suggestions]=\"search\"\n    [optionLabel]=\"label\"\n    (mentionSearch)=\"query.set($event)\"\n  ></textarea>\n  <ng-template [starMentionItem]=\"message\" let-item>\n    @if ($any(item).tag) {\n      <span>#{{ $any(item).tag }}</span>\n    } @else {\n      <span class=\"person\">\n        <span>{{ $any(item).name }}</span>\n        <small>{{ $any(item).team }}</small>\n      </span>\n    }\n  </ng-template>\n  <p class=\"docs-output\" role=\"status\">\n    Search: {{ query() ? query()!.trigger + query()!.query : 'none' }}\n  </p>\n</div>",
+  "menu/groups": "<star-menu inline ariaLabel=\"Workspace menu\" [items]=\"groupItems\">\n  <ng-template starMenuTemplate=\"start\">\n    <span class=\"docs-output\">Workspace: Orders</span>\n  </ng-template>\n  <ng-template starMenuTemplate=\"submenuHeader\" let-item>\n    {{ item.label }} actions\n  </ng-template>\n  <ng-template starMenuTemplate=\"end\">\n    <span class=\"docs-output\">2 people online</span>\n  </ng-template>\n</star-menu>",
   "menu/icon-trigger": "<button\n  type=\"button\"\n  class=\"star-btn star-btn--secondary star-btn--icon\"\n  aria-label=\"Row actions\"\n  [starMenuTrigger]=\"rowMenu\"\n>\n  <i class=\"ph-bold ph-dots-three-vertical\" aria-hidden=\"true\"></i>\n</button>\n<star-menu #rowMenu [items]=\"fileItems\" />",
   "menu/icons": "<star-button variant=\"secondary\" [starMenuTrigger]=\"editMenu\">Edit</star-button>\n<star-menu #editMenu [items]=\"editItems\" />",
   "menu/inline": "<star-menu inline ariaLabel=\"Inline menu\" [items]=\"viewItems\" />",

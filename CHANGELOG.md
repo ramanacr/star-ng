@@ -44,6 +44,8 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 
 - `star-breadcrumb`: an item with `command` and no link renders as a button.
 
+- `star-breadcrumb`: the slot `starBreadcrumbTemplate` (`item`, `separator`) and the output `itemClick` (PrimeNG `#item`, `#separator`, `onItemClick`).
+
 #### Button
 
 - Button: the variants `info`, `help` and `contrast` (new token `--star-help`; AA text contrast in both themes), `appearance` (`filled`, `outlined`, `text`, `link`), `raised`, `rounded`, `badge` and `badgeSeverity`, `label`, `loadingIcon`, `tabindex`, `autofocus`, and the `starIcon` slots `icon` and `loading` (PrimeNG `p-button`).
@@ -214,6 +216,10 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 
 - Mention (`starMention`, `StarMentionItemTemplate`, new entry `@star-ng/ui/mention`): a directive for `textarea` and `input` that opens suggestions at the caret after a trigger (`triggers`, default `@`), from an array or a function that returns an array or a promise, with `optionLabel`, `filterMatchMode`, `aria-activedescendant` on the field, Enter or Tab to insert `trigger + label + ' '` as plain text, Escape to close, the outputs `mentionSearch` and `mentionSelect`, the read-only `mentions` signal and the `starMentionItem` slot (Syncfusion Mention). UI text `mentionSuggestions` (English, German, Spanish).
 
+#### Menus
+
+- Menus: the slot `starMenuTemplate` (`item`, `itemIcon`, `submenuHeader`, `start`, `end`) and `starIcon="submenu"` on `star-menu`, `star-menubar` (also passed to its submenus), `star-mega-menu` (`submenuHeader` for the column headings) and `star-panel-menu` (`item`, `itemIcon`; the `submenu` icon gets `let-expanded`). `star-menu`: items with `group` show in place under a heading (a `group` with `aria-labelledby`, PrimeNG `p-menu` submenu headers), `ariaLabelledBy`, and the outputs `show`, `hide`, `submenuShow` and `submenuHide`. `star-menubar`: `autoDisplay` (open on hover), `ariaLabelledBy`, `submenuShow` and `submenuHide`. `StarMenuItemContext` gets `level` and `hasSubmenu` (PrimeNG `p-menu`, `p-tieredmenu`, `p-menubar`, `p-megamenu`, `p-panelmenu`).
+
 #### Multi-column combobox
 
 - Multi-column combobox (`star-multi-column-combobox`, `StarColumnCellTemplate`, new entry `@star-ng/ui/multi-column-combobox`): an editable combobox over a grid-like listbox with a header row (`columns: { field, header, width? }[]`), filtering over every column with `starFilterMatch` (`filterFields`, `filterMatchMode`), arrows, Home, End, Page up, Page down, Enter, Escape and Alt+Arrow down, `aria-activedescendant`, virtual scroll for large data, and the `starColumnCell`, `starEmpty`, `starLoading`, `starHeader` and `starFooter` slots. It extends `StarOptionListBase` without changing it (Kendo UI MultiColumnComboBox, Ignite UI `igx-combo` with columns).
@@ -231,6 +237,8 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 #### Paginator
 
 - Paginator: `showJumpToPageInput` and `showJumpToPageDropdown` (`STAR_UI_TEXT.goToPage`, with German and Spanish texts), `currentPageReportTemplate` (placeholders `{currentPage}`, `{totalPages}`, `{first}`, `{last}`, `{rows}`, `{totalRecords}`), `locale` of the numbers, `showPageLinks`, `alwaysShow`, `liveReport`, and the slots `starPaginatorTemplate` (`start`, `end`) and `starIcon` (`first`, `previous`, `next`, `last`) (PrimeNG `p-paginator`).
+
+- Paginator: the slot `starPaginatorOption` (`rows`, `jump`) for the options of the inner selects and `starIcon="dropdown"` for their arrow (PrimeNG `dropdownItemTemplate`, `jumpToPageItemTemplate`, `dropdownicon`). The data view passes `starPaginatorOption` on (PrimeNG `paginatordropdownitem`).
 
 #### Panel
 
@@ -270,6 +278,8 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - Listbox: `checkbox` mode with a tri-state "Select all", drag and drop between listboxes (`dragdrop`, `dropListData`, `connectedTo`, `dropped`, Alt + Arrow keys), and `optionDblClick`.
 - Autocomplete: `forceSelection`, `optionSelect` and `optionUnselect`. Multiple autocomplete: token entry with `separator`, `addOnTab`, `addOnBlur` and `unique`.
 - `STAR_UI_TEXT.addCustomValue` with German and Spanish texts.
+
+- Cascade select: `groupChange` (the parent option and its level when a submenu opens), the slots `starHeader` and `starFooter` in the menu and `starIcon="group"` for the submenu arrow (PrimeNG `onGroupChange`, `#header`, `#footer`, `#groupicon`). `beforeShow` and `beforeHide` emit before the menu overlay is created or removed, `show` and `hide` after it.
 
 #### Signature pad
 

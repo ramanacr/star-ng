@@ -143,6 +143,8 @@
     "StarMenuInDialog",
     "StarMenuItem",
     "StarMenuItemContext",
+    "StarMenuSlotName",
+    "StarMenuTemplate",
     "StarMenuTrigger",
     "StarMenubar",
     "StarPanelMenu",

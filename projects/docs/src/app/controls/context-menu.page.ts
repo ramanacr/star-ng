@@ -71,6 +71,11 @@ readonly rowItems: readonly StarMenuItem[] = [
 
   protected readonly slots: readonly DocsRow[] = [
     {
+      name: 'star-menu slots',
+      description:
+        'Write starMenuTemplate and starIcon="submenu" inside the star-menu that the directive opens. PrimeNG #item and #submenuicon. show and hide of the star-menu are PrimeNG onShow and onHide.',
+    },
+    {
       name: '(none)',
       description: 'A directive: it adds the behavior to the element that has it.',
     },
