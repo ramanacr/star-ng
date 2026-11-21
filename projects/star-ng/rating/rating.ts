@@ -16,6 +16,7 @@ import {
 } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
 import {
+  injectStarControlDefaults,
   STAR_SLOT_HOST,
   STAR_UI_TEXT,
   StarIconContext,
@@ -33,7 +34,8 @@ import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/
  *
  * `cancel` adds a first option that clears the rating (PrimeNG `cancel`). `allowHalf` gives each
  * star two options, so the arrow keys step by 0.5 and each option reads "2.5 of 5" (PrimeNG
- * `allowHalf`). `orientation="vertical"` stacks the stars (PrimeNG `orientation`). Slots:
+ * `allowHalf`). `orientation="vertical"` stacks the stars (PrimeNG `orientation`; layout only,
+ * as ARIA 1.2 gives a radio group no `aria-orientation`). Slots:
  * `<ng-template starIcon="on">` and `starIcon="off"` replace the filled and the empty star, and
  * `starIcon="cancel"` the clear icon (PrimeNG `#onicon`, `#officon`, `#cancelicon`).
  */
@@ -51,7 +53,6 @@ import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/
     '[attr.aria-labelledby]': 'labelledBy()',
     '[attr.aria-describedby]': 'fieldDescribedBy()',
     '[attr.aria-required]': 'required() || null',
-    '[attr.aria-orientation]': "orientation() === 'vertical' ? 'vertical' : null",
     '[class.star-rating--vertical]': "orientation() === 'vertical'",
     '[class.star-rating--readonly]': 'readonly() || disabled()',
     '(mouseleave)': 'hover.set(null)',
@@ -101,7 +102,7 @@ import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/
                 [value]="option"
                 [checked]="value() === option"
                 [disabled]="disabled() || readonly()"
-                [attr.aria-label]="text.ofTotal(option, stars().length)"
+                [attr.aria-label]="text.ofTotal($any(number(option)), stars().length)"
                 (click)="choose(option)"
                 (blur)="touch.emit()"
               />
@@ -151,7 +152,7 @@ export class StarRating implements FormValueControl<number | null> {
   readonly cancel = input(false, { transform: booleanAttribute });
   /** Half stars: each star has two options (`2.5`, `3`), the keys step by 0.5. PrimeNG `allowHalf`. */
   readonly allowHalf = input(false, { transform: booleanAttribute });
-  /** `'vertical'` stacks the stars (`aria-orientation`). PrimeNG `orientation`. */
+  /** `'vertical'` stacks the stars (layout only). PrimeNG `orientation`. */
   readonly orientation = input<'horizontal' | 'vertical'>('horizontal');
   readonly ariaLabel = input<string | null>(null);
   /** Id of the element that labels the rating. PrimeNG `ariaLabelledBy`. */
@@ -178,6 +179,14 @@ export class StarRating implements FormValueControl<number | null> {
   private readonly slots = contentChildren(StarSlot, { descendants: true });
   protected readonly icons = starSlotMap<StarIconContext>(this.slots, this, 'icon');
   protected readonly noState: StarIconContext = {};
+
+  private readonly numberFormat = new Intl.NumberFormat(
+    injectStarControlDefaults([]).locale ?? undefined,
+  );
+  /** A half-star value in the number format of the locale ("2,5" in German). */
+  protected number(value: number): string {
+    return this.numberFormat.format(value);
+  }
 
   protected readonly hover = signal<number | null>(null);
   protected readonly stars = computed(() => Array.from({ length: this.count() }, (_, i) => i + 1));

@@ -93,7 +93,7 @@ import { injectStarFieldLink } from '@star-ng/ui/field';
         (blur)="onBlur()"
         (keydown)="onKeydown($event)"
       />
-      @if (showClear() && value() !== null && !disabled() && !readonly()) {
+      @if (showClear() && allowEmpty() && value() !== null && !disabled() && !readonly()) {
         <button
           data-star-part="clearButton"
           type="button"

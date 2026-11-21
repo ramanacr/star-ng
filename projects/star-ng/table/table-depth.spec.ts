@@ -52,6 +52,8 @@ const COLUMNS: StarColumn<Order>[] = [
       ariaLabel="Slots"
       [cellNavigation]="nav()"
       [groupBy]="group()"
+      [pinnedRows]="pins()"
+      [selectionMode]="selectMode()"
       paginator
       [rows]="10"
     >
@@ -83,6 +85,8 @@ class SlotHost {
   readonly columns = COLUMNS.slice(0, 2);
   readonly nav = signal<boolean | undefined>(undefined);
   readonly group = signal<keyof Order | null>(null);
+  readonly pins = signal<StarRowPins>({});
+  readonly selectMode = signal<'multiple' | null>(null);
 }
 
 @Component({
@@ -186,6 +190,37 @@ describe('StarTable depth (N1)', () => {
         'Paid: 1',
         'Shipped: 1',
       ]);
+    });
+
+    it('starGroupFooter rows leave out the pinned rows (review minor 7)', async () => {
+      const fixture = TestBed.createComponent(SlotHost);
+      fixture.componentInstance.group.set('status');
+      fixture.componentInstance.pins.set({ top: ['ORD-1'] });
+      await fixture.whenStable();
+      expect(texts(fixture.nativeElement, 'td.own-group-foot')).toEqual([
+        'Open: 1',
+        'Paid: 1',
+        'Shipped: 1',
+      ]);
+    });
+
+    it('the page check box also selects the pinned rows in view (review minor 13)', async () => {
+      const fixture = TestBed.createComponent(SlotHost);
+      const host = fixture.componentInstance;
+      host.selectMode.set('multiple');
+      host.pins.set({ top: ['ORD-4'] });
+      await fixture.whenStable();
+      const all = (fixture.nativeElement as HTMLElement).querySelector<HTMLInputElement>(
+        'thead [data-lead="select"] input',
+      )!;
+      all.click();
+      await fixture.whenStable();
+      expect(
+        host
+          .table()
+          .selection()
+          .map((row) => row.id),
+      ).toContain('ORD-4');
     });
 
     it('starPaginatorStart and starPaginatorEnd go into the paginator', async () => {

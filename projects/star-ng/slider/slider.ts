@@ -220,14 +220,31 @@ export class StarRangeSlider implements FormValueControl<readonly [number, numbe
   protected readonly highPercent = computed(() => this.toPercent(this.value()[1]));
 
   protected setLow(value: number, input: HTMLInputElement): void {
-    const low = Math.min(value, this.value()[1] - this.gap());
-    input.value = String(low);
-    this.value.set([low, this.value()[1]]);
+    this.apply(value, this.value()[1], 'low', input);
   }
 
   protected setHigh(value: number, input: HTMLInputElement): void {
-    const high = Math.max(value, this.value()[0] + this.gap());
-    input.value = String(high);
-    this.value.set([this.value()[0], high]);
+    this.apply(this.value()[0], value, 'high', input);
+  }
+
+  /**
+   * Keeps both values in the bounds and at least the gap apart. The moved handle gives way to the
+   * other one; when the bounds leave no room, the other handle moves too.
+   */
+  private apply(low: number, high: number, moved: 'low' | 'high', input: HTMLInputElement): void {
+    const [min, max] = this.bounds();
+    const gap = Math.min(this.gap(), max - min);
+    const clamp = (n: number) => Math.min(max, Math.max(min, n));
+    if (moved === 'low') {
+      low = clamp(Math.min(low, high - gap));
+      high = clamp(Math.max(high, low + gap));
+      low = Math.min(low, high - gap);
+    } else {
+      high = clamp(Math.max(high, low + gap));
+      low = clamp(Math.min(low, high - gap));
+      high = Math.max(high, low + gap);
+    }
+    input.value = String(moved === 'low' ? low : high);
+    this.value.set([low, high]);
   }
 }

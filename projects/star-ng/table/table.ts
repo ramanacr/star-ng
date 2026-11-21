@@ -2394,7 +2394,8 @@ export class StarTable<T> extends StarTableInteraction<T> implements ɵStarTable
   private readonly groupRows = computed(() => {
     const groups = new Map<string, T[]>();
     if (!this.groupFooterSlot()) return groups;
-    for (const row of this.lazy() ? this.pageRows() : this.sorted()) {
+    // Pinned rows show in their own part, not in their group.
+    for (const row of this.lazy() ? this.pageRows() : this.pinSplit().rest) {
       const label = this.groupOf(row);
       const rows = groups.get(label);
       if (rows) rows.push(row);
@@ -2907,7 +2908,7 @@ export class StarTable<T> extends StarTableInteraction<T> implements ɵStarTable
    * invalid cell: announces it, opens its editor with the message and focuses it.
    */
   private batchValid(): boolean {
-    const rows = this.pageRows();
+    const rows = this.shownRows();
     const seen = new Set<unknown>();
     for (const row of rows) {
       const key = this.trackKey(row);
@@ -3320,8 +3321,9 @@ export class StarTable<T> extends StarTableInteraction<T> implements ɵStarTable
     rowSelectable: this.rowSelectable,
     keyOf: (row) => this.trackKey(row),
     gridCell: (tr) => (this.cellMode() ? tr.querySelector('td[data-field="$select"]') : null),
-    rows: computed(() => (this.lazy() ? this.pageRows() : this.withAdded())),
-    pageRows: this.pageRows,
+    // The pinned rows are in view too: the page check box covers them.
+    rows: computed(() => (this.lazy() ? this.shownRows() : this.withAdded())),
+    pageRows: computed(() => this.shownRows()),
     knownRows: this.value,
     changing: this.selectionChanging,
     rowSelect: this.rowSelect,

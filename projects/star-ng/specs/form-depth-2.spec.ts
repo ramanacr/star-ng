@@ -2,7 +2,7 @@ import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { form, FormField, required } from '@angular/forms/signals';
 import { StarCheckbox } from '@star-ng/ui/checkbox';
-import { StarIconTemplate } from '@star-ng/ui/core';
+import { provideStarNg, StarIconTemplate } from '@star-ng/ui/core';
 import { StarInputMask } from '@star-ng/ui/input-mask';
 import { StarInputNumber } from '@star-ng/ui/input-number';
 import { StarInputTags } from '@star-ng/ui/input-tags';
@@ -353,7 +353,9 @@ describe('form controls depth, part 2 (N1)', () => {
   it('rating: half steps with the keys, valuetext and vertical orientation', async () => {
     const { fixture, host, root } = await setup();
     const rating = q(root, '.rt');
-    expect(rating.getAttribute('aria-orientation')).toBe('vertical');
+    // ARIA 1.2 gives a radiogroup no aria-orientation: only the layout class.
+    expect(rating.getAttribute('aria-orientation')).toBeNull();
+    expect(rating.classList).toContain('star-rating--vertical');
     const radios = Array.from(rating.querySelectorAll<HTMLInputElement>('input[type="radio"]'));
     expect(radios.length).toBe(10);
     expect(radios[4].getAttribute('aria-label')).toBe('2.5 of 5');
@@ -431,5 +433,45 @@ describe('color picker format round trip (N1 review)', () => {
       const hex = root.querySelector<HTMLInputElement>('[data-star-part="hexInput"]')!.value;
       expect(hex).toBe(button.getAttribute('aria-label')!.toLowerCase());
     }
+  });
+});
+
+describe('form depth review minors (N1)', () => {
+  @Component({
+    imports: [StarInputNumber, StarRangeSlider, StarRating],
+    template: `
+      <star-input-number class="nb" [value]="5" showClear [allowEmpty]="false" ariaLabel="N" />
+      <star-range-slider class="rs" [(value)]="range" [minStepsBetweenHandles]="10" ariaLabel="R" />
+      <star-rating class="rt" [value]="2.5" allowHalf ariaLabel="Rating" />
+    `,
+  })
+  class MinorHost {
+    readonly range = signal<readonly [number, number]>([95, 100]);
+  }
+
+  it('input number: no clear button when an empty field is not allowed', async () => {
+    const fixture = TestBed.createComponent(MinorHost);
+    await fixture.whenStable();
+    expect(q(fixture.nativeElement, '.nb [data-star-part="clearButton"]')).toBeNull();
+  });
+
+  it('range slider: the gap stays inside the bounds', async () => {
+    const fixture = TestBed.createComponent(MinorHost);
+    await fixture.whenStable();
+    const high = (fixture.nativeElement as HTMLElement).querySelectorAll<HTMLInputElement>(
+      '.rs input',
+    )[1];
+    high.value = '99';
+    high.dispatchEvent(new Event('input'));
+    await fixture.whenStable();
+    expect(fixture.componentInstance.range()).toEqual([90, 100]);
+  });
+
+  it('rating: half-star labels use the number format of the locale', async () => {
+    TestBed.configureTestingModule({ providers: [provideStarNg({ locale: 'de-DE' })] });
+    const fixture = TestBed.createComponent(MinorHost);
+    await fixture.whenStable();
+    const radios = (fixture.nativeElement as HTMLElement).querySelectorAll('.rt input');
+    expect(radios[4].getAttribute('aria-label')).toBe('2,5 of 5');
   });
 });

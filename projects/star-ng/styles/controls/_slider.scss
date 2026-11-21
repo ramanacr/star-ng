@@ -208,7 +208,7 @@
     outline: 2px solid var(--star-accent);
   }
 }
-.star-rating__star--half i {
+.star-rating__star--half :is(i, .star-rating__icon) {
   background: linear-gradient(to right, var(--star-warning) 50%, var(--star-border-strong) 50%);
   background-clip: text;
   color: transparent;
