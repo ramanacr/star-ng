@@ -43,7 +43,7 @@ const isoDay = (date: Date): string =>
   template: `
     <docs-page
       heading="Query builder"
-      lead="Build a filter from rules and nested groups joined with and or or. Each rule has a field, a match mode and a value editor for the field type. The match modes are the ones of the table filter, and starQueryToPredicate turns the query into a row test. The Ignite UI equivalent is igx-query-builder; the Syncfusion equivalent is ejs-querybuilder; the Kendo UI equivalent is kendo-filter."
+      lead="Build a filter from rules and nested groups joined with and or or. Each rule has a field, a match mode and a value editor for the field type. The match modes are the ones of the table filter, and starQueryToPredicate turns the query into a row test. The query model (starQueryToPredicate, starQueryToText, starQueryComplete and the query types) is also in the entry point @star-ng/ui/query-builder/model, which does not load the component. The Ignite UI equivalent is igx-query-builder; the Syncfusion equivalent is ejs-querybuilder; the Kendo UI equivalent is kendo-filter."
       importFrom="import { StarQueryBuilder, starQueryToPredicate } from '@star-ng/ui/query-builder';"
     >
       <docs-example

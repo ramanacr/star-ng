@@ -1124,4 +1124,42 @@ test.describe('service overlays close when the page goes', () => {
       await expect(overlay).toHaveCount(0);
     });
   }
+
+  test('confirm: Back closes the open question of the page', async ({ page }) => {
+    await openPage(page, '/controls/button', 'Button');
+    await expect(page.locator('[ngh]')).toHaveCount(0, { timeout: 15_000 });
+    await page.locator('#docs-nav').getByRole('link', { name: 'Confirm', exact: true }).click();
+    await expect(page.getByRole('heading', { level: 1, name: 'Confirm' })).toBeVisible();
+    await example(page, 'Confirm dialog').getByRole('button', { name: 'Delete order' }).click();
+    const question = page.getByRole('alertdialog');
+    await expect(question).toBeVisible();
+
+    await page.goBack();
+    await expect(page.getByRole('heading', { level: 1, name: 'Button' })).toBeVisible();
+    await expect(page.locator('dialog[open]')).toHaveCount(0);
+    await expect(question).toHaveCount(0);
+  });
+
+  test('scheduler: Back closes the event editor that the scheduler opened', async ({ page }) => {
+    await openPage(page, '/controls/button', 'Button');
+    await expect(page.locator('[ngh]')).toHaveCount(0, { timeout: 15_000 });
+    await page.locator('#docs-nav').getByRole('link', { name: 'Scheduler', exact: true }).click();
+    await expect(page.getByRole('heading', { level: 1, name: 'Scheduler' })).toBeVisible();
+    // A held click on a booking of the timeline opens the edit editor (StarDialogService).
+    const rooms = example(page, 'Rooms on a timeline, with the editor');
+    const booking = rooms.getByRole('button', { name: /^Team meeting, / });
+    await booking.scrollIntoViewIfNeeded();
+    const box = (await booking.boundingBox())!;
+    await page.mouse.move(box.x + Math.min(box.width / 2, 20), box.y + box.height / 2);
+    await page.mouse.down();
+    await page.waitForTimeout(150);
+    await page.mouse.up();
+    const editor = page.getByRole('dialog', { name: 'Edit event' });
+    await expect(editor).toBeVisible();
+
+    await page.goBack();
+    await expect(page.getByRole('heading', { level: 1, name: 'Button' })).toBeVisible();
+    await expect(page.locator('dialog[open]')).toHaveCount(0);
+    await expect(editor).toHaveCount(0);
+  });
 });

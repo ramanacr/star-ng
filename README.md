@@ -78,6 +78,8 @@ export class Orders {
 }
 ```
 
+The query model has its own entry point, `@star-ng/ui/query-builder/model`. It holds `starQueryToPredicate`, `starQueryToText`, `starQueryComplete` and the query types, and it does not load the query builder component. Import from it when you only need to turn a query into a row test. `@star-ng/ui/query-builder` exports the same names, so existing imports keep working.
+
 ## Forms
 
 1. Form controls implement the Signal Forms control interfaces. Bind them with `[formField]`.

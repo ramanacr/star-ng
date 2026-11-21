@@ -30,32 +30,33 @@ This file explains how to work on the StarNG repository: set up, run the checks,
 
 ## Development commands
 
-| Command                           | What it does                                                                             |
-| --------------------------------- | ---------------------------------------------------------------------------------------- |
-| `corepack pnpm start`             | Serves the docs application on <http://localhost:4200>.                                  |
-| `corepack pnpm format`            | Formats all files with Prettier.                                                         |
-| `corepack pnpm format:check`      | Checks the format. CI runs it.                                                           |
-| `corepack pnpm lint`              | ESLint, docs data check and name check.                                                  |
-| `corepack pnpm lint:fix`          | ESLint with automatic fixes.                                                             |
-| `corepack pnpm test`              | Unit tests in watch mode.                                                                |
-| `corepack pnpm test:ci`           | Unit tests (Vitest, jsdom) with coverage.                                                |
-| `corepack pnpm build`             | Builds the package to `dist/star-ng` (with CSS) and the docs.                            |
-| `corepack pnpm build:lib`         | Builds only the package and the CSS.                                                     |
-| `corepack pnpm build:docs`        | Builds only the docs application, prerenders every page and checks the result.           |
-| `corepack pnpm check:prerender`   | Checks that the last docs build has an HTML file for every page.                         |
-| `corepack pnpm docs:gen`          | Writes the API and example data of the docs.                                             |
-| `corepack pnpm docs:check`        | Fails when the generated docs data is out of date.                                       |
-| `corepack pnpm docs:styles`       | Writes the route stylesheet of each docs page and the shell list of `styles.scss`.       |
-| `corepack pnpm test:tools`        | Tests of the CI tools (change detection and gate). No browser.                           |
-| `corepack pnpm e2e`               | Playwright tests, without the visual tests and the Pages tests.                          |
-| `corepack pnpm e2e:a11y`          | Only the axe accessibility scan.                                                         |
-| `corepack pnpm e2e:ui`            | Playwright in its interactive UI mode.                                                   |
-| `corepack pnpm e2e:visual`        | Visual tests. They skip outside CI (see "Visual tests").                                 |
-| `corepack pnpm e2e:visual:update` | Writes baseline images. It refuses to run outside Linux in CI.                           |
-| `corepack pnpm e2e:pages`         | Builds the Pages version of the docs, then runs `e2e/pages` against it.                  |
-| `corepack pnpm pages:preview`     | Builds the Pages version, then serves it on <http://localhost:4300/star-ng/>.            |
-| `corepack pnpm check:package`     | Checks `dist/star-ng`: files, exports, size, names, README links. Run `build:lib` first. |
-| `corepack pnpm smoke:consumer`    | Installs the packed package in a temporary Angular app and builds it (about 2 minutes).  |
+| Command                           | What it does                                                                                     |
+| --------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `corepack pnpm start`             | Serves the docs application on <http://localhost:4200>.                                          |
+| `corepack pnpm format`            | Formats all files with Prettier.                                                                 |
+| `corepack pnpm format:check`      | Checks the format. CI runs it.                                                                   |
+| `corepack pnpm lint`              | ESLint, docs data check and name check.                                                          |
+| `corepack pnpm lint:fix`          | ESLint with automatic fixes.                                                                     |
+| `corepack pnpm test`              | Unit tests in watch mode.                                                                        |
+| `corepack pnpm test:ci`           | Unit tests (Vitest, jsdom) with coverage.                                                        |
+| `corepack pnpm build`             | Builds the package to `dist/star-ng` (with CSS) and the docs.                                    |
+| `corepack pnpm build:lib`         | Builds only the package and the CSS.                                                             |
+| `corepack pnpm build:docs`        | Builds only the docs application, prerenders every page and checks the result.                   |
+| `corepack pnpm check:prerender`   | Checks that the last docs build has an HTML file for every page.                                 |
+| `corepack pnpm docs:gen`          | Writes the API and example data of the docs.                                                     |
+| `corepack pnpm docs:check`        | Fails when the generated docs data is out of date.                                               |
+| `corepack pnpm docs:styles`       | Writes the route stylesheet of each docs page and the shell list of `styles.scss`.               |
+| `corepack pnpm docs:icons`        | Writes the Phosphor icon subset of the docs (`projects/docs/src/generated/phosphor-subset.css`). |
+| `corepack pnpm test:tools`        | Tests of the CI tools (change detection and gate). No browser.                                   |
+| `corepack pnpm e2e`               | Playwright tests, without the visual tests and the Pages tests.                                  |
+| `corepack pnpm e2e:a11y`          | Only the axe accessibility scan.                                                                 |
+| `corepack pnpm e2e:ui`            | Playwright in its interactive UI mode.                                                           |
+| `corepack pnpm e2e:visual`        | Visual tests. They skip outside CI (see "Visual tests").                                         |
+| `corepack pnpm e2e:visual:update` | Writes baseline images. It refuses to run outside Linux in CI.                                   |
+| `corepack pnpm e2e:pages`         | Builds the Pages version of the docs, then runs `e2e/pages` against it.                          |
+| `corepack pnpm pages:preview`     | Builds the Pages version, then serves it on <http://localhost:4300/star-ng/>.                    |
+| `corepack pnpm check:package`     | Checks `dist/star-ng`: files, exports, size, names, README links. Run `build:lib` first.         |
+| `corepack pnpm smoke:consumer`    | Installs the packed package in a temporary Angular app and builds it (about 2 minutes).          |
 
 ## Rules for the library
 
@@ -108,6 +109,15 @@ The docs load the library CSS per route, as they load the page JavaScript. The p
 - A page with its own component styles keeps them in a child component (`<Name>Content`), so they come after the route styles.
 - The build counts a route stylesheet as a component style. So the `anyComponentStyle` budget in `angular.json` is 120 kB (warning) and 150 kB (error): the largest route stylesheet (the file manager page) is about 115 kB. The initial budgets do not change.
 - `tools/docs-page-styles.test.mjs` (`corepack pnpm test:tools`) checks that each page has its partials and that the order is kept.
+
+## Docs icons
+
+The docs load only the Phosphor icons that they use. The package does not change: consumers still load the stylesheets of `@phosphor-icons/web` (see the README).
+
+- `tools/docs-icons.mjs` (`corepack pnpm docs:icons`) writes `projects/docs/src/generated/phosphor-subset.css`, which `angular.json` loads in place of the package stylesheets. It copies the `@font-face` rule (WOFF2 source only) and the base rule of each used weight from the package CSS, and the `:before` rule of each used icon. Do not edit the file.
+- The used icons come from the strings of the library and docs sources (no comments, no spec files): every `ph-<name>` class with the `ph-<weight>` class in the same quoted value (default bold), and the `name` and `weight` of every `<star-icon>`. A name built at run time from data goes into `EXTRA` in the tool, with a comment.
+- After you add or change an icon, run `corepack pnpm docs:icons`. `corepack pnpm lint` fails when the file is out of date, and the tool fails on a name that Phosphor does not have.
+- `tools/docs-icons.test.mjs` checks the output and the names; `e2e/docs-icons.spec.ts` checks, on the built site, that every icon on eight pages has its rule and draws a glyph.
 
 ## The docs data generator
 

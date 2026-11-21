@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
 import { StarButton } from '@star-ng/ui/button';
 import { StarConfirmService } from '@star-ng/ui/dialog';
 import { DOCS, DocsRow } from '../shared/docs';
@@ -136,6 +136,14 @@ import { DOCS, DocsRow } from '../shared/docs';
 })
 export class ConfirmPage {
   private readonly confirm = inject(StarConfirmService);
+
+  constructor() {
+    // The questions of this page close with it (as "no"): a popup is anchored to an element of
+    // the page, and the shell host would keep a dialog open on the next page.
+    inject(DestroyRef).onDestroy(() => {
+      while (this.confirm.current()) this.confirm.settle(false);
+    });
+  }
 
   protected readonly result = signal('none');
   protected readonly popupResult = signal('none');

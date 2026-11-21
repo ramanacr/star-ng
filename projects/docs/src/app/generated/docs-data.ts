@@ -17507,6 +17507,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "null",
         "required": false,
         "description": "Optional: pass the table rows to type `let-row` in strict templates."
+      },
+      {
+        "name": "starRowColumns",
+        "type": "readonly C[] | null",
+        "default": "null",
+        "required": false,
+        "description": "Optional: pass the columns to type `let-columns` in strict templates. In a tree table pass the tree table columns (`[starRowColumns]=\"columns\"`), so a column is a `StarTreeTableColumn` (with `frozen`, `editor`) and not a table column."
       }
     ],
     "models": [],
@@ -20714,7 +20721,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "directive",
     "selector": "td[starTableCell]",
     "entry": "@star-ng/ui/table",
-    "description": "A data cell of a `starRow` template: `<td [starTableCell]=\"column.field\" [starTableCellRow]=\"row\">`. It sets the grid attributes that the built-in cells have, so cell navigation, cell selection, the context menu and paste work in the custom row.",
+    "description": "A data cell of a `starRow` template: `<td [starTableCell]=\"column.field\" [starTableCellRow]=\"row\">`. It sets the grid attributes that the built-in cells have, so cell navigation, cell selection, the context menu and paste work in the custom row, and the sticky offset of a pinned (table) or frozen (tree table) column, so the cell stays under its header.",
     "inputs": [
       {
         "name": "starTableCell",

@@ -238,7 +238,7 @@ function plainText(text: string): string {
                   @if (message.status) {
                     <i
                       data-star-part="statusIcon"
-                      class="star-chat__status ph"
+                      class="star-chat__status ph-bold"
                       role="img"
                       [class.ph-clock]="message.status === 'sending'"
                       [class.ph-check]="message.status === 'sent'"

@@ -56,6 +56,7 @@ const COLUMNS: StarColumn<Order>[] = [
       [groupBy]="group()"
       [pinnedRows]="pins()"
       [selectionMode]="selectMode()"
+      [virtualColumns]="virtualCols()"
       paginator
       [rows]="10"
     >
@@ -89,6 +90,7 @@ class SlotHost {
   readonly group = signal<keyof Order | null>(null);
   readonly pins = signal<StarRowPins>({});
   readonly selectMode = signal<'multiple' | null>(null);
+  readonly virtualCols = signal(false);
 }
 
 @Component({
@@ -160,6 +162,42 @@ describe('StarTable depth (N1)', () => {
       expect(rows.length).toBe(4);
       expect(texts(rows[1], 'td.own-cell')).toEqual(['1:ORD-2', '1:Ben Carter']);
       expect(rows[0].querySelector('td.own-cell')?.getAttribute('data-star-part')).toBe('rowCell');
+    });
+
+    it('starTableCell gets the sticky offset of a pinned column', async () => {
+      const fixture = TestBed.createComponent(SlotHost);
+      await fixture.whenStable();
+      fixture.componentInstance.table().pinColumn('customer', 'start');
+      await fixture.whenStable();
+      const root = fixture.nativeElement as HTMLElement;
+      // The cells of the first row, found by their text (a pinned column moves to its side).
+      const cell = (value: string) =>
+        Array.from(
+          root
+            .querySelectorAll('tbody tr[data-star-part="row"]')[0]
+            .querySelectorAll<HTMLElement>('td.own-cell'),
+        ).find((td) => td.textContent?.includes(value))!;
+      const pinned = cell(ORDERS[0].customer);
+      expect(pinned.classList).toContain('star-table__cell--frozen');
+      expect(pinned.classList).toContain('star-table__cell--pin-edge');
+      expect(pinned.style.insetInlineStart).not.toBe('');
+      expect(cell(ORDERS[0].id).classList).not.toContain('star-table__cell--frozen');
+      fixture.componentInstance.table().pinColumn('customer', 'end');
+      await fixture.whenStable();
+      expect(cell(ORDERS[0].customer).classList).toContain('star-table__cell--pinned-end');
+      expect(cell(ORDERS[0].customer).style.insetInlineEnd).not.toBe('');
+      expect(cell(ORDERS[0].customer).style.insetInlineStart).toBe('');
+    });
+
+    it('starRow with virtualColumns logs a dev-mode warning', async () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      const fixture = TestBed.createComponent(SlotHost);
+      fixture.componentInstance.virtualCols.set(true);
+      await fixture.whenStable();
+      expect(warn.mock.calls.flat().join(' ')).toContain(
+        'starRow template does not support virtualColumns',
+      );
+      warn.mockRestore();
     });
 
     it('starTableCell keeps the grid semantics with cell navigation', async () => {
@@ -322,6 +360,28 @@ describe('StarTable depth (N1)', () => {
       const root = fixture.nativeElement as HTMLElement;
       const top = root.querySelector('tbody[data-star-part="pinnedTopPanel"] tr');
       expect(top?.querySelector('td')?.textContent?.trim()).toBe('ORD-1');
+      expect(bodyIds(root)).toEqual(['ORD-9']);
+    });
+
+    it('lazy mode forgets a row that the owner unpins through pinnedRows', async () => {
+      const fixture = TestBed.createComponent(FeatureHost);
+      const host = fixture.componentInstance;
+      host.lazy.set(true);
+      await fixture.whenStable();
+      host.table().pinRow(ORDERS[0], 'top');
+      await fixture.whenStable();
+      // The owner unpins the key through the model, the page changes, and the key is pinned
+      // again while its page is not loaded: the old row object must not come back.
+      host.pins.set({});
+      await fixture.whenStable();
+      host.rows = [{ id: 'ORD-9', customer: 'Ivy Moon', status: 'Paid', total: 3 }];
+      fixture.changeDetectorRef.markForCheck();
+      fixture.componentRef.changeDetectorRef.detectChanges();
+      await fixture.whenStable();
+      host.pins.set({ top: ['ORD-1'] });
+      await fixture.whenStable();
+      const root = fixture.nativeElement as HTMLElement;
+      expect(root.querySelector('tbody[data-star-part="pinnedTopPanel"] tr')).toBeNull();
       expect(bodyIds(root)).toEqual(['ORD-9']);
     });
 
@@ -631,8 +691,14 @@ describe('StarTable depth (N1)', () => {
       const dialog = document.querySelector<HTMLElement>('dialog')!;
       expect(dialog.querySelector('star-query-builder')).not.toBeNull();
       const table = host.table() as unknown as {
-        advancedDraft: { set(value: StarQueryGroup): void };
+        advancedDraft: { set(value: StarQueryGroup): void; (): StarQueryGroup };
       };
+      // The builder is created on open (a dynamic import) and bound two ways to the draft.
+      Array.from(dialog.querySelectorAll<HTMLElement>('star-query-builder button'))
+        .find((b) => b.textContent?.trim() === 'Add rule')!
+        .click();
+      await fixture.whenStable();
+      expect(table.advancedDraft().rules.length).toBe(1);
       table.advancedDraft.set({
         operator: 'and',
         rules: [{ field: 'status', matchMode: 'contains', value: 'open' }],

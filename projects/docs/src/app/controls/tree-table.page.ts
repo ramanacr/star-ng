@@ -629,6 +629,16 @@ onRowAction(event: StarTreeTableContextMenuEvent): void {
       name: 'ng-template[starFooter]',
       description: 'Content child. Content below the table.',
     },
+    {
+      name: 'ng-template[starRow] with td[starTableCell]',
+      description:
+        'Content child, from @star-ng/ui/table. Replaces the cells after the tree column. The context (StarTreeTableRowContext) has the row, its index, the columns (StarTreeTableColumn, after the first one), selected and expanded. Each starTableCell cell gets its grid attributes and, in a frozen column, the sticky offset of that column. Bind [starRowColumns]="columns" on the template to type let-columns as StarTreeTableColumn in strict templates.',
+    },
+    {
+      name: 'ng-template[starIcon="toggle"]',
+      description:
+        'Content child. Replaces the toggle icon; the context has expanded. Parts: the default icon is the part expandIcon (as in the table and the tree), and the wrapper of a custom toggle icon is the part toggleIcon. Style both in pt (expandIcon and toggleIcon) when you style the toggle icon. The two names stay apart: the move buttons of the column headers also use expandIcon.',
+    },
   ];
   protected readonly cssVars: readonly DocsRow[] = [
     {

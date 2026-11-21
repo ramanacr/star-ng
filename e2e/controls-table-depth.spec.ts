@@ -57,6 +57,18 @@ test.describe('table depth (wave N1)', () => {
     await live.getByRole('button', { name: 'Advanced filter' }).click();
     const dialog = page.getByRole('dialog', { name: 'Advanced filter' });
     await expect(dialog).toBeVisible();
+    // The focus starts inside the query builder, not on a footer button.
+    await expect
+      .poll(() =>
+        page.evaluate(() => {
+          const active = document.activeElement;
+          return (
+            !!active?.closest('star-query-builder') &&
+            !active.closest('[data-star-part="advancedButtonsPanel"]')
+          );
+        }),
+      )
+      .toBe(true);
     await dialog.getByRole('button', { name: 'Cancel' }).click();
     await expect(dialog).toBeHidden();
     await expect(live.getByRole('status')).toHaveText('Rules: 0');

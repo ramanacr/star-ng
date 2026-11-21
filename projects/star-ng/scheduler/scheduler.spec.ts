@@ -781,6 +781,20 @@ describe('StarScheduler', () => {
         allDay: false,
       });
     });
+
+    it('closes the editor when the scheduler is destroyed, without an event', async () => {
+      const { fixture, host, cell, stable } = await setup((h) => h.editor.set(true));
+      cell(28, 2).click();
+      await stable();
+      expect(document.querySelector('dialog[open]')).not.toBeNull();
+      fixture.destroy();
+      for (let i = 0; i < 4; i++) {
+        TestBed.tick();
+        await Promise.resolve();
+      }
+      expect(document.querySelector('dialog[open]')).toBeNull();
+      expect(host.saved).toHaveLength(0);
+    });
   });
 
   describe('current time', () => {

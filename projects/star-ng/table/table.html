@@ -776,7 +776,8 @@
 @if (advancedFilter()) {
   <star-dialog [(visible)]="advancedOpen" [header]="text.advancedFilter" size="lg">
     @if (advancedOpen()) {
-      <star-query-builder [fields]="queryFields()" [(value)]="advancedDraft" />
+      <!-- The query builder, created when the dialog opens (see openAdvanced). -->
+      <ng-container #queryBuilderHost />
     }
     <div
       data-star-part="advancedButtonsPanel"

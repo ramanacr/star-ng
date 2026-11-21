@@ -201,14 +201,47 @@ function styledClasses(css: string): Set<string> {
 }
 
 /**
+ * Rule signatures of a stylesheet: for each selector, its sorted `star-*` classes (`.star-x`) and
+ * element names (`star-x`), outside brackets and the arguments of functional pseudo-classes. A
+ * signature ignores what minifiers rewrite (whitespace, quotes, `::before`), so the compiled
+ * library and the built docs CSS give the same signature for the same rule.
+ */
+function signatures(css: string): Set<string> {
+  const out = new Set<string>();
+  for (const m of css.matchAll(/([^{};]+)\{/g)) {
+    const prelude = m[1].trim();
+    if (!prelude || prelude.startsWith('@')) continue;
+    let depth = 0;
+    let plain = '';
+    for (const c of prelude) {
+      if (c === '[' || c === '(') depth++;
+      if (depth === 0) plain += c;
+      if (c === ']' || c === ')') depth--;
+    }
+    for (const selector of plain.split(',')) {
+      const tokens = new Set(
+        [...selector.matchAll(/(^|[\s>+~.])(star-[a-z0-9_-]+)/g)].map((t) =>
+          t[1] === '.' ? `.${t[2]}` : t[2],
+        ),
+      );
+      if (tokens.size) out.add([...tokens].sort().join(' '));
+    }
+  }
+  return out;
+}
+
+/**
  * Route styles, checked from the outside (independent of tools/docs-page-styles.mjs): every
  * `star-*` class in the prerendered HTML of a page that star-ng.css styles is also styled by the
- * CSS that the page loads, the global stylesheet and the route styles in its `<head>`.
+ * CSS that the page loads, the global stylesheet and the route styles in its `<head>`. Then per
+ * rule: every library rule whose classes and element names all occur in the HTML is loaded.
  */
 test.describe('route styles in the prerendered HTML', () => {
-  const library = styledClasses(
-    sass.compile('projects/star-ng/styles/star-ng.scss', { style: 'compressed' }).css,
-  );
+  const libraryCss = sass.compile('projects/star-ng/styles/star-ng.scss', {
+    style: 'compressed',
+  }).css;
+  const library = styledClasses(libraryCss);
+  const librarySignatures = signatures(libraryCss);
   for (const path of [
     'controls/table',
     'controls/select',
@@ -233,6 +266,20 @@ test.describe('route styles in the prerendered HTML', () => {
       expect(used.size).toBeGreaterThan(20);
       const missing = [...used].filter((name) => library.has(name) && !loaded.has(name));
       expect(missing).toEqual([]);
+
+      // Per rule, not only per class: a partial that is missing while another partial styles
+      // the same classes fails here. Limit: a rule that needs a class or element that appears
+      // only after hydration or on interaction is not checked.
+      const vocabulary = new Set([
+        ...[...used].map((name) => `.${name}`),
+        ...[...html.matchAll(/<(star-[a-z0-9-]+)/g)].map((m) => m[1]),
+      ]);
+      const loadedSignatures = signatures([global, ...inline].join('\n'));
+      const needed = [...librarySignatures].filter((signature) =>
+        signature.split(' ').every((token) => vocabulary.has(token)),
+      );
+      expect(needed.length).toBeGreaterThan(20);
+      expect(needed.filter((signature) => !loadedSignatures.has(signature))).toEqual([]);
     });
   }
 });

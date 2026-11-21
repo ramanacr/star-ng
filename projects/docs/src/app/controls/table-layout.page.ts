@@ -182,7 +182,7 @@ const LOG: readonly LogEntry[] = Array.from({ length: 5000 }, (_, i) => ({
         heading="Custom rows"
         source="table-layout/custom-rows"
         [script]="customRowScript"
-        note="An ng-template with starRow draws the data cells of each row: write one td with starTableCell per column of the columns context. The table keeps the row element, its keys, selection and context menu, so cell navigation still works. starFooterRow draws the cells of the footer row; its context has the columns and the filtered rows."
+        note="An ng-template with starRow draws the data cells of each row: write one td with starTableCell per column of the columns context. The table keeps the row element, its keys, selection and context menu, so cell navigation still works. A starTableCell in a pinned column gets the sticky offset of the column. starRow does not support virtualColumns (the cells would not line up with the header; dev mode logs a warning). starFooterRow draws the cells of the footer row; its context has the columns and the filtered rows."
       >
         <docs-fill>
           <star-table

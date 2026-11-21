@@ -66,6 +66,10 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 
 - Popover: the slot `starHeader` and `closeOnEscape` (PrimeNG `closeOnEscape`).
 
+#### Query builder
+
+- Query builder: the new entry point `@star-ng/ui/query-builder/model` holds the query model (`starQueryToPredicate`, `starQueryComplete`, `starQueryToText` and the query types). `@star-ng/ui/query-builder` still exports the same names. The table loads the query builder component only when the advanced filter dialog opens, so a page with a table does not load it before.
+
 #### Select, autocomplete and listbox
 
 - Cascade select: `groupChange` (the parent option and its level when a submenu opens), the slots `starHeader` and `starFooter` in the menu and `starIcon="group"` for the submenu arrow (PrimeNG `onGroupChange`, `#header`, `#footer`, `#groupicon`). `beforeShow` and `beforeHide` emit before the menu overlay is created or removed, `show` and `hide` after it.
@@ -73,6 +77,10 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 #### Tabs
 
 - Tabs: `dynamicHeight` (the panel area animates its height on a tab change) and `animationDuration` (the new panel fades in; both off with reduced motion) (Material `dynamicHeight`, `animationDuration`). New `star-tab-nav` with `a[starTabLink]` and `star-tab-nav-panel`: router links as tabs, active from `routerLinkActive` (or `active`), the WAI-ARIA tabs pattern with a panel (tablist, roving tabindex, Arrow keys, Home, End, Space) and a `navigation` of `aria-current` links without one (Material `mat-tab-nav-bar`, `mat-tab-link`, `mat-tab-nav-panel`).
+
+#### Table and tree table
+
+- Tree table: the types `StarTreeTableRowContext` and `StarTreeTableFooterRowContext` (the `starRow` and `starFooterRow` contexts with `StarTreeTableColumn` columns). `StarRowSlotContext` and `StarFooterRowContext` take the column type as an optional second type parameter (default `StarColumn<T>`), so the tree table no longer casts its columns. `StarRowTemplate` takes the optional input `starRowColumns` that types `let-columns` in strict templates (`[starRowColumns]="columns"` in a tree table).
 
 #### Tree
 
@@ -93,10 +101,16 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - Cascade select: `beforeShow` and `beforeHide` now emit before the overlay opens or closes (the list is not in the page yet at `beforeShow`), and `show` and `hide` emit after it. In 0.4.0 all four emitted together.
 - Meter group: the `icon` of an item now shows in the legend (the field existed but was not rendered).
 - Docs site (internal; the package does not change): the library CSS of the docs now loads per route, like the page JavaScript. The global stylesheet keeps the critical CSS (tokens, base rules, unstyled mode, the controls of the shell and the docs layout), and each page loads the partials of its own controls (`<page>.scss`, written by `corepack pnpm docs:styles`). The prerendered HTML of a page contains its styles. The initial bundle of the docs goes from 999 kB to 775 kB, and the global stylesheet from 459 kB to 234 kB.
+- Docs site (internal; the package does not change): the docs load only the Phosphor icons that they use (`corepack pnpm docs:icons` writes the subset from the package CSS). The initial bundle of the docs goes from 775 kB to 640 kB, and the global stylesheet from 234 kB to 99 kB.
 
 ### Fixed
 
 - Header and footer slots (`starHeader`, `starFooter`) of select, multi-select, autocomplete, multi-column combobox, tree select, cascade select, date picker, listbox and tree, and the popover header: the content sat flush against the edge of the panel, with no padding and no line between it and the list. It now sits in a padded region inside the panel, lined up with the options, with a thin divider to the list and small muted text like the group headings. The header stays above the scrolling list and the footer stays below it. The regions are the new parts `headerSlotPanel` and `footerSlotPanel` (the popover keeps its part `headerPanel`), with pass-through `pt` and unstyled mode, and work in right-to-left pages and in dark mode. Other panels can use the same classes `star-panel__header` and `star-panel__footer`.
+- Table: a `td[starTableCell]` of a `starRow` template in a pinned column now gets the sticky offset and pin classes of the column, so it stays under its header. `starRow` does not support `virtualColumns` (documented; dev mode logs a warning).
+- Table: in lazy mode the row objects of pinned rows are now a pure derivation (`linkedSignal`) instead of a cache written inside a `computed`; a key that the owner unpins through `pinnedRows` no longer comes back with an old row object.
+- Scheduler: the event editor (opened through `StarDialogService`) now closes when the scheduler is destroyed, for example on a route change. Before, it stayed open on the next page. No `editorSave` or `eventDelete` is emitted then, also not for a save whose dialog is still closing.
+- Chat: the message status icon (sending, sent, error) used the regular Phosphor weight (`ph`), which the README does not ask to load, so it was blank. It now uses the bold weight (`ph-bold`), as the other controls do. The icon now shows (a visual change of the chat).
+- Tree table: a `td[starTableCell]` of a `starRow` template in a frozen column now gets the sticky offset of the column. The docs and the JSDoc now name both parts of the toggle icon (`expandIcon` for the default icon, `toggleIcon` for the wrapper of a `starIcon="toggle"` template); the names do not change.
 
 ## [0.4.0] - 2026-11-21
 
