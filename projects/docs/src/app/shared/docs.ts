@@ -1,3 +1,4 @@
+import { LiveAnnouncer } from '@angular/cdk/a11y';
 import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { DOCS_API, DOCS_EXAMPLES, DocsApiMember } from '../generated/docs-data';
@@ -15,11 +16,16 @@ export interface DocsRow {
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'docs-code' },
   template: `
-    <button type="button" class="docs-code__copy" (click)="copy()">
+    <button
+      type="button"
+      class="docs-code__copy"
+      [class.docs-code__copy--done]="copied()"
+      (click)="copy()"
+    >
       <i [class]="copied() ? 'ph-bold ph-check' : 'ph-bold ph-copy'" aria-hidden="true"></i>
       <span class="star-sr-only">{{ copied() ? 'Copied' : 'Copy ' + label() }}</span>
     </button>
-    <pre tabindex="0" [attr.aria-label]="label()"><code>{{ code() }}</code></pre>
+    <pre tabindex="0" translate="no" [attr.aria-label]="label()"><code>{{ code() }}</code></pre>
   `,
 })
 export class DocsCode {
@@ -27,14 +33,18 @@ export class DocsCode {
   /** Accessible name of the block, for example "Example source". */
   readonly label = input('Code');
   protected readonly copied = signal(false);
+  private readonly announcer = inject(LiveAnnouncer);
 
   protected async copy(): Promise<void> {
     try {
       await navigator.clipboard.writeText(this.code());
       this.copied.set(true);
+      // The icon change is visual only: a screen reader hears the result.
+      void this.announcer.announce('Copied to the clipboard', 'polite');
       setTimeout(() => this.copied.set(false), 1500);
     } catch {
       // Clipboard access can be blocked: the text stays selectable.
+      void this.announcer.announce('Copy failed. Select the code and copy it.', 'polite');
     }
   }
 }
@@ -49,7 +59,12 @@ export class DocsCode {
   template: `
     <header class="docs-page__header">
       @if (group) {
-        <p class="docs-page__group">{{ group }}</p>
+        <nav class="docs-page__trail" aria-label="Breadcrumb">
+          <ol>
+            <li><a routerLink="/">Docs</a></li>
+            <li aria-current="location">{{ group }}</li>
+          </ol>
+        </nav>
       }
       <h1>{{ heading() }}</h1>
       @if (lead()) {
@@ -61,7 +76,7 @@ export class DocsCode {
     </header>
     <ng-content />
   `,
-  imports: [DocsCode],
+  imports: [DocsCode, RouterLink],
   host: { class: 'docs-page' },
 })
 export class DocsPage {
@@ -82,18 +97,32 @@ export class DocsPage {
  */
 @Component({
   selector: 'docs-example',
-  imports: [DocsCode],
+  imports: [DocsCode, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'docs-example' },
   template: `
-    <h2 class="docs-example__title" [id]="anchor()">{{ heading() }}</h2>
+    <div class="docs-example__head">
+      <h2 class="docs-example__title" [id]="anchor()">{{ heading() }}</h2>
+      <a
+        class="docs-example__anchor"
+        [routerLink]="[]"
+        [fragment]="anchor()"
+        [attr.aria-label]="'Link to ' + heading()"
+      >
+        <i class="ph-bold ph-link-simple" aria-hidden="true"></i>
+      </a>
+    </div>
     @if (note()) {
       <p class="docs-example__note">{{ note() }}</p>
     }
     <div class="docs-example__frame">
       <div class="docs-example__live"><ng-content /></div>
       <details class="docs-example__source">
-        <summary>Source</summary>
+        <summary>
+          <i class="ph-bold ph-code docs-example__source-icon" aria-hidden="true"></i>
+          <span>Source</span>
+          <i class="ph-bold ph-caret-down docs-example__source-caret" aria-hidden="true"></i>
+        </summary>
         <docs-code [code]="code()" [label]="heading() + ' source'" />
         @if (script()) {
           <docs-code [code]="script()" [label]="heading() + ' component code'" />
@@ -138,7 +167,7 @@ export class DocsExample {
         }
         @for (table of item.tables; track table.title) {
           <div class="docs-table-wrap">
-            <table class="docs-table">
+            <table class="docs-table docs-table--api">
               <caption>
                 {{
                   table.title
@@ -146,12 +175,12 @@ export class DocsExample {
               </caption>
               <thead>
                 <tr>
-                  <th scope="col">Name</th>
-                  <th scope="col">Type</th>
+                  <th scope="col" class="docs-table__name">Name</th>
+                  <th scope="col" class="docs-table__type">Type</th>
                   @if (table.defaults) {
-                    <th scope="col">Default</th>
+                    <th scope="col" class="docs-table__default">Default</th>
                   }
-                  <th scope="col">Description</th>
+                  <th scope="col" class="docs-table__description">Description</th>
                 </tr>
               </thead>
               <tbody>
@@ -168,11 +197,11 @@ export class DocsExample {
                         >
                       }
                     </th>
-                    <td>
+                    <td class="docs-table__type">
                       <code>{{ member.type }}</code>
                     </td>
                     @if (table.defaults) {
-                      <td>
+                      <td class="docs-table__default">
                         @if (member.default !== null) {
                           <code>{{ member.default }}</code>
                         }

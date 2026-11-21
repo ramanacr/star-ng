@@ -89,4 +89,44 @@ test.describe('docs application', () => {
     await expect(page.getByRole('heading', { level: 1, name: 'Checkbox' })).toBeVisible();
     await expect(nav).toBeHidden();
   });
+
+  test('the navigation drawer keeps the focus and closes with Escape', async ({ page }) => {
+    await page.setViewportSize({ width: 480, height: 800 });
+    await openPage(page, '/controls/table', 'Table');
+    const nav = page.getByRole('navigation', { name: 'Pages' });
+    const menu = page.getByRole('button', { name: 'Navigation' });
+    await menu.click();
+    await expect(menu).toHaveAttribute('aria-expanded', 'true');
+    // The search field takes the focus, and the page behind the drawer is inert.
+    await expect(nav.getByRole('searchbox', { name: 'Search pages' })).toBeFocused();
+    await expect(page.locator('#main')).toHaveAttribute('inert', '');
+    await page.keyboard.press('Escape');
+    await expect(nav).toBeHidden();
+    await expect(menu).toBeFocused();
+    await expect(page.locator('#main')).not.toHaveAttribute('inert');
+    // A click on the dimmed page closes the drawer too.
+    await menu.click();
+    await page.locator('.docs-backdrop').click({ position: { x: 460, y: 400 } });
+    await expect(nav).toBeHidden();
+  });
+
+  test('slash moves the focus to the search, and Enter opens the first match', async ({ page }) => {
+    await openPage(page, '/controls/button', 'Button');
+    const search = page
+      .getByRole('navigation', { name: 'Pages' })
+      .getByRole('searchbox', { name: 'Search pages' });
+    await page.locator('#main').focus();
+    await page.keyboard.press('/');
+    await expect(search).toBeFocused();
+    await search.fill('tree table');
+    await expect(page.locator('.docs-nav__status')).toHaveText('1 page matches.');
+    await search.press('Enter');
+    await expect(page.getByRole('heading', { level: 1, name: 'Tree table' })).toBeVisible();
+  });
+
+  test('an example heading has a link to the example', async ({ page }) => {
+    await openPage(page, '/controls/button', 'Button');
+    await page.getByRole('link', { name: 'Link to Sizes' }).click();
+    await expect(page).toHaveURL(/\/controls\/button#button-sizes$/);
+  });
 });
