@@ -170,15 +170,15 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 #### Form inputs
 
 - Checkbox: `starIcon="check"` slot for the check and the indeterminate icon (PrimeNG `#icon`).
-- Color picker: `opened` and `closed` outputs of the custom color panel; `format` (`hex`, `rgb`, `hsb`) of the value, read back without loss (PrimeNG `onShow`, `onHide`, `format`).
+- Color picker: `opened` and `closed` outputs of the custom color panel; `format` (`hex`, `rgb`, `hsb`) of the value, read back without loss; `inline` (the panel in the page, without the tile and popup); `invalid`, `touched` and `name` (PrimeNG `onShow`, `onHide`, `format`, `inline`).
 - Input mask: `characterPattern`, `showClear`, `keepCharPositions` (Backspace, Delete, typing and paste keep the other characters in place) and `variant` (PrimeNG names).
-- Input number: `buttonLayout` (`horizontal`, `stacked`, `vertical`), `allowEmpty`, `highlightOnFocus`, `currencyDisplay`, `showClear` and the `starIcon` slots `increment` and `decrement` (PrimeNG `buttonLayout`, `allowEmpty`, `currencyDisplay`, `showClear`, `#incrementbuttonicon`, `#decrementbuttonicon`).
+- Input number: `buttonLayout` (`horizontal`, `stacked`, `vertical`), `allowEmpty`, `highlightOnFocus`, `currencyDisplay`, `showClear`, `format` (plain number when `false`), `localeMatcher` and the `starIcon` slots `increment` and `decrement` (PrimeNG `buttonLayout`, `allowEmpty`, `currencyDisplay`, `showClear`, `format`, `localeMatcher`, `#incrementbuttonicon`, `#decrementbuttonicon`).
 - Input tags: `starInputTag` chip slot (`StarInputTagTemplate`, `StarInputTagContext`) and the `starIcon` slots `remove` and `clear`.
-- Knob: `strokeWidth` (1 to 20, through `--star-knob-stroke-width`) and `showValue` (PrimeNG `strokeWidth`, `showValue`).
-- Password: `thresholds` of the strength levels; `starIcon` slots `show` and `hide`; `starHeader` and `starFooter` around the strength feedback (PrimeNG `#showicon`, `#hideicon`).
-- Range slider: `orientation`, `slideEnd`, `minStepsBetweenHandles` (kept inside the bounds), `disabledMinHandle` and `disabledMaxHandle` (PrimeNG names).
-- Rating: `cancel`, `allowHalf` (half steps with the arrow keys, labels in the locale number format), `orientation` and the `starIcon` slots `on`, `off` and `cancel` (PrimeNG `cancel`, `allowHalf`, `orientation`, `#onicon`, `#officon`, `#cancelicon`).
-- Slider: `orientation="vertical"` and the `slideEnd` output (PrimeNG `orientation`, `onSlideEnd`).
+- Knob: `strokeWidth` (1 to 20, through `--star-knob-stroke-width`), `showValue`, `invalid`, `touched` and `name` (PrimeNG `strokeWidth`, `showValue`).
+- Password: `toggleMask` (the show / hide button, default on; PrimeNG `toggleMask`); `thresholds` of the strength levels; `starIcon` slots `show` and `hide`; `starHeader` and `starFooter` around the strength feedback (PrimeNG `#showicon`, `#hideicon`).
+- Range slider: `orientation`, `slideEnd`, `minStepsBetweenHandles` (kept inside the bounds), `disabledMinHandle`, `disabledMaxHandle`, `invalid`, `touched` and `name` (PrimeNG names).
+- Rating: `invalid`, `touched`, `name`, `cancel`, `allowHalf` (half steps with the arrow keys, labels in the locale number format), `orientation` and the `starIcon` slots `on`, `off` and `cancel` (PrimeNG `cancel`, `allowHalf`, `orientation`, `#onicon`, `#officon`, `#cancelicon`).
+- Slider: `orientation="vertical"`, `invalid`, `touched`, `name` and the `slideEnd` output (PrimeNG `orientation`, `onSlideEnd`).
 - Toggle switch: `onLabel` / `offLabel` state text and `starIcon` `on` / `off` in the handle (PrimeNG `#handle`). Toggle button: `starIcon` `on` / `off`, `iconPos` and `starToggleButtonContent` (`StarToggleButtonContentTemplate`; PrimeNG `#icon`, `#content`, `iconPos`).
 - `ariaLabelledBy` and `required` on password, input mask, input tags, input number, checkbox, toggle switch, toggle button, rating, slider, range slider, knob, color picker and select button (`aria-required` where the role takes it; Signal Forms `required()` binds to `required`).
 - Core: new `StarIconSlotName` values `sort`, `on`, `off`, `increment`, `decrement`, `remove`, `show` and `hide`.

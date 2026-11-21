@@ -3638,6 +3638,34 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "description": "Color picker (PrimeNG `p-colorpicker`): preset swatches, a custom color panel and a hex field. Value: `#rrggbb`.",
     "inputs": [
       {
+        "name": "inline",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Shows the saturation / brightness area and the hue slider in place, without the custom color tile and its popup (same keys and slider roles). PrimeNG `inline`."
+      },
+      {
+        "name": "invalid",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The value is not valid; it shows after `touched` (also bound from Signal Forms)."
+      },
+      {
+        "name": "touched",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The user has visited the control (Signal Forms binds it)."
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "Name of the value in a native form submit."
+      },
+      {
         "name": "format",
         "type": "'hex' | 'rgb' | 'hsb'",
         "default": "'hex'",
@@ -3743,14 +3771,15 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "pickButton",
       "pickIcon",
       "hexInput",
+      "valueInput",
       "panel",
+      "barPanel",
+      "barButton",
       "areaPanel",
       "thumbnail",
       "hueTrack",
-      "barPanel",
       "previewText",
-      "codeText",
-      "barButton"
+      "codeText"
     ]
   },
   "StarColumnCellTemplate": {
@@ -9839,6 +9868,20 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "How `mode=\"currency\"` shows the currency: `'symbol'` (default, `€`), `'narrowSymbol'`, `'code'` (`EUR`) or `'name'` (`euros`). PrimeNG `currencyDisplay`."
       },
       {
+        "name": "format",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "`false` shows the plain number at all times (no grouping, currency or unit text), also when the field does not have the focus. Default `true`. PrimeNG `format`."
+      },
+      {
+        "name": "localeMatcher",
+        "type": "'lookup' | 'best fit'",
+        "default": "'best fit'",
+        "required": false,
+        "description": "Locale matching algorithm of `Intl.NumberFormat`. PrimeNG `localeMatcher`."
+      },
+      {
         "name": "showClear",
         "type": "boolean",
         "default": "false",
@@ -10671,6 +10714,27 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "A value is needed; feeds Signal Forms `required()` (the slider role takes no `aria-required`)."
       },
       {
+        "name": "invalid",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The value is not valid; it shows after `touched` (also bound from Signal Forms)."
+      },
+      {
+        "name": "touched",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The user has visited the control (Signal Forms binds it)."
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "Name of the value in a native form submit."
+      },
+      {
         "name": "disabled",
         "type": "boolean",
         "default": "false",
@@ -10724,7 +10788,8 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "graphic",
       "track",
       "valueItem",
-      "text"
+      "text",
+      "valueInput"
     ]
   },
   "StarLinearGauge": {
@@ -14822,6 +14887,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Shares of the rules met (0 to 1) from which the strength is fair, good and strong. Default `[0.375, 0.625, 0.875]` (the share rounded to quarters). Below the first share it is weak."
       },
       {
+        "name": "toggleMask",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "The show / hide button (default `true`). It has a name (\"Show password\"), `aria-pressed`, keeps the focus and takes the `show` / `hide` icon slots. PrimeNG `toggleMask`."
+      },
+      {
         "name": "placeholder",
         "type": "string | null",
         "default": "null",
@@ -16140,6 +16212,27 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "A value is needed; feeds Signal Forms `required()` (the slider role takes no `aria-required`)."
       },
       {
+        "name": "invalid",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The value is not valid; it shows after `touched` (also bound from Signal Forms)."
+      },
+      {
+        "name": "touched",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The user has visited the control (Signal Forms binds it)."
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "Name of the value in a native form submit."
+      },
+      {
         "name": "disabled",
         "type": "boolean",
         "default": "false",
@@ -16277,6 +16370,27 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "false",
         "required": false,
         "description": "A rating is needed (`aria-required`); also bound from Signal Forms `required()`."
+      },
+      {
+        "name": "invalid",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The value is not valid; it shows after `touched` (also bound from Signal Forms)."
+      },
+      {
+        "name": "touched",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The user has visited the control (Signal Forms binds it)."
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "Name of the value in a native form submit."
       },
       {
         "name": "disabled",
@@ -17988,6 +18102,27 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "(generated id)",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "invalid",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The value is not valid; it shows after `touched` (also bound from Signal Forms)."
+      },
+      {
+        "name": "touched",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The user has visited the control (Signal Forms binds it)."
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "default": "''",
+        "required": false,
+        "description": "Name of the value in a native form submit."
       },
       {
         "name": "disabled",
@@ -22615,6 +22750,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "color-picker/basic": "<star-color-picker [(value)]=\"color\" ariaLabel=\"Label color\" />\n<p class=\"docs-output\" role=\"status\">Value: {{ color() }}</p>",
   "color-picker/disabled": "<star-color-picker value=\"#64748b\" disabled ariaLabel=\"Locked color\" />",
   "color-picker/format": "<star-color-picker [(value)]=\"rgbColor\" format=\"rgb\" ariaLabel=\"Label color\" />\n<p class=\"docs-output\" role=\"status\">Value: {{ rgbColor() }}</p>",
+  "color-picker/inline": "<star-color-picker [(value)]=\"inlineColor\" inline ariaLabel=\"Theme color\" />\n<p class=\"docs-output\" role=\"status\">Value: {{ inlineColor() }}</p>",
   "color-picker/swatches": "<star-color-picker\n  [(value)]=\"category\"\n  [swatches]=\"['#0f766e', '#b45309', '#7c3aed', '#be123c']\"\n  ariaLabel=\"Category color\"\n/>",
   "command-palette/basic": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"open.set(true)\">\n      Open command palette\n    </star-button>\n  </div>\n  <star-command-palette\n    [commands]=\"commands\"\n    [(visible)]=\"open\"\n    (commandRun)=\"last.set($event.label)\"\n  />\n  <p class=\"docs-output\" role=\"status\">Last command: {{ last() }}</p>\n</div>",
   "command-palette/templates": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"peopleOpen.set(true)\">\n      Find a person\n    </star-button>\n  </div>\n  <star-command-palette\n    [commands]=\"people\"\n    [(visible)]=\"peopleOpen\"\n    [hotkey]=\"null\"\n    [maxRecent]=\"0\"\n    placeholder=\"Search people\"\n    ariaLabel=\"Find a person\"\n    (commandRun)=\"person.set($event.label)\"\n  >\n    <ng-template starCommand let-command>\n      <i class=\"ph-bold ph-user-circle\" aria-hidden=\"true\"></i>\n      <span class=\"option\">\n        <span>{{ command.label }}</span>\n        <small>{{ command.group }} · {{ command.keywords?.[0] }}</small>\n      </span>\n    </ng-template>\n    <ng-template starEmpty let-query>No person matches “{{ query }}”.</ng-template>\n  </star-command-palette>\n  <p class=\"docs-output\" role=\"status\">Chosen: {{ person() }}</p>\n</div>",
@@ -22760,6 +22896,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "input-number/currency-display": "<star-input-number\n  [(value)]=\"fee\"\n  mode=\"currency\"\n  currency=\"EUR\"\n  currencyDisplay=\"code\"\n  showClear\n  ariaLabel=\"Fee\"\n/>",
   "input-number/layouts": "<div class=\"docs-row\">\n  <star-input-number\n    [(value)]=\"stacked\"\n    showButtons\n    buttonLayout=\"stacked\"\n    [allowEmpty]=\"false\"\n    highlightOnFocus\n    ariaLabel=\"Stacked\"\n  />\n  <star-input-number\n    [(value)]=\"vertical\"\n    showButtons\n    buttonLayout=\"vertical\"\n    [min]=\"0\"\n    ariaLabel=\"Vertical\"\n  >\n    <ng-template starIcon=\"increment\"><i class=\"ph-bold ph-arrow-up\"></i></ng-template>\n    <ng-template starIcon=\"decrement\"><i class=\"ph-bold ph-arrow-down\"></i></ng-template>\n  </star-input-number>\n</div>",
   "input-number/modes": "<div class=\"docs-stack\">\n  <star-input-number [(value)]=\"share\" mode=\"percent\" locale=\"en-US\" ariaLabel=\"Share\" />\n  <star-input-number\n    [(value)]=\"weight\"\n    mode=\"unit\"\n    unit=\"kilogram\"\n    locale=\"en-US\"\n    ariaLabel=\"Weight\"\n  />\n  <star-input-number [(value)]=\"items\" suffix=\" items\" locale=\"en-US\" ariaLabel=\"Items\" />\n</div>",
+  "input-number/plain": "<star-input-number\n  [(value)]=\"plain\"\n  [format]=\"false\"\n  localeMatcher=\"lookup\"\n  ariaLabel=\"Plain amount\"\n/>",
   "input-number/states": "<div class=\"docs-stack\">\n  <star-input-number [value]=\"12\" disabled ariaLabel=\"Disabled number\" />\n  <star-input-number [value]=\"12\" readonly ariaLabel=\"Read-only number\" />\n</div>",
   "input-otp/basic": "<star-input-otp\n  [(value)]=\"code\"\n  integerOnly\n  ariaLabel=\"Verification code\"\n  (completed)=\"done.set($event)\"\n/>\n<p class=\"docs-output\" role=\"status\">\n  Value: {{ code() || '(empty)' }}. Completed: {{ done() || 'no' }}\n</p>",
   "input-otp/disabled": "<star-input-otp value=\"123456\" disabled ariaLabel=\"Used code\" />",
@@ -22847,6 +22984,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "panel/toggler": "<div class=\"docs-stack\">\n  <star-panel\n    header=\"Delivery address\"\n    toggleable\n    toggler=\"header\"\n    (beforeToggle)=\"toggleLog.set('before: ' + ($event.collapsed ? 'collapsed' : 'open'))\"\n    (afterToggle)=\"\n      toggleLog.set(toggleLog() + ', after: ' + ($event.collapsed ? 'collapsed' : 'open'))\n    \"\n  >\n    12 Harbor Road, Lakeside.\n  </star-panel>\n  <star-panel header=\"Invoice notes\" toggleable iconPos=\"start\">\n    Send the invoice at the end of the month.\n  </star-panel>\n  <p class=\"docs-output\" role=\"status\">{{ toggleLog() || 'No toggle yet' }}</p>\n</div>",
   "password/basic": "<div class=\"docs-stack\">\n  <star-field label=\"Password\">\n    <star-password [(value)]=\"current\" />\n  </star-field>\n</div>",
   "password/feedback": "<div class=\"docs-stack\">\n  <star-field label=\"New password\">\n    <star-password [(value)]=\"created\" feedback />\n  </star-field>\n</div>",
+  "password/no-toggle": "<star-password [(value)]=\"hiddenOnly\" [toggleMask]=\"false\" ariaLabel=\"PIN\" />",
   "password/rules": "<div class=\"docs-stack\">\n  <star-field label=\"PIN phrase\">\n    <star-password [(value)]=\"phrase\" feedback [rules]=\"rules\" />\n  </star-field>\n</div>",
   "password/templates": "<star-password\n  [(value)]=\"templated\"\n  feedback\n  [thresholds]=\"[0.4, 0.6, 0.8]\"\n  ariaLabel=\"Account password\"\n>\n  <ng-template starIcon=\"show\"><i class=\"ph-bold ph-lock-simple-open\"></i></ng-template>\n  <ng-template starIcon=\"hide\"><i class=\"ph-bold ph-lock-simple\"></i></ng-template>\n  <ng-template starHeader><p>Pick a password you do not use elsewhere.</p></ng-template>\n  <ng-template starFooter><p>A password manager can make one for you.</p></ng-template>\n</star-password>",
   "pick-list/basic": "<div class=\"docs-stack\">\n  <star-pick-list [(source)]=\"available\" [(target)]=\"chosen\" />\n  <p class=\"docs-output\" role=\"status\">Chosen: {{ chosen().join(', ') || 'none' }}</p>\n</div>",
