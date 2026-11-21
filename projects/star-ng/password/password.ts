@@ -91,29 +91,31 @@ export function starPasswordRules(text: StarUiText, minLength = 12): readonly St
         (input)="value.set(input.value)"
         (blur)="touch.emit()"
       />
-      <button
-        data-star-part="revealButton"
-        type="button"
-        class="star-select__icon-btn"
-        [attr.aria-label]="masked() ? text.showPassword : text.hidePassword"
-        [attr.aria-pressed]="!masked()"
-        [disabled]="disabled()"
-        (click)="masked.set(!masked())"
-      >
-        @if (icons().get(masked() ? 'show' : 'hide'); as icon) {
-          <span data-star-part="revealIcon" class="star-password__icon" aria-hidden="true">
-            <ng-container *ngTemplateOutlet="icon; context: noState" />
-          </span>
-        } @else {
-          <i
-            data-star-part="revealIcon"
-            class="ph-bold"
-            [class.ph-eye]="masked()"
-            [class.ph-eye-slash]="!masked()"
-            aria-hidden="true"
-          ></i>
-        }
-      </button>
+      @if (toggleMask()) {
+        <button
+          data-star-part="revealButton"
+          type="button"
+          class="star-select__icon-btn"
+          [attr.aria-label]="masked() ? text.showPassword : text.hidePassword"
+          [attr.aria-pressed]="!masked()"
+          [disabled]="disabled()"
+          (click)="masked.set(!masked())"
+        >
+          @if (icons().get(masked() ? 'show' : 'hide'); as icon) {
+            <span data-star-part="revealIcon" class="star-password__icon" aria-hidden="true">
+              <ng-container *ngTemplateOutlet="icon; context: noState" />
+            </span>
+          } @else {
+            <i
+              data-star-part="revealIcon"
+              class="ph-bold"
+              [class.ph-eye]="masked()"
+              [class.ph-eye-slash]="!masked()"
+              aria-hidden="true"
+            ></i>
+          }
+        </button>
+      }
     </div>
     @if (feedback()) {
       <div data-star-part="feedbackPanel" class="star-password__feedback" [id]="feedbackId">
@@ -175,6 +177,11 @@ export class StarPassword implements FormValueControl<string> {
    * Default `[0.375, 0.625, 0.875]` (the share rounded to quarters). Below the first share it is weak.
    */
   readonly thresholds = input<readonly [number, number, number]>([0.375, 0.625, 0.875]);
+  /**
+   * The show / hide button (default `true`). It has a name ("Show password"), `aria-pressed`,
+   * keeps the focus and takes the `show` / `hide` icon slots. PrimeNG `toggleMask`.
+   */
+  readonly toggleMask = input(true, { transform: booleanAttribute });
   readonly placeholder = input<string | null>(null);
   readonly autocomplete = input<string | null>(null);
   readonly ariaLabel = input<string | null>(null);

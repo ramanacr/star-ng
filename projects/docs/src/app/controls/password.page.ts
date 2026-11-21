@@ -71,11 +71,20 @@ import { DOCS, DocsRow } from '../shared/docs';
         </star-password>
       </docs-example>
 
+      <docs-example
+        heading="Without the show button"
+        source="password/no-toggle"
+        note="toggleMask false removes the show / hide button, for example when a policy does not allow plain text. The default is true: the button has a name, aria-pressed and keeps the focus."
+      >
+        <star-password [(value)]="hiddenOnly" [toggleMask]="false" ariaLabel="PIN" />
+      </docs-example>
+
       <docs-api [of]="['StarPassword']" [cssVars]="cssVars" [keyboard]="keyboard" />
     </docs-page>
   `,
 })
 export class PasswordPage {
+  protected readonly hiddenOnly = signal('');
   protected readonly current = signal('');
   protected readonly templated = signal('');
   protected readonly created = signal('');
