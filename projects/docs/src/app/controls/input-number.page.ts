@@ -113,11 +113,25 @@ import { DOCS, DocsRow } from '../shared/docs';
         />
       </docs-example>
 
+      <docs-example
+        heading="Plain number"
+        source="input-number/plain"
+        note="format false shows the plain number at all times, without grouping or currency text. localeMatcher picks the locale matching of Intl (lookup or best fit)."
+      >
+        <star-input-number
+          [(value)]="plain"
+          [format]="false"
+          localeMatcher="lookup"
+          ariaLabel="Plain amount"
+        />
+      </docs-example>
+
       <docs-api [of]="['StarInputNumber']" [cssVars]="cssVars" [keyboard]="keyboard" />
     </docs-page>
   `,
 })
 export class InputNumberPage {
+  protected readonly plain = signal<number | null>(1234567.5);
   protected readonly fee = signal<number | null>(49.9);
   protected readonly quantity = signal<number | null>(3);
   protected readonly stacked = signal<number | null>(12);

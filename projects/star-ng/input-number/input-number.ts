@@ -168,6 +168,13 @@ export class StarInputNumber implements FormValueControl<number | null> {
    * `'code'` (`EUR`) or `'name'` (`euros`). PrimeNG `currencyDisplay`.
    */
   readonly currencyDisplay = input<'symbol' | 'narrowSymbol' | 'code' | 'name'>('symbol');
+  /**
+   * `false` shows the plain number at all times (no grouping, currency or unit text), also when
+   * the field does not have the focus. Default `true`. PrimeNG `format`.
+   */
+  readonly format = input(true, { transform: booleanAttribute });
+  /** Locale matching algorithm of `Intl.NumberFormat`. PrimeNG `localeMatcher`. */
+  readonly localeMatcher = input<'lookup' | 'best fit'>('best fit');
   /** A clear button while the field has a value. PrimeNG `showClear`. */
   readonly showClear = input(false, { transform: booleanAttribute });
   /**
@@ -234,6 +241,7 @@ export class StarInputNumber implements FormValueControl<number | null> {
       style: mode,
       currency: mode === 'currency' ? this.currency() : undefined,
       currencyDisplay: mode === 'currency' ? this.currencyDisplay() : undefined,
+      localeMatcher: this.localeMatcher(),
       unit: mode === 'unit' ? this.unit() : undefined,
       minimumFractionDigits: this.minFractionDigits(),
       maximumFractionDigits: this.maxFractionDigits(),
@@ -271,7 +279,7 @@ export class StarInputNumber implements FormValueControl<number | null> {
 
   /** Plain digits while editing, formatted text otherwise. */
   protected readonly text = linkedSignal(() =>
-    this.focused() ? this.plain(this.value()) : this.formatted(),
+    this.focused() || !this.format() ? this.plain(this.value()) : this.formatted(),
   );
 
   private plain(value: number | null): string {
@@ -316,7 +324,7 @@ export class StarInputNumber implements FormValueControl<number | null> {
     this.commit();
     this.focused.set(false);
     // The [value] binding may not change if the formatted text equals the last render.
-    this.input().nativeElement.value = this.formatted();
+    this.input().nativeElement.value = this.format() ? this.formatted() : this.plain(this.value());
     this.touch.emit();
   }
 
@@ -346,7 +354,8 @@ export class StarInputNumber implements FormValueControl<number | null> {
     const start = this.value() ?? this.min() ?? 0;
     const next = this.clamp(start + direction * this.step());
     this.value.set(next);
-    this.input().nativeElement.value = this.focused() ? this.plain(next) : this.formatted();
+    this.input().nativeElement.value =
+      this.focused() || !this.format() ? this.plain(next) : this.formatted();
   }
 
   protected onKeydown(event: KeyboardEvent): void {
