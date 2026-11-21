@@ -1,5 +1,10 @@
 export * from './query-builder';
-export { starQueryComplete, starQueryToPredicate, starQueryToText } from './query-model';
+// The query model lives in `@star-ng/ui/query-builder/model`; the names stay here as in 0.4.0.
+export {
+  starQueryComplete,
+  starQueryToPredicate,
+  starQueryToText,
+} from '@star-ng/ui/query-builder/model';
 export type {
   StarQueryCompleteOptions,
   StarQueryField,
@@ -9,4 +14,4 @@ export type {
   StarQueryOption,
   StarQueryRule,
   StarQueryRuleValue,
-} from './query-model';
+} from '@star-ng/ui/query-builder/model';

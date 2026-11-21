@@ -21,10 +21,14 @@ import {
   linkedSignal,
   model,
   output,
+  PendingTasks,
   signal,
   TemplateRef,
   untracked,
   viewChild,
+  ViewContainerRef,
+  type ComponentRef,
+  type Type,
 } from '@angular/core';
 import { StarButton } from '@star-ng/ui/button';
 import { StarCheckbox } from '@star-ng/ui/checkbox';
@@ -64,12 +68,12 @@ import { StarDialog } from '@star-ng/ui/dialog';
 import { StarContextMenu, StarMenu } from '@star-ng/ui/menu';
 import { StarPaginator, StarPaginatorTemplate } from '@star-ng/ui/paginator';
 import { StarPopover } from '@star-ng/ui/popover';
+import type { StarQueryBuilder } from '@star-ng/ui/query-builder';
 import {
-  StarQueryBuilder,
-  StarQueryField,
-  StarQueryGroup,
   starQueryToPredicate,
-} from '@star-ng/ui/query-builder';
+  type StarQueryField,
+  type StarQueryGroup,
+} from '@star-ng/ui/query-builder/model';
 import { StarMultiSelect, StarSelect } from '@star-ng/ui/select';
 import { StarSkeleton } from '@star-ng/ui/skeleton';
 import {
@@ -510,7 +514,6 @@ export class StarRowExpansionTemplate<T = unknown> {
     StarMultiSelect,
     StarPaginator,
     StarPaginatorTemplate,
-    StarQueryBuilder,
     StarSelect,
     StarPopover,
     StarSkeleton,
@@ -1278,7 +1281,9 @@ export class StarTable<T> extends StarTableInteraction<T> implements ɵStarTable
    * Lazy mode: the row object of each pinned key, so a pinned row stays when its page is not
    * loaded (the last object seen for it). A pure derivation from the previous value: the pinned
    * rows of the loaded page give the current objects, and keys that are no longer pinned are
-   * dropped, so a later pin of the same key does not show an old object.
+   * dropped, so a later pin of the same key does not show an old object. Limit: an unpin and a
+   * re-pin of the same key with no read in between (one tick) keep the old object, because the
+   * derivation sees only the final pins.
    */
   private readonly pinnedObjects = linkedSignal<
     { readonly pins: StarRowPins; readonly loaded: readonly T[] },
@@ -2488,10 +2493,47 @@ export class StarTable<T> extends StarTableInteraction<T> implements ɵStarTable
   /** The rules in the dialog, before Apply. */
   protected readonly advancedDraft = signal<StarQueryGroup>({ operator: 'and', rules: [] });
 
-  protected openAdvanced(): void {
+  /**
+   * The query builder component, loaded the first time the dialog opens: the table route does
+   * not carry it (and its date picker and number field) until the advanced filter is used.
+   */
+  private readonly queryBuilderType = signal<Type<StarQueryBuilder> | null>(null);
+  private readonly pendingTasks = inject(PendingTasks);
+  private readonly queryBuilderHost = viewChild('queryBuilderHost', { read: ViewContainerRef });
+
+  protected async openAdvanced(): Promise<void> {
+    if (!this.queryBuilderType()) {
+      await this.pendingTasks.run(async () => {
+        const { StarQueryBuilder } = await import('@star-ng/ui/query-builder');
+        this.queryBuilderType.set(StarQueryBuilder);
+      });
+    }
     this.advancedDraft.set(this.advancedQuery());
     this.advancedOpen.set(true);
   }
+
+  /** Creates the query builder in the open dialog, bound to the fields and the draft. */
+  private readonly queryBuilderRef = signal<ComponentRef<StarQueryBuilder> | null>(null);
+  private readonly renderQueryBuilder = effect((onCleanup) => {
+    const host = this.queryBuilderHost();
+    const builder = this.queryBuilderType();
+    if (!host || !builder) return;
+    untracked(() => {
+      host.clear();
+      const ref = host.createComponent(builder);
+      const changes = ref.instance.value.subscribe((value) => this.advancedDraft.set(value));
+      ref.onDestroy(() => changes.unsubscribe());
+      this.queryBuilderRef.set(ref);
+    });
+    onCleanup(() => this.queryBuilderRef.set(null));
+  });
+  /** `[fields]="queryFields()"` and `[(value)]="advancedDraft"` of the created query builder. */
+  private readonly bindQueryBuilder = effect(() => {
+    const ref = this.queryBuilderRef();
+    if (!ref) return;
+    ref.setInput('fields', this.queryFields());
+    ref.setInput('value', this.advancedDraft());
+  });
 
   protected applyAdvanced(): void {
     this.advancedQuery.set(this.advancedDraft());

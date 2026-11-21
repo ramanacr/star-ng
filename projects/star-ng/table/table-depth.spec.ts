@@ -691,8 +691,14 @@ describe('StarTable depth (N1)', () => {
       const dialog = document.querySelector<HTMLElement>('dialog')!;
       expect(dialog.querySelector('star-query-builder')).not.toBeNull();
       const table = host.table() as unknown as {
-        advancedDraft: { set(value: StarQueryGroup): void };
+        advancedDraft: { set(value: StarQueryGroup): void; (): StarQueryGroup };
       };
+      // The builder is created on open (a dynamic import) and bound two ways to the draft.
+      Array.from(dialog.querySelectorAll<HTMLElement>('star-query-builder button'))
+        .find((b) => b.textContent?.trim() === 'Add rule')!
+        .click();
+      await fixture.whenStable();
+      expect(table.advancedDraft().rules.length).toBe(1);
       table.advancedDraft.set({
         operator: 'and',
         rules: [{ field: 'status', matchMode: 'contains', value: 'open' }],

@@ -31,24 +31,24 @@ import {
 import { StarDatePicker } from '@star-ng/ui/date-picker';
 import { StarInput } from '@star-ng/ui/field';
 import { StarInputNumber } from '@star-ng/ui/input-number';
+import {
+  type StarQueryField,
+  type StarQueryGroup,
+  type StarQueryOption,
+  type StarQueryRule,
+  type StarQueryRuleValue,
+  ɵstarIsQueryGroup as starIsQueryGroup,
+  ɵstarQueryEmptyValue as starQueryEmptyValue,
+  ɵstarQueryIncompleteCount as starQueryIncompleteCount,
+  ɵstarQueryModeLabel as starQueryModeLabel,
+  ɵstarQueryModesOf as starQueryModesOf,
+  ɵstarQueryNewRule as starQueryNewRule,
+  ɵstarQueryOptions as starQueryOptions,
+  ɵstarQueryRuleComplete as starQueryRuleComplete,
+} from '@star-ng/ui/query-builder/model';
 import { StarMultiSelect, StarSelect } from '@star-ng/ui/select';
 import { StarSelectButton } from '@star-ng/ui/select-button';
 import { StarToggleSwitch } from '@star-ng/ui/toggle-switch';
-import {
-  starIsQueryGroup,
-  starQueryEmptyValue,
-  StarQueryField,
-  StarQueryGroup,
-  starQueryIncompleteCount,
-  starQueryModeLabel,
-  starQueryModesOf,
-  starQueryNewRule,
-  StarQueryOption,
-  starQueryOptions,
-  StarQueryRule,
-  starQueryRuleComplete,
-  StarQueryRuleValue,
-} from './query-model';
 
 /** Context of a custom value editor (`ng-template[starQueryValue]`). */
 export interface StarQueryValueContext {

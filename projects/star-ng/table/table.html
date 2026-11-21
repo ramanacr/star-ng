@@ -774,14 +774,10 @@
   </star-paginator>
 }
 @if (advancedFilter()) {
-  <!--
-    Not behind @defer: the table imports starQueryToPredicate from the same entry point, so the
-    query builder stays in the static graph, and @defer only added its runtime (measured in the
-    docs build: table route unchanged, initial bundle +5.6 kB).
-  -->
   <star-dialog [(visible)]="advancedOpen" [header]="text.advancedFilter" size="lg">
     @if (advancedOpen()) {
-      <star-query-builder [fields]="queryFields()" [(value)]="advancedDraft" />
+      <!-- The query builder, created when the dialog opens (see openAdvanced). -->
+      <ng-container #queryBuilderHost />
     }
     <div
       data-star-part="advancedButtonsPanel"
