@@ -75,7 +75,7 @@ export function starPasswordRules(text: StarUiText, minLength = 12): readonly St
         data-star-part="input"
         #input
         class="star-password__input"
-        [type]="masked() ? 'password' : 'text'"
+        [type]="masked() || !toggleMask() ? 'password' : 'text'"
         [id]="inputId()"
         [attr.name]="name() || null"
         [value]="value()"

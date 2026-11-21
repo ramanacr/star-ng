@@ -76,7 +76,13 @@ import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/
       }
     </svg>
     @if (name()) {
-      <input data-star-part="valueInput" type="hidden" [name]="name()" [value]="value()" />
+      <input
+        data-star-part="valueInput"
+        type="hidden"
+        [name]="name()"
+        [value]="value()"
+        [disabled]="disabled()"
+      />
     }
   `,
 })
@@ -460,7 +466,13 @@ export function ɵstarColorFromHex(hex: string, format: 'hex' | 'rgb' | 'hsb'): 
       (blur)="touch.emit()"
     />
     @if (name()) {
-      <input data-star-part="valueInput" type="hidden" [name]="name()" [value]="value()" />
+      <input
+        data-star-part="valueInput"
+        type="hidden"
+        [name]="name()"
+        [value]="value()"
+        [disabled]="disabled()"
+      />
     }
     @if (inline()) {
       <div
@@ -513,7 +525,8 @@ export function ɵstarColorFromHex(hex: string, format: 'hex' | 'rgb' | 'hsb'): 
         #area
         class="star-color__area"
         role="slider"
-        tabindex="0"
+        [attr.tabindex]="disabled() ? -1 : 0"
+        [attr.aria-disabled]="disabled() || null"
         aria-valuemin="0"
         aria-valuemax="100"
         [style.background]="areaBackground()"
@@ -536,7 +549,8 @@ export function ɵstarColorFromHex(hex: string, format: 'hex' | 'rgb' | 'hsb'): 
         data-star-part="hueTrack"
         class="star-color__hue"
         role="slider"
-        tabindex="0"
+        [attr.tabindex]="disabled() ? -1 : 0"
+        [attr.aria-disabled]="disabled() || null"
         aria-valuemin="0"
         aria-valuemax="359"
         aria-orientation="horizontal"
@@ -740,7 +754,7 @@ export class StarColorPicker implements FormValueControl<string> {
 
   /** Opens the custom color panel. The focus goes to the saturation and brightness area. */
   openPanel(): void {
-    if (this.disabled() || this.open()) return;
+    if (this.inline() || this.disabled() || this.open()) return;
     this.rtl.set(starIsRtl(this.host.nativeElement));
     this.open.set(true);
     this.opened.emit();
