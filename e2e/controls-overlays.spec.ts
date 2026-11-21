@@ -227,6 +227,22 @@ test.describe('dialog', () => {
   });
 });
 
+/**
+ * The box of an element, rounded to whole pixels. Tests poll the full box in one read, so
+ * they never compare one coordinate from one frame with another coordinate from a later frame.
+ */
+async function rounded(
+  element: Locator,
+): Promise<{ x: number; y: number; width: number; height: number }> {
+  const box = (await element.boundingBox())!;
+  return {
+    x: Math.round(box.x),
+    y: Math.round(box.y),
+    width: Math.round(box.width),
+    height: Math.round(box.height),
+  };
+}
+
 /** Waits until the entry transition of a dialog has ended, so its box has the final size. */
 async function settled(dialog: Locator): Promise<void> {
   await expect
@@ -249,21 +265,25 @@ test.describe('dialog drag, resize, maximize and position', () => {
     await page.mouse.move(start.x - 95, start.y - 35, { steps: 5 });
     await page.mouse.up();
     await expect
-      .poll(async () => Math.round((await dialog.boundingBox())!.x))
-      .toBe(Math.round(before.x - 100));
-    const moved = (await dialog.boundingBox())!;
-    expect(Math.round(moved.y)).toBe(Math.round(before.y - 40));
+      .poll(async () => {
+        const { x, y } = await rounded(dialog);
+        return { x, y };
+      })
+      .toEqual({ x: Math.round(before.x - 100), y: Math.round(before.y - 40) });
+    const moved = await rounded(dialog);
 
     const move = dialog.getByRole('button', { name: 'Move dialog' });
     await move.focus();
     await page.keyboard.press('Alt+ArrowRight');
     await page.keyboard.press('Alt+ArrowDown');
     await expect
-      .poll(async () => Math.round((await dialog.boundingBox())!.x))
-      .toBe(Math.round(moved.x + 10));
-    expect(Math.round((await dialog.boundingBox())!.y)).toBe(Math.round(moved.y + 10));
+      .poll(async () => {
+        const { x, y } = await rounded(dialog);
+        return { x, y };
+      })
+      .toEqual({ x: moved.x + 10, y: moved.y + 10 });
     await expect(example(page, 'Drag').getByRole('status')).toContainText(
-      `${Math.round(moved.x + 10)}, ${Math.round(moved.y + 10)}`,
+      `${moved.x + 10}, ${moved.y + 10}`,
     );
 
     // A drag far outside stays inside the window (keepInViewport).
@@ -272,8 +292,12 @@ test.describe('dialog drag, resize, maximize and position', () => {
     await page.mouse.down();
     await page.mouse.move(-500, -500, { steps: 5 });
     await page.mouse.up();
-    await expect.poll(async () => Math.round((await dialog.boundingBox())!.x)).toBe(0);
-    expect(Math.round((await dialog.boundingBox())!.y)).toBe(0);
+    await expect
+      .poll(async () => {
+        const { x, y } = await rounded(dialog);
+        return { x, y };
+      })
+      .toEqual({ x: 0, y: 0 });
 
     // The position resets on reopen.
     await page.keyboard.press('Escape');
@@ -300,19 +324,22 @@ test.describe('dialog drag, resize, maximize and position', () => {
     await page.mouse.move(corner.x + 68, corner.y + 48, { steps: 5 });
     await page.mouse.up();
     await expect
-      .poll(async () => Math.round((await dialog.boundingBox())!.width))
-      .toBe(Math.round(before.width + 60));
-    const resized = (await dialog.boundingBox())!;
-    expect(Math.round(resized.height)).toBe(Math.round(before.height + 40));
-    expect(Math.round(resized.x)).toBe(Math.round(before.x));
+      .poll(async () => {
+        const { x, width, height } = await rounded(dialog);
+        return { x, width, height };
+      })
+      .toEqual({
+        x: Math.round(before.x),
+        width: Math.round(before.width + 60),
+        height: Math.round(before.height + 40),
+      });
+    const resized = await rounded(dialog);
 
     await handle.focus();
     await page.keyboard.press('Shift+ArrowLeft');
-    await expect
-      .poll(async () => Math.round((await dialog.boundingBox())!.width))
-      .toBe(Math.round(resized.width - 10));
+    await expect.poll(async () => (await rounded(dialog)).width).toBe(resized.width - 10);
     await expect(example(page, 'Resize').getByRole('status')).toContainText(
-      `${Math.round(resized.width - 10)} x`,
+      `${resized.width - 10} x`,
     );
   });
 
@@ -323,9 +350,11 @@ test.describe('dialog drag, resize, maximize and position', () => {
     await dialog.getByRole('button', { name: 'Maximize' }).click();
     const viewport = page.viewportSize()!;
     await expect
-      .poll(async () => Math.round((await dialog.boundingBox())!.width))
-      .toBe(viewport.width);
-    expect(Math.round((await dialog.boundingBox())!.height)).toBe(viewport.height);
+      .poll(async () => {
+        const { width, height } = await rounded(dialog);
+        return { width, height };
+      })
+      .toEqual({ width: viewport.width, height: viewport.height });
     await expect(example(page, 'Maximize').getByRole('status')).toHaveText('Maximized: yes');
 
     await dialog.getByRole('button', { name: 'Restore' }).click();
@@ -786,9 +815,11 @@ test.describe('drawer modes', () => {
     await expect(full).toBeVisible();
     const viewport = page.viewportSize()!;
     await expect
-      .poll(async () => Math.round((await full.boundingBox())!.width))
-      .toBe(viewport.width);
-    expect(Math.round((await full.boundingBox())!.height)).toBe(viewport.height);
+      .poll(async () => {
+        const { width, height } = await rounded(full);
+        return { width, height };
+      })
+      .toEqual({ width: viewport.width, height: viewport.height });
     await page.keyboard.press('Escape');
     await expect(full).toBeHidden();
     await expect(live.getByRole('status')).toHaveText('Last event: full screen hidden');

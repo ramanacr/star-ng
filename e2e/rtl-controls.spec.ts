@@ -210,9 +210,13 @@ test.describe('right-to-left controls', () => {
         steps: 6,
       });
       await page.mouse.up();
-      const size = Number(await gutter.getAttribute('aria-valuenow'));
-      expect(size).toBeGreaterThan(70);
-      expect(size).toBeLessThan(80);
+      // Poll: the value comes with the next render after the last pointer move.
+      await expect
+        .poll(async () => {
+          const size = Number(await gutter.getAttribute('aria-valuenow'));
+          return size > 70 && size < 80 ? 'in range' : size;
+        })
+        .toBe('in range');
     });
 
     test('galleria: Arrow left shows the next image', async ({ page }) => {
@@ -335,7 +339,7 @@ test.describe('right-to-left controls', () => {
       await page.mouse.down();
       await page.mouse.move(at.x + at.width / 2 - 30, at.y + at.height / 2, { steps: 5 });
       await page.mouse.up();
-      expect((await box(header)).width).toBeGreaterThan(start + 20);
+      await expect.poll(async () => (await box(header)).width).toBeGreaterThan(start + 20);
     });
   });
 
