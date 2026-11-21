@@ -192,3 +192,37 @@
 .star-rating__cancel {
   color: var(--star-text-muted);
 }
+// Half stars (`allowHalf`): two hit areas per star, the icon half filled.
+.star-rating__half {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  width: 50%;
+  z-index: 1;
+  cursor: pointer;
+
+  &--end {
+    inset-inline-start: 50%;
+  }
+  &:has(input:focus-visible) {
+    outline: 2px solid var(--star-accent);
+  }
+}
+.star-rating__star--half i {
+  background: linear-gradient(to right, var(--star-warning) 50%, var(--star-border-strong) 50%);
+  background-clip: text;
+  color: transparent;
+
+  &:dir(rtl) {
+    background: linear-gradient(to left, var(--star-warning) 50%, var(--star-border-strong) 50%);
+    background-clip: text;
+  }
+}
+.star-rating--vertical {
+  flex-direction: column;
+}
+// Vertical range slider: the two inputs stand on one vertical track.
+.star-slider--range.star-slider--vertical .star-slider__track {
+  width: 1.5rem;
+  height: var(--star-slider-length, 10rem);
+}

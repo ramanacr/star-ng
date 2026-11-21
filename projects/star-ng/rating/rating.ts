@@ -31,7 +31,9 @@ import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/
  * screen readers announce "3 of 5 stars". Hover previews the rating.
  * `<star-rating [(value)]="quality" ariaLabel="Response quality" />`
  *
- * `cancel` adds a first option that clears the rating (PrimeNG `cancel`). Slots:
+ * `cancel` adds a first option that clears the rating (PrimeNG `cancel`). `allowHalf` gives each
+ * star two options, so the arrow keys step by 0.5 and each option reads "2.5 of 5" (PrimeNG
+ * `allowHalf`). `orientation="vertical"` stacks the stars (PrimeNG `orientation`). Slots:
  * `<ng-template starIcon="on">` and `starIcon="off"` replace the filled and the empty star, and
  * `starIcon="cancel"` the clear icon (PrimeNG `#onicon`, `#officon`, `#cancelicon`).
  */
@@ -48,6 +50,9 @@ import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/
     '[attr.aria-label]': 'labelledBy() ? null : (ariaLabel() ?? text.ratingLabel)',
     '[attr.aria-labelledby]': 'labelledBy()',
     '[attr.aria-describedby]': 'fieldDescribedBy()',
+    '[attr.aria-required]': 'required() || null',
+    '[attr.aria-orientation]': "orientation() === 'vertical' ? 'vertical' : null",
+    '[class.star-rating--vertical]': "orientation() === 'vertical'",
     '[class.star-rating--readonly]': 'readonly() || disabled()',
     '(mouseleave)': 'hover.set(null)',
   },
@@ -75,32 +80,66 @@ import { injectStarFieldLink, starFieldLabelledBy, starJoinIds } from '@star-ng/
       </label>
     }
     @for (star of stars(); track star) {
-      <label
-        data-star-part="rateItem"
-        class="star-rating__star"
-        [class.star-rating__star--on]="star <= shown()"
-        (mouseenter)="!readonly() && hover.set(star)"
-      >
-        <input
-          type="radio"
-          class="star-sr-only"
-          [name]="groupName"
-          [value]="star"
-          [checked]="value() === star"
-          [disabled]="disabled() || readonly()"
-          [attr.aria-label]="text.ofTotal(star, stars().length)"
-          (click)="choose(star)"
-          (blur)="touch.emit()"
-        />
-        @if (icons().get(star <= shown() ? 'on' : 'off'); as icon) {
-          <span data-star-part="rateIcon" class="star-rating__icon" aria-hidden="true">
-            <ng-container *ngTemplateOutlet="icon; context: noState" />
-          </span>
-        } @else {
-          <i data-star-part="rateIcon" class="ph-fill ph-star" aria-hidden="true"></i>
-        }
-      </label>
+      @if (allowHalf()) {
+        <span
+          data-star-part="rateItem"
+          class="star-rating__star"
+          [class.star-rating__star--on]="star <= shown()"
+          [class.star-rating__star--half]="star - 0.5 === shown()"
+        >
+          @for (option of [star - 0.5, star]; track option; let half = $first) {
+            <label
+              data-star-part="halfLabel"
+              class="star-rating__half"
+              [class.star-rating__half--end]="!half"
+              (mouseenter)="!readonly() && hover.set(option)"
+            >
+              <input
+                type="radio"
+                class="star-sr-only"
+                [name]="groupName"
+                [value]="option"
+                [checked]="value() === option"
+                [disabled]="disabled() || readonly()"
+                [attr.aria-label]="text.ofTotal(option, stars().length)"
+                (click)="choose(option)"
+                (blur)="touch.emit()"
+              />
+            </label>
+          }
+          <ng-container *ngTemplateOutlet="starIcon; context: { $implicit: star }" />
+        </span>
+      } @else {
+        <label
+          data-star-part="rateItem"
+          class="star-rating__star"
+          [class.star-rating__star--on]="star <= shown()"
+          (mouseenter)="!readonly() && hover.set(star)"
+        >
+          <input
+            type="radio"
+            class="star-sr-only"
+            [name]="groupName"
+            [value]="star"
+            [checked]="value() === star"
+            [disabled]="disabled() || readonly()"
+            [attr.aria-label]="text.ofTotal(star, stars().length)"
+            (click)="choose(star)"
+            (blur)="touch.emit()"
+          />
+          <ng-container *ngTemplateOutlet="starIcon; context: { $implicit: star }" />
+        </label>
+      }
     }
+    <ng-template #starIcon let-star>
+      @if (icons().get(star <= shown() ? 'on' : 'off'); as icon) {
+        <span starPart="rateIcon" class="star-rating__icon" aria-hidden="true">
+          <ng-container *ngTemplateOutlet="icon; context: noState" />
+        </span>
+      } @else {
+        <i starPart="rateIcon" class="ph-fill ph-star" aria-hidden="true"></i>
+      }
+    </ng-template>
   `,
 })
 export class StarRating implements FormValueControl<number | null> {
@@ -110,14 +149,24 @@ export class StarRating implements FormValueControl<number | null> {
   readonly count = input(5);
   /** A first option that clears the rating (value `null`). PrimeNG `cancel`. */
   readonly cancel = input(false, { transform: booleanAttribute });
+  /** Half stars: each star has two options (`2.5`, `3`), the keys step by 0.5. PrimeNG `allowHalf`. */
+  readonly allowHalf = input(false, { transform: booleanAttribute });
+  /** `'vertical'` stacks the stars (`aria-orientation`). PrimeNG `orientation`. */
+  readonly orientation = input<'horizontal' | 'vertical'>('horizontal');
   readonly ariaLabel = input<string | null>(null);
+  /** Id of the element that labels the rating. PrimeNG `ariaLabelledBy`. */
+  readonly ariaLabelledBy = input<string | null>(null);
+  /** A rating is needed (`aria-required`); also bound from Signal Forms `required()`. */
+  readonly required = input(false, { transform: booleanAttribute });
   readonly disabled = input(false, { transform: booleanAttribute });
   readonly readonly = input(false, { transform: booleanAttribute });
   readonly touch = output<void>();
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   /** The parent `star-field` when it labels the rating (a radio group is not labelable). */
   private readonly field = injectStarFieldLink(null, () => this.focus());
-  protected readonly labelledBy = computed(() => starFieldLabelledBy(this.field, this.ariaLabel()));
+  protected readonly labelledBy = computed(() =>
+    starFieldLabelledBy(this.field, this.ariaLabel(), this.ariaLabelledBy()),
+  );
   protected readonly fieldDescribedBy = computed(() => starJoinIds(this.field?.describedBy()));
 
   /** Focuses the chosen star, else the first one. */
