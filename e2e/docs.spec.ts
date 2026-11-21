@@ -100,6 +100,10 @@ test.describe('docs application', () => {
     // The search field takes the focus, and the page behind the drawer is inert.
     await expect(nav.getByRole('searchbox', { name: 'Search pages' })).toBeFocused();
     await expect(page.locator('#main')).toHaveAttribute('inert', '');
+    // The drawer fills the height under the header, also when its list is long.
+    const box = await nav.boundingBox();
+    expect(box?.y).toBe(56);
+    expect(box?.height).toBe(800 - 56);
     await page.keyboard.press('Escape');
     await expect(nav).toBeHidden();
     await expect(menu).toBeFocused();

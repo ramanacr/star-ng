@@ -383,6 +383,9 @@ kbd {
     z-index: 20;
     width: min(20rem, 88vw);
     height: auto;
+    // Box alignment applies to a fixed box too: `start` (from the sticky layout above) would
+    // size the drawer to its content and ignore `bottom: 0`. Stretch fills the screen height.
+    align-self: stretch;
     box-shadow: var(--star-shadow-xl);
   }
   [dir='rtl'] .docs-nav {
