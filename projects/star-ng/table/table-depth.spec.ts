@@ -1,7 +1,7 @@
 import { Component, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import type { StarQueryGroup } from '@star-ng/ui/query-builder';
-import { StarColumn, StarTable } from './table';
+import { StarColumn, StarColumnFilters, StarTable } from './table';
 import type { StarRowPinEvent, StarRowPins } from './table-row-pins';
 import {
   StarFooterRowTemplate,
@@ -110,6 +110,8 @@ class SlotHost {
       [collapsedGroups]="collapsed()"
       [lazy]="lazy()"
       [totalRecords]="lazy() ? 8 : 0"
+      [(filters)]="filters"
+      [stateKey]="stateKey()"
     />
   `,
 })
@@ -129,6 +131,8 @@ class FeatureHost {
   readonly groupBy = signal<keyof Order | null>(null);
   readonly collapsed = signal<readonly string[]>([]);
   readonly lazy = signal(false);
+  readonly filters = signal<StarColumnFilters>({});
+  readonly stateKey = signal<string | null>(null);
 }
 
 const texts = (root: Element, selector: string) =>
@@ -305,6 +309,71 @@ describe('StarTable depth (N1)', () => {
 
   describe('filterDelay', () => {
     afterEach(() => vi.useRealTimers());
+
+    /** Types filter text through the delayed path of the filter row and the filter menu. */
+    const typeFilter = (table: StarTable<Order>, field: string, text: string) =>
+      (table as unknown as { setFilterDelayed(f: string, v: string): void }).setFilterDelayed(
+        field,
+        text,
+      );
+
+    it('clearFilters() drops a pending typed filter', async () => {
+      vi.useFakeTimers();
+      const fixture = TestBed.createComponent(FeatureHost);
+      const host = fixture.componentInstance;
+      host.delay.set(300);
+      fixture.detectChanges();
+      typeFilter(host.table(), 'customer', 'Ben');
+      host.table().clearFilters();
+      vi.advanceTimersByTime(400);
+      fixture.detectChanges();
+      expect(host.table().filters()).toEqual({});
+      expect(bodyIds(fixture.nativeElement)).toHaveLength(4);
+    });
+
+    it('an owner write to filters drops a pending typed filter', async () => {
+      vi.useFakeTimers();
+      const fixture = TestBed.createComponent(FeatureHost);
+      const host = fixture.componentInstance;
+      host.delay.set(300);
+      fixture.detectChanges();
+      typeFilter(host.table(), 'customer', 'Ben');
+      host.filters.set({ customer: 'Ava' });
+      fixture.detectChanges();
+      vi.advanceTimersByTime(400);
+      fixture.detectChanges();
+      expect(host.filters()).toEqual({ customer: 'Ava' });
+      expect(bodyIds(fixture.nativeElement)).toEqual(['ORD-1']);
+    });
+
+    it('a state restore drops a pending typed filter', async () => {
+      vi.useFakeTimers();
+      localStorage.setItem('n1-restore', JSON.stringify({ filters: { customer: 'Chloe' } }));
+      const fixture = TestBed.createComponent(FeatureHost);
+      const host = fixture.componentInstance;
+      host.delay.set(300);
+      fixture.detectChanges();
+      typeFilter(host.table(), 'customer', 'Ben');
+      host.stateKey.set('n1-restore');
+      fixture.detectChanges();
+      vi.advanceTimersByTime(400);
+      fixture.detectChanges();
+      expect(host.table().filters()).toEqual({ customer: 'Chloe' });
+      localStorage.removeItem('n1-restore');
+    });
+
+    it('two fields typed within the delay both apply', async () => {
+      vi.useFakeTimers();
+      const fixture = TestBed.createComponent(FeatureHost);
+      const host = fixture.componentInstance;
+      host.delay.set(300);
+      fixture.detectChanges();
+      typeFilter(host.table(), 'customer', 'a');
+      vi.advanceTimersByTime(100);
+      typeFilter(host.table(), 'id', 'ORD');
+      vi.advanceTimersByTime(400);
+      expect(host.table().filters()).toEqual({ customer: 'a', id: 'ORD' });
+    });
 
     it('waits for the delay before a typed column filter or the global filter applies', async () => {
       vi.useFakeTimers();

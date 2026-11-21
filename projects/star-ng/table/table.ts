@@ -1942,7 +1942,10 @@ export class StarTable<T> extends StarTableInteraction<T> implements ɵStarTable
     if (state.sortField !== undefined) this.sortField.set(state.sortField);
     if (state.sortOrder === 1 || state.sortOrder === -1) this.sortOrder.set(state.sortOrder);
     if (Array.isArray(state.sortMeta)) this.sortMeta.set(state.sortMeta);
-    if (state.filters && typeof state.filters === 'object') this.filters.set(state.filters);
+    if (state.filters && typeof state.filters === 'object') {
+      this.cancelFilterTimers();
+      this.filters.set(state.filters);
+    }
     if (Array.isArray(state.columnOrder)) this.columnOrder.set(state.columnOrder);
     if (Array.isArray(state.hiddenColumns)) this.hiddenColumns.set(state.hiddenColumns);
     if (state.columnWidths && typeof state.columnWidths === 'object') {
@@ -3079,6 +3082,16 @@ export class StarTable<T> extends StarTableInteraction<T> implements ɵStarTable
     if (timer !== undefined) clearTimeout(timer);
     this.filterTimers.delete(field);
     this.filters.update((filters) => ({ ...filters, [field]: value }));
+    this.ownFilters = this.filters();
+  }
+
+  /** The `filters` object that the table wrote last (a pending delayed filter builds on it). */
+  private ownFilters: StarColumnFilters | null = null;
+
+  /** Drops the delayed filter text that has not applied yet. */
+  private cancelFilterTimers(): void {
+    this.filterTimers.forEach((timer) => clearTimeout(timer));
+    this.filterTimers.clear();
   }
 
   /** `setFilter` after `filterDelay` (typed text); a newer value restarts the delay. */
@@ -3090,14 +3103,24 @@ export class StarTable<T> extends StarTableInteraction<T> implements ɵStarTable
     }
     const timer = this.filterTimers.get(field);
     if (timer !== undefined) clearTimeout(timer);
+    if (!this.filterTimers.size) this.ownFilters = this.filters();
     this.filterTimers.set(
       field,
-      setTimeout(() => this.setFilter(field, value), delay),
+      setTimeout(() => {
+        // The owner, `clearFilters()` or a state restore wrote the filters in the meantime:
+        // that write wins over the old typed text.
+        if (this.filters() !== this.ownFilters) {
+          this.cancelFilterTimers();
+          return;
+        }
+        this.setFilter(field, value);
+      }, delay),
     );
   }
 
   /** Removes every column filter. */
   clearFilters(): void {
+    this.cancelFilterTimers();
     this.filters.set({});
   }
 
