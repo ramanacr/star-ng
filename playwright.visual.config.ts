@@ -33,8 +33,13 @@ export default defineConfig({
       animations: 'disabled',
       caret: 'hide',
       scale: 'css',
-      // Anti-aliasing noise only: a changed control moves far more than 0.2 percent of a page.
-      maxDiffPixelRatio: 0.002,
+      // An absolute limit, not a ratio. A ratio grows with the slice: 0.2 percent of a
+      // 1024 x 3015 slice is 6175 pixels. Two new sentences in the scheduler API table changed
+      // 6464 pixels of the dark slice (it failed by a hair) and fewer of the light slice (it
+      // passed with stale content). Two local runs of the whole suite differ by 0 pixels
+      // (pixelmatch already ignores anti-aliased pixels and color steps under `threshold`), so
+      // 100 pixels leave a margin for rendering noise, and one changed word fails.
+      maxDiffPixels: 100,
     },
   },
   use: {
