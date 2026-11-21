@@ -664,7 +664,8 @@ test.describe('right-to-left controls', () => {
       await expect.poll(dot).toBe(0);
       await expect(previous).toBeDisabled();
       await expect.poll(slideAtStart('1 of 6')).toBeLessThan(2);
-      expect(await track.evaluate((el) => el.scrollLeft)).toBe(0);
+      // The smooth scroll can still be a pixel away: poll the offset too.
+      await expect.poll(() => track.evaluate((el) => el.scrollLeft)).toBe(0);
     });
   });
 
