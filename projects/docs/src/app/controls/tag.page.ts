@@ -32,6 +32,10 @@ import { DOCS, DocsRow } from '../shared/docs';
 })
 export class TagPage {
   protected readonly slots: readonly DocsRow[] = [
+    {
+      name: 'ng-template[starIcon="icon"]',
+      description: 'Content child. Replaces the icon (also without the icon input). PrimeNG #icon.',
+    },
     { name: '(default)', description: 'The text, as an alternative to the value input.' },
   ];
   protected readonly cssVars: readonly DocsRow[] = [

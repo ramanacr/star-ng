@@ -50,12 +50,6 @@ interface Part {
     .stock-out {
       color: var(--star-danger);
     }
-    .footer {
-      padding: 0.5rem 0.75rem;
-      border-block-start: 1px solid var(--star-border);
-      color: var(--star-text-muted);
-      font: var(--star-type-body-sm);
-    }
   `,
   template: `
     <docs-page
@@ -109,9 +103,7 @@ interface Part {
             }
           </ng-template>
           <ng-template starEmpty let-query>No product name starts with “{{ query }}”.</ng-template>
-          <ng-template starFooter>
-            <div class="footer">{{ products.length }} products</div>
-          </ng-template>
+          <ng-template starFooter> {{ products.length }} products </ng-template>
         </star-multi-column-combobox>
       </docs-example>
 

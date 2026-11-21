@@ -11,3 +11,37 @@ $ease: cubic-bezier(0.2, 0, 0, 1);
     @content;
   }
 }
+
+// Header or footer slot region of a panel (`starHeader`, `starFooter`): a divider on the side of
+// the list and the muted label text of the group headings. The default `$inline` padding is the
+// padding of the list plus that of an option, so the text lines up with the options and the group
+// headings. `$edge` is `header` (divider below) or `footer` (divider above). In a panel with its
+// own padding, `$bleed` is that padding: the region then reaches the edges of the panel and keeps
+// a gap of `$gap` to the content. Logical properties, so it is correct in RTL.
+// `.star-panel__header` and `.star-panel__footer` apply it; a control partial can include it for
+// a panel of its own.
+@mixin star-slot-region(
+  $edge: header,
+  $inline: calc(0.375rem + var(--star-space-3)),
+  $bleed: 0,
+  $gap: 0.5rem
+) {
+  flex: none;
+  padding-block: var(--star-space-2);
+  padding-inline: $inline;
+  font: var(--star-type-label);
+  color: var(--star-text-muted);
+  @if $edge == footer {
+    border-block-start: 1px solid var(--star-border);
+  } @else {
+    border-block-end: 1px solid var(--star-border);
+  }
+  @if $bleed != 0 {
+    margin-inline: calc(-1 * #{$bleed});
+    @if $edge == footer {
+      margin-block: $gap calc(-1 * #{$bleed});
+    } @else {
+      margin-block: calc(-1 * #{$bleed}) $gap;
+    }
+  }
+}

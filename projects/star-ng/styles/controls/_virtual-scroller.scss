@@ -39,6 +39,30 @@
     padding-inline: 0.5rem;
   }
 }
+// Rows of cells (orientation both): only the columns in view are rendered.
+.star-scroller--both {
+  .star-scroller__item {
+    padding-inline: 0;
+    overflow: visible;
+  }
+}
+.star-scroller__row {
+  display: flex;
+  box-sizing: border-box;
+  block-size: 100%;
+}
+.star-scroller__cell {
+  display: flex;
+  flex: none;
+  align-items: center;
+  box-sizing: border-box;
+  padding-inline: 0.5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.star-scroller__content {
+  display: contents;
+}
 .star-scroller__empty {
   display: flex;
   align-items: center;

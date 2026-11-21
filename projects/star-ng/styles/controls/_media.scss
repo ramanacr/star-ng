@@ -24,6 +24,35 @@
 .star-carousel__slide {
   scroll-snap-align: start;
 }
+.star-carousel--vertical .star-carousel__track {
+  grid-auto-columns: auto;
+  grid-auto-rows: calc((100% - (var(--star-visible) - 1) * 0.75rem) / var(--star-visible));
+  grid-auto-flow: row;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  scroll-snap-type: y mandatory;
+}
+.star-carousel__header,
+.star-carousel__footer {
+  min-width: 0;
+}
+// A dot with own content: the content replaces the drawn dot.
+.star-carousel__dot--custom {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  min-width: 1.5rem;
+  color: var(--star-text-muted);
+
+  &::before {
+    content: none;
+  }
+  &.star-carousel__dot--on {
+    color: var(--star-text-strong);
+  }
+}
 .star-carousel__dots {
   display: flex;
   justify-content: center;

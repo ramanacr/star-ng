@@ -39,7 +39,12 @@ import { DOCS, DocsRow } from '../shared/docs';
       <h2>Right-to-left</h2>
       <p>The separator arrow turns around in a right-to-left page. See the Right-to-left guide.</p>
 
-      <docs-api [of]="['StarBreadcrumb']" [cssVars]="cssVars" [keyboard]="keyboard" />
+      <docs-api
+        [of]="['StarBreadcrumb', 'StarBreadcrumbTemplate']"
+        [slots]="slots"
+        [cssVars]="cssVars"
+        [keyboard]="keyboard"
+      />
     </docs-page>
   `,
 })
@@ -64,6 +69,13 @@ readonly trail: readonly StarBreadcrumbItem[] = [
   { label: 'ORD-1042' },
 ];`;
 
+  protected readonly slots: readonly DocsRow[] = [
+    {
+      name: 'ng-template[starBreadcrumbTemplate]',
+      description:
+        'Content child. "item" replaces the content of each item (let-index, let-current); the link or button stays. "separator" replaces the separator; it is decorative. PrimeNG #item and #separator.',
+    },
+  ];
   protected readonly cssVars: readonly DocsRow[] = [
     { name: '--star-text-muted', description: 'Color of the links and the separators.' },
     { name: '--star-primary', description: 'Color of a link on hover.' },

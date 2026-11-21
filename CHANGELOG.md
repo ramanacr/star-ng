@@ -6,6 +6,101 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 
 ### Added
 
+#### Accordion
+
+- Accordion: the outputs `opened` and `closed` (PrimeNG `onOpen`, `onClose`); a panel takes the slots `starHeader` (title) and `starIcon="toggle"` (`let-expanded`) (PrimeNG `#toggleicon`, `expandIcon`, `collapseIcon`).
+
+#### Breadcrumb
+
+- `star-breadcrumb`: the slot `starBreadcrumbTemplate` (`item`, `separator`) and the output `itemClick` (PrimeNG `#item`, `#separator`, `onItemClick`).
+
+#### Carousel
+
+- Carousel: `numScroll`, `responsiveOptions` (`StarCarouselResponsiveOption`), `orientation` (`vertical` with `verticalViewPortHeight`), `circular`, `showIndicators`, `showNavigators`, a two-way `page` model, `previous()` and `next()`, and the slots `starHeader`, `starFooter`, `starIcon` (`previous`, `next`) and `starCarouselIndicator`. Autoplay still pauses on hover and focus (PrimeNG `p-carousel`).
+
+#### Chart
+
+- Chart: the `plugins` input (`StarChartPlugin` with `beforeDraw` and `afterDraw`, each with its own `aria-hidden` SVG layer under or over the plot, `StarChartPluginContext`) and `refresh()` (PrimeNG `plugins`, `refresh()`).
+
+#### Chip and tag
+
+- Chip: `starIcon="remove"` (PrimeNG `#removeicon`). Tag: `starIcon="icon"` (PrimeNG `#icon`).
+- Chips area (`star-chips-area`, `StarChipsAreaItem`, in `@star-ng/ui/layout`): chips that move by drag and drop or with Control+Shift and an arrow key, and are removed with Delete (`removable`), one tab stop with the arrow keys, announcements through `StarAnnouncer`, `[(items)]`, `optionLabel`, the outputs `reorder` and `removed`. UI texts `chipsMoveHint` and `chipsMoveRemoveHint` (English, German, Spanish) (Ignite UI `igx-chips-area`).
+- Chip: `disabled` (PrimeNG `disabled`).
+
+#### Core and configuration
+
+- Fluid layout (PrimeNG `p-fluid`): `provideStarNg({ fluid: true })` (`data-star-fluid` on `<html>`, and the default of the `fluid` input of the cascade select) and the `starFluid` directive (`StarFluid`, sets `data-star-fluid`) for one container. One shared style rule widens the input fields, the select family, the date and time pickers, the color picker, input number, mask and tags, password and listbox, and inside a `form` also `star-button`, `star-select-button` and `star-toggle-button`. `starFluid="false"` / `data-star-fluid="false"` turns it off below that element. The configuration guide also records that PrimeNG `p-motion` is covered by `starAnimateOnScroll` and `starPrefersReducedMotion`, and that StarNG has no overlay primitive because its popups are in the top layer.
+
+#### Date and time pickers
+
+- Date pickers and calendar: the slots `starDecade` (the title of the year view; calendar input `decadeTemplate`) and `starButtonBar` (the buttons of the button bar, with `today` and `clear`). Time picker: the slots `starHeader`, `starFooter` and `starTimeCell` (each hour, minute, second and period cell; `star-time-columns` input `cellTemplate`; the date pickers with `showTime` pass it to their time columns too) (PrimeNG `#decade`, `#buttonbar` and the time templates).
+
+#### Dialog
+
+- Confirm (`star-confirm-host`): the slot `starConfirmTemplate` (`header`, `icon`, `acceptIcon`, `rejectIcon`, `footer` with `accept` and `reject`) (PrimeNG `p-confirmdialog` and `p-confirmpopup` templates).
+
+#### Icon
+
+- Icon (`star-icon`, `StarIconWeight`, new entry `@star-ng/ui/icon`): a Phosphor icon class with `name`, `weight` (default `bold`), `size`, `label` (with it `role="img"` and the name; without it decorative) and `mirror` for right-to-left (Material `mat-icon`).
+
+#### Menus
+
+- Menus: the slot `starMenuTemplate` (`item`, `itemIcon`, `submenuHeader`, `start`, `end`) and `starIcon="submenu"` on `star-menu`, `star-menubar` (also passed to its submenus), `star-mega-menu` (`submenuHeader` for the column headings) and `star-panel-menu` (`item`, `itemIcon`; the `submenu` icon gets `let-expanded`). `star-menu`: items with `group` show in place under a heading (a `group` with `aria-labelledby`, PrimeNG `p-menu` submenu headers), `ariaLabelledBy`, and the outputs `show`, `hide`, `submenuShow` and `submenuHide`. `star-menubar`: `autoDisplay` (open on hover), `ariaLabelledBy`, `submenuShow` and `submenuHide`. `StarMenuItemContext` gets `level` and `hasSubmenu` (PrimeNG `p-menu`, `p-tieredmenu`, `p-menubar`, `p-megamenu`, `p-panelmenu`).
+- Mega menu: `ariaLabelledBy`.
+
+#### Message
+
+- Message: the slots `starMessageContainer` (the whole content, with `close`) and `starIcon` (`icon`, `close`) (PrimeNG `#container`, `#icon`, `#closeicon`).
+- Message: `size` (`sm`, `md`, `lg`) (PrimeNG `size`).
+
+#### Paginator
+
+- Paginator: the slot `starPaginatorOption` (`rows`, `jump`) for the options of the inner selects and `starIcon="dropdown"` for their arrow (PrimeNG `dropdownItemTemplate`, `jumpToPageItemTemplate`, `dropdownicon`). The data view passes `starPaginatorOption` on (PrimeNG `paginatordropdownitem`).
+
+#### Panel
+
+- Fieldset: the slots `starHeader` (legend) and `starIcon="toggle"` (`let-expanded`), the outputs `beforeToggle` (with `cancel()`) and `afterToggle`, and a public `toggle()` (PrimeNG `p-fieldset`).
+
+#### Popover
+
+- Popover: the slot `starHeader` and `closeOnEscape` (PrimeNG `closeOnEscape`).
+
+#### Select, autocomplete and listbox
+
+- Cascade select: `groupChange` (the parent option and its level when a submenu opens), the slots `starHeader` and `starFooter` in the menu and `starIcon="group"` for the submenu arrow (PrimeNG `onGroupChange`, `#header`, `#footer`, `#groupicon`). `beforeShow` and `beforeHide` emit before the menu overlay is created or removed, `show` and `hide` after it.
+
+#### Tabs
+
+- Tabs: `dynamicHeight` (the panel area animates its height on a tab change) and `animationDuration` (the new panel fades in; both off with reduced motion) (Material `dynamicHeight`, `animationDuration`). New `star-tab-nav` with `a[starTabLink]` and `star-tab-nav-panel`: router links as tabs, active from `routerLinkActive` (or `active`), the WAI-ARIA tabs pattern with a panel (tablist, roving tabindex, Arrow keys, Home, End, Space) and a `navigation` of `aria-current` links without one (Material `mat-tab-nav-bar`, `mat-tab-link`, `mat-tab-nav-panel`).
+
+#### Tree
+
+- Tree: node templates per node type: `StarTreeNode.type` and `<ng-template starNode="folder">`; the template without a type draws the other nodes. `star-tree-select` passes its typed templates on (PrimeNG `type` with `pTemplate`).
+
+#### Utility
+
+- Meter group: `orientation`, `labelPosition`, `labelOrientation`, `min`, the legend icon of an item, and the slots `starMeterGroupTemplate` (`label`, `start`, `end`; context `StarMeterGroupContext`) and `starMeterGroupItem` (`meter`, `icon`; context `StarMeterGroupItemContext`). Splitter: `step`, `stateKey` and `stateStorage` (the size survives a reload), the outputs `resizeStart` and `resizeEnd`, and the slot `starSplitterGutter`. Scroll top: `target` also takes `parent` and `window`, `ariaLabel`, `behavior`, and `starIcon="icon"`. Block UI: the slot `starLoading` replaces the spinner and the message (PrimeNG `p-metergroup`, `p-splitter`, `p-scrolltop`, `p-blockui`).
+- Splitter: `disabled` (the gutter does not move and leaves the tab order) (PrimeNG `disabled`).
+
+#### Virtual scroller
+
+- Virtual scroller: `orientation="both"` (rows of cells; only the columns in view render, `columnSize`), `delay` for `lazyLoad`, and the slots `starVirtualLoader` (a placeholder per item while loading) and `starVirtualContent` (one template for the rendered items) (PrimeNG `p-scroller`).
+
+### Changed
+
+- Menus: the list of a `star-menu` (popup and inline) is now inside a `framePanel` element with `display: contents` (a framed box when the menu has `start` or `end` content). A style selector that needs the list as a direct child of the overlay pane (`.cdk-overlay-pane > .star-menu`) no longer matches.
+- Cascade select: `beforeShow` and `beforeHide` now emit before the overlay opens or closes (the list is not in the page yet at `beforeShow`), and `show` and `hide` emit after it. In 0.4.0 all four emitted together.
+- Meter group: the `icon` of an item now shows in the legend (the field existed but was not rendered).
+
+### Fixed
+
+- Header and footer slots (`starHeader`, `starFooter`) of select, multi-select, autocomplete, multi-column combobox, tree select, cascade select, date picker, listbox and tree, and the popover header: the content sat flush against the edge of the panel, with no padding and no line between it and the list. It now sits in a padded region inside the panel, lined up with the options, with a thin divider to the list and small muted text like the group headings. The header stays above the scrolling list and the footer stays below it. The regions are the new parts `headerSlotPanel` and `footerSlotPanel` (the popover keeps its part `headerPanel`), with pass-through `pt` and unstyled mode, and work in right-to-left pages and in dark mode. Other panels can use the same classes `star-panel__header` and `star-panel__footer`.
+
+## [0.4.0] - 2026-11-21
+
+### Added
+
 #### Action strip
 
 - Action strip (`star-action-strip`, new entry `@star-ng/ui/action-strip`): icon actions on hover and focus of a row or card, with a "More actions" menu (Ignite UI `igx-action-strip`).
@@ -450,6 +545,25 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - Tabs: when the last tab that can take the focus closes from the keyboard or its close button, the focus moves to the tab list instead of the page body.
 - Mention: the result count ("2 results available", "No results found") goes to the shared live region (`StarAnnouncer`); the region inside the suggestion panel was created with its first text, so screen readers could miss it.
 
+### Migrating from 0.3
+
+Read this list when you update from `0.3.x` to `0.4.0`. Each item is a change that can break code, tests or styles. The items are in the `Changed` and `Deprecated` sections above, with more detail.
+
+1. Replace `formatFileSize` (`@star-ng/ui/file-upload`) with `starFormatFileSize` from `@star-ng/ui/core`, or use the `starFileSize` pipe. The old function still works in `0.4.0`, but it is deprecated.
+2. Tabs: each tab button is now inside `span.star-tabs__item`, and the tab list is inside `div.star-tabs__nav`. Change the selector `.star-tabs__list > .star-tabs__tab` to `.star-tabs__list .star-tabs__tab`.
+3. Table: the check boxes and radios of the rows now have names such as "Select row ORD-1001". A test that matches the old name "Select row" exactly must change.
+4. Table: a table with an `editable` column is now a `role="grid"` with one tab stop. Use the arrow keys to move between cells. A control that you add in a custom row action or lead template, without a row or edit change, keeps its tab stop. Give it `tabindex="-1"`.
+5. Table: `StarFilterValue` also includes `StarFilterConstraint`. If your code narrows a filter value with `typeof value === 'object'` or `Array.isArray`, also handle the rule object (it has `operator` and `rules`).
+6. Tree: `nodeSelect` no longer fires when a node turns off in multiple or checkbox mode. `nodeUnselect` fires instead. To react to every change, listen to `nodeUnselect` or `valueChange`.
+7. Editor: `star-editor` now declares `maxLength`, so a Signal Forms `maxLength` rule sets it. The editor counts text characters. The form rule counts the length of the value, which includes tags with `format="html"`.
+8. Editor: the HTML sanitizer is now the allow-list sanitizer of the editor. An unsafe URL is removed (it no longer gets the `unsafe:` prefix), and `id` and `name` are removed. A value that you read back can differ from the value that you wrote. Compare or store the value that the editor gives back.
+9. Dialog and drawer: both now extend `StarDialogBase`. `StarDrawer` no longer extends `StarDialog`. The page scroll lock uses the class `star-dialog--block-scroll` instead of `star-dialog--modal`. Update custom styles that select `star-dialog--modal` for this purpose.
+10. Icons: use the bold weight (`ph-bold`) of Phosphor in your own examples. The signature pad, AI prompt, app sidebar and command palette now use it.
+11. Every control element now has a `data-star-part` attribute. Tests that compare the whole markup of a control (snapshots) must accept it. In a few templates, `textContent` now starts or ends with a space (the rendered text is the same). Compare the trimmed text.
+12. The new styling hooks (`pt` and `unstyled`) are opt-in. A control that has no `pt` and is not unstyled looks as before. Do not set `unstyled` unless you supply your own classes for the selected, hover and surface states.
+13. Speed dial: a click outside now closes the open actions, because `hideOnClickOutside` is `true` by default. Set `hideOnClickOutside` to `false` to keep the old behavior.
+14. Paginator: the page numbers and the report numbers now follow the locale (`Intl.NumberFormat`), for example "1,200" or "1.200". Set `locale` on the paginator, or the locale of `provideStarNg`, so that the displayed numbers are the same on every browser. Tests that match the old plain digits must change.
+
 ## [0.3.1] - 2026-11-18
 
 ### Added
@@ -564,6 +678,7 @@ This is the first release.
 - A docs site with guides and one page per control, with live examples, source and API tables: <https://ramanacr.github.io/star-ng/>.
 - Tests: unit tests, end-to-end tests in Chromium, automated axe accessibility scans, a right-to-left sweep, visual tests with baselines made in CI, a print test of the table export, and a consumer smoke test of the packed package.
 
+[0.4.0]: https://github.com/ramanacr/star-ng/releases/tag/v0.4.0
 [0.3.1]: https://github.com/ramanacr/star-ng/releases/tag/v0.3.1
 [0.3.0]: https://github.com/ramanacr/star-ng/releases/tag/v0.3.0
 [0.2.1]: https://github.com/ramanacr/star-ng/releases/tag/v0.2.1

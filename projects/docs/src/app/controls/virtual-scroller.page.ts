@@ -140,7 +140,12 @@ function fetchOrderPage(page: number, abortSignal: AbortSignal): Promise<readonl
       </docs-example>
 
       <docs-api
-        [of]="['StarVirtualScroller', 'StarVirtualItemTemplate']"
+        [of]="[
+          'StarVirtualScroller',
+          'StarVirtualItemTemplate',
+          'StarVirtualLoaderTemplate',
+          'StarVirtualContentTemplate',
+        ]"
         [slots]="slots"
         [cssVars]="cssVars"
         [keyboard]="keyboard"
@@ -230,6 +235,16 @@ readonly lazyOrders = computed(() =>
 );`;
 
   protected readonly slots: readonly DocsRow[] = [
+    {
+      name: 'ng-template[starVirtualLoader]',
+      description:
+        'Content child. A placeholder in place of each rendered item while loading is on (let-index, let-count). PrimeNG #loader.',
+    },
+    {
+      name: 'ng-template[starVirtualContent]',
+      description:
+        'Content child. Draws the rendered items in one template (let-items, let-first, let-count, let-itemSize), placed at the offset of the first one. PrimeNG #content.',
+    },
     {
       name: 'ng-template[starVirtualItem]',
       description:

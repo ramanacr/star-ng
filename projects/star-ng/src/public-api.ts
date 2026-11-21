@@ -37,6 +37,7 @@ export * from '@star-ng/ui/file-upload';
 export * from '@star-ng/ui/gantt';
 export * from '@star-ng/ui/gauge';
 export * from '@star-ng/ui/hierarchical-grid';
+export * from '@star-ng/ui/icon';
 export * from '@star-ng/ui/image-editor';
 export * from '@star-ng/ui/input-group';
 export * from '@star-ng/ui/input-mask';

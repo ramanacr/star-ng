@@ -308,6 +308,10 @@ export interface StarUiText {
   readonly tabClose: (label: string) => string;
   readonly tabCloseHint: string;
   readonly tabReorderHint: string;
+  /** Hint of a chip in `star-chips-area`. */
+  readonly chipsMoveHint: string;
+  /** Hint of a chip in a `removable` `star-chips-area`. */
+  readonly chipsMoveRemoveHint: string;
   readonly editorStrikethrough: string;
   readonly editorCode: string;
   readonly editorQuote: string;
@@ -1182,6 +1186,9 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   tabClose: (label) => `Close ${label}`,
   tabCloseHint: 'Press Delete to close the tab.',
   tabReorderHint: 'Press Control+Shift and an arrow key to move the tab.',
+  chipsMoveHint: 'Press Control+Shift and an arrow key to move the item.',
+  chipsMoveRemoveHint:
+    'Press Control+Shift and an arrow key to move the item, or Delete to remove it.',
   editorStrikethrough: 'Strikethrough',
   editorCode: 'Code',
   editorQuote: 'Quote',

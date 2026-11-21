@@ -70,6 +70,11 @@ export class SplitterPage {
   protected readonly basicScript = `readonly split = signal(50);`;
 
   protected readonly slots: readonly DocsRow[] = [
+    {
+      name: 'ng-template[starSplitterGutter]',
+      description:
+        'Content child. Replaces the handle in the gutter; it is decorative. stateKey keeps the size in the local or session storage (stateStorage); resizeStart and resizeEnd report a drag or a key resize.',
+    },
     { name: '[starSplitterStart]', description: 'Content of the first pane.' },
     { name: '[starSplitterEnd]', description: 'Content of the second pane.' },
   ];

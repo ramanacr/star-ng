@@ -54,6 +54,25 @@ class PlainHost {
 }
 
 @Component({
+  imports: [StarListbox, StarHeaderTemplate, StarFooterTemplate],
+  template: `
+    <star-listbox
+      [options]="cities"
+      optionLabel="name"
+      ariaLabel="Styled"
+      unstyled
+      [pt]="{ headerSlotPanel: { class: 'my-head' }, footerSlotPanel: { class: 'my-foot' } }"
+    >
+      <ng-template starHeader>Head</ng-template>
+      <ng-template starFooter>Foot</ng-template>
+    </star-listbox>
+  `,
+})
+class PtHost {
+  readonly cities = CITIES;
+}
+
+@Component({
   imports: [StarListbox, StarGroupTemplate],
   template: `
     <star-listbox
@@ -129,6 +148,28 @@ describe('StarListbox slots', () => {
     const list = box.querySelector('[role="listbox"]') as HTMLElement;
     expect(head.compareDocumentPosition(filter) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(list.compareDocumentPosition(foot) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    // The shared slot regions, outside the scrolling list.
+    expect(
+      head.parentElement!.matches('[data-star-part="headerSlotPanel"].star-panel__header'),
+    ).toBe(true);
+    expect(
+      foot.parentElement!.matches('[data-star-part="footerSlotPanel"].star-panel__footer'),
+    ).toBe(true);
+    expect(list.contains(foot)).toBe(false);
+  });
+
+  it('the slot regions take the pass-through and the unstyled mode', async () => {
+    const fixture = TestBed.createComponent(PtHost);
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+    const head = el.querySelector('[data-star-part="headerSlotPanel"]')!;
+    const foot = el.querySelector('[data-star-part="footerSlotPanel"]')!;
+    expect(head.classList).toContain('star-panel__header');
+    expect(head.classList).toContain('my-head');
+    expect(foot.classList).toContain('star-panel__footer');
+    expect(foot.classList).toContain('my-foot');
+    expect(head.hasAttribute('data-star-unstyled')).toBe(true);
+    expect(foot.hasAttribute('data-star-unstyled')).toBe(true);
   });
 
   it('empty slot receives the filter text', () => {

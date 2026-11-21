@@ -25,10 +25,16 @@ export function needsDevBuild(): void {
   );
 }
 
-/** Opens a docs page and waits for its heading. */
+/**
+ * Opens a docs page, waits for its heading and then for hydration. The production build is
+ * prerendered, so the page is visible before the application runs, and a key, a click or a fill
+ * before hydration is lost. A hydrated component loses its `ngh` attribute; the development
+ * server does not prerender, so there the wait ends at once.
+ */
 export async function openPage(page: Page, path: string, heading: string | RegExp): Promise<void> {
   await page.goto(path);
   await expect(page.getByRole('heading', { level: 1, name: heading })).toBeVisible();
+  await expect(page.locator('docs-root[ngh], #main [ngh]')).toHaveCount(0, { timeout: 15_000 });
 }
 
 /** The live area of one example of the open page, found by the example heading. */

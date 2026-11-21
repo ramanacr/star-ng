@@ -175,13 +175,14 @@ interface Place {
       <p>
         The PrimeNG p-cascadeselect names that StarNG gives in another way: optionGroupChildren is
         optionChildren; dataKey is compareWith; id is inputId; onChange is valueChange and
-        optionSelect; onClear is cleared; onFocus and onBlur are the native focusin and focusout
-        events; variant is inputVariant of provideStarNg; the value template is starSelected and the
-        option template starCascadeOption; panelStyle and panelStyleClass are the pass-through pt.
-        Not needed: appendTo, overlayOptions and motionOptions (the menu is an overlay of the
-        Angular CDK with theme motion) and the search options (searchLocale, searchMessage,
-        emptySearchMessage, focusOnHover, selectOnFocus, autoOptionFocus: the menu has typeahead and
-        the keyboard model of the CDK menu, not a search field).
+        optionSelect; onGroupChange is groupChange; onClear is cleared; onFocus and onBlur are the
+        native focusin and focusout events; variant is inputVariant of provideStarNg; the value
+        template is starSelected and the option template starCascadeOption; panelStyle and
+        panelStyleClass are the pass-through pt. Not needed: appendTo, overlayOptions and
+        motionOptions (the menu is an overlay of the Angular CDK with theme motion) and the search
+        options (searchLocale, searchMessage, emptySearchMessage, focusOnHover, selectOnFocus,
+        autoOptionFocus: the menu has typeahead and the keyboard model of the CDK menu, not a search
+        field).
       </p>
 
       <h2>Right-to-left</h2>
@@ -283,7 +284,12 @@ readonly office = form(this.officeModel, (path) => {
     {
       name: 'ng-template[starIcon]',
       description:
-        'Content child. "dropdown", "clear" or "loading" replaces that icon. PrimeNG triggericon, clearicon and loadingicon.',
+        'Content child. "dropdown", "clear", "loading" or "group" (the submenu arrow) replaces that icon. PrimeNG triggericon, clearicon, loadingicon and groupicon.',
+    },
+    {
+      name: 'ng-template[starHeader] / ng-template[starFooter]',
+      description:
+        'Content child. Content above or below the options in the menu, outside the menu role. No focusable elements: the menu owns the keyboard. PrimeNG header and footer templates.',
     },
   ];
   protected readonly cssVars: readonly DocsRow[] = [

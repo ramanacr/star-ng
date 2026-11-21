@@ -9,6 +9,8 @@
 @use 'controls/field';
 @use 'controls/choice';
 @use 'controls/tag';
+@use 'controls/icon';
+@use 'controls/fluid';
 @use 'controls/spinner';
 @use 'controls/input-group';
 @use 'controls/input-number';
@@ -21,6 +23,7 @@
 @use 'controls/action-strip';
 @use 'controls/chip';
 @use 'controls/select';
+@use 'controls/panel-slot';
 @use 'controls/autocomplete';
 @use 'controls/listbox';
 @use 'controls/tree';

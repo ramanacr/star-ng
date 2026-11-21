@@ -47,3 +47,93 @@ export class StarDateTemplate extends StarSlot<StarDateContext> {
     return true;
   }
 }
+
+/** Context of the decade slot. */
+export interface StarDecadeContext {
+  /** The years of the year view. */
+  readonly $implicit: readonly number[];
+  /** The first year. */
+  readonly first: number;
+  /** The last year. */
+  readonly last: number;
+}
+
+/**
+ * Replaces the title of the year view ("2016 – 2027") in `star-calendar` and the date pickers.
+ * PrimeNG `#decade` template. The title stays a live region, so keep the years in the text.
+ */
+@Directive({
+  selector: 'ng-template[starDecade]',
+  providers: [{ provide: StarSlot, useExisting: StarDecadeTemplate }],
+})
+export class StarDecadeTemplate extends StarSlot<StarDecadeContext> {
+  readonly name = 'decade';
+
+  static ngTemplateContextGuard(
+    _dir: StarDecadeTemplate,
+    _ctx: unknown,
+  ): _ctx is StarDecadeContext {
+    return true;
+  }
+}
+
+/** Context of the button bar slot. */
+export interface StarButtonBarContext {
+  /** Chooses today (or the current month or year in the month and year views). */
+  readonly today: () => void;
+  /** Clears the value. */
+  readonly clear: () => void;
+}
+
+/**
+ * Replaces the buttons of the button bar (`showButtonBar`) in the date pickers. PrimeNG
+ * `#buttonbar` template. Use buttons with a visible text; they are in the tab order of the panel.
+ */
+@Directive({
+  selector: 'ng-template[starButtonBar]',
+  providers: [{ provide: StarSlot, useExisting: StarButtonBarTemplate }],
+})
+export class StarButtonBarTemplate extends StarSlot<StarButtonBarContext> {
+  readonly name = 'buttonBar';
+
+  static ngTemplateContextGuard(
+    _dir: StarButtonBarTemplate,
+    _ctx: unknown,
+  ): _ctx is StarButtonBarContext {
+    return true;
+  }
+}
+
+/** Context of the time cell slot. */
+export interface StarTimeCellContext {
+  /** The text of the cell, for example `09` or `PM`. */
+  readonly $implicit: string;
+  /** The value of the cell in its column (hours 0–23, minutes, seconds, or 0 / 12 for the period). */
+  readonly value: number;
+  /** The column: `hour`, `minute`, `second` or `period`. */
+  readonly part: 'hour' | 'minute' | 'second' | 'period';
+  /** The cell is the chosen one. */
+  readonly selected: boolean;
+  /** The cell cannot be chosen (outside `min` … `max`). */
+  readonly disabled: boolean;
+}
+
+/**
+ * Replaces the content of an hour, minute, second or period cell in `star-time-picker` (and in
+ * `star-time-columns`). PrimeNG time templates. The cell keeps its `option` role, its name and the
+ * keyboard; keep the text of the cell in the template.
+ */
+@Directive({
+  selector: 'ng-template[starTimeCell]',
+  providers: [{ provide: StarSlot, useExisting: StarTimeCellTemplate }],
+})
+export class StarTimeCellTemplate extends StarSlot<StarTimeCellContext> {
+  readonly name = 'timeCell';
+
+  static ngTemplateContextGuard(
+    _dir: StarTimeCellTemplate,
+    _ctx: unknown,
+  ): _ctx is StarTimeCellContext {
+    return true;
+  }
+}

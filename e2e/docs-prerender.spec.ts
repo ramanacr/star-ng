@@ -65,10 +65,15 @@ test.describe('prerendered docs pages', () => {
     const html = await response.text();
     expect(html).toContain('<docs-root></docs-root>');
     expect(html).not.toContain('<h1');
-    // The shell starts the application, and the router sends an unknown address to the home page.
+    // The shell starts the application, and the router shows the "Page not found" page. The
+    // address stays, so the visitor sees which link is wrong.
     await page.goto('/no/such/page');
+    await expect(page.getByRole('heading', { level: 1, name: 'Page not found' })).toBeVisible();
+    await expect(page.getByRole('main')).toContainText('/no/such/page');
+    await expect(page).toHaveURL(/\/no\/such\/page$/);
+    await expect(page).toHaveTitle('Page not found · StarNG');
+    await page.getByRole('link', { name: 'Go to the home page' }).click();
     await expect(page.getByRole('heading', { level: 1, name: 'StarNG' })).toBeVisible();
-    await expect(page).toHaveURL(/\/$/);
   });
 
   test('the browser reuses the prerendered page (hydration) without an error', async ({ page }) => {

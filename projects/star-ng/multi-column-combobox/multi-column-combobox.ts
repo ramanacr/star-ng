@@ -199,7 +199,9 @@ const ROW_GUESS = 40;
         (focusout)="onPanelFocusout($event)"
       >
         @if (headerSlot(); as header) {
-          <ng-container *ngTemplateOutlet="header" />
+          <div data-star-part="headerSlotPanel" class="star-panel__header">
+            <ng-container *ngTemplateOutlet="header" />
+          </div>
         }
         <div data-star-part="header" class="star-mcc__header" role="presentation">
           @for (column of columns(); track $index) {
@@ -311,7 +313,9 @@ const ROW_GUESS = 40;
           }
         </ul>
         @if (footerSlot(); as footer) {
-          <ng-container *ngTemplateOutlet="footer" />
+          <div data-star-part="footerSlotPanel" class="star-panel__footer">
+            <ng-container *ngTemplateOutlet="footer" />
+          </div>
         }
       </div>
     </ng-template>

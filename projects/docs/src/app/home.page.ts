@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import {
+  afterNextRender,
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  inject,
+  signal,
+} from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { DOCS_NAV } from './nav';
 import { DocsCode } from './shared/docs';
@@ -13,8 +21,25 @@ const pageCount = (test: (label: string) => boolean): number =>
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="docs-page docs-home">
-      <section class="docs-hero" aria-labelledby="docs-hero-title">
-        <p class="docs-hero__eyebrow">Angular component library</p>
+      <section
+        class="docs-hero"
+        [class.docs-hero--paused]="paused()"
+        aria-labelledby="docs-hero-title"
+      >
+        <!-- Soft lights that drift behind the star of the mark. CSS only (styles.scss); it
+             stands still with reduced motion and pauses while the tab is hidden. -->
+        <div class="docs-hero__glow" aria-hidden="true"></div>
+        <svg class="docs-hero__mark" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+          <g class="docs-hero__mark-brackets">
+            <path d="M14 20L4 32L14 44" />
+            <path d="M43 46L49 18" />
+            <path d="M53 20L61 32L53 44" />
+          </g>
+          <path
+            class="docs-hero__mark-star"
+            d="M28 19C28.9 28 31 30.1 40 31C31 31.9 28.9 34 28 43C27.1 34 25 31.9 16 31C25 30.1 27.1 28 28 19Z"
+          />
+        </svg>
         <h1 id="docs-hero-title">StarNG</h1>
         <p class="docs-hero__lead">
           Accessible Angular controls built on signals, Signal Forms and the Angular CDK. No Angular
@@ -81,6 +106,21 @@ const pageCount = (test: (label: string) => boolean): number =>
   `,
 })
 export class HomePage {
+  private readonly document = inject(DOCUMENT);
+  private readonly destroyRef = inject(DestroyRef);
+  /** True while the browser tab is hidden: the hero lights stop drifting. */
+  protected readonly paused = signal(false);
+
+  constructor() {
+    // Browser only: the prerender step never runs this, so the server HTML has no paused class.
+    afterNextRender(() => {
+      const document = this.document;
+      const update = () => this.paused.set(document.hidden);
+      update();
+      document.addEventListener('visibilitychange', update);
+      this.destroyRef.onDestroy(() => document.removeEventListener('visibilitychange', update));
+    });
+  }
   protected readonly nav = DOCS_NAV;
   protected readonly install = `pnpm add @star-ng/ui @angular/cdk @phosphor-icons/web`;
   /** The first control page: the first page after the guides. */

@@ -272,6 +272,9 @@ export const STAR_UI_TEXT_DE: StarUiText = {
   tabClose: (label) => `${label} schließen`,
   tabCloseHint: 'Entf drücken, um den Tab zu schließen.',
   tabReorderHint: 'Strg+Umschalt und eine Pfeiltaste drücken, um den Tab zu verschieben.',
+  chipsMoveHint: 'Strg+Umschalt und eine Pfeiltaste drücken, um den Eintrag zu verschieben.',
+  chipsMoveRemoveHint:
+    'Strg+Umschalt und eine Pfeiltaste drücken, um den Eintrag zu verschieben, oder Entf, um ihn zu entfernen.',
   editorStrikethrough: 'Durchgestrichen',
   editorCode: 'Inline-Code',
   editorQuote: 'Zitat',

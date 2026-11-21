@@ -1174,6 +1174,11 @@ const STATES: readonly State[] = [
         .getByRole('combobox', { name: 'Filter by Status' })
         .click();
       await expect(page.getByRole('listbox')).toBeVisible();
+      // The open list scrolls the page so that it fits. That leaves the paginator of the example
+      // above just under the sticky header, where axe reads it as a target that the header
+      // buttons cover. A short scroll back shows it below the header; the list stays open.
+      await page.evaluate(() => window.scrollBy(0, -120));
+      await expect(page.getByRole('listbox')).toBeVisible();
     },
   },
   {
@@ -1307,6 +1312,11 @@ const STATES: readonly State[] = [
       await example(page, 'Column filters')
         .getByRole('combobox', { name: 'Filter by Region' })
         .click();
+      await expect(page.getByRole('listbox')).toBeVisible();
+      // The open list scrolls the page so that it fits. That leaves the paginator of the example
+      // above just under the sticky header, where axe reads it as a target that the header
+      // buttons cover. A short scroll back shows it below the header; the list stays open.
+      await page.evaluate(() => window.scrollBy(0, -120));
       await expect(page.getByRole('listbox')).toBeVisible();
     },
   },

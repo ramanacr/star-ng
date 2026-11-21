@@ -168,12 +168,15 @@ describe('date slots', () => {
     const { fixture, el } = await setup();
     const panel = await open(fixture, el, 'single');
     const children = [...panel.children];
-    const head = panel.querySelector('.head')!;
-    const foot = panel.querySelector('.foot')!;
+    const head = panel.querySelector('.head')!.parentElement!;
+    const foot = panel.querySelector('.foot')!.parentElement!;
     const calendar = panel.querySelector('star-calendar')!;
     const bar = panel.querySelector('.star-date__bar')!;
     expect(head.textContent).toBe('Pick a due date');
     expect(foot.textContent).toBe('Due dates have a dot');
+    // The slots render in the shared slot regions (parts headerSlotPanel and footerSlotPanel).
+    expect(head.matches('[data-star-part="headerSlotPanel"].star-panel__header')).toBe(true);
+    expect(foot.matches('[data-star-part="footerSlotPanel"].star-panel__footer')).toBe(true);
     expect(children.indexOf(head)).toBeLessThan(children.indexOf(calendar));
     expect(children.indexOf(calendar)).toBeLessThan(children.indexOf(foot));
     // The footer is the last child of the panel, below the Today / Clear button bar.

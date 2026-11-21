@@ -399,19 +399,13 @@ import { DOCS, DocsRow } from '../shared/docs';
             showButtonBar
             ariaLabel="Payment date"
           >
-            <ng-template starHeader>
-              <p class="docs-output docs-due-note">Invoices due in November 2026</p>
-            </ng-template>
+            <ng-template starHeader> Invoices due in November 2026 </ng-template>
             <ng-template starDate let-date>
               <span class="docs-due" [class.docs-due--marked]="isDue(date)">{{
                 date.getDate()
               }}</span>
             </ng-template>
-            <ng-template starFooter>
-              <p class="docs-output docs-due-note">
-                A dot marks a due date: 5, 12 and 26 November.
-              </p>
-            </ng-template>
+            <ng-template starFooter> A dot marks a due date: 5, 12 and 26 November. </ng-template>
           </star-date-picker>
           <p class="docs-output" role="status">Payment date: {{ iso(payDate()) }}</p>
         </div>
@@ -514,9 +508,6 @@ import { DOCS, DocsRow } from '../shared/docs';
       border-radius: 50%;
       background: currentColor;
       transform: translateX(-50%);
-    }
-    .docs-due-note {
-      margin: var(--star-space-2) 0;
     }
   `,
 })
@@ -677,6 +668,16 @@ readonly iso = (date: Date | null) => (date ? isoDay(date) : 'none');
 // }`;
 
   protected readonly slots: readonly DocsRow[] = [
+    {
+      name: 'ng-template[starDecade]',
+      description:
+        'Content child. Replaces the title of the year view; let-years, let-first and let-last. Keep the years in the text: the title is a live region. PrimeNG #decade.',
+    },
+    {
+      name: 'ng-template[starButtonBar]',
+      description:
+        'Content child. Replaces the buttons of the button bar (showButtonBar); let-today and let-clear are the actions. PrimeNG #buttonbar.',
+    },
     {
       name: 'ng-template[starDate]',
       description:

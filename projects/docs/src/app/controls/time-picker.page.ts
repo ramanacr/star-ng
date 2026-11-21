@@ -114,7 +114,12 @@ import { DOCS, DocsRow } from '../shared/docs';
         the right, and Arrow left moves to the next column. See the Right-to-left guide.
       </p>
 
-      <docs-api [of]="['StarTimePicker']" [cssVars]="cssVars" [keyboard]="keyboard" />
+      <docs-api
+        [of]="['StarTimePicker']"
+        [slots]="slots"
+        [cssVars]="cssVars"
+        [keyboard]="keyboard"
+      />
 
       <h2>Technical notes</h2>
       <p>
@@ -146,6 +151,17 @@ readonly slot = form(this.slotModel, (path) => {
   required(path.pickup, { message: 'Choose a pick-up time.' });
 });`;
 
+  protected readonly slots: readonly DocsRow[] = [
+    {
+      name: 'ng-template[starHeader] / ng-template[starFooter]',
+      description: 'Content child. Content above and below the columns in the panel.',
+    },
+    {
+      name: 'ng-template[starTimeCell]',
+      description:
+        'Content child. The content of each cell; let-label (implicit), let-value, let-part (hour, minute, second, period), let-selected, let-disabled. The cell keeps its option role and name.',
+    },
+  ];
   protected readonly cssVars: readonly DocsRow[] = [
     { name: '--star-input-radius', description: 'Corner radius of the field.' },
     { name: '--star-border', description: 'Border of the field and the panel.' },

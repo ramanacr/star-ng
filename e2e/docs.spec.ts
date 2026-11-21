@@ -89,4 +89,75 @@ test.describe('docs application', () => {
     await expect(page.getByRole('heading', { level: 1, name: 'Checkbox' })).toBeVisible();
     await expect(nav).toBeHidden();
   });
+
+  test('the navigation drawer keeps the focus and closes with Escape', async ({ page }) => {
+    await page.setViewportSize({ width: 480, height: 800 });
+    await openPage(page, '/controls/table', 'Table');
+    const nav = page.getByRole('navigation', { name: 'Pages' });
+    const menu = page.getByRole('button', { name: 'Navigation' });
+    await menu.click();
+    await expect(menu).toHaveAttribute('aria-expanded', 'true');
+    // The search field takes the focus, and the page behind the drawer is inert.
+    await expect(nav.getByRole('searchbox', { name: 'Search pages' })).toBeFocused();
+    await expect(page.locator('#main')).toHaveAttribute('inert', '');
+    // The drawer fills the height under the header, also when its list is long.
+    const box = await nav.boundingBox();
+    expect(box?.y).toBe(56);
+    expect(box?.height).toBe(800 - 56);
+    await page.keyboard.press('Escape');
+    await expect(nav).toBeHidden();
+    await expect(menu).toBeFocused();
+    await expect(page.locator('#main')).not.toHaveAttribute('inert');
+    // A click on the dimmed page closes the drawer too.
+    await menu.click();
+    await page.locator('.docs-backdrop').click({ position: { x: 460, y: 400 } });
+    await expect(nav).toBeHidden();
+  });
+
+  test('slash moves the focus to the search, and Enter opens the first match', async ({ page }) => {
+    await openPage(page, '/controls/button', 'Button');
+    const search = page
+      .getByRole('navigation', { name: 'Pages' })
+      .getByRole('searchbox', { name: 'Search pages' });
+    await page.locator('#main').focus();
+    await page.keyboard.press('/');
+    await expect(search).toBeFocused();
+    await search.fill('tree table');
+    await expect(page.locator('.docs-nav__status')).toHaveText('1 page matches.');
+    await search.press('Enter');
+    await expect(page.getByRole('heading', { level: 1, name: 'Tree table' })).toBeVisible();
+  });
+
+  test('the hero star beats and its lights drift; both stop with reduced motion and in a hidden tab', async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await openPage(page, '/', 'StarNG');
+    const glow = page.locator('.docs-hero__glow');
+    const star = page.locator('.docs-hero__mark-star');
+    // The star of the mark beats like a heart.
+    await expect(star).toHaveCSS('animation-name', 'docs-star-beat');
+    // The lights are drawn (registered properties make the gradients valid) and they move.
+    await expect(glow).not.toHaveCSS('background-image', 'none');
+    await expect(glow).toHaveCSS('animation-play-state', /^running(, running)*$/);
+    expect(await glow.evaluate((element) => element.getAnimations().length)).toBe(3);
+    // A hidden tab pauses them.
+    await page.evaluate(() => {
+      Object.defineProperty(document, 'hidden', { configurable: true, get: () => true });
+      document.dispatchEvent(new Event('visibilitychange'));
+    });
+    await expect(glow).toHaveCSS('animation-play-state', /^paused(, paused)*$/);
+    await expect(star).toHaveCSS('animation-play-state', 'paused');
+    // Reduced motion: no animation, the same lights stand still.
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await expect(glow).toHaveCSS('animation-name', 'none');
+    await expect(star).toHaveCSS('animation-name', 'none');
+    await expect(glow).not.toHaveCSS('background-image', 'none');
+  });
+
+  test('an example heading has a link to the example', async ({ page }) => {
+    await openPage(page, '/controls/button', 'Button');
+    await page.getByRole('link', { name: 'Link to Sizes' }).click();
+    await expect(page).toHaveURL(/\/controls\/button#button-sizes$/);
+  });
 });

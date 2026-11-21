@@ -3,7 +3,12 @@ import { TestBed } from '@angular/core/testing';
 import { FormGroup } from '@angular/forms';
 import { form, FormField, required } from '@angular/forms/signals';
 import { SignalFormControl } from '@angular/forms/signals/compat';
-import { StarEmptyTemplate, StarFilterMatchMode } from '@star-ng/ui/core';
+import {
+  StarEmptyTemplate,
+  StarFilterMatchMode,
+  StarFooterTemplate,
+  StarHeaderTemplate,
+} from '@star-ng/ui/core';
 import {
   StarColumnCellTemplate,
   StarComboboxColumn,
@@ -41,7 +46,13 @@ const firstCells = () =>
   options().map((o) => o.querySelector('.star-mcc__cell')?.textContent?.trim());
 
 @Component({
-  imports: [StarMultiColumnCombobox, StarColumnCellTemplate, StarEmptyTemplate],
+  imports: [
+    StarMultiColumnCombobox,
+    StarColumnCellTemplate,
+    StarEmptyTemplate,
+    StarHeaderTemplate,
+    StarFooterTemplate,
+  ],
   template: `
     <star-multi-column-combobox
       [options]="people()"
@@ -60,6 +71,8 @@ const firstCells = () =>
           <b class="custom">{{ column.header }}={{ $any(row)[$any(column).field] }}</b>
         </ng-template>
         <ng-template starEmpty let-query>Nobody called {{ query }}</ng-template>
+        <ng-template starHeader>People</ng-template>
+        <ng-template starFooter>4 people</ng-template>
       }
     </star-multi-column-combobox>
   `,
@@ -221,6 +234,14 @@ describe('StarMultiColumnCombobox', () => {
     await press('ArrowDown');
     expect(options()[0].querySelector('.custom')?.textContent).toBe('Name=Ana Silva');
     expect(options()[0].querySelectorAll('.custom').length).toBe(3);
+    // Header and footer slots sit in the shared slot regions, outside the scrolling list.
+    const head = document.querySelector('[data-star-part="headerSlotPanel"]')!;
+    const foot = document.querySelector('[data-star-part="footerSlotPanel"]')!;
+    expect(head.classList).toContain('star-panel__header');
+    expect(foot.classList).toContain('star-panel__footer');
+    expect(head.textContent).toBe('People');
+    expect(foot.textContent).toBe('4 people');
+    expect(document.querySelector('[role=listbox]')!.contains(foot)).toBe(false);
     await type('zzz');
     expect(document.querySelector('.star-listbox__empty')?.textContent?.trim()).toBe(
       'Nobody called zzz',
