@@ -130,7 +130,33 @@ class ChipsKeyHost {
   readonly byId = (_: number, tag: Tag) => tag.id;
 }
 
+@Component({
+  imports: [StarChipsArea],
+  template: `<star-chips-area ariaLabel="Words" [(items)]="words" />`,
+})
+class ChipsDuplicateHost {
+  readonly words = signal<readonly string[]>(['north', 'north', 'south']);
+}
+
 describe('StarChipsArea access and identity', () => {
+  it('renders repeated primitive items without duplicate track keys', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    try {
+      const fixture = TestBed.createComponent(ChipsDuplicateHost);
+      await fixture.whenStable();
+      // Angular checks the track keys when it updates the list.
+      fixture.componentInstance.words.set(['north', 'south', 'north']);
+      await fixture.whenStable();
+      const chips = (fixture.nativeElement as HTMLElement).querySelectorAll(
+        '[data-star-part=chipButton]',
+      );
+      expect(chips.length).toBe(3);
+      expect(warn.mock.calls.some((call) => String(call[0]).includes('NG0955'))).toBe(false);
+    } finally {
+      warn.mockRestore();
+    }
+  });
+
   it('names the remove buttons for assistive technology and keeps them out of the tab order', async () => {
     const fixture = TestBed.createComponent(ChipsKeyHost);
     await fixture.whenStable();

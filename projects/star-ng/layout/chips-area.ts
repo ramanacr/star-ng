@@ -163,9 +163,13 @@ export class StarChipsArea<T = unknown> {
 
   /**
    * Identity of an item, so a chip keeps its element (and the focus and a drag) when the items
-   * move. Default: the item itself. Give one for items that can repeat or are new objects.
+   * move. Default: an object item is its own identity; a text or number item is tracked by its
+   * position, so repeated values work. Give one (for example an id) for items that are new
+   * objects after each change.
    */
-  readonly trackBy = input<(index: number, item: T) => unknown>((_index: number, item: T) => item);
+  readonly trackBy = input<(index: number, item: T) => unknown>((index: number, item: T) =>
+    typeof item === 'object' && item !== null ? item : index,
+  );
 
   protected readonly itemTemplate = contentChild(StarChipsAreaItem);
   /** The chip in the tab order; it stays inside the items when the owner removes some. */
