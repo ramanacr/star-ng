@@ -89,7 +89,7 @@ import { sampleSet } from '../shared/sample-images';
       </p>
 
       <docs-api
-        [of]="['StarCarousel', 'StarCarouselItem']"
+        [of]="['StarCarousel', 'StarCarouselItem', 'StarCarouselIndicator']"
         [slots]="slots"
         [cssVars]="cssVars"
         [keyboard]="keyboard"
@@ -117,6 +117,21 @@ export class CarouselPage {
 // sampleSet makes { label, src } objects. src is an inline SVG data URL.`;
 
   protected readonly slots: readonly DocsRow[] = [
+    {
+      name: 'ng-template[starHeader] / ng-template[starFooter]',
+      description:
+        'Content child. Content above and below the carousel. PrimeNG #header and #footer.',
+    },
+    {
+      name: 'ng-template[starIcon]',
+      description:
+        'Content child. "previous" or "next" replaces the icon of that button. PrimeNG #previousicon and #nexticon.',
+    },
+    {
+      name: 'ng-template[starCarouselIndicator]',
+      description:
+        'Content child. The content of each page dot; let-active is true for the current page. The button keeps its name.',
+    },
     {
       name: 'ng-template[starCarouselItem]',
       description:

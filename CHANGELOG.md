@@ -55,6 +55,10 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - Button: the variants `info`, `help` and `contrast` (new token `--star-help`; AA text contrast in both themes), `appearance` (`filled`, `outlined`, `text`, `link`), `raised`, `rounded`, `badge` and `badgeSeverity`, `label`, `loadingIcon`, `tabindex`, `autofocus`, and the `starIcon` slots `icon` and `loading` (PrimeNG `p-button`).
 - Button group (`star-button-group`, `@star-ng/ui/button`): joins adjacent buttons and split buttons into one bar (PrimeNG `p-buttongroup`).
 
+#### Carousel
+
+- Carousel: `numScroll`, `responsiveOptions` (`StarCarouselResponsiveOption`), `orientation` (`vertical` with `verticalViewPortHeight`), `circular`, `showIndicators`, `showNavigators`, a two-way `page` model, `previous()` and `next()`, and the slots `starHeader`, `starFooter`, `starIcon` (`previous`, `next`) and `starCarouselIndicator`. Autoplay still pauses on hover and focus (PrimeNG `p-carousel`).
+
 #### Chart
 
 - Chart: `starChartSvgDocument`, `starChartPng` and `starChartViewBox` are public (`@star-ng/ui/chart`), with a `prepare` option for the copy; the diagram export uses them.
@@ -404,6 +408,8 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 #### Virtual scroller
 
 - `star-virtual-scroller` (`@star-ng/ui/virtual-scroller`): windowed list on CDK virtual scrolling with fixed item size, vertical or horizontal, lazy loading (`lazyLoad`), loading and empty slots, `scrollToIndex`, `scrollTo`, `visibleRange`.
+
+- Virtual scroller: `orientation="both"` (rows of cells; only the columns in view render, `columnSize`), `delay` for `lazyLoad`, and the slots `starVirtualLoader` (a placeholder per item while loading) and `starVirtualContent` (one template for the rendered items) (PrimeNG `p-scroller`).
 
 #### Window
 

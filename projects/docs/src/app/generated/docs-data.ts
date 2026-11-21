@@ -2739,6 +2739,55 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Number of slides in one page."
       },
       {
+        "name": "numScroll",
+        "type": "number | null",
+        "default": "null",
+        "required": false,
+        "description": "Number of slides that one step moves. Default: `numVisible` (a full page). PrimeNG `numScroll`."
+      },
+      {
+        "name": "responsiveOptions",
+        "type": "readonly StarCarouselResponsiveOption[]",
+        "default": "[]",
+        "required": false,
+        "description": "`numVisible` and `numScroll` per screen width: the option with the smallest `breakpoint` that is not below the window width wins. PrimeNG `responsiveOptions`."
+      },
+      {
+        "name": "orientation",
+        "type": "'horizontal' | 'vertical'",
+        "default": "'horizontal'",
+        "required": false,
+        "description": "`'horizontal'` (default) or `'vertical'` (set `verticalViewPortHeight`). PrimeNG `orientation`."
+      },
+      {
+        "name": "verticalViewPortHeight",
+        "type": "string",
+        "default": "'300px'",
+        "required": false,
+        "description": "CSS height of the track in the vertical orientation (default `'300px'`)."
+      },
+      {
+        "name": "circular",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Next on the last page goes to the first, previous on the first to the last. PrimeNG `circular`."
+      },
+      {
+        "name": "showIndicators",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Shows the page dots (default `true`). PrimeNG `showIndicators`."
+      },
+      {
+        "name": "showNavigators",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Shows the previous and next buttons (default `true`). PrimeNG `showNavigators`."
+      },
+      {
         "name": "autoplay",
         "type": "number",
         "default": "0",
@@ -2769,10 +2818,19 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "inheritedFrom": "StarStyled"
       }
     ],
-    "models": [],
+    "models": [
+      {
+        "name": "page",
+        "type": "number",
+        "default": "0",
+        "required": false,
+        "description": "The current page, from `0`. Two-way. PrimeNG `page` and `onPage`."
+      }
+    ],
     "outputs": [],
     "parts": [
       "root",
+      "headerPanel",
       "controlsPanel",
       "controlButton",
       "controlIcon",
@@ -2781,8 +2839,19 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "track",
       "slidePanel",
       "indicatorList",
-      "indicatorButton"
+      "indicatorButton",
+      "indicatorText",
+      "footerPanel"
     ]
+  },
+  "StarCarouselIndicator": {
+    "kind": "directive",
+    "selector": "ng-template[starCarouselIndicator]",
+    "entry": "@star-ng/ui/media",
+    "description": "Content of each page indicator (dot) of `star-carousel`: the button, its name and `aria-current` stay. PrimeNG indicator template. The content is decorative (`aria-hidden`).",
+    "inputs": [],
+    "models": [],
+    "outputs": []
   },
   "StarCarouselItem": {
     "kind": "directive",
@@ -22016,6 +22085,23 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "cellInput"
     ]
   },
+  "StarVirtualContentTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starVirtualContent]",
+    "entry": "@star-ng/ui/virtual-scroller",
+    "description": "Renders the rendered items in one template, in place of one item template per item: `<ng-template starVirtualContent let-items let-first=\"first\">…</ng-template>`. The template is placed at the scroll offset of the first rendered item, so draw the items one after the other with the size `itemSize`. PrimeNG `#content` template. Give the items your own roles (for example a table or a list): the viewport has no list role then.",
+    "inputs": [
+      {
+        "name": "starVirtualContentOf",
+        "type": "readonly T[] | null",
+        "default": "null",
+        "required": false,
+        "description": "Optional: pass the items array to type `let-items` in strict templates."
+      }
+    ],
+    "models": [],
+    "outputs": []
+  },
   "StarVirtualItemTemplate": {
     "kind": "directive",
     "selector": "ng-template[starVirtualItem]",
@@ -22030,6 +22116,15 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Optional: pass the items array to type `let-item` in strict templates."
       }
     ],
+    "models": [],
+    "outputs": []
+  },
+  "StarVirtualLoaderTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starVirtualLoader]",
+    "entry": "@star-ng/ui/virtual-scroller",
+    "description": "Renders a placeholder in place of each rendered item while `loading` is on: `<ng-template starVirtualLoader let-i=\"index\">…</ng-template>`. PrimeNG `#loader` template. Without it, `loading` shows one spinner over the items.",
+    "inputs": [],
     "models": [],
     "outputs": []
   },
@@ -22055,10 +22150,24 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       },
       {
         "name": "orientation",
-        "type": "'vertical' | 'horizontal'",
+        "type": "'vertical' | 'horizontal' | 'both'",
         "default": "'vertical'",
         "required": false,
-        "description": "Scroll direction."
+        "description": "Scroll direction. `'both'`: `items` are rows of cells; the rows and the columns scroll. PrimeNG `orientation`."
+      },
+      {
+        "name": "columnSize",
+        "type": "number | null",
+        "default": "null",
+        "required": false,
+        "description": "With `orientation=\"both\"`: width of one column in pixels (default `itemSize`)."
+      },
+      {
+        "name": "delay",
+        "type": "number",
+        "default": "0",
+        "required": false,
+        "description": "Milliseconds to wait after the rendered range changes before `lazyLoad` emits, so a fast scroll asks once (default `0`). PrimeNG `delay`."
       },
       {
         "name": "scrollHeight",
@@ -22132,7 +22241,10 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "parts": [
       "root",
       "emptyPanel",
+      "contentPanel",
       "item",
+      "rowPanel",
+      "cellPanel",
       "loadingItem"
     ]
   },
