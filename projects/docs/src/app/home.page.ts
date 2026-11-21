@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import {
+  afterNextRender,
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  inject,
+  signal,
+} from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { DOCS_NAV } from './nav';
 import { DocsCode } from './shared/docs';
@@ -13,7 +21,14 @@ const pageCount = (test: (label: string) => boolean): number =>
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="docs-page docs-home">
-      <section class="docs-hero" aria-labelledby="docs-hero-title">
+      <section
+        class="docs-hero"
+        [class.docs-hero--paused]="paused()"
+        aria-labelledby="docs-hero-title"
+      >
+        <!-- Soft lights that drift behind the star of the mark. CSS only (styles.scss); it
+             stands still with reduced motion and pauses while the tab is hidden. -->
+        <div class="docs-hero__glow" aria-hidden="true"></div>
         <svg class="docs-hero__mark" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
           <g class="docs-hero__mark-brackets">
             <path d="M14 20L4 32L14 44" />
@@ -91,6 +106,21 @@ const pageCount = (test: (label: string) => boolean): number =>
   `,
 })
 export class HomePage {
+  private readonly document = inject(DOCUMENT);
+  private readonly destroyRef = inject(DestroyRef);
+  /** True while the browser tab is hidden: the hero lights stop drifting. */
+  protected readonly paused = signal(false);
+
+  constructor() {
+    // Browser only: the prerender step never runs this, so the server HTML has no paused class.
+    afterNextRender(() => {
+      const document = this.document;
+      const update = () => this.paused.set(document.hidden);
+      update();
+      document.addEventListener('visibilitychange', update);
+      this.destroyRef.onDestroy(() => document.removeEventListener('visibilitychange', update));
+    });
+  }
   protected readonly nav = DOCS_NAV;
   protected readonly install = `pnpm add @star-ng/ui @angular/cdk @phosphor-icons/web`;
   /** The first control page: the first page after the guides. */

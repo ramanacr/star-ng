@@ -875,6 +875,182 @@ kbd {
 [dir='rtl'] .docs-hero__mark {
   scale: -1 1;
 }
+
+// Hero lights: three soft lights drift slowly around the star of the mark, like light that the
+// star gives off. The offsets are registered custom properties, so the browser animates them and
+// the gradients stay pure CSS (no script, no canvas). The initial values are in px: a registration
+// with a value that depends on the font size (rem) is invalid, and the browser drops it. A veil of
+// the surface color covers the start side, where the text is: the text keeps its contrast.
+@property --docs-glow-star-x {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+@property --docs-glow-star-y {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+@property --docs-glow-wide-x {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+@property --docs-glow-wide-y {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+@property --docs-glow-soft-x {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+@property --docs-glow-soft-y {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+.docs-hero__glow {
+  // The center of the star of the mark: 8rem from the end edge and from the top edge.
+  --docs-glow-x: calc(100% - 8rem);
+  --docs-glow-y: 8rem;
+  // Strength of the lights (percent of the color in the mix).
+  --docs-glow-star: 34%;
+  --docs-glow-wide: 20%;
+  --docs-glow-soft: 26%;
+
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      90deg,
+      var(--star-surface) 0%,
+      var(--star-surface) 38%,
+      color-mix(in srgb, var(--star-surface) 70%, transparent) 58%,
+      transparent 78%
+    ),
+    radial-gradient(
+      circle 10rem at calc(var(--docs-glow-x) + var(--docs-glow-star-x))
+        calc(var(--docs-glow-y) + var(--docs-glow-star-y)),
+      color-mix(in srgb, var(--docs-logo-star) var(--docs-glow-star), transparent),
+      transparent
+    ),
+    radial-gradient(
+      circle 16rem at calc(var(--docs-glow-x) - 6rem + var(--docs-glow-soft-x))
+        calc(var(--docs-glow-y) + 5rem + var(--docs-glow-soft-y)),
+      color-mix(in srgb, var(--docs-logo-brackets) var(--docs-glow-soft), transparent),
+      transparent
+    ),
+    radial-gradient(
+      circle 26rem at calc(var(--docs-glow-x) + 4rem + var(--docs-glow-wide-x))
+        calc(var(--docs-glow-y) - 4rem + var(--docs-glow-wide-y)),
+      color-mix(in srgb, var(--star-primary) var(--docs-glow-wide), transparent),
+      transparent
+    );
+}
+// The veil and the lights follow the reading direction: the star is on the start side in RTL.
+[dir='rtl'] .docs-hero__glow {
+  scale: -1 1;
+}
+// The dark theme needs a little more light to show on the dark surface.
+[data-theme='dark'] .docs-hero__glow {
+  --docs-glow-star: 26%;
+  --docs-glow-wide: 26%;
+  --docs-glow-soft: 22%;
+}
+// On a narrow hero the text runs under the lights and the mark is hidden: the star light goes,
+// and the two indigo lights move to the top end corner and soften.
+@media (max-width: 1100px) {
+  .docs-hero__glow {
+    --docs-glow-x: 100%;
+    --docs-glow-y: 0rem;
+    --docs-glow-star: 0%;
+    --docs-glow-wide: 12%;
+    --docs-glow-soft: 12%;
+  }
+  // Same weight as the dark rule above, so the narrow values win in the dark theme too.
+  [data-theme='dark'] .docs-hero__glow {
+    --docs-glow-star: 0%;
+    --docs-glow-wide: 14%;
+    --docs-glow-soft: 12%;
+  }
+}
+// Motion only when the visitor allows it. Each light has its own period, so the pattern does not
+// repeat in an obvious loop. The page stops it while the tab is hidden (docs-hero--paused).
+@media (prefers-reduced-motion: no-preference) {
+  .docs-hero__glow {
+    animation:
+      docs-glow-star 17s ease-in-out infinite alternate,
+      docs-glow-wide 29s ease-in-out infinite alternate,
+      docs-glow-soft 23s ease-in-out infinite alternate;
+  }
+  // The star of the mark beats like a heart: two quick beats, then a rest. The light around it
+  // swells with each beat. Scale turns around the center of the star itself.
+  .docs-hero__mark-star {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: docs-star-beat 2.8s cubic-bezier(0.33, 0, 0.2, 1) infinite;
+  }
+  .docs-hero--paused :is(.docs-hero__glow, .docs-hero__mark-star) {
+    animation-play-state: paused;
+  }
+}
+@keyframes docs-star-beat {
+  0%,
+  40%,
+  100% {
+    scale: 1;
+    filter: drop-shadow(0 0 0 transparent);
+  }
+  10% {
+    scale: 1.16;
+    filter: drop-shadow(0 0 3px color-mix(in srgb, var(--docs-logo-star) 70%, transparent));
+  }
+  18% {
+    scale: 1.02;
+  }
+  27% {
+    scale: 1.1;
+    filter: drop-shadow(0 0 2px color-mix(in srgb, var(--docs-logo-star) 55%, transparent));
+  }
+}
+@keyframes docs-glow-star {
+  33% {
+    --docs-glow-star-x: -1.5rem;
+    --docs-glow-star-y: 1rem;
+  }
+  66% {
+    --docs-glow-star-x: 1rem;
+    --docs-glow-star-y: -1.25rem;
+  }
+  100% {
+    --docs-glow-star-x: -0.5rem;
+    --docs-glow-star-y: 1.5rem;
+  }
+}
+@keyframes docs-glow-wide {
+  50% {
+    --docs-glow-wide-x: -7rem;
+    --docs-glow-wide-y: 5rem;
+  }
+  100% {
+    --docs-glow-wide-x: 3rem;
+    --docs-glow-wide-y: 7rem;
+  }
+}
+@keyframes docs-glow-soft {
+  50% {
+    --docs-glow-soft-x: 5rem;
+    --docs-glow-soft-y: -4rem;
+  }
+  100% {
+    --docs-glow-soft-x: -4rem;
+    --docs-glow-soft-y: 2rem;
+  }
+}
 .docs-page .docs-hero__lead {
   max-width: 38rem;
   margin: var(--star-space-3) 0 var(--star-space-6);

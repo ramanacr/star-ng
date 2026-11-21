@@ -128,6 +128,33 @@ test.describe('docs application', () => {
     await expect(page.getByRole('heading', { level: 1, name: 'Tree table' })).toBeVisible();
   });
 
+  test('the hero star beats and its lights drift; both stop with reduced motion and in a hidden tab', async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await openPage(page, '/', 'StarNG');
+    const glow = page.locator('.docs-hero__glow');
+    const star = page.locator('.docs-hero__mark-star');
+    // The star of the mark beats like a heart.
+    await expect(star).toHaveCSS('animation-name', 'docs-star-beat');
+    // The lights are drawn (registered properties make the gradients valid) and they move.
+    await expect(glow).not.toHaveCSS('background-image', 'none');
+    await expect(glow).toHaveCSS('animation-play-state', /^running(, running)*$/);
+    expect(await glow.evaluate((element) => element.getAnimations().length)).toBe(3);
+    // A hidden tab pauses them.
+    await page.evaluate(() => {
+      Object.defineProperty(document, 'hidden', { configurable: true, get: () => true });
+      document.dispatchEvent(new Event('visibilitychange'));
+    });
+    await expect(glow).toHaveCSS('animation-play-state', /^paused(, paused)*$/);
+    await expect(star).toHaveCSS('animation-play-state', 'paused');
+    // Reduced motion: no animation, the same lights stand still.
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await expect(glow).toHaveCSS('animation-name', 'none');
+    await expect(star).toHaveCSS('animation-name', 'none');
+    await expect(glow).not.toHaveCSS('background-image', 'none');
+  });
+
   test('an example heading has a link to the example', async ({ page }) => {
     await openPage(page, '/controls/button', 'Button');
     await page.getByRole('link', { name: 'Link to Sizes' }).click();
