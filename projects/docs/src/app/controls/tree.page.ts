@@ -5,6 +5,7 @@ import {
   resource,
   signal,
   untracked,
+  ViewEncapsulation,
 } from '@angular/core';
 
 import { form, FormField, minLength } from '@angular/forms/signals';
@@ -36,6 +37,8 @@ interface Project {
 }
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './tree.page.scss',
   selector: 'docs-tree-page',
 
   imports: [DOCS, StarTree, StarNodeTemplate, STAR_SLOTS, StarField, FormField, StarButton],

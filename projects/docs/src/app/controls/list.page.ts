@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { StarEmptyTemplate } from '@star-ng/ui/core';
 import { StarList, StarListItem, StarListSubheader } from '@star-ng/ui/list';
 import { StarTag } from '@star-ng/ui/tag';
@@ -11,6 +11,8 @@ interface Project {
 }
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './list.page.scss',
   selector: 'docs-list-page',
   imports: [DOCS, StarList, StarListItem, StarListSubheader, StarEmptyTemplate, StarTag],
   changeDetection: ChangeDetectionStrategy.OnPush,

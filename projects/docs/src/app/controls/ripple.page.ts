@@ -1,8 +1,10 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation } from '@angular/core';
 import { StarRipple } from '@star-ng/ui/utility';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './ripple.page.scss',
   selector: 'docs-ripple-page',
   imports: [DOCS, StarRipple],
   changeDetection: ChangeDetectionStrategy.OnPush,

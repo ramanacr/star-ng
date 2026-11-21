@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { StarButton } from '@star-ng/ui/button';
 import {
   StarBatchChanges,
@@ -28,6 +28,8 @@ function applyBatch(rows: readonly Order[], changes: StarBatchChanges<Order>): O
 }
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './table-edit.page.scss',
   selector: 'docs-table-edit-page',
   imports: [DOCS, StarTable, StarCellTemplate, StarButton, DocsFill],
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { StarBreadcrumb } from '@star-ng/ui/breadcrumb';
 import { StarPaginator } from '@star-ng/ui/paginator';
 import { StarSelectButton } from '@star-ng/ui/select-button';
@@ -6,6 +6,8 @@ import { StarTab, StarTabs } from '@star-ng/ui/tabs';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './right-to-left.guide.scss',
   selector: 'docs-right-to-left-guide',
   imports: [DOCS, StarTabs, StarTab, StarBreadcrumb, StarPaginator, StarSelectButton],
   changeDetection: ChangeDetectionStrategy.OnPush,

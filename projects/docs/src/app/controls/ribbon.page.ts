@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  signal,
+  ViewEncapsulation,
+} from '@angular/core';
 import {
   StarRibbon,
   StarRibbonBackstage,
@@ -11,7 +17,7 @@ import {
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
-  selector: 'docs-ribbon-page',
+  selector: 'docs-ribbon-page-content',
   imports: [
     DOCS,
     StarRibbon,
@@ -140,7 +146,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     </docs-page>
   `,
 })
-export class RibbonPage {
+export class RibbonPageContent {
   protected readonly tab = signal<string | null>('home');
   protected readonly collapsed = signal(true);
   protected readonly last = signal('none');
@@ -317,3 +323,18 @@ run(command: StarRibbonCommand): void {
     { name: 'Arrow down', description: 'Opens the menu of a dropdown or split button.' },
   ];
 }
+
+/**
+ * Route component of the page. It loads the route styles (`ribbon.page.scss`): the library
+ * partials of the page and the docs layout. The page content is a child, so its own component
+ * styles come after them, as they came after the global styles.
+ */
+@Component({
+  selector: 'docs-ribbon-page',
+  imports: [RibbonPageContent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './ribbon.page.scss',
+  template: '<docs-ribbon-page-content />',
+})
+export class RibbonPage {}

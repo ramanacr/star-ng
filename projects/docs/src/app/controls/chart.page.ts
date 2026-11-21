@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import {
   StarChart,
   StarChartPointSelectEvent,
@@ -9,6 +9,8 @@ import {
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './chart.page.scss',
   selector: 'docs-chart-page',
   imports: [DOCS, StarChart, StarChartTooltip],
   changeDetection: ChangeDetectionStrategy.OnPush,

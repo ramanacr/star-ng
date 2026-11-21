@@ -1,9 +1,9 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { StarTile, StarTileLayout, StarTileResize } from '@star-ng/ui/tile-layout';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
-  selector: 'docs-tile-layout-page',
+  selector: 'docs-tile-layout-page-content',
   imports: [DOCS, StarTileLayout, StarTile],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: `
@@ -98,7 +98,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     </docs-page>
   `,
 })
-export class TileLayoutPage {
+export class TileLayoutPageContent {
   protected readonly basicTiles = [
     { key: 'one', title: 'Overview', text: 'Two columns, two rows.', colSpan: 2, rowSpan: 2 },
     { key: 'two', title: 'Tasks', text: 'One cell.', colSpan: 1, rowSpan: 1 },
@@ -179,3 +179,18 @@ onResize(event: StarTileResize): void {
     },
   ];
 }
+
+/**
+ * Route component of the page. It loads the route styles (`tile-layout.page.scss`): the library
+ * partials of the page and the docs layout. The page content is a child, so its own component
+ * styles come after them, as they came after the global styles.
+ */
+@Component({
+  selector: 'docs-tile-layout-page',
+  imports: [TileLayoutPageContent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './tile-layout.page.scss',
+  template: '<docs-tile-layout-page-content />',
+})
+export class TileLayoutPage {}

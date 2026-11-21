@@ -1,10 +1,12 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { StarIconTemplate } from '@star-ng/ui/core';
 import { StarField } from '@star-ng/ui/field';
 import { StarInputTags, StarInputTagTemplate } from '@star-ng/ui/input-tags';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './input-tags.page.scss',
   selector: 'docs-input-tags-page',
   imports: [DOCS, StarInputTags, StarInputTagTemplate, StarIconTemplate, StarField],
   changeDetection: ChangeDetectionStrategy.OnPush,

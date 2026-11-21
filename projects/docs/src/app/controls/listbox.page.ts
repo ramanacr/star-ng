@@ -1,5 +1,5 @@
 import { moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { form, FormField, minLength } from '@angular/forms/signals';
 import { STAR_SLOTS } from '@star-ng/ui/core';
 import { StarField } from '@star-ng/ui/field';
@@ -31,6 +31,8 @@ interface City {
 const REGIONS = ['Central', 'East', 'North', 'South', 'West'];
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './listbox.page.scss',
   selector: 'docs-listbox-page',
   imports: [DOCS, StarListbox, StarOptionTemplate, STAR_SLOTS, StarField, FormField],
   changeDetection: ChangeDetectionStrategy.OnPush,

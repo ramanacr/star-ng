@@ -7,6 +7,7 @@ import {
   inject,
   signal,
   viewChild,
+  ViewEncapsulation,
 } from '@angular/core';
 import { StarButton } from '@star-ng/ui/button';
 import { StarImageEditor } from '@star-ng/ui/image-editor';
@@ -33,7 +34,7 @@ function sampleScene(): string {
 }
 
 @Component({
-  selector: 'docs-image-editor-page',
+  selector: 'docs-image-editor-page-content',
   imports: [DOCS, StarButton, StarImageEditor],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: `
@@ -113,7 +114,7 @@ function sampleScene(): string {
     </docs-page>
   `,
 })
-export class ImageEditorPage {
+export class ImageEditorPageContent {
   private readonly doc = inject(DOCUMENT);
   private readonly editor = viewChild.required<StarImageEditor>('editor');
   protected readonly scene = sampleScene();
@@ -196,3 +197,18 @@ openFile(event: Event) {
     { name: 'Escape', description: 'Closes the open tool panel without a change.' },
   ];
 }
+
+/**
+ * Route component of the page. It loads the route styles (`image-editor.page.scss`): the library
+ * partials of the page and the docs layout. The page content is a child, so its own component
+ * styles come after them, as they came after the global styles.
+ */
+@Component({
+  selector: 'docs-image-editor-page',
+  imports: [ImageEditorPageContent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './image-editor.page.scss',
+  template: '<docs-image-editor-page-content />',
+})
+export class ImageEditorPage {}

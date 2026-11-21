@@ -1,10 +1,12 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { StarFooterTemplate, StarHeaderTemplate, StarIconTemplate } from '@star-ng/ui/core';
 import { StarField } from '@star-ng/ui/field';
 import { StarPassword, StarPasswordRule } from '@star-ng/ui/password';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './password.page.scss',
   selector: 'docs-password-page',
   imports: [
     DOCS,

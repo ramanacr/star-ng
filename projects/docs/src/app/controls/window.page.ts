@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  inject,
+  signal,
+  ViewEncapsulation,
+} from '@angular/core';
 import { StarButton } from '@star-ng/ui/button';
 import { StarSelect } from '@star-ng/ui/select';
 import {
@@ -30,6 +37,8 @@ export class DocsOrderWindow {
 }
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './window.page.scss',
   selector: 'docs-window-page',
   imports: [DOCS, StarButton, StarSelect, StarWindow],
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -1,8 +1,10 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { StarRadio, StarRadioGroup } from '@star-ng/ui/radio';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './radio.page.scss',
   selector: 'docs-radio-page',
   imports: [DOCS, StarRadioGroup, StarRadio],
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -1,9 +1,9 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { StarSplitter } from '@star-ng/ui/utility';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
-  selector: 'docs-splitter-page',
+  selector: 'docs-splitter-page-content',
   imports: [DOCS, StarSplitter],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -64,7 +64,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     }
   `,
 })
-export class SplitterPage {
+export class SplitterPageContent {
   protected readonly split = signal(50);
 
   protected readonly basicScript = `readonly split = signal(50);`;
@@ -97,3 +97,18 @@ export class SplitterPage {
     { name: 'Home / End', description: 'Moves the gutter to the minimum or the maximum size.' },
   ];
 }
+
+/**
+ * Route component of the page. It loads the route styles (`splitter.page.scss`): the library
+ * partials of the page and the docs layout. The page content is a child, so its own component
+ * styles come after them, as they came after the global styles.
+ */
+@Component({
+  selector: 'docs-splitter-page',
+  imports: [SplitterPageContent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './splitter.page.scss',
+  template: '<docs-splitter-page-content />',
+})
+export class SplitterPage {}

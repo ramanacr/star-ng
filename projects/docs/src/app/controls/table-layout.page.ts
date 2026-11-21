@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { StarButton } from '@star-ng/ui/button';
 import {
   StarColumn,
@@ -75,6 +75,8 @@ const LOG: readonly LogEntry[] = Array.from({ length: 5000 }, (_, i) => ({
 }));
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './table-layout.page.scss',
   selector: 'docs-table-layout-page',
   imports: [
     DOCS,

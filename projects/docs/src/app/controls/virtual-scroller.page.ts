@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, computed, resource, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  resource,
+  signal,
+  ViewEncapsulation,
+} from '@angular/core';
 import { StarButton } from '@star-ng/ui/button';
 import { StarSkeleton } from '@star-ng/ui/skeleton';
 import {
@@ -43,7 +50,7 @@ function fetchOrderPage(page: number, abortSignal: AbortSignal): Promise<readonl
 }
 
 @Component({
-  selector: 'docs-virtual-scroller-page',
+  selector: 'docs-virtual-scroller-page-content',
   imports: [DOCS, StarVirtualScroller, StarVirtualItemTemplate, StarButton, StarSkeleton],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -163,7 +170,7 @@ function fetchOrderPage(page: number, abortSignal: AbortSignal): Promise<readonl
     }
   `,
 })
-export class VirtualScrollerPage {
+export class VirtualScrollerPageContent {
   protected readonly orders: readonly Order[] = Array.from({ length: TOTAL }, (_, i) => order(i));
   protected readonly cities = Array.from(
     { length: 500 },
@@ -273,3 +280,18 @@ readonly lazyOrders = computed(() =>
     },
   ];
 }
+
+/**
+ * Route component of the page. It loads the route styles (`virtual-scroller.page.scss`): the library
+ * partials of the page and the docs layout. The page content is a child, so its own component
+ * styles come after them, as they came after the global styles.
+ */
+@Component({
+  selector: 'docs-virtual-scroller-page',
+  imports: [VirtualScrollerPageContent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './virtual-scroller.page.scss',
+  template: '<docs-virtual-scroller-page-content />',
+})
+export class VirtualScrollerPage {}

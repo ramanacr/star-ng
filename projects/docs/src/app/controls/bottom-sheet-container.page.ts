@@ -1,9 +1,19 @@
-import { ChangeDetectionStrategy, Component, inject, signal, TemplateRef } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  inject,
+  signal,
+  TemplateRef,
+  ViewEncapsulation,
+} from '@angular/core';
 import { StarBottomSheet, StarBottomSheetContext } from '@star-ng/ui/bottom-sheet';
 import { StarButton } from '@star-ng/ui/button';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './bottom-sheet-container.page.scss',
   selector: 'docs-bottom-sheet-container-page',
   imports: [DOCS, StarButton],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -84,6 +94,12 @@ import { DOCS, DocsRow } from '../shared/docs';
 })
 export class BottomSheetContainerPage {
   private readonly sheet = inject(StarBottomSheet);
+
+  constructor() {
+    // The service puts its overlays in the body, outside the page: close them when the page
+    // goes, as its route styles go with it.
+    inject(DestroyRef).onDestroy(() => this.sheet.dismiss());
+  }
 
   protected readonly filter = signal('none');
   protected readonly city = signal('none');

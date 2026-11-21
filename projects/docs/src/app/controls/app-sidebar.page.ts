@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import {
   StarAppSidebar,
   StarAppSidebarFooter,
@@ -10,7 +10,7 @@ import { StarButton } from '@star-ng/ui/button';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
-  selector: 'docs-app-sidebar-page',
+  selector: 'docs-app-sidebar-page-content',
   imports: [
     DOCS,
     StarButton,
@@ -175,7 +175,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     </docs-page>
   `,
 })
-export class AppSidebarPage {
+export class AppSidebarPageContent {
   protected readonly collapsed = signal(false);
   protected readonly current = signal('Dashboard');
   protected readonly menuOpen = signal(false);
@@ -227,3 +227,18 @@ readonly shopPage = signal('Products');`;
     },
   ];
 }
+
+/**
+ * Route component of the page. It loads the route styles (`app-sidebar.page.scss`): the library
+ * partials of the page and the docs layout. The page content is a child, so its own component
+ * styles come after them, as they came after the global styles.
+ */
+@Component({
+  selector: 'docs-app-sidebar-page',
+  imports: [AppSidebarPageContent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './app-sidebar.page.scss',
+  template: '<docs-app-sidebar-page-content />',
+})
+export class AppSidebarPage {}

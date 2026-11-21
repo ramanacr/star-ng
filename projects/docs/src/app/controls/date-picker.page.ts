@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { form, FormField, required } from '@angular/forms/signals';
 import { RouterLink } from '@angular/router';
 import { StarFooterTemplate, StarHeaderTemplate } from '@star-ng/ui/core';
@@ -16,7 +16,7 @@ import { StarField } from '@star-ng/ui/field';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
-  selector: 'docs-date-picker-page',
+  selector: 'docs-date-picker-page-content',
   imports: [
     DOCS,
     RouterLink,
@@ -511,7 +511,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     }
   `,
 })
-export class DatePickerPage {
+export class DatePickerPageContent {
   protected readonly iso = (date: Date | null | undefined): string =>
     date ? isoDay(date) : 'none';
   protected readonly clock = (date: Date | null | undefined, seconds = false): string => {
@@ -810,3 +810,18 @@ readonly iso = (date: Date | null) => (date ? isoDay(date) : 'none');
     },
   ];
 }
+
+/**
+ * Route component of the page. It loads the route styles (`date-picker.page.scss`): the library
+ * partials of the page and the docs layout. The page content is a child, so its own component
+ * styles come after them, as they came after the global styles.
+ */
+@Component({
+  selector: 'docs-date-picker-page',
+  imports: [DatePickerPageContent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './date-picker.page.scss',
+  template: '<docs-date-picker-page-content />',
+})
+export class DatePickerPage {}

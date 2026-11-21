@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { form, FormField } from '@angular/forms/signals';
 import { StarField, StarInput } from '@star-ng/ui/field';
 import { StarMention, StarMentionItemTemplate, StarMentionSearchEvent } from '@star-ng/ui/mention';
@@ -31,7 +31,7 @@ const TOPICS: readonly Topic[] = [
 ];
 
 @Component({
-  selector: 'docs-mention-page',
+  selector: 'docs-mention-page-content',
   imports: [DOCS, FormField, StarField, StarInput, StarMention, StarMentionItemTemplate],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: `
@@ -139,7 +139,7 @@ const TOPICS: readonly Topic[] = [
     </docs-page>
   `,
 })
-export class MentionPage {
+export class MentionPageContent {
   protected readonly people = PEOPLE;
   protected readonly last = signal('none');
   protected readonly query = signal<StarMentionSearchEvent | null>(null);
@@ -192,3 +192,18 @@ readonly search = (query: string, trigger: string): Promise<(Person | Topic)[]> 
     { name: 'Escape', description: 'Closes the list. It stays closed for this mention.' },
   ];
 }
+
+/**
+ * Route component of the page. It loads the route styles (`mention.page.scss`): the library
+ * partials of the page and the docs layout. The page content is a child, so its own component
+ * styles come after them, as they came after the global styles.
+ */
+@Component({
+  selector: 'docs-mention-page',
+  imports: [MentionPageContent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './mention.page.scss',
+  template: '<docs-mention-page-content />',
+})
+export class MentionPage {}

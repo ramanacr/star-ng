@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { form, FormField, max, min } from '@angular/forms/signals';
 import { StarButton } from '@star-ng/ui/button';
 import { StarField } from '@star-ng/ui/field';
@@ -6,6 +6,8 @@ import { StarGaugeRange, StarLinearGauge, StarRadialGauge } from '@star-ng/ui/ga
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './gauge.page.scss',
   selector: 'docs-gauge-page',
   imports: [DOCS, StarLinearGauge, StarRadialGauge, StarButton, StarField, FormField],
   changeDetection: ChangeDetectionStrategy.OnPush,

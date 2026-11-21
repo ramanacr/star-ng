@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { form, FormField, required } from '@angular/forms/signals';
 import { StarField } from '@star-ng/ui/field';
 import { StarCascadeOptionTemplate, StarCascadeSelect } from '@star-ng/ui/select';
@@ -12,6 +12,8 @@ interface Place {
 }
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './cascade-select.page.scss',
   selector: 'docs-cascade-select-page',
   imports: [DOCS, StarCascadeSelect, StarCascadeOptionTemplate, StarField, FormField],
   changeDetection: ChangeDetectionStrategy.OnPush,

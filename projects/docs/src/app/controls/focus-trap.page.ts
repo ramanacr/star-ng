@@ -1,11 +1,11 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { StarButton } from '@star-ng/ui/button';
 import { StarToggleSwitch } from '@star-ng/ui/toggle-switch';
 import { StarFocusTrap } from '@star-ng/ui/utility';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
-  selector: 'docs-focus-trap-page',
+  selector: 'docs-focus-trap-page-content',
   imports: [DOCS, StarFocusTrap, StarButton, StarToggleSwitch],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -41,7 +41,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     }
   `,
 })
-export class FocusTrapPage {
+export class FocusTrapPageContent {
   protected readonly trapOn = signal(false);
 
   protected readonly script = `readonly trapOn = signal(false);`;
@@ -57,3 +57,18 @@ export class FocusTrapPage {
     },
   ];
 }
+
+/**
+ * Route component of the page. It loads the route styles (`focus-trap.page.scss`): the library
+ * partials of the page and the docs layout. The page content is a child, so its own component
+ * styles come after them, as they came after the global styles.
+ */
+@Component({
+  selector: 'docs-focus-trap-page',
+  imports: [FocusTrapPageContent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './focus-trap.page.scss',
+  template: '<docs-focus-trap-page-content />',
+})
+export class FocusTrapPage {}

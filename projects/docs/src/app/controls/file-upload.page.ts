@@ -1,5 +1,12 @@
 import { HttpEvent, HttpEventType, HttpResponse } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  inject,
+  signal,
+  ViewEncapsulation,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { StarEmptyTemplate } from '@star-ng/ui/core';
 import {
@@ -44,6 +51,8 @@ function fakeUpload(file: File): Observable<HttpEvent<Receipt>> {
 }
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './file-upload.page.scss',
   selector: 'docs-file-upload-page',
   imports: [DOCS, StarFileUpload, StarFileTemplate, StarEmptyTemplate],
   changeDetection: ChangeDetectionStrategy.OnPush,

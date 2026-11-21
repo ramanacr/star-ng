@@ -1,10 +1,12 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation } from '@angular/core';
 import { StarButton } from '@star-ng/ui/button';
 import { StarField, StarInput } from '@star-ng/ui/field';
 import { StarIconField, StarInputGroup, StarInputGroupAddon } from '@star-ng/ui/input-group';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './input-group.page.scss',
   selector: 'docs-input-group-page',
   imports: [
     DOCS,

@@ -1097,3 +1097,31 @@ test.describe('overlay pages', () => {
     });
   }
 });
+
+/**
+ * A dialog or a sheet from a service lives in the body, outside the page. The page loads its own
+ * styles per route, so it closes these overlays when it goes: no overlay stays open (and
+ * unstyled) on the next page.
+ */
+test.describe('service overlays close when the page goes', () => {
+  for (const [path, label, heading, trigger, name] of [
+    ['dialog', 'Dialog', 'Dialog from code', 'Edit note', 'Edit note'],
+    ['bottom-sheet', 'Bottom sheet', 'Sheet from a component', 'Export invoice', /Export invoice/],
+  ] as const) {
+    test(`${path}: Back closes the open overlay`, async ({ page }) => {
+      await openPage(page, '/controls/button', 'Button');
+      // The page is prerendered: wait for hydration, then move to the page in the client.
+      await expect(page.locator('[ngh]')).toHaveCount(0, { timeout: 15_000 });
+      await page.locator('#docs-nav').getByRole('link', { name: label, exact: true }).click();
+      await expect(page.getByRole('heading', { level: 1, name: label })).toBeVisible();
+      await example(page, heading).getByRole('button', { name: trigger }).click();
+      const overlay = page.getByRole('dialog', { name });
+      await expect(overlay).toBeVisible();
+
+      await page.goBack();
+      await expect(page.getByRole('heading', { level: 1, name: 'Button' })).toBeVisible();
+      await expect(page.locator('dialog[open]')).toHaveCount(0);
+      await expect(overlay).toHaveCount(0);
+    });
+  }
+});

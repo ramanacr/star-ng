@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import {
   STAR_EDITOR_FULL_TOOLBAR,
   STAR_EDITOR_SANITIZE_DEFAULTS,
@@ -12,6 +12,8 @@ import {
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './editor.page.scss',
   selector: 'docs-editor-page',
   imports: [DOCS, StarEditor, StarEditorToolbarTemplate],
   changeDetection: ChangeDetectionStrategy.OnPush,

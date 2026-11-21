@@ -1,8 +1,10 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { StarColorPicker } from '@star-ng/ui/knob';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './color-picker.page.scss',
   selector: 'docs-color-picker-page',
   imports: [DOCS, StarColorPicker],
   changeDetection: ChangeDetectionStrategy.OnPush,

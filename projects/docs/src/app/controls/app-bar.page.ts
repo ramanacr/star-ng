@@ -1,11 +1,11 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation } from '@angular/core';
 import { StarAppBar } from '@star-ng/ui/app-bar';
 import { StarAvatar } from '@star-ng/ui/avatar';
 import { StarButton } from '@star-ng/ui/button';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
-  selector: 'docs-app-bar-page',
+  selector: 'docs-app-bar-page-content',
   imports: [DOCS, StarAppBar, StarButton, StarAvatar],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -84,7 +84,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     }
   `,
 })
-export class AppBarPage {
+export class AppBarPageContent {
   protected readonly weeks = Array.from({ length: 12 }, (_, i) => i + 1);
 
   protected readonly slots: readonly DocsRow[] = [
@@ -105,3 +105,18 @@ export class AppBarPage {
     { name: '--star-shadow-md', description: 'Shadow of an elevated bar.' },
   ];
 }
+
+/**
+ * Route component of the page. It loads the route styles (`app-bar.page.scss`): the library
+ * partials of the page and the docs layout. The page content is a child, so its own component
+ * styles come after them, as they came after the global styles.
+ */
+@Component({
+  selector: 'docs-app-bar-page',
+  imports: [AppBarPageContent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './app-bar.page.scss',
+  template: '<docs-app-bar-page-content />',
+})
+export class AppBarPage {}

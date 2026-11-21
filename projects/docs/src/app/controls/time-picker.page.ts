@@ -1,10 +1,12 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { form, FormField, required } from '@angular/forms/signals';
 import { StarTimePicker } from '@star-ng/ui/date-picker';
 import { StarField } from '@star-ng/ui/field';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './time-picker.page.scss',
   selector: 'docs-time-picker-page',
   imports: [DOCS, StarTimePicker, StarField, FormField],
   changeDetection: ChangeDetectionStrategy.OnPush,

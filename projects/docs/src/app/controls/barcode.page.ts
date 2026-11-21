@@ -1,10 +1,12 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { StarBarcode, StarBarcodeType } from '@star-ng/ui/barcode';
 import { StarInput } from '@star-ng/ui/field';
 import { StarSelect } from '@star-ng/ui/select';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './barcode.page.scss',
   selector: 'docs-barcode-page',
   imports: [DOCS, StarBarcode, StarInput, StarSelect],
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -1,9 +1,11 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { StarButton } from '@star-ng/ui/button';
 import { StarMessage } from '@star-ng/ui/message';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './message.page.scss',
   selector: 'docs-message-page',
   imports: [DOCS, StarMessage, StarButton],
   changeDetection: ChangeDetectionStrategy.OnPush,

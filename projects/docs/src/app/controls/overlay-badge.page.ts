@@ -1,10 +1,12 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { StarAvatar } from '@star-ng/ui/avatar';
 import { StarOverlayBadge } from '@star-ng/ui/badge';
 import { StarButton } from '@star-ng/ui/button';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './overlay-badge.page.scss',
   selector: 'docs-overlay-badge-page',
   imports: [DOCS, StarAvatar, StarButton, StarOverlayBadge],
   changeDetection: ChangeDetectionStrategy.OnPush,

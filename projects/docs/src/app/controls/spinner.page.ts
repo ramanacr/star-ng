@@ -1,8 +1,10 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation } from '@angular/core';
 import { StarSpinner } from '@star-ng/ui/spinner';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './spinner.page.scss',
   selector: 'docs-spinner-page',
   imports: [DOCS, StarSpinner],
   changeDetection: ChangeDetectionStrategy.OnPush,

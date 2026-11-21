@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { StarFooterTemplate, StarHeaderTemplate } from '@star-ng/ui/core';
 import {
   compareDays,
@@ -12,7 +12,7 @@ import {
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
-  selector: 'docs-calendar-page',
+  selector: 'docs-calendar-page-content',
   imports: [DOCS, StarCalendar, StarDateTemplate, StarHeaderTemplate, StarFooterTemplate],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -236,7 +236,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     }
   `,
 })
-export class CalendarPage {
+export class CalendarPageContent {
   protected readonly iso = (date: Date | null | undefined): string =>
     date ? isoDay(date) : 'none';
 
@@ -387,3 +387,18 @@ readonly iso = (date: Date | null) => (date ? isoDay(date) : 'none');
     },
   ];
 }
+
+/**
+ * Route component of the page. It loads the route styles (`calendar.page.scss`): the library
+ * partials of the page and the docs layout. The page content is a child, so its own component
+ * styles come after them, as they came after the global styles.
+ */
+@Component({
+  selector: 'docs-calendar-page',
+  imports: [CalendarPageContent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './calendar.page.scss',
+  template: '<docs-calendar-page-content />',
+})
+export class CalendarPage {}

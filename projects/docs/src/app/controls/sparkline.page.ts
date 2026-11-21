@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation } from '@angular/core';
 import { StarSparkline } from '@star-ng/ui/sparkline';
 import { StarCellTemplate, StarColumn, StarTable } from '@star-ng/ui/table';
 import { DOCS, DocsRow } from '../shared/docs';
@@ -10,6 +10,8 @@ interface Region {
 }
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './sparkline.page.scss',
   selector: 'docs-sparkline-page',
   imports: [DOCS, StarSparkline, StarTable, StarCellTemplate],
   changeDetection: ChangeDetectionStrategy.OnPush,

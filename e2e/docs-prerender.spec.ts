@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import * as sass from 'sass';
 import { collectErrors, DOCS_PAGES } from './support';
 
 /**
@@ -191,4 +192,47 @@ test('the prerendered styling hooks guide has the pass-through and the unstyled 
   expect(html).toMatch(
     /data-star-part="triggerPanel"[^>]*data-star-unstyled|data-star-unstyled[^>]*data-star-part="triggerPanel"/,
   );
+});
+
+/** The `star-*` classes that the rules of a stylesheet style (not the ones under `:not()`). */
+function styledClasses(css: string): Set<string> {
+  const withoutNot = css.replace(/:not\((?:[^()]|\([^()]*\))*\)/g, '');
+  return new Set([...withoutNot.matchAll(/\.(star-[a-z0-9_-]+)/g)].map((m) => m[1]));
+}
+
+/**
+ * Route styles, checked from the outside (independent of tools/docs-page-styles.mjs): every
+ * `star-*` class in the prerendered HTML of a page that star-ng.css styles is also styled by the
+ * CSS that the page loads, the global stylesheet and the route styles in its `<head>`.
+ */
+test.describe('route styles in the prerendered HTML', () => {
+  const library = styledClasses(
+    sass.compile('projects/star-ng/styles/star-ng.scss', { style: 'compressed' }).css,
+  );
+  for (const path of [
+    'controls/table',
+    'controls/select',
+    'controls/scheduler',
+    'controls/date-picker',
+    'controls/tree-table',
+    'guides/forms',
+  ]) {
+    test(`${path} loads the CSS of every library class in its HTML`, async ({ request }) => {
+      const html = await (await request.get(`/${path}`)).text();
+      const head = html.slice(0, html.indexOf('</head>'));
+      const inline = [...head.matchAll(/<style[^>]*>([^]*?)<\/style>/g)].map((m) => m[1]);
+      expect(inline.join('').length).toBeGreaterThan(1000);
+      const href = /<link rel="stylesheet" href="([^"]+)"/.exec(head)?.[1];
+      expect(href).toBeTruthy();
+      const global = await (await request.get(`/${href}`)).text();
+      const loaded = styledClasses([global, ...inline].join('\n'));
+      const used = new Set<string>();
+      for (const m of html.matchAll(/class="([^"]*)"/g)) {
+        for (const name of m[1].split(/\s+/)) if (name.startsWith('star-')) used.add(name);
+      }
+      expect(used.size).toBeGreaterThan(20);
+      const missing = [...used].filter((name) => library.has(name) && !loaded.has(name));
+      expect(missing).toEqual([]);
+    });
+  }
 });

@@ -1,10 +1,12 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { StarButton } from '@star-ng/ui/button';
 import { StarField, StarInput } from '@star-ng/ui/field';
 import { StarBlockUi } from '@star-ng/ui/utility';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './block-ui.page.scss',
   selector: 'docs-block-ui-page',
   imports: [DOCS, StarBlockUi, StarButton, StarField, StarInput],
   changeDetection: ChangeDetectionStrategy.OnPush,

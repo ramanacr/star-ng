@@ -1,8 +1,10 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation } from '@angular/core';
 import { StarBreadcrumb, StarBreadcrumbItem } from '@star-ng/ui/breadcrumb';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './breadcrumb.page.scss',
   selector: 'docs-breadcrumb-page',
   imports: [DOCS, StarBreadcrumb],
   changeDetection: ChangeDetectionStrategy.OnPush,

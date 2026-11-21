@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { StarButton } from '@star-ng/ui/button';
 import { STAR_SLOTS } from '@star-ng/ui/core';
 import { StarInput } from '@star-ng/ui/field';
@@ -23,6 +23,8 @@ import {
 } from './table-demo';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './table.page.scss',
   selector: 'docs-table-page',
   imports: [
     DOCS,

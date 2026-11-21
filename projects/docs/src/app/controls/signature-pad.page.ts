@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  signal,
+  ViewEncapsulation,
+} from '@angular/core';
 import { form, FormField, required } from '@angular/forms/signals';
 import { StarButton } from '@star-ng/ui/button';
 import { StarField } from '@star-ng/ui/field';
@@ -6,7 +12,7 @@ import { StarSignaturePad } from '@star-ng/ui/signature-pad';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
-  selector: 'docs-signature-pad-page',
+  selector: 'docs-signature-pad-page-content',
   imports: [DOCS, FormField, StarButton, StarField, StarSignaturePad],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: `
@@ -88,7 +94,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     </docs-page>
   `,
 })
-export class SignaturePadPage {
+export class SignaturePadPageContent {
   protected readonly signature = signal('');
   protected readonly typedSignature = signal('');
   protected readonly summary = computed(() => {
@@ -116,3 +122,18 @@ export class SignaturePadPage {
     },
   ];
 }
+
+/**
+ * Route component of the page. It loads the route styles (`signature-pad.page.scss`): the library
+ * partials of the page and the docs layout. The page content is a child, so its own component
+ * styles come after them, as they came after the global styles.
+ */
+@Component({
+  selector: 'docs-signature-pad-page',
+  imports: [SignaturePadPageContent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './signature-pad.page.scss',
+  template: '<docs-signature-pad-page-content />',
+})
+export class SignaturePadPage {}

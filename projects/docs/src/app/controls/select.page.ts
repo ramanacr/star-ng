@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { form, FormField, required } from '@angular/forms/signals';
 import { STAR_SLOTS } from '@star-ng/ui/core';
 import { StarField } from '@star-ng/ui/field';
@@ -31,6 +31,8 @@ interface Shipment {
 }
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './select.page.scss',
   selector: 'docs-select-page',
   imports: [
     DOCS,

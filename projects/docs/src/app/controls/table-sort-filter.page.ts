@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  signal,
+  ViewEncapsulation,
+} from '@angular/core';
 import { StarButton } from '@star-ng/ui/button';
 import { StarFilterService } from '@star-ng/ui/core';
 import { StarInput } from '@star-ng/ui/field';
@@ -16,6 +22,8 @@ import { DOCS, DocsRow } from '../shared/docs';
 import { DocsFill, formatDay, formatMoney, Order, ORDERS, STATUS_SEVERITY } from './table-demo';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './table-sort-filter.page.scss',
   selector: 'docs-table-sort-filter-page',
   imports: [DOCS, StarTable, StarCellTemplate, StarTag, StarButton, StarInput, DocsFill],
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { form, FormField, required } from '@angular/forms/signals';
 import { StarEmptyTemplate, StarFooterTemplate } from '@star-ng/ui/core';
 import { StarField } from '@star-ng/ui/field';
@@ -35,7 +35,7 @@ interface Part {
 }
 
 @Component({
-  selector: 'docs-multi-column-combobox-page',
+  selector: 'docs-multi-column-combobox-page-content',
   imports: [
     DOCS,
     FormField,
@@ -152,7 +152,7 @@ interface Part {
     </docs-page>
   `,
 })
-export class MultiColumnComboboxPage {
+export class MultiColumnComboboxPageContent {
   protected readonly products = PRODUCTS;
   protected readonly columns: readonly StarComboboxColumn<Product>[] = [
     { field: 'sku', header: 'SKU', width: '5.5rem' },
@@ -222,3 +222,18 @@ readonly columns: readonly StarComboboxColumn<Product>[] = [
     { name: 'Escape', description: 'Closes the list.' },
   ];
 }
+
+/**
+ * Route component of the page. It loads the route styles (`multi-column-combobox.page.scss`): the library
+ * partials of the page and the docs layout. The page content is a child, so its own component
+ * styles come after them, as they came after the global styles.
+ */
+@Component({
+  selector: 'docs-multi-column-combobox-page',
+  imports: [MultiColumnComboboxPageContent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './multi-column-combobox.page.scss',
+  template: '<docs-multi-column-combobox-page-content />',
+})
+export class MultiColumnComboboxPage {}

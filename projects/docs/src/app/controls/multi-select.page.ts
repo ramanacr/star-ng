@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { form, FormField, minLength } from '@angular/forms/signals';
 import { STAR_SLOTS } from '@star-ng/ui/core';
 import { StarField } from '@star-ng/ui/field';
@@ -29,6 +29,8 @@ interface Parcel {
 }
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './multi-select.page.scss',
   selector: 'docs-multi-select-page',
   imports: [
     DOCS,

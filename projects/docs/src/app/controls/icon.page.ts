@@ -1,8 +1,10 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation } from '@angular/core';
 import { StarIcon } from '@star-ng/ui/icon';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './icon.page.scss',
   selector: 'docs-icon-page',
   imports: [DOCS, StarIcon],
   changeDetection: ChangeDetectionStrategy.OnPush,

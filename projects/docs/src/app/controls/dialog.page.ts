@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  inject,
+  signal,
+  ViewEncapsulation,
+} from '@angular/core';
 import { StarButton } from '@star-ng/ui/button';
 import {
   StarDialog,
@@ -32,6 +39,8 @@ const POSITIONS: readonly StarDialogPosition[] = [
 ];
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './dialog.page.scss',
   selector: 'docs-dialog-page',
   imports: [
     DOCS,
@@ -412,6 +421,12 @@ const POSITIONS: readonly StarDialogPosition[] = [
 })
 export class DialogPage {
   private readonly dialogs = inject(StarDialogService);
+
+  constructor() {
+    // The service puts its overlays in the body, outside the page: close them when the page
+    // goes, as its route styles go with it.
+    inject(DestroyRef).onDestroy(() => this.dialogs.closeAll());
+  }
 
   protected readonly sizes = SIZES;
   protected readonly basicOpen = signal(false);

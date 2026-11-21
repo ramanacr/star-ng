@@ -1,10 +1,12 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { StarInput } from '@star-ng/ui/field';
 import { StarQrCode, StarQrErrorCorrection } from '@star-ng/ui/qr-code';
 import { StarSelectButton } from '@star-ng/ui/select-button';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './qr-code.page.scss',
   selector: 'docs-qr-code-page',
   imports: [DOCS, StarQrCode, StarInput, StarSelectButton],
   changeDetection: ChangeDetectionStrategy.OnPush,

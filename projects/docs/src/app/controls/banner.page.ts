@@ -1,9 +1,11 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { StarBanner } from '@star-ng/ui/banner';
 import { StarButton } from '@star-ng/ui/button';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './banner.page.scss',
   selector: 'docs-banner-page',
   imports: [DOCS, StarBanner, StarButton],
   changeDetection: ChangeDetectionStrategy.OnPush,

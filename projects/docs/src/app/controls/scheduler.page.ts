@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import {
   StarScheduler,
   StarSchedulerEditorSave,
@@ -75,7 +75,7 @@ function monthEvents(): StarSchedulerEvent[] {
 }
 
 @Component({
-  selector: 'docs-scheduler-page',
+  selector: 'docs-scheduler-page-content',
   imports: [DOCS, StarScheduler, StarSchedulerEventTemplate],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: `
@@ -197,7 +197,7 @@ function monthEvents(): StarSchedulerEvent[] {
     </docs-page>
   `,
 })
-export class SchedulerPage {
+export class SchedulerPageContent {
   protected readonly rooms = ROOMS;
   protected readonly events = signal<readonly StarSchedulerEvent[]>(teamEvents());
   protected readonly view = signal<StarSchedulerView>('week');
@@ -346,3 +346,18 @@ function applyChange(
     };
   });
 }
+
+/**
+ * Route component of the page. It loads the route styles (`scheduler.page.scss`): the library
+ * partials of the page and the docs layout. The page content is a child, so its own component
+ * styles come after them, as they came after the global styles.
+ */
+@Component({
+  selector: 'docs-scheduler-page',
+  imports: [SchedulerPageContent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './scheduler.page.scss',
+  template: '<docs-scheduler-page-content />',
+})
+export class SchedulerPage {}

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import { StarDraggable, StarDropEvent, StarDroppable } from '@star-ng/ui/drag-drop';
 import { DOCS, DocsRow } from '../shared/docs';
 
@@ -8,7 +8,7 @@ interface Order {
 }
 
 @Component({
-  selector: 'docs-drag-drop-page',
+  selector: 'docs-drag-drop-page-content',
   imports: [DOCS, StarDraggable, StarDroppable],
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: `
@@ -180,7 +180,7 @@ interface Order {
     </docs-page>
   `,
 })
-export class DragDropPage {
+export class DragDropPageContent {
   protected readonly open = signal<readonly Order[]>([
     { id: 'ORD-1042', city: 'Lisbon' },
     { id: 'ORD-1043', city: 'Oslo' },
@@ -233,3 +233,18 @@ export class DragDropPage {
     { name: 'Escape / Tab', description: 'Cancels the drag. The item does not move.' },
   ];
 }
+
+/**
+ * Route component of the page. It loads the route styles (`drag-drop.page.scss`): the library
+ * partials of the page and the docs layout. The page content is a child, so its own component
+ * styles come after them, as they came after the global styles.
+ */
+@Component({
+  selector: 'docs-drag-drop-page',
+  imports: [DragDropPageContent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './drag-drop.page.scss',
+  template: '<docs-drag-drop-page-content />',
+})
+export class DragDropPage {}

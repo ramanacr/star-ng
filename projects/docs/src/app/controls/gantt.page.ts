@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import {
   StarGantt,
   StarGanttId,
@@ -102,6 +102,8 @@ function largePlan(): StarGanttTask[] {
 }
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './gantt.page.scss',
   selector: 'docs-gantt-page',
   imports: [DOCS, StarGantt, StarSelectButton],
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -1,4 +1,11 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  inject,
+  signal,
+  ViewEncapsulation,
+} from '@angular/core';
 import {
   StarAiPrompt,
   StarAiPromptOutput,
@@ -31,6 +38,8 @@ const ANSWERS: Record<string, string> = {
 };
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './chat.page.scss',
   selector: 'docs-chat-page',
   imports: [DOCS, StarAiPrompt, StarChat],
   changeDetection: ChangeDetectionStrategy.OnPush,

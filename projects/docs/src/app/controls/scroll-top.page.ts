@@ -1,9 +1,9 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation } from '@angular/core';
 import { StarScrollTop } from '@star-ng/ui/utility';
 import { DOCS, DocsRow } from '../shared/docs';
 
 @Component({
-  selector: 'docs-scroll-top-page',
+  selector: 'docs-scroll-top-page-content',
   imports: [DOCS, StarScrollTop],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -60,7 +60,7 @@ import { DOCS, DocsRow } from '../shared/docs';
     }
   `,
 })
-export class ScrollTopPage {
+export class ScrollTopPageContent {
   protected readonly rows = Array.from({ length: 30 }, (_, index) => 1001 + index);
 
   protected readonly script = `readonly rows = Array.from({ length: 30 }, (_, index) => 1001 + index);`;
@@ -87,3 +87,18 @@ export class ScrollTopPage {
     { name: 'Enter / Space', description: 'Scrolls to the top.' },
   ];
 }
+
+/**
+ * Route component of the page. It loads the route styles (`scroll-top.page.scss`): the library
+ * partials of the page and the docs layout. The page content is a child, so its own component
+ * styles come after them, as they came after the global styles.
+ */
+@Component({
+  selector: 'docs-scroll-top-page',
+  imports: [ScrollTopPageContent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './scroll-top.page.scss',
+  template: '<docs-scroll-top-page-content />',
+})
+export class ScrollTopPage {}

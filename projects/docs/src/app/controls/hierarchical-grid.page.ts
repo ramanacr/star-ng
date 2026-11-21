@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal, ViewEncapsulation } from '@angular/core';
 import {
   StarChildGridCreatedEvent,
   StarHierarchicalGrid,
@@ -58,6 +58,8 @@ function linesOf(order: Order): OrderLine[] {
 }
 
 @Component({
+  encapsulation: ViewEncapsulation.None,
+  styleUrl: './hierarchical-grid.page.scss',
   selector: 'docs-hierarchical-grid-page',
   imports: [DOCS, StarHierarchicalGrid, StarRowIsland],
   changeDetection: ChangeDetectionStrategy.OnPush,
