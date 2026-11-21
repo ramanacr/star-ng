@@ -54,6 +54,8 @@ export interface StarUiText {
   readonly selectAll: string;
   readonly selectedItems: (count: number) => string;
   readonly searching: string;
+  /** The autocomplete `suggestionLoader` failed (its promise rejected). */
+  readonly searchFailed: string;
   readonly showOptions: string;
   /** The row that adds typed text as a new value (multi-select, multiple autocomplete). */
   readonly addCustomValue: (label: string) => string;
@@ -965,6 +967,7 @@ export const STAR_UI_TEXT_DEFAULTS: StarUiText = {
   selectAll: 'Select all',
   selectedItems: (count) => `${count} items selected`,
   searching: 'Searching…',
+  searchFailed: 'The search failed. Type again to retry.',
   showOptions: 'Show options',
   addCustomValue: (label) => `Add “${label}”`,
   resultsAvailable: (count) => (count === 1 ? '1 result available' : `${count} results available`),

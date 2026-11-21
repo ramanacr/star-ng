@@ -5,12 +5,11 @@ import {
   Component,
   computed,
   contentChildren,
-  DestroyRef,
   Directive,
+  effect,
   forwardRef,
   inject,
   input,
-  OnInit,
   output,
   signal,
 } from '@angular/core';
@@ -123,9 +122,8 @@ export class StarMessageContainer extends StarSlot<StarMessageContainerContext> 
     }
   `,
 })
-export class StarMessage implements OnInit {
+export class StarMessage {
   protected readonly text = inject(STAR_UI_TEXT);
-  private readonly destroyRef = inject(DestroyRef);
 
   readonly severity = input<StarMessageSeverity>('info');
   readonly variant = input<'soft' | 'outlined'>('soft');
@@ -152,15 +150,22 @@ export class StarMessage implements OnInit {
   };
   protected readonly iconClass = computed(() => this.icon() ?? ICONS[this.severity()]);
 
-  ngOnInit(): void {
-    const life = this.life();
-    if (life > 0) {
+  constructor() {
+    // The timer starts when the first change detection has set the inputs (the first run of a
+    // component effect). The effect reads `life` and `visible`: a new `life` starts the timer
+    // again, and a close (by the user or by `close()`) runs the cleanup, which clears the timer.
+    // The cleanup also runs when the message is destroyed.
+    effect((onCleanup) => {
+      const life = this.life();
+      if (life <= 0 || !this.visible()) return;
       const timer = setTimeout(() => this.close(), life);
-      this.destroyRef.onDestroy(() => clearTimeout(timer));
-    }
+      onCleanup(() => clearTimeout(timer));
+    });
   }
 
+  /** Hides the message and emits `closed`. A message that is closed already does nothing. */
   close(): void {
+    if (!this.visible()) return;
     this.visible.set(false);
     this.closed.emit();
   }

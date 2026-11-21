@@ -124,6 +124,28 @@ interface OfficeCity {
       </docs-example>
 
       <docs-example
+        heading="Loader function"
+        source="autocomplete/loader"
+        [script]="loaderScript"
+        note="suggestionLoader takes a function of the typed text and an AbortSignal that returns a promise of the options. The control runs it through Angular resource(): it shows the loading state, aborts an older load when the text changes and shows the result. A failed load shows a message; type again to retry. Type 'zz' to see the failure. The example waits 400 ms to simulate a server."
+      >
+        <div class="docs-stack">
+          <star-autocomplete
+            [suggestionLoader]="findPeople"
+            [minQueryLength]="2"
+            [delay]="150"
+            optionLabel="name"
+            optionValue="id"
+            [(value)]="loaded"
+            placeholder="Type 2 letters of a name"
+            ariaLabel="Colleague (loader)"
+            showClear
+          />
+          <p class="docs-output" role="status">Colleague: {{ loaded() ?? 'none' }}</p>
+        </div>
+      </docs-example>
+
+      <docs-example
         heading="Multiple"
         source="autocomplete/multiple"
         note="star-multi-autocomplete turns each choice into a removable chip. Backspace in an empty field removes the last chip. Chosen options leave the list. selectionLimit stops choices at a number."
@@ -461,6 +483,20 @@ readonly lazyList = lazyOrders();`;
     }, 400);
   }
 
+  protected readonly loaded = signal<string | null>(null);
+  /** Waits 400 ms like a server; the text 'zz' fails, to show the error state. */
+  protected readonly findPeople = (query: string, abortSignal: AbortSignal) =>
+    new Promise<readonly Person[]>((resolve, reject) => {
+      const timer = setTimeout(() => {
+        if (query.toLowerCase() === 'zz') reject(new Error('The directory is not available.'));
+        else
+          resolve(
+            this.people.filter((item) => item.name.toLowerCase().includes(query.toLowerCase())),
+          );
+      }, 400);
+      abortSignal.addEventListener('abort', () => clearTimeout(timer));
+    });
+
   protected readonly taskModel = signal<{ assignee: string | null }>({ assignee: null });
   protected readonly task = form(this.taskModel, (path) => {
     required(path.assignee, { message: 'Choose an assignee.' });
@@ -483,6 +519,17 @@ search(event: StarAutoCompleteSearch): void {
     this.searching.set(false);
   }, 400);
 }`;
+  protected readonly loaderScript = `readonly loaded = signal<string | null>(null);
+
+// A real application calls its server here, for example with fetch(url, { signal: abortSignal }).
+readonly findPeople = (query: string, abortSignal: AbortSignal) =>
+  new Promise<readonly Person[]>((resolve, reject) => {
+    const timer = setTimeout(() => {
+      if (query.toLowerCase() === 'zz') reject(new Error('The directory is not available.'));
+      else resolve(this.people.filter((item) => item.name.toLowerCase().includes(query.toLowerCase())));
+    }, 400);
+    abortSignal.addEventListener('abort', () => clearTimeout(timer));
+  });`;
   protected readonly slotsScript = `// Import STAR_SLOTS from '@star-ng/ui/core' in the component imports.
 readonly officeCities: readonly OfficeCity[] = [
   { code: 'BER', name: 'Berlin', country: 'Germany' },

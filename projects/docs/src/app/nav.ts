@@ -83,6 +83,13 @@ export const DOCS_NAV: readonly DocsNavGroup[] = [
         keywords: 'a11y keyboard screen reader contrast wcag aria',
         load: () => import('./guides/accessibility.guide').then((m) => m.AccessibilityGuide),
       },
+      {
+        label: 'Angular features',
+        path: 'guides/angular-features',
+        keywords:
+          'signals zoneless ssr hydration defer resource signal forms control flow standalone csp vitest',
+        load: () => import('./guides/angular-features.guide').then((m) => m.AngularFeaturesGuide),
+      },
     ],
   },
   {

@@ -197,6 +197,9 @@ test.describe('scheduler', () => {
     page.on('console', (message) => {
       if (message.text().includes('NG0953')) errors.push(message.text());
     });
+    // The page change cross-fades (view transition) and scrolls after it: a held click at a
+    // measured position needs the page to stay still, so this test asks for reduced motion.
+    await page.emulateMedia({ reducedMotion: 'reduce' });
     await openPage(page, '/controls/button', 'Button');
     await page.locator('#docs-nav').getByRole('link', { name: 'Scheduler', exact: true }).click();
     await expect(page.getByRole('heading', { level: 1, name: 'Scheduler' })).toBeVisible();

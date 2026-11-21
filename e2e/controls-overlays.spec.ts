@@ -1172,6 +1172,9 @@ test.describe('service overlays close when the page goes', () => {
   });
 
   test('scheduler: Back closes the event editor that the scheduler opened', async ({ page }) => {
+    // The page change cross-fades (view transition) and scrolls after it: a held click at a
+    // measured position needs the page to stay still, so this test asks for reduced motion.
+    await page.emulateMedia({ reducedMotion: 'reduce' });
     await openPage(page, '/controls/button', 'Button');
     await expect(page.locator('[ngh]')).toHaveCount(0, { timeout: 15_000 });
     await page.locator('#docs-nav').getByRole('link', { name: 'Scheduler', exact: true }).click();

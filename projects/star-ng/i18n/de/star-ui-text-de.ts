@@ -49,6 +49,7 @@ export const STAR_UI_TEXT_DE: StarUiText = {
   selectAll: 'Alle auswählen',
   selectedItems: (count) => `${count} ${forCount(count, 'Element', 'Elemente')} ausgewählt`,
   searching: 'Suche läuft…',
+  searchFailed: 'Die Suche ist fehlgeschlagen. Tippen Sie erneut, um es noch einmal zu versuchen.',
   showOptions: 'Optionen anzeigen',
   addCustomValue: (label) => `„${label}“ hinzufügen`,
   resultsAvailable: (count) => `${count} ${forCount(count, 'Ergebnis', 'Ergebnisse')} verfügbar`,
