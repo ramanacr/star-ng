@@ -31,6 +31,7 @@
 //
 //   node tools/docs-page-styles.mjs           writes the page stylesheets and the shell list
 //   node tools/docs-page-styles.mjs --check   fails when a written file is out of date
+//   --sheets-dir <folder>                     searches that folder for orphan sheets (tests)
 //
 // `tools/docs-page-styles.test.mjs` checks the coverage of every page and the cascade order.
 import { existsSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
@@ -471,14 +472,18 @@ export function shellStylesText(current, shell = shellPartials()) {
   return current.slice(0, start) + shellBlockText(shell) + current.slice(end + SHELL_END.length);
 }
 
-/** Every file that the tool writes, with its expected text (`null`: the file must not exist). */
-export function expectedFiles() {
+/**
+ * Every file that the tool writes, with its expected text (`null`: the file must not exist).
+ * `sheetsDir` is the folder searched for orphan stylesheets (default the docs app; the tests pass
+ * a temporary folder, so a parallel build never sees their files).
+ */
+export function expectedFiles(sheetsDir = appDir) {
   const shell = shellPartials();
   const files = [[shellStylesFile, shellStylesText(readFileSync(shellStylesFile, 'utf8'), shell)]];
   for (const page of pageFiles()) files.push([pageStylesFile(page), pageStylesText(page, shell)]);
   // A generated stylesheet whose page is gone (renamed, removed) must go as well.
   const known = new Set(files.map(([file]) => file));
-  for (const file of generatedSheets()) if (!known.has(file)) files.push([file, null]);
+  for (const file of generatedSheets(sheetsDir)) if (!known.has(file)) files.push([file, null]);
   return files;
 }
 
@@ -503,8 +508,11 @@ export function generatedSheets(dir = appDir) {
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const check = process.argv.includes('--check');
+  // `--sheets-dir <folder>`: search that folder for orphan stylesheets (for the tests).
+  const at = process.argv.indexOf('--sheets-dir');
+  const sheetsDir = at > 0 ? resolve(process.argv[at + 1]) : appDir;
   const stale = [];
-  for (const [file, text] of expectedFiles()) {
+  for (const [file, text] of expectedFiles(sheetsDir)) {
     const current = existsSync(file) ? readFileSync(file, 'utf8') : null;
     if (current === text) continue;
     if (check) stale.push(posix(relative(root, file)));
