@@ -36,7 +36,7 @@ Control groups: buttons; forms (field, input, checkbox, radio, switch, number, p
 
 ### Change detection
 
-The controls use signals and `OnPush`, and need no `zone.js`. They work in a zoneless application (the Angular default) and in an application that still uses `provideZoneChangeDetection`. The tests of the library run zoneless.
+The controls use signals and `OnPush`, and need no `zone.js`. They work in a zoneless application (the Angular default). An application that still uses `provideZoneChangeDetection` is supported, but not tested: the tests of the library run zoneless only.
 
 ## Install
 

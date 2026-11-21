@@ -44,7 +44,7 @@ export class StarClock {
     // Outside the zone: a zone-based application does not run change detection on every tick;
     // the signal update schedules the views that read `now()`. In a zoneless application
     // (the default) `NgZone` is a no-op zone and this only runs the function. StarNG supports
-    // zone-based applications too (the peer range `@angular/core` ^22 still offers
+    // zone-based applications too (not tested in CI) (the peer range `@angular/core` ^22 still offers
     // `provideZoneChangeDetection`; see "Change detection" in the README), so this call stays.
     const timer = inject(NgZone).runOutsideAngular(() =>
       setInterval(() => this.current.set(Date.now()), tick),
