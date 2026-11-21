@@ -15,6 +15,7 @@ import {
   linkedSignal,
   model,
   output,
+  resource,
   signal,
   untracked,
   viewChild,
@@ -36,6 +37,15 @@ import {
 export interface StarAutoCompleteSearch {
   readonly query: string;
 }
+
+/**
+ * Loads the suggestions for a typed text (see `suggestionLoader`). `abortSignal` aborts when the
+ * user types again before the load ends.
+ */
+export type StarAutoCompleteLoader<TOption> = (
+  query: string,
+  abortSignal: AbortSignal,
+) => Promise<readonly TOption[]> | readonly TOption[];
 
 interface Chip<TValue> {
   readonly value: TValue;
@@ -64,6 +74,15 @@ export abstract class StarAutoCompleteBase<TOption, TValue> extends StarOptionLi
   readonly autoHighlight = input(false, { transform: booleanAttribute });
   readonly showEmptyMessage = input(true, { transform: booleanAttribute });
 
+  /**
+   * Loads the suggestions itself, as an alternative to `(completeMethod)` + `[suggestions]`. The
+   * control calls the function with the debounced text (at the time `completeMethod` fires, which
+   * still fires) through Angular `resource()`: it shows the loading row while the promise is open,
+   * aborts an older load when the user types again, and shows the result. A set `suggestions`
+   * input wins over the loaded list. Default `null` (no loader).
+   */
+  readonly suggestionLoader = input<StarAutoCompleteLoader<TOption> | null>(null);
+
   /** Fires (debounced) when the user types; load `suggestions` in reply (PrimeNG `completeMethod`). */
   readonly completeMethod = output<StarAutoCompleteSearch>();
   /** An option was chosen (also from typed text). PrimeNG `onSelect`. */
@@ -88,8 +107,29 @@ export abstract class StarAutoCompleteBase<TOption, TValue> extends StarOptionLi
   /** Typed text. Resets to the selected label when the value changes. */
   protected readonly query = linkedSignal(() => this.queryFromValue());
 
+  /** The text of the last search (`completeMethod`), or `null` before the first search. */
+  private readonly searched = signal<string | null>(null);
+  private readonly loaded = resource({
+    params: () => {
+      const loader = this.suggestionLoader();
+      const query = this.searched();
+      return loader && query !== null ? { loader, query } : undefined;
+    },
+    loader: async ({ params, abortSignal }) => params.loader(params.query, abortSignal),
+  });
+  /** The `suggestions` input, else the result of `suggestionLoader`, else `null` (local mode). */
+  protected readonly remote = computed<readonly TOption[] | null>(() => {
+    const given = this.suggestions();
+    if (given || !this.suggestionLoader()) return given;
+    return this.loaded.hasValue() ? this.loaded.value() : [];
+  });
+
+  protected override busy(): boolean {
+    return this.loading() || this.loaded.isLoading();
+  }
+
   protected override readonly visibleOptions = computed(() => {
-    const remote = this.suggestions();
+    const remote = this.remote();
     const query = this.query();
     const candidates =
       remote ??
@@ -111,13 +151,13 @@ export abstract class StarAutoCompleteBase<TOption, TValue> extends StarOptionLi
       this.queryLongEnough() &&
       (this.visibleOptions().length > 0 ||
         this.customRow() !== null ||
-        this.loading() ||
+        this.busy() ||
         this.showEmptyMessage()),
   );
 
   protected readonly liveText = computed(() => {
     if (!this.panelVisible()) return '';
-    if (this.loading()) return this.text.searching;
+    if (this.busy()) return this.text.searching;
     const count = this.visibleOptions().length;
     return count ? this.text.resultsAvailable(count) : this.emptyText();
   });
@@ -155,7 +195,7 @@ export abstract class StarAutoCompleteBase<TOption, TValue> extends StarOptionLi
 
   /** Finds the option behind a stored value, for labels. */
   protected optionForValue(value: TValue): TOption | undefined {
-    const pools = [this.known(), this.suggestions() ?? [], this.options()];
+    const pools = [this.known(), this.remote() ?? [], this.options()];
     for (const pool of pools) {
       const match = pool.find((option) => this.equals(this.valueOf(option), value));
       if (match !== undefined) return match;
@@ -184,7 +224,13 @@ export abstract class StarAutoCompleteBase<TOption, TValue> extends StarOptionLi
       return;
     }
     this.openPanel();
-    this.searchTimer = setTimeout(() => this.completeMethod.emit({ query: text }), this.delay());
+    this.searchTimer = setTimeout(() => this.search(text), this.delay());
+  }
+
+  /** Starts a search: `completeMethod`, and the `suggestionLoader` when one is set. */
+  private search(query: string): void {
+    this.searched.set(query);
+    this.completeMethod.emit({ query });
   }
 
   protected showAllOptions(): void {
@@ -194,7 +240,7 @@ export abstract class StarAutoCompleteBase<TOption, TValue> extends StarOptionLi
       return;
     }
     this.showAll.set(true);
-    this.completeMethod.emit({ query: '' });
+    this.search('');
     this.openPanel();
     this.focus();
   }
@@ -307,7 +353,7 @@ const TEMPLATE = `
         (blur)="onInputBlur()"
       />
     </div>
-    @if (loading()) {
+    @if (busy()) {
       <i data-star-part="loadingIcon" class="ph-bold ph-spinner-gap star-spin star-select__caret" aria-hidden="true"></i>
     }
     @if (showClear() && hasValue() && interactive()) {
@@ -423,7 +469,7 @@ const TEMPLATE = `
               @if (emptySlot(); as custom) {
                 <ng-container *ngTemplateOutlet="custom; context: emptyContext()" />
               } @else {
-                <ng-container>{{ loading() ? text.searching : emptyText() }}</ng-container>
+                <ng-container>{{ busy() ? text.searching : emptyText() }}</ng-container>
               }
             </li>
           }
@@ -680,7 +726,7 @@ export class StarMultiAutoComplete<TOption = unknown, TValue = TOption>
     const text = raw.trim();
     if (!text || !this.interactive()) return false;
     const lower = text.toLocaleLowerCase();
-    const option = [...(this.suggestions() ?? []), ...this.options()].find(
+    const option = [...(this.remote() ?? []), ...this.options()].find(
       (o) =>
         o !== undefined && !this.isDisabled(o) && this.labelOf(o).toLocaleLowerCase() === lower,
     );
@@ -712,7 +758,7 @@ export class StarMultiAutoComplete<TOption = unknown, TValue = TOption>
   private customTaken(text: string): boolean {
     const lower = text.toLocaleLowerCase();
     return (
-      [...(this.suggestions() ?? []), ...this.options()].some(
+      [...(this.remote() ?? []), ...this.options()].some(
         (option) => option !== undefined && this.labelOf(option).toLocaleLowerCase() === lower,
       ) ||
       (this.unique() &&

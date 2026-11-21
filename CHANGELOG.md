@@ -73,6 +73,7 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 #### Select, autocomplete and listbox
 
 - Cascade select: `groupChange` (the parent option and its level when a submenu opens), the slots `starHeader` and `starFooter` in the menu and `starIcon="group"` for the submenu arrow (PrimeNG `onGroupChange`, `#header`, `#footer`, `#groupicon`). `beforeShow` and `beforeHide` emit before the menu overlay is created or removed, `show` and `hide` after it.
+- Autocomplete and multi-autocomplete: the opt-in input `suggestionLoader` (`StarAutoCompleteLoader`: `(query, abortSignal) => Promise<options> | options`). The control calls it through Angular `resource()` with the debounced text, shows the loading state while the promise is open, aborts an older load when the user types again, and shows the result. `completeMethod` still fires at the same time, and a set `suggestions` input still wins.
 
 #### Tabs
 
@@ -104,6 +105,7 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - Docs site (internal; the package does not change): the docs load only the Phosphor icons that they use (`corepack pnpm docs:icons` writes the subset from the package CSS). The initial bundle of the docs goes from 775 kB to 640 kB, and the global stylesheet from 234 kB to 99 kB.
 - Scheduler: `editorSave` and `eventDelete` now emit when Save or Delete is pressed in the event editor, before the dialog closes. Before, they emitted after the dialog had closed. The payload does not change.
 - Internal (no API change): the remaining RxJS subscriptions of the pass-through host, the tab link, the tile layout and the list now end with `takeUntilDestroyed`, and the popover also ends its outside-click subscription when it is destroyed. The date picker switches its text to `inputFormat` in the focus event by writing the field, without a synchronous change detection run (`detectChanges`). The library runs zoneless; `StarClock` keeps `NgZone.runOutsideAngular` for zone-based applications.
+- Message: the `life` timer now starts in an effect instead of `ngOnInit`. It starts at the same time (the first change detection), and a new `life` value now starts the timer again (before, a later change was ignored). The README states that the controls work in zoneless and zone-based applications.
 
 ### Fixed
 

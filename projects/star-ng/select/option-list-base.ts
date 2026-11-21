@@ -265,8 +265,12 @@ export abstract class StarOptionListBase<TOption, TValue> {
   protected readonly loadingSlot = starSlot<object>(this.slots, this, 'loading');
   protected readonly groupSlot = starSlot<StarGroupContext>(this.slots, this, 'group');
   protected readonly iconSlots = starSlotMap<object>(this.slots, this, 'icon');
-  /** The loading slot, only while `loading` is on. */
-  protected readonly loadingRow = computed(() => (this.loading() ? this.loadingSlot() : null));
+  /** The loading slot, only while the list loads (see `busy`). */
+  protected readonly loadingRow = computed(() => (this.busy() ? this.loadingSlot() : null));
+  /** True while the list loads: the `loading` input, or a load that a subclass runs itself. */
+  protected busy(): boolean {
+    return this.loading();
+  }
   protected readonly trigger = viewChild.required<ElementRef<HTMLElement>>('trigger');
   private readonly filterInput = viewChild<ElementRef<HTMLInputElement>>('filterInput');
 

@@ -5,14 +5,14 @@ import {
   Component,
   computed,
   contentChildren,
-  DestroyRef,
   Directive,
+  effect,
   forwardRef,
   inject,
   input,
-  OnInit,
   output,
   signal,
+  untracked,
 } from '@angular/core';
 import {
   STAR_SLOT_HOST,
@@ -123,9 +123,8 @@ export class StarMessageContainer extends StarSlot<StarMessageContainerContext> 
     }
   `,
 })
-export class StarMessage implements OnInit {
+export class StarMessage {
   protected readonly text = inject(STAR_UI_TEXT);
-  private readonly destroyRef = inject(DestroyRef);
 
   readonly severity = input<StarMessageSeverity>('info');
   readonly variant = input<'soft' | 'outlined'>('soft');
@@ -152,12 +151,16 @@ export class StarMessage implements OnInit {
   };
   protected readonly iconClass = computed(() => this.icon() ?? ICONS[this.severity()]);
 
-  ngOnInit(): void {
-    const life = this.life();
-    if (life > 0) {
+  constructor() {
+    // The timer starts when the first change detection has set the inputs (the first run of a
+    // component effect). A new `life` starts the timer again; a closed message has no timer.
+    // The cleanup clears the timer on a change and when the message is destroyed.
+    effect((onCleanup) => {
+      const life = this.life();
+      if (life <= 0 || !untracked(this.visible)) return;
       const timer = setTimeout(() => this.close(), life);
-      this.destroyRef.onDestroy(() => clearTimeout(timer));
-    }
+      onCleanup(() => clearTimeout(timer));
+    });
   }
 
   close(): void {

@@ -1064,6 +1064,14 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "inheritedFrom": "StarAutoCompleteBase"
       },
       {
+        "name": "suggestionLoader",
+        "type": "StarAutoCompleteLoader<TOption> | null",
+        "default": "null",
+        "required": false,
+        "description": "Loads the suggestions itself, as an alternative to `(completeMethod)` + `[suggestions]`. The control calls the function with the debounced text (at the time `completeMethod` fires, which still fires) through Angular `resource()`: it shows the loading row while the promise is open, aborts an older load when the user types again, and shows the result. A set `suggestions` input wins over the loaded list. Default `null` (no loader).",
+        "inheritedFrom": "StarAutoCompleteBase"
+      },
+      {
         "name": "forceSelection",
         "type": "boolean",
         "default": "false",
@@ -1507,6 +1515,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "true",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "suggestionLoader",
+        "type": "StarAutoCompleteLoader<TOption> | null",
+        "default": "null",
+        "required": false,
+        "description": "Loads the suggestions itself, as an alternative to `(completeMethod)` + `[suggestions]`. The control calls the function with the debounced text (at the time `completeMethod` fires, which still fires) through Angular `resource()`: it shows the loading row while the promise is open, aborts an older load when the user types again, and shows the result. A set `suggestions` input wins over the loaded list. Default `null` (no loader)."
       }
     ],
     "models": [],
@@ -12991,6 +13006,14 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "true",
         "required": false,
         "description": "",
+        "inheritedFrom": "StarAutoCompleteBase"
+      },
+      {
+        "name": "suggestionLoader",
+        "type": "StarAutoCompleteLoader<TOption> | null",
+        "default": "null",
+        "required": false,
+        "description": "Loads the suggestions itself, as an alternative to `(completeMethod)` + `[suggestions]`. The control calls the function with the debounced text (at the time `completeMethod` fires, which still fires) through Angular `resource()`: it shows the loading row while the promise is open, aborts an older load when the user types again, and shows the result. A set `suggestions` input wins over the loaded list. Default `null` (no loader).",
         "inheritedFrom": "StarAutoCompleteBase"
       },
       {
