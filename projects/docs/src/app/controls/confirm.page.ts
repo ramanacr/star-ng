@@ -308,6 +308,11 @@ async deleteInvoice(id: string, event: MouseEvent): Promise<void> {
 
   protected readonly slots: readonly DocsRow[] = [
     {
+      name: 'ng-template[starConfirmTemplate]',
+      description:
+        'Content child of star-confirm-host. "header" replaces the dialog title (the dialog keeps the header or message as its name), "icon" the icon, "acceptIcon" and "rejectIcon" add an icon in the buttons, "footer" replaces the buttons. Context: $implicit (the options), accept and reject. PrimeNG #header, #icon, #accepticon, #rejecticon and #footer.',
+    },
+    {
       name: 'ng-template[starConfirmMessage]',
       description:
         'Inside star-confirm-host. Replaces the message text of the dialog and the popup. let-options gives the options of ask.',

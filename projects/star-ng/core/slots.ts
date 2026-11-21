@@ -188,7 +188,9 @@ export type StarIconSlotName =
   | 'list'
   | 'grid'
   | 'submenu'
-  | 'group';
+  | 'group'
+  | 'close'
+  | 'remove';
 
 /** Context of the icon slot. */
 export interface StarIconContext {

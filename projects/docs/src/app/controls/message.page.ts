@@ -77,6 +77,16 @@ reset(): void {
 }`;
 
   protected readonly slots: readonly DocsRow[] = [
+    {
+      name: 'ng-template[starMessageContainer]',
+      description:
+        'Content child. Replaces the whole content; let-close closes the message. PrimeNG #container.',
+    },
+    {
+      name: 'ng-template[starIcon]',
+      description:
+        'Content child. "icon" replaces the severity icon, "close" the icon of the close button. PrimeNG #icon and #closeicon.',
+    },
     { name: '(default)', description: 'The text of the message.' },
   ];
   protected readonly cssVars: readonly DocsRow[] = [

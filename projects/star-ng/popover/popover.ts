@@ -8,12 +8,15 @@ import {
   OverlayRef,
 } from '@angular/cdk/overlay';
 import { TemplatePortal } from '@angular/cdk/portal';
+import { NgTemplateOutlet } from '@angular/common';
 import {
   afterNextRender,
   booleanAttribute,
   ChangeDetectionStrategy,
   Component,
+  contentChildren,
   DestroyRef,
+  forwardRef,
   inject,
   Injector,
   input,
@@ -23,7 +26,15 @@ import {
   viewChild,
   ViewContainerRef,
 } from '@angular/core';
-import { StarDirectionService, StarPart, StarStyled, ɵSTAR_PART_HOST } from '@star-ng/ui/core';
+import {
+  STAR_SLOT_HOST,
+  StarDirectionService,
+  StarPart,
+  StarSlot,
+  starSlot,
+  StarStyled,
+  ɵSTAR_PART_HOST,
+} from '@star-ng/ui/core';
 import { Subscription } from 'rxjs';
 
 const FOCUSABLE =
@@ -48,12 +59,21 @@ const POSITIONS: ConnectedPosition[] = [
  * <star-button #anchor (pressed)="info.toggle($event)">Details</star-button>
  * <star-popover #info ariaLabel="Order details">…</star-popover>
  * ```
+ *
+ * Slots (content children): `starHeader` adds a header above the content (PrimeNG has no header
+ * template; this matches the `header` of the other overlays).
+ *
+ * PrimeNG names that star-ng covers in another way: `onShow` / `onHide` = `shown` / `hidden`, the
+ * `content` template = the projected content, `ariaCloseLabel` = put your own close button in the
+ * content. Not applicable: `appendTo`, `autoZIndex`, `baseZIndex` (top layer), `motionOptions`
+ * (theme motion, off with reduced motion).
  */
 @Component({
   selector: 'star-popover',
   hostDirectives: [{ directive: StarStyled, inputs: ['pt', 'unstyled'] }],
   viewProviders: [{ provide: ɵSTAR_PART_HOST, useExisting: StarStyled }],
-  imports: [StarPart],
+  imports: [StarPart, NgTemplateOutlet],
+  providers: [{ provide: STAR_SLOT_HOST, useExisting: forwardRef(() => StarPopover) }],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <ng-template #panel>
@@ -66,8 +86,13 @@ const POSITIONS: ConnectedPosition[] = [
         [attr.aria-modal]="role() === 'alertdialog' ? 'false' : null"
         [attr.aria-label]="ariaLabelledby() ? null : ariaLabel()"
         [attr.aria-labelledby]="ariaLabelledby()"
-        (keydown.escape)="hide()"
+        (keydown.escape)="closeOnEscape() && hide()"
       >
+        @if (headerSlot(); as header) {
+          <div data-star-part="headerPanel" class="star-popover__header">
+            <ng-container *ngTemplateOutlet="header" />
+          </div>
+        }
         <ng-content />
       </div>
     </ng-template>
@@ -86,7 +111,13 @@ export class StarPopover {
   readonly role = input<'dialog' | 'alertdialog'>('dialog');
   /** Moves focus into the popover when it opens. */
   readonly focusOnShow = input(true, { transform: booleanAttribute });
+  /** A click outside closes the popover (default `true`). PrimeNG `dismissable`. */
   readonly dismissable = input(true, { transform: booleanAttribute });
+  /** Escape closes the popover (default `true`). PrimeNG `closeOnEscape`. */
+  readonly closeOnEscape = input(true, { transform: booleanAttribute });
+
+  private readonly slots = contentChildren(StarSlot, { descendants: true });
+  protected readonly headerSlot = starSlot<object>(this.slots, this, 'header');
 
   readonly shown = output<void>();
   readonly hidden = output<void>();

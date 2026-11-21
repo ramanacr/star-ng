@@ -6,6 +6,10 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 
 ### Added
 
+#### Accordion
+
+- Accordion: the outputs `opened` and `closed` (PrimeNG `onOpen`, `onClose`); a panel takes the slots `starHeader` (title) and `starIcon="toggle"` (`let-expanded`) (PrimeNG `#toggleicon`, `expandIcon`, `collapseIcon`).
+
 #### Action strip
 
 - Action strip (`star-action-strip`, new entry `@star-ng/ui/action-strip`): icon actions on hover and focus of a row or card, with a "More actions" menu (Ignite UI `igx-action-strip`).
@@ -64,6 +68,10 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 
 - Chat and AI prompt (`star-chat`, `star-ai-prompt`, `star-markdown-lite`, `StarChatMessageTemplate`, new entry `@star-ng/ui/chat`): a message list with own messages at the end, author groups, day separators, a composer (Enter sends, Shift+Enter adds a line, `send`), a typing indicator, `loadMore` at the top with a kept scroll position, in-place streaming with a polite announcement once a message from others is `sent`, and a Markdown subset rendered as text (bold, italic, code, code blocks, safe links with `rel="noopener noreferrer"`, no raw HTML); and a prompt panel with suggestion chips, `promptRequest`, responses with Copy, Retry (`retry`) and Stop (`stop`) while streaming. No network or model call (Kendo UI Chat and AIPrompt). UI texts `chatMessages`, `chatEmpty`, `message`, `send`, `messageFrom`, `newMessage`, `newMessages`, `messageSending`, `messageSent`, `messageNotSent`, `isTyping`, `areTyping`, `aiPrompt`, `aiPromptPlaceholder`, `promptSuggestions`, `generate`, `aiResponses`, `aiGenerating`, `aiResponseReady`, `aiResponseFailed`, `aiPromptShortcutHint`, `copy`, `copied`, `copyFailed`, `retry` and `stop` (English, German, Spanish).
 
+#### Chip and tag
+
+- Chip: `starIcon="remove"` (PrimeNG `#removeicon`). Tag: `starIcon="icon"` (PrimeNG `#icon`).
+
 #### Color picker
 
 - Eye dropper button in `star-color-picker` (`@star-ng/ui/knob`): picks a color from the screen with the `EyeDropper` API of the browser; hidden when the browser has no such API (PrimeNG `p-inputcolor-eyedropper`). New output `changed` emits the color that the user chose. UI text `eyeDropper` (English, German, Spanish).
@@ -113,6 +121,8 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - Dialog: `breakpoints` (`{ '<max-width>': '<width>' }`) sets the width of `star-dialog` per window size (PrimeNG `breakpoints`). `blockScroll` (dialog and drawer; default on for a modal, off for a non-modal) and `focusOnShow` (default true) (PrimeNG `blockScroll`, `focusOnShow`). `@star-ng/ui/core` exports `starViewportWidth()` and `starBreakpointValue()`.
 - Dialog: `headless` renders only the projected content (no header, no title, no close button; the `[starDialogFooter]` slot stays) (PrimeNG `headless` template). New input `ariaLabelledby` on the dialog and the drawer names the dialog by the id of your own heading.
 - `StarDialogConfig` (`StarDialogService.open`): `position`, `draggable`, `resizable`, `maximizable`, `keepInViewport`, `breakpoints`, `blockScroll` and `focusOnShow`.
+
+- Confirm (`star-confirm-host`): the slot `starConfirmTemplate` (`header`, `icon`, `acceptIcon`, `rejectIcon`, `footer` with `accept` and `reject`) (PrimeNG `p-confirmdialog` and `p-confirmpopup` templates).
 
 #### Docs
 
@@ -220,6 +230,10 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 
 - Menus: the slot `starMenuTemplate` (`item`, `itemIcon`, `submenuHeader`, `start`, `end`) and `starIcon="submenu"` on `star-menu`, `star-menubar` (also passed to its submenus), `star-mega-menu` (`submenuHeader` for the column headings) and `star-panel-menu` (`item`, `itemIcon`; the `submenu` icon gets `let-expanded`). `star-menu`: items with `group` show in place under a heading (a `group` with `aria-labelledby`, PrimeNG `p-menu` submenu headers), `ariaLabelledBy`, and the outputs `show`, `hide`, `submenuShow` and `submenuHide`. `star-menubar`: `autoDisplay` (open on hover), `ariaLabelledBy`, `submenuShow` and `submenuHide`. `StarMenuItemContext` gets `level` and `hasSubmenu` (PrimeNG `p-menu`, `p-tieredmenu`, `p-menubar`, `p-megamenu`, `p-panelmenu`).
 
+#### Message
+
+- Message: the slots `starMessageContainer` (the whole content, with `close`) and `starIcon` (`icon`, `close`) (PrimeNG `#container`, `#icon`, `#closeicon`).
+
 #### Multi-column combobox
 
 - Multi-column combobox (`star-multi-column-combobox`, `StarColumnCellTemplate`, new entry `@star-ng/ui/multi-column-combobox`): an editable combobox over a grid-like listbox with a header row (`columns: { field, header, width? }[]`), filtering over every column with `starFilterMatch` (`filterFields`, `filterMatchMode`), arrows, Home, End, Page up, Page down, Enter, Escape and Alt+Arrow down, `aria-activedescendant`, virtual scroll for large data, and the `starColumnCell`, `starEmpty`, `starLoading`, `starHeader` and `starFooter` slots. It extends `StarOptionListBase` without changing it (Kendo UI MultiColumnComboBox, Ignite UI `igx-combo` with columns).
@@ -244,9 +258,15 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 
 - Panel: `toggler` (`icon` or `header`: the title is the toggle button), `iconPos` (`start` or `end`), `showHeader`, the outputs `beforeToggle` and `afterToggle` (`{ collapsed }`), a public `toggle()`, and the slots `starHeader` and `starIcon="toggle"` (PrimeNG `p-panel`).
 
+- Fieldset: the slots `starHeader` (legend) and `starIcon="toggle"` (`let-expanded`), the outputs `beforeToggle` (with `cancel()`) and `afterToggle`, and a public `toggle()` (PrimeNG `p-fieldset`).
+
 #### Pivot grid
 
 - Pivot grid (`star-pivot-grid`, new entry `@star-ng/ui/pivot-grid`; Ignite UI igx-pivot-grid, Kendo UI PivotGrid, Syncfusion Pivot Table, DevExtreme dxPivotGrid, AG Grid pivot mode): pure engine `starPivot(data, config)` (row and column dimensions with a year > quarter > month date hierarchy, `sum`, `count`, `avg`, `min`, `max`, `distinctCount` or a custom aggregate, include and exclude member filters, member sort by label or by a value, grand totals and subtotals per axis, collapsed members, empty-cell text, drill-down records; no `eval`; `timeZone` for the date buckets) and `starPivotPathKey` (key of `collapsedRows` / `collapsedColumns`). The grid has multi-level sticky column headers (`aria-colindex`, `aria-colspan`), indented row headers with `aria-expanded`, labelled totals, row and column windowing, one-tab-stop cell navigation (arrows, Home, End, Ctrl+Home, Ctrl+End, PageUp, PageDown; Enter or Space and Alt+arrows expand and collapse), `cellClick` with the source records, `expandAll()`, `collapseAll()`, `toCsv()` and `exportCsv()` (RFC 4180; text that starts with `= + - @`, a tab or a carriage return is escaped, number cells never) and a two-way `config`. `showConfigurator` adds a panel: fields move between Rows, Columns, Values and Filters by CDK drag and drop or a move menu (announced), with an aggregate select per value and a member filter popover with search per field. Excel XML export is out of scope. New `STAR_UI_TEXT` keys (`pivot*`, `expandAll`, `collapseAll`) with German and Spanish texts.
+
+#### Popover
+
+- Popover: the slot `starHeader` and `closeOnEscape` (PrimeNG `closeOnEscape`).
 
 #### QR code
 
@@ -378,6 +398,8 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 
 - Pipes in `@star-ng/ui/utility` (pure, server safe, locale from the argument or `provideStarNg`): `starFileSize`, `starRelativeTime` (with `StarClock` and `provideStarClock` in `@star-ng/ui/core` for the current time), `starHighlight` (escaped text with `<mark>` around the matches, accent-insensitive like `starFilterMatch`) and `starInitials`; `STAR_PIPES` imports all four. Helpers `starFormatFileSize`, `starFormatRelativeTime`, `starTextParts`, `starEscapeHtml`, `starInitials` and `starFoldText` in `@star-ng/ui/core`.
 - Key filter `starKeyFilter` (`@star-ng/ui/utility`, PrimeNG `pKeyFilter`): presets `int`, `num`, `money`, `hex`, `alpha`, `alphanum`, `email` or a `RegExp`; blocks keys and filters paste and drop (up to `maxlength`, also on `type="email"` and `type="number"`), never interrupts IME composition; `validateOnly` sets an error instead (`valid()`, `validChange`, native validation message, forms error `starKeyFilter`). UI text `keyFilterInvalid` (English, German, Spanish).
+
+- Meter group: `orientation`, `labelPosition`, `labelOrientation`, `min`, the legend icon of an item, and the slot `starMeterGroupTemplate` (`label`, `meter`, `start`, `end`, `icon`). Splitter: `step`, `stateKey` and `stateStorage` (the size survives a reload), the outputs `resizeStart` and `resizeEnd`, and the slot `starSplitterGutter`. Scroll top: `target` also takes `parent` and `window`, `ariaLabel`, `behavior`, and `starIcon="icon"`. Block UI: the slot `starLoading` replaces the spinner and the message (PrimeNG `p-metergroup`, `p-splitter`, `p-scrolltop`, `p-blockui`).
 
 #### Virtual scroller
 

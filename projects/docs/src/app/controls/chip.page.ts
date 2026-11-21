@@ -50,6 +50,10 @@ remove(name: string): void {
 }`;
 
   protected readonly slots: readonly DocsRow[] = [
+    {
+      name: 'ng-template[starIcon="remove"]',
+      description: 'Content child. Replaces the icon of the remove button. PrimeNG #removeicon.',
+    },
     { name: '(default)', description: 'Extra text after the label.' },
   ];
   protected readonly cssVars: readonly DocsRow[] = [

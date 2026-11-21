@@ -61,7 +61,22 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       }
     ],
-    "outputs": [],
+    "outputs": [
+      {
+        "name": "opened",
+        "type": "string",
+        "default": null,
+        "required": false,
+        "description": "Emits the value of a panel that the user opened. PrimeNG `onOpen`."
+      },
+      {
+        "name": "closed",
+        "type": "string",
+        "default": null,
+        "required": false,
+        "description": "Emits the value of a panel that the user closed. PrimeNG `onClose`."
+      }
+    ],
     "parts": [
       "root"
     ]
@@ -3911,12 +3926,14 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "outputs": [],
     "parts": [
       "root",
-      "popupPanel",
-      "dialogPanel",
       "icon",
       "severityIcon",
+      "buttonIcon",
+      "popupPanel",
+      "dialogPanel",
       "messageText",
       "actionList",
+      "headerPanel",
       "footer"
     ]
   },
@@ -3926,6 +3943,23 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "entry": "@star-ng/ui/dialog",
     "description": "Replaces the message text of the confirm dialog and popup (PrimeNG `#message` template). Write it inside `star-confirm-host`:",
     "inputs": [],
+    "models": [],
+    "outputs": []
+  },
+  "StarConfirmTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starConfirmTemplate]",
+    "entry": "@star-ng/ui/dialog",
+    "description": "Template slot of `star-confirm-host`: `<ng-template starConfirmTemplate=\"footer\" let-options let-accept=\"accept\">…</ng-template>`. The icons are decorative (`aria-hidden`). Buttons in `footer` must call `accept` or `reject`; put `data-autofocus` on the one that gets the first focus.",
+    "inputs": [
+      {
+        "name": "starConfirmTemplate",
+        "type": "StarConfirmSlotName",
+        "default": null,
+        "required": true,
+        "description": ""
+      }
+    ],
     "models": [],
     "outputs": []
   },
@@ -7681,7 +7715,22 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       }
     ],
-    "outputs": [],
+    "outputs": [
+      {
+        "name": "beforeToggle",
+        "type": "StarFieldsetToggleEvent",
+        "default": null,
+        "required": false,
+        "description": "Emits before the fieldset opens or closes, with the state before the toggle. Call `cancel()` on the event to stop the toggle. PrimeNG `onBeforeToggle`."
+      },
+      {
+        "name": "afterToggle",
+        "type": "StarPanelToggleEvent",
+        "default": null,
+        "required": false,
+        "description": "Emits after the fieldset opened or closed (after the render), with the new state. PrimeNG `onAfterToggle`."
+      }
+    ],
     "parts": [
       "root",
       "frame",
@@ -11646,7 +11695,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "parts": [
       "root",
-      "menuPanel",
+      "framePanel",
       "startPanel",
       "itemList",
       "separator",
@@ -11881,6 +11930,15 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "closeIcon"
     ]
   },
+  "StarMessageContainer": {
+    "kind": "directive",
+    "selector": "ng-template[starMessageContainer]",
+    "entry": "@star-ng/ui/message",
+    "description": "Replaces the whole content of `star-message` (icon, text and close button). `let-close` closes the message. PrimeNG `#container`. The host keeps its `status` or `alert` role.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
+  },
   "StarMeterGroup": {
     "kind": "component",
     "selector": "star-meter-group",
@@ -11902,6 +11960,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Full scale; default: the sum of the items."
       },
       {
+        "name": "min",
+        "type": "number",
+        "default": "0",
+        "required": false,
+        "description": "Start of the scale (default `0`). PrimeNG `min`."
+      },
+      {
         "name": "unit",
         "type": "string",
         "default": "''",
@@ -11914,6 +11979,27 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "null",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "orientation",
+        "type": "'horizontal' | 'vertical'",
+        "default": "'horizontal'",
+        "required": false,
+        "description": "Direction of the bar: `'horizontal'` (default) or `'vertical'`. PrimeNG `orientation`."
+      },
+      {
+        "name": "labelPosition",
+        "type": "'start' | 'end'",
+        "default": "'end'",
+        "required": false,
+        "description": "Side of the legend: `'end'` (default, after the bar) or `'start'`. PrimeNG `labelPosition`."
+      },
+      {
+        "name": "labelOrientation",
+        "type": "'horizontal' | 'vertical'",
+        "default": "'horizontal'",
+        "required": false,
+        "description": "Flow of the legend items: `'horizontal'` (default) or `'vertical'`. PrimeNG `labelOrientation`."
       },
       {
         "name": "pt",
@@ -11936,13 +12022,34 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "outputs": [],
     "parts": [
       "root",
+      "startPanel",
       "barPanel",
       "partText",
+      "endPanel",
+      "labelPanel",
       "legend",
       "legendItem",
+      "legendIcon",
       "swatchText",
       "legendText"
     ]
+  },
+  "StarMeterGroupTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starMeterGroupTemplate]",
+    "entry": "@star-ng/ui/utility",
+    "description": "Template slot of `star-meter-group`: - `label`: replaces the legend (PrimeNG `#label`); context `StarMeterGroupContext`. - `start` and `end`: content before and after the bar and the legend (PrimeNG `#start`, `#end`). - `meter`: content inside each part of the bar (PrimeNG `#meter`); context `StarMeterGroupItemContext`. The part keeps `role=\"meter\"` and its values. - `icon`: the icon of each legend item (PrimeNG `#icon`).",
+    "inputs": [
+      {
+        "name": "starMeterGroupTemplate",
+        "type": "'label' | 'meter' | 'start' | 'end' | 'icon'",
+        "default": null,
+        "required": true,
+        "description": ""
+      }
+    ],
+    "models": [],
+    "outputs": []
   },
   "StarMultiAutoComplete": {
     "kind": "component",
@@ -15342,7 +15449,14 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "boolean",
         "default": "true",
         "required": false,
-        "description": ""
+        "description": "A click outside closes the popover (default `true`). PrimeNG `dismissable`."
+      },
+      {
+        "name": "closeOnEscape",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Escape closes the popover (default `true`). PrimeNG `closeOnEscape`."
       },
       {
         "name": "pt",
@@ -15380,7 +15494,8 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "parts": [
       "root",
-      "surface"
+      "surface",
+      "headerPanel"
     ]
   },
   "StarProgressBar": {
@@ -16895,10 +17010,24 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       },
       {
         "name": "target",
-        "type": "HTMLElement | null",
+        "type": "HTMLElement | 'window' | 'parent' | null",
         "default": "null",
         "required": false,
-        "description": "Scroll container; default the window."
+        "description": "Scroll container: an element, `'parent'` (the parent element of the button) or `'window'`. Default the window. PrimeNG `target` (`window` or `parent`)."
+      },
+      {
+        "name": "ariaLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Accessible name of the button (default `STAR_UI_TEXT.scrollToTop`). PrimeNG `buttonAriaLabel`."
+      },
+      {
+        "name": "behavior",
+        "type": "'smooth' | 'auto'",
+        "default": "'smooth'",
+        "required": false,
+        "description": "`'smooth'` (default) or `'auto'`; reduced motion always uses `'auto'`. PrimeNG `behavior`."
       },
       {
         "name": "pt",
@@ -18393,6 +18522,27 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
+        "name": "step",
+        "type": "number",
+        "default": "2",
+        "required": false,
+        "description": "Percent that one arrow key moves the gutter (default `2`). PrimeNG `step`."
+      },
+      {
+        "name": "stateKey",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Key under which the size is kept in the storage, so it survives a reload. `null` (default) keeps nothing. PrimeNG `stateKey`."
+      },
+      {
+        "name": "stateStorage",
+        "type": "'local' | 'session'",
+        "default": "'local'",
+        "required": false,
+        "description": "Storage of `stateKey`: `'local'` (default) or `'session'`. PrimeNG `stateStorage`."
+      },
+      {
         "name": "pt",
         "type": "StarPassThrough | null",
         "default": "null",
@@ -18418,13 +18568,37 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "Size of the first pane in percent."
       }
     ],
-    "outputs": [],
+    "outputs": [
+      {
+        "name": "resizeStart",
+        "type": "void",
+        "default": null,
+        "required": false,
+        "description": "Emits when a drag or a key starts to resize. PrimeNG `onResizeStart`."
+      },
+      {
+        "name": "resizeEnd",
+        "type": "StarSplitterResizeEvent",
+        "default": null,
+        "required": false,
+        "description": "Emits the new size when a drag ends or a resize key is released. PrimeNG `onResizeEnd`."
+      }
+    ],
     "parts": [
       "root",
       "panePanel",
       "gutterPanel",
       "handle"
     ]
+  },
+  "StarSplitterGutter": {
+    "kind": "directive",
+    "selector": "ng-template[starSplitterGutter]",
+    "entry": "@star-ng/ui/utility",
+    "description": "Content of the gutter of `star-splitter` in place of the default handle (PrimeNG has a `gutterSize` only). It is decorative (`aria-hidden`); the gutter keeps the `separator` role and the keyboard.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
   },
   "StarSpreadsheet": {
     "kind": "component",
