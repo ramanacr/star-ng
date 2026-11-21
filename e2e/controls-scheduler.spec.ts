@@ -1,5 +1,5 @@
 import { expect, Locator, Page, test } from '@playwright/test';
-import { example, openPage } from './support';
+import { collectErrors, example, openPage } from './support';
 
 /** Drags with the mouse from the centre of `from` by small steps to a point. */
 async function dragTo(page: Page, from: Locator, x: number, y: number): Promise<void> {
@@ -187,5 +187,54 @@ test.describe('scheduler', () => {
     expect(await meeting.evaluate((element) => element.offsetHeight)).toBe(
       Math.round(height) * 2 - 2,
     );
+  });
+
+  test('the editor saves at once, also when the page changes during the close', async ({
+    page,
+  }) => {
+    // NG0953 is a console warning: an output emitted after its component was destroyed.
+    const errors = collectErrors(page);
+    page.on('console', (message) => {
+      if (message.text().includes('NG0953')) errors.push(message.text());
+    });
+    await openPage(page, '/controls/button', 'Button');
+    await page.locator('#docs-nav').getByRole('link', { name: 'Scheduler', exact: true }).click();
+    await expect(page.getByRole('heading', { level: 1, name: 'Scheduler' })).toBeVisible();
+    const rooms = example(page, 'Rooms on a timeline, with the editor');
+    const editor = page.getByRole('dialog', { name: 'Edit event' });
+    /** A held click on a booking opens the edit editor. */
+    const edit = async (name: RegExp) => {
+      const booking = rooms.getByRole('button', { name });
+      await booking.scrollIntoViewIfNeeded();
+      const box = (await booking.boundingBox())!;
+      await page.mouse.move(box.x + Math.min(box.width / 2, 20), box.y + box.height / 2);
+      await page.mouse.down();
+      await page.waitForTimeout(150);
+      await page.mouse.up();
+      await expect(editor).toBeVisible();
+    };
+
+    // Save: the page applies editorSave, the editor closes.
+    await edit(/^Team meeting, /);
+    await editor.getByRole('textbox', { name: 'Title' }).fill('Team sync');
+    await editor.getByRole('button', { name: 'Save' }).click();
+    await expect(editor).toBeHidden();
+    await expect(rooms.getByRole('button', { name: /^Team sync, / })).toBeVisible();
+
+    // Save and a route change in the same task: the scheduler is destroyed while the editor
+    // closes. The save was emitted when Save was pressed; nothing emits after the destroy.
+    await edit(/^Team sync, /);
+    await editor.getByRole('textbox', { name: 'Title' }).fill('Team sync 2');
+    await editor.evaluate((dialog) => {
+      const save = [...dialog.querySelectorAll('button')].find(
+        (button) => button.textContent?.trim() === 'Save',
+      )!;
+      save.click();
+      history.back();
+    });
+    await expect(page.getByRole('heading', { level: 1, name: 'Button' })).toBeVisible();
+    await expect(page.locator('dialog[open]')).toHaveCount(0);
+    await expect(editor).toHaveCount(0);
+    expect(errors).toEqual([]);
   });
 });

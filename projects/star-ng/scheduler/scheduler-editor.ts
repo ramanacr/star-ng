@@ -26,6 +26,12 @@ export interface StarSchedulerEditorData {
   readonly locale: string | undefined;
   readonly hourFormat: '12' | '24';
   readonly slotMinutes: number;
+  /**
+   * Takes the result at the moment Save or Delete is pressed, before the dialog starts to close.
+   * The scheduler emits it then, so a scheduler that is destroyed while the dialog is still
+   * closing (exit animation) cannot lose it.
+   */
+  readonly commit: (result: StarSchedulerEditorResult) => void;
 }
 
 /** @internal Result of the editor dialog. */
@@ -87,7 +93,7 @@ export type StarSchedulerEditorResult =
       }
       <div data-star-part="footer" class="star-dialog__footer star-dialog__footer--inline">
         @if (data.canDelete) {
-          <star-button variant="danger" (pressed)="ref.close({ action: 'delete' })">
+          <star-button variant="danger" (pressed)="finish({ action: 'delete' })">
             {{ text.deleteEvent }}
           </star-button>
         }
@@ -128,7 +134,7 @@ export class StarSchedulerEditor {
     const end = this.end();
     if (!this.valid() || !start || !end) return;
     const allDay = this.allDay();
-    this.ref.close({
+    this.finish({
       action: 'save',
       value: {
         title: this.title().trim(),
@@ -138,5 +144,18 @@ export class StarSchedulerEditor {
         resourceId: this.resourceId() ?? null,
       },
     });
+  }
+
+  private finished = false;
+
+  /**
+   * Gives the result to the scheduler at once (it emits then), and then closes the dialog. A second
+   * press while the dialog is still closing does nothing.
+   */
+  protected finish(result: StarSchedulerEditorResult): void {
+    if (this.finished) return;
+    this.finished = true;
+    this.data.commit(result);
+    this.ref.close(result);
   }
 }

@@ -795,6 +795,41 @@ describe('StarScheduler', () => {
       expect(document.querySelector('dialog[open]')).toBeNull();
       expect(host.saved).toHaveLength(0);
     });
+
+    it('keeps a save when the scheduler is destroyed while the editor is still closing', async () => {
+      const warn = vi.spyOn(console, 'warn');
+      const error = vi.spyOn(console, 'error');
+      const { fixture, host, cell, stable } = await setup((h) => h.editor.set(true));
+      cell(28, 2).click();
+      await stable();
+      const dialog = document.querySelector('dialog')!;
+      const title = dialog.querySelector<HTMLInputElement>('input[starInput]')!;
+      title.value = 'Budget review';
+      title.dispatchEvent(new Event('input'));
+      await stable();
+      const form = dialog.querySelector('form')!;
+      form.dispatchEvent(new Event('submit', { cancelable: true }));
+      // The save is emitted when Save is pressed, before the dialog closes.
+      expect(host.saved).toHaveLength(1);
+      expect(host.saved[0].value.title).toBe('Budget review');
+      // A second press during the exit animation does not emit again.
+      form.dispatchEvent(new Event('submit', { cancelable: true }));
+      // The scheduler goes (a route change) before the dialog has closed.
+      fixture.destroy();
+      for (let i = 0; i < 4; i++) {
+        TestBed.tick();
+        await Promise.resolve();
+      }
+      expect(document.querySelector('dialog[open]')).toBeNull();
+      expect(host.saved).toHaveLength(1);
+      // No output emits after the destroy (NG0953).
+      const ng0953 = [...warn.mock.calls, ...error.mock.calls].filter((call) =>
+        String(call[0]).includes('NG0953'),
+      );
+      expect(ng0953).toEqual([]);
+      warn.mockRestore();
+      error.mockRestore();
+    });
   });
 
   describe('current time', () => {
