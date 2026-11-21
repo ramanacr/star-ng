@@ -1,5 +1,10 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
-import { StarSelectButton, StarToggleButton } from '@star-ng/ui/select-button';
+import { StarIconTemplate } from '@star-ng/ui/core';
+import {
+  StarSelectButton,
+  StarToggleButton,
+  StarToggleButtonContentTemplate,
+} from '@star-ng/ui/select-button';
 import { DOCS, DocsRow } from '../shared/docs';
 
 interface View {
@@ -10,7 +15,13 @@ interface View {
 
 @Component({
   selector: 'docs-select-button-page',
-  imports: [DOCS, StarSelectButton, StarToggleButton],
+  imports: [
+    DOCS,
+    StarSelectButton,
+    StarToggleButton,
+    StarToggleButtonContentTemplate,
+    StarIconTemplate,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <docs-page
@@ -72,6 +83,25 @@ interface View {
         option and Arrow right the previous one. See the Right-to-left guide.
       </p>
 
+      <docs-example
+        heading="Toggle button icons and content"
+        source="select-button/toggle-icons"
+        note="starIcon on and off replace the icons of the toggle button, and iconPos end puts them after the label. starToggleButtonContent replaces the whole content; its context is the pressed state."
+      >
+        <div class="docs-row">
+          <star-toggle-button [(checked)]="pinned" onLabel="Pinned" offLabel="Pin" iconPos="end">
+            <ng-template starIcon="on"><i class="ph-fill ph-push-pin"></i></ng-template>
+            <ng-template starIcon="off"><i class="ph-bold ph-push-pin"></i></ng-template>
+          </star-toggle-button>
+          <star-toggle-button [(checked)]="muted" ariaLabel="Sound">
+            <ng-template starToggleButtonContent let-checked>
+              <i [class]="checked ? 'ph-bold ph-speaker-x' : 'ph-bold ph-speaker-high'"></i>
+              {{ checked ? 'Muted' : 'Sound on' }}
+            </ng-template>
+          </star-toggle-button>
+        </div>
+      </docs-example>
+
       <docs-api
         [of]="['StarSelectButton', 'StarToggleButton']"
         [cssVars]="cssVars"
@@ -81,6 +111,8 @@ interface View {
   `,
 })
 export class SelectButtonPage {
+  protected readonly pinned = signal(false);
+  protected readonly muted = signal(false);
   protected readonly period = signal<string | readonly string[] | null>('Week');
   protected readonly views: readonly View[] = [
     { id: 'list', label: 'List', icon: 'ph-bold ph-list' },

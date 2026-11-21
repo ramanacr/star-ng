@@ -177,6 +177,13 @@ All notable changes to `@star-ng/ui` are in this file. The format follows [Keep 
 - Password: `thresholds` of the strength levels; `starIcon` slots `show` and `hide`; `starHeader` and `starFooter` around the strength feedback (PrimeNG `#showicon`, `#hideicon`, `#header`, `#footer`).
 - Rating: `cancel` (a first option that clears the rating) and the `starIcon` slots `on`, `off` and `cancel` (PrimeNG `cancel`, `#onicon`, `#officon`, `#cancelicon`).
 - Slider: `orientation="vertical"` and the `slideEnd` output (PrimeNG `orientation`, `onSlideEnd`).
+- Toggle switch: `onLabel` / `offLabel` state text and `starIcon` `on` / `off` in the handle (PrimeNG `#handle`); toggle button: `starIcon` `on` / `off`, `iconPos`, `starToggleButtonContent` (`StarToggleButtonContentTemplate`, PrimeNG `#icon`, `#content`, `iconPos`).
+- Color picker: `format` (`hex`, `rgb`, `hsb`) of the value; the picker reads all three (PrimeNG `format`).
+- Knob: `strokeWidth` and `showValue` (PrimeNG `strokeWidth`, `showValue`).
+- Input number: `currencyDisplay` and `showClear`; input mask: `showClear`, `keepCharPositions` and `variant` (PrimeNG names).
+- Rating: `allowHalf` (half steps with the arrow keys, "2.5 of 5") and `orientation` (PrimeNG `allowHalf`, `orientation`).
+- Range slider: `orientation`, `slideEnd`, `minStepsBetweenHandles`, `disabledMinHandle` and `disabledMaxHandle` (PrimeNG names).
+- `ariaLabelledBy` and `required` on password, input mask, input tags, input number, checkbox, toggle switch, toggle button, rating, slider, range slider, knob, color picker and select button (`aria-required` where the role takes it; Signal Forms `required()` binds to `required`).
 - Core: new `StarIconSlotName` values `sort`, `on`, `off`, `increment`, `decrement`, `remove`, `show` and `hide`.
 
 #### Galleria

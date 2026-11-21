@@ -45,11 +45,24 @@ import { DOCS, DocsRow } from '../shared/docs';
         direction: Arrow left selects the next star. See the Right-to-left guide.
       </p>
 
+      <docs-example
+        heading="Half stars, vertical"
+        source="rating/half"
+        note="allowHalf gives each star two options, so the arrow keys step by 0.5 and each option reads, for example, 3.5 of 5. orientation vertical stacks the stars."
+      >
+        <div class="docs-row">
+          <star-rating [(value)]="halfScore" allowHalf ariaLabel="Half stars" />
+          <star-rating [(value)]="halfScore" orientation="vertical" ariaLabel="Vertical rating" />
+        </div>
+        <p class="docs-output" role="status">Rating: {{ halfScore() ?? 'none' }}</p>
+      </docs-example>
+
       <docs-api [of]="['StarRating']" [cssVars]="cssVars" [keyboard]="keyboard" />
     </docs-page>
   `,
 })
 export class RatingPage {
+  protected readonly halfScore = signal<number | null>(3.5);
   protected readonly score = signal<number | null>(3);
   protected readonly detail = signal<number | null>(7);
   protected readonly hearts = signal<number | null>(2);

@@ -3480,6 +3480,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
+        "name": "ariaLabelledBy",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Id of the element that labels the control (`aria-labelledby`). PrimeNG `ariaLabelledBy`."
+      },
+      {
         "name": "ariaDescribedBy",
         "type": "string | null",
         "default": "null",
@@ -3631,6 +3638,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "description": "Color picker (PrimeNG `p-colorpicker`): preset swatches, a custom color panel and a hex field. Value: `#rrggbb`.",
     "inputs": [
       {
+        "name": "format",
+        "type": "'hex' | 'rgb' | 'hsb'",
+        "default": "'hex'",
+        "required": false,
+        "description": "Text format of the value that the control writes. PrimeNG `format`."
+      },
+      {
         "name": "swatches",
         "type": "readonly string[] | undefined",
         "default": "undefined",
@@ -3650,6 +3664,20 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "false",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "ariaLabelledBy",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Id of the element that labels the control (`aria-labelledby`). PrimeNG `ariaLabelledBy`."
+      },
+      {
+        "name": "required",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "A color is needed (`aria-required` on the swatch group); also bound from Signal Forms `required()`."
       },
       {
         "name": "pt",
@@ -3674,7 +3702,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "type": "string",
         "default": "'#4f46e5'",
         "required": false,
-        "description": "The color, as `#rrggbb`."
+        "description": "The color: `#rrggbb` (`format=\"hex\"`), `rgb(r, g, b)` (`'rgb'`) or `hsb(h, s%, b%)` (`'hsb'`). The control reads all three."
       }
     ],
     "outputs": [
@@ -9606,7 +9634,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-input-mask",
     "entry": "@star-ng/ui/input-mask",
-    "description": "Masked text field (PrimeNG `p-inputmask`): fixed-format entry such as phone numbers, postal codes or serial numbers. Mask tokens: `9` digit, `a` letter, `*` letter or digit; other characters are literals. The value is the masked text, or the raw slots with `unmask`. `characterPattern` changes what an `a` slot takes (PrimeNG `characterPattern`).",
+    "description": "Masked text field (PrimeNG `p-inputmask`): fixed-format entry such as phone numbers, postal codes or serial numbers. Mask tokens: `9` digit, `a` letter, `*` letter or digit; other characters are literals. The value is the masked text, or the raw slots with `unmask`. `characterPattern` changes what an `a` slot takes (PrimeNG `characterPattern`). With `keepCharPositions`, deleting a character leaves its slot empty and the later characters stay in place. `showClear` adds a clear button; `variant` is `outlined` or `filled`.",
     "inputs": [
       {
         "name": "mask",
@@ -9656,6 +9684,34 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "null",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "ariaLabelledBy",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Id of the element that labels the control (`aria-labelledby`). PrimeNG `ariaLabelledBy`."
+      },
+      {
+        "name": "showClear",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "A clear button while the field has a value. PrimeNG `showClear`."
+      },
+      {
+        "name": "keepCharPositions",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Deleting a character leaves its slot empty; the later characters keep their places. PrimeNG `keepCharPositions`."
+      },
+      {
+        "name": "variant",
+        "type": "StarInputVariant",
+        "default": "'outlined'",
+        "required": false,
+        "description": "Look: border on every side, or a filled surface. Default: `inputVariant` of `provideStarNg`, else `outlined`. PrimeNG `variant`."
       },
       {
         "name": "inputId",
@@ -9750,7 +9806,9 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     ],
     "parts": [
       "root",
-      "input"
+      "input",
+      "clearButton",
+      "clearIcon"
     ]
   },
   "StarInputNumber": {
@@ -9772,6 +9830,20 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "'USD'",
         "required": false,
         "description": "ISO 4217 code for `mode=\"currency\"`, for example `EUR`."
+      },
+      {
+        "name": "currencyDisplay",
+        "type": "'symbol' | 'narrowSymbol' | 'code' | 'name'",
+        "default": "'symbol'",
+        "required": false,
+        "description": "How `mode=\"currency\"` shows the currency: `'symbol'` (default, `€`), `'narrowSymbol'`, `'code'` (`EUR`) or `'name'` (`euros`). PrimeNG `currencyDisplay`."
+      },
+      {
+        "name": "showClear",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "A clear button while the field has a value. PrimeNG `showClear`."
       },
       {
         "name": "unit",
@@ -9893,6 +9965,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
+        "name": "ariaLabelledBy",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Id of the element that labels the control (`aria-labelledby`). PrimeNG `ariaLabelledBy`."
+      },
+      {
         "name": "inputId",
         "type": "string",
         "default": "(generated id)",
@@ -9980,6 +10059,8 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "root",
       "controlPanel",
       "input",
+      "clearButton",
+      "clearIcon",
       "stepPanel",
       "stepButton",
       "stepIcon"
@@ -10162,6 +10243,20 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "null",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "ariaLabelledBy",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Id of the element that labels the control (`aria-labelledby`). PrimeNG `ariaLabelledBy`."
+      },
+      {
+        "name": "required",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "At least one tag is needed (`aria-required`); also bound from Signal Forms `required()`."
       },
       {
         "name": "inputId",
@@ -10541,11 +10636,39 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "`{value}` is replaced by the number, for example `{value}%`."
       },
       {
+        "name": "strokeWidth",
+        "type": "number | null",
+        "default": "null",
+        "required": false,
+        "description": "Width of the track and the value arc, in units of the 100 × 100 view box. PrimeNG `strokeWidth`."
+      },
+      {
+        "name": "showValue",
+        "type": "boolean",
+        "default": "true",
+        "required": false,
+        "description": "Shows the value text in the middle. Default `true`. PrimeNG `showValue`."
+      },
+      {
         "name": "ariaLabel",
         "type": "string | null",
         "default": "null",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "ariaLabelledBy",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Id of the element that labels the control (`aria-labelledby`). PrimeNG `ariaLabelledBy`."
+      },
+      {
+        "name": "required",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "A value is needed; feeds Signal Forms `required()` (the slider role takes no `aria-required`)."
       },
       {
         "name": "disabled",
@@ -14720,6 +14843,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
+        "name": "ariaLabelledBy",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Id of the element that labels the control (`aria-labelledby`). PrimeNG `ariaLabelledBy`."
+      },
+      {
         "name": "inputId",
         "type": "string",
         "default": "(generated id)",
@@ -15996,11 +16126,53 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
+        "name": "ariaLabelledBy",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Id of the element that labels the control (`aria-labelledby`). PrimeNG `ariaLabelledBy`."
+      },
+      {
+        "name": "required",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "A value is needed; feeds Signal Forms `required()` (the slider role takes no `aria-required`)."
+      },
+      {
         "name": "disabled",
         "type": "boolean",
         "default": "false",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "orientation",
+        "type": "'horizontal' | 'vertical'",
+        "default": "'horizontal'",
+        "required": false,
+        "description": "`'vertical'`: low at the bottom, high at the top. PrimeNG `orientation`."
+      },
+      {
+        "name": "minStepsBetweenHandles",
+        "type": "number",
+        "default": "0",
+        "required": false,
+        "description": "Smallest gap between the handles, in steps. PrimeNG `minStepsBetweenHandles`."
+      },
+      {
+        "name": "disabledMinHandle",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Locks the low handle. PrimeNG `disabledMinHandle`."
+      },
+      {
+        "name": "disabledMaxHandle",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Locks the high handle. PrimeNG `disabledMaxHandle`."
       },
       {
         "name": "pt",
@@ -16035,6 +16207,13 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": null,
         "required": false,
         "description": ""
+      },
+      {
+        "name": "slideEnd",
+        "type": "readonly [number, number]",
+        "default": null,
+        "required": false,
+        "description": "The value when a drag or a key press ends (the native `change`). PrimeNG `onSlideEnd`."
       }
     ],
     "parts": [
@@ -16065,11 +16244,39 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": "A first option that clears the rating (value `null`). PrimeNG `cancel`."
       },
       {
+        "name": "allowHalf",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "Half stars: each star has two options (`2.5`, `3`), the keys step by 0.5. PrimeNG `allowHalf`."
+      },
+      {
+        "name": "orientation",
+        "type": "'horizontal' | 'vertical'",
+        "default": "'horizontal'",
+        "required": false,
+        "description": "`'vertical'` stacks the stars (`aria-orientation`). PrimeNG `orientation`."
+      },
+      {
         "name": "ariaLabel",
         "type": "string | null",
         "default": "null",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "ariaLabelledBy",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Id of the element that labels the rating. PrimeNG `ariaLabelledBy`."
+      },
+      {
+        "name": "required",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "A rating is needed (`aria-required`); also bound from Signal Forms `required()`."
       },
       {
         "name": "disabled",
@@ -16125,6 +16332,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "cancelItem",
       "cancelIcon",
       "rateItem",
+      "halfLabel",
       "rateIcon"
     ]
   },
@@ -17391,6 +17599,20 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
+        "name": "ariaLabelledBy",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Id of the element that labels the control (`aria-labelledby`). PrimeNG `ariaLabelledBy`."
+      },
+      {
+        "name": "required",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "A choice is needed: `aria-required` on the radio group (single mode); also bound from Signal Forms `required()`."
+      },
+      {
         "name": "disabled",
         "type": "boolean",
         "default": "false",
@@ -17738,6 +17960,20 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "default": "null",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "ariaLabelledBy",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Id of the element that labels the control (`aria-labelledby`). PrimeNG `ariaLabelledBy`."
+      },
+      {
+        "name": "required",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "A value is needed; feeds Signal Forms `required()` (the slider role takes no `aria-required`)."
       },
       {
         "name": "orientation",
@@ -20799,7 +21035,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "kind": "component",
     "selector": "star-toggle-button",
     "entry": "@star-ng/ui/select-button",
-    "description": "Two-state button (PrimeNG `p-togglebutton`): `aria-pressed`, on / off labels and icons. `<star-toggle-button [(checked)]=\"starred\" onLabel=\"Starred\" offLabel=\"Star\" onIcon=\"ph-fill ph-star\" offIcon=\"ph-bold ph-star\" />`",
+    "description": "Two-state button (PrimeNG `p-togglebutton`): `aria-pressed`, on / off labels and icons. `iconPos` puts the icon before or after the label. Slots: `<ng-template starIcon=\"on\">` and `starIcon=\"off\"` replace the icons (PrimeNG `#icon`), `starToggleButtonContent` the whole content (PrimeNG `#content`). `required` feeds the forms only: a button takes no `aria-required`. `<star-toggle-button [(checked)]=\"starred\" onLabel=\"Starred\" offLabel=\"Star\" onIcon=\"ph-fill ph-star\" offIcon=\"ph-bold ph-star\" />`",
     "inputs": [
       {
         "name": "onLabel",
@@ -20830,11 +21066,32 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
+        "name": "iconPos",
+        "type": "'start' | 'end'",
+        "default": "'start'",
+        "required": false,
+        "description": "Icon before (`'start'`) or after (`'end'`) the label. PrimeNG `iconPos` (logical sides)."
+      },
+      {
         "name": "ariaLabel",
         "type": "string | null",
         "default": "null",
         "required": false,
         "description": ""
+      },
+      {
+        "name": "ariaLabelledBy",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Id of the element that labels the control (`aria-labelledby`). PrimeNG `ariaLabelledBy`."
+      },
+      {
+        "name": "required",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The button must be on; feeds Signal Forms `required()` (a button takes no `aria-required`)."
       },
       {
         "name": "disabled",
@@ -20888,9 +21145,18 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
     "parts": [
       "root",
       "item",
-      "itemIcon",
-      "itemText"
+      "itemText",
+      "itemIcon"
     ]
+  },
+  "StarToggleButtonContentTemplate": {
+    "kind": "directive",
+    "selector": "ng-template[starToggleButtonContent]",
+    "entry": "@star-ng/ui/select-button",
+    "description": "Replaces the icon and the label of `star-toggle-button`: `<ng-template starToggleButtonContent let-checked>…</ng-template>`. PrimeNG `#content`. The button and its `aria-pressed` stay; do not add focusable elements.",
+    "inputs": [],
+    "models": [],
+    "outputs": []
   },
   "StarToggleSwitch": {
     "kind": "component",
@@ -20955,6 +21221,34 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
         "description": ""
       },
       {
+        "name": "ariaLabelledBy",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "Id of the element that labels the control (`aria-labelledby`). PrimeNG `ariaLabelledBy`."
+      },
+      {
+        "name": "required",
+        "type": "boolean",
+        "default": "false",
+        "required": false,
+        "description": "The switch must be on; also bound from Signal Forms `required()`."
+      },
+      {
+        "name": "onLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "State text shown while on (PrimeNG toggle button `onLabel`)."
+      },
+      {
+        "name": "offLabel",
+        "type": "string | null",
+        "default": "null",
+        "required": false,
+        "description": "State text shown while off."
+      },
+      {
         "name": "hasLabel",
         "type": "boolean",
         "default": "true",
@@ -21002,6 +21296,7 @@ export const DOCS_API: Readonly<Record<string, DocsApiEntry>> = {
       "input",
       "track",
       "thumbnail",
+      "stateText",
       "text"
     ]
   },
@@ -22318,6 +22613,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "chip/removable": "<div class=\"docs-row\">\n  @for (name of names(); track name) {\n    <star-chip [label]=\"name\" removable (removed)=\"remove(name)\" />\n  }\n</div>\n<p class=\"docs-output\" role=\"status\">{{ names().length }} chips left.</p>",
   "color-picker/basic": "<star-color-picker [(value)]=\"color\" ariaLabel=\"Label color\" />\n<p class=\"docs-output\" role=\"status\">Value: {{ color() }}</p>",
   "color-picker/disabled": "<star-color-picker value=\"#64748b\" disabled ariaLabel=\"Locked color\" />",
+  "color-picker/format": "<star-color-picker [(value)]=\"rgbColor\" format=\"rgb\" ariaLabel=\"Label color\" />\n<p class=\"docs-output\" role=\"status\">Value: {{ rgbColor() }}</p>",
   "color-picker/swatches": "<star-color-picker\n  [(value)]=\"category\"\n  [swatches]=\"['#0f766e', '#b45309', '#7c3aed', '#be123c']\"\n  ariaLabel=\"Category color\"\n/>",
   "command-palette/basic": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"open.set(true)\">\n      Open command palette\n    </star-button>\n  </div>\n  <star-command-palette\n    [commands]=\"commands\"\n    [(visible)]=\"open\"\n    (commandRun)=\"last.set($event.label)\"\n  />\n  <p class=\"docs-output\" role=\"status\">Last command: {{ last() }}</p>\n</div>",
   "command-palette/templates": "<div class=\"docs-stack\">\n  <div class=\"docs-row\">\n    <star-button variant=\"secondary\" (pressed)=\"peopleOpen.set(true)\">\n      Find a person\n    </star-button>\n  </div>\n  <star-command-palette\n    [commands]=\"people\"\n    [(visible)]=\"peopleOpen\"\n    [hotkey]=\"null\"\n    [maxRecent]=\"0\"\n    placeholder=\"Search people\"\n    ariaLabel=\"Find a person\"\n    (commandRun)=\"person.set($event.label)\"\n  >\n    <ng-template starCommand let-command>\n      <i class=\"ph-bold ph-user-circle\" aria-hidden=\"true\"></i>\n      <span class=\"option\">\n        <span>{{ command.label }}</span>\n        <small>{{ command.group }} · {{ command.keywords?.[0] }}</small>\n      </span>\n    </ng-template>\n    <ng-template starEmpty let-query>No person matches “{{ query }}”.</ng-template>\n  </star-command-palette>\n  <p class=\"docs-output\" role=\"status\">Chosen: {{ person() }}</p>\n</div>",
@@ -22454,11 +22750,13 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "input-group/addons": "<div class=\"docs-stack\">\n  <star-field label=\"Website\">\n    <star-input-group>\n      <star-input-group-addon>https://</star-input-group-addon>\n      <input starInput placeholder=\"example.com\" />\n    </star-input-group>\n  </star-field>\n  <star-input-group ariaLabel=\"Weight\">\n    <input starInput inputmode=\"decimal\" aria-label=\"Weight\" placeholder=\"0.0\" />\n    <star-input-group-addon>kg</star-input-group-addon>\n  </star-input-group>\n</div>",
   "input-group/button": "<div class=\"docs-stack\">\n  <star-input-group ariaLabel=\"Coupon\">\n    <input starInput aria-label=\"Coupon code\" placeholder=\"Coupon code\" />\n    <star-button variant=\"secondary\">Apply</star-button>\n  </star-input-group>\n</div>",
   "input-group/icon": "<div class=\"docs-stack\">\n  <star-icon-field icon=\"ph-bold ph-magnifying-glass\">\n    <input starInput type=\"search\" placeholder=\"Search orders\" aria-label=\"Search orders\" />\n  </star-icon-field>\n  <star-icon-field icon=\"ph-bold ph-envelope-simple\" iconPosition=\"end\">\n    <input starInput type=\"email\" placeholder=\"name@example.com\" aria-label=\"Email\" />\n  </star-icon-field>\n</div>",
+  "input-mask/options": "<star-input-mask\n  mask=\"9999-9999\"\n  [(value)]=\"card\"\n  showClear\n  keepCharPositions\n  variant=\"filled\"\n  ariaLabel=\"Member number\"\n/>",
   "input-mask/pattern": "<star-input-mask\n  mask=\"aa-9999\"\n  characterPattern=\"[A-F]\"\n  [(value)]=\"batch\"\n  ariaLabel=\"Batch code\"\n/>\n<p class=\"docs-output\" role=\"status\">Value: {{ batch() || 'empty' }}</p>",
   "input-mask/phone": "<div class=\"docs-stack\">\n  <star-field label=\"Phone\">\n    <star-input-mask mask=\"(999) 999-9999\" [(value)]=\"phone\" />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Value: {{ phone() || '(empty)' }}</p>\n</div>",
   "input-mask/unmask": "<div class=\"docs-stack\">\n  <star-field label=\"Serial number\">\n    <star-input-mask mask=\"aa-9999-**\" unmask slotChar=\"#\" [(value)]=\"serial\" />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Value: {{ serial() || '(empty)' }}</p>\n</div>",
   "input-number/basic": "<div class=\"docs-stack\">\n  <star-field label=\"Quantity\">\n    <star-input-number [(value)]=\"quantity\" [min]=\"0\" [max]=\"20\" showButtons />\n  </star-field>\n  <p class=\"docs-output\" role=\"status\">Quantity: {{ quantity() }}</p>\n</div>",
   "input-number/currency": "<div class=\"docs-stack\">\n  <star-input-number\n    [(value)]=\"price\"\n    mode=\"currency\"\n    currency=\"EUR\"\n    locale=\"de-DE\"\n    ariaLabel=\"Price in euro\"\n  />\n  <star-input-number\n    [(value)]=\"price\"\n    mode=\"currency\"\n    currency=\"USD\"\n    locale=\"en-US\"\n    ariaLabel=\"Price in dollars\"\n  />\n</div>",
+  "input-number/currency-display": "<star-input-number\n  [(value)]=\"fee\"\n  mode=\"currency\"\n  currency=\"EUR\"\n  currencyDisplay=\"code\"\n  showClear\n  ariaLabel=\"Fee\"\n/>",
   "input-number/layouts": "<div class=\"docs-row\">\n  <star-input-number\n    [(value)]=\"stacked\"\n    showButtons\n    buttonLayout=\"stacked\"\n    [allowEmpty]=\"false\"\n    highlightOnFocus\n    ariaLabel=\"Stacked\"\n  />\n  <star-input-number\n    [(value)]=\"vertical\"\n    showButtons\n    buttonLayout=\"vertical\"\n    [min]=\"0\"\n    ariaLabel=\"Vertical\"\n  >\n    <ng-template starIcon=\"increment\"><i class=\"ph-bold ph-arrow-up\"></i></ng-template>\n    <ng-template starIcon=\"decrement\"><i class=\"ph-bold ph-arrow-down\"></i></ng-template>\n  </star-input-number>\n</div>",
   "input-number/modes": "<div class=\"docs-stack\">\n  <star-input-number [(value)]=\"share\" mode=\"percent\" locale=\"en-US\" ariaLabel=\"Share\" />\n  <star-input-number\n    [(value)]=\"weight\"\n    mode=\"unit\"\n    unit=\"kilogram\"\n    locale=\"en-US\"\n    ariaLabel=\"Weight\"\n  />\n  <star-input-number [(value)]=\"items\" suffix=\" items\" locale=\"en-US\" ariaLabel=\"Items\" />\n</div>",
   "input-number/states": "<div class=\"docs-stack\">\n  <star-input-number [value]=\"12\" disabled ariaLabel=\"Disabled number\" />\n  <star-input-number [value]=\"12\" readonly ariaLabel=\"Read-only number\" />\n</div>",
@@ -22475,6 +22773,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "knob/basic": "<star-knob [(value)]=\"progress\" valueTemplate=\"{value}%\" ariaLabel=\"Progress\" />\n<p class=\"docs-output\" role=\"status\">Value: {{ progress() }}</p>",
   "knob/range": "<star-knob\n  [(value)]=\"temperature\"\n  [min]=\"10\"\n  [max]=\"30\"\n  [step]=\"0.5\"\n  [size]=\"160\"\n  valueTemplate=\"{value}°\"\n  ariaLabel=\"Temperature\"\n/>",
   "knob/states": "<star-knob [value]=\"72\" readonly [size]=\"90\" ariaLabel=\"Disk use\" />\n<star-knob [value]=\"35\" disabled [size]=\"90\" ariaLabel=\"Locked value\" />",
+  "knob/stroke": "<div class=\"docs-row\">\n  <star-knob [(value)]=\"thick\" [strokeWidth]=\"14\" ariaLabel=\"Thick knob\" />\n  <star-knob [(value)]=\"thick\" [showValue]=\"false\" ariaLabel=\"Knob without text\" />\n</div>",
   "list/action": "<div class=\"docs-stack\">\n  <star-list mode=\"action\" dense ariaLabel=\"Projects\">\n    @for (project of projects; track project.id) {\n      <star-list-item\n        [active]=\"opened() === project.id\"\n        (activated)=\"opened.set(project.id)\"\n      >\n        {{ project.name }}\n        <span starListItemEnd>{{ project.tasks }} tasks</span>\n      </star-list-item>\n    }\n    <star-list-item disabled>\n      Archive\n      <span starListItemEnd>Read only</span>\n    </star-list-item>\n  </star-list>\n  <p class=\"docs-output\" role=\"status\">Opened: {{ opened() ?? 'none' }}</p>\n</div>",
   "list/basic": "<star-list ariaLabel=\"Warehouses\" divider>\n  <star-list-subheader>Portugal</star-list-subheader>\n  <star-list-item>\n    <i starListItemStart class=\"ph-bold ph-warehouse\" aria-hidden=\"true\"></i>\n    Lisbon\n    <span starListItemSubtitle>Main warehouse</span>\n    <span starListItemEnd>1,240 orders</span>\n  </star-list-item>\n  <star-list-item>\n    <i starListItemStart class=\"ph-bold ph-warehouse\" aria-hidden=\"true\"></i>\n    Porto\n    <span starListItemSubtitle>Returns</span>\n    <span starListItemEnd>310 orders</span>\n  </star-list-item>\n  <star-list-subheader>Spain</star-list-subheader>\n  <star-list-item>\n    <i starListItemStart class=\"ph-bold ph-warehouse\" aria-hidden=\"true\"></i>\n    Valencia\n    <span starListItemSubtitle>Cross-dock</span>\n    <star-tag starListItemEnd severity=\"success\" value=\"Open\" />\n  </star-list-item>\n</star-list>",
   "list/empty": "<star-list ariaLabel=\"Recent orders\">\n  <ng-template starEmpty>No recent orders.</ng-template>\n</star-list>",
@@ -22577,6 +22876,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "rating/basic": "<star-rating [(value)]=\"score\" ariaLabel=\"Service rating\" />\n<p class=\"docs-output\" role=\"status\">Rating: {{ score() ?? 'none' }}</p>",
   "rating/cancel": "<star-rating [(value)]=\"hearts\" cancel ariaLabel=\"Delivery\">\n  <ng-template starIcon=\"on\"><i class=\"ph-fill ph-heart\"></i></ng-template>\n  <ng-template starIcon=\"off\"><i class=\"ph-bold ph-heart\"></i></ng-template>\n</star-rating>\n<p class=\"docs-output\" role=\"status\">Rating: {{ hearts() ?? 'none' }}</p>",
   "rating/count": "<star-rating [(value)]=\"detail\" [count]=\"10\" ariaLabel=\"Detailed rating\" />",
+  "rating/half": "<div class=\"docs-row\">\n  <star-rating [(value)]=\"halfScore\" allowHalf ariaLabel=\"Half stars\" />\n  <star-rating [(value)]=\"halfScore\" orientation=\"vertical\" ariaLabel=\"Vertical rating\" />\n</div>\n<p class=\"docs-output\" role=\"status\">Rating: {{ halfScore() ?? 'none' }}</p>",
   "rating/states": "<star-rating [value]=\"4\" readonly ariaLabel=\"Average rating\" />\n<star-rating [value]=\"2\" disabled ariaLabel=\"Closed rating\" />",
   "ribbon/collapsed": "<star-ribbon [(collapsed)]=\"collapsed\" (command)=\"run($event)\">\n  <star-ribbon-tab key=\"home\" label=\"Home\">\n    <star-ribbon-group label=\"Clipboard\" [items]=\"clipboard\" />\n  </star-ribbon-tab>\n  <star-ribbon-tab key=\"review\" label=\"Review\">\n    <star-ribbon-group label=\"Comments\" [items]=\"comments\" />\n  </star-ribbon-tab>\n</star-ribbon>",
   "ribbon/editor": "<div class=\"docs-stack\">\n  <star-ribbon [(selectedTab)]=\"tab\" (command)=\"run($event)\">\n    <star-ribbon-backstage>\n      <p class=\"backstage\">Recent documents: Order summary, Project plan, Invoice notes.</p>\n    </star-ribbon-backstage>\n    <star-ribbon-tab key=\"home\" label=\"Home\" keyTip=\"H\">\n      <star-ribbon-group\n        label=\"Clipboard\"\n        icon=\"ph-bold ph-clipboard\"\n        [items]=\"clipboard\"\n        dialogLauncher=\"clipboard-options\"\n      />\n      <star-ribbon-group\n        label=\"Font\"\n        icon=\"ph-bold ph-text-aa\"\n        [items]=\"font()\"\n        dialogLauncher=\"font-options\"\n      >\n        <ng-template starRibbonItem=\"font-size\" let-item>\n          <select class=\"size\" [attr.aria-label]=\"item.label\" (change)=\"size($event)\">\n            <option>11</option>\n            <option>12</option>\n            <option>14</option>\n          </select>\n        </ng-template>\n      </star-ribbon-group>\n      <star-ribbon-group\n        label=\"Paragraph\"\n        icon=\"ph-bold ph-paragraph\"\n        [items]=\"paragraph()\"\n      />\n    </star-ribbon-tab>\n    <star-ribbon-tab key=\"insert\" label=\"Insert\">\n      <star-ribbon-group label=\"Tables\" icon=\"ph-bold ph-table\" [items]=\"tables\" />\n      <star-ribbon-group label=\"Media\" icon=\"ph-bold ph-image\" [items]=\"media\" />\n    </star-ribbon-tab>\n    <star-ribbon-tab key=\"review\" label=\"Review\">\n      <star-ribbon-group label=\"Comments\" icon=\"ph-bold ph-chat-text\" [items]=\"comments\" />\n    </star-ribbon-tab>\n  </star-ribbon>\n  <p class=\"docs-output\" role=\"status\">Last command: {{ last() }}</p>\n</div>",
@@ -22594,6 +22894,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "select-button/objects": "<star-select-button\n  [options]=\"views\"\n  optionLabel=\"label\"\n  optionValue=\"id\"\n  optionIcon=\"icon\"\n  [(value)]=\"view\"\n  [allowEmpty]=\"false\"\n  ariaLabel=\"View\"\n/>",
   "select-button/single": "<star-select-button\n  [options]=\"['Day', 'Week', 'Month']\"\n  [(value)]=\"period\"\n  ariaLabel=\"Period\"\n/>\n<p class=\"docs-output\" role=\"status\">Period: {{ period() }}</p>",
   "select-button/toggle": "<star-toggle-button\n  [(checked)]=\"pinned\"\n  onLabel=\"Pinned\"\n  offLabel=\"Pin\"\n  onIcon=\"ph-fill ph-push-pin\"\n  offIcon=\"ph-bold ph-push-pin\"\n/>\n<star-toggle-button [checked]=\"true\" disabled onLabel=\"Locked\" offLabel=\"Lock\" />",
+  "select-button/toggle-icons": "<div class=\"docs-row\">\n  <star-toggle-button [(checked)]=\"pinned\" onLabel=\"Pinned\" offLabel=\"Pin\" iconPos=\"end\">\n    <ng-template starIcon=\"on\"><i class=\"ph-fill ph-push-pin\"></i></ng-template>\n    <ng-template starIcon=\"off\"><i class=\"ph-bold ph-push-pin\"></i></ng-template>\n  </star-toggle-button>\n  <star-toggle-button [(checked)]=\"muted\" ariaLabel=\"Sound\">\n    <ng-template starToggleButtonContent let-checked>\n      <i [class]=\"checked ? 'ph-bold ph-speaker-x' : 'ph-bold ph-speaker-high'\"></i>\n      {{ checked ? 'Muted' : 'Sound on' }}\n    </ng-template>\n  </star-toggle-button>\n</div>",
   "select/basic": "<div class=\"docs-stack\">\n  <star-select\n    [options]=\"countries\"\n    optionLabel=\"name\"\n    optionValue=\"code\"\n    [(value)]=\"country\"\n    placeholder=\"Select a country\"\n    ariaLabel=\"Country\"\n  />\n  <p class=\"docs-output\" role=\"status\">Country: {{ country() ?? 'none' }}</p>\n</div>",
   "select/disabled-options": "<star-select\n  [options]=\"countries\"\n  optionLabel=\"name\"\n  optionValue=\"code\"\n  optionDisabled=\"closed\"\n  [(value)]=\"open\"\n  placeholder=\"Offices (one is closed)\"\n  ariaLabel=\"Office\"\n/>",
   "select/editable": "<div class=\"docs-stack\">\n  <star-select\n    [options]=\"cities\"\n    optionLabel=\"name\"\n    optionValue=\"code\"\n    [(value)]=\"editedCity\"\n    editable\n    allowCustomValue\n    showClear\n    placeholder=\"Type or choose a city\"\n    ariaLabel=\"City, editable\"\n    (customValue)=\"lastCustom.set($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">\n    Value: {{ editedCity() ?? 'none' }}. Last custom text: {{ lastCustom() ?? 'none' }}\n  </p>\n</div>",
@@ -22620,6 +22921,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "slider/disabled": "<div class=\"docs-stack\">\n  <star-slider [value]=\"30\" disabled ariaLabel=\"Locked value\" />\n</div>",
   "slider/format": "<div class=\"docs-stack\">\n  <star-slider\n    [(value)]=\"discount\"\n    [min]=\"0\"\n    [max]=\"50\"\n    [step]=\"5\"\n    showValue\n    [format]=\"percent\"\n    ariaLabel=\"Discount\"\n  />\n</div>",
   "slider/range": "<div class=\"docs-stack\">\n  <star-range-slider\n    [(value)]=\"price\"\n    [bounds]=\"[0, 500]\"\n    [step]=\"10\"\n    showValue\n    ariaLabel=\"Price range\"\n  />\n  <p class=\"docs-output\" role=\"status\">From {{ price()[0] }} to {{ price()[1] }}</p>\n</div>",
+  "slider/range-options": "<div class=\"docs-row\">\n  <star-range-slider\n    [(value)]=\"span\"\n    orientation=\"vertical\"\n    [minStepsBetweenHandles]=\"10\"\n    ariaLabel=\"Span\"\n    (slideEnd)=\"spanEnd.set($event)\"\n  />\n  <star-range-slider [(value)]=\"span\" disabledMinHandle ariaLabel=\"Upper limit\" />\n  <p class=\"docs-output\" role=\"status\">Last end: {{ spanEnd()?.join(' to ') ?? 'none' }}</p>\n</div>",
   "slider/vertical": "<div class=\"docs-row\">\n  <star-slider\n    [(value)]=\"height\"\n    orientation=\"vertical\"\n    ariaLabel=\"Height\"\n    showValue\n    (slideEnd)=\"ended.set($event)\"\n  />\n  <p class=\"docs-output\" role=\"status\">Last end: {{ ended() ?? 'none' }}</p>\n</div>",
   "sparkline/line": "<p>\n  Weekly sales <star-sparkline [data]=\"sales\" [highlight]=\"['last']\" /> rose to 21.5\n  thousand.\n</p>",
   "sparkline/markers": "<star-sparkline\n  [data]=\"load\"\n  [highlight]=\"['min', 'max', 'last']\"\n  [referenceLine]=\"70\"\n  [min]=\"0\"\n  [max]=\"100\"\n  [width]=\"200\"\n  [height]=\"40\"\n  ariaLabel=\"Server load, target 70 percent\"\n/>",
@@ -22745,6 +23047,7 @@ export const DOCS_EXAMPLES: Readonly<Record<string, string>> = {
   "toast/sticky": "<star-button size=\"sm\" variant=\"secondary\" (pressed)=\"sticky()\">Sticky message</star-button>\n<star-button size=\"sm\" variant=\"secondary\" (pressed)=\"quick()\"\n  >Two second message</star-button\n>\n<star-button size=\"sm\" variant=\"ghost\" (pressed)=\"toasts.clear()\">Clear all</star-button>",
   "toggle-switch/basic": "<star-toggle-switch [(checked)]=\"alerts\">Email alerts</star-toggle-switch>\n<p class=\"docs-output\" role=\"status\">Alerts: {{ alerts() ? 'on' : 'off' }}</p>",
   "toggle-switch/disabled": "<star-toggle-switch [checked]=\"true\" disabled\n  >Two-step sign-in (set by your admin)</star-toggle-switch\n>",
+  "toggle-switch/labels": "<star-toggle-switch [(checked)]=\"lights\" onLabel=\"On\" offLabel=\"Off\">\n  Lights\n  <ng-template starIcon=\"on\"><i class=\"ph-bold ph-check\"></i></ng-template>\n  <ng-template starIcon=\"off\"><i class=\"ph-bold ph-x\"></i></ng-template>\n</star-toggle-switch>",
   "toggle-switch/small": "<star-toggle-switch size=\"sm\" [(checked)]=\"compact\">Compact rows</star-toggle-switch>",
   "toolbar/basic": "<div class=\"docs-stack\">\n  <star-toolbar ariaLabel=\"Order actions\">\n    <ng-container starToolbarStart>\n      <star-button size=\"sm\" leadingIcon=\"ph-bold ph-plus\" (pressed)=\"last.set('New')\">\n        New\n      </star-button>\n      <star-button\n        size=\"sm\"\n        variant=\"secondary\"\n        leadingIcon=\"ph-bold ph-pencil-simple\"\n        (pressed)=\"last.set('Edit')\"\n      >\n        Edit\n      </star-button>\n    </ng-container>\n    <ng-container starToolbarEnd>\n      <star-button\n        size=\"sm\"\n        variant=\"ghost\"\n        leadingIcon=\"ph-bold ph-export\"\n        (pressed)=\"last.set('Export')\"\n      >\n        Export\n      </star-button>\n    </ng-container>\n  </star-toolbar>\n  <p class=\"docs-output\" role=\"status\">Last action: {{ last() }}</p>\n</div>",
   "toolbar/center": "<div class=\"docs-stack\">\n  <star-toolbar ariaLabel=\"Page controls\">\n    <ng-container starToolbarStart>\n      <star-button size=\"sm\" variant=\"secondary\">Back</star-button>\n    </ng-container>\n    <ng-container starToolbarCenter>\n      <star-button size=\"sm\" variant=\"ghost\">Day</star-button>\n      <star-divider layout=\"vertical\" />\n      <star-button size=\"sm\" variant=\"ghost\">Week</star-button>\n    </ng-container>\n    <ng-container starToolbarEnd>\n      <star-button size=\"sm\">Save</star-button>\n    </ng-container>\n  </star-toolbar>\n</div>",

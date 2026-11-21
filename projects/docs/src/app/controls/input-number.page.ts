@@ -98,11 +98,27 @@ import { DOCS, DocsRow } from '../shared/docs';
         </div>
       </docs-example>
 
+      <docs-example
+        heading="Currency display and clear"
+        source="input-number/currency-display"
+        note="currencyDisplay shows the currency as a symbol (default), a narrow symbol, the ISO code or its name. showClear adds a clear button while the field has a value."
+      >
+        <star-input-number
+          [(value)]="fee"
+          mode="currency"
+          currency="EUR"
+          currencyDisplay="code"
+          showClear
+          ariaLabel="Fee"
+        />
+      </docs-example>
+
       <docs-api [of]="['StarInputNumber']" [cssVars]="cssVars" [keyboard]="keyboard" />
     </docs-page>
   `,
 })
 export class InputNumberPage {
+  protected readonly fee = signal<number | null>(49.9);
   protected readonly quantity = signal<number | null>(3);
   protected readonly stacked = signal<number | null>(12);
   protected readonly vertical = signal<number | null>(4);

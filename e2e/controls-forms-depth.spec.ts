@@ -38,4 +38,43 @@ test.describe('form inputs depth (wave N1)', () => {
     await page.keyboard.press('ArrowUp');
     await expect(live.locator('p.docs-output')).toHaveText('Last end: 61');
   });
+
+  test('rating: half stars step by 0.5 with the arrow keys', async ({ page }) => {
+    await openPage(page, '/controls/rating', 'Rating');
+    const live = example(page, 'Half stars, vertical');
+    const half = live.locator('star-rating').first();
+    await half.getByRole('radio', { name: '3.5 of 5' }).focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(half.getByRole('radio', { name: '4 of 5' })).toBeChecked();
+    await expect(live.locator('p.docs-output')).toHaveText('Rating: 4');
+  });
+
+  test('toggle switch: the state label follows the switch', async ({ page }) => {
+    await openPage(page, '/controls/toggle-switch', 'Toggle switch');
+    const live = example(page, 'State labels and handle icons');
+    const toggle = live.getByRole('switch', { name: 'Lights' });
+    await expect(live.locator('[data-star-part="stateText"]')).toHaveText('On');
+    await toggle.press('Space');
+    await expect(toggle).not.toBeChecked();
+    await expect(live.locator('[data-star-part="stateText"]')).toHaveText('Off');
+  });
+
+  test('input number: the clear button empties the field', async ({ page }) => {
+    await openPage(page, '/controls/input-number', 'Input number');
+    const live = example(page, 'Currency display and clear');
+    const field = live.getByRole('spinbutton', { name: 'Fee' });
+    await expect(field).toHaveValue(/EUR/);
+    await live.getByRole('button', { name: 'Clear' }).click();
+    await expect(field).toHaveValue('');
+    await expect(field).toBeFocused();
+  });
+
+  test('range slider: the gap between the handles holds', async ({ page }) => {
+    await openPage(page, '/controls/slider', 'Slider');
+    const live = example(page, 'Range slider options');
+    const low = live.getByRole('slider').first();
+    await low.focus();
+    await page.keyboard.press('End');
+    await expect(live.locator('p.docs-output')).toHaveText('Last end: 50 to 60');
+  });
 });
